@@ -780,6 +780,8 @@ int test_scene_second_emit_no_uploads_when_not_dirty(TstContext* suite, const Ts
 
 int test_scene_pending_render_work_tracks_volume_state(TstContext* suite, const TstCase* item);
 
+int test_scene_pending_render_work_tracks_labels_state(TstContext* suite, const TstCase* item);
+
 int test_scene_pending_render_work_clears_unlit_background(
     TstContext* suite, const TstCase* item);
 

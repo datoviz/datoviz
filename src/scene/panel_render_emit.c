@@ -579,8 +579,9 @@ static bool _scene_append_visual_to_render_pass(
                     sizeof(metadata.draw_scene_occlusion_producer_pass_id)))
                 return false;
             bool scene_occlusion_uses_set2 =
-                draw_contract.needs_image_set || draw_contract.needs_glyph_set ||
-                draw_contract.needs_volume_set || draw_contract.needs_material_set;
+                draw_contract.needs_image_set || draw_contract.needs_labels_set ||
+                draw_contract.needs_glyph_set || draw_contract.needs_volume_set ||
+                draw_contract.needs_material_set;
             metadata.draw_scene_occlusion_bind_set = scene_occlusion_uses_set2
                                                          ? DVZ_SCENE_SHADER_SET_SCENE_OCCLUSION
                                                          : DVZ_SCENE_SHADER_SET_VISUAL;

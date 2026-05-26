@@ -159,6 +159,11 @@ bool _scene_visual_frame_plan_metadata(
                 sizeof(metadata->volume_transfer_texture_id)))
             return false;
     }
+    if (visual->type == DVZ_VISUAL_TYPE_LABELS)
+    {
+        metadata->has_labels = true;
+        metadata->labels_state = visual->labels;
+    }
     if (!_scene_attr_resource_key(
             figure, visual, visual_index, "normal", metadata->normal_id,
             sizeof(metadata->normal_id)))

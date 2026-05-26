@@ -17,6 +17,7 @@
 #include <float.h>
 
 #include "scene_graph_utils.h"
+#include "../_frame_plan_runtime_internal.h"
 #include "datoviz/geom.h"
 
 
@@ -4611,6 +4612,74 @@ static void _labels_log_pipeline_labels(const DvzDrp2CommandStream* stream)
 }
 
 
+/**
+ * Return whether a stream contains the labels texture/sampler/params bind-group layout.
+ *
+ * @param stream the emitted command stream
+ * @return whether the labels layout is present
+ */
+static bool _labels_stream_has_params_layout(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT)
+            continue;
+        if (cmd->u.create_bind_group_layout.entry_count != 3)
+            continue;
+        const DvzDrp2BindGroupLayoutEntry* entries = cmd->u.create_bind_group_layout.entries;
+        if (entries[0].binding == 0 &&
+            entries[0].binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE &&
+            entries[1].binding == 1 &&
+            entries[1].binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLER &&
+            entries[2].binding == 2 &&
+            entries[2].binding_type == DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+/**
+ * Return whether a stream writes the expected labels presentation uniform.
+ *
+ * @param stream the emitted command stream
+ * @return whether the labels uniform write is present
+ */
+static bool _labels_stream_has_params_write(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_WRITE_BUFFER ||
+            cmd->u.write_buffer.size != sizeof(DvzSceneLabelsUniform))
+        {
+            continue;
+        }
+        const DvzSceneLabelsUniform* uniform =
+            (const DvzSceneLabelsUniform*)cmd->u.write_buffer.data_raw;
+        if (uniform == NULL)
+            continue;
+        if (uniform->ids[0] == 0u && uniform->ids[1] == 17u &&
+            uniform->params[0] ==
+                (DVZ_SCENE_LABELS_FLAG_SELECTED | DVZ_SCENE_LABELS_FLAG_BOUNDARY) &&
+            uniform->params[1] == 123u && uniform->params[2] == 2u &&
+            fabsf(uniform->floats[0] - 0.55f) < 1e-6f &&
+            fabsf(uniform->floats[1] - 2.0f) < 1e-6f &&
+            uniform->hidden_ids[0][0] == (uint32_t)(int32_t)-7 &&
+            uniform->hidden_ids[0][1] == 1009u)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 
 /**
  * Build one retained labels visual bound to a categorical scale.
@@ -4636,6 +4705,13 @@ static int _labels_emit_figure(
     ANN(panel);
     DvzVisual* labels = dvz_labels(scene, 0);
     ANN(labels);
+    DvzCategoryId hidden[2] = {-7, 1009};
+    DvzColor boundary = {255, 244, 64, 245};
+    AT(dvz_labels_set_opacity(labels, 0.55f) == 0);
+    AT(dvz_labels_set_selected(labels, 17) == 0);
+    AT(dvz_labels_set_hidden(labels, hidden, 2) == 0);
+    AT(dvz_labels_set_boundary(labels, true, 2.0f, boundary) == 0);
+    AT(dvz_labels_set_fallback_seed(labels, 123) == 0);
 
     vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
     vec2 extents[1] = {{2.0f, 2.0f}};
@@ -4705,6 +4781,8 @@ int test_scene_labels_emit_signed_glsl(TstContext* suite, const TstCase* item)
     ANN(stream);
     AT(_stream_has_render_pipeline_label_part(stream, "_pipe_labels_sintg"));
     AT(!_stream_has_render_pipeline_label(stream, "_pipe_imgg"));
+    AT(_labels_stream_has_params_layout(stream));
+    AT(_labels_stream_has_params_write(stream));
     AT(_stream_has_texture_format(stream, VK_FORMAT_R32_SINT, 2, 2));
     AT(_stream_has_texture_upload(stream, 2, 2, 2 * sizeof(int32_t)));
 
@@ -4751,6 +4829,8 @@ int test_scene_labels_emit_unsigned_glsl(TstContext* suite, const TstCase* item)
     ANN(stream);
     AT(_stream_has_render_pipeline_label_part(stream, "_pipe_labels_uintg"));
     AT(!_stream_has_render_pipeline_label(stream, "_pipe_imgg"));
+    AT(_labels_stream_has_params_layout(stream));
+    AT(_labels_stream_has_params_write(stream));
     AT(_stream_has_texture_format(stream, VK_FORMAT_R32_UINT, 2, 2));
     AT(_stream_has_texture_upload(stream, 2, 2, 2 * sizeof(uint32_t)));
 
@@ -4802,6 +4882,8 @@ int test_scene_labels_emit_wgsl(TstContext* suite, const TstCase* item)
     if (!_stream_has_render_pipeline_label_part(stream, "_pipe_labels_sintw"))
         _labels_log_pipeline_labels(stream);
     AT(_stream_has_render_pipeline_label_part(stream, "_pipe_labels_sintw"));
+    AT(_labels_stream_has_params_layout(stream));
+    AT(_labels_stream_has_params_write(stream));
     AT(_stream_has_texture_format(stream, VK_FORMAT_R32_SINT, 2, 2));
 
     char* json = dvz_drp2_stream_json(stream, "scene_labels_wgsl_from_c");
@@ -4810,6 +4892,8 @@ int test_scene_labels_emit_wgsl(TstContext* suite, const TstCase* item)
     AT(strstr(json, "texture_2d<i32>") != NULL);
     AT(strstr(json, "textureLoad") != NULL);
     AT(strstr(json, "@group(1) @binding(0)") != NULL);
+    AT(strstr(json, "@group(1) @binding(2)") != NULL);
+    AT(strstr(json, "LabelsParams") != NULL);
     dvz_drp2_stream_json_destroy(json);
 
     dvz_drp2_stream_destroy(stream);
@@ -5586,6 +5670,61 @@ int test_scene_pending_render_work_tracks_volume_state(TstContext* suite, const 
     AT(_scene_figure_has_pending_render_work(figure));
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream2 = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream2 != NULL);
+    dvz_drp2_stream_destroy(stream2);
+    AT(!_scene_figure_has_pending_render_work(figure));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure retained labels parameter mutations keep on-demand scheduling dirty until emitted.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_pending_render_work_tracks_labels_state(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    int32_t values[4] = {0, -7, 17, -100};
+    DvzFigure* figure = NULL;
+    AT(_labels_emit_figure(
+           scene, DVZ_FIELD_FORMAT_R32_SINT, values, 2 * sizeof(int32_t), &figure) == 0);
+    AT(figure != NULL);
+    AT(figure->panel_count == 1);
+    DvzPanel* panel = &figure->panels[0];
+    AT(panel->visual_count == 1);
+    DvzVisual* labels = panel->visuals[0].visual;
+    AT(labels != NULL);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    caps.supports_color_blending = true;
+    DvzDiagnosticReport report;
+
+    AT(_scene_figure_has_pending_render_work(figure));
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream1 != NULL);
+    dvz_drp2_stream_destroy(stream1);
+    AT(!_scene_figure_has_pending_render_work(figure));
+
+    AT(dvz_labels_set_opacity(labels, 0.25f) == 0);
+    AT(_scene_figure_has_pending_render_work(figure));
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream2 = dvz_figure_emit(figure, &caps, &report);
+    if (dvz_diagnostic_report_count(&report) != 0)
+        _labels_log_diagnostics(&report);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream2 != NULL);
     dvz_drp2_stream_destroy(stream2);

@@ -293,6 +293,7 @@ typedef struct DvzFramePlanVisualMeta
     bool depth_cue_enabled;
     bool point_style_enabled;
     bool has_volume;
+    bool has_labels;
     uint32_t field_format;
     uint32_t field_width;
     uint32_t field_height;
@@ -306,6 +307,7 @@ typedef struct DvzFramePlanVisualMeta
     bool volume_occluded;
     bool has_volume_occlusion;
     DvzVolumeOcclusionDesc volume_occlusion;
+    DvzLabelsState labels_state;
     DvzVolumeState volume_state;
     uint32_t glyph_atlas_encoding;
     float glyph_distance_range_px;

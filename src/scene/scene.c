@@ -2322,6 +2322,12 @@ static bool _scene_visual_has_pending_render_work(const DvzVisual* visual)
     {
         return true;
     }
+    if (
+        visual->type == DVZ_VISUAL_TYPE_LABELS &&
+        visual->labels_realized_version != visual->labels.version)
+    {
+        return true;
+    }
     if (visual->field != NULL && visual->field->dirty)
         return true;
     if (visual->buffer != NULL && visual->buffer->dirty)
@@ -2522,6 +2528,8 @@ static void _scene_commit_emit_success(DvzFigure* figure)
             }
             if (visual->type == DVZ_VISUAL_TYPE_VOLUME)
                 visual->volume_realized_version = visual->volume.version;
+            if (visual->type == DVZ_VISUAL_TYPE_LABELS)
+                visual->labels_realized_version = visual->labels.version;
         }
     }
     for (uint32_t i = 0; i < figure->scene->field_count; i++)

@@ -727,6 +727,8 @@ static bool _scene_visual_desc_from_metadata(
                     *error = "labels metadata has unsupported integer texture format";
                 return false;
             }
+            out->labels_visual_index = meta->visual_index;
+            out->labels_state = meta->labels_state;
         }
         else
             out->kind = DVZ_SCENE_VISUAL_DESC_IMAGE;

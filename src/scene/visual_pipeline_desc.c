@@ -275,11 +275,15 @@ static bool _pipeline_apply_fixed_visual(
             caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op, out);
     }
     else if (
-        visual->kind == DVZ_SCENE_VISUAL_DESC_IMAGE ||
+        visual->kind == DVZ_SCENE_VISUAL_DESC_IMAGE)
+    {
+        out->needs_image_layout = caps->uses_image_set;
+    }
+    else if (
         visual->kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
         visual->kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT)
     {
-        out->needs_image_layout = caps->uses_image_set;
+        out->needs_labels_layout = caps->uses_image_set;
     }
     else if (visual->kind == DVZ_SCENE_VISUAL_DESC_GLYPH)
     {

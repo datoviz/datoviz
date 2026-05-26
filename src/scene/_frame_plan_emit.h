@@ -49,6 +49,10 @@
 #define DRP2_EMITTER_OBJECT_ID_BASE 5000
 #define DVZ_SCENE_COMMON_CACHE_CAPACITY (2 * DVZ_SCENE_MAX_PANELS)
 #define DVZ_SCENE_VOLUME_CACHE_CAPACITY DVZ_SCENE_MAX_VISUALS
+#define DVZ_SCENE_LABELS_CACHE_CAPACITY DVZ_SCENE_MAX_VISUALS
+#define DVZ_SCENE_LABELS_HIDDEN_VEC4_COUNT ((DVZ_LABELS_MAX_HIDDEN + 3u) / 4u)
+#define DVZ_SCENE_LABELS_FLAG_SELECTED 0x01u
+#define DVZ_SCENE_LABELS_FLAG_BOUNDARY 0x02u
 
 
 
@@ -59,7 +63,17 @@
 typedef struct ResourceId ResourceId;
 typedef struct ConverterState ConverterState;
 typedef struct SceneRenderStateCache SceneRenderStateCache;
+typedef struct DvzSceneLabelsUniform DvzSceneLabelsUniform;
 typedef struct DvzSceneVolumeUniform DvzSceneVolumeUniform;
+
+struct DvzSceneLabelsUniform
+{
+    uint32_t ids[4]; /* background bits, selected bits, reserved, reserved */
+    uint32_t params[4]; /* flags, fallback seed, hidden count, reserved */
+    float floats[4]; /* opacity, boundary width in texels, reserved, reserved */
+    float boundary_color[4];
+    uint32_t hidden_ids[DVZ_SCENE_LABELS_HIDDEN_VEC4_COUNT][4];
+};
 
 struct DvzSceneVolumeUniform
 {
@@ -140,6 +154,9 @@ struct DvzFramePlanEmitter
     char volume_ids[DVZ_SCENE_VOLUME_CACHE_CAPACITY][DVZ_SCENE_LABEL_SIZE];
     DvzSceneVolumeUniform volume_cache[DVZ_SCENE_VOLUME_CACHE_CAPACITY];
     uint32_t volume_count;
+    char labels_ids[DVZ_SCENE_LABELS_CACHE_CAPACITY][DVZ_SCENE_LABEL_SIZE];
+    DvzSceneLabelsUniform labels_cache[DVZ_SCENE_LABELS_CACHE_CAPACITY];
+    uint32_t labels_count;
 };
 
 
@@ -161,6 +178,9 @@ _emitter_viewport_slot(DvzFramePlanEmitter* emitter, const char* key);
 
 DvzSceneVolumeUniform*
 _emitter_volume_slot(DvzFramePlanEmitter* emitter, const char* key);
+
+DvzSceneLabelsUniform*
+_emitter_labels_slot(DvzFramePlanEmitter* emitter, const char* key);
 
 uint64_t _resource_id(ConverterState* state, const char* key);
 

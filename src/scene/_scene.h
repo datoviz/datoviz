@@ -1147,6 +1147,7 @@ struct DvzVisual
     bool                   volume_occluded;
     DvzLabelsState         labels;
     DvzVolumeState         volume;
+    uint64_t               labels_realized_version;
     uint64_t               volume_realized_version;
 
     /* Attribute slots — indexed by attr index (type-specific) */

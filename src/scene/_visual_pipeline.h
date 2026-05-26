@@ -76,6 +76,8 @@ typedef struct DvzSceneVisualDesc
     uint64_t index_buffer_id;
     uint64_t material_buffer_id;
     uint64_t image_texture_id;
+    uint32_t labels_visual_index;
+    DvzLabelsState labels_state;
     uint32_t glyph_atlas_encoding;
     float glyph_distance_range_px;
     uint64_t volume_texture_id;
@@ -162,6 +164,7 @@ typedef struct DvzSceneVisualPipelineDesc
     uint32_t offsets[DVZ_SCENE_MAX_NODE_RESOURCES];
     bool needs_common_layout;
     bool needs_image_layout;
+    bool needs_labels_layout;
     bool needs_glyph_layout;
     bool needs_volume_layout;
     bool needs_material_layout;
@@ -185,6 +188,10 @@ typedef struct DvzSceneVisualBindDesc
     bool uses_image_set1;
     bool image_nearest_sampler;
     uint64_t image_texture_id;
+    bool uses_labels_set1;
+    uint64_t labels_texture_id;
+    uint32_t labels_visual_index;
+    DvzLabelsState labels_state;
     bool uses_glyph_set1;
     uint64_t glyph_texture_id;
     uint32_t glyph_atlas_encoding;

@@ -264,6 +264,7 @@ bool _emitter_prepare_render_multi(
 
     /* Image BGL + sampler (shared, created lazily on first image visual). */
     uint64_t img_bgl_id = 0, img_sampler_linear_id = 0, img_sampler_nearest_id = 0;
+    uint64_t labels_bgl_id = 0, labels_sampler_id = 0;
     uint64_t glyph_bgl_id = 0, glyph_sampler_id = 0;
     uint64_t volume_bgl_id = 0, volume_sampler_linear_id = 0, volume_sampler_nearest_id = 0;
     uint64_t scene_occlusion_bgl_id = 0, scene_occlusion_sampler_id = 0;
@@ -688,6 +689,17 @@ bool _emitter_prepare_render_multi(
                     ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(
                                    stream, img_bgl_id);
             }
+            if (pipeline.needs_labels_layout && labels_bgl_id == 0)
+            {
+                labels_bgl_id = _obj_id(emitter, "_bgl_labels", &is_new);
+                if (labels_bgl_id == 0)
+                {
+                    ok = false;
+                    break;
+                }
+                if (is_new)
+                    ok = ok && _create_labels_bind_group_layout(stream, labels_bgl_id);
+            }
             if (pipeline.needs_glyph_layout && glyph_bgl_id == 0)
             {
                 glyph_bgl_id = _obj_id(emitter, "_bgl_glyph", &is_new);
@@ -760,6 +772,8 @@ bool _emitter_prepare_render_multi(
                         layouts[1] = material_bgl_id;
                     else if (pipeline.needs_image_layout && img_bgl_id != 0)
                         layouts[1] = img_bgl_id;
+                    else if (pipeline.needs_labels_layout && labels_bgl_id != 0)
+                        layouts[1] = labels_bgl_id;
                     else if (pipeline.needs_glyph_layout && glyph_bgl_id != 0)
                         layouts[1] = glyph_bgl_id;
                     else if (pipeline.needs_volume_layout && volume_bgl_id != 0)
@@ -781,9 +795,9 @@ bool _emitter_prepare_render_multi(
                 else
                 {
                     _pipeline_bind_group_layouts(
-                        &pipeline, common_bgl_id, img_bgl_id, glyph_bgl_id, volume_bgl_id,
-                        material_bgl_id, scene_occlusion_bgl_id, scene_occlusion_uses_set2,
-                        layouts, &layout_count);
+                        &pipeline, common_bgl_id, img_bgl_id, labels_bgl_id, glyph_bgl_id,
+                        volume_bgl_id, material_bgl_id, scene_occlusion_bgl_id,
+                        scene_occlusion_uses_set2, layouts, &layout_count);
                 }
                 if (layout_count > 0)
                     ok = dvz_drp2_stream_pipeline_set_bind_group_layouts(
@@ -989,6 +1003,38 @@ bool _emitter_prepare_render_multi(
                      dvz_drp2_stream_create_texture_sampler_bind_group(
                          stream, img_bg_id, img_bgl_id, bind.image_texture_id, *img_sampler_id);
             vis_bg_set1 = img_bg_id;
+        }
+        if (bind.uses_labels_set1)
+        {
+            if (labels_bgl_id == 0)
+            {
+                labels_bgl_id = _obj_id(emitter, "_bgl_labels", &is_new);
+                if (labels_bgl_id == 0)
+                {
+                    ok = false;
+                    break;
+                }
+                if (is_new)
+                    ok = ok && _create_labels_bind_group_layout(stream, labels_bgl_id);
+            }
+            if (labels_sampler_id == 0)
+            {
+                labels_sampler_id = _obj_id(emitter, "_sampler_labels_nearest", &is_new);
+                if (labels_sampler_id == 0)
+                {
+                    ok = false;
+                    break;
+                }
+                if (ok && is_new)
+                    ok = ok && dvz_drp2_stream_create_sampler_filter(
+                                   stream, labels_sampler_id, DVZ_DRP2_FILTER_NEAREST,
+                                   DVZ_DRP2_FILTER_NEAREST);
+            }
+            uint64_t labels_bg_id = 0;
+            ok = ok && _resolve_labels_bind_group(
+                           emitter, stream, labels_bgl_id, labels_sampler_id, &bind,
+                           &labels_bg_id);
+            vis_bg_set1 = labels_bg_id;
         }
         if (bind.uses_glyph_set1)
         {
@@ -2800,39 +2846,66 @@ bool _emitter_emit_render(
         vs_wgsl = _builtin_shader_wgsl(image_shader, false);
         fs_wgsl = _builtin_shader_wgsl(image_shader, true);
 
-        /* Sampler + texture-sampler bind-group layout + bind-group, all persistent. */
-        bool bgl_new = false;
-        bgl_id = _obj_id(emitter, "_bgl_img", &bgl_new);
-        if (bgl_id == 0)
-            return false;
-        if (bgl_new)
-            ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, bgl_id);
-
-        bool sampler_new = false;
         bool labels_nearest = is_labels_sint || is_labels_uint;
-        uint64_t sampler_id = _obj_id(
-            emitter, labels_nearest ? "_sampler_img_nearest" : "_sampler_img", &sampler_new);
-        if (sampler_id == 0)
-            return false;
-        if (ok && sampler_new)
+        if (labels_nearest)
         {
-            DvzDrp2FilterMode filter =
-                labels_nearest ? DVZ_DRP2_FILTER_NEAREST : DVZ_DRP2_FILTER_LINEAR;
-            ok = ok && dvz_drp2_stream_create_sampler_filter(stream, sampler_id, filter, filter);
-        }
+            bool bgl_new = false;
+            bgl_id = _obj_id(emitter, "_bgl_labels", &bgl_new);
+            if (bgl_id == 0)
+                return false;
+            if (bgl_new)
+                ok = ok && _create_labels_bind_group_layout(stream, bgl_id);
 
-        char bg_key[48];
-        dvz_snprintf(
-            bg_key, sizeof(bg_key), labels_nearest ? "_bg_img_nearest_%" PRIu64 :
-                                                     "_bg_img_%" PRIu64,
-            image_tex);
-        bool bg_new = false;
-        bg_id = _obj_id(emitter, bg_key, &bg_new);
-        if (bg_id == 0)
-            return false;
-        if (ok && bg_new)
-            ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group(
-                           stream, bg_id, bgl_id, image_tex, sampler_id);
+            bool sampler_new = false;
+            uint64_t sampler_id = _obj_id(emitter, "_sampler_labels_nearest", &sampler_new);
+            if (sampler_id == 0)
+                return false;
+            if (ok && sampler_new)
+                ok = ok && dvz_drp2_stream_create_sampler_filter(
+                               stream, sampler_id, DVZ_DRP2_FILTER_NEAREST,
+                               DVZ_DRP2_FILTER_NEAREST);
+
+            DvzLabelsState labels_state = {0};
+            labels_state.opacity = 1.0f;
+            labels_state.boundary_width_px = 1.0f;
+            labels_state.boundary_color = (DvzColor){255, 255, 255, 255};
+            if (visual_meta != NULL && visual_meta->has_labels)
+                labels_state = visual_meta->labels_state;
+            DvzSceneVisualBindDesc bind = {
+                .labels_texture_id = image_tex,
+                .labels_visual_index = visual_meta != NULL ? visual_meta->visual_index : 0,
+                .labels_state = labels_state,
+            };
+            ok = ok && _resolve_labels_bind_group(emitter, stream, bgl_id, sampler_id, &bind, &bg_id);
+        }
+        else
+        {
+            bool bgl_new = false;
+            bgl_id = _obj_id(emitter, "_bgl_img", &bgl_new);
+            if (bgl_id == 0)
+                return false;
+            if (bgl_new)
+                ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, bgl_id);
+
+            bool sampler_new = false;
+            uint64_t sampler_id = _obj_id(emitter, "_sampler_img", &sampler_new);
+            if (sampler_id == 0)
+                return false;
+            if (ok && sampler_new)
+                ok = ok && dvz_drp2_stream_create_sampler_filter(
+                               stream, sampler_id, DVZ_DRP2_FILTER_LINEAR,
+                               DVZ_DRP2_FILTER_LINEAR);
+
+            char bg_key[48];
+            dvz_snprintf(bg_key, sizeof(bg_key), "_bg_img_%" PRIu64, image_tex);
+            bool bg_new = false;
+            bg_id = _obj_id(emitter, bg_key, &bg_new);
+            if (bg_id == 0)
+                return false;
+            if (ok && bg_new)
+                ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group(
+                               stream, bg_id, bgl_id, image_tex, sampler_id);
+        }
     }
     else if (cfg != NULL && cfg->fullscreen_triangle)
     {

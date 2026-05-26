@@ -194,6 +194,31 @@ _emitter_volume_slot(DvzFramePlanEmitter* emitter, const char* key)
 }
 
 
+/**
+ * Return the labels uniform cache slot for a visual key, creating it when capacity allows.
+ *
+ * @param emitter the persistent emitter
+ * @param key the labels cache key
+ * @return the cached labels uniform slot, or NULL when the cache is full
+ */
+DvzSceneLabelsUniform*
+_emitter_labels_slot(DvzFramePlanEmitter* emitter, const char* key)
+{
+    ANN(emitter);
+    ANN(key);
+    for (uint32_t i = 0; i < emitter->labels_count; i++)
+    {
+        if (strncmp(emitter->labels_ids[i], key, DVZ_SCENE_LABEL_SIZE) == 0)
+            return &emitter->labels_cache[i];
+    }
+    if (emitter->labels_count >= DVZ_SCENE_LABELS_CACHE_CAPACITY)
+        return NULL;
+    uint32_t slot = emitter->labels_count++;
+    strncpy(emitter->labels_ids[slot], key, DVZ_SCENE_LABEL_SIZE - 1);
+    return &emitter->labels_cache[slot];
+}
+
+
 
 /**
  * Return a deterministic DRP2 id for a scene resource key.

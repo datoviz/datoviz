@@ -966,6 +966,7 @@ static void _labels_state_mark_dirty(DvzVisual* visual)
 {
     ANN(visual);
     _visual_bump_version(&visual->labels.version);
+    visual->image_gpu.dirty = true;
     _scene_notify_visual_changed(visual);
 }
 

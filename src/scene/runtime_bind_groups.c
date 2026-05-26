@@ -52,6 +52,7 @@
  * @param pipeline visual pipeline descriptor
  * @param common_bgl_id scene-common bind group layout id
  * @param image_bgl_id image bind group layout id
+ * @param labels_bgl_id labels bind group layout id
  * @param glyph_bgl_id glyph bind group layout id
  * @param volume_bgl_id volume bind group layout id
  * @param material_bgl_id material bind group layout id
@@ -62,7 +63,7 @@
  */
 void _pipeline_bind_group_layouts(
     const DvzSceneVisualPipelineDesc* pipeline, uint64_t common_bgl_id, uint64_t image_bgl_id,
-    uint64_t glyph_bgl_id, uint64_t volume_bgl_id, uint64_t material_bgl_id,
+    uint64_t labels_bgl_id, uint64_t glyph_bgl_id, uint64_t volume_bgl_id, uint64_t material_bgl_id,
     uint64_t scene_occlusion_bgl_id, bool scene_occlusion_uses_set2, uint64_t* out_layouts,
     uint32_t* out_count)
 {
@@ -76,6 +77,8 @@ void _pipeline_bind_group_layouts(
         out_layouts[count++] = common_bgl_id;
     if (pipeline->needs_image_layout && image_bgl_id != 0)
         set1_layout = image_bgl_id;
+    if (pipeline->needs_labels_layout && labels_bgl_id != 0)
+        set1_layout = labels_bgl_id;
     if (pipeline->needs_glyph_layout && glyph_bgl_id != 0)
         set1_layout = glyph_bgl_id;
     if (pipeline->needs_volume_layout && volume_bgl_id != 0)
@@ -159,6 +162,41 @@ bool _create_glyph_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id)
         },
         {
             .binding = DVZ_SCENE_SHADER_BINDING_GLYPH_PARAMS,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+    };
+    return dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 3, entries);
+}
+
+
+/**
+ * Create the labels bind group layout used by integer label shaders.
+ *
+ * @param stream destination DRP2 command stream.
+ * @param id bind group layout id.
+ * @return whether the command was appended.
+ */
+bool _create_labels_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id)
+{
+    ANN(stream);
+
+    DvzDrp2BindGroupLayoutEntry entries[3] = {
+        {
+            .binding = DVZ_SCENE_SHADER_BINDING_LABELS_TEXTURE,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = DVZ_SCENE_SHADER_BINDING_LABELS_SAMPLER,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = DVZ_SCENE_SHADER_BINDING_LABELS_PARAMS,
             .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
             .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
             .access = DVZ_DRP2_BINDING_ACCESS_READ,
@@ -378,6 +416,129 @@ bool _resolve_glyph_bind_group(
     uniform.params[1] = (float)encoding;
     if (!dvz_drp2_stream_write_buffer_bytes(
             stream, params_buf_id, 0, sizeof(DvzSceneGlyphUniform), &uniform))
+        return false;
+
+    *out_bg_id = bg_id;
+    return true;
+}
+
+
+/**
+ * Convert retained labels state into the shader uniform payload.
+ *
+ * @param state retained labels state.
+ * @param out output uniform payload.
+ */
+void _labels_uniform_from_state(const DvzLabelsState* state, DvzSceneLabelsUniform* out)
+{
+    ANN(state);
+    ANN(out);
+
+    dvz_memset(out, sizeof(DvzSceneLabelsUniform), 0, sizeof(DvzSceneLabelsUniform));
+    out->ids[0] = (uint32_t)(int32_t)state->background_id;
+    out->ids[1] = (uint32_t)(int32_t)state->selected_id;
+    out->params[0] = state->selected_enabled ? DVZ_SCENE_LABELS_FLAG_SELECTED : 0u;
+    if (state->boundary_enabled)
+        out->params[0] |= DVZ_SCENE_LABELS_FLAG_BOUNDARY;
+    out->params[1] = state->fallback_seed;
+    out->params[2] = state->hidden_count;
+    out->floats[0] = state->opacity;
+    out->floats[1] = state->boundary_width_px;
+    out->boundary_color[0] = (float)state->boundary_color.r / 255.0f;
+    out->boundary_color[1] = (float)state->boundary_color.g / 255.0f;
+    out->boundary_color[2] = (float)state->boundary_color.b / 255.0f;
+    out->boundary_color[3] = (float)state->boundary_color.a / 255.0f;
+
+    uint32_t hidden_count = state->hidden_count;
+    if (hidden_count > DVZ_LABELS_MAX_HIDDEN)
+        hidden_count = DVZ_LABELS_MAX_HIDDEN;
+    out->params[2] = hidden_count;
+    for (uint32_t i = 0; i < hidden_count; i++)
+        out->hidden_ids[i / 4u][i % 4u] = (uint32_t)(int32_t)state->hidden_ids[i];
+}
+
+
+/**
+ * Resolve the labels texture/sampler/parameter bind group for one visual.
+ *
+ * @param emitter frame-plan emitter carrying persistent object ids and uniform cache.
+ * @param stream destination DRP2 command stream.
+ * @param bgl_id labels bind group layout id.
+ * @param sampler_id shared nearest labels sampler id.
+ * @param bind labels bind descriptor.
+ * @param out_bg_id resolved bind group id.
+ * @return whether the bind group was resolved.
+ */
+bool _resolve_labels_bind_group(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bgl_id,
+    uint64_t sampler_id, const DvzSceneVisualBindDesc* bind, uint64_t* out_bg_id)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(bind);
+    ANN(out_bg_id);
+    *out_bg_id = 0;
+    if (bind->labels_texture_id == 0)
+        return false;
+
+    bool is_new = false;
+    char params_buf_key[96], params_slot_key[96], bg_key[128];
+    dvz_snprintf(
+        params_buf_key, sizeof(params_buf_key), "_buf_labels_params_%u_%" PRIu64,
+        bind->labels_visual_index, bind->labels_texture_id);
+    dvz_snprintf(
+        params_slot_key, sizeof(params_slot_key), "_slot_labels_params_%u_%" PRIu64,
+        bind->labels_visual_index, bind->labels_texture_id);
+    dvz_snprintf(
+        bg_key, sizeof(bg_key), "_bg_labels_%u_%" PRIu64, bind->labels_visual_index,
+        bind->labels_texture_id);
+
+    uint32_t usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                     DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+    uint64_t params_buf_id = _obj_id(emitter, params_buf_key, &is_new);
+    if (params_buf_id == 0)
+        return false;
+    if (is_new && !dvz_drp2_stream_create_buffer(
+                      stream, params_buf_id, sizeof(DvzSceneLabelsUniform), usage))
+        return false;
+
+    uint64_t bg_id = _obj_id(emitter, bg_key, &is_new);
+    if (bg_id == 0)
+        return false;
+    if (is_new)
+    {
+        DvzDrp2BindGroupEntry entries[3] = {
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_LABELS_TEXTURE,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+                .resource_id = bind->labels_texture_id,
+            },
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_LABELS_SAMPLER,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+                .resource_id = sampler_id,
+            },
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_LABELS_PARAMS,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+                .resource_id = params_buf_id,
+                .offset = 0,
+                .size = sizeof(DvzSceneLabelsUniform),
+            },
+        };
+        if (!dvz_drp2_stream_create_bind_group_entries(stream, bg_id, bgl_id, 3, entries))
+            return false;
+    }
+
+    DvzSceneLabelsUniform* slot = _emitter_labels_slot(emitter, params_slot_key);
+    if (slot == NULL)
+        return false;
+    _labels_uniform_from_state(&bind->labels_state, slot);
+    if (!dvz_drp2_stream_write_buffer_bytes(
+            stream, params_buf_id, 0, sizeof(DvzSceneLabelsUniform), slot))
         return false;
 
     *out_bg_id = bg_id;

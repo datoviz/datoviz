@@ -207,18 +207,23 @@ DvzSceneBuiltinShader _depth_peel_fragment_shader(bool lit, bool back_pass);
 const char* _depth_peel_fragment_spirv_key(DvzSceneBuiltinShader shader);
 void _pipeline_bind_group_layouts(
     const DvzSceneVisualPipelineDesc* pipeline, uint64_t common_bgl_id, uint64_t image_bgl_id,
-    uint64_t glyph_bgl_id, uint64_t volume_bgl_id, uint64_t material_bgl_id,
+    uint64_t labels_bgl_id, uint64_t glyph_bgl_id, uint64_t volume_bgl_id, uint64_t material_bgl_id,
     uint64_t scene_occlusion_bgl_id, bool scene_occlusion_uses_set2, uint64_t* out_layouts,
     uint32_t* out_count);
 bool _resolve_material_bind_group_layout(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t* out_id);
 bool _create_glyph_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id);
+bool _create_labels_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id);
 bool _create_volume_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id);
 bool _create_scene_occlusion_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id);
 bool _create_dummy_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id);
 void _scene_occlusion_uniform_from_desc(
     const DvzSceneOcclusionDesc* desc, DvzSceneOcclusionUniform* out);
 bool _resolve_glyph_bind_group(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bgl_id,
+    uint64_t sampler_id, const DvzSceneVisualBindDesc* bind, uint64_t* out_bg_id);
+void _labels_uniform_from_state(const DvzLabelsState* state, DvzSceneLabelsUniform* out);
+bool _resolve_labels_bind_group(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bgl_id,
     uint64_t sampler_id, const DvzSceneVisualBindDesc* bind, uint64_t* out_bg_id);
 bool _resolve_scene_occlusion_bind_group(
