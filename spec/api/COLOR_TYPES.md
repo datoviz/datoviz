@@ -230,16 +230,55 @@ Tests should cover:
 The v0.4 branch can make this change aggressively because external API compatibility is not a
 constraint.
 
-1. Replace `#define DvzColor cvec4` with `typedef struct DvzColor { ... } DvzColor`.
-2. Add `DvzColorf`, constructors, conversion helpers, and compile-time layout assertions.
-3. Update style APIs to pass `DvzColor` by value and remove NULL checks on color values.
-4. Update output APIs to use `DvzColor* out`.
-5. Update visual attribute definitions to use `sizeof(DvzColor)` and keep RGBA8 unorm formats.
-6. Replace `color[0]` access with `color.r` access in scalar code.
-7. Keep `DvzColor colors[count]` as the bulk data shape.
-8. Update examples to use constructors instead of manual byte conversion.
-9. Add focused tests for layout, conversion, and representative visual uploads.
+Use the following operational sequence so the migration stays reviewable and avoids throwaway warning
+fixes around the current array-alias implementation.
+
+1. Inventory the current public and internal `DvzColor` API surface while `DvzColor` is still the
+   `cvec4` alias. Mark scalar color APIs, bulk color arrays, output parameters, colormap sampling,
+   GUI color editors, geometry color fields, and visual upload paths.
+2. Add `DvzColorf`, constructors, conversion helpers, hex helpers, and compile-time layout
+   assertions. Add focused tests for `sizeof(DvzColor)`, channel offsets, `dvz_color_u8()` clamping
+   and rounding, unit-float conversion, hex byte order, and sRGB/linear round trips.
+3. Replace `#define DvzColor cvec4` with `typedef struct DvzColor { ... } DvzColor`. This should be
+   a dedicated breakage commit whose expected result is compile errors in all remaining array-style
+   access sites.
+4. Repair core producers and storage first: `math/mock`, `geom`, and any shared helpers that
+   allocate, default, copy, or compare `DvzColor` values. Keep `DvzColor colors[count]` as the bulk
+   data shape, and keep `sizeof(DvzColor)` as the visual color item size.
+5. Repair scene visual attribute and upload paths next. Preserve RGBA8 unorm GPU formats and verify
+   that upload byte sizes still use `count * sizeof(DvzColor)`.
+6. Repair scale, colormap, and colorbar APIs. Change output APIs such as `dvz_colormap_sample()` to
+   use `DvzColor* out`, and add the float sampling form when the implementation can define its color
+   space precisely.
+7. Repair scalar style APIs and remove value NULL checks. APIs such as polygon, text, axis, and
+   material/style setters should take `DvzColor` by value when the input is one coherent color.
+8. Repair GUI helpers and examples. Replace local normalized-float-to-byte helpers with
+   `dvz_color_u8()` or `dvz_color_from_unit()`, and use `dvz_color_rgba()` / `dvz_color_rgb()` for
+   literal colors where that improves readability.
+9. Repair tests last, except for tests needed to validate an earlier stage. Prefer asserting through
+   `color.r`, `color.g`, `color.b`, and `color.a` for scalar values; use flat byte views only when a
+   test is explicitly validating packed RGBA8 memory layout.
 10. Remove compatibility shims before API freeze unless they are needed for internal generated code.
+
+
+### Warning Cleanup Note
+
+Do not spend time locally fixing warnings whose only cause is the current array-alias form of
+`DvzColor`. In particular, `-Wpedantic` warnings about pointers to arrays with different qualifiers
+should be left for the struct migration unless the touched code has an independent correctness bug.
+Those warnings should mostly disappear when `DvzColor` becomes a real four-byte struct.
+
+
+### Validation Gates
+
+Run focused validation at each stage:
+
+1. After adding helpers, run the focused color/layout tests and `just build`.
+2. After repairing `geom`, run `just test geom`.
+3. After repairing scene visual uploads, scale, colormap, colorbar, or style APIs, run
+   `just test scene`.
+4. After example and GUI cleanup, run `just build` to compile all examples and optional Qt targets.
+5. Before considering the migration complete, run `just rebuild`, `just test`, and `git diff --check`.
 
 
 ## Non-Goals
@@ -249,4 +288,3 @@ constraint.
 3. Do not use packed `uint32_t` as the canonical public color type.
 4. Do not preserve array-decay compatibility with the old `DvzColor` macro alias.
 5. Do not overload one type to mean both byte display color and linear float material color.
-
