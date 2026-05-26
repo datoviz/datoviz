@@ -76,6 +76,7 @@ typedef struct DvzSceneVisualDesc
     uint64_t index_buffer_id;
     uint64_t material_buffer_id;
     uint64_t image_texture_id;
+    bool image_pixel_space;
     uint32_t labels_visual_index;
     DvzLabelsState labels_state;
     uint32_t glyph_atlas_encoding;

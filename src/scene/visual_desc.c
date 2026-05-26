@@ -731,7 +731,10 @@ static bool _scene_visual_desc_from_metadata(
             out->labels_state = meta->labels_state;
         }
         else
+        {
             out->kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
+            out->image_pixel_space = meta->image_pixel_space;
+        }
         if (meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
         {
             uint64_t bounds_id =

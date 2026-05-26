@@ -158,6 +158,8 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "gbuffer_normal_frag" : "primitive_lit_vert";
     case DVZ_SCENE_BUILTIN_SHADER_IMAGE:
         return fragment ? "image_frag" : "image_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_IMAGE_PIXEL:
+        return fragment ? "image_frag" : "image_pixel_vert";
     case DVZ_SCENE_BUILTIN_SHADER_LABELS_SINT:
         return fragment ? "labels_sint_frag" : "image_vert";
     case DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT:

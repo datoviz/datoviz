@@ -881,13 +881,15 @@ static void _scene_emit_path_uploads(
  * Return whether an image visual uses per-item rectangles.
  *
  * @param visual the image visual
- * @return whether the visual has an extent attribute
+ * @return whether the visual has visual-space or pixel-space rectangle attributes
  */
 bool _scene_image_uses_generated_quads(const DvzVisual* visual)
 {
     ANN(visual);
-    return (visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_LABELS) &&
-           _scene_visual_has_attr_data(visual, "extent");
+    bool image_like =
+        visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_LABELS;
+    return image_like && (_scene_visual_has_attr_data(visual, "extent") ||
+                          _scene_visual_has_attr_data(visual, "extent_px"));
 }
 
 
@@ -900,19 +902,33 @@ bool _scene_image_uses_generated_quads(const DvzVisual* visual)
 static bool _image_cache_rebuild(DvzVisual* visual)
 {
     ANN(visual);
-    if (!_scene_image_uses_generated_quads(visual) ||
-        !_scene_visual_has_attr_data(visual, "position"))
+    if (!_scene_image_uses_generated_quads(visual))
     {
-        log_error("image-like visual per-item rectangles require position and extent attributes");
+        log_error("image-like visual per-item rectangles require extent attributes");
         return false;
     }
 
-    DvzVisualAttr* position_attr = &visual->attrs[_attr_index(visual, "position")];
-    DvzVisualAttr* extent_attr = &visual->attrs[_attr_index(visual, "extent")];
+    bool has_visual_rect = _scene_visual_has_attr_data(visual, "position") &&
+                           _scene_visual_has_attr_data(visual, "extent");
+    bool has_pixel_rect = visual->type == DVZ_VISUAL_TYPE_IMAGE &&
+                          _scene_visual_has_attr_data(visual, "position_px") &&
+                          _scene_visual_has_attr_data(visual, "extent_px");
+    if (has_visual_rect == has_pixel_rect)
+    {
+        log_error(
+            "image visual per-item rectangles require exactly one of position/extent or "
+            "position_px/extent_px");
+        return false;
+    }
+
+    const char* position_name = has_pixel_rect ? "position_px" : "position";
+    const char* extent_name = has_pixel_rect ? "extent_px" : "extent";
+    DvzVisualAttr* position_attr = &visual->attrs[_attr_index(visual, position_name)];
+    DvzVisualAttr* extent_attr = &visual->attrs[_attr_index(visual, extent_name)];
     const uint64_t item_count = position_attr->item_count;
     if (item_count == 0 || extent_attr->item_count != item_count)
     {
-        log_error("image visual position and extent item counts must match");
+        log_error("image visual rectangle position and extent item counts must match");
         return false;
     }
 
@@ -979,6 +995,7 @@ static bool _image_cache_rebuild(DvzVisual* visual)
 
     cache->item_count = item_count;
     cache->vertex_count = vertex_count;
+    cache->pixel_space = has_pixel_rect;
     cache->dirty = false;
     return true;
 }

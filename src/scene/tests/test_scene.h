@@ -772,6 +772,8 @@ int test_scene_image_emit(TstContext* suite, const TstCase* item);
 
 int test_scene_image_multi_item_emit(TstContext* suite, const TstCase* item);
 
+int test_scene_image_pixel_anchor_emit_wgsl(TstContext* suite, const TstCase* item);
+
 int test_scene_empty_figure_emit_clear_only(TstContext* suite, const TstCase* item);
 
 int test_scene_point_emit_has_vertex_layout(TstContext* suite, const TstCase* item);

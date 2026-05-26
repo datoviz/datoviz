@@ -4285,6 +4285,140 @@ int test_scene_image_multi_item_emit(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Verify pixel-anchored image visuals emit fixed-size generated quads.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_image_pixel_anchor_emit_wgsl(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 128, 96, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_image(scene, 0);
+    ANN(visual);
+
+    vec3 positions[1] = {{10.0f, 20.0f, 0.5f}};
+    vec2 extents[1] = {{80.0f, 40.0f}};
+    vec2 anchors[1] = {{-1.0f, -1.0f}};
+    vec4 tex_rects[1] = {{0.25f, 0.25f, 0.75f, 0.75f}};
+    uint8_t pixels[4 * 4 * 4];
+    dvz_memset(pixels, sizeof(pixels), 128, sizeof(pixels));
+
+    AT(dvz_visual_set_data(visual, "position_px", positions, 1) == 0);
+    AT(dvz_visual_set_data(visual, "extent_px", extents, 1) == 0);
+    AT(dvz_visual_set_data(visual, "anchor", anchors, 1) == 0);
+    AT(dvz_visual_set_data(visual, "tex_rect", tex_rects, 1) == 0);
+    AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(
+           panel, visual,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+    caps.shader_format_glsl = false;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    uint64_t position_buffer_id = 0;
+    bool found_pipeline = false;
+    bool found_draw = false;
+    bool found_vertex_shader = false;
+    bool found_position_values = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+            if (label != NULL && strstr(label, "_pipe_img_pxw") == label)
+            {
+                found_pipeline = true;
+                AT(cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+                AT(cmd->u.create_render_pipeline.vertex_buffer_slots == 2);
+                AT(cmd->u.create_render_pipeline.binding_count == 2);
+                AT(cmd->u.create_render_pipeline.attr_count == 2);
+                AT(cmd->u.create_render_pipeline.bind_group_layout_count == 2);
+            }
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+        {
+            found_vertex_shader =
+                found_vertex_shader ||
+                (strcmp(cmd->u.create_shader_module.stage, "VERTEX") == 0 &&
+                 strcmp(cmd->u.create_shader_module.format, "wgsl") == 0 &&
+                 cmd->u.create_shader_module.code != NULL &&
+                 strstr(cmd->u.create_shader_module.code, "image_pixel_anchor") != NULL);
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
+        {
+            if (cmd->u.set_vertex_buffer.slot == 0)
+                position_buffer_id = cmd->u.set_vertex_buffer.buffer_id;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            found_draw = cmd->u.draw.vertex_count == 6 && cmd->u.draw.instance_count == 1;
+        }
+    }
+    AT(position_buffer_id != 0);
+
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type != DVZ_DRP2_COMMAND_WRITE_BUFFER ||
+            cmd->u.write_buffer.buffer_id != position_buffer_id ||
+            cmd->u.write_buffer.data_raw == NULL)
+            continue;
+        const float* pos = (const float*)cmd->u.write_buffer.data_raw;
+        const float expected[18] = {
+            10.0f, 20.0f, 0.5f, 10.0f, 60.0f, 0.5f, 90.0f, 20.0f, 0.5f,
+            90.0f, 20.0f, 0.5f, 10.0f, 60.0f, 0.5f, 90.0f, 60.0f, 0.5f,
+        };
+        found_position_values = cmd->u.write_buffer.size == sizeof(expected);
+        for (uint32_t j = 0; j < 18 && found_position_values; j++)
+            found_position_values = pos[j] == expected[j];
+    }
+
+    AT(found_pipeline);
+    AT(found_draw);
+    AT(found_vertex_shader);
+    AT(found_position_values);
+
+    char* json = dvz_drp2_stream_json(stream, "scene_image_pixel_anchor_wgsl_from_c");
+    ANN(json);
+    AT(strstr(json, "\"format\": \"wgsl\"") != NULL);
+    AT(strstr(json, "image_pixel_anchor") != NULL);
+    AT(strstr(json, "\"topology\": \"triangle-list\"") != NULL);
+    AT(strstr(json, "\"bind_group_layout_ids\": [") != NULL);
+    dvz_drp2_stream_json_destroy(json);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify glyph visuals emit an MSDF-capable textured triangle pipeline.
  *
  * @param suite the active test suite

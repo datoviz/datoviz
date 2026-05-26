@@ -41,6 +41,26 @@
 /*************************************************************************************************/
 
 /**
+ * Return the draw-position attribute used to decide whether one visual can render.
+ *
+ * @param visual the visual
+ * @return the position-like attribute name
+ */
+static const char* _scene_visual_draw_position_attr(const DvzVisual* visual)
+{
+    ANN(visual);
+    if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
+        return "position_start";
+    if (visual->type == DVZ_VISUAL_TYPE_IMAGE &&
+        _scene_visual_has_attr_data(visual, "position_px") &&
+        _scene_visual_has_attr_data(visual, "extent_px"))
+        return "position_px";
+    return "position";
+}
+
+
+
+/**
  * Report a panel graph-emission failure to logs and the optional diagnostic report.
  *
  * @param report optional diagnostic report
@@ -289,8 +309,7 @@ static bool _scene_panel_has_visible_volume_occlusion_target(const DvzPanel* pan
         if (visual == NULL || !visual->visible || visual->type == DVZ_VISUAL_TYPE_TEXT ||
             !visual->volume_occluded || visual == panel->volume_occluder_visual)
             continue;
-        int pos_idx = _attr_index(
-            visual, visual->type == DVZ_VISUAL_TYPE_SEGMENT ? "position_start" : "position");
+        int pos_idx = _attr_index(visual, _scene_visual_draw_position_attr(visual));
         if (pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0)
             return true;
     }
@@ -310,8 +329,7 @@ static bool _scene_visual_is_visible_drawable(const DvzVisual* visual)
         return false;
     if (visual->type == DVZ_VISUAL_TYPE_TEXT)
         return false;
-    int pos_idx = _attr_index(
-        visual, visual->type == DVZ_VISUAL_TYPE_SEGMENT ? "position_start" : "position");
+    int pos_idx = _attr_index(visual, _scene_visual_draw_position_attr(visual));
     return pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0;
 }
 
@@ -638,8 +656,7 @@ bool _scene_emit_panel_render_ex(
         uint32_t vidx = 0;
         if (!_figure_visual_index(figure, visual, &vidx))
             continue;
-        const char* position_attr =
-            visual->type == DVZ_VISUAL_TYPE_SEGMENT ? "position_start" : "position";
+        const char* position_attr = _scene_visual_draw_position_attr(visual);
         int pos_idx = _attr_index(visual, position_attr);
         if (pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0)
             drawable_count++;
@@ -784,8 +801,7 @@ bool _scene_emit_panel_render_ex(
         uint32_t vidx = 0;
         if (!_figure_visual_index(figure, visual, &vidx))
             continue;
-        int pos_idx = _attr_index(
-            visual, visual->type == DVZ_VISUAL_TYPE_SEGMENT ? "position_start" : "position");
+        int pos_idx = _attr_index(visual, _scene_visual_draw_position_attr(visual));
         if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
             continue;
 
@@ -879,8 +895,7 @@ bool _scene_emit_panel_render_ex(
         uint32_t vidx = 0;
         if (!_figure_visual_index(figure, visual, &vidx))
             continue;
-        int pos_idx = _attr_index(
-            visual, visual->type == DVZ_VISUAL_TYPE_SEGMENT ? "position_start" : "position");
+        int pos_idx = _attr_index(visual, _scene_visual_draw_position_attr(visual));
         if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
             continue;
 

@@ -156,6 +156,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_path_emit);
     TST_CASE(test_scene_image_emit);
     TST_CASE(test_scene_image_multi_item_emit);
+    TST_CASE(test_scene_image_pixel_anchor_emit_wgsl);
     TST_CASE(test_scene_glyph_emit_glsl);
     TST_CASE(test_scene_labels_emit_signed_glsl);
     TST_CASE(test_scene_labels_emit_unsigned_glsl);

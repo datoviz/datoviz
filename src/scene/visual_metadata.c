@@ -232,6 +232,7 @@ bool _scene_visual_frame_plan_metadata(
             return false;
         if (visual->image_gpu.vertex_count > 0)
             metadata->vertex_count = (uint32_t)visual->image_gpu.vertex_count;
+        metadata->image_pixel_space = visual->image_gpu.pixel_space;
     }
     return true;
 }

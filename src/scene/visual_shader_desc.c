@@ -517,12 +517,19 @@ bool _scene_visual_shader_desc(
         return _scene_shader_desc_primitive(&features, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
-        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_img%s", format_tag);
+        dvz_snprintf(
+            out->vertex_key, sizeof(out->vertex_key), "_vs_img%s%s",
+            visual->image_pixel_space ? "_px" : "", format_tag);
         dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_img%s", format_tag);
-        dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_img%s", format_tag);
-        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_IMAGE);
-        _scene_shader_desc_set_identity(out, "scene.image", "default");
-        out->vertex_spirv_key = "image_vert";
+        dvz_snprintf(
+            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_img%s%s",
+            visual->image_pixel_space ? "_px" : "", format_tag);
+        _scene_shader_desc_set_builtin(
+            out, visual->image_pixel_space ? DVZ_SCENE_BUILTIN_SHADER_IMAGE_PIXEL
+                                           : DVZ_SCENE_BUILTIN_SHADER_IMAGE);
+        _scene_shader_desc_set_identity(
+            out, "scene.image", visual->image_pixel_space ? "pixel" : "default");
+        out->vertex_spirv_key = visual->image_pixel_space ? "image_pixel_vert" : "image_vert";
         out->fragment_spirv_key = "image_frag";
         return true;
 

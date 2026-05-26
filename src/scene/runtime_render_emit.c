@@ -399,9 +399,11 @@ bool _emitter_prepare_render_multi(
                 }
                 else if (desc.kind == DVZ_SCENE_VISUAL_DESC_IMAGE)
                 {
-                    stem = "image";
-                    vertex_spirv_key = "image_vert";
-                    vertex_shader = DVZ_SCENE_BUILTIN_SHADER_IMAGE;
+                    stem = desc.image_pixel_space ? "image_px" : "image";
+                    vertex_spirv_key =
+                        desc.image_pixel_space ? "image_pixel_vert" : "image_vert";
+                    vertex_shader = desc.image_pixel_space ? DVZ_SCENE_BUILTIN_SHADER_IMAGE_PIXEL
+                                                           : DVZ_SCENE_BUILTIN_SHADER_IMAGE;
                 }
                 else if (desc.kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE)
                     continue;
@@ -2700,6 +2702,9 @@ bool _emitter_emit_render(
         (visual_meta->field_format == DVZ_FIELD_FORMAT_R8_UINT ||
          visual_meta->field_format == DVZ_FIELD_FORMAT_R16_UINT ||
          visual_meta->field_format == DVZ_FIELD_FORMAT_R32_UINT);
+    bool image_pixel_space =
+        is_image && !is_labels_sint && !is_labels_uint && visual_meta != NULL &&
+        visual_meta->image_pixel_space;
 
     const char* vs_glsl = NULL;
     const char* fs_glsl = NULL;
@@ -2826,9 +2831,13 @@ bool _emitter_emit_render(
             vertex_count = (uint32_t)(pos_size / (3 * sizeof(float)));
         if (visual_meta != NULL && visual_meta->vertex_count > 0)
             vertex_count = visual_meta->vertex_count;
-        topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-        DvzSceneBuiltinShader image_shader = DVZ_SCENE_BUILTIN_SHADER_IMAGE;
-        const char* shader_name = "img";
+        topology = _resource_topology(&emitter->resources, image_pos);
+        if (topology == UINT32_MAX)
+            topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+        DvzSceneBuiltinShader image_shader =
+            image_pixel_space ? DVZ_SCENE_BUILTIN_SHADER_IMAGE_PIXEL
+                              : DVZ_SCENE_BUILTIN_SHADER_IMAGE;
+        const char* shader_name = image_pixel_space ? "img_px" : "img";
         if (is_labels_sint)
         {
             image_shader = DVZ_SCENE_BUILTIN_SHADER_LABELS_SINT;
@@ -2969,7 +2978,7 @@ bool _emitter_emit_render(
     }
     else if (is_image)
     {
-        vs_spirv_key = "image_vert";
+        vs_spirv_key = image_pixel_space ? "image_pixel_vert" : "image_vert";
         fs_spirv_key = is_labels_sint    ? "labels_sint_frag"
                        : is_labels_uint  ? "labels_uint_frag"
                                          : "image_frag";
@@ -3054,6 +3063,7 @@ bool _emitter_emit_render(
     {
         const char* pipe_name = is_labels_sint  ? "labels_sint"
                                 : is_labels_uint ? "labels_uint"
+                                : image_pixel_space ? "img_px"
                                                  : "img";
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_%s%s", pipe_name, fmt);
     }

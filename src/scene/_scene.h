@@ -1246,6 +1246,7 @@ struct DvzImageGpuCache
     float* texcoords;
     uint64_t item_count;
     uint64_t vertex_count;
+    bool pixel_space;
     bool dirty;
 };
 
