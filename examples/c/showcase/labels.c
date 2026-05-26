@@ -8,7 +8,7 @@
  *
  * This example keeps segmentation IDs in a signed integer sampled field and renders them through
  * dvz_labels(). Selection and boundary feedback are driven by the labels shader while hover/click
- * readout still uses a temporary CPU coordinate lookup until raw labels GPU probing lands.
+ * readout uses scene segment probes against the raw integer labels field.
  *
  * Build:  cmake --build build --target labels
  * Run:    ./build/examples/c/showcase/labels
@@ -76,10 +76,10 @@ struct LabelsDemoState
 {
     DvzScene* scene;
     DvzView* win;
+    DvzPanel* panel;
     DvzPanzoom* panzoom;
     DvzVisual* labels_visual;
     DvzLegend* legend;
-    int32_t* labels;
     DvzCategoryId hover_id;
     DvzCategoryId selected_id;
     float opacity;
@@ -87,6 +87,11 @@ struct LabelsDemoState
     int outline_width;
     bool labels_visible;
     bool boundary_enabled;
+    bool cursor_valid;
+    double cursor_x;
+    double cursor_y;
+    bool click_pending;
+    uint64_t next_probe_request_id;
 };
 
 
@@ -395,45 +400,6 @@ static const char* _category_name(DvzCategoryId id)
 
 
 /**
- * Convert a pointer position to a label ID using the current panzoom extent.
- *
- * @param state demo state
- * @param px pointer x in window pixels
- * @param py pointer y in window pixels
- * @return label ID under the pointer, or 0 outside the labels quad
- */
-static DvzCategoryId _label_at_pointer(const LabelsDemoState* state, double px, double py)
-{
-    ANN(state);
-    if (state->labels == NULL)
-        return 0;
-
-    float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
-    if (state->panzoom != NULL)
-        (void)dvz_panzoom_extent(state->panzoom, extent);
-
-    float sx = (float)(px / (double)WIDTH);
-    float sy = (float)(py / (double)HEIGHT);
-    float vx = extent[0] + sx * (extent[1] - extent[0]);
-    float vy = extent[3] - sy * (extent[3] - extent[2]);
-
-    if (vx < IMAGE_MIN_NDC || vx > IMAGE_MAX_NDC || vy < IMAGE_MIN_NDC || vy > IMAGE_MAX_NDC)
-        return 0;
-
-    float u = (vx - IMAGE_MIN_NDC) / (IMAGE_MAX_NDC - IMAGE_MIN_NDC);
-    float v = (vy - IMAGE_MIN_NDC) / (IMAGE_MAX_NDC - IMAGE_MIN_NDC);
-    uint32_t x = (uint32_t)floorf(u * (float)TEX_W);
-    uint32_t y = (uint32_t)floorf(v * (float)TEX_H);
-    if (x >= TEX_W)
-        x = TEX_W - 1;
-    if (y >= TEX_H)
-        y = TEX_H - 1;
-    return (DvzCategoryId)state->labels[y * TEX_W + x];
-}
-
-
-
-/**
  * Apply current labels presentation controls to the retained labels visual.
  *
  * @param state demo state
@@ -595,7 +561,7 @@ static bool _set_quad_geometry(DvzVisual* visual)
 /*************************************************************************************************/
 
 /**
- * Update hover state and select labels on click.
+ * Record pointer state for labels probing.
  *
  * @param router input router emitting the pointer event
  * @param event pointer event payload
@@ -607,10 +573,14 @@ static void _pointer_callback(DvzInputRouter* router, const DvzPointerEvent* eve
     LabelsDemoState* state = (LabelsDemoState*)user_data;
     if (state == NULL || event == NULL)
         return;
-    if (event->type != DVZ_POINTER_EVENT_MOVE)
+    if (event->type != DVZ_POINTER_EVENT_MOVE && event->type != DVZ_POINTER_EVENT_CLICK)
         return;
 
-    state->hover_id = _label_at_pointer(state, event->pos[0], event->pos[1]);
+    state->cursor_valid = true;
+    state->cursor_x = event->pos[0];
+    state->cursor_y = event->pos[1];
+    if (event->type == DVZ_POINTER_EVENT_CLICK)
+        state->click_pending = true;
 }
 
 
@@ -622,7 +592,8 @@ static void _pointer_callback(DvzInputRouter* router, const DvzPointerEvent* eve
  * @param event input event payload
  * @param user_data demo state
  */
-static void _input_event_callback(DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
+static void
+_input_event_callback(DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
 {
     (void)router;
     LabelsDemoState* state = (LabelsDemoState*)user_data;
@@ -633,8 +604,51 @@ static void _input_event_callback(DvzInputRouter* router, const DvzInputEvent* e
     if (pointer->type != DVZ_POINTER_EVENT_CLICK)
         return;
 
-    state->hover_id = _label_at_pointer(state, pointer->pos[0], pointer->pos[1]);
-    _toggle_label(state, state->hover_id);
+    state->cursor_valid = true;
+    state->cursor_x = pointer->pos[0];
+    state->cursor_y = pointer->pos[1];
+    state->click_pending = true;
+}
+
+
+
+/**
+ * Poll labels probe results and queue the next cursor probe.
+ *
+ * @param win view whose frame just completed
+ * @param user_data demo state
+ */
+static void _labels_frame_callback(DvzView* win, void* user_data)
+{
+    LabelsDemoState* state = (LabelsDemoState*)user_data;
+    if (state == NULL)
+        return;
+
+    DvzProbeResult probe = {0};
+    while (dvz_scene_poll_probe(state->scene, &probe))
+    {
+        state->hover_id =
+            probe.hit && probe.value_kind == DVZ_PROBE_VALUE_LABEL ? probe.category_id : 0;
+        if (state->click_pending)
+        {
+            _toggle_label(state, state->hover_id);
+            state->click_pending = false;
+        }
+    }
+
+    if (state->cursor_valid && state->panel != NULL)
+    {
+        int rc = dvz_panel_probe(
+            state->panel, state->cursor_x, state->cursor_y,
+            &(DvzProbeRequest){
+                .request_id = ++state->next_probe_request_id,
+                .target = DVZ_SCENE_TARGET_SEGMENT,
+            });
+        if (rc != 0)
+            dvz_fprintf(stderr, "dvz_panel_probe(labels) failed\n");
+        if (win != NULL)
+            dvz_view_request_frame(win);
+    }
 }
 
 
@@ -733,7 +747,7 @@ int main(int argc, char** argv)
 
     LabelsDemoState state = {
         .scene = scene,
-        .labels = labels,
+        .panel = panel,
         .opacity = 1.0f,
         .outline_width = 3,
         .labels_visible = true,
@@ -816,6 +830,7 @@ int main(int argc, char** argv)
     state.panzoom = panzoom;
     dvz_input_subscribe_pointer(router, _pointer_callback, &state);
     dvz_input_subscribe_event(router, _input_event_callback, &state);
+    dvz_view_set_frame_callback(win, _labels_frame_callback, &state);
 
     DvzGui* gui = dvz_view_gui(win, NULL);
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
