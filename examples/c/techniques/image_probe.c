@@ -7,8 +7,9 @@
 /* image_probe — live image-probe smoke example.
  *
  * Opens a GLFW window showing a non-uniform image. Move the cursor over the panel to issue one
- * image probe per frame through the scene -> DRP2 -> vklite live app path. Resolved probe values
- * are printed when the sampled RGBA changes.
+ * image probe per frame through the scene -> DRP2 -> vklite live app path. Click to pin the next
+ * resolved image-probe value as a retained readout card. Resolved probe values are printed when
+ * the sampled RGBA changes.
  *
  * Build:  just example-c visuals/image_probe
  * Run:    ./build/examples/c/techniques/image_probe
@@ -59,6 +60,8 @@ struct ImageProbeState
     double last_rgba[4];
     bool last_hit;
     bool has_last_result;
+    bool pin_next_result;
+    uint32_t pinned_count;
 };
 
 
@@ -185,6 +188,8 @@ _image_probe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void*
     state->cursor_valid = true;
     state->cursor_x = event->pos[0];
     state->cursor_y = event->pos[1];
+    if (event->type == DVZ_POINTER_EVENT_CLICK)
+        state->pin_next_result = true;
 }
 
 
@@ -205,12 +210,33 @@ static void _image_probe_frame(DvzView* win, void* user_data)
     DvzProbeResult probe = {0};
     while (dvz_scene_poll_probe(state->scene, &probe))
     {
+        if (state->pin_next_result)
+        {
+            if (probe.hit)
+            {
+                DvzPinnedReadout* readout = dvz_pinned_readout(state->panel, &probe);
+                if (readout != NULL)
+                {
+                    dvz_pinned_readout_set_format(
+                        readout, &(DvzFormatDesc){.precision = 3, .trim_trailing_zeros = true});
+                    state->pinned_count++;
+                    dvz_fprintf(stdout, "pinned readout %u\n", state->pinned_count);
+                }
+                else
+                {
+                    dvz_fprintf(stderr, "dvz_pinned_readout() failed\n");
+                }
+            }
+            state->pin_next_result = false;
+        }
+
         if (!_probe_changed(state, &probe))
             continue;
 
         if (probe.hit && probe.value_kind == DVZ_PROBE_VALUE_VEC4)
         {
-            printf(
+            dvz_fprintf(
+                stdout,
                 "probe x=%7.1f y=%7.1f rgba=(%0.3f, %0.3f, %0.3f, %0.3f)\n",
                 probe.has_coordinate ? probe.coordinate[0] : state->cursor_x,
                 probe.has_coordinate ? probe.coordinate[1] : state->cursor_y,
@@ -218,7 +244,7 @@ static void _image_probe_frame(DvzView* win, void* user_data)
         }
         else
         {
-            printf("probe miss x=%7.1f y=%7.1f\n", state->cursor_x, state->cursor_y);
+            dvz_fprintf(stdout, "probe miss x=%7.1f y=%7.1f\n", state->cursor_x, state->cursor_y);
         }
         _store_probe_result(state, &probe);
     }
@@ -232,7 +258,7 @@ static void _image_probe_frame(DvzView* win, void* user_data)
                     .target = DVZ_SCENE_TARGET_PIXEL,
                 }) != 0)
         {
-            fprintf(stderr, "dvz_panel_probe() failed\n");
+            dvz_fprintf(stderr, "dvz_panel_probe() failed\n");
         }
     }
 }
