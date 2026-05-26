@@ -498,6 +498,7 @@ if(DVZ_BUILD_VK)
 target_include_directories(datoviz_vk_layer
     PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/volk>
     $<INSTALL_INTERFACE:include>
 )
 
@@ -522,6 +523,7 @@ if(DVZ_BUILD_CANVAS)
 target_include_directories(datoviz_canvas_layer
     PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/volk>
     $<INSTALL_INTERFACE:include>
 )
 
@@ -562,6 +564,7 @@ endif()
 target_include_directories(datoviz
     PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/volk>
     $<$<BOOL:${DVZ_BUILD_GUI}>:$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/cimgui>>
     $<INSTALL_INTERFACE:include>
 )
