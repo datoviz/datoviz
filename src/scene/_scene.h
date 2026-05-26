@@ -1822,6 +1822,8 @@ bool _scene_emit_sampled_field_texture_upload(
 
 void _scene_text_block_init(DvzTextBlock* block, const char* source);
 
+void _scene_text_block_set_source(DvzTextBlock* block, const char* source);
+
 void _scene_text_block_destroy(DvzTextBlock* block);
 
 int _scene_text_block_parse(DvzTextBlock* block);

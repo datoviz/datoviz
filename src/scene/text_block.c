@@ -1456,6 +1456,39 @@ void _scene_text_block_init(DvzTextBlock* block, const char* source)
 {
     ANN(block);
     dvz_memset(block, sizeof(DvzTextBlock), 0, sizeof(DvzTextBlock));
+    _scene_text_block_set_source(block, source);
+}
+
+
+
+/**
+ * Replace source text while preserving realized image resources.
+ *
+ * @param block the text block
+ * @param source UTF-8 source text, or NULL for an empty block
+ */
+void _scene_text_block_set_source(DvzTextBlock* block, const char* source)
+{
+    ANN(block);
+    uint8_t* rgba = block->rgba;
+    uint64_t rgba_size = block->rgba_size;
+    uint64_t raster_version = block->raster_version;
+    DvzVisual* image_visual = block->image_visual;
+    DvzSampledField* image_field = block->image_field;
+    uint32_t image_width = block->image_width;
+    uint32_t image_height = block->image_height;
+    bool image_attached = block->image_attached;
+
+    dvz_memset(block, sizeof(DvzTextBlock), 0, sizeof(DvzTextBlock));
+    block->rgba = rgba;
+    block->rgba_size = rgba_size;
+    block->raster_version = raster_version;
+    block->image_visual = image_visual;
+    block->image_field = image_field;
+    block->image_width = image_width;
+    block->image_height = image_height;
+    block->image_attached = image_attached;
+
     if (source == NULL)
         source = "";
     dvz_strlcpy(block->source, source, sizeof(block->source));

@@ -556,6 +556,33 @@ int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCas
     AT(card->card.realized_rect_px[2] >= card->card.content_size_px[0]);
     AT(card->card.realized_rect_px[3] >= card->card.content_size_px[1]);
 
+    DvzVisual* image_visual = card->rich_block.image_visual;
+    DvzSampledField* image_field = card->rich_block.image_field;
+    uint32_t visual_count = scene->visual_count;
+    for (uint32_t i = 0; i < 8; i++)
+    {
+        char source[128] = {0};
+        int n = dvz_snprintf(
+            source, sizeof(source), "Updated <b>rich card</b> sample %u", i);
+        AT(n > 0 && (size_t)n < sizeof(source));
+        AT(dvz_overlay_card_set_rich_text(
+               card,
+               &(DvzOverlayRichTextDesc){
+                   .source = source,
+                   .max_width_px = 126.0f,
+                   .char_width_px = 7.0f,
+                   .line_height_px = 12.0f,
+                   .scale = 2.0f,
+                   .text_color = {235, 240, 250, 255},
+                   .background_color = {0, 0, 0, 0},
+               }) == 0);
+        _scene_prepare_text_visuals(figure);
+        AT(card->rich_block.image_visual == image_visual);
+        AT(card->rich_block.image_field == image_field);
+        AT(scene->visual_count == visual_count);
+        AT(!card->rich_dirty);
+    }
+
     dvz_overlay_card_set_visible(card, false);
     AT(!card->card.background_visual->visible);
     AT(!card->rich_block.image_visual->visible);

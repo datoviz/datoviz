@@ -1773,8 +1773,10 @@ int dvz_overlay_card_set_rich_text(DvzOverlayCard* card, const DvzOverlayRichTex
     if (!card->active || desc == NULL || desc->source == NULL)
         return -1;
 
-    _scene_text_block_destroy(&card->rich_block);
-    _scene_text_block_init(&card->rich_block, desc->source);
+    if (card->rich_enabled)
+        _scene_text_block_set_source(&card->rich_block, desc->source);
+    else
+        _scene_text_block_init(&card->rich_block, desc->source);
 
     card->rich_layout = (DvzTextBlockLayout){
         .scene = card->scene,
