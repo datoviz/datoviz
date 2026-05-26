@@ -19,9 +19,11 @@ release criteria, or long implementation history.
    documentation, or migration/known-issues work, read [`DOCUMENTATION.md`](DOCUMENTATION.md).
 3. For current implementation lane status, RC1 blockers, and parallel-work guidance, read
    [`STATUS.md`](STATUS.md).
-4. For scene semantics, public scene API shape, frame planning, visual families, interaction,
+4. For high-payoff shiny demo follow-up beyond WebGPU/WASM and raw `ctypes`, read
+   [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
+5. For scene semantics, public scene API shape, frame planning, visual families, interaction,
    annotations, scales, or runtime boundaries, read [`../../spec/scene/README.md`](../../spec/scene/README.md).
-5. For DRP2 commands, fixtures, schemas, or scene code that emits DRP2, read
+6. For DRP2 commands, fixtures, schemas, or scene code that emits DRP2, read
    [`../../spec/drp2/README.md`](../../spec/drp2/README.md) and
    [`../../spec/drp2/AGENT_SPEC_PHASE.md`](../../spec/drp2/AGENT_SPEC_PHASE.md).
 
@@ -37,6 +39,12 @@ state, broad item pick/probe request execution, selection bookkeeping, rendered 
 annotations, continuous colorbars, categorical legends, first-class integer labels, scale bars,
 graph-backed techniques, app/offscreen/GLFW rendering, and capture. Treat these as active code, not
 future scaffolding.
+
+Current shiny-demo recommendations are recorded in
+[`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md):
+vector/arrow visuals are the best new demo unlock, raw label-id GPU probing is the key labels
+interaction gap, explanatory layout proof is mostly validation/polish, and splats are attractive
+but a new visual family.
 
 The CPU-side `geom` subset is also active: owned `DvzGeometry` buffers, cube/plane/sphere/surface
 grid generators, bounds, normals, transforms, merges, edges, contours, polygon triangulation, mesh

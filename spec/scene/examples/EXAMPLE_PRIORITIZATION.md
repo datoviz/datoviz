@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ANALYSIS REPORT`
-> - **Updated on:** `2026-05-17`
+> - **Updated on:** `2026-05-26`
 > - **Scope:** `spec/scene/examples`, current `examples/c`, and v0.4 scene/runtime capability
 >   readiness
 > - **Purpose:** rank example candidates by visual payoff, first-batch feasibility, 2D/3D balance,
@@ -39,6 +39,12 @@ categorical legends, broad item-pick first slices, and several polished C GLFW e
 exist. The biggest remaining blockers for polished examples are release proof and polish for
 rendered text/axes/colorbars/legends, vector/arrow visuals, richer picking/probe payloads,
 scene-level compute/custom materials, and large-data policies.
+
+The current agent-facing recommendation for shiny demo follow-up is tracked in
+[`../../../agents/soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../../../agents/soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
+In short: vector/arrow visuals are the best new showcase unlock; raw label-id GPU probing is the
+main remaining labels interaction gap; explanatory layout and the existing protein/LiDAR/brain/label
+showcases mostly need proof and polish; splats are attractive but are a new visual family.
 
 
 ## Recommended First Batch

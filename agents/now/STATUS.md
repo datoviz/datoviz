@@ -42,6 +42,7 @@ Primary references:
 4. [`../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
 5. [`../../spec/scene/api/API_SURFACE.md`](../../spec/scene/api/API_SURFACE.md)
 6. [`../../spec/scene/validation/DEFERRED_TRACKER.md`](../../spec/scene/validation/DEFERRED_TRACKER.md)
+7. [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md)
 
 
 ## Feature Status
@@ -63,6 +64,23 @@ Primary references:
 | API inventory and docs | `Blocker for RC1` | [`DOCUMENTATION.md`](DOCUMENTATION.md), public headers under `include/datoviz/` | Produce public surface/status table and known-gap notes. |
 
 
+## Shiny Demo Follow-Up
+
+These lanes are not more important than the WebGPU/WASM and raw `ctypes` blockers, but they are the
+best next choices when the task is to improve examples or add a visible capability:
+
+| Priority | Lane | Current read | Next action |
+| ---: | --- | --- | --- |
+| 1 | Vector/arrow visual | Missing as a semantic visual; wind-field examples can use primitives only as a temporary bridge. | Start from [`../soon/scene/SCENE_VECTOR_VISUALS_PLAN.md`](../soon/scene/SCENE_VECTOR_VISUALS_PLAN.md), then pressure it with a wind-field showcase. |
+| 2 | Raw label-id GPU probe | Labels rendering, legend, and selection exist; true label-id GPU probing is still the important interaction gap. | Extend the scene request/readback path and add sparse/high-id pressure tests. |
+| 3 | Explanatory layout proof | Reserve/layout infrastructure exists for axes, colorbars, legends, and scale bars. | Add one composed example and focused validation for predictable adornment composition. |
+| 4 | Gallery proof pass | Protein, LiDAR, brain, and labels showcases mostly exist. | Run/capture/tune defaults and fix concrete rough edges before RC1. |
+| 5 | Splat visual | Not implemented and intentionally a new visual family. | Keep after release proof unless maximum visual novelty is the goal. |
+
+The longer rationale is in
+[`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
+
+
 ## Parallel Lanes
 
 Good parallel work now:
@@ -81,6 +99,9 @@ Good parallel work now:
    selected-item metadata cards, public overlay card API, rich overlay card API, example proof,
    non-overlay rich text-block proof, and FreeType-backed private rich text-block rasterization in
    [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md).
+8. **Shiny demo follow-up:** vector/arrow visual first, then label GPU probing, explanatory layout
+   proof, gallery proof, and splats as recorded in
+   [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
 
 Avoid parallel edits that touch the same write scope:
 
