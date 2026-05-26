@@ -18,7 +18,7 @@ This document defines the target public color model for Datoviz v0.4. The curren
 
 ## Canonical Color Types
 
-The public byte color type is a real struct:
+The public byte color type is a real struct in `include/datoviz/common/types.h`:
 
 ```c
 typedef struct DvzColor
@@ -45,7 +45,7 @@ use RGBA8 unorm vertex attributes or texture data where that is the intended com
 
 ## Float Color Type
 
-The public float color type is separate:
+The public float color type is separate and is defined next to `DvzColor`:
 
 ```c
 typedef struct DvzColorf
@@ -99,7 +99,9 @@ GUI pickers, examples, and simple user-authored color ramps. It is not a replace
 linear-light interpolation where color accuracy matters.
 
 The linear conversion helpers should use the standard sRGB transfer function for RGB. Alpha is copied
-as a normalized straight-alpha value.
+as a normalized straight-alpha value. Conversion from `DvzColorf` to `DvzColor` clamps RGB and alpha
+to `[0, 1]` before applying the sRGB transfer and byte conversion; HDR/intensity-capable APIs should
+keep `DvzColorf` values instead of converting them to RGBA8.
 
 Hex helpers are allowed, but they must make byte order explicit in the name:
 
@@ -187,9 +189,9 @@ typedef enum DvzColorSpace
 } DvzColorSpace;
 ```
 
-Do not add display-P3, ICC profiles, or full color management until there is an implementation path
-and a validation story. The v0.4 target is explicit, consistent sRGB and linear behavior, not a full
-CMS.
+Do not expose this enum until a concrete API needs it. Do not add display-P3, ICC profiles, or full
+color management until there is an implementation path and a validation story. The v0.4 target is
+explicit, consistent sRGB and linear behavior, not a full CMS.
 
 
 ## Palettes, Colormaps, And Interpolation
@@ -278,7 +280,8 @@ Run focused validation at each stage:
 3. After repairing scene visual uploads, scale, colormap, colorbar, or style APIs, run
    `just test scene`.
 4. After example and GUI cleanup, run `just build` to compile all examples and optional Qt targets.
-5. Before considering the migration complete, run `just rebuild`, `just test`, and `git diff --check`.
+5. Before considering the migration complete, run `just clean`, `just build`, `just test`, and
+   `git diff --check`.
 
 
 ## Non-Goals
