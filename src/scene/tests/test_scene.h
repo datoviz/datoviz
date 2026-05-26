@@ -879,6 +879,9 @@ int test_app_offscreen_text_has_nonblank_pixels(TstContext* suite, const TstCase
 
 int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_text_block_raster_has_nonblank_pixels(
+    TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_image_field_partial_update_changes_region(
     TstContext* suite, const TstCase* item);
 

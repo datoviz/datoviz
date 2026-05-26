@@ -3345,6 +3345,100 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
 }
 
 
+/**
+ * Ensure CPU-rasterized text blocks render through the image visual offscreen path.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_text_block_raster_has_nonblank_pixels(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 128, 96, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    AT(panel != NULL);
+
+    DvzTextBlock block = {0};
+    _scene_text_block_init(&block, "Rich <b>block</b> <i>card</i>");
+    AT(_scene_text_block_parse(&block) == 0);
+    AT(_scene_text_block_measure(
+           &block,
+           &(DvzTextBlockLayout){
+               .max_width_px = 96.0f,
+               .char_width_px = 7.0f,
+               .line_height_px = 12.0f,
+               .padding_px = {3.0f, 3.0f},
+           }) == 0);
+    AT(_scene_text_block_rasterize(
+           &block,
+           &(DvzTextBlockRasterDesc){
+               .text_color = {0, 255, 0, 255},
+               .background_color = {0, 0, 0, 0},
+           }) == 0);
+    AT(_scene_text_block_realize_image(
+           &block, panel,
+           &(DvzTextBlockImageDesc){
+               .position = {0.0f, 0.0f, 0.0f},
+               .extent = {1.5f, 0.65f},
+               .anchor = {0.0f, 0.0f},
+               .z_layer = 1,
+               .controller_mode = DVZ_CONTROLLER_APPLY,
+           }) == 0);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_text_block_raster_has_nonblank_pixels skipped: GPU context "
+            "creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        _scene_text_block_destroy(&block);
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 128, 96);
+    AT(win != NULL);
+
+    dvz_app_run(app, 1);
+
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 128);
+    AT(height == 96);
+
+    uint32_t green_count = 0;
+    for (uint32_t i = 0; i < width * height; i++)
+    {
+        const uint8_t* pixel = &rgba[4 * i];
+        if (_app_text_green_pixel(pixel))
+            green_count++;
+    }
+    AT(green_count > 0);
+
+    dvz_free(rgba);
+    _scene_text_block_destroy(&block);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_offscreen_image_field_partial_update_changes_region(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -6243,6 +6337,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_colorbar_has_visible_ramp_and_labels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_text_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_sdf_text_has_nonblank_pixels);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_text_block_raster_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_field_partial_update_changes_region);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_orders_overlap);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_cue_darkens_far);
