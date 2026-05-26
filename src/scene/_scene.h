@@ -257,6 +257,7 @@ typedef struct DvzTextAtlas DvzTextAtlas;
 typedef struct DvzTextBlockRun DvzTextBlockRun;
 typedef struct DvzTextBlockLayout DvzTextBlockLayout;
 typedef struct DvzTextBlockRasterDesc DvzTextBlockRasterDesc;
+typedef struct DvzTextBlockImageDesc DvzTextBlockImageDesc;
 typedef struct DvzTextBlock DvzTextBlock;
 
 typedef void (*DvzSceneRequestFrameCallback)(DvzFigure* figure, void* user_data);
@@ -529,6 +530,16 @@ struct DvzTextBlockRasterDesc
 };
 
 
+struct DvzTextBlockImageDesc
+{
+    vec3 position;
+    vec2 extent;
+    vec2 anchor;
+    int32_t z_layer;
+    DvzControllerMode controller_mode;
+};
+
+
 struct DvzTextBlock
 {
     char source[DVZ_SCENE_TEXT_BLOCK_SOURCE_SIZE];
@@ -545,6 +556,11 @@ struct DvzTextBlock
     uint32_t raster_width;
     uint32_t raster_height;
     uint64_t raster_version;
+    DvzVisual* image_visual;
+    DvzSampledField* image_field;
+    uint32_t image_width;
+    uint32_t image_height;
+    bool image_attached;
     bool valid;
 };
 
@@ -1716,6 +1732,9 @@ int _scene_text_block_parse(DvzTextBlock* block);
 int _scene_text_block_measure(DvzTextBlock* block, const DvzTextBlockLayout* layout);
 
 int _scene_text_block_rasterize(DvzTextBlock* block, const DvzTextBlockRasterDesc* desc);
+
+int _scene_text_block_realize_image(
+    DvzTextBlock* block, DvzPanel* panel, const DvzTextBlockImageDesc* desc);
 
 bool _scene_visual_frame_plan_metadata(
     const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,

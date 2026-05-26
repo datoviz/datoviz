@@ -314,6 +314,16 @@ void _scene_text_block_destroy(DvzTextBlock* block)
 {
     if (block == NULL)
         return;
+    if (block->image_visual != NULL)
+    {
+        dvz_visual_set_visible(block->image_visual, false);
+        block->image_visual = NULL;
+    }
+    if (block->image_field != NULL)
+    {
+        (void)dvz_sampled_field_destroy(block->image_field);
+        block->image_field = NULL;
+    }
     if (block->rgba != NULL)
     {
         dvz_free(block->rgba);
@@ -322,6 +332,9 @@ void _scene_text_block_destroy(DvzTextBlock* block)
     block->rgba_size = 0;
     block->raster_width = 0;
     block->raster_height = 0;
+    block->image_width = 0;
+    block->image_height = 0;
+    block->image_attached = false;
 }
 
 
@@ -631,5 +644,112 @@ int _scene_text_block_rasterize(DvzTextBlock* block, const DvzTextBlockRasterDes
     }
 
     block->raster_version++;
+    return 0;
+}
+
+
+
+/**
+ * Realize a rasterized text block as one image-like scene visual.
+ *
+ * @param block the text block
+ * @param panel the owning panel
+ * @param desc image placement descriptor, or NULL for centered defaults
+ * @return 0 on success, -1 on invalid input or scene allocation failure
+ */
+int _scene_text_block_realize_image(
+    DvzTextBlock* block, DvzPanel* panel, const DvzTextBlockImageDesc* desc)
+{
+    ANN(block);
+    ANN(panel);
+    if (panel->figure == NULL || panel->figure->scene == NULL || block->rgba == NULL ||
+        block->raster_width == 0 || block->raster_height == 0)
+    {
+        return -1;
+    }
+
+    DvzTextBlockImageDesc resolved = {
+        .position = {0.0f, 0.0f, 0.0f},
+        .extent = {1.0f, 0.25f},
+        .anchor = {0.0f, 0.0f},
+        .z_layer = 0,
+        .controller_mode = DVZ_CONTROLLER_APPLY,
+    };
+    if (desc != NULL)
+        resolved = *desc;
+
+    DvzScene* scene = panel->figure->scene;
+    if (block->image_visual == NULL)
+    {
+        block->image_visual = dvz_image(scene, 0);
+        if (block->image_visual == NULL)
+            return -1;
+        block->image_visual->visible = false;
+        if (dvz_visual_set_alpha_mode(block->image_visual, DVZ_ALPHA_BLENDED) != 0)
+            return -1;
+        if (dvz_visual_set_depth_test(block->image_visual, false) != 0)
+            return -1;
+    }
+
+    if (block->image_field == NULL)
+    {
+        block->image_field = dvz_sampled_field(
+            scene, &(DvzSampledFieldDesc){
+                       .dim = DVZ_FIELD_DIM_2D,
+                       .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                       .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                       .width = block->raster_width,
+                       .height = block->raster_height,
+                       .depth = 1,
+                   });
+        if (block->image_field == NULL)
+            return -1;
+        block->image_width = block->raster_width;
+        block->image_height = block->raster_height;
+    }
+
+    DvzFieldDataView view = {
+        .data = block->rgba,
+        .bytes_per_row = 4u * (uint64_t)block->raster_width,
+        .rows_per_image = block->raster_height,
+    };
+    if (block->image_width != block->raster_width || block->image_height != block->raster_height)
+    {
+        if (!dvz_sampled_field_resize(
+                block->image_field, block->raster_width, block->raster_height, 1, &view))
+            return -1;
+        block->image_width = block->raster_width;
+        block->image_height = block->raster_height;
+    }
+    else
+    {
+        if (!dvz_sampled_field_set_data(block->image_field, &view))
+            return -1;
+    }
+
+    vec3 positions[1] = {{resolved.position[0], resolved.position[1], resolved.position[2]}};
+    vec2 extents[1] = {{resolved.extent[0], resolved.extent[1]}};
+    vec2 anchors[1] = {{resolved.anchor[0], resolved.anchor[1]}};
+    DvzVisualDataUpdate updates[3] = {
+        {.attr_name = "position", .data = positions, .item_count = 1},
+        {.attr_name = "extent", .data = extents, .item_count = 1},
+        {.attr_name = "anchor", .data = anchors, .item_count = 1},
+    };
+    if (dvz_visual_set_data_many(block->image_visual, updates, 3) != 0)
+        return -1;
+    if (!dvz_visual_set_field(block->image_visual, "field", block->image_field))
+        return -1;
+    if (!block->image_attached)
+    {
+        if (dvz_panel_add_visual(
+                panel, block->image_visual,
+                &(DvzVisualAttachDesc){
+                    .z_layer = resolved.z_layer,
+                    .controller_mode = resolved.controller_mode,
+                }) != 0)
+            return -1;
+        block->image_attached = true;
+    }
+    dvz_visual_set_visible(block->image_visual, true);
     return 0;
 }

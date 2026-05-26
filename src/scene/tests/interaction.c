@@ -2282,6 +2282,66 @@ int test_scene_text_block_rasterize(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Verify private text-block image lowering creates a retained sampled-image visual.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_block_image_lowering(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzTextBlock block = {0};
+    _scene_text_block_init(&block, "Rich <b>card</b>");
+    AT(_scene_text_block_parse(&block) == 0);
+    AT(_scene_text_block_measure(
+           &block,
+           &(DvzTextBlockLayout){
+               .char_width_px = 7.0f,
+               .line_height_px = 10.0f,
+               .padding_px = {2.0f, 2.0f},
+           }) == 0);
+    AT(_scene_text_block_rasterize(&block, NULL) == 0);
+    AT(_scene_text_block_realize_image(
+           &block, panel,
+           &(DvzTextBlockImageDesc){
+               .position = {-0.5f, 0.25f, 0.0f},
+               .extent = {0.8f, 0.3f},
+               .anchor = {-1.0f, +1.0f},
+               .z_layer = 3,
+               .controller_mode = DVZ_CONTROLLER_APPLY,
+           }) == 0);
+
+    ANN(block.image_visual);
+    ANN(block.image_field);
+    AT(block.image_visual->visible);
+    AT(block.image_visual->field == block.image_field);
+    AT(block.image_field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM);
+    AT(block.image_field->desc.width == block.raster_width);
+    AT(block.image_field->desc.height == block.raster_height);
+    AT(panel->visual_count == 1);
+    AT(panel->visuals[0].visual == block.image_visual);
+    AT(panel->visuals[0].z_layer == 3);
+
+    _scene_text_block_destroy(&block);
+    AT(block.image_visual == NULL);
+    AT(block.image_field == NULL);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Register scene interaction tests.
@@ -2323,6 +2383,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_block_parse_markup);
     TST_CASE(test_scene_text_block_measure);
     TST_CASE(test_scene_text_block_rasterize);
+    TST_CASE(test_scene_text_block_image_lowering);
 
     return 0;
 }
