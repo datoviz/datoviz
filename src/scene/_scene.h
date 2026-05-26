@@ -282,22 +282,6 @@ void _dvz_scene_controller_links_propagate(DvzScene* scene);
 
 
 
-DvzPanzoom* _dvz_panzoom(float width, float height, int flags);
-
-
-
-DvzArcball* _dvz_arcball(float width, float height, int flags);
-
-
-
-DvzFly* _dvz_fly(const DvzFlyDesc* desc);
-
-
-
-DvzTurntable* _dvz_turntable(const DvzTurntableDesc* desc);
-
-
-
 /*************************************************************************************************/
 /*  Request frame subscriptions                                                                  */
 /*************************************************************************************************/

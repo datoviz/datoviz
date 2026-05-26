@@ -424,8 +424,6 @@ static bool _scene_has_live_streams(const DvzScene* scene);
 
 static void _scene_figure_id(const DvzFigure* figure, char* out, uint32_t size);
 
-static void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, float* out_height);
-
 static DvzCamera* _scene_panel_ensure_camera(DvzPanel* panel);
 
 static void _scene_controller_destroy(DvzController* controller);
