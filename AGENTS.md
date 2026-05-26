@@ -22,6 +22,9 @@ maintainability.
 
 When refactoring, do NOT delete existing comments, keep them and update them if needed, but do not delete them.
 
+Do NOT commit changes inside the `data` submodule, or commit large binary files anywhere in the
+repository, without explicit approval from Cyrille for that specific commit.
+
 
 ### Current branch snapshot (2026-05-17)
 
