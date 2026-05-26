@@ -99,6 +99,35 @@ DVZ_EXPORT bool dvz_scale_set_categories(
 
 
 /**
+ * Update or append retained categorical entries on a scale.
+ *
+ * Entries are valid only on categorical scales. Existing entries with matching category ids are
+ * replaced in place. New entries are appended. Duplicate ids in the input batch are rejected.
+ *
+ * @param scale the scale
+ * @param categories category entry array
+ * @param count the number of category entries
+ * @return true when the category table was accepted
+ */
+DVZ_EXPORT bool dvz_scale_update_categories(
+    DvzScale* scale, const DvzScaleCategory* categories, uint32_t count);
+
+
+/**
+ * Remove retained categorical entries from a scale.
+ *
+ * Entries are valid only on categorical scales. Missing ids are ignored.
+ *
+ * @param scale the scale
+ * @param ids category ids to remove
+ * @param count the number of ids
+ * @return true when the category table was updated
+ */
+DVZ_EXPORT bool dvz_scale_remove_categories(
+    DvzScale* scale, const DvzCategoryId* ids, uint32_t count);
+
+
+/**
  * Create a scene-owned colormap object.
  *
  * @param scene the scene

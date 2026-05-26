@@ -72,7 +72,7 @@ struct DvzSceneProbePayload
     uint64_t auxiliary_id;
     DvzProbeValueKind value_kind;
     double vector[4];
-    uint64_t category_id;
+    DvzCategoryId category_id;
     char label[DVZ_SCENE_LABEL_SIZE];
 };
 
@@ -674,7 +674,7 @@ static bool _scene_decode_image_probe_payload(
         out_payload->target_id = label_id;
         out_payload->group_id = label_id;
         out_payload->value_kind = DVZ_PROBE_VALUE_LABEL;
-        out_payload->category_id = label_id;
+        out_payload->category_id = (DvzCategoryId)label_id;
         dvz_snprintf(out_payload->label, sizeof(out_payload->label), "label %" PRIu64, label_id);
         return true;
     }

@@ -187,8 +187,8 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
     ANN(categorical);
     DvzScaleCategory categories[3] = {
         {.category_id = 7, .order = 2, .label = "Beta", .color = {220, 40, 40, 255}},
-        {.category_id = 3, .order = 1, .label = "Alpha", .color = {40, 220, 40, 255}},
-        {.category_id = 9, .order = 3, .label = NULL, .color = {40, 40, 220, 255}},
+        {.category_id = -3, .order = 1, .label = "Alpha", .color = {40, 220, 40, 255}},
+        {.category_id = 4000000000LL, .order = 3, .label = NULL, .color = {40, 40, 220, 255}},
     };
     AT(dvz_scale_set_categories(categorical, categories, 3));
     AT(categorical->category_count == 3);
@@ -197,17 +197,33 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
     AT(categorical->categories[0].has_label);
     AT(strcmp(categorical->categories[0].label, "Beta") == 0);
     AT(categorical->categories[0].color.r == 220);
-    AT(categorical->categories[1].category_id == 3);
-    AT(categorical->categories[2].category_id == 9);
+    AT(categorical->categories[1].category_id == -3);
+    AT(categorical->categories[2].category_id == 4000000000LL);
     AT(!categorical->categories[2].has_label);
 
     DvzScaleCategory duplicate[2] = {
-        {.category_id = 4, .order = 0, .label = "First", .color = {1, 2, 3, 255}},
-        {.category_id = 4, .order = 1, .label = "Second", .color = {4, 5, 6, 255}},
+        {.category_id = -4, .order = 0, .label = "First", .color = {1, 2, 3, 255}},
+        {.category_id = -4, .order = 1, .label = "Second", .color = {4, 5, 6, 255}},
     };
     AT_EXPECTED_ERROR_STRICT(suite, !dvz_scale_set_categories(categorical, duplicate, 2));
     AT(categorical->category_count == 3);
     AT(categorical->categories[0].category_id == 7);
+
+    DvzScaleCategory patch[2] = {
+        {.category_id = -3, .order = 4, .label = "Updated", .color = {10, 20, 30, 255}},
+        {.category_id = -100, .order = 0, .label = NULL, .color = {80, 90, 100, 255}},
+    };
+    AT(dvz_scale_update_categories(categorical, patch, 2));
+    AT(categorical->category_count == 4);
+    AT(categorical->categories[1].category_id == -3);
+    AT(categorical->categories[1].order == 4);
+    AT(strcmp(categorical->categories[1].label, "Updated") == 0);
+    AT(categorical->categories[3].category_id == -100);
+
+    DvzCategoryId remove_ids[2] = {-100, 12345};
+    AT(dvz_scale_remove_categories(categorical, remove_ids, 2));
+    AT(categorical->category_count == 3);
+    AT(categorical->categories[2].category_id == 4000000000LL);
 
     DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
     ANN(continuous);
@@ -332,12 +348,13 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
-    DvzScaleCategory categories[3] = {
+    DvzScaleCategory categories[4] = {
         {.category_id = 7, .order = 2, .label = "Beta", .color = {220, 40, 40, 255}},
         {.category_id = 3, .order = 1, .label = "Alpha", .color = {40, 220, 40, 255}},
-        {.category_id = 9, .order = 3, .label = NULL, .color = {40, 40, 220, 255}},
+        {.category_id = -7, .order = 3, .label = NULL, .color = {40, 40, 220, 255}},
+        {.category_id = 4000000000LL, .order = 4, .label = NULL, .color = {220, 220, 40, 255}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 3));
+    AT(dvz_scale_set_categories(scale, categories, 4));
 
     DvzLegend* legend = dvz_legend(
         panel, scale, &(DvzLegendDesc){
@@ -354,16 +371,17 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
     AT(legend->text_visual->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
     AT(legend->mark_visual->visible);
     AT(legend->text_visual->visible);
-    AT(legend->entry_count == 3);
-    AT(legend->text_count == 4);
+    AT(legend->entry_count == 4);
+    AT(legend->text_count == 5);
     AT(strcmp(legend->text_labels[0], "Classes") == 0);
     AT(strcmp(legend->text_labels[1], "Alpha") == 0);
     AT(strcmp(legend->text_labels[2], "Beta") == 0);
-    AT(strcmp(legend->text_labels[3], "9") == 0);
+    AT(strcmp(legend->text_labels[3], "-7") == 0);
+    AT(strcmp(legend->text_labels[4], "4000000000") == 0);
 
     DvzVisualDataView color_view = {0};
     AT(dvz_visual_data(legend->mark_visual, "color", &color_view) == 0);
-    AT(color_view.item_count == 3);
+    AT(color_view.item_count == 4);
     const uint8_t* colors = color_view.data;
     ANN(colors);
     AT(colors[1] == 220);
@@ -372,14 +390,14 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
 
     DvzVisualDataView position_view = {0};
     AT(dvz_visual_data(legend->mark_visual, "position", &position_view) == 0);
-    AT(position_view.item_count == 3);
+    AT(position_view.item_count == 4);
     const float* positions = (const float*)position_view.data;
     ANN(positions);
     AT(positions[0] > 0.0f);
 
     DvzVisualDataView text_position_view = {0};
     AT(dvz_visual_data(legend->text_visual, "position", &text_position_view) == 0);
-    AT(text_position_view.item_count == 4);
+    AT(text_position_view.item_count == 5);
 
     DvzVisualDataView first_position = {0};
     AT(dvz_visual_data(legend->mark_visual, "position", &first_position) == 0);

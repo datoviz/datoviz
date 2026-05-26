@@ -16,6 +16,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <math.h>
 #include <string.h>
 
@@ -43,6 +44,10 @@ static void _scene_mark_legend_dirty(DvzLegend* legend);
 
 static bool _scale_categories_have_duplicate_ids(
     const DvzScaleCategory* categories, uint32_t count);
+
+static int32_t _scale_category_index(const DvzScale* scale, DvzCategoryId id);
+
+static void _scale_category_copy(DvzScaleCategoryState* dst, const DvzScaleCategory* src);
 
 
 
@@ -402,6 +407,46 @@ static bool _scale_categories_have_duplicate_ids(
         }
     }
     return false;
+}
+
+
+/**
+ * Return the index of a retained category id.
+ *
+ * @param scale the categorical scale
+ * @param id the category id
+ * @return the category index, or -1 when absent
+ */
+static int32_t _scale_category_index(const DvzScale* scale, DvzCategoryId id)
+{
+    ANN(scale);
+    for (uint32_t i = 0; i < scale->category_count; i++)
+    {
+        if (scale->categories[i].category_id == id)
+            return (int32_t)i;
+    }
+    return -1;
+}
+
+
+/**
+ * Copy a public category descriptor into retained category state.
+ *
+ * @param dst retained category state
+ * @param src public category descriptor
+ */
+static void _scale_category_copy(DvzScaleCategoryState* dst, const DvzScaleCategory* src)
+{
+    ANN(dst);
+    ANN(src);
+    dvz_memset(dst, sizeof(DvzScaleCategoryState), 0, sizeof(DvzScaleCategoryState));
+    dst->category_id = src->category_id;
+    dst->order = src->order;
+    dst->flags = src->flags;
+    dst->has_label = src->label != NULL && src->label[0] != '\0';
+    if (dst->has_label)
+        dvz_strlcpy(dst->label, src->label, sizeof(dst->label));
+    dst->color = src->color;
 }
 
 
@@ -1862,7 +1907,7 @@ static void _legend_update_visuals(DvzLegend* legend, DvzDiagnosticReport* repor
         char fallback[32] = {0};
         const char* label = category->has_label ? category->label : fallback;
         if (!category->has_label)
-            dvz_snprintf(fallback, sizeof(fallback), "%d", category->category_id);
+            dvz_snprintf(fallback, sizeof(fallback), "%" PRId64, category->category_id);
         _legend_append_text(
             legend, label, rect[0] + legend->mark_size_px + legend->mark_label_gap_px, y, 0.0f,
             0.5f, COLORBAR_TICK_TEXT_SIZE_PX);
@@ -2155,16 +2200,7 @@ bool dvz_scale_set_categories(
 
     for (uint32_t i = 0; i < count; i++)
     {
-        DvzScaleCategoryState* dst = &scale->categories[i];
-        const DvzScaleCategory* src = &categories[i];
-        dvz_memset(dst, sizeof(DvzScaleCategoryState), 0, sizeof(DvzScaleCategoryState));
-        dst->category_id = src->category_id;
-        dst->order = src->order;
-        dst->flags = src->flags;
-        dst->has_label = src->label != NULL && src->label[0] != '\0';
-        if (dst->has_label)
-            dvz_strlcpy(dst->label, src->label, sizeof(dst->label));
-        dst->color = src->color;
+        _scale_category_copy(&scale->categories[i], &categories[i]);
     }
     for (uint32_t i = count; i < scale->category_count; i++)
     {
@@ -2174,6 +2210,97 @@ bool dvz_scale_set_categories(
     }
     scale->category_count = count;
     _scene_mark_scale_dirty(scale);
+    return true;
+}
+
+
+/**
+ * Update or append retained categorical entries on a scale.
+ *
+ * @param scale the scale
+ * @param categories category entry array
+ * @param count the number of category entries
+ * @return true when the category table was accepted
+ */
+bool dvz_scale_update_categories(
+    DvzScale* scale, const DvzScaleCategory* categories, uint32_t count)
+{
+    ANN(scale);
+    if (scale->kind != DVZ_SCALE_CATEGORICAL)
+    {
+        log_error("scale categories are valid only for categorical scales");
+        return false;
+    }
+    if (categories == NULL || count == 0)
+        return true;
+    if (_scale_categories_have_duplicate_ids(categories, count))
+    {
+        log_error("duplicate scale category id");
+        return false;
+    }
+
+    uint32_t append_count = 0;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        if (_scale_category_index(scale, categories[i].category_id) < 0)
+            append_count++;
+    }
+    if (append_count > DVZ_SCENE_MAX_SCALE_CATEGORIES - scale->category_count)
+    {
+        log_error(
+            "too many scale categories: %u > %u", scale->category_count + append_count,
+            DVZ_SCENE_MAX_SCALE_CATEGORIES);
+        return false;
+    }
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        int32_t index = _scale_category_index(scale, categories[i].category_id);
+        if (index < 0)
+            index = (int32_t)scale->category_count++;
+        _scale_category_copy(&scale->categories[(uint32_t)index], &categories[i]);
+    }
+    _scene_mark_scale_dirty(scale);
+    return true;
+}
+
+
+/**
+ * Remove retained categorical entries from a scale.
+ *
+ * @param scale the scale
+ * @param ids category ids to remove
+ * @param count the number of ids
+ * @return true when the category table was updated
+ */
+bool dvz_scale_remove_categories(DvzScale* scale, const DvzCategoryId* ids, uint32_t count)
+{
+    ANN(scale);
+    if (scale->kind != DVZ_SCALE_CATEGORICAL)
+    {
+        log_error("scale categories are valid only for categorical scales");
+        return false;
+    }
+    if (ids == NULL || count == 0)
+        return true;
+
+    bool changed = false;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        int32_t index = _scale_category_index(scale, ids[i]);
+        if (index < 0)
+            continue;
+        uint32_t ui = (uint32_t)index;
+        for (uint32_t j = ui + 1; j < scale->category_count; j++)
+            scale->categories[j - 1] = scale->categories[j];
+        scale->category_count--;
+        dvz_memset(
+            &scale->categories[scale->category_count], sizeof(DvzScaleCategoryState), 0,
+            sizeof(DvzScaleCategoryState));
+        changed = true;
+    }
+    if (changed)
+        _scene_mark_scale_dirty(scale);
     return true;
 }
 

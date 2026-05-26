@@ -534,7 +534,7 @@ bool _dvz_figure_fly_update(DvzFigure* figure, double dt);
 
 typedef struct DvzScaleCategoryState
 {
-    int32_t category_id;
+    DvzCategoryId category_id;
     uint32_t order;
     bool has_label;
     char label[DVZ_SCENE_LABEL_SIZE];

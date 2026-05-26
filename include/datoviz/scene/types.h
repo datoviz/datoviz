@@ -76,6 +76,9 @@ typedef struct DvzAnnotation        DvzAnnotation;
 typedef struct DvzAxis              DvzAxis;
 
 
+typedef int64_t DvzCategoryId;
+
+
 
 /*************************************************************************************************/
 /*  Enums                                                                                        */
@@ -623,7 +626,7 @@ struct DvzProbeResult
     DvzProbeValueKind value_kind;
     double scalar;
     double vector[4];
-    uint64_t category_id;
+    DvzCategoryId category_id;
     char label[DVZ_SCENE_LABEL_SIZE];
     char unit[32];
     DvzScale* scale;
@@ -654,7 +657,7 @@ typedef struct DvzScaleDesc DvzScaleDesc;
 
 struct DvzScaleCategory
 {
-    int32_t category_id;
+    DvzCategoryId category_id;
     uint32_t order;
     const char* label;
     DvzColor color;
