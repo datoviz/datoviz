@@ -184,6 +184,44 @@ Unknown hash-colored IDs do not appear in legends automatically because they are
 semantic categories. If an application wants unknown observed IDs in a legend, it should promote
 them into the categorical scale through `dvz_scale_update_categories()`.
 
+### Generic Legend Highlights
+
+Legends should expose generic category highlighting rather than labels-specific selection state.
+Selection is one use case, but the same retained state can also represent hover, focus, active
+filters, or search matches.
+
+First public API shape:
+
+```c
+bool dvz_legend_set_highlight(DvzLegend* legend, DvzCategoryId id);
+bool dvz_legend_clear_highlight(DvzLegend* legend);
+bool dvz_legend_set_highlights(
+    DvzLegend* legend, const DvzCategoryId* ids, uint32_t count);
+```
+
+`set_highlight()` is a single-entry convenience wrapper over `set_highlights()`. The retained state
+should support multiple highlighted IDs from the start, even if the first example only uses one
+selected label.
+
+Rendering requirements:
+
+1. keep `DvzScaleCategory.color` unchanged because category color is semantic;
+2. render highlighted entries with stronger visual treatment such as a larger marker, marker
+   outline, or subtle row background;
+3. avoid text-style changes unless the active text renderer can do it without introducing a
+   separate one-off glyph path;
+4. preserve category order and hidden/unknown category policy;
+5. mark the legend dirty and rebuild derived mark/text visuals when highlight state changes.
+
+The live labels example should wire selection to legend highlight state once this API lands:
+
+```c
+dvz_legend_set_highlight(legend, selected_label_id);
+```
+
+Clearing the selected label should clear the legend highlight. The example must not mutate the
+categorical scale merely to represent selection.
+
 Compatibility work required by signed label IDs is now mostly landed:
 
 1. `typedef int64_t DvzCategoryId` is public scene surface;
@@ -349,6 +387,69 @@ id2 = label(x, y + 1)
 boundary = id0 != id1 || id0 != id2
 ```
 
+### GPU Selected-Boundary Rendering
+
+Selected-label boundaries should be rendered by the labels visual shader, not by an example-local
+CPU overlay. This keeps selection tied to the same integer texture used for display and avoids
+duplicating label state in an RGBA mask.
+
+First-slice retained state already has the right public shape:
+
+```c
+dvz_labels_set_selected(labels, selected_id);
+dvz_labels_clear_selected(labels);
+dvz_labels_set_boundary(labels, enabled, width_px, color);
+```
+
+The implementation should upload a labels presentation uniform alongside the labels texture. A
+minimal GPU payload is:
+
+```c
+typedef struct DvzLabelsUniform
+{
+    int64_t background_id;
+    int64_t selected_id;
+    uint32_t flags;          /* selected enabled, boundary enabled, reserved */
+    uint32_t fallback_seed;
+    float opacity;
+    float boundary_width;   /* first slice: texel radius, despite public px naming */
+    DvzColor boundary_color;
+} DvzLabelsUniform;
+```
+
+Shader behavior:
+
+```text
+id = texelFetch(labels_tex, coord)
+if id == background_id: discard
+
+color = explicit style lookup or deterministic hash fallback
+
+if selected_enabled && id == selected_id:
+    if boundary_enabled:
+        boundary = any neighbor within radius has id != selected_id
+        if boundary:
+            color = boundary_color
+    else:
+        color = selected presentation color/policy
+
+out = color * opacity
+```
+
+First implementation details:
+
+1. use integer `texelFetch()` / `textureLoad()` for all neighbor reads;
+2. interpret `boundary_width` as an integer texel radius in the first slice;
+3. clamp neighbor coordinates to the texture extent;
+4. compare against the selected ID, not only against the center ID, so the selected boundary remains
+   stable even when adjacent labels share colors;
+5. support both signed and unsigned label shader variants with equivalent GLSL and WGSL logic;
+6. update the labels example to remove the CPU selection overlay once the shader path is available.
+
+Later refinements can map public `width_px` to screen-space width, add antialiasing from derivatives
+or a distance field, and support hover/multi-selection policies. Those should not block the first
+GPU boundary path.
+
 The first 3D path should display one slice of a 3D integer field. Categorical DVR is deferred
 because compositing category IDs along a ray is semantically ambiguous.
 
@@ -486,14 +587,17 @@ The labels visual should harden these lower-layer capabilities:
    and hash fallback colors. Shader-driven opacity is still pending.
 6. Partly done: add scale patch/remove APIs. Lowering categorical scale entries to a sorted sparse
    GPU style buffer is pending.
-7. Pending: add selected, hidden, fallback-seed, and boundary uniforms.
-8. Pending: add GPU probe/readback returning raw label IDs.
-9. Pending: add 3D axis-aligned label slice rendering.
-10. Pending: add GPU-only field/resource binding for labels.
-11. Done for first slice: add WGSL parity and fixture/preflight coverage for 2D labels.
-12. Done for first slice: add a live labels example with a proper legend and GUI controls for the
+7. Pending: add generic legend highlight API and wire labels example selection to legend
+   highlight state.
+8. Pending: add selected, hidden, fallback-seed, and boundary uniforms.
+9. Pending: implement selected-label boundary rendering in GLSL/WGSL labels shaders.
+10. Pending: add GPU probe/readback returning raw label IDs.
+11. Pending: add 3D axis-aligned label slice rendering.
+12. Pending: add GPU-only field/resource binding for labels.
+13. Done for first slice: add WGSL parity and fixture/preflight coverage for 2D labels.
+14. Done for first slice: add a live labels example with a proper legend and GUI controls for the
     label settings.
-13. Pending: add napari large-label pressure tests with arbitrary sparse IDs and thousands of
+15. Pending: add napari large-label pressure tests with arbitrary sparse IDs and thousands of
     categories.
 
 
