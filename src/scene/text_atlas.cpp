@@ -2093,6 +2093,19 @@ DvzTextAtlasSpec _scene_text_atlas_spec(DvzTextAtlasBackend backend, float size_
 }
 
 
+/**
+ * Ensure a scene font has owned TrueType bytes available.
+ *
+ * @param font the font
+ * @return whether TTF bytes are available
+ */
+bool _scene_font_ensure_bytes(DvzFont* font)
+{
+    ANN(font);
+    return _text_sdf_font_bytes(font);
+}
+
+
 
 /**
  * Return a font atlas matching a requested spec, including SDF fallback atlases.

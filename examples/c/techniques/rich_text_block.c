@@ -132,6 +132,9 @@ static bool _add_rich_text_block(DvzTextBlock* block, DvzPanel* panel)
 {
     if (block == NULL || panel == NULL)
         return false;
+    DvzScene* scene = panel->figure != NULL ? panel->figure->scene : NULL;
+    if (scene == NULL)
+        return false;
 
     _scene_text_block_init(
         block,
@@ -158,8 +161,10 @@ static bool _add_rich_text_block(DvzTextBlock* block, DvzPanel* panel)
     rc = _scene_text_block_rasterize(
         block,
         &(DvzTextBlockRasterDesc){
+            .scene = scene,
             .text_color = {236, 241, 248, 255},
             .background_color = {12, 18, 28, 232},
+            .font_size_px = 11.5f,
             .scale = 2.0f,
         });
     if (rc != 0)

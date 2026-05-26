@@ -23,6 +23,12 @@
 #include "_compat.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "datoviz/scene/text.h"
+
+#if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#endif
 
 
 
@@ -323,6 +329,245 @@ static void _text_block_put_px(DvzTextBlock* block, uint32_t x, uint32_t y, cons
     block->rgba[idx + 2] = color.b;
     block->rgba[idx + 3] = color.a;
 }
+
+
+/**
+ * Composite one RGBA pixel with coverage into a text-block raster.
+ *
+ * @param block the text block
+ * @param x x coordinate
+ * @param y y coordinate
+ * @param color source text color
+ * @param coverage source coverage in the range 0..255
+ */
+static void _text_block_put_coverage_px(
+    DvzTextBlock* block, uint32_t x, uint32_t y, const DvzColor color, uint8_t coverage)
+{
+    ANN(block);
+    ANN(block->rgba);
+    if (coverage == 0 || x >= block->raster_width || y >= block->raster_height)
+        return;
+
+    uint64_t idx = 4u * ((uint64_t)y * block->raster_width + x);
+    uint32_t src_a = ((uint32_t)color.a * (uint32_t)coverage + 127u) / 255u;
+    uint32_t inv_a = 255u - src_a;
+    block->rgba[idx + 0] =
+        (uint8_t)(((uint32_t)color.r * src_a + (uint32_t)block->rgba[idx + 0] * inv_a) / 255u);
+    block->rgba[idx + 1] =
+        (uint8_t)(((uint32_t)color.g * src_a + (uint32_t)block->rgba[idx + 1] * inv_a) / 255u);
+    block->rgba[idx + 2] =
+        (uint8_t)(((uint32_t)color.b * src_a + (uint32_t)block->rgba[idx + 2] * inv_a) / 255u);
+    block->rgba[idx + 3] =
+        (uint8_t)(src_a + ((uint32_t)block->rgba[idx + 3] * inv_a + 127u) / 255u);
+}
+
+
+
+#if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
+/**
+ * Resolve the scene default font for text-block rasterization.
+ *
+ * @param scene the scene
+ * @return the default font, or NULL on allocation failure
+ */
+static DvzFont* _text_block_default_font(DvzScene* scene)
+{
+    if (scene == NULL)
+        return NULL;
+
+    DvzFontDesc desc = scene->font_defaults.sans;
+    if (desc.family == NULL || desc.family[0] == '\0')
+        desc.family = "Roboto";
+    if (desc.style == NULL || desc.style[0] == '\0')
+        desc.style = "Regular";
+
+    for (uint32_t i = 0; i < scene->font_count; i++)
+    {
+        bool path_matches = false;
+        if (desc.path == NULL || desc.path[0] == '\0')
+            path_matches = scene->fonts[i].path[0] == '\0';
+        else
+            path_matches = strcmp(scene->fonts[i].path, desc.path) == 0;
+
+        if (
+            path_matches && strcmp(scene->fonts[i].family, desc.family) == 0 &&
+            strcmp(scene->fonts[i].style, desc.style) == 0 &&
+            scene->fonts[i].face_index == desc.face_index)
+        {
+            return &scene->fonts[i];
+        }
+    }
+    return dvz_font(scene, &desc);
+}
+
+
+/**
+ * Return one FreeType bitmap coverage sample.
+ *
+ * @param bitmap source glyph bitmap
+ * @param x x coordinate in the bitmap
+ * @param y y coordinate in the bitmap
+ * @return coverage in the range 0..255
+ */
+static uint8_t _text_block_ft_coverage(const FT_Bitmap* bitmap, uint32_t x, uint32_t y)
+{
+    ANN(bitmap);
+    if (x >= (uint32_t)bitmap->width || y >= (uint32_t)bitmap->rows || bitmap->buffer == NULL)
+        return 0;
+
+    int pitch = bitmap->pitch;
+    uint32_t row_index = y;
+    if (pitch < 0)
+    {
+        pitch = -pitch;
+        row_index = (uint32_t)bitmap->rows - 1u - y;
+    }
+    const uint8_t* row = bitmap->buffer + (uint64_t)row_index * (uint32_t)pitch;
+    if (bitmap->pixel_mode == FT_PIXEL_MODE_GRAY)
+        return row[x];
+    if (bitmap->pixel_mode == FT_PIXEL_MODE_MONO)
+        return (row[x / 8u] & (uint8_t)(0x80u >> (x % 8u))) != 0 ? 255 : 0;
+    return 0;
+}
+
+
+/**
+ * Draw one rendered FreeType glyph bitmap into a text-block raster.
+ *
+ * @param block the text block
+ * @param bitmap source glyph bitmap
+ * @param dst_x destination x origin, signed before clipping
+ * @param dst_y destination y origin, signed before clipping
+ * @param color text color
+ * @param style_flags active style flags
+ */
+static void _text_block_draw_ft_bitmap(
+    DvzTextBlock* block, const FT_Bitmap* bitmap, int32_t dst_x, int32_t dst_y,
+    const DvzColor color, uint32_t style_flags)
+{
+    ANN(block);
+    ANN(bitmap);
+    uint32_t rows = (uint32_t)bitmap->rows;
+    uint32_t width = (uint32_t)bitmap->width;
+    uint32_t bold_passes = (style_flags & DVZ_TEXT_BLOCK_STYLE_BOLD) != 0 ? 2u : 1u;
+    for (uint32_t y = 0; y < rows; y++)
+    {
+        int32_t italic_shift =
+            (style_flags & DVZ_TEXT_BLOCK_STYLE_ITALIC) != 0 ? (int32_t)((rows - y) / 4u) : 0;
+        for (uint32_t x = 0; x < width; x++)
+        {
+            uint8_t coverage = _text_block_ft_coverage(bitmap, x, y);
+            if (coverage == 0)
+                continue;
+            for (uint32_t pass = 0; pass < bold_passes; pass++)
+            {
+                int32_t px = dst_x + (int32_t)x + italic_shift + (int32_t)pass;
+                int32_t py = dst_y + (int32_t)y;
+                if (px < 0 || py < 0)
+                    continue;
+                _text_block_put_coverage_px(block, (uint32_t)px, (uint32_t)py, color, coverage);
+            }
+        }
+    }
+}
+
+
+/**
+ * Draw parsed text bytes through a FreeType face.
+ *
+ * @param block the text block
+ * @param face active FreeType face
+ * @param desc resolved raster descriptor
+ * @return whether drawing succeeded
+ */
+static bool _text_block_draw_freetype(
+    DvzTextBlock* block, FT_Face face, const DvzTextBlockRasterDesc* desc)
+{
+    ANN(block);
+    ANN(face);
+    ANN(desc);
+
+    uint32_t char_w = _text_block_scaled_px(block->layout.char_width_px, desc->scale, 7);
+    uint32_t line_h = _text_block_scaled_px(block->layout.line_height_px, desc->scale, 14);
+    uint32_t pad_x = _text_block_scaled_px(block->layout.padding_px[0], desc->scale, 0);
+    uint32_t pad_y = _text_block_scaled_px(block->layout.padding_px[1], desc->scale, 0);
+    int32_t ascender =
+        face->size != NULL ? (int32_t)((face->size->metrics.ascender + 32) / 64) : 0;
+    if (ascender <= 0)
+        ascender = (int32_t)((3u * line_h) / 4u);
+
+    for (uint32_t i = 0; i < block->text_size; i++)
+    {
+        char byte = block->text[i];
+        if (byte == ' ' || byte == '\t' || byte == '\n')
+            continue;
+
+        uint32_t x = pad_x + block->layout_x[i] * char_w;
+        uint32_t y = pad_y + block->layout_y[i] * line_h;
+        uint32_t style_flags = _text_block_style_at(block, i);
+        DvzColor color = _text_block_color_at(block, i, desc->text_color);
+        FT_ULong codepoint = (FT_ULong)(uint8_t)byte;
+        if (FT_Load_Char(face, codepoint, FT_LOAD_DEFAULT) != 0)
+            codepoint = (FT_ULong)'?';
+        if (FT_Load_Char(face, codepoint, FT_LOAD_DEFAULT) != 0 ||
+            FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL) != 0)
+        {
+            return false;
+        }
+
+        int32_t dst_x = (int32_t)x + face->glyph->bitmap_left;
+        int32_t dst_y = (int32_t)y + ascender - face->glyph->bitmap_top;
+        _text_block_draw_ft_bitmap(block, &face->glyph->bitmap, dst_x, dst_y, color, style_flags);
+
+        if ((style_flags & DVZ_TEXT_BLOCK_STYLE_UNDERLINE) != 0)
+        {
+            uint32_t underline_y = y + line_h - 3u;
+            for (uint32_t ux = 0; ux + 1 < char_w; ux++)
+                _text_block_put_coverage_px(block, x + ux, underline_y, color, 255);
+        }
+    }
+    return true;
+}
+
+
+/**
+ * Try to rasterize a text block through FreeType.
+ *
+ * @param block the text block
+ * @param desc resolved raster descriptor
+ * @return whether FreeType drawing was used successfully
+ */
+static bool _text_block_try_freetype(DvzTextBlock* block, const DvzTextBlockRasterDesc* desc)
+{
+    ANN(block);
+    ANN(desc);
+    DvzFont* font = desc->font != NULL ? desc->font : _text_block_default_font(desc->scene);
+    if (font == NULL || !_scene_font_ensure_bytes(font))
+        return false;
+
+    FT_Library library = NULL;
+    FT_Face face = NULL;
+    if (FT_Init_FreeType(&library) != 0)
+        return false;
+    if (FT_New_Memory_Face(
+            library, (const FT_Byte*)font->ttf_bytes, (FT_Long)font->ttf_size,
+            (FT_Long)font->face_index, &face) != 0)
+    {
+        FT_Done_FreeType(library);
+        return false;
+    }
+
+    float font_size = desc->font_size_px > 0.0f ? desc->font_size_px :
+                                                     0.78f * block->layout.line_height_px;
+    uint32_t font_px = _text_block_scaled_px(font_size, desc->scale, 10);
+    bool ok = FT_Set_Pixel_Sizes(face, 0, (FT_UInt)font_px) == 0 &&
+              _text_block_draw_freetype(block, face, desc);
+
+    FT_Done_Face(face);
+    FT_Done_FreeType(library);
+    return ok;
+}
+#endif
 
 
 
@@ -860,20 +1105,30 @@ int _scene_text_block_rasterize(DvzTextBlock* block, const DvzTextBlockRasterDes
         block->rgba[4u * i + 3] = resolved.background_color.a;
     }
 
-    uint32_t char_w = _text_block_scaled_px(block->layout.char_width_px, resolved.scale, 7);
-    uint32_t line_h = _text_block_scaled_px(block->layout.line_height_px, resolved.scale, 14);
-    uint32_t pad_x = _text_block_scaled_px(block->layout.padding_px[0], resolved.scale, 0);
-    uint32_t pad_y = _text_block_scaled_px(block->layout.padding_px[1], resolved.scale, 0);
-    for (uint32_t i = 0; i < block->text_size; i++)
-    {
-        if (block->text[i] == '\n')
-            continue;
+    bool used_freetype = false;
+#if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
+    if (resolved.font != NULL || resolved.scene != NULL)
+        used_freetype = _text_block_try_freetype(block, &resolved);
+#endif
 
-        uint32_t x = pad_x + block->layout_x[i] * char_w;
-        uint32_t y = pad_y + block->layout_y[i] * line_h;
-        DvzColor color = _text_block_color_at(block, i, resolved.text_color);
-        _text_block_draw_byte(
-            block, block->text[i], x, y, _text_block_style_at(block, i), color, resolved.scale);
+    if (!used_freetype)
+    {
+        uint32_t char_w = _text_block_scaled_px(block->layout.char_width_px, resolved.scale, 7);
+        uint32_t line_h = _text_block_scaled_px(block->layout.line_height_px, resolved.scale, 14);
+        uint32_t pad_x = _text_block_scaled_px(block->layout.padding_px[0], resolved.scale, 0);
+        uint32_t pad_y = _text_block_scaled_px(block->layout.padding_px[1], resolved.scale, 0);
+        for (uint32_t i = 0; i < block->text_size; i++)
+        {
+            if (block->text[i] == '\n')
+                continue;
+
+            uint32_t x = pad_x + block->layout_x[i] * char_w;
+            uint32_t y = pad_y + block->layout_y[i] * line_h;
+            DvzColor color = _text_block_color_at(block, i, resolved.text_color);
+            _text_block_draw_byte(
+                block, block->text[i], x, y, _text_block_style_at(block, i), color,
+                resolved.scale);
+        }
     }
 
     block->raster_version++;

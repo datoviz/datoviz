@@ -3382,6 +3382,7 @@ int test_app_offscreen_text_block_raster_has_nonblank_pixels(
     AT(_scene_text_block_rasterize(
            &block,
            &(DvzTextBlockRasterDesc){
+               .scene = scene,
                .text_color = {0, 255, 0, 255},
                .background_color = {0, 0, 0, 0},
            }) == 0);

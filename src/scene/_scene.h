@@ -545,8 +545,11 @@ struct DvzTextBlockLayout
 
 struct DvzTextBlockRasterDesc
 {
+    DvzScene* scene;
+    DvzFont* font;
     DvzColor text_color;
     DvzColor background_color;
+    float font_size_px;
     float scale;
 };
 
@@ -1865,6 +1868,8 @@ bool _scene_text_atlas_ensure_strings(
 DvzTextAtlasGlyph* _scene_text_atlas_glyph(DvzTextAtlas* atlas, uint32_t codepoint);
 
 void _scene_text_atlas_destroy(DvzTextAtlas* atlas);
+
+bool _scene_font_ensure_bytes(DvzFont* font);
 
 void _scene_font_release(DvzFont* font);
 

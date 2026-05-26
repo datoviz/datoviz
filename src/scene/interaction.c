@@ -1803,8 +1803,10 @@ int dvz_overlay_card_set_rich_text(DvzOverlayCard* card, const DvzOverlayRichTex
     if (text_color.a == 0)
         text_color = card->card.text_color;
     card->rich_raster = (DvzTextBlockRasterDesc){
+        .scene = card->scene,
         .text_color = text_color,
         .background_color = desc->background_color,
+        .font_size_px = 0.78f * card->rich_layout.line_height_px,
         .scale = desc->scale > 0.0f ? desc->scale : 1.0f,
     };
 

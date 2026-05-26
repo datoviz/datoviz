@@ -2594,7 +2594,13 @@ int test_scene_text_block_image_lowering(TstContext* suite, const TstCase* item)
                .line_height_px = 10.0f,
                .padding_px = {2.0f, 2.0f},
            }) == 0);
-    AT(_scene_text_block_rasterize(&block, NULL) == 0);
+    AT(_scene_text_block_rasterize(
+           &block,
+           &(DvzTextBlockRasterDesc){
+               .scene = scene,
+               .text_color = {255, 255, 255, 255},
+               .background_color = {0, 0, 0, 0},
+           }) == 0);
     AT(_scene_text_block_realize_image(
            &block, panel,
            &(DvzTextBlockImageDesc){
