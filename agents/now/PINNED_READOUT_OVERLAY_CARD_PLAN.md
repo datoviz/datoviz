@@ -12,6 +12,33 @@ rendering. Keep detailed semantics in `spec/scene/`; keep this file as the execu
 handoff record.
 
 
+## Landed Slices
+
+These commits are the current implemented baseline for this lane:
+
+1. `8cd5af73c docs: add pinned readout overlay card plan`
+2. `eddb3830e scene: format pinned readout payloads`
+3. `e6ffd7556 scene: render pinned readout cards`
+4. `213a78a93 examples: pin image probe readouts`
+5. `acdbbca35 scene: factor pinned readouts through internal cards`
+6. `c8d85a70d scene: add private rich text block parser`
+
+Current behavior:
+
+1. `DvzPinnedReadout` formats scalar and vector probe payloads into retained text.
+2. Pinned readouts render as retained screen-space cards using a private `DvzSceneCard` shell.
+3. `examples/c/techniques/image_probe.c` pins the next resolved image probe on click.
+4. A private `DvzTextBlock` parser/measurement prototype exists for `<b>`, `<i>`, escaped
+   `<`, `>`, and `&`, with source/text style runs and diagnostics.
+
+Remaining follow-up before this plan should move to `agents/done/`:
+
+1. decide whether `DvzSceneCard` should grow a second in-tree consumer before any public overlay API,
+2. lower `DvzTextBlock` output to a raster/image-like scene contribution, or explicitly split that
+   into a new rich-text backend plan,
+3. add an offscreen nonblank smoke once rich text blocks render as image-like quads.
+
+
 ## Owning References
 
 Read these before changing code in this lane:
@@ -49,6 +76,8 @@ Read these before changing code in this lane:
 
 ### 1. Pinned Readout Formatting
 
+Status: **landed** in `eddb3830e`.
+
 Add focused formatting helpers and tests for `DvzPinnedReadout` content:
 
 1. scalar payloads,
@@ -67,6 +96,8 @@ git diff --check
 
 ### 2. Private Internal Card Shell
 
+Status: **landed** in `e6ffd7556` and generalized in `acdbbca35`.
+
 Add a reusable internal scene card shell that can be owned by retained semantic objects:
 
 1. panel pointer and panel-local anchor point,
@@ -81,6 +112,8 @@ Keep names internal and avoid public header churn unless a private header is nee
 
 ### 3. Readout Card Realization
 
+Status: **landed** in `e6ffd7556`.
+
 Wire `DvzPinnedReadout` to the private card shell:
 
 1. `dvz_pinned_readout()` realizes a card for hit probe results,
@@ -91,12 +124,17 @@ Wire `DvzPinnedReadout` to the private card shell:
 
 ### 4. Example Proof
 
+Status: **landed** in `213a78a93`.
+
 Update a narrow C example, preferably `examples/c/techniques/image_probe.c`, so a click/probe can
 pin a persistent readout card. Keep the example bounded-frame friendly and avoid adding external
 data.
 
 
 ### 5. Internal Overlay Generalization
+
+Status: **landed as private `DvzSceneCard` refactor** in `acdbbca35`; a second consumer is still
+the gate before public overlay API promotion.
 
 After pinned readouts work, refactor the private card shell toward a small internal overlay/card
 layer that can later support hover cards, selected-item cards, telemetry, and readouts without
@@ -106,6 +144,9 @@ Do not expose public APIs in this stage unless a second committed consumer prove
 
 
 ### 6. Rich Text-Block Prototype
+
+Status: **partially landed** in `c8d85a70d` as private parsing and fixed-advance measurement. CPU
+raster output, image-like quad lowering, DPI cache keys, and nonblank rendering smoke remain.
 
 Prototype a private text-block backend only after the glyph-card path is stable:
 
