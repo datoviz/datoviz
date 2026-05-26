@@ -25,26 +25,33 @@ These commits are the current implemented baseline for this lane:
 8. `343b9bdc7 scene: lower text blocks to image visuals`
 9. `acce3878f scene: smoke text block image rendering`
 10. `180fbb1ca scene: show selection metadata cards`
-11. current change set: `scene: add public overlay card API`
+11. `26382dc68 scene: add public overlay card API`
+12. `12d8c16ea scene: harden overlay card layout and text style`
+13. `84f23ff61 scene: harden rich text block raster backend`
+14. `0c84332d5 scene: add rich text overlay cards`
+15. `ab77a35f6 examples: showcase overlay cards`
 
 Current behavior:
 
 1. `DvzPinnedReadout` formats scalar and vector probe payloads into retained text.
 2. Pinned readouts render as retained screen-space cards using a private `DvzSceneCard` shell.
 3. `examples/c/techniques/image_probe.c` pins the next resolved image probe on click.
-4. A private `DvzTextBlock` parser/measurement prototype exists for `<b>`, `<i>`, escaped
-   `<`, `>`, and `&`, with source/text style runs and diagnostics.
+4. A private `DvzTextBlock` parser/measurement prototype exists for `<b>`, `<i>`, `<u>`,
+   `<color=#RRGGBB>`, escaped `<`, `>`, and `&`, with source/text style runs and diagnostics.
 5. Text blocks can rasterize to owned RGBA8 pixels and lower to image-like scene visuals backed by
-   explicit sampled fields.
+   explicit sampled fields, with scale-aware raster output.
 6. Offscreen app coverage confirms text-block image lowering renders nonblank pixels.
 7. Retained selections are the second in-tree `DvzSceneCard` consumer and render selected-item
    metadata cards through the same text/adornment path.
 8. The public `DvzOverlay` / `DvzOverlayCard` API exposes panel-local retained cards without
    exposing the private `DvzSceneCard` shell.
-9. `examples/c/techniques/overlay_card.c` demonstrates the public overlay card API.
+9. Public overlay cards now support semantic placement, style updates, GPU text renderer selection,
+   and rich text content lowered through the private text-block raster/image backend.
+10. `examples/c/techniques/overlay_card.c` demonstrates polished GPU-text overlay cards, and
+    `examples/c/techniques/overlay_rich_card.c` demonstrates rich overlay cards.
 
 Remaining follow-up is polish outside this completed lane: DPI cache keys, richer wrapping,
-font-backed rich-text rasterization, and public annotation/card rich-text integration.
+font-backed rich-text rasterization, and broader annotation rich-text integration.
 
 
 ## Owning References
@@ -60,7 +67,7 @@ Read these before changing code in this lane:
 4. [`../../spec/scene/examples/api/API_IMAGE_PROBE_PINNED_READOUT.md`](../../spec/scene/examples/api/API_IMAGE_PROBE_PINNED_READOUT.md)
    for the public API pressure test.
 5. [`../../spec/scene/implementation/TEXT_BLOCK_BACKENDS.md`](../../spec/scene/implementation/TEXT_BLOCK_BACKENDS.md)
-   for the later rich text-block backend.
+   for the rich text-block backend contract and follow-up polish.
 6. [`../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md`](../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md)
    and [`../../spec/scene/slices/TEXT_RENDERING_SLICE.md`](../../spec/scene/slices/TEXT_RENDERING_SLICE.md)
    for the active glyph/text path.
@@ -155,7 +162,7 @@ are covered by `test_scene_selection_card_realizes_pick_metadata`.
 
 ### 6. Public Overlay Card API
 
-Status: **landed** in current change set `scene: add public overlay card API`.
+Status: **landed** in `26382dc68` and hardened in `12d8c16ea`.
 
 The public first slice exposes:
 
@@ -165,15 +172,19 @@ The public first slice exposes:
 4. `dvz_overlay_card()` / `dvz_overlay_card_destroy()`,
 5. text, panel-local layout, and visibility setters,
 6. focused public API coverage in `test_scene_overlay_card_public_api`,
-7. a minimal `examples/c/techniques/overlay_card.c` example.
+7. semantic placement modes,
+8. GPU text renderer selection for polished card labels,
+9. a polished `examples/c/techniques/overlay_card.c` example.
 
 
 ### 7. Rich Text-Block Prototype
 
-Status: **landed as private prototype** in `c8d85a70d`, `1bdafc8bb`, `343b9bdc7`, and `acce3878f`.
+Status: **landed as private prototype** in `c8d85a70d`, `1bdafc8bb`, `343b9bdc7`,
+`acce3878f`, and hardened in `84f23ff61`.
 The first slice covers parsing, fixed-advance measurement, deterministic RGBA8 raster output,
-sampled-field image lowering, and offscreen nonblank rendering. DPI cache keys, richer wrapping,
-font-backed rasterization, and public annotation/card integration remain follow-up polish.
+sampled-field image lowering, underline/color runs, scale-aware rasterization, and offscreen
+nonblank rendering. DPI cache keys, richer wrapping, font-backed rasterization, and broader
+annotation integration remain follow-up polish.
 
 Prototype a private text-block backend only after the glyph-card path is stable:
 
@@ -185,6 +196,32 @@ Prototype a private text-block backend only after the glyph-card path is stable:
 
 Rich markup, rows, wrapping polish, math, and public API promotion are follow-up work unless a
 release example depends on them.
+
+
+### 8. Public Rich Overlay Cards and Examples
+
+Status: **landed** in `0c84332d5` and `ab77a35f6`.
+
+Public overlay cards can now switch from the plain GPU glyph path to rich text content:
+
+1. `DvzOverlayRichTextDesc` describes source markup, fixed layout width, raster scale, and colors;
+2. `dvz_overlay_card_set_rich_text()` parses/measures/rasterizes rich content and realizes it as a
+   fixed overlay image inside the same card background/layout shell;
+3. `dvz_overlay_card_clear_rich_text()` returns the card to the plain GPU-text path;
+4. lifecycle, hide/show, and clear behavior are covered by
+   `test_scene_overlay_card_rich_text_public_api`;
+5. `overlay_card` now showcases polished multi-card GPU text;
+6. `overlay_rich_card` showcases rich CPU-raster text inside a retained public overlay card.
+
+Validation recorded for these slices:
+
+```text
+git diff --check
+just build
+just test scene/interaction
+./build/examples/c/techniques/overlay_card 1
+./build/examples/c/techniques/overlay_rich_card 1
+```
 
 
 ## Subagent Use
@@ -207,6 +244,7 @@ This plan moved to `agents/done/` after:
 1. pinned image probe readouts render as retained cards through the scene path;
 2. the first card shell is reusable internally and documented in code;
 3. focused scene tests cover formatting, lifecycle, and emitted visuals;
-4. examples demonstrate pinned readouts and public overlay cards;
+4. examples demonstrate pinned readouts, public overlay cards, and rich overlay cards;
 5. the rich text-block backend is prototyped and validated by offscreen nonblank rendering;
-6. the public overlay API is gated by two internal consumers.
+6. public rich overlay cards lower rich text through image-like quads;
+7. the public overlay API is gated by two internal consumers.

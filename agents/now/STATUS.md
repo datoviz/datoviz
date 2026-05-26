@@ -52,7 +52,7 @@ Primary references:
 | Text | `Closed first slice / RC polish` | `examples/c/visuals/text.c`, scene text tests, app/offscreen text smokes | Data/world placement, DPI/clipping, fallback diagnostics, and public API wording. |
 | 2D axes and ticks | `Closed first slice / RC proof` | `src/scene/tests/axis.c`, `examples/c/techniques/scatter_axes.c` | Screenshot/offscreen proof, formatter/clipping polish, shared reserve behavior. |
 | Continuous colorbars | `Closed first slice` | `src/scene/tests/fields.c`, `test_app_offscreen_colorbar_has_visible_ramp_and_labels`, `examples/c/visuals/colorbar.c` | Shared layout and categorical legend follow-up. |
-| Label annotations and readouts | `Readout, selection, overlay-card, and private rich block slices landed` | annotation/text realization tests, `test_scene_selection_card_realizes_pick_metadata`, `test_scene_overlay_card_public_api`, `test_app_offscreen_text_block_raster_has_nonblank_pixels`, `examples/c/techniques/image_probe.c`, `examples/c/techniques/overlay_card.c`, [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md) | Keep richer text-block polish, DPI cache keys, wrapping, and public annotation/card rich-text integration as follow-up. |
+| Label annotations and readouts | `Readout, selection, overlay-card, and rich overlay card slices landed` | annotation/text realization tests, `test_scene_selection_card_realizes_pick_metadata`, `test_scene_overlay_card_public_api`, `test_scene_overlay_card_rich_text_public_api`, `test_app_offscreen_text_block_raster_has_nonblank_pixels`, `examples/c/techniques/image_probe.c`, `examples/c/techniques/overlay_card.c`, `examples/c/techniques/overlay_rich_card.c`, [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md) | Keep richer text-block polish, DPI cache keys, wrapping, font-backed rasterization, and broader annotation rich-text integration as follow-up. |
 | Scale bars | `Closed first slice / validation` | [`../done/SCENE_SCALEBAR_RENDERING_SLICE.md`](../done/SCENE_SCALEBAR_RENDERING_SLICE.md), [`../done/SCENE_SCALEBAR_3D_REFERENCE_SLICE.md`](../done/SCENE_SCALEBAR_3D_REFERENCE_SLICE.md), [`../done/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR.md`](../done/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR.md) | Keep fixture/example smoke and churn trace in release validation. |
 | Grid layout and linked panels | `Partial / RC proof` | grid/panel tests, `examples/c/techniques/linked_panels.c` | Prove release examples resize and link predictably; defer richer dashboard layout. |
 | Visual families | `Mostly first-slice active` | point, pixel, marker, primitive, mesh, path/segment, image, volume, sphere examples/tests | Fill release-example gaps and mark unsupported variants explicitly. |
@@ -78,8 +78,8 @@ Good parallel work now:
 6. **RC2 polish:** text placement/DPI, axes formatter/clipping, shared layout, categorical legends,
    richer readouts, and broader pick/probe payloads.
 7. **Pinned readout/card lane:** completed private C card shell, rendered pinned image readouts,
-   selected-item metadata cards, public overlay card API, example proof, and private rich
-   text-block prototype in
+   selected-item metadata cards, public overlay card API, rich overlay card API, example proof,
+   and private rich text-block prototype in
    [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md).
 
 Avoid parallel edits that touch the same write scope:
