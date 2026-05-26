@@ -977,9 +977,10 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
         return false;
     }
     if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH &&
-        visual->type != DVZ_VISUAL_TYPE_VOLUME)
+        visual->type != DVZ_VISUAL_TYPE_VOLUME && visual->type != DVZ_VISUAL_TYPE_LABELS)
     {
-        log_error("dvz_visual_set_field is only supported for image, glyph, and volume visuals");
+        log_error(
+            "dvz_visual_set_field is only supported for image, glyph, volume, and labels visuals");
         return false;
     }
     if (strcmp(slot_name, "field") != 0)
@@ -988,10 +989,17 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
         return false;
     }
     if (field != NULL &&
-        (visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_GLYPH) &&
+        (visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_GLYPH ||
+         visual->type == DVZ_VISUAL_TYPE_LABELS) &&
         field->desc.dim != DVZ_FIELD_DIM_2D)
     {
-        log_error("image and glyph visuals require a 2D sampled field");
+        log_error("image, glyph, and labels visuals require a 2D sampled field");
+        return false;
+    }
+    if (field != NULL && visual->type == DVZ_VISUAL_TYPE_LABELS &&
+        field->desc.semantic != DVZ_FIELD_SEMANTIC_LABEL)
+    {
+        log_error("labels visuals require a sampled field with LABEL semantic");
         return false;
     }
     if (field != NULL && visual->type == DVZ_VISUAL_TYPE_VOLUME &&

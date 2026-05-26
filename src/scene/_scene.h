@@ -105,6 +105,7 @@ typedef enum
     DVZ_VISUAL_TYPE_SPHERE    = 10,
     DVZ_VISUAL_TYPE_GLYPH     = 11,
     DVZ_VISUAL_TYPE_TEXT      = 12,
+    DVZ_VISUAL_TYPE_LABELS    = 13,
 } DvzVisualType;
 
 

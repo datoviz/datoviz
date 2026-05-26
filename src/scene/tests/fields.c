@@ -1397,6 +1397,69 @@ int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCas
 }
 
 
+int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzVisual* labels = dvz_labels(scene, 0);
+    ANN(labels);
+    AT(labels->type == DVZ_VISUAL_TYPE_LABELS);
+    AT(labels->alpha_mode == DVZ_ALPHA_BLENDED);
+    AT(!labels->depth_test_enabled);
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    ANN(scale);
+    DvzScaleCategory categories[2] = {
+        {.category_id = -1, .order = 0, .label = "unassigned", .color = {128, 128, 128, 120}},
+        {.category_id = 42, .order = 1, .label = "cell 42", .color = {0, 255, 0, 180}},
+    };
+    AT(dvz_scale_set_categories(scale, categories, 2));
+    AT(dvz_visual_set_scale(labels, "labels", scale) == 0);
+    AT(labels->scale == scale);
+    AT(strcmp(labels->scale_slot, "labels") == 0);
+
+    int32_t values[4] = {0, -1, 42, -1};
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_SINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 2 * sizeof(int32_t),
+                                   .rows_per_image = 2}));
+    AT(dvz_visual_set_field(labels, "field", field));
+    AT(labels->field == field);
+
+    DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(continuous);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(labels, "labels", continuous) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(labels, "colormap", scale) != 0);
+
+    DvzSampledField* scalar = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(scalar);
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_visual_set_field(labels, "field", scalar));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_visual_scale_rejects_cross_scene_scale(TstContext* suite, const TstCase* item)
 {
     tst_log_capture_begin(suite);
@@ -3299,6 +3362,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_colorbar_rejects_unsupported_requests);
     TST_CASE(test_scene_colorbar_rejects_cross_scene_scale);
     TST_CASE(test_scene_image_visual_binds_colormap_scale);
+    TST_CASE(test_scene_labels_visual_binds_categorical_scale);
     TST_CASE(test_scene_visual_scale_rejects_cross_scene_scale);
     TST_CASE(test_scene_visual_buffer_rejects_cross_scene_buffer);
     TST_CASE(test_scene_image_scalar_texture_uses_bound_scale);

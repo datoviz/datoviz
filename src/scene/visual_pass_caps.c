@@ -141,6 +141,7 @@ bool _scene_visual_pass_caps_from_visual(
                    : DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
         break;
     case DVZ_VISUAL_TYPE_IMAGE:
+    case DVZ_VISUAL_TYPE_LABELS:
         kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
         break;
     case DVZ_VISUAL_TYPE_GLYPH:

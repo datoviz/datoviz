@@ -436,6 +436,8 @@ static DvzSceneVisualFamily _scene_visual_family(uint32_t visual_type)
         return DVZ_SCENE_VISUAL_FAMILY_PATH;
     case DVZ_VISUAL_TYPE_IMAGE:
         return DVZ_SCENE_VISUAL_FAMILY_IMAGE;
+    case DVZ_VISUAL_TYPE_LABELS:
+        return DVZ_SCENE_VISUAL_FAMILY_LABELS;
     case DVZ_VISUAL_TYPE_MESH:
         return DVZ_SCENE_VISUAL_FAMILY_MESH;
     case DVZ_VISUAL_TYPE_VOLUME:

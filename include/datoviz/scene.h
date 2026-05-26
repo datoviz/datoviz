@@ -1873,6 +1873,21 @@ DVZ_EXPORT DvzVisual* dvz_image(DvzScene* scene, uint32_t flags);
 
 
 /**
+ * Create a labels visual.
+ *
+ * Labels visuals render integer sampled fields with categorical scale metadata. They use the same
+ * image placement attributes as image visuals: `position`, `extent`, `anchor`, and `tex_rect`.
+ * Bind the integer sampled field with `dvz_visual_set_field(labels, "field", field)` and the
+ * categorical scale with `dvz_visual_set_scale(labels, "labels", scale)`.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_labels(DvzScene* scene, uint32_t flags);
+
+
+/**
  * Create a glyph visual.
  *
  * Renders atlas-backed glyph quads with `position` (vec3 anchor), `bounds` (vec4 local pixel

@@ -332,10 +332,8 @@ DVZ_EXPORT void dvz_legend_set_title(DvzLegend* legend, const char* title);
 /**
  * Bind a scene-owned scale to a named visual slot.
  *
- * First retained slice: image visuals accept the `"colormap"` slot. Other
- * visual families and slot names are rejected until their retained scale
- * wiring is implemented. Volume visuals also accept the `"colormap"` slot as retained transfer
- * function state for the volume renderer.
+ * Image and volume visuals accept the `"colormap"` slot with a continuous scale. Labels visuals
+ * accept the `"labels"` slot with a categorical scale.
  *
  * @param visual the visual
  * @param slot_name the semantic slot name

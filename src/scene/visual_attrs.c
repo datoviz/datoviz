@@ -1279,14 +1279,27 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
         log_error("cannot bind a scale from a different scene");
         return -1;
     }
-    if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_VOLUME &&
+        visual->type != DVZ_VISUAL_TYPE_LABELS)
     {
-        log_error("dvz_visual_set_scale is only supported for image and volume visuals");
+        log_error("dvz_visual_set_scale is only supported for image, volume, and labels visuals");
         return -1;
     }
-    if (strcmp(slot_name, "colormap") != 0)
+    const bool labels = visual->type == DVZ_VISUAL_TYPE_LABELS;
+    const char* expected_slot = labels ? "labels" : "colormap";
+    if (strcmp(slot_name, expected_slot) != 0)
     {
-        log_error("unsupported visual scale slot '%s' (expected 'colormap')", slot_name);
+        log_error("unsupported visual scale slot '%s' (expected '%s')", slot_name, expected_slot);
+        return -1;
+    }
+    if (labels && scale != NULL && scale->kind != DVZ_SCALE_CATEGORICAL)
+    {
+        log_error("labels visuals require a categorical scale");
+        return -1;
+    }
+    if (!labels && scale != NULL && scale->kind != DVZ_SCALE_CONTINUOUS)
+    {
+        log_error("image and volume visuals require a continuous scale");
         return -1;
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "bind scale"))
@@ -1332,6 +1345,8 @@ const char* _visual_type_name(DvzVisualType type)
         return "path";
     case DVZ_VISUAL_TYPE_IMAGE:
         return "image";
+    case DVZ_VISUAL_TYPE_LABELS:
+        return "labels";
     case DVZ_VISUAL_TYPE_TEXT:
         return "text";
     case DVZ_VISUAL_TYPE_GLYPH:

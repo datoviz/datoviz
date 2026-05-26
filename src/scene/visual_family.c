@@ -189,6 +189,8 @@ static const VisualFamilyAttrs FAMILY_ATTRS[] = {
      "position, color, stroke_width"},
     {DVZ_VISUAL_TYPE_IMAGE, IMAGE_ATTRS, DVZ_ARRAY_COUNT(IMAGE_ATTRS),
      "position, extent, anchor, tex_rect, texcoords"},
+    {DVZ_VISUAL_TYPE_LABELS, IMAGE_ATTRS, DVZ_ARRAY_COUNT(IMAGE_ATTRS),
+     "position, extent, anchor, tex_rect, texcoords"},
     {DVZ_VISUAL_TYPE_MESH, MESH_ATTRS, DVZ_ARRAY_COUNT(MESH_ATTRS),
      "position, color, normal, texcoords, instance_transform"},
     {DVZ_VISUAL_TYPE_VOLUME, VOLUME_ATTRS, DVZ_ARRAY_COUNT(VOLUME_ATTRS),
