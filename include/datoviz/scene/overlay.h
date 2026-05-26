@@ -36,6 +36,17 @@ typedef enum
 } DvzOverlayCardFlag;
 
 
+typedef enum
+{
+    DVZ_OVERLAY_CARD_PLACEMENT_PIXEL = 0,
+    DVZ_OVERLAY_CARD_PLACEMENT_TOP_LEFT,
+    DVZ_OVERLAY_CARD_PLACEMENT_TOP_RIGHT,
+    DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_LEFT,
+    DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_RIGHT,
+    DVZ_OVERLAY_CARD_PLACEMENT_CENTER,
+} DvzOverlayCardPlacement;
+
+
 typedef struct DvzOverlayCardStyle
 {
     DvzColor background_color;
@@ -45,6 +56,7 @@ typedef struct DvzOverlayCardStyle
     float height_px;
     float glyph_advance_px;
     float text_size_px;
+    DvzTextRenderer text_renderer;
     uint32_t max_text_chars;
 } DvzOverlayCardStyle;
 
@@ -52,6 +64,7 @@ typedef struct DvzOverlayCardStyle
 typedef struct DvzOverlayCardDesc
 {
     const char* text;
+    DvzOverlayCardPlacement placement;
     float anchor_px[2];
     float offset_px[2];
     const DvzOverlayCardStyle* style;
@@ -105,6 +118,17 @@ DVZ_EXPORT void dvz_overlay_card_destroy(DvzOverlayCard* card);
 
 
 /**
+ * Set an overlay card style.
+ *
+ * @param card the card
+ * @param style the style descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_overlay_card_set_style(
+    DvzOverlayCard* card, const DvzOverlayCardStyle* style);
+
+
+/**
  * Set the text displayed in an overlay card.
  *
  * @param card the card
@@ -122,6 +146,17 @@ DVZ_EXPORT void dvz_overlay_card_set_text(DvzOverlayCard* card, const char* text
  */
 DVZ_EXPORT void dvz_overlay_card_set_layout(
     DvzOverlayCard* card, const float anchor_px[2], const float offset_px[2]);
+
+
+/**
+ * Set semantic placement for an overlay card.
+ *
+ * @param card the card
+ * @param placement semantic placement mode
+ * @param offset_px inward/relative offset in logical pixels, or NULL to keep it unchanged
+ */
+DVZ_EXPORT void dvz_overlay_card_set_placement(
+    DvzOverlayCard* card, DvzOverlayCardPlacement placement, const float offset_px[2]);
 
 
 /**

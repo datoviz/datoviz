@@ -392,10 +392,12 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
     DvzOverlayCardStyle style = dvz_overlay_card_style();
     style.background_color = dvz_color_rgba(10, 20, 30, 220);
     style.text_color = dvz_color_rgb(230, 240, 250);
+    style.text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     DvzOverlayCard* card = dvz_overlay_card(
         overlay,
         &(DvzOverlayCardDesc){
             .text = "overlay",
+            .placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_RIGHT,
             .anchor_px = {40.0f, 50.0f},
             .offset_px = {8.0f, 6.0f},
             .style = &style});
@@ -410,9 +412,12 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
     AT(card->card.background_visual != NULL);
     AT(card->card.text_visual != NULL);
     AT(card->card.text_visual->text.glyph_visual != NULL);
+    AT(card->card.text_visual->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
     AT(card->card.background_visual->visible);
     AT(card->card.text_visual->visible);
     AT(card->card.text_visual->text.glyph_visual->visible);
+    AT(card->card.realized_rect_px[0] > 560.0f);
+    AC(card->card.realized_rect_px[1], 6.0f, 1e-6f);
 
     dvz_overlay_card_set_text(card, "updated");
     float anchor[2] = {100.0f, 120.0f};
@@ -422,6 +427,20 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
     AT(strcmp(card->card.text, "updated") == 0);
     AT(card->card.anchor_px[0] == 100.0f);
     AT(card->card.offset_px[1] == 3.0f);
+    AT(card->card.placement == DVZ_OVERLAY_CARD_PLACEMENT_PIXEL);
+
+    style.text_renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
+    style.height_px = 28.0f;
+    AT(dvz_overlay_card_set_style(card, &style) == 0);
+    _scene_prepare_text_visuals(figure);
+    AT(card->card.text_visual->text.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
+    AC(card->card.realized_rect_px[3], 28.0f, 1e-6f);
+
+    float inset[2] = {12.0f, 14.0f};
+    dvz_overlay_card_set_placement(card, DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_LEFT, inset);
+    _scene_prepare_text_visuals(figure);
+    AC(card->card.realized_rect_px[0], 12.0f, 1e-6f);
+    AC(card->card.realized_rect_px[1] + card->card.realized_rect_px[3], 466.0f, 1e-6f);
 
     dvz_overlay_card_set_visible(card, false);
     AT(!card->card.visible);

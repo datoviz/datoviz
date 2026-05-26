@@ -25,6 +25,7 @@
 #include "datoviz/scene/enums.h"
 #include "datoviz/scene/fly.h"
 #include "datoviz/scene/frame_plan.h"
+#include "datoviz/scene/overlay.h"
 #include "datoviz/scene/panzoom.h"
 #include "datoviz/scene/turntable.h"
 #include "datoviz/scene/types.h"
@@ -387,6 +388,7 @@ struct DvzSceneCard
     DvzVisual* text_visual;
     char text[DVZ_SCENE_LABEL_SIZE];
     char realized_text[DVZ_SCENE_LABEL_SIZE];
+    DvzOverlayCardPlacement placement;
     float anchor_px[2];
     float offset_px[2];
     float padding_px[2];
@@ -394,9 +396,11 @@ struct DvzSceneCard
     float height_px;
     float glyph_advance_px;
     float text_size_px;
+    DvzTextRenderer text_renderer;
     uint32_t max_text_chars;
     DvzColor background_color;
     DvzColor text_color;
+    float realized_rect_px[4];
     uint32_t figure_width;
     uint32_t figure_height;
     bool dirty;

@@ -78,7 +78,13 @@ static void _scene_card_hide(DvzSceneCard* card);
 
 static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card);
 
-static void _scene_card_apply_style(DvzSceneCard* card, const DvzOverlayCardStyle* style);
+static bool _scene_card_renderer_supported(DvzTextRenderer renderer);
+
+static int _scene_card_apply_style(DvzSceneCard* card, const DvzOverlayCardStyle* style);
+
+static void _scene_card_origin_px(
+    const DvzSceneCard* card, const float panel_size[2], float card_w, float card_h,
+    float out_xy[2]);
 
 static bool _readout_card_realize(DvzFigure* figure, DvzPinnedReadout* readout);
 
@@ -598,6 +604,7 @@ static void _scene_card_init(DvzSceneCard* card, DvzPanel* panel)
     card->height_px = 24.0f;
     card->glyph_advance_px = 7.0f;
     card->text_size_px = 12.0f;
+    card->text_renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
     card->max_text_chars = 96;
     card->background_color = dvz_color_rgba(16, 22, 32, 225);
     card->text_color = dvz_color_rgb(245, 248, 255);
@@ -607,16 +614,37 @@ static void _scene_card_init(DvzSceneCard* card, DvzPanel* panel)
 
 
 /**
+ * Return whether a card text renderer is supported by the internal glyph path.
+ *
+ * @param renderer renderer selection
+ * @return whether the renderer can be used
+ */
+static bool _scene_card_renderer_supported(DvzTextRenderer renderer)
+{
+    return renderer == DVZ_TEXT_RENDERER_AUTO ||
+           renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS ||
+           renderer == DVZ_TEXT_RENDERER_BITMAP_ATLAS ||
+           renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS;
+}
+
+
+/**
  * Apply an optional public card style to an internal card shell.
  *
  * @param card the card
  * @param style the public style, or NULL for defaults
+ * @return 0 on success, -1 on error
  */
-static void _scene_card_apply_style(DvzSceneCard* card, const DvzOverlayCardStyle* style)
+static int _scene_card_apply_style(DvzSceneCard* card, const DvzOverlayCardStyle* style)
 {
     ANN(card);
     if (style == NULL)
-        return;
+        return 0;
+    if (!_scene_card_renderer_supported(style->text_renderer))
+    {
+        log_error("overlay card text renderer %d is not implemented", style->text_renderer);
+        return -1;
+    }
 
     card->background_color = style->background_color;
     card->text_color = style->text_color;
@@ -626,8 +654,10 @@ static void _scene_card_apply_style(DvzSceneCard* card, const DvzOverlayCardStyl
     card->height_px = style->height_px;
     card->glyph_advance_px = style->glyph_advance_px;
     card->text_size_px = style->text_size_px;
+    card->text_renderer = style->text_renderer;
     card->max_text_chars = style->max_text_chars;
     card->dirty = true;
+    return 0;
 }
 
 
@@ -646,6 +676,53 @@ static void _scene_card_panel_size_px(const DvzFigure* figure, const DvzPanel* p
     ANN(out);
     out[0] = (float)figure->width * panel->desc.width;
     out[1] = (float)figure->height * panel->desc.height;
+}
+
+
+/**
+ * Resolve the top-left origin of an overlay card in panel-local pixels.
+ *
+ * @param card the card
+ * @param panel_size panel width and height in logical pixels
+ * @param card_w card width in logical pixels
+ * @param card_h card height in logical pixels
+ * @param out_xy output top-left origin
+ */
+static void _scene_card_origin_px(
+    const DvzSceneCard* card, const float panel_size[2], float card_w, float card_h,
+    float out_xy[2])
+{
+    ANN(card);
+    ANN(panel_size);
+    ANN(out_xy);
+    switch (card->placement)
+    {
+    case DVZ_OVERLAY_CARD_PLACEMENT_TOP_LEFT:
+        out_xy[0] = card->offset_px[0];
+        out_xy[1] = card->offset_px[1];
+        break;
+    case DVZ_OVERLAY_CARD_PLACEMENT_TOP_RIGHT:
+        out_xy[0] = panel_size[0] - card_w - card->offset_px[0];
+        out_xy[1] = card->offset_px[1];
+        break;
+    case DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_LEFT:
+        out_xy[0] = card->offset_px[0];
+        out_xy[1] = panel_size[1] - card_h - card->offset_px[1];
+        break;
+    case DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_RIGHT:
+        out_xy[0] = panel_size[0] - card_w - card->offset_px[0];
+        out_xy[1] = panel_size[1] - card_h - card->offset_px[1];
+        break;
+    case DVZ_OVERLAY_CARD_PLACEMENT_CENTER:
+        out_xy[0] = 0.5f * (panel_size[0] - card_w) + card->offset_px[0];
+        out_xy[1] = 0.5f * (panel_size[1] - card_h) + card->offset_px[1];
+        break;
+    case DVZ_OVERLAY_CARD_PLACEMENT_PIXEL:
+    default:
+        out_xy[0] = card->anchor_px[0] + card->offset_px[0];
+        out_xy[1] = card->anchor_px[1] + card->offset_px[1];
+        break;
+    }
 }
 
 
@@ -717,14 +794,19 @@ static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card)
             return false;
         card->text_visual->visible = false;
         card->text_visual->text.reserved_glyph_vertices = card->max_text_chars * 6u;
-        if (_scene_text_visual_set_renderer(
-                card->text_visual, DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS) != 0)
+        if (_scene_adornment_text_visual_set_renderer(card->text_visual, card->text_renderer) != 0)
             return false;
         if (dvz_panel_add_visual(
                 panel, card->text_visual,
                 &(DvzVisualAttachDesc){
                     .z_layer = INT32_MAX / 4 - 1, .controller_mode = DVZ_CONTROLLER_FIXED}) != 0)
             return false;
+    }
+    if (card->text_visual->text.renderer != card->text_renderer)
+    {
+        if (_scene_adornment_text_visual_set_renderer(card->text_visual, card->text_renderer) != 0)
+            return false;
+        card->dirty = true;
     }
 
     bool size_changed =
@@ -755,8 +837,10 @@ static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card)
     if (card_w < card->min_width_px)
         card_w = card->min_width_px;
 
-    float x = card->anchor_px[0] + card->offset_px[0];
-    float y = card->anchor_px[1] + card->offset_px[1];
+    float origin[2] = {0};
+    _scene_card_origin_px(card, panel_size, card_w, card_h, origin);
+    float x = origin[0];
+    float y = origin[1];
     if (x + card_w > panel_size[0] - 4.0f)
         x = panel_size[0] - card_w - 4.0f;
     if (y + card_h > panel_size[1] - 4.0f)
@@ -765,6 +849,10 @@ static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card)
         x = 4.0f;
     if (y < 4.0f)
         y = 4.0f;
+    card->realized_rect_px[0] = x;
+    card->realized_rect_px[1] = y;
+    card->realized_rect_px[2] = card_w;
+    card->realized_rect_px[3] = card_h;
 
     float x0 = -1.0f + 2.0f * x / panel_size[0];
     float x1 = -1.0f + 2.0f * (x + card_w) / panel_size[0];
@@ -1425,6 +1513,7 @@ DvzOverlayCardStyle dvz_overlay_card_style(void)
         .height_px = card.height_px,
         .glyph_advance_px = card.glyph_advance_px,
         .text_size_px = card.text_size_px,
+        .text_renderer = card.text_renderer,
         .max_text_chars = card.max_text_chars,
     };
 }
@@ -1459,9 +1548,11 @@ DvzOverlayCard* dvz_overlay_card(DvzOverlay* overlay, const DvzOverlayCardDesc* 
     _scene_card_init(&card->card, overlay->panel);
     if (desc != NULL)
     {
-        _scene_card_apply_style(&card->card, desc->style);
+        if (_scene_card_apply_style(&card->card, desc->style) != 0)
+            return NULL;
         if (desc->text != NULL)
             dvz_strlcpy(card->card.text, desc->text, sizeof(card->card.text));
+        card->card.placement = desc->placement;
         card->card.anchor_px[0] = desc->anchor_px[0];
         card->card.anchor_px[1] = desc->anchor_px[1];
         card->card.offset_px[0] = desc->offset_px[0];
@@ -1499,6 +1590,26 @@ void dvz_overlay_card_destroy(DvzOverlayCard* card)
 
 
 /**
+ * Set an overlay card style.
+ *
+ * @param card the card
+ * @param style the style descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
+ */
+int dvz_overlay_card_set_style(DvzOverlayCard* card, const DvzOverlayCardStyle* style)
+{
+    ANN(card);
+    if (!card->active)
+        return -1;
+    DvzOverlayCardStyle resolved = style != NULL ? *style : dvz_overlay_card_style();
+    if (_scene_card_apply_style(&card->card, &resolved) != 0)
+        return -1;
+    _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+    return 0;
+}
+
+
+/**
  * Set the text displayed in an overlay card.
  *
  * @param card the card
@@ -1531,11 +1642,36 @@ void dvz_overlay_card_set_layout(
     ANN(card);
     if (!card->active)
         return;
+    card->card.placement = DVZ_OVERLAY_CARD_PLACEMENT_PIXEL;
     if (anchor_px != NULL)
     {
         card->card.anchor_px[0] = anchor_px[0];
         card->card.anchor_px[1] = anchor_px[1];
     }
+    if (offset_px != NULL)
+    {
+        card->card.offset_px[0] = offset_px[0];
+        card->card.offset_px[1] = offset_px[1];
+    }
+    card->card.dirty = true;
+    _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+}
+
+
+/**
+ * Set semantic placement for an overlay card.
+ *
+ * @param card the card
+ * @param placement semantic placement mode
+ * @param offset_px inward/relative offset in logical pixels, or NULL to keep it unchanged
+ */
+void dvz_overlay_card_set_placement(
+    DvzOverlayCard* card, DvzOverlayCardPlacement placement, const float offset_px[2])
+{
+    ANN(card);
+    if (!card->active)
+        return;
+    card->card.placement = placement;
     if (offset_px != NULL)
     {
         card->card.offset_px[0] = offset_px[0];
