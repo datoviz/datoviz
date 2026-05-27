@@ -247,7 +247,7 @@ int main(int argc, char** argv)
     };
     int rc = dvz_visual_set_data_many(visual, updates, 3);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");
-    dvz_visual_set_pick_capabilities(visual, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM);
 
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");

@@ -55,7 +55,9 @@ Current implementation state:
    the v0.4 scene API. `examples/c` now uses the query API directly.
 8. The private compatibility flag that allowed old probe shims to bypass visual query capability
    gates has been removed; query eligibility is now capability-driven.
-9. DRP2 and WebGPU parity are not finished: C runtime copy helpers still need full origin/depth and
+9. Visual query capability APIs now use query terminology (`dvz_visual_set_query_capabilities()`
+   and `DVZ_QUERY_CAPABILITY_*`).
+10. DRP2 and WebGPU parity are not finished: C runtime copy helpers still need full origin/depth and
    multi-output query support, and `rg32uint` needs runtime/readback fixture coverage.
 
 

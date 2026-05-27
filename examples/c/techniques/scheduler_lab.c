@@ -571,7 +571,7 @@ int main(int argc, char** argv)
     rc = dvz_visual_set_data(image, "texcoords", texcoords, 4);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(image texcoords) failed");
 
-    dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_PIXEL);
+    dvz_visual_set_query_capabilities(image, DVZ_QUERY_CAPABILITY_PIXEL);
     rc = dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){.z_layer = -1});
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(image) failed");
 
@@ -589,7 +589,7 @@ int main(int argc, char** argv)
         { 95, 150, 245, 255},
         {220, 120, 245, 255},
     };
-    dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(points, DVZ_QUERY_CAPABILITY_ITEM);
     rc = dvz_visual_set_data(points, "position", point_pos, LAB_POINT_COUNT);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(point position) failed");
 

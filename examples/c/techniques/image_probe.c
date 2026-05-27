@@ -312,7 +312,7 @@ int main(int argc, char** argv)
 
     rc = dvz_visual_set_texture(image, pixels, IMG, IMG);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_texture() failed");
-    dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_PIXEL);
+    dvz_visual_set_query_capabilities(image, DVZ_QUERY_CAPABILITY_PIXEL);
 
     rc = dvz_panel_add_visual(panel, image, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");

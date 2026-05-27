@@ -466,7 +466,7 @@ static bool _labels_query_eligible(
         if (attach->visual == visual && attach->controller_mode == DVZ_CONTROLLER_FIXED)
             return false;
     }
-    return (visual->pick_capabilities & DVZ_PICK_CAPABILITY_ITEM) != 0;
+    return (visual->query_capabilities & DVZ_QUERY_CAPABILITY_ITEM) != 0;
 }
 
 

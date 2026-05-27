@@ -100,12 +100,12 @@ DVZ_EXPORT void dvz_interaction_set_auto_pin_readout(
 /*************************************************************************************************/
 
 /**
- * Declare the picking capabilities exposed by a visual.
+ * Declare the query capabilities exposed by a visual.
  *
  * @param visual the visual
- * @param capabilities bitwise OR of DvzPickCapabilityFlag values
+ * @param capabilities bitwise OR of DvzQueryCapabilityFlag values
  */
-DVZ_EXPORT void dvz_visual_set_pick_capabilities(DvzVisual* visual, uint32_t capabilities);
+DVZ_EXPORT void dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t capabilities);
 
 
 /**

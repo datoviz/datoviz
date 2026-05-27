@@ -38,27 +38,27 @@ static uint32_t _query_target_capability(DvzSceneTargetKind target)
     switch (target)
     {
     case DVZ_SCENE_TARGET_NONE:
-        return DVZ_PICK_CAPABILITY_ITEM;
+        return DVZ_QUERY_CAPABILITY_ITEM;
     case DVZ_SCENE_TARGET_OBJECT:
-        return DVZ_PICK_CAPABILITY_OBJECT;
+        return DVZ_QUERY_CAPABILITY_OBJECT;
     case DVZ_SCENE_TARGET_ITEM:
-        return DVZ_PICK_CAPABILITY_ITEM;
+        return DVZ_QUERY_CAPABILITY_ITEM;
     case DVZ_SCENE_TARGET_VERTEX:
-        return DVZ_PICK_CAPABILITY_VERTEX;
+        return DVZ_QUERY_CAPABILITY_VERTEX;
     case DVZ_SCENE_TARGET_FACE:
     case DVZ_SCENE_TARGET_TRIANGLE:
-        return DVZ_PICK_CAPABILITY_FACE;
+        return DVZ_QUERY_CAPABILITY_FACE;
     case DVZ_SCENE_TARGET_PIXEL:
-        return DVZ_PICK_CAPABILITY_PIXEL;
+        return DVZ_QUERY_CAPABILITY_PIXEL;
     case DVZ_SCENE_TARGET_SAMPLE:
-        return DVZ_PICK_CAPABILITY_SAMPLE;
+        return DVZ_QUERY_CAPABILITY_SAMPLE;
     case DVZ_SCENE_TARGET_STRIP:
-        return DVZ_PICK_CAPABILITY_GROUP;
+        return DVZ_QUERY_CAPABILITY_GROUP;
     case DVZ_SCENE_TARGET_SEGMENT:
-        return DVZ_PICK_CAPABILITY_ITEM;
+        return DVZ_QUERY_CAPABILITY_ITEM;
     case DVZ_SCENE_TARGET_TEXT:
     case DVZ_SCENE_TARGET_ANNOTATION:
-        return DVZ_PICK_CAPABILITY_OBJECT;
+        return DVZ_QUERY_CAPABILITY_OBJECT;
     default:
         return 0;
     }
@@ -173,7 +173,7 @@ static DvzVisual* _query_candidate_visual(const DvzPanel* panel, uint32_t capabi
             continue;
         if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
             continue;
-        if ((visual->pick_capabilities & capability) != 0)
+        if ((visual->query_capabilities & capability) != 0)
             return visual;
     }
     return NULL;
@@ -331,7 +331,7 @@ bool _dvz_scene_query_process_pending(
             continue;
         if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
             continue;
-        if ((visual->pick_capabilities & capability) == 0)
+        if ((visual->query_capabilities & capability) == 0)
             continue;
         const DvzSceneQueryFamilyOps* ops =
             _query_family_ops_for_visual(pending->panel, visual, &pending->request);

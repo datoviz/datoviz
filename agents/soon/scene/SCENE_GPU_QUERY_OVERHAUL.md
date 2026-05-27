@@ -141,6 +141,11 @@ Committed implementation slices:
     - renamed the remaining `DvzSceneProbePlan` scratch container and `probe_plan.c` file to query
       terminology,
     - renamed internal scratch buffers from `pick_*`/`probe_*` to `query_*`.
+35. `scene: rename visual query capabilities`
+    - replaced the public `dvz_visual_set_pick_capabilities()` API with
+      `dvz_visual_set_query_capabilities()`,
+    - renamed `DVZ_PICK_CAPABILITY_*` and visual `pick_capabilities` internals to query capability
+      terminology.
 
 Recorded validation after these commits:
 

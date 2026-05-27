@@ -67,7 +67,7 @@ Visuals should declare what interaction identities they support.
 Conceptual API shape:
 
 ```text
-dvz_visual_set_pick_capabilities(visual, caps)
+dvz_visual_set_query_capabilities(visual, caps)
 dvz_visual_set_link_keys(visual, channel, mapping)
 dvz_visual_set_selection(visual, selection)
 ```
@@ -289,7 +289,7 @@ dvz_interaction_set_active_link_channel(policy, channel)
 dvz_interaction_set_selection_policy(policy, DVZ_SELECT_FACE_IF_ENABLED)
 dvz_interaction_set_probe_policy(policy, DVZ_PROBE_CLEAR_ON_MISS)
 
-dvz_visual_set_pick_capabilities(mesh, caps)
+dvz_visual_set_query_capabilities(mesh, caps)
 dvz_visual_set_selection(mesh, sel)
 dvz_visual_set_link_keys(mesh, channel, face_region_keys)
 
@@ -303,7 +303,7 @@ dvz_scene_poll_probe_result(scene, &probe)
 
 The narrowest useful first API slice is:
 
-1. per-visual pick capability declaration
+1. per-visual query capability declaration
 2. one interaction policy object bound per panel
 3. retained selection object
 4. retained link channels

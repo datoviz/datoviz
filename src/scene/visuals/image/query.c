@@ -388,16 +388,16 @@ static bool _image_query_eligible(
                 return false;
         }
         uint32_t capability = request->target == DVZ_SCENE_TARGET_SAMPLE
-                                  ? DVZ_PICK_CAPABILITY_SAMPLE
-                                  : DVZ_PICK_CAPABILITY_PIXEL;
-        return (visual->pick_capabilities & capability) != 0;
+                                  ? DVZ_QUERY_CAPABILITY_SAMPLE
+                                  : DVZ_QUERY_CAPABILITY_PIXEL;
+        return (visual->query_capabilities & capability) != 0;
     }
     if (request->target != DVZ_SCENE_TARGET_NONE && request->target != DVZ_SCENE_TARGET_ITEM &&
         request->target != DVZ_SCENE_TARGET_OBJECT)
     {
         return false;
     }
-    return (visual->pick_capabilities & DVZ_PICK_CAPABILITY_ITEM) != 0;
+    return (visual->query_capabilities & DVZ_QUERY_CAPABILITY_ITEM) != 0;
 }
 
 

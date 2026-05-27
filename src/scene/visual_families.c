@@ -587,15 +587,15 @@ void dvz_panel_set_background_color(DvzPanel* panel, float r, float g, float b, 
 /*************************************************************************************************/
 
 /**
- * Set the picking capabilities exposed by a visual.
+ * Set the query capabilities exposed by a visual.
  *
  * @param visual the visual
  * @param capabilities the capability mask
  */
-void dvz_visual_set_pick_capabilities(DvzVisual* visual, uint32_t capabilities)
+void dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t capabilities)
 {
     ANN(visual);
-    visual->pick_capabilities = capabilities;
+    visual->query_capabilities = capabilities;
 }
 
 

@@ -212,7 +212,7 @@ static bool _add_probe_field(
     rc = dvz_visual_set_texture(field, pixels, FIELD_WIDTH, FIELD_HEIGHT);
     if (rc != 0)
         return false;
-    dvz_visual_set_pick_capabilities(field, DVZ_PICK_CAPABILITY_PIXEL);
+    dvz_visual_set_query_capabilities(field, DVZ_QUERY_CAPABILITY_PIXEL);
     rc = dvz_panel_add_visual(panel, field, &(DvzVisualAttachDesc){.z_layer = -1});
     return rc == 0;
 }

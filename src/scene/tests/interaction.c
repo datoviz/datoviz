@@ -165,8 +165,8 @@ int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstC
     ANN(selection);
     ANN(visual);
 
-    dvz_visual_set_pick_capabilities(visual, DVZ_PICK_CAPABILITY_ITEM);
-    AT(visual->pick_capabilities == DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM);
+    AT(visual->query_capabilities == DVZ_QUERY_CAPABILITY_ITEM);
     AT(dvz_visual_set_link_keys(visual, channel, keys, 3) == 0);
     AT(visual->link_channel == channel);
     AT(visual->link_key_count == 3);

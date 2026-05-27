@@ -1460,7 +1460,7 @@ int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
 
     DvzVisual* points = dvz_point(scene, 0);
     AT(points != NULL);
-    dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(points, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 point_pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor point_color[1] = {{255, 255, 0, 255}};
     float point_size[1] = {24.0f};
@@ -1471,7 +1471,7 @@ int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
 
     DvzVisual* image = dvz_image(scene, 0);
     AT(image != NULL);
-    dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_PIXEL);
+    dvz_visual_set_query_capabilities(image, DVZ_QUERY_CAPABILITY_PIXEL);
     vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
@@ -5155,7 +5155,7 @@ int test_app_offscreen_pick_probe_request_steady_state(TstContext* suite, const 
 
     DvzVisual* points = dvz_point(scene, 0);
     AT(points != NULL);
-    dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(points, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 point_pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor point_color[1] = {{255, 255, 0, 255}};
     float point_size[1] = {24.0f};

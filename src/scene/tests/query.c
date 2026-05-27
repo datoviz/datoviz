@@ -180,7 +180,7 @@ int test_scene_query_volume_sample_is_explicitly_unsupported(TstContext* suite, 
 
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
-    dvz_visual_set_pick_capabilities(volume, DVZ_PICK_CAPABILITY_SAMPLE);
+    dvz_visual_set_query_capabilities(volume, DVZ_QUERY_CAPABILITY_SAMPLE);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
 
     AT(dvz_panel_query(
@@ -219,7 +219,7 @@ int test_scene_query_skips_fixed_visuals(TstContext* suite, const TstCase* item)
 
     DvzVisual* point = dvz_point(scene, 0);
     ANN(point);
-    dvz_visual_set_pick_capabilities(point, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(point, DVZ_QUERY_CAPABILITY_ITEM);
     AT(dvz_panel_add_visual(
            panel, point, &(DvzVisualAttachDesc){.controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
@@ -280,7 +280,7 @@ int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* ite
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_SAMPLE);
+    dvz_visual_set_query_capabilities(image, DVZ_QUERY_CAPABILITY_SAMPLE);
     vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
@@ -382,7 +382,7 @@ int test_scene_image_sample_query_readback_failure(TstContext* suite, const TstC
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_SAMPLE);
+    dvz_visual_set_query_capabilities(image, DVZ_QUERY_CAPABILITY_SAMPLE);
     vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
@@ -473,7 +473,7 @@ int test_scene_point_query_misses_empty_pixel(TstContext* suite, const TstCase* 
 
     DvzVisual* points = dvz_point(scene, 0);
     ANN(points);
-    dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(points, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 position[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor color[1] = {{255, 255, 255, 255}};
     float size[1] = {8.0f};
@@ -541,7 +541,7 @@ int test_scene_pixel_query_accepts_square_corner(TstContext* suite, const TstCas
 
     DvzVisual* pixel = dvz_pixel(scene, 0);
     ANN(pixel);
-    dvz_visual_set_pick_capabilities(pixel, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(pixel, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 pixel_pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor pixel_color[1] = {{255, 255, 255, 255}};
     float pixel_size[1] = {24.0f};
@@ -612,7 +612,7 @@ int test_scene_marker_query_accepts_bbox_corner(TstContext* suite, const TstCase
 
     DvzVisual* marker = dvz_marker(scene, 0);
     ANN(marker);
-    dvz_visual_set_pick_capabilities(marker, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(marker, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 marker_pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor marker_color[1] = {{255, 255, 255, 255}};
     float marker_size[1] = {24.0f};
@@ -687,7 +687,7 @@ int test_scene_sphere_query_resolves_item(TstContext* suite, const TstCase* item
 
     DvzVisual* sphere = dvz_sphere(scene, 0);
     ANN(sphere);
-    dvz_visual_set_pick_capabilities(sphere, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(sphere, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 positions[2] = {
         {-0.5f, 0.0f, 0.0f},
         {0.0f, 0.0f, 0.0f},
@@ -771,7 +771,7 @@ int test_scene_segment_query_resolves_item(TstContext* suite, const TstCase* ite
 
     DvzVisual* segment = dvz_segment(scene, 0);
     ANN(segment);
-    dvz_visual_set_pick_capabilities(segment, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(segment, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 segment_start[2] = {
         {-0.75f, -0.5f, 0.0f},
         {-0.75f, 0.0f, 0.0f},
@@ -861,7 +861,7 @@ int test_scene_path_query_resolves_item(TstContext* suite, const TstCase* item)
 
     DvzVisual* path = dvz_path(scene, 0);
     ANN(path);
-    dvz_visual_set_pick_capabilities(path, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(path, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 path_position[3] = {
         {-0.75f, 0.0f, 0.0f},
         {0.0f, 0.0f, 0.0f},
@@ -949,7 +949,7 @@ int test_scene_primitive_query_resolves_item(TstContext* suite, const TstCase* i
 
     DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     ANN(primitive);
-    dvz_visual_set_pick_capabilities(primitive, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(primitive, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 primitive_pos[6] = {
         {-0.9f, -0.7f, 0.0f},
         {-0.9f, 0.7f, 0.0f},
@@ -1038,7 +1038,7 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
 
     DvzVisual* mesh = dvz_mesh(scene, 0);
     ANN(mesh);
-    dvz_visual_set_pick_capabilities(mesh, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(mesh, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 mesh_pos[4] = {
         {-0.8f, -0.8f, 0.0f},
         {-0.8f, 0.8f, 0.0f},
@@ -1136,7 +1136,7 @@ int test_scene_image_query_resolves_item(TstContext* suite, const TstCase* item)
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(image, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 positions[2] = {
         {-0.5f, 0.0f, 0.0f},
         {0.5f, 0.0f, 0.0f},
@@ -1218,7 +1218,7 @@ int test_scene_volume_query_resolves_item(TstContext* suite, const TstCase* item
 
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
-    dvz_visual_set_pick_capabilities(volume, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(volume, DVZ_QUERY_CAPABILITY_ITEM);
     double bounds_min[3] = {-0.4, -0.4, -0.4};
     double bounds_max[3] = {+0.4, +0.4, +0.4};
     AT(dvz_volume_set_bounds(volume, bounds_min, bounds_max) == 0);
@@ -1293,7 +1293,7 @@ int test_scene_labels_query_resolves_category(TstContext* suite, const TstCase* 
 
     DvzVisual* labels = dvz_labels(scene, 0);
     ANN(labels);
-    dvz_visual_set_pick_capabilities(labels, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(labels, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 positions[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
@@ -1433,7 +1433,7 @@ int test_scene_labels_query_high_unsigned_id(TstContext* suite, const TstCase* i
 
     DvzVisual* labels = dvz_labels(scene, 0);
     ANN(labels);
-    dvz_visual_set_pick_capabilities(labels, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(labels, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 positions[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
@@ -1531,7 +1531,7 @@ int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const T
 
     DvzVisual* points = dvz_point(scene, 0);
     ANN(points);
-    dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(points, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 point_pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor point_color[1] = {{255, 255, 0, 255}};
     float point_size[1] = {24.0f};
@@ -1542,7 +1542,7 @@ int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const T
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_PIXEL);
+    dvz_visual_set_query_capabilities(image, DVZ_QUERY_CAPABILITY_PIXEL);
     vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},

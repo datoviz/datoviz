@@ -798,7 +798,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(labels) failed");
     int rc = dvz_visual_set_scale(labels_visual, "labels", labels_scale);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_scale(labels) failed");
-    dvz_visual_set_pick_capabilities(labels_visual, DVZ_PICK_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(labels_visual, DVZ_QUERY_CAPABILITY_ITEM);
     state.labels_visual = labels_visual;
 
     rc = dvz_panel_add_visual(panel, base, &(DvzVisualAttachDesc){.z_layer = 0});

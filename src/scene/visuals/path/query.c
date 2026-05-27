@@ -490,7 +490,7 @@ static bool _path_query_eligible(
     const DvzVisualAttr* width = &visual->attrs[width_idx];
     if (width->data == NULL || width->item_count == 0 || width->item_size != sizeof(float))
         return false;
-    return (visual->pick_capabilities & DVZ_PICK_CAPABILITY_ITEM) != 0;
+    return (visual->query_capabilities & DVZ_QUERY_CAPABILITY_ITEM) != 0;
 }
 
 

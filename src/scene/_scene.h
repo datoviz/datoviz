@@ -1304,7 +1304,7 @@ struct DvzVisual
     DvzVisualTexture texture;      /* used by DVZ_VISUAL_TYPE_IMAGE */
     DvzScale*     scale;           /* first slice: image colormap scale */
     char          scale_slot[32];  /* semantic binding slot name */
-    uint32_t      pick_capabilities;
+    uint32_t      query_capabilities;
     DvzLinkChannel* link_channel;
     uint64_t*       link_keys;
     uint32_t        link_key_count;
