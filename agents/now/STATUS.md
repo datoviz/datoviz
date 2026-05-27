@@ -62,7 +62,7 @@ Primary references:
 | Visual families | `Mostly first-slice active; retained textured mesh missing` | point, pixel, marker, primitive, mesh, path/segment, image, labels, volume, sphere, polygon/composite examples/tests | Land mesh texture binding/shader path, fill release-example gaps, and mark unsupported variants explicitly. |
 | Pick, probe, selection | `Broader first slices landed` | point/pixel/marker/sphere/stroke/primitive/image/mesh/volume item-pick tests, image/probe tests, label segment-probe tests, selection-mask tests, `examples/c/techniques/pick_hover.c` | Richer payloads, linked-panel probe state, exact marker/path semantics, mesh face/region identity, volume ray hits, and text picking remain follow-up. |
 | WebGPU/WASM | `Partial / blocker` | `examples/webgpu/`, `tools/webgpu_fixture_preflight.py`, DRP2 WGSL fixtures | Document and smoke the experimental subset. |
-| Raw `ctypes` | `Partial / blocker` | `tools/build_ctypes.py`, `datoviz/_ctypes.py`, `just ctypes` | Regenerate, load, and document low-level binding scope. |
+| Raw `ctypes` | `Partial / blocker` | `tools/bindings/extract_api.py`, `tools/bindings/generate_ctypes.py`, `datoviz/_ctypes.py`, `just ctypes` | Regenerate, load, and document low-level binding scope. |
 | Runtime hardening | `Ongoing` | DRP2/vklite/app tests and completed lifetime records | Fix concrete lifetime, resize, descriptor, repeated-frame, or churn bugs as examples expose them. |
 | API inventory and docs | `Blocker for RC1` | [`DOCUMENTATION.md`](DOCUMENTATION.md), public headers under `include/datoviz/` | Produce public surface/status table and known-gap notes. |
 

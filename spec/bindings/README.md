@@ -64,8 +64,6 @@ tools/bindings/
   extract_api.py          # C/Clang -> normalized JSON
   generate_ctypes.py      # JSON -> datoviz/_ctypes.py
   validate_ctypes_abi.py  # ctypes sizeof/offset checks
-  ctypes_runtime.py.in    # loader/runtime prelude template
-  ctypes_footer.py.in     # optional error hooks/helpers
 
 spec/bindings/
   README.md               # this binding architecture and policy
@@ -83,9 +81,9 @@ datoviz/
   _ctypes.py              # generated implementation, do not edit by hand
 ```
 
-The old v0.3-style names `parse_headers.py`, `build_ctypes.py`, and `headers.json` should not be
-preserved as the v0.4 design. They are useful historical references, but the v0.4 names should state
-the actual stage and artifact.
+The old v0.3-style names `parse_headers.py`, `build_ctypes.py`, and `headers.json` are not part of
+the v0.4 design. The v0.4 names state the actual stage and artifact, and git history remains the
+reference for the removed v0.3 generator.
 
 
 ## Just Commands
@@ -245,13 +243,13 @@ the generated Python classes. Do not rely on blanket assumptions such as `_pack_
 
 ## Migration From v0.3 Tooling
 
-The v0.3 tooling demonstrated a useful architecture:
+The removed v0.3 tooling demonstrated a useful architecture:
 
 ```text
 tools/parse_headers.py -> build/headers.json -> tools/build_ctypes.py -> datoviz/_ctypes.py
 ```
 
-For v0.4, keep the two-stage architecture but aggressively update the implementation:
+For v0.4, keep the two-stage architecture but use the active `tools/bindings/` implementation:
 
 1. replace pyparsing extraction with Clang-based extraction;
 2. rename scripts to reflect their roles;

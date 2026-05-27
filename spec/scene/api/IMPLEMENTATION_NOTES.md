@@ -206,21 +206,21 @@ no logic of its own.
 ### Binding Pipeline
 
 v0.3 established a code-generation approach that v0.4 continues. No compiled extension module is
-needed — the binding layer is a generated pure Python file that loads `libdatoviz.so` at runtime
+needed - the binding layer is a generated pure Python file that loads `libdatoviz.so` at runtime
 via `ctypes.CDLL()`.
 
-**Step 1 — `tools/parse_headers.py`**: A pyparsing-based parser reads all
-`include/datoviz/**/*.h` headers and emits `build/headers.json` containing defines, enums,
-struct field layouts, and all `DVZ_EXPORT`-marked function signatures with their doxygen
-docstrings. Only `DVZ_EXPORT` functions are included — this is the public API gate.
+**Step 1 - `tools/bindings/extract_api.py`**: A libclang-based extractor reads the public v0.4
+headers selected by `spec/bindings/ctypes.yml` and emits
+`build/bindings/datoviz_api.json` containing normalized function, enum, typedef, and record
+metadata.
 
-**Step 2 — `tools/build_ctypes.py`**: Reads `headers.json` and generates `datoviz/_ctypes.py`:
-emits Python `IntEnum` classes for C enums, `ctypes.Structure` subclasses with correct field
-types, `argtypes`/`restype` for every exported function, and converts doxygen docstrings to
-NumPy-style. The output is never edited by hand (in v0.3 it was ~15 000 lines).
+**Step 2 - `tools/bindings/generate_ctypes.py`**: Reads `datoviz_api.json` and generates
+`datoviz/_ctypes.py`, including enum classes, opaque/concrete record classes, and function
+`argtypes`/`restype` declarations for signatures the current raw generator can represent. The
+output is never edited by hand.
 
-In v0.4 the generator scripts may need updates for new header conventions, but the architecture
-stays the same.
+The raw binding pipeline is documented in `spec/bindings/README.md`; high-level Python plotting
+ergonomics remain outside Datoviz v0.4.
 
 
 ### C API Design As An FFI Target
