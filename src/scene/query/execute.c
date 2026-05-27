@@ -98,6 +98,20 @@ static bool _query_profile_supported(DvzQueryProfile profile, const DvzCapabilit
 
 
 /**
+ * Return whether a query comes from a legacy probe compatibility path.
+ *
+ * @param request the query request
+ * @return true when pick capability gates should not reject the legacy probe
+ */
+static bool _query_compat_probe(const DvzQueryRequest* request)
+{
+    ANN(request);
+    return (request->flags & DVZ_SCENE_QUERY_FLAG_COMPAT_PROBE) != 0;
+}
+
+
+
+/**
  * Resolve the effective profile for one query request.
  *
  * @param request the query request
@@ -309,8 +323,12 @@ bool _dvz_scene_query_process_pending(
             continue;
         if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
             continue;
-        if ((visual->pick_capabilities & capability) == 0)
+        if (
+            !_query_compat_probe(&pending->request) &&
+            (visual->pick_capabilities & capability) == 0)
+        {
             continue;
+        }
         const DvzSceneQueryFamilyOps* ops =
             _query_family_ops_for_visual(pending->panel, visual, &pending->request);
         if (ops == NULL || ops->build == NULL || ops->decode == NULL)

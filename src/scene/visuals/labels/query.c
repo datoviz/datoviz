@@ -466,6 +466,8 @@ static bool _labels_query_eligible(
         if (attach->visual == visual && attach->controller_mode == DVZ_CONTROLLER_FIXED)
             return false;
     }
+    if ((request->flags & DVZ_SCENE_QUERY_FLAG_COMPAT_PROBE) != 0)
+        return true;
     return (visual->pick_capabilities & DVZ_PICK_CAPABILITY_ITEM) != 0;
 }
 

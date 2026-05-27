@@ -28,6 +28,7 @@
 /*************************************************************************************************/
 
 #define DVZ_SCENE_QUERY_PAYLOAD_WORDS 4
+#define DVZ_SCENE_QUERY_FLAG_COMPAT_PROBE 0x80000000u
 
 
 
