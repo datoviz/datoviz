@@ -104,6 +104,113 @@ remove them by routing point, pixel, marker, primitive, mesh, image, labels, sph
 segment, and splat behavior through normalized descriptors rather than ad hoc family detection.
 
 
+## Semantic Visuals And Renderable Primitives
+
+The stronger Stage 2 target is a two-step boundary:
+
+1. retained **semantic visual families** own user-facing state, validation, defaults, bounds, dirty
+   tracking, and conversion from public attributes;
+2. semantic families lower into family-neutral **renderable primitives** that generic pipeline code
+   can emit without knowing the original family.
+
+This means generic render emission should not treat `segment`, `vector`, `path`, `annotation`, or
+future arrow objects as implementation parents of one another. They are independent semantic
+families that may lower to the same renderable primitive.
+
+The initial renderable primitive vocabulary should stay small and match existing runtime paths:
+
+1. `stroke_quad`: indexed screen-space stroke quads with `position_start`, `position_end`, `color`,
+   `line_width`, material/cap parameters, and optional index data;
+2. `path_stroke`: screen-space path strokes with previous/current/next positions, joins, caps,
+   distance, and path flags;
+3. `point_like`: point, pixel, marker, sphere-impostor, and splat-style point expansion variants;
+4. `indexed_mesh`: primitive, mesh, generated solids, and other indexed geometry;
+5. `textured_quad`: image, labels, glyph atlas quads, and other 2D textured rectangles;
+6. `volume_proxy`: volume and volume-label proxy geometry.
+
+This list is a lowering vocabulary, not a public API. It may be implemented as C structs, descriptor
+enums, draw packets, or family ops outputs, but the ownership rule is mandatory: semantic visual
+state stays with the semantic family, and shared rendering state belongs to renderable primitives.
+
+The preferred internal shape is a family-ops table plus a lowering result:
+
+```c
+typedef struct DvzVisualFamilyOps
+{
+    DvzVisualType type;
+    void (*init)(DvzVisual* visual);
+    void (*destroy)(DvzVisual* visual);
+    int (*bounds)(const DvzVisual* visual, DvzBounds* out);
+    bool (*dirty)(const DvzVisual* visual);
+    bool (*lower)(DvzVisualLoweringContext* ctx, DvzVisualLowering* out);
+} DvzVisualFamilyOps;
+
+typedef struct DvzVisualLowering
+{
+    DvzRenderableKind renderable_kind;
+    DvzSceneVisualDescKind pipeline_kind;
+    DvzDrawKind draw_kind;
+    DvzLoweredResource resources[DVZ_SCENE_MAX_NODE_RESOURCES];
+    uint32_t resource_count;
+    uint32_t vertex_count;
+    uint32_t index_count;
+    uint32_t instance_count;
+    bool needs_material_params;
+    DvzSceneMaterialParams material_params;
+} DvzVisualLowering;
+```
+
+The exact names may change during implementation, but generic files should consume the lowering
+result, not `DvzVisualType` branches. A generic branch on `DvzRenderableKind` is acceptable only when
+the branch represents a reusable render primitive. A branch on `DVZ_VISUAL_TYPE_VECTOR`,
+`DVZ_VISUAL_TYPE_SEGMENT`, `DVZ_VISUAL_TYPE_ARROW`, or any other semantic family in generic
+pipeline, metadata, pass-capability, descriptor, or upload plumbing is not acceptable.
+
+
+## Vector And Arrow Independence Rule
+
+`arrow` is currently an alias for `vector`, but arrow/vector behavior must still be independent from
+the `segment` and `path` retained-family state. Sharing a shader, pipeline, or renderable primitive
+is encouraged; sharing retained state is not.
+
+Required end state for vector/arrow:
+
+1. `DvzVisual` stores vector/arrow state in vector-owned fields only. It must not store vector caps,
+   style, dirty flags, or upload cache data in `visual->segment` or `visual->path`.
+2. Straight vector/arrow may lower to `stroke_quad`, and curved vector/arrow may lower to
+   `path_stroke`, but those lowerings are renderable primitives shared by clients, not the segment
+   or path families.
+3. Segment owns `position_start`/`position_end` semantics. Path owns standalone path semantics.
+   Vector owns straight `position`/`vector` semantics and curved point/subpath semantics, computing
+   endpoints or expanded path-stroke inputs during vector lowering.
+4. `dvz_arrow()` may remain a public alias for `dvz_vector()` while arrows are the default vector
+   presentation mode, but arrow defaults and future arrow-head options must be represented in
+   vector-owned style/state.
+5. Generic visual, metadata, pass-capability, descriptor, upload, and render-emission files must not
+   contain vector/arrow-specific checks. They should consume `stroke_quad` and `path_stroke`
+   lowering facts.
+6. Tests should assert vector/arrow public behavior and emitted renderable descriptors, not
+   implementation details such as `visual->segment.gpu`, `visual->segment.start_cap`, or path state.
+7. Query results must preserve vector/arrow semantic identity. Shared query builders are acceptable
+   only as renderable-primitive query helpers; vector/arrow query routing should not delegate to
+   segment/path retained-family ownership as the long-term design.
+
+Concrete refactor targets from the current codebase:
+
+1. replace the segment-owned upload cache currently reused by straight vector with a neutral
+   stroke-quad cache or lowering packet;
+2. replace the path-owned upload cache currently reused by curved vector with a neutral path-stroke
+   cache or lowering packet;
+3. move straight-vector endpoint generation behind vector-family lowering;
+4. move curved-vector path/subpath expansion behind vector-family lowering;
+5. remove `DVZ_VISUAL_TYPE_VECTOR` checks from generic descriptor, metadata, pass-capability, upload,
+   and render-position logic;
+6. move vector query delegation onto renderable-primitive query helpers so vector results retain
+   `DVZ_SCENE_VISUAL_FAMILY_VECTOR` without depending on segment/path family ops;
+7. keep segment and path tests focused on their own semantics, keep vector/arrow tests focused on
+   vector/arrow semantics, and cover shared stroke/path renderable primitives with separate tests.
+
+
 ## Target Module Candidates
 
 ### `controller`
@@ -331,29 +438,44 @@ Required end state:
 
 ### Stage 2: Internal Scene Directory Cleanup
 
-Goal: reduce the flat `src/scene` list without changing public behavior.
+Goal: introduce the semantic-visual-to-renderable-primitive boundary, then reduce the flat
+`src/scene` list without changing public behavior.
 
 Preferred order:
 
-1. normalize visual-family lowering so generic pipeline code consumes descriptors instead of
-   concrete-family branches;
-2. remove existing family-specific checks from generic visual/render-emission paths, including splat
+1. define the internal renderable-primitive lowering result consumed by generic pipeline code;
+2. route segment and straight vector/arrow through a shared `stroke_quad` lowering primitive without
+   sharing segment retained state;
+3. route path and curved vector/arrow through a shared `path_stroke` lowering primitive without
+   sharing path retained state;
+4. remove vector/arrow-specific checks from generic visual, descriptor, metadata, pass-capability,
+   upload, render-position, and render-emission paths;
+5. normalize the remaining visual-family lowering so generic pipeline code consumes descriptors
+   instead of concrete-family branches;
+6. remove existing family-specific checks from generic visual/render-emission paths, including splat
    checks introduced during experimental visual work;
-3. group tests by domain if not already clear;
-4. group internal headers by ownership;
-5. move implementation files into domain subdirectories only when include paths stay readable;
-6. preserve current comments and update them when paths or ownership change.
+7. group tests by domain if not already clear;
+8. group internal headers by ownership;
+9. move implementation files into domain subdirectories only when include paths stay readable;
+10. preserve current comments and update them when paths or ownership change.
 
 Required end state:
 
 1. adding a visual family does not require adding `if (is_<family>)`, `if (<family>)`, or
    `visual_type == DVZ_VISUAL_TYPE_<FAMILY>` checks to generic visual, render-emission, or pipeline
    plumbing files;
-2. family-specific vertex layouts, shader keys, draw counts, topology, bind-group needs, and
-   pass-capability choices are expressed through descriptor/lowering helpers;
-3. generic scene pipeline code branches on reusable categories or descriptor fields only;
-4. focused scene tests cover at least one retained family and one nontrivial descriptor/lowering path
-   so the boundary fails visibly if concrete-family logic leaks back into generic code.
+2. vector/arrow owns vector/arrow state only and does not write to or depend on `visual->segment` or
+   `visual->path` retained state;
+3. family-specific vertex layouts, shader keys, draw counts, topology, bind-group needs, upload
+   resources, material parameters, and pass-capability choices are expressed through
+   descriptor/lowering helpers;
+4. generic scene pipeline code branches on reusable renderable primitives or descriptor fields only;
+5. focused scene tests cover at least one retained family and one nontrivial descriptor/lowering path
+   so the boundary fails visibly if concrete-family logic leaks back into generic code;
+6. vector/arrow tests fail if straight lowering regresses to segment-owned cache/state, curved
+   lowering regresses to path-owned cache/state, query routing loses vector semantic identity, or a
+   new `DVZ_VISUAL_TYPE_VECTOR`/arrow check appears in generic pipeline plumbing outside
+   vector-family owned files.
 
 This stage should not introduce new public modules.
 
