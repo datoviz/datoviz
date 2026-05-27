@@ -590,7 +590,14 @@ static bool _labels_query_eligible(
         if (attach->visual == visual && attach->controller_mode == DVZ_CONTROLLER_FIXED)
             return false;
     }
-    return (visual->query_capabilities & DVZ_QUERY_CAPABILITY_ITEM) != 0;
+    if ((visual->query_capabilities & DVZ_QUERY_CAPABILITY_ITEM) == 0)
+        return false;
+    if (visual->field == NULL)
+        return false;
+    uint32_t texture_format = 0;
+    uint32_t bytes_per_texel = 0;
+    return _labels_query_integer_format(
+        visual->field->desc.format, &texture_format, &bytes_per_texel);
 }
 
 
