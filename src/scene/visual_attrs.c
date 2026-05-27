@@ -28,6 +28,7 @@
 #include "_visual_family.h"
 #include "_visual_internal.h"
 #include "datoviz/scene.h"
+#include "sample_profile.h"
 
 
 /*************************************************************************************************/
@@ -1307,7 +1308,13 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
     _scene_release_visual_scale(visual);
     if (scale != NULL)
         _visual_binding_assign(visual, DVZ_VISUAL_BINDING_SCALE, slot_name, scale, false);
-    if (visual->field != NULL && _field_format_is_scalar(visual->field->desc.format))
+    DvzSceneSampleProfile profile = {0};
+    bool has_profile =
+        visual->field != NULL &&
+        _scene_sample_profile_resolve(
+            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+            &profile);
+    if (has_profile && _scene_sample_profile_uses_continuous_colorizer(&profile))
     {
         _scene_visual_texture_mark_clean(visual);
         visual->texture.dirty = true;

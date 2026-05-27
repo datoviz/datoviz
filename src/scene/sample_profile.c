@@ -233,3 +233,46 @@ bool _scene_sample_profile_is_signed_label(const DvzSceneSampleProfile* profile)
     ANN(profile);
     return profile->value_kind == DVZ_SCENE_SAMPLE_VALUE_LABEL_S32;
 }
+
+
+
+/**
+ * Return whether a resolved profile consumes a continuous scale.
+ *
+ * @param profile the resolved sample profile
+ * @return whether the profile uses a continuous colorizer
+ */
+bool _scene_sample_profile_uses_continuous_colorizer(const DvzSceneSampleProfile* profile)
+{
+    ANN(profile);
+    return profile->colorizer_kind == DVZ_SCENE_COLORIZER_COLORMAP_1D ||
+           profile->colorizer_kind == DVZ_SCENE_COLORIZER_TRANSFER_1D;
+}
+
+
+
+/**
+ * Return whether a resolved profile needs a 1D transfer texture.
+ *
+ * @param profile the resolved sample profile
+ * @return whether the profile uses a transfer texture
+ */
+bool _scene_sample_profile_uses_transfer(const DvzSceneSampleProfile* profile)
+{
+    ANN(profile);
+    return profile->colorizer_kind == DVZ_SCENE_COLORIZER_TRANSFER_1D;
+}
+
+
+
+/**
+ * Return whether a resolved profile samples direct RGBA data.
+ *
+ * @param profile the resolved sample profile
+ * @return whether the profile is direct RGBA
+ */
+bool _scene_sample_profile_is_direct_rgba(const DvzSceneSampleProfile* profile)
+{
+    ANN(profile);
+    return profile->colorizer_kind == DVZ_SCENE_COLORIZER_DIRECT_RGBA;
+}

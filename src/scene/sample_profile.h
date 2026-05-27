@@ -94,3 +94,9 @@ bool _scene_sample_profile_is_integer_label(const DvzSceneSampleProfile* profile
 bool _scene_sample_profile_is_unsigned_label(const DvzSceneSampleProfile* profile);
 
 bool _scene_sample_profile_is_signed_label(const DvzSceneSampleProfile* profile);
+
+bool _scene_sample_profile_uses_continuous_colorizer(const DvzSceneSampleProfile* profile);
+
+bool _scene_sample_profile_uses_transfer(const DvzSceneSampleProfile* profile);
+
+bool _scene_sample_profile_is_direct_rgba(const DvzSceneSampleProfile* profile);

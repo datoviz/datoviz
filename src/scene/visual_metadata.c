@@ -33,6 +33,7 @@
 #include "_technique.h"
 #include "_visual_pipeline.h"
 #include "datoviz/drp2/runtime.h"
+#include "sample_profile.h"
 #include "render_contract.h"
 
 
@@ -142,8 +143,13 @@ bool _scene_visual_frame_plan_metadata(
         metadata->has_volume = true;
         metadata->volume_state = visual->volume;
         metadata->volume_occluded = visual->volume_occluded;
+        DvzSceneSampleProfile profile = {0};
         metadata->volume_transfer_rgba =
-            visual->field != NULL && visual->field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM;
+            visual->field != NULL &&
+            _scene_sample_profile_resolve(
+                visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+                &profile) &&
+            _scene_sample_profile_is_direct_rgba(&profile);
         if (visual->field != NULL)
         {
             metadata->field_format = (uint32_t)visual->field->desc.format;

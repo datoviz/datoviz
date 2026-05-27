@@ -25,6 +25,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_scene.h"
+#include "sample_profile.h"
 
 
 
@@ -238,8 +239,14 @@ static void _scene_mark_scale_dirty(DvzScale* scale)
         DvzVisual* visual = &scene->visuals[i];
         if (visual->scene != scene || visual->scale != scale)
             continue;
+        DvzSceneSampleProfile profile = {0};
+        bool has_profile =
+            visual->field != NULL &&
+            _scene_sample_profile_resolve(
+                visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+                &profile);
         if ((visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_VOLUME) &&
-            visual->field != NULL && _field_format_is_scalar(visual->field->desc.format))
+            has_profile && _scene_sample_profile_uses_continuous_colorizer(&profile))
         {
             _scene_visual_texture_mark_clean(visual);
             visual->texture.dirty = true;

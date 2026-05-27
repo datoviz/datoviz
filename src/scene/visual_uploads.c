@@ -33,6 +33,7 @@
 #include "_scene_shader_abi.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
+#include "sample_profile.h"
 #include "datoviz/drp2/runtime.h"
 #include "render_contract.h"
 
@@ -1177,6 +1178,26 @@ static float _volume_alpha_at(const DvzVolumeState* state, double t)
 
 
 /**
+ * Return whether a volume visual needs a scalar transfer texture.
+ *
+ * @param visual the volume visual
+ * @return whether the volume resolves to a transfer-texture profile
+ */
+static bool _scene_volume_uses_transfer_texture(const DvzVisual* visual)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || visual->field == NULL)
+        return false;
+    DvzSceneSampleProfile profile = {0};
+    return _scene_sample_profile_resolve(
+               visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+               &profile) &&
+           _scene_sample_profile_uses_transfer(&profile);
+}
+
+
+
+/**
  * Build the 256x1 RGBA transfer texture for a scalar volume.
  *
  * @param visual the volume visual
@@ -1188,8 +1209,7 @@ static bool _scene_prepare_volume_transfer_texture(DvzVisual* visual, const void
     ANN(visual);
     ANN(out_data);
     *out_data = NULL;
-    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || visual->field == NULL ||
-        !_field_format_is_scalar(visual->field->desc.format))
+    if (!_scene_volume_uses_transfer_texture(visual))
         return false;
 
     const uint64_t size = 256ull * 4ull;
@@ -1465,8 +1485,7 @@ _scene_emit_volume_transfer_texture_upload(DvzFramePlan* plan, DvzVisual* visual
 {
     ANN(plan);
     ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || visual->field == NULL ||
-        !_field_format_is_scalar(visual->field->desc.format))
+    if (!_scene_volume_uses_transfer_texture(visual))
     {
         return;
     }
