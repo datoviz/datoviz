@@ -4,12 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* gothic_splat - provisional Gothic Gaussian-splat showcase.
+/* gothic_splat - Gothic Gaussian-splat showcase.
  *
- * This example loads the v0.4 Gothic splat cache arrays, renders them with dvz_point() as a
- * temporary consistency check, and uses a fly controller like the LIDAR showcase. Once the retained
- * splat visual lands, the visual creation and radius upload should be replaced by the real splat
- * attributes while keeping the loader shape.
+ * This example loads the v0.4 Gothic splat cache arrays, renders them with dvz_splat(), and uses a
+ * fly controller like the LIDAR showcase.
  *
  * Prepare: python examples/c/showcase/prepare_gothic_splat.py
  * Build:   just example-c showcase/gothic_splat
@@ -50,9 +48,9 @@
 #define GOTHIC_SPLAT_DATA_DIR ".cache/datoviz/examples/gothic_splat/prepared"
 #define GOTHIC_SPLAT_SOURCE   ".cache/datoviz/examples/gothic_splat/source/gothic.ply"
 
-#define GOTHIC_DIAMETER_SCALE 1800.0f
-#define GOTHIC_DIAMETER_MIN   1.0f
-#define GOTHIC_DIAMETER_MAX   18.0f
+#define GOTHIC_SIGMA_SCALE 900.0f
+#define GOTHIC_SIGMA_MIN   0.5f
+#define GOTHIC_SIGMA_MAX   9.0f
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
@@ -65,8 +63,7 @@ struct GothicSplatDataset
 {
     vec3* positions;
     DvzColor* colors;
-    float* radii;
-    float* diameters;
+    vec2* sigma;
     uint32_t count;
 };
 
@@ -156,25 +153,25 @@ static void _print_prepare_hint(const char* data_dir)
 
 
 /**
- * Clamp a point diameter to the temporary point-fallback range.
+ * Clamp a source radius to the screen-space Gaussian sigma range.
  *
  * @param radius normalized source radius
- * @return fallback point diameter in pixels
+ * @return splat standard deviation in pixels
  */
-static float _fallback_diameter(float radius)
+static float _screen_sigma(float radius)
 {
-    float diameter = radius * GOTHIC_DIAMETER_SCALE;
-    if (diameter < GOTHIC_DIAMETER_MIN)
-        diameter = GOTHIC_DIAMETER_MIN;
-    if (diameter > GOTHIC_DIAMETER_MAX)
-        diameter = GOTHIC_DIAMETER_MAX;
-    return diameter;
+    float sigma = radius * GOTHIC_SIGMA_SCALE;
+    if (sigma < GOTHIC_SIGMA_MIN)
+        sigma = GOTHIC_SIGMA_MIN;
+    if (sigma > GOTHIC_SIGMA_MAX)
+        sigma = GOTHIC_SIGMA_MAX;
+    return sigma;
 }
 
 
 
 /**
- * Load the Gothic splat cache arrays and build temporary point diameters.
+ * Load the Gothic splat cache arrays and build screen-space splat sigmas.
  *
  * @param data_dir directory containing Gothic splat .npy arrays
  * @param stride sampling stride
@@ -250,15 +247,11 @@ static bool _load_gothic_dataset(
 
     dataset->positions = (vec3*)dvz_calloc(sampled_count, sizeof(*dataset->positions));
     dataset->colors = (DvzColor*)dvz_calloc(sampled_count, sizeof(*dataset->colors));
-    dataset->radii = (float*)dvz_calloc(sampled_count, sizeof(*dataset->radii));
-    dataset->diameters = (float*)dvz_calloc(sampled_count, sizeof(*dataset->diameters));
-    if (
-        dataset->positions == NULL || dataset->colors == NULL || dataset->radii == NULL ||
-        dataset->diameters == NULL)
+    dataset->sigma = (vec2*)dvz_calloc(sampled_count, sizeof(*dataset->sigma));
+    if (dataset->positions == NULL || dataset->colors == NULL || dataset->sigma == NULL)
     {
-        dvz_fprintf(stderr, "unable to allocate Gothic splat fallback buffers\n");
-        dvz_free(dataset->diameters);
-        dvz_free(dataset->radii);
+        dvz_fprintf(stderr, "unable to allocate Gothic splat buffers\n");
+        dvz_free(dataset->sigma);
         dvz_free(dataset->colors);
         dvz_free(dataset->positions);
         dvz_free(radii);
@@ -274,8 +267,9 @@ static bool _load_gothic_dataset(
         dataset->positions[dst][1] = positions[src][1];
         dataset->positions[dst][2] = positions[src][2];
         dataset->colors[dst] = colors[src];
-        dataset->radii[dst] = radii[src];
-        dataset->diameters[dst] = _fallback_diameter(radii[src]);
+        float sigma = _screen_sigma(radii[src]);
+        dataset->sigma[dst][0] = sigma;
+        dataset->sigma[dst][1] = sigma;
         dst++;
     }
     dataset->count = dst;
@@ -285,8 +279,7 @@ static bool _load_gothic_dataset(
     dvz_free(positions);
 
     dvz_fprintf(
-        stderr, "loaded Gothic splat fallback with %u points (stride=%u)\n", dataset->count,
-        stride);
+        stderr, "loaded Gothic splat dataset with %u splats (stride=%u)\n", dataset->count, stride);
     return true;
 }
 
@@ -301,8 +294,7 @@ static void _destroy_gothic_dataset(GothicSplatDataset* dataset)
 {
     if (dataset == NULL)
         return;
-    dvz_free(dataset->diameters);
-    dvz_free(dataset->radii);
+    dvz_free(dataset->sigma);
     dvz_free(dataset->colors);
     dvz_free(dataset->positions);
     *dataset = (GothicSplatDataset){0};
@@ -375,7 +367,7 @@ static void _center_dataset(GothicSplatDataset* dataset, const vec3 center)
 /*************************************************************************************************/
 
 /**
- * Run the provisional Gothic splat showcase.
+ * Run the Gothic splat showcase.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -391,7 +383,7 @@ int main(int argc, char** argv)
     const char* data_dir = _data_dir(argc, argv);
     uint32_t stride = _stride(argc, argv);
     bool ok = _load_gothic_dataset(data_dir, stride, &dataset);
-    EXAMPLE_CHECK(ok, "failed to load Gothic splat fallback data");
+    EXAMPLE_CHECK(ok, "failed to load Gothic splat data");
 
     vec3 center = {0};
     float radius = 1.0f;
@@ -429,13 +421,13 @@ int main(int argc, char** argv)
     ok = dvz_panel_set_edl(panel, &edl);
     EXAMPLE_CHECK(ok, "dvz_panel_set_edl() failed");
 
-    DvzVisual* visual = dvz_point(scene, 0);
-    EXAMPLE_CHECK(visual != NULL, "dvz_point() fallback failed");
+    DvzVisual* visual = dvz_splat(scene, 0);
+    EXAMPLE_CHECK(visual != NULL, "dvz_splat() failed");
 
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = dataset.positions, .item_count = dataset.count},
         {.attr_name = "color", .data = dataset.colors, .item_count = dataset.count},
-        {.attr_name = "diameter", .data = dataset.diameters, .item_count = dataset.count},
+        {.attr_name = "sigma", .data = dataset.sigma, .item_count = dataset.count},
     };
     int rc = dvz_visual_set_data_many(visual, updates, 3);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");
