@@ -35,6 +35,8 @@
 static bool _selection_matches_pick(
     const DvzSelection* selection, const DvzPickResult* pick, DvzSelectionItem* out_item);
 
+static DvzPickResult _selection_pick_from_query(const DvzQueryResult* query);
+
 static bool _selection_item_equals(const DvzSelectionItem* a, const DvzSelectionItem* b);
 
 static bool _scene_remove_selection_item(DvzSelection* selection, const DvzSelectionItem* item);
@@ -67,6 +69,8 @@ static bool _selection_card_realize(DvzFigure* figure, DvzSelection* selection);
 
 static void _readout_format_value(
     const DvzSceneFormatState* format, double value, char* out, uint32_t out_size);
+
+static DvzProbeResult _readout_probe_from_query(const DvzQueryResult* query);
 
 static void _readout_refresh_text(DvzPinnedReadout* readout);
 
@@ -120,6 +124,46 @@ static bool _selection_matches_pick(
     out_item->target_id = pick->resolved_id;
     out_item->link_key = pick->link_key;
     return true;
+}
+
+
+
+/**
+ * Convert a query result into the transitional pick view used by selection.
+ *
+ * @param query the query result
+ * @return pick-compatible result
+ */
+static DvzPickResult _selection_pick_from_query(const DvzQueryResult* query)
+{
+    ANN(query);
+    DvzPickResult pick = {0};
+    pick.request_id = query->request_id;
+    pick.status = query->hit ? DVZ_PICK_STATUS_HIT : DVZ_PICK_STATUS_MISS;
+    pick.hit = query->hit;
+    pick.panel_id = query->panel_id;
+    pick.visual_id = query->visual_id;
+    pick.visual_family = query->visual_family;
+    pick.item_id = query->item_id;
+    pick.group_id = query->group_id;
+    pick.auxiliary_id = query->auxiliary_id;
+    pick.raw_parent_target = query->raw_parent_target;
+    pick.raw_parent_id = query->raw_parent_id;
+    pick.raw_target = query->raw_target;
+    pick.raw_id = query->raw_id;
+    pick.resolved_parent_target = query->resolved_parent_target;
+    pick.resolved_parent_id = query->resolved_parent_id;
+    pick.resolved_target = query->resolved_target;
+    pick.resolved_id = query->resolved_id;
+    pick.instance_id = query->instance_id;
+    pick.link_key = query->link_key;
+    pick.panel_position[0] = query->panel_position[0];
+    pick.panel_position[1] = query->panel_position[1];
+    pick.has_data_position = query->has_data_position;
+    pick.data_position[0] = query->data_position[0];
+    pick.data_position[1] = query->data_position[1];
+    pick.data_position[2] = query->data_position[2];
+    return pick;
 }
 
 
@@ -520,6 +564,76 @@ static void _readout_format_value(
     {
         dvz_snprintf(out, out_size, "%s%s%s", format->prefix, value_str, format->suffix);
     }
+}
+
+
+
+/**
+ * Convert a query result into the transitional probe view used by pinned readouts.
+ *
+ * @param query the query result
+ * @return probe-compatible result
+ */
+static DvzProbeResult _readout_probe_from_query(const DvzQueryResult* query)
+{
+    ANN(query);
+    DvzProbeResult probe = {0};
+    probe.request_id = query->request_id;
+    probe.status = query->hit ? DVZ_PROBE_STATUS_HIT : DVZ_PROBE_STATUS_MISS;
+    probe.hit = query->hit;
+    probe.panel_id = query->panel_id;
+    probe.visual_id = query->visual_id;
+    probe.visual_family = query->visual_family;
+    probe.item_id = query->item_id;
+    probe.group_id = query->group_id;
+    probe.auxiliary_id = query->auxiliary_id;
+    probe.target = query->resolved_target;
+    probe.target_id = query->resolved_id;
+    probe.panel_position[0] = query->panel_position[0];
+    probe.panel_position[1] = query->panel_position[1];
+    probe.has_coordinate = query->has_data_position;
+    probe.coordinate[0] = query->data_position[0];
+    probe.coordinate[1] = query->data_position[1];
+    probe.coordinate[2] = query->data_position[2];
+    probe.has_uvw = query->has_uvw;
+    probe.uvw[0] = query->uvw[0];
+    probe.uvw[1] = query->uvw[1];
+    probe.uvw[2] = query->uvw[2];
+    switch (query->value_kind)
+    {
+    case DVZ_QUERY_VALUE_SCALAR:
+        probe.value_kind = DVZ_PROBE_VALUE_SCALAR;
+        break;
+    case DVZ_QUERY_VALUE_VEC2:
+        probe.value_kind = DVZ_PROBE_VALUE_VEC2;
+        break;
+    case DVZ_QUERY_VALUE_VEC3:
+        probe.value_kind = DVZ_PROBE_VALUE_VEC3;
+        break;
+    case DVZ_QUERY_VALUE_VEC4:
+        probe.value_kind = DVZ_PROBE_VALUE_VEC4;
+        break;
+    case DVZ_QUERY_VALUE_CATEGORY:
+        probe.value_kind = DVZ_PROBE_VALUE_LABEL;
+        break;
+    case DVZ_QUERY_VALUE_NONE:
+    case DVZ_QUERY_VALUE_TEXT:
+    case DVZ_QUERY_VALUE_OPAQUE_FAMILY_PAYLOAD:
+    default:
+        probe.value_kind = DVZ_PROBE_VALUE_NONE;
+        break;
+    }
+    probe.scalar = query->scalar;
+    probe.vector[0] = query->vector[0];
+    probe.vector[1] = query->vector[1];
+    probe.vector[2] = query->vector[2];
+    probe.vector[3] = query->vector[3];
+    probe.category_id = query->category_id;
+    dvz_snprintf(probe.label, sizeof(probe.label), "%s", query->label);
+    dvz_snprintf(probe.unit, sizeof(probe.unit), "%s", query->unit);
+    probe.scale = query->scale;
+    probe.source_request_id = query->request_id;
+    return probe;
 }
 
 
@@ -1444,6 +1558,23 @@ int dvz_selection_apply_pick(DvzSelection* selection, const DvzPickResult* pick)
 
 
 /**
+ * Apply one resolved query result to a selection.
+ *
+ * @param selection the selection
+ * @param query the query result
+ * @return 0 on success, -1 on error
+ */
+int dvz_selection_apply_query(DvzSelection* selection, const DvzQueryResult* query)
+{
+    ANN(selection);
+    ANN(query);
+    DvzPickResult pick = _selection_pick_from_query(query);
+    return dvz_selection_apply_pick(selection, &pick);
+}
+
+
+
+/**
  * Return the number of stored selection items.
  *
  * @param selection the selection
@@ -1945,6 +2076,21 @@ DvzPinnedReadout* dvz_pinned_readout(DvzPanel* panel, const DvzProbeResult* prob
     panel->pinned_readouts[panel->pinned_readout_count++] = readout;
     _scene_notify_request_frame(panel->figure);
     return readout;
+}
+
+
+/**
+ * Create a pinned readout from a resolved query result.
+ *
+ * @param panel the panel
+ * @param query the query result
+ * @return the pinned readout, or NULL on allocation failure
+ */
+DvzPinnedReadout* dvz_pinned_readout_query(DvzPanel* panel, const DvzQueryResult* query)
+{
+    ANN(query);
+    DvzProbeResult probe = _readout_probe_from_query(query);
+    return dvz_pinned_readout(panel, &probe);
 }
 
 

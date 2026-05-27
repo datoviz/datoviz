@@ -409,7 +409,10 @@ int test_scene_query_api_bridges_pick_and_probe_results(TstContext* suite, const
     AT(_dvz_scene_enqueue_probe_result(scene, &probe));
 
     DvzQueryResult query = {0};
+    DvzQueryResult item_query = {0};
+    DvzQueryResult value_query = {0};
     AT(dvz_scene_poll_query(scene, &query));
+    item_query = query;
     AT(query.request_id == 41);
     AT(query.status == DVZ_QUERY_STATUS_HIT);
     AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_POINT);
@@ -418,6 +421,7 @@ int test_scene_query_api_bridges_pick_and_probe_results(TstContext* suite, const
     AT(query.value_kind == DVZ_QUERY_VALUE_NONE);
 
     AT(dvz_scene_poll_query(scene, &query));
+    value_query = query;
     AT(query.request_id == 42);
     AT(query.status == DVZ_QUERY_STATUS_HIT);
     AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_IMAGE);
@@ -429,6 +433,16 @@ int test_scene_query_api_bridges_pick_and_probe_results(TstContext* suite, const
     AC(query.data_position[0], 0.5, 1e-12);
     AT(strcmp(query.label, "intensity") == 0);
     AT(!dvz_scene_poll_query(scene, &query));
+
+    DvzSelection* selection = dvz_selection(
+        scene, &(DvzSelectionDesc){.mode = DVZ_SELECT_REPLACE, .target = DVZ_SCENE_TARGET_ITEM});
+    ANN(selection);
+    AT(dvz_selection_apply_query(selection, &item_query) == 0);
+    AT(dvz_selection_count(selection) == 1);
+
+    DvzPinnedReadout* readout = dvz_pinned_readout_query(panel, &value_query);
+    ANN(readout);
+    AT(strcmp(readout->text, "intensity: 2.25") == 0);
 
     dvz_scene_destroy(scene);
     return 0;
