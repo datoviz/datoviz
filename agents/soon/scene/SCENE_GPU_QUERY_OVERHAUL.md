@@ -146,6 +146,9 @@ Committed implementation slices:
       `dvz_visual_set_query_capabilities()`,
     - renamed `DVZ_PICK_CAPABILITY_*` and visual `pick_capabilities` internals to query capability
       terminology.
+36. `scene: remove CPU point pick fallback`
+    - removed the unused CPU point-picking helper and `DVZ_PICK_TRACE` hook,
+    - renamed the remaining panel-coordinate helper to query terminology.
 
 Recorded validation after these commits:
 

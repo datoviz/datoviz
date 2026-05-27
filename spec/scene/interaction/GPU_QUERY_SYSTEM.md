@@ -57,7 +57,9 @@ Current implementation state:
    gates has been removed; query eligibility is now capability-driven.
 9. Visual query capability APIs now use query terminology (`dvz_visual_set_query_capabilities()`
    and `DVZ_QUERY_CAPABILITY_*`).
-10. DRP2 and WebGPU parity are not finished: C runtime copy helpers still need full origin/depth and
+10. The unused CPU point-pick fallback and `DVZ_PICK_TRACE` hook have been removed from scene
+    internals.
+11. DRP2 and WebGPU parity are not finished: C runtime copy helpers still need full origin/depth and
    multi-output query support, and `rg32uint` needs runtime/readback fixture coverage.
 
 

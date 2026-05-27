@@ -299,7 +299,7 @@ bool _dvz_scene_query_process_pending(
     _query_result_init(figure, pending, out_result);
 
     vec2 request_ndc = {0};
-    if (!_scene_pick_request_ndc(figure, pending->panel, pending->x, pending->y, request_ndc))
+    if (!_scene_query_request_ndc(figure, pending->panel, pending->x, pending->y, request_ndc))
     {
         out_result->status = DVZ_QUERY_STATUS_OUTSIDE_PANEL;
         return true;
