@@ -92,7 +92,7 @@ static bool _image_query_alloc(void** out_ptr, uint64_t count, uint64_t item_siz
 
 
 /**
- * Return image-probe static resource versions for one visual.
+ * Return image-query static resource versions for one visual.
  *
  * @param visual the image visual
  * @param out_position_version position attribute version
@@ -100,7 +100,7 @@ static bool _image_query_alloc(void** out_ptr, uint64_t count, uint64_t item_siz
  * @param out_texture_version texture payload version
  * @return true when required static resources exist
  */
-static bool _image_query_probe_static_versions(
+static bool _image_query_static_versions(
     const DvzVisual* visual, uint64_t* out_position_version, uint64_t* out_texcoord_version,
     uint64_t* out_texture_version)
 {
@@ -158,7 +158,7 @@ static bool _image_query_probe_static_versions(
 
 
 /**
- * Return whether retained image-probe static uploads must be refreshed.
+ * Return whether retained image-query static uploads must be refreshed.
  *
  * @param executor retained query executor
  * @param visual image visual
@@ -167,17 +167,17 @@ static bool _image_query_probe_static_versions(
  * @param texture_version texture payload version
  * @return true when the static resources should be uploaded
  */
-static bool _image_query_probe_needs_static_upload(
+static bool _image_query_needs_static_upload(
     const DvzSceneRequestExecutor* executor, const DvzVisual* visual, uint64_t position_version,
     uint64_t texcoord_version, uint64_t texture_version)
 {
     ANN(visual);
     if (executor == NULL)
         return true;
-    return executor->image_probe_visual != visual ||
-           executor->image_probe_position_version != position_version ||
-           executor->image_probe_texcoord_version != texcoord_version ||
-           executor->image_probe_texture_version != texture_version;
+    return executor->image_query_visual != visual ||
+           executor->image_query_position_version != position_version ||
+           executor->image_query_texcoord_version != texcoord_version ||
+           executor->image_query_texture_version != texture_version;
 }
 
 
@@ -260,7 +260,7 @@ static void _image_query_apply_render_state(
  * @return true when derived buffers were created
  */
 static bool _image_query_geometry(
-    const DvzVisual* visual, DvzSceneProbePlan* scratch, uint64_t* out_vertex_count)
+    const DvzVisual* visual, DvzSceneQueryScratch* scratch, uint64_t* out_vertex_count)
 {
     ANN(visual);
     ANN(scratch);
@@ -291,10 +291,10 @@ static bool _image_query_geometry(
         return false;
     }
 
-    if (!_image_query_alloc((void**)&scratch->probe_positions, vertex_count, sizeof(vec3)) ||
-        !_image_query_alloc((void**)&scratch->pick_ids, vertex_count, sizeof(uint32_t)))
+    if (!_image_query_alloc((void**)&scratch->query_positions, vertex_count, sizeof(vec3)) ||
+        !_image_query_alloc((void**)&scratch->query_ids, vertex_count, sizeof(uint32_t)))
     {
-        _scene_probe_plan_destroy(scratch);
+        _scene_query_scratch_destroy(scratch);
         return false;
     }
 
@@ -305,7 +305,7 @@ static bool _image_query_geometry(
         bool has_anchor = _image_query_attr(visual, "anchor", sizeof(vec2), &anchor_attr);
         if (has_anchor && anchor_attr->item_count != pos_attr->item_count)
         {
-            _scene_probe_plan_destroy(scratch);
+            _scene_query_scratch_destroy(scratch);
             return false;
         }
         const float* anchor = has_anchor ? (const float*)anchor_attr->data : NULL;
@@ -329,8 +329,8 @@ static bool _image_query_geometry(
             for (uint32_t j = 0; j < 6; j++)
             {
                 uint64_t dst = 6 * i + j;
-                dvz_memcpy(scratch->probe_positions[dst], sizeof(vec3), quad_pos[j], sizeof(vec3));
-                scratch->pick_ids[dst] = (uint32_t)i + 1u;
+                dvz_memcpy(scratch->query_positions[dst], sizeof(vec3), quad_pos[j], sizeof(vec3));
+                scratch->query_ids[dst] = (uint32_t)i + 1u;
             }
         }
     }
@@ -340,9 +340,9 @@ static bool _image_query_geometry(
         for (uint32_t j = 0; j < 6; j++)
         {
             dvz_memcpy(
-                scratch->probe_positions[j], sizeof(vec3), &position[3 * order[j]],
+                scratch->query_positions[j], sizeof(vec3), &position[3 * order[j]],
                 sizeof(vec3));
-            scratch->pick_ids[j] = 1u;
+            scratch->query_ids[j] = 1u;
         }
     }
     else
@@ -350,8 +350,8 @@ static bool _image_query_geometry(
         for (uint32_t j = 0; j < 6; j++)
         {
             dvz_memcpy(
-                scratch->probe_positions[j], sizeof(vec3), &position[3 * j], sizeof(vec3));
-            scratch->pick_ids[j] = 1u;
+                scratch->query_positions[j], sizeof(vec3), &position[3 * j], sizeof(vec3));
+            scratch->query_ids[j] = 1u;
         }
     }
 
@@ -425,28 +425,28 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
         uint64_t position_version = 0;
         uint64_t texcoord_version = 0;
         uint64_t texture_version = 0;
-        if (!_image_query_probe_static_versions(
+        if (!_image_query_static_versions(
                 ctx->visual, &position_version, &texcoord_version, &texture_version))
         {
             return false;
         }
-        bool include_static_uploads = _image_query_probe_needs_static_upload(
+        bool include_static_uploads = _image_query_needs_static_upload(
             ctx->executor, ctx->visual, position_version, texcoord_version, texture_version);
 
-        if (!_scene_image_probe_plan(
+        if (!_scene_image_query_plan(
                 ctx->panel, ctx->visual, ctx->pending, ctx->request_ndc, include_static_uploads,
                 &out_plan->scratch))
         {
-            _scene_probe_plan_destroy(&out_plan->scratch);
+            _scene_query_scratch_destroy(&out_plan->scratch);
             return false;
         }
         if (include_static_uploads)
         {
-            out_plan->mark_image_probe_static_uploaded = true;
-            out_plan->image_probe_visual = ctx->visual;
-            out_plan->image_probe_position_version = position_version;
-            out_plan->image_probe_texcoord_version = texcoord_version;
-            out_plan->image_probe_texture_version = texture_version;
+            out_plan->mark_image_query_static_uploaded = true;
+            out_plan->image_query_visual = ctx->visual;
+            out_plan->image_query_position_version = position_version;
+            out_plan->image_query_texcoord_version = texcoord_version;
+            out_plan->image_query_texture_version = texture_version;
         }
         out_plan->target_width = 1;
         out_plan->target_height = 1;
@@ -458,7 +458,7 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
     uint64_t vertex_count = 0;
     if (!_image_query_geometry(ctx->visual, &out_plan->scratch, &vertex_count))
     {
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 
@@ -466,7 +466,7 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
     uint32_t target_height = 0;
     if (!_image_query_target_extent(ctx->figure, ctx->panel, &target_width, &target_height))
     {
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 
@@ -477,7 +477,7 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
         _dvz_mul_u64_overflows(vertex_count, sizeof(uint32_t), &id_bytes))
     {
         log_error("image query request buffer size overflow");
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 
@@ -486,11 +486,11 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
     bool ok = plan != NULL;
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "query0_position", 0, position_bytes, "position",
-                   out_plan->scratch.probe_positions);
+                   out_plan->scratch.query_positions);
     if (ok)
         ok = dvz_frame_plan_upload_set_topology(plan, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     ok = ok && dvz_frame_plan_upload_bytes(
-                   plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.pick_ids);
+                   plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.query_ids);
 
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;
@@ -530,7 +530,7 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
         log_error(
             "image query request %" PRIu64 " failed to assemble the GPU readback plan",
             ctx->pending->request.request_id);
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 

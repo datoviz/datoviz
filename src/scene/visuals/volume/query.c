@@ -182,16 +182,16 @@ static bool _volume_query_build(
     }
     uint64_t vertex_count = pos_attr->item_count;
 
-    if ((out_plan->scratch.pick_ids = (uint32_t*)dvz_calloc(vertex_count, sizeof(uint32_t))) == NULL)
+    if ((out_plan->scratch.query_ids = (uint32_t*)dvz_calloc(vertex_count, sizeof(uint32_t))) == NULL)
         return false;
     for (uint64_t i = 0; i < vertex_count; i++)
-        out_plan->scratch.pick_ids[i] = 1u;
+        out_plan->scratch.query_ids[i] = 1u;
 
     uint32_t target_width = 0;
     uint32_t target_height = 0;
     if (!_volume_query_target_extent(ctx->figure, ctx->panel, &target_width, &target_height))
     {
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 
@@ -202,7 +202,7 @@ static bool _volume_query_build(
         _dvz_mul_u64_overflows(vertex_count, sizeof(uint32_t), &id_bytes))
     {
         log_error("volume query request buffer size overflow");
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 
@@ -214,7 +214,7 @@ static bool _volume_query_build(
     if (ok)
         ok = dvz_frame_plan_upload_set_topology(plan, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     ok = ok && dvz_frame_plan_upload_bytes(
-                   plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.pick_ids);
+                   plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.query_ids);
 
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;
@@ -254,7 +254,7 @@ static bool _volume_query_build(
         log_error(
             "volume query request %" PRIu64 " failed to assemble the GPU readback plan",
             ctx->pending->request.request_id);
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 

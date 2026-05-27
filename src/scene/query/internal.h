@@ -75,7 +75,7 @@ struct DvzSceneQueryBuildContext
 
 struct DvzSceneQueryPlan
 {
-    DvzSceneProbePlan scratch;
+    DvzSceneQueryScratch scratch;
     DvzSampledField* field;
     uint32_t target_width;
     uint32_t target_height;
@@ -84,11 +84,11 @@ struct DvzSceneQueryPlan
     uint32_t texel_x;
     uint32_t texel_y;
     double uvw[3];
-    bool mark_image_probe_static_uploaded;
-    DvzVisual* image_probe_visual;
-    uint64_t image_probe_position_version;
-    uint64_t image_probe_texcoord_version;
-    uint64_t image_probe_texture_version;
+    bool mark_image_query_static_uploaded;
+    DvzVisual* image_query_visual;
+    uint64_t image_query_position_version;
+    uint64_t image_query_texcoord_version;
+    uint64_t image_query_texture_version;
 };
 
 

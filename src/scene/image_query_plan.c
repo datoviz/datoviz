@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Scene image probe frame plans                                                                */
+/*  Scene image query frame plans                                                                */
 /*************************************************************************************************/
 
 
@@ -40,7 +40,7 @@
  * @param out_pixel_rect optional pixel-rect flag
  * @return true when the visual uses generated image rectangles
  */
-static bool _image_probe_generated_rect(
+static bool _image_query_generated_rect(
     const DvzVisual* visual, int* out_extent_idx, bool* out_pixel_rect)
 {
     ANN(visual);
@@ -61,7 +61,7 @@ static bool _image_probe_generated_rect(
 
 
 /**
- * Expand retained image rectangles to probe-ready position and texcoord buffers.
+ * Expand retained image rectangles to query-ready position and texcoord buffers.
  *
  * @param panel the panel receiving the request
  * @param visual the image visual
@@ -72,9 +72,9 @@ static bool _image_probe_generated_rect(
  * @param out_vertex_count expanded vertex count
  * @return true when geometry was expanded
  */
-static bool _image_probe_expand_rects(
+static bool _image_query_expand_rects(
     const DvzPanel* panel, const DvzVisual* visual, const DvzVisualAttr* pos_attr,
-    const DvzVisualAttr* extent_attr, bool pixel_rect, DvzSceneProbePlan* out_plan,
+    const DvzVisualAttr* extent_attr, bool pixel_rect, DvzSceneQueryScratch* out_plan,
     uint64_t* out_vertex_count)
 {
     ANN(panel);
@@ -95,18 +95,18 @@ static bool _image_probe_expand_rects(
     uint64_t vertex_count = 0;
     if (_dvz_mul_u64_overflows(pos_attr->item_count, 6, &vertex_count))
     {
-        log_error("image probe request vertex count overflow");
+        log_error("image query request vertex count overflow");
         return false;
     }
-    out_plan->probe_positions = (vec3*)dvz_calloc(vertex_count, sizeof(vec3));
-    out_plan->probe_texcoords = (vec2*)dvz_calloc(vertex_count, sizeof(vec2));
-    if (out_plan->probe_positions == NULL || out_plan->probe_texcoords == NULL)
+    out_plan->query_positions = (vec3*)dvz_calloc(vertex_count, sizeof(vec3));
+    out_plan->query_texcoords = (vec2*)dvz_calloc(vertex_count, sizeof(vec2));
+    if (out_plan->query_positions == NULL || out_plan->query_texcoords == NULL)
     {
-        log_error("image probe request geometry allocation failed");
-        dvz_free(out_plan->probe_positions);
-        dvz_free(out_plan->probe_texcoords);
-        out_plan->probe_positions = NULL;
-        out_plan->probe_texcoords = NULL;
+        log_error("image query request geometry allocation failed");
+        dvz_free(out_plan->query_positions);
+        dvz_free(out_plan->query_texcoords);
+        out_plan->query_positions = NULL;
+        out_plan->query_texcoords = NULL;
         return false;
     }
 
@@ -175,8 +175,8 @@ static bool _image_probe_expand_rects(
         for (uint32_t j = 0; j < 6; j++)
         {
             uint64_t dst = 6 * i + j;
-            dvz_memcpy(out_plan->probe_positions[dst], sizeof(vec3), quad_pos[j], sizeof(vec3));
-            dvz_memcpy(out_plan->probe_texcoords[dst], sizeof(vec2), quad_uv[j], sizeof(vec2));
+            dvz_memcpy(out_plan->query_positions[dst], sizeof(vec3), quad_pos[j], sizeof(vec3));
+            dvz_memcpy(out_plan->query_texcoords[dst], sizeof(vec2), quad_uv[j], sizeof(vec2));
         }
     }
 
@@ -194,15 +194,15 @@ static bool _image_probe_expand_rects(
  * Build a synthetic GPU readback frame plan for one image query request.
  *
  * @param panel the panel receiving the request
- * @param visual the image visual to probe
+ * @param visual the image visual to query
  * @param pending the pending query request
  * @param request_ndc the request coordinate in panel-local NDC
  * @param out_plan the output plan wrapper
  * @return true when the plan was assembled
  */
-bool _scene_image_probe_plan(
+bool _scene_image_query_plan(
     const DvzPanel* panel, DvzVisual* visual, const DvzPendingQueryRequest* pending,
-    const vec2 request_ndc, bool include_static_uploads, DvzSceneProbePlan* out_plan)
+    const vec2 request_ndc, bool include_static_uploads, DvzSceneQueryScratch* out_plan)
 {
     ANN(panel);
     ANN(visual);
@@ -221,20 +221,20 @@ bool _scene_image_probe_plan(
     uint64_t texcoord_item_count = 0;
     int extent_idx = -1;
     bool pixel_rect = false;
-    bool generated_rect = _image_probe_generated_rect(visual, &extent_idx, &pixel_rect);
+    bool generated_rect = _image_query_generated_rect(visual, &extent_idx, &pixel_rect);
     if (generated_rect)
     {
         DvzVisualAttr* extent_attr = &visual->attrs[extent_idx];
         if (include_static_uploads)
         {
             uint64_t vertex_count = 0;
-            if (!_image_probe_expand_rects(
+            if (!_image_query_expand_rects(
                     panel, visual, pos_attr, extent_attr, pixel_rect, out_plan, &vertex_count))
             {
                 return false;
             }
-            position_data = out_plan->probe_positions;
-            texcoord_data = out_plan->probe_texcoords;
+            position_data = out_plan->query_positions;
+            texcoord_data = out_plan->query_texcoords;
             position_item_count = vertex_count;
             texcoord_item_count = vertex_count;
         }
@@ -297,28 +297,28 @@ bool _scene_image_probe_plan(
          _dvz_mul_u64_overflows(texture_width, texture_height, &texture_pixels) ||
          _dvz_mul_u64_overflows(texture_pixels, 4, &texture_bytes)))
     {
-        log_error("image probe request buffer size overflow");
+        log_error("image query request buffer size overflow");
         return false;
     }
 
-    DvzFramePlan* plan = dvz_frame_plan("figure.probe", pending->request.request_id);
+    DvzFramePlan* plan = dvz_frame_plan("figure.query.image.sample", pending->request.request_id);
     bool ok = plan != NULL;
     if (include_static_uploads)
     {
         ok = ok && dvz_frame_plan_upload_bytes(
-                       plan, "probe0_position", 0, position_bytes, "position", position_data) &&
+                       plan, "image_query0_position", 0, position_bytes, "position", position_data) &&
              dvz_frame_plan_upload_bytes(
-                 plan, "probe0_texcoords", 0, texcoord_bytes, "texcoords", texcoord_data) &&
+                 plan, "image_query0_texcoords", 0, texcoord_bytes, "texcoords", texcoord_data) &&
              dvz_frame_plan_upload_bytes(
-                 plan, "probe0_texture", 0, texture_bytes, "texture", texture_data) &&
+                 plan, "image_query0_texture", 0, texture_bytes, "texture", texture_data) &&
              dvz_frame_plan_upload_set_texture_extent(plan, texture_width, texture_height) &&
              dvz_frame_plan_upload_set_texture_allocation_extent(
                  plan, texture_width, texture_height);
     }
     ok = ok && dvz_frame_plan_render_panel(
-                   plan, "panel.probe", "target.probe", false,
+                   plan, "panel.query.image", "target.query.image", false,
                    (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1}) &&
-         dvz_frame_plan_render_visual(plan, "probe0");
+         dvz_frame_plan_render_visual(plan, "image_query0");
     DvzFramePlanNode* render = plan != NULL ? dvz_frame_plan_last_render_node(plan) : NULL;
     if (render != NULL)
     {
@@ -328,12 +328,12 @@ bool _scene_image_probe_plan(
         render->u.render.apply_mvp = mvp;
         render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
     }
-    ok = ok && dvz_frame_plan_copy(plan, "target.probe", "buf.probe", 4) &&
-         dvz_frame_plan_readback(plan, "buf.probe", "request.probe");
+    ok = ok && dvz_frame_plan_copy(plan, "target.query.image", "buf.query.image", 4) &&
+         dvz_frame_plan_readback(plan, "buf.query.image", "request.query.image");
     if (!ok)
     {
         log_error(
-            "image probe request %" PRIu64 " failed to assemble the GPU readback plan",
+            "image query request %" PRIu64 " failed to assemble the GPU readback plan",
             pending->request.request_id);
         dvz_frame_plan_destroy(plan);
         return false;
@@ -346,36 +346,36 @@ bool _scene_image_probe_plan(
 
 
 /**
- * Destroy a synthetic image probe frame plan wrapper.
+ * Destroy a synthetic image query frame plan wrapper.
  *
  * @param plan the plan wrapper
  */
-void _scene_probe_plan_destroy(DvzSceneProbePlan* plan)
+void _scene_query_scratch_destroy(DvzSceneQueryScratch* plan)
 {
     if (plan == NULL)
         return;
     dvz_frame_plan_destroy(plan->plan);
     plan->plan = NULL;
-    dvz_free(plan->probe_positions);
-    plan->probe_positions = NULL;
-    dvz_free(plan->probe_texcoords);
-    plan->probe_texcoords = NULL;
-    dvz_free(plan->pick_colors);
-    plan->pick_colors = NULL;
-    dvz_free(plan->pick_ids);
-    plan->pick_ids = NULL;
-    dvz_free(plan->pick_position_start);
-    plan->pick_position_start = NULL;
-    dvz_free(plan->pick_position_curr);
-    plan->pick_position_curr = NULL;
-    dvz_free(plan->pick_position_end);
-    plan->pick_position_end = NULL;
-    dvz_free(plan->pick_line_width);
-    plan->pick_line_width = NULL;
-    dvz_free(plan->pick_path_flags);
-    plan->pick_path_flags = NULL;
-    dvz_free(plan->pick_path_distance);
-    plan->pick_path_distance = NULL;
-    dvz_free(plan->pick_indices);
-    plan->pick_indices = NULL;
+    dvz_free(plan->query_positions);
+    plan->query_positions = NULL;
+    dvz_free(plan->query_texcoords);
+    plan->query_texcoords = NULL;
+    dvz_free(plan->query_colors);
+    plan->query_colors = NULL;
+    dvz_free(plan->query_ids);
+    plan->query_ids = NULL;
+    dvz_free(plan->query_position_start);
+    plan->query_position_start = NULL;
+    dvz_free(plan->query_position_curr);
+    plan->query_position_curr = NULL;
+    dvz_free(plan->query_position_end);
+    plan->query_position_end = NULL;
+    dvz_free(plan->query_line_width);
+    plan->query_line_width = NULL;
+    dvz_free(plan->query_path_flags);
+    plan->query_path_flags = NULL;
+    dvz_free(plan->query_path_distance);
+    plan->query_path_distance = NULL;
+    dvz_free(plan->query_indices);
+    plan->query_indices = NULL;
 }

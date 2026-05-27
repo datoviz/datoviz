@@ -332,7 +332,7 @@ static uint64_t _path_query_next_index(
  * @return true when derived buffers were created
  */
 static bool _path_query_geometry(
-    const DvzVisual* visual, DvzSceneProbePlan* scratch, uint64_t* out_vertex_count,
+    const DvzVisual* visual, DvzSceneQueryScratch* scratch, uint64_t* out_vertex_count,
     uint64_t* out_index_count)
 {
     ANN(visual);
@@ -383,16 +383,16 @@ static bool _path_query_geometry(
     }
 
     if (!_path_query_alloc(
-            (void**)&scratch->pick_position_start, vertex_count, 3 * sizeof(float)) ||
+            (void**)&scratch->query_position_start, vertex_count, 3 * sizeof(float)) ||
         !_path_query_alloc(
-            (void**)&scratch->pick_position_curr, vertex_count, 3 * sizeof(float)) ||
+            (void**)&scratch->query_position_curr, vertex_count, 3 * sizeof(float)) ||
         !_path_query_alloc(
-            (void**)&scratch->pick_position_end, vertex_count, 3 * sizeof(float)) ||
-        !_path_query_alloc((void**)&scratch->pick_ids, vertex_count, sizeof(uint32_t)) ||
-        !_path_query_alloc((void**)&scratch->pick_line_width, vertex_count, sizeof(float)) ||
-        !_path_query_alloc((void**)&scratch->pick_path_flags, vertex_count, sizeof(uint32_t)) ||
-        !_path_query_alloc((void**)&scratch->pick_path_distance, vertex_count, sizeof(float)) ||
-        !_path_query_alloc((void**)&scratch->pick_indices, index_count, sizeof(uint32_t)))
+            (void**)&scratch->query_position_end, vertex_count, 3 * sizeof(float)) ||
+        !_path_query_alloc((void**)&scratch->query_ids, vertex_count, sizeof(uint32_t)) ||
+        !_path_query_alloc((void**)&scratch->query_line_width, vertex_count, sizeof(float)) ||
+        !_path_query_alloc((void**)&scratch->query_path_flags, vertex_count, sizeof(uint32_t)) ||
+        !_path_query_alloc((void**)&scratch->query_path_distance, vertex_count, sizeof(float)) ||
+        !_path_query_alloc((void**)&scratch->query_indices, index_count, sizeof(uint32_t)))
     {
         return false;
     }
@@ -428,27 +428,27 @@ static bool _path_query_geometry(
                 bool subpath_end = !closed && point_idx + 1 == offset + length;
                 uint64_t dst = 4 * segment + j;
                 dvz_memcpy(
-                    &scratch->pick_position_start[3 * dst], 3 * sizeof(float),
+                    &scratch->query_position_start[3 * dst], 3 * sizeof(float),
                     &position[3 * prev_idx], 3 * sizeof(float));
                 dvz_memcpy(
-                    &scratch->pick_position_curr[3 * dst], 3 * sizeof(float),
+                    &scratch->query_position_curr[3 * dst], 3 * sizeof(float),
                     &position[3 * point_idx], 3 * sizeof(float));
                 dvz_memcpy(
-                    &scratch->pick_position_end[3 * dst], 3 * sizeof(float),
+                    &scratch->query_position_end[3 * dst], 3 * sizeof(float),
                     &position[3 * next_idx], 3 * sizeof(float));
-                scratch->pick_ids[dst] = (uint32_t)segment + 1u;
-                scratch->pick_line_width[dst] = line_width[point_idx];
-                scratch->pick_path_flags[dst] = _path_query_vertex_flags(
+                scratch->query_ids[dst] = (uint32_t)segment + 1u;
+                scratch->query_line_width[dst] = line_width[point_idx];
+                scratch->query_path_flags[dst] = _path_query_vertex_flags(
                     side_negative, endpoint_end, has_prev, has_next, subpath_start, subpath_end);
-                scratch->pick_path_distance[dst] =
+                scratch->query_path_distance[dst] =
                     endpoint_end ? cumulative + edge_length : cumulative;
             }
-            scratch->pick_indices[6 * segment + 0] = (uint32_t)(4 * segment + 0);
-            scratch->pick_indices[6 * segment + 1] = (uint32_t)(4 * segment + 1);
-            scratch->pick_indices[6 * segment + 2] = (uint32_t)(4 * segment + 2);
-            scratch->pick_indices[6 * segment + 3] = (uint32_t)(4 * segment + 0);
-            scratch->pick_indices[6 * segment + 4] = (uint32_t)(4 * segment + 2);
-            scratch->pick_indices[6 * segment + 5] = (uint32_t)(4 * segment + 3);
+            scratch->query_indices[6 * segment + 0] = (uint32_t)(4 * segment + 0);
+            scratch->query_indices[6 * segment + 1] = (uint32_t)(4 * segment + 1);
+            scratch->query_indices[6 * segment + 2] = (uint32_t)(4 * segment + 2);
+            scratch->query_indices[6 * segment + 3] = (uint32_t)(4 * segment + 0);
+            scratch->query_indices[6 * segment + 4] = (uint32_t)(4 * segment + 2);
+            scratch->query_indices[6 * segment + 5] = (uint32_t)(4 * segment + 3);
             segment++;
             cumulative += edge_length;
         }
@@ -520,7 +520,7 @@ static bool _path_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQuer
     uint64_t index_count = 0;
     if (!_path_query_geometry(ctx->visual, &out_plan->scratch, &vertex_count, &index_count))
     {
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 
@@ -539,7 +539,7 @@ static bool _path_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQuer
         _dvz_mul_u64_overflows(index_count, sizeof(uint32_t), &index_bytes))
     {
         log_error("path query request buffer size overflow");
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 
@@ -548,26 +548,26 @@ static bool _path_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQuer
     bool ok = plan != NULL;
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "query0_position_start", 0, position_bytes, "position_start",
-                   out_plan->scratch.pick_position_start) &&
+                   out_plan->scratch.query_position_start) &&
          dvz_frame_plan_upload_bytes(
              plan, "query0_position", 0, position_bytes, "position",
-             out_plan->scratch.pick_position_curr) &&
+             out_plan->scratch.query_position_curr) &&
          dvz_frame_plan_upload_bytes(
              plan, "query0_position_end", 0, position_bytes, "position_end",
-             out_plan->scratch.pick_position_end) &&
+             out_plan->scratch.query_position_end) &&
          dvz_frame_plan_upload_bytes(
-             plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.pick_ids) &&
+             plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.query_ids) &&
          dvz_frame_plan_upload_bytes(
              plan, "query0_line_width", 0, width_bytes, "line_width",
-             out_plan->scratch.pick_line_width) &&
+             out_plan->scratch.query_line_width) &&
          dvz_frame_plan_upload_bytes(
              plan, "query0_path_flags", 0, flags_bytes, "path_flags",
-             out_plan->scratch.pick_path_flags) &&
+             out_plan->scratch.query_path_flags) &&
          dvz_frame_plan_upload_bytes(
              plan, "query0_path_distance", 0, distance_bytes, "path_distance",
-             out_plan->scratch.pick_path_distance) &&
+             out_plan->scratch.query_path_distance) &&
          dvz_frame_plan_upload_bytes(
-             plan, "query0_index", 0, index_bytes, "index", out_plan->scratch.pick_indices);
+             plan, "query0_index", 0, index_bytes, "index", out_plan->scratch.query_indices);
     if (ok)
         _path_query_mark_last_upload_index(plan, sizeof(uint32_t));
     ok = ok && dvz_frame_plan_upload_bytes(
@@ -624,7 +624,7 @@ static bool _path_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQuer
         log_error(
             "path query request %" PRIu64 " failed to assemble the GPU readback plan",
             ctx->pending->request.request_id);
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 

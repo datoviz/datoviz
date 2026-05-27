@@ -587,10 +587,10 @@ static bool _labels_query_execute(
     }
 
     dvz_drp2_runtime_reset(executor->runtime);
-    executor->image_probe_visual = NULL;
-    executor->image_probe_position_version = 0;
-    executor->image_probe_texcoord_version = 0;
-    executor->image_probe_texture_version = 0;
+    executor->image_query_visual = NULL;
+    executor->image_query_position_version = 0;
+    executor->image_query_texcoord_version = 0;
+    executor->image_query_texture_version = 0;
 
     const uint64_t texture_id = 7001;
     const uint64_t buffer_id = 7002;

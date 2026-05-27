@@ -37,7 +37,7 @@ new design decisions.
 1. `src/scene/query/queue.c`: native query queue ownership and figure-level processing entry point.
 2. `src/scene/query/execute.c`: generic native query orchestration across visual-family ops.
 3. `src/scene/query/executor.c`: retained DRP2 query executor lifecycle.
-4. `src/scene/probe_plan.c`: image query plan builder still carrying probe-era naming.
+4. `src/scene/image_query_plan.c`: synthetic image sample query frame-plan construction.
 4. `src/scene/render_pass.c`: scene-to-DRP2 converter now forwards `DvzFramePlanCopyDesc` metadata
    for supported DRP2 fields, but runtime copy selection is still tied to the current color target.
 5. `include/datoviz/scene/frame_plan.h`: copy metadata exists; multi-output query integration and
@@ -137,6 +137,10 @@ Committed implementation slices:
     - removed the private `DVZ_SCENE_QUERY_FLAG_COMPAT_PROBE` path left behind after public probe
       deletion,
     - query eligibility now always uses native visual capabilities.
+34. `scene: rename query scratch internals`
+    - renamed the remaining `DvzSceneProbePlan` scratch container and `probe_plan.c` file to query
+      terminology,
+    - renamed internal scratch buffers from `pick_*`/`probe_*` to `query_*`.
 
 Recorded validation after these commits:
 
@@ -416,8 +420,7 @@ Tasks:
 2. Keep examples on query. Current `examples/c` no longer calls public pick/probe APIs.
 3. Expand selection and pinned readout tests around native query results.
 4. Rename tests from pick/probe when their behavior is now query-specific.
-5. Rename probe-era internal helper names where they now describe generic query plan scratch.
-6. Keep migration notes in specs, not legacy `docs/`.
+5. Keep migration notes in specs, not legacy `docs/`.
 
 Validation:
 
@@ -435,7 +438,7 @@ Primary ownership:
 1. `src/scene/query/queue.c`
 2. `src/scene/query/execute.c`
 3. `src/scene/query/executor.c`
-4. `src/scene/probe_plan.c`
+4. `src/scene/image_query_plan.c`
 5. broad visual files touched by query policy
 6. CMake source globs/layout if subdirectories need explicit inclusion
 
@@ -485,12 +488,11 @@ edit the same file unless the coordinator explicitly serializes that integration
 
 The best next code slice is cleanup around non-final family readout/format details:
 
-1. Rename probe-era internal helper names in image/query scratch paths.
-2. Harden labels query so rendered GPU semantics replace the current direct retained-field
+1. Harden labels query so rendered GPU semantics replace the current direct retained-field
    upload/readback path.
-3. Add GPU volume slice query semantics.
-4. Continue replacing old public pick/probe test names with native query names.
-5. Add DRP2/runtime fixtures for `rg32uint` and multi-output query readbacks before relying on those
+2. Add GPU volume slice query semantics.
+3. Continue replacing old public pick/probe test names with native query names.
+4. Add DRP2/runtime fixtures for `rg32uint` and multi-output query readbacks before relying on those
    profiles broadly.
 
 

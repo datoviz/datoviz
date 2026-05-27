@@ -977,7 +977,7 @@ struct DvzAnnotation
 typedef struct DvzPendingQueryRequest DvzPendingQueryRequest;
 typedef struct DvzQueuedQueryResult DvzQueuedQueryResult;
 typedef struct DvzRequestFreshnessScope DvzRequestFreshnessScope;
-typedef struct DvzSceneProbePlan DvzSceneProbePlan;
+typedef struct DvzSceneQueryScratch DvzSceneQueryScratch;
 typedef struct DvzSceneRequestExecutor DvzSceneRequestExecutor;
 
 struct DvzPendingQueryRequest
@@ -1007,20 +1007,20 @@ struct DvzRequestFreshnessScope
 };
 
 
-struct DvzSceneProbePlan
+struct DvzSceneQueryScratch
 {
     DvzFramePlan* plan;
-    vec3* probe_positions;
-    vec2* probe_texcoords;
-    DvzColor* pick_colors;
-    uint32_t* pick_ids;
-    float* pick_position_start;
-    float* pick_position_curr;
-    float* pick_position_end;
-    float* pick_line_width;
-    uint32_t* pick_path_flags;
-    float* pick_path_distance;
-    uint32_t* pick_indices;
+    vec3* query_positions;
+    vec2* query_texcoords;
+    DvzColor* query_colors;
+    uint32_t* query_ids;
+    float* query_position_start;
+    float* query_position_curr;
+    float* query_position_end;
+    float* query_line_width;
+    uint32_t* query_path_flags;
+    float* query_path_distance;
+    uint32_t* query_indices;
 };
 
 
@@ -1029,13 +1029,13 @@ struct DvzSceneRequestExecutor
     DvzDrp2Runtime* runtime;
     DvzFramePlanEmitter* emitter;
     DvzDrp2RuntimeConfig runtime_cfg;
-    DvzVisual* image_probe_visual;
-    uint64_t image_probe_position_version;
-    uint64_t image_probe_texcoord_version;
-    uint64_t image_probe_texture_version;
+    DvzVisual* image_query_visual;
+    uint64_t image_query_position_version;
+    uint64_t image_query_texcoord_version;
+    uint64_t image_query_texture_version;
     uint32_t runtime_create_count;
     uint32_t emitter_create_count;
-    uint32_t image_probe_static_upload_count;
+    uint32_t image_query_static_upload_count;
 };
 
 
@@ -1695,10 +1695,10 @@ bool _scene_point_pick_cpu(
     const DvzFigure* figure, const DvzPanel* panel, const DvzVisual* visual, double x, double y,
     uint64_t* out_item_id);
 void _scene_pick_trace(const char* format, ...);
-bool _scene_image_probe_plan(
+bool _scene_image_query_plan(
     const DvzPanel* panel, DvzVisual* visual, const DvzPendingQueryRequest* pending,
-    const vec2 request_ndc, bool include_static_uploads, DvzSceneProbePlan* out_plan);
-void _scene_probe_plan_destroy(DvzSceneProbePlan* plan);
+    const vec2 request_ndc, bool include_static_uploads, DvzSceneQueryScratch* out_plan);
+void _scene_query_scratch_destroy(DvzSceneQueryScratch* plan);
 void _scene_request_executor_init(DvzSceneRequestExecutor* executor);
 void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor);
 bool _scene_request_executor_prepare(

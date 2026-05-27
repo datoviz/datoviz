@@ -205,7 +205,7 @@ static void _segment_query_mark_last_upload_uniform(DvzFramePlan* plan)
  * @return true when derived buffers were created
  */
 static bool _segment_query_geometry(
-    const DvzVisual* visual, DvzSceneProbePlan* scratch, uint64_t* out_vertex_count,
+    const DvzVisual* visual, DvzSceneQueryScratch* scratch, uint64_t* out_vertex_count,
     uint64_t* out_index_count)
 {
     ANN(visual);
@@ -236,12 +236,12 @@ static bool _segment_query_geometry(
     }
 
     if (!_segment_query_alloc(
-            (void**)&scratch->pick_position_start, vertex_count, 3 * sizeof(float)) ||
+            (void**)&scratch->query_position_start, vertex_count, 3 * sizeof(float)) ||
         !_segment_query_alloc(
-            (void**)&scratch->pick_position_end, vertex_count, 3 * sizeof(float)) ||
-        !_segment_query_alloc((void**)&scratch->pick_line_width, vertex_count, sizeof(float)) ||
-        !_segment_query_alloc((void**)&scratch->pick_ids, vertex_count, sizeof(uint32_t)) ||
-        !_segment_query_alloc((void**)&scratch->pick_indices, index_count, sizeof(uint32_t)))
+            (void**)&scratch->query_position_end, vertex_count, 3 * sizeof(float)) ||
+        !_segment_query_alloc((void**)&scratch->query_line_width, vertex_count, sizeof(float)) ||
+        !_segment_query_alloc((void**)&scratch->query_ids, vertex_count, sizeof(uint32_t)) ||
+        !_segment_query_alloc((void**)&scratch->query_indices, index_count, sizeof(uint32_t)))
     {
         return false;
     }
@@ -255,20 +255,20 @@ static bool _segment_query_geometry(
         {
             uint64_t dst = 4 * i + j;
             dvz_memcpy(
-                &scratch->pick_position_start[3 * dst], 3 * sizeof(float),
+                &scratch->query_position_start[3 * dst], 3 * sizeof(float),
                 &position_start[3 * i], 3 * sizeof(float));
             dvz_memcpy(
-                &scratch->pick_position_end[3 * dst], 3 * sizeof(float),
+                &scratch->query_position_end[3 * dst], 3 * sizeof(float),
                 &position_end[3 * i], 3 * sizeof(float));
-            scratch->pick_line_width[dst] = line_width[i];
-            scratch->pick_ids[dst] = (uint32_t)i + 1u;
+            scratch->query_line_width[dst] = line_width[i];
+            scratch->query_ids[dst] = (uint32_t)i + 1u;
         }
-        scratch->pick_indices[6 * i + 0] = (uint32_t)(4 * i + 0);
-        scratch->pick_indices[6 * i + 1] = (uint32_t)(4 * i + 1);
-        scratch->pick_indices[6 * i + 2] = (uint32_t)(4 * i + 2);
-        scratch->pick_indices[6 * i + 3] = (uint32_t)(4 * i + 0);
-        scratch->pick_indices[6 * i + 4] = (uint32_t)(4 * i + 2);
-        scratch->pick_indices[6 * i + 5] = (uint32_t)(4 * i + 3);
+        scratch->query_indices[6 * i + 0] = (uint32_t)(4 * i + 0);
+        scratch->query_indices[6 * i + 1] = (uint32_t)(4 * i + 1);
+        scratch->query_indices[6 * i + 2] = (uint32_t)(4 * i + 2);
+        scratch->query_indices[6 * i + 3] = (uint32_t)(4 * i + 0);
+        scratch->query_indices[6 * i + 4] = (uint32_t)(4 * i + 2);
+        scratch->query_indices[6 * i + 5] = (uint32_t)(4 * i + 3);
     }
 
     *out_vertex_count = vertex_count;
@@ -331,7 +331,7 @@ static bool _segment_query_build(
     uint64_t index_count = 0;
     if (!_segment_query_geometry(ctx->visual, &out_plan->scratch, &vertex_count, &index_count))
     {
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 
@@ -346,7 +346,7 @@ static bool _segment_query_build(
         _dvz_mul_u64_overflows(index_count, sizeof(uint32_t), &index_bytes))
     {
         log_error("segment query request buffer size overflow");
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 
@@ -355,17 +355,17 @@ static bool _segment_query_build(
     bool ok = plan != NULL;
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "query0_position_start", 0, position_bytes, "position_start",
-                   out_plan->scratch.pick_position_start) &&
+                   out_plan->scratch.query_position_start) &&
          dvz_frame_plan_upload_bytes(
              plan, "query0_position_end", 0, position_bytes, "position_end",
-             out_plan->scratch.pick_position_end) &&
+             out_plan->scratch.query_position_end) &&
          dvz_frame_plan_upload_bytes(
-             plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.pick_ids) &&
+             plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.query_ids) &&
          dvz_frame_plan_upload_bytes(
              plan, "query0_line_width", 0, width_bytes, "line_width",
-             out_plan->scratch.pick_line_width) &&
+             out_plan->scratch.query_line_width) &&
          dvz_frame_plan_upload_bytes(
-             plan, "query0_index", 0, index_bytes, "index", out_plan->scratch.pick_indices);
+             plan, "query0_index", 0, index_bytes, "index", out_plan->scratch.query_indices);
     if (ok)
         _segment_query_mark_last_upload_index(plan, sizeof(uint32_t));
     ok = ok && dvz_frame_plan_upload_bytes(
@@ -417,7 +417,7 @@ static bool _segment_query_build(
         log_error(
             "segment query request %" PRIu64 " failed to assemble the GPU readback plan",
             ctx->pending->request.request_id);
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 

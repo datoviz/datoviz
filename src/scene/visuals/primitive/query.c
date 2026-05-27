@@ -222,7 +222,7 @@ static bool _primitive_query_source_vertex_index(
  * @return true when derived buffers were created
  */
 static bool _primitive_query_geometry(
-    const DvzVisual* visual, DvzSceneProbePlan* scratch, uint64_t* out_vertex_count,
+    const DvzVisual* visual, DvzSceneQueryScratch* scratch, uint64_t* out_vertex_count,
     uint32_t* out_topology)
 {
     ANN(visual);
@@ -299,10 +299,10 @@ static bool _primitive_query_geometry(
         return false;
 
     if (!_primitive_query_alloc(
-            (void**)&scratch->probe_positions, draw_vertex_count, sizeof(vec3)) ||
-        !_primitive_query_alloc((void**)&scratch->pick_ids, draw_vertex_count, sizeof(uint32_t)))
+            (void**)&scratch->query_positions, draw_vertex_count, sizeof(vec3)) ||
+        !_primitive_query_alloc((void**)&scratch->query_ids, draw_vertex_count, sizeof(uint32_t)))
     {
-        _scene_probe_plan_destroy(scratch);
+        _scene_query_scratch_destroy(scratch);
         return false;
     }
 
@@ -346,7 +346,7 @@ static bool _primitive_query_geometry(
             prim_vertex_count = 3;
             break;
         default:
-            _scene_probe_plan_destroy(scratch);
+            _scene_query_scratch_destroy(scratch);
             return false;
         }
 
@@ -356,14 +356,14 @@ static bool _primitive_query_geometry(
             if (!_primitive_query_source_vertex_index(
                     visual, draw_indices[j], vertex_count, &source_index))
             {
-                _scene_probe_plan_destroy(scratch);
+                _scene_query_scratch_destroy(scratch);
                 return false;
             }
             uint64_t dst = prim * prim_vertex_count + j;
             dvz_memcpy(
-                scratch->probe_positions[dst], sizeof(vec3), &position[3 * source_index],
+                scratch->query_positions[dst], sizeof(vec3), &position[3 * source_index],
                 sizeof(vec3));
-            scratch->pick_ids[dst] = (uint32_t)prim + 1u;
+            scratch->query_ids[dst] = (uint32_t)prim + 1u;
         }
     }
 
@@ -421,7 +421,7 @@ static bool _primitive_query_build(
     uint32_t topology = 0;
     if (!_primitive_query_geometry(ctx->visual, &out_plan->scratch, &vertex_count, &topology))
     {
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 
@@ -429,7 +429,7 @@ static bool _primitive_query_build(
     uint32_t target_height = 0;
     if (!_primitive_query_target_extent(ctx->figure, ctx->panel, &target_width, &target_height))
     {
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 
@@ -440,7 +440,7 @@ static bool _primitive_query_build(
         _dvz_mul_u64_overflows(vertex_count, sizeof(uint32_t), &id_bytes))
     {
         log_error("primitive query request buffer size overflow");
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 
@@ -449,11 +449,11 @@ static bool _primitive_query_build(
     bool ok = plan != NULL;
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "query0_position", 0, position_bytes, "position",
-                   out_plan->scratch.probe_positions);
+                   out_plan->scratch.query_positions);
     if (ok)
         ok = dvz_frame_plan_upload_set_topology(plan, topology);
     ok = ok && dvz_frame_plan_upload_bytes(
-                   plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.pick_ids);
+                   plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.query_ids);
 
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;
@@ -493,7 +493,7 @@ static bool _primitive_query_build(
         log_error(
             "primitive query request %" PRIu64 " failed to assemble the GPU readback plan",
             ctx->pending->request.request_id);
-        _scene_probe_plan_destroy(&out_plan->scratch);
+        _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
     }
 

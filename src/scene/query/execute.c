@@ -98,23 +98,23 @@ static bool _query_profile_supported(DvzQueryProfile profile, const DvzCapabilit
 
 
 /**
- * Mark retained image-probe static uploads after a successful command execution.
+ * Mark retained image-query static uploads after a successful command execution.
  *
  * @param executor retained query executor
- * @param plan query plan carrying image-probe cache versions
+ * @param plan query plan carrying image-query cache versions
  */
-static void _query_mark_image_probe_static_upload(
+static void _query_mark_image_static_upload(
     DvzSceneRequestExecutor* executor, const DvzSceneQueryPlan* plan)
 {
     ANN(executor);
     ANN(plan);
-    if (!plan->mark_image_probe_static_uploaded || plan->image_probe_visual == NULL)
+    if (!plan->mark_image_query_static_uploaded || plan->image_query_visual == NULL)
         return;
-    executor->image_probe_visual = plan->image_probe_visual;
-    executor->image_probe_position_version = plan->image_probe_position_version;
-    executor->image_probe_texcoord_version = plan->image_probe_texcoord_version;
-    executor->image_probe_texture_version = plan->image_probe_texture_version;
-    executor->image_probe_static_upload_count++;
+    executor->image_query_visual = plan->image_query_visual;
+    executor->image_query_position_version = plan->image_query_position_version;
+    executor->image_query_texcoord_version = plan->image_query_texcoord_version;
+    executor->image_query_texture_version = plan->image_query_texture_version;
+    executor->image_query_static_upload_count++;
 }
 
 
@@ -276,7 +276,7 @@ static void _query_result_init(
 /*************************************************************************************************/
 
 /**
- * Resolve one native query request without falling back to pick/probe queues.
+ * Resolve one native query request through visual-family query operations.
  *
  * @param figure the figure
  * @param runtime the DRP2 runtime
@@ -444,7 +444,7 @@ bool _dvz_scene_query_execute_family(
     DvzSceneQueryPlan plan = {0};
     if (!ops->build(&build, &plan))
     {
-        _scene_probe_plan_destroy(&plan.scratch);
+        _scene_query_scratch_destroy(&plan.scratch);
         return false;
     }
 
@@ -462,12 +462,12 @@ bool _dvz_scene_query_execute_family(
             plan.target_height, plan.format, bytes, plan.byte_size, &executed);
     }
     if (executed)
-        _query_mark_image_probe_static_upload(executor, &plan);
+        _query_mark_image_static_upload(executor, &plan);
     if (!ok)
     {
         out_result->status =
             executed ? DVZ_QUERY_STATUS_READBACK_FAILED : DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
-        _scene_probe_plan_destroy(&plan.scratch);
+        _scene_query_scratch_destroy(&plan.scratch);
         return true;
     }
 
@@ -479,7 +479,7 @@ bool _dvz_scene_query_execute_family(
     };
     if (!ops->decode(&decode, out_result))
     {
-        _scene_probe_plan_destroy(&plan.scratch);
+        _scene_query_scratch_destroy(&plan.scratch);
         return false;
     }
 
@@ -493,6 +493,6 @@ bool _dvz_scene_query_execute_family(
             out_result->status = DVZ_QUERY_STATUS_DECODE_FAILED;
     }
 
-    _scene_probe_plan_destroy(&plan.scratch);
+    _scene_query_scratch_destroy(&plan.scratch);
     return true;
 }
