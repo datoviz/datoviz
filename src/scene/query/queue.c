@@ -294,8 +294,7 @@ uint32_t dvz_figure_process_queries(
     DvzScene* scene = figure->scene;
     uint32_t processed = 0;
     _query_coalesce_pending_requests(scene, figure);
-    DvzSceneRequestExecutor executor = {0};
-    _scene_request_executor_init(&executor);
+    DvzSceneRequestExecutor* executor = &scene->query_executor;
 
     for (uint32_t i = 0; i < scene->pending_query_count;)
     {
@@ -307,7 +306,7 @@ uint32_t dvz_figure_process_queries(
         }
 
         DvzQueryResult result = {0};
-        if (_dvz_scene_query_process_pending(figure, runtime, &executor, caps, &pending, &result))
+        if (_dvz_scene_query_process_pending(figure, runtime, executor, caps, &pending, &result))
             (void)_dvz_scene_query_push_result(
                 scene, pending.panel, pending.freshness_serial, &result);
 
@@ -315,7 +314,6 @@ uint32_t dvz_figure_process_queries(
         processed++;
     }
 
-    _scene_request_executor_destroy(&executor);
     return processed;
 }
 

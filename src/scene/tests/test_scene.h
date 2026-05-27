@@ -788,6 +788,9 @@ int test_scene_query_rejects_family_unsupported_profile(TstContext* suite, const
 
 int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* item);
 
+int test_scene_image_query_generated_rect_samples_position(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_image_sample_query_readback_failure(TstContext* suite, const TstCase* item);
 
 int test_scene_point_query_misses_empty_pixel(TstContext* suite, const TstCase* item);

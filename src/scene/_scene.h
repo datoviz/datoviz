@@ -1039,6 +1039,8 @@ struct DvzSceneRequestExecutor
     uint64_t image_query_position_version;
     uint64_t image_query_texcoord_version;
     uint64_t image_query_texture_version;
+    DvzSceneVisualFamily active_query_family;
+    DvzSceneTargetKind active_query_target;
     uint32_t runtime_create_count;
     uint32_t emitter_create_count;
     uint32_t image_query_static_upload_count;
@@ -1669,6 +1671,7 @@ struct DvzScene
 
     uint32_t pending_query_count;
     DvzPendingQueryRequest pending_queries[DVZ_SCENE_MAX_PENDING_REQUESTS];
+    DvzSceneRequestExecutor query_executor;
 
     uint32_t query_result_count;
     uint32_t query_result_head;

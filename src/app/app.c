@@ -3240,6 +3240,8 @@ void dvz_app_destroy(DvzApp* app)
         win->has_last_trace_snapshot = false;
         _view_post_destroy(win);
     }
+    if (app->scene != NULL)
+        _scene_request_executor_destroy(&app->scene->query_executor);
     _app_destroy_resources(app);
 #endif
 

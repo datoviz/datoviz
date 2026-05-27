@@ -267,6 +267,27 @@ static void _query_result_init(
 
 
 
+/**
+ * Reset retained query resources when the next plan uses a different resource schema.
+ *
+ * @param executor retained query executor
+ * @param family query visual family
+ * @param target query target
+ */
+static void _query_executor_reset_for_schema(
+    DvzSceneRequestExecutor* executor, DvzSceneVisualFamily family, DvzSceneTargetKind target)
+{
+    ANN(executor);
+    if (
+        executor->active_query_family != DVZ_SCENE_VISUAL_FAMILY_NONE &&
+        (executor->active_query_family != family || executor->active_query_target != target))
+    {
+        _scene_request_executor_destroy(executor);
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -422,11 +443,14 @@ bool _dvz_scene_query_execute_family(
         out_result->status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
         return true;
     }
+    _query_executor_reset_for_schema(executor, ops->family, pending->request.target);
     if (!_scene_request_executor_prepare(executor, runtime))
     {
         out_result->status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
         return true;
     }
+    executor->active_query_family = ops->family;
+    executor->active_query_target = pending->request.target;
 
     DvzSceneQueryBuildContext build = {
         .figure = figure,

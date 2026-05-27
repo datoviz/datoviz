@@ -306,11 +306,14 @@ bool _scene_image_query_plan(
     if (include_static_uploads)
     {
         ok = ok && dvz_frame_plan_upload_bytes(
-                       plan, "image_query0_position", 0, position_bytes, "position", position_data) &&
-             dvz_frame_plan_upload_bytes(
-                 plan, "image_query0_texcoords", 0, texcoord_bytes, "texcoords", texcoord_data) &&
-             dvz_frame_plan_upload_bytes(
-                 plan, "image_query0_texture", 0, texture_bytes, "texture", texture_data) &&
+                       plan, "query0_position", 0, position_bytes, "position", position_data);
+        ok = ok && dvz_frame_plan_upload_set_topology(
+                       plan, generated_rect ? DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+                                             : DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
+        ok = ok && dvz_frame_plan_upload_bytes(
+                       plan, "query0_texcoords", 0, texcoord_bytes, "texcoords", texcoord_data);
+        ok = ok && dvz_frame_plan_upload_bytes(
+                       plan, "query0_texture", 0, texture_bytes, "texture", texture_data) &&
              dvz_frame_plan_upload_set_texture_extent(plan, texture_width, texture_height) &&
              dvz_frame_plan_upload_set_texture_allocation_extent(
                  plan, texture_width, texture_height);
@@ -318,7 +321,7 @@ bool _scene_image_query_plan(
     ok = ok && dvz_frame_plan_render_panel(
                    plan, "panel.query.image", "target.query.image", false,
                    (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1}) &&
-         dvz_frame_plan_render_visual(plan, "image_query0");
+         dvz_frame_plan_render_visual(plan, "query0");
     DvzFramePlanNode* render = plan != NULL ? dvz_frame_plan_last_render_node(plan) : NULL;
     if (render != NULL)
     {

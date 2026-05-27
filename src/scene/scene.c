@@ -2273,6 +2273,7 @@ DvzScene* dvz_scene(void)
     scene->font_defaults = dvz_font_defaults();
     scene->clock.mode = DVZ_CLOCK_REALTIME;
     scene->clock.fps = 60.0;
+    _scene_request_executor_init(&scene->query_executor);
     scene->emitter = dvz_frame_plan_emitter();
     if (scene->emitter == NULL)
     {
@@ -2354,6 +2355,7 @@ void dvz_scene_destroy(DvzScene* scene)
         scene->overlay_cards[i].scene = NULL;
     for (uint32_t i = 0; i < scene->controller_count; i++)
         _scene_controller_destroy(&scene->controllers[i]);
+    _scene_request_executor_destroy(&scene->query_executor);
     if (scene->emitter != NULL)
     {
         dvz_frame_plan_emitter_destroy(scene->emitter);
