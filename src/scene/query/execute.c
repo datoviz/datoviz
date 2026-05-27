@@ -95,9 +95,17 @@ bool _dvz_scene_query_execute_family(
 
     uint8_t bytes[DVZ_SCENE_QUERY_PAYLOAD_WORDS * sizeof(uint32_t)] = {0};
     bool executed = false;
-    bool ok = _dvz_scene_query_execute_readback(
-        figure->scene, executor, caps, plan.scratch.plan, plan.target_width, plan.target_height,
-        plan.format, bytes, plan.byte_size, &executed);
+    bool ok = false;
+    if (ops->execute != NULL)
+    {
+        ok = ops->execute(&build, executor, caps, &plan, bytes, plan.byte_size, &executed);
+    }
+    else
+    {
+        ok = _dvz_scene_query_execute_readback(
+            figure->scene, executor, caps, plan.scratch.plan, plan.target_width,
+            plan.target_height, plan.format, bytes, plan.byte_size, &executed);
+    }
     if (!ok)
     {
         out_result->status =

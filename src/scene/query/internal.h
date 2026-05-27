@@ -46,6 +46,10 @@ typedef bool (*DvzSceneQueryEligible)(
     const DvzPanel* panel, const DvzVisual* visual, const DvzQueryRequest* request);
 typedef bool (*DvzSceneQueryBuild)(
     const DvzSceneQueryBuildContext* ctx, DvzSceneQueryPlan* out_plan);
+typedef bool (*DvzSceneQueryExecute)(
+    const DvzSceneQueryBuildContext* ctx, DvzSceneRequestExecutor* executor,
+    const DvzCapabilitySnapshot* caps, const DvzSceneQueryPlan* plan, uint8_t* bytes,
+    uint32_t byte_size, bool* out_executed);
 typedef bool (*DvzSceneQueryDecode)(
     const DvzSceneQueryDecodeContext* ctx, DvzQueryResult* out_result);
 typedef bool (*DvzSceneQueryReadout)(
@@ -109,6 +113,7 @@ struct DvzSceneQueryFamilyOps
     uint32_t query_flags;
     DvzSceneQueryEligible eligible;
     DvzSceneQueryBuild build;
+    DvzSceneQueryExecute execute;
     DvzSceneQueryDecode decode;
     DvzSceneQueryReadout readout;
 };
