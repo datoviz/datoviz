@@ -124,6 +124,12 @@ Advanced APIs may expose generated visuals by stable role names, such as `"fill"
 `"nodes"`, or `"edges"`, but this should be an escape hatch for integration and tests. It should not
 replace typed object APIs for common user workflows.
 
+Vector/arrow APIs should follow the same boundary. A public arrow object or visual family may expose
+one semantic mutation surface for straight and curved arrows while lowering internally to generated
+leaf roles such as `"shaft"`, `"head_start"`, and `"head_end"`. Arrowhead behavior should be shared
+across straight and curved variants through one head-style semantic contract rather than per-leaf
+ad hoc setters.
+
 
 ## Opaque Handles Versus Public Structs
 
