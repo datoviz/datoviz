@@ -1636,9 +1636,11 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     bool found_texture = false;
     bool found_upload = false;
     bool found_image_bind_group = false;
+    bool found_material_upload = false;
     bool found_draw_indexed = false;
     bool found_depth_pipeline = false;
     uint64_t texture_id = 0;
+    uint64_t material_id = 0;
 
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
@@ -1661,22 +1663,37 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
                                             cmd->u.write_texture.depth == 1 &&
                                             cmd->u.write_texture.bytes_per_row == 2 * 4);
         }
+        else if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+        {
+            if (cmd->u.write_buffer.size == sizeof(DvzSceneMaterialParams))
+            {
+                found_material_upload = true;
+                material_id = cmd->u.write_buffer.buffer_id;
+            }
+        }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP && texture_id != 0)
         {
+            bool has_material = false;
             bool has_texture = false;
             bool has_sampler = false;
             for (uint32_t j = 0; j < cmd->u.create_bind_group.entry_count; j++)
             {
                 const DvzDrp2BindGroupEntry* entry = &cmd->u.create_bind_group.entries[j];
+                has_material =
+                    has_material ||
+                    (entry->binding == 0 &&
+                     entry->binding_type == DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER &&
+                     entry->resource_id == material_id);
                 has_texture = has_texture ||
-                              (entry->binding == 0 &&
+                              (entry->binding == 1 &&
                                entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE &&
                                entry->resource_id == texture_id);
                 has_sampler = has_sampler ||
-                              (entry->binding == 1 &&
+                              (entry->binding == 2 &&
                                entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLER);
             }
-            found_image_bind_group = found_image_bind_group || (has_texture && has_sampler);
+            found_image_bind_group =
+                found_image_bind_group || (has_material && has_texture && has_sampler);
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
@@ -1697,11 +1714,12 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
 
     AT(found_texture);
     AT(found_upload);
+    AT(found_material_upload);
     AT(found_image_bind_group);
     AT(found_depth_pipeline);
     AT(found_draw_indexed);
     AT(_stream_set_vertex_buffer_count(stream) == 4);
-    AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneMaterialParams)) == 0);
+    AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneMaterialParams)) == 1);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);

@@ -15,11 +15,14 @@ struct VertexOut {
     @location(1) normal: vec3f,
     @location(2) uv: vec2f,
     @location(3) depth: f32,
+    @location(4) world_position: vec3f,
+    @location(5) camera_position: vec3f,
 }
 
 @vertex
 fn main(input: VertexIn) -> VertexOut {
     var output: VertexOut;
+    let world = mvp.model * vec4f(input.position, 1.0);
     let clip = transform(input.position);
     output.position = clip;
     output.color = input.color;
@@ -30,5 +33,7 @@ fn main(input: VertexIn) -> VertexOut {
     ) * input.normal;
     output.uv = input.uv;
     output.depth = clip.z / max(abs(clip.w), 1e-6);
+    output.world_position = world.xyz;
+    output.camera_position = (inverse(mvp.view) * vec4f(0.0, 0.0, 0.0, 1.0)).xyz;
     return output;
 }

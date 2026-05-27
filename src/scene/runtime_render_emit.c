@@ -92,6 +92,123 @@ const char* _depth_peel_fragment_spirv_key(DvzSceneBuiltinShader shader)
 
 
 /**
+ * Resolve the textured-mesh material plus texture bind-group layout.
+ *
+ * @param emitter frame-plan emitter carrying persistent object ids
+ * @param stream destination DRP2 command stream
+ * @param out_id resolved bind group layout id
+ * @return whether the layout exists or was appended
+ */
+static bool
+_resolve_textured_mesh_bind_group_layout(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t* out_id)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(out_id);
+
+    bool is_new = false;
+    uint64_t id = _obj_id(emitter, "_bgl_mesh_textured", &is_new);
+    if (id == 0)
+        return false;
+    if (is_new)
+    {
+        DvzDrp2BindGroupLayoutEntry entries[3] = {
+            {
+                .binding = 0,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .visibility = DVZ_DRP2_SHADER_STAGE_VERTEX | DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+                .access = DVZ_DRP2_BINDING_ACCESS_READ,
+            },
+            {
+                .binding = 1,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+                .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+                .access = DVZ_DRP2_BINDING_ACCESS_READ,
+            },
+            {
+                .binding = 2,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+                .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+                .access = DVZ_DRP2_BINDING_ACCESS_READ,
+            },
+        };
+        if (!dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 3, entries))
+            return false;
+    }
+    *out_id = id;
+    return true;
+}
+
+
+
+/**
+ * Resolve a textured-mesh bind group containing material params, texture, and sampler.
+ *
+ * @param emitter frame-plan emitter carrying persistent object ids
+ * @param stream destination DRP2 command stream
+ * @param bind_group_layout_id bind group layout id
+ * @param material_buffer_id material uniform buffer id
+ * @param texture_id sampled texture id
+ * @param sampler_id sampler id
+ * @param out_id resolved bind group id
+ * @return whether the bind group exists or was appended
+ */
+static bool _resolve_textured_mesh_bind_group(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id,
+    uint64_t material_buffer_id, uint64_t texture_id, uint64_t sampler_id, uint64_t* out_id)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(out_id);
+    if (bind_group_layout_id == 0 || material_buffer_id == 0 || texture_id == 0 || sampler_id == 0)
+        return false;
+
+    char bg_key[96];
+    dvz_snprintf(
+        bg_key, sizeof(bg_key), "_bg_mesh_textured_%" PRIu64 "_%" PRIu64 "_%" PRIu64,
+        material_buffer_id, texture_id, sampler_id);
+    bool is_new = false;
+    uint64_t id = _obj_id(emitter, bg_key, &is_new);
+    if (id == 0)
+        return false;
+    if (is_new)
+    {
+        DvzDrp2BindGroupEntry entries[3] = {
+            {
+                .binding = 0,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+                .resource_id = material_buffer_id,
+                .offset = 0,
+                .size = sizeof(DvzSceneMaterialParams),
+            },
+            {
+                .binding = 1,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+                .resource_id = texture_id,
+            },
+            {
+                .binding = 2,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+                .resource_id = sampler_id,
+            },
+        };
+        if (!dvz_drp2_stream_create_bind_group_entries(
+                stream, id, bind_group_layout_id, 3, entries))
+        {
+            return false;
+        }
+    }
+    *out_id = id;
+    return true;
+}
+
+
+
+/**
  * Attach scene/runtime labels to ids in an emitted DRP2 stream.
  *
  * @param emitter frame-plan emitter carrying scene/resource id maps
@@ -264,6 +381,7 @@ bool _emitter_prepare_render_multi(
 
     /* Image BGL + sampler (shared, created lazily on first image visual). */
     uint64_t img_bgl_id = 0, img_sampler_linear_id = 0, img_sampler_nearest_id = 0;
+    uint64_t textured_mesh_bgl_id = 0;
     uint64_t labels_bgl_id = 0, labels_sampler_id = 0;
     uint64_t glyph_bgl_id = 0, glyph_sampler_id = 0;
     uint64_t volume_bgl_id = 0, volume_sampler_linear_id = 0, volume_sampler_nearest_id = 0;
@@ -821,7 +939,13 @@ bool _emitter_prepare_render_multi(
                     break;
                 }
             }
-            if (pipeline.needs_image_layout && img_bgl_id == 0)
+            if (pipeline.needs_image_layout && desc.kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
+            {
+                ok = ok &&
+                     _resolve_textured_mesh_bind_group_layout(
+                         emitter, stream, &textured_mesh_bgl_id);
+            }
+            else if (pipeline.needs_image_layout && img_bgl_id == 0)
             {
                 img_bgl_id = _obj_id(emitter, "_bgl_img", &is_new);
                 if (img_bgl_id == 0)
@@ -939,8 +1063,11 @@ bool _emitter_prepare_render_multi(
                 else
                 {
                     _pipeline_bind_group_layouts(
-                        &pipeline, common_bgl_id, img_bgl_id, labels_bgl_id, glyph_bgl_id,
-                        volume_bgl_id, material_bgl_id, scene_occlusion_bgl_id,
+                        &pipeline, common_bgl_id,
+                        desc.kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH ? textured_mesh_bgl_id
+                                                                         : img_bgl_id,
+                        labels_bgl_id, glyph_bgl_id, volume_bgl_id, material_bgl_id,
+                        scene_occlusion_bgl_id,
                         scene_occlusion_uses_set2, layouts, &layout_count);
                 }
                 if (layout_count > 0)
@@ -1099,7 +1226,39 @@ bool _emitter_prepare_render_multi(
                                sizeof(DvzSceneMaterialParams));
             vis_bg_set1 = material_bg_id;
         }
-        if (bind.uses_image_set1)
+        if (bind.uses_image_set1 && desc.kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
+        {
+            if (!_resolve_textured_mesh_bind_group_layout(emitter, stream, &textured_mesh_bgl_id))
+            {
+                ok = false;
+                break;
+            }
+            if (bind.material_buffer_id == 0)
+            {
+                _diagnostic(report, "textured mesh render missing material params buffer");
+                ok = false;
+                break;
+            }
+            if (img_sampler_linear_id == 0)
+            {
+                img_sampler_linear_id = _obj_id(emitter, "_sampler_img", &is_new);
+                if (img_sampler_linear_id == 0)
+                {
+                    ok = false;
+                    break;
+                }
+                if (ok && is_new)
+                    ok = ok && dvz_drp2_stream_create_sampler_filter(
+                                   stream, img_sampler_linear_id, DVZ_DRP2_FILTER_LINEAR,
+                                   DVZ_DRP2_FILTER_LINEAR);
+            }
+            uint64_t mesh_bg_id = 0;
+            ok = ok && _resolve_textured_mesh_bind_group(
+                           emitter, stream, textured_mesh_bgl_id, bind.material_buffer_id,
+                           bind.image_texture_id, img_sampler_linear_id, &mesh_bg_id);
+            vis_bg_set1 = mesh_bg_id;
+        }
+        else if (bind.uses_image_set1)
         {
             /* Image BGL + sampler (lazy). */
             if (img_bgl_id == 0)
