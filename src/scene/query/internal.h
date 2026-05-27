@@ -132,6 +132,11 @@ bool _dvz_scene_query_execute_family(
     const vec2 request_ndc, DvzQueryProfile profile, DvzVisual* visual,
     const DvzSceneQueryFamilyOps* ops, DvzQueryResult* out_result);
 
+bool _dvz_scene_query_process_pending(
+    DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
+    const DvzCapabilitySnapshot* caps,
+    const DvzPendingQueryRequest* pending, DvzQueryResult* out_result);
+
 bool _dvz_scene_query_execute_readback(
     const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     DvzFramePlan* plan, uint32_t target_width, uint32_t target_height, uint32_t color_format,
