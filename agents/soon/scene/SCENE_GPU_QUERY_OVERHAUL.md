@@ -541,13 +541,28 @@ edit the same file unless the coordinator explicitly serializes that integration
 
 ## Next Implementation Slice Recommendation
 
-The best next code slice is cleanup around non-final family readout/format details:
+The next agent should start with query readback profile validation, before adding wider semantic
+payloads:
 
-1. Add displayed RGBA to GPU volume slice queries once the payload shape can carry it cleanly.
-2. Query profile and labels format failure coverage is now present.
-3. Continue replacing old public pick/probe test names with native query names.
-4. Add DRP2/runtime fixtures for `rg32uint` and two-attachment query readbacks before relying on
-   those profiles broadly.
+1. Add a DRP2 positive fixture for an `rg32uint` render target copied to a readback buffer. The fixture
+   should prove the 1x1 payload uses an 8-byte byte size and row pitch, not the old 4-byte
+   assumptions.
+2. Add or extend a C runtime test that executes an `rg32uint` render/copy/readback path and verifies
+   the returned 8-byte payload. Prefer a small focused DRP2/runtime test over another scene query
+   test unless scene integration is required.
+3. Commit that fixture/runtime coverage as one slice.
+4. Then handle `DVZ_QUERY_PROFILE_U64_2XR32` explicitly. Either implement true two-attachment
+   execution/readback support or remove/defer it from automatic profile selection until execution can
+   actually consume it.
+5. Only after the profile paths are covered, add displayed RGBA to GPU volume slice queries. The
+   current `rg32uint` profile is already scalar plus UVW, so displayed RGBA likely needs a wider
+   payload shape, multi-output query support, or a separate readout pass.
+6. Leave MIP and DVR/composite volume sample queries explicitly unsupported until exact GPU semantics
+   are specified and implemented.
+
+Do not start with broad `pick`/`picking` renames. Some of that terminology still describes the
+FramePlan render-pass role, and a broad rename is more likely to create churn than improve query
+behavior.
 
 
 ## Risk Register
@@ -579,6 +594,6 @@ The overhaul is complete when:
 9. examples use one panel query instead of manual pick/probe composition,
 10. focused scene and DRP2 tests pass.
 
-Current status: criteria 1, 2, 3, 4, 5, 8, and 9 are substantially satisfied by the native query,
-family-execution, public API removal, and example-migration commits. Criterion 6 remains open for
-volume slice query. Criterion 7 remains open for broader non-4-byte integer readback profiles.
+Current status: criteria 1, 2, 3, 4, 5, 6, 8, and 9 are substantially satisfied by the native query,
+family-execution, public API removal, example-migration, labels GPU readout, and scalar volume slice
+GPU query commits. Criterion 7 remains open for broader non-4-byte integer readback profile coverage.
