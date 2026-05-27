@@ -269,7 +269,7 @@ static uint32_t _query_target_capability(DvzSceneTargetKind target)
  */
 static bool _query_target_uses_probe(DvzSceneTargetKind target)
 {
-    return target == DVZ_SCENE_TARGET_SAMPLE || target == DVZ_SCENE_TARGET_SEGMENT;
+    return target == DVZ_SCENE_TARGET_SAMPLE;
 }
 
 
@@ -485,7 +485,9 @@ static bool _query_process_pending(
         return true;
     }
 
-    if (pending->request.target == DVZ_SCENE_TARGET_PIXEL)
+    if (
+        pending->request.target == DVZ_SCENE_TARGET_PIXEL ||
+        pending->request.target == DVZ_SCENE_TARGET_SEGMENT)
     {
         out_result->visual_id = _scene_visual_public_id(figure->scene, visual);
         out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
