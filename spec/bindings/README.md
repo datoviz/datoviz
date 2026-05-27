@@ -242,6 +242,21 @@ Required validation should include:
 The ABI facts should be generated from C into `build/bindings/ctypes_abi.json`, then compared with
 the generated Python classes. Do not rely on blanket assumptions such as `_pack_ = 8`.
 
+The current generator emits `_fields_` only for layout-safe records it can validate with `ctypes`.
+Records that depend on cglm vector/matrix alignment are intentionally kept opaque until the raw
+binding has an explicit aligned-structure policy.
+
+
+## Examples
+
+Keep raw Python examples small and close to the generated C surface:
+
+1. `examples/python/raw/lifecycle.py` proves import, timer calls, and scene create/destroy.
+2. `examples/python/raw/offscreen_point.py` builds a tiny point scene with raw `ctypes` arrays,
+   renders offscreen when a runtime is available, and verifies PNG capture.
+
+These examples are low-level integration proof, not a Pythonic plotting API.
+
 
 ## Migration From v0.3 Tooling
 
