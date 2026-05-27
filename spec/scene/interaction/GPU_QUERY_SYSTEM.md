@@ -49,8 +49,9 @@ Current implementation state:
    native GPU-backed families.
 5. Native query does not use the old CPU volume slice probe path. Scalar volume slice sample query
    now renders GPU payloads: `r32uint` returns the scalar baseline, while requested `rg32uint`
-   returns scalar plus GPU-computed UVW. MIP/composite, integer, and RGBA volume samples still
-   return explicit unsupported until exact GPU policies land.
+   returns scalar plus GPU-computed UVW and derives the voxel/sample id from that GPU coordinate.
+   MIP/composite, integer, and RGBA volume samples still return explicit unsupported until exact GPU
+   policies land.
 6. Labels query is family-owned and now renders through labels query shaders into an `r32uint`
    payload. CPU category lookup and text formatting remain post-GPU readout work.
 7. Old public pick/probe APIs and public pick/probe request/result structs have been removed from
@@ -422,8 +423,8 @@ than a CPU ray or proxy-geometry approximation.
 Initial implementation note: scalar slice-mode volume sample query is GPU-backed through rendered
 one-pixel integer payloads. The default `r32uint` payload carries the sampled scalar quantized
 through the volume value range. Requested `rg32uint` carries the same scalar plus packed
-GPU-computed UVW. Voxel/sample ids, displayed RGBA, integer texture formats, RGBA volumes, MIP
-winner samples, and DVR first-hit policy remain pending.
+GPU-computed UVW and derives voxel/sample ids from that coordinate after readback. Displayed RGBA,
+integer texture formats, RGBA volumes, MIP winner samples, and DVR first-hit policy remain pending.
 
 ### Text, Glyphs, And Annotations
 
