@@ -1,7 +1,7 @@
 # Scene GPU Query Overhaul
 
 > **Execution Status**
-> - **Status:** `SOON - MULTI-AGENT EXECUTION PLAN`
+> - **Status:** `IN PROGRESS - FOUNDATION LANDED`
 > - **Updated on:** `2026-05-27`
 > - **Purpose:** give the next agent team an immediately actionable plan for replacing scene
 >   pick/probe with a GPU-only query system.
@@ -37,17 +37,58 @@ new design decisions.
 1. `src/scene/request_execute.c`: main file to split and eventually delete or shrink to a migration
    wrapper. It currently mixes queue execution, family dispatch, geometry expansion, readback, labels,
    volume, and result decode.
-2. `src/scene/probe_plan.c`: image probe plan builder with current four-byte readback assumption.
-3. `src/scene/render_pass.c`: scene-to-DRP2 converter currently emits a fixed `1x1`, four-byte copy.
-4. `include/datoviz/scene/frame_plan.h`: copy/readback API lacks query format, extent, attachment,
-   row pitch, and multi-output metadata.
-5. `include/datoviz/scene/types.h`: `DvzCapabilitySnapshot` lacks query profile, readback, and
-   concrete integer render-target format facts.
-6. `include/datoviz/scene/interaction.h`: public API still exposes pick/probe as separate concepts.
-7. `src/drp2/serialization.c` and `spec/drp2/schema/common/GPUTextureFormat.json`: already contain
+2. `src/scene/query/queue.c`: transitional public query bridge that still queues old pick/probe
+   requests and converts the old results into `DvzQueryResult`.
+3. `src/scene/probe_plan.c`: image probe plan builder still used by the bridge path, with old
+   one-sample readback assumptions.
+4. `src/scene/render_pass.c`: scene-to-DRP2 converter now forwards `DvzFramePlanCopyDesc` metadata
+   for supported DRP2 fields, but runtime copy selection is still tied to the current color target.
+5. `include/datoviz/scene/frame_plan.h`: copy metadata exists; multi-output query integration and
+   full DRP2 origin/depth/attachment execution remain.
+6. `include/datoviz/scene/types.h`: query request/result/capability fields exist; capability-driven
+   profile selection is not implemented.
+7. `include/datoviz/scene/interaction.h`: public query API exists, while pick/probe remain public
+   transitional APIs.
+8. `src/drp2/serialization.c` and `spec/drp2/schema/common/GPUTextureFormat.json`: already contain
    `r32uint` and `rg32uint`, useful for query profiles.
-8. `spec/drp2/fixtures/positive/pressure_picking_readback.json`: existing `r32uint` readback fixture
+9. `spec/drp2/fixtures/positive/pressure_picking_readback.json`: existing `r32uint` readback fixture
    that should be expanded into runtime and scene-facing query tests.
+
+
+## Landed Foundation - 2026-05-27
+
+Committed implementation slices:
+
+1. `87c91a15a Add scene query migration guardrails`
+   - source guard for generic query purity,
+   - CMake inclusion for `src/scene/query/` and `src/scene/visuals/*/`,
+   - migration marker in `request_execute.c`.
+2. `108fda50d Add scene query capability surface`
+   - public query profiles, statuses, value kinds, request/result structs,
+   - query/readback capability fields and app-side Vulkan population.
+3. `566b13f45 Widen frame plan query readback metadata`
+   - `DvzFramePlanCopyDesc`,
+   - `dvz_frame_plan_copy_ex()`,
+   - fixture/runtime metadata propagation and tests.
+4. `1bd36cc71 Add panel query API bridge`
+   - public panel query, poll, process, and blocking test helper,
+   - old pick/probe to query-result conversion.
+5. `6c4789d00 Add scene query family registry`
+   - generic registry,
+   - family operation tables for point, pixel, marker, sphere, segment, path, primitive, mesh,
+     image, labels, volume, text, and glyph.
+6. `5b371244c Let selection and readouts consume query results`
+   - selection and pinned readout adapters for `DvzQueryResult`.
+
+Recorded validation after these commits:
+
+1. `just build`
+2. `just test frame_plan`
+3. `just test pick-probe`
+4. `just test query`
+5. `just test scene` with `463/463`
+6. `git diff --check`
+7. `python testing/test_scene_query_source_guard.py`
 
 
 ## Decisions Already Chosen
@@ -77,6 +118,8 @@ Use these defaults unless the user explicitly changes them:
 
 Owner: coordinator or one small worker.
 
+Status: landed in `87c91a15a`.
+
 Tasks:
 
 1. Add or update source checks that can later forbid visual-family internals in `src/scene/query/`.
@@ -95,6 +138,9 @@ Validation:
 
 Suggested subagent: DRP2/capability agent.
 
+Status: partially landed. Scene capability fields and app population exist; DRP2/WebGPU integer
+format and fixture parity still need work.
+
 Primary ownership:
 
 1. `include/datoviz/drp2/*`
@@ -107,13 +153,8 @@ Tasks:
 
 1. Introduce a logical Datoviz/DRP2 texture format vocabulary or wrapper so query design is not
    architecturally tied to raw `VkFormat`.
-2. Add scene/runtime capability fields for:
-   - `supports_readback`,
-   - supported render-target formats,
-   - supported texture formats,
-   - query profiles,
-   - min texture-copy row-pitch alignment,
-   - max readback size where needed.
+2. Complete scene/runtime capability usage for supported render-target formats, supported texture
+   formats, query profiles, min texture-copy row-pitch alignment, and max readback size.
 3. Add DRP2 fixtures for:
    - `r32uint` render target write plus readback,
    - `rg32uint` render target write plus readback,
@@ -133,6 +174,9 @@ Validation:
 
 Suggested subagent: scene frame-plan agent.
 
+Status: partially landed in `566b13f45`. Metadata is represented and emitted; multiple query
+outputs and full runtime origin/depth/attachment execution remain.
+
 Primary ownership:
 
 1. `include/datoviz/scene/frame_plan.h`
@@ -144,17 +188,9 @@ Primary ownership:
 
 Tasks:
 
-1. Replace or extend `dvz_frame_plan_copy()`/`dvz_frame_plan_readback()` for query readback metadata:
-   - format,
-   - source attachment index,
-   - origin,
-   - width/height/depth,
-   - bytes per row,
-   - rows per image,
-   - byte size,
-   - destination offset,
-   - request/readback id.
-2. Remove hardcoded `1x1`, `4`, `rows_per_image=1` assumptions from scene conversion.
+1. Extend DRP2/runtime execution so every `DvzFramePlanCopyDesc` field is honored, including source
+   origin, depth, attachment index, row pitch, destination offset, and request/readback id.
+2. Remove remaining hardcoded `1x1`, `4`, `rows_per_image=1` assumptions from old probe/query paths.
 3. Support multiple query output attachments/readbacks in one query pass.
 4. Keep existing simple copies working during migration.
 5. Add fixture-mode coverage for non-4-byte query payloads.
@@ -170,9 +206,12 @@ Validation:
 
 Suggested subagent: scene query core agent.
 
+Status: partially landed. Public structs/API, queue bridge, result polling, registry, and source
+guard exist. Native query execution, readback decode, and old-path replacement remain.
+
 Primary ownership:
 
-1. new `src/scene/query/`
+1. `src/scene/query/`
 2. private query headers
 3. `src/scene/request_queue.c` or successor queue files
 4. public/private interaction request structs
@@ -180,11 +219,10 @@ Primary ownership:
 
 Tasks:
 
-1. Add `DvzQueryRequest`, `DvzQueryResult`, query statuses, and query flags.
-2. Implement query queueing and polling.
-3. Preserve latest-request-wins and stale-result rejection behavior.
-4. Add a visual-family query registry.
-5. Add generic execution that:
+1. Replace the bridge in `src/scene/query/queue.c` with real query request queueing and polling.
+2. Preserve latest-request-wins and stale-result rejection behavior.
+3. Use the visual-family query registry to route execution instead of old pick/probe dispatch.
+4. Add generic execution that:
    - resolves panel coordinates,
    - orders panel visuals,
    - checks generic visibility and controller state,
@@ -193,8 +231,9 @@ Tasks:
    - executes DRP2 readback,
    - calls family decode/readout,
    - finalizes public result status.
-6. Ensure generic query core contains no visual-family internals.
-7. Keep old pick/probe code temporarily only as a bridge if needed.
+5. Ensure generic query core contains no visual-family internals.
+6. Invert the migration direction: old pick/probe shims should call query once native query
+   execution exists.
 
 Validation:
 
@@ -299,6 +338,9 @@ Validation:
 
 Suggested subagent: API/tests/examples agent.
 
+Status: partially landed. Query API, selection adapter, and pinned readout adapter exist. Examples,
+tests, and old public pick/probe removal remain.
+
 Primary ownership:
 
 1. `include/datoviz/scene/interaction.h`
@@ -309,13 +351,12 @@ Primary ownership:
 
 Tasks:
 
-1. Add public query API.
+1. Keep refining the public query API only as needed by native execution.
 2. Convert examples from pick/probe to query.
-3. Convert selection application to accept query results or a common identity view.
-4. Convert pinned readout creation to accept query results.
-5. Remove or privatize public pick/probe entry points.
-6. Rename tests from pick/probe when their behavior is now query-specific.
-7. Keep migration notes in specs, not legacy `docs/`.
+3. Expand selection and pinned readout tests around native query results.
+4. Remove or privatize public pick/probe entry points.
+5. Rename tests from pick/probe when their behavior is now query-specific.
+6. Keep migration notes in specs, not legacy `docs/`.
 
 Validation:
 
@@ -377,17 +418,20 @@ Workers are not alone in the codebase. Give each worker a disjoint write set. Do
 edit the same file unless the coordinator explicitly serializes that integration.
 
 
-## First Implementation Slice Recommendation
+## Next Implementation Slice Recommendation
 
-The best first code slice is not a visual family. Start with infrastructure:
+The best next code slice is the native query executor, followed by one simple family:
 
-1. add query profile/capability fields,
-2. add FramePlan query readback metadata,
-3. prove `r32uint` and `rg32uint` readback through DRP2 fixtures/tests,
-4. introduce `src/scene/query/` with queue/result scaffolding,
-5. port point query as the first family.
+1. Add `src/scene/query/execute.c`, `readback.c`, and result helpers as needed.
+2. Make `dvz_panel_query()` enqueue native query requests instead of old pick/probe requests.
+3. Make `dvz_figure_process_queries()` stop delegating to `dvz_figure_process_requests()`.
+4. Use the registry to select family ops and return explicit unsupported statuses.
+5. Port point or pixel query first using `r32uint` identity payload.
+6. Add forced readback-failure tests proving no CPU fallback result appears.
+7. After native query works, make old pick/probe APIs private shims or remove them.
 
-That slice creates the shape without forcing mesh/volume semantics too early.
+That slice removes the main architectural ambiguity before mesh, image, labels, and volume semantics
+are migrated.
 
 
 ## Risk Register
@@ -419,3 +463,6 @@ The overhaul is complete when:
 8. capability failures produce explicit unsupported results,
 9. examples use one panel query instead of manual pick/probe composition,
 10. focused scene and DRP2 tests pass.
+
+Current status: criteria 1, 3, and 4 are partially satisfied by the foundation commits. Criteria 2
+and 5-9 remain open and should be treated as the next phase of the overhaul.

@@ -14,6 +14,42 @@ The v0.4 branch may break API and ABI to get this right. Do not preserve the cur
 surface if it keeps the architecture ambiguous.
 
 
+## Implementation Status
+
+Updated on 2026-05-27 after the first implementation slice landed.
+
+Foundation now present in the tree:
+
+1. `DvzQueryRequest`, `DvzQueryResult`, query profiles, query statuses, and value kinds live in the
+   public scene headers.
+2. `dvz_panel_query()`, `dvz_scene_poll_query()`, `dvz_figure_process_queries()`, and
+   `dvz_panel_query_now()` provide the new public API bridge.
+3. `DvzCapabilitySnapshot` carries query/readback capability fields, and the app layer populates the
+   Vulkan-facing readback and integer-format facts available today.
+4. `DvzFramePlanCopyDesc` and `dvz_frame_plan_copy_ex()` carry source attachment, origin, extent,
+   format, row pitch, rows-per-image, destination offset, and request correlation metadata.
+5. `src/scene/query/registry.c` and `src/scene/query/internal.h` define the visual-family registry.
+6. Per-family query files now exist under `src/scene/visuals/<family>/query.c` for point, pixel,
+   marker, sphere, segment, path, primitive, mesh, image, labels, volume, text, and glyph families.
+7. Selection and pinned readout helpers can consume `DvzQueryResult`.
+8. `testing/test_scene_query_source_guard.py` checks that generic query files do not pull in
+   visual-family internals.
+
+Important transitional state:
+
+1. `dvz_panel_query()` currently routes through the old pick/probe request machinery; it is an API
+   bridge, not the final query executor.
+2. `dvz_figure_process_queries()` currently delegates to `dvz_figure_process_requests()`.
+3. `src/scene/request_execute.c` still owns most real execution, readback decode, labels handling,
+   and volume handling.
+4. The visual-family `query.c` files expose operation tables and capabilities only; they do not yet
+   build or decode native GPU query plans.
+5. CPU fallback paths still exist in the legacy bridge path, especially labels and volume probing.
+6. Old public pick/probe APIs remain available during migration.
+7. DRP2 and WebGPU parity are not finished: C runtime copy helpers still need full origin/depth and
+   multi-output query support, and `rg32uint` support is not yet validated across all lanes.
+
+
 ## Summary
 
 The scene should expose one authoritative question:
@@ -428,17 +464,18 @@ Current code implications recorded on 2026-05-27:
 
 1. `src/scene/request_execute.c` mixes generic request orchestration, visual-family policy, GPU
    readback, labels probing, volume probing, and result decode.
-2. Current scene readback is hardcoded around a one-pixel, four-byte RGBA payload.
+2. FramePlan copy nodes now carry query readback metadata, but the old execution path still mostly
+   consumes one-pixel, four-byte payloads.
 3. Current identity encoding is a 24-bit RGB item id, not a robust query payload format.
 4. Labels probing currently computes UVs from retained CPU attrs and reads from retained field data
    through a temporary GPU copy path.
 5. Volume slice probing currently uses CPU ray/box math and CPU sampled-field reads.
 6. DRP2 already has explicit texture formats, color attachments, texture-to-buffer copies, and
    readback submissions.
-7. DRP2 specs already mention supported render-target formats and readback capabilities, but the
-   scene capability snapshot is still too coarse.
-8. `r32uint` and `rg32uint` already exist in DRP2 schema/serialization, but scene query planning does
-   not yet use them.
+7. The scene capability snapshot now has query/readback fields, but scene query planning does not
+   yet use them to select profiles or reject unsupported visuals.
+8. `r32uint` and `rg32uint` already exist in DRP2 schema/serialization. Runtime C format handling and
+   WebGPU preflight still need to be hardened before `rg32uint` can be treated as a portable path.
 
 
 ## Relationship To Other Specs
