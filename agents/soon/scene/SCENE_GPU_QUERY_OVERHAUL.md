@@ -157,14 +157,17 @@ Committed implementation slices:
     - labels query now builds a rendered one-pixel FramePlan readback instead of a direct retained
       field copy/readback,
     - CPU still maps the GPU-returned id to category label text after decode.
+39. `scene: harden labels query failures`
+    - labels query eligibility now rejects visuals without an integer label field,
+    - tests cover missing labels field and forced labels readback failure without CPU fallback.
 
 Recorded validation after these commits:
 
 1. `just build`
 2. `just test frame_plan`
 3. `just test pick-probe`
-4. `just test query`
-5. `just test scene` with `449/449`
+4. `just test query` with `31/31`
+5. `just test scene` with `451/451`
 6. `git diff --check`
 7. `python testing/test_scene_query_source_guard.py`
 
