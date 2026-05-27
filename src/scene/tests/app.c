@@ -5726,6 +5726,109 @@ int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const T
 
 
 /**
+ * Ensure composite label-volume rendering displays categorical colors.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_volume_label_composite_renders_category(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R16_UINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(field);
+    const uint16_t labels[8] = {2, 2, 2, 2, 2, 2, 2, 2};
+    AT(dvz_sampled_field_set_data(
+        field,
+        &(DvzFieldDataView){
+            .data = labels,
+            .bytes_per_row = 2 * sizeof(uint16_t),
+            .rows_per_image = 2,
+        }));
+    AT(dvz_visual_set_field(volume, "field", field));
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    ANN(scale);
+    DvzScaleCategory category = {
+        .category_id = 2,
+        .order = 0,
+        .label = "green",
+        .color = {0, 255, 0, 255},
+    };
+    AT(dvz_scale_set_categories(scale, &category, 1));
+    AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
+    AT(dvz_volume_set_step_count(volume, 16) == 0);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_volume_label_composite_renders_category skipped: GPU context "
+            "failed");
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+    ANN(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    uint32_t green_count = 0;
+    for (uint32_t frame = 0; frame < 3; frame++)
+    {
+        dvz_app_run(app, 1);
+
+        uint32_t width = 0, height = 0;
+        uint8_t* rgba = NULL;
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+        ANN(rgba);
+        green_count = 0;
+        for (uint32_t i = 0; i < width * height; i++)
+        {
+            const uint8_t* px = &rgba[4 * i];
+            if (px[1] > 180 && px[0] < 80 && px[2] < 80)
+                green_count++;
+        }
+        dvz_free(rgba);
+        if (green_count > (width * height) / 2)
+            break;
+    }
+    AT(green_count > 64 * 64 / 2);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Render the deterministic volume-occlusion fixture and return region sums.
  *
  * @param suite test context used for shared app resources
@@ -6458,6 +6561,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_slice_renders_field);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_mip_renders_bright_slice);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_composite_renders_field);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_label_composite_renders_category);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_occlusion_slice_renders);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_occlusion_region_delta);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_occlusion_perspective_camera);
@@ -6484,6 +6588,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_slice_renders_field);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_mip_renders_bright_slice);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_composite_renders_field);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_label_composite_renders_category);
 #endif
 
     return 0;

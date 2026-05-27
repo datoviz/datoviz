@@ -123,6 +123,10 @@ bool _scene_visual_bind_desc(
         out->volume_occluded = visual->volume_occluded;
         out->volume_occlusion = visual->volume_occlusion;
         out->volume_state = visual->volume_state;
+        if (
+            visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT ||
+            visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT)
+            out->volume_state.sampling = DVZ_VOLUME_SAMPLING_NEAREST;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_NONE:
