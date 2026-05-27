@@ -47,6 +47,8 @@ static const char* _draw_packet_kind_name(DvzSceneVisualDescKind kind)
         return "point";
     case DVZ_SCENE_VISUAL_DESC_PIXEL:
         return "pixel";
+    case DVZ_SCENE_VISUAL_DESC_SPLAT:
+        return "splat";
     case DVZ_SCENE_VISUAL_DESC_MARKER:
         return "marker";
     case DVZ_SCENE_VISUAL_DESC_SPHERE:
@@ -403,8 +405,10 @@ bool _scene_draw_packet_init_fallback(
     uint32_t binding_count =
         kind == DVZ_SCENE_VISUAL_DESC_MARKER ? 5
         : kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH ? 4
-        : kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL ? 3
-                                                                                      : 2;
+        : kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+                kind == DVZ_SCENE_VISUAL_DESC_SPLAT
+            ? 3
+            : 2;
     if (binding_count > vertex_buffer_count)
         binding_count = vertex_buffer_count;
     pipeline.binding_count = binding_count;
@@ -424,6 +428,17 @@ bool _scene_draw_packet_init_fallback(
             pipeline.strides[3] = sizeof(float);
             pipeline.strides[4] = sizeof(uint32_t);
         }
+        if (instanced_point_like)
+        {
+            for (uint32_t i = 0; i < binding_count; i++)
+                pipeline.step_modes[i] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
+        }
+    }
+    else if (kind == DVZ_SCENE_VISUAL_DESC_SPLAT)
+    {
+        pipeline.strides[0] = 3 * sizeof(float);
+        pipeline.strides[1] = 4 * sizeof(uint8_t);
+        pipeline.strides[2] = 2 * sizeof(float);
         if (instanced_point_like)
         {
             for (uint32_t i = 0; i < binding_count; i++)

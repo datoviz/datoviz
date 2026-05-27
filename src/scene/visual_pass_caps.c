@@ -60,6 +60,7 @@ static void _scene_visual_pass_caps_resolve(
     bool sphere = _scene_visual_desc_is_sphere(kind);
     bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
                       kind == DVZ_SCENE_VISUAL_DESC_MARKER;
+    bool splat = kind == DVZ_SCENE_VISUAL_DESC_SPLAT;
     bool image = _scene_visual_desc_is_image(kind);
     bool volume = _scene_visual_desc_is_volume(kind);
     bool fixed = controller_mode == DVZ_CONTROLLER_FIXED;
@@ -80,12 +81,12 @@ static void _scene_visual_pass_caps_resolve(
     out->uses_source_over_blend = _scene_alpha_mode_is_blended(alpha_mode);
     out->writes_color = kind != DVZ_SCENE_VISUAL_DESC_NONE;
     out->writes_depth = out->draws_in_opaque_pass &&
-                        (raster_mesh || stroke || point_like || sphere) && !fixed &&
+                        (raster_mesh || stroke || point_like || splat || sphere) && !fixed &&
                         depth_test_enabled;
     out->can_write_depth =
-        (raster_mesh || stroke || point_like || sphere) && !fixed && depth_test_enabled;
+        (raster_mesh || stroke || point_like || splat || sphere) && !fixed && depth_test_enabled;
     out->can_depth_test =
-        (raster_mesh || stroke || point_like || sphere) && !fixed && depth_test_enabled;
+        (raster_mesh || stroke || point_like || splat || sphere) && !fixed && depth_test_enabled;
     out->samples_depth = volume && !fixed;
     out->needs_depth_attachment = out->can_depth_test || out->samples_depth;
     out->eligible_for_depth_postprocess = out->draws_in_opaque_pass && out->writes_depth;
@@ -121,6 +122,9 @@ bool _scene_visual_pass_caps_from_visual(
     DvzSceneVisualDescKind kind = DVZ_SCENE_VISUAL_DESC_NONE;
     switch (visual->type)
     {
+    case DVZ_VISUAL_TYPE_SPLAT:
+        kind = DVZ_SCENE_VISUAL_DESC_SPLAT;
+        break;
     case DVZ_VISUAL_TYPE_POINT:
     case DVZ_VISUAL_TYPE_PIXEL:
     case DVZ_VISUAL_TYPE_MARKER:
@@ -278,6 +282,14 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
             if (_scene_visual_meta_point_like_kind(meta->visual_type, &point_like_kind))
             {
                 if (has_color)
+                    return true;
+                continue;
+            }
+            if (meta->visual_type == DVZ_VISUAL_TYPE_SPLAT)
+            {
+                bool has_sigma =
+                    _scene_visual_resource_lookup_label(&emitter->resources, meta->sigma_id) != 0;
+                if (has_color && has_sigma)
                     return true;
                 continue;
             }

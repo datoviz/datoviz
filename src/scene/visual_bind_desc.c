@@ -58,6 +58,11 @@ bool _scene_visual_bind_desc(
 
     switch (visual->kind)
     {
+    case DVZ_SCENE_VISUAL_DESC_SPLAT:
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        return true;
+
     case DVZ_SCENE_VISUAL_DESC_PIXEL:
     case DVZ_SCENE_VISUAL_DESC_POINT:
     case DVZ_SCENE_VISUAL_DESC_MARKER:

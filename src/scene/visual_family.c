@@ -84,7 +84,6 @@ static const DvzVisualFamilyAttrDesc SPLAT_ATTRS[] = {
     {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
     {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
     {"sigma", 2 * sizeof(float), SRC_SIZE_GROUPED, false},
-    {"angle", sizeof(float), SRC_ITEM_ONLY, false},
 };
 
 
@@ -188,7 +187,7 @@ static const DvzVisualFamilyAttrDesc VOLUME_ATTRS[] = {
 
 static const VisualFamilyAttrs FAMILY_ATTRS[] = {
     {DVZ_VISUAL_TYPE_SPLAT, SPLAT_ATTRS, DVZ_ARRAY_COUNT(SPLAT_ATTRS),
-     "position, color, sigma, optional angle"},
+     "position, color, sigma"},
     {DVZ_VISUAL_TYPE_POINT, POINT_ATTRS, DVZ_ARRAY_COUNT(POINT_ATTRS),
      "position, color, diameter, selection"},
     {DVZ_VISUAL_TYPE_PIXEL, PIXEL_ATTRS, DVZ_ARRAY_COUNT(PIXEL_ATTRS),

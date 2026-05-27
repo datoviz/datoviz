@@ -515,6 +515,28 @@ static bool _scene_visual_desc_from_metadata(
         return true;
     }
 
+    if (meta->visual_type == DVZ_VISUAL_TYPE_SPLAT)
+    {
+        uint64_t color_id =
+            _scene_visual_resource_lookup_label(&emitter->resources, meta->color_id);
+        uint64_t sigma_id =
+            _scene_visual_resource_lookup_label(&emitter->resources, meta->sigma_id);
+        if (color_id == 0 || sigma_id == 0)
+        {
+            if (error != NULL)
+                *error = "typed splat metadata missing color/sigma resource";
+            return false;
+        }
+        uint32_t item_count = out->vertex_count;
+        out->kind = DVZ_SCENE_VISUAL_DESC_SPLAT;
+        out->vbuf_ids[out->vbuf_count++] = color_id;
+        out->vbuf_ids[out->vbuf_count++] = sigma_id;
+        out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        out->vertex_count = 6;
+        out->instance_count = item_count;
+        return true;
+    }
+
     if (stroked_path)
     {
         uint64_t curr_id =
@@ -927,6 +949,43 @@ bool _is_point_visual(const ConverterState* state, const uint64_t* ids, uint32_t
 }
 
 
+/**
+ * Return true when vertex buffers identify a Gaussian splat visual.
+ *
+ * @param state resource id state
+ * @param ids resource ids
+ * @param n resource id count
+ * @return whether the ids carry position, color, and sigma resources
+ */
+bool _is_splat_visual(const ConverterState* state, const uint64_t* ids, uint32_t n)
+{
+    if (n < 3)
+        return false;
+    bool has_pos = false, has_col = false, has_sigma = false;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        DvzFramePlanResourceRole role = _resource_role(state, ids[i]);
+        if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION)
+            has_pos = true;
+        if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR)
+            has_col = true;
+        if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA)
+            has_sigma = true;
+        if (role != DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE)
+            continue;
+
+        const char* tag = _resource_data_tag(state, ids[i]);
+        if (strcmp(tag, "position") == 0)
+            has_pos = true;
+        if (strcmp(tag, "color") == 0)
+            has_col = true;
+        if (strcmp(tag, "sigma") == 0)
+            has_sigma = true;
+    }
+    return has_pos && has_col && has_sigma;
+}
+
+
 
 /*
  * Return true when ids carry "position" + "color" with an optional "normal" attribute and
@@ -1173,6 +1232,9 @@ bool _emitter_resolve_render_vertex_buffers(
                     &emitter->resources, meta->size_id, out_ids, out_count, false))
                 return false;
             if (!_append_resource_key(
+                    &emitter->resources, meta->sigma_id, out_ids, out_count, false))
+                return false;
+            if (!_append_resource_key(
                     &emitter->resources, meta->angle_id, out_ids, out_count, false))
                 return false;
             if (!_append_resource_key(
@@ -1214,9 +1276,9 @@ bool _emitter_resolve_render_vertex_buffers(
          * IMAGE      = position, texcoords (+ texture, registered alongside). */
         const DvzFramePlanResourceRole optional[] = {
             DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR, DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE,
-            DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS,
-            DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE};
-        for (uint32_t ai = 0; ai < 5; ai++)
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA, DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE};
+        for (uint32_t ai = 0; ai < 6; ai++)
         {
             uint64_t id = _scene_render_visual_resource_id(
                 emitter, render->u.render.visuals[i], optional[ai]);
@@ -1305,10 +1367,11 @@ bool _scene_visual_desc_from_render(
 
     const DvzFramePlanResourceRole optionals[] = {
         DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR,           DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE,
-        DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS,       DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
-        DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL,          DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
-        DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS, DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION};
-    for (uint32_t ai = 0; ai < 8; ai++)
+        DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA,           DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS,
+        DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,         DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL,
+        DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,           DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS,
+        DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION};
+    for (uint32_t ai = 0; ai < 9; ai++)
     {
         uint64_t rid_id = _scene_render_visual_resource_id(
             emitter, render->u.render.visuals[visual_index], optionals[ai]);
@@ -1332,22 +1395,24 @@ bool _scene_visual_desc_from_render(
     }
 
     bool is_point = _is_point_visual(&emitter->resources, out->vbuf_ids, out->vbuf_count);
+    bool is_splat =
+        !is_point && _is_splat_visual(&emitter->resources, out->vbuf_ids, out->vbuf_count);
     uint64_t mesh_pos = 0, mesh_color = 0, mesh_normal = 0, mesh_uv = 0, mesh_tex = 0;
     bool is_textured_mesh =
-        !is_point &&
+        !is_point && !is_splat &&
         _is_textured_mesh_visual(
             &emitter->resources, out->vbuf_ids, out->vbuf_count, &mesh_pos, &mesh_color,
             &mesh_normal, &mesh_uv, &mesh_tex);
     bool is_primitive =
-        !is_point && !is_textured_mesh &&
+        !is_point && !is_splat && !is_textured_mesh &&
         _is_primitive_visual(&emitter->resources, out->vbuf_ids, out->vbuf_count);
     uint64_t img_pos = 0, img_uv = 0, img_tex = 0;
     bool is_image =
-        !is_point && !is_primitive &&
+        !is_point && !is_splat && !is_primitive &&
         _is_image_visual(
             &emitter->resources, out->vbuf_ids, out->vbuf_count, &img_pos, &img_uv, &img_tex);
 
-    if (!is_point && !is_textured_mesh && !is_primitive && !is_image)
+    if (!is_point && !is_splat && !is_textured_mesh && !is_primitive && !is_image)
         return false;
 
     uint64_t pos_size = _resource_byte_size(&emitter->resources, pos_buf);
@@ -1373,6 +1438,25 @@ bool _scene_visual_desc_from_render(
     {
         out->kind = DVZ_SCENE_VISUAL_DESC_POINT;
         out->point_like_kind = DVZ_SCENE_POINT_LIKE_POINT;
+    }
+    else if (is_splat)
+    {
+        uint64_t color_id = _scene_visual_resource_by_role(
+            &emitter->resources, out->vbuf_ids, out->vbuf_count,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR);
+        uint64_t sigma_id = _scene_visual_resource_by_role(
+            &emitter->resources, out->vbuf_ids, out->vbuf_count,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA);
+        if (color_id == 0 || sigma_id == 0)
+            return false;
+        out->kind = DVZ_SCENE_VISUAL_DESC_SPLAT;
+        out->vbuf_ids[0] = pos_buf;
+        out->vbuf_ids[1] = color_id;
+        out->vbuf_ids[2] = sigma_id;
+        out->vbuf_count = 3;
+        out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        out->instance_count = out->vertex_count;
+        out->vertex_count = 6;
     }
     else if (is_textured_mesh)
     {

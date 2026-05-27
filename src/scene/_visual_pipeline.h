@@ -32,6 +32,7 @@ typedef enum
     DVZ_SCENE_VISUAL_DESC_NONE = 0,
     DVZ_SCENE_VISUAL_DESC_POINT,
     DVZ_SCENE_VISUAL_DESC_PIXEL,
+    DVZ_SCENE_VISUAL_DESC_SPLAT,
     DVZ_SCENE_VISUAL_DESC_MARKER,
     DVZ_SCENE_VISUAL_DESC_SPHERE,
     DVZ_SCENE_VISUAL_DESC_SEGMENT,
@@ -237,6 +238,8 @@ typedef struct DvzScenePointLoweringDesc
 
 
 bool _is_point_visual(const ConverterState* state, const uint64_t* ids, uint32_t n);
+
+bool _is_splat_visual(const ConverterState* state, const uint64_t* ids, uint32_t n);
 
 bool _is_primitive_visual(const ConverterState* state, const uint64_t* ids, uint32_t n);
 

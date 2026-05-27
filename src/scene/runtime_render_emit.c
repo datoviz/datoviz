@@ -2989,17 +2989,19 @@ bool _emitter_emit_render(
     bool is_pixel = is_point && visual_type == DVZ_VISUAL_TYPE_PIXEL;
     bool is_marker = is_point && visual_type == DVZ_VISUAL_TYPE_MARKER;
     bool is_point_like = is_point;
+    bool is_splat = !is_point_like && visual_type == DVZ_VISUAL_TYPE_SPLAT &&
+                    _is_splat_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
     uint64_t mesh_pos = 0, mesh_color = 0, mesh_normal = 0, mesh_uv = 0, mesh_tex = 0;
     bool is_textured_mesh =
-        !is_point_like &&
+        !is_point_like && !is_splat &&
         _is_textured_mesh_visual(
             &emitter->resources, vertex_buffer_ids, vertex_buffer_count, &mesh_pos, &mesh_color,
             &mesh_normal, &mesh_uv, &mesh_tex);
     bool is_primitive =
-        !is_point_like && !is_textured_mesh &&
+        !is_point_like && !is_splat && !is_textured_mesh &&
         _is_primitive_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
     uint64_t image_pos = 0, image_uv = 0, image_tex = 0;
-    bool is_image = !is_point_like && !is_textured_mesh && !is_primitive &&
+    bool is_image = !is_point_like && !is_splat && !is_textured_mesh && !is_primitive &&
                     _is_image_visual(
                         &emitter->resources, vertex_buffer_ids, vertex_buffer_count, &image_pos,
                         &image_uv, &image_tex);
@@ -3026,6 +3028,7 @@ bool _emitter_emit_render(
     const char* fs_wgsl = NULL;
     uint32_t topology = 0;
     uint32_t vertex_count = 3; /* default for stub / non-point path */
+    uint32_t instance_count = 1;
     uint64_t bgl_id = 0;
     uint64_t bg_id = 0;
     DvzScenePointLikeLoweringDesc point_like_lowering = {0};
@@ -3034,10 +3037,32 @@ bool _emitter_emit_render(
     /* Common bind group IDs used for GLSL/WGSL point, primitive, and image paths. */
     uint64_t common_bgl_id = 0;
     uint64_t common_bg_id = 0;
-    bool uses_common = (is_point || is_textured_mesh || is_primitive || is_image) && cfg != NULL &&
+    bool uses_common = (is_point || is_splat || is_textured_mesh || is_primitive || is_image) &&
+                       cfg != NULL &&
                        (cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL ||
                         (cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL &&
-                         (is_point || is_textured_mesh || is_primitive || is_image)));
+                         (is_point || is_splat || is_textured_mesh || is_primitive || is_image)));
+
+    uint64_t splat_vertex_ids[3];
+    if (is_splat)
+    {
+        uint64_t splat_pos = _scene_visual_resource_by_role(
+            &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
+        uint64_t splat_color = _scene_visual_resource_by_role(
+            &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR);
+        uint64_t splat_sigma = _scene_visual_resource_by_role(
+            &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA);
+        if (splat_pos == 0 || splat_color == 0 || splat_sigma == 0)
+            return false;
+        splat_vertex_ids[0] = splat_pos;
+        splat_vertex_ids[1] = splat_color;
+        splat_vertex_ids[2] = splat_sigma;
+        vertex_buffer_ids = splat_vertex_ids;
+        vertex_buffer_count = 3;
+    }
 
     /* When IMAGE: re-narrow vertex_buffer_ids to (position, texcoords) only — the texture
      * is bound through a bind group, not as a vertex buffer. */
@@ -3130,6 +3155,22 @@ bool _emitter_emit_render(
         if (!has_point_like_lowering)
             return false;
         topology = point_like_lowering.topology;
+    }
+    else if (is_splat)
+    {
+        uint64_t pos_size = _resource_byte_size(&emitter->resources, vertex_buffer_ids[0]);
+        if (pos_size > 0)
+            instance_count = (uint32_t)(pos_size / (3 * sizeof(float)));
+        if (visual_meta != NULL && visual_meta->vertex_count > 0)
+            instance_count = visual_meta->vertex_count;
+        vertex_count = 6;
+        topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        dvz_snprintf(vs_key, sizeof(vs_key), "_vs_splat%s", fmt);
+        dvz_snprintf(fs_key, sizeof(fs_key), "_fs_splat%s", fmt);
+        vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPLAT, false);
+        fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPLAT, true);
+        vs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_SPLAT, false);
+        fs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_SPLAT, true);
     }
     else if (is_textured_mesh)
     {
@@ -3368,6 +3409,11 @@ bool _emitter_emit_render(
         vs_spirv_key = "mesh_textured_vert";
         fs_spirv_key = "mesh_textured_frag";
     }
+    else if (is_splat)
+    {
+        vs_spirv_key = "splat_vert";
+        fs_spirv_key = "splat_frag";
+    }
     else if (is_primitive)
     {
         vs_spirv_key = "primitive_vert";
@@ -3459,6 +3505,8 @@ bool _emitter_emit_render(
                        : "point",
             suffix, fmt);
     }
+    else if (is_splat)
+        dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_splat%s", fmt);
     else if (is_textured_mesh)
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_mesh_textured_t%u%s", topology, fmt);
     else if (is_primitive)
@@ -3510,6 +3558,25 @@ bool _emitter_emit_render(
                                point_like_attr_count, strides, point_like_attr_count, bindings,
                                locations, formats, offsets);
             }
+            if (ok && uses_common && common_bgl_id != 0)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, common_bgl_id);
+        }
+        else if (is_splat)
+        {
+            uint32_t strides[3] = {
+                3 * sizeof(float), 4 * sizeof(uint8_t), 2 * sizeof(float)};
+            uint32_t step_modes[3] = {
+                DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE, DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE,
+                DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE};
+            uint32_t bindings[3] = {0, 1, 2};
+            uint32_t locations[3] = {0, 1, 2};
+            uint32_t formats[3] = {
+                VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM,
+                VK_FORMAT_R32G32_SFLOAT};
+            uint32_t offsets[3] = {0, 0, 0};
+            ok = ok && dvz_drp2_stream_create_render_pipeline_ex2(
+                           stream, pipe_id, vs_id, fs_id, vertex_buffer_count, topology, 3,
+                           strides, step_modes, 3, bindings, locations, formats, offsets);
             if (ok && uses_common && common_bgl_id != 0)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, common_bgl_id);
         }
@@ -3602,17 +3669,18 @@ bool _emitter_emit_render(
     if (ok && (is_textured_mesh || is_image) && bg_id != 0)
         ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 1, bg_id);
     uint32_t draw_vertex_count = vertex_count;
-    uint32_t draw_instance_count = 1;
+    uint32_t draw_instance_count = instance_count;
     if (is_point_like && has_point_like_lowering)
     {
         draw_vertex_count = point_like_lowering.draw_vertex_count;
         draw_instance_count = point_like_lowering.draw_instance_count;
     }
-    if (is_point_like || is_textured_mesh || is_primitive || is_image)
+    if (is_point_like || is_splat || is_textured_mesh || is_primitive || is_image)
     {
         DvzSceneVisualDescKind kind = is_image          ? DVZ_SCENE_VISUAL_DESC_IMAGE
                                       : is_textured_mesh ? DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH
                                       : is_primitive     ? DVZ_SCENE_VISUAL_DESC_PRIMITIVE
+                                      : is_splat         ? DVZ_SCENE_VISUAL_DESC_SPLAT
                                       : is_marker        ? DVZ_SCENE_VISUAL_DESC_MARKER
                                       : is_pixel         ? DVZ_SCENE_VISUAL_DESC_PIXEL
                                                          : DVZ_SCENE_VISUAL_DESC_POINT;
@@ -3621,8 +3689,9 @@ bool _emitter_emit_render(
         else if (is_labels_uint)
             kind = DVZ_SCENE_VISUAL_DESC_LABELS_UINT;
         bool instanced_point_like =
-            has_point_like_lowering &&
-            point_like_lowering.lowering == DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS;
+            is_splat || (has_point_like_lowering &&
+                         point_like_lowering.lowering ==
+                             DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS);
         SceneDrawPacket packet = {0};
         if (!_scene_draw_packet_init_fallback(
                 &emitter->resources, kind, pipe_id, common_bg_id,

@@ -537,6 +537,125 @@ int test_scene_splat_api_and_attrs(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Verify splat visuals lower to instanced Gaussian screen-space quads.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_splat_emit_instanced_quads(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    vec3 positions[3] = {
+        {-0.5f, -0.4f, 0.0f},
+        { 0.0f,  0.4f, 0.0f},
+        { 0.5f, -0.4f, 0.0f},
+    };
+    DvzColor colors[3] = {{255, 0, 0, 192}, {0, 180, 255, 192}, {255, 255, 255, 192}};
+    vec2 sigma[3] = {{5.0f, 5.0f}, {8.0f, 4.0f}, {3.0f, 9.0f}};
+
+    for (uint32_t pass = 0; pass < 2; pass++)
+    {
+        bool wgsl = pass == 1;
+        DvzScene* scene = dvz_scene();
+        AT(scene != NULL);
+        DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+        AT(figure != NULL);
+        DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+        AT(panel != NULL);
+        DvzVisual* visual = dvz_splat(scene, 0);
+        AT(visual != NULL);
+
+        AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+        AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+        AT(dvz_visual_set_data(visual, "sigma", sigma, 3) == 0);
+        AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+        DvzCapabilitySnapshot caps;
+        dvz_capability_snapshot_default(&caps);
+        caps.supports_color_blending = true;
+        if (wgsl)
+        {
+            caps.shader_format_wgsl = true;
+            caps.shader_format_glsl = false;
+            caps.max_vertex_buffers = 16;
+            caps.max_bind_groups = 4;
+            caps.max_buffer_size = 256 * 1024 * 1024;
+        }
+
+        DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+        emit_cfg.shader_format =
+            wgsl ? DVZ_SCENE_SHADER_FORMAT_WGSL : DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+        DvzDiagnosticReport report;
+        dvz_diagnostic_report_init(&report);
+        DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+        AT(dvz_diagnostic_report_count(&report) == 0);
+        ANN(stream);
+
+        bool found_pipeline = false;
+        bool found_draw = false;
+        bool found_sigma_buffer = false;
+        const uint32_t count = dvz_drp2_stream_count(stream);
+        for (uint32_t i = 0; i < count; i++)
+        {
+            const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+            ANN(command);
+            if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+            {
+                if (command->u.create_render_pipeline.binding_count != 3)
+                    continue;
+                found_pipeline = true;
+                AT(command->u.create_render_pipeline.topology ==
+                   VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+                AT(command->u.create_render_pipeline.binding_count == 3);
+                AT(command->u.create_render_pipeline.binding_strides[0] == 3 * sizeof(float));
+                AT(command->u.create_render_pipeline.binding_strides[1] == 4 * sizeof(uint8_t));
+                AT(command->u.create_render_pipeline.binding_strides[2] == 2 * sizeof(float));
+                AT(command->u.create_render_pipeline.binding_step_modes[0] ==
+                   DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
+                AT(command->u.create_render_pipeline.binding_step_modes[1] ==
+                   DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
+                AT(command->u.create_render_pipeline.binding_step_modes[2] ==
+                   DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
+            }
+            else if (command->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER &&
+                     command->u.set_vertex_buffer.slot == 2)
+            {
+                found_sigma_buffer = true;
+            }
+            else if (command->type == DVZ_DRP2_COMMAND_DRAW)
+            {
+                found_draw = found_draw ||
+                             (command->u.draw.vertex_count == 6 &&
+                              command->u.draw.instance_count == 3);
+            }
+        }
+        AT(found_pipeline);
+        AT(found_sigma_buffer);
+        AT(found_draw);
+
+        char* json = dvz_drp2_stream_json(stream, wgsl ? "scene_splat_wgsl" : "scene_splat_glsl");
+        ANN(json);
+        if (wgsl)
+            AT(strstr(json, "\"format\": \"wgsl\"") != NULL);
+        AT(strstr(json, "\"topology\": \"triangle-list\"") != NULL);
+        AT(strstr(json, "\"step_mode\": \"instance\"") != NULL);
+        AT(strstr(json, "\"vertex_count\": 6") != NULL);
+        AT(strstr(json, "\"instance_count\": 3") != NULL);
+        dvz_drp2_stream_json_destroy(json);
+
+        dvz_drp2_stream_destroy(stream);
+        dvz_scene_destroy(scene);
+    }
+
+    return 0;
+}
+
+
 
 /**
  * Verify GLSL point visuals keep native point-list draw semantics.
@@ -7889,6 +8008,7 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
 
     DvzVisual* point = dvz_point(scene, 0);
     DvzVisual* pixel = dvz_pixel(scene, 0);
+    DvzVisual* splat = dvz_splat(scene, 0);
     DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     DvzVisual* path = dvz_path(scene, 0);
     DvzVisual* fixed_primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
@@ -7898,6 +8018,7 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
     DvzVisual* volume = dvz_volume(scene, 0);
     AT(point != NULL);
     AT(pixel != NULL);
+    AT(splat != NULL);
     AT(primitive != NULL);
     AT(path != NULL);
     AT(fixed_primitive != NULL);
@@ -7946,6 +8067,7 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, splat, NULL) == 0);
 
     DvzSceneVisualPassCaps caps = {0};
     DvzSceneGBufferPlan gbuffer = {0};
@@ -8073,6 +8195,24 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
     AT(!caps.eligible_for_gbuffer);
     AT(caps.uses_volume_set);
     AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, volume, &panel->visuals[8]));
+    AT(gbuffer.producer_count == 2);
+
+    AT(_scene_visual_pass_caps_from_visual(splat, &panel->visuals[9], &caps));
+    AT(caps.kind == DVZ_SCENE_VISUAL_DESC_SPLAT);
+    AT(caps.draws_in_transparent_blend_pass);
+    AT(!caps.draws_in_opaque_pass);
+    AT(caps.uses_source_over_blend);
+    AT(caps.writes_color);
+    AT(!caps.writes_depth);
+    AT(caps.can_write_depth);
+    AT(caps.can_depth_test);
+    AT(caps.needs_depth_attachment);
+    AT(!caps.eligible_for_depth_postprocess);
+    AT(!caps.eligible_for_gbuffer);
+    AT(caps.uses_common_set);
+    AT(!caps.uses_material_set);
+    AT(!caps.supports_depth_cue);
+    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, splat, &panel->visuals[9]));
     AT(gbuffer.producer_count == 2);
 
     DvzSceneDrawContract draw_contract = {0};

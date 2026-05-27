@@ -360,6 +360,24 @@ bool _scene_visual_pipeline_desc(
 
     switch (visual->kind)
     {
+    case DVZ_SCENE_VISUAL_DESC_SPLAT:
+        if (picking)
+            return false;
+        out->vertex_buffer_count = 3;
+        out->binding_count = 3;
+        out->attr_count = 3;
+        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
+        _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32G32_SFLOAT, 2 * sizeof(float));
+        out->step_modes[0] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
+        out->step_modes[1] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
+        out->step_modes[2] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
+        out->needs_common_layout = caps.uses_common_set;
+        _pipeline_apply_standard_depth_state(
+            &caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op,
+            out);
+        return true;
+
     case DVZ_SCENE_VISUAL_DESC_PIXEL:
     case DVZ_SCENE_VISUAL_DESC_POINT:
     case DVZ_SCENE_VISUAL_DESC_SPHERE:
