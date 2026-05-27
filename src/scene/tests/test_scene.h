@@ -794,6 +794,8 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item);
 
 int test_scene_image_query_resolves_item(TstContext* suite, const TstCase* item);
 
+int test_scene_volume_query_resolves_item(TstContext* suite, const TstCase* item);
+
 int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const TstCase* item);
 
 int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstContext* suite, const TstCase* item);

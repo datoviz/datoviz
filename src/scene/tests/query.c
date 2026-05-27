@@ -888,6 +888,83 @@ int test_scene_image_query_resolves_item(TstContext* suite, const TstCase* item)
 
 
 
+/**
+ * Ensure native volume item queries resolve visual identity through proxy geometry.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_volume_query_resolves_item(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+    dvz_visual_set_pick_capabilities(volume, DVZ_PICK_CAPABILITY_ITEM);
+    double bounds_min[3] = {-0.4, -0.4, -0.4};
+    double bounds_max[3] = {+0.4, +0.4, +0.4};
+    AT(dvz_volume_set_bounds(volume, bounds_min, bounds_max) == 0);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    AT(dvz_panel_query(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){.request_id = 111, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+    AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+    AT(scene->pick_result_count == 0);
+    AT(scene->probe_result_count == 0);
+
+    DvzQueryResult query = {0};
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.hit);
+    AT(query.request_id == 111);
+    AT(query.status == DVZ_QUERY_STATUS_HIT);
+    AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_VOLUME);
+    AT(query.resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(query.resolved_id == 0);
+    AT(query.item_id == 0);
+    AT(!dvz_scene_poll_query(scene, &query));
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -1025,6 +1102,7 @@ int test_scene_query(TstSuite* suite)
     TST_SCENE_QUERY_GPU_CASE(test_scene_primitive_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_mesh_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_resolves_item);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_volume_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_query_processes_item_and_pixel_results);
 
     return 0;
