@@ -35,7 +35,6 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzSceneQueryPayload DvzSceneQueryPayload;
 typedef struct DvzSceneQueryFamilyOps DvzSceneQueryFamilyOps;
 typedef struct DvzSceneQueryBuildContext DvzSceneQueryBuildContext;
 typedef struct DvzSceneQueryDecodeContext DvzSceneQueryDecodeContext;
@@ -60,12 +59,6 @@ typedef bool (*DvzSceneQueryReadout)(
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
-
-struct DvzSceneQueryPayload
-{
-    uint32_t words[DVZ_SCENE_QUERY_PAYLOAD_WORDS];
-};
-
 
 struct DvzSceneQueryBuildContext
 {
@@ -114,7 +107,6 @@ struct DvzSceneQueryFamilyOps
     const char* name;
     DvzSceneVisualFamily family;
     uint32_t pick_capabilities;
-    uint32_t query_flags;
     DvzSceneQueryEligible eligible;
     DvzSceneQueryBuild build;
     DvzSceneQueryExecute execute;
