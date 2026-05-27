@@ -130,6 +130,8 @@ int test_scene_dpi(TstSuite* suite);
 
 int test_scene_fields(TstSuite* suite);
 
+int test_scene_sample_profile(TstSuite* suite);
+
 int test_scene_interaction(TstSuite* suite);
 
 int test_scene_graph(TstSuite* suite);

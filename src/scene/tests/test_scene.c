@@ -36,6 +36,7 @@ int test_scene(TstSuite* suite)
     test_scene_frame_plan(suite);
     test_scene_frame_plan_emit(suite);
     test_scene_dpi(suite);
+    test_scene_sample_profile(suite);
     test_scene_fields(suite);
     test_scene_interaction(suite);
     test_scene_graph(suite);
