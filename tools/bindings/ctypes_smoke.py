@@ -8,12 +8,33 @@ from pathlib import Path
 
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
+POLICY_PATH = ROOT_DIR / 'spec' / 'bindings' / 'ctypes.yml'
+
+
+def _smoke_symbols() -> list[str]:
+    symbols: list[str] = []
+    in_smoke_list = False
+    for line in POLICY_PATH.read_text().splitlines():
+        stripped = line.strip()
+        if stripped == 'smoke_symbols:':
+            in_smoke_list = True
+            continue
+        if in_smoke_list and stripped.startswith('- '):
+            symbols.append(stripped[2:].strip())
+        elif in_smoke_list and stripped and not stripped.startswith('#'):
+            break
+    return symbols
 
 
 def main() -> int:
     sys.path.insert(0, str(ROOT_DIR))
 
     import datoviz as dvz  # noqa: PLC0415
+    import datoviz.raw as raw  # noqa: PLC0415
+
+    for symbol in _smoke_symbols():
+        assert hasattr(dvz, symbol), f'missing datoviz.{symbol}'
+        assert hasattr(raw, symbol), f'missing datoviz.raw.{symbol}'
 
     t0 = dvz.dvz_time_monotonic_ns()
     t1 = dvz.dvz_time_monotonic_ns()
