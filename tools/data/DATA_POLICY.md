@@ -3,6 +3,11 @@
 This policy covers example-data bundles prepared by `tools/data/*` and stored in the `data` submodule.
 Do not edit scripts or data files when the task is documentation-only.
 
+The canonical v0.4 data-branch strategy is in
+[`../../spec/data/V0_4_DATA_REPOSITORY.md`](../../spec/data/V0_4_DATA_REPOSITORY.md). In particular,
+the v0.4 data branch should be clean and should not carry old v0.3 payloads forward unless they are
+promoted into the v0.4 layout with fresh manifest and provenance records.
+
 ## Commit Order
 
 Example data is stored in a separate Git repository mounted as the parent repo's `data` submodule. When a
@@ -54,6 +59,8 @@ appears as a multi-megabyte Git blob, fix `.gitattributes` and re-add that file 
 Do not commit raw downloads, scratch intermediates, caches, or temporary extraction directories unless a
 preparation script intentionally promotes a source artifact and the provenance explains why it must be
 versioned. Use `.cache/datoviz/examples/<example_id>/` for local downloads and intermediates.
+Use `.cache/datoviz/<dataset_or_example_id>/` for developer-only local render-ready payloads that are
+not being promoted into the data submodule.
 
 Manifests and provenance files are normal text files and should not be stored through LFS.
 

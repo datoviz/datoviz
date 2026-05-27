@@ -22,7 +22,7 @@ def main() -> int:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("build/local_data/lidar"),
+        default=Path(".cache/datoviz/lidar"),
         help="directory where lidar_pos.npy and lidar_color.npy will be written",
     )
     args = parser.parse_args()

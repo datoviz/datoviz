@@ -39,7 +39,7 @@
 #define WIDTH  1000u
 #define HEIGHT 760u
 
-#define BWM_DATA_DIR "build/local_data/ibl_bwm"
+#define BWM_DATA_DIR ".cache/datoviz/ibl_bwm"
 
 #define BWM_DEFAULT_POINT_SIZE 5.0f
 #define BWM_DEFAULT_MESH_ALPHA (32.0f / 255.0f)

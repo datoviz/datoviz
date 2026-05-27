@@ -9,7 +9,7 @@ import numpy as np
 
 
 DEFAULT_INPUT = Path("/home/cyrille/GIT/Viz/experiments/ibl/bwm.npz")
-DEFAULT_OUTPUT = Path("build/local_data/ibl_bwm")
+DEFAULT_OUTPUT = Path(".cache/datoviz/ibl_bwm")
 
 
 def _compute_vertex_normals(positions: np.ndarray, indices: np.ndarray) -> np.ndarray:

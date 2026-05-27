@@ -4,6 +4,11 @@ Scripts in this directory prepare deterministic, render-ready data bundles for e
 See [DATA_POLICY.md](DATA_POLICY.md) for commit order, storage policy, blocked external sources, and
 how to handle existing untracked data.
 
+The v0.4 data repository branch strategy and target layout are specified in
+[`../../spec/data/V0_4_DATA_REPOSITORY.md`](../../spec/data/V0_4_DATA_REPOSITORY.md). The short version:
+the parent repo keeps preparation scripts and schema policy, while the `data` submodule stores only
+redistributable v0.4 render-ready bundles and reusable assets.
+
 Prepared artifacts live in the `data` submodule under:
 
 ```text
@@ -18,6 +23,12 @@ intentionally records them as source artifacts:
 
 ```text
 .cache/datoviz/examples/<example_id>/
+```
+
+Developer-only local payloads that are consumed directly by examples may use:
+
+```text
+.cache/datoviz/<dataset_or_example_id>/
 ```
 
 Every committed bundle should include:
