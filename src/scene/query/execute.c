@@ -112,6 +112,28 @@ static bool _query_compat_probe(const DvzQueryRequest* request)
 
 
 /**
+ * Mark retained image-probe static uploads after a successful command execution.
+ *
+ * @param executor retained query executor
+ * @param plan query plan carrying image-probe cache versions
+ */
+static void _query_mark_image_probe_static_upload(
+    DvzSceneRequestExecutor* executor, const DvzSceneQueryPlan* plan)
+{
+    ANN(executor);
+    ANN(plan);
+    if (!plan->mark_image_probe_static_uploaded || plan->image_probe_visual == NULL)
+        return;
+    executor->image_probe_visual = plan->image_probe_visual;
+    executor->image_probe_position_version = plan->image_probe_position_version;
+    executor->image_probe_texcoord_version = plan->image_probe_texcoord_version;
+    executor->image_probe_texture_version = plan->image_probe_texture_version;
+    executor->image_probe_static_upload_count++;
+}
+
+
+
+/**
  * Resolve the effective profile for one query request.
  *
  * @param request the query request
@@ -429,6 +451,7 @@ bool _dvz_scene_query_execute_family(
         .figure = figure,
         .panel = pending->panel,
         .visual = visual,
+        .executor = executor,
         .pending = pending,
         .caps = caps,
         .profile = profile,
@@ -456,6 +479,8 @@ bool _dvz_scene_query_execute_family(
             figure->scene, executor, caps, plan.scratch.plan, plan.target_width,
             plan.target_height, plan.format, bytes, plan.byte_size, &executed);
     }
+    if (executed)
+        _query_mark_image_probe_static_upload(executor, &plan);
     if (!ok)
     {
         out_result->status =

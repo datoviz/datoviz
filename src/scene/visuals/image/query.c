@@ -92,6 +92,97 @@ static bool _image_query_alloc(void** out_ptr, uint64_t count, uint64_t item_siz
 
 
 /**
+ * Return image-probe static resource versions for one visual.
+ *
+ * @param visual the image visual
+ * @param out_position_version position attribute version
+ * @param out_texcoord_version texcoord attribute version
+ * @param out_texture_version texture payload version
+ * @return true when required static resources exist
+ */
+static bool _image_query_probe_static_versions(
+    const DvzVisual* visual, uint64_t* out_position_version, uint64_t* out_texcoord_version,
+    uint64_t* out_texture_version)
+{
+    ANN(visual);
+    ANN(out_position_version);
+    ANN(out_texcoord_version);
+    ANN(out_texture_version);
+
+    const DvzVisualAttr* pos_attr = NULL;
+    if (!_image_query_attr(visual, "position", sizeof(vec3), &pos_attr))
+        return false;
+
+    uint64_t texcoord_version = 0;
+    int extent_idx = _attr_index(visual, "extent");
+    int extent_px_idx = _attr_index(visual, "extent_px");
+    bool has_extent = extent_idx >= 0 && visual->attrs[extent_idx].data != NULL;
+    bool has_extent_px = extent_px_idx >= 0 && visual->attrs[extent_px_idx].data != NULL;
+    if (has_extent || has_extent_px)
+    {
+        if (has_extent && has_extent_px)
+            return false;
+        const DvzVisualAttr* extent_attr =
+            has_extent_px ? &visual->attrs[extent_px_idx] : &visual->attrs[extent_idx];
+        if (
+            extent_attr->item_count != pos_attr->item_count ||
+            extent_attr->item_size != sizeof(vec2))
+        {
+            return false;
+        }
+        texcoord_version = extent_attr->version;
+
+        int anchor_idx = _attr_index(visual, "anchor");
+        if (anchor_idx >= 0 && visual->attrs[anchor_idx].data != NULL)
+            texcoord_version ^= visual->attrs[anchor_idx].version;
+        int tex_rect_idx = _attr_index(visual, "tex_rect");
+        if (tex_rect_idx >= 0 && visual->attrs[tex_rect_idx].data != NULL)
+            texcoord_version ^= visual->attrs[tex_rect_idx].version;
+    }
+    else
+    {
+        const DvzVisualAttr* uv_attr = NULL;
+        if (!_image_query_attr(visual, "texcoords", sizeof(vec2), &uv_attr))
+            return false;
+        if (uv_attr->item_count != pos_attr->item_count)
+            return false;
+        texcoord_version = uv_attr->version;
+    }
+
+    *out_position_version = pos_attr->version;
+    *out_texcoord_version = texcoord_version;
+    *out_texture_version = visual->texture.version;
+    return true;
+}
+
+
+
+/**
+ * Return whether retained image-probe static uploads must be refreshed.
+ *
+ * @param executor retained query executor
+ * @param visual image visual
+ * @param position_version position attribute version
+ * @param texcoord_version texcoord attribute version
+ * @param texture_version texture payload version
+ * @return true when the static resources should be uploaded
+ */
+static bool _image_query_probe_needs_static_upload(
+    const DvzSceneRequestExecutor* executor, const DvzVisual* visual, uint64_t position_version,
+    uint64_t texcoord_version, uint64_t texture_version)
+{
+    ANN(visual);
+    if (executor == NULL)
+        return true;
+    return executor->image_probe_visual != visual ||
+           executor->image_probe_position_version != position_version ||
+           executor->image_probe_texcoord_version != texcoord_version ||
+           executor->image_probe_texture_version != texture_version;
+}
+
+
+
+/**
  * Return the offscreen query target extent for one panel.
  *
  * @param figure parent figure
@@ -299,6 +390,8 @@ static bool _image_query_eligible(
         uint32_t capability = request->target == DVZ_SCENE_TARGET_SAMPLE
                                   ? DVZ_PICK_CAPABILITY_SAMPLE
                                   : DVZ_PICK_CAPABILITY_PIXEL;
+        if ((request->flags & DVZ_SCENE_QUERY_FLAG_COMPAT_PROBE) != 0)
+            return true;
         return (visual->pick_capabilities & capability) != 0;
     }
     if (request->target != DVZ_SCENE_TARGET_NONE && request->target != DVZ_SCENE_TARGET_ITEM &&
@@ -331,6 +424,17 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
         ctx->pending->request.target == DVZ_SCENE_TARGET_PIXEL ||
         ctx->pending->request.target == DVZ_SCENE_TARGET_SAMPLE)
     {
+        uint64_t position_version = 0;
+        uint64_t texcoord_version = 0;
+        uint64_t texture_version = 0;
+        if (!_image_query_probe_static_versions(
+                ctx->visual, &position_version, &texcoord_version, &texture_version))
+        {
+            return false;
+        }
+        bool include_static_uploads = _image_query_probe_needs_static_upload(
+            ctx->executor, ctx->visual, position_version, texcoord_version, texture_version);
+
         DvzPendingProbeRequest pending = {0};
         pending.panel = ctx->panel;
         pending.x = ctx->pending->x;
@@ -339,10 +443,19 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
         pending.request.request_id = ctx->pending->request.request_id;
         pending.request.target = ctx->pending->request.target;
         if (!_scene_image_probe_plan(
-                ctx->panel, ctx->visual, &pending, ctx->request_ndc, true, &out_plan->scratch))
+                ctx->panel, ctx->visual, &pending, ctx->request_ndc, include_static_uploads,
+                &out_plan->scratch))
         {
             _scene_probe_plan_destroy(&out_plan->scratch);
             return false;
+        }
+        if (include_static_uploads)
+        {
+            out_plan->mark_image_probe_static_uploaded = true;
+            out_plan->image_probe_visual = ctx->visual;
+            out_plan->image_probe_position_version = position_version;
+            out_plan->image_probe_texcoord_version = texcoord_version;
+            out_plan->image_probe_texture_version = texture_version;
         }
         out_plan->target_width = 1;
         out_plan->target_height = 1;
@@ -466,6 +579,12 @@ static bool _image_query_decode(const DvzSceneQueryDecodeContext* ctx, DvzQueryR
         }
         if (ctx->bytes[3] == 0)
         {
+            if ((ctx->build->pending->request.flags & DVZ_SCENE_QUERY_FLAG_COMPAT_PROBE) != 0)
+            {
+                log_error(
+                    "image probe request %" PRIu64 " returned a transparent GPU pixel",
+                    ctx->build->pending->request.request_id);
+            }
             out_result->status = DVZ_QUERY_STATUS_MISS;
             out_result->visual_id =
                 _scene_visual_public_id(ctx->build->figure->scene, ctx->build->visual);

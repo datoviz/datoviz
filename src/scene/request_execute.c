@@ -17,16 +17,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <inttypes.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <vulkan/vulkan_core.h>
-
 #include "datoviz/drp2/runtime.h"
 #include "datoviz/math/_cglm.h"
-#include "../drp2/_stream.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -34,35 +30,6 @@
 #include "_scene.h"
 #include "query/internal.h"
 
-
-
-/*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-typedef struct DvzSceneProbePayload DvzSceneProbePayload;
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-
-struct DvzSceneProbePayload
-{
-    DvzProbeStatus status;
-    DvzSceneVisualFamily visual_family;
-    DvzSceneTargetKind target;
-    uint64_t target_id;
-    uint64_t item_id;
-    uint64_t group_id;
-    uint64_t auxiliary_id;
-    DvzProbeValueKind value_kind;
-    double vector[4];
-    DvzCategoryId category_id;
-    char label[DVZ_SCENE_LABEL_SIZE];
-};
 
 
 /*************************************************************************************************/
@@ -92,40 +59,13 @@ static DvzProbeStatus _scene_probe_status_from_query(DvzQueryStatus status);
 static void _scene_probe_result_from_query(
     const DvzQueryResult* query, DvzProbeResult* out_result);
 
-static bool _scene_decode_image_probe_payload(
-    const DvzVisual* visual, const uint8_t rgba[4], DvzSceneProbePayload* out_payload);
-
-static void _scene_apply_probe_payload(
-    const DvzScene* scene, const DvzVisual* visual, const DvzSceneProbePayload* payload,
-    DvzProbeResult* out_result);
-
-static bool _scene_execute_readback_plan(
-    const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
-    DvzFramePlan* plan, uint32_t target_width, uint32_t target_height, uint8_t rgba[4],
-    bool* out_executed);
-
 static bool _scene_runtime_config_matches(
     const DvzDrp2RuntimeConfig* a, const DvzDrp2RuntimeConfig* b);
-
-static bool _scene_image_probe_static_versions(
-    const DvzVisual* visual, uint64_t* out_position_version, uint64_t* out_texcoord_version,
-    uint64_t* out_texture_version);
-
-static bool _scene_image_probe_needs_static_upload(
-    const DvzSceneRequestExecutor* executor, const DvzVisual* visual, uint64_t position_version,
-    uint64_t texcoord_version, uint64_t texture_version);
-
-static void _scene_image_probe_mark_static_uploaded(
-    DvzSceneRequestExecutor* executor, DvzVisual* visual, uint64_t position_version,
-    uint64_t texcoord_version, uint64_t texture_version);
 
 static bool _scene_labels_probe_integer_format(
     DvzFieldFormat format, uint32_t* out_texture_format, uint32_t* out_bytes_per_texel);
 
 static bool _scene_probe_request_has_labels_candidate(
-    const DvzFigure* figure, const DvzPendingProbeRequest* pending);
-
-static bool _scene_probe_request_has_image_candidate(
     const DvzFigure* figure, const DvzPendingProbeRequest* pending);
 
 static bool _scene_probe_request_has_volume_slice_candidate(
@@ -136,8 +76,8 @@ static bool _scene_process_pick_request(
     const DvzCapabilitySnapshot* caps, const DvzPendingPickRequest* pending);
 
 static bool _scene_process_image_probe_request(
-    DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
-    const DvzPendingProbeRequest* pending);
+    DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
+    const DvzCapabilitySnapshot* caps, const DvzPendingProbeRequest* pending);
 
 static bool _scene_process_labels_probe_request(
     DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
@@ -242,9 +182,7 @@ uint32_t _dvz_figure_process_requests_with_executor(
             processed++;
             continue;
         }
-        if (_scene_probe_request_has_image_candidate(figure, &pending))
-            (void)_scene_request_executor_prepare(executor, runtime);
-        (void)_scene_process_image_probe_request(figure, executor, caps, &pending);
+        (void)_scene_process_image_probe_request(figure, runtime, executor, caps, &pending);
         _scene_remove_pending_probe_at(scene, i);
         processed++;
     }
@@ -594,167 +532,6 @@ static void _scene_probe_result_from_query(
 
 
 /**
- * Decode the GPU RGBA payload for an image probe.
- *
- * @param visual visual that produced the payload
- * @param rgba sampled GPU pixel
- * @param out_payload decoded scene payload
- * @return true when the pixel contains a supported hit payload
- */
-static bool _scene_decode_image_probe_payload(
-    const DvzVisual* visual, const uint8_t rgba[4], DvzSceneProbePayload* out_payload)
-{
-    ANN(visual);
-    ANN(rgba);
-    ANN(out_payload);
-    dvz_memset(out_payload, sizeof(DvzSceneProbePayload), 0, sizeof(DvzSceneProbePayload));
-    out_payload->status = DVZ_PROBE_STATUS_MISS;
-    out_payload->visual_family = _scene_visual_family((uint32_t)visual->type);
-
-    if (rgba[3] == 0)
-        return false;
-
-    out_payload->status = DVZ_PROBE_STATUS_HIT;
-    out_payload->target = DVZ_SCENE_TARGET_PIXEL;
-    out_payload->value_kind = DVZ_PROBE_VALUE_VEC4;
-    out_payload->vector[0] = rgba[0] / 255.0;
-    out_payload->vector[1] = rgba[1] / 255.0;
-    out_payload->vector[2] = rgba[2] / 255.0;
-    out_payload->vector[3] = rgba[3] / 255.0;
-    dvz_strlcpy(out_payload->label, "rgba", sizeof(out_payload->label));
-    return true;
-}
-
-
-/**
- * Copy a decoded probe payload into a public probe result.
- *
- * @param scene owning scene
- * @param visual visual that produced the payload
- * @param payload decoded scene payload
- * @param out_result result to populate
- */
-static void _scene_apply_probe_payload(
-    const DvzScene* scene, const DvzVisual* visual, const DvzSceneProbePayload* payload,
-    DvzProbeResult* out_result)
-{
-    ANN(scene);
-    ANN(visual);
-    ANN(payload);
-    ANN(out_result);
-    out_result->status = payload->status;
-    out_result->hit = payload->status == DVZ_PROBE_STATUS_HIT;
-    out_result->visual_id = _scene_visual_public_id(scene, visual);
-    out_result->visual_family = payload->visual_family;
-    out_result->target = payload->target;
-    out_result->target_id = payload->target_id;
-    out_result->item_id = payload->item_id;
-    out_result->group_id = payload->group_id;
-    out_result->auxiliary_id = payload->auxiliary_id;
-    out_result->value_kind = payload->value_kind;
-    for (uint32_t i = 0; i < 4; i++)
-        out_result->vector[i] = payload->vector[i];
-    out_result->category_id = payload->category_id;
-    dvz_strlcpy(out_result->label, payload->label, sizeof(out_result->label));
-}
-
-
-
-/**
- * Emit, execute, and download one 4-byte readback request.
- *
- * @param scene the owning scene, used for instance-scoped test controls
- * @param runtime the DRP2 runtime
- * @param caps the capability snapshot
- * @param plan the prepared frame plan
- * @param rgba the destination 4-byte readback buffer
- * @param out_executed whether the stream executed successfully before download
- * @return true on successful execution and download
- */
-static bool _scene_execute_readback_plan(
-    const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
-    DvzFramePlan* plan, uint32_t target_width, uint32_t target_height, uint8_t rgba[4],
-    bool* out_executed)
-{
-    ANN(executor);
-    ANN(caps);
-    ANN(rgba);
-    ANN(out_executed);
-    *out_executed = false;
-    if (plan == NULL || executor->runtime == NULL || executor->emitter == NULL)
-    {
-        log_error("scene readback requires a prepared frame plan and emitter");
-        return false;
-    }
-
-    DvzDiagnosticReport report = {0};
-    dvz_diagnostic_report_init(&report);
-    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
-    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    cfg.target_width = target_width > 0 ? target_width : 1;
-    cfg.target_height = target_height > 0 ? target_height : 1;
-    DvzDrp2CommandStream* stream =
-        dvz_frame_plan_emitter_emit_drp2(executor->emitter, plan, caps, &report, &cfg);
-    if (stream == NULL)
-    {
-        log_error("scene readback DRP2 emission failed");
-        return false;
-    }
-    uint64_t rb_id = dvz_frame_plan_emitter_object_id(executor->emitter, "_rb");
-    bool ok = false;
-    if (rb_id == 0)
-    {
-        log_error("scene readback plan did not emit the _rb buffer");
-    }
-    else
-    {
-        DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(executor->runtime, stream);
-        if (!result.ok)
-        {
-            const DvzDrp2Command* failed = dvz_drp2_stream_get(stream, result.command_index);
-            uint64_t failed_id = 0;
-            if (failed != NULL)
-            {
-                if (failed->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
-                    failed_id = failed->u.create_render_pipeline.id;
-                else if (failed->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
-                    failed_id = failed->u.create_shader_module.id;
-                else if (failed->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT)
-                    failed_id = failed->u.create_bind_group_layout.id;
-                else if (failed->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
-                    failed_id = failed->u.create_bind_group.id;
-                else if (failed->type == DVZ_DRP2_COMMAND_DRAW)
-                    failed_id = failed->u.draw.pass_id;
-            }
-            const char* failed_label =
-                failed_id != 0 ? dvz_drp2_stream_label(stream, failed_id) : NULL;
-            log_error(
-                "scene readback runtime execution failed (code=%d command=%u type=%d id=%llu "
-                "label=%s)",
-                (int)result.code, result.command_index, failed != NULL ? (int)failed->type : -1,
-                (unsigned long long)failed_id, failed_label != NULL ? failed_label : "");
-        }
-        else
-        {
-            *out_executed = true;
-            if (scene != NULL && scene->test.force_readback_download_failure)
-            {
-                log_error("scene readback buffer download forced to fail");
-            }
-            else
-            {
-                ok = dvz_drp2_runtime_download_buffer(executor->runtime, rb_id, 0, 4, rgba);
-                if (!ok)
-                    log_error("scene readback buffer download failed");
-            }
-        }
-    }
-    dvz_drp2_stream_destroy(stream);
-    return ok;
-}
-
-
-/**
  * Return whether two DRP2 runtime configurations borrow the same backend.
  *
  * @param a first runtime configuration
@@ -810,129 +587,6 @@ bool _scene_request_executor_prepare(DvzSceneRequestExecutor* executor, DvzDrp2R
     executor->runtime_cfg = runtime_cfg;
     executor->runtime_create_count++;
     return true;
-}
-
-
-
-/**
- * Return image-probe static resource versions for one visual.
- *
- * @param visual the image visual
- * @param out_position_version position attribute version
- * @param out_texcoord_version texcoord attribute version
- * @param out_texture_version texture payload version
- * @return true when required static resources exist
- */
-static bool _scene_image_probe_static_versions(
-    const DvzVisual* visual, uint64_t* out_position_version, uint64_t* out_texcoord_version,
-    uint64_t* out_texture_version)
-{
-    ANN(visual);
-    ANN(out_position_version);
-    ANN(out_texcoord_version);
-    ANN(out_texture_version);
-
-    int pos_idx = _attr_index(visual, "position");
-    if (pos_idx < 0)
-        return false;
-    const DvzVisualAttr* pos_attr = &visual->attrs[pos_idx];
-    if (pos_attr->data == NULL || pos_attr->item_count == 0 || pos_attr->item_size != sizeof(vec3))
-    {
-        return false;
-    }
-
-    uint64_t texcoord_version = 0;
-    int extent_idx = _attr_index(visual, "extent");
-    int extent_px_idx = _attr_index(visual, "extent_px");
-    bool has_extent = extent_idx >= 0 && visual->attrs[extent_idx].data != NULL;
-    bool has_extent_px = extent_px_idx >= 0 && visual->attrs[extent_px_idx].data != NULL;
-    if (has_extent || has_extent_px)
-    {
-        if (has_extent && has_extent_px)
-            return false;
-        const DvzVisualAttr* extent_attr =
-            has_extent_px ? &visual->attrs[extent_px_idx] : &visual->attrs[extent_idx];
-        if (
-            extent_attr->item_count != pos_attr->item_count ||
-            extent_attr->item_size != sizeof(vec2))
-        {
-            return false;
-        }
-        texcoord_version = extent_attr->version;
-
-        int anchor_idx = _attr_index(visual, "anchor");
-        if (anchor_idx >= 0 && visual->attrs[anchor_idx].data != NULL)
-            texcoord_version ^= visual->attrs[anchor_idx].version;
-        int tex_rect_idx = _attr_index(visual, "tex_rect");
-        if (tex_rect_idx >= 0 && visual->attrs[tex_rect_idx].data != NULL)
-            texcoord_version ^= visual->attrs[tex_rect_idx].version;
-    }
-    else
-    {
-        int uv_idx = _attr_index(visual, "texcoords");
-        if (uv_idx < 0)
-            return false;
-        const DvzVisualAttr* uv_attr = &visual->attrs[uv_idx];
-        if (
-            uv_attr->data == NULL || uv_attr->item_count != pos_attr->item_count ||
-            uv_attr->item_size != sizeof(vec2))
-        {
-            return false;
-        }
-        texcoord_version = uv_attr->version;
-    }
-
-    *out_position_version = pos_attr->version;
-    *out_texcoord_version = texcoord_version;
-    *out_texture_version = visual->texture.version;
-    return true;
-}
-
-
-
-/**
- * Return whether the retained image-probe static resources must be refreshed.
- *
- * @param executor the retained request executor
- * @param visual the image visual
- * @param position_version position attribute version
- * @param texcoord_version texcoord attribute version
- * @param texture_version texture payload version
- * @return true when static uploads are required
- */
-static bool _scene_image_probe_needs_static_upload(
-    const DvzSceneRequestExecutor* executor, const DvzVisual* visual, uint64_t position_version,
-    uint64_t texcoord_version, uint64_t texture_version)
-{
-    ANN(executor);
-    ANN(visual);
-    return executor->image_probe_visual != visual ||
-           executor->image_probe_position_version != position_version ||
-           executor->image_probe_texcoord_version != texcoord_version ||
-           executor->image_probe_texture_version != texture_version;
-}
-
-
-
-/**
- * Mark the retained image-probe static resources as current.
- *
- * @param executor the retained request executor
- * @param visual the image visual
- * @param position_version position attribute version
- * @param texcoord_version texcoord attribute version
- * @param texture_version texture payload version
- */
-static void _scene_image_probe_mark_static_uploaded(
-    DvzSceneRequestExecutor* executor, DvzVisual* visual, uint64_t position_version,
-    uint64_t texcoord_version, uint64_t texture_version)
-{
-    ANN(executor);
-    ANN(visual);
-    executor->image_probe_visual = visual;
-    executor->image_probe_position_version = position_version;
-    executor->image_probe_texcoord_version = texcoord_version;
-    executor->image_probe_texture_version = texture_version;
 }
 
 
@@ -1264,43 +918,6 @@ static bool _scene_probe_request_has_labels_candidate(
 
 
 /**
- * Return whether one pending probe has a visible image candidate that may need GPU readback.
- *
- * @param figure figure whose request queue is being processed
- * @param pending pending probe request
- * @return true when a matching image visual exists
- */
-static bool _scene_probe_request_has_image_candidate(
-    const DvzFigure* figure, const DvzPendingProbeRequest* pending)
-{
-    ANN(figure);
-    ANN(pending);
-    if (pending->panel == NULL || pending->panel->figure != figure)
-        return false;
-    if (
-        pending->request.target != DVZ_SCENE_TARGET_NONE &&
-        pending->request.target != DVZ_SCENE_TARGET_PIXEL)
-    {
-        return false;
-    }
-
-    const DvzPanel* panel = pending->panel;
-    for (uint32_t i = 0; i < panel->visual_count; i++)
-    {
-        const DvzPanelAttach* attach = &panel->visuals[i];
-        const DvzVisual* visual = attach->visual;
-        if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_IMAGE)
-            continue;
-        if (visual->visible && attach->controller_mode != DVZ_CONTROLLER_FIXED)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-/**
  * Resolve one pick request by trying visible visuals from top to bottom.
  *
  * @param figure figure whose request queue is being processed
@@ -1573,11 +1190,22 @@ static bool _scene_process_labels_probe_request(
 
 
 
+/**
+ * Resolve one image probe request through the native query executor.
+ *
+ * @param figure figure whose request queue is being processed
+ * @param runtime caller runtime
+ * @param executor retained request executor
+ * @param caps runtime capability snapshot
+ * @param pending pending probe request
+ * @return whether a result was queued
+ */
 static bool _scene_process_image_probe_request(
-    DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
-    const DvzPendingProbeRequest* pending)
+    DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
+    const DvzCapabilitySnapshot* caps, const DvzPendingProbeRequest* pending)
 {
     ANN(figure);
+    ANN(executor);
     ANN(caps);
     ANN(pending);
     ANN(pending->panel);
@@ -1595,86 +1223,26 @@ static bool _scene_process_image_probe_request(
     if (pending->request.target == DVZ_SCENE_TARGET_SAMPLE)
         return _scene_push_probe_result(scene, panel, pending->freshness_serial, &miss);
 
-    vec2 request_ndc = {0};
-    if (!_scene_pick_request_ndc(figure, panel, pending->x, pending->y, request_ndc))
+    DvzPendingQueryRequest query_pending = {
+        .panel = panel,
+        .x = pending->x,
+        .y = pending->y,
+        .freshness_serial = pending->freshness_serial,
+        .request = {
+            .request_id = pending->request.request_id,
+            .target = DVZ_SCENE_TARGET_PIXEL,
+            .flags = pending->request.flags | DVZ_SCENE_QUERY_FLAG_COMPAT_PROBE,
+        },
+    };
+    DvzQueryResult query = {0};
+    if (!_dvz_scene_query_process_pending(
+            figure, runtime, executor, caps, &query_pending, &query))
     {
-        miss.status = DVZ_PROBE_STATUS_OUTSIDE_PANEL;
+        miss.status = DVZ_PROBE_STATUS_INVALID_RESULT;
         return _scene_push_probe_result(scene, panel, pending->freshness_serial, &miss);
     }
-    uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
-    _scene_panel_visual_order(panel, order);
 
-    for (int32_t oi = (int32_t)panel->visual_count - 1; oi >= 0; oi--)
-    {
-        DvzPanelAttach* attach = &panel->visuals[order[oi]];
-        DvzVisual* visual = attach->visual;
-        if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_IMAGE)
-            continue;
-        if (!visual->visible || attach->controller_mode == DVZ_CONTROLLER_FIXED)
-        {
-            continue;
-        }
-
-        if (miss.status == DVZ_PROBE_STATUS_NO_CAPABLE_VISUAL)
-            miss.status = DVZ_PROBE_STATUS_MISS;
-
-        if (executor == NULL || executor->runtime == NULL || executor->emitter == NULL)
-        {
-            log_error("image probe request requires a DRP2 runtime");
-            miss.status = DVZ_PROBE_STATUS_GPU_EXEC_FAILED;
-            continue;
-        }
-
-        uint64_t position_version = 0;
-        uint64_t texcoord_version = 0;
-        uint64_t texture_version = 0;
-        if (!_scene_image_probe_static_versions(
-                visual, &position_version, &texcoord_version, &texture_version))
-        {
-            continue;
-        }
-
-        bool include_static_uploads = _scene_image_probe_needs_static_upload(
-            executor, visual, position_version, texcoord_version, texture_version);
-
-        DvzSceneProbePlan probe_plan = {0};
-        if (!_scene_image_probe_plan(
-                panel, visual, pending, request_ndc, include_static_uploads, &probe_plan))
-            continue;
-
-        uint8_t rgba[4] = {0};
-        bool executed = false;
-        bool readback_ok = _scene_execute_readback_plan(
-            scene, executor, caps, probe_plan.plan, 1, 1, rgba, &executed);
-        if (!readback_ok)
-            miss.status = executed ? DVZ_PROBE_STATUS_READBACK_FAILED :
-                                     DVZ_PROBE_STATUS_GPU_EXEC_FAILED;
-        if (executed && include_static_uploads)
-        {
-            _scene_image_probe_mark_static_uploaded(
-                executor, visual, position_version, texcoord_version, texture_version);
-            executor->image_probe_static_upload_count++;
-        }
-        bool hit = readback_ok && rgba[3] > 0;
-        if (readback_ok && rgba[3] == 0)
-        {
-            log_error(
-                "image probe request %" PRIu64 " returned a transparent GPU pixel",
-                pending->request.request_id);
-        }
-        _scene_probe_plan_destroy(&probe_plan);
-
-        if (!hit)
-            continue;
-
-        DvzSceneProbePayload payload = {0};
-        if (!_scene_decode_image_probe_payload(visual, rgba, &payload))
-            continue;
-
-        DvzProbeResult resolved = miss;
-        _scene_apply_probe_payload(scene, visual, &payload, &resolved);
-        return _scene_push_probe_result(scene, panel, pending->freshness_serial, &resolved);
-    }
-
-    return _scene_push_probe_result(scene, panel, pending->freshness_serial, &miss);
+    DvzProbeResult probe = {0};
+    _scene_probe_result_from_query(&query, &probe);
+    return _scene_push_probe_result(scene, panel, pending->freshness_serial, &probe);
 }

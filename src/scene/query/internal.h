@@ -66,6 +66,7 @@ struct DvzSceneQueryBuildContext
     DvzFigure* figure;
     DvzPanel* panel;
     DvzVisual* visual;
+    DvzSceneRequestExecutor* executor;
     const DvzPendingQueryRequest* pending;
     const DvzCapabilitySnapshot* caps;
     DvzQueryProfile profile;
@@ -84,6 +85,11 @@ struct DvzSceneQueryPlan
     uint32_t texel_x;
     uint32_t texel_y;
     double uvw[3];
+    bool mark_image_probe_static_uploaded;
+    DvzVisual* image_probe_visual;
+    uint64_t image_probe_position_version;
+    uint64_t image_probe_texcoord_version;
+    uint64_t image_probe_texture_version;
 };
 
 

@@ -869,7 +869,7 @@ int test_scene_image_probe_gpu_readback_failure_misses(TstContext* suite, const 
     AT(!probe.hit);
     AT(probe.request_id == 22);
     AT(probe.status == DVZ_PROBE_STATUS_READBACK_FAILED);
-    AT(_captured_log_contains(suite, "scene readback buffer download forced to fail"));
+    AT(_captured_log_contains(suite, "scene query readback buffer download forced to fail"));
 
     dvz_drp2_runtime_destroy(runtime);
     dvz_gpu_ctx_destroy(ctx);
