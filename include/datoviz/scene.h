@@ -1054,7 +1054,8 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  * First-slice visual families currently accept:
  * point: `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels),
  *        optional `"selection"` (uint8 mask)
- * splat: `"position"` (vec3f), `"color"` (RGBA8), `"sigma"` (vec2f pixels)
+ * splat: `"position"` (vec3f), `"color"` (RGBA8), `"sigma"` (vec2f pixels),
+ *        `"angle"` (float radians)
  * pixel: `"position"` (vec3f), `"color"` (RGBA8), `"pixel_size"` (float pixels)
  * marker: `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels),
  *         `"angle"` (float radians), `"shape"` (uint32_t DvzMarkerShape),
@@ -1438,8 +1439,9 @@ DVZ_EXPORT DvzVisual* dvz_point(DvzScene* scene, uint32_t flags);
  * Create a Gaussian splat visual.
  *
  * Renders one screen-facing Gaussian footprint per item with `position` (vec3), `color` (RGBA8),
- * and `sigma` (vec2, screen pixels). The first implementation uses center depth, depth test on,
- * depth writes off through alpha blending, and no sorting or projected 3D covariance.
+ * `sigma` (vec2, screen pixels), and `angle` (float radians). The first implementation uses
+ * center depth, depth test on, depth writes off through alpha blending, and no sorting or
+ * projected 3D covariance.
  *
  * @param scene the scene
  * @param flags variant flags

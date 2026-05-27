@@ -521,16 +521,19 @@ static bool _scene_visual_desc_from_metadata(
             _scene_visual_resource_lookup_label(&emitter->resources, meta->color_id);
         uint64_t sigma_id =
             _scene_visual_resource_lookup_label(&emitter->resources, meta->sigma_id);
-        if (color_id == 0 || sigma_id == 0)
+        uint64_t angle_id =
+            _scene_visual_resource_lookup_label(&emitter->resources, meta->angle_id);
+        if (color_id == 0 || sigma_id == 0 || angle_id == 0)
         {
             if (error != NULL)
-                *error = "typed splat metadata missing color/sigma resource";
+                *error = "typed splat metadata missing color/sigma/angle resource";
             return false;
         }
         uint32_t item_count = out->vertex_count;
         out->kind = DVZ_SCENE_VISUAL_DESC_SPLAT;
         out->vbuf_ids[out->vbuf_count++] = color_id;
         out->vbuf_ids[out->vbuf_count++] = sigma_id;
+        out->vbuf_ids[out->vbuf_count++] = angle_id;
         out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         out->vertex_count = 6;
         out->instance_count = item_count;
@@ -955,13 +958,13 @@ bool _is_point_visual(const ConverterState* state, const uint64_t* ids, uint32_t
  * @param state resource id state
  * @param ids resource ids
  * @param n resource id count
- * @return whether the ids carry position, color, and sigma resources
+ * @return whether the ids carry position, color, sigma, and angle resources
  */
 bool _is_splat_visual(const ConverterState* state, const uint64_t* ids, uint32_t n)
 {
-    if (n < 3)
+    if (n < 4)
         return false;
-    bool has_pos = false, has_col = false, has_sigma = false;
+    bool has_pos = false, has_col = false, has_sigma = false, has_angle = false;
     for (uint32_t i = 0; i < n; i++)
     {
         DvzFramePlanResourceRole role = _resource_role(state, ids[i]);
@@ -971,6 +974,8 @@ bool _is_splat_visual(const ConverterState* state, const uint64_t* ids, uint32_t
             has_col = true;
         if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA)
             has_sigma = true;
+        if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_ANGLE)
+            has_angle = true;
         if (role != DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE)
             continue;
 
@@ -981,8 +986,10 @@ bool _is_splat_visual(const ConverterState* state, const uint64_t* ids, uint32_t
             has_col = true;
         if (strcmp(tag, "sigma") == 0)
             has_sigma = true;
+        if (strcmp(tag, "angle") == 0)
+            has_angle = true;
     }
-    return has_pos && has_col && has_sigma;
+    return has_pos && has_col && has_sigma && has_angle;
 }
 
 
@@ -1447,13 +1454,17 @@ bool _scene_visual_desc_from_render(
         uint64_t sigma_id = _scene_visual_resource_by_role(
             &emitter->resources, out->vbuf_ids, out->vbuf_count,
             DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA);
-        if (color_id == 0 || sigma_id == 0)
+        uint64_t angle_id = _scene_visual_resource_by_role(
+            &emitter->resources, out->vbuf_ids, out->vbuf_count,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_ANGLE);
+        if (color_id == 0 || sigma_id == 0 || angle_id == 0)
             return false;
         out->kind = DVZ_SCENE_VISUAL_DESC_SPLAT;
         out->vbuf_ids[0] = pos_buf;
         out->vbuf_ids[1] = color_id;
         out->vbuf_ids[2] = sigma_id;
-        out->vbuf_count = 3;
+        out->vbuf_ids[3] = angle_id;
+        out->vbuf_count = 4;
         out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         out->instance_count = out->vertex_count;
         out->vertex_count = 6;

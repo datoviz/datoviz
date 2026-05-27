@@ -404,9 +404,8 @@ bool _scene_draw_packet_init_fallback(
 
     uint32_t binding_count =
         kind == DVZ_SCENE_VISUAL_DESC_MARKER ? 5
-        : kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH ? 4
-        : kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
-                kind == DVZ_SCENE_VISUAL_DESC_SPLAT
+        : kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH || kind == DVZ_SCENE_VISUAL_DESC_SPLAT ? 4
+        : kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL
             ? 3
             : 2;
     if (binding_count > vertex_buffer_count)
@@ -439,6 +438,8 @@ bool _scene_draw_packet_init_fallback(
         pipeline.strides[0] = 3 * sizeof(float);
         pipeline.strides[1] = 4 * sizeof(uint8_t);
         pipeline.strides[2] = 2 * sizeof(float);
+        if (binding_count >= 4)
+            pipeline.strides[3] = sizeof(float);
         if (instanced_point_like)
         {
             for (uint32_t i = 0; i < binding_count; i++)

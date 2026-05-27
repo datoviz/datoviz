@@ -64,6 +64,7 @@ struct GothicSplatDataset
     vec3* positions;
     DvzColor* colors;
     vec2* sigma;
+    float* angles;
     uint32_t count;
 };
 
@@ -153,14 +154,15 @@ static void _print_prepare_hint(const char* data_dir)
 
 
 /**
- * Clamp a source radius to the screen-space Gaussian sigma range.
+ * Clamp a screen-space Gaussian sigma to the configured display range.
  *
- * @param radius normalized source radius
+ * @param sigma unclamped splat standard deviation in pixels
  * @return splat standard deviation in pixels
  */
-static float _screen_sigma(float radius)
+static float _clamp_sigma(float sigma)
 {
-    float sigma = radius * GOTHIC_SIGMA_SCALE;
+    if (!isfinite(sigma))
+        sigma = GOTHIC_SIGMA_MIN;
     if (sigma < GOTHIC_SIGMA_MIN)
         sigma = GOTHIC_SIGMA_MIN;
     if (sigma > GOTHIC_SIGMA_MAX)
@@ -171,7 +173,117 @@ static float _screen_sigma(float radius)
 
 
 /**
- * Load the Gothic splat cache arrays and build screen-space splat sigmas.
+ * Convert a normalized quaternion to a 3x3 rotation matrix.
+ *
+ * @param q source quaternion in w, x, y, z order
+ * @param out output row-major rotation matrix
+ */
+static void _quat_to_matrix(const vec4 q, float out[3][3])
+{
+    ANN(q);
+    ANN(out);
+
+    float w = q[0];
+    float x = q[1];
+    float y = q[2];
+    float z = q[3];
+    float norm = sqrtf(w * w + x * x + y * y + z * z);
+    if (!isfinite(norm) || norm <= 1e-12f)
+    {
+        w = 1.0f;
+        x = y = z = 0.0f;
+    }
+    else
+    {
+        float inv_norm = 1.0f / norm;
+        w *= inv_norm;
+        x *= inv_norm;
+        y *= inv_norm;
+        z *= inv_norm;
+    }
+
+    float xx = x * x;
+    float yy = y * y;
+    float zz = z * z;
+    float xy = x * y;
+    float xz = x * z;
+    float yz = y * z;
+    float wx = w * x;
+    float wy = w * y;
+    float wz = w * z;
+
+    out[0][0] = 1.0f - 2.0f * (yy + zz);
+    out[0][1] = 2.0f * (xy - wz);
+    out[0][2] = 2.0f * (xz + wy);
+    out[1][0] = 2.0f * (xy + wz);
+    out[1][1] = 1.0f - 2.0f * (xx + zz);
+    out[1][2] = 2.0f * (yz - wx);
+    out[2][0] = 2.0f * (xz - wy);
+    out[2][1] = 2.0f * (yz + wx);
+    out[2][2] = 1.0f - 2.0f * (xx + yy);
+}
+
+
+
+/**
+ * Project one source 3D Gaussian shape to a screen-facing ellipse.
+ *
+ * @param scale source standard deviations along the local 3D axes
+ * @param quat source orientation quaternion in w, x, y, z order
+ * @param sigma output screen-space ellipse standard deviations in pixels
+ * @param angle output screen-space major-axis angle in radians
+ */
+static void _screen_ellipse_from_splat(const vec3 scale, const vec4 quat, vec2 sigma, float* angle)
+{
+    ANN(scale);
+    ANN(quat);
+    ANN(sigma);
+    ANN(angle);
+
+    float r[3][3] = {{0}};
+    _quat_to_matrix(quat, r);
+
+    float sx2 = scale[0] * scale[0];
+    float sy2 = scale[1] * scale[1];
+    float sz2 = scale[2] * scale[2];
+    if (!isfinite(sx2) || !isfinite(sy2) || !isfinite(sz2) || sx2 <= 0.0f || sy2 <= 0.0f ||
+        sz2 <= 0.0f)
+    {
+        sigma[0] = GOTHIC_SIGMA_MIN;
+        sigma[1] = GOTHIC_SIGMA_MIN;
+        *angle = 0.0f;
+        return;
+    }
+
+    float cxx = sx2 * r[0][0] * r[0][0] + sy2 * r[0][1] * r[0][1] +
+                sz2 * r[0][2] * r[0][2];
+    float cyy = sx2 * r[1][0] * r[1][0] + sy2 * r[1][1] * r[1][1] +
+                sz2 * r[1][2] * r[1][2];
+    /* The prepared cache mirrors Y positions; mirror the XY covariance block to match. */
+    float cxy = -(sx2 * r[0][0] * r[1][0] + sy2 * r[0][1] * r[1][1] +
+                  sz2 * r[0][2] * r[1][2]);
+
+    float diff = cxx - cyy;
+    float root = sqrtf(fmaxf(diff * diff + 4.0f * cxy * cxy, 0.0f));
+    float major_var = 0.5f * (cxx + cyy + root);
+    float minor_var = 0.5f * (cxx + cyy - root);
+    if (!isfinite(major_var) || !isfinite(minor_var) || major_var <= 0.0f || minor_var <= 0.0f)
+    {
+        sigma[0] = GOTHIC_SIGMA_MIN;
+        sigma[1] = GOTHIC_SIGMA_MIN;
+        *angle = 0.0f;
+        return;
+    }
+
+    sigma[0] = _clamp_sigma(sqrtf(major_var) * GOTHIC_SIGMA_SCALE);
+    sigma[1] = _clamp_sigma(sqrtf(minor_var) * GOTHIC_SIGMA_SCALE);
+    *angle = 0.5f * atan2f(2.0f * cxy, diff);
+}
+
+
+
+/**
+ * Load the Gothic splat cache arrays and build screen-space splat ellipses.
  *
  * @param data_dir directory containing Gothic splat .npy arrays
  * @param stride sampling stride
@@ -188,10 +300,12 @@ static bool _load_gothic_dataset(
 
     char pos_path[1024] = {0};
     char color_path[1024] = {0};
-    char radius_path[1024] = {0};
+    char scale_path[1024] = {0};
+    char quat_path[1024] = {0};
     if (!_join_path(data_dir, "gothic_splat_pos.npy", pos_path, sizeof(pos_path)) ||
         !_join_path(data_dir, "gothic_splat_color.npy", color_path, sizeof(color_path)) ||
-        !_join_path(data_dir, "gothic_splat_radius.npy", radius_path, sizeof(radius_path)))
+        !_join_path(data_dir, "gothic_splat_scale.npy", scale_path, sizeof(scale_path)) ||
+        !_join_path(data_dir, "gothic_splat_quat.npy", quat_path, sizeof(quat_path)))
     {
         dvz_fprintf(stderr, "Gothic splat data path is too long\n");
         return false;
@@ -199,25 +313,29 @@ static bool _load_gothic_dataset(
 
     DvzSize pos_size = 0;
     DvzSize color_size = 0;
-    DvzSize radius_size = 0;
+    DvzSize scale_size = 0;
+    DvzSize quat_size = 0;
     vec3* positions = dvz_read_npy(pos_path, &pos_size);
     DvzColor* colors = dvz_read_npy(color_path, &color_size);
-    float* radii = dvz_read_npy(radius_path, &radius_size);
-    if (positions == NULL || colors == NULL || radii == NULL)
+    vec3* scales = dvz_read_npy(scale_path, &scale_size);
+    vec4* quats = dvz_read_npy(quat_path, &quat_size);
+    if (positions == NULL || colors == NULL || scales == NULL || quats == NULL)
     {
-        dvz_free(radii);
+        dvz_free(quats);
+        dvz_free(scales);
         dvz_free(colors);
         dvz_free(positions);
         _print_prepare_hint(data_dir);
         return false;
     }
 
-    if (pos_size == 0 || color_size == 0 || radius_size == 0 ||
+    if (pos_size == 0 || color_size == 0 || scale_size == 0 || quat_size == 0 ||
         pos_size % (3 * sizeof(float)) != 0 || color_size % sizeof(DvzColor) != 0 ||
-        radius_size % sizeof(float) != 0)
+        scale_size % (3 * sizeof(float)) != 0 || quat_size % (4 * sizeof(float)) != 0)
     {
         dvz_fprintf(stderr, "invalid Gothic splat .npy payload sizes\n");
-        dvz_free(radii);
+        dvz_free(quats);
+        dvz_free(scales);
         dvz_free(colors);
         dvz_free(positions);
         return false;
@@ -225,11 +343,14 @@ static bool _load_gothic_dataset(
 
     DvzSize source_count = pos_size / (3 * sizeof(float));
     DvzSize color_count = color_size / sizeof(DvzColor);
-    DvzSize radius_count = radius_size / sizeof(float);
-    if (source_count != color_count || source_count != radius_count || source_count > UINT32_MAX)
+    DvzSize scale_count = scale_size / (3 * sizeof(float));
+    DvzSize quat_count = quat_size / (4 * sizeof(float));
+    if (source_count != color_count || source_count != scale_count || source_count != quat_count ||
+        source_count > UINT32_MAX)
     {
-        dvz_fprintf(stderr, "Gothic splat position/color/radius counts do not match\n");
-        dvz_free(radii);
+        dvz_fprintf(stderr, "Gothic splat position/color/scale/quaternion counts do not match\n");
+        dvz_free(quats);
+        dvz_free(scales);
         dvz_free(colors);
         dvz_free(positions);
         return false;
@@ -239,7 +360,8 @@ static bool _load_gothic_dataset(
     if (sampled_count == 0 || sampled_count > UINT32_MAX)
     {
         dvz_fprintf(stderr, "invalid Gothic splat sampled point count\n");
-        dvz_free(radii);
+        dvz_free(quats);
+        dvz_free(scales);
         dvz_free(colors);
         dvz_free(positions);
         return false;
@@ -248,13 +370,21 @@ static bool _load_gothic_dataset(
     dataset->positions = (vec3*)dvz_calloc(sampled_count, sizeof(*dataset->positions));
     dataset->colors = (DvzColor*)dvz_calloc(sampled_count, sizeof(*dataset->colors));
     dataset->sigma = (vec2*)dvz_calloc(sampled_count, sizeof(*dataset->sigma));
-    if (dataset->positions == NULL || dataset->colors == NULL || dataset->sigma == NULL)
+    dataset->angles = (float*)dvz_calloc(sampled_count, sizeof(*dataset->angles));
+    if (dataset->positions == NULL || dataset->colors == NULL || dataset->sigma == NULL ||
+        dataset->angles == NULL)
     {
         dvz_fprintf(stderr, "unable to allocate Gothic splat buffers\n");
+        dvz_free(dataset->angles);
         dvz_free(dataset->sigma);
         dvz_free(dataset->colors);
         dvz_free(dataset->positions);
-        dvz_free(radii);
+        dataset->angles = NULL;
+        dataset->sigma = NULL;
+        dataset->colors = NULL;
+        dataset->positions = NULL;
+        dvz_free(quats);
+        dvz_free(scales);
         dvz_free(colors);
         dvz_free(positions);
         return false;
@@ -267,14 +397,14 @@ static bool _load_gothic_dataset(
         dataset->positions[dst][1] = positions[src][1];
         dataset->positions[dst][2] = positions[src][2];
         dataset->colors[dst] = colors[src];
-        float sigma = _screen_sigma(radii[src]);
-        dataset->sigma[dst][0] = sigma;
-        dataset->sigma[dst][1] = sigma;
+        _screen_ellipse_from_splat(
+            scales[src], quats[src], dataset->sigma[dst], &dataset->angles[dst]);
         dst++;
     }
     dataset->count = dst;
 
-    dvz_free(radii);
+    dvz_free(quats);
+    dvz_free(scales);
     dvz_free(colors);
     dvz_free(positions);
 
@@ -294,6 +424,7 @@ static void _destroy_gothic_dataset(GothicSplatDataset* dataset)
 {
     if (dataset == NULL)
         return;
+    dvz_free(dataset->angles);
     dvz_free(dataset->sigma);
     dvz_free(dataset->colors);
     dvz_free(dataset->positions);
@@ -428,8 +559,9 @@ int main(int argc, char** argv)
         {.attr_name = "position", .data = dataset.positions, .item_count = dataset.count},
         {.attr_name = "color", .data = dataset.colors, .item_count = dataset.count},
         {.attr_name = "sigma", .data = dataset.sigma, .item_count = dataset.count},
+        {.attr_name = "angle", .data = dataset.angles, .item_count = dataset.count},
     };
-    int rc = dvz_visual_set_data_many(visual, updates, 3);
+    int rc = dvz_visual_set_data_many(visual, updates, 4);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");
 
     rc = dvz_visual_set_depth_test(visual, true);

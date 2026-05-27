@@ -189,8 +189,8 @@ def prepare(
             "gothic_splat_pos.npy": "float32 Nx3 center positions",
             "gothic_splat_color.npy": "uint8 Nx4 RGBA colors, DvzColor-compatible",
             "gothic_splat_radius.npy": "float32 N scalar radius from geometric mean scale",
-            "gothic_splat_scale.npy": "float32 Nx3 exp(scale_*) future 3DGS attribute",
-            "gothic_splat_quat.npy": "float32 Nx4 normalized rot_* future 3DGS attribute",
+            "gothic_splat_scale.npy": "float32 Nx3 exp(scale_*) 3DGS scale attribute",
+            "gothic_splat_quat.npy": "float32 Nx4 normalized rot_* 3DGS quaternion attribute",
         },
     }
     (output_dir / "gothic_splat_meta.json").write_text(json.dumps(metadata, indent=2))

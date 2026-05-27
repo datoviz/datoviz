@@ -289,7 +289,9 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
             {
                 bool has_sigma =
                     _scene_visual_resource_lookup_label(&emitter->resources, meta->sigma_id) != 0;
-                if (has_color && has_sigma)
+                bool has_angle =
+                    _scene_visual_resource_lookup_label(&emitter->resources, meta->angle_id) != 0;
+                if (has_color && has_sigma && has_angle)
                     return true;
                 continue;
             }

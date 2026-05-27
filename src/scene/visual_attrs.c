@@ -260,20 +260,38 @@ static bool _visual_attr_values_valid(
     ANN(attr_name);
     ANN(data);
 
-    if (visual->type != DVZ_VISUAL_TYPE_SPLAT || strcmp(attr_name, "sigma") != 0)
+    if (visual->type != DVZ_VISUAL_TYPE_SPLAT)
         return true;
 
-    const float* sigma = (const float*)data;
-    for (uint32_t i = 0; i < item_count; i++)
+    if (strcmp(attr_name, "sigma") == 0)
     {
-        float sx = sigma[2 * i + 0];
-        float sy = sigma[2 * i + 1];
-        if (!isfinite(sx) || !isfinite(sy) || sx <= 0.0f || sy <= 0.0f)
+        const float* sigma = (const float*)data;
+        for (uint32_t i = 0; i < item_count; i++)
         {
-            log_error("splat visual attribute 'sigma' requires finite positive components");
-            return false;
+            float sx = sigma[2 * i + 0];
+            float sy = sigma[2 * i + 1];
+            if (!isfinite(sx) || !isfinite(sy) || sx <= 0.0f || sy <= 0.0f)
+            {
+                log_error("splat visual attribute 'sigma' requires finite positive components");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    if (strcmp(attr_name, "angle") == 0)
+    {
+        const float* angles = (const float*)data;
+        for (uint32_t i = 0; i < item_count; i++)
+        {
+            if (!isfinite(angles[i]))
+            {
+                log_error("splat visual attribute 'angle' requires finite values");
+                return false;
+            }
         }
     }
+
     return true;
 }
 

@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <float.h>
+#include <math.h>
 
 #include "scene_graph_utils.h"
 #include "../_frame_plan_runtime_internal.h"
@@ -517,20 +518,27 @@ int test_scene_splat_api_and_attrs(TstContext* suite, const TstCase* item)
     vec3 positions[2] = {{-0.25f, 0.0f, 0.0f}, {+0.25f, 0.0f, 0.0f}};
     DvzColor colors[2] = {{255, 0, 0, 128}, {0, 255, 0, 192}};
     vec2 sigma[2] = {{4.0f, 8.0f}, {6.0f, 3.0f}};
+    float angles[2] = {0.0f, 0.5f};
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = 2},
         {.attr_name = "color", .data = colors, .item_count = 2},
         {.attr_name = "sigma", .data = sigma, .item_count = 2},
+        {.attr_name = "angle", .data = angles, .item_count = 2},
     };
-    AT(dvz_visual_set_data_many(visual, updates, 3) == 0);
+    AT(dvz_visual_set_data_many(visual, updates, 4) == 0);
 
     DvzVisualDataView view = {0};
     AT(dvz_visual_data(visual, "sigma", &view) == 0);
     AT(view.item_count == 2);
     AT(view.item_size == 2 * sizeof(float));
+    AT(dvz_visual_data(visual, "angle", &view) == 0);
+    AT(view.item_count == 2);
+    AT(view.item_size == sizeof(float));
 
     vec2 bad_sigma[2] = {{4.0f, 0.0f}, {6.0f, 3.0f}};
     AT(dvz_visual_set_data(visual, "sigma", bad_sigma, 2) == -1);
+    float bad_angles[2] = {0.0f, NAN};
+    AT(dvz_visual_set_data(visual, "angle", bad_angles, 2) == -1);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -556,6 +564,7 @@ int test_scene_splat_emit_instanced_quads(TstContext* suite, const TstCase* item
     };
     DvzColor colors[3] = {{255, 0, 0, 192}, {0, 180, 255, 192}, {255, 255, 255, 192}};
     vec2 sigma[3] = {{5.0f, 5.0f}, {8.0f, 4.0f}, {3.0f, 9.0f}};
+    float angles[3] = {0.0f, 0.6f, -0.4f};
 
     for (uint32_t pass = 0; pass < 2; pass++)
     {
@@ -572,6 +581,7 @@ int test_scene_splat_emit_instanced_quads(TstContext* suite, const TstCase* item
         AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
         AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
         AT(dvz_visual_set_data(visual, "sigma", sigma, 3) == 0);
+        AT(dvz_visual_set_data(visual, "angle", angles, 3) == 0);
         AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
         DvzCapabilitySnapshot caps;
@@ -599,6 +609,7 @@ int test_scene_splat_emit_instanced_quads(TstContext* suite, const TstCase* item
         bool found_pipeline = false;
         bool found_draw = false;
         bool found_sigma_buffer = false;
+        bool found_angle_buffer = false;
         const uint32_t count = dvz_drp2_stream_count(stream);
         for (uint32_t i = 0; i < count; i++)
         {
@@ -606,26 +617,34 @@ int test_scene_splat_emit_instanced_quads(TstContext* suite, const TstCase* item
             ANN(command);
             if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
             {
-                if (command->u.create_render_pipeline.binding_count != 3)
+                if (command->u.create_render_pipeline.binding_count != 4)
                     continue;
                 found_pipeline = true;
                 AT(command->u.create_render_pipeline.topology ==
                    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-                AT(command->u.create_render_pipeline.binding_count == 3);
+                AT(command->u.create_render_pipeline.binding_count == 4);
                 AT(command->u.create_render_pipeline.binding_strides[0] == 3 * sizeof(float));
                 AT(command->u.create_render_pipeline.binding_strides[1] == 4 * sizeof(uint8_t));
                 AT(command->u.create_render_pipeline.binding_strides[2] == 2 * sizeof(float));
+                AT(command->u.create_render_pipeline.binding_strides[3] == sizeof(float));
                 AT(command->u.create_render_pipeline.binding_step_modes[0] ==
                    DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
                 AT(command->u.create_render_pipeline.binding_step_modes[1] ==
                    DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
                 AT(command->u.create_render_pipeline.binding_step_modes[2] ==
                    DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
+                AT(command->u.create_render_pipeline.binding_step_modes[3] ==
+                   DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
             }
             else if (command->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER &&
                      command->u.set_vertex_buffer.slot == 2)
             {
                 found_sigma_buffer = true;
+            }
+            else if (command->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER &&
+                     command->u.set_vertex_buffer.slot == 3)
+            {
+                found_angle_buffer = true;
             }
             else if (command->type == DVZ_DRP2_COMMAND_DRAW)
             {
@@ -636,6 +655,7 @@ int test_scene_splat_emit_instanced_quads(TstContext* suite, const TstCase* item
         }
         AT(found_pipeline);
         AT(found_sigma_buffer);
+        AT(found_angle_buffer);
         AT(found_draw);
 
         char* json = dvz_drp2_stream_json(stream, wgsl ? "scene_splat_wgsl" : "scene_splat_glsl");

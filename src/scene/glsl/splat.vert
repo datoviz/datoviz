@@ -5,10 +5,12 @@
 layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec4 inColor;
 layout(location = 2) in vec2 inSigma;
+layout(location = 3) in float inAngle;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 fragOffsetPx;
 layout(location = 2) out vec2 fragSigma;
+layout(location = 3) out float fragAngle;
 
 const float CUTOFF_SIGMA = 3.0;
 
@@ -37,4 +39,5 @@ void main()
     fragColor = inColor;
     fragOffsetPx = corner * extent;
     fragSigma = sigma;
+    fragAngle = inAngle;
 }

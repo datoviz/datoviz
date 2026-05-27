@@ -16,12 +16,12 @@ formats remain future work. The broader frame-plan pressure is recorded in
 Status on 2026-05-27: `splat` has a retained scene API and render path.
 
 The active runtime implements `DVZ_VISUAL_TYPE_SPLAT`, public `dvz_splat()`, retained
-`position`/`color`/`sigma` attributes, finite-positive `sigma` validation, GLSL and WGSL shader
-variants, and DRP2 lowering through the normal scene visual path.
+`position`/`color`/`sigma`/`angle` attributes, finite-positive `sigma` validation, finite `angle`
+validation, GLSL and WGSL shader variants, and DRP2 lowering through the normal scene visual path.
 
-This first slice intentionally omits `angle`, separate `opacity`, WBOIT/depth-peel shader variants,
-and request/readback behavior. It renders axis-aligned screen-space Gaussian billboards with
-source-over alpha blending and center-depth testing.
+This first slice intentionally omits separate `opacity`, WBOIT/depth-peel shader variants, and
+request/readback behavior. It renders rotated screen-space Gaussian billboards with source-over
+alpha blending and center-depth testing.
 
 
 ## Semantic Purpose
@@ -77,12 +77,12 @@ Standard deviations along the local ellipse axes. Both components must be finite
 The isotropic case uses `sigma_x == sigma_y`.
 
 
-### `angle` (deferred)
+### `angle`
 
 Standard — see `SHARED_ATTRIBUTES.md`.
 
-Applied in screen space to the local ellipse axes. The current first slice does not expose this
-attribute; all ellipses are axis-aligned in screen space.
+Applied in screen space to the local ellipse axes. Values must be finite. The current first slice
+accepts only `PER_ITEM` angles.
 
 
 ### `opacity` (deferred)
@@ -201,7 +201,7 @@ The preferred v0.4 rendering path is an instanced billboard:
 
 1. one logical instance per splat,
 2. four generated or static quad corners,
-3. per-instance `position`, `color`, `sigma`,
+3. per-instance `position`, `color`, `sigma`, and `angle`,
 4. vertex expansion in screen space,
 5. fragment Gaussian opacity evaluation.
 
@@ -212,9 +212,9 @@ draws, CPU/GPU sort, tile bins, or a splat-specific runtime escape hatch.
 ## Minimum Cases This Spec Must Support
 
 1. isotropic soft points: per-item `position`, `color`, and equal `sigma` components,
-2. anisotropic uncertainty ellipses: per-item `sigma`,
+2. anisotropic uncertainty ellipses: per-item `sigma` and `angle`,
 3. translucent density cloud: low-alpha colors with source-over blending,
-4. streaming kernels: range updates of `position`, `color`, and `sigma`,
+4. streaming kernels: range updates of `position`, `color`, `sigma`, and `angle`,
 5. sparse overlaid kernels with opaque geometry depth-tested by center depth.
 
 

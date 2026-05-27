@@ -4,6 +4,7 @@ struct VertexIn {
     @location(0) position: vec3f,
     @location(1) color: vec4f,
     @location(2) sigma: vec2f,
+    @location(3) angle: f32,
 }
 
 struct VertexOut {
@@ -11,6 +12,7 @@ struct VertexOut {
     @location(0) color: vec4f,
     @location(1) offset_px: vec2f,
     @location(2) sigma: vec2f,
+    @location(3) angle: f32,
 }
 
 const CUTOFF_SIGMA: f32 = 3.0;
@@ -41,5 +43,6 @@ fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {
     output.color = input.color;
     output.offset_px = corner * extent;
     output.sigma = sigma;
+    output.angle = input.angle;
     return output;
 }

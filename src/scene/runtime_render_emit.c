@@ -3043,7 +3043,7 @@ bool _emitter_emit_render(
                         (cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL &&
                          (is_point || is_splat || is_textured_mesh || is_primitive || is_image)));
 
-    uint64_t splat_vertex_ids[3];
+    uint64_t splat_vertex_ids[4];
     if (is_splat)
     {
         uint64_t splat_pos = _scene_visual_resource_by_role(
@@ -3055,13 +3055,17 @@ bool _emitter_emit_render(
         uint64_t splat_sigma = _scene_visual_resource_by_role(
             &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
             DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA);
-        if (splat_pos == 0 || splat_color == 0 || splat_sigma == 0)
+        uint64_t splat_angle = _scene_visual_resource_by_role(
+            &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_ANGLE);
+        if (splat_pos == 0 || splat_color == 0 || splat_sigma == 0 || splat_angle == 0)
             return false;
         splat_vertex_ids[0] = splat_pos;
         splat_vertex_ids[1] = splat_color;
         splat_vertex_ids[2] = splat_sigma;
+        splat_vertex_ids[3] = splat_angle;
         vertex_buffer_ids = splat_vertex_ids;
-        vertex_buffer_count = 3;
+        vertex_buffer_count = 4;
     }
 
     /* When IMAGE: re-narrow vertex_buffer_ids to (position, texcoords) only — the texture
@@ -3563,20 +3567,21 @@ bool _emitter_emit_render(
         }
         else if (is_splat)
         {
-            uint32_t strides[3] = {
-                3 * sizeof(float), 4 * sizeof(uint8_t), 2 * sizeof(float)};
-            uint32_t step_modes[3] = {
+            uint32_t strides[4] = {
+                3 * sizeof(float), 4 * sizeof(uint8_t), 2 * sizeof(float), sizeof(float)};
+            uint32_t step_modes[4] = {
                 DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE, DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE,
+                DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE,
                 DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE};
-            uint32_t bindings[3] = {0, 1, 2};
-            uint32_t locations[3] = {0, 1, 2};
-            uint32_t formats[3] = {
+            uint32_t bindings[4] = {0, 1, 2, 3};
+            uint32_t locations[4] = {0, 1, 2, 3};
+            uint32_t formats[4] = {
                 VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM,
-                VK_FORMAT_R32G32_SFLOAT};
-            uint32_t offsets[3] = {0, 0, 0};
+                VK_FORMAT_R32G32_SFLOAT, VK_FORMAT_R32_SFLOAT};
+            uint32_t offsets[4] = {0, 0, 0, 0};
             ok = ok && dvz_drp2_stream_create_render_pipeline_ex2(
-                           stream, pipe_id, vs_id, fs_id, vertex_buffer_count, topology, 3,
-                           strides, step_modes, 3, bindings, locations, formats, offsets);
+                           stream, pipe_id, vs_id, fs_id, vertex_buffer_count, topology, 4,
+                           strides, step_modes, 4, bindings, locations, formats, offsets);
             if (ok && uses_common && common_bgl_id != 0)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, common_bgl_id);
         }
