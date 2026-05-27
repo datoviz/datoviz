@@ -413,7 +413,10 @@ bool _dvz_scene_query_execute_family(
     out_result->visual_family = ops->family;
     if (ops->build == NULL || ops->decode == NULL)
         return false;
-    if (profile != DVZ_QUERY_PROFILE_U32_R32)
+    bool volume_rg32_sample =
+        profile == DVZ_QUERY_PROFILE_U64_RG32 && ops->family == DVZ_SCENE_VISUAL_FAMILY_VOLUME &&
+        pending->request.target == DVZ_SCENE_TARGET_SAMPLE;
+    if (profile != DVZ_QUERY_PROFILE_U32_R32 && !volume_rg32_sample)
     {
         out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_QUERY_PROFILE;
         return true;

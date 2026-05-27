@@ -35,6 +35,7 @@
 /*************************************************************************************************/
 
 #define DVZ_VOLUME_QUERY_QUANT_MAX 16777214.0
+#define DVZ_VOLUME_QUERY_UVW_QUANT_MAX 1023.0
 
 static const uint8_t VOLUME_QUERY_DUMMY_TRANSFER_RGBA[4] = {255, 255, 255, 255};
 
@@ -155,6 +156,21 @@ static bool _volume_query_field_byte_size(
         return false;
     }
     return !_dvz_mul_u64_overflows(texel_count, bytes_per_texel, out_byte_size);
+}
+
+
+
+/**
+ * Decode one 10-bit quantized UVW component from a packed query word.
+ *
+ * @param packed packed UVW payload
+ * @param shift bit shift of the component
+ * @return normalized UVW component
+ */
+static double _volume_query_decode_uvw_component(uint32_t packed, uint32_t shift)
+{
+    uint32_t code = (packed >> shift) & 0x3ffu;
+    return (double)code / DVZ_VOLUME_QUERY_UVW_QUANT_MAX;
 }
 
 
@@ -316,15 +332,18 @@ static bool _volume_query_build_sample(
         render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
     }
 
+    bool rg32_profile = ctx->profile == DVZ_QUERY_PROFILE_U64_RG32;
+    uint32_t query_format = rg32_profile ? VK_FORMAT_R32G32_UINT : VK_FORMAT_R32_UINT;
+    uint32_t query_byte_size = rg32_profile ? 2u * sizeof(uint32_t) : sizeof(uint32_t);
     DvzFramePlanCopyDesc copy = {
         .src_resource_id = "target.query.volume.sample",
         .dst_resource_id = "buf.query.volume.sample",
         .extent = {1, 1, 1},
-        .format = VK_FORMAT_R32_UINT,
-        .bytes_per_texel = sizeof(uint32_t),
-        .bytes_per_row = sizeof(uint32_t),
+        .format = query_format,
+        .bytes_per_texel = query_byte_size,
+        .bytes_per_row = query_byte_size,
         .rows_per_image = 1,
-        .byte_size = sizeof(uint32_t),
+        .byte_size = query_byte_size,
         .request_id = ctx->pending->request.request_id,
     };
     ok = ok && dvz_frame_plan_copy_ex(plan, &copy) &&
@@ -341,8 +360,8 @@ static bool _volume_query_build_sample(
     out_plan->field = field;
     out_plan->target_width = 1;
     out_plan->target_height = 1;
-    out_plan->format = VK_FORMAT_R32_UINT;
-    out_plan->byte_size = sizeof(uint32_t);
+    out_plan->format = query_format;
+    out_plan->byte_size = query_byte_size;
     return true;
 }
 
@@ -547,6 +566,24 @@ static bool _volume_query_decode(
         out_result->value_kind = DVZ_QUERY_VALUE_SCALAR;
         out_result->scalar = value;
         out_result->vector[0] = value;
+        if (ctx->plan->format == VK_FORMAT_R32G32_UINT)
+        {
+            if (ctx->byte_size < 2u * sizeof(uint32_t))
+            {
+                out_result->status = DVZ_QUERY_STATUS_DECODE_FAILED;
+                out_result->hit = false;
+                out_result->value_kind = DVZ_QUERY_VALUE_NONE;
+                return true;
+            }
+            uint32_t packed_uvw = 0;
+            dvz_memcpy(
+                &packed_uvw, sizeof(packed_uvw), ctx->bytes + sizeof(uint32_t),
+                sizeof(packed_uvw));
+            out_result->has_uvw = true;
+            out_result->uvw[0] = _volume_query_decode_uvw_component(packed_uvw, 0);
+            out_result->uvw[1] = _volume_query_decode_uvw_component(packed_uvw, 10);
+            out_result->uvw[2] = _volume_query_decode_uvw_component(packed_uvw, 20);
+        }
         dvz_strlcpy(out_result->label, "scalar", sizeof(out_result->label));
         return true;
     }

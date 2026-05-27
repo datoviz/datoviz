@@ -790,6 +790,9 @@ int test_scene_volume_query_resolves_item(TstContext* suite, const TstCase* item
 
 int test_scene_volume_query_resolves_sample(TstContext* suite, const TstCase* item);
 
+int test_scene_volume_query_resolves_sample_uvw_profile(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_volume_sample_query_rejects_deferred_policies(
     TstContext* suite, const TstCase* item);
 
