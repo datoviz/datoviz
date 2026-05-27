@@ -102,9 +102,6 @@ static bool _scene_pick_target_supported(DvzSceneTargetKind target);
 
 static bool _scene_probe_target_supported(DvzSceneTargetKind target);
 
-static bool _scene_take_appended_pick_result(
-    DvzScene* scene, uint32_t old_count, DvzPickResult* out_result);
-
 static bool _scene_take_appended_probe_result(
     DvzScene* scene, uint32_t old_count, DvzProbeResult* out_result);
 
@@ -418,33 +415,6 @@ uint32_t _dvz_figure_process_requests_with_executor(
 
 
 /**
- * Take the pick result appended by one legacy query adapter call.
- *
- * @param scene the scene
- * @param old_count pick result count before the adapter call
- * @param out_result output pick result
- * @return whether one appended result was found
- */
-static bool _scene_take_appended_pick_result(
-    DvzScene* scene, uint32_t old_count, DvzPickResult* out_result)
-{
-    ANN(scene);
-    ANN(out_result);
-    if (scene->pick_result_count <= old_count)
-        return false;
-
-    uint32_t index = (scene->pick_result_head + old_count) % DVZ_SCENE_MAX_PICK_RESULTS;
-    *out_result = scene->pick_results[index].result;
-    dvz_memset(
-        &scene->pick_results[index], sizeof(DvzQueuedPickResult), 0,
-        sizeof(DvzQueuedPickResult));
-    scene->pick_result_count = old_count;
-    return true;
-}
-
-
-
-/**
  * Take the probe result appended by one legacy query adapter call.
  *
  * @param scene the scene
@@ -467,55 +437,6 @@ static bool _scene_take_appended_probe_result(
         sizeof(DvzQueuedProbeResult));
     scene->probe_result_count = old_count;
     return true;
-}
-
-
-
-/**
- * Execute one native query through the legacy GPU pick implementation.
- *
- * @param figure the figure
- * @param runtime the caller's main DRP2 runtime
- * @param executor retained request executor
- * @param caps capability snapshot
- * @param pending pending native query
- * @param out_result output pick result
- * @return whether a pick result was produced
- */
-bool _scene_query_execute_pick_legacy(
-    DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
-    const DvzCapabilitySnapshot* caps, const DvzPendingQueryRequest* pending,
-    DvzPickResult* out_result)
-{
-    ANN(figure);
-    ANN(figure->scene);
-    ANN(executor);
-    ANN(caps);
-    ANN(pending);
-    ANN(out_result);
-    if (runtime == NULL)
-        return false;
-
-    DvzPendingPickRequest pick = {
-        .panel = pending->panel,
-        .x = pending->x,
-        .y = pending->y,
-        .freshness_serial = 0,
-        .request =
-            {
-                .request_id = pending->request.request_id,
-                .target = pending->request.target,
-                .hit_policy = pending->request.hit_policy,
-                .flags = pending->request.flags,
-            },
-    };
-
-    DvzScene* scene = figure->scene;
-    uint32_t old_count = scene->pick_result_count;
-    if (_scene_pick_request_needs_runtime(figure, &pick))
-        (void)_scene_request_executor_prepare(executor, runtime);
-    (void)_scene_process_pick_request(figure, executor, caps, &pick);
-    return _scene_take_appended_pick_result(scene, old_count, out_result);
 }
 
 
