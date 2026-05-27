@@ -168,14 +168,17 @@ Committed implementation slices:
       scalar query value,
     - MIP/composite, integer texture, and RGBA volume sample policies remain unsupported rather than
       falling back to CPU.
+42. `scene: harden volume sample query tests`
+    - tests cover deferred MIP policy rejection, unsupported integer volume sample format rejection,
+      and forced GPU readback failure without CPU fallback.
 
 Recorded validation after these commits:
 
 1. `just build`
 2. `just test frame_plan`
 3. `just test pick-probe`
-4. `just test query` with `32/32`
-5. `just test scene` with `452/452`
+4. `just test query` with `35/35`
+5. `just test scene` with `455/455`
 6. `git diff --check`
 7. `python testing/test_scene_query_source_guard.py`
 
