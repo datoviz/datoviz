@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Testing scene                                                                                */
+/*  Primitive query policy                                                                       */
 /*************************************************************************************************/
 
 
@@ -14,35 +14,26 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_assertions.h"
-#include "test_scene.h"
-#include "testing.h"
+#include "../../query/internal.h"
 
 
 
 /*************************************************************************************************/
-/*  Entry-point                                                                                  */
+/*  Functions                                                                                    */
 /*************************************************************************************************/
 
-int test_scene(TstSuite* suite)
+/**
+ * Return primitive visual query operations.
+ *
+ * @return query operation table
+ */
+const DvzSceneQueryFamilyOps* _dvz_scene_query_primitive_ops(void)
 {
-    ANN(suite);
-
-    test_scene_animation(suite);
-    test_scene_panzoom_arcball(suite);
-    test_scene_axis(suite);
-    test_scene_fly(suite);
-    test_scene_turntable(suite);
-    test_scene_frame_plan(suite);
-    test_scene_frame_plan_emit(suite);
-    test_scene_dpi(suite);
-    test_scene_fields(suite);
-    test_scene_interaction(suite);
-    test_scene_graph(suite);
-    test_scene_pick_probe(suite);
-    test_scene_query(suite);
-    test_scene_text_atlas(suite);
-    test_scene_app(suite);
-
-    return 0;
+    static const DvzSceneQueryFamilyOps ops = {
+        .name = "primitive",
+        .family = DVZ_SCENE_VISUAL_FAMILY_PRIMITIVE,
+        .pick_capabilities = DVZ_PICK_CAPABILITY_OBJECT | DVZ_PICK_CAPABILITY_ITEM |
+                             DVZ_PICK_CAPABILITY_VERTEX | DVZ_PICK_CAPABILITY_FACE,
+    };
+    return &ops;
 }

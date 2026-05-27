@@ -136,6 +136,8 @@ int test_scene_graph(TstSuite* suite);
 
 int test_scene_pick_probe(TstSuite* suite);
 
+int test_scene_query(TstSuite* suite);
+
 int test_scene_text_atlas(TstSuite* suite);
 
 int test_scene_poll_pick_probe_clears_consumed_slots(TstContext* suite, const TstCase* item);
@@ -765,6 +767,9 @@ int test_scene_process_requests_coalesces_pending_probes_before_execution(
 int test_scene_pick_probe_unsupported_targets(TstContext* suite, const TstCase* item);
 
 int test_scene_query_api_bridges_pick_and_probe_results(TstContext* suite, const TstCase* item);
+
+int test_scene_query_registry_covers_active_visual_families(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstContext* suite, const TstCase* item);
 
