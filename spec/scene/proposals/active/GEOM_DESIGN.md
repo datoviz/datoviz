@@ -124,5 +124,7 @@ Remaining deferred work:
 1. Add arrow/gizmo-axis and other solid generators when a concrete example needs them.
 2. Add richer structured-grid update/provenance helpers once surface examples require more
    update-efficient behavior.
-3. Defer OBJ import, constrained triangulation, contour/isoline sidecars, and richer asset import
+3. Add CPU curve tessellation helpers, starting with quadratic/cubic Bezier and then Catmull-Rom
+   and B-spline helpers, with output directly consumable by `dvz_path()`.
+4. Defer OBJ import, constrained triangulation, contour/isoline sidecars, and richer asset import
    until the current container and direct upload path have more example pressure.

@@ -103,13 +103,34 @@ utilities remain CPU-only and do not own panels, render state, or generated visu
 
 ## Curve Tessellation
 
-Curve tessellation outputs flat F64 `dvec3` polyline data for `path` resources.
+Curve tessellation is a CPU-side data-preparation helper, not a scene graph node or visual
+family. It converts analytic curve controls into flat F64 `dvec3` polyline data that users pass to
+ordinary `path` visuals.
 
 | Curve | Function | Controls |
 |---|---|---|
 | quadratic/cubic Bezier | `dvz_tessellate_bezier_cubic` and related forms | F64 deviation tolerance in data units |
 | Catmull-Rom | `dvz_tessellate_catmull_rom` | steps per segment; passes through controls |
 | uniform cubic B-spline | `dvz_tessellate_bspline` | steps per segment and degree |
+
+The user-facing workflow is:
+
+1. provide analytic controls to a `dvz_tessellate_*` helper;
+2. receive a Datoviz-owned F64 polyline buffer and point count, plus subpath lengths when
+   tessellating multiple curves in one call;
+3. upload the points to `dvz_path()` as the `"position"` attribute, alongside `"color"` and optional
+   `"stroke_width"` attributes;
+4. call `dvz_path_set_subpaths()` when the tessellated output contains multiple curves.
+
+Returned buffers must use the Datoviz allocator contract and be released with the matching Datoviz
+free helper. The tessellation helpers do not attach data to panels, create visuals, choose colors,
+or configure stroke style.
+
+Bezier tessellation should be the first implementation slice because it covers common annotation,
+routed-edge, and smooth-line use cases with a compact API. Catmull-Rom and B-spline helpers may
+follow once the Bezier contract and path-lowering examples are stable. A separate `curve` visual is
+not part of the v0.4 baseline; screen-space curve strokes lower to `path`, while radius-bearing 3D
+curves with normals, lighting, ribbons, or tube modes belong to the future `tube` family.
 
 
 ## Line Simplification

@@ -39,8 +39,9 @@ still use the historical internal name `line_width`.
 Current limitations:
 
 1. thin line-strip paths do not yet consume explicit subpath lengths;
-2. a first-class closed-path API, dashes, picking, SVG parsing, filled paths/polygons, data-space
-   stroke width, and WGSL lowering are deferred.
+2. a first-class closed-path API, dashes, path/subpath identity picking, SVG parsing, filled
+   paths/polygons, data-space stroke width, analytic curve tessellation helpers, and WGSL lowering
+   are deferred.
 
 The following sections describe the target path contract. Closed subpaths, dashes, filled
 paths/polygons, SVG parsing, path picking, data-space stroke width, and fuller backend parity are
@@ -56,6 +57,27 @@ For independent unconnected segments with per-segment styling, use `segment`.
 
 Typical uses: signal traces, time series, contour lines, trajectories, graph edges with bends,
 scientific line plots.
+
+
+## Analytic Curve Lowering
+
+`path` remains a polyline/span visual. Analytic curves such as Bezier, Catmull-Rom, or B-spline
+inputs are prepared by CPU-side geometry utilities, which tessellate control data into ordinary
+path vertices before upload.
+
+The intended user workflow is:
+
+1. call a `dvz_tessellate_*` geometry helper to produce F64 polyline vertices;
+2. downcast or upload through the normal scene path as the `"position"` attribute;
+3. set `"color"`, `"stroke_width"`, caps, joins, and subpath lengths on `dvz_path()`.
+
+This keeps curve rendering on the same `path` frame-plan, DRP2, picking, styling, and backend
+adaptation path as authored polylines. Datoviz should not add a separate `curve` visual for the
+v0.4 baseline.
+
+Curves that require a physical radius, surface normals, corrected tube depth, material/SSAO
+participation, ribbons, or tube-specific rendering modes should use the future `tube` family rather
+than extending `path` beyond screen-space strokes.
 
 
 ## Item and Span Model
