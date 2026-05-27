@@ -1,0 +1,157 @@
+{
+  "name": "query_rg32uint_readback",
+  "description": "Render a two-word query payload into an rg32uint attachment, copy one pixel to a readback buffer, and submit.",
+  "reason": "The rg32uint render target has RENDER_ATTACHMENT and COPY_SRC usage. The staging buffer has COPY_DST and MAP_READ usage. CopyTextureToBuffer copies a 1x1 region with bytes_per_row=8, matching the 8-byte rg32uint texel size.",
+  "notes": "This fixture guards the query-profile path against old 4-byte r32uint assumptions. The fragment shader writes two u32 words to one rg32uint render target, and the readback request covers exactly 8 bytes.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "query",
+    "render_pass",
+    "pipeline",
+    "copy",
+    "readback",
+    "queue"
+  ],
+  "capabilities": {
+    "max_buffer_size": 134217728,
+    "max_texture_dimension_1d": 8192,
+    "max_texture_dimension_2d": 8192,
+    "max_texture_dimension_3d": 2048,
+    "supported_texture_formats": ["rg32uint"],
+    "supported_sample_counts": [1],
+    "supported_shader_formats": ["wgsl"],
+    "supports_fp64": false
+  },
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9000,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@vertex fn main(@builtin(vertex_index) idx: u32) -> @builtin(position) vec4f { var p = array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0)); return vec4f(p[idx], 0.0, 1.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9001,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@fragment fn main() -> @location(0) vec2u { return vec2u(0x11223344u, 0x55667788u); }"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 10,
+      "label": "rg32_query_pipeline",
+      "vertex_shader_module_id": 9000,
+      "fragment_shader_module_id": 9001,
+      "vertex_buffer_slots": 0,
+      "vertex_buffers": [],
+      "color_targets": [{ "format": "rg32uint" }]
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "label": "rg32_query_target",
+      "dimension": "2d",
+      "width": 1,
+      "height": 1,
+      "depth": 1,
+      "format": "rg32uint",
+      "usage": ["RENDER_ATTACHMENT", "COPY_SRC"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 2,
+      "label": "rg32_query_staging",
+      "size": 8,
+      "usage": ["COPY_DST", "MAP_READ"]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 20
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 21,
+      "encoder_id": 20,
+      "color_attachments": [
+        {
+          "texture_id": 1,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": { "r": 0, "g": 0, "b": 0, "a": 0 }
+        }
+      ]
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 21,
+      "pipeline_id": 10
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 21,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 21
+    },
+    {
+      "cmd": "CopyTextureToBuffer",
+      "encoder_id": 20,
+      "src_texture_id": 1,
+      "src_mip_level": 0,
+      "src_origin": { "x": 0, "y": 0, "z": 0 },
+      "size": { "width": 1, "height": 1, "depth": 1 },
+      "dst_buffer_id": 2,
+      "dst_offset": 0,
+      "bytes_per_row": 8,
+      "rows_per_image": 1
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 20,
+      "command_buffer_id": 22
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [22],
+      "submission_id": 30,
+      "readbacks": [
+        { "buffer_id": 2, "offset": 0, "size": 8 }
+      ]
+    },
+    {
+      "cmd": "QueueSubmitReply",
+      "submission_id": 30,
+      "readbacks": [
+        { "buffer_id": 2, "offset": 0, "size": 8, "data": "RDMiEYh3ZlU=" }
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}
