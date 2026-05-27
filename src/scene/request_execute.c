@@ -563,18 +563,11 @@ bool _scene_query_execute_probe_legacy(
 
     DvzScene* scene = figure->scene;
     uint32_t old_count = scene->probe_result_count;
-    if (_scene_probe_request_has_labels_candidate(figure, &probe) ||
-        _scene_probe_request_has_image_candidate(figure, &probe))
-    {
-        (void)_scene_request_executor_prepare(executor, runtime);
-    }
+    if (!_scene_probe_request_has_image_candidate(figure, &probe))
+        return false;
 
-    if (_scene_probe_request_has_labels_candidate(figure, &probe))
-        (void)_scene_process_labels_probe_request(figure, executor, caps, &probe);
-    else if (_scene_probe_request_has_volume_slice_candidate(figure, &probe))
-        (void)_scene_process_volume_slice_probe_request(figure, &probe);
-    else
-        (void)_scene_process_image_probe_request(figure, executor, caps, &probe);
+    (void)_scene_request_executor_prepare(executor, runtime);
+    (void)_scene_process_image_probe_request(figure, executor, caps, &probe);
 
     return _scene_take_appended_probe_result(scene, old_count, out_result);
 }
