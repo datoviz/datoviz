@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DOCUMENTATION ROADMAP`
-> - **Updated on:** `2026-05-26`
+> - **Updated on:** `2026-05-27`
 > - **Purpose:** collect the v0.4 public-documentation deliverables, release gates, and
 >   source-of-truth links in one place
 > - **Audience:** maintainers and agents preparing the v0.4 API/docs inventory, release
@@ -30,8 +30,11 @@ the final release.
    boundaries belong under [../../spec/scene/](../../spec/scene/).
 8. DRP2 commands, schemas, fixtures, conformance, and runtime contract details belong under
    [../../spec/drp2/](../../spec/drp2/).
-9. User-facing tutorial, guide, and reference material should move to `docs/` only once the v0.4
-   public documentation migration has explicitly started.
+9. Documentation information architecture, example-coverage policy, and AI-friendly authoring rules
+   belong under [../../spec/docs/](../../spec/docs/).
+10. In this v0.4 branch, the public `docs/` tree may be aggressively rebuilt in place. The v0.3-era
+    website remains on `main` and archived material can be consulted from the old branch or
+    `v0.3/` subtree when useful.
 
 Do not copy detailed API rules or visual semantics into this file. Link to the owning spec instead.
 
@@ -45,14 +48,15 @@ The v0.4 public documentation set should include:
 3. feature/status table that classifies each visible capability as `supported`, `experimental`,
    `advanced/unstable`, `deferred`, or `external/GSP`.
 4. known issues and limitations, including explicit unsupported visual and runtime variants.
-5. v0.3-to-v0.4 migration/status notes focused on visible capability parity, not source
-   compatibility.
+5. a Datoviz/VisPy2/GSP positioning note that explains that v0.4 does not provide a migration path
+   for the old Datoviz Pythonic API.
 6. release notes for RCs and final `v0.4.0`.
-7. minimal RC1 user guide outside `docs/` until the full v0.4 public documentation migration starts.
-8. example and gallery index with screenshots or captured artifacts for release examples.
+7. minimal RC1 user guide in the rebuilt public documentation tree.
+8. example and gallery index with screenshots or captured artifacts for release examples, following
+   [../../spec/docs/EXAMPLE_COVERAGE.md](../../spec/docs/EXAMPLE_COVERAGE.md).
 9. generated C reference or complete API reference outline.
 10. raw `ctypes` binding documentation, including generation scope, loading expectations, and the
-   boundary with higher-level Python.
+    boundary with higher-level Python.
 11. WebGPU/WASM experimental-scope documentation with supported subset, diagnostics, and known gaps.
 12. GSP/VisPy2 positioning note that keeps high-level Python plotting outside the Datoviz v0.4
     release surface.
@@ -65,23 +69,24 @@ page-by-page from the legacy v0.3 Python-first docs. Datoviz v0.4 should be docu
 renderer/runtime with native scene/app examples, raw generated `ctypes` for low-level Python
 integration, and GSP/VisPy2 as the intended home for Pythonic scientific visualization.
 
-The full v0.4 documentation structure should separate:
+The full v0.4 documentation structure is defined in
+[../../spec/docs/INFORMATION_ARCHITECTURE.md](../../spec/docs/INFORMATION_ARCHITECTURE.md). Use a
+Diataxis-inspired layout with these top-level sections:
 
-1. getting started material for installing, building, running a first C scene, opening a window,
-   and capturing offscreen output;
-2. a C user guide covering scenes, figures, panels, visuals, retained data updates, scales,
-   colormaps, axes, text, annotations, controllers, picking/probing, selection, animation, and
-   capture;
-3. focused tutorials backed by runnable C examples, with screenshots or captured artifacts;
-4. visual-family reference pages for the v0.4 supported families;
-5. advanced topics for architecture, scene -> DRP2 -> runtime, frame lifecycle, resource ownership,
-   performance, rendering techniques, hosted integration, WebGPU/WASM, and DRP2/DVZR;
-6. reference pages for the C API, raw `ctypes`, feature status, known issues, and v0.3-to-v0.4
-   visible migration notes.
+1. `Start` for orientation, install/build, first C program, project status, and layer selection;
+2. `Tutorials` for polished first-time learning paths backed by runnable C examples;
+3. `Examples` as a first-class executable catalog, with one visual or feature per minimal example;
+4. `How-To` for task-oriented recipes that adapt minimal examples to real programs;
+5. `Reference` for exact API, feature-status, backend-support, and object-lifetime facts;
+6. `Explanation` for architecture, scene -> DRP2 -> runtime, ownership, performance, portability,
+   and the GSP/VisPy2 boundary;
+7. `Contributors` for build/test, docs authoring, AI-agent workflow, adding examples, adding
+   visuals, and release validation.
 
-Do not recreate the v0.3 object-oriented Python guide inside Datoviz. The Datoviz Python material
-should be deliberately small: raw `ctypes` loading, ownership rules, a few smoke examples, and links
-to GSP/VisPy2 for the Pythonic API.
+Do not recreate the v0.3 object-oriented Python guide inside Datoviz. Do not provide a migration
+path from that API in the v0.4 Datoviz docs. The Datoviz Python material should be deliberately
+small: raw `ctypes` loading, ownership rules, a few smoke examples, and links to GSP/VisPy2 for the
+Pythonic API.
 
 
 ## API Inventory Deliverables
@@ -110,7 +115,8 @@ Required documentation state:
 
 1. public API inventory exists;
 2. supported, experimental, advanced/unstable, deferred, and external/GSP labels are visible;
-3. v0.3 visible parity table exists and every gap has a fix/defer/GSP disposition;
+3. the Datoviz/VisPy2/GSP boundary is documented and old Pythonic API migration is explicitly out
+   of Datoviz v0.4 scope;
 4. raw `ctypes` scope is documented enough for early testers;
 5. WebGPU/WASM is documented as experimental, with known gaps;
 6. a minimal RC1 user guide is linked from `README.md` and the GitHub pre-release body;
@@ -138,7 +144,7 @@ Required documentation state:
 
 1. feature table is final for the release;
 2. known issues and limitations are explicit;
-3. migration notes and install instructions are published;
+3. install instructions and Datoviz/VisPy2/GSP positioning notes are published;
 4. raw `ctypes` and WebGPU/WASM experimental scopes are published;
 5. GSP/VisPy2 positioning is published;
 6. website, gallery, and release announcement assets are published.
@@ -146,9 +152,8 @@ Required documentation state:
 
 ## Example And Gallery Documentation
 
-Use
-[../../spec/scene/examples/EXAMPLE_ORGANIZATION.md](../../spec/scene/examples/EXAMPLE_ORGANIZATION.md)
-for example ownership and layout, and
+Use [../../spec/docs/EXAMPLE_COVERAGE.md](../../spec/docs/EXAMPLE_COVERAGE.md) for public
+documentation example coverage, and
 [../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
 for release staging.
 
@@ -156,6 +161,14 @@ The release gallery should prove the declared v0.4 feature set with a compact se
 examples first. Raw Python examples should stay close to the generated binding surface. High-level
 Python plotting examples belong to GSP/VisPy2 unless they are deliberately documenting raw Datoviz
 bindings.
+
+
+## AI And Agent-Friendly Documentation
+
+Use [../../spec/docs/AI_DOCUMENTATION.md](../../spec/docs/AI_DOCUMENTATION.md) when writing public
+docs and contributor docs. The public documentation should help users and coding agents choose the
+right layer, start from stable examples, preserve ownership rules, avoid old Pythonic Datoviz APIs,
+and run the narrowest relevant validation command.
 
 
 ## Validation Defaults
