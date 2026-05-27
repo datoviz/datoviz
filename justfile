@@ -1063,7 +1063,18 @@ ctypes-render-smoke:
     @PYTHONPATH=. python tools/bindings/ctypes_render_smoke.py
 #
 
-bindings: build ctypes ctypes-check ctypes-smoke ctypes-render-smoke
+ctypes-editable-smoke: build ctypes
+    @python tools/bindings/ctypes_package_smoke.py editable
+#
+
+ctypes-wheel-smoke: build ctypes
+    @python tools/bindings/ctypes_package_smoke.py wheel
+#
+
+ctypes-package-smoke: ctypes-editable-smoke ctypes-wheel-smoke
+#
+
+bindings: build ctypes ctypes-check ctypes-smoke ctypes-render-smoke ctypes-package-smoke
 #
 
 pytest:
