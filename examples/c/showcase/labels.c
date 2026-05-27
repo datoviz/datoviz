@@ -8,7 +8,7 @@
  *
  * This example keeps segmentation IDs in a signed integer sampled field and renders them through
  * dvz_labels(). Selection and boundary feedback are driven by the labels shader while hover/click
- * readout uses scene segment probes against the raw integer labels field.
+ * readout uses scene segment queries against the raw integer labels field.
  *
  * Build:  cmake --build build --target labels
  * Run:    ./build/examples/c/showcase/labels
@@ -91,7 +91,7 @@ struct LabelsDemoState
     double cursor_x;
     double cursor_y;
     bool click_pending;
-    uint64_t next_probe_request_id;
+    uint64_t next_query_request_id;
 };
 
 
@@ -561,7 +561,7 @@ static bool _set_quad_geometry(DvzVisual* visual)
 /*************************************************************************************************/
 
 /**
- * Record pointer state for labels probing.
+ * Record pointer state for labels querying.
  *
  * @param router input router emitting the pointer event
  * @param event pointer event payload
@@ -613,7 +613,7 @@ _input_event_callback(DvzInputRouter* router, const DvzInputEvent* event, void* 
 
 
 /**
- * Poll labels probe results and queue the next cursor probe.
+ * Poll labels query results and queue the next cursor query.
  *
  * @param win view whose frame just completed
  * @param user_data demo state
@@ -624,11 +624,14 @@ static void _labels_frame_callback(DvzView* win, void* user_data)
     if (state == NULL)
         return;
 
-    DvzProbeResult probe = {0};
-    while (dvz_scene_poll_probe(state->scene, &probe))
+    DvzQueryResult query = {0};
+    while (dvz_scene_poll_query(state->scene, &query))
     {
         state->hover_id =
-            probe.hit && probe.value_kind == DVZ_PROBE_VALUE_LABEL ? probe.category_id : 0;
+            query.status == DVZ_QUERY_STATUS_HIT && query.hit &&
+                    query.value_kind == DVZ_QUERY_VALUE_CATEGORY
+                ? query.category_id
+                : 0;
         if (state->click_pending)
         {
             _toggle_label(state, state->hover_id);
@@ -638,14 +641,14 @@ static void _labels_frame_callback(DvzView* win, void* user_data)
 
     if (state->cursor_valid && state->panel != NULL)
     {
-        int rc = dvz_panel_probe(
+        int rc = dvz_panel_query(
             state->panel, state->cursor_x, state->cursor_y,
-            &(DvzProbeRequest){
-                .request_id = ++state->next_probe_request_id,
+            &(DvzQueryRequest){
+                .request_id = ++state->next_query_request_id,
                 .target = DVZ_SCENE_TARGET_SEGMENT,
             });
         if (rc != 0)
-            dvz_fprintf(stderr, "dvz_panel_probe(labels) failed\n");
+            dvz_fprintf(stderr, "dvz_panel_query(labels) failed\n");
         if (win != NULL)
             dvz_view_request_frame(win);
     }
@@ -795,6 +798,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(labels) failed");
     int rc = dvz_visual_set_scale(labels_visual, "labels", labels_scale);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_scale(labels) failed");
+    dvz_visual_set_pick_capabilities(labels_visual, DVZ_PICK_CAPABILITY_ITEM);
     state.labels_visual = labels_visual;
 
     rc = dvz_panel_add_visual(panel, base, &(DvzVisualAttachDesc){.z_layer = 0});
