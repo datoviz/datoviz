@@ -102,6 +102,12 @@ static bool _scene_pick_target_supported(DvzSceneTargetKind target);
 
 static bool _scene_probe_target_supported(DvzSceneTargetKind target);
 
+static bool _scene_take_appended_pick_result(
+    DvzScene* scene, uint32_t old_count, DvzPickResult* out_result);
+
+static bool _scene_take_appended_probe_result(
+    DvzScene* scene, uint32_t old_count, DvzProbeResult* out_result);
+
 static DvzPickResult _scene_pick_miss_result(
     const DvzFigure* figure, const DvzPanel* panel, const DvzPendingPickRequest* pending,
     DvzPickStatus status);
@@ -410,6 +416,167 @@ uint32_t _dvz_figure_process_requests_with_executor(
     }
 
     return processed;
+}
+
+
+
+/**
+ * Take the pick result appended by one legacy query adapter call.
+ *
+ * @param scene the scene
+ * @param old_count pick result count before the adapter call
+ * @param out_result output pick result
+ * @return whether one appended result was found
+ */
+static bool _scene_take_appended_pick_result(
+    DvzScene* scene, uint32_t old_count, DvzPickResult* out_result)
+{
+    ANN(scene);
+    ANN(out_result);
+    if (scene->pick_result_count <= old_count)
+        return false;
+
+    uint32_t index = (scene->pick_result_head + old_count) % DVZ_SCENE_MAX_PICK_RESULTS;
+    *out_result = scene->pick_results[index].result;
+    dvz_memset(
+        &scene->pick_results[index], sizeof(DvzQueuedPickResult), 0,
+        sizeof(DvzQueuedPickResult));
+    scene->pick_result_count = old_count;
+    return true;
+}
+
+
+
+/**
+ * Take the probe result appended by one legacy query adapter call.
+ *
+ * @param scene the scene
+ * @param old_count probe result count before the adapter call
+ * @param out_result output probe result
+ * @return whether one appended result was found
+ */
+static bool _scene_take_appended_probe_result(
+    DvzScene* scene, uint32_t old_count, DvzProbeResult* out_result)
+{
+    ANN(scene);
+    ANN(out_result);
+    if (scene->probe_result_count <= old_count)
+        return false;
+
+    uint32_t index = (scene->probe_result_head + old_count) % DVZ_SCENE_MAX_PROBE_RESULTS;
+    *out_result = scene->probe_results[index].result;
+    dvz_memset(
+        &scene->probe_results[index], sizeof(DvzQueuedProbeResult), 0,
+        sizeof(DvzQueuedProbeResult));
+    scene->probe_result_count = old_count;
+    return true;
+}
+
+
+
+/**
+ * Execute one native query through the legacy GPU pick implementation.
+ *
+ * @param figure the figure
+ * @param runtime the caller's main DRP2 runtime
+ * @param executor retained request executor
+ * @param caps capability snapshot
+ * @param pending pending native query
+ * @param out_result output pick result
+ * @return whether a pick result was produced
+ */
+bool _scene_query_execute_pick_legacy(
+    DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
+    const DvzCapabilitySnapshot* caps, const DvzPendingQueryRequest* pending,
+    DvzPickResult* out_result)
+{
+    ANN(figure);
+    ANN(figure->scene);
+    ANN(executor);
+    ANN(caps);
+    ANN(pending);
+    ANN(out_result);
+    if (runtime == NULL)
+        return false;
+
+    DvzPendingPickRequest pick = {
+        .panel = pending->panel,
+        .x = pending->x,
+        .y = pending->y,
+        .freshness_serial = 0,
+        .request =
+            {
+                .request_id = pending->request.request_id,
+                .target = pending->request.target,
+                .hit_policy = pending->request.hit_policy,
+                .flags = pending->request.flags,
+            },
+    };
+
+    DvzScene* scene = figure->scene;
+    uint32_t old_count = scene->pick_result_count;
+    if (_scene_pick_request_needs_runtime(figure, &pick))
+        (void)_scene_request_executor_prepare(executor, runtime);
+    (void)_scene_process_pick_request(figure, executor, caps, &pick);
+    return _scene_take_appended_pick_result(scene, old_count, out_result);
+}
+
+
+
+/**
+ * Execute one native query through the legacy GPU probe implementation.
+ *
+ * @param figure the figure
+ * @param runtime the caller's main DRP2 runtime
+ * @param executor retained request executor
+ * @param caps capability snapshot
+ * @param pending pending native query
+ * @param out_result output probe result
+ * @return whether a probe result was produced
+ */
+bool _scene_query_execute_probe_legacy(
+    DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
+    const DvzCapabilitySnapshot* caps, const DvzPendingQueryRequest* pending,
+    DvzProbeResult* out_result)
+{
+    ANN(figure);
+    ANN(figure->scene);
+    ANN(executor);
+    ANN(caps);
+    ANN(pending);
+    ANN(out_result);
+    if (runtime == NULL)
+        return false;
+
+    DvzPendingProbeRequest probe = {
+        .panel = pending->panel,
+        .x = pending->x,
+        .y = pending->y,
+        .freshness_serial = 0,
+        .request =
+            {
+                .request_id = pending->request.request_id,
+                .target = pending->request.target,
+                .flags = pending->request.flags,
+            },
+    };
+
+    DvzScene* scene = figure->scene;
+    uint32_t old_count = scene->probe_result_count;
+    if (_scene_probe_request_has_labels_candidate(figure, &probe) ||
+        _scene_probe_request_has_image_candidate(figure, &probe))
+    {
+        (void)_scene_request_executor_prepare(executor, runtime);
+    }
+
+    if (_scene_probe_request_has_labels_candidate(figure, &probe))
+        (void)_scene_process_labels_probe_request(figure, executor, caps, &probe);
+    else if (_scene_probe_request_has_volume_slice_candidate(figure, &probe))
+        (void)_scene_process_volume_slice_probe_request(figure, &probe);
+    else
+        (void)_scene_process_image_probe_request(figure, executor, caps, &probe);
+
+    return _scene_take_appended_probe_result(scene, old_count, out_result);
 }
 
 

@@ -1780,6 +1780,14 @@ bool _scene_image_probe_plan(
 void _scene_probe_plan_destroy(DvzSceneProbePlan* plan);
 void _scene_request_executor_init(DvzSceneRequestExecutor* executor);
 void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor);
+bool _scene_query_execute_pick_legacy(
+    DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
+    const DvzCapabilitySnapshot* caps, const DvzPendingQueryRequest* pending,
+    DvzPickResult* out_result);
+bool _scene_query_execute_probe_legacy(
+    DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
+    const DvzCapabilitySnapshot* caps, const DvzPendingQueryRequest* pending,
+    DvzProbeResult* out_result);
 uint32_t _dvz_figure_process_requests_with_executor(
     DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
     const DvzCapabilitySnapshot* caps);

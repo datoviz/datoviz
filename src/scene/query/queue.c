@@ -27,6 +27,16 @@
 
 
 /*************************************************************************************************/
+/*  Function prototypes                                                                          */
+/*************************************************************************************************/
+
+static void _query_from_pick(const DvzPickResult* pick, DvzQueryResult* out_result);
+
+static void _query_from_probe(const DvzProbeResult* probe, DvzQueryResult* out_result);
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
@@ -376,6 +386,20 @@ static uint32_t _query_target_capability(DvzSceneTargetKind target)
 
 
 /**
+ * Return whether a target uses the value/probe legacy adapter.
+ *
+ * @param target the query target
+ * @return true for probe-style targets
+ */
+static bool _query_target_uses_probe(DvzSceneTargetKind target)
+{
+    return target == DVZ_SCENE_TARGET_PIXEL || target == DVZ_SCENE_TARGET_SAMPLE ||
+           target == DVZ_SCENE_TARGET_SEGMENT;
+}
+
+
+
+/**
  * Return whether a query profile is supported by the capability snapshot.
  *
  * @param profile the query profile
@@ -499,10 +523,12 @@ static void _query_result_init(
  * @return true when a result was produced
  */
 static bool _query_process_pending(
-    const DvzFigure* figure, const DvzCapabilitySnapshot* caps,
+    DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
+    const DvzCapabilitySnapshot* caps,
     const DvzPendingQueryRequest* pending, DvzQueryResult* out_result)
 {
     ANN(figure);
+    ANN(executor);
     ANN(caps);
     ANN(pending);
     ANN(out_result);
@@ -537,8 +563,32 @@ static bool _query_process_pending(
         return true;
     }
 
+    if (_query_target_uses_probe(pending->request.target))
+    {
+        DvzProbeResult probe = {0};
+        if (_scene_query_execute_probe_legacy(figure, runtime, executor, caps, pending, &probe))
+        {
+            _query_from_probe(&probe, out_result);
+            out_result->freshness_serial = pending->freshness_serial;
+            out_result->profile = _query_select_profile(&pending->request, caps);
+            return true;
+        }
+    }
+    else
+    {
+        DvzPickResult pick = {0};
+        if (_scene_query_execute_pick_legacy(figure, runtime, executor, caps, pending, &pick))
+        {
+            _query_from_pick(&pick, out_result);
+            out_result->freshness_serial = pending->freshness_serial;
+            out_result->profile = _query_select_profile(&pending->request, caps);
+            return true;
+        }
+    }
+
     out_result->visual_id = _scene_visual_public_id(figure->scene, visual);
-    out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+    out_result->status = runtime == NULL ? DVZ_QUERY_STATUS_GPU_EXEC_FAILED
+                                         : DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
     return true;
 }
 
@@ -833,7 +883,6 @@ uint32_t dvz_figure_process_queries(
 {
     ANN(figure);
     ANN(figure->scene);
-    (void)runtime;
 
     DvzCapabilitySnapshot local_caps = {0};
     if (caps == NULL)
@@ -848,6 +897,8 @@ uint32_t dvz_figure_process_queries(
     DvzScene* scene = figure->scene;
     uint32_t processed = 0;
     _query_coalesce_pending_requests(scene, figure);
+    DvzSceneRequestExecutor executor = {0};
+    _scene_request_executor_init(&executor);
 
     for (uint32_t i = 0; i < scene->pending_query_count;)
     {
@@ -859,13 +910,14 @@ uint32_t dvz_figure_process_queries(
         }
 
         DvzQueryResult result = {0};
-        if (_query_process_pending(figure, caps, &pending, &result))
+        if (_query_process_pending(figure, runtime, &executor, caps, &pending, &result))
             (void)_query_push_result(scene, pending.panel, pending.freshness_serial, &result);
 
         _query_remove_pending_at(scene, i);
         processed++;
     }
 
+    _scene_request_executor_destroy(&executor);
     return processed;
 }
 
