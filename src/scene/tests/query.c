@@ -1258,7 +1258,7 @@ int test_scene_volume_query_resolves_item(TstContext* suite, const TstCase* item
 
 
 /**
- * Ensure native labels queries read raw signed integer IDs from the labels field.
+ * Ensure native labels queries return signed integer IDs from the rendered labels pass.
  *
  * @param suite the active test suite
  * @param item the active test item

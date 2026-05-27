@@ -1,7 +1,7 @@
 # Scene GPU Query Overhaul
 
 > **Execution Status**
-> - **Status:** `IN PROGRESS - PUBLIC PICK/PROBE REMOVED`
+> - **Status:** `IN PROGRESS - LABELS GPU QUERY RENDERED`
 > - **Updated on:** `2026-05-27`
 > - **Purpose:** give the next agent team an immediately actionable plan for replacing scene
 >   pick/probe with a GPU-only query system.
@@ -152,6 +152,11 @@ Committed implementation slices:
 37. `scene: rename native query tests`
     - renamed the old `pick_probe.c` scene test wrapper and app steady-state tests to query names,
     - kept the `pick-probe` validation group as an alias for the required focused test command.
+38. `scene: render labels queries on GPU`
+    - added signed/unsigned labels query shaders that write encoded `r32uint` label ids,
+    - labels query now builds a rendered one-pixel FramePlan readback instead of a direct retained
+      field copy/readback,
+    - CPU still maps the GPU-returned id to category label text after decode.
 
 Recorded validation after these commits:
 
@@ -159,7 +164,7 @@ Recorded validation after these commits:
 2. `just test frame_plan`
 3. `just test pick-probe`
 4. `just test query`
-5. `just test scene` with `482/482`
+5. `just test scene` with `449/449`
 6. `git diff --check`
 7. `python testing/test_scene_query_source_guard.py`
 
@@ -353,6 +358,10 @@ Validation:
 
 Suggested subagent: image/labels query agent.
 
+Status: image sample/item query and labels segment query are native. Labels now renders a GPU
+`r32uint` label-id payload; remaining work is hardening unsupported/failure reporting and avoiding
+temporary CPU-expanded geometry where the renderer already owns a GPU cache.
+
 Primary ownership:
 
 1. `src/scene/visuals/image/query.c`
@@ -365,8 +374,8 @@ Tasks:
 1. Convert image probe/pick into one image query path.
 2. Return texel/data coordinate and displayed RGBA from GPU query.
 3. Remove example-side coordinate flipping and manual pick/probe composition.
-4. Convert labels probe to GPU-returned integer label id.
-5. Remove CPU retained-field sampling from labels query.
+4. Convert labels probe to GPU-returned integer label id. Landed.
+5. Remove CPU retained-field sampling from labels query. Landed for hit/value payloads.
 6. CPU may map returned label id to category label after GPU result.
 7. Add unsupported statuses for label formats or query profiles the runtime cannot support.
 
@@ -498,9 +507,8 @@ edit the same file unless the coordinator explicitly serializes that integration
 
 The best next code slice is cleanup around non-final family readout/format details:
 
-1. Harden labels query so rendered GPU semantics replace the current direct retained-field
-   upload/readback path.
-2. Add GPU volume slice query semantics.
+1. Add GPU volume slice query semantics.
+2. Add unsupported/failure coverage around label formats and query profiles.
 3. Continue replacing old public pick/probe test names with native query names.
 4. Add DRP2/runtime fixtures for `rg32uint` and multi-output query readbacks before relying on those
    profiles broadly.
@@ -535,7 +543,6 @@ The overhaul is complete when:
 9. examples use one panel query instead of manual pick/probe composition,
 10. focused scene and DRP2 tests pass.
 
-Current status: criteria 1, 3, 4, 5, 8, and 9 are partially satisfied by the native query,
-family-execution, and example-migration commits. Criterion 5 is satisfied for native query, but old
-public probe still has an intentional CPU volume-slice compatibility path. Criteria 2, 6, and 7
-remain open.
+Current status: criteria 1, 2, 3, 4, 5, 8, and 9 are substantially satisfied by the native query,
+family-execution, public API removal, and example-migration commits. Criterion 6 remains open for
+volume slice query. Criterion 7 remains open for broader non-4-byte integer readback profiles.

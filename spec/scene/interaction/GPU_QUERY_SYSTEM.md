@@ -16,8 +16,8 @@ surface if it keeps the architecture ambiguous.
 
 ## Implementation Status
 
-Updated on 2026-05-27 after the native query executor replacement and public pick/probe removal
-slices landed.
+Updated on 2026-05-27 after the native query executor replacement, public pick/probe removal, and
+rendered labels-query slices landed.
 
 Foundation now present in the tree:
 
@@ -49,8 +49,8 @@ Current implementation state:
    native GPU-backed families.
 5. Native query does not use the old CPU volume slice probe path. Volume sample query currently
    returns explicit unsupported until a GPU family path lands.
-6. Labels query is family-owned but still uses a direct retained-field upload/readback path for raw
-   integer label ids. It must move to rendered GPU semantics before the overhaul is complete.
+6. Labels query is family-owned and now renders through labels query shaders into an `r32uint`
+   payload. CPU category lookup and text formatting remain post-GPU readout work.
 7. Old public pick/probe APIs and public pick/probe request/result structs have been removed from
    the v0.4 scene API. `examples/c` now uses the query API directly.
 8. The private compatibility flag that allowed old probe shims to bypass visual query capability
@@ -479,8 +479,8 @@ Current code implications recorded on 2026-05-27:
 2. FramePlan copy nodes now carry query readback metadata, but multi-output query attachments and
    broader copy-origin/depth coverage remain incomplete.
 3. Current simple-family identity encoding uses the `r32uint` baseline.
-4. Labels probing currently computes UVs from retained CPU attrs and reads raw field data through a
-   temporary GPU copy path.
+4. Labels query still computes UV readout coordinates from retained attrs, but the hit/value payload
+   comes from the rendered GPU labels query pass rather than retained-field sampling.
 5. Volume slice probing currently uses CPU ray/box math and CPU sampled-field reads.
 6. DRP2 already has explicit texture formats, color attachments, texture-to-buffer copies, and
    readback submissions.
