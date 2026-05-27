@@ -668,7 +668,6 @@ static void _app_apply_runtime_caps(DvzApp* app, DvzCapabilitySnapshot* caps)
     caps->query_profile_u64_2xr32 =
         caps->supports_readback && caps->render_target_format_r32uint &&
         caps->max_color_attachments >= 2;
-    caps->query_profile_packed_rgba8 = caps->supports_readback;
 
     caps->max_color_sample_count = _app_image_max_sample_count(
         physical_device, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,

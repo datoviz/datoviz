@@ -184,9 +184,7 @@ The query format ladder should be explicit and backend-neutral. Preferred profil
 1. `DVZ_QUERY_PROFILE_U32_R32`: one `r32uint` identity attachment; required baseline if possible.
 2. `DVZ_QUERY_PROFILE_U64_RG32`: one `rg32uint` identity attachment; preferred when supported.
 3. `DVZ_QUERY_PROFILE_U64_2XR32`: two `r32uint` attachments; fallback when `rg32uint` is absent.
-4. `DVZ_QUERY_PROFILE_PACKED_RGBA8`: packed `rgba8uint` or equivalent, only as a GPU-only compact
-   fallback when it preserves the requested semantic precision.
-5. `DVZ_QUERY_PROFILE_UNSUPPORTED`: explicit failure when no acceptable GPU path exists.
+4. `DVZ_QUERY_PROFILE_UNSUPPORTED`: explicit failure when no acceptable GPU path exists.
 
 Do not use `rgb*` render-target formats for query payloads. Three-component render-target support is
 not reliable enough and is awkward for WebGPU parity.

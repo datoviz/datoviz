@@ -178,6 +178,9 @@ Committed implementation slices:
 44. `scene: decode volume sample voxel id`
     - requested `rg32uint` volume slice sample queries now derive `raw_id`, `resolved_id`,
       `voxel_id`, and `texel_id` from the GPU-computed UVW using retained axis order and flips.
+45. `scene: drop packed rgba query profile`
+    - removed the unimplemented packed RGBA query profile and capability flag so query execution
+      fails explicitly when `r32uint`, `rg32uint`, or two-attachment `r32uint` profiles are absent.
 
 Recorded validation after these commits:
 
@@ -539,8 +542,8 @@ The best next code slice is cleanup around non-final family readout/format detai
 1. Add GPU volume slice query semantics.
 2. Add unsupported/failure coverage around label formats and query profiles.
 3. Continue replacing old public pick/probe test names with native query names.
-4. Add DRP2/runtime fixtures for `rg32uint` and multi-output query readbacks before relying on those
-   profiles broadly.
+4. Add DRP2/runtime fixtures for `rg32uint` and two-attachment query readbacks before relying on
+   those profiles broadly.
 
 
 ## Risk Register

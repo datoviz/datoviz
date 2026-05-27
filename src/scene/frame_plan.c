@@ -1586,7 +1586,6 @@ void dvz_capability_snapshot_default(DvzCapabilitySnapshot* snapshot)
     snapshot->query_profile_u32_r32 = true;
     snapshot->query_profile_u64_rg32 = true;
     snapshot->query_profile_u64_2xr32 = true;
-    snapshot->query_profile_packed_rgba8 = true;
 }
 
 

@@ -148,7 +148,6 @@ struct DvzCapabilitySnapshot
     bool query_profile_u32_r32;
     bool query_profile_u64_rg32;
     bool query_profile_u64_2xr32;
-    bool query_profile_packed_rgba8;
 };
 
 

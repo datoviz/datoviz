@@ -87,8 +87,6 @@ static bool _query_profile_supported(DvzQueryProfile profile, const DvzCapabilit
         return caps->query_profile_u64_rg32;
     case DVZ_QUERY_PROFILE_U64_2XR32:
         return caps->query_profile_u64_2xr32;
-    case DVZ_QUERY_PROFILE_PACKED_RGBA8:
-        return caps->query_profile_packed_rgba8;
     case DVZ_QUERY_PROFILE_UNSUPPORTED:
     default:
         return false;
@@ -143,8 +141,6 @@ _query_select_profile(const DvzQueryRequest* request, const DvzCapabilitySnapsho
         return DVZ_QUERY_PROFILE_U64_RG32;
     if (_query_profile_supported(DVZ_QUERY_PROFILE_U64_2XR32, caps))
         return DVZ_QUERY_PROFILE_U64_2XR32;
-    if (_query_profile_supported(DVZ_QUERY_PROFILE_PACKED_RGBA8, caps))
-        return DVZ_QUERY_PROFILE_PACKED_RGBA8;
     return DVZ_QUERY_PROFILE_UNSUPPORTED;
 }
 
