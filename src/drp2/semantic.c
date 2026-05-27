@@ -386,6 +386,11 @@ bool _drp2_texture_format_bytes_per_texel(uint32_t format, uint32_t* out_bytes)
     case VK_FORMAT_D32_SFLOAT:
         *out_bytes = 4;
         return true;
+    case VK_FORMAT_R32G32_UINT:
+    case VK_FORMAT_R32G32_SINT:
+    case VK_FORMAT_R32G32_SFLOAT:
+        *out_bytes = 8;
+        return true;
     case VK_FORMAT_R8G8B8A8_UNORM:
     case VK_FORMAT_R8G8B8A8_UINT:
     case VK_FORMAT_R8G8B8A8_SINT:
