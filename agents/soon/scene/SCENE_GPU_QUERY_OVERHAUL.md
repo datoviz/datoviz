@@ -181,14 +181,16 @@ Committed implementation slices:
 45. `scene: drop packed rgba query profile`
     - removed the unimplemented packed RGBA query profile and capability flag so query execution
       fails explicitly when `r32uint`, `rg32uint`, or two-attachment `r32uint` profiles are absent.
+46. `scene: cover unsupported query profiles`
+    - added CPU query tests for missing profile support and family-level requested-profile rejection.
 
 Recorded validation after these commits:
 
 1. `just build`
 2. `just test frame_plan`
 3. `just test pick-probe`
-4. `just test query` with `36/36`
-5. `just test scene` with `456/456`
+4. `just test query` with `38/38`
+5. `just test scene` with `458/458`
 6. `git diff --check`
 7. `python testing/test_scene_query_source_guard.py`
 
@@ -540,7 +542,7 @@ edit the same file unless the coordinator explicitly serializes that integration
 The best next code slice is cleanup around non-final family readout/format details:
 
 1. Add GPU volume slice query semantics.
-2. Add unsupported/failure coverage around label formats and query profiles.
+2. Add unsupported/failure coverage around label formats; query profile coverage is now present.
 3. Continue replacing old public pick/probe test names with native query names.
 4. Add DRP2/runtime fixtures for `rg32uint` and two-attachment query readbacks before relying on
    those profiles broadly.
