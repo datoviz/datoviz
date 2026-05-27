@@ -460,10 +460,15 @@ bool _emitter_prepare_render_multi(
         bool primitive_query_u32 =
             render->u.render.picking && desc.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
             cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
+        bool labels_query_u32 =
+            render->u.render.picking &&
+            (desc.kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
+             desc.kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT) &&
+            cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
         bool query_u32 =
             render->u.render.picking &&
             (point_like_desc || desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE ||
-             segment_query_u32 || path_query_u32 || primitive_query_u32) &&
+             segment_query_u32 || path_query_u32 || primitive_query_u32 || labels_query_u32) &&
             cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
         if (query_u32)
         {
@@ -482,6 +487,10 @@ bool _emitter_prepare_render_multi(
             {
                 query_shader = DVZ_SCENE_BUILTIN_SHADER_PIXEL_QUERY_U32;
             }
+            else if (desc.kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT)
+                query_shader = DVZ_SCENE_BUILTIN_SHADER_LABELS_SINT_QUERY_U32;
+            else if (desc.kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT)
+                query_shader = DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT_QUERY_U32;
             ok = _runtime_key_append(
                      shader.fragment_key, sizeof(shader.fragment_key), "_query_u32", report) &&
                  _runtime_key_append(
@@ -521,6 +530,10 @@ bool _emitter_prepare_render_multi(
                 shader.fragment_spirv_key = "primitive_query_u32_frag";
             else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_PIXEL_QUERY_U32)
                 shader.fragment_spirv_key = "pixel_query_u32_frag";
+            else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_LABELS_SINT_QUERY_U32)
+                shader.fragment_spirv_key = "labels_sint_query_u32_frag";
+            else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT_QUERY_U32)
+                shader.fragment_spirv_key = "labels_uint_query_u32_frag";
             else
                 shader.fragment_spirv_key = "point_query_u32_frag";
             shader.builtin_family = NULL;
@@ -2806,6 +2819,8 @@ bool _emitter_emit_render(
         (visual_meta->field_format == DVZ_FIELD_FORMAT_R8_UINT ||
          visual_meta->field_format == DVZ_FIELD_FORMAT_R16_UINT ||
          visual_meta->field_format == DVZ_FIELD_FORMAT_R32_UINT);
+    bool labels_query_u32 = render->u.render.picking && is_labels &&
+                            cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
     bool image_pixel_space =
         is_image && !is_labels_sint && !is_labels_uint && visual_meta != NULL &&
         visual_meta->image_pixel_space;
@@ -2950,13 +2965,15 @@ bool _emitter_emit_render(
         const char* shader_name = image_pixel_space ? "img_px" : "img";
         if (is_labels_sint)
         {
-            image_shader = DVZ_SCENE_BUILTIN_SHADER_LABELS_SINT;
-            shader_name = "labels_sint";
+            image_shader = labels_query_u32 ? DVZ_SCENE_BUILTIN_SHADER_LABELS_SINT_QUERY_U32
+                                            : DVZ_SCENE_BUILTIN_SHADER_LABELS_SINT;
+            shader_name = labels_query_u32 ? "labels_sint_query_u32" : "labels_sint";
         }
         else if (is_labels_uint)
         {
-            image_shader = DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT;
-            shader_name = "labels_uint";
+            image_shader = labels_query_u32 ? DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT_QUERY_U32
+                                            : DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT;
+            shader_name = labels_query_u32 ? "labels_uint_query_u32" : "labels_uint";
         }
         dvz_snprintf(vs_key, sizeof(vs_key), "_vs_%s%s", shader_name, fmt);
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs_%s%s", shader_name, fmt);
@@ -3097,9 +3114,11 @@ bool _emitter_emit_render(
     else if (is_image)
     {
         vs_spirv_key = image_pixel_space ? "image_pixel_vert" : "image_vert";
-        fs_spirv_key = is_labels_sint    ? "labels_sint_frag"
-                       : is_labels_uint  ? "labels_uint_frag"
-                                         : "image_frag";
+        fs_spirv_key = is_labels_sint && labels_query_u32  ? "labels_sint_query_u32_frag"
+                       : is_labels_uint && labels_query_u32 ? "labels_uint_query_u32_frag"
+                       : is_labels_sint                     ? "labels_sint_frag"
+                       : is_labels_uint                     ? "labels_uint_frag"
+                                                            : "image_frag";
     }
 
     uint64_t vs_id = _obj_id(emitter, vs_key, &is_new);

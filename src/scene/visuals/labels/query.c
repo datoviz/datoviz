@@ -19,8 +19,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <vulkan/vulkan_core.h>
+
 #include "datoviz/math/_cglm.h"
-#include "../../../drp2/_stream.h"
 #include "../../query/internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
@@ -353,55 +354,178 @@ static bool _labels_query_visual_uv(
 
 
 /**
- * Decode raw labels-query texel bytes into a category ID.
+ * Resolve query-render geometry for a retained labels visual.
+ *
+ * @param visual labels visual
+ * @param scratch output scratch storage
+ * @param out_position_data output position buffer pointer
+ * @param out_texcoord_data output texture coordinate buffer pointer
+ * @param out_vertex_count output vertex count
+ * @param out_topology output primitive topology
+ * @return true when renderable labels geometry was resolved
+ */
+static bool _labels_query_geometry(
+    const DvzVisual* visual, DvzSceneQueryScratch* scratch, const void** out_position_data,
+    const void** out_texcoord_data, uint64_t* out_vertex_count, uint32_t* out_topology)
+{
+    ANN(visual);
+    ANN(scratch);
+    ANN(out_position_data);
+    ANN(out_texcoord_data);
+    ANN(out_vertex_count);
+    ANN(out_topology);
+
+    const DvzVisualAttr* pos_attr = NULL;
+    if (!_labels_query_attr(visual, "position", sizeof(vec3), &pos_attr))
+        return false;
+    const float* position = (const float*)pos_attr->data;
+
+    const DvzVisualAttr* extent_attr = NULL;
+    if (_labels_query_attr(visual, "extent", sizeof(vec2), &extent_attr))
+    {
+        if (extent_attr->item_count != pos_attr->item_count)
+            return false;
+
+        uint64_t vertex_count = 0;
+        if (_dvz_mul_u64_overflows(pos_attr->item_count, 6, &vertex_count) ||
+            vertex_count > UINT32_MAX)
+        {
+            log_error("labels query geometry size overflow");
+            return false;
+        }
+
+        scratch->query_positions = (vec3*)dvz_calloc(vertex_count, sizeof(vec3));
+        scratch->query_texcoords = (vec2*)dvz_calloc(vertex_count, sizeof(vec2));
+        if (scratch->query_positions == NULL || scratch->query_texcoords == NULL)
+        {
+            log_error("labels query geometry allocation failed");
+            _scene_query_scratch_destroy(scratch);
+            return false;
+        }
+
+        const float* extent = (const float*)extent_attr->data;
+        const DvzVisualAttr* anchor_attr = NULL;
+        const bool has_anchor =
+            _labels_query_attr(visual, "anchor", sizeof(vec2), &anchor_attr) &&
+            anchor_attr->item_count == pos_attr->item_count;
+        const float* anchor = has_anchor ? (const float*)anchor_attr->data : NULL;
+        const DvzVisualAttr* tex_rect_attr = NULL;
+        const bool has_tex_rect =
+            _labels_query_attr(visual, "tex_rect", 4 * sizeof(float), &tex_rect_attr) &&
+            tex_rect_attr->item_count == pos_attr->item_count;
+        const float* tex_rect = has_tex_rect ? (const float*)tex_rect_attr->data : NULL;
+
+        for (uint64_t i = 0; i < pos_attr->item_count; i++)
+        {
+            const float x = position[3 * i + 0];
+            const float y = position[3 * i + 1];
+            const float z = position[3 * i + 2];
+            const float w = extent[2 * i + 0];
+            const float h = extent[2 * i + 1];
+            const float ax = anchor != NULL ? anchor[2 * i + 0] : 0.0f;
+            const float ay = anchor != NULL ? anchor[2 * i + 1] : 0.0f;
+            const float x0 = x - 0.5f * (ax + 1.0f) * w;
+            const float x1 = x0 + w;
+            const float y0 = y - 0.5f * (ay + 1.0f) * h;
+            const float y1 = y0 + h;
+            const float u0 = tex_rect != NULL ? tex_rect[4 * i + 0] : 0.0f;
+            const float v0 = tex_rect != NULL ? tex_rect[4 * i + 1] : 0.0f;
+            const float u1 = tex_rect != NULL ? tex_rect[4 * i + 2] : 1.0f;
+            const float v1 = tex_rect != NULL ? tex_rect[4 * i + 3] : 1.0f;
+            const float quad_pos[6][3] = {
+                {x0, y0, z}, {x0, y1, z}, {x1, y0, z},
+                {x1, y0, z}, {x0, y1, z}, {x1, y1, z},
+            };
+            const float quad_uv[6][2] = {
+                {u0, v0}, {u0, v1}, {u1, v0}, {u1, v0}, {u0, v1}, {u1, v1},
+            };
+            for (uint32_t j = 0; j < 6; j++)
+            {
+                const uint64_t dst = 6 * i + j;
+                dvz_memcpy(scratch->query_positions[dst], sizeof(vec3), quad_pos[j], sizeof(vec3));
+                dvz_memcpy(scratch->query_texcoords[dst], sizeof(vec2), quad_uv[j], sizeof(vec2));
+            }
+        }
+        *out_position_data = scratch->query_positions;
+        *out_texcoord_data = scratch->query_texcoords;
+        *out_vertex_count = vertex_count;
+        *out_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        return true;
+    }
+
+    const DvzVisualAttr* uv_attr = NULL;
+    if (!_labels_query_attr(visual, "texcoords", sizeof(vec2), &uv_attr))
+        return false;
+    if (uv_attr->item_count != pos_attr->item_count)
+        return false;
+    if (pos_attr->item_count != 4 && pos_attr->item_count % 3 != 0)
+        return false;
+
+    *out_position_data = pos_attr->data;
+    *out_texcoord_data = uv_attr->data;
+    *out_vertex_count = pos_attr->item_count;
+    *out_topology = pos_attr->item_count == 4 ? VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP
+                                              : VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    return true;
+}
+
+
+
+/**
+ * Return the byte size of one dense 2D labels field.
+ *
+ * @param field labels field
+ * @param bytes_per_texel field texel byte size
+ * @param out_byte_size output byte size
+ * @return true when the size is valid
+ */
+static bool _labels_query_field_byte_size(
+    const DvzSampledField* field, uint32_t bytes_per_texel, uint64_t* out_byte_size)
+{
+    ANN(field);
+    ANN(out_byte_size);
+    uint64_t pixels = 0;
+    if (
+        _dvz_mul_u64_overflows(field->desc.width, field->desc.height, &pixels) ||
+        _dvz_mul_u64_overflows(pixels, bytes_per_texel, out_byte_size) ||
+        *out_byte_size == 0)
+    {
+        log_error("labels query texture size overflow");
+        return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Decode an encoded labels-query payload word into a category ID.
  *
  * @param format sampled-field format
- * @param sample raw texel bytes
+ * @param encoded encoded r32uint shader payload
  * @param out_id decoded category ID
  * @return true when the format was decoded
  */
 static bool _labels_query_decode_sample(
-    DvzFieldFormat format, const uint8_t sample[4], DvzCategoryId* out_id)
+    DvzFieldFormat format, uint32_t encoded, DvzCategoryId* out_id)
 {
-    ANN(sample);
     ANN(out_id);
+    if (encoded == 0)
+        return false;
+    uint32_t bits = encoded - 1u;
     switch (format)
     {
     case DVZ_FIELD_FORMAT_R8_UINT:
-        *out_id = (DvzCategoryId)sample[0];
+    case DVZ_FIELD_FORMAT_R16_UINT:
+    case DVZ_FIELD_FORMAT_R32_UINT:
+        *out_id = (DvzCategoryId)bits;
         return true;
     case DVZ_FIELD_FORMAT_R8_SINT:
-    {
-        int8_t v = 0;
-        dvz_memcpy(&v, sizeof(v), sample, sizeof(v));
-        *out_id = (DvzCategoryId)v;
-        return true;
-    }
-    case DVZ_FIELD_FORMAT_R16_UINT:
-    {
-        uint16_t v = 0;
-        dvz_memcpy(&v, sizeof(v), sample, sizeof(v));
-        *out_id = (DvzCategoryId)v;
-        return true;
-    }
     case DVZ_FIELD_FORMAT_R16_SINT:
-    {
-        int16_t v = 0;
-        dvz_memcpy(&v, sizeof(v), sample, sizeof(v));
-        *out_id = (DvzCategoryId)v;
-        return true;
-    }
-    case DVZ_FIELD_FORMAT_R32_UINT:
-    {
-        uint32_t v = 0;
-        dvz_memcpy(&v, sizeof(v), sample, sizeof(v));
-        *out_id = (DvzCategoryId)v;
-        return true;
-    }
     case DVZ_FIELD_FORMAT_R32_SINT:
     {
         int32_t v = 0;
-        dvz_memcpy(&v, sizeof(v), sample, sizeof(v));
+        dvz_memcpy(&v, sizeof(v), &bits, sizeof(bits));
         *out_id = (DvzCategoryId)v;
         return true;
     }
@@ -472,7 +596,7 @@ static bool _labels_query_eligible(
 
 
 /**
- * Build a labels-family direct integer readback query plan.
+ * Build a labels-family rendered integer query plan.
  *
  * @param ctx build context
  * @param out_plan output query plan
@@ -484,6 +608,7 @@ static bool _labels_query_build(
     ANN(ctx);
     ANN(ctx->panel);
     ANN(ctx->visual);
+    ANN(ctx->pending);
     ANN(out_plan);
 
     DvzSampledField* field = ctx->visual->field;
@@ -506,151 +631,108 @@ static bool _labels_query_build(
     if (uv[0] < 0.0 || uv[0] > 1.0 || uv[1] < 0.0 || uv[1] > 1.0)
         return false;
 
-    uint32_t texel_x = (uint32_t)floor(uv[0] * (double)field->desc.width);
-    uint32_t texel_y = (uint32_t)floor(uv[1] * (double)field->desc.height);
-    if (texel_x >= field->desc.width)
-        texel_x = field->desc.width - 1;
-    if (texel_y >= field->desc.height)
-        texel_y = field->desc.height - 1;
+    const void* position_data = NULL;
+    const void* texcoord_data = NULL;
+    uint64_t vertex_count = 0;
+    uint32_t topology = 0;
+    if (!_labels_query_geometry(
+            ctx->visual, &out_plan->scratch, &position_data, &texcoord_data, &vertex_count,
+            &topology))
+    {
+        _scene_query_scratch_destroy(&out_plan->scratch);
+        return false;
+    }
+
+    uint64_t position_bytes = 0;
+    uint64_t texcoord_bytes = 0;
+    uint64_t texture_bytes = 0;
+    if (
+        _dvz_mul_u64_overflows(vertex_count, sizeof(vec3), &position_bytes) ||
+        _dvz_mul_u64_overflows(vertex_count, sizeof(vec2), &texcoord_bytes) ||
+        !_labels_query_field_byte_size(field, bytes_per_texel, &texture_bytes))
+    {
+        _scene_query_scratch_destroy(&out_plan->scratch);
+        return false;
+    }
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.query.labels", ctx->pending->request.request_id);
+    out_plan->scratch.plan = plan;
+    bool ok = plan != NULL;
+    ok = ok && dvz_frame_plan_upload_bytes(
+                   plan, "labels_query0_position", 0, position_bytes, "position",
+                   position_data) &&
+         dvz_frame_plan_upload_set_topology(plan, topology) &&
+         dvz_frame_plan_upload_bytes(
+             plan, "labels_query0_texcoords", 0, texcoord_bytes, "texcoords", texcoord_data) &&
+         dvz_frame_plan_upload_bytes(
+             plan, "labels_query0_texture", 0, texture_bytes, "texture", field->data) &&
+         dvz_frame_plan_upload_set_texture_format(plan, texture_format, bytes_per_texel) &&
+         dvz_frame_plan_upload_set_texture_extent(plan, field->desc.width, field->desc.height) &&
+         dvz_frame_plan_upload_set_texture_allocation_extent(
+             plan, field->desc.width, field->desc.height);
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.has_metadata = true;
+    metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_LABELS;
+    metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
+    metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
+    metadata.depth_compare_op = ctx->visual->depth_compare_op;
+    metadata.vertex_count = (uint32_t)vertex_count;
+    metadata.field_format = field->desc.format;
+    metadata.field_width = field->desc.width;
+    metadata.field_height = field->desc.height;
+    metadata.has_labels = true;
+    metadata.labels_state = ctx->visual->labels;
+    dvz_strlcpy(metadata.position_id, "labels_query0_position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.texcoords_id, "labels_query0_texcoords", sizeof(metadata.texcoords_id));
+    dvz_strlcpy(metadata.texture_id, "labels_query0_texture", sizeof(metadata.texture_id));
+
+    ok = ok && dvz_frame_plan_render_panel(
+                   plan, "panel.query.labels", "target.query.labels", true,
+                   (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1}) &&
+         dvz_frame_plan_render_visual(plan, "labels_query0") &&
+         dvz_frame_plan_render_visual_metadata(plan, &metadata);
+    DvzFramePlanNode* render = plan != NULL ? dvz_frame_plan_last_render_node(plan) : NULL;
+    if (render != NULL)
+    {
+        DvzMVP mvp = {0};
+        _scene_request_apply_mvp(ctx->panel, ctx->request_ndc, &mvp);
+        render->u.render.has_mvp = true;
+        render->u.render.apply_mvp = mvp;
+        render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
+    }
+
+    DvzFramePlanCopyDesc copy = {
+        .src_resource_id = "target.query.labels",
+        .dst_resource_id = "buf.query.labels",
+        .extent = {1, 1, 1},
+        .format = VK_FORMAT_R32_UINT,
+        .bytes_per_texel = sizeof(uint32_t),
+        .bytes_per_row = sizeof(uint32_t),
+        .rows_per_image = 1,
+        .byte_size = sizeof(uint32_t),
+        .request_id = ctx->pending->request.request_id,
+    };
+    ok = ok && dvz_frame_plan_copy_ex(plan, &copy) &&
+         dvz_frame_plan_readback(plan, "buf.query.labels", "request.query.labels");
+    if (!ok)
+    {
+        log_error(
+            "labels query request %" PRIu64 " failed to assemble the GPU readback plan",
+            ctx->pending->request.request_id);
+        _scene_query_scratch_destroy(&out_plan->scratch);
+        return false;
+    }
 
     out_plan->field = field;
-    out_plan->texel_x = texel_x;
-    out_plan->texel_y = texel_y;
     out_plan->uvw[0] = uv[0];
     out_plan->uvw[1] = uv[1];
     out_plan->uvw[2] = 0.0;
-    out_plan->format = texture_format;
-    out_plan->byte_size = bytes_per_texel;
+    out_plan->target_width = 1;
+    out_plan->target_height = 1;
+    out_plan->format = VK_FORMAT_R32_UINT;
+    out_plan->byte_size = sizeof(uint32_t);
     return true;
-}
-
-
-
-/**
- * Execute a labels-family direct integer texture readback.
- *
- * @param ctx build context
- * @param executor retained query executor
- * @param caps capability snapshot
- * @param plan query plan
- * @param bytes output byte buffer
- * @param byte_size output byte buffer size
- * @param out_executed whether the stream executed successfully before download
- * @return true when the selected sample was downloaded
- */
-static bool _labels_query_execute(
-    const DvzSceneQueryBuildContext* ctx, DvzSceneRequestExecutor* executor,
-    const DvzCapabilitySnapshot* caps, const DvzSceneQueryPlan* plan, uint8_t* bytes,
-    uint32_t byte_size, bool* out_executed)
-{
-    ANN(ctx);
-    ANN(executor);
-    ANN(caps);
-    ANN(plan);
-    ANN(plan->field);
-    ANN(bytes);
-    ANN(out_executed);
-    (void)caps;
-    *out_executed = false;
-    if (executor->runtime == NULL || byte_size < plan->byte_size)
-        return false;
-
-    const DvzSampledField* field = plan->field;
-    uint32_t bytes_per_texel = 0;
-    uint32_t texture_format = 0;
-    if (!_labels_query_integer_format(field->desc.format, &texture_format, &bytes_per_texel))
-        return false;
-    if (bytes_per_texel != plan->byte_size)
-        return false;
-
-    uint64_t row_bytes = 0;
-    uint64_t buffer_size = 0;
-    if (
-        _dvz_mul_u64_overflows(field->desc.width, bytes_per_texel, &row_bytes) ||
-        _dvz_mul_u64_overflows(row_bytes, field->desc.height, &buffer_size) ||
-        row_bytes > UINT32_MAX || buffer_size == 0)
-    {
-        log_error("labels query readback buffer size overflow");
-        return false;
-    }
-
-    uint64_t sample_offset = 0;
-    uint64_t row_offset = 0;
-    uint64_t texel_offset = 0;
-    if (
-        _dvz_mul_u64_overflows(plan->texel_y, row_bytes, &row_offset) ||
-        _dvz_mul_u64_overflows(plan->texel_x, bytes_per_texel, &texel_offset) ||
-        _dvz_add_u64_overflows(row_offset, texel_offset, &sample_offset))
-    {
-        log_error("labels query readback sample offset overflow");
-        return false;
-    }
-
-    dvz_drp2_runtime_reset(executor->runtime);
-    executor->image_query_visual = NULL;
-    executor->image_query_position_version = 0;
-    executor->image_query_texcoord_version = 0;
-    executor->image_query_texture_version = 0;
-
-    const uint64_t texture_id = 7001;
-    const uint64_t buffer_id = 7002;
-    const uint64_t encoder_id = 7003;
-    const uint64_t command_buffer_id = 7004;
-    const uint64_t submission_id = 7005;
-    DvzDrp2CommandStream* stream = dvz_drp2_stream();
-    if (stream == NULL)
-        return false;
-
-    bool ok = dvz_drp2_stream_hello_renderer(stream, "scene-labels-query") &&
-              dvz_drp2_stream_renderer_hello_reply(stream, "datoviz") &&
-              dvz_drp2_stream_create_texture_2d_format_usage(
-                  stream, texture_id, field->desc.width, field->desc.height, texture_format,
-                  DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC) &&
-              dvz_drp2_stream_write_texture_2d_bytes(
-                  stream, texture_id, 0, field->desc.width, field->desc.height,
-                  (uint32_t)row_bytes, field->desc.height, field->data) &&
-              dvz_drp2_stream_create_buffer(
-                  stream, buffer_id, buffer_size,
-                  DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ) &&
-              dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
-              dvz_drp2_stream_copy_texture_to_buffer(
-                  stream, encoder_id, texture_id, buffer_id, 0, field->desc.width,
-                  field->desc.height, (uint32_t)row_bytes, field->desc.height) &&
-              dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id) &&
-              dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
-    if (!ok)
-    {
-        log_error("labels query readback stream assembly failed");
-        dvz_drp2_stream_destroy(stream);
-        return false;
-    }
-
-    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(executor->runtime, stream);
-    if (!result.ok)
-    {
-        log_error(
-            "labels query readback runtime execution failed (code=%d command=%u)",
-            (int)result.code, result.command_index);
-        dvz_drp2_stream_destroy(stream);
-        return false;
-    }
-    *out_executed = true;
-
-    ok = false;
-    if (ctx->figure != NULL && ctx->figure->scene != NULL &&
-        ctx->figure->scene->test.force_readback_download_failure)
-    {
-        log_error("labels query readback buffer download forced to fail");
-    }
-    else
-    {
-        ok = dvz_drp2_runtime_download_buffer(
-            executor->runtime, buffer_id, sample_offset, bytes_per_texel, bytes);
-        if (!ok)
-            log_error("labels query readback buffer download failed");
-    }
-    dvz_drp2_stream_destroy(stream);
-    return ok;
 }
 
 
@@ -679,10 +761,19 @@ static bool _labels_query_decode(
         return true;
     }
 
+    uint32_t encoded = 0;
+    dvz_memcpy(&encoded, sizeof(encoded), ctx->bytes, sizeof(encoded));
+
     DvzCategoryId label_id = 0;
-    if (!_labels_query_decode_sample(ctx->plan->field->desc.format, ctx->bytes, &label_id))
+    if (!_labels_query_decode_sample(ctx->plan->field->desc.format, encoded, &label_id))
     {
-        out_result->status = DVZ_QUERY_STATUS_DECODE_FAILED;
+        out_result->status = DVZ_QUERY_STATUS_MISS;
+        out_result->visual_id =
+            _scene_visual_public_id(ctx->build->figure->scene, ctx->build->visual);
+        out_result->visual_family = DVZ_SCENE_VISUAL_FAMILY_LABELS;
+        out_result->raw_target = DVZ_SCENE_TARGET_SEGMENT;
+        out_result->resolved_target = DVZ_SCENE_TARGET_SEGMENT;
+        out_result->value_kind = DVZ_QUERY_VALUE_NONE;
         return true;
     }
     if (label_id == ctx->build->visual->labels.background_id)
@@ -755,7 +846,6 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_labels_ops(void)
         .family = DVZ_SCENE_VISUAL_FAMILY_LABELS,
         .eligible = _labels_query_eligible,
         .build = _labels_query_build,
-        .execute = _labels_query_execute,
         .decode = _labels_query_decode,
         .readout = _labels_query_readout,
     };

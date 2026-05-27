@@ -176,6 +176,10 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "labels_sint_frag" : "image_vert";
     case DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT:
         return fragment ? "labels_uint_frag" : "image_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_LABELS_SINT_QUERY_U32:
+        return fragment ? "labels_sint_query_u32_frag" : "image_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT_QUERY_U32:
+        return fragment ? "labels_uint_query_u32_frag" : "image_vert";
     case DVZ_SCENE_BUILTIN_SHADER_GLYPH:
         return fragment ? "glyph_frag" : "glyph_vert";
     case DVZ_SCENE_BUILTIN_SHADER_VOLUME_SLICE:
