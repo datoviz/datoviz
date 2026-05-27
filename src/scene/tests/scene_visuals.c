@@ -26,6 +26,9 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const TstCase* item);
+
+
 /**
  * Assert one bounds object exactly enough for deterministic test inputs.
  *
@@ -1538,6 +1541,167 @@ int test_scene_mesh_emits_depth_attachment(TstContext* suite, const TstCase* ite
     AT(!found_named_depth_pass);
     AT(!found_named_depth_texture);
     AT(found_depth_pipeline);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify textured mesh lowering emits a texture-backed mesh pipeline and draw.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_mesh(scene, 0);
+    ANN(visual);
+
+    vec3 positions[4] = {
+        {-0.8f, -0.8f, 0.0f}, {-0.8f, 0.8f, 0.0f},
+        {0.8f, -0.8f, 0.0f},  {0.8f, 0.8f, 0.0f},
+    };
+    DvzColor colors[4] = {
+        {255, 255, 255, 255}, {255, 255, 255, 255},
+        {255, 255, 255, 255}, {255, 255, 255, 255},
+    };
+    vec3 normals[4] = {
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f},
+        {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    static const uint8_t pixels[2 * 2 * 4] = {
+        255, 0,   0,   255,
+        0,   255, 0,   255,
+        0,   0,   255, 255,
+        255, 255, 255, 255,
+    };
+
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = pixels, .bytes_per_row = 2 * 4, .rows_per_image = 2}));
+
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
+    AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
+    AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_visual_set_field(visual, "texture", field));
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool found_texture = false;
+    bool found_upload = false;
+    bool found_image_bind_group = false;
+    bool found_draw_indexed = false;
+    bool found_depth_pipeline = false;
+    uint64_t texture_id = 0;
+
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            if (cmd->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
+                cmd->u.create_texture.width == 2 && cmd->u.create_texture.height == 2 &&
+                cmd->u.create_texture.depth == 1)
+            {
+                found_texture = true;
+                texture_id = cmd->u.create_texture.id;
+            }
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+        {
+            found_upload = found_upload || (cmd->u.write_texture.width == 2 &&
+                                            cmd->u.write_texture.height == 2 &&
+                                            cmd->u.write_texture.depth == 1 &&
+                                            cmd->u.write_texture.bytes_per_row == 2 * 4);
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP && texture_id != 0)
+        {
+            bool has_texture = false;
+            bool has_sampler = false;
+            for (uint32_t j = 0; j < cmd->u.create_bind_group.entry_count; j++)
+            {
+                const DvzDrp2BindGroupEntry* entry = &cmd->u.create_bind_group.entries[j];
+                has_texture = has_texture ||
+                              (entry->binding == 0 &&
+                               entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE &&
+                               entry->resource_id == texture_id);
+                has_sampler = has_sampler ||
+                              (entry->binding == 1 &&
+                               entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLER);
+            }
+            found_image_bind_group = found_image_bind_group || (has_texture && has_sampler);
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+            found_depth_pipeline =
+                found_depth_pipeline ||
+                (label != NULL && strstr(label, "_pipe_mesh_textured_t") != NULL &&
+                 cmd->u.create_render_pipeline.has_depth_attachment &&
+                 cmd->u.create_render_pipeline.depth_write_enabled &&
+                 cmd->u.create_render_pipeline.binding_count == 4 &&
+                 cmd->u.create_render_pipeline.attr_count == 4);
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
+        {
+            found_draw_indexed = found_draw_indexed || cmd->u.draw_indexed.index_count == 6;
+        }
+    }
+
+    AT(found_texture);
+    AT(found_upload);
+    AT(found_image_bind_group);
+    AT(found_depth_pipeline);
+    AT(found_draw_indexed);
+    AT(_stream_set_vertex_buffer_count(stream) == 4);
+    AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneMaterialParams)) == 0);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);

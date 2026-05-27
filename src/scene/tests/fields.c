@@ -38,6 +38,9 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+int test_scene_mesh_visual_binds_texture_field(TstContext* suite, const TstCase* item);
+
+
 /**
  * Return whether a stream contains a render pipeline label fragment.
  *
@@ -2053,6 +2056,77 @@ int test_scene_image_visual_rejects_3d_field(TstContext* suite, const TstCase* i
 }
 
 
+/**
+ * Verify textured meshes accept only 2D RGBA sampled fields.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_mesh_visual_binds_texture_field(TstContext* suite, const TstCase* item)
+{
+    tst_log_capture_begin(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
+
+    static const uint8_t pixels[2 * 2 * 4] = {
+        255, 0,   0,   255,
+        0,   255, 0,   255,
+        0,   0,   255, 255,
+        255, 255, 255, 255,
+    };
+    DvzSampledField* rgba = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(rgba);
+    AT(dvz_sampled_field_set_data(
+        rgba, &(DvzFieldDataView){.data = pixels, .bytes_per_row = 2 * 4, .rows_per_image = 2}));
+    AT(dvz_visual_set_field(mesh, "texture", rgba));
+    AT(mesh->field == rgba);
+    AT(strcmp(mesh->field_slot, "texture") == 0);
+
+    DvzSampledField* scalar = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(scalar);
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_visual_set_field(mesh, "texture", scalar));
+    AT(_captured_log_contains(suite, "mesh texture fields require RGBA8_UNORM"));
+
+    DvzSampledField* volume = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(volume);
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_visual_set_field(mesh, "texture", volume));
+    AT(_captured_log_contains(suite, "require a 2D sampled field"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_volume_visual_binds_3d_field(TstContext* suite, const TstCase* item)
 {
     tst_log_capture_begin(suite);
@@ -4015,6 +4089,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_sampled_field_update_region);
     TST_CASE(test_scene_sampled_field_rejects_unsupported_format);
     TST_CASE(test_scene_image_visual_rejects_3d_field);
+    TST_CASE(test_scene_mesh_visual_binds_texture_field);
     TST_CASE(test_scene_volume_visual_binds_3d_field);
     TST_CASE(test_scene_volume_field_emit_realizes_3d_texture);
     TST_CASE(test_scene_volume_retained_controls);
