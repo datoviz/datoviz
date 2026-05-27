@@ -365,16 +365,18 @@ int test_scene_query_api_bridges_pick_and_probe_results(TstContext* suite, const
     AT(dvz_panel_query(
            panel, 12.0, 34.0,
            &(DvzQueryRequest){.request_id = 41, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
-    AT(scene->pending_pick_count == 1);
-    AT(scene->pending_picks[0].request.request_id == 41);
-    AT(scene->pending_picks[0].request.target == DVZ_SCENE_TARGET_ITEM);
+    AT(scene->pending_query_count == 1);
+    AT(scene->pending_queries[0].request.request_id == 41);
+    AT(scene->pending_queries[0].request.target == DVZ_SCENE_TARGET_ITEM);
+    AT(scene->pending_pick_count == 0);
 
     AT(dvz_panel_query(
            panel, 56.0, 78.0,
            &(DvzQueryRequest){.request_id = 42, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
-    AT(scene->pending_probe_count == 1);
-    AT(scene->pending_probes[0].request.request_id == 42);
-    AT(scene->pending_probes[0].request.target == DVZ_SCENE_TARGET_SAMPLE);
+    AT(scene->pending_query_count == 2);
+    AT(scene->pending_queries[1].request.request_id == 42);
+    AT(scene->pending_queries[1].request.target == DVZ_SCENE_TARGET_SAMPLE);
+    AT(scene->pending_probe_count == 0);
 
     DvzPickResult pick = {
         .request_id = 41,

@@ -72,6 +72,7 @@
 #define DVZ_SCENE_MAX_SELECTION_ITEMS 1024
 #define DVZ_SCENE_MAX_PICK_RESULTS 128
 #define DVZ_SCENE_MAX_PROBE_RESULTS 128
+#define DVZ_SCENE_MAX_QUERY_RESULTS 128
 #define DVZ_SCENE_MAX_PENDING_REQUESTS 128
 #define DVZ_SCENE_MAX_REQUEST_SCOPES 256
 #define DVZ_SCENE_MAX_ANIMATIONS 128
@@ -975,8 +976,10 @@ struct DvzAnnotation
 
 typedef struct DvzPendingPickRequest DvzPendingPickRequest;
 typedef struct DvzPendingProbeRequest DvzPendingProbeRequest;
+typedef struct DvzPendingQueryRequest DvzPendingQueryRequest;
 typedef struct DvzQueuedPickResult DvzQueuedPickResult;
 typedef struct DvzQueuedProbeResult DvzQueuedProbeResult;
+typedef struct DvzQueuedQueryResult DvzQueuedQueryResult;
 typedef struct DvzRequestFreshnessScope DvzRequestFreshnessScope;
 typedef struct DvzSceneProbePlan DvzSceneProbePlan;
 typedef struct DvzSceneRequestExecutor DvzSceneRequestExecutor;
@@ -1001,6 +1004,16 @@ struct DvzPendingProbeRequest
 };
 
 
+struct DvzPendingQueryRequest
+{
+    DvzPanel* panel;
+    double x;
+    double y;
+    uint64_t freshness_serial;
+    DvzQueryRequest request;
+};
+
+
 struct DvzQueuedPickResult
 {
     DvzPanel* panel;
@@ -1014,6 +1027,14 @@ struct DvzQueuedProbeResult
     DvzPanel* panel;
     uint64_t freshness_serial;
     DvzProbeResult result;
+};
+
+
+struct DvzQueuedQueryResult
+{
+    DvzPanel* panel;
+    uint64_t freshness_serial;
+    DvzQueryResult result;
 };
 
 
@@ -1692,11 +1713,20 @@ struct DvzScene
     uint32_t probe_result_count;
     uint32_t probe_result_head;
     DvzQueuedProbeResult probe_results[DVZ_SCENE_MAX_PROBE_RESULTS];
+
+    uint32_t pending_query_count;
+    DvzPendingQueryRequest pending_queries[DVZ_SCENE_MAX_PENDING_REQUESTS];
+
+    uint32_t query_result_count;
+    uint32_t query_result_head;
+    DvzQueuedQueryResult query_results[DVZ_SCENE_MAX_QUERY_RESULTS];
     uint64_t next_request_serial;
     uint32_t pick_scope_count;
     DvzRequestFreshnessScope pick_scopes[DVZ_SCENE_MAX_REQUEST_SCOPES];
     uint32_t probe_scope_count;
     DvzRequestFreshnessScope probe_scopes[DVZ_SCENE_MAX_REQUEST_SCOPES];
+    uint32_t query_scope_count;
+    DvzRequestFreshnessScope query_scopes[DVZ_SCENE_MAX_REQUEST_SCOPES];
     DvzSampledField* text_bitmap_atlas;
     DvzSceneRequestFrameSubscription
         request_frame_subscriptions[DVZ_SCENE_MAX_REQUEST_FRAME_SUBSCRIPTIONS];

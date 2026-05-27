@@ -18,8 +18,10 @@
 #include <stdint.h>
 
 #include "../_scene.h"
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_log.h"
 #include "datoviz/scene.h"
 
 
@@ -29,15 +31,515 @@
 /*************************************************************************************************/
 
 /**
- * Return whether a query target is value-oriented.
+ * Return whether two request ids belong to the same query freshness scope.
+ *
+ * @param lhs_request_id the first request id
+ * @param rhs_request_id the second request id
+ * @return true when the ids share one latest-wins scope
+ */
+static bool _query_request_ids_share_scope(uint64_t lhs_request_id, uint64_t rhs_request_id)
+{
+    if (lhs_request_id == 0 || rhs_request_id == 0)
+        return lhs_request_id == 0 && rhs_request_id == 0;
+    return lhs_request_id == rhs_request_id;
+}
+
+
+
+/**
+ * Touch one query request freshness scope.
+ *
+ * @param scene the scene
+ * @param panel the panel
+ * @param request_id the request id
+ * @param freshness_serial the newest request serial
+ */
+static void _query_track_request_serial(
+    DvzScene* scene, DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial)
+{
+    ANN(scene);
+    ANN(panel);
+    if (freshness_serial == 0)
+        return;
+
+    for (uint32_t i = 0; i < scene->query_scope_count; i++)
+    {
+        DvzRequestFreshnessScope* scope = &scene->query_scopes[i];
+        if (scope->panel == panel && _query_request_ids_share_scope(scope->request_id, request_id))
+        {
+            scope->request_id = request_id;
+            scope->freshness_serial = freshness_serial;
+            scope->touched_serial = freshness_serial;
+            return;
+        }
+    }
+
+    if (scene->query_scope_count >= DVZ_SCENE_MAX_REQUEST_SCOPES)
+    {
+        log_error("query request freshness scope table is full");
+        return;
+    }
+
+    DvzRequestFreshnessScope* scope = &scene->query_scopes[scene->query_scope_count++];
+    *scope = (DvzRequestFreshnessScope){
+        .panel = panel,
+        .request_id = request_id,
+        .freshness_serial = freshness_serial,
+        .touched_serial = freshness_serial,
+    };
+}
+
+
+
+/**
+ * Return the latest query freshness serial for one request scope.
+ *
+ * @param scene the scene
+ * @param panel the panel
+ * @param request_id the request id
+ * @return latest freshness serial, or zero when absent
+ */
+static uint64_t
+_query_latest_request_serial(const DvzScene* scene, const DvzPanel* panel, uint64_t request_id)
+{
+    ANN(scene);
+    ANN(panel);
+    for (uint32_t i = 0; i < scene->query_scope_count; i++)
+    {
+        const DvzRequestFreshnessScope* scope = &scene->query_scopes[i];
+        if (scope->panel == panel && _query_request_ids_share_scope(scope->request_id, request_id))
+            return scope->freshness_serial;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Return whether a query request/result scope is still current.
+ *
+ * @param scene the scene
+ * @param panel the panel
+ * @param request_id the request id
+ * @param freshness_serial the originating freshness serial
+ * @return true when the result is current
+ */
+static bool _query_request_is_current(
+    const DvzScene* scene, const DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial)
+{
+    ANN(scene);
+    ANN(panel);
+    if (freshness_serial == 0)
+        return true;
+    uint64_t latest_serial = _query_latest_request_serial(scene, panel, request_id);
+    return latest_serial == 0 || latest_serial == freshness_serial;
+}
+
+
+
+/**
+ * Return whether a pending query is superseded by a newer request.
+ *
+ * @param pending the pending query
+ * @param panel the panel
+ * @param request_id the newer request id
+ * @return true when the pending query is stale
+ */
+static bool _query_pending_superseded(
+    const DvzPendingQueryRequest* pending, const DvzPanel* panel, uint64_t request_id)
+{
+    ANN(pending);
+    return pending->panel == panel &&
+           _query_request_ids_share_scope(pending->request.request_id, request_id);
+}
+
+
+
+/**
+ * Drop unresolved query requests superseded by a newer panel query.
+ *
+ * @param scene the scene
+ * @param panel the panel
+ * @param request_id the new request id
+ */
+static void _query_drop_superseded_requests(
+    DvzScene* scene, const DvzPanel* panel, uint64_t request_id)
+{
+    ANN(scene);
+    ANN(panel);
+    uint32_t old_count = scene->pending_query_count;
+    uint32_t write = 0;
+    for (uint32_t read = 0; read < scene->pending_query_count; read++)
+    {
+        DvzPendingQueryRequest pending = scene->pending_queries[read];
+        if (_query_pending_superseded(&pending, panel, request_id))
+            continue;
+        if (write != read)
+            scene->pending_queries[write] = pending;
+        write++;
+    }
+    for (uint32_t i = write; i < old_count; i++)
+    {
+        dvz_memset(
+            &scene->pending_queries[i], sizeof(DvzPendingQueryRequest), 0,
+            sizeof(DvzPendingQueryRequest));
+    }
+    scene->pending_query_count = write;
+}
+
+
+
+/**
+ * Drop queued query results superseded by a newer panel query.
+ *
+ * @param scene the scene
+ * @param panel the panel
+ * @param request_id the new request id
+ */
+static void _query_drop_superseded_results(
+    DvzScene* scene, const DvzPanel* panel, uint64_t request_id)
+{
+    ANN(scene);
+    ANN(panel);
+    DvzQueuedQueryResult kept[DVZ_SCENE_MAX_QUERY_RESULTS] = {0};
+    uint32_t kept_count = 0;
+    for (uint32_t i = 0; i < scene->query_result_count; i++)
+    {
+        uint32_t index = (scene->query_result_head + i) % DVZ_SCENE_MAX_QUERY_RESULTS;
+        DvzQueuedQueryResult queued = scene->query_results[index];
+        if (queued.panel == panel &&
+            _query_request_ids_share_scope(queued.result.request_id, request_id))
+        {
+            continue;
+        }
+        kept[kept_count++] = queued;
+    }
+    dvz_memset(scene->query_results, sizeof(scene->query_results), 0, sizeof(scene->query_results));
+    for (uint32_t i = 0; i < kept_count; i++)
+        scene->query_results[i] = kept[i];
+    scene->query_result_head = 0;
+    scene->query_result_count = kept_count;
+}
+
+
+
+/**
+ * Coalesce pending query requests for one figure.
+ *
+ * @param scene the scene
+ * @param figure the figure being processed
+ */
+static void _query_coalesce_pending_requests(DvzScene* scene, const DvzFigure* figure)
+{
+    ANN(scene);
+    ANN(figure);
+    bool keep[DVZ_SCENE_MAX_PENDING_REQUESTS] = {0};
+    uint32_t write = 0;
+    uint32_t old_count = scene->pending_query_count;
+
+    for (int32_t i = (int32_t)scene->pending_query_count - 1; i >= 0; i--)
+    {
+        const DvzPendingQueryRequest* pending = &scene->pending_queries[i];
+        bool keep_pending = true;
+        if (pending->panel != NULL && pending->panel->figure == figure)
+        {
+            for (uint32_t j = (uint32_t)i + 1; j < scene->pending_query_count; j++)
+            {
+                const DvzPendingQueryRequest* newer = &scene->pending_queries[j];
+                if (!keep[j])
+                    continue;
+                if (newer->panel != pending->panel)
+                    continue;
+                if (!_query_request_ids_share_scope(
+                        newer->request.request_id, pending->request.request_id))
+                {
+                    continue;
+                }
+                keep_pending = false;
+                break;
+            }
+        }
+        keep[i] = keep_pending;
+    }
+
+    for (uint32_t read = 0; read < old_count; read++)
+    {
+        if (!keep[read])
+            continue;
+        if (write != read)
+            scene->pending_queries[write] = scene->pending_queries[read];
+        write++;
+    }
+    for (uint32_t i = write; i < old_count; i++)
+    {
+        dvz_memset(
+            &scene->pending_queries[i], sizeof(DvzPendingQueryRequest), 0,
+            sizeof(DvzPendingQueryRequest));
+    }
+    scene->pending_query_count = write;
+}
+
+
+
+/**
+ * Remove one pending query by queue index.
+ *
+ * @param scene the scene
+ * @param index the queue index
+ */
+static void _query_remove_pending_at(DvzScene* scene, uint32_t index)
+{
+    ANN(scene);
+    ASSERT(index < scene->pending_query_count);
+    for (uint32_t i = index + 1; i < scene->pending_query_count; i++)
+        scene->pending_queries[i - 1] = scene->pending_queries[i];
+    scene->pending_query_count--;
+    dvz_memset(
+        &scene->pending_queries[scene->pending_query_count], sizeof(DvzPendingQueryRequest), 0,
+        sizeof(DvzPendingQueryRequest));
+}
+
+
+
+/**
+ * Push one native query result.
+ *
+ * @param scene the scene
+ * @param panel the panel
+ * @param freshness_serial the originating freshness serial
+ * @param result the result
+ * @return true on success
+ */
+static bool _query_push_result(
+    DvzScene* scene, DvzPanel* panel, uint64_t freshness_serial, const DvzQueryResult* result)
+{
+    ANN(scene);
+    ANN(result);
+    if (panel != NULL &&
+        !_query_request_is_current(scene, panel, result->request_id, freshness_serial))
+    {
+        return true;
+    }
+    if (scene->query_result_count >= DVZ_SCENE_MAX_QUERY_RESULTS)
+    {
+        log_error("query result queue is full");
+        return false;
+    }
+    uint32_t index =
+        (scene->query_result_head + scene->query_result_count) % DVZ_SCENE_MAX_QUERY_RESULTS;
+    scene->query_results[index].panel = panel;
+    scene->query_results[index].freshness_serial = freshness_serial;
+    scene->query_results[index].result = *result;
+    scene->query_result_count++;
+    return true;
+}
+
+
+
+/**
+ * Return the capability bit required by one query target.
  *
  * @param target the requested scene target
- * @return whether the transitional bridge should use the probe path
+ * @return required capability bit, or zero for unsupported targets
  */
-static bool _query_target_uses_probe(DvzSceneTargetKind target)
+static uint32_t _query_target_capability(DvzSceneTargetKind target)
 {
-    return target == DVZ_SCENE_TARGET_PIXEL || target == DVZ_SCENE_TARGET_SAMPLE ||
-           target == DVZ_SCENE_TARGET_SEGMENT;
+    switch (target)
+    {
+    case DVZ_SCENE_TARGET_NONE:
+        return DVZ_PICK_CAPABILITY_ITEM;
+    case DVZ_SCENE_TARGET_OBJECT:
+        return DVZ_PICK_CAPABILITY_OBJECT;
+    case DVZ_SCENE_TARGET_ITEM:
+        return DVZ_PICK_CAPABILITY_ITEM;
+    case DVZ_SCENE_TARGET_VERTEX:
+        return DVZ_PICK_CAPABILITY_VERTEX;
+    case DVZ_SCENE_TARGET_FACE:
+    case DVZ_SCENE_TARGET_TRIANGLE:
+        return DVZ_PICK_CAPABILITY_FACE;
+    case DVZ_SCENE_TARGET_PIXEL:
+        return DVZ_PICK_CAPABILITY_PIXEL;
+    case DVZ_SCENE_TARGET_SAMPLE:
+        return DVZ_PICK_CAPABILITY_SAMPLE;
+    case DVZ_SCENE_TARGET_STRIP:
+        return DVZ_PICK_CAPABILITY_GROUP;
+    case DVZ_SCENE_TARGET_SEGMENT:
+        return DVZ_PICK_CAPABILITY_ITEM;
+    case DVZ_SCENE_TARGET_TEXT:
+    case DVZ_SCENE_TARGET_ANNOTATION:
+        return DVZ_PICK_CAPABILITY_OBJECT;
+    default:
+        return 0;
+    }
+}
+
+
+
+/**
+ * Return whether a query profile is supported by the capability snapshot.
+ *
+ * @param profile the query profile
+ * @param caps the capability snapshot
+ * @return true when supported
+ */
+static bool _query_profile_supported(DvzQueryProfile profile, const DvzCapabilitySnapshot* caps)
+{
+    ANN(caps);
+    if (!caps->supports_readback)
+        return false;
+
+    switch (profile)
+    {
+    case DVZ_QUERY_PROFILE_U32_R32:
+        return caps->query_profile_u32_r32;
+    case DVZ_QUERY_PROFILE_U64_RG32:
+        return caps->query_profile_u64_rg32;
+    case DVZ_QUERY_PROFILE_U64_2XR32:
+        return caps->query_profile_u64_2xr32;
+    case DVZ_QUERY_PROFILE_PACKED_RGBA8:
+        return caps->query_profile_packed_rgba8;
+    case DVZ_QUERY_PROFILE_UNSUPPORTED:
+    default:
+        return false;
+    }
+}
+
+
+
+/**
+ * Resolve the effective profile for one query request.
+ *
+ * @param request the query request
+ * @param caps the capability snapshot
+ * @return a supported profile, or unsupported
+ */
+static DvzQueryProfile
+_query_select_profile(const DvzQueryRequest* request, const DvzCapabilitySnapshot* caps)
+{
+    ANN(request);
+    ANN(caps);
+    if (request->profile != DVZ_QUERY_PROFILE_UNSUPPORTED)
+    {
+        if (_query_profile_supported(request->profile, caps))
+            return request->profile;
+        return DVZ_QUERY_PROFILE_UNSUPPORTED;
+    }
+    if (_query_profile_supported(DVZ_QUERY_PROFILE_U32_R32, caps))
+        return DVZ_QUERY_PROFILE_U32_R32;
+    if (_query_profile_supported(DVZ_QUERY_PROFILE_U64_RG32, caps))
+        return DVZ_QUERY_PROFILE_U64_RG32;
+    if (_query_profile_supported(DVZ_QUERY_PROFILE_U64_2XR32, caps))
+        return DVZ_QUERY_PROFILE_U64_2XR32;
+    if (_query_profile_supported(DVZ_QUERY_PROFILE_PACKED_RGBA8, caps))
+        return DVZ_QUERY_PROFILE_PACKED_RGBA8;
+    return DVZ_QUERY_PROFILE_UNSUPPORTED;
+}
+
+
+
+/**
+ * Return one currently drawable query candidate for a panel request.
+ *
+ * @param panel the panel
+ * @param capability required query capability
+ * @return the topmost matching visual, or NULL
+ */
+static DvzVisual* _query_candidate_visual(const DvzPanel* panel, uint32_t capability)
+{
+    ANN(panel);
+    if (capability == 0)
+        return NULL;
+    for (int32_t i = (int32_t)panel->visual_count - 1; i >= 0; i--)
+    {
+        DvzVisual* visual = panel->visuals[i].visual;
+        if (visual == NULL || !visual->visible)
+            continue;
+        if ((visual->pick_capabilities & capability) != 0)
+            return visual;
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Initialize a query result from one pending request.
+ *
+ * @param figure the figure
+ * @param pending the pending query
+ * @param out_result output result
+ */
+static void _query_result_init(
+    const DvzFigure* figure, const DvzPendingQueryRequest* pending, DvzQueryResult* out_result)
+{
+    ANN(figure);
+    ANN(pending);
+    ANN(out_result);
+    *out_result = (DvzQueryResult){0};
+    out_result->request_id = pending->request.request_id;
+    out_result->freshness_serial = pending->freshness_serial;
+    out_result->status = DVZ_QUERY_STATUS_UNKNOWN;
+    out_result->panel_id = _scene_panel_public_id(figure, pending->panel);
+    out_result->panel_position[0] = pending->x;
+    out_result->panel_position[1] = pending->y;
+    out_result->raw_target = pending->request.target;
+    out_result->resolved_target = pending->request.target;
+    out_result->value_kind = DVZ_QUERY_VALUE_NONE;
+}
+
+
+
+/**
+ * Resolve one native query request without falling back to pick/probe queues.
+ *
+ * @param figure the figure
+ * @param caps the capability snapshot
+ * @param pending the pending query
+ * @param out_result output result
+ * @return true when a result was produced
+ */
+static bool _query_process_pending(
+    const DvzFigure* figure, const DvzCapabilitySnapshot* caps,
+    const DvzPendingQueryRequest* pending, DvzQueryResult* out_result)
+{
+    ANN(figure);
+    ANN(caps);
+    ANN(pending);
+    ANN(out_result);
+    _query_result_init(figure, pending, out_result);
+
+    vec2 request_ndc = {0};
+    if (!_scene_pick_request_ndc(figure, pending->panel, pending->x, pending->y, request_ndc))
+    {
+        out_result->status = DVZ_QUERY_STATUS_OUTSIDE_PANEL;
+        return true;
+    }
+
+    uint32_t capability = _query_target_capability(pending->request.target);
+    if (capability == 0)
+    {
+        out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_TARGET;
+        return true;
+    }
+
+    out_result->profile = _query_select_profile(&pending->request, caps);
+    if (out_result->profile == DVZ_QUERY_PROFILE_UNSUPPORTED)
+    {
+        out_result->status = caps->supports_readback ? DVZ_QUERY_STATUS_UNSUPPORTED_QUERY_PROFILE
+                                                     : DVZ_QUERY_STATUS_READBACK_FAILED;
+        return true;
+    }
+
+    DvzVisual* visual = _query_candidate_visual(pending->panel, capability);
+    if (visual == NULL)
+    {
+        out_result->status = DVZ_QUERY_STATUS_NO_CAPABLE_VISUAL;
+        return true;
+    }
+
+    out_result->visual_id = _scene_visual_public_id(figure->scene, visual);
+    out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+    return true;
 }
 
 
@@ -247,27 +749,31 @@ static void _query_from_probe(const DvzProbeResult* probe, DvzQueryResult* out_r
 int dvz_panel_query(DvzPanel* panel, double x, double y, const DvzQueryRequest* request)
 {
     ANN(panel);
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+        return -1;
+    DvzScene* scene = panel->figure->scene;
     DvzQueryRequest local = {0};
     if (request != NULL)
         local = *request;
 
-    if (_query_target_uses_probe(local.target))
+    _query_drop_superseded_requests(scene, panel, local.request_id);
+    _query_drop_superseded_results(scene, panel, local.request_id);
+    if (scene->pending_query_count >= DVZ_SCENE_MAX_PENDING_REQUESTS)
     {
-        DvzProbeRequest probe = {
-            .request_id = local.request_id,
-            .target = local.target,
-            .flags = local.flags,
-        };
-        return dvz_panel_probe(panel, x, y, &probe);
+        log_error("query request queue is full");
+        return -1;
     }
 
-    DvzPickRequest pick = {
-        .request_id = local.request_id,
-        .target = local.target,
-        .hit_policy = local.hit_policy,
-        .flags = local.flags,
-    };
-    return dvz_panel_pick(panel, x, y, &pick);
+    DvzPendingQueryRequest* pending = &scene->pending_queries[scene->pending_query_count++];
+    dvz_memset(pending, sizeof(DvzPendingQueryRequest), 0, sizeof(DvzPendingQueryRequest));
+    pending->panel = panel;
+    pending->x = x;
+    pending->y = y;
+    pending->freshness_serial = _scene_next_request_serial(scene);
+    pending->request = local;
+    _query_track_request_serial(scene, panel, local.request_id, pending->freshness_serial);
+    _scene_notify_request_frame(panel->figure);
+    return 0;
 }
 
 
@@ -283,6 +789,18 @@ bool dvz_scene_poll_query(DvzScene* scene, DvzQueryResult* out_result)
 {
     ANN(scene);
     ANN(out_result);
+
+    if (scene->query_result_count > 0)
+    {
+        uint32_t index = scene->query_result_head;
+        *out_result = scene->query_results[index].result;
+        dvz_memset(
+            &scene->query_results[index], sizeof(DvzQueuedQueryResult), 0,
+            sizeof(DvzQueuedQueryResult));
+        scene->query_result_head = (index + 1) % DVZ_SCENE_MAX_QUERY_RESULTS;
+        scene->query_result_count--;
+        return true;
+    }
 
     DvzPickResult pick = {0};
     if (dvz_scene_poll_pick(scene, &pick))
@@ -313,7 +831,42 @@ bool dvz_scene_poll_query(DvzScene* scene, DvzQueryResult* out_result)
 uint32_t dvz_figure_process_queries(
     DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps)
 {
-    return dvz_figure_process_requests(figure, runtime, caps);
+    ANN(figure);
+    ANN(figure->scene);
+    (void)runtime;
+
+    DvzCapabilitySnapshot local_caps = {0};
+    if (caps == NULL)
+    {
+        dvz_capability_snapshot_default(&local_caps);
+        caps = &local_caps;
+    }
+
+    if (!_scene_figure_resolve_layouts(figure))
+        return 0;
+
+    DvzScene* scene = figure->scene;
+    uint32_t processed = 0;
+    _query_coalesce_pending_requests(scene, figure);
+
+    for (uint32_t i = 0; i < scene->pending_query_count;)
+    {
+        const DvzPendingQueryRequest pending = scene->pending_queries[i];
+        if (pending.panel == NULL || pending.panel->figure != figure)
+        {
+            i++;
+            continue;
+        }
+
+        DvzQueryResult result = {0};
+        if (_query_process_pending(figure, caps, &pending, &result))
+            (void)_query_push_result(scene, pending.panel, pending.freshness_serial, &result);
+
+        _query_remove_pending_at(scene, i);
+        processed++;
+    }
+
+    return processed;
 }
 
 
