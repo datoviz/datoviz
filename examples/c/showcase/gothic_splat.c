@@ -6,9 +6,10 @@
 
 /* gothic_splat - provisional Gothic Gaussian-splat showcase.
  *
- * This example loads the v0.4 Gothic splat cache arrays and renders them with dvz_point() as a
- * temporary consistency check. Once the retained splat visual lands, the visual creation and
- * radius upload should be replaced by the real splat attributes while keeping the loader shape.
+ * This example loads the v0.4 Gothic splat cache arrays, renders them with dvz_point() as a
+ * temporary consistency check, and uses a fly controller like the LIDAR showcase. Once the retained
+ * splat visual lands, the visual creation and radius upload should be replaced by the real splat
+ * attributes while keeping the loader shape.
  *
  * Prepare: python examples/c/showcase/prepare_gothic_splat.py
  * Build:   just example-c showcase/gothic_splat
@@ -52,10 +53,6 @@
 #define GOTHIC_DIAMETER_SCALE 1800.0f
 #define GOTHIC_DIAMETER_MIN   1.0f
 #define GOTHIC_DIAMETER_MAX   18.0f
-
-#define GOTHIC_ROTATION_SPEED_RAD_PER_SEC 0.18f
-
-
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
@@ -410,8 +407,14 @@ int main(int argc, char** argv)
     DvzPanel* panel = dvz_panel_full(figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
 
+    vec3 eye = {0.0f, 0.0f, fmaxf(2.8f, 2.8f * radius)};
+    vec3 target = {0.0f, 0.0f, 0.0f};
+    vec3 up = {0.0f, 1.0f, 0.0f};
+
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[2] = fmaxf(2.8f, 2.8f * radius);
+    camera_desc.eye[0] = eye[0];
+    camera_desc.eye[1] = eye[1];
+    camera_desc.eye[2] = eye[2];
     camera_desc.near = 0.01f;
     camera_desc.far = 100.0f;
     ok = dvz_panel_set_camera(panel, &camera_desc);
@@ -449,14 +452,14 @@ int main(int argc, char** argv)
     DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "gothic_splat");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
-    EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
-    dvz_arcball_set(arcball, (vec3){+0.48f, -0.12f, +0.20f});
-
-    DvzAnimation* spin = dvz_anim_arcball_spin(
-        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, GOTHIC_ROTATION_SPEED_RAD_PER_SEC,
-        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
+    DvzFlyDesc fly_desc = dvz_fly_desc();
+    fly_desc.mode = DVZ_FLY_MODE_PLANE;
+    dvz_memcpy(fly_desc.position, sizeof(fly_desc.position), eye, sizeof(eye));
+    dvz_memcpy(fly_desc.target, sizeof(fly_desc.target), target, sizeof(target));
+    dvz_memcpy(fly_desc.up, sizeof(fly_desc.up), up, sizeof(up));
+    fly_desc.speed = fmaxf(0.12f, 0.35f * radius);
+    DvzFly* fly = dvz_view_fly(win, panel, &fly_desc);
+    EXAMPLE_CHECK(fly != NULL, "failed to create or bind fly controller");
 
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
