@@ -12,6 +12,8 @@ Do not use it for execution planning or broad architecture essays.
 - `drp2/`: backend-agnostic rendering protocol contract, schemas, fixtures, and native-runtime
   pressure rules
 - `api/`: cross-module public API conventions for naming, structs, bindings, and release review
+- `bindings/`: raw generated Python `ctypes` binding architecture, generation policy, and
+  validation rules
 - `docs/`: v0.4 documentation architecture, example-coverage policy, and AI-friendly authoring
   rules
 - `scene/`: scene-layer requirements, consumer-side object model, retained object semantics, and
