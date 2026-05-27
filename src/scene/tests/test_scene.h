@@ -134,7 +134,7 @@ int test_scene_interaction(TstSuite* suite);
 
 int test_scene_graph(TstSuite* suite);
 
-int test_scene_pick_probe(TstSuite* suite);
+int test_scene_query_filter_alias(TstSuite* suite);
 
 int test_scene_query(TstSuite* suite);
 
@@ -394,7 +394,7 @@ int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
 int test_app_offscreen_frame_callback_enables_continuous_scheduler(
     TstContext* suite, const TstCase* item);
 
-int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
+int test_app_offscreen_query_requests_notify_hosted_callback(
     TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_shared_scene_request_frame_subscribers(
@@ -943,7 +943,7 @@ int test_app_offscreen_retained_render_second_frame(TstContext* suite, const Tst
 int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(
     TstContext* suite, const TstCase* item);
 
-int test_app_offscreen_pick_probe_request_steady_state(TstContext* suite, const TstCase* item);
+int test_app_offscreen_query_request_steady_state(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, const TstCase* item);
 

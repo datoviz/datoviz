@@ -25,12 +25,12 @@
 /*************************************************************************************************/
 
 /**
- * Register a small native-query coverage point under the historical pick-probe filter.
+ * Register a small native-query coverage point under the historical pick-probe validation alias.
  *
  * @param suite the active test suite
  * @return 0 on success
  */
-int test_scene_pick_probe(TstSuite* suite)
+int test_scene_query_filter_alias(TstSuite* suite)
 {
     ANN(suite);
     const char* tags = "scene";

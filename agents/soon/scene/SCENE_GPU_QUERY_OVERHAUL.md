@@ -149,6 +149,9 @@ Committed implementation slices:
 36. `scene: remove CPU point pick fallback`
     - removed the unused CPU point-picking helper and `DVZ_PICK_TRACE` hook,
     - renamed the remaining panel-coordinate helper to query terminology.
+37. `scene: rename native query tests`
+    - renamed the old `pick_probe.c` scene test wrapper and app steady-state tests to query names,
+    - kept the `pick-probe` validation group as an alias for the required focused test command.
 
 Recorded validation after these commits:
 
@@ -420,7 +423,7 @@ Primary ownership:
 2. `include/datoviz/scene/types.h`
 3. `src/scene/interaction.c`
 4. examples using query
-5. `src/scene/tests/pick_probe.c` and successor tests
+5. `src/scene/tests/query_filter.c` and successor tests
 
 Tasks:
 

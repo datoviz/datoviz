@@ -1436,13 +1436,13 @@ int test_app_offscreen_frame_callback_enables_continuous_scheduler(
 
 
 /**
- * Ensure pick and probe requests notify hosted view repaint callbacks.
+ * Ensure query requests notify hosted view repaint callbacks.
  *
  * @param suite the test suite
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
+int test_app_offscreen_query_requests_notify_hosted_callback(
     TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -1499,7 +1499,7 @@ int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
     if (app == NULL)
     {
         log_warn(
-            "test_app_offscreen_pick_probe_requests_notify_hosted_callback skipped: GPU context "
+            "test_app_offscreen_query_requests_notify_hosted_callback skipped: GPU context "
             "failed");
         tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
@@ -5132,13 +5132,13 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
 
 
 /**
- * Ensure app-owned request execution stays steady across repeated pick/probe frames.
+ * Ensure app-owned request execution stays steady across repeated query frames.
  *
  * @param suite the test suite
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_pick_probe_request_steady_state(TstContext* suite, const TstCase* item)
+int test_app_offscreen_query_request_steady_state(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5192,7 +5192,7 @@ int test_app_offscreen_pick_probe_request_steady_state(TstContext* suite, const 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_offscreen_pick_probe_request_steady_state skipped: GPU context failed");
+        log_warn("test_app_offscreen_query_request_steady_state skipped: GPU context failed");
         tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -6405,7 +6405,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_scheduler_sees_scene_dirty_without_request);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_frame_callback_enables_continuous_scheduler);
-    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pick_probe_requests_notify_hosted_callback);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_query_requests_notify_hosted_callback);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_shared_scene_request_frame_subscribers);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_timer_advances_in_app_run);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_timer_advances_in_render_once);
@@ -6452,7 +6452,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_retained_render_second_frame);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_retained_render_second_frame);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_resize_reuses_runtime_with_mesh_and_image);
-    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pick_probe_request_steady_state);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_query_request_steady_state);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_two_panel_points_light_both_halves);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_clear_color);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_slice_renders_field);
