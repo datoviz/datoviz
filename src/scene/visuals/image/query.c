@@ -390,8 +390,6 @@ static bool _image_query_eligible(
         uint32_t capability = request->target == DVZ_SCENE_TARGET_SAMPLE
                                   ? DVZ_PICK_CAPABILITY_SAMPLE
                                   : DVZ_PICK_CAPABILITY_PIXEL;
-        if ((request->flags & DVZ_SCENE_QUERY_FLAG_COMPAT_PROBE) != 0)
-            return true;
         return (visual->pick_capabilities & capability) != 0;
     }
     if (request->target != DVZ_SCENE_TARGET_NONE && request->target != DVZ_SCENE_TARGET_ITEM &&
@@ -572,12 +570,6 @@ static bool _image_query_decode(const DvzSceneQueryDecodeContext* ctx, DvzQueryR
         }
         if (ctx->bytes[3] == 0)
         {
-            if ((ctx->build->pending->request.flags & DVZ_SCENE_QUERY_FLAG_COMPAT_PROBE) != 0)
-            {
-                log_error(
-                    "image probe request %" PRIu64 " returned a transparent GPU pixel",
-                    ctx->build->pending->request.request_id);
-            }
             out_result->status = DVZ_QUERY_STATUS_MISS;
             out_result->visual_id =
                 _scene_visual_public_id(ctx->build->figure->scene, ctx->build->visual);

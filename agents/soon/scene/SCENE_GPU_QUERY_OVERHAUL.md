@@ -133,6 +133,10 @@ Committed implementation slices:
     - deleted `request_execute.c` and `request_queue.c`,
     - moved retained query executor lifecycle under `src/scene/query/executor.c`,
     - app rendering now processes native query queues directly.
+33. `scene: remove dead query probe compatibility flag`
+    - removed the private `DVZ_SCENE_QUERY_FLAG_COMPAT_PROBE` path left behind after public probe
+      deletion,
+    - query eligibility now always uses native visual capabilities.
 
 Recorded validation after these commits:
 
