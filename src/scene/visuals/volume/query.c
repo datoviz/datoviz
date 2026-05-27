@@ -176,6 +176,87 @@ static double _volume_query_decode_uvw_component(uint32_t packed, uint32_t shift
 
 
 /**
+ * Return one axis-selected UVW component.
+ *
+ * @param axis axis index
+ * @param uvw normalized volume coordinate
+ * @return selected component, clamped by caller
+ */
+static double _volume_query_axis_value(uint32_t axis, const double uvw[3])
+{
+    axis = axis <= 2 ? axis : 0;
+    return uvw[axis];
+}
+
+
+
+/**
+ * Map normalized volume UVW to normalized texture UVW using retained axis mapping.
+ *
+ * @param state retained volume state
+ * @param uvw normalized volume coordinate
+ * @param out_texture_uvw normalized texture coordinate
+ */
+static void _volume_query_texture_uvw(
+    const DvzVolumeState* state, const double uvw[3], double out_texture_uvw[3])
+{
+    ANN(state);
+    ANN(uvw);
+    ANN(out_texture_uvw);
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        uint32_t axis = state->axis_order[i] <= 2 ? state->axis_order[i] : i;
+        double value = _volume_query_axis_value(axis, uvw);
+        if (state->axis_flip[i])
+            value = 1.0 - value;
+        if (value < 0.0)
+            value = 0.0;
+        if (value > 1.0)
+            value = 1.0;
+        out_texture_uvw[i] = value;
+    }
+}
+
+
+
+/**
+ * Decode a linear voxel/sample id from GPU-returned UVW.
+ *
+ * @param field sampled field
+ * @param state retained volume state
+ * @param uvw normalized volume coordinate
+ * @param out_voxel_id output linear voxel id
+ * @return true when the id was computed
+ */
+static bool _volume_query_voxel_id(
+    const DvzSampledField* field, const DvzVolumeState* state, const double uvw[3],
+    uint64_t* out_voxel_id)
+{
+    ANN(field);
+    ANN(state);
+    ANN(uvw);
+    ANN(out_voxel_id);
+    if (field->desc.width == 0 || field->desc.height == 0 || field->desc.depth == 0)
+        return false;
+
+    double texture_uvw[3] = {0};
+    _volume_query_texture_uvw(state, uvw, texture_uvw);
+    uint32_t dims[3] = {field->desc.width, field->desc.height, field->desc.depth};
+    uint32_t coord[3] = {0};
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        double scaled = texture_uvw[i] * (double)dims[i];
+        coord[i] = scaled >= (double)dims[i] ? dims[i] - 1u : (uint32_t)scaled;
+    }
+    *out_voxel_id =
+        (uint64_t)coord[2] * (uint64_t)field->desc.width * (uint64_t)field->desc.height +
+        (uint64_t)coord[1] * (uint64_t)field->desc.width + (uint64_t)coord[0];
+    return true;
+}
+
+
+
+/**
  * Apply the request-centered MVP and viewport to a query render node.
  *
  * @param plan frame plan
@@ -583,6 +664,17 @@ static bool _volume_query_decode(
             out_result->uvw[0] = _volume_query_decode_uvw_component(packed_uvw, 0);
             out_result->uvw[1] = _volume_query_decode_uvw_component(packed_uvw, 10);
             out_result->uvw[2] = _volume_query_decode_uvw_component(packed_uvw, 20);
+            DvzSampledField* field = ctx->plan->field;
+            uint64_t voxel_id = 0;
+            if (
+                field != NULL &&
+                _volume_query_voxel_id(field, state, out_result->uvw, &voxel_id))
+            {
+                out_result->raw_id = voxel_id;
+                out_result->resolved_id = voxel_id;
+                out_result->voxel_id = voxel_id;
+                out_result->texel_id = voxel_id;
+            }
         }
         dvz_strlcpy(out_result->label, "scalar", sizeof(out_result->label));
         return true;

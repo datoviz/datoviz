@@ -1434,6 +1434,9 @@ int test_scene_volume_query_resolves_sample_uvw_profile(TstContext* suite, const
     AC(query.uvw[0], 0.5, 0.01);
     AC(query.uvw[1], 0.5, 0.01);
     AC(query.uvw[2], 0.5, 0.01);
+    AT(query.resolved_id == 7);
+    AT(query.voxel_id == 7);
+    AT(query.texel_id == 7);
     AT(!dvz_scene_poll_query(scene, &query));
 
     dvz_drp2_runtime_destroy(runtime);
