@@ -729,6 +729,13 @@ static bool _labels_query_build(
     out_plan->target_height = 1;
     out_plan->format = VK_FORMAT_R32_UINT;
     out_plan->byte_size = sizeof(uint32_t);
+    out_plan->schema = (DvzSceneQuerySchema){
+        .fields = DVZ_SCENE_QUERY_SCHEMA_FIELD_LABEL_ID | DVZ_SCENE_QUERY_SCHEMA_FIELD_UVW,
+        .value_kind = DVZ_QUERY_VALUE_CATEGORY,
+        .profile = ctx->profile,
+        .format = out_plan->format,
+        .byte_size = out_plan->byte_size,
+    };
     return true;
 }
 

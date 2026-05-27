@@ -452,6 +452,13 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
         out_plan->target_height = 1;
         out_plan->format = 0;
         out_plan->byte_size = 4;
+        out_plan->schema = (DvzSceneQuerySchema){
+            .fields = DVZ_SCENE_QUERY_SCHEMA_FIELD_DISPLAY_RGBA,
+            .value_kind = DVZ_QUERY_VALUE_VEC4,
+            .profile = ctx->profile,
+            .format = out_plan->format,
+            .byte_size = out_plan->byte_size,
+        };
         return true;
     }
 
@@ -538,6 +545,13 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
     out_plan->target_height = target_height;
     out_plan->format = VK_FORMAT_R32_UINT;
     out_plan->byte_size = sizeof(uint32_t);
+    out_plan->schema = (DvzSceneQuerySchema){
+        .fields = DVZ_SCENE_QUERY_SCHEMA_FIELD_VISUAL_ID | DVZ_SCENE_QUERY_SCHEMA_FIELD_ITEM_ID,
+        .value_kind = DVZ_QUERY_VALUE_NONE,
+        .profile = ctx->profile,
+        .format = out_plan->format,
+        .byte_size = out_plan->byte_size,
+    };
     return true;
 }
 

@@ -443,6 +443,16 @@ static bool _volume_query_build_sample(
     out_plan->target_height = 1;
     out_plan->format = query_format;
     out_plan->byte_size = query_byte_size;
+    out_plan->schema = (DvzSceneQuerySchema){
+        .fields = DVZ_SCENE_QUERY_SCHEMA_FIELD_SAMPLE_VALUE |
+                  (rg32_profile ? (DVZ_SCENE_QUERY_SCHEMA_FIELD_UVW |
+                                   DVZ_SCENE_QUERY_SCHEMA_FIELD_VOXEL_COORD)
+                                : 0),
+        .value_kind = DVZ_QUERY_VALUE_SCALAR,
+        .profile = ctx->profile,
+        .format = out_plan->format,
+        .byte_size = out_plan->byte_size,
+    };
     return true;
 }
 
@@ -595,6 +605,13 @@ static bool _volume_query_build(
     out_plan->target_height = target_height;
     out_plan->format = VK_FORMAT_R32_UINT;
     out_plan->byte_size = sizeof(uint32_t);
+    out_plan->schema = (DvzSceneQuerySchema){
+        .fields = DVZ_SCENE_QUERY_SCHEMA_FIELD_VISUAL_ID | DVZ_SCENE_QUERY_SCHEMA_FIELD_ITEM_ID,
+        .value_kind = DVZ_QUERY_VALUE_NONE,
+        .profile = ctx->profile,
+        .format = out_plan->format,
+        .byte_size = out_plan->byte_size,
+    };
     return true;
 }
 

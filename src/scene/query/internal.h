@@ -40,6 +40,7 @@ typedef struct DvzSceneQueryBuildContext DvzSceneQueryBuildContext;
 typedef struct DvzSceneQueryDecodeContext DvzSceneQueryDecodeContext;
 typedef struct DvzSceneQueryReadoutContext DvzSceneQueryReadoutContext;
 typedef struct DvzSceneQueryPlan DvzSceneQueryPlan;
+typedef struct DvzSceneQuerySchema DvzSceneQuerySchema;
 
 typedef bool (*DvzSceneQueryEligible)(
     const DvzPanel* panel, const DvzVisual* visual, const DvzQueryRequest* request);
@@ -57,8 +58,35 @@ typedef bool (*DvzSceneQueryReadout)(
 
 
 /*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+typedef enum
+{
+    DVZ_SCENE_QUERY_SCHEMA_FIELD_NONE         = 0,
+    DVZ_SCENE_QUERY_SCHEMA_FIELD_VISUAL_ID    = 1u << 0,
+    DVZ_SCENE_QUERY_SCHEMA_FIELD_ITEM_ID      = 1u << 1,
+    DVZ_SCENE_QUERY_SCHEMA_FIELD_SAMPLE_VALUE = 1u << 2,
+    DVZ_SCENE_QUERY_SCHEMA_FIELD_LABEL_ID     = 1u << 3,
+    DVZ_SCENE_QUERY_SCHEMA_FIELD_UVW          = 1u << 4,
+    DVZ_SCENE_QUERY_SCHEMA_FIELD_VOXEL_COORD  = 1u << 5,
+    DVZ_SCENE_QUERY_SCHEMA_FIELD_DISPLAY_RGBA = 1u << 6,
+} DvzSceneQuerySchemaField;
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzSceneQuerySchema
+{
+    uint32_t fields;
+    DvzQueryValueKind value_kind;
+    DvzQueryProfile profile;
+    uint32_t format;
+    uint32_t byte_size;
+};
 
 struct DvzSceneQueryBuildContext
 {
@@ -81,6 +109,7 @@ struct DvzSceneQueryPlan
     uint32_t target_height;
     uint32_t format;
     uint32_t byte_size;
+    DvzSceneQuerySchema schema;
     double uvw[3];
     bool mark_image_query_static_uploaded;
     DvzVisual* image_query_visual;
