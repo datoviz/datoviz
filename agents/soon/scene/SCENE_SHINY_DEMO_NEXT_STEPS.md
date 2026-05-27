@@ -44,6 +44,8 @@ Several earlier-looking gaps are now mostly implemented:
 
 ### Retained Textured Mesh
 
+Use [`SCENE_TEXTURED_MESH_PLAN.md`](SCENE_TEXTURED_MESH_PLAN.md) as the implementation handoff.
+
 The first slice should stay deliberately narrow: a mesh resource with `texcoords`, one 2D RGBA
 sampled texture or field bound as mesh material input, `color_mode = texture`, linear/nearest
 sampler defaults, and composition with the current lighting/material path. It should prove
