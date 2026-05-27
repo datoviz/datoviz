@@ -633,6 +633,9 @@ Codex may and should run analysis tools when they are available and relevant to 
 - **Active scene/DRP2 stack (`scene`, `drp2`):** prioritize a small, tested vertical slice over broad API
   growth. Scene should emit frame plans and DRP2 streams; the native runtime should execute through
   `vklite` and borrowed canvas frames without scene owning swapchains, command-buffer lifecycle, or sinks.
+  When adding scene visuals, isolate family-specific behavior behind visual descriptor/lowering helpers;
+  generic render-emission, visual descriptor, and pipeline plumbing must consume normalized facts instead
+  of adding concrete-family checks such as `if (splat)`.
 - **Cross-module helpers:** if multiple modules need the same low-level utility, move it to `src/common`
   instead of duplicating it.
 - **Scaffolding modules (`color`, `wasm`, text/gui, and broader renderer/client layers):** keep untouched
@@ -703,6 +706,17 @@ When generating or editing code:
    * Avoid global toggles for tests/fault injection; wire controls through the object under test.
    * Reset test-control flags in fixture lifecycle helpers to avoid cross-test leakage.
 
+11. **Scene visuals must not leak family checks into generic pipeline code.**
+
+   * New visual families must express shader keys, vertex layouts, topology, draw counts, instance policy,
+     bind-group needs, pass capabilities, and draw-packet requirements through visual-family descriptors
+     or lowering helpers.
+   * Do not add `if (is_<family>)`, `if (<family>)`, or
+     `visual_type == DVZ_VISUAL_TYPE_<FAMILY>` branches to generic visual, render-emission, or pipeline
+     plumbing files.
+   * If a family needs behavior that the generic path cannot express, first extend the normalized
+     descriptor/lowering interface and add focused tests for that reusable concept.
+
 ---
 
 ## ✅ **Checklist for Codex**
@@ -715,6 +729,8 @@ Before submitting a PR or automated refactor:
 * [ ] `external/` unchanged unless explicitly requested in the task
 * [ ] Test added under `src/<module>/tests/`
 * [ ] Scene visual/shader changes follow `spec/scene/implementation/VISUAL_SHADER_REFACTOR.md`
+* [ ] New scene visual behavior is isolated behind descriptor/lowering helpers, with no concrete-family
+      checks added to generic visual/render/pipeline files
 * [ ] Scene shader ABI changes pass `just shader-abi-check`
 * [ ] Builds with `cmake -B build && cmake --build build`
 * [ ] Relevant validation passes (`just test` and/or the narrowest relevant `dvztest_*` target)

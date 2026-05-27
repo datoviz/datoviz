@@ -80,6 +80,30 @@ These responsibilities should stay under `scene` unless a concrete non-scene pro
 7. App-facing scene hosting and offscreen/window presentation behavior.
 
 
+## Visual Family Boundary Rule
+
+Visual-family-specific behavior must be isolated behind scene-owned visual descriptors, lowering
+descriptors, shader descriptors, pass-capability categories, and draw-packet helpers. Generic scene
+pipeline files should consume normalized facts, not discover or special-case concrete families.
+
+When adding or changing a visual family:
+
+1. put retained API, attribute validation, defaults, metadata emission, and bounds logic in the
+   visual-family layer;
+2. put shader names, vertex layouts, topology, draw counts, instance policy, bind-group needs, and
+   pass capabilities behind descriptor/lowering helpers;
+3. update generic render emission only to consume a new normalized descriptor field or category when
+   the concept is reusable across families;
+4. do not add concrete-family checks such as `if (splat)`, `visual_type == ...`, or family-specific
+   buffer reshaping to generic visual, render-emission, or pipeline plumbing files;
+5. if a new family appears to require such a branch, first extend the descriptor/lowering interface
+   and add regression coverage proving another family can use the same path.
+
+Existing family-specific branches in generic scene pipeline code are refactor debt. Stage 2 must
+remove them by routing point, pixel, marker, primitive, mesh, image, labels, sphere, volume, path,
+segment, and splat behavior through normalized descriptors rather than ad hoc family detection.
+
+
 ## Target Module Candidates
 
 ### `controller`
@@ -231,6 +255,11 @@ Recommended internal grouping:
 This grouping may be implemented as subdirectories or as filename prefixes. Prefer subdirectories
 only when CMake, includes, and test ownership become clearer; avoid churn that only changes paths.
 
+The first internal cleanup target is the visual-family and pipeline boundary. Move concrete-family
+decisions out of generic render emission and into family descriptor/lowering code before doing broad
+path churn. A directory split that leaves `runtime_render_emit.c`, generic visual descriptor code, or
+generic pipeline plumbing full of concrete-family branches is incomplete.
+
 
 ## Public Header Strategy
 
@@ -306,10 +335,25 @@ Goal: reduce the flat `src/scene` list without changing public behavior.
 
 Preferred order:
 
-1. group tests by domain if not already clear;
-2. group internal headers by ownership;
-3. move implementation files into domain subdirectories only when include paths stay readable;
-4. preserve current comments and update them when paths or ownership change.
+1. normalize visual-family lowering so generic pipeline code consumes descriptors instead of
+   concrete-family branches;
+2. remove existing family-specific checks from generic visual/render-emission paths, including splat
+   checks introduced during experimental visual work;
+3. group tests by domain if not already clear;
+4. group internal headers by ownership;
+5. move implementation files into domain subdirectories only when include paths stay readable;
+6. preserve current comments and update them when paths or ownership change.
+
+Required end state:
+
+1. adding a visual family does not require adding `if (is_<family>)`, `if (<family>)`, or
+   `visual_type == DVZ_VISUAL_TYPE_<FAMILY>` checks to generic visual, render-emission, or pipeline
+   plumbing files;
+2. family-specific vertex layouts, shader keys, draw counts, topology, bind-group needs, and
+   pass-capability choices are expressed through descriptor/lowering helpers;
+3. generic scene pipeline code branches on reusable categories or descriptor fields only;
+4. focused scene tests cover at least one retained family and one nontrivial descriptor/lowering path
+   so the boundary fails visibly if concrete-family logic leaks back into generic code.
 
 This stage should not introduce new public modules.
 
@@ -356,6 +400,7 @@ scene visual constructors to `geom`.
 | `FramePlan` | Keep in `scene` for now. | It is tightly coupled to retained visual semantics and DRP2 scene emission. |
 | Query/selection | Keep in `scene`. | Query routing, hover, selection, and result freshness are panel/scene semantics. |
 | Visual families | Keep in `scene`. | They own retained object lifetime and frame-plan participation, even when they use lower-level primitives. |
+| Visual-family lowering | Generic pipeline code must consume normalized descriptors, not concrete-family checks. | New visual families should extend family descriptor/lowering helpers; adding `if (splat)`-style branches to generic visual/render files scales poorly and hides family contracts. |
 
 
 ## Open Questions
