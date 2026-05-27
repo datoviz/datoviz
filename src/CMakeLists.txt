@@ -224,6 +224,7 @@ set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     DVZ_HAS_FREETYPE=${DVZ_HAS_FREETYPE}
     DVZ_HAS_MSDF_ATLAS=${DVZ_HAS_MSDF_ATLAS}
     DVZ_HAS_DRP2=$<IF:$<BOOL:${DVZ_BUILD_DRP2}>,1,0>
+    DVZ_HAS_CONTROLLER=$<IF:$<BOOL:${DVZ_BUILD_CONTROLLER}>,1,0>
     DVZ_HAS_SCENE=$<IF:$<BOOL:${DVZ_BUILD_SCENE}>,1,0>
     DVZ_HAS_APP=$<IF:$<BOOL:${DVZ_BUILD_APP}>,1,0>
     DVZ_HAS_GUI=$<IF:$<BOOL:${DVZ_BUILD_GUI}>,1,0>
@@ -293,6 +294,11 @@ set(DVZ_VK_COMPONENTS
     datoviz_vklite
 )
 
+set(DVZ_CONTROLLER_COMPONENTS
+    datoviz_input
+    datoviz_controller
+)
+
 set(DVZ_CANVAS_COMPONENTS
     datoviz_input
     datoviz_window
@@ -307,6 +313,7 @@ set(DVZ_DRP2_COMPONENTS
 
 set(DVZ_SCENE_COMPONENTS
     datoviz_geom
+    datoviz_controller
     datoviz_scene
 )
 
@@ -323,6 +330,10 @@ if(NOT DVZ_BUILD_CORE AND (DVZ_BUILD_VK OR DVZ_BUILD_CANVAS))
     message(FATAL_ERROR "DVZ_BUILD_VK/DVZ_BUILD_CANVAS require DVZ_BUILD_CORE=ON.")
 endif()
 
+if(NOT DVZ_BUILD_CORE AND DVZ_BUILD_CONTROLLER)
+    message(FATAL_ERROR "DVZ_BUILD_CONTROLLER requires DVZ_BUILD_CORE=ON.")
+endif()
+
 if(NOT DVZ_BUILD_VK AND DVZ_BUILD_CANVAS)
     message(FATAL_ERROR "DVZ_BUILD_CANVAS requires DVZ_BUILD_VK=ON.")
 endif()
@@ -337,6 +348,10 @@ endif()
 
 if(DVZ_BUILD_SCENE AND NOT DVZ_BUILD_DRP2)
     message(FATAL_ERROR "DVZ_BUILD_SCENE requires DVZ_BUILD_DRP2=ON.")
+endif()
+
+if(DVZ_BUILD_SCENE AND NOT DVZ_BUILD_CONTROLLER)
+    message(FATAL_ERROR "DVZ_BUILD_SCENE requires DVZ_BUILD_CONTROLLER=ON.")
 endif()
 
 if(DVZ_BUILD_APP AND NOT DVZ_BUILD_SCENE)
@@ -397,8 +412,15 @@ if(DVZ_BUILD_CORE)
     add_subdirectory(thread)
 endif()
 
-if(DVZ_BUILD_CANVAS)
+if(DVZ_BUILD_CANVAS OR DVZ_BUILD_CONTROLLER)
     add_subdirectory(input)
+endif()
+
+if(DVZ_BUILD_CONTROLLER)
+    add_subdirectory(controller)
+endif()
+
+if(DVZ_BUILD_CANVAS)
     add_subdirectory(window)
     add_subdirectory(canvas)
     add_subdirectory(stream)
@@ -434,6 +456,9 @@ set(DVZ_COMPONENTS)
 
 if(DVZ_BUILD_CORE)
     list(APPEND DVZ_COMPONENTS ${DVZ_CORE_COMPONENTS})
+endif()
+if(DVZ_BUILD_CONTROLLER)
+    list(APPEND DVZ_COMPONENTS ${DVZ_CONTROLLER_COMPONENTS})
 endif()
 if(DVZ_BUILD_VK)
     list(APPEND DVZ_COMPONENTS ${DVZ_VK_COMPONENTS})
@@ -748,6 +773,7 @@ if(DVZ_SANITIZER_FLAGS)
         datoviz_math
         datoviz_thread
         datoviz_input
+        datoviz_controller
         datoviz_window
         datoviz_canvas
         datoviz_stream

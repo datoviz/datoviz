@@ -34,6 +34,7 @@ function(dvz_add_example group name source)
         datoviz_math
         datoviz_thread
         datoviz_input
+        datoviz_controller
         datoviz_window
         datoviz_canvas
         datoviz_stream

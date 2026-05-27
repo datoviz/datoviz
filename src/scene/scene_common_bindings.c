@@ -26,7 +26,7 @@
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/math/_cglm.h"
-#include "datoviz/scene/panzoom.h"
+#include "datoviz/controller/panzoom.h"
 
 
 

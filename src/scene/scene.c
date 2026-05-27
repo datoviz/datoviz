@@ -3007,22 +3007,6 @@ static DvzController* _scene_controller(DvzScene* scene, DvzControllerType type)
 
 
 /**
- * Return a default panzoom descriptor.
- *
- * @return the panzoom descriptor
- */
-DvzPanzoomDesc dvz_panzoom_desc(void)
-{
-    return (DvzPanzoomDesc){
-        .width = 800.0f,
-        .height = 600.0f,
-        .flags = 0,
-    };
-}
-
-
-
-/**
  * Create a scene-owned panzoom controller.
  *
  * @param scene the scene
@@ -3039,7 +3023,7 @@ DvzController* dvz_panzoom(DvzScene* scene, const DvzPanzoomDesc* desc)
     DvzController* controller = _scene_controller(scene, DVZ_CONTROLLER_TYPE_PANZOOM);
     if (controller == NULL)
         return NULL;
-    controller->panzoom = _dvz_panzoom(desc->width, desc->height, desc->flags);
+    controller->panzoom = dvz_panzoom_create(desc);
     if (controller->panzoom == NULL)
     {
         _scene_controller_destroy(controller);
@@ -3047,22 +3031,6 @@ DvzController* dvz_panzoom(DvzScene* scene, const DvzPanzoomDesc* desc)
         return NULL;
     }
     return controller;
-}
-
-
-
-/**
- * Return a default arcball descriptor.
- *
- * @return the arcball descriptor
- */
-DvzArcballDesc dvz_arcball_desc(void)
-{
-    return (DvzArcballDesc){
-        .width = 800.0f,
-        .height = 600.0f,
-        .flags = 0,
-    };
 }
 
 
@@ -3084,7 +3052,7 @@ DvzController* dvz_arcball(DvzScene* scene, const DvzArcballDesc* desc)
     DvzController* controller = _scene_controller(scene, DVZ_CONTROLLER_TYPE_ARCBALL);
     if (controller == NULL)
         return NULL;
-    controller->arcball = _dvz_arcball(desc->width, desc->height, desc->flags);
+    controller->arcball = dvz_arcball_create(desc);
     if (controller->arcball == NULL)
     {
         _scene_controller_destroy(controller);
@@ -3109,7 +3077,7 @@ DvzController* dvz_fly(DvzScene* scene, const DvzFlyDesc* desc)
     DvzController* controller = _scene_controller(scene, DVZ_CONTROLLER_TYPE_FLY);
     if (controller == NULL)
         return NULL;
-    controller->fly = _dvz_fly(desc);
+    controller->fly = dvz_fly_create(desc);
     if (controller->fly == NULL)
     {
         _scene_controller_destroy(controller);
@@ -3134,7 +3102,7 @@ DvzController* dvz_turntable(DvzScene* scene, const DvzTurntableDesc* desc)
     DvzController* controller = _scene_controller(scene, DVZ_CONTROLLER_TYPE_TURNTABLE);
     if (controller == NULL)
         return NULL;
-    controller->turntable = _dvz_turntable(desc);
+    controller->turntable = dvz_turntable_create(desc);
     if (controller->turntable == NULL)
     {
         _scene_controller_destroy(controller);

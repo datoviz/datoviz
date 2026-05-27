@@ -15,6 +15,7 @@ target_include_directories(datoviz_app
 
 target_link_libraries(datoviz_app
     PUBLIC
+    datoviz_controller
     datoviz_scene
     datoviz_drp2
     datoviz_canvas

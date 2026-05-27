@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Scene panzoom controller                                                                     */
+/*  Controller internals                                                                         */
 /*************************************************************************************************/
 
 #pragma once
@@ -16,8 +16,11 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "datoviz/controller/arcball.h"
+#include "datoviz/controller/camera.h"
+#include "datoviz/controller/fly.h"
 #include "datoviz/controller/panzoom.h"
-#include "datoviz/scene/types.h"
+#include "datoviz/controller/turntable.h"
 
 
 
@@ -27,14 +30,19 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-/**
- * Create a scene-owned panzoom controller.
- *
- * @param scene the scene
- * @param desc panzoom descriptor, or NULL for defaults
- * @return the scene-owned controller handle
- */
-DVZ_EXPORT DvzController* dvz_panzoom(DvzScene* scene, const DvzPanzoomDesc* desc);
+DvzCamera* _dvz_camera(const DvzCameraDesc* desc);
+
+DvzPanzoom* _dvz_panzoom(float width, float height, int flags);
+
+DvzArcball* _dvz_arcball(float width, float height, int flags);
+
+void _dvz_arcball_view(DvzArcball* arcball, mat4 view);
+
+void _dvz_arcball_clear_view(DvzArcball* arcball);
+
+DvzFly* _dvz_fly(const DvzFlyDesc* desc);
+
+DvzTurntable* _dvz_turntable(const DvzTurntableDesc* desc);
 
 
 

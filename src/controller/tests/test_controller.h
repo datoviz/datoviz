@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Scene panzoom controller                                                                     */
+/*  Testing controller                                                                           */
 /*************************************************************************************************/
 
 #pragma once
@@ -16,26 +16,24 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/controller/panzoom.h"
-#include "datoviz/scene/types.h"
+#include "testing.h"
 
 
-
-EXTERN_C_ON
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Tests                                                                                        */
 /*************************************************************************************************/
 
-/**
- * Create a scene-owned panzoom controller.
- *
- * @param scene the scene
- * @param desc panzoom descriptor, or NULL for defaults
- * @return the scene-owned controller handle
- */
-DVZ_EXPORT DvzController* dvz_panzoom(DvzScene* scene, const DvzPanzoomDesc* desc);
+int test_controller_panzoom_create(TstContext* suite, const TstCase* item);
+
+int test_controller_arcball_create(TstContext* suite, const TstCase* item);
+
+int test_controller_camera_create(TstContext* suite, const TstCase* item);
+
+int test_controller_fly_create(TstContext* suite, const TstCase* item);
+
+int test_controller_turntable_create(TstContext* suite, const TstCase* item);
 
 
 
-EXTERN_C_OFF
+int test_controller(TstSuite* suite);

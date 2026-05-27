@@ -19,9 +19,9 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "_scene.h"
+#include "_controller.h"
 #include "datoviz/math/_cglm.h"
-#include "datoviz/scene/camera.h"
+#include "datoviz/controller/camera.h"
 
 
 
@@ -148,7 +148,7 @@ DvzCameraDesc dvz_camera_desc(void)
  * @param desc the camera descriptor
  * @return the camera, or NULL on allocation failure
  */
-DvzCamera* _dvz_camera(const DvzCameraDesc* desc)
+DvzCamera* dvz_camera_create(const DvzCameraDesc* desc)
 {
     DvzCameraDesc default_desc = dvz_camera_desc();
     if (desc == NULL)
@@ -160,6 +160,18 @@ DvzCamera* _dvz_camera(const DvzCameraDesc* desc)
     dvz_camera_resize(camera, DVZ_CAMERA_DEFAULT_WIDTH, DVZ_CAMERA_DEFAULT_HEIGHT);
     _camera_apply_desc(camera, desc);
     return camera;
+}
+
+
+/**
+ * Create a camera from a descriptor.
+ *
+ * @param desc the camera descriptor
+ * @return the camera, or NULL on allocation failure
+ */
+DvzCamera* _dvz_camera(const DvzCameraDesc* desc)
+{
+    return dvz_camera_create(desc);
 }
 
 

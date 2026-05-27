@@ -20,14 +20,14 @@
 #include "datoviz/geom/types.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene/animation.h"
-#include "datoviz/scene/arcball.h"
-#include "datoviz/scene/camera.h"
+#include "datoviz/controller/arcball.h"
+#include "datoviz/controller/camera.h"
 #include "datoviz/scene/enums.h"
-#include "datoviz/scene/fly.h"
+#include "datoviz/controller/fly.h"
 #include "datoviz/scene/frame_plan.h"
 #include "datoviz/scene/overlay.h"
-#include "datoviz/scene/panzoom.h"
-#include "datoviz/scene/turntable.h"
+#include "datoviz/controller/panzoom.h"
+#include "datoviz/controller/turntable.h"
 #include "datoviz/scene/types.h"
 
 
@@ -624,6 +624,9 @@ struct DvzTextBlock
     DvzSampledField* image_field;
     uint32_t image_width;
     uint32_t image_height;
+    uint64_t image_raster_version;
+    DvzTextBlockImageDesc image_desc;
+    bool image_desc_valid;
     bool image_attached;
     bool valid;
 };

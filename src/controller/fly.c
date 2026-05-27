@@ -18,10 +18,10 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "_controllers.h"
+#include "_controller.h"
 #include "_log.h"
 #include "datoviz/math/_cglm.h"
-#include "datoviz/scene/fly.h"
+#include "datoviz/controller/fly.h"
 
 
 
@@ -458,6 +458,18 @@ DvzFly* _dvz_fly(const DvzFlyDesc* desc)
             fly, (vec3){desc->position[0], desc->position[1], desc->position[2]},
             (vec3){desc->target[0], desc->target[1], desc->target[2]});
     return fly;
+}
+
+
+/**
+ * Create a standalone fly camera controller.
+ *
+ * @param desc fly descriptor, or NULL for defaults
+ * @return the fly controller, or NULL on allocation failure
+ */
+DvzFly* dvz_fly_create(const DvzFlyDesc* desc)
+{
+    return _dvz_fly(desc);
 }
 
 

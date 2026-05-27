@@ -51,6 +51,7 @@ target_include_directories(datoviz_gui
 
 target_link_libraries(datoviz_gui
     PUBLIC
+    datoviz_controller
     datoviz_scene
     datoviz_canvas
     datoviz_window

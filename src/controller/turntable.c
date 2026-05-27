@@ -18,9 +18,9 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "_controllers.h"
+#include "_controller.h"
 #include "datoviz/math/_cglm.h"
-#include "datoviz/scene/turntable.h"
+#include "datoviz/controller/turntable.h"
 
 
 
@@ -391,6 +391,18 @@ DvzTurntable* _dvz_turntable(const DvzTurntableDesc* desc)
         desc->max_distance > turntable->min_distance ? desc->max_distance : 100000.0f;
     dvz_turntable_reset(turntable);
     return turntable;
+}
+
+
+/**
+ * Create a standalone turntable controller.
+ *
+ * @param desc turntable descriptor, or NULL for defaults
+ * @return the turntable controller, or NULL on allocation failure
+ */
+DvzTurntable* dvz_turntable_create(const DvzTurntableDesc* desc)
+{
+    return _dvz_turntable(desc);
 }
 
 

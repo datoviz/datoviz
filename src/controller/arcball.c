@@ -18,10 +18,10 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "_controllers.h"
+#include "_controller.h"
 #include "_log.h"
 #include "datoviz/math/_cglm.h"
-#include "datoviz/scene/arcball.h"
+#include "datoviz/controller/arcball.h"
 
 
 
@@ -199,6 +199,22 @@ static void _arcball_input_callback(
 /*  Public API                                                                                   */
 /*************************************************************************************************/
 
+/**
+ * Return a default arcball descriptor.
+ *
+ * @return the arcball descriptor
+ */
+DvzArcballDesc dvz_arcball_desc(void)
+{
+    return (DvzArcballDesc){
+        .width = 800.0f,
+        .height = 600.0f,
+        .flags = 0,
+    };
+}
+
+
+
 DvzArcball* _dvz_arcball(float width, float height, int flags)
 {
     ASSERT(width > 0);
@@ -211,6 +227,21 @@ DvzArcball* _dvz_arcball(float width, float height, int flags)
     glm_mat4_identity(arcball->view);
     dvz_arcball_reset(arcball);
     return arcball;
+}
+
+
+/**
+ * Create a standalone arcball controller.
+ *
+ * @param desc arcball descriptor, or NULL for defaults
+ * @return the arcball controller, or NULL on allocation failure
+ */
+DvzArcball* dvz_arcball_create(const DvzArcballDesc* desc)
+{
+    DvzArcballDesc default_desc = dvz_arcball_desc();
+    if (desc == NULL)
+        desc = &default_desc;
+    return _dvz_arcball(desc->width, desc->height, desc->flags);
 }
 
 

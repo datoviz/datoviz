@@ -178,6 +178,7 @@ if(DVZ_VKLITE_TEST_SHADERS)
 endif()
 
 set(_dvz_has_core 0)
+set(_dvz_has_controller 0)
 set(_dvz_has_vk 0)
 set(_dvz_has_canvas 0)
 set(_dvz_has_drp2 0)
@@ -195,6 +196,10 @@ endif()
 
 if(TARGET datoviz_vk AND TARGET datoviz_vklite)
     set(_dvz_has_vk 1)
+endif()
+
+if(TARGET datoviz_controller)
+    set(_dvz_has_controller 1)
 endif()
 
 if(TARGET datoviz_input AND TARGET datoviz_window AND TARGET datoviz_canvas AND TARGET datoviz_stream AND TARGET datoviz_video)
@@ -216,6 +221,11 @@ endif()
 if(NOT _dvz_has_drp2)
     list(FILTER DVZ_MODULE_TEST_SOURCES EXCLUDE REGEX "/src/drp2/tests/")
     list(FILTER TEST_SOURCES EXCLUDE REGEX "/src/drp2/tests/")
+endif()
+
+if(NOT _dvz_has_controller)
+    list(FILTER DVZ_MODULE_TEST_SOURCES EXCLUDE REGEX "/src/controller/tests/")
+    list(FILTER TEST_SOURCES EXCLUDE REGEX "/src/controller/tests/")
 endif()
 
 if(NOT _dvz_has_scene)
@@ -243,6 +253,9 @@ list(FILTER DVZ_TEST_MATH_SOURCES INCLUDE REGEX "/src/math/tests/")
 
 set(DVZ_TEST_THREAD_SOURCES ${DVZ_MODULE_TEST_SOURCES})
 list(FILTER DVZ_TEST_THREAD_SOURCES INCLUDE REGEX "/src/thread/tests/")
+
+set(DVZ_TEST_CONTROLLER_SOURCES ${DVZ_MODULE_TEST_SOURCES})
+list(FILTER DVZ_TEST_CONTROLLER_SOURCES INCLUDE REGEX "/src/controller/tests/")
 
 set(DVZ_TEST_DRP2_SOURCES ${DVZ_MODULE_TEST_SOURCES})
 list(FILTER DVZ_TEST_DRP2_SOURCES INCLUDE REGEX "/src/drp2/tests/")
@@ -396,6 +409,19 @@ else()
     message(STATUS "Skipping dvztest_core: core target set is not enabled.")
 endif()
 
+if(_dvz_has_core AND _dvz_has_controller)
+    dvz_add_cpu_test_runner(
+        dvztest_controller
+        DVZ_TEST_CONTROLLER_SOURCES
+        datoviz_common
+        datoviz_math
+        datoviz_input
+        datoviz_controller
+    )
+else()
+    message(STATUS "Skipping dvztest_controller: controller target set is not enabled.")
+endif()
+
 if(_dvz_has_core AND _dvz_has_drp2)
     add_executable(dvztest_drp2
         ${DVZ_TEST_DRP2_SOURCES}
@@ -498,6 +524,7 @@ if(_dvz_has_core AND _dvz_has_drp2 AND _dvz_has_scene)
         datoviz_math
         datoviz_thread
         datoviz_input
+        datoviz_controller
         datoviz_window
         datoviz_canvas
         datoviz_stream
@@ -708,6 +735,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
             datoviz_math
             datoviz_thread
             datoviz_input
+            datoviz_controller
             datoviz_window
             datoviz_canvas
             datoviz_stream
@@ -810,6 +838,11 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         target_link_libraries(dvztest_integration PRIVATE datoviz_drp2)
     endif()
 
+    if(TARGET datoviz_controller)
+        target_link_libraries(dvztest PRIVATE datoviz_controller)
+        target_link_libraries(dvztest_integration PRIVATE datoviz_controller)
+    endif()
+
     if(TARGET datoviz_scene)
         target_link_libraries(dvztest PRIVATE datoviz_scene)
         target_link_libraries(dvztest_integration PRIVATE datoviz_scene)
@@ -869,6 +902,10 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
 
     if(TARGET datoviz_app)
         target_link_libraries(dvz_live_canvas PRIVATE datoviz_app)
+    endif()
+
+    if(TARGET datoviz_controller)
+        target_link_libraries(dvz_live_canvas PRIVATE datoviz_controller)
     endif()
 
     if(TARGET datoviz_gui)

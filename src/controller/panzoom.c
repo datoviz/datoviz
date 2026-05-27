@@ -19,10 +19,10 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "_controllers.h"
+#include "_controller.h"
 #include "_log.h"
 #include "datoviz/math/_cglm.h"
-#include "datoviz/scene/panzoom.h"
+#include "datoviz/controller/panzoom.h"
 
 
 
@@ -314,6 +314,22 @@ static void _panzoom_input_callback(
 /*  Public API                                                                                   */
 /*************************************************************************************************/
 
+/**
+ * Return a default panzoom descriptor.
+ *
+ * @return the panzoom descriptor
+ */
+DvzPanzoomDesc dvz_panzoom_desc(void)
+{
+    return (DvzPanzoomDesc){
+        .width = 800.0f,
+        .height = 600.0f,
+        .flags = 0,
+    };
+}
+
+
+
 DvzPanzoom* _dvz_panzoom(float width, float height, int flags)
 {
     ASSERT(width > 0);
@@ -328,6 +344,21 @@ DvzPanzoom* _dvz_panzoom(float width, float height, int flags)
     pz->flags = flags;
     dvz_panzoom_reset(pz);
     return pz;
+}
+
+
+/**
+ * Create a standalone panzoom controller.
+ *
+ * @param desc panzoom descriptor, or NULL for defaults
+ * @return the panzoom controller, or NULL on allocation failure
+ */
+DvzPanzoom* dvz_panzoom_create(const DvzPanzoomDesc* desc)
+{
+    DvzPanzoomDesc default_desc = dvz_panzoom_desc();
+    if (desc == NULL)
+        desc = &default_desc;
+    return _dvz_panzoom(desc->width, desc->height, desc->flags);
 }
 
 

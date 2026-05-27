@@ -5,10 +5,8 @@
  */
 
 /*************************************************************************************************/
-/*  Scene panzoom controller                                                                     */
+/*  Datoviz controller test runner                                                               */
 /*************************************************************************************************/
-
-#pragma once
 
 
 
@@ -16,26 +14,34 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/controller/panzoom.h"
-#include "datoviz/scene/types.h"
+#include "_log.h"
+#include "../../src/controller/tests/test_controller.h"
+#include "datoviz_testing.h"
+#include "testing.h"
 
 
-
-EXTERN_C_ON
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Entry-point                                                                                  */
 /*************************************************************************************************/
 
 /**
- * Create a scene-owned panzoom controller.
+ * Run controller-module tests.
  *
- * @param scene the scene
- * @param desc panzoom descriptor, or NULL for defaults
- * @return the scene-owned controller handle
+ * @param argc command-line argument count
+ * @param argv command-line arguments
+ * @return process exit code
  */
-DVZ_EXPORT DvzController* dvz_panzoom(DvzScene* scene, const DvzPanzoomDesc* desc);
+int main(int argc, char** argv)
+{
+    log_set_level_env();
 
+    TstSuite suite = tst_suite();
+    dvz_testing_install_log_adapter(&suite);
 
+    test_controller(&suite);
 
-EXTERN_C_OFF
+    int res = tst_suite_run(&suite, argc, argv);
+    tst_suite_destroy(&suite);
+    return res;
+}

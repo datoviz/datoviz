@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Public API                                                                                   */
+/*  Controller                                                                                   */
 /*************************************************************************************************/
 
 #pragma once
@@ -16,17 +16,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "common.h"
-#include "controller.h"
-#include "drp2.h"
-#include "dvzmath.h"
-#include "font.h"
-#include "geom.h"
-#include "gui.h"
-#include "input.h"
-#include "stream.h"
-#include "scene.h"
-#include "video.h"
-#include "window.h"
-#include "vk.h"
-#include "vklite.h"
+#include "controller/arcball.h"
+#include "controller/camera.h"
+#include "controller/fly.h"
+#include "controller/panzoom.h"
+#include "controller/turntable.h"
