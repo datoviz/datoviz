@@ -764,6 +764,10 @@ int test_scene_query_volume_sample_is_explicitly_unsupported(
 
 int test_scene_query_skips_fixed_visuals(TstContext* suite, const TstCase* item);
 
+int test_scene_query_rejects_missing_query_profile(TstContext* suite, const TstCase* item);
+
+int test_scene_query_rejects_family_unsupported_profile(TstContext* suite, const TstCase* item);
+
 int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* item);
 
 int test_scene_image_sample_query_readback_failure(TstContext* suite, const TstCase* item);
