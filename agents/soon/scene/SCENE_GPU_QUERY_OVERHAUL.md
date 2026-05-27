@@ -57,7 +57,7 @@ Committed implementation slices:
 1. `87c91a15a Add scene query migration guardrails`
    - source guard for generic query purity,
    - CMake inclusion for `src/scene/query/` and `src/scene/visuals/*/`,
-   - migration marker in `request_execute.c`.
+   - initial migration marker, later removed with the legacy request executor.
 2. `108fda50d Add scene query capability surface`
    - public query profiles, statuses, value kinds, request/result structs,
    - query/readback capability fields and app-side Vulkan population.
@@ -196,8 +196,7 @@ Status: landed in `87c91a15a`.
 Tasks:
 
 1. Add or update source checks that can later forbid visual-family internals in `src/scene/query/`.
-2. Add a temporary TODO marker in `request_execute.c` pointing to the new plan if that file remains
-   during migration.
+2. Remove temporary migration markers once the legacy request executor is gone.
 3. Confirm `git status --short` is clean or identify unrelated user changes before editing.
 4. Keep docs and tests updated at every stage.
 
@@ -289,7 +288,7 @@ Primary ownership:
 
 1. `src/scene/query/`
 2. private query headers
-3. `src/scene/request_queue.c` or successor queue files
+3. native query queue/result files
 4. public/private interaction request structs
 5. result queues and freshness tests
 
@@ -335,7 +334,7 @@ Primary ownership:
 
 Tasks:
 
-1. Move existing item-id behavior out of `request_execute.c`.
+1. Keep item-id behavior in visual-family query implementations.
 2. Switch from RGB24 item-id encoding to selected query profile payloads.
 3. Avoid query-time CPU geometry generation as the long-term path. Where the first migration must
    reuse existing CPU-expanded caches, mark it temporary and move toward rendering GPU caches.
@@ -519,7 +518,6 @@ The best next code slice is cleanup around non-final family readout/format detai
    explicit later profiles.
 6. **Generic file pollution:** enforce source lint early, or visual-specific logic will creep back into
    query core.
-7. **Long-file churn:** `request_execute.c` is large; split by stages and keep behavior tests running.
 
 
 ## Done Criteria

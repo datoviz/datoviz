@@ -137,7 +137,7 @@ have been removed from the public contract. They should not return as a parallel
 
 ## Result Shape
 
-`DvzQueryResult` should subsume current `DvzPickResult` and `DvzProbeResult` fields. Reserve space for:
+`DvzQueryResult` subsumes the former `DvzPickResult` and `DvzProbeResult` fields. Reserve space for:
 
 1. request id and freshness serial,
 2. status and hit/miss flag,
@@ -474,8 +474,8 @@ Tests should also cover:
 
 Current code implications recorded on 2026-05-27:
 
-1. `src/scene/request_execute.c` still owns old public pick/probe queue consumption, status
-   conversion, and the intentional legacy CPU volume-slice probe path.
+1. `src/scene/request_execute.c` and `src/scene/request_queue.c` have been removed; public
+   pick/probe queue consumption no longer exists.
 2. FramePlan copy nodes now carry query readback metadata, but multi-output query attachments and
    broader copy-origin/depth coverage remain incomplete.
 3. Current simple-family identity encoding uses the `r32uint` baseline.
