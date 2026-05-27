@@ -38,9 +38,14 @@ Implemented first-slice behavior:
 7. bounds, material parameter refresh, GLSL frame-plan tests, and native item query coverage;
 8. a C smoke example at `examples/c/visuals/vector.c`.
 
-Deferred behavior remains: dedicated vector shaders, scalar/magnitude styling, per-item head
-dimensions, authored id payloads, WebGPU parity for the vector-specific API surface, and richer
-query payloads beyond the logical visual family and item id.
+The active arrowhead rendering is cap-based: vector/arrow uses the segment/path triangular cap
+vocabulary, and the visible head size is derived from `stroke_width`. Thin strokes therefore produce
+small, sometimes barely visible heads. Independent head length/width, head-size space, and richer
+head geometry are not implemented yet.
+
+Deferred behavior remains: dedicated vector shaders, scalar/magnitude styling, independent
+visual-wide or per-item head dimensions, authored id payloads, WebGPU parity for the vector-specific
+API surface, and richer query payloads beyond the logical visual family and item id.
 
 Relevant existing contracts:
 
@@ -160,7 +165,9 @@ magnitude upload.
 
 Standard stroke width attribute. Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 
-This controls the shaft width. It does not by itself define arrowhead size.
+This controls the shaft width. In the active first slice, arrowheads are endpoint caps, so their
+visible size is also tied to this width. This is a temporary implementation constraint, not the
+intended final vector contract.
 
 
 ### `head_length`
@@ -175,6 +182,9 @@ This controls the shaft width. It does not by itself define arrowhead size.
 
 Length of the arrowhead measured along the vector direction.
 
+Current implementation status: deferred. The active cap-based arrowheads do not expose independent
+head length.
+
 
 ### `head_width`
 
@@ -187,6 +197,9 @@ Length of the arrowhead measured along the vector direction.
 | Optional | yes |
 
 Width of the arrowhead measured perpendicular to the vector direction.
+
+Current implementation status: deferred. The active cap-based arrowheads do not expose independent
+head width.
 
 
 ### `magnitude`
@@ -342,7 +355,7 @@ This matters for geographic wind fields, deformed meshes, and anisotropic scient
 
 ## Lowering Strategy
 
-The expected first 2D lowering is:
+The desired 2D lowering is:
 
 1. derive shaft endpoint pairs from `position`, `vector`, `scale`, and `anchor`;
 2. render shafts through the segment/path stroke backend;
@@ -359,6 +372,11 @@ Open implementation choice:
 
 The proposal prefers code-SDF or analytic head rendering for the first 2D slice, and reserves mesh
 arrowheads for true 3D arrows.
+
+Active implementation note: the landed first slice does not yet use marker-style arrow glyphs or
+generated head triangles. Straight vectors and curved arrows currently use the existing segment/path
+cap shaders with triangular end caps. This is enough to preserve vector semantics and query identity,
+but it cannot make arrowheads visually independent from shaft width.
 
 
 ## Picking And Selection
@@ -399,29 +417,33 @@ The smallest useful implementation slice should support:
 
 1. `dvz_vector()` retained visual construction;
 2. dense `position`, `vector`, `color`, and `stroke_width` data;
-3. visual-wide `scale`, `anchor = tail`, `head_placement = end`, and `head_style = filled`;
-4. screen-space `stroke_width` and `head_size_space`;
-5. 2D panel lowering to existing stroke plus head rendering;
-6. GPU picking that maps shaft and head hits to the same source item;
-7. one offscreen example with a sparse synthetic vector field.
+3. curved mode using `position`, `color`, `stroke_width`, and `dvz_vector_set_subpaths()`;
+4. visual-wide `scale`, `anchor = tail`, and endpoint cap style;
+5. screen-space `stroke_width`;
+6. 2D panel lowering to existing stroke pipelines with cap-based arrowheads;
+7. GPU picking that maps shaft/cap hits to the same source item;
+8. one example with sparse straight vectors and curved arrows.
 
-Everything else can follow after this slice is validated.
+Everything else can follow after this slice is validated. In particular, `head_length`,
+`head_width`, `head_size_space`, and head rendering that remains visible for thin shafts are
+post-first-slice work.
 
 
 ## Deferred Capabilities
 
 1. screen-space vector length mode;
 2. per-item head style;
-3. start and double-headed arrows;
-4. vector gradients from tail color to head color;
-5. dashes along vector shafts;
-6. 3D mesh arrows with lighting, depth, materials, and SSAO/G-buffer participation;
-7. curved arrows over `path`;
-8. vector-field sampled resources and GPU-side resampling;
-9. adaptive thinning, density control, and level-of-detail;
-10. streamline, pathline, and tube generation;
-11. vector probe payloads tied to sampled fields;
-12. exact head-shape picking for all head styles.
+3. independent visual-wide and per-item head length/width;
+4. generated or analytic head geometry decoupled from shaft width;
+5. start and double-headed arrows;
+6. vector gradients from tail color to head color;
+7. dashes along vector shafts;
+8. 3D mesh arrows with lighting, depth, materials, and SSAO/G-buffer participation;
+9. vector-field sampled resources and GPU-side resampling;
+10. adaptive thinning, density control, and level-of-detail;
+11. streamline, pathline, and tube generation;
+12. vector probe payloads tied to sampled fields;
+13. exact head-shape picking for all head styles.
 
 
 ## Example Pressure Tests
