@@ -101,6 +101,13 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
     robust fallback paths. Some app/video pieces exist, but the integrated scene example layer is not
     there yet.
 
+11. **Runtime/export variants and engine diagnostics.**
+    Native multi-window/fullscreen/HiDPI examples, high-resolution capture, transparent-background
+    export, batch/server-side rendering, camera bookmarks, explicit coordinate-space demos,
+    visual diagnostics, and remote/cloud/thin-client workflows remain mostly planning topics. Keep
+    v0.4 focused on native window, offscreen PNG, bounded video where available, WebGPU subset,
+    DRP2/DVZR fixtures, and raw `ctypes` smoke.
+
 
 ## Example-by-Example Status
 
@@ -180,13 +187,20 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
    annotation derivation, and UI-mutated selection/visibility state should become first-class.
 
 10. **Add large-data and streaming policies.**
-   Build explicit ring-buffer, visible-range, LOD/subsampling, constant-attribute, per-group, and
-   per-span attribute support into the scene resource model.
+    Build explicit ring-buffer, visible-range, LOD/subsampling, constant-attribute, per-group, and
+    per-span attribute support into the scene resource model. Later large-data gallery examples
+    should also account for density rendering, progressive refinement, tile streaming, GPU
+    instancing, and out-of-core policy.
 
 11. **Finish example harness infrastructure.**
     Python bindings, cache/download helpers, ImGui integration, deterministic screenshot/video
     capture, and asset/font bundling are required for the larger examples to run from a clean
     checkout.
+
+12. **Stage runtime/export and diagnostic examples.**
+    Add fixture-level coverage for multi-window/fullscreen/HiDPI behavior, high-resolution and
+    transparent-background export, batch/server-side capture, camera bookmarks, coordinate spaces,
+    and visual diagnostics before promoting any of them to public gallery promises.
 
 
 ## Near-Term Minimal Example Unlock Order

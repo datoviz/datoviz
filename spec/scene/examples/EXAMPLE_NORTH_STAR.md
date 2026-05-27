@@ -127,6 +127,7 @@ The feature should be visible without reading the caption.
 | Lighting/materials | Flat, lit, and polished material variants of the same mesh. |
 | Clipping | Volume or mesh cutaway revealing internal structure. |
 | Colormap choice | Same scalar field rendered with appropriate sequential/diverging maps. |
+| Visual diagnostics | Coordinate grids, picking ids, bounds, and update/resource diagnostics for engine users. |
 
 
 ## Runtime And Integration Gallery
@@ -143,6 +144,10 @@ Runtime examples should answer whether Datoviz fits real software, not just whet
 8. Command-stream recording and replay.
 9. Minimal raw Python binding smoke test.
 10. Experimental browser/WebGPU page.
+11. HiDPI/native-window behavior, multi-window/fullscreen variants, and hosted viewport smoke where
+    those runtime surfaces are part of the release proof.
+12. Future remote/cloud/thin-client direction over the shared scene/DRP2 contract, clearly marked
+    as directional until a concrete runtime exists.
 
 
 ## Data Domain Balance

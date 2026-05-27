@@ -106,9 +106,17 @@ example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `l
 | Annotation | Rendered label | Implemented first slice | `fixture_annotation_rendered.c` | PNG | scene+app | One point with one label overlay; callouts remain separate. |
 | App | Offscreen render | Implemented | `fixture_app_offscreen.c` | PNG | scene+app | Render one point scene offscreen. |
 | App | PNG capture | Implemented | `fixture_capture_png.c` | PNG | scene+app | Render and save a PNG through app/canvas capture. |
+| App | High-resolution capture | Planned practical fixture | `fixture_capture_high_res.c` | PNG | scene+app | Render the same tiny scene at a larger output size and verify dimensions/nonblank pixels. |
+| App | Transparent-background capture | Planned/deferred | `fixture_capture_transparent_bg.c` | PNG | scene+app | Render one alpha-enabled scene and verify exported alpha where the runtime supports it. |
+| App | Batch parameter sweep | Planned practical fixture | `fixture_batch_capture_sweep.c` | PNG set | scene+app | Render a small deterministic scene across a few parameter values without opening a window. |
 | App | GLFW live window | Implemented | `fixture_glfw_window.c` | bounded GLFW | scene+app+GLFW | One point scene, auto-close after N frames. |
+| App | Fullscreen window | Planned runtime fixture | `fixture_glfw_fullscreen.c` | bounded GLFW | scene+app+GLFW | Open a fullscreen or borderless view when supported, render one scene, then auto-close. |
+| App | Multi-window | Planned runtime fixture | `fixture_glfw_multi_window.c` | bounded GLFW | scene+app+GLFW | Two small windows render independent or synchronized tiny scenes. |
+| App | HiDPI resize | Planned runtime fixture | `fixture_hidpi_window.c` | stdout/PNG | scene+app+GLFW | Report logical/physical sizes and render a crisp text/line smoke when content scale is available. |
 | App | Frame callback | Implemented | `fixture_frame_callback.c` | PNG | scene+app | Mutate point color on frame 2 and capture frame 3. |
 | Animation/stress | CPU fluid or particle advection | v0.4 experimental/stretch | `fixture_cpu_fluid_particles.c` | PNG/live | scene+app | Update a small scalar image plus particle points or short trails over bounded frames without scene-level GPU compute. |
+| Controller | Camera bookmarks | Planned | `fixture_camera_bookmarks.c` | PNG x2 | scene+app | Save or define two named camera/controller states and render both deterministically. |
+| Coordinates | Coordinate-space debug | Planned diagnostic fixture | `fixture_coordinate_spaces.c` | PNG/stdout | scene+app | Show or print screen, panel, data, world, and NDC coordinate mappings for one point/probe. |
 | App | Hosted window | Implemented smoke | `fixture_hosted_window.c` | bounded GLFW | app+canvas+GLFW | Minimal hosted-window integration smoke. |
 | Serialization | Scene JSON | Implemented | `fixture_scene_json.c` | JSON | scene | Serialize one-point scene to JSON. |
 | Emission | Figure DRP2 stream | Implemented | `fixture_emit_drp2.c` | JSON | scene+drp2 | Emit a one-triangle frame plan and save debug JSON. |
@@ -269,6 +277,9 @@ These rows should remain planned until the corresponding runtime behavior is lan
 | Technique | Selected outline | `fixture_selected_outline.c` | Select one object and render an outline. |
 | Technique | Dual depth peeling | `fixture_dual_depth_peel.c` | Transparent layered geometry after graph-backed path lands. |
 | Technique | Curvature/cavity shading | `fixture_cavity_shading.c` | One lit mesh/sphere with cavity shading. |
+| Diagnostics | Picking-id view | `fixture_diagnostics_picking_ids.c` | Render or read a tiny id target and verify stable visual/item ids. |
+| Diagnostics | Bounds/grid overlay | `fixture_diagnostics_bounds_grid.c` | Show coordinate grid and visual bounds over a tiny scene. |
+| Diagnostics | Draw/update trace | `fixture_diagnostics_update_trace.c` | Emit a deterministic trace of draw groups or buffer dirty ranges for one update. |
 | Compute | GPU particle simulation | `fixture_gpu_particles.c` | Scene-level compute writes persistent particle buffers consumed by point/sphere rendering. |
 
 

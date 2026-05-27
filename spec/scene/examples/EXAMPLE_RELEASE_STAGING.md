@@ -1,7 +1,7 @@
 # Scene Example Release Staging
 
 > **Status:** Active planning
-> **Updated on:** 2026-05-26
+> **Updated on:** 2026-05-27
 > **Scope:** `spec/scene/examples`, current `examples/c`, and v0.4/v0.5/later feature staging
 > **Purpose:** classify examples by release target and make feature dependencies explicit.
 
@@ -181,6 +181,7 @@ stable.
 | `napari/VOLUME_CLIPPING_3D.md` | `v0.5` | richer volume clipping/probing and UI controls | Builds on v0.4 volume. |
 | `napari/TRACKS_VECTORS_SHAPES_CELL_MOTION.md` | `v0.5` | vector visual, tracks/path identity, selection | Good vector/linked interaction target. |
 | `neuro/DIFFUSION_TRACTOGRAPHY.md` | `v0.5` | packed ragged 3D streamlines, per-streamline identity, direction color, arcball, selection | Make this a good v0.5 showcase, not just a minimal line demo. Use high-quality thin streamlines first; keep tubes/ribbons/out-of-core for later. |
+| 3D network / graph explorer | `v0.5` | graph layout/data helpers, edge/path identity, labels on demand, linked selection | Useful mixed-primitive and interaction showcase after path picking, labels, and selection styling mature. |
 | `geo/GLOBAL_WIND_PROJECTIONS.md` | `v0.5` | projection transforms, vector visual, graticule/coastline helpers | `SHOWCASE_WIND_FIELD` is the v0.4 subset. |
 | Full `geo/GRAND_CANYON_FLYOVER.md` | `v0.5` | terrain asset cache, camera-path polish, optional overlays | A narrow textured terrain proof is v0.4 required; full data/product workflow can follow. |
 | Full `geo/EARTH.md` | `v0.5` | cubemap/skybox, equirectangular sphere texture if not covered by mesh, asset polish | Keep nonessential skybox and full globe workflow for later if needed. |
@@ -208,6 +209,12 @@ These are valuable pressure tests, but they should not shape the v0.4 release ga
 | `geo/FLIGHT_TRAJECTORIES_DEMO_PLAN.md` | `later` | Needs globe/projection, trajectory paths, large-data/LOD policies. |
 | `astronomy/ASTRONOMY_MANY_LABELS.md` | `later` | Needs label LOD/collision policy beyond v0.4 basic text hardening. |
 | `napari/GPU_AI_SEGMENTATION_INTEROP.md` | `later` | Needs external GPU/AI interop and richer label/selection workflow. |
+| Remote/cloud/thin-client viewer | `later` | Needs transport, session, latency, security, and deployment policy above the native runtime. Keep WebGPU/browser as the v0.4 portability proof. |
+| Native multi-window/fullscreen/HiDPI showcase variants | `later` | Useful runtime confidence lanes, but v0.4 should keep them fixture-level unless release examples need them. |
+| High-resolution, transparent-background, and server-side/batch export workflows | `later` | PNG capture exists, but export scale/alpha/background conventions, batch APIs, and server deployment policies need dedicated design. |
+| Advanced axes and coordinate-system gallery | `later` | Log/symlog/datetime axes, explicit screen/panel/data/world/NDC demos, and multiple coordinate systems need focused semantics beyond linear v0.4 axes. |
+| Visual diagnostics gallery | `later` | Coordinate grids, picking-id views, draw-call grouping, and GPU buffer-update visualization are valuable engine-user diagnostics but not public v0.4 showcase promises. |
+| Large-data rendering strategy gallery | `later` | Density rendering, progressive refinement, tile streaming, GPU instancing, and out-of-core policies need explicit resource and LOD semantics. |
 
 
 ## External/GSP Primary Examples

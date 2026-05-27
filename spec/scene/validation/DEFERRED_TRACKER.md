@@ -52,6 +52,7 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Scene-level animation timeline coordination | `spec/scene/interaction/ANIMATION.md` |
 | Multi-scene GPU resource sharing across threads | `spec/scene/integration/THREAD_SAFETY.md` |
 | Polar axis geometry (circular gridlines, radial labels) | `spec/scene/pipeline/TRANSFORM_PIPELINE.md` |
+| Log/symlog/datetime axes and explicit screen/panel/data/world/NDC coordinate-system gallery examples beyond the active linear 2D axes slice | `spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`, `spec/scene/pipeline/TRANSFORM_PIPELINE.md` |
 | Map tile loading and LOD management | `spec/scene/pipeline/TRANSFORM_PIPELINE.md` |
 | Per-item material / PBR lighting for sphere | `spec/scene/visuals/SPHERE.md` |
 | Full PBR material model beyond current material/Phong/depth-cue slices | `spec/scene/semantics/LIGHTING.md`, `spec/scene/proposals/active/MATERIAL_LIGHTING_API.md` |
@@ -62,6 +63,8 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Per-character glyph orientation | `spec/scene/visuals/GLYPH.md` |
 | Vector export tile-based rendering and SVG-level effects | `spec/scene/export/VECTOR_EXPORT.md` |
 | Python/CuPy/host adapter API layer over the low-level interop/runtime hooks | `spec/scene/integration/CUPY_CUDA_INTEROP.md`, `spec/scene/integration/HOSTED_BACKENDS.md` |
+| Native multi-window/fullscreen/HiDPI showcase variants, high-resolution and transparent-background export workflows, batch/server-side rendering, remote/cloud/thin-client viewers, and public visual-diagnostics gallery examples | `spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`, `spec/scene/examples/FEATURE_FIXTURE_MATRIX.md` |
+| Large-data rendering strategy gallery: density rendering, progressive refinement, tile streaming, GPU instancing, and out-of-core resource policies beyond current point/pixel/path update proofs | `spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`, `spec/scene/examples/EXAMPLE_GAP_REPORT.md` |
 | Full exact OIT beyond active WBOIT and depth-peeling modes | `spec/scene/semantics/TRANSPARENCY.md` |
 | `wiggle` promotion to a full visual family | `spec/scene/semantics/VISUAL_FAMILIES.md` |
 

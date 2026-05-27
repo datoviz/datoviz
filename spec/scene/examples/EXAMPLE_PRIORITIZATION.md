@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ANALYSIS REPORT`
-> - **Updated on:** `2026-05-26`
+> - **Updated on:** `2026-05-27`
 > - **Scope:** `spec/scene/examples`, current `examples/c`, and v0.4 scene/runtime capability
 >   readiness
 > - **Purpose:** rank example candidates by visual payoff, first-batch feasibility, 2D/3D balance,
@@ -80,7 +80,8 @@ new visual family.
 | 11 | Toy DICOM / volume clipping | Medium | 3D sampled field, slices, crosshair, window/level, 4-panel layout. | Needs better slice semantics and colorbar/text. |
 | 12 | Large labels segmentation | Medium | Integer label textures, random label colors, selection, categorical legends. | First-class `dvz_labels()` path exists; larger sparse-ID and transform pressure tests remain. |
 | 13 | GPU Gray-Scott / Mandelbrot / particles | Low for scene-first | Scene-level compute, custom shaders, ping-pong resources. | Very high eye-candy, but should not be forced through ad hoc DRP-only paths. |
-| 14 | Tractography / tokamak / HEP | Low-medium | Ragged 3D paths, tubes, vector fields, transparency, picking. | Excellent later architecture-pressure demos. |
+| 14 | 3D network / graph explorer | Low-medium | Mixed nodes/edges, labels-on-demand, linked selection, graph layout/data helpers. | Good v0.5 interaction showcase after labels, path/edge identity, and selection styling mature. |
+| 15 | Tractography / tokamak / HEP | Low-medium | Ragged 3D paths, tubes, vector fields, transparency, picking. | Excellent later architecture-pressure demos. |
 
 
 ## Capability Matrix
