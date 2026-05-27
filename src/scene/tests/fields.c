@@ -2759,6 +2759,214 @@ int test_scene_volume_label_slice_uses_categorical_scale(TstContext* suite, cons
 
 
 
+/**
+ * Ensure unsigned label volumes use the first-hit composite shader.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_volume_label_composite_uses_first_hit_shader(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+    uint16_t labels[8] = {0, 1, 2, 0, 1, 2, 0, 2};
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R16_UINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field,
+        &(DvzFieldDataView){
+            .data = labels,
+            .bytes_per_row = 2 * sizeof(uint16_t),
+            .rows_per_image = 2,
+        }));
+    AT(dvz_visual_set_field(volume, "field", field));
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    ANN(scale);
+    DvzScaleCategory categories[] = {
+        {.category_id = 0, .order = 0, .label = "background", .color = {0, 0, 0, 0}},
+        {.category_id = 1, .order = 1, .label = "one", .color = {255, 0, 0, 255}},
+        {.category_id = 2, .order = 2, .label = "two", .color = {0, 255, 0, 255}},
+    };
+    AT(dvz_scale_set_categories(scale, categories, 3));
+    AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = {.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL};
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(_colorbar_stream_has_pipeline_label(stream, "_pipe_vol_labels_uint_composite"));
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Ensure signed label volumes use the first-hit composite shader.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_volume_signed_label_composite_uses_first_hit_shader(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+    int16_t labels[8] = {0, -1, 2, 0, -1, 2, 0, 2};
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R16_SINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field,
+        &(DvzFieldDataView){
+            .data = labels,
+            .bytes_per_row = 2 * sizeof(int16_t),
+            .rows_per_image = 2,
+        }));
+    AT(dvz_visual_set_field(volume, "field", field));
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    ANN(scale);
+    DvzScaleCategory categories[] = {
+        {.category_id = -1, .order = 0, .label = "minus one", .color = {255, 0, 0, 255}},
+        {.category_id = 2, .order = 1, .label = "two", .color = {0, 255, 0, 255}},
+    };
+    AT(dvz_scale_set_categories(scale, categories, 2));
+    AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = {.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL};
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(_colorbar_stream_has_pipeline_label(stream, "_pipe_vol_labels_sint_composite"));
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Ensure label volumes reject categorical MIP emission explicitly.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_volume_label_mip_reports_unsupported(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+    uint16_t labels[8] = {0, 1, 2, 0, 1, 2, 0, 2};
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R16_UINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field,
+        &(DvzFieldDataView){
+            .data = labels,
+            .bytes_per_row = 2 * sizeof(uint16_t),
+            .rows_per_image = 2,
+        }));
+    AT(dvz_visual_set_field(volume, "field", field));
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    ANN(scale);
+    DvzScaleCategory category = {
+        .category_id = 1,
+        .order = 0,
+        .label = "one",
+        .color = {255, 0, 0, 255},
+    };
+    AT(dvz_scale_set_categories(scale, &category, 1));
+    AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
+
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) != 0);
+
+    DvzVisual* mip_first = dvz_volume(scene, 0);
+    ANN(mip_first);
+    AT(dvz_volume_set_render_mode(mip_first, DVZ_VOLUME_RENDER_MIP) == 0);
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_visual_set_field(mip_first, "field", field));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -3555,6 +3763,9 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_volume_retained_controls);
     TST_CASE(test_scene_volume_rgba_field_no_transfer);
     TST_CASE(test_scene_volume_label_slice_uses_categorical_scale);
+    TST_CASE(test_scene_volume_label_composite_uses_first_hit_shader);
+    TST_CASE(test_scene_volume_signed_label_composite_uses_first_hit_shader);
+    TST_CASE(test_scene_volume_label_mip_reports_unsupported);
     TST_CASE(test_scene_volume_visual_metadata_lowering);
     TST_CASE(test_scene_volume_scalar_transfer_function_uploads_rgba);
     TST_CASE(test_scene_sampled_field_3d_emits_runtime_texture_upload);

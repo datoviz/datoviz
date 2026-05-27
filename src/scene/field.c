@@ -1019,6 +1019,14 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
         log_error("volume visuals require a 3D sampled field");
         return false;
     }
+    if (
+        field != NULL && visual->type == DVZ_VISUAL_TYPE_VOLUME && supported_profile &&
+        _scene_sample_profile_is_integer_label(&profile) &&
+        visual->volume.render_mode == DVZ_VOLUME_RENDER_MIP)
+    {
+        log_error("label volumes only support slice and composite render modes");
+        return false;
+    }
     if (!_scene_visual_mutation_allowed(visual->scene, "bind sampled field"))
         return false;
 

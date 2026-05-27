@@ -30,6 +30,7 @@
 #include "_scene.h"
 #include "_scene_resource_key.h"
 #include "_visual_internal.h"
+#include "sample_profile.h"
 #include "datoviz/scene.h"
 
 
@@ -1479,6 +1480,17 @@ int dvz_volume_set_render_mode(DvzVisual* visual, DvzVolumeRenderMode mode)
         mode != DVZ_VOLUME_RENDER_COMPOSITE)
     {
         log_error("unsupported volume render mode %d", (int)mode);
+        return -1;
+    }
+    DvzSceneSampleProfile profile = {0};
+    if (
+        mode == DVZ_VOLUME_RENDER_MIP && visual->field != NULL &&
+        _scene_sample_profile_resolve(
+            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+            &profile) &&
+        _scene_sample_profile_is_integer_label(&profile))
+    {
+        log_error("label volumes only support slice and composite render modes");
         return -1;
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set volume render mode"))

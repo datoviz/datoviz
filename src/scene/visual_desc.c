@@ -780,20 +780,24 @@ static bool _scene_visual_desc_from_metadata(
                 DVZ_FIELD_DIM_3D, &profile);
         if (has_profile && _scene_sample_profile_is_signed_label(&profile))
         {
-            if (meta->volume_state.render_mode != DVZ_VOLUME_RENDER_SLICE)
+            if (
+                meta->volume_state.render_mode != DVZ_VOLUME_RENDER_SLICE &&
+                meta->volume_state.render_mode != DVZ_VOLUME_RENDER_COMPOSITE)
             {
                 if (error != NULL)
-                    *error = "label volumes only support slice render mode";
+                    *error = "label volumes only support slice and composite render modes";
                 return false;
             }
             out->kind = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT;
         }
         else if (has_profile && _scene_sample_profile_is_unsigned_label(&profile))
         {
-            if (meta->volume_state.render_mode != DVZ_VOLUME_RENDER_SLICE)
+            if (
+                meta->volume_state.render_mode != DVZ_VOLUME_RENDER_SLICE &&
+                meta->volume_state.render_mode != DVZ_VOLUME_RENDER_COMPOSITE)
             {
                 if (error != NULL)
-                    *error = "label volumes only support slice render mode";
+                    *error = "label volumes only support slice and composite render modes";
                 return false;
             }
             out->kind = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT;

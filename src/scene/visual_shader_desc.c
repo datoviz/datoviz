@@ -602,28 +602,50 @@ bool _scene_visual_shader_desc(
     }
 
     case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT:
+    {
+        bool composite =
+            _shader_features_has(&features, DVZ_SCENE_SHADER_FEATURE_VOLUME_COMPOSITE);
         dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_vol_labels_sint%s", format_tag);
         dvz_snprintf(
-            out->fragment_key, sizeof(out->fragment_key), "_fs_vol_labels_sint%s", format_tag);
+            out->fragment_key, sizeof(out->fragment_key),
+            composite ? "_fs_vol_labels_sint_composite%s" : "_fs_vol_labels_sint%s", format_tag);
         dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_vol_labels_sint%s", format_tag);
-        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_SINT_SLICE);
-        _scene_shader_desc_set_identity(out, "scene.volume", "labels_sint_slice");
+            out->pipeline_key, sizeof(out->pipeline_key),
+            composite ? "_pipe_vol_labels_sint_composite%s" : "_pipe_vol_labels_sint%s",
+            format_tag);
+        _scene_shader_desc_set_builtin(
+            out, composite ? DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_SINT_COMPOSITE
+                           : DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_SINT_SLICE);
+        _scene_shader_desc_set_identity(
+            out, "scene.volume", composite ? "labels_sint_composite" : "labels_sint_slice");
         out->vertex_spirv_key = "volume_slice_vert";
-        out->fragment_spirv_key = "volume_labels_sint_slice_frag";
+        out->fragment_spirv_key =
+            composite ? "volume_labels_sint_composite_frag" : "volume_labels_sint_slice_frag";
         return true;
+    }
 
     case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT:
+    {
+        bool composite =
+            _shader_features_has(&features, DVZ_SCENE_SHADER_FEATURE_VOLUME_COMPOSITE);
         dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_vol_labels_uint%s", format_tag);
         dvz_snprintf(
-            out->fragment_key, sizeof(out->fragment_key), "_fs_vol_labels_uint%s", format_tag);
+            out->fragment_key, sizeof(out->fragment_key),
+            composite ? "_fs_vol_labels_uint_composite%s" : "_fs_vol_labels_uint%s", format_tag);
         dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_vol_labels_uint%s", format_tag);
-        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_UINT_SLICE);
-        _scene_shader_desc_set_identity(out, "scene.volume", "labels_uint_slice");
+            out->pipeline_key, sizeof(out->pipeline_key),
+            composite ? "_pipe_vol_labels_uint_composite%s" : "_pipe_vol_labels_uint%s",
+            format_tag);
+        _scene_shader_desc_set_builtin(
+            out, composite ? DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_UINT_COMPOSITE
+                           : DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_UINT_SLICE);
+        _scene_shader_desc_set_identity(
+            out, "scene.volume", composite ? "labels_uint_composite" : "labels_uint_slice");
         out->vertex_spirv_key = "volume_slice_vert";
-        out->fragment_spirv_key = "volume_labels_uint_slice_frag";
+        out->fragment_spirv_key =
+            composite ? "volume_labels_uint_composite_frag" : "volume_labels_uint_slice_frag";
         return true;
+    }
 
     case DVZ_SCENE_VISUAL_DESC_NONE:
     default:
