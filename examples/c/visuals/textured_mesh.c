@@ -241,11 +241,11 @@ static void _state_reset_controls(TexturedMeshState* state)
     state->auto_rotate = true;
     state->standard_material = false;
     state->spin_speed = ROTATION_SPEED_RAD_PER_SEC;
-    state->light_direction[0] = -1.000f;
-    state->light_direction[1] = +0.793f;
-    state->light_direction[2] = +1.000f;
-    state->ambient = 0.476f;
-    state->diffuse = 0.801f;
+    state->light_direction[0] = -0.034f;
+    state->light_direction[1] = -0.035f;
+    state->light_direction[2] = +0.067f;
+    state->ambient = 0.734f;
+    state->diffuse = 0.637f;
     state->specular = 0.188f;
     state->shininess = 24.602f;
     state->roughness = 0.58f;
