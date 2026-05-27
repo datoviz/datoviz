@@ -251,68 +251,6 @@ DVZ_EXPORT int dvz_panel_query_now(
 
 
 
-/*************************************************************************************************/
-/*  Transitional pick and probe requests                                                         */
-/*************************************************************************************************/
-
-/**
- * Queue an explicit pick request on a panel.
- *
- * Freshness rules for the current v0.4 slice:
- * non-zero `request_id` values supersede older pick work on the same panel with the same id,
- * while zero-id requests use one latest-request-wins scope within the panel pick stream. Once a
- * newer request claims that scope, late older results are discarded even if the newer result was
- * already polled.
- *
- * @param panel the panel
- * @param x the logical panel x coordinate
- * @param y the logical panel y coordinate
- * @param request the request descriptor, or NULL for defaults
- * @return 0 on success, -1 on error
- */
-DVZ_EXPORT int dvz_panel_pick(
-    DvzPanel* panel, double x, double y, const DvzPickRequest* request);
-
-
-/**
- * Queue an explicit probe request on a panel.
- *
- * Freshness rules for the current v0.4 slice:
- * non-zero `request_id` values supersede older probe work on the same panel with the same id,
- * while zero-id requests use one latest-request-wins scope within the panel probe stream. Once a
- * newer request claims that scope, late older results are discarded even if the newer result was
- * already polled.
- *
- * @param panel the panel
- * @param x the logical panel x coordinate
- * @param y the logical panel y coordinate
- * @param request the request descriptor, or NULL for defaults
- * @return 0 on success, -1 on error
- */
-DVZ_EXPORT int dvz_panel_probe(
-    DvzPanel* panel, double x, double y, const DvzProbeRequest* request);
-
-
-/**
- * Poll one resolved pick result from the scene.
- *
- * @param scene the scene
- * @param out_result output result
- * @return true when a result was written
- */
-DVZ_EXPORT bool dvz_scene_poll_pick(DvzScene* scene, DvzPickResult* out_result);
-
-
-/**
- * Poll one resolved probe result from the scene.
- *
- * @param scene the scene
- * @param out_result output result
- * @return true when a result was written
- */
-DVZ_EXPORT bool dvz_scene_poll_probe(DvzScene* scene, DvzProbeResult* out_result);
-
-
 /**
  * Return the retained hover state for one panel.
  *

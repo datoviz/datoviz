@@ -375,27 +375,6 @@ DVZ_EXPORT DvzDrp2CommandStream* dvz_figure_emit_ex(
 
 
 /**
- * Execute queued pick/probe requests for one figure through the DRP2 runtime.
- *
- * This helper is intended for live/offscreen scene runtimes after the figure's main draw has
- * already realized the current scene resources in the runtime. Supported first-slice resolution
- * currently focuses on point picking and basic image probing. Freshness is tracked per
- * panel/request-kind scope: non-zero request ids supersede older work with the same panel-local
- * id, while zero-id requests use one latest-request-wins scope per panel/kind. Late results are
- * discarded once a newer request has claimed the same scope, even if that newer result was already
- * resolved and polled. Pending requests are coalesced before execution so only the newest request
- * in each active scope runs.
- *
- * @param figure the figure
- * @param runtime the DRP2 runtime
- * @param caps the capability snapshot, or NULL for defaults
- * @return the number of requests that were consumed from the scene queues
- */
-DVZ_EXPORT uint32_t dvz_figure_process_requests(
-    DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps);
-
-
-/**
  * Execute queued query requests for one figure through the DRP2 runtime.
  *
  * @param figure the figure

@@ -191,17 +191,17 @@ static bool _image_probe_expand_rects(
 /*************************************************************************************************/
 
 /**
- * Build a synthetic GPU readback frame plan for one image probe request.
+ * Build a synthetic GPU readback frame plan for one image query request.
  *
  * @param panel the panel receiving the request
  * @param visual the image visual to probe
- * @param pending the pending probe request
+ * @param pending the pending query request
  * @param request_ndc the request coordinate in panel-local NDC
  * @param out_plan the output plan wrapper
  * @return true when the plan was assembled
  */
 bool _scene_image_probe_plan(
-    const DvzPanel* panel, DvzVisual* visual, const DvzPendingProbeRequest* pending,
+    const DvzPanel* panel, DvzVisual* visual, const DvzPendingQueryRequest* pending,
     const vec2 request_ndc, bool include_static_uploads, DvzSceneProbePlan* out_plan)
 {
     ANN(panel);

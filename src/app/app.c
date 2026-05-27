@@ -177,7 +177,6 @@ struct DvzApp
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     DvzGpuCtx*      gpu_ctx;
     DvzDrp2Runtime* runtime;
-    DvzSceneRequestExecutor request_executor;
     DvzWindowHost*  window_host;
     bool owns_gpu_ctx;
     bool owns_runtime;
@@ -1057,10 +1056,10 @@ static bool _app_has_continuous_work(DvzApp* app)
 
 
 /**
- * Return whether one view's figure has queued scene requests.
+ * Return whether one view's figure has queued scene queries.
  *
  * @param win view to inspect
- * @return whether pick/probe work is pending for the figure
+ * @return whether query work is pending for the figure
  */
 static bool _view_has_pending_requests(DvzView* win)
 {
@@ -1068,15 +1067,9 @@ static bool _view_has_pending_requests(DvzView* win)
     if (win->app == NULL || win->app->scene == NULL || win->figure == NULL)
         return false;
     DvzScene* scene = win->app->scene;
-    for (uint32_t i = 0; i < scene->pending_pick_count; i++)
+    for (uint32_t i = 0; i < scene->pending_query_count; i++)
     {
-        DvzPendingPickRequest* pending = &scene->pending_picks[i];
-        if (pending->panel != NULL && pending->panel->figure == win->figure)
-            return true;
-    }
-    for (uint32_t i = 0; i < scene->pending_probe_count; i++)
-    {
-        DvzPendingProbeRequest* pending = &scene->pending_probes[i];
+        DvzPendingQueryRequest* pending = &scene->pending_queries[i];
         if (pending->panel != NULL && pending->panel->figure == win->figure)
             return true;
     }
@@ -2882,8 +2875,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     else
     {
         _app_runtime_failure_reset(win, "_app_draw runtime execution");
-        (void)_dvz_figure_process_requests_with_executor(
-            win->figure, app->runtime, &app->request_executor, &caps);
+        (void)dvz_figure_process_queries(win->figure, app->runtime, &caps);
     }
 
     if (result.ok)
@@ -3058,10 +3050,8 @@ dvz_app_with_resources(DvzScene* scene, const DvzAppConfig* config, const DvzApp
             return NULL;
         }
     }
-    _scene_request_executor_init(&app->request_executor);
     if (!_scene_add_request_frame_callback(app->scene, _app_scene_request_frame, app))
     {
-        _scene_request_executor_destroy(&app->request_executor);
         _app_destroy_resources(app);
         dvz_free(app);
         return NULL;
@@ -3141,7 +3131,6 @@ void dvz_app_destroy(DvzApp* app)
         _dvz_app_trace_snapshot_destroy(&win->last_trace_snapshot);
         win->has_last_trace_snapshot = false;
     }
-    _scene_request_executor_destroy(&app->request_executor);
     _app_destroy_resources(app);
 #endif
 

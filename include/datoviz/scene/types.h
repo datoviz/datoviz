@@ -594,83 +594,6 @@ struct DvzSelectionItem
 typedef struct DvzSelectionItem DvzSelectionItem;
 
 
-struct DvzPickRequest
-{
-    uint64_t request_id;
-    DvzSceneTargetKind target;
-    DvzPickHitPolicy hit_policy;
-    uint32_t flags;
-};
-typedef struct DvzPickRequest DvzPickRequest;
-
-
-struct DvzPickResult
-{
-    uint64_t request_id;
-    DvzPickStatus status;
-    bool hit;
-    uint64_t panel_id;
-    uint64_t visual_id;
-    DvzSceneVisualFamily visual_family;
-    uint64_t item_id;
-    uint64_t group_id;
-    uint64_t auxiliary_id;
-    DvzSceneTargetKind raw_parent_target;
-    uint64_t raw_parent_id;
-    DvzSceneTargetKind raw_target;
-    uint64_t raw_id;
-    DvzSceneTargetKind resolved_parent_target;
-    uint64_t resolved_parent_id;
-    DvzSceneTargetKind resolved_target;
-    uint64_t resolved_id;
-    uint64_t instance_id;
-    uint64_t link_key;
-    double panel_position[2];
-    bool has_data_position;
-    double data_position[3];
-};
-typedef struct DvzPickResult DvzPickResult;
-
-
-struct DvzProbeRequest
-{
-    uint64_t request_id;
-    DvzSceneTargetKind target;
-    uint32_t flags;
-};
-typedef struct DvzProbeRequest DvzProbeRequest;
-
-
-struct DvzProbeResult
-{
-    uint64_t request_id;
-    DvzProbeStatus status;
-    bool hit;
-    uint64_t panel_id;
-    uint64_t visual_id;
-    DvzSceneVisualFamily visual_family;
-    uint64_t item_id;
-    uint64_t group_id;
-    uint64_t auxiliary_id;
-    DvzSceneTargetKind target;
-    uint64_t target_id;
-    double panel_position[2];
-    bool has_coordinate;
-    double coordinate[3];
-    bool has_uvw;
-    double uvw[3];
-    DvzProbeValueKind value_kind;
-    double scalar;
-    double vector[4];
-    DvzCategoryId category_id;
-    char label[DVZ_SCENE_LABEL_SIZE];
-    char unit[32];
-    DvzScale* scale;
-    uint64_t source_request_id;
-};
-typedef struct DvzProbeResult DvzProbeResult;
-
-
 struct DvzQueryRequest
 {
     uint64_t request_id;
@@ -739,8 +662,7 @@ struct DvzHoverState
 {
     bool active;
     DvzLinkChannel* link_channel;
-    DvzPickResult pick;
-    DvzProbeResult probe;
+    DvzQueryResult query;
 };
 typedef struct DvzHoverState DvzHoverState;
 

@@ -1471,6 +1471,7 @@ int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
 
     DvzVisual* image = dvz_image(scene, 0);
     AT(image != NULL);
+    dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_PIXEL);
     vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
@@ -1514,12 +1515,12 @@ int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
     AppRequestFrameProbe request_probe = {0};
     dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
 
-    AT(dvz_panel_pick(panel, 32.0, 32.0, &(DvzPickRequest){.request_id = 1}) == 0);
+    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){.request_id = 1}) == 0);
     AT(request_probe.calls == 1);
     AT(request_probe.last_window == win);
     AT(_dvz_view_scheduler_should_render(win, false, 0));
 
-    AT(dvz_panel_probe(panel, 32.0, 32.0, &(DvzProbeRequest){.request_id = 2}) == 0);
+    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){.request_id = 2}) == 0);
     AT(request_probe.calls == 2);
     AT(request_probe.last_window == win);
     AT(_dvz_view_scheduler_should_render(win, false, 0));
@@ -1585,14 +1586,14 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
     dvz_view_set_request_frame_callback(win1, _app_request_frame_probe_callback, &probe1);
     dvz_view_set_request_frame_callback(win2, _app_request_frame_probe_callback, &probe2);
 
-    AT(dvz_panel_pick(panel, 32.0, 32.0, &(DvzPickRequest){.request_id = 1}) == 0);
+    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){.request_id = 1}) == 0);
     AT(probe1.calls == 1);
     AT(probe1.last_window == win1);
     AT(probe2.calls == 1);
     AT(probe2.last_window == win2);
 
     dvz_app_destroy(app1);
-    AT(dvz_panel_probe(panel, 32.0, 32.0, &(DvzProbeRequest){.request_id = 2}) == 0);
+    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){.request_id = 2}) == 0);
     AT(probe1.calls == 1);
     AT(probe2.calls == 2);
     AT(probe2.last_window == win2);
@@ -5201,37 +5202,35 @@ int test_app_offscreen_pick_probe_request_steady_state(TstContext* suite, const 
 
     for (uint32_t frame = 0; frame < 8; frame++)
     {
-        uint64_t pick_id = 100 + frame;
-        uint64_t probe_id = 200 + frame;
-        AT(dvz_panel_pick(panel, 32.0, 32.0, &(DvzPickRequest){.request_id = pick_id}) == 0);
-        AT(dvz_panel_probe(panel, 32.0, 32.0, &(DvzProbeRequest){.request_id = probe_id}) == 0);
-        AT(scene->pending_pick_count == 1);
-        AT(scene->pending_probe_count == 1);
+        uint64_t first_id = 100 + frame;
+        uint64_t second_id = 200 + frame;
+        AT(dvz_panel_query(
+               panel, 32.0, 32.0,
+               &(DvzQueryRequest){.request_id = first_id, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+        AT(dvz_panel_query(
+               panel, 32.0, 32.0,
+               &(DvzQueryRequest){.request_id = second_id, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+        AT(scene->pending_query_count == 2);
 
         AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
-        AT(scene->pending_pick_count == 0);
-        AT(scene->pending_probe_count == 0);
+        AT(scene->pending_query_count == 0);
 
-        DvzPickResult pick = {0};
-        DvzProbeResult probe = {0};
-        AT(dvz_scene_poll_pick(scene, &pick));
-        AT(dvz_scene_poll_probe(scene, &probe));
-        AT(pick.hit);
-        AT(pick.request_id == pick_id);
-        AT(pick.resolved_target == DVZ_SCENE_TARGET_ITEM);
-        AT(pick.resolved_id == 0);
-        AT(probe.hit);
-        AT(probe.request_id == probe_id);
-        AT(probe.value_kind == DVZ_PROBE_VALUE_VEC4);
-        AT(probe.vector[0] > 0.9);
-        AT(probe.vector[1] < 0.1);
-        AT(probe.vector[2] < 0.1);
-        AT(probe.vector[3] > 0.9);
+        DvzQueryResult first = {0};
+        DvzQueryResult second = {0};
+        AT(dvz_scene_poll_query(scene, &first));
+        AT(dvz_scene_poll_query(scene, &second));
+        AT(first.hit);
+        AT(second.hit);
+        AT(first.request_id == first_id || first.request_id == second_id);
+        AT(second.request_id == first_id || second.request_id == second_id);
+        AT(first.request_id != second.request_id);
+        AT(first.resolved_target == DVZ_SCENE_TARGET_ITEM);
+        AT(second.resolved_target == DVZ_SCENE_TARGET_ITEM);
+        AT(first.resolved_id == 0);
+        AT(second.resolved_id == 0);
 
-        AT(!dvz_scene_poll_pick(scene, &pick));
-        AT(!dvz_scene_poll_probe(scene, &probe));
-        AT(scene->pick_result_count == 0);
-        AT(scene->probe_result_count == 0);
+        AT(!dvz_scene_poll_query(scene, &second));
+        AT(scene->query_result_count == 0);
     }
 
     dvz_app_destroy(app);

@@ -1,7 +1,7 @@
 # GPU Query System
 
 > **Execution Status**
-> - **Status:** `ACTIVE DESIGN`
+> - **Status:** `ACTIVE IMPLEMENTATION - PUBLIC PICK/PROBE REMOVED`
 > - **Updated on:** `2026-05-27`
 > - **Purpose:** define the long-term v0.4 scene query architecture: one GPU-only panel query
 >   system replacing the separate public pick/probe request model.
@@ -16,8 +16,8 @@ surface if it keeps the architecture ambiguous.
 
 ## Implementation Status
 
-Updated on 2026-05-27 after the native queue, simple-family execution, and legacy shim
-inversion slices landed.
+Updated on 2026-05-27 after the native query executor replacement and public pick/probe removal
+slices landed.
 
 Foundation now present in the tree:
 
@@ -32,28 +32,27 @@ Foundation now present in the tree:
 5. `src/scene/query/registry.c` and `src/scene/query/internal.h` define the visual-family registry.
 6. Per-family query files now exist under `src/scene/visuals/<family>/query.c` for point, pixel,
    marker, sphere, segment, path, primitive, mesh, image, labels, volume, text, and glyph families.
-7. Selection and pinned readout helpers can consume `DvzQueryResult`.
+7. Selection and pinned readout helpers consume `DvzQueryResult` directly.
 8. `testing/test_scene_query_source_guard.py` checks that generic query files do not pull in
    visual-family internals.
 9. Native query processing executes current GPU-backed point-like, pixel, image, and labels query
    paths through visual-family operation tables, with generic orchestration in `src/scene/query/`.
 10. DRP2 texture layout validation now accepts `rg32uint` byte sizing.
 
-Important transitional state:
+Current implementation state:
 
 1. `src/scene/query/queue.c` owns native query queues, while `src/scene/query/execute.c`,
-   `readback.c`, and `result.c` own execution/readback/result helpers.
+   `executor.c`, `readback.c`, and `result.c` own execution/readback/result helpers.
 2. `dvz_figure_process_queries()` no longer delegates to `dvz_figure_process_requests()`.
-3. `src/scene/request_execute.c` is now a legacy pick/probe bridge: old public pick/probe requests
-   call native query for GPU-backed pick, image probe, and labels probe compatibility.
+3. `src/scene/request_execute.c` and `src/scene/request_queue.c` have been removed.
 4. The visual-family `query.c` files own eligibility, plan build, decode, and readout for current
    native GPU-backed families.
 5. Native query does not use the old CPU volume slice probe path. Volume sample query currently
    returns explicit unsupported until a GPU family path lands.
 6. Labels query is family-owned but still uses a direct retained-field upload/readback path for raw
    integer label ids. It must move to rendered GPU semantics before the overhaul is complete.
-7. Old public pick/probe APIs remain available during migration, but `examples/c` now uses the
-   query API directly.
+7. Old public pick/probe APIs and public pick/probe request/result structs have been removed from
+   the v0.4 scene API. `examples/c` now uses the query API directly.
 8. DRP2 and WebGPU parity are not finished: C runtime copy helpers still need full origin/depth and
    multi-output query support, and `rg32uint` needs runtime/readback fixture coverage.
 
@@ -127,8 +126,7 @@ dvz_scene_poll_probe(...)
 dvz_figure_process_requests(...)
 ```
 
-should be removed from the public contract or kept only as private migration shims until all examples
-and tests are converted. They should not remain as a parallel public model.
+have been removed from the public contract. They should not return as a parallel public model.
 
 
 ## Result Shape

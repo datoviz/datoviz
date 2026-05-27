@@ -435,15 +435,8 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
         bool include_static_uploads = _image_query_probe_needs_static_upload(
             ctx->executor, ctx->visual, position_version, texcoord_version, texture_version);
 
-        DvzPendingProbeRequest pending = {0};
-        pending.panel = ctx->panel;
-        pending.x = ctx->pending->x;
-        pending.y = ctx->pending->y;
-        pending.freshness_serial = ctx->pending->freshness_serial;
-        pending.request.request_id = ctx->pending->request.request_id;
-        pending.request.target = ctx->pending->request.target;
         if (!_scene_image_probe_plan(
-                ctx->panel, ctx->visual, &pending, ctx->request_ndc, include_static_uploads,
+                ctx->panel, ctx->visual, ctx->pending, ctx->request_ndc, include_static_uploads,
                 &out_plan->scratch))
         {
             _scene_probe_plan_destroy(&out_plan->scratch);

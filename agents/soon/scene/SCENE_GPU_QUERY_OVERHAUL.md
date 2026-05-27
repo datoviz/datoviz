@@ -1,7 +1,7 @@
 # Scene GPU Query Overhaul
 
 > **Execution Status**
-> - **Status:** `IN PROGRESS - FAMILY EXECUTION LANDED`
+> - **Status:** `IN PROGRESS - PUBLIC PICK/PROBE REMOVED`
 > - **Updated on:** `2026-05-27`
 > - **Purpose:** give the next agent team an immediately actionable plan for replacing scene
 >   pick/probe with a GPU-only query system.
@@ -34,21 +34,16 @@ new design decisions.
 
 ## Current Code Hotspots
 
-1. `src/scene/request_execute.c`: main file to split and eventually delete or shrink to a migration
-   wrapper. It currently mixes queue execution, family dispatch, geometry expansion, readback, labels,
-   volume, and result decode.
-2. `src/scene/query/queue.c`: transitional public query bridge that still queues old pick/probe
-   requests and converts the old results into `DvzQueryResult`.
-3. `src/scene/probe_plan.c`: image probe plan builder still used by the bridge path, with old
-   one-sample readback assumptions.
+1. `src/scene/query/queue.c`: native query queue ownership and figure-level processing entry point.
+2. `src/scene/query/execute.c`: generic native query orchestration across visual-family ops.
+3. `src/scene/query/executor.c`: retained DRP2 query executor lifecycle.
+4. `src/scene/probe_plan.c`: image query plan builder still carrying probe-era naming.
 4. `src/scene/render_pass.c`: scene-to-DRP2 converter now forwards `DvzFramePlanCopyDesc` metadata
    for supported DRP2 fields, but runtime copy selection is still tied to the current color target.
 5. `include/datoviz/scene/frame_plan.h`: copy metadata exists; multi-output query integration and
    full DRP2 origin/depth/attachment execution remain.
-6. `include/datoviz/scene/types.h`: query request/result/capability fields exist; capability-driven
-   profile selection is not implemented.
-7. `include/datoviz/scene/interaction.h`: public query API exists, while pick/probe remain public
-   transitional APIs.
+6. `include/datoviz/scene/types.h`: query request/result/capability fields exist.
+7. `include/datoviz/scene/interaction.h`: public query API is the only panel query request API.
 8. `src/drp2/serialization.c` and `spec/drp2/schema/common/GPUTextureFormat.json`: already contain
    `r32uint` and `rg32uint`, useful for query profiles.
 9. `spec/drp2/fixtures/positive/pressure_picking_readback.json`: existing `r32uint` readback fixture
@@ -131,6 +126,13 @@ Committed implementation slices:
     - rich-card overlay demo now consumes pixel query results.
 30. `aa098676d examples: use scene query in scheduler lab`
     - scheduler lab now uses item and pixel queries instead of pick/probe requests.
+31. `c61026aa4 scene: make selection readouts query native`
+    - selection cards and pinned readouts now retain/use `DvzQueryResult` directly.
+32. `scene: remove legacy pick probe request API`
+    - removed public pick/probe functions and result types,
+    - deleted `request_execute.c` and `request_queue.c`,
+    - moved retained query executor lifecycle under `src/scene/query/executor.c`,
+    - app rendering now processes native query queues directly.
 
 Recorded validation after these commits:
 
@@ -393,15 +395,15 @@ Validation:
 
 Suggested subagent: API/tests/examples agent.
 
-Status: partially landed. Query API, selection adapter, pinned readout adapter, old pick/probe shim
-inversion, and public example migration exist. Test naming and old public pick/probe removal remain.
+Status: partially landed. Query API, family execution, selection/readout query ownership, and public
+example migration exist. Old public pick/probe APIs and bridge files have been removed.
 
 Primary ownership:
 
 1. `include/datoviz/scene/interaction.h`
 2. `include/datoviz/scene/types.h`
 3. `src/scene/interaction.c`
-4. examples using pick/probe
+4. examples using query
 5. `src/scene/tests/pick_probe.c` and successor tests
 
 Tasks:
@@ -409,8 +411,8 @@ Tasks:
 1. Keep refining the public query API only as needed by native execution.
 2. Keep examples on query. Current `examples/c` no longer calls public pick/probe APIs.
 3. Expand selection and pinned readout tests around native query results.
-4. Remove or privatize public pick/probe entry points.
-5. Rename tests from pick/probe when their behavior is now query-specific.
+4. Rename tests from pick/probe when their behavior is now query-specific.
+5. Rename probe-era internal helper names where they now describe generic query plan scratch.
 6. Keep migration notes in specs, not legacy `docs/`.
 
 Validation:
@@ -426,14 +428,16 @@ Suggested subagent: cleanup agent after feature agents land.
 
 Primary ownership:
 
-1. `src/scene/request_execute.c`
-2. `src/scene/probe_plan.c`
-3. broad visual files touched by query policy
-4. CMake source globs/layout if subdirectories need explicit inclusion
+1. `src/scene/query/queue.c`
+2. `src/scene/query/execute.c`
+3. `src/scene/query/executor.c`
+4. `src/scene/probe_plan.c`
+5. broad visual files touched by query policy
+6. CMake source globs/layout if subdirectories need explicit inclusion
 
 Tasks:
 
-1. Delete obsolete pick/probe execution code.
+1. Keep only native query queues/results.
 2. Split remaining long files where useful.
 3. Move query-specific shaders into clear names.
 4. Ensure CMake includes new subdirectories.
@@ -475,18 +479,14 @@ edit the same file unless the coordinator explicitly serializes that integration
 
 ## Next Implementation Slice Recommendation
 
-The best next code slice is cleanup around the remaining legacy bridge and the non-final family
-paths:
+The best next code slice is cleanup around non-final family readout/format details:
 
-1. Keep `src/scene/request_execute.c` limited to old public pick/probe queue consumption, status
-   conversion, and the intentional legacy CPU volume-slice probe path.
-2. Move duplicate legacy-probe routing checks out of `request_execute.c` only when equivalent native
-   query ordering semantics are covered by tests.
-3. Harden labels query so rendered GPU semantics replace the current direct retained-field
+1. Rename probe-era internal helper names in image/query scratch paths.
+2. Harden labels query so rendered GPU semantics replace the current direct retained-field
    upload/readback path.
-4. Add GPU volume slice query semantics, then remove the legacy CPU volume slice probe path.
-5. Continue replacing old public pick/probe tests with native query tests as behavior migrates.
-6. Add DRP2/runtime fixtures for `rg32uint` and multi-output query readbacks before relying on those
+3. Add GPU volume slice query semantics.
+4. Continue replacing old public pick/probe test names with native query names.
+5. Add DRP2/runtime fixtures for `rg32uint` and multi-output query readbacks before relying on those
    profiles broadly.
 
 

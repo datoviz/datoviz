@@ -140,8 +140,6 @@ int test_scene_query(TstSuite* suite);
 
 int test_scene_text_atlas(TstSuite* suite);
 
-int test_scene_poll_pick_probe_clears_consumed_slots(TstContext* suite, const TstCase* item);
-
 int test_scene_app(TstSuite* suite);
 
 int test_panzoom_create_reset(TstContext* suite, const TstCase* item);
@@ -347,8 +345,6 @@ int test_scene_image_emit_uses_common_and_texture_sets(TstContext* suite, const 
 
 int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCase* item);
 
-int test_scene_process_pick_probe_requests(TstContext* suite, const TstCase* item);
-
 int test_scene_point_pick_quadrants(TstContext* suite, const TstCase* item);
 
 int test_scene_point_pick_rejects_disc_corner(TstContext* suite, const TstCase* item);
@@ -369,8 +365,6 @@ int test_scene_pick_respects_visual_order_across_families(
     TstContext* suite, const TstCase* item);
 
 int test_scene_volume_pick_resolves_item(TstContext* suite, const TstCase* item);
-
-int test_scene_process_requests_preserves_caller_runtime(TstContext* suite, const TstCase* item);
 
 int test_scene_image_probe_reuses_retained_request_executor(TstContext* suite, const TstCase* item);
 
@@ -758,16 +752,6 @@ int test_scene_pick_request_same_id_rejects_late_result_after_newer_poll(
 int test_scene_probe_request_zero_id_rejects_late_result_after_newer_poll(
     TstContext* suite, const TstCase* item);
 
-int test_scene_process_requests_coalesces_pending_picks_before_execution(
-    TstContext* suite, const TstCase* item);
-
-int test_scene_process_requests_coalesces_pending_probes_before_execution(
-    TstContext* suite, const TstCase* item);
-
-int test_scene_pick_probe_unsupported_targets(TstContext* suite, const TstCase* item);
-
-int test_scene_query_api_bridges_pick_and_probe_results(TstContext* suite, const TstCase* item);
-
 int test_scene_query_registry_covers_active_visual_families(
     TstContext* suite, const TstCase* item);
 
@@ -873,15 +857,11 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item);
 
 int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCase* item);
 
-int test_scene_pick_probe_queues_and_pinned_readout(TstContext* suite, const TstCase* item);
-
 int test_scene_pick_request_same_id_supersedes_older_unresolved(
     TstContext* suite, const TstCase* item);
 
 int test_scene_probe_request_zero_id_keeps_newest_unresolved(
     TstContext* suite, const TstCase* item);
-
-int test_scene_image_probe_plan_rejects_size_overflow(TstContext* suite, const TstCase* item);
 
 int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* item);
 
