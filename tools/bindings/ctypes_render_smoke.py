@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import ctypes
+import importlib.util
 import sys
 from pathlib import Path
 
@@ -54,10 +55,15 @@ def _run_view_post_smoke() -> None:
 
 def main() -> int:
     sys.path.insert(0, str(ROOT_DIR))
-    from examples.python.raw.offscreen_point import main as run_example  # noqa: PLC0415
+    example_path = ROOT_DIR / 'examples' / 'python' / 'raw' / 'offscreen_point.py'
+    spec = importlib.util.spec_from_file_location('datoviz_raw_offscreen_point', example_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f'cannot load {example_path}')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
 
     _run_view_post_smoke()
-    return run_example([])
+    return module.main([])
 
 
 if __name__ == '__main__':
