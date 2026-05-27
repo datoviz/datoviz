@@ -10,6 +10,10 @@ cache. The first slice should render one 2D panzoom flow panel with an animated 
 advected tracer particles, a circular cylinder, play/pause, and hover readout for velocity and
 vorticity.
 
+Status note on 2026-05-27: this is a v0.4 experimental/stretch candidate only for the CPU-side
+Stage 1 path. GPU-side fluid or particle simulation remains deferred until scene-level compute,
+ping-pong storage textures, and compute-to-render dependencies are available.
+
 The example is distinct from reaction-diffusion, standalone particles, and geoscience wind-field
 showcases: one flow state drives vorticity, tracers, optional streamlines, probes, and diagnostics.
 

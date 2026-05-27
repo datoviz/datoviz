@@ -9,8 +9,9 @@
 
 Build a cinematic 3D flyover over a recognizable Grand Canyon terrain patch. Runtime consumes a
 preprocessed Datoviz-ready terrain bundle from the cache or `datoviz/data`; it must not query GIS
-services. The first slice is one bounded textured or color-relief mesh with a perspective camera
-following a simple path.
+services. The first v0.4 slice is one bounded true textured mesh with UVs, a mesh-bound RGBA
+texture, lighting, and a perspective camera following a simple path. Generated color relief may be
+the texture source, but baked vertex colors alone do not satisfy this example.
 
 ## User-Visible Result
 
@@ -149,7 +150,7 @@ If normals are missing, compute them at load time or fall back to unlit texture 
 
 - One terrain bundle or explicit procedural fallback.
 - One full-window 3D panel.
-- Indexed mesh with positions, indices, UVs, and texture or generated color relief.
+- Indexed mesh with positions, indices, UVs, and a mesh-bound texture.
 - Depth testing and simple directional lighting.
 - Flyover or orbit path.
 - Optional `--asset`, `--mode flyover|orbit`, `--wireframe`, `--no-texture`, `--screenshot`, and

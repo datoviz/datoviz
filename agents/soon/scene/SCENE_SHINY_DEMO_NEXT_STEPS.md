@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `RECOMMENDED FOLLOW-UP DISPATCH`
-> - **Updated on:** `2026-05-26`
+> - **Updated on:** `2026-05-27`
 > - **Purpose:** record the current recommendation for high-payoff v0.4 RC1 or early v0.4+
 >   showcase work after text, overlays, legends, colorbars, labels, and scale bars landed.
 > - **Audience:** agents choosing the next moderately complicated feature or gallery-polish lane.
@@ -23,20 +23,35 @@ Several earlier-looking gaps are now mostly implemented:
    The remaining gap is a composed proof example, not core layout infrastructure.
 3. **Showcases:** protein, LiDAR, brain, and labels examples mostly exist. The remaining work is
    default tuning, screenshots/captures, smoke validation, and gallery polish.
+4. **Textured mesh:** the gallery strategy now requires a true retained textured-mesh terrain or
+   planet-surface proof for v0.4. Baked vertex colors are not an acceptable substitute for this
+   lane.
 
 
 ## Recommended Order
 
 | Priority | Lane | Why it is next | First useful slice |
 | ---: | --- | --- | --- |
-| 1 | Vector/arrow visual | Best new semantic visual for scientific demos; unlocks wind, CFD, displacement, normals, trajectories, and napari-style vectors. | Add a first-class arrow/vector visual or tightly scoped arrow helper, then use it in the wind-field showcase. |
-| 2 | Raw label-id GPU probe | Smaller than a new visual family and directly improves the napari-style labels demo. | Return integer label ids from `dvz_labels()` fields through a labels-specific scene request/readback path; add sparse/high-id stress tests. |
-| 3 | Explanatory layout proof | Low-risk RC proof for already-landed adornment layout pieces. | Add or polish one example combining axes, colorbar, legend, scale bar, and panel reserves without collisions. |
-| 4 | Gallery proof pass | Converts existing showcase code into release confidence. | Run/polish protein, LiDAR, brain, labels, colorbar/legend, and capture paths; tune defaults and record validation. |
-| 5 | Splat visual | Flashy and self-contained, but it is a new visual family and should follow the smaller proof lanes unless visual impact is the priority. | Implement a narrow point-cloud splat/Gaussian-like visual with a dense example and explicit deferred scope. |
+| 1 | Retained textured mesh | Required for the v0.4 terrain/planet showcase and useful for many mesh examples; current retained mesh path does not yet bind textures as material input. | Add UV upload, mesh texture binding, `color_mode = texture`, sampler defaults, lighting/material integration, fixture coverage, and a terrain/planet capture. |
+| 2 | Vector/arrow visual | Best new semantic visual for scientific demos; unlocks wind, CFD, displacement, normals, trajectories, and napari-style vectors. | Add a first-class arrow/vector visual or tightly scoped arrow helper, then use it in the wind-field showcase. |
+| 3 | Raw label-id GPU probe | Smaller than a new visual family and directly improves the napari-style labels demo. | Return integer label ids from `dvz_labels()` fields through a labels-specific scene request/readback path; add sparse/high-id stress tests. |
+| 4 | Explanatory layout proof | Low-risk RC proof for already-landed adornment layout pieces. | Add or polish one example combining axes, colorbar, legend, scale bar, and panel reserves without collisions. |
+| 5 | Gallery proof pass | Converts existing showcase code into release confidence. | Run/polish protein, LiDAR, brain, labels, textured terrain/planet, colorbar/legend, and capture paths; tune defaults and record validation. |
+| 6 | Splat visual | Flashy and self-contained, but it is a new visual family and should follow the smaller proof lanes unless visual impact is the priority. | Implement a narrow point-cloud splat/Gaussian-like visual with a dense example and explicit deferred scope. |
 
 
 ## Lane Notes
+
+### Retained Textured Mesh
+
+The first slice should stay deliberately narrow: a mesh resource with `texcoords`, one 2D RGBA
+sampled texture or field bound as mesh material input, `color_mode = texture`, linear/nearest
+sampler defaults, and composition with the current lighting/material path. It should prove
+replacement or layer switching without recreating unrelated mesh buffers.
+
+The pressure example is a deterministic terrain or planet-surface C example with one screenshot
+capture. Defer cubemaps, skyboxes, multi-texture materials, normal maps, PBR, terrain LOD, asset
+download/cache automation, and mesh face picking unless the first showcase exposes a concrete need.
 
 ### Vector/Arrow Visual
 
@@ -92,6 +107,8 @@ full differentiable/3D Gaussian-splatting ambitions.
 
 ## Practical Choice
 
-For a new shiny feature, start with **vector/arrow visual**, then immediately pressure it with a
-wind-field showcase. For RC1 rigor, start with **raw label-id GPU probing** and the **explanatory
-layout proof**. For maximum visual novelty after those, start the **splat visual** first slice.
+For required v0.4 gallery scope, start with **retained textured mesh** and pressure it with a
+terrain or planet-surface capture. For an additional shiny feature, start with **vector/arrow
+visual**, then immediately pressure it with a wind-field showcase. For RC1 rigor after those, use
+**raw label-id GPU probing** and the **explanatory layout proof**. For maximum visual novelty after
+the release proof, start the **splat visual** first slice.

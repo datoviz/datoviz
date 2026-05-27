@@ -21,9 +21,15 @@ registration, depth, normals, camera behavior, and mask alignment.
 
 > **Execution Status**
 > - **Status:** `PROPOSAL`
-> - **Updated on:** `2026-05-16`
+> - **Updated on:** `2026-05-27`
 > - **Purpose:** define a polished scientific showcase for future textured-mesh support using real
 >   Mars terrain data.
+
+Status note on 2026-05-27: the narrow retained textured-mesh capability is now required for v0.4.
+This Mars plan remains a richer planetary-analysis showcase, but its first slice should use the
+same v0.4 mesh texture path as the terrain/planet proof: UVs, mesh-bound sampled texture, lighting,
+sampler defaults, and retained layer switching. Dataset download/cache, many layers, probe
+metadata, and analysis controls can follow after the core texture path is proven.
 
 
 ## Target Outcome

@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ANALYSIS REPORT`
-> - **Updated on:** `2026-05-25`
+> - **Updated on:** `2026-05-27`
 > - **Scope:** `spec/scene/examples/*.md`
 > - **Purpose:** summarize what Datoviz v0.4 still needs in scene, DRP2, app, and renderer/runtime
 >   support before all scene worked examples can be implemented.
@@ -46,7 +46,10 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
 2. **Visual family expansion and polish.**
    Implemented families now include `marker`, `sphere`, and `volume`, but gaps remain for
    grouped/ragged 3D paths, tubes/ribbons, vector glyphs/arrows, bars/candles, cubemap/skybox,
-   textured terrain, fullscreen custom visuals, and postprocess/composite visuals. Existing
+   fullscreen custom visuals, and postprocess/composite visuals. Retained textured mesh is a v0.4
+   release blocker for the terrain/planet showcase slice: it needs UV attributes, mesh-bound
+   sampled textures, a texture color-mode shader variant, lighting/material integration, sampler
+   defaults, retained texture updates, fixture coverage, and a deterministic C example. Existing
    families still need richer picking identities, categorical workflows beyond the first labels
    slice, and large-data policies.
 
@@ -119,14 +122,15 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
 | `API_SAMPLED_FIELD.md` | `SampledField` covers scalar/color/label 2D/3D descriptors, geometry metadata, full/region updates, image binding, labels binding, and volume binding. | Richer probe payloads, labels probe pressure, 3D labels, and broader non-image consumers. |
 | `GALAXY.md` | 3D panel, camera/arcball, point/pixel visuals, alpha modes, and WBOIT path are partial fits. | True marker/point-sprite radial falloff, large-star dataset loader/cache, per-star alpha/size style quality, rotation animation helper, overlay text, and gallery screenshot path. |
 | `GLOBAL_WIND_PROJECTIONS.md` | Primitive/path/image can approximate some layers. | Projection-aware transform pipeline, vector glyph/arrow visual, vector Jacobian semantics, coastline/graticule helpers, orthographic globe/projection interaction, optional compute particle overlay, and hover labels. |
-| `GRAND_CANYON_FLYOVER.md` | Mesh, texture image path, depth, camera, arcball, app capture, and animation callbacks are building blocks. | Textured mesh material path beyond image quads, terrain sampler parameters, camera flyover/keyframe helper, cache/download bundle handling, optional sky/background pass, and deterministic gallery screenshot example. |
+| `GRAND_CANYON_FLYOVER.md` | Mesh, depth, camera, arcball, app capture, animation callbacks, sampled image resources, and material/lighting paths are building blocks. | v0.4 blocker: true retained mesh texture binding, UV upload, `color_mode = texture`, sampler defaults, and deterministic terrain screenshot example. Full cache/download bundle handling, camera keyframes, sky/background pass, and polished flyover controls can follow. |
 | `GRAY_SCOTT.md` | DRP2 compute can exist below scene. | Scene-level compute nodes with storage textures or ping-pong fields, compute-to-render dependencies, brush/input uniforms, reset/preset controls, and rendering the compute output without direct DRP-only code. |
 | `LATEX_MICROTEX_TEXT_VISUAL.md` | Retained text/font/annotation handles and rendered bitmap/SDF glyph text paths exist. | TeX/math rendering, HarfBuzz shaping, richer font fallback chains, paragraph/layout behavior, and polished math-text examples. |
 | `MANDELBROT.md` | DRP2 can express custom shaders and fullscreen draws at a low level. | Scene custom fullscreen visual/material API, uniform buffers exposed to scene users, event-driven parameter updates, double-single parameter helpers, progressive refinement, HUD text, and Python binding path. |
 | `MARKET_MICROSTRUCTURE.md` | Multi-panel, path/point/image primitives, partial updates, image heatmap, panzoom, and app loop exist. | Bars/candles visual, LOD/visible-range aggregation, axes/text/tooltips, crosshair overlays, linked panels, CPU/GPU picking for trades/heatmap cells, ImGui controls, and streaming replay policy. |
 | `DIFFUSION_TRACTOGRAPHY.md` | 3D path can be approximated as one line strip or primitive lines. | Ragged path buffers, per-streamline identity, future `tube` rendering, tube impostors, tessellated tubes/ribbons, direction coloring, streamline picking/highlight, LOD/subsampling, and WBOIT/SSAO integration. |
-| `EARTH.md` | 3D camera/arcball and mesh/image primitives are available. | Cubemap/skybox visual, environment/background transform that follows camera orientation, textured sphere material, globe spin transform, asset download/cache, and polished depth/layering example. |
-| `PARTICLES.md` | DRP2 compute/storage buffers exist below scene, point rendering exists, and `spec/scene/proposals/active/PARTICLE_SYSTEM_DESIGN.md` captures the proposed particle-system semantics. | Scene-level compute-written storage buffers consumed as vertex/instance input, persistent buffer reuse, additive/transparent particle shaders, optional trails accumulation framegraph, and per-frame parameter/UI controls. |
+| `EARTH.md` | 3D camera/arcball, mesh/image primitives, sampled fields, and material/lighting paths are available. | v0.4 can use the retained textured-mesh slice for a planet patch or UV sphere-like surface. Full cubemap/skybox visual, environment/background transform, globe spin helper, asset cache, and polished depth/layering example remain later. |
+| `PARTICLES.md` | Point rendering, dynamic updates, app frame callbacks, and DRP2 compute/storage buffers below scene are available. `spec/scene/proposals/active/PARTICLE_SYSTEM_DESIGN.md` captures the proposed particle-system semantics. | v0.4 stretch can support CPU-side particle or fluid advection by updating point/path/image data each frame. Full GPU particle simulation still needs scene-level compute-written storage buffers consumed as vertex/instance input, persistent buffer reuse, additive/transparent particle shaders, optional trails accumulation framegraph, and per-frame parameter/UI controls. |
+| `CFD_VORTICITY_ADVECTION.md` | Image fields, point/path overlays, partial updates, app frame callbacks, and video/capture infrastructure are building blocks. | v0.4 stretch path is CPU-side bounded advection with scalar image and particle/trail overlays. GPU-side fluid simulation needs scene compute nodes, ping-pong storage textures, compute-to-render dependencies, and UI/reset controls. |
 | `STREAMING_DAQ_VIEWER.md` | Partial range updates, path/primitive rendering, panzoom, and app loop exist. | Ring-buffer visual semantics, discontinuity handling at wrap, many-trace layout/stacking helpers, cursor/overlays/text, pause/reset controls, and sustained streaming resource policy. |
 | `TOY_DICOM_VIEWER.md` | Multi-panel, image, mesh, camera, arcball, sampled-field metadata, and app interaction are partial pieces. | Shared 3D texture resource bound to slices and volume, oriented slice shader, window/level uniforms, crosshair overlays, 3D raymarch volume visual, transfer functions, slice dragging, and UI sliders. |
 | `PROTEIN_ARCBALL_VIEWER.md` | Mesh, primitive, depth, arcball, WBOIT, and app path are useful foundations. | Sphere impostor atoms, cylinder/bond or tube visual, ribbon/cartoon mesh helpers, material controls, ImGui controls, asset cache/download, multi-representation visibility groups, SSAO gbuffer/pass/blur/composite framegraph, and rendered labels. |
@@ -134,46 +138,52 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
 
 ## Cross-Cutting Work Queue
 
-1. **Text and explanatory-object proof first.**
+1. **Add retained textured mesh before final gallery proof.**
+   Land the v0.4-required UV attribute path, mesh texture resource binding, texture shader variant,
+   sampler defaults, material/lighting integration, fixture, and terrain/planet C showcase. Do not
+   count baked vertex colors as satisfying this lane.
+
+2. **Text and explanatory-object proof.**
    Harden the existing rendered text, axes, labels, legends, annotations, colorbars, and scale bars
    through focused examples and screenshot/offscreen proof. This unlocks many 2D examples and
    improves every gallery scene.
 
-2. **Polish the point-like family.**
+3. **Polish the point-like family.**
    Public marker, point, pixel, and sphere first slices exist with item-id support. The next work is
    exact marker hit testing, richer marker style payloads, large-count stress, and selection styling.
 
-3. **Make FramePlan multi-pass resources explicit in scene.**
+4. **Make FramePlan multi-pass resources explicit in scene.**
    Add named virtual textures/buffers, dependencies, pass roles, fullscreen/postprocess passes, and
    per-panel resource lifetimes. This is the common blocker for WBOIT polish, SSAO, compute examples,
    volume rendering, and custom shader demos.
 
-4. **Expose scene-level custom visual/material resources.**
+5. **Expose scene-level custom visual/material resources.**
    Let examples define shaders, uniforms, storage buffers/textures, samplers, and fullscreen draws
    without dropping below scene or leaking Vulkan.
 
-5. **Promote compute from DRP2 capability to scene feature.**
-   Start with Gray-Scott or particles: persistent ping-pong resources, compute pass, render pass,
-   and deterministic dependency ordering.
+6. **Separate CPU-side fluid/particle stretch from GPU compute.**
+   A bounded CPU-side fluid or particle example can use existing image/point/path dynamic updates.
+   GPU Gray-Scott or particles require persistent ping-pong resources, compute pass, render pass,
+   and deterministic dependency ordering at the scene level.
 
-6. **Add volume and 3D sampled-field rendering.**
+7. **Add volume and 3D sampled-field rendering.**
    Implement `volume` slice first, then raymarch/offscreen export. Keep `SampledField` as the
    source resource and make transfer/window-level/colormap parameters explicit.
 
-7. **Widen picking/probing payloads.**
+8. **Widen picking/probing payloads.**
    Add marker, mesh face/region, path/streamline, heatmap cell, and volume-slice targets with stable
    ids, link-key resolution, stale-result handling, and CPU fallback hooks where GPU picking is not
    ready.
 
-8. **Add linked-scene interaction primitives.**
+9. **Add linked-scene interaction primitives.**
    Shared controllers by dimension, linked crosshair/probe state, scale identity, panel-local
    annotation derivation, and UI-mutated selection/visibility state should become first-class.
 
-9. **Add large-data and streaming policies.**
+10. **Add large-data and streaming policies.**
    Build explicit ring-buffer, visible-range, LOD/subsampling, constant-attribute, per-group, and
    per-span attribute support into the scene resource model.
 
-10. **Finish example harness infrastructure.**
+11. **Finish example harness infrastructure.**
     Python bindings, cache/download helpers, ImGui integration, deterministic screenshot/video
     capture, and asset/font bundling are required for the larger examples to run from a clean
     checkout.
@@ -190,7 +200,11 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
    and colorbars on top of the existing image probe path.
 5. `VOLUME_SLICE.md`: first real 3D sampled-field consumer; then `TOY_DICOM_VIEWER.md` becomes
    feasible in stages.
-6. `GRAY_SCOTT.md`: first scene-level compute-to-render framegraph, after virtual resources and
+6. `GRAND_CANYON_FLYOVER.md` or `EARTH.md`: v0.4-required retained textured mesh proof with UVs,
+   mesh-bound texture sampling, lighting, and deterministic capture.
+7. `CFD_VORTICITY_ADVECTION.md`: optional CPU-side dynamic image/particle/path update stretch
+   before scene-level GPU compute.
+8. `GRAY_SCOTT.md`: first scene-level compute-to-render framegraph, after virtual resources and
    custom material/resource binding exist.
-7. `PROTEIN_ARCBALL_VIEWER.md`: keep as the multi-pass renderer pressure test after mesh/material,
+9. `PROTEIN_ARCBALL_VIEWER.md`: keep as the multi-pass renderer pressure test after mesh/material,
    WBOIT, postprocess, text, and UI controls are in better shape.

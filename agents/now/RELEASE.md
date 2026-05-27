@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE RELEASE ROADMAP`
-> - **Updated on:** `2026-05-25`
+> - **Updated on:** `2026-05-27`
 > - **Purpose:** provide the step-by-step route from the current v0.4 branch to `v0.4.0`
 > - **Audience:** maintainers and agents coordinating feature freeze, release candidates, and final
 >   release work
@@ -32,6 +32,11 @@ implemented enough that they should not be treated as primary feature-freeze blo
 readouts currently have public/bookkeeping state and formatting; richer rendered readout UI can be
 polish or v0.5 work unless a release example depends on it.
 
+The gallery strategy now makes retained textured mesh a required v0.4 feature, with no baked-color
+workaround. Feature freeze therefore also requires a narrow UV-mapped mesh texture slice and a
+deterministic terrain or planet-surface proof before the final v0.4 gallery can be considered
+honest.
+
 Scale-bar rendering is present, including the retained update-performance refactor captured in
 [../done/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR.md](../done/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR.md).
 Panzoom/domain changes now avoid rebuilding text/glyph resources when the formatted label and text
@@ -41,12 +46,15 @@ The remaining feature-freeze blockers are:
 
 1. **WebGPU/WASM experimental path:** a documented and tested browser/backend subset, not full
    native parity.
-2. **Raw `ctypes` API:** generated low-level Python bindings that honestly track the v0.4 C API.
-3. **v0.3 visible parity audit:** visible capability parity or explicit deferral, not source/API
+2. **Retained textured mesh:** UV attributes, mesh-bound sampled textures, texture-mode mesh
+   shader/pipeline variant, sampler defaults, material/lighting integration, fixture coverage, and
+   a deterministic terrain or planet-surface C example.
+3. **Raw `ctypes` API:** generated low-level Python bindings that honestly track the v0.4 C API.
+4. **v0.3 visible parity audit:** visible capability parity or explicit deferral, not source/API
    compatibility.
-4. **Public API/status cleanup:** supported, experimental, advanced/unstable, deferred, and
+5. **Public API/status cleanup:** supported, experimental, advanced/unstable, deferred, and
    external/GSP labels are clear.
-5. **Release example proof:** a compact set of examples demonstrates the declared feature set.
+6. **Release example proof:** a compact set of examples demonstrates the declared feature set.
 
 
 ## Scope Decisions
@@ -54,10 +62,11 @@ The remaining feature-freeze blockers are:
 ### Required Before Feature Freeze
 
 1. Native scene/app path covers the declared v0.4 visual and interaction subset.
-2. WebGPU/WASM has an experimental subset with explicit unsupported-feature diagnostics.
-3. Raw `ctypes` generation and smoke tests work for the intended public C surface.
-4. v0.3 visible capability gaps are fixed, explicitly deferred, or moved to GSP/VisPy2.
-5. Core examples compile and exercise the release feature set.
+2. Retained textured mesh has a narrow but real implementation and deterministic example proof.
+3. WebGPU/WASM has an experimental subset with explicit unsupported-feature diagnostics.
+4. Raw `ctypes` generation and smoke tests work for the intended public C surface.
+5. v0.3 visible capability gaps are fixed, explicitly deferred, or moved to GSP/VisPy2.
+6. Core examples compile and exercise the release feature set.
 
 ### Not Required For v0.4 Feature Freeze
 
@@ -91,17 +100,19 @@ Checklist:
    `external/GSP`.
 3. Close or explicitly defer every item in [STATUS.md](STATUS.md) that is still
    listed as feature-freeze critical.
-4. Verify that text, axes, ticks, axis labels, colorbars, annotations, and scale bars are represented
+4. Land or explicitly re-scope the retained textured-mesh blocker; the release plan currently
+   treats it as required, not deferrable.
+5. Verify that text, axes, ticks, axis labels, colorbars, annotations, and scale bars are represented
    in examples/tests and are not stale planning-only claims.
-5. Decide whether any rendered pinned readout work is required for release examples; otherwise mark
+6. Decide whether any rendered pinned readout work is required for release examples; otherwise mark
    richer readouts as polish or v0.5.
-6. Keep the landed retained scale-bar update-performance churn tests and live example smokes
+7. Keep the landed retained scale-bar update-performance churn tests and live example smokes
    represented in release validation.
-7. Reconcile [STATUS.md](STATUS.md),
+8. Reconcile [STATUS.md](STATUS.md),
    [../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md),
    and the public feature table so completed first slices are not still presented as active
    feature-freeze blockers.
-8. Decide or explicitly defer unresolved API-shape questions that affect RC1 feedback, especially
+9. Decide or explicitly defer unresolved API-shape questions that affect RC1 feedback, especially
    unified panel query versus pick/probe polling and callback wording versus the retained polling
    model.
 
@@ -129,7 +140,7 @@ Checklist:
 1. Audit visible capabilities, not old symbol names:
    retained scene workflow, offscreen/GLFW app, screenshot/capture, frame callbacks, multi-panel
    figures, text, axes, colorbars, panzoom, arcball/fly/turntable, point, pixel, marker, primitive,
-   segment/path, image, mesh, sphere, and volume.
+   segment/path, image, mesh including retained textured mesh, sphere, and volume.
 2. Compare examples and v0.3-visible feature families against the v0.4 example staging table.
 3. For each gap, choose one disposition:
    fix before RC1, document as deferred, or move to GSP/VisPy2.
@@ -243,7 +254,8 @@ Required artifacts:
 9. explicit deferred-feature list aligned with
    [../../spec/scene/validation/DEFERRED_TRACKER.md](../../spec/scene/validation/DEFERRED_TRACKER.md),
 10. release-staging reconciliation for examples that prove text, axes, colorbars, annotations,
-    scale bars, pick/probe, sampled fields, sphere, volume, and dense point coverage,
+    scale bars, pick/probe, sampled fields, retained textured mesh, sphere, volume, and dense point
+    coverage,
 11. temporary RC1 user guide at the repository root, for example `V0_4_RC1.md`, explaining that
     legacy `docs/` and the public website may still describe v0.3, and giving source-build,
     optional wheel/raw-`ctypes`, example-smoke, known-issues, feedback, and
@@ -284,8 +296,8 @@ Checklist:
 
 1. Add the minimal render-conformance harness or a narrow equivalent.
 2. Start with a small stable fixture set:
-   point, image plus colormap, mesh plus depth, multi-panel scissor, text/axis labels, colorbar,
-   volume or sphere, and one technique such as EDL, SSAO, WBOIT, or MSAA.
+   point, image plus colormap, mesh plus depth, textured mesh, multi-panel scissor, text/axis
+   labels, colorbar, volume or sphere, and one technique such as EDL, SSAO, WBOIT, or MSAA.
 3. Use exact image refs only where stable; otherwise use nonblank checks, expected sampled pixels,
    changed-region checks, and metamorphic assertions.
 4. Add failure artifacts for actual/diff images when image comparison is active.
@@ -293,7 +305,7 @@ Checklist:
    validation set.
 6. Build release gallery examples:
    scatter with axes, linked image probe/colorbar, protein, brain/volume, LiDAR or dense point
-   cloud, and one WebGPU/WASM subset page.
+   cloud, textured terrain or planet surface, and one WebGPU/WASM subset page.
 7. Add gallery/example metadata and asset-policy notes before broadening showcase examples.
 8. Use the active view/canvas raster capture path for gallery screenshots; keep render-scale,
    panel-as-texture, and native vector/PDF/SVG export out of the v0.4 promise.

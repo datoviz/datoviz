@@ -17,9 +17,16 @@ Update on 2026-05-24: CPU-side `geom` helpers can derive unique mesh edges and u
 contour segments. The first live overlay example lowers those derived outputs to `segment` visuals;
 this does not make edge overlay or isolines native mesh runtime features yet.
 
-Texture slots, scalar colormap mode, automatic normal generation, edge overlay, isolines,
-shape-builder integration, and face/region picking are target capabilities unless marked above as
-implemented.
+Update on 2026-05-27: retained textured mesh is required for the v0.4 release example set, not a
+later workaroundable feature. The minimum slice is `texcoords`, a 2D sampled-field or texture
+resource bound by mesh visuals, a `color_mode = texture` shader/pipeline variant, texture sampling
+combined with the active lighting/material path, retained texture replacement or layer switching,
+sampler defaults, deterministic tests, and one C terrain or planet-surface example. Baked vertex
+colors are useful fallbacks for other examples, but they do not satisfy the textured-mesh release
+requirement.
+
+Scalar colormap mode, automatic normal generation, edge overlay, isolines, shape-builder
+integration, and face/region picking remain target capabilities unless marked above as implemented.
 
 ## Purpose
 
@@ -87,7 +94,7 @@ the resource on the next validated frame plan.
 
 | Parameter | Type | Default | Applies to | Notes |
 |---|---|---|---|---|
-| `texture` | 2D `SampledField`, RGBA `u8` | none | `color_mode = texture` | target capability; mesh texture slot, not image-only setter |
+| `texture` | 2D `SampledField`, RGBA `u8` | none | `color_mode = texture` | v0.4 required capability; mesh texture slot, not image-only setter |
 | `colormap` | `Scale` kind `color` | none | `color_mode = scalar` | maps per-vertex scalar to color |
 | `backface_culling` | `bool` | `true` | all | set `false` for open/thin surfaces |
 | lighting parameters | shared | shared defaults | `lighting = phong` | see `SHARED_ATTRIBUTES.md` |
@@ -184,7 +191,7 @@ the rendered mesh target. Mesh face/region identity remains deferred.
 ## Required Cases
 
 1. brain surface with vertex-colored regions;
-2. terrain with satellite texture;
+2. terrain with satellite texture; this is the v0.4 retained textured-mesh proof case;
 3. activity-colored cortical surface using scalar colormap;
 4. flat-shaded polyhedral mesh;
 5. wireframe/edge overlay;
@@ -213,9 +220,9 @@ the rendered mesh target. Mesh face/region identity remains deferred.
 | `dvz_mesh_alloc` | automatic visual resize |
 | `dvz_mesh_shape` / `dvz_mesh_reshape` | shape builder integration |
 
-The target v0.4 contract adds variant axes, `backface_culling`, `isoline_range`, auto normals,
-scale-backed colormaps, `CONSTANT` color, empty visual support, dynamic index updates, and hidden
-edge-distance payloads.
+The target v0.4 contract adds variant axes, retained mesh texture binding,
+`backface_culling`, `isoline_range`, auto normals, scale-backed colormaps, `CONSTANT` color, empty
+visual support, dynamic index updates, and hidden edge-distance payloads.
 
 ## PBR Forward Compatibility
 

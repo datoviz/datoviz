@@ -10,17 +10,20 @@ See [../SHARED_POLICIES.md](../SHARED_POLICIES.md) for shared example policy.
 
 ## Summary
 
-Create an interactive 3D globe in front of a cubemap deep-space background. The first practical slice
-is a skybox or equivalent cubemap environment, textured fake-sphere Earth, orbit camera, and
-time-based slow spin. The goal is to exercise cubemap creation, upload, sampling, face orientation,
-camera-relative background behavior, and a simple interactive 3D scene.
+Create an interactive 3D globe in front of a cubemap deep-space background. The v0.4-required slice
+is a true retained textured mesh: UV-mapped sphere or sphere-like planet surface, mesh-bound RGBA
+texture sampling, orbit camera, and time-based slow spin. Full cubemap/skybox background behavior
+is a later extension unless the first textured-mesh proof already exists. The broader goal is to
+exercise cubemap creation, upload, sampling, face orientation, camera-relative background behavior,
+and a simple interactive 3D scene.
 
 
 ## User-Visible Result
 
 - A window opens directly into a 3D scene.
-- A starry universe cubemap fills the background and responds to camera rotation without parallax.
-- A centered textured Earth looks spherical and rotates slowly.
+- A centered textured Earth mesh looks spherical and rotates slowly.
+- A starry universe cubemap fills the background and responds to camera rotation without parallax
+  when the later cubemap slice is enabled.
 - The user can orbit and zoom around the globe with stable interaction.
 - The example runs out of the box after assets are bundled, cached, downloaded, or generated.
 
@@ -29,9 +32,10 @@ Suggested scenario/example id: `earth_cubemap`.
 
 ## Feature Pressure Points
 
-- Cubemap resource upload and sampling.
+- Retained textured mesh with UVs and mesh-side sampled texture binding.
+- Mesh lighting/material integration for a spherical or sphere-like surface.
+- Cubemap resource upload and sampling in the later full example.
 - Skybox/environment rendering that ignores camera translation but follows orientation.
-- Fake-sphere/impostor/textured-sphere visual in front of the background.
 - Time-based object animation independent of frame count.
 - Orbit/arcball camera defaults and resize stability.
 
@@ -73,10 +77,10 @@ Earth texture:
 1. Resolve asset cache paths and populate missing cubemap/Earth assets by download or deterministic
    generation.
 2. Load the six cubemap faces with correct ordering/orientation.
-3. Create a skybox, cubemap visual, environment technique, or low-level cube draw that appears
-   infinitely distant.
-4. Create one centered textured globe using a fake sphere, impostor sphere, billboard sphere, or
-   current v0.4 equivalent.
+3. Create one centered textured globe as a retained mesh with positions, normals, UVs, indices, and
+   a mesh-bound RGBA texture.
+4. Create a skybox, cubemap visual, environment technique, or low-level cube draw that appears
+   infinitely distant when the later full example is in scope.
 5. Set an orbit camera framing the full globe with surrounding space visible.
 6. Update Earth rotation from elapsed time.
 7. Start the event loop normally.
@@ -85,7 +89,8 @@ Earth texture:
 ## Scene And Runtime Behavior
 
 - Earth is centered near the world origin and is the orbit target.
-- Cubemap translation is camera-relative; rotation changes the visible face/region.
+- Cubemap translation is camera-relative; rotation changes the visible face/region when the
+  cubemap slice is enabled.
 - Globe renders in front of the background; skybox never occludes it.
 - The example should use current v0.4 scene/runtime paths and should not preserve v0.3 API names.
 - Startup after cache population should be fast; runtime should remain smooth on a typical desktop
@@ -98,9 +103,10 @@ Manual checklist:
 
 - first run populates cache or clearly reports unavailable assets;
 - second run reuses cache without redundant downloads/generation;
-- the cubemap is visible, nonflat, correctly oriented, and not mirrored;
-- camera orbit changes the background while the skybox has no translation parallax;
-- Earth is visible, spherical, foregrounded, and slowly rotating without jitter;
+- Earth is visible, spherical, foregrounded, textured through the mesh path, and slowly rotating
+  without jitter;
+- the cubemap is visible, nonflat, correctly oriented, and not mirrored when enabled;
+- camera orbit changes the background while the skybox has no translation parallax when enabled;
 - resize does not break rendering;
 - depth/draw order never hides the Earth behind the skybox.
 

@@ -54,6 +54,7 @@ example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `l
 | Visual | Primitive triangle | Implemented | `fixture_primitive_triangle.c` | PNG | scene+app | One RGB triangle with `DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST`. |
 | Visual | Primitive line | Implemented | `fixture_primitive_line.c` | PNG | scene+app | One line strip or line list. |
 | Visual | Mesh | Implemented | `fixture_mesh.c` | PNG | scene+app | One indexed tetrahedron or cube. |
+| Visual | Textured mesh | Required v0.4 | `fixture_mesh_textured.c` | PNG | scene+app | One UV-mapped quad or small terrain grid with a 4x4 RGBA texture sampled by the mesh shader and lit. |
 | Visual | Path | Implemented | `fixture_path.c` | PNG | scene+app | One five-point polyline. |
 | Visual | Image | Implemented | `fixture_image.c` | PNG | scene+app | One 4x4 RGBA checkerboard on a quad. |
 | Visual | Volume slice | Implemented | `fixture_volume_slice.c` | PNG | scene+app | One tiny 3D scalar field rendered as a slice. |
@@ -107,6 +108,7 @@ example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `l
 | App | PNG capture | Implemented | `fixture_capture_png.c` | PNG | scene+app | Render and save a PNG through app/canvas capture. |
 | App | GLFW live window | Implemented | `fixture_glfw_window.c` | bounded GLFW | scene+app+GLFW | One point scene, auto-close after N frames. |
 | App | Frame callback | Implemented | `fixture_frame_callback.c` | PNG | scene+app | Mutate point color on frame 2 and capture frame 3. |
+| Animation/stress | CPU fluid or particle advection | v0.4 experimental/stretch | `fixture_cpu_fluid_particles.c` | PNG/live | scene+app | Update a small scalar image plus particle points or short trails over bounded frames without scene-level GPU compute. |
 | App | Hosted window | Implemented smoke | `fixture_hosted_window.c` | bounded GLFW | app+canvas+GLFW | Minimal hosted-window integration smoke. |
 | Serialization | Scene JSON | Implemented | `fixture_scene_json.c` | JSON | scene | Serialize one-point scene to JSON. |
 | Emission | Figure DRP2 stream | Implemented | `fixture_emit_drp2.c` | JSON | scene+drp2 | Emit a one-triangle frame plan and save debug JSON. |
@@ -267,6 +269,7 @@ These rows should remain planned until the corresponding runtime behavior is lan
 | Technique | Selected outline | `fixture_selected_outline.c` | Select one object and render an outline. |
 | Technique | Dual depth peeling | `fixture_dual_depth_peel.c` | Transparent layered geometry after graph-backed path lands. |
 | Technique | Curvature/cavity shading | `fixture_cavity_shading.c` | One lit mesh/sphere with cavity shading. |
+| Compute | GPU particle simulation | `fixture_gpu_particles.c` | Scene-level compute writes persistent particle buffers consumed by point/sphere rendering. |
 
 
 ## Showcase Pressure Tests
@@ -278,6 +281,8 @@ features and should be backed by smaller fixtures for the individual capabilitie
 | ---- | ------- | ------ | ------------- | ------------------- |
 | Embedding dashboard | `IMAGE_EMBEDDING_LOD.md` | Planned showcase | PD12M image thumbnails, texture-array LOD, panzoom, picking, retained resource reuse. | <=10,000 PD12M items rendered as mean-color rectangles from preprocessed embedding positions. |
 | Embedding dashboard | `SEMANTIC_EMBEDDING_ATLAS.md` | Planned showcase | Dense semantic points, label LOD, title search, selection cards, optional query vectors. | <=100,000 Wikivecs articles rendered as colored points with panzoom and stable pick ids. |
+| Terrain/planet | `GRAND_CANYON_FLYOVER.md` / `EARTH.md` | v0.4 required showcase slice | Retained textured mesh, UVs, sampler state, lit terrain or sphere-like surface, camera/capture. | One deterministic UV-mapped terrain or planet patch using true mesh texture sampling, not baked vertex colors. |
+| Physics | `CFD_VORTICITY_ADVECTION.md` | v0.4 experimental/stretch | Dynamic image updates, particle/path updates, bounded animation loop, optional video capture. | CPU advection updates a small field and point/trail overlay for 64-256 frames. |
 | Frame graph | Debug graph dump | `fixture_frame_plan_graph_debug.c` | Emit deterministic graph debug output with typed resources/passes. |
 | Descriptor refresh | Resize refresh | `fixture_descriptor_refresh_resize.c` | Repeated resize with stable resource ids and refreshed descriptors. |
 | CuPy | Python/CuPy external memory | `fixture_cupy_external_memory.py` | Future Python-facing Vulkan-owned allocation import into CuPy. |

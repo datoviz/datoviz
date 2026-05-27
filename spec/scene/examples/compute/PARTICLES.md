@@ -14,6 +14,11 @@ while staying focused on Datoviz compute-buffer-to-render flow.
 
 See also [particle system design](../../proposals/active/PARTICLE_SYSTEM_DESIGN.md).
 
+Status note on 2026-05-27: this GPU-driven version remains deferred until scene-level compute and
+compute-written render inputs are first-class. A v0.4 stretch particle/fluid showcase should use
+CPU-side bounded updates to existing point, path, or image visuals instead of claiming GPU particle
+simulation support.
+
 ## User-Visible Result
 
 - Dark 3D scene with a bright rotating core, spiral/vortex streaks, and semi-transparent particles.
