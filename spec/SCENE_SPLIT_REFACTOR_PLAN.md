@@ -86,6 +86,21 @@ Visual-family-specific behavior must be isolated behind scene-owned visual descr
 descriptors, shader descriptors, pass-capability categories, and draw-packet helpers. Generic scene
 pipeline files should consume normalized facts, not discover or special-case concrete families.
 
+Strict requirement: after Stage 2, no visual-specific code should remain in visual-generic code.
+For this rule, visual-generic code means shared scene files that manage generic `DvzVisual`
+lifecycle, metadata aggregation, descriptor selection, pass capability lookup, upload scheduling,
+render-position extraction, frame-plan construction, render-contract construction, DRP2 emission, or
+pipeline/resource plumbing. These files must not branch on semantic visual families, mention
+family-owned struct fields, reshape buffers for one family, or encode shader/topology/draw-count
+rules for one concrete family. They may branch only on reusable renderable primitives, normalized
+descriptor fields, or backend/runtime facts.
+
+The practical acceptance test is that adding or modifying an ordinary visual family should not
+require edits scattered across generic descriptor, metadata, upload, pass-capability,
+render-position, frame-plan, and DRP2-emission files. If a visual change appears to require broad
+generic churn, treat that as evidence that the visual-family lowering interface is missing a
+reusable abstraction.
+
 When adding or changing a visual family:
 
 1. put retained API, attribute validation, defaults, metadata emission, and bounds logic in the
@@ -470,12 +485,21 @@ Required end state:
    resources, material parameters, and pass-capability choices are expressed through
    descriptor/lowering helpers;
 4. generic scene pipeline code branches on reusable renderable primitives or descriptor fields only;
-5. focused scene tests cover at least one retained family and one nontrivial descriptor/lowering path
+5. visual-generic code contains no semantic-family names, `DVZ_VISUAL_TYPE_<FAMILY>` checks,
+   `DVZ_SCENE_VISUAL_FAMILY_<FAMILY>` checks, `visual-><family>` field access, or helper calls whose
+   behavior applies to only one concrete visual family;
+6. focused scene tests cover at least one retained family and one nontrivial descriptor/lowering path
    so the boundary fails visibly if concrete-family logic leaks back into generic code;
-6. vector/arrow tests fail if straight lowering regresses to segment-owned cache/state, curved
+7. vector/arrow tests fail if straight lowering regresses to segment-owned cache/state, curved
    lowering regresses to path-owned cache/state, query routing loses vector semantic identity, or a
    new `DVZ_VISUAL_TYPE_VECTOR`/arrow check appears in generic pipeline plumbing outside
    vector-family owned files.
+
+Before closing Stage 2, run a source review and grep-style leak check over visual-generic files. The
+exact file list may change during the split, but it must include the generic visual, descriptor,
+metadata, pass-capability, upload, frame-plan, render-contract, render-position, and DRP2 emission
+files. Any hit for a semantic family name in those files must be either removed or justified as a
+renderable-primitive-neutral descriptor concept before the stage is considered complete.
 
 This stage should not introduce new public modules.
 
