@@ -150,7 +150,7 @@ int test_scene_interaction_core(TstContext* suite, const TstCase* item)
 }
 
 
-int test_scene_selection_apply_pick_and_link_keys(TstContext* suite, const TstCase* item)
+int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -172,24 +172,24 @@ int test_scene_selection_apply_pick_and_link_keys(TstContext* suite, const TstCa
     AT(visual->link_key_count == 3);
     AT(visual->link_keys[1] == 11);
 
-    DvzPickResult pick = {
+    DvzQueryResult query = {
         .request_id = 1,
-        .status = DVZ_PICK_STATUS_HIT,
+        .status = DVZ_QUERY_STATUS_HIT,
         .hit = true,
         .visual_id = 7,
         .resolved_target = DVZ_SCENE_TARGET_ITEM,
         .resolved_id = 0,
         .link_key = 10,
     };
-    AT(dvz_selection_apply_pick(selection, &pick) == 0);
+    AT(dvz_selection_apply_query(selection, &query) == 0);
     AT(dvz_selection_count(selection) == 1);
-    AT(dvz_selection_apply_pick(selection, &pick) == 0);
+    AT(dvz_selection_apply_query(selection, &query) == 0);
     AT(dvz_selection_count(selection) == 0);
 
-    pick.resolved_id = 43;
-    pick.link_key = 0;
+    query.resolved_id = 43;
+    query.link_key = 0;
     selection->desc.mode = DVZ_SELECT_ADDITIVE;
-    AT(dvz_selection_apply_pick(selection, &pick) == 0);
+    AT(dvz_selection_apply_query(selection, &query) == 0);
     AT(dvz_selection_count(selection) == 1);
 
     DvzSelectionItem items[2] = {0};
@@ -203,7 +203,7 @@ int test_scene_selection_apply_pick_and_link_keys(TstContext* suite, const TstCa
 }
 
 
-int test_scene_selection_apply_pick_updates_visual_masks(TstContext* suite, const TstCase* item)
+int test_scene_selection_apply_query_updates_visual_masks(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -259,16 +259,16 @@ int test_scene_selection_apply_pick_updates_visual_masks(TstContext* suite, cons
     AT(dvz_visual_set_link_keys(marker, channel, marker_keys, 3) == 0);
     AT(dvz_panel_add_visual(panel, marker, NULL) == 0);
 
-    DvzPickResult pick = {
+    DvzQueryResult query = {
         .request_id = 1,
-        .status = DVZ_PICK_STATUS_HIT,
+        .status = DVZ_QUERY_STATUS_HIT,
         .hit = true,
         .visual_id = _scene_visual_public_id(scene, point),
         .resolved_target = DVZ_SCENE_TARGET_ITEM,
         .resolved_id = 1,
         .link_key = 20,
     };
-    AT(dvz_selection_apply_pick(selection, &pick) == 0);
+    AT(dvz_selection_apply_query(selection, &query) == 0);
 
     int point_selection_idx = _attr_index(point, "selection");
     int marker_selection_idx = _attr_index(marker, "selection");
@@ -304,7 +304,7 @@ int test_scene_selection_apply_pick_updates_visual_masks(TstContext* suite, cons
 
     AT(point->attrs[point_selection_idx].dirty_item_count == 0);
     AT(marker->attrs[marker_selection_idx].dirty_item_count == 0);
-    AT(dvz_selection_apply_pick(selection, &pick) == 0);
+    AT(dvz_selection_apply_query(selection, &query) == 0);
     AT(dvz_selection_count(selection) == 0);
     point_mask = (const uint8_t*)point->attrs[point_selection_idx].data;
     marker_mask = (const uint8_t*)marker->attrs[marker_selection_idx].data;
@@ -322,7 +322,7 @@ int test_scene_selection_apply_pick_updates_visual_masks(TstContext* suite, cons
 }
 
 
-int test_scene_selection_card_realizes_pick_metadata(TstContext* suite, const TstCase* item)
+int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -337,9 +337,9 @@ int test_scene_selection_card_realizes_pick_metadata(TstContext* suite, const Ts
     ANN(panel);
     ANN(selection);
 
-    DvzPickResult pick = {
+    DvzQueryResult query = {
         .request_id = 1,
-        .status = DVZ_PICK_STATUS_HIT,
+        .status = DVZ_QUERY_STATUS_HIT,
         .hit = true,
         .panel_id = _scene_panel_public_id(figure, panel),
         .visual_id = 7,
@@ -349,7 +349,7 @@ int test_scene_selection_card_realizes_pick_metadata(TstContext* suite, const Ts
         .link_key = 123,
         .panel_position = {20.0, 30.0},
     };
-    AT(dvz_selection_apply_pick(selection, &pick) == 0);
+    AT(dvz_selection_apply_query(selection, &query) == 0);
     AT(selection->card_panel == panel);
     AT(selection->card.visible);
     AT(selection->card.dirty);
@@ -2731,9 +2731,9 @@ int test_scene_interaction(TstSuite* suite)
     TST_GROUP("interaction");
 
     TST_CASE(test_scene_interaction_core);
-    TST_CASE(test_scene_selection_apply_pick_and_link_keys);
-    TST_CASE(test_scene_selection_apply_pick_updates_visual_masks);
-    TST_CASE(test_scene_selection_card_realizes_pick_metadata);
+    TST_CASE(test_scene_selection_apply_query_and_link_keys);
+    TST_CASE(test_scene_selection_apply_query_updates_visual_masks);
+    TST_CASE(test_scene_selection_card_realizes_query_metadata);
     TST_CASE(test_scene_overlay_card_public_api);
     TST_CASE(test_scene_overlay_card_rich_text_public_api);
     TST_CASE(test_scene_text_annotation_bookkeeping);

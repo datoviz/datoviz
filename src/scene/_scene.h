@@ -834,7 +834,7 @@ struct DvzSelection
     DvzSelectionDesc desc;
     DvzPanel* card_panel;
     bool card_enabled;
-    DvzPickResult card_pick;
+    DvzQueryResult card_query;
     DvzSceneCard card;
     uint32_t item_count;
     DvzSelectionItem items[DVZ_SCENE_MAX_SELECTION_ITEMS];
@@ -856,7 +856,7 @@ struct DvzPinnedReadout
 {
     DvzScene* scene;
     DvzPanel* panel;
-    DvzProbeResult probe;
+    DvzQueryResult query;
     bool has_format;
     DvzSceneFormatState format;
     char text[DVZ_SCENE_LABEL_SIZE];

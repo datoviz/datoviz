@@ -176,17 +176,6 @@ DVZ_EXPORT void dvz_selection_clear(DvzSelection* selection);
 
 
 /**
- * Apply one pick result to a selection object.
- *
- * @param selection the selection
- * @param pick the pick result
- * @return 0 on success, -1 on error
- */
-DVZ_EXPORT int dvz_selection_apply_pick(
-    DvzSelection* selection, const DvzPickResult* pick);
-
-
-/**
  * Apply one query result to a selection object.
  *
  * @param selection the selection
@@ -338,16 +327,6 @@ DVZ_EXPORT const DvzHoverState* dvz_scene_hover(const DvzScene* scene, const Dvz
 /*************************************************************************************************/
 /*  Pinned readouts                                                                              */
 /*************************************************************************************************/
-
-/**
- * Create a pinned readout from a resolved probe result.
- *
- * @param panel the panel
- * @param probe the probe result
- * @return the pinned readout
- */
-DVZ_EXPORT DvzPinnedReadout* dvz_pinned_readout(DvzPanel* panel, const DvzProbeResult* probe);
-
 
 /**
  * Create a pinned readout from a resolved query result.

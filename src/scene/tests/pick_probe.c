@@ -293,10 +293,22 @@ int test_scene_pick_probe_queues_and_pinned_readout(TstContext* suite, const Tst
     AT(hover->active);
     AT(hover->pick.resolved_id == 99);
 
-    DvzPinnedReadout* readout = dvz_pinned_readout(panel, &out_probe);
+    DvzQueryResult readout_query = {
+        .request_id = out_probe.request_id,
+        .status = DVZ_QUERY_STATUS_HIT,
+        .hit = out_probe.hit,
+        .panel_id = out_probe.panel_id,
+        .visual_id = out_probe.visual_id,
+        .resolved_target = out_probe.target,
+        .resolved_id = out_probe.target_id,
+        .value_kind = DVZ_QUERY_VALUE_SCALAR,
+        .scalar = out_probe.scalar,
+    };
+    dvz_snprintf(readout_query.label, sizeof(readout_query.label), "%s", out_probe.label);
+    DvzPinnedReadout* readout = dvz_pinned_readout_query(panel, &readout_query);
     ANN(readout);
     AT(panel->pinned_readout_count == 1);
-    AT(readout->probe.scalar == 3.5);
+    AT(readout->query.scalar == 3.5);
     AT(strcmp(readout->text, "density: 3.5") == 0);
     AT(readout->card.dirty);
     readout->card.dirty = false;
@@ -307,18 +319,19 @@ int test_scene_pick_probe_queues_and_pinned_readout(TstContext* suite, const Tst
     AT(strcmp(readout->text, "density: 3.50 u") == 0);
     AT(readout->card.dirty);
 
-    DvzProbeResult rgba_probe = {
+    DvzQueryResult rgba_query = {
         .request_id = 7,
+        .status = DVZ_QUERY_STATUS_HIT,
         .hit = true,
         .panel_id = 1,
         .visual_id = 3,
-        .target = DVZ_SCENE_TARGET_PIXEL,
-        .target_id = 3,
-        .value_kind = DVZ_PROBE_VALUE_VEC4,
+        .resolved_target = DVZ_SCENE_TARGET_PIXEL,
+        .resolved_id = 3,
+        .value_kind = DVZ_QUERY_VALUE_VEC4,
         .vector = {0.25, 0.5, 1.0, 0.75},
     };
-    dvz_snprintf(rgba_probe.label, sizeof(rgba_probe.label), "%s", "rgba");
-    DvzPinnedReadout* rgba_readout = dvz_pinned_readout(panel, &rgba_probe);
+    dvz_snprintf(rgba_query.label, sizeof(rgba_query.label), "%s", "rgba");
+    DvzPinnedReadout* rgba_readout = dvz_pinned_readout_query(panel, &rgba_query);
     ANN(rgba_readout);
     AT(panel->pinned_readout_count == 2);
     AT(strcmp(rgba_readout->text, "rgba: 0.25 0.5 1 0.75") == 0);

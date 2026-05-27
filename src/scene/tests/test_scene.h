@@ -863,11 +863,11 @@ int test_scene_render_pass_scope_excludes_resource_commands(TstContext* suite, c
 
 int test_scene_interaction_core(TstContext* suite, const TstCase* item);
 
-int test_scene_selection_apply_pick_and_link_keys(TstContext* suite, const TstCase* item);
+int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstCase* item);
 
-int test_scene_selection_apply_pick_updates_visual_masks(TstContext* suite, const TstCase* item);
+int test_scene_selection_apply_query_updates_visual_masks(TstContext* suite, const TstCase* item);
 
-int test_scene_selection_card_realizes_pick_metadata(TstContext* suite, const TstCase* item);
+int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const TstCase* item);
 
 int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item);
 
