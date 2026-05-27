@@ -56,9 +56,10 @@ Recommended follow-up commits:
    clipping box, and clipping plane.
 4. Add screenshot or smoke coverage for the napari volume clipping example once assets and runtime
    expectations are stable.
-5. Keep categorical label volumes, full MPR, isosurfaces, gradient-lighted surfaces, bricking,
-   out-of-core streaming, and WebGPU/WGSL parity as separate follow-up lanes unless a specific task
-   activates one of them.
+5. Keep full MPR, isosurfaces, gradient-lighted surfaces, bricking, out-of-core streaming, and
+   WebGPU/WGSL parity as separate follow-up lanes unless a specific task activates one of them.
+   Categorical signed/unsigned label volumes are now tracked by
+   [`SCENE_SAMPLED_FIELD_INTERPRETATION_PLAN.md`](SCENE_SAMPLED_FIELD_INTERPRETATION_PLAN.md).
 
 
 ## v0.3 Reference

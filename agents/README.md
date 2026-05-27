@@ -47,31 +47,36 @@ If resuming work on the branch:
    [../spec/scene/interaction/GPU_QUERY_SYSTEM.md](../spec/scene/interaction/GPU_QUERY_SYSTEM.md)
    before changing pick/probe/query execution, GPU request readback, visual-family query policy, or
    CPU fallback behavior.
-8. Read [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md) for completed
+8. Read [soon/scene/SCENE_SAMPLED_FIELD_INTERPRETATION_PLAN.md](soon/scene/SCENE_SAMPLED_FIELD_INTERPRETATION_PLAN.md)
+   and
+   [../spec/scene/proposals/active/SAMPLED_FIELD_INTERPRETATION_ARCHITECTURE.md](../spec/scene/proposals/active/SAMPLED_FIELD_INTERPRETATION_ARCHITECTURE.md)
+   before changing sampled-field format/semantic interpretation, categorical colorizers,
+   label-volume support, or sampled visual query schemas.
+9. Read [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md) for completed
    test-runner modernization history, and
    [later/TEST_RUNNER_SCHEDULING.md](later/TEST_RUNNER_SCHEDULING.md) before changing scheduling,
    process sharding, CI orchestration, or remaining skip/reporting behavior.
-9. Read [../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
+10. Read [../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
    before extending pixel, point, marker, segment, path, image, sphere, or mesh first-slice
    behavior.
-10. Read [../spec/scene/validation/IMAGE_PICKING_RECOVERY.md](../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
+11. Read [../spec/scene/validation/IMAGE_PICKING_RECOVERY.md](../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
    before changing image/labels probe coordinates, panzoom probe mapping, or CPU fallback behavior.
-11. Read [later/SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md](later/SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md)
+12. Read [later/SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md](later/SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md)
    before changing `request_execute.c`, GPU pick/probe targets, request payload decoding, or
    visual-family request execution policy.
-12. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
+13. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
    public scene API shape, frame planning, visual families, interaction, annotations, scales, or
    runtime boundaries.
-13. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
+14. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
    scene API shape or adding new scene object families.
-14. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
+15. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
    [../spec/drp2/AGENT_SPEC_PHASE.md](../spec/drp2/AGENT_SPEC_PHASE.md) before touching
    `spec/drp2/`, `src/drp2/`, or
    DRP2-emitting scene code.
-15. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
+16. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
    [done/DRP2_SCENE_SAFETY.md](done/DRP2_SCENE_SAFETY.md) when touching the completed first
    scene -> DRP2 -> runtime slice.
-16. Read [done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
+17. Read [done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
    and [done/SCENE_TURNTABLE_CONTROLLER_PLAN.md](done/SCENE_TURNTABLE_CONTROLLER_PLAN.md) before
    changing scene-owned controller binding, panel-local input routing, or camera controller
    semantics.
@@ -114,10 +119,11 @@ Scene feature lanes:
 5. [soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md](soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md)
 6. [soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md](soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md)
 7. [soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md](soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md)
-8. [soon/effects/SCENE_MSAA_PLAN.md](soon/effects/SCENE_MSAA_PLAN.md)
-9. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
-10. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
-11. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
+8. [soon/scene/SCENE_SAMPLED_FIELD_INTERPRETATION_PLAN.md](soon/scene/SCENE_SAMPLED_FIELD_INTERPRETATION_PLAN.md)
+9. [soon/effects/SCENE_MSAA_PLAN.md](soon/effects/SCENE_MSAA_PLAN.md)
+10. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
+11. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
+12. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
 
 For visual-family lanes, durable contracts live under [../spec/scene/visuals](../spec/scene/visuals);
 the `soon/` files above are execution follow-up notes.

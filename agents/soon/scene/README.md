@@ -12,15 +12,17 @@ belongs in [../../later/](../../later/).
    feature-freeze blocker and terrain/planet gallery proof.
 2. [SCENE_GPU_QUERY_OVERHAUL.md](SCENE_GPU_QUERY_OVERHAUL.md): GPU-only panel query overhaul
    replacing public pick/probe.
-3. [SCENE_NAPARI_IMAGE_LABELS_PLAN.md](SCENE_NAPARI_IMAGE_LABELS_PLAN.md): remaining napari-style
+3. [SCENE_SAMPLED_FIELD_INTERPRETATION_PLAN.md](SCENE_SAMPLED_FIELD_INTERPRETATION_PLAN.md):
+   sampled-field interpretation, shared colorizer, label-volume, and query-schema refactor.
+4. [SCENE_NAPARI_IMAGE_LABELS_PLAN.md](SCENE_NAPARI_IMAGE_LABELS_PLAN.md): remaining napari-style
    image and label follow-up.
-4. [SCENE_POINT_PIXEL_MARKER_FOLLOWUP.md](SCENE_POINT_PIXEL_MARKER_FOLLOWUP.md): remaining point, pixel,
+5. [SCENE_POINT_PIXEL_MARKER_FOLLOWUP.md](SCENE_POINT_PIXEL_MARKER_FOLLOWUP.md): remaining point, pixel,
    and marker follow-up.
-5. [SCENE_VECTOR_VISUALS_PLAN.md](SCENE_VECTOR_VISUALS_PLAN.md): remaining segment, path, and
+6. [SCENE_VECTOR_VISUALS_PLAN.md](SCENE_VECTOR_VISUALS_PLAN.md): remaining segment, path, and
    vector-family follow-up.
-6. [SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md): remaining
+7. [SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md): remaining
    visual shader ABI cleanup.
-7. [SCENE_VOLUME_RENDERING_FOLLOWUP.md](SCENE_VOLUME_RENDERING_FOLLOWUP.md): remaining volume and napari
+8. [SCENE_VOLUME_RENDERING_FOLLOWUP.md](SCENE_VOLUME_RENDERING_FOLLOWUP.md): remaining volume and napari
    clipping follow-up.
-8. [SCENE_WGSL_SHADER_VARIANTS_PLAN.md](SCENE_WGSL_SHADER_VARIANTS_PLAN.md): remaining WGSL
+9. [SCENE_WGSL_SHADER_VARIANTS_PLAN.md](SCENE_WGSL_SHADER_VARIANTS_PLAN.md): remaining WGSL
    shader-variant parity work.
