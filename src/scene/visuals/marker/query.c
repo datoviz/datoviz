@@ -343,7 +343,6 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_marker_ops(void)
     static const DvzSceneQueryFamilyOps ops = {
         .name = "marker",
         .family = DVZ_SCENE_VISUAL_FAMILY_MARKER,
-        .pick_capabilities = DVZ_PICK_CAPABILITY_OBJECT | DVZ_PICK_CAPABILITY_ITEM,
         .eligible = _marker_query_eligible,
         .build = _marker_query_build,
         .decode = _marker_query_decode,

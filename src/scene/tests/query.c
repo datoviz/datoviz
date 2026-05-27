@@ -79,7 +79,6 @@ int test_scene_query_registry_covers_active_visual_families(TstContext* suite, c
         ANN(ops);
         AT(ops->family == families[i]);
         AT(ops->name != NULL);
-        AT(ops->pick_capabilities != 0);
     }
     AT(_dvz_scene_query_registry_find(DVZ_SCENE_VISUAL_FAMILY_NONE) == NULL);
     return 0;

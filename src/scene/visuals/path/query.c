@@ -712,8 +712,6 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_path_ops(void)
     static const DvzSceneQueryFamilyOps ops = {
         .name = "path",
         .family = DVZ_SCENE_VISUAL_FAMILY_PATH,
-        .pick_capabilities = DVZ_PICK_CAPABILITY_OBJECT | DVZ_PICK_CAPABILITY_ITEM |
-                             DVZ_PICK_CAPABILITY_GROUP,
         .eligible = _path_query_eligible,
         .build = _path_query_build,
         .decode = _path_query_decode,

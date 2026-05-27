@@ -32,7 +32,6 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_glyph_ops(void)
     static const DvzSceneQueryFamilyOps ops = {
         .name = "glyph",
         .family = DVZ_SCENE_VISUAL_FAMILY_GLYPH,
-        .pick_capabilities = DVZ_PICK_CAPABILITY_OBJECT | DVZ_PICK_CAPABILITY_ITEM,
     };
     return &ops;
 }

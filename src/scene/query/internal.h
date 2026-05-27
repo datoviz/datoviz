@@ -113,7 +113,6 @@ struct DvzSceneQueryFamilyOps
 {
     const char* name;
     DvzSceneVisualFamily family;
-    uint32_t pick_capabilities;
     DvzSceneQueryEligible eligible;
     DvzSceneQueryBuild build;
     DvzSceneQueryExecute execute;

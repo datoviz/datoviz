@@ -343,7 +343,6 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_pixel_ops(void)
     static const DvzSceneQueryFamilyOps ops = {
         .name = "pixel",
         .family = DVZ_SCENE_VISUAL_FAMILY_PIXEL,
-        .pick_capabilities = DVZ_PICK_CAPABILITY_OBJECT | DVZ_PICK_CAPABILITY_ITEM,
         .eligible = _pixel_query_eligible,
         .build = _pixel_query_build,
         .decode = _pixel_query_decode,

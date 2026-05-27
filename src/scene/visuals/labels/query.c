@@ -755,8 +755,6 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_labels_ops(void)
     static const DvzSceneQueryFamilyOps ops = {
         .name = "labels",
         .family = DVZ_SCENE_VISUAL_FAMILY_LABELS,
-        .pick_capabilities = DVZ_PICK_CAPABILITY_OBJECT | DVZ_PICK_CAPABILITY_ITEM |
-                             DVZ_PICK_CAPABILITY_PIXEL | DVZ_PICK_CAPABILITY_SAMPLE,
         .eligible = _labels_query_eligible,
         .build = _labels_query_build,
         .execute = _labels_query_execute,

@@ -344,8 +344,6 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_volume_ops(void)
     static const DvzSceneQueryFamilyOps ops = {
         .name = "volume",
         .family = DVZ_SCENE_VISUAL_FAMILY_VOLUME,
-        .pick_capabilities = DVZ_PICK_CAPABILITY_OBJECT | DVZ_PICK_CAPABILITY_ITEM |
-                             DVZ_PICK_CAPABILITY_SAMPLE,
         .eligible = _volume_query_eligible,
         .build = _volume_query_build,
         .decode = _volume_query_decode,

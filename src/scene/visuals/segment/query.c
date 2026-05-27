@@ -507,7 +507,6 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_segment_ops(void)
     static const DvzSceneQueryFamilyOps ops = {
         .name = "segment",
         .family = DVZ_SCENE_VISUAL_FAMILY_SEGMENT,
-        .pick_capabilities = DVZ_PICK_CAPABILITY_OBJECT | DVZ_PICK_CAPABILITY_ITEM,
         .eligible = _segment_query_eligible,
         .build = _segment_query_build,
         .decode = _segment_query_decode,
