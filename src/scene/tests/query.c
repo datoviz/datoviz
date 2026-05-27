@@ -207,6 +207,46 @@ int test_scene_query_volume_sample_is_explicitly_unsupported(TstContext* suite, 
 
 
 
+int test_scene_query_skips_fixed_visuals(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+    dvz_visual_set_pick_capabilities(point, DVZ_PICK_CAPABILITY_ITEM);
+    AT(dvz_panel_add_visual(
+           panel, point, &(DvzVisualAttachDesc){.controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+
+    AT(dvz_panel_query(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){.request_id = 37, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
+
+    DvzQueryResult query = {0};
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.request_id == 37);
+    AT(!query.hit);
+    AT(query.status == DVZ_QUERY_STATUS_NO_CAPABLE_VISUAL);
+    AT(query.visual_id == 0);
+    AT(!dvz_scene_poll_query(scene, &query));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 /**
  * Ensure image sample queries resolve through the native GPU value path.
  *
@@ -1624,6 +1664,7 @@ int test_scene_query(TstSuite* suite)
     TST_CASE(test_scene_query_queue_processes_native_results);
     TST_CASE(test_scene_query_queue_coalesces_pending_requests);
     TST_CASE(test_scene_query_volume_sample_is_explicitly_unsupported);
+    TST_CASE(test_scene_query_skips_fixed_visuals);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_resolves_sample);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_sample_query_readback_failure);
     TST_SCENE_QUERY_GPU_CASE(test_scene_point_query_misses_empty_pixel);

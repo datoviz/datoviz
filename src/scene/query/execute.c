@@ -140,10 +140,16 @@ static DvzVisual* _query_candidate_visual(const DvzPanel* panel, uint32_t capabi
     ANN(panel);
     if (capability == 0)
         return NULL;
-    for (int32_t i = (int32_t)panel->visual_count - 1; i >= 0; i--)
+
+    uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
+    _scene_panel_visual_order(panel, order);
+    for (int32_t oi = (int32_t)panel->visual_count - 1; oi >= 0; oi--)
     {
-        DvzVisual* visual = panel->visuals[i].visual;
+        const DvzPanelAttach* attach = &panel->visuals[order[oi]];
+        DvzVisual* visual = attach->visual;
         if (visual == NULL || !visual->visible)
+            continue;
+        if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
             continue;
         if ((visual->pick_capabilities & capability) != 0)
             return visual;
@@ -293,10 +299,15 @@ bool _dvz_scene_query_process_pending(
     }
 
     bool native_attempted = false;
-    for (int32_t i = (int32_t)pending->panel->visual_count - 1; i >= 0; i--)
+    uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
+    _scene_panel_visual_order(pending->panel, order);
+    for (int32_t oi = (int32_t)pending->panel->visual_count - 1; oi >= 0; oi--)
     {
-        DvzVisual* visual = pending->panel->visuals[i].visual;
+        const DvzPanelAttach* attach = &pending->panel->visuals[order[oi]];
+        DvzVisual* visual = attach->visual;
         if (visual == NULL || !visual->visible)
+            continue;
+        if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
             continue;
         if ((visual->pick_capabilities & capability) == 0)
             continue;
