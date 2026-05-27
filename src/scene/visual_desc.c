@@ -145,6 +145,18 @@ bool _scene_visual_desc_is_primitive(DvzSceneVisualDescKind kind)
 }
 
 
+/**
+ * Return whether a visual descriptor uses the textured mesh pipeline family.
+ *
+ * @param kind the visual descriptor kind
+ * @return whether the descriptor is textured-mesh-like
+ */
+bool _scene_visual_desc_is_textured_mesh(DvzSceneVisualDescKind kind)
+{
+    return kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
+}
+
+
 
 /**
  * Return whether a visual descriptor uses a sampled-image bind group.
@@ -154,7 +166,9 @@ bool _scene_visual_desc_is_primitive(DvzSceneVisualDescKind kind)
  */
 bool _scene_visual_desc_is_image(DvzSceneVisualDescKind kind)
 {
-    return kind == DVZ_SCENE_VISUAL_DESC_IMAGE || kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
+    return kind == DVZ_SCENE_VISUAL_DESC_IMAGE ||
+           kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH ||
+           kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
            kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT || kind == DVZ_SCENE_VISUAL_DESC_GLYPH;
 }
 
@@ -644,10 +658,38 @@ static bool _scene_visual_desc_from_metadata(
             out->vbuf_ids[out->vbuf_count++] = normal_id;
             out->has_normal = true;
         }
+        uint64_t texture_id = meta->visual_type == DVZ_VISUAL_TYPE_MESH
+                                  ? _scene_visual_resource_lookup_label(
+                                        &emitter->resources, meta->texture_id)
+                                  : 0;
+        if (texture_id != 0)
+        {
+            uint64_t texcoords_id =
+                _scene_visual_resource_lookup_label(&emitter->resources, meta->texcoords_id);
+            if (normal_id == 0 || texcoords_id == 0)
+            {
+                if (error != NULL)
+                    *error = "typed textured mesh metadata missing normal/texcoords resource";
+                return false;
+            }
+            out->kind = DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
+            out->vbuf_ids[out->vbuf_count++] = texcoords_id;
+            out->image_texture_id = texture_id;
+        }
+        else
+        {
+            out->kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+        }
         uint64_t instance_transform_id =
             _scene_visual_resource_lookup_label(&emitter->resources, meta->instance_transform_id);
         if (meta->visual_type == DVZ_VISUAL_TYPE_MESH && instance_transform_id != 0)
         {
+            if (out->kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
+            {
+                if (error != NULL)
+                    *error = "typed textured mesh instancing is not supported";
+                return false;
+            }
             out->vbuf_ids[out->vbuf_count++] = instance_transform_id;
             out->has_instance_transform = true;
             uint64_t transform_bytes =
@@ -714,6 +756,7 @@ static bool _scene_visual_desc_from_metadata(
         {
             out->kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
             out->image_pixel_space = meta->image_pixel_space;
+            out->image_nearest_sampler = meta->image_nearest_sampler;
         }
         if (meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
         {
@@ -984,6 +1027,56 @@ bool _is_image_visual(
 }
 
 
+/**
+ * Return true when ids carry position, color, normal, texcoords, and texture resources.
+ *
+ * @param state resource id state
+ * @param ids resource ids
+ * @param n resource id count
+ * @param out_pos optional position resource id
+ * @param out_color optional color resource id
+ * @param out_normal optional normal resource id
+ * @param out_uv optional texcoord resource id
+ * @param out_tex optional texture resource id
+ * @return whether the ids identify a textured mesh visual
+ */
+bool _is_textured_mesh_visual(
+    const ConverterState* state, const uint64_t* ids, uint32_t n, uint64_t* out_pos,
+    uint64_t* out_color, uint64_t* out_normal, uint64_t* out_uv, uint64_t* out_tex)
+{
+    if (n != 5)
+        return false;
+    uint64_t pos = 0, color = 0, normal = 0, uv = 0, tex = 0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        DvzFramePlanResourceRole role = _resource_role(state, ids[i]);
+        if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION)
+            pos = ids[i];
+        else if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR)
+            color = ids[i];
+        else if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL)
+            normal = ids[i];
+        else if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS)
+            uv = ids[i];
+        else if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE)
+            tex = ids[i];
+    }
+    if (pos == 0 || color == 0 || normal == 0 || uv == 0 || tex == 0)
+        return false;
+    if (out_pos != NULL)
+        *out_pos = pos;
+    if (out_color != NULL)
+        *out_color = color;
+    if (out_normal != NULL)
+        *out_normal = normal;
+    if (out_uv != NULL)
+        *out_uv = uv;
+    if (out_tex != NULL)
+        *out_tex = tex;
+    return true;
+}
+
+
 
 /**
  * Find the first visual resource with a typed role, falling back to legacy tags.
@@ -1237,15 +1330,22 @@ bool _scene_visual_desc_from_render(
     }
 
     bool is_point = _is_point_visual(&emitter->resources, out->vbuf_ids, out->vbuf_count);
+    uint64_t mesh_pos = 0, mesh_color = 0, mesh_normal = 0, mesh_uv = 0, mesh_tex = 0;
+    bool is_textured_mesh =
+        !is_point &&
+        _is_textured_mesh_visual(
+            &emitter->resources, out->vbuf_ids, out->vbuf_count, &mesh_pos, &mesh_color,
+            &mesh_normal, &mesh_uv, &mesh_tex);
     bool is_primitive =
-        !is_point && _is_primitive_visual(&emitter->resources, out->vbuf_ids, out->vbuf_count);
+        !is_point && !is_textured_mesh &&
+        _is_primitive_visual(&emitter->resources, out->vbuf_ids, out->vbuf_count);
     uint64_t img_pos = 0, img_uv = 0, img_tex = 0;
     bool is_image =
         !is_point && !is_primitive &&
         _is_image_visual(
             &emitter->resources, out->vbuf_ids, out->vbuf_count, &img_pos, &img_uv, &img_tex);
 
-    if (!is_point && !is_primitive && !is_image)
+    if (!is_point && !is_textured_mesh && !is_primitive && !is_image)
         return false;
 
     uint64_t pos_size = _resource_byte_size(&emitter->resources, pos_buf);
@@ -1262,7 +1362,7 @@ bool _scene_visual_desc_from_render(
     }
 
     out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-    if (is_primitive)
+    if (is_primitive || is_textured_mesh)
         out->topology = _resource_topology(&emitter->resources, pos_buf);
     else if (is_image)
         out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
@@ -1271,6 +1371,17 @@ bool _scene_visual_desc_from_render(
     {
         out->kind = DVZ_SCENE_VISUAL_DESC_POINT;
         out->point_like_kind = DVZ_SCENE_POINT_LIKE_POINT;
+    }
+    else if (is_textured_mesh)
+    {
+        out->kind = DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
+        out->image_texture_id = mesh_tex;
+        out->vbuf_ids[0] = mesh_pos;
+        out->vbuf_ids[1] = mesh_color;
+        out->vbuf_ids[2] = mesh_normal;
+        out->vbuf_ids[3] = mesh_uv;
+        out->vbuf_count = 4;
+        out->has_normal = true;
     }
     else if (is_primitive)
         out->kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;

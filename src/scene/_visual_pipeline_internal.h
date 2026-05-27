@@ -36,6 +36,8 @@ bool _scene_visual_has_dense_attr(const DvzVisual* visual, const char* name);
 
 bool _scene_visual_desc_is_primitive(DvzSceneVisualDescKind kind);
 
+bool _scene_visual_desc_is_textured_mesh(DvzSceneVisualDescKind kind);
+
 bool _scene_visual_desc_is_image(DvzSceneVisualDescKind kind);
 
 bool _scene_visual_desc_is_volume(DvzSceneVisualDescKind kind);

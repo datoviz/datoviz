@@ -1540,8 +1540,9 @@ DVZ_EXPORT DvzVisual* dvz_primitive(
  *
  * First retained slice: meshes use a triangle-list topology with `position` (vec3), optional
  * `color` (RGBA8, defaulting to opaque white when omitted), optional `normal` (vec3), optional
- * `instance_transform` (mat4, one per instance), and optional `"index"` buffer bindings for
- * indexed draws.
+ * `texcoords` (vec2), optional `instance_transform` (mat4, one per instance), and optional
+ * `"index"` buffer bindings for indexed draws. Binding an RGBA8 2D sampled field to the
+ * `"texture"` slot enables the first retained textured-mesh shader path.
  *
  * @param scene the scene
  * @param flags variant flags

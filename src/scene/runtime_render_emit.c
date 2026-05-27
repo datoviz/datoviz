@@ -2830,11 +2830,17 @@ bool _emitter_emit_render(
     bool is_pixel = is_point && visual_type == DVZ_VISUAL_TYPE_PIXEL;
     bool is_marker = is_point && visual_type == DVZ_VISUAL_TYPE_MARKER;
     bool is_point_like = is_point;
-    bool is_primitive =
+    uint64_t mesh_pos = 0, mesh_color = 0, mesh_normal = 0, mesh_uv = 0, mesh_tex = 0;
+    bool is_textured_mesh =
         !is_point_like &&
+        _is_textured_mesh_visual(
+            &emitter->resources, vertex_buffer_ids, vertex_buffer_count, &mesh_pos, &mesh_color,
+            &mesh_normal, &mesh_uv, &mesh_tex);
+    bool is_primitive =
+        !is_point_like && !is_textured_mesh &&
         _is_primitive_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
     uint64_t image_pos = 0, image_uv = 0, image_tex = 0;
-    bool is_image = !is_point_like && !is_primitive &&
+    bool is_image = !is_point_like && !is_textured_mesh && !is_primitive &&
                     _is_image_visual(
                         &emitter->resources, vertex_buffer_ids, vertex_buffer_count, &image_pos,
                         &image_uv, &image_tex);
@@ -2869,10 +2875,10 @@ bool _emitter_emit_render(
     /* Common bind group IDs used for GLSL/WGSL point, primitive, and image paths. */
     uint64_t common_bgl_id = 0;
     uint64_t common_bg_id = 0;
-    bool uses_common = (is_point || is_primitive || is_image) && cfg != NULL &&
+    bool uses_common = (is_point || is_textured_mesh || is_primitive || is_image) && cfg != NULL &&
                        (cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL ||
                         (cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL &&
-                         (is_point || is_primitive || is_image)));
+                         (is_point || is_textured_mesh || is_primitive || is_image)));
 
     /* When IMAGE: re-narrow vertex_buffer_ids to (position, texcoords) only — the texture
      * is bound through a bind group, not as a vertex buffer. */
@@ -2883,6 +2889,16 @@ bool _emitter_emit_render(
         image_vertex_ids[1] = image_uv;
         vertex_buffer_ids = image_vertex_ids;
         vertex_buffer_count = 2;
+    }
+    uint64_t textured_mesh_vertex_ids[4];
+    if (is_textured_mesh)
+    {
+        textured_mesh_vertex_ids[0] = mesh_pos;
+        textured_mesh_vertex_ids[1] = mesh_color;
+        textured_mesh_vertex_ids[2] = mesh_normal;
+        textured_mesh_vertex_ids[3] = mesh_uv;
+        vertex_buffer_ids = textured_mesh_vertex_ids;
+        vertex_buffer_count = 4;
     }
 
     char vs_key[32];
@@ -2955,6 +2971,48 @@ bool _emitter_emit_render(
         if (!has_point_like_lowering)
             return false;
         topology = point_like_lowering.topology;
+    }
+    else if (is_textured_mesh)
+    {
+        uint64_t pos_size = _resource_byte_size(&emitter->resources, mesh_pos);
+        if (pos_size > 0)
+            vertex_count = (uint32_t)(pos_size / (3 * sizeof(float)));
+        if (visual_meta != NULL && visual_meta->vertex_count > 0)
+            vertex_count = visual_meta->vertex_count;
+        topology = _resource_topology(&emitter->resources, mesh_pos);
+        if (topology == UINT32_MAX)
+            topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        dvz_snprintf(vs_key, sizeof(vs_key), "_vs_mesh_textured%s", fmt);
+        dvz_snprintf(fs_key, sizeof(fs_key), "_fs_mesh_textured%s", fmt);
+        vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_MESH_TEXTURED, false);
+        fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_MESH_TEXTURED, true);
+        vs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_MESH_TEXTURED, false);
+        fs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_MESH_TEXTURED, true);
+
+        bool bgl_new = false;
+        bgl_id = _obj_id(emitter, "_bgl_img", &bgl_new);
+        if (bgl_id == 0)
+            return false;
+        if (bgl_new)
+            ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, bgl_id);
+
+        bool sampler_new = false;
+        uint64_t sampler_id = _obj_id(emitter, "_sampler_img", &sampler_new);
+        if (sampler_id == 0)
+            return false;
+        if (ok && sampler_new)
+            ok = ok && dvz_drp2_stream_create_sampler_filter(
+                           stream, sampler_id, DVZ_DRP2_FILTER_LINEAR, DVZ_DRP2_FILTER_LINEAR);
+
+        char bg_key[48];
+        dvz_snprintf(bg_key, sizeof(bg_key), "_bg_img_%" PRIu64, mesh_tex);
+        bool bg_new = false;
+        bg_id = _obj_id(emitter, bg_key, &bg_new);
+        if (bg_id == 0)
+            return false;
+        if (ok && bg_new)
+            ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group(
+                           stream, bg_id, bgl_id, mesh_tex, sampler_id);
     }
     else if (is_primitive)
     {
@@ -3054,16 +3112,26 @@ bool _emitter_emit_render(
                 ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, bgl_id);
 
             bool sampler_new = false;
-            uint64_t sampler_id = _obj_id(emitter, "_sampler_img", &sampler_new);
+            bool nearest_image_sampler =
+                visual_meta != NULL && visual_meta->image_nearest_sampler;
+            uint64_t sampler_id = _obj_id(
+                emitter, nearest_image_sampler ? "_sampler_img_nearest" : "_sampler_img",
+                &sampler_new);
             if (sampler_id == 0)
                 return false;
             if (ok && sampler_new)
+            {
+                DvzDrp2FilterMode filter =
+                    nearest_image_sampler ? DVZ_DRP2_FILTER_NEAREST : DVZ_DRP2_FILTER_LINEAR;
                 ok = ok && dvz_drp2_stream_create_sampler_filter(
-                               stream, sampler_id, DVZ_DRP2_FILTER_LINEAR,
-                               DVZ_DRP2_FILTER_LINEAR);
+                               stream, sampler_id, filter, filter);
+            }
 
             char bg_key[48];
-            dvz_snprintf(bg_key, sizeof(bg_key), "_bg_img_%" PRIu64, image_tex);
+            dvz_snprintf(
+                bg_key, sizeof(bg_key),
+                nearest_image_sampler ? "_bg_img_nearest_%" PRIu64 : "_bg_img_%" PRIu64,
+                image_tex);
             bool bg_new = false;
             bg_id = _obj_id(emitter, bg_key, &bg_new);
             if (bg_id == 0)
@@ -3135,6 +3203,11 @@ bool _emitter_emit_render(
             vs_spirv_key = depth_cue ? "point_cue_vert" : "point_vert";
             fs_spirv_key = depth_cue ? "point_cue_frag" : "point_frag";
         }
+    }
+    else if (is_textured_mesh)
+    {
+        vs_spirv_key = "mesh_textured_vert";
+        fs_spirv_key = "mesh_textured_frag";
     }
     else if (is_primitive)
     {
@@ -3227,6 +3300,8 @@ bool _emitter_emit_render(
                        : "point",
             suffix, fmt);
     }
+    else if (is_textured_mesh)
+        dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_mesh_textured_t%u%s", topology, fmt);
     else if (is_primitive)
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_prim_t%u%s", topology, fmt);
     else if (is_image)
@@ -3278,6 +3353,25 @@ bool _emitter_emit_render(
             }
             if (ok && uses_common && common_bgl_id != 0)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, common_bgl_id);
+        }
+        else if (is_textured_mesh)
+        {
+            uint32_t strides[4] = {
+                3 * sizeof(float), 4 * sizeof(uint8_t), 3 * sizeof(float),
+                2 * sizeof(float)};
+            uint32_t bindings[4] = {0, 1, 2, 3};
+            uint32_t locations[4] = {0, 1, 2, 3};
+            uint32_t formats[4] = {
+                VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM,
+                VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT};
+            uint32_t offsets[4] = {0, 0, 0, 0};
+            ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
+                           stream, pipe_id, vs_id, fs_id, vertex_buffer_count, topology, 4,
+                           strides, 4, bindings, locations, formats, offsets);
+            if (ok && uses_common && common_bgl_id != 0)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, common_bgl_id);
+            if (ok && bgl_id != 0)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, bgl_id);
         }
         else if (is_primitive)
         {
@@ -3346,7 +3440,7 @@ bool _emitter_emit_render(
          dvz_drp2_stream_set_pipeline(stream, render_pass_id, pipe_id);
     if (ok && uses_common && common_bg_id != 0)
         ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, common_bg_id);
-    if (ok && is_image && bg_id != 0)
+    if (ok && (is_textured_mesh || is_image) && bg_id != 0)
         ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 1, bg_id);
     uint32_t draw_vertex_count = vertex_count;
     uint32_t draw_instance_count = 1;
@@ -3355,13 +3449,14 @@ bool _emitter_emit_render(
         draw_vertex_count = point_like_lowering.draw_vertex_count;
         draw_instance_count = point_like_lowering.draw_instance_count;
     }
-    if (is_point_like || is_primitive || is_image)
+    if (is_point_like || is_textured_mesh || is_primitive || is_image)
     {
-        DvzSceneVisualDescKind kind = is_image        ? DVZ_SCENE_VISUAL_DESC_IMAGE
-                                      : is_primitive ? DVZ_SCENE_VISUAL_DESC_PRIMITIVE
-                                      : is_marker    ? DVZ_SCENE_VISUAL_DESC_MARKER
-                                      : is_pixel     ? DVZ_SCENE_VISUAL_DESC_PIXEL
-                                                     : DVZ_SCENE_VISUAL_DESC_POINT;
+        DvzSceneVisualDescKind kind = is_image          ? DVZ_SCENE_VISUAL_DESC_IMAGE
+                                      : is_textured_mesh ? DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH
+                                      : is_primitive     ? DVZ_SCENE_VISUAL_DESC_PRIMITIVE
+                                      : is_marker        ? DVZ_SCENE_VISUAL_DESC_MARKER
+                                      : is_pixel         ? DVZ_SCENE_VISUAL_DESC_PIXEL
+                                                         : DVZ_SCENE_VISUAL_DESC_POINT;
         if (is_labels_sint)
             kind = DVZ_SCENE_VISUAL_DESC_LABELS_SINT;
         else if (is_labels_uint)
@@ -3371,7 +3466,8 @@ bool _emitter_emit_render(
             point_like_lowering.lowering == DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS;
         SceneDrawPacket packet = {0};
         if (!_scene_draw_packet_init_fallback(
-                &emitter->resources, kind, pipe_id, common_bg_id, is_image ? bg_id : 0,
+                &emitter->resources, kind, pipe_id, common_bg_id,
+                (is_textured_mesh || is_image) ? bg_id : 0,
                 vertex_buffer_ids, vertex_buffer_count, draw_vertex_count, draw_instance_count,
                 instanced_point_like, report, &packet))
             return false;

@@ -75,6 +75,14 @@ bool _scene_visual_bind_desc(
         out->material_buffer_id = visual->material_buffer_id;
         return true;
 
+    case DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH:
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_image_set1 = caps.uses_image_set;
+        out->image_texture_id = visual->image_texture_id;
+        out->image_nearest_sampler = visual->image_nearest_sampler;
+        return true;
+
     case DVZ_SCENE_VISUAL_DESC_SEGMENT:
     case DVZ_SCENE_VISUAL_DESC_PATH:
         out->uses_common_set0 = caps.uses_common_set;
@@ -88,6 +96,7 @@ bool _scene_visual_bind_desc(
         out->uses_fixed_common = caps.fixed_controller;
         out->uses_image_set1 = caps.uses_image_set;
         out->image_texture_id = visual->image_texture_id;
+        out->image_nearest_sampler = visual->image_nearest_sampler;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_LABELS_SINT:

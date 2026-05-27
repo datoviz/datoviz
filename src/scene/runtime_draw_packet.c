@@ -57,6 +57,8 @@ static const char* _draw_packet_kind_name(DvzSceneVisualDescKind kind)
         return "path";
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
         return "primitive";
+    case DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH:
+        return "textured_mesh";
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
         return "image";
     case DVZ_SCENE_VISUAL_DESC_LABELS_SINT:
@@ -398,8 +400,9 @@ bool _scene_draw_packet_init_fallback(
 
     uint32_t binding_count =
         kind == DVZ_SCENE_VISUAL_DESC_MARKER ? 5
+        : kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH ? 4
         : kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL ? 3
-        : 2;
+                                                                                      : 2;
     if (binding_count > vertex_buffer_count)
         binding_count = vertex_buffer_count;
     pipeline.binding_count = binding_count;
@@ -429,6 +432,13 @@ bool _scene_draw_packet_init_fallback(
     {
         pipeline.strides[0] = 3 * sizeof(float);
         pipeline.strides[1] = 4 * sizeof(uint8_t);
+    }
+    else if (kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
+    {
+        pipeline.strides[0] = 3 * sizeof(float);
+        pipeline.strides[1] = 4 * sizeof(uint8_t);
+        pipeline.strides[2] = 3 * sizeof(float);
+        pipeline.strides[3] = 2 * sizeof(float);
     }
     else
     {

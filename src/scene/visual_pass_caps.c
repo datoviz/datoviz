@@ -54,6 +54,8 @@ static void _scene_visual_pass_caps_resolve(
     dvz_memset(out, sizeof(DvzSceneVisualPassCaps), 0, sizeof(DvzSceneVisualPassCaps));
 
     bool primitive = _scene_visual_desc_is_primitive(kind);
+    bool textured_mesh = kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
+    bool raster_mesh = primitive || textured_mesh;
     bool stroke = _scene_visual_desc_is_stroke(kind);
     bool sphere = _scene_visual_desc_is_sphere(kind);
     bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
@@ -78,12 +80,12 @@ static void _scene_visual_pass_caps_resolve(
     out->uses_source_over_blend = _scene_alpha_mode_is_blended(alpha_mode);
     out->writes_color = kind != DVZ_SCENE_VISUAL_DESC_NONE;
     out->writes_depth = out->draws_in_opaque_pass &&
-                        (primitive || stroke || point_like || sphere) && !fixed &&
+                        (raster_mesh || stroke || point_like || sphere) && !fixed &&
                         depth_test_enabled;
     out->can_write_depth =
-        (primitive || stroke || point_like || sphere) && !fixed && depth_test_enabled;
+        (raster_mesh || stroke || point_like || sphere) && !fixed && depth_test_enabled;
     out->can_depth_test =
-        (primitive || stroke || point_like || sphere) && !fixed && depth_test_enabled;
+        (raster_mesh || stroke || point_like || sphere) && !fixed && depth_test_enabled;
     out->samples_depth = volume && !fixed;
     out->needs_depth_attachment = out->can_depth_test || out->samples_depth;
     out->eligible_for_depth_postprocess = out->draws_in_opaque_pass && out->writes_depth;
@@ -93,7 +95,7 @@ static void _scene_visual_pass_caps_resolve(
     out->needs_material_layout =
         (primitive && has_normals) || stroke || sphere || (point_like && has_material_resource);
     out->uses_material_set = out->needs_material_layout && has_material_resource;
-    out->uses_image_set = image;
+    out->uses_image_set = image || textured_mesh;
     out->uses_volume_set = volume;
     out->supports_depth_cue = (primitive && has_normals) || point_like || sphere;
     out->depth_cue_enabled = out->supports_depth_cue && depth_cue_enabled;
@@ -135,6 +137,8 @@ bool _scene_visual_pass_caps_from_visual(
     case DVZ_VISUAL_TYPE_PRIMITIVE:
     case DVZ_VISUAL_TYPE_MESH:
         kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+        if (visual->type == DVZ_VISUAL_TYPE_MESH && visual->field != NULL)
+            kind = DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
         break;
     case DVZ_VISUAL_TYPE_PATH:
         kind = _scene_visual_has_dense_attr(visual, "line_width")
@@ -188,7 +192,7 @@ bool _scene_visual_pass_caps_from_visual(
     }
 
     bool has_normals = false;
-    if (_scene_visual_desc_is_primitive(kind))
+    if (_scene_visual_desc_is_primitive(kind) || kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
     {
         int normal_idx = _attr_index(visual, "normal");
         has_normals = normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&

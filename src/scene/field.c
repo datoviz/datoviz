@@ -978,23 +978,34 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
         return false;
     }
     if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH &&
-        visual->type != DVZ_VISUAL_TYPE_VOLUME && visual->type != DVZ_VISUAL_TYPE_LABELS)
+        visual->type != DVZ_VISUAL_TYPE_VOLUME && visual->type != DVZ_VISUAL_TYPE_LABELS &&
+        visual->type != DVZ_VISUAL_TYPE_MESH)
     {
         log_error(
-            "dvz_visual_set_field is only supported for image, glyph, volume, and labels visuals");
+            "dvz_visual_set_field is only supported for image, glyph, volume, labels, and mesh visuals");
         return false;
     }
-    if (strcmp(slot_name, "field") != 0)
+    bool mesh_texture_slot =
+        visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(slot_name, "texture") == 0;
+    if (strcmp(slot_name, "field") != 0 && !mesh_texture_slot)
     {
-        log_error("unsupported visual field slot '%s' (expected 'field')", slot_name);
+        log_error(
+            "unsupported visual field slot '%s' (expected 'field' or mesh 'texture')",
+            slot_name);
         return false;
     }
     if (field != NULL &&
         (visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_GLYPH ||
-         visual->type == DVZ_VISUAL_TYPE_LABELS) &&
+         visual->type == DVZ_VISUAL_TYPE_LABELS || visual->type == DVZ_VISUAL_TYPE_MESH) &&
         field->desc.dim != DVZ_FIELD_DIM_2D)
     {
-        log_error("image, glyph, and labels visuals require a 2D sampled field");
+        log_error("image, glyph, labels, and mesh visuals require a 2D sampled field");
+        return false;
+    }
+    if (field != NULL && visual->type == DVZ_VISUAL_TYPE_MESH &&
+        field->desc.format != DVZ_FIELD_FORMAT_RGBA8_UNORM)
+    {
+        log_error("mesh texture fields require RGBA8_UNORM format in the first slice");
         return false;
     }
     if (field != NULL && visual->type == DVZ_VISUAL_TYPE_LABELS &&

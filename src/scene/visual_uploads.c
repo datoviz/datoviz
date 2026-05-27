@@ -159,6 +159,8 @@ bool _scene_visual_needs_material_params(const DvzVisual* visual)
         return true;
     if (visual->type == DVZ_VISUAL_TYPE_PATH)
         return _scene_visual_has_attr_data(visual, "line_width");
+    if (visual->type == DVZ_VISUAL_TYPE_MESH && visual->field != NULL)
+        return false;
     if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE || visual->type == DVZ_VISUAL_TYPE_MESH)
         return _scene_visual_has_attr_data(visual, "normal");
     return false;
@@ -1531,13 +1533,13 @@ static void _scene_emit_image_like_texture_upload(
     ANN(plan);
     ANN(visual);
     if ((visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH &&
-         visual->type != DVZ_VISUAL_TYPE_LABELS) ||
+         visual->type != DVZ_VISUAL_TYPE_LABELS && visual->type != DVZ_VISUAL_TYPE_MESH) ||
         visual->field == NULL || (!visual->texture.dirty && !visual->field->dirty))
     {
         return;
     }
 
-    if (visual->type == DVZ_VISUAL_TYPE_LABELS)
+    if (visual->type == DVZ_VISUAL_TYPE_LABELS || visual->type == DVZ_VISUAL_TYPE_MESH)
     {
         char tex_resource_id[128];
         if (!_scene_visual_texture_resource_key(

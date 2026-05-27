@@ -516,6 +516,21 @@ bool _scene_visual_shader_desc(
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
         return _scene_shader_desc_primitive(&features, format_tag, out);
 
+    case DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH:
+        if (picking || wboit_accumulation)
+            return false;
+        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_mesh_textured%s", format_tag);
+        dvz_snprintf(
+            out->fragment_key, sizeof(out->fragment_key), "_fs_mesh_textured%s", format_tag);
+        dvz_snprintf(
+            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_mesh_textured_t%u%s",
+            features.topology, format_tag);
+        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_MESH_TEXTURED);
+        _scene_shader_desc_set_identity(out, "scene.mesh", "textured");
+        out->vertex_spirv_key = "mesh_textured_vert";
+        out->fragment_spirv_key = "mesh_textured_frag";
+        return true;
+
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
         dvz_snprintf(
             out->vertex_key, sizeof(out->vertex_key), "_vs_img%s%s",

@@ -234,8 +234,9 @@ DVZ_EXPORT const DvzSampledFieldDesc* dvz_sampled_field_desc(const DvzSampledFie
 /**
  * Bind a scene-owned sampled field to a named visual slot.
  *
- * Image, glyph, and labels visuals accept the `"field"` slot and require a 2D field. Volume
- * visuals accept the `"field"` slot and require a 3D field. Labels visuals additionally require
+ * Image, glyph, and labels visuals accept the `"field"` slot and require a 2D field. Mesh visuals
+ * accept the `"texture"` slot for a first-slice RGBA8 2D texture. Volume visuals accept the
+ * `"field"` slot and require a 3D field. Labels visuals additionally require
  * `DVZ_FIELD_SEMANTIC_LABEL`.
  *
  * @param visual the visual

@@ -2141,7 +2141,8 @@ static void _scene_commit_emit_success(DvzFigure* figure)
                 visual->type == DVZ_VISUAL_TYPE_IMAGE ||
                 visual->type == DVZ_VISUAL_TYPE_GLYPH ||
                 visual->type == DVZ_VISUAL_TYPE_LABELS ||
-                visual->type == DVZ_VISUAL_TYPE_VOLUME)
+                visual->type == DVZ_VISUAL_TYPE_VOLUME ||
+                visual->type == DVZ_VISUAL_TYPE_MESH)
             {
                 _scene_visual_texture_mark_clean(visual);
             }

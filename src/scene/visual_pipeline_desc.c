@@ -82,6 +82,14 @@ static const PipelineFixedAttr IMAGE_PIPELINE_ATTRS[] = {
 };
 
 
+static const PipelineFixedAttr TEXTURED_MESH_PIPELINE_ATTRS[] = {
+    {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float)},
+    {1, 1, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t)},
+    {2, 2, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float)},
+    {3, 3, VK_FORMAT_R32G32_SFLOAT, 2 * sizeof(float)},
+};
+
+
 static const PipelineFixedAttr GLYPH_PIPELINE_ATTRS[] = {
     {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float)},
     {1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 4 * sizeof(float)},
@@ -104,6 +112,8 @@ static const PipelineFixedLayout FIXED_PIPELINE_LAYOUTS[] = {
      (uint32_t)DVZ_ARRAY_COUNT(PATH_PIPELINE_ATTRS)},
     {DVZ_SCENE_VISUAL_DESC_IMAGE, IMAGE_PIPELINE_ATTRS,
      (uint32_t)DVZ_ARRAY_COUNT(IMAGE_PIPELINE_ATTRS)},
+    {DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH, TEXTURED_MESH_PIPELINE_ATTRS,
+     (uint32_t)DVZ_ARRAY_COUNT(TEXTURED_MESH_PIPELINE_ATTRS)},
     {DVZ_SCENE_VISUAL_DESC_LABELS_SINT, IMAGE_PIPELINE_ATTRS,
      (uint32_t)DVZ_ARRAY_COUNT(IMAGE_PIPELINE_ATTRS)},
     {DVZ_SCENE_VISUAL_DESC_LABELS_UINT, IMAGE_PIPELINE_ATTRS,
@@ -283,6 +293,12 @@ static bool _pipeline_apply_fixed_visual(
     {
         out->needs_image_layout = caps->uses_image_set;
     }
+    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
+    {
+        out->needs_image_layout = caps->uses_image_set;
+        _pipeline_apply_standard_depth_state(
+            caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op, out);
+    }
     else if (
         visual->kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
         visual->kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT)
@@ -419,6 +435,7 @@ bool _scene_visual_pipeline_desc(
 
     case DVZ_SCENE_VISUAL_DESC_SEGMENT:
     case DVZ_SCENE_VISUAL_DESC_PATH:
+    case DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH:
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
     case DVZ_SCENE_VISUAL_DESC_LABELS_SINT:
     case DVZ_SCENE_VISUAL_DESC_LABELS_UINT:

@@ -37,6 +37,7 @@ typedef enum
     DVZ_SCENE_VISUAL_DESC_SEGMENT,
     DVZ_SCENE_VISUAL_DESC_PATH,
     DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
+    DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH,
     DVZ_SCENE_VISUAL_DESC_IMAGE,
     DVZ_SCENE_VISUAL_DESC_LABELS_SINT,
     DVZ_SCENE_VISUAL_DESC_LABELS_UINT,
@@ -79,6 +80,7 @@ typedef struct DvzSceneVisualDesc
     uint64_t material_buffer_id;
     uint64_t image_texture_id;
     bool image_pixel_space;
+    bool image_nearest_sampler;
     uint32_t labels_visual_index;
     DvzLabelsState labels_state;
     uint32_t glyph_atlas_encoding;
@@ -241,6 +243,10 @@ bool _is_primitive_visual(const ConverterState* state, const uint64_t* ids, uint
 bool _is_image_visual(
     const ConverterState* state, const uint64_t* ids, uint32_t n,
     uint64_t* out_pos, uint64_t* out_uv, uint64_t* out_tex);
+
+bool _is_textured_mesh_visual(
+    const ConverterState* state, const uint64_t* ids, uint32_t n, uint64_t* out_pos,
+    uint64_t* out_color, uint64_t* out_normal, uint64_t* out_uv, uint64_t* out_tex);
 
 uint64_t _scene_visual_resource_by_role(
     const ConverterState* state, const uint64_t* ids, uint32_t n,
