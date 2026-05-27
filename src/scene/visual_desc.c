@@ -322,6 +322,8 @@ static const char* _resource_role_tag(DvzFramePlanResourceRole role)
         return "color";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE:
         return "size";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA:
+        return "sigma";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_ANGLE:
         return "angle";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_SHAPE:

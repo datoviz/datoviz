@@ -293,6 +293,8 @@ int test_scene_path_stroke_style(TstContext* suite, const TstCase* item);
 
 int test_scene_point_like_lowering_policy(TstContext* suite, const TstCase* item);
 
+int test_scene_splat_api_and_attrs(TstContext* suite, const TstCase* item);
+
 int test_scene_point_emit_glsl_native_points(TstContext* suite, const TstCase* item);
 
 int test_scene_point_style_emits_glsl_and_wgsl(TstContext* suite, const TstCase* item);

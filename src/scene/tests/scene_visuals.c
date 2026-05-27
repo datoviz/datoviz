@@ -494,6 +494,51 @@ int test_scene_point_like_lowering_policy(TstContext* suite, const TstCase* item
 
 
 /**
+ * Verify retained splat visual attributes and value validation.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_splat_api_and_attrs(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_splat(scene, 0);
+    ANN(visual);
+
+    AT(visual->type == DVZ_VISUAL_TYPE_SPLAT);
+    AT(visual->alpha_mode == DVZ_ALPHA_BLENDED);
+    AT(visual->depth_test_enabled);
+
+    vec3 positions[2] = {{-0.25f, 0.0f, 0.0f}, {+0.25f, 0.0f, 0.0f}};
+    DvzColor colors[2] = {{255, 0, 0, 128}, {0, 255, 0, 192}};
+    vec2 sigma[2] = {{4.0f, 8.0f}, {6.0f, 3.0f}};
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 2},
+        {.attr_name = "color", .data = colors, .item_count = 2},
+        {.attr_name = "sigma", .data = sigma, .item_count = 2},
+    };
+    AT(dvz_visual_set_data_many(visual, updates, 3) == 0);
+
+    DvzVisualDataView view = {0};
+    AT(dvz_visual_data(visual, "sigma", &view) == 0);
+    AT(view.item_count == 2);
+    AT(view.item_size == 2 * sizeof(float));
+
+    vec2 bad_sigma[2] = {{4.0f, 0.0f}, {6.0f, 3.0f}};
+    AT(dvz_visual_set_data(visual, "sigma", bad_sigma, 2) == -1);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Verify GLSL point visuals keep native point-list draw semantics.
  *
  * @param suite the active test suite

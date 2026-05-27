@@ -115,6 +115,10 @@ bool _scene_visual_frame_plan_metadata(
             figure, visual, visual_index, "size", metadata->size_id, sizeof(metadata->size_id)))
         return false;
     if (!_scene_attr_resource_key(
+            figure, visual, visual_index, "sigma", metadata->sigma_id,
+            sizeof(metadata->sigma_id)))
+        return false;
+    if (!_scene_attr_resource_key(
             figure, visual, visual_index, "angle", metadata->angle_id, sizeof(metadata->angle_id)))
         return false;
     if (!_scene_attr_resource_key(

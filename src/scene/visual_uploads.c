@@ -75,6 +75,8 @@ static DvzFramePlanResourceRole _scene_attr_frame_plan_role(const char* attr_nam
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR;
     if (strcmp(attr_name, "size") == 0)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE;
+    if (strcmp(attr_name, "sigma") == 0)
+        return DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA;
     if (strcmp(attr_name, "angle") == 0)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_ANGLE;
     if (strcmp(attr_name, "shape") == 0)
@@ -292,7 +294,8 @@ static bool _scene_attach_upload_metadata(
 static bool _scene_upload_role_screen_space(DvzFramePlanResourceRole role)
 {
     return role == DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE ||
-           role == DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH;
+           role == DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH ||
+           role == DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA;
 }
 
 

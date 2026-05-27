@@ -47,6 +47,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_path_stroke_style);
     TST_CASE(test_scene_segment_emit_glsl);
     TST_CASE(test_scene_point_like_lowering_policy);
+    TST_CASE(test_scene_splat_api_and_attrs);
     TST_CASE(test_scene_point_emit_glsl_native_points);
     TST_CASE(test_scene_point_style_emits_glsl_and_wgsl);
     TST_CASE(test_scene_marker_api_and_emit_glsl);

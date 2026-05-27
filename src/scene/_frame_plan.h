@@ -56,6 +56,7 @@ typedef enum
     DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION,
     DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_FLAGS,
     DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_DISTANCE,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA,
 } DvzFramePlanResourceRole;
 
 
@@ -333,6 +334,7 @@ typedef struct DvzFramePlanVisualMeta
     char position_end_id[DVZ_SCENE_LABEL_SIZE];
     char color_id[DVZ_SCENE_LABEL_SIZE];
     char size_id[DVZ_SCENE_LABEL_SIZE];
+    char sigma_id[DVZ_SCENE_LABEL_SIZE];
     char angle_id[DVZ_SCENE_LABEL_SIZE];
     char bounds_id[DVZ_SCENE_LABEL_SIZE];
     char shape_id[DVZ_SCENE_LABEL_SIZE];

@@ -14,6 +14,7 @@
 /*************************************************************************************************/
 
 #include <float.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -238,6 +239,40 @@ bool _visual_attr_count_consistent(
             "item_count %u",
             _visual_type_name(visual->type), attr_name, item_count, attr->name, attr->item_count);
         return false;
+    }
+    return true;
+}
+
+
+/**
+ * Validate family-specific dense attribute payload values before retaining them.
+ *
+ * @param visual the visual
+ * @param attr_name storage attribute name
+ * @param data packed attribute data
+ * @param item_count number of items
+ * @return whether the values are accepted
+ */
+static bool _visual_attr_values_valid(
+    const DvzVisual* visual, const char* attr_name, const void* data, uint32_t item_count)
+{
+    ANN(visual);
+    ANN(attr_name);
+    ANN(data);
+
+    if (visual->type != DVZ_VISUAL_TYPE_SPLAT || strcmp(attr_name, "sigma") != 0)
+        return true;
+
+    const float* sigma = (const float*)data;
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        float sx = sigma[2 * i + 0];
+        float sy = sigma[2 * i + 1];
+        if (!isfinite(sx) || !isfinite(sy) || sx <= 0.0f || sy <= 0.0f)
+        {
+            log_error("splat visual attribute 'sigma' requires finite positive components");
+            return false;
+        }
     }
     return true;
 }
@@ -729,6 +764,8 @@ int dvz_visual_set_data(
         return -1;
     if (!_visual_attr_count_consistent(visual, attr_name, item_count))
         return -1;
+    if (!_visual_attr_values_valid(visual, attr_name, data, item_count))
+        return -1;
 
     DvzVisualAttr* attr = _attr_get_or_create(visual, attr_name, item_size);
     if (attr == NULL)
@@ -1025,6 +1062,11 @@ int dvz_visual_set_data_many(
             log_error(
                 "visual attribute '%s' byte size overflow for item_count=%u item_size=%u",
                 update->attr_name, update->item_count, item_size);
+            dvz_free(prepared);
+            return -1;
+        }
+        if (!_visual_attr_values_valid(visual, attr_name, update->data, update->item_count))
+        {
             dvz_free(prepared);
             return -1;
         }
@@ -1359,6 +1401,8 @@ const char* _visual_type_name(DvzVisualType type)
         return "image";
     case DVZ_VISUAL_TYPE_LABELS:
         return "labels";
+    case DVZ_VISUAL_TYPE_SPLAT:
+        return "splat";
     case DVZ_VISUAL_TYPE_TEXT:
         return "text";
     case DVZ_VISUAL_TYPE_GLYPH:

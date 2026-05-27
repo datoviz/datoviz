@@ -104,6 +104,8 @@ static const char* _draw_packet_role_name(const ConverterState* state, uint64_t 
         return "color";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE:
         return "size";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA:
+        return "sigma";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_ANGLE:
         return "angle";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_SHAPE:

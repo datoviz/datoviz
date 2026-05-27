@@ -140,7 +140,8 @@ float _scene_screen_scale(const DvzFigure* figure)
 static bool _scene_attr_is_screen_space(const char* attr_name)
 {
     return attr_name != NULL &&
-           (strcmp(attr_name, "size") == 0 || strcmp(attr_name, "line_width") == 0);
+           (strcmp(attr_name, "size") == 0 || strcmp(attr_name, "line_width") == 0 ||
+            strcmp(attr_name, "sigma") == 0);
 }
 
 
