@@ -139,8 +139,8 @@ _query_select_profile(const DvzQueryRequest* request, const DvzCapabilitySnapsho
         return DVZ_QUERY_PROFILE_U32_R32;
     if (_query_profile_supported(DVZ_QUERY_PROFILE_U64_RG32, caps))
         return DVZ_QUERY_PROFILE_U64_RG32;
-    if (_query_profile_supported(DVZ_QUERY_PROFILE_U64_2XR32, caps))
-        return DVZ_QUERY_PROFILE_U64_2XR32;
+    /* Two-attachment query readback remains an explicit future profile until family builders
+     * and FramePlan emission can produce and consume both output attachments. */
     return DVZ_QUERY_PROFILE_UNSUPPORTED;
 }
 

@@ -766,6 +766,8 @@ int test_scene_query_skips_fixed_visuals(TstContext* suite, const TstCase* item)
 
 int test_scene_query_rejects_missing_query_profile(TstContext* suite, const TstCase* item);
 
+int test_scene_query_does_not_auto_select_2xr32_profile(TstContext* suite, const TstCase* item);
+
 int test_scene_query_rejects_family_unsupported_profile(TstContext* suite, const TstCase* item);
 
 int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* item);

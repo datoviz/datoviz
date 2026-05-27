@@ -295,6 +295,56 @@ int test_scene_query_rejects_missing_query_profile(TstContext* suite, const TstC
 
 
 /**
+ * Ensure automatic profile selection does not choose the deferred two-attachment query profile.
+ *
+ * @param suite test context
+ * @param item test case
+ * @return 0 on success
+ */
+int test_scene_query_does_not_auto_select_2xr32_profile(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+    dvz_visual_set_query_capabilities(point, DVZ_QUERY_CAPABILITY_ITEM);
+    AT(dvz_panel_add_visual(panel, point, NULL) == 0);
+
+    AT(dvz_panel_query(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){.request_id = 40, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.query_profile_u32_r32 = false;
+    caps.query_profile_u64_rg32 = false;
+    caps.query_profile_u64_2xr32 = true;
+    AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
+
+    DvzQueryResult query = {0};
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.request_id == 40);
+    AT(!query.hit);
+    AT(query.status == DVZ_QUERY_STATUS_UNSUPPORTED_QUERY_PROFILE);
+    AT(query.profile == DVZ_QUERY_PROFILE_UNSUPPORTED);
+    AT(query.visual_id == 0);
+    AT(!dvz_scene_poll_query(scene, &query));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Ensure family execution rejects a requested profile it cannot decode.
  *
  * @param suite test context
@@ -2345,6 +2395,7 @@ int test_scene_query(TstSuite* suite)
     TST_CASE(test_scene_query_volume_sample_is_explicitly_unsupported);
     TST_CASE(test_scene_query_skips_fixed_visuals);
     TST_CASE(test_scene_query_rejects_missing_query_profile);
+    TST_CASE(test_scene_query_does_not_auto_select_2xr32_profile);
     TST_CASE(test_scene_query_rejects_family_unsupported_profile);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_resolves_sample);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_sample_query_readback_failure);
