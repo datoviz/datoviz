@@ -97,6 +97,8 @@ just ctypes          # generate datoviz/_ctypes.py from JSON
 just ctypes-abi      # generate build/bindings/ctypes_abi.json
 just ctypes-check    # validate generated ctypes against C ABI facts
 just ctypes-smoke    # import/load/create-destroy smoke
+just ctypes-render-smoke    # offscreen render/capture smoke, skips without runtime support
+just ctypes-package-smoke   # editable and wheel install smoke
 just bindings        # run the full raw-binding workflow
 ```
 

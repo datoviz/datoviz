@@ -199,10 +199,10 @@ Checklist:
    or capture when runtime support is available.
 6. Document that high-level OO Python plotting belongs to GSP/VisPy2.
 
-Current first-slice evidence: `just bindings` now builds, regenerates the API JSON and raw ctypes
-module, validates C ABI layout facts for generated structs, checks import/load/create-destroy, and
-runs a tiny offscreen point render smoke that skips cleanly when no GPU/runtime is available.
-Examples live under `examples/python/raw/`.
+Current RC1 evidence: `just bindings` now builds, regenerates the API JSON and raw ctypes module,
+validates C ABI layout facts for generated structs, checks import/load/create-destroy, runs a tiny
+offscreen point render smoke that skips cleanly when no GPU/runtime is available, and verifies both
+editable and wheel installs. Examples live under `examples/python/raw/`.
 
 Suggested validation:
 
@@ -210,7 +210,8 @@ Suggested validation:
 2. `just ctypes-check`
 3. `just ctypes-smoke`
 4. `just ctypes-render-smoke`
-5. wheel or editable-install smoke, when packaging work starts
+5. `just ctypes-package-smoke`
+6. `just bindings`
 
 Exit criteria:
 
