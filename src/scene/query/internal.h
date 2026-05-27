@@ -82,10 +82,14 @@ struct DvzSceneQueryBuildContext
 struct DvzSceneQueryPlan
 {
     DvzSceneProbePlan scratch;
+    DvzSampledField* field;
     uint32_t target_width;
     uint32_t target_height;
     uint32_t format;
     uint32_t byte_size;
+    uint32_t texel_x;
+    uint32_t texel_y;
+    double uvw[3];
 };
 
 
