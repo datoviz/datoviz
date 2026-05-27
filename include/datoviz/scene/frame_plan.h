@@ -29,6 +29,28 @@
 EXTERN_C_ON
 
 /*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct DvzFramePlanCopyDesc
+{
+    const char* src_resource_id;
+    const char* dst_resource_id;
+    uint32_t src_attachment_index;
+    uint32_t src_origin[3];
+    uint32_t extent[3];
+    uint32_t format;
+    uint32_t bytes_per_texel;
+    uint64_t bytes_per_row;
+    uint32_t rows_per_image;
+    uint64_t dst_offset;
+    uint64_t byte_size;
+    uint64_t request_id;
+} DvzFramePlanCopyDesc;
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -390,6 +412,17 @@ DVZ_EXPORT bool dvz_frame_plan_render_visual(DvzFramePlan* plan, const char* vis
 DVZ_EXPORT bool dvz_frame_plan_copy(
     DvzFramePlan* plan, const char* src_resource_id, const char* dst_resource_id,
     uint64_t byte_size);
+
+
+/**
+ * Append an explicit texture-to-buffer copy node.
+ *
+ * @param plan the FramePlan
+ * @param desc the copy descriptor
+ * @return whether the node was appended
+ */
+DVZ_EXPORT bool dvz_frame_plan_copy_ex(
+    DvzFramePlan* plan, const DvzFramePlanCopyDesc* desc);
 
 
 

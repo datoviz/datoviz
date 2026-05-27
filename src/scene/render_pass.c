@@ -183,7 +183,9 @@ bool _render_pass_copy_finish_submit(
         if (color_id == 0 || readback_buffer_id == 0)
             return false;
         ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
-                       stream, encoder_id, color_id, readback_buffer_id, 0, 1, 1, 4, 1);
+                       stream, encoder_id, color_id, readback_buffer_id,
+                       copy->u.copy.dst_offset, copy->u.copy.extent[0], copy->u.copy.extent[1],
+                       (uint32_t)copy->u.copy.bytes_per_row, copy->u.copy.rows_per_image);
     }
 
     ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);

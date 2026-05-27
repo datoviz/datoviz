@@ -423,7 +423,9 @@ static bool _emit_readback(
     (void)readback;
 
     return dvz_drp2_stream_copy_texture_to_buffer(
-        stream, DRP2_ID_ENCODER, DRP2_ID_COLOR_TARGET, DRP2_ID_READBACK_BUFFER, 0, 1, 1, 4, 1);
+        stream, DRP2_ID_ENCODER, DRP2_ID_COLOR_TARGET, DRP2_ID_READBACK_BUFFER,
+        copy->u.copy.dst_offset, copy->u.copy.extent[0], copy->u.copy.extent[1],
+        (uint32_t)copy->u.copy.bytes_per_row, copy->u.copy.rows_per_image);
 }
 
 

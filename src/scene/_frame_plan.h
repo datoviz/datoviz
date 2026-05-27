@@ -434,7 +434,16 @@ struct DvzFramePlanNode
         {
             char src_resource_id[DVZ_SCENE_LABEL_SIZE];
             char dst_resource_id[DVZ_SCENE_LABEL_SIZE];
+            uint32_t src_attachment_index;
+            uint32_t src_origin[3];
+            uint32_t extent[3];
+            uint32_t format;
+            uint32_t bytes_per_texel;
+            uint64_t bytes_per_row;
+            uint32_t rows_per_image;
+            uint64_t dst_offset;
             uint64_t byte_size;
+            uint64_t request_id;
         } copy;
         struct
         {

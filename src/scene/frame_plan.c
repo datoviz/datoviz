@@ -1516,7 +1516,21 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
         _json_append_escaped_string(builder, node->u.copy.src_resource_id);
         _json_append(builder, ", \"dst_resource_id\": ");
         _json_append_escaped_string(builder, node->u.copy.dst_resource_id);
-        _json_append(builder, ", \"byte_size\": %" PRIu64 " }", node->u.copy.byte_size);
+        _json_append(
+            builder,
+            ", \"src_attachment_index\": %" PRIu32
+            ", \"src_origin\": { \"x\": %" PRIu32 ", \"y\": %" PRIu32
+            ", \"z\": %" PRIu32 " }, \"extent\": { \"width\": %" PRIu32
+            ", \"height\": %" PRIu32 ", \"depth\": %" PRIu32 " }, \"format\": %" PRIu32
+            ", \"bytes_per_texel\": %" PRIu32 ", \"bytes_per_row\": %" PRIu64
+            ", \"rows_per_image\": %" PRIu32 ", \"dst_offset\": %" PRIu64
+            ", \"byte_size\": %" PRIu64 ", \"request_id\": %" PRIu64 " }",
+            node->u.copy.src_attachment_index, node->u.copy.src_origin[0],
+            node->u.copy.src_origin[1], node->u.copy.src_origin[2], node->u.copy.extent[0],
+            node->u.copy.extent[1], node->u.copy.extent[2], node->u.copy.format,
+            node->u.copy.bytes_per_texel, node->u.copy.bytes_per_row,
+            node->u.copy.rows_per_image, node->u.copy.dst_offset, node->u.copy.byte_size,
+            node->u.copy.request_id);
         break;
     case DVZ_FRAME_PLAN_NODE_READBACK:
         _json_append(builder, "{ \"type\": \"%s\", \"resource_id\": ", _node_type_name(node->type));
@@ -2202,16 +2216,54 @@ bool dvz_frame_plan_copy(
     DvzFramePlan* plan, const char* src_resource_id, const char* dst_resource_id,
     uint64_t byte_size)
 {
+    DvzFramePlanCopyDesc desc = {
+        .src_resource_id = src_resource_id,
+        .dst_resource_id = dst_resource_id,
+        .extent = {1, 1, 1},
+        .bytes_per_texel = byte_size > UINT32_MAX ? UINT32_MAX : (uint32_t)byte_size,
+        .bytes_per_row = byte_size,
+        .rows_per_image = 1,
+        .byte_size = byte_size,
+    };
+    return dvz_frame_plan_copy_ex(plan, &desc);
+}
+
+
+
+/**
+ * Append an explicit texture-to-buffer copy node.
+ *
+ * @param plan the FramePlan
+ * @param desc the copy descriptor
+ * @return whether the node was appended
+ */
+bool dvz_frame_plan_copy_ex(DvzFramePlan* plan, const DvzFramePlanCopyDesc* desc)
+{
+    ANN(desc);
     DvzFramePlanNode* node = _append_node(plan, DVZ_FRAME_PLAN_NODE_COPY);
     if (node == NULL)
         return false;
     _copy_label(
         node->u.copy.src_resource_id, DVZ_SCENE_LABEL_SIZE,
-        src_resource_id ? src_resource_id : "");
+        desc->src_resource_id ? desc->src_resource_id : "");
     _copy_label(
         node->u.copy.dst_resource_id, DVZ_SCENE_LABEL_SIZE,
-        dst_resource_id ? dst_resource_id : "");
-    node->u.copy.byte_size = byte_size;
+        desc->dst_resource_id ? desc->dst_resource_id : "");
+    node->u.copy.src_attachment_index = desc->src_attachment_index;
+    node->u.copy.src_origin[0] = desc->src_origin[0];
+    node->u.copy.src_origin[1] = desc->src_origin[1];
+    node->u.copy.src_origin[2] = desc->src_origin[2];
+    node->u.copy.extent[0] = desc->extent[0] != 0 ? desc->extent[0] : 1;
+    node->u.copy.extent[1] = desc->extent[1] != 0 ? desc->extent[1] : 1;
+    node->u.copy.extent[2] = desc->extent[2] != 0 ? desc->extent[2] : 1;
+    node->u.copy.format = desc->format;
+    node->u.copy.bytes_per_texel = desc->bytes_per_texel;
+    node->u.copy.bytes_per_row =
+        desc->bytes_per_row != 0 ? desc->bytes_per_row : desc->byte_size;
+    node->u.copy.rows_per_image = desc->rows_per_image != 0 ? desc->rows_per_image : 1;
+    node->u.copy.dst_offset = desc->dst_offset;
+    node->u.copy.byte_size = desc->byte_size;
+    node->u.copy.request_id = desc->request_id;
     return true;
 }
 

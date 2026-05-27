@@ -223,6 +223,8 @@ int test_frame_plan_texture_upload_json_includes_region(TstContext* suite, const
 
 int test_frame_plan_readbacks(TstContext* suite, const TstCase* item);
 
+int test_frame_plan_query_readback_copy_metadata(TstContext* suite, const TstCase* item);
+
 int test_frame_plan_graph_static_multipass(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_graph_dependencies_dump(TstContext* suite, const TstCase* item);

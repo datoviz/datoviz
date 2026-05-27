@@ -697,8 +697,53 @@ int test_frame_plan_readbacks(TstContext* suite, const TstCase* item)
     AT(strstr(json, "\"picking\": true") != NULL);
     AT(strstr(json, "\"type\": \"copy\"") != NULL);
     AT(strstr(json, "\"src_resource_id\": \"target.panel.0.picking\"") != NULL);
+    AT(strstr(json, "\"bytes_per_row\": 4") != NULL);
+    AT(strstr(json, "\"rows_per_image\": 1") != NULL);
     AT(strstr(json, "\"request_id\": \"request.pick.0\"") != NULL);
     AT(strstr(json, "\"request_id\": \"request.export.0\"") != NULL);
+
+    dvz_frame_plan_json_destroy(json);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+int test_frame_plan_query_readback_copy_metadata(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.query.readback", 10);
+    ANN(plan);
+
+    DvzFramePlanCopyDesc desc = {
+        .src_resource_id = "target.panel.0.query.identity",
+        .dst_resource_id = "buf.query.readback",
+        .src_attachment_index = 1,
+        .src_origin = {2, 3, 0},
+        .extent = {2, 1, 1},
+        .format = 98,
+        .bytes_per_texel = 8,
+        .bytes_per_row = 16,
+        .rows_per_image = 1,
+        .dst_offset = 32,
+        .byte_size = 16,
+        .request_id = 1234,
+    };
+    AT(dvz_frame_plan_copy_ex(plan, &desc));
+    AT(dvz_frame_plan_readback(plan, "buf.query.readback", "request.query.1234"));
+
+    char* json = dvz_frame_plan_json(plan);
+    ANN(json);
+    AT(strstr(json, "\"src_attachment_index\": 1") != NULL);
+    AT(strstr(json, "\"src_origin\": { \"x\": 2, \"y\": 3, \"z\": 0 }") != NULL);
+    AT(strstr(json, "\"extent\": { \"width\": 2, \"height\": 1, \"depth\": 1 }") != NULL);
+    AT(strstr(json, "\"format\": 98") != NULL);
+    AT(strstr(json, "\"bytes_per_texel\": 8") != NULL);
+    AT(strstr(json, "\"bytes_per_row\": 16") != NULL);
+    AT(strstr(json, "\"dst_offset\": 32") != NULL);
+    AT(strstr(json, "\"byte_size\": 16") != NULL);
+    AT(strstr(json, "\"request_id\": 1234") != NULL);
 
     dvz_frame_plan_json_destroy(json);
     dvz_frame_plan_destroy(plan);
@@ -1718,6 +1763,7 @@ int test_scene_frame_plan(TstSuite* suite)
     TST_CASE(test_frame_plan_dynamic_update);
     TST_CASE(test_frame_plan_texture_upload_json_includes_region);
     TST_CASE(test_frame_plan_readbacks);
+    TST_CASE(test_frame_plan_query_readback_copy_metadata);
     TST_CASE(test_frame_plan_graph_static_multipass);
     TST_CASE(test_frame_plan_graph_dependencies_dump);
     TST_CASE(test_frame_plan_graph_depth_peeling_shape);
