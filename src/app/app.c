@@ -596,6 +596,26 @@ static double _app_record_fps_from_env(void)
 }
 
 
+/**
+ * Return whether a Vulkan format supports query render-target readback.
+ *
+ * @param physical_device Vulkan physical device
+ * @param format Vulkan format to test
+ * @return whether the format can be rendered and copied from optimal tiling
+ */
+static bool _app_format_supports_query_readback(VkPhysicalDevice physical_device, VkFormat format)
+{
+    if (physical_device == VK_NULL_HANDLE)
+        return false;
+
+    VkFormatProperties props = {0};
+    vkGetPhysicalDeviceFormatProperties(physical_device, format, &props);
+    const VkFormatFeatureFlags required =
+        VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_TRANSFER_SRC_BIT;
+    return (props.optimalTilingFeatures & required) == required;
+}
+
+
 
 /**
  * Apply runtime-backed limits to app frame emission capabilities.
@@ -627,6 +647,29 @@ static void _app_apply_runtime_caps(DvzApp* app, DvzCapabilitySnapshot* caps)
     vkGetPhysicalDeviceProperties2(physical_device, &props);
     if (props13.maxBufferSize > caps->max_buffer_size)
         caps->max_buffer_size = props13.maxBufferSize;
+    if (props.properties.limits.maxColorAttachments > caps->max_color_attachments)
+        caps->max_color_attachments = props.properties.limits.maxColorAttachments;
+    caps->max_readback_size = caps->max_buffer_size;
+    caps->supports_readback = true;
+    caps->min_texture_copy_bytes_per_row_alignment =
+        props.properties.limits.optimalBufferCopyRowPitchAlignment > UINT32_MAX
+            ? UINT32_MAX
+            : (uint32_t)props.properties.limits.optimalBufferCopyRowPitchAlignment;
+    if (caps->min_texture_copy_bytes_per_row_alignment == 0)
+        caps->min_texture_copy_bytes_per_row_alignment = 4;
+
+    caps->render_target_format_r32uint =
+        _app_format_supports_query_readback(physical_device, VK_FORMAT_R32_UINT);
+    caps->render_target_format_rg32uint =
+        _app_format_supports_query_readback(physical_device, VK_FORMAT_R32G32_UINT);
+    caps->texture_format_r32uint = caps->render_target_format_r32uint;
+    caps->texture_format_rg32uint = caps->render_target_format_rg32uint;
+    caps->query_profile_u32_r32 = caps->supports_readback && caps->render_target_format_r32uint;
+    caps->query_profile_u64_rg32 = caps->supports_readback && caps->render_target_format_rg32uint;
+    caps->query_profile_u64_2xr32 =
+        caps->supports_readback && caps->render_target_format_r32uint &&
+        caps->max_color_attachments >= 2;
+    caps->query_profile_packed_rgba8 = caps->supports_readback;
 
     caps->max_color_sample_count = _app_image_max_sample_count(
         physical_device, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,

@@ -50,10 +50,19 @@ int test_scene_capabilities_diagnostics(TstContext* suite, const TstCase* item)
     dvz_capability_snapshot_default(&caps);
     AT(caps.max_buffer_size > 0);
     AT(caps.max_texture_dimension_2d > 0);
+    AT(caps.supports_readback);
+    AT(caps.max_readback_size == caps.max_buffer_size);
+    AT(caps.min_texture_copy_bytes_per_row_alignment > 0);
+    AT(caps.render_target_format_r32uint);
+    AT(caps.render_target_format_rg32uint);
+    AT(caps.query_profile_u32_r32);
+    AT(caps.query_profile_u64_rg32);
+    AT(caps.query_profile_u64_2xr32);
 
     dvz_capability_snapshot_copy(&copy, &caps);
     AT(copy.max_buffer_size == caps.max_buffer_size);
     AT(copy.max_vertex_buffers == caps.max_vertex_buffers);
+    AT(copy.query_profile_u64_rg32 == caps.query_profile_u64_rg32);
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);

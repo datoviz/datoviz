@@ -138,6 +138,17 @@ struct DvzCapabilitySnapshot
     bool render_target_format_r16float;
     bool supports_render_target_sampling;
     bool supports_color_blending;
+    bool supports_readback;
+    uint32_t min_texture_copy_bytes_per_row_alignment;
+    uint64_t max_readback_size;
+    bool texture_format_r32uint;
+    bool texture_format_rg32uint;
+    bool render_target_format_r32uint;
+    bool render_target_format_rg32uint;
+    bool query_profile_u32_r32;
+    bool query_profile_u64_rg32;
+    bool query_profile_u64_2xr32;
+    bool query_profile_packed_rgba8;
 };
 
 
@@ -657,6 +668,70 @@ struct DvzProbeResult
     uint64_t source_request_id;
 };
 typedef struct DvzProbeResult DvzProbeResult;
+
+
+struct DvzQueryRequest
+{
+    uint64_t request_id;
+    DvzSceneTargetKind target;
+    DvzPickHitPolicy hit_policy;
+    DvzQueryProfile profile;
+    uint32_t flags;
+};
+typedef struct DvzQueryRequest DvzQueryRequest;
+
+
+struct DvzQueryResult
+{
+    uint64_t request_id;
+    uint64_t freshness_serial;
+    DvzQueryStatus status;
+    bool hit;
+    uint64_t panel_id;
+    double panel_position[2];
+    uint32_t framebuffer_position[2];
+    uint64_t visual_id;
+    DvzSceneVisualFamily visual_family;
+    DvzQueryProfile profile;
+    uint32_t payload_version;
+    DvzSceneTargetKind raw_parent_target;
+    uint64_t raw_parent_id;
+    DvzSceneTargetKind raw_target;
+    uint64_t raw_id;
+    DvzSceneTargetKind resolved_parent_target;
+    uint64_t resolved_parent_id;
+    DvzSceneTargetKind resolved_target;
+    uint64_t resolved_id;
+    uint64_t item_id;
+    uint64_t group_id;
+    uint64_t auxiliary_id;
+    uint64_t instance_id;
+    uint64_t face_id;
+    uint64_t primitive_id;
+    uint64_t vertex_id;
+    uint64_t voxel_id;
+    uint64_t texel_id;
+    uint64_t link_key;
+    uint32_t link_channel;
+    bool has_visual_position;
+    double visual_position[3];
+    bool has_data_position;
+    double data_position[3];
+    bool has_uvw;
+    double uvw[3];
+    bool has_depth;
+    double depth;
+    bool has_display_rgba;
+    double display_rgba[4];
+    DvzQueryValueKind value_kind;
+    double scalar;
+    double vector[4];
+    DvzCategoryId category_id;
+    char label[DVZ_SCENE_LABEL_SIZE];
+    char unit[32];
+    DvzScale* scale;
+};
+typedef struct DvzQueryResult DvzQueryResult;
 
 
 struct DvzHoverState

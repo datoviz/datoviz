@@ -1562,6 +1562,17 @@ void dvz_capability_snapshot_default(DvzCapabilitySnapshot* snapshot)
     snapshot->render_target_format_r16float = false;
     snapshot->supports_render_target_sampling = false;
     snapshot->supports_color_blending = false;
+    snapshot->supports_readback = true;
+    snapshot->min_texture_copy_bytes_per_row_alignment = 4;
+    snapshot->max_readback_size = snapshot->max_buffer_size;
+    snapshot->texture_format_r32uint = true;
+    snapshot->texture_format_rg32uint = true;
+    snapshot->render_target_format_r32uint = true;
+    snapshot->render_target_format_rg32uint = true;
+    snapshot->query_profile_u32_r32 = true;
+    snapshot->query_profile_u64_rg32 = true;
+    snapshot->query_profile_u64_2xr32 = true;
+    snapshot->query_profile_packed_rgba8 = true;
 }
 
 
