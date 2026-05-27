@@ -81,8 +81,6 @@ struct DvzSceneQueryPlan
     uint32_t target_height;
     uint32_t format;
     uint32_t byte_size;
-    uint32_t texel_x;
-    uint32_t texel_y;
     double uvw[3];
     bool mark_image_query_static_uploaded;
     DvzVisual* image_query_visual;
