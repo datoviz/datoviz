@@ -16,6 +16,19 @@ These documents refine `../semantics/VISUAL_FAMILY_RULES.md` and `../semantics/V
 detail to implement or validate each family.
 
 
+## Visuals Versus Composites
+
+A visual family is a repeated renderable item contract with one primary data schema, one installed
+attribute table, and one query identity model. It may still lower internally to generated resources
+or multiple draw calls.
+
+A composite is a semantic object that coordinates multiple visual roles with different schemas or
+interaction behavior. For example, polygons own fill and stroke visuals, graphs own node, edge,
+label, and highlight roles, and axes/colorbars/legends/annotations lower to visual contributions.
+Composite contracts belong under the closest semantic or API spec rather than as visual-family
+files.
+
+
 ## Consistency Contract
 
 The active v0.4 visual API should use precise attribute names rather than a family-dependent
@@ -41,8 +54,8 @@ names above. Examples include `dvz_sphere_mode()`, `dvz_visual_set_material()`, 
 fill/stroke/outline aspect setters, and stroke-style setters as behavior APIs.
 
 Picking is GPU-backed only. A visual without a GPU pick implementation for the requested precision
-must fail explicitly through `DvzPickStatus` rather than falling back to CPU hit testing or silently
-returning a miss.
+must fail explicitly through `DvzQueryStatus` rather than falling back to CPU hit testing or
+silently returning a miss.
 
 Mesh instancing is part of the mesh contract. A mesh visual may draw one shared geometry resource
 multiple times through per-instance attributes such as `instance_transform`, `instance_color`, and
@@ -53,6 +66,32 @@ Image visuals are multi-item visuals. The coherent v0.4 model is many image rect
 shared texture/field/atlas, with per-item `position`, `extent`, `anchor`, `tex_rect`, `angle`, and
 `tint`. Arbitrary different texture resources per image item are deferred; use multiple image
 visuals or an atlas/texture array for that case.
+
+
+## Installed Attribute Matrix
+
+This table is code-derived from `src/scene/visual_family.c` and should be updated when the installed
+attribute descriptors change. Public aliases are the names examples and specs should use; storage
+names are the current retained implementation slots.
+
+| Family | Public constructor | Installed public attributes | Storage aliases | Installed source support |
+|---|---|---|---|---|
+| `pixel` | `dvz_pixel()` | `position`, `color`, `pixel_size` | `pixel_size -> size` | `position` item; `color` item/constant/group; `pixel_size` item/constant/group |
+| `point` | `dvz_point()` | `position`, `color`, `diameter`, `selection` | `diameter -> size` | `position` item; `color` item/constant/group; `diameter` item/constant/group; `selection` item |
+| `marker` | `dvz_marker()` | `position`, `color`, `diameter`, `selection`, `angle`, `shape` | `diameter -> size` | `position`, `selection`, `angle`, `shape` item; `color`, `diameter` item/constant/group |
+| `sphere` | `dvz_sphere()` | `position`, `color`, `radius` | `radius -> size` | `position` item; `color`, `radius` item/constant/group |
+| `segment` | `dvz_segment()` | `position_start`, `position_end`, `color`, `stroke_width` | `stroke_width -> line_width` | endpoints item; `color` item/constant; `stroke_width` item/constant |
+| `path` | `dvz_path()` | `position`, `color`, `stroke_width` | `stroke_width -> line_width` | `position` item; `color` item/constant/span/group; `stroke_width` item/constant |
+| `primitive` | `dvz_primitive()` | `position`, `color`, `normal` | none | `position`, `normal` item; `color` item/constant/group |
+| `mesh` | `dvz_mesh()` | `position`, `color`, `normal`, `texcoords`, `instance_transform` | none | all item; `color` also constant/group |
+| `image` | `dvz_image()` | `position`, `extent`, `position_px`, `extent_px`, `anchor`, `tex_rect`, `texcoords` | none | all item |
+| `labels` | `dvz_labels()` | `position`, `extent`, `position_px`, `extent_px`, `anchor`, `tex_rect`, `texcoords` | none | all item |
+| `volume` | `dvz_volume()` | `position`, `texcoords` | none | all item |
+| `glyph` | `dvz_glyph()` | `position`, `bounds`, `texcoords`, `color`, `angle` | none | `position`, `bounds`, `texcoords`, `angle` item; `color` item/constant/group |
+
+`DVZ_VISUAL_TYPE_TEXT` is an internal retained lowering path for semantic text. Public text
+ownership is documented under `../semantics/TEXT.md`; low-level atlas-backed draw items are covered
+by `GLYPH.md`.
 
 
 ## Active Implementation Status
