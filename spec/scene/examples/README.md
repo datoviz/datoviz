@@ -77,9 +77,9 @@ single imported scratch file.
 3. [EXAMPLE_PRIORITIZATION.md](EXAMPLE_PRIORITIZATION.md) owns the implementation order and
    architecture-pressure ranking.
 4. [GALLERY_VISUAL_IDENTITY.md](GALLERY_VISUAL_IDENTITY.md) owns visual style, screenshot rules,
-   and video rules.
+   video rules, and the MkDocs Material gallery publishing direction.
 5. [EXAMPLE_ORGANIZATION.md](EXAMPLE_ORGANIZATION.md) owns repository/API-layer placement,
-   scenario IDs, and lane organization.
+   scenario IDs, lane organization, and example metadata used to generate gallery pages.
 
 If an imported planning note is present locally, treat it as provenance only. Promote durable
 decisions into the files above before relying on them.

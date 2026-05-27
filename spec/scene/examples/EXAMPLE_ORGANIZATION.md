@@ -168,6 +168,34 @@ related:
   - vispy2/examples/gsp/showcases/earth_cubemap.py
 ```
 
+Gallery-critical examples should extend this compact manifest with documentation and asset fields:
+
+```yaml
+gallery:
+  card: front-page | section | hidden
+  title: Earth Cubemap
+  summary: Textured planet mesh with lighting, camera animation, and capture.
+  image: assets/gallery/showcases/earth_cubemap.webp
+  video: assets/gallery/showcases/earth_cubemap.webm
+  poster: assets/gallery/showcases/earth_cubemap.webp
+  alt: Textured Earth mesh rendered with Datoviz
+  capture_command: just capture showcase_earth_cubemap
+  docs_page: examples/showcases/earth-cubemap.md
+  status_label: supported | experimental | fixture-only | deferred
+features:
+  - mesh
+  - sampled-field
+  - texture
+  - arcball
+  - capture
+```
+
+These fields let the documentation generator build visual MkDocs pages without copying example
+facts into Markdown by hand. Generated gallery pages should include the canonical media asset,
+source/example path, run or capture command, backend requirements, release status, and feature tags.
+The metadata should also make it possible to validate that every public gallery card has a
+nonblank image, alt text, and a reachable source example.
+
 
 ## Data, Validation, And Duplication Policy
 
