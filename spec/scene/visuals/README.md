@@ -26,6 +26,7 @@ The active v0.4 visual API should use precise attribute names rather than a fami
 | `pixel` | `pixel_size` | square side length in screen pixels |
 | `point` | `diameter` | circular point diameter in screen pixels |
 | `marker` | `diameter` | marker sprite box diameter in screen pixels |
+| `splat` | `sigma` | Gaussian standard deviations in screen pixels |
 | `sphere` | `radius` | sphere radius in world/data units unless a radius mode is added |
 | `segment` | `stroke_width` | line stroke width in screen pixels |
 | `path` | `stroke_width` | path stroke width in screen pixels |
@@ -71,6 +72,7 @@ broader than the current implementation.
 | `labels` | [IMAGE.md](IMAGE.md), active labels proposal | `dvz_labels()`, field + categorical scale binding | integer 2D `SampledField`, categorical scale, opacity/background/selected/hidden/boundary/fallback style | integer texture fetch with GLSL and WGSL variants | raw 2D label-id segment probe readback | 3D label slices, optimized sparse/high-id probe pressure tests |
 | `mesh` | [MESH.md](MESH.md) | `dvz_mesh()` | vertex attributes, optional indices/normals, instance attributes, material/depth/alpha | indexed triangle mesh, optional instancing, depth, Phong/material, WBOIT/depth-peel, EDL/SSAO/G-buffer eligibility | item-level mesh picking | face/region picking, geometry-resource API, full PBR |
 | `sphere` | [SPHERE.md](SPHERE.md) | `dvz_sphere()` | position/color/radius, impostor mode, material/depth | analytic impostor sphere, including raycast and SSAO/G-buffer coverage | sphere item picking | texture variants and per-item material/PBR |
+| `splat` | [SPLAT.md](SPLAT.md) | none installed | none | no | no | proposed v0.4 experimental screen-space Gaussian contract |
 | `volume` | [VOLUME.md](VOLUME.md) | `dvz_volume()`, volume setters, field binding | 3D `SampledField`, mode/slice/bounds/clipping/sampling/opacity/scale | box-proxy slice, MIP, and composite rendering | volume proxy item picking and slice probe/readout | isosurfaces, MPR, DVR/MIP ray-hit picking, categorical label volumes, and WebGPU parity |
 | `errorbar` | [ERRORBAR.md](ERRORBAR.md) | none installed | none | no | no | spec only |
 | `boxplot` | [BOXPLOT.md](BOXPLOT.md) | none installed | none | no | no | spec only |
@@ -78,13 +80,18 @@ broader than the current implementation.
 
 ## Future Visual-Family Specs
 
-`tube` is documented as a future/spec-only family in [TUBE.md](TUBE.md). It covers radius-bearing
-3D curve surfaces such as tractography fibers, streamtubes, vessels, neurites, field lines,
-trajectory tubes, and ribbons. It is intentionally separate from `path`: `path` owns screen-space
-stroked polylines, while `tube` owns surface-like curve rendering with radius, depth, normals, and
+`splat` is documented as a proposed v0.4 experimental family in [SPLAT.md](SPLAT.md). The first
+contract is limited to screen-space Gaussian billboards; scalable Gaussian-splat pipelines remain
+future work.
+
+`tube` is documented as a future/spec-only family in [TUBE.md](TUBE.md). It covers radius-bearing 3D
+curve surfaces such as tractography fibers, streamtubes, vessels, neurites, field lines, trajectory
+tubes, and ribbons. It is intentionally separate from `path`: `path` owns screen-space stroked
+polylines, while `tube` owns surface-like curve rendering with radius, depth, normals, and
 mode-specific implementations such as impostor tubes, mesh tubes, and ribbons.
 
-No `dvz_tube()` constructor or runtime lowering is installed in the active v0.4 slice.
+No `dvz_splat()` or `dvz_tube()` constructor or runtime lowering is installed in the active v0.4
+slice.
 
 
 ## Reading Order

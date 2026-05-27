@@ -1,87 +1,122 @@
-# Splat Visual Contract
+# Visual Family: `splat`
 
-Status: proposed v0.4 visual family.
+Status: proposed v0.4 experimental visual family. No public `dvz_splat()` constructor or
+`DVZ_VISUAL_TYPE_SPLAT` enum value is installed yet.
 
-This document defines the v0.4 contract for a simple anisotropic Gaussian splat visual.
-It is intentionally limited to screen-space billboard splats so it can land without requiring
-GPU sorting, compute prepasses, indirect draws, tile binning, or 3D Gaussian Splatting
-compatibility.
+This document defines a deliberately small screen-space Gaussian splat contract. It refines
+`../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.md`,
+`../pipeline/ATTRIBUTE_SOURCES.md`, and `../semantics/TRANSPARENCY.md`.
 
-## Scope
+Full Gaussian-splat pipelines, projected 3D covariance, sorting, tile binning, and trained asset
+formats remain future work. The broader frame-plan pressure is recorded in
+`../proposals/future/SPLATTING_FRAME_PLAN_REQUIREMENTS.md`.
 
-The v0.4 `splat` family renders one screen-facing Gaussian footprint per item. Each item has a
-center position in the normal Datoviz scene coordinate pipeline and an anisotropic footprint in
-screen pixels.
 
-The first implementation should support:
+## Current Implementation Status
 
-1. screen-space anisotropic Gaussian footprints,
-2. the isotropic Gaussian case as `sigma.x == sigma.y`,
-3. per-item color and optional opacity,
-4. transparent rendering through the existing scene alpha/depth machinery,
-5. retained scene data updates through the normal visual data path,
-6. DRP2 emission as an ordinary render visual.
+Status on 2026-05-27: `splat` is concept/spec only.
 
-The first implementation must not depend on:
+The active runtime does not implement retained splat state, shader variants, DRP2 lowering,
+request/readback behavior, or public C API. The first implementation should remain a normal
+retained scene visual and must not introduce a parallel renderer path.
 
-1. GPU or CPU depth sorting,
-2. compute prepasses,
-3. indirect draw or dispatch,
-4. tile binning,
-5. projected 3D covariance,
-6. spherical harmonic colors,
-7. 3DGS dataset loaders.
 
-## Relationship to points and markers
+## Semantic Purpose
 
-The `splat` family is not a replacement for `point` or `marker`:
+`splat` renders one continuous Gaussian footprint per item. The footprint is screen-facing,
+elliptical, and measured in screen pixels.
 
-- `point` remains the compact antialiased circular point primitive.
-- `marker` remains the discrete shape/SDF marker primitive.
-- `splat` represents a continuous kernel footprint with explicit Gaussian falloff and
-  anisotropic screen-space support.
+It is separate from nearby point-like families:
 
-Round Gaussian billboards are a degenerate form of the splat visual, not a separate visual family.
+| Family | Use when |
+|---|---|
+| `point` | the mark is a compact antialiased circle with no Gaussian tail |
+| `marker` | the mark is a discrete symbol or SDF shape with fill/stroke styling |
+| `sphere` | the item has 3D radius, normals, material, and depth-correct impostor behavior |
+| `splat` | the item represents a smooth kernel, uncertainty footprint, or density-like blob |
 
-## Per-item attributes
+Round Gaussian billboards are expressed by equal `sigma.x` and `sigma.y`; they are not a separate
+family.
 
-| Attribute | Type | Required | Units | Meaning |
-|---|---:|---:|---|---|
-| `position` | `vec3f` | yes | scene/data coordinates | Splat center before panel transform and camera projection. |
-| `color` | `rgba8` or active scene color format | yes | normalized color | Base splat color. Alpha participates in final opacity. |
-| `sigma` | `vec2f` | yes | screen pixels | Standard deviations along the local ellipse axes. |
-| `angle` | `float` | no | radians | Screen-space rotation of the local ellipse axes. Defaults to `0`. |
-| `opacity` | `float` | no | unitless | Multiplicative opacity. Defaults to `1`. |
 
-`position`, `color`, and `sigma` are the minimal required v0.4 data contract. `angle` and `opacity`
-should be accepted when the visual data path supports optional attributes; otherwise they may be
-implemented as visual-wide defaults in the first implementation and promoted to per-item attributes
-before the family is considered complete.
+## Per-Item Attributes
 
-All per-item attributes share the same item count. Range updates follow the same mutability and
-validation rules as other retained visual attributes.
+### `position`
 
-## Visual-wide parameters
+| Property | Value |
+|---|---|
+| Type | `vec3`, `(x, y, z)` in visual space |
+| Accepted sources | `PER_ITEM` only |
+| Typical mutability | `dynamic` or `streaming` |
 
-| Parameter | Default | Meaning |
-|---|---:|---|
-| `kernel` | `gaussian` | Kernel evaluated inside the billboard footprint. v0.4 only requires Gaussian. |
-| `footprint` | `screen_ellipse` | Footprint is a screen-space ellipse. |
-| `cutoff` | `3.0` or `4.0` | Billboard half-size multiplier in standard deviations. |
-| `min_alpha` | implementation-defined | Optional low-alpha discard/clamp threshold. |
+Splat center before panel transform and projection.
 
-The visual-wide `cutoff` controls the conservative billboard extent:
+
+### `color`
+
+Standard — see `SHARED_ATTRIBUTES.md`. Base RGBA color. The alpha channel contributes to final
+splat opacity.
+
+Accepted sources for the first slice: `PER_ITEM`, with `CONSTANT` and `PER_GROUP` allowed by the
+target contract when the generic source machinery supports them for this family.
+
+
+### `sigma`
+
+| Property | Value |
+|---|---|
+| Type | `vec2`, `(sigma_x, sigma_y)` |
+| Unit | screen pixels |
+| Accepted sources | `PER_ITEM` initially; target contract also allows `CONSTANT` and `PER_GROUP` |
+| Typical mutability | `dynamic` or `streaming` |
+
+Standard deviations along the local ellipse axes. Both components must be finite and positive.
+The isotropic case uses `sigma_x == sigma_y`.
+
+
+### `angle`
+
+Standard — see `SHARED_ATTRIBUTES.md`.
+
+Applied in screen space to the local ellipse axes. Defaults to `0` if absent. A first
+implementation may make this visual-wide if optional per-item attributes are not ready.
+
+
+### `opacity`
+
+| Property | Value |
+|---|---|
+| Type | `float32` |
+| Unit | multiplier in `[0, 1]` |
+| Accepted sources | `CONSTANT`, `PER_ITEM`, `PER_GROUP` |
+| Typical mutability | `dynamic` |
+| Optional | yes |
+
+Multiplies the color alpha after Gaussian evaluation. Defaults to `1.0`. This is a convenience for
+scalar opacity updates; users can also encode opacity in `color.a`.
+
+
+## Visual-Wide Parameters
+
+| Parameter | Type | Default | Meaning |
+|---|---|---:|---|
+| `kernel` | enum | `gaussian` | Kernel evaluated in local ellipse coordinates; v0.4 only requires Gaussian. |
+| `cutoff` | `float32` | `3.0` | Billboard half-size multiplier in standard deviations. |
+| `min_alpha` | `float32` | `0.0` | Optional low-alpha discard threshold before blending. |
+
+`cutoff` controls the conservative billboard extent:
 
 ```text
-half_extent_px = cutoff * max(sigma.x, sigma.y)
+half_extent_px = cutoff * max(sigma_x, sigma_y)
 ```
 
-The implementation should choose a default that balances quality and overdraw. A cutoff of `3.0`
-is faster; a cutoff of `4.0` preserves more tail energy.
+A larger cutoff preserves more tail energy and increases overdraw. `cutoff <= 0`, non-finite
+values, and non-positive `sigma` values are validation errors.
 
-## Kernel evaluation
 
-The fragment shader evaluates a Gaussian in local ellipse coordinates:
+## Kernel Evaluation
+
+The fragment shader evaluates opacity in local ellipse coordinates:
 
 ```text
 q = rotate(local_pixel_offset, -angle) / sigma
@@ -89,82 +124,107 @@ alpha_kernel = exp(-0.5 * dot(q, q))
 alpha = color.a * opacity * alpha_kernel
 ```
 
-Fragments outside the cutoff ellipse may be discarded. The shader must use the existing scene
-convention for premultiplied or straight-alpha output; this contract only defines the scalar opacity
-before that convention is applied.
+Fragments outside the cutoff ellipse may be discarded. The shader must follow the scene's active
+straight-alpha or premultiplied-alpha output convention; this contract defines only the scalar
+opacity before that convention is applied.
 
-## Transform model
 
-The splat center follows the normal Datoviz scene transform stack:
+## Variant Axes
+
+Required first slice:
+
+| Axis | Values | Default |
+|---|---|---|
+| `kernel` | `gaussian` | `gaussian` |
+| `sigma_space` | `screen` | `screen` |
+
+Deferred variant axes:
+
+| Axis | Deferred values |
+|---|---|
+| `sigma_space` | `data`, `world`, projected covariance |
+| `color_mode` | scalar color mapped through a `Scale` |
+| `quality` | unsorted, WBOIT-preferred, sorted, tile-binned |
+
+`sigma_space = screen` is the only v0.4 conformance target. A runtime must not reinterpret
+data-space covariance as screen-pixel `sigma` silently.
+
+
+## Transform Model
+
+The splat center follows the standard scene transform model:
 
 ```text
-data/scene position -> panel transform -> camera/projection -> clip/screen center
+data/scene position -> panel transform -> camera/projection -> screen center
 ```
 
 The footprint is screen-facing and measured in screen pixels. It does not rotate with the 3D camera
 except through the explicit screen-space `angle` attribute.
 
-The v0.4 contract does not define data-space or world-space splat radii. Projected 3D covariance is
-reserved for a later tier.
 
-## Depth and transparency
+## Depth And Transparency
 
-The v0.4 splat visual is a transparent render visual by default.
+The default splat path is transparent:
 
-Recommended defaults:
+| Property | Default |
+|---|---|
+| Depth test | enabled |
+| Depth write | disabled |
+| Alpha mode | `DVZ_ALPHA_BLENDED`, unless the user selects `DVZ_ALPHA_WBOIT` |
+| Fragment depth | center depth |
 
-1. depth test: enabled,
-2. depth write: disabled,
-3. alpha mode: ordinary alpha blending unless the user selects weighted blended OIT,
-4. depth value: center depth.
+The visual participates in the same transparent-stage routing as other alpha-enabled scene visuals.
+Weighted blended OIT is the preferred quality path when available. Exact sorted compositing is not a
+v0.4 requirement.
 
-The visual should be eligible for the same transparent-stage routing as other alpha-enabled scene
-visuals. If weighted blended OIT is active and the current frame plan supports the target formats,
-splats may render through that path. Exact order-dependent compositing is out of scope for v0.4.
 
-## Picking and requests
+## Picking And Requests
 
-GPU picking is optional for v0.4. If implemented, the initial behavior should be explicit and simple:
+GPU picking is optional for the first experimental slice. If implemented, the minimum behavior is:
 
 1. hit if the query position lies within the cutoff ellipse,
-2. report the item identity,
+2. report `(panel_id, visual_id, item_index)`,
 3. use center depth for depth ordering.
 
-The following picking semantics are deferred:
+If no GPU request path exists, splat picking must fail explicitly through the scene request status
+mechanism rather than falling back to CPU testing or silently returning a miss.
 
-1. highest Gaussian contribution among overlapping splats,
-2. top-k contributing splats,
-3. integrated-kernel queries,
-4. sorted transparent hit reconstruction,
-5. 3D covariance-aware picking.
+Deferred request semantics include highest-contribution picking, top-k contributing splats,
+integrated-kernel queries, transparent hit reconstruction, and 3D covariance-aware picking.
 
-If no GPU picking path exists, splat picking must fail explicitly through the scene request status
-mechanism rather than silently falling back to CPU testing.
 
-## Implementation guidance
+## Rendering Model
 
-The preferred v0.4 implementation is an instanced billboard path:
+The preferred v0.4 rendering path is an instanced billboard:
 
-1. one item instance per splat,
-2. four quad corners generated from vertex index or a small static quad buffer,
+1. one logical instance per splat,
+2. four generated or static quad corners,
 3. per-instance `position`, `color`, `sigma`, optional `angle`, optional `opacity`,
-4. vertex shader expands the quad in screen space,
-5. fragment shader evaluates the Gaussian opacity.
+4. vertex expansion in screen space,
+5. fragment Gaussian opacity evaluation.
 
-A single oversized triangle per splat is acceptable if it better matches the existing renderer, but
-an instanced quad is easier to validate and extend.
+This is ordinary scene -> DRP2 render emission. It must not depend on compute passes, indirect
+draws, CPU/GPU sort, tile bins, or a splat-specific runtime escape hatch.
 
-## Deferred tiers
 
-The `splat` family should be designed so future tiers can add:
+## Minimum Cases This Spec Must Support
+
+1. isotropic soft points: per-item `position`, `color`, and equal `sigma` components,
+2. anisotropic uncertainty ellipses: per-item `sigma` and `angle`,
+3. translucent density cloud: low-alpha colors with WBOIT when available,
+4. streaming kernels: range updates of `position`, `color`, and `sigma`,
+5. sparse overlaid kernels with opaque geometry depth-tested by center depth.
+
+
+## Deferred Tiers
+
+The following are outside the v0.4 splat contract:
 
 1. packed 2D covariance attributes,
-2. projected 3D covariance from `scale + rotation` or a covariance matrix,
-3. compute preprojection and culling,
-4. weighted blended OIT quality improvements,
-5. CPU and GPU depth sorting options,
-6. indirect draws and generated draw counts,
-7. tile binning for large transparent splat sets,
-8. spherical harmonic colors for 3DGS-like datasets.
-
-Those tiers are roadmap items, not v0.4 conformance requirements.
+2. projected 3D covariance from `scale + rotation` or covariance matrices,
+3. compute projection, culling, compaction, or sorting,
+4. CPU or GPU depth sorting,
+5. indirect draw or generated draw counts,
+6. tile-binned splatting,
+7. spherical harmonic colors,
+8. 3DGS PLY loaders, trained asset formats, LOD, and out-of-core streaming.
