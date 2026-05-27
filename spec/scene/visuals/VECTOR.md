@@ -1,7 +1,7 @@
 # Visual Family: `vector`
 
-Status: proposed v0.4 visual family. No public `dvz_vector()` constructor or
-`DVZ_VISUAL_TYPE_VECTOR` enum value is installed yet.
+Status: first v0.4 slice implemented. Public `dvz_vector()` / `dvz_arrow()` constructors and
+`DVZ_VISUAL_TYPE_VECTOR` are installed.
 
 This document defines a vector and arrow visual contract. It refines
 `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.md`,
@@ -24,10 +24,23 @@ with one logical vector item.
 
 ## Current Position
 
-Status on 2026-05-27: `vector` is concept/spec only.
+Status on 2026-05-27: `vector` has an active retained scene visual implementation.
 
-The active runtime does not implement retained vector state, shader variants, DRP2 lowering,
-request/readback behavior, or public C API.
+Implemented first-slice behavior:
+
+1. public `dvz_vector()` and `dvz_arrow()` constructors;
+2. public `DvzVectorStyle`, `dvz_vector_style()`, and `dvz_vector_set_style()`;
+3. straight vector mode with dense `position`, `vector`, `color`, and `stroke_width` attributes;
+4. curved arrow mode that omits `vector` and interprets `position`, `color`, and `stroke_width`
+   as path points;
+5. public `dvz_vector_set_subpaths()` for curved-arrow path grouping;
+6. DRP2 emission through existing segment and path stroke pipelines;
+7. bounds, material parameter refresh, GLSL frame-plan tests, and native item query coverage;
+8. a C smoke example at `examples/c/visuals/vector.c`.
+
+Deferred behavior remains: dedicated vector shaders, scalar/magnitude styling, per-item head
+dimensions, authored id payloads, WebGPU parity for the vector-specific API surface, and richer
+query payloads beyond the logical visual family and item id.
 
 Relevant existing contracts:
 
@@ -44,7 +57,7 @@ Relevant existing contracts:
 
 ## Core Direction
 
-Add a first-class `vector` visual family when implementation begins.
+Keep `vector` as a first-class visual family.
 
 `arrow` should be a presentation mode of `vector`, not a separate family. A vector item may render
 with no head, one head, or two heads, but the semantic item remains the same origin plus direction
@@ -68,7 +81,9 @@ The preferred public shape is a normal retained visual:
 DvzVisual* dvz_vector(DvzScene* scene, uint32_t flags);
 ```
 
-The visual may internally own generated leaf roles:
+The visual currently lowers directly to existing stroke families instead of owning persistent child
+visuals. Straight vectors lower to the segment stroke path; curved arrows lower to the path stroke
+path. Future generated leaf roles remain acceptable if they become useful:
 
 ```text
 "shaft"      segment-like stroke contribution
@@ -76,7 +91,7 @@ The visual may internally own generated leaf roles:
 "head_end"   optional marker/glyph/geometry contribution
 ```
 
-Those role names are useful for tests and diagnostics, but common user code should configure the
+Those role names would be useful for tests and diagnostics, but common user code configures the
 vector visual through vector-specific setters and normal visual data APIs.
 
 A higher-level domain object such as a sampled vector field may later create or update a `vector`
@@ -92,8 +107,13 @@ tail = position
 head = position + vector * scale
 ```
 
-`position` is the item anchor in visual/data coordinates. `vector` is a displacement or direction in
-the same coordinate system unless the visual declares a different vector-space mode.
+In straight mode, `position` is the item anchor in visual/data coordinates. `vector` is a
+displacement or direction in the same coordinate system unless the visual declares a different
+vector-space mode.
+
+In curved mode, omit the `vector` attribute. `position` then contains path points and
+`dvz_vector_set_subpaths()` optionally partitions them into open arrow paths. The path endpoint cap
+settings from `DvzVectorStyle` define arrowheads.
 
 The default anchor is the tail. Other anchors change how the displacement is placed around
 `position`:
