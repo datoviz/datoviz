@@ -184,6 +184,10 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "glyph_frag" : "glyph_vert";
     case DVZ_SCENE_BUILTIN_SHADER_VOLUME_SLICE:
         return fragment ? "volume_slice_frag" : "volume_slice_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_SINT_SLICE:
+        return fragment ? "volume_labels_sint_slice_frag" : "volume_slice_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_UINT_SLICE:
+        return fragment ? "volume_labels_uint_slice_frag" : "volume_slice_vert";
     case DVZ_SCENE_BUILTIN_SHADER_VOLUME_MIP:
         return fragment ? "volume_mip_frag" : "volume_slice_vert";
     case DVZ_SCENE_BUILTIN_SHADER_VOLUME_COMPOSITE:
@@ -192,6 +196,10 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "volume_query_u32_frag" : "volume_slice_vert";
     case DVZ_SCENE_BUILTIN_SHADER_VOLUME_QUERY_RG32:
         return fragment ? "volume_query_rg32_frag" : "volume_slice_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_SINT_QUERY_U32:
+        return fragment ? "volume_labels_sint_query_u32_frag" : "volume_slice_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_UINT_QUERY_U32:
+        return fragment ? "volume_labels_uint_query_u32_frag" : "volume_slice_vert";
     case DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH:
         return fragment ? "volume_occlusion_depth_frag" : "volume_slice_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SCENE_OCCLUSION_DEPTH:

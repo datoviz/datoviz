@@ -167,7 +167,9 @@ bool _scene_visual_desc_is_image(DvzSceneVisualDescKind kind)
  */
 bool _scene_visual_desc_is_volume(DvzSceneVisualDescKind kind)
 {
-    return kind == DVZ_SCENE_VISUAL_DESC_VOLUME;
+    return kind == DVZ_SCENE_VISUAL_DESC_VOLUME ||
+           kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT ||
+           kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT;
 }
 
 
@@ -771,7 +773,33 @@ static bool _scene_visual_desc_from_metadata(
                 *error = "typed scalar volume metadata missing transfer texture resource";
             return false;
         }
-        out->kind = DVZ_SCENE_VISUAL_DESC_VOLUME;
+        DvzSceneSampleProfile profile = {0};
+        bool has_profile =
+            _scene_sample_profile_resolve(
+                (DvzFieldFormat)meta->field_format, (DvzFieldSemantic)meta->field_semantic,
+                DVZ_FIELD_DIM_3D, &profile);
+        if (has_profile && _scene_sample_profile_is_signed_label(&profile))
+        {
+            if (meta->volume_state.render_mode != DVZ_VOLUME_RENDER_SLICE)
+            {
+                if (error != NULL)
+                    *error = "label volumes only support slice render mode";
+                return false;
+            }
+            out->kind = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT;
+        }
+        else if (has_profile && _scene_sample_profile_is_unsigned_label(&profile))
+        {
+            if (meta->volume_state.render_mode != DVZ_VOLUME_RENDER_SLICE)
+            {
+                if (error != NULL)
+                    *error = "label volumes only support slice render mode";
+                return false;
+            }
+            out->kind = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT;
+        }
+        else
+            out->kind = DVZ_SCENE_VISUAL_DESC_VOLUME;
         out->vbuf_ids[out->vbuf_count++] = uvw_id;
         out->volume_texture_id = tex_id;
         out->volume_transfer_texture_id = transfer_tex_id;

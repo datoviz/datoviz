@@ -1,5 +1,7 @@
 #version 450
 
+#define DVZ_VOLUME_LABEL_SINT_QUERY 1
+
 layout(set = 0, binding = 0) uniform MVP
 {
     mat4 model;

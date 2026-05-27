@@ -80,6 +80,7 @@ bool _scene_visual_frame_plan_metadata(
     if (visual->field != NULL)
     {
         metadata->field_format = (uint32_t)visual->field->desc.format;
+        metadata->field_semantic = (uint32_t)visual->field->desc.semantic;
         metadata->field_width = visual->field->desc.width;
         metadata->field_height = visual->field->desc.height;
         metadata->field_depth = visual->field->desc.depth;
@@ -153,6 +154,7 @@ bool _scene_visual_frame_plan_metadata(
         if (visual->field != NULL)
         {
             metadata->field_format = (uint32_t)visual->field->desc.format;
+            metadata->field_semantic = (uint32_t)visual->field->desc.semantic;
             metadata->field_width = visual->field->desc.width;
             metadata->field_height = visual->field->desc.height;
             metadata->field_depth = visual->field->desc.depth;

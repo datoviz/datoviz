@@ -296,6 +296,7 @@ typedef struct DvzFramePlanVisualMeta
     bool has_labels;
     bool image_pixel_space;
     uint32_t field_format;
+    uint32_t field_semantic;
     uint32_t field_width;
     uint32_t field_height;
     uint32_t field_depth;

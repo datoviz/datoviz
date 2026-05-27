@@ -466,7 +466,10 @@ bool _emitter_prepare_render_multi(
              desc.kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT) &&
             cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
         bool volume_query_u32 =
-            render->u.render.picking && desc.kind == DVZ_SCENE_VISUAL_DESC_VOLUME &&
+            render->u.render.picking &&
+            (desc.kind == DVZ_SCENE_VISUAL_DESC_VOLUME ||
+             desc.kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT ||
+             desc.kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT) &&
             cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
         bool volume_query_rg32 =
             render->u.render.picking && desc.kind == DVZ_SCENE_VISUAL_DESC_VOLUME &&
@@ -501,7 +504,13 @@ bool _emitter_prepare_render_multi(
             else if (desc.kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT)
                 query_shader = DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT_QUERY_U32;
             else if (volume_query_u32)
-                query_shader = DVZ_SCENE_BUILTIN_SHADER_VOLUME_QUERY_U32;
+            {
+                query_shader = desc.kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT
+                                   ? DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_SINT_QUERY_U32
+                               : desc.kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT
+                                   ? DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_UINT_QUERY_U32
+                                   : DVZ_SCENE_BUILTIN_SHADER_VOLUME_QUERY_U32;
+            }
             else if (volume_query_rg32)
                 query_shader = DVZ_SCENE_BUILTIN_SHADER_VOLUME_QUERY_RG32;
             ok = _runtime_key_append(
@@ -551,6 +560,10 @@ bool _emitter_prepare_render_multi(
                 shader.fragment_spirv_key = "volume_query_u32_frag";
             else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_VOLUME_QUERY_RG32)
                 shader.fragment_spirv_key = "volume_query_rg32_frag";
+            else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_SINT_QUERY_U32)
+                shader.fragment_spirv_key = "volume_labels_sint_query_u32_frag";
+            else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_UINT_QUERY_U32)
+                shader.fragment_spirv_key = "volume_labels_uint_query_u32_frag";
             else
                 shader.fragment_spirv_key = "point_query_u32_frag";
             shader.builtin_family = NULL;

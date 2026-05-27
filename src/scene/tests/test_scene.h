@@ -577,6 +577,8 @@ int test_scene_volume_retained_controls(TstContext* suite, const TstCase* item);
 
 int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* item);
 
+int test_scene_volume_label_slice_uses_categorical_scale(TstContext* suite, const TstCase* item);
+
 int test_scene_volume_visual_metadata_lowering(TstContext* suite, const TstCase* item);
 
 int test_scene_volume_scalar_transfer_function_uploads_rgba(
@@ -797,6 +799,8 @@ int test_scene_image_query_resolves_item(TstContext* suite, const TstCase* item)
 int test_scene_volume_query_resolves_item(TstContext* suite, const TstCase* item);
 
 int test_scene_volume_query_resolves_sample(TstContext* suite, const TstCase* item);
+
+int test_scene_volume_query_resolves_label_sample(TstContext* suite, const TstCase* item);
 
 int test_scene_volume_query_resolves_sample_uvw_profile(
     TstContext* suite, const TstCase* item);

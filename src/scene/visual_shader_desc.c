@@ -601,6 +601,30 @@ bool _scene_visual_shader_desc(
         return true;
     }
 
+    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT:
+        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_vol_labels_sint%s", format_tag);
+        dvz_snprintf(
+            out->fragment_key, sizeof(out->fragment_key), "_fs_vol_labels_sint%s", format_tag);
+        dvz_snprintf(
+            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_vol_labels_sint%s", format_tag);
+        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_SINT_SLICE);
+        _scene_shader_desc_set_identity(out, "scene.volume", "labels_sint_slice");
+        out->vertex_spirv_key = "volume_slice_vert";
+        out->fragment_spirv_key = "volume_labels_sint_slice_frag";
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT:
+        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_vol_labels_uint%s", format_tag);
+        dvz_snprintf(
+            out->fragment_key, sizeof(out->fragment_key), "_fs_vol_labels_uint%s", format_tag);
+        dvz_snprintf(
+            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_vol_labels_uint%s", format_tag);
+        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_UINT_SLICE);
+        _scene_shader_desc_set_identity(out, "scene.volume", "labels_uint_slice");
+        out->vertex_spirv_key = "volume_slice_vert";
+        out->fragment_spirv_key = "volume_labels_uint_slice_frag";
+        return true;
+
     case DVZ_SCENE_VISUAL_DESC_NONE:
     default:
         return false;

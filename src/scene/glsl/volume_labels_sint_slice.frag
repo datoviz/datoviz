@@ -1,5 +1,7 @@
 #version 450
 
+#define DVZ_VOLUME_LABEL_SINT 1
+
 #ifdef DVZ_SCENE_OCCLUSION
 #include "scene_occlusion.glsl"
 #endif

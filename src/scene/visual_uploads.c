@@ -33,6 +33,7 @@
 #include "_scene_shader_abi.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
+#include "colorizer.h"
 #include "sample_profile.h"
 #include "datoviz/drp2/runtime.h"
 #include "render_contract.h"
@@ -1183,16 +1184,20 @@ static float _volume_alpha_at(const DvzVolumeState* state, double t)
  * @param visual the volume visual
  * @return whether the volume resolves to a transfer-texture profile
  */
-static bool _scene_volume_uses_transfer_texture(const DvzVisual* visual)
+static bool _scene_volume_uses_color_texture(const DvzVisual* visual)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_VOLUME || visual->field == NULL)
         return false;
     DvzSceneSampleProfile profile = {0};
-    return _scene_sample_profile_resolve(
-               visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
-               &profile) &&
-           _scene_sample_profile_uses_transfer(&profile);
+    if (!_scene_sample_profile_resolve(
+            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+            &profile))
+    {
+        return false;
+    }
+    return _scene_sample_profile_uses_transfer(&profile) ||
+           _scene_sample_profile_is_integer_label(&profile);
 }
 
 
@@ -1209,8 +1214,65 @@ static bool _scene_prepare_volume_transfer_texture(DvzVisual* visual, const void
     ANN(visual);
     ANN(out_data);
     *out_data = NULL;
-    if (!_scene_volume_uses_transfer_texture(visual))
+    if (!_scene_volume_uses_color_texture(visual))
         return false;
+
+    DvzSceneSampleProfile profile = {0};
+    if (!_scene_sample_profile_resolve(
+            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+            &profile))
+    {
+        return false;
+    }
+
+    if (_scene_sample_profile_is_integer_label(&profile))
+    {
+        DvzSceneColorizer colorizer = {0};
+        bool has_colorizer = _scene_colorizer_from_scale(
+            visual->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer);
+        uint32_t palette_count = 1;
+        bool has_dense_palette =
+            has_colorizer && _scene_colorizer_dense_palette_extent(&colorizer, &palette_count);
+        if (palette_count == 0)
+            palette_count = 1;
+
+        uint64_t size = 0;
+        if (_dvz_mul_u64_overflows(palette_count, sizeof(DvzColor), &size))
+        {
+            log_error("label volume palette size overflow");
+            return false;
+        }
+        if (visual->texture.rgba == NULL || visual->texture.rgba_size != size)
+        {
+            if (visual->texture.rgba != NULL)
+                dvz_free(visual->texture.rgba);
+            visual->texture.rgba = dvz_calloc(size, 1);
+            if (visual->texture.rgba == NULL)
+            {
+                visual->texture.rgba_size = 0;
+                log_error("label volume palette allocation failed");
+                return false;
+            }
+            visual->texture.rgba_size = size;
+        }
+
+        DvzColor fallback = {48, 48, 48, 180};
+        if (has_dense_palette)
+        {
+            if (!_scene_colorizer_build_dense_palette(
+                    &colorizer, fallback, (DvzColor*)visual->texture.rgba, palette_count))
+            {
+                log_error("label volume categorical palette build failed");
+                return false;
+            }
+        }
+        else
+        {
+            ((DvzColor*)visual->texture.rgba)[0] = (DvzColor){0, 0, 0, 0};
+        }
+        *out_data = visual->texture.rgba;
+        return true;
+    }
 
     const uint64_t size = 256ull * 4ull;
     if (visual->texture.rgba == NULL || visual->texture.rgba_size != size)
@@ -1485,18 +1547,32 @@ _scene_emit_volume_transfer_texture_upload(DvzFramePlan* plan, DvzVisual* visual
 {
     ANN(plan);
     ANN(visual);
-    if (!_scene_volume_uses_transfer_texture(visual))
+    if (!_scene_volume_uses_color_texture(visual))
     {
         return;
     }
 
     char transfer_resource_id[128];
     const void* transfer_data = NULL;
+    uint32_t width = 256;
+    if (visual->field != NULL && visual->field->desc.semantic == DVZ_FIELD_SEMANTIC_LABEL)
+    {
+        width = 1;
+        DvzSceneColorizer colorizer = {0};
+        uint32_t palette_width = 0;
+        if (
+            _scene_colorizer_from_scale(
+                visual->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer) &&
+            _scene_colorizer_dense_palette_extent(&colorizer, &palette_width) &&
+            palette_width > 0)
+            width = palette_width;
+    }
+    uint64_t upload_size = (uint64_t)width * 4ull;
     if (!_scene_resource_key_volume_transfer(
             visual_index, transfer_resource_id, sizeof(transfer_resource_id)) ||
         !_scene_prepare_volume_transfer_texture(visual, &transfer_data) ||
         !dvz_frame_plan_upload_bytes(
-            plan, transfer_resource_id, 0, 256ull * 4ull, "volume_transfer", transfer_data) ||
+            plan, transfer_resource_id, 0, upload_size, "volume_transfer", transfer_data) ||
         !dvz_frame_plan_upload_metadata(
             plan,
             &(DvzFramePlanUploadMeta){
@@ -1506,8 +1582,8 @@ _scene_emit_volume_transfer_texture_upload(DvzFramePlan* plan, DvzVisual* visual
                 .buffer_index = UINT32_MAX,
             }) ||
         !dvz_frame_plan_upload_set_texture_format(plan, VK_FORMAT_R8G8B8A8_UNORM, 4) ||
-        !dvz_frame_plan_upload_set_texture_extent(plan, 256, 1) ||
-        !dvz_frame_plan_upload_set_texture_allocation_extent(plan, 256, 1) ||
+        !dvz_frame_plan_upload_set_texture_extent(plan, width, 1) ||
+        !dvz_frame_plan_upload_set_texture_allocation_extent(plan, width, 1) ||
         !dvz_frame_plan_upload_set_texture_region(plan, 0, 0))
     {
         log_error("volume transfer texture upload failed");

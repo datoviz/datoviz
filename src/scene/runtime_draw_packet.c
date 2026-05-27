@@ -65,6 +65,8 @@ static const char* _draw_packet_kind_name(DvzSceneVisualDescKind kind)
     case DVZ_SCENE_VISUAL_DESC_GLYPH:
         return "glyph";
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
+    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT:
+    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT:
         return "volume";
     case DVZ_SCENE_VISUAL_DESC_NONE:
     default:

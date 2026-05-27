@@ -111,6 +111,8 @@ bool _scene_visual_bind_desc(
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
+    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT:
+    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT:
         out->uses_common_set0 = caps.uses_common_set;
         out->uses_fixed_common = caps.fixed_controller;
         out->uses_volume_set1 = caps.uses_volume_set;

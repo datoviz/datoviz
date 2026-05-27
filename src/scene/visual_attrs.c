@@ -1286,7 +1286,16 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
         log_error("dvz_visual_set_scale is only supported for image, volume, and labels visuals");
         return -1;
     }
-    const bool labels = visual->type == DVZ_VISUAL_TYPE_LABELS;
+    DvzSceneSampleProfile bound_profile = {0};
+    bool has_bound_profile =
+        visual->field != NULL &&
+        _scene_sample_profile_resolve(
+            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+            &bound_profile);
+    const bool labels =
+        visual->type == DVZ_VISUAL_TYPE_LABELS ||
+        (visual->type == DVZ_VISUAL_TYPE_VOLUME && has_bound_profile &&
+         _scene_sample_profile_is_integer_label(&bound_profile));
     const char* expected_slot = labels ? "labels" : "colormap";
     if (strcmp(slot_name, expected_slot) != 0)
     {
@@ -1308,13 +1317,7 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
     _scene_release_visual_scale(visual);
     if (scale != NULL)
         _visual_binding_assign(visual, DVZ_VISUAL_BINDING_SCALE, slot_name, scale, false);
-    DvzSceneSampleProfile profile = {0};
-    bool has_profile =
-        visual->field != NULL &&
-        _scene_sample_profile_resolve(
-            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
-            &profile);
-    if (has_profile && _scene_sample_profile_uses_continuous_colorizer(&profile))
+    if (has_bound_profile && _scene_sample_profile_uses_continuous_colorizer(&bound_profile))
     {
         _scene_visual_texture_mark_clean(visual);
         visual->texture.dirty = true;

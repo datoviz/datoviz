@@ -1498,6 +1498,114 @@ int test_scene_volume_query_resolves_sample(TstContext* suite, const TstCase* it
 
 
 /**
+ * Ensure native label-volume sample queries return categorical IDs and scale labels.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_volume_query_resolves_label_sample(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+    dvz_visual_set_query_capabilities(volume, DVZ_QUERY_CAPABILITY_SAMPLE);
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_SLICE) == 0);
+    AT(dvz_volume_set_sampling(volume, DVZ_VOLUME_SAMPLING_NEAREST) == 0);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R16_UINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(field);
+    const uint16_t voxels[8] = {23, 23, 23, 23, 23, 23, 23, 23};
+    AT(dvz_sampled_field_set_data(
+        field,
+        &(DvzFieldDataView){
+            .data = voxels,
+            .bytes_per_row = 2 * sizeof(uint16_t),
+            .rows_per_image = 2,
+        }));
+    AT(dvz_visual_set_field(volume, "field", field));
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL, .label = "regions"});
+    ANN(scale);
+    DvzScaleCategory category = {
+        .category_id = 23,
+        .order = 0,
+        .label = "region 23",
+        .color = {20, 120, 220, 255},
+    };
+    AT(dvz_scale_set_categories(scale, &category, 1));
+    AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    AT(dvz_panel_query(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){.request_id = 117, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
+    AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+
+    DvzQueryResult query = {0};
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.hit);
+    AT(query.request_id == 117);
+    AT(query.status == DVZ_QUERY_STATUS_HIT);
+    AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_VOLUME);
+    AT(query.resolved_target == DVZ_SCENE_TARGET_SAMPLE);
+    AT(query.value_kind == DVZ_QUERY_VALUE_CATEGORY);
+    AT(query.category_id == 23);
+    AT(query.scale == scale);
+    AT(strcmp(query.label, "region 23") == 0);
+    AT(!dvz_scene_poll_query(scene, &query));
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Ensure requested rg32 volume sample queries return GPU-computed UVW.
  *
  * @param suite the active test suite
@@ -2410,6 +2518,7 @@ int test_scene_query(TstSuite* suite)
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_volume_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_volume_query_resolves_sample);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_volume_query_resolves_label_sample);
     TST_SCENE_QUERY_GPU_CASE(test_scene_volume_query_resolves_sample_uvw_profile);
     TST_CASE(test_scene_volume_sample_query_rejects_deferred_policies);
     TST_CASE(test_scene_volume_sample_query_rejects_unsupported_format);

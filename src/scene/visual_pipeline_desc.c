@@ -112,6 +112,10 @@ static const PipelineFixedLayout FIXED_PIPELINE_LAYOUTS[] = {
      (uint32_t)DVZ_ARRAY_COUNT(GLYPH_PIPELINE_ATTRS)},
     {DVZ_SCENE_VISUAL_DESC_VOLUME, VOLUME_PIPELINE_ATTRS,
      (uint32_t)DVZ_ARRAY_COUNT(VOLUME_PIPELINE_ATTRS)},
+    {DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT, VOLUME_PIPELINE_ATTRS,
+     (uint32_t)DVZ_ARRAY_COUNT(VOLUME_PIPELINE_ATTRS)},
+    {DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT, VOLUME_PIPELINE_ATTRS,
+     (uint32_t)DVZ_ARRAY_COUNT(VOLUME_PIPELINE_ATTRS)},
 };
 
 
@@ -289,7 +293,10 @@ static bool _pipeline_apply_fixed_visual(
     {
         out->needs_glyph_layout = caps->uses_image_set;
     }
-    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME)
+    else if (
+        visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME ||
+        visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT ||
+        visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT)
     {
         out->needs_volume_layout = caps->uses_volume_set;
         out->has_raster_state = true;
@@ -417,6 +424,8 @@ bool _scene_visual_pipeline_desc(
     case DVZ_SCENE_VISUAL_DESC_LABELS_UINT:
     case DVZ_SCENE_VISUAL_DESC_GLYPH:
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
+    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT:
+    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT:
         return _pipeline_apply_fixed_visual(
             visual, &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
 

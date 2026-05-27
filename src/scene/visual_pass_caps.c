@@ -168,6 +168,19 @@ bool _scene_visual_pass_caps_from_visual(
         break;
     case DVZ_VISUAL_TYPE_VOLUME:
         kind = DVZ_SCENE_VISUAL_DESC_VOLUME;
+        if (visual->field != NULL)
+        {
+            DvzSceneSampleProfile profile = {0};
+            if (_scene_sample_profile_resolve(
+                    visual->field->desc.format, visual->field->desc.semantic,
+                    visual->field->desc.dim, &profile))
+            {
+                if (_scene_sample_profile_is_signed_label(&profile))
+                    kind = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT;
+                else if (_scene_sample_profile_is_unsigned_label(&profile))
+                    kind = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT;
+            }
+        }
         break;
     case DVZ_VISUAL_TYPE_NONE:
     default:

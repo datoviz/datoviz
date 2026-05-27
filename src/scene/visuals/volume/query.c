@@ -21,7 +21,9 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/math/_cglm.h"
+#include "../../colorizer.h"
 #include "../../query/internal.h"
+#include "../../sample_profile.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -131,6 +133,95 @@ static bool _volume_query_scalar_sample_format(
         *out_bytes_per_texel = 0;
         return false;
     }
+}
+
+
+
+/**
+ * Return whether a label volume texture format can be sampled by the integer query shader.
+ *
+ * @param format retained field format
+ * @param out_texture_format output Vulkan texture format
+ * @param out_bytes_per_texel output texture byte size
+ * @return true when the sample query shader supports the field format
+ */
+static bool _volume_query_label_sample_format(
+    DvzFieldFormat format, uint32_t* out_texture_format, uint32_t* out_bytes_per_texel)
+{
+    ANN(out_texture_format);
+    ANN(out_bytes_per_texel);
+    DvzSceneSampleProfile profile = {0};
+    if (_scene_sample_profile_resolve(
+            format, DVZ_FIELD_SEMANTIC_LABEL, DVZ_FIELD_DIM_3D, &profile) &&
+        _scene_sample_profile_is_integer_label(&profile))
+    {
+        return _field_format_texture_format(format, out_texture_format) &&
+               _field_format_bytes_per_texel(format, out_bytes_per_texel);
+    }
+    *out_texture_format = 0;
+    *out_bytes_per_texel = 0;
+    return false;
+}
+
+
+
+/**
+ * Decode an encoded label volume payload word into a category ID.
+ *
+ * @param format sampled-field format
+ * @param encoded encoded r32uint shader payload
+ * @param out_id decoded category ID
+ * @return true when the format was decoded
+ */
+static bool _volume_query_decode_label_sample(
+    DvzFieldFormat format, uint32_t encoded, DvzCategoryId* out_id)
+{
+    ANN(out_id);
+    if (encoded == 0)
+        return false;
+    uint32_t bits = encoded - 1u;
+    DvzSceneSampleProfile profile = {0};
+    if (!_scene_sample_profile_resolve(
+            format, DVZ_FIELD_SEMANTIC_LABEL, DVZ_FIELD_DIM_3D, &profile))
+    {
+        return false;
+    }
+    if (_scene_sample_profile_is_unsigned_label(&profile))
+    {
+        *out_id = (DvzCategoryId)bits;
+        return true;
+    }
+    if (_scene_sample_profile_is_signed_label(&profile))
+    {
+        int32_t v = 0;
+        dvz_memcpy(&v, sizeof(v), &bits, sizeof(bits));
+        *out_id = (DvzCategoryId)v;
+        return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Return the display label for one label-volume query category.
+ *
+ * @param visual volume visual
+ * @param id category ID
+ * @param out_label output display label
+ * @param label_size output label capacity
+ */
+static void _volume_query_category_label(
+    const DvzVisual* visual, DvzCategoryId id, char* out_label, uint64_t label_size)
+{
+    ANN(visual);
+    ANN(out_label);
+    DvzSceneColorizer colorizer = {0};
+    if (_scene_colorizer_from_scale(
+            visual->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer))
+        (void)_scene_colorizer_category_label(&colorizer, id, out_label, label_size);
+    else
+        dvz_snprintf(out_label, label_size, "label %" PRIi64, id);
 }
 
 
@@ -320,8 +411,21 @@ static bool _volume_query_build_sample(
 
     uint32_t texture_format = 0;
     uint32_t bytes_per_texel = 0;
-    if (!_volume_query_scalar_sample_format(
-            field->desc.format, &texture_format, &bytes_per_texel))
+    DvzSceneSampleProfile sample_profile = {0};
+    if (!_scene_sample_profile_resolve(
+            field->desc.format, field->desc.semantic, field->desc.dim, &sample_profile))
+    {
+        return false;
+    }
+    bool label_profile = _scene_sample_profile_is_integer_label(&sample_profile);
+    if (label_profile && ctx->profile != DVZ_QUERY_PROFILE_U32_R32)
+        return false;
+    bool valid_format = label_profile
+                            ? _volume_query_label_sample_format(
+                                  field->desc.format, &texture_format, &bytes_per_texel)
+                            : _volume_query_scalar_sample_format(
+                                  field->desc.format, &texture_format, &bytes_per_texel);
+    if (!valid_format)
     {
         return false;
     }
@@ -383,6 +487,7 @@ static bool _volume_query_build_sample(
     metadata.depth_compare_op = ctx->visual->depth_compare_op;
     metadata.vertex_count = (uint32_t)vertex_count;
     metadata.field_format = field->desc.format;
+    metadata.field_semantic = field->desc.semantic;
     metadata.field_width = field->desc.width;
     metadata.field_height = field->desc.height;
     metadata.field_depth = field->desc.depth;
@@ -413,7 +518,7 @@ static bool _volume_query_build_sample(
         render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
     }
 
-    bool rg32_profile = ctx->profile == DVZ_QUERY_PROFILE_U64_RG32;
+    bool rg32_profile = !label_profile && ctx->profile == DVZ_QUERY_PROFILE_U64_RG32;
     uint32_t query_format = rg32_profile ? VK_FORMAT_R32G32_UINT : VK_FORMAT_R32_UINT;
     uint32_t query_byte_size = rg32_profile ? 2u * sizeof(uint32_t) : sizeof(uint32_t);
     DvzFramePlanCopyDesc copy = {
@@ -444,11 +549,12 @@ static bool _volume_query_build_sample(
     out_plan->format = query_format;
     out_plan->byte_size = query_byte_size;
     out_plan->schema = (DvzSceneQuerySchema){
-        .fields = DVZ_SCENE_QUERY_SCHEMA_FIELD_SAMPLE_VALUE |
-                  (rg32_profile ? (DVZ_SCENE_QUERY_SCHEMA_FIELD_UVW |
-                                   DVZ_SCENE_QUERY_SCHEMA_FIELD_VOXEL_COORD)
-                                : 0),
-        .value_kind = DVZ_QUERY_VALUE_SCALAR,
+        .fields = label_profile ? DVZ_SCENE_QUERY_SCHEMA_FIELD_LABEL_ID
+                                : (DVZ_SCENE_QUERY_SCHEMA_FIELD_SAMPLE_VALUE |
+                                   (rg32_profile ? (DVZ_SCENE_QUERY_SCHEMA_FIELD_UVW |
+                                                    DVZ_SCENE_QUERY_SCHEMA_FIELD_VOXEL_COORD)
+                                                 : 0)),
+        .value_kind = label_profile ? DVZ_QUERY_VALUE_CATEGORY : DVZ_QUERY_VALUE_SCALAR,
         .profile = ctx->profile,
         .format = out_plan->format,
         .byte_size = out_plan->byte_size,
@@ -484,6 +590,16 @@ static bool _volume_query_eligible(
             return false;
         uint32_t texture_format = 0;
         uint32_t bytes_per_texel = 0;
+        DvzSceneSampleProfile profile = {0};
+        if (!_scene_sample_profile_resolve(
+                visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+                &profile))
+        {
+            return false;
+        }
+        if (_scene_sample_profile_is_integer_label(&profile))
+            return _volume_query_label_sample_format(
+                visual->field->desc.format, &texture_format, &bytes_per_texel);
         return _volume_query_scalar_sample_format(
             visual->field->desc.format, &texture_format, &bytes_per_texel);
     }
@@ -652,6 +768,41 @@ static bool _volume_query_decode(
         {
             out_result->status = DVZ_QUERY_STATUS_MISS;
             out_result->value_kind = DVZ_QUERY_VALUE_NONE;
+            return true;
+        }
+
+        DvzSceneSampleProfile sample_profile = {0};
+        bool label_profile =
+            ctx->plan != NULL && ctx->plan->field != NULL &&
+            _scene_sample_profile_resolve(
+                ctx->plan->field->desc.format, ctx->plan->field->desc.semantic,
+                ctx->plan->field->desc.dim, &sample_profile) &&
+            _scene_sample_profile_is_integer_label(&sample_profile);
+        if (label_profile)
+        {
+            DvzCategoryId label_id = 0;
+            if (!_volume_query_decode_label_sample(
+                    ctx->plan->field->desc.format, encoded, &label_id) ||
+                label_id == 0)
+            {
+                out_result->status = DVZ_QUERY_STATUS_MISS;
+                out_result->value_kind = DVZ_QUERY_VALUE_NONE;
+                return true;
+            }
+            uint64_t target_id = label_id >= 0 ? (uint64_t)label_id : 0;
+            out_result->status = DVZ_QUERY_STATUS_HIT;
+            out_result->hit = true;
+            out_result->payload_version = 1;
+            out_result->raw_target = DVZ_SCENE_TARGET_SAMPLE;
+            out_result->raw_id = target_id;
+            out_result->resolved_target = DVZ_SCENE_TARGET_SAMPLE;
+            out_result->resolved_id = target_id;
+            out_result->group_id = target_id;
+            out_result->category_id = label_id;
+            out_result->scale = ctx->build->visual->scale;
+            out_result->value_kind = DVZ_QUERY_VALUE_CATEGORY;
+            _volume_query_category_label(
+                ctx->build->visual, label_id, out_result->label, sizeof(out_result->label));
             return true;
         }
 
