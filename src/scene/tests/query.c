@@ -94,14 +94,14 @@ int test_scene_query_queue_processes_native_results(TstContext* suite, const Tst
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
-    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, (DvzPanelDesc){.x = 0.25f, .y = 0.5f, .width = 0.5f, .height = 0.25f});
     ANN(panel);
 
     AT(dvz_panel_query(
-           panel, 8.0, 8.0,
+           panel, 10.0, 20.0,
            &(DvzQueryRequest){.request_id = 11, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(scene->pending_query_count == 1);
     AT(scene->pending_pick_count == 0);
@@ -118,7 +118,10 @@ int test_scene_query_queue_processes_native_results(TstContext* suite, const Tst
     AT(result.request_id == 11);
     AT(result.status == DVZ_QUERY_STATUS_NO_CAPABLE_VISUAL);
     AT(result.panel_id == 1);
-    AC(result.panel_position[0], 8.0, 1e-12);
+    AC(result.panel_position[0], 10.0, 1e-12);
+    AC(result.panel_position[1], 20.0, 1e-12);
+    AT(result.framebuffer_position[0] == 60);
+    AT(result.framebuffer_position[1] == 70);
     AT(!dvz_scene_poll_query(scene, &result));
 
     dvz_scene_destroy(scene);

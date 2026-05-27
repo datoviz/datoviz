@@ -375,6 +375,40 @@ static const DvzSceneQueryFamilyOps* _query_family_ops_for_visual(
 
 
 /**
+ * Resolve one panel-local query coordinate to a figure framebuffer coordinate.
+ *
+ * @param figure the figure
+ * @param panel the panel
+ * @param x panel-local logical x coordinate
+ * @param y panel-local logical y coordinate
+ * @param out_position output framebuffer coordinate
+ * @return true when the framebuffer coordinate was written
+ */
+static bool _query_framebuffer_position(
+    const DvzFigure* figure, const DvzPanel* panel, double x, double y,
+    uint32_t out_position[2])
+{
+    ANN(figure);
+    ANN(panel);
+    ANN(out_position);
+    if (figure->width == 0 || figure->height == 0 || x < 0.0 || y < 0.0)
+        return false;
+
+    double fb_x = (double)figure->width * (double)panel->desc.x + x;
+    double fb_y = (double)figure->height * (double)panel->desc.y + y;
+    if (fb_x < 0.0 || fb_y < 0.0)
+        return false;
+
+    uint32_t max_x = figure->width > 0 ? figure->width - 1 : 0;
+    uint32_t max_y = figure->height > 0 ? figure->height - 1 : 0;
+    out_position[0] = fb_x >= (double)figure->width ? max_x : (uint32_t)fb_x;
+    out_position[1] = fb_y >= (double)figure->height ? max_y : (uint32_t)fb_y;
+    return true;
+}
+
+
+
+/**
  * Initialize a query result from one pending request.
  *
  * @param figure the figure
@@ -394,6 +428,8 @@ static void _query_result_init(
     out_result->panel_id = _scene_panel_public_id(figure, pending->panel);
     out_result->panel_position[0] = pending->x;
     out_result->panel_position[1] = pending->y;
+    (void)_query_framebuffer_position(
+        figure, pending->panel, pending->x, pending->y, out_result->framebuffer_position);
     out_result->raw_target = pending->request.target;
     out_result->resolved_target = pending->request.target;
     out_result->value_kind = DVZ_QUERY_VALUE_NONE;
