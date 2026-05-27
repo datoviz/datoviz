@@ -788,6 +788,8 @@ int test_scene_segment_query_resolves_item(TstContext* suite, const TstCase* ite
 
 int test_scene_path_query_resolves_item(TstContext* suite, const TstCase* item);
 
+int test_scene_primitive_query_resolves_item(TstContext* suite, const TstCase* item);
+
 int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const TstCase* item);
 
 int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstContext* suite, const TstCase* item);
