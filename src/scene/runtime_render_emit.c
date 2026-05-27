@@ -465,10 +465,14 @@ bool _emitter_prepare_render_multi(
             (desc.kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
              desc.kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT) &&
             cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
+        bool volume_query_u32 =
+            render->u.render.picking && desc.kind == DVZ_SCENE_VISUAL_DESC_VOLUME &&
+            cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
         bool query_u32 =
             render->u.render.picking &&
             (point_like_desc || desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE ||
-             segment_query_u32 || path_query_u32 || primitive_query_u32 || labels_query_u32) &&
+             segment_query_u32 || path_query_u32 || primitive_query_u32 || labels_query_u32 ||
+             volume_query_u32) &&
             cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
         if (query_u32)
         {
@@ -491,6 +495,8 @@ bool _emitter_prepare_render_multi(
                 query_shader = DVZ_SCENE_BUILTIN_SHADER_LABELS_SINT_QUERY_U32;
             else if (desc.kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT)
                 query_shader = DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT_QUERY_U32;
+            else if (volume_query_u32)
+                query_shader = DVZ_SCENE_BUILTIN_SHADER_VOLUME_QUERY_U32;
             ok = _runtime_key_append(
                      shader.fragment_key, sizeof(shader.fragment_key), "_query_u32", report) &&
                  _runtime_key_append(
@@ -534,6 +540,8 @@ bool _emitter_prepare_render_multi(
                 shader.fragment_spirv_key = "labels_sint_query_u32_frag";
             else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT_QUERY_U32)
                 shader.fragment_spirv_key = "labels_uint_query_u32_frag";
+            else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_VOLUME_QUERY_U32)
+                shader.fragment_spirv_key = "volume_query_u32_frag";
             else
                 shader.fragment_spirv_key = "point_query_u32_frag";
             shader.builtin_family = NULL;

@@ -31,6 +31,16 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_VOLUME_QUERY_QUANT_MAX 16777214.0
+
+static const uint8_t VOLUME_QUERY_DUMMY_TRANSFER_RGBA[4] = {255, 255, 255, 255};
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
@@ -93,6 +103,63 @@ static bool _volume_query_target_extent(
 
 
 /**
+ * Return whether a scalar volume texture format can be sampled by the float query shader.
+ *
+ * @param format retained field format
+ * @param out_texture_format output Vulkan texture format
+ * @param out_bytes_per_texel output texture byte size
+ * @return true when the sample query shader supports the field format
+ */
+static bool _volume_query_scalar_sample_format(
+    DvzFieldFormat format, uint32_t* out_texture_format, uint32_t* out_bytes_per_texel)
+{
+    ANN(out_texture_format);
+    ANN(out_bytes_per_texel);
+    switch (format)
+    {
+    case DVZ_FIELD_FORMAT_R8_UNORM:
+    case DVZ_FIELD_FORMAT_R8_SNORM:
+    case DVZ_FIELD_FORMAT_R16_UNORM:
+    case DVZ_FIELD_FORMAT_R16_SNORM:
+    case DVZ_FIELD_FORMAT_R16_FLOAT:
+    case DVZ_FIELD_FORMAT_R32_FLOAT:
+        return _field_format_texture_format(format, out_texture_format) &&
+               _field_format_bytes_per_texel(format, out_bytes_per_texel);
+    default:
+        *out_texture_format = 0;
+        *out_bytes_per_texel = 0;
+        return false;
+    }
+}
+
+
+
+/**
+ * Return the byte size of a dense 3D volume field.
+ *
+ * @param field retained sampled field
+ * @param bytes_per_texel field texel byte size
+ * @param out_byte_size output byte size
+ * @return true when the size was computed without overflow
+ */
+static bool _volume_query_field_byte_size(
+    const DvzSampledField* field, uint32_t bytes_per_texel, uint64_t* out_byte_size)
+{
+    ANN(field);
+    ANN(out_byte_size);
+    uint64_t texel_count = 0;
+    if (
+        _dvz_mul_u64_overflows(field->desc.width, field->desc.height, &texel_count) ||
+        _dvz_mul_u64_overflows(texel_count, field->desc.depth, &texel_count))
+    {
+        return false;
+    }
+    return !_dvz_mul_u64_overflows(texel_count, bytes_per_texel, out_byte_size);
+}
+
+
+
+/**
  * Apply the request-centered MVP and viewport to a query render node.
  *
  * @param plan frame plan
@@ -132,7 +199,157 @@ static void _volume_query_apply_render_state(
 
 
 /**
- * Return whether a volume visual can answer one identity query request.
+ * Build a volume-family rendered scalar sample query plan.
+ *
+ * @param ctx build context
+ * @param out_plan output query plan
+ * @return true when the plan was assembled
+ */
+static bool _volume_query_build_sample(
+    const DvzSceneQueryBuildContext* ctx, DvzSceneQueryPlan* out_plan)
+{
+    ANN(ctx);
+    ANN(ctx->panel);
+    ANN(ctx->visual);
+    ANN(ctx->pending);
+    ANN(out_plan);
+
+    DvzSampledField* field = ctx->visual->field;
+    if (field == NULL || field->data == NULL || field->desc.dim != DVZ_FIELD_DIM_3D ||
+        field->desc.width == 0 || field->desc.height == 0 || field->desc.depth == 0)
+    {
+        return false;
+    }
+
+    uint32_t texture_format = 0;
+    uint32_t bytes_per_texel = 0;
+    if (!_volume_query_scalar_sample_format(
+            field->desc.format, &texture_format, &bytes_per_texel))
+    {
+        return false;
+    }
+
+    const DvzVisualAttr* pos_attr = NULL;
+    const DvzVisualAttr* uvw_attr = NULL;
+    if (!_volume_query_attr(ctx->visual, "position", sizeof(vec3), &pos_attr) ||
+        !_volume_query_attr(ctx->visual, "texcoords", sizeof(vec3), &uvw_attr) ||
+        uvw_attr->item_count != pos_attr->item_count || pos_attr->item_count > UINT32_MAX)
+    {
+        return false;
+    }
+    uint64_t vertex_count = pos_attr->item_count;
+
+    uint64_t position_bytes = 0;
+    uint64_t texcoord_bytes = 0;
+    uint64_t texture_bytes = 0;
+    if (
+        _dvz_mul_u64_overflows(vertex_count, sizeof(vec3), &position_bytes) ||
+        _dvz_mul_u64_overflows(vertex_count, sizeof(vec3), &texcoord_bytes) ||
+        !_volume_query_field_byte_size(field, bytes_per_texel, &texture_bytes))
+    {
+        log_error("volume sample query request buffer size overflow");
+        return false;
+    }
+
+    DvzFramePlan* plan =
+        dvz_frame_plan("figure.query.volume.sample", ctx->pending->request.request_id);
+    out_plan->scratch.plan = plan;
+    bool ok = plan != NULL;
+    ok = ok && dvz_frame_plan_upload_bytes(
+                   plan, "volume_query0_position", 0, position_bytes, "position",
+                   pos_attr->data) &&
+         dvz_frame_plan_upload_set_topology(plan, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST) &&
+         dvz_frame_plan_upload_bytes(
+             plan, "volume_query0_texcoords", 0, texcoord_bytes, "texcoords", uvw_attr->data) &&
+         dvz_frame_plan_upload_bytes(
+             plan, "volume_query0_texture", 0, texture_bytes, "texture", field->data) &&
+         dvz_frame_plan_upload_set_texture_format(plan, texture_format, bytes_per_texel) &&
+         dvz_frame_plan_upload_set_texture_3d_extent(
+             plan, field->desc.width, field->desc.height, field->desc.depth) &&
+         dvz_frame_plan_upload_set_texture_3d_allocation_extent(
+             plan, field->desc.width, field->desc.height, field->desc.depth) &&
+         dvz_frame_plan_upload_set_texture_3d_region(plan, 0, 0, 0) &&
+         dvz_frame_plan_upload_bytes(
+             plan, "volume_query0_transfer", 0, sizeof(VOLUME_QUERY_DUMMY_TRANSFER_RGBA),
+             "volume_transfer", VOLUME_QUERY_DUMMY_TRANSFER_RGBA) &&
+         dvz_frame_plan_upload_set_texture_format(plan, VK_FORMAT_R8G8B8A8_UNORM, 4) &&
+         dvz_frame_plan_upload_set_texture_extent(plan, 1, 1) &&
+         dvz_frame_plan_upload_set_texture_allocation_extent(plan, 1, 1) &&
+         dvz_frame_plan_upload_set_texture_region(plan, 0, 0);
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.has_metadata = true;
+    metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_VOLUME;
+    metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
+    metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
+    metadata.depth_compare_op = ctx->visual->depth_compare_op;
+    metadata.vertex_count = (uint32_t)vertex_count;
+    metadata.field_format = field->desc.format;
+    metadata.field_width = field->desc.width;
+    metadata.field_height = field->desc.height;
+    metadata.field_depth = field->desc.depth;
+    metadata.has_volume = true;
+    metadata.volume_state = ctx->visual->volume;
+    metadata.volume_transfer_rgba = false;
+    dvz_strlcpy(metadata.position_id, "volume_query0_position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.texcoords_id, "volume_query0_texcoords", sizeof(metadata.texcoords_id));
+    dvz_strlcpy(metadata.texture_id, "volume_query0_texture", sizeof(metadata.texture_id));
+    dvz_strlcpy(
+        metadata.volume_texture_id, "volume_query0_texture", sizeof(metadata.volume_texture_id));
+    dvz_strlcpy(
+        metadata.volume_transfer_texture_id, "volume_query0_transfer",
+        sizeof(metadata.volume_transfer_texture_id));
+
+    ok = ok && dvz_frame_plan_render_panel(
+                   plan, "panel.query.volume.sample", "target.query.volume.sample", true,
+                   (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1}) &&
+         dvz_frame_plan_render_visual(plan, "volume_query0") &&
+         dvz_frame_plan_render_visual_metadata(plan, &metadata);
+    DvzFramePlanNode* render = plan != NULL ? dvz_frame_plan_last_render_node(plan) : NULL;
+    if (render != NULL)
+    {
+        DvzMVP mvp = {0};
+        _scene_request_apply_mvp(ctx->panel, ctx->request_ndc, &mvp);
+        render->u.render.has_mvp = true;
+        render->u.render.apply_mvp = mvp;
+        render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
+    }
+
+    DvzFramePlanCopyDesc copy = {
+        .src_resource_id = "target.query.volume.sample",
+        .dst_resource_id = "buf.query.volume.sample",
+        .extent = {1, 1, 1},
+        .format = VK_FORMAT_R32_UINT,
+        .bytes_per_texel = sizeof(uint32_t),
+        .bytes_per_row = sizeof(uint32_t),
+        .rows_per_image = 1,
+        .byte_size = sizeof(uint32_t),
+        .request_id = ctx->pending->request.request_id,
+    };
+    ok = ok && dvz_frame_plan_copy_ex(plan, &copy) &&
+         dvz_frame_plan_readback(plan, "buf.query.volume.sample", "request.query.volume.sample");
+    if (!ok)
+    {
+        log_error(
+            "volume sample query request %" PRIu64 " failed to assemble the GPU readback plan",
+            ctx->pending->request.request_id);
+        _scene_query_scratch_destroy(&out_plan->scratch);
+        return false;
+    }
+
+    out_plan->field = field;
+    out_plan->target_width = 1;
+    out_plan->target_height = 1;
+    out_plan->format = VK_FORMAT_R32_UINT;
+    out_plan->byte_size = sizeof(uint32_t);
+    return true;
+}
+
+
+
+/**
+ * Return whether a volume visual can answer one query request.
  *
  * @param panel the panel
  * @param visual the visual
@@ -147,6 +364,19 @@ static bool _volume_query_eligible(
     ANN(request);
     if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
         return false;
+    if (request->target == DVZ_SCENE_TARGET_SAMPLE)
+    {
+        if ((visual->query_capabilities & DVZ_QUERY_CAPABILITY_SAMPLE) == 0)
+            return false;
+        if (visual->volume.render_mode != DVZ_VOLUME_RENDER_SLICE)
+            return false;
+        if (visual->field == NULL || visual->field->data == NULL)
+            return false;
+        uint32_t texture_format = 0;
+        uint32_t bytes_per_texel = 0;
+        return _volume_query_scalar_sample_format(
+            visual->field->desc.format, &texture_format, &bytes_per_texel);
+    }
     if (request->target != DVZ_SCENE_TARGET_NONE && request->target != DVZ_SCENE_TARGET_ITEM &&
         request->target != DVZ_SCENE_TARGET_OBJECT)
     {
@@ -173,6 +403,9 @@ static bool _volume_query_build(
     ANN(ctx->visual);
     ANN(ctx->pending);
     ANN(out_plan);
+
+    if (ctx->pending->request.target == DVZ_SCENE_TARGET_SAMPLE)
+        return _volume_query_build_sample(ctx, out_plan);
 
     const DvzVisualAttr* pos_attr = NULL;
     if (!_volume_query_attr(ctx->visual, "position", sizeof(vec3), &pos_attr) ||
@@ -283,6 +516,41 @@ static bool _volume_query_decode(
     ANN(ctx->build->visual);
     ANN(ctx->bytes);
     ANN(out_result);
+    if (ctx->build->pending->request.target == DVZ_SCENE_TARGET_SAMPLE)
+    {
+        if (ctx->byte_size < sizeof(uint32_t))
+        {
+            out_result->status = DVZ_QUERY_STATUS_DECODE_FAILED;
+            return true;
+        }
+
+        uint32_t encoded = 0;
+        dvz_memcpy(&encoded, sizeof(encoded), ctx->bytes, sizeof(encoded));
+        out_result->visual_id =
+            _scene_visual_public_id(ctx->build->figure->scene, ctx->build->visual);
+        out_result->visual_family = DVZ_SCENE_VISUAL_FAMILY_VOLUME;
+        out_result->raw_target = DVZ_SCENE_TARGET_SAMPLE;
+        out_result->resolved_target = DVZ_SCENE_TARGET_SAMPLE;
+        if (encoded == 0)
+        {
+            out_result->status = DVZ_QUERY_STATUS_MISS;
+            out_result->value_kind = DVZ_QUERY_VALUE_NONE;
+            return true;
+        }
+
+        double t = (double)(encoded - 1u) / DVZ_VOLUME_QUERY_QUANT_MAX;
+        const DvzVolumeState* state = &ctx->build->visual->volume;
+        double value = state->value_min + t * (state->value_max - state->value_min);
+        out_result->status = DVZ_QUERY_STATUS_HIT;
+        out_result->hit = true;
+        out_result->payload_version = 1;
+        out_result->value_kind = DVZ_QUERY_VALUE_SCALAR;
+        out_result->scalar = value;
+        out_result->vector[0] = value;
+        dvz_strlcpy(out_result->label, "scalar", sizeof(out_result->label));
+        return true;
+    }
+
     if (ctx->byte_size < sizeof(uint32_t))
     {
         out_result->status = DVZ_QUERY_STATUS_DECODE_FAILED;
@@ -324,7 +592,8 @@ static bool _volume_query_readout(
 {
     ANN(ctx);
     ANN(result);
-    result->value_kind = DVZ_QUERY_VALUE_NONE;
+    if (result->resolved_target != DVZ_SCENE_TARGET_SAMPLE)
+        result->value_kind = DVZ_QUERY_VALUE_NONE;
     return true;
 }
 
