@@ -30,6 +30,7 @@ The active v0.4 visual API should use precise attribute names rather than a fami
 | `sphere` | `radius` | sphere radius in world/data units unless a radius mode is added |
 | `segment` | `stroke_width` | line stroke width in screen pixels |
 | `path` | `stroke_width` | path stroke width in screen pixels |
+| `vector` | `vector` | displacement/direction from the item anchor; shaft/head shape uses stroke attributes |
 | `tube` | `radius` | future 3D curve-surface radius in world/data units |
 | `image` | `extent` | image rectangle width/height |
 | `mesh` | none | geometry size comes from vertex data and transforms |
@@ -67,6 +68,7 @@ broader than the current implementation.
 | `marker` | [MARKER.md](MARKER.md) | `dvz_marker()` | position/color/diameter/angle/shape, style | code-SDF marker sprites in GLSL | bounding-box GPU picking | exact SDF picking, bitmap/SDF atlas, WGSL parity |
 | `segment` | [SEGMENT.md](SEGMENT.md) | `dvz_segment()` | endpoint positions/color/stroke_width/caps | analytic screen-space stroke quads in GLSL | stroke GPU picking | dashes, arrows, gradients, richer path identity, WGSL parity |
 | `path` | [PATH.md](PATH.md) | `dvz_path()` | line-strip plus optional subpaths/stroke_width/caps/joins | primitive line-strip or path-native stroked lowering | stroke GPU picking over lowered edges | analytic curve tessellation helpers, first-class closed-path API, dashes, path/subpath identity picking, WGSL parity |
+| `vector` | [VECTOR.md](VECTOR.md) | none installed | none | no | no | proposed vector/arrow contract |
 | `glyph` | [GLYPH.md](GLYPH.md) | `dvz_glyph()` low-level plus semantic `dvz_text()` lowering | text/font/annotation state lowers to glyph visuals | atlas-backed bitmap/SDF/MSDF-capable glyph path | no | data/world placement, HarfBuzz shaping, diagnostics, glyph/text picking |
 | `image` | [IMAGE.md](IMAGE.md) | `dvz_image()`, field binding, texture wrappers | multi-item position/extent/anchor/tex_rect/tint over 2D `SampledField`, scale/colormap binding, partial updates | textured rectangle path | image item picking and pixel probe readback | richer probe payloads and tiled/LOD policy |
 | `labels` | [IMAGE.md](IMAGE.md), active labels proposal | `dvz_labels()`, field + categorical scale binding | integer 2D `SampledField`, categorical scale, opacity/background/selected/hidden/boundary/fallback style | integer texture fetch with GLSL and WGSL variants | raw 2D label-id segment probe readback | 3D label slices, optimized sparse/high-id probe pressure tests |
@@ -84,14 +86,18 @@ broader than the current implementation.
 contract is limited to screen-space Gaussian billboards; scalable Gaussian-splat pipelines remain
 future work.
 
+`vector` is documented as a proposed v0.4 visual family in [VECTOR.md](VECTOR.md). It covers
+quiver-style vector and arrow items with a single source identity, while allowing the first runtime
+implementation to lower internally to shaft and head roles.
+
 `tube` is documented as a future/spec-only family in [TUBE.md](TUBE.md). It covers radius-bearing 3D
 curve surfaces such as tractography fibers, streamtubes, vessels, neurites, field lines, trajectory
 tubes, and ribbons. It is intentionally separate from `path`: `path` owns screen-space stroked
 polylines, while `tube` owns surface-like curve rendering with radius, depth, normals, and
 mode-specific implementations such as impostor tubes, mesh tubes, and ribbons.
 
-No `dvz_splat()` or `dvz_tube()` constructor or runtime lowering is installed in the active v0.4
-slice.
+No `dvz_splat()`, `dvz_vector()`, or `dvz_tube()` constructor or runtime lowering is installed in
+the active v0.4 slice.
 
 
 ## Reading Order
@@ -118,7 +124,7 @@ They are better understood as semantic resources or compositions that lower to t
 
 1. graphs and networks lower to points/markers, segments/paths, glyphs, and overlays;
 2. unstructured grids lower to boundary meshes, cut meshes, cell-edge segments, and glyphs;
-3. vector and tensor fields lower to arrows, streamlines, glyphs, images, and volumes;
+3. vector and tensor fields lower to vectors/arrows, streamlines, glyphs, images, and volumes;
 4. categorical label volumes and sparse voxel fields extend the sampled-field/volume direction;
 5. tracks, ensembles, and molecular structures lower to multiple coordinated views.
 

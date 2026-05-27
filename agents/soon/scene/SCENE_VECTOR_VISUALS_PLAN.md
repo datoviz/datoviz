@@ -15,6 +15,7 @@ Durable vector-family contracts live in:
 2. [`../../../spec/scene/visuals/PATH.md`](../../../spec/scene/visuals/PATH.md)
 3. [`../../../spec/scene/visuals/MARKER.md`](../../../spec/scene/visuals/MARKER.md)
 4. [`../../../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md`](../../../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
+5. [`../../../spec/scene/visuals/VECTOR.md`](../../../spec/scene/visuals/VECTOR.md)
 
 The active v0.4 code already has retained `dvz_segment()` endpoint-pair visuals, analytic GLSL
 screen-space stroked segments, the first segment cap set, `dvz_segment_set_caps()`, primitive
@@ -38,11 +39,12 @@ Recommended follow-up commits:
    path-native joins, miter-limit behavior, subpath metadata, and path-specific cap handling.
 5. Add dashing after cumulative path-distance metadata and dash phase updates can be tested without
    rebuilding source geometry.
-6. Add arrow/vector-field helpers on top of segment/path plus marker-style arrowheads once picking
+6. Settle the remaining open questions in the vector visual spec before implementation.
+7. Add arrow/vector-field helpers on top of segment/path plus marker-style arrowheads once picking
    metadata can map shafts and heads back to the same source item.
-7. Keep SVG parsing, fills, markers, transforms, and static import as a later subset. Treat SVG as
+8. Keep SVG parsing, fills, markers, transforms, and static import as a later subset. Treat SVG as
    an authoring/import layer over Datoviz visuals, not as a separate renderer.
-8. Keep dense 3D streamlines/ribbons and tube meshes behind the 2D stroke backend. Tube work should
+9. Keep dense 3D streamlines/ribbons and tube meshes behind the 2D stroke backend. Tube work should
    follow [`../../../spec/scene/visuals/TUBE.md`](../../../spec/scene/visuals/TUBE.md) and reuse
    mesh material, depth cueing, SSAO/G-buffer, and stable frame-generation rules.
 
