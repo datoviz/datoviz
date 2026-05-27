@@ -16,9 +16,10 @@ Durable visual-family behavior belongs under `spec/scene/visuals/`.
 
 Several earlier-looking gaps are now mostly implemented:
 
-1. **Labels:** first-class integer labels render, bind categorical scales, integrate with legends,
-   support selected/hidden/boundary state, and have a polished showcase. The remaining high-value
-   gap is raw label-id GPU probing plus larger sparse-id pressure tests.
+1. **Labels and label volumes:** first-class integer labels render, bind categorical scales,
+   integrate with legends, support selected/hidden/boundary state, and have a polished showcase.
+   Raw 2D label-id probing and sparse signed/unsigned label-volume lookup are active. The remaining
+   high-value label gap is larger-field, transform, and request-path pressure testing.
 2. **Explanatory layout:** axes, colorbars, legends, scale bars, and panel reserve plumbing exist.
    The remaining gap is a composed proof example, not core layout infrastructure.
 3. **Showcases:** protein, LiDAR, brain, and labels examples mostly exist. The remaining work is
@@ -34,7 +35,7 @@ Several earlier-looking gaps are now mostly implemented:
 | ---: | --- | --- | --- |
 | 1 | Retained textured mesh | Required for the v0.4 terrain/planet showcase and useful for many mesh examples; current retained mesh path does not yet bind textures as material input. | Add UV upload, mesh texture binding, `color_mode = texture`, sampler defaults, lighting/material integration, fixture coverage, and a terrain/planet capture. |
 | 2 | Vector/arrow visual | Best new semantic visual for scientific demos; unlocks wind, CFD, displacement, normals, trajectories, and napari-style vectors. | Add a first-class arrow/vector visual or tightly scoped arrow helper, then use it in the wind-field showcase. |
-| 3 | Raw label-id GPU probe | Smaller than a new visual family and directly improves the napari-style labels demo. | Return integer label ids from `dvz_labels()` fields through a labels-specific scene request/readback path; add sparse/high-id stress tests. |
+| 3 | Label probe hardening | Smaller than a new visual family and directly improves the napari-style labels demo. | Stress raw label-id probing under transforms, larger fields, request churn, and gallery-style hover/click readout. |
 | 4 | Explanatory layout proof | Low-risk RC proof for already-landed adornment layout pieces. | Add or polish one example combining axes, colorbar, legend, scale bar, and panel reserves without collisions. |
 | 5 | Gallery proof pass | Converts existing showcase code into release confidence. | Run/polish protein, LiDAR, brain, labels, textured terrain/planet, colorbar/legend, and capture paths; tune defaults and record validation. |
 | 6 | Splat visual | Flashy and self-contained; now acceptable as a v0.4 experimental showcase target if the new visual lands cleanly. | Implement a retained point-cloud splat/Gaussian-like visual, add fixture/capture proof, and keep full Gaussian-splat pipelines explicitly deferred. |
@@ -65,16 +66,16 @@ Keep the first slice narrow: positions, vectors, color, length/scale, optional a
 panzoom/arcball-compatible transforms. Defer tensor glyphs, streamtube generation, vector-field LOD,
 and advanced per-item metadata unless the first showcase needs them.
 
-### Raw Label-Id GPU Probe
+### Label Probe Hardening
 
 The labels showcase now uses a GPU-backed `dvz_labels()` segment probe for hover and click readout.
-The remaining work is hardening: mapped data coordinates, panzoom/keep-aspect coverage, sparse-id
+Sparse signed/unsigned label-volume lookup and high-id query edge cases are also covered. The
+remaining work is hardening: mapped data coordinates, panzoom/keep-aspect coverage, large-field
 pressure, and optimizing the request path beyond full-texture copies.
 
 Use [`SCENE_NAPARI_IMAGE_LABELS_PLAN.md`](SCENE_NAPARI_IMAGE_LABELS_PLAN.md) and
 [`../../../spec/scene/integration/napari/NAPARI.md`](../../../spec/scene/integration/napari/NAPARI.md)
-for semantics. Add pressure tests for sparse ids and ids that exceed ordinary small categorical
-indices.
+for semantics. Add pressure tests for transformed panels, larger fields, and request churn.
 
 ### Explanatory Layout Proof
 

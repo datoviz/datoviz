@@ -47,8 +47,8 @@ If resuming work on the branch:
    [../spec/scene/interaction/GPU_QUERY_SYSTEM.md](../spec/scene/interaction/GPU_QUERY_SYSTEM.md)
    before changing pick/probe/query execution, GPU request readback, visual-family query policy, or
    CPU fallback behavior.
-8. Read [done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md](done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md)
-   and
+8. Read [done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md](done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md),
+   [done/SCENE_SPARSE_LABEL_VOLUME_LOOKUP.md](done/SCENE_SPARSE_LABEL_VOLUME_LOOKUP.md), and
    [../spec/scene/semantics/SAMPLED_FIELD_INTERPRETATION.md](../spec/scene/semantics/SAMPLED_FIELD_INTERPRETATION.md)
    before changing sampled-field format/semantic interpretation, categorical colorizers,
    label-volume support, or sampled visual query schemas.
@@ -169,6 +169,7 @@ Recently retired or historical notes:
 19. [done/SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md](done/SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md)
 20. [done/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md](done/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md)
 21. [done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md](done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md)
+22. [done/SCENE_SPARSE_LABEL_VOLUME_LOOKUP.md](done/SCENE_SPARSE_LABEL_VOLUME_LOOKUP.md)
 
 ### `later/`
 

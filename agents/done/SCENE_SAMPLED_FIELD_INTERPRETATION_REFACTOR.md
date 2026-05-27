@@ -23,6 +23,9 @@ query paths. The durable behavior record is
 6. `0412a8faf` `scene: support label volume slices and queries`
 7. `e65bd93ef` `scene: add label volume first-hit compositing`
 8. `d290bf402` `scene: validate label volume compositing offscreen`
+9. `d2dfa7876` `spec: define sparse label lookup contract`
+10. `33ab572da` `scene: add sparse lookup for label volumes`
+11. `3160395a0` `spec: update label volume support status`
 
 
 ## Decisions
@@ -33,8 +36,8 @@ query paths. The durable behavior record is
 4. Use `COMPOSITE` as first nonzero categorical label hit for label-volume ray marching.
 5. Reject label-volume `MIP` because maximum label id is not meaningful categorical rendering.
 6. Keep default label sample queries on the existing 4-byte `r32uint` readback path.
-7. Treat dense categorical palettes as an implementation detail. Sparse lookup-table support is the
-   correct long-term path for atlas labels and large sparse ids.
+7. Treat dense categorical palettes as an implementation detail. Sparse GPU lookup tables are the
+   canonical path for atlas labels and large sparse ids.
 8. Do not revive CPU retained-data sampling as a rendered visual query fallback.
 
 
@@ -48,13 +51,13 @@ direnv exec . just test scene
 git diff --check
 ```
 
-The final broad scene run passed `472/472` selected tests.
+The final broad scene run passed `478/478` selected tests.
 
 
 ## Follow-Up
 
-1. Add sparse GPU categorical lookup tables for large/signed atlas ids, while preserving semantic ids
-   in query results.
-2. Add an IBL `iblatlas` label-volume example using the Allen annotation-index volume and region
+1. Add an IBL `iblatlas` label-volume example using the Allen annotation-index volume and region
    colors.
+2. Add displayed RGBA to query results only after the multi-output/richer query payload
+   architecture is chosen.
 3. Keep WebGPU/WGSL parity as a separate later lane.

@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE / FOLLOW-UP NOTE`
-> - **Updated on:** `2026-05-26`
+> - **Updated on:** `2026-05-27`
 > - **Purpose:** track remaining 2D image/label work needed for napari-class layer rendering.
 
 
@@ -24,9 +24,9 @@ The active v0.4 code already has retained `SampledField` resources, 2D image vis
 sampled fields, image dirty-region uploads, z-layered panel attachment, scale/colormap bookkeeping,
 categorical scale/legend bookkeeping and rendering, first-class `dvz_labels()` integer sampled-field
 rendering, label GLSL/WGSL shader variants, selected-label/boundary/hidden-label styling, image
-probe/readback plumbing, and a first raw 2D `dvz_labels()` label-id probe path. Scalar fields are
-still commonly colorized through a staged RGBA path, and labels probing still needs larger sparse-id
-and transform pressure tests.
+probe/readback plumbing, and a raw 2D `dvz_labels()` label-id probe path with signed/high-unsigned
+coverage. Scalar fields are still commonly colorized through a staged RGBA path, and labels probing
+still needs larger-field, transform, and request-path pressure tests.
 
 Use this file only for execution sequencing. Do not duplicate napari or image visual semantics here.
 
@@ -37,8 +37,8 @@ Recommended follow-up commits:
 
 1. Add native shader-side scalar image lookup: raw scalar texture, contrast/gamma params, colormap
    palette texture, opacity, and raw-value probe semantics.
-2. Harden raw label-ID GPU probing so hover/click readout remains correct under panzoom, sparse IDs,
-   and larger fields.
+2. Harden raw label-ID GPU probing so hover/click readout remains correct under panzoom,
+   keep-aspect transforms, latest-request-wins behavior, and larger fields.
 3. Preserve label IDs as integer sampled-field data; labels must use nearest sampling or texel
    fetch, with label `0` transparent by default.
 4. Continue broadening label palette/hash color, selected-label-only, contour, opacity, hidden-ID,
@@ -63,7 +63,7 @@ Recommended example order:
 1. scalar image colormap with contrast/gamma/opacity controls;
 2. integer labels overlay with categorical legend, shader-side selection/boundary styling, and
    probe-backed hover/click lookup, matching `examples/c/showcase/labels.c`;
-3. raw `dvz_labels()` label-id GPU probe/readback pressure tests;
+3. raw `dvz_labels()` label-id GPU probe/readback pressure tests for transforms and larger fields;
 4. multi-layer image stack with napari-style blend-mode controls;
 5. dirty-tile or multiscale level-switching smoke after sampled-field region updates are stable.
 

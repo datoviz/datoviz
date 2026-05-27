@@ -193,6 +193,13 @@ Committed implementation slices:
     - stopped default profile selection from choosing `DVZ_QUERY_PROFILE_U64_2XR32` until true
       two-attachment query execution/readback exists,
     - added CPU query coverage for the "only 2xr32 is advertised" case.
+50. `scene: add sparse lookup for label volumes`
+    - signed/unsigned label-volume slice and composite rendering now use a sparse GPU categorical
+      lookup buffer for large or signed semantic ids,
+    - label-volume sample queries now return raw `r32uint` label bits, preserving `UINT32_MAX` and
+      signed `-1`,
+    - tests cover sparse unsigned rendering, signed lookup upload/binding, high unsigned label
+      query, and signed negative label query.
 
 Recorded validation after these commits:
 
@@ -201,7 +208,8 @@ Recorded validation after these commits:
 3. `direnv exec . just test test_drp2_runtime_vklite_draws_rg32uint_readback`
 4. `just test test_scene_query_does_not_auto_select_2xr32_profile`
 5. `direnv exec . just test query` with `40/40`
-6. `git diff --check`
+6. `direnv exec . just test scene` with `478/478`
+7. `git diff --check`
 
 
 ## Decisions Already Chosen
@@ -429,8 +437,9 @@ Suggested subagent: mesh/volume query agent.
 
 Status: mesh identity query is native. Volume item query uses proxy geometry identity, and scalar
 slice-mode sample query is now GPU-backed through rendered `r32uint` and requested `rg32uint`
-payloads. The `rg32uint` profile adds GPU-computed UVW and derives voxel/sample ids from that
-coordinate. Displayed RGBA and non-slice policies remain deferred.
+payloads. Label-volume slice sample query returns raw signed/unsigned label ids through the
+baseline 4-byte `r32uint` payload. The `rg32uint` profile adds GPU-computed UVW and derives
+voxel/sample ids from that coordinate. Displayed RGBA and non-slice policies remain deferred.
 
 Primary ownership:
 
@@ -445,7 +454,8 @@ Tasks:
    hit position.
 2. Do not rely solely on backend primitive id; provide explicit GPU metadata where needed.
 3. Volume slice query returns UVW, voxel/sample id, and sampled value from GPU. Current `rg32uint`
-   support returns scalar plus GPU UVW and derives the id after readback.
+   support returns scalar plus GPU UVW and derives the id after readback; current label-volume
+   `r32uint` support returns raw signed/unsigned category ids.
 4. Remove CPU volume ray/box and CPU sampled-field query path.
 5. Return unsupported for DVR/MIP/composite until exact GPU semantics land.
 6. Record MIP and DVR policy tests as skipped/deferred only if the test framework supports that
@@ -572,8 +582,9 @@ behavior.
    only path. Keep `r32uint` baseline and two-attachment fallback.
 2. **WebGPU:** avoid Vulkan-only primitive-id and raw `VkFormat` contracts.
 3. **CPU fallback regression:** tests must force GPU/readback failure and verify no CPU result appears.
-4. **Volume semantics:** slice is clear; MIP and DVR/composite must remain explicit deferred policies
-   until implemented on GPU.
+4. **Volume semantics:** slice is clear; MIP and DVR/composite sample-query semantics must remain
+   explicit deferred policies until implemented on GPU. Label-volume composite rendering is active,
+   but composite query semantics are not.
 5. **Transparency semantics:** opaque/depth-tested frontmost query first; blended/WBOIT/depth-peel need
    explicit later profiles.
 6. **Generic file pollution:** enforce source lint early, or visual-specific logic will creep back into
@@ -589,12 +600,14 @@ The overhaul is complete when:
 3. generic query code has no visual-family internals,
 4. visual-family query code lives under `src/scene/visuals/<family>/`,
 5. rendered visual queries have no CPU fallback,
-6. labels and scalar volume slice sample queries no longer sample retained CPU data,
+6. labels, scalar volume slice, and label-volume slice sample queries no longer sample retained CPU
+   data,
 7. DRP2/FramePlan supports non-4-byte integer query payload readback,
 8. capability failures produce explicit unsupported results,
 9. examples use one panel query instead of manual pick/probe composition,
 10. focused scene and DRP2 tests pass.
 
 Current status: criteria 1, 2, 3, 4, 5, 6, 8, and 9 are substantially satisfied by the native query,
-family-execution, public API removal, example-migration, labels GPU readout, and scalar volume slice
-GPU query commits. Criterion 7 remains open for broader non-4-byte integer readback profile coverage.
+family-execution, public API removal, example-migration, labels GPU readout, scalar volume slice GPU
+query, and label-volume raw-id query commits. Criterion 7 remains open for broader non-4-byte
+integer readback profile coverage.
