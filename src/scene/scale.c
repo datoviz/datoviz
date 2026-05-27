@@ -239,11 +239,15 @@ static void _scene_mark_scale_dirty(DvzScale* scale)
         if (visual->scene != scene || visual->scale != scale)
             continue;
         if ((visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_VOLUME) &&
-            visual->field != NULL &&
-            _field_format_is_scalar(visual->field->desc.format))
+            visual->field != NULL && _field_format_is_scalar(visual->field->desc.format))
         {
             _scene_visual_texture_mark_clean(visual);
             visual->texture.dirty = true;
+            _scene_texture_bump_version(visual);
+            _scene_notify_visual_changed(visual);
+        }
+        if (visual->type == DVZ_VISUAL_TYPE_LABELS)
+        {
             _scene_texture_bump_version(visual);
             _scene_notify_visual_changed(visual);
         }

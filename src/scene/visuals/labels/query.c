@@ -22,6 +22,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/math/_cglm.h"
+#include "../../colorizer.h"
 #include "../../query/internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
@@ -549,19 +550,12 @@ static void _labels_query_category_label(
 {
     ANN(visual);
     ANN(out_label);
-    if (visual->scale != NULL)
-    {
-        for (uint32_t i = 0; i < visual->scale->category_count; i++)
-        {
-            const DvzScaleCategoryState* category = &visual->scale->categories[i];
-            if (category->category_id == id && category->has_label)
-            {
-                dvz_strlcpy(out_label, category->label, label_size);
-                return;
-            }
-        }
-    }
-    dvz_snprintf(out_label, label_size, "label %" PRIi64, id);
+    DvzSceneColorizer colorizer = {0};
+    if (_scene_colorizer_from_scale(
+            visual->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer))
+        (void)_scene_colorizer_category_label(&colorizer, id, out_label, label_size);
+    else
+        dvz_snprintf(out_label, label_size, "label %" PRIi64, id);
 }
 
 

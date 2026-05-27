@@ -14,8 +14,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <string.h>
+
 #include "_assertions.h"
+#include "../colorizer.h"
 #include "../sample_profile.h"
+#include "datoviz/scene.h"
 #include "test_scene.h"
 #include "testing.h"
 
@@ -155,6 +159,62 @@ static int test_scene_sample_profile_rejects_unsupported(TstContext* suite, cons
 
 
 /**
+ * Check categorical colorizer lookup and dense palette construction.
+ *
+ * @param suite the test suite
+ * @param item the test case
+ * @return 0 on success
+ */
+static int test_scene_colorizer_categorical_palette(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzScale* scale =
+        dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL, .label = "regions"});
+    ANN(scale);
+    DvzScaleCategory categories[] = {
+        {.category_id = 0, .order = 0, .label = "background", .color = {0, 0, 0, 0}},
+        {.category_id = 2, .order = 1, .label = "region", .color = {10, 20, 30, 255}},
+    };
+    AT(dvz_scale_set_categories(scale, categories, 2));
+
+    DvzSceneColorizer colorizer = {0};
+    AT(_scene_colorizer_from_scale(scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer));
+    DvzColor color = {0};
+    AT(_scene_colorizer_category_color(&colorizer, 2, &color));
+    AT(color.r == 10);
+    AT(color.g == 20);
+    AT(color.b == 30);
+    AT(color.a == 255);
+
+    char label[32] = {0};
+    AT(_scene_colorizer_category_label(&colorizer, 2, label, sizeof(label)));
+    AT(strcmp(label, "region") == 0);
+    AT(!_scene_colorizer_category_label(&colorizer, 7, label, sizeof(label)));
+    AT(strcmp(label, "label 7") == 0);
+
+    uint32_t palette_count = 0;
+    AT(_scene_colorizer_dense_palette_extent(&colorizer, &palette_count));
+    AT(palette_count == 3);
+    DvzColor palette[3] = {0};
+    DvzColor fallback = {1, 2, 3, 4};
+    AT(_scene_colorizer_build_dense_palette(&colorizer, fallback, palette, 3));
+    AT(palette[0].a == 0);
+    AT(palette[1].r == 1);
+    AT(palette[1].a == 4);
+    AT(palette[2].r == 10);
+    AT(palette[2].a == 255);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Register sampled-field profile tests.
  *
  * @param suite the active test suite
@@ -172,6 +232,7 @@ int test_scene_sample_profile(TstSuite* suite)
     TST_CASE(test_scene_sample_profile_labels);
     TST_CASE(test_scene_sample_profile_rgba);
     TST_CASE(test_scene_sample_profile_rejects_unsupported);
+    TST_CASE(test_scene_colorizer_categorical_palette);
 
     return 0;
 }
