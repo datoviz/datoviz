@@ -929,7 +929,8 @@ int dvz_visual_bounds(const DvzVisual* visual, DvzBounds* out)
     }
     else if (visual->type == DVZ_VISUAL_TYPE_VECTOR)
     {
-        (void)_bounds_from_vector(visual, out);
+        if (!_bounds_from_vector(visual, out))
+            (void)_bounds_from_position_attr(visual, "position", out);
     }
     else if (visual->type == DVZ_VISUAL_TYPE_SPHERE)
     {

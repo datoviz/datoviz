@@ -820,6 +820,10 @@ int test_scene_segment_query_resolves_item(TstContext* suite, const TstCase* ite
 
 int test_scene_path_query_resolves_item(TstContext* suite, const TstCase* item);
 
+int test_scene_vector_query_resolves_straight_item(TstContext* suite, const TstCase* item);
+
+int test_scene_vector_query_resolves_curved_item(TstContext* suite, const TstCase* item);
+
 int test_scene_primitive_query_resolves_item(TstContext* suite, const TstCase* item);
 
 int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item);

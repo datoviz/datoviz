@@ -33,6 +33,7 @@
 #include "_scene_shader_abi.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
+#include "_visual_internal.h"
 #include "colorizer.h"
 #include "sample_profile.h"
 #include "datoviz/drp2/runtime.h"
@@ -406,6 +407,23 @@ static bool _vector_required_attrs(const DvzVisual* visual, uint64_t* out_count)
     }
     *out_count = count;
     return true;
+}
+
+
+/**
+ * Return whether a vector visual should use curved path lowering.
+ *
+ * @param visual the vector visual
+ * @return whether path-style point data should be used
+ */
+static bool _vector_uses_path_mode(const DvzVisual* visual)
+{
+    ANN(visual);
+    return visual->type == DVZ_VISUAL_TYPE_VECTOR &&
+           !_scene_visual_has_attr_data(visual, "vector") &&
+           _scene_visual_has_attr_data(visual, "position") &&
+           _scene_visual_has_attr_data(visual, "color") &&
+           _scene_visual_has_attr_data(visual, "line_width");
 }
 
 
@@ -1719,7 +1737,16 @@ static bool _scene_emit_visual_family_derived_uploads(
     }
     if (visual->type == DVZ_VISUAL_TYPE_VECTOR)
     {
-        _scene_emit_vector_uploads(figure, plan, visual, visual_index);
+        if (_vector_uses_path_mode(visual))
+        {
+            _path_sync_params(visual);
+            _scene_emit_path_uploads(figure, plan, visual, visual_index);
+        }
+        else
+        {
+            _segment_sync_params(visual);
+            _scene_emit_vector_uploads(figure, plan, visual, visual_index);
+        }
         *out_finished_visual = true;
         return _scene_emit_visual_material_upload(figure, plan, visual, visual_index);
     }

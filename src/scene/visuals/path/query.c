@@ -477,7 +477,16 @@ static bool _path_query_eligible(
     ANN(visual);
     ANN(request);
     if (visual->type != DVZ_VISUAL_TYPE_PATH)
-        return false;
+    {
+        if (visual->type != DVZ_VISUAL_TYPE_VECTOR)
+            return false;
+        int vector_idx = _attr_index(visual, "vector");
+        if (vector_idx >= 0 && visual->attrs[vector_idx].data != NULL &&
+            visual->attrs[vector_idx].item_count > 0)
+        {
+            return false;
+        }
+    }
     if (request->target != DVZ_SCENE_TARGET_NONE && request->target != DVZ_SCENE_TARGET_ITEM &&
         request->target != DVZ_SCENE_TARGET_OBJECT &&
         request->target != DVZ_SCENE_TARGET_SEGMENT)
@@ -667,7 +676,9 @@ static bool _path_query_decode(const DvzSceneQueryDecodeContext* ctx, DvzQueryRe
     out_result->status = DVZ_QUERY_STATUS_HIT;
     out_result->hit = true;
     out_result->visual_id = _scene_visual_public_id(ctx->build->figure->scene, ctx->build->visual);
-    out_result->visual_family = DVZ_SCENE_VISUAL_FAMILY_PATH;
+    out_result->visual_family = ctx->build->visual->type == DVZ_VISUAL_TYPE_VECTOR
+                                    ? DVZ_SCENE_VISUAL_FAMILY_VECTOR
+                                    : DVZ_SCENE_VISUAL_FAMILY_PATH;
     out_result->payload_version = 1;
     out_result->raw_target = DVZ_SCENE_TARGET_ITEM;
     out_result->raw_id = item_id;

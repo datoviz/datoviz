@@ -915,6 +915,67 @@ DvzVisual* dvz_path(DvzScene* scene, uint32_t flags)
 
 
 /**
+ * Set explicit subpath lengths for a path-backed visual.
+ *
+ * @param visual the path-backed visual
+ * @param subpath_count number of subpaths
+ * @param lengths point count for each subpath
+ * @param label label used in diagnostics
+ * @return 0 on success, -1 on error
+ */
+static int _visual_set_path_subpaths(
+    DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths, const char* label)
+{
+    ANN(visual);
+    ANN(label);
+    if (!_scene_visual_mutation_allowed(visual->scene, "update path-backed subpaths"))
+        return -1;
+    if (subpath_count > 0 && lengths == NULL)
+    {
+        log_error("%s subpath lengths are required when subpath_count > 0", label);
+        return -1;
+    }
+
+    uint32_t* copy = NULL;
+    if (subpath_count > 0)
+    {
+        uint64_t byte_size = 0;
+        if (_dvz_mul_u64_overflows(subpath_count, sizeof(uint32_t), &byte_size) ||
+            byte_size > SIZE_MAX)
+        {
+            log_error("%s subpath length byte size overflow", label);
+            return -1;
+        }
+        copy = dvz_malloc((size_t)byte_size);
+        if (copy == NULL)
+        {
+            log_error("%s subpath length allocation failed", label);
+            return -1;
+        }
+        dvz_memcpy(copy, (size_t)byte_size, lengths, (size_t)byte_size);
+        for (uint32_t i = 0; i < subpath_count; i++)
+        {
+            if (copy[i] == 0)
+            {
+                dvz_free(copy);
+                log_error("%s subpath lengths must be greater than zero", label);
+                return -1;
+            }
+        }
+    }
+
+    dvz_free(visual->path.subpath_lengths);
+    visual->path.subpath_lengths = copy;
+    visual->path.subpath_count = subpath_count;
+    visual->path.gpu.dirty = true;
+    if (visual->type == DVZ_VISUAL_TYPE_VECTOR)
+        _visual_material_mark_dirty(visual);
+    _scene_notify_visual_changed(visual);
+    return 0;
+}
+
+
+/**
  * Set explicit subpath lengths for a path visual.
  *
  * @param visual the path visual
@@ -930,48 +991,27 @@ int dvz_path_set_subpaths(DvzVisual* visual, uint32_t subpath_count, const uint3
         log_error("dvz_path_set_subpaths requires a path visual");
         return -1;
     }
-    if (!_scene_visual_mutation_allowed(visual->scene, "update path subpaths"))
-        return -1;
-    if (subpath_count > 0 && lengths == NULL)
+    return _visual_set_path_subpaths(visual, subpath_count, lengths, "path");
+}
+
+
+/**
+ * Set explicit subpath lengths for a curved vector visual.
+ *
+ * @param visual the vector visual
+ * @param subpath_count number of subpaths
+ * @param lengths point count for each subpath
+ * @return 0 on success, -1 on error
+ */
+int dvz_vector_set_subpaths(DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_VECTOR)
     {
-        log_error("path subpath lengths are required when subpath_count > 0");
+        log_error("dvz_vector_set_subpaths requires a vector visual");
         return -1;
     }
-
-    uint32_t* copy = NULL;
-    if (subpath_count > 0)
-    {
-        uint64_t byte_size = 0;
-        if (_dvz_mul_u64_overflows(subpath_count, sizeof(uint32_t), &byte_size) ||
-            byte_size > SIZE_MAX)
-        {
-            log_error("path subpath length byte size overflow");
-            return -1;
-        }
-        copy = dvz_malloc((size_t)byte_size);
-        if (copy == NULL)
-        {
-            log_error("path subpath length allocation failed");
-            return -1;
-        }
-        dvz_memcpy(copy, (size_t)byte_size, lengths, (size_t)byte_size);
-        for (uint32_t i = 0; i < subpath_count; i++)
-        {
-            if (copy[i] == 0)
-            {
-                dvz_free(copy);
-                log_error("path subpath lengths must be greater than zero");
-                return -1;
-            }
-        }
-    }
-
-    dvz_free(visual->path.subpath_lengths);
-    visual->path.subpath_lengths = copy;
-    visual->path.subpath_count = subpath_count;
-    visual->path.gpu.dirty = true;
-    _scene_notify_visual_changed(visual);
-    return 0;
+    return _visual_set_path_subpaths(visual, subpath_count, lengths, "vector");
 }
 
 

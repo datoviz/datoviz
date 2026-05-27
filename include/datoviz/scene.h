@@ -1554,6 +1554,9 @@ DVZ_EXPORT DvzVectorStyle dvz_vector_style(void);
  * `color` (RGBA8), and `stroke_width` (float pixels). The first native lowering renders each item
  * through the scene segment stroke pipeline with source item identity preserved.
  *
+ * Curved arrow mode omits `vector`; `position`, `color`, and `stroke_width` are then interpreted
+ * as path points, optionally grouped by dvz_vector_set_subpaths().
+ *
  * @param scene the scene
  * @param flags variant flags
  * @return the visual
@@ -1585,6 +1588,21 @@ DVZ_EXPORT DvzVisual* dvz_arrow(DvzScene* scene, uint32_t flags);
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT int dvz_vector_set_style(DvzVisual* visual, const DvzVectorStyle* style);
+
+
+/**
+ * Set explicit curved-arrow subpath lengths for a vector visual.
+ *
+ * When unset in curved mode, all points belong to one open arrow path. Lengths are consumed in
+ * order and must sum to the vector visual's path-point count at emission time.
+ *
+ * @param visual the vector visual
+ * @param subpath_count number of subpaths
+ * @param lengths point count for each subpath
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_vector_set_subpaths(
+    DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths);
 
 
 /**

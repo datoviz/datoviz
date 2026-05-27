@@ -25,7 +25,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_SCENE_QUERY_FAMILY_COUNT 13
+#define DVZ_SCENE_QUERY_FAMILY_COUNT 14
 
 
 
@@ -64,22 +64,24 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_registry_get(uint32_t index)
     case 3:
         return _dvz_scene_query_sphere_ops();
     case 4:
-        return _dvz_scene_query_segment_ops();
+        return _dvz_scene_query_vector_ops();
     case 5:
-        return _dvz_scene_query_path_ops();
+        return _dvz_scene_query_segment_ops();
     case 6:
-        return _dvz_scene_query_primitive_ops();
+        return _dvz_scene_query_path_ops();
     case 7:
-        return _dvz_scene_query_mesh_ops();
+        return _dvz_scene_query_primitive_ops();
     case 8:
-        return _dvz_scene_query_image_ops();
+        return _dvz_scene_query_mesh_ops();
     case 9:
-        return _dvz_scene_query_labels_ops();
+        return _dvz_scene_query_image_ops();
     case 10:
-        return _dvz_scene_query_volume_ops();
+        return _dvz_scene_query_labels_ops();
     case 11:
-        return _dvz_scene_query_text_ops();
+        return _dvz_scene_query_volume_ops();
     case 12:
+        return _dvz_scene_query_text_ops();
+    case 13:
         return _dvz_scene_query_glyph_ops();
     default:
         return NULL;

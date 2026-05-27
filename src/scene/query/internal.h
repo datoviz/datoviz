@@ -189,6 +189,8 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_marker_ops(void);
 
 const DvzSceneQueryFamilyOps* _dvz_scene_query_sphere_ops(void);
 
+const DvzSceneQueryFamilyOps* _dvz_scene_query_vector_ops(void);
+
 const DvzSceneQueryFamilyOps* _dvz_scene_query_segment_ops(void);
 
 const DvzSceneQueryFamilyOps* _dvz_scene_query_path_ops(void);

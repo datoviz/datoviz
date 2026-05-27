@@ -207,7 +207,7 @@ static const VisualFamilyAttrs FAMILY_ATTRS[] = {
     {DVZ_VISUAL_TYPE_SEGMENT, SEGMENT_ATTRS, DVZ_ARRAY_COUNT(SEGMENT_ATTRS),
      "position_start, position_end, color, stroke_width"},
     {DVZ_VISUAL_TYPE_VECTOR, VECTOR_ATTRS, DVZ_ARRAY_COUNT(VECTOR_ATTRS),
-     "position, vector, color, stroke_width"},
+     "position, optional vector, color, stroke_width"},
     {DVZ_VISUAL_TYPE_PATH, PATH_ATTRS, DVZ_ARRAY_COUNT(PATH_ATTRS),
      "position, color, stroke_width"},
     {DVZ_VISUAL_TYPE_IMAGE, IMAGE_ATTRS, DVZ_ARRAY_COUNT(IMAGE_ATTRS),

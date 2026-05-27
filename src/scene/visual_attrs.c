@@ -857,7 +857,8 @@ int dvz_visual_set_data(
     {
         visual->mesh_default_color = false;
     }
-    if (visual->type == DVZ_VISUAL_TYPE_PATH && strcmp(attr_name, "line_width") == 0)
+    if ((visual->type == DVZ_VISUAL_TYPE_PATH || visual->type == DVZ_VISUAL_TYPE_VECTOR) &&
+        strcmp(attr_name, "line_width") == 0)
         visual->material_params_dirty = true;
     _scene_notify_visual_changed(visual);
     return 0;
@@ -1175,7 +1176,7 @@ int dvz_visual_set_data_many(
             mesh_position_updated = true;
         if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(prepared[i].attr_name, "color") == 0)
             mesh_color_updated = true;
-        if (visual->type == DVZ_VISUAL_TYPE_PATH &&
+        if ((visual->type == DVZ_VISUAL_TYPE_PATH || visual->type == DVZ_VISUAL_TYPE_VECTOR) &&
             strcmp(prepared[i].attr_name, "line_width") == 0)
             path_line_width_updated = true;
     }

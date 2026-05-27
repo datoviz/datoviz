@@ -215,16 +215,38 @@ static bool _segment_query_geometry(
 
     const DvzVisualAttr* start_attr = NULL;
     const DvzVisualAttr* end_attr = NULL;
+    const DvzVisualAttr* position_attr = NULL;
+    const DvzVisualAttr* vector_attr = NULL;
     const DvzVisualAttr* width_attr = NULL;
-    if (!_segment_query_attr(visual, "position_start", sizeof(vec3), &start_attr) ||
-        !_segment_query_attr(visual, "position_end", sizeof(vec3), &end_attr) ||
-        !_segment_query_attr(visual, "line_width", sizeof(float), &width_attr))
+    bool vector_mode = visual->type == DVZ_VISUAL_TYPE_VECTOR;
+    if (vector_mode)
+    {
+        if (!_segment_query_attr(visual, "position", sizeof(vec3), &position_attr) ||
+            !_segment_query_attr(visual, "vector", sizeof(vec3), &vector_attr) ||
+            !_segment_query_attr(visual, "line_width", sizeof(float), &width_attr))
+        {
+            return false;
+        }
+    }
+    else
+    {
+        if (!_segment_query_attr(visual, "position_start", sizeof(vec3), &start_attr) ||
+            !_segment_query_attr(visual, "position_end", sizeof(vec3), &end_attr) ||
+            !_segment_query_attr(visual, "line_width", sizeof(float), &width_attr))
+        {
+            return false;
+        }
+    }
+    uint64_t item_count = vector_mode ? position_attr->item_count : start_attr->item_count;
+    if (vector_mode)
+    {
+        if (vector_attr->item_count != item_count || width_attr->item_count != item_count)
+            return false;
+    }
+    else if (end_attr->item_count != item_count || width_attr->item_count != item_count)
     {
         return false;
     }
-    uint64_t item_count = start_attr->item_count;
-    if (end_attr->item_count != item_count || width_attr->item_count != item_count)
-        return false;
 
     uint64_t vertex_count = 0;
     uint64_t index_count = 0;
@@ -246,20 +268,48 @@ static bool _segment_query_geometry(
         return false;
     }
 
-    const float* position_start = (const float*)start_attr->data;
-    const float* position_end = (const float*)end_attr->data;
+    const float* position_start = vector_mode ? NULL : (const float*)start_attr->data;
+    const float* position_end = vector_mode ? NULL : (const float*)end_attr->data;
+    const float* position = vector_mode ? (const float*)position_attr->data : NULL;
+    const float* vector = vector_mode ? (const float*)vector_attr->data : NULL;
     const float* line_width = (const float*)width_attr->data;
     for (uint64_t i = 0; i < item_count; i++)
     {
+        float vector_start[3] = {0};
+        float vector_end[3] = {0};
+        if (vector_mode)
+        {
+            float scale = visual->vector.scale;
+            float head_factor = 1.0f;
+            float tail_factor = 0.0f;
+            if (visual->vector.anchor == DVZ_VECTOR_ANCHOR_CENTER)
+            {
+                tail_factor = -0.5f;
+                head_factor = 0.5f;
+            }
+            else if (visual->vector.anchor == DVZ_VECTOR_ANCHOR_HEAD)
+            {
+                tail_factor = -1.0f;
+                head_factor = 0.0f;
+            }
+            for (uint32_t k = 0; k < 3; k++)
+            {
+                float delta = vector[3 * i + k] * scale;
+                vector_start[k] = position[3 * i + k] + tail_factor * delta;
+                vector_end[k] = position[3 * i + k] + head_factor * delta;
+            }
+        }
         for (uint32_t j = 0; j < 4; j++)
         {
             uint64_t dst = 4 * i + j;
+            const float* start = vector_mode ? vector_start : &position_start[3 * i];
+            const float* end = vector_mode ? vector_end : &position_end[3 * i];
             dvz_memcpy(
-                &scratch->query_position_start[3 * dst], 3 * sizeof(float),
-                &position_start[3 * i], 3 * sizeof(float));
+                &scratch->query_position_start[3 * dst], 3 * sizeof(float), start,
+                3 * sizeof(float));
             dvz_memcpy(
-                &scratch->query_position_end[3 * dst], 3 * sizeof(float),
-                &position_end[3 * i], 3 * sizeof(float));
+                &scratch->query_position_end[3 * dst], 3 * sizeof(float), end,
+                3 * sizeof(float));
             scratch->query_line_width[dst] = line_width[i];
             scratch->query_ids[dst] = (uint32_t)i + 1u;
         }
@@ -293,7 +343,16 @@ static bool _segment_query_eligible(
     ANN(visual);
     ANN(request);
     if (visual->type != DVZ_VISUAL_TYPE_SEGMENT)
-        return false;
+    {
+        if (visual->type != DVZ_VISUAL_TYPE_VECTOR)
+            return false;
+        int vector_idx = _attr_index(visual, "vector");
+        if (vector_idx < 0 || visual->attrs[vector_idx].data == NULL ||
+            visual->attrs[vector_idx].item_count == 0)
+        {
+            return false;
+        }
+    }
     if (request->target != DVZ_SCENE_TARGET_NONE && request->target != DVZ_SCENE_TARGET_ITEM &&
         request->target != DVZ_SCENE_TARGET_OBJECT &&
         request->target != DVZ_SCENE_TARGET_SEGMENT)
@@ -461,7 +520,9 @@ static bool _segment_query_decode(
     out_result->status = DVZ_QUERY_STATUS_HIT;
     out_result->hit = true;
     out_result->visual_id = _scene_visual_public_id(ctx->build->figure->scene, ctx->build->visual);
-    out_result->visual_family = DVZ_SCENE_VISUAL_FAMILY_SEGMENT;
+    out_result->visual_family = ctx->build->visual->type == DVZ_VISUAL_TYPE_VECTOR
+                                    ? DVZ_SCENE_VISUAL_FAMILY_VECTOR
+                                    : DVZ_SCENE_VISUAL_FAMILY_SEGMENT;
     out_result->payload_version = 1;
     out_result->raw_target = DVZ_SCENE_TARGET_ITEM;
     out_result->raw_id = item_id;

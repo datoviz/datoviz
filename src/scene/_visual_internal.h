@@ -34,6 +34,7 @@ bool _attr_is_instance_attribute(const char* name);
 uint32_t _attr_item_size(DvzVisualType type, const char* name);
 bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item_size);
 bool _attr_source_supported(DvzVisualType type, const char* name, DvzVisualAttrSource source);
+int _attr_index(const DvzVisual* visual, const char* name);
 bool _visual_data_update_contains_attr(
     DvzVisualType type, const DvzVisualDataUpdate* updates, uint32_t update_count,
     const char* attr_name);

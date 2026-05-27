@@ -139,7 +139,10 @@ bool _scene_visual_pass_caps_from_visual(
         kind = DVZ_SCENE_VISUAL_DESC_SEGMENT;
         break;
     case DVZ_VISUAL_TYPE_VECTOR:
-        kind = DVZ_SCENE_VISUAL_DESC_SEGMENT;
+        kind = !_scene_visual_has_dense_attr(visual, "vector") &&
+                       _scene_visual_has_dense_attr(visual, "line_width")
+                   ? DVZ_SCENE_VISUAL_DESC_PATH
+                   : DVZ_SCENE_VISUAL_DESC_SEGMENT;
         break;
     case DVZ_VISUAL_TYPE_PRIMITIVE:
     case DVZ_VISUAL_TYPE_MESH:
@@ -209,7 +212,9 @@ bool _scene_visual_pass_caps_from_visual(
     bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
                       kind == DVZ_SCENE_VISUAL_DESC_MARKER;
     bool stroked_path =
-        visual->type == DVZ_VISUAL_TYPE_PATH && _scene_visual_has_dense_attr(visual, "line_width");
+        (visual->type == DVZ_VISUAL_TYPE_PATH || visual->type == DVZ_VISUAL_TYPE_VECTOR) &&
+        _scene_visual_has_dense_attr(visual, "line_width") &&
+        (visual->type != DVZ_VISUAL_TYPE_VECTOR || !_scene_visual_has_dense_attr(visual, "vector"));
     bool has_material_resource =
         has_normals || visual->type == DVZ_VISUAL_TYPE_SEGMENT ||
         visual->type == DVZ_VISUAL_TYPE_VECTOR || stroked_path ||

@@ -614,6 +614,96 @@ int test_scene_vector_emit_glsl(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Verify curved vector visuals lower to the path stroke pipeline.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_vector_curved_emit_glsl(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzVisual* visual = dvz_vector(scene, 0);
+    AT(visual != NULL);
+
+    vec3 positions[5] = {
+        {-0.75f, -0.25f, 0.0f},
+        {-0.35f,  0.25f, 0.0f},
+        { 0.00f, -0.10f, 0.0f},
+        { 0.35f,  0.35f, 0.0f},
+        { 0.75f, -0.25f, 0.0f},
+    };
+    DvzColor colors[5] = {
+        {255, 0, 0, 255},
+        {255, 255, 0, 255},
+        {0, 255, 255, 255},
+        {0, 128, 255, 255},
+        {255, 255, 255, 255},
+    };
+    float stroke_widths[5] = {3.0f, 6.0f, 9.0f, 5.0f, 2.0f};
+    uint32_t subpaths[2] = {3, 2};
+
+    AT(dvz_visual_set_data(visual, "position", positions, 5) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 5) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width", stroke_widths, 5) == 0);
+    AT(dvz_vector_set_subpaths(visual, 2, subpaths) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool found_pipeline = false;
+    bool found_set_index = false;
+    bool found_draw_indexed = false;
+    uint32_t set_vertex_buffer_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+            if (label != NULL && strstr(label, "_pipe_pathg") == label)
+            {
+                found_pipeline = true;
+                AT(cmd->u.create_render_pipeline.binding_count == 7);
+                AT(cmd->u.create_render_pipeline.attr_count == 7);
+            }
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
+            set_vertex_buffer_count++;
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_INDEX_BUFFER)
+            found_set_index = strcmp(cmd->u.set_index_buffer.index_format, "uint32") == 0;
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
+            found_draw_indexed = cmd->u.draw_indexed.index_count == 18;
+    }
+
+    AT(found_pipeline);
+    AT(found_set_index);
+    AT(found_draw_indexed);
+    AT(set_vertex_buffer_count == 7);
+    AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneMaterialParams)) >= 1);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Verify the scene point visual backend lowering decision.

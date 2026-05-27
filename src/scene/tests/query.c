@@ -65,7 +65,8 @@ int test_scene_query_registry_covers_active_visual_families(TstContext* suite, c
     const DvzSceneVisualFamily families[] = {
         DVZ_SCENE_VISUAL_FAMILY_POINT,     DVZ_SCENE_VISUAL_FAMILY_PIXEL,
         DVZ_SCENE_VISUAL_FAMILY_MARKER,    DVZ_SCENE_VISUAL_FAMILY_SPHERE,
-        DVZ_SCENE_VISUAL_FAMILY_SEGMENT,   DVZ_SCENE_VISUAL_FAMILY_PATH,
+        DVZ_SCENE_VISUAL_FAMILY_VECTOR,    DVZ_SCENE_VISUAL_FAMILY_SEGMENT,
+        DVZ_SCENE_VISUAL_FAMILY_PATH,
         DVZ_SCENE_VISUAL_FAMILY_PRIMITIVE, DVZ_SCENE_VISUAL_FAMILY_MESH,
         DVZ_SCENE_VISUAL_FAMILY_IMAGE,     DVZ_SCENE_VISUAL_FAMILY_LABELS,
         DVZ_SCENE_VISUAL_FAMILY_VOLUME,    DVZ_SCENE_VISUAL_FAMILY_TEXT,
@@ -1369,6 +1370,191 @@ int test_scene_path_query_resolves_item(TstContext* suite, const TstCase* item)
     AT(query.request_id == 73);
     AT(query.status == DVZ_QUERY_STATUS_HIT);
     AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_PATH);
+    AT(query.resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(query.resolved_id == 1);
+    AT(query.item_id == 1);
+    AT(!dvz_scene_poll_query(scene, &query));
+
+    dvz_scene_destroy(scene);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
+/**
+ * Ensure native straight-vector queries resolve vector identity.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_vector_query_resolves_straight_item(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* vector = dvz_vector(scene, 0);
+    ANN(vector);
+    dvz_visual_set_query_capabilities(vector, DVZ_QUERY_CAPABILITY_ITEM);
+    vec3 position[2] = {
+        {-0.75f, -0.5f, 0.0f},
+        {-0.75f, 0.0f, 0.0f},
+    };
+    vec3 displacement[2] = {
+        {1.5f, 0.0f, 0.0f},
+        {1.5f, 0.0f, 0.0f},
+    };
+    DvzColor color[2] = {
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+    };
+    float width[2] = {12.0f, 12.0f};
+    AT(dvz_visual_set_data(vector, "position", position, 2) == 0);
+    AT(dvz_visual_set_data(vector, "vector", displacement, 2) == 0);
+    AT(dvz_visual_set_data(vector, "color", color, 2) == 0);
+    AT(dvz_visual_set_data(vector, "stroke_width", width, 2) == 0);
+    DvzVectorStyle style = dvz_vector_style();
+    style.start_cap = DVZ_SEGMENT_CAP_BUTT;
+    style.end_cap = DVZ_SEGMENT_CAP_BUTT;
+    AT(dvz_vector_set_style(vector, &style) == 0);
+    AT(dvz_panel_add_visual(panel, vector, NULL) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    AT(dvz_panel_query(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){.request_id = 75, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+    AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+
+    DvzQueryResult query = {0};
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.hit);
+    AT(query.request_id == 75);
+    AT(query.status == DVZ_QUERY_STATUS_HIT);
+    AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_VECTOR);
+    AT(query.resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(query.resolved_id == 1);
+    AT(query.item_id == 1);
+    AT(!dvz_scene_poll_query(scene, &query));
+
+    dvz_scene_destroy(scene);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
+/**
+ * Ensure native curved-vector queries resolve vector identity.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_vector_query_resolves_curved_item(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* vector = dvz_vector(scene, 0);
+    ANN(vector);
+    dvz_visual_set_query_capabilities(vector, DVZ_QUERY_CAPABILITY_ITEM);
+    vec3 position[3] = {
+        {-0.75f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 0.0f},
+        {0.75f, 0.0f, 0.0f},
+    };
+    DvzColor color[3] = {
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+    };
+    float width[3] = {12.0f, 12.0f, 12.0f};
+    uint32_t subpaths[1] = {3};
+    AT(dvz_visual_set_data(vector, "position", position, 3) == 0);
+    AT(dvz_visual_set_data(vector, "color", color, 3) == 0);
+    AT(dvz_visual_set_data(vector, "stroke_width", width, 3) == 0);
+    AT(dvz_vector_set_subpaths(vector, 1, subpaths) == 0);
+    DvzVectorStyle style = dvz_vector_style();
+    style.start_cap = DVZ_SEGMENT_CAP_BUTT;
+    style.end_cap = DVZ_SEGMENT_CAP_BUTT;
+    AT(dvz_vector_set_style(vector, &style) == 0);
+    AT(dvz_panel_add_visual(panel, vector, NULL) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    AT(dvz_panel_query(
+           panel, 48.0, 32.0,
+           &(DvzQueryRequest){.request_id = 77, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+    AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+
+    DvzQueryResult query = {0};
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.hit);
+    AT(query.request_id == 77);
+    AT(query.status == DVZ_QUERY_STATUS_HIT);
+    AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_VECTOR);
     AT(query.resolved_target == DVZ_SCENE_TARGET_ITEM);
     AT(query.resolved_id == 1);
     AT(query.item_id == 1);
@@ -2985,6 +3171,8 @@ int test_scene_query(TstSuite* suite)
     TST_SCENE_QUERY_GPU_CASE(test_scene_sphere_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_segment_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_path_query_resolves_item);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_vector_query_resolves_straight_item);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_vector_query_resolves_curved_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_primitive_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_mesh_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_resolves_item);

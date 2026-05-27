@@ -188,8 +188,11 @@ bool _scene_visual_frame_plan_metadata(
             figure, visual, visual_index, "selection", metadata->selection_id,
             sizeof(metadata->selection_id)))
         return false;
-    if (visual->type == DVZ_VISUAL_TYPE_PATH &&
-        _scene_visual_has_attr_data(visual, "line_width"))
+    bool vector_path_mode =
+        visual->type == DVZ_VISUAL_TYPE_VECTOR && !_scene_visual_has_attr_data(visual, "vector") &&
+        _scene_visual_has_attr_data(visual, "line_width");
+    if ((visual->type == DVZ_VISUAL_TYPE_PATH && _scene_visual_has_attr_data(visual, "line_width")) ||
+        vector_path_mode)
     {
         if (!_scene_visual_attr_resource_key(
                 figure, visual, visual_index, "path_flags", metadata->path_flags_id,
@@ -225,7 +228,16 @@ bool _scene_visual_frame_plan_metadata(
                 figure, visual, visual_index, "index", metadata->index_id,
                 sizeof(metadata->index_id)))
             return false;
-        if (visual->type == DVZ_VISUAL_TYPE_SEGMENT || visual->type == DVZ_VISUAL_TYPE_VECTOR)
+        if (visual->type == DVZ_VISUAL_TYPE_VECTOR && vector_path_mode)
+        {
+            if (visual->path.gpu.vertex_count > UINT32_MAX ||
+                visual->path.gpu.index_count > UINT32_MAX)
+                return false;
+            metadata->vertex_count = (uint32_t)visual->path.gpu.vertex_count;
+            metadata->index_count = (uint32_t)visual->path.gpu.index_count;
+        }
+        else if (visual->type == DVZ_VISUAL_TYPE_SEGMENT ||
+                 visual->type == DVZ_VISUAL_TYPE_VECTOR)
         {
             if (visual->segment.gpu.vertex_count > UINT32_MAX ||
                 visual->segment.gpu.index_count > UINT32_MAX)
