@@ -27,3 +27,12 @@ def test_raw_ctypes_import_time_and_scene_smoke():
         cwd=ROOT_DIR,
         check=True,
     )
+
+
+@pytest.mark.skipif(not _library_exists(), reason='libdatoviz has not been built')
+def test_raw_ctypes_offscreen_render_smoke():
+    subprocess.run(
+        [sys.executable, 'tools/bindings/ctypes_render_smoke.py'],
+        cwd=ROOT_DIR,
+        check=True,
+    )
