@@ -457,6 +457,7 @@ static bool _query_process_pending(
         return true;
     }
 
+    bool native_attempted = false;
     for (int32_t i = (int32_t)pending->panel->visual_count - 1; i >= 0; i--)
     {
         DvzVisual* visual = pending->panel->visuals[i].visual;
@@ -468,6 +469,7 @@ static bool _query_process_pending(
             _query_family_ops_for_visual(pending->panel, visual, &pending->request);
         if (ops == NULL || ops->build == NULL || ops->decode == NULL)
             continue;
+        native_attempted = true;
         if (_dvz_scene_query_execute_family(
                 figure, runtime, executor, caps, pending, request_ndc, out_result->profile,
                 visual, ops, out_result))
@@ -482,6 +484,13 @@ static bool _query_process_pending(
     if (visual == NULL)
     {
         out_result->status = DVZ_QUERY_STATUS_NO_CAPABLE_VISUAL;
+        return true;
+    }
+
+    if (native_attempted)
+    {
+        out_result->visual_id = _scene_visual_public_id(figure->scene, visual);
+        out_result->status = DVZ_QUERY_STATUS_MISS;
         return true;
     }
 
@@ -500,17 +509,6 @@ static bool _query_process_pending(
         if (_scene_query_execute_probe_legacy(figure, runtime, executor, caps, pending, &probe))
         {
             _dvz_scene_query_from_probe(&probe, out_result);
-            out_result->freshness_serial = pending->freshness_serial;
-            out_result->profile = _query_select_profile(&pending->request, caps);
-            return true;
-        }
-    }
-    else
-    {
-        DvzPickResult pick = {0};
-        if (_scene_query_execute_pick_legacy(figure, runtime, executor, caps, pending, &pick))
-        {
-            _dvz_scene_query_from_pick(&pick, out_result);
             out_result->freshness_serial = pending->freshness_serial;
             out_result->profile = _query_select_profile(&pending->request, caps);
             return true;

@@ -778,6 +778,8 @@ int test_scene_query_queue_coalesces_pending_requests(TstContext* suite, const T
 int test_scene_query_volume_sample_is_explicitly_unsupported(
     TstContext* suite, const TstCase* item);
 
+int test_scene_point_query_misses_empty_pixel(TstContext* suite, const TstCase* item);
+
 int test_scene_pixel_query_accepts_square_corner(TstContext* suite, const TstCase* item);
 
 int test_scene_marker_query_accepts_bbox_corner(TstContext* suite, const TstCase* item);
