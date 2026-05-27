@@ -33,8 +33,10 @@
 #include "datoviz/app.h"
 #include "datoviz/fileio.h"
 #include "datoviz/geom.h"
+#include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "tools/example_gui_controls.h"
 
 
 
@@ -53,7 +55,29 @@
 #define SPHERE_SECTORS 96
 #define SPHERE_RINGS 48
 
-#define ROTATION_SPEED_RAD_PER_SEC 0.32f
+#define ROTATION_SPEED_RAD_PER_SEC 0.16f
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct TexturedMeshState
+{
+    DvzVisual* visual;
+    DvzAnimation* spin;
+    bool auto_rotate;
+    bool standard_material;
+    float spin_speed;
+    float light_direction[3];
+    float ambient;
+    float diffuse;
+    float specular;
+    float shininess;
+    float roughness;
+    float rim_strength;
+} TexturedMeshState;
 
 
 
@@ -205,6 +229,146 @@ static uint8_t* _load_earth_texture(uint32_t* width, uint32_t* height)
 
 
 
+/**
+ * Reset GUI-controlled animation and material parameters.
+ *
+ * @param state example state
+ */
+static void _state_reset_controls(TexturedMeshState* state)
+{
+    ANN(state);
+
+    state->auto_rotate = true;
+    state->standard_material = false;
+    state->spin_speed = ROTATION_SPEED_RAD_PER_SEC;
+    state->light_direction[0] = 0.25f;
+    state->light_direction[1] = -0.55f;
+    state->light_direction[2] = 0.80f;
+    state->ambient = 0.28f;
+    state->diffuse = 0.86f;
+    state->specular = 0.18f;
+    state->shininess = 36.0f;
+    state->roughness = 0.58f;
+    state->rim_strength = 0.08f;
+}
+
+
+
+/**
+ * Apply GUI-controlled material parameters to the textured mesh.
+ *
+ * @param state example state
+ */
+static void _state_apply_material(TexturedMeshState* state)
+{
+    ANN(state);
+    if (state->visual == NULL)
+        return;
+
+    DvzMaterialDesc material =
+        state->standard_material ? dvz_standard_material_desc() : dvz_phong_material_desc();
+    material.light_direction[0] = state->light_direction[0];
+    material.light_direction[1] = state->light_direction[1];
+    material.light_direction[2] = state->light_direction[2];
+    if (state->standard_material)
+    {
+        material.standard.roughness = state->roughness;
+        material.standard.specular = state->specular;
+        material.standard.rim_strength = state->rim_strength;
+    }
+    else
+    {
+        material.phong.ambient = state->ambient;
+        material.phong.diffuse = state->diffuse;
+        material.phong.specular = state->specular;
+        material.phong.shininess = state->shininess;
+    }
+    (void)dvz_visual_set_material(state->visual, &material);
+}
+
+
+
+/**
+ * Apply GUI-controlled animation speed to the spin animation.
+ *
+ * @param state example state
+ */
+static void _state_apply_spin(TexturedMeshState* state)
+{
+    ANN(state);
+    if (state->spin == NULL)
+        return;
+
+    const float speed = state->auto_rotate ? state->spin_speed : 0.0f;
+    dvz_anim_set_speed(state->spin, speed);
+}
+
+
+
+/**
+ * Build live GUI controls for the textured mesh example.
+ *
+ * @param gui GUI overlay
+ * @param win view
+ * @param user_data example state
+ */
+static void _textured_mesh_gui(DvzGui* gui, DvzView* win, void* user_data)
+{
+    (void)win;
+    TexturedMeshState* state = (TexturedMeshState*)user_data;
+    if (state == NULL)
+        return;
+
+    bool material_changed = false;
+    bool spin_changed = false;
+    bool reset = false;
+
+    if (dvz_gui_begin(gui, "Textured Mesh", NULL, 0))
+    {
+        dvz_gui_separator_text(gui, "Animation");
+        spin_changed |= dvz_gui_checkbox(gui, "Auto rotate", &state->auto_rotate);
+        spin_changed |= dvz_gui_slider_float_format(
+            gui, "Rotation speed", &state->spin_speed, 0.0f, 0.8f, "%.2f rad/s");
+
+        dvz_gui_separator_text(gui, "Lighting");
+        material_changed |=
+            dvz_gui_slider_float3(gui, "Light direction", state->light_direction, -1.0f, 1.0f);
+        DvzExampleGuiMaterialControls material = {
+            .standard_material = state->standard_material,
+            .ambient = state->ambient,
+            .diffuse = state->diffuse,
+            .specular = state->specular,
+            .shininess = state->shininess,
+            .roughness = state->roughness,
+            .rim_strength = state->rim_strength,
+        };
+        material_changed |= dvz_example_gui_material(gui, &material);
+        state->standard_material = material.standard_material;
+        state->ambient = material.ambient;
+        state->diffuse = material.diffuse;
+        state->specular = material.specular;
+        state->shininess = material.shininess;
+        state->roughness = material.roughness;
+        state->rim_strength = material.rim_strength;
+
+        reset = dvz_gui_button(gui, "Reset");
+    }
+    dvz_gui_end(gui);
+
+    if (reset)
+    {
+        _state_reset_controls(state);
+        material_changed = true;
+        spin_changed = true;
+    }
+    if (material_changed)
+        _state_apply_material(state);
+    if (spin_changed)
+        _state_apply_spin(state);
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -222,6 +386,8 @@ int main(int argc, char** argv)
     uint8_t* pixels = NULL;
     uint32_t texture_width = 0;
     uint32_t texture_height = 0;
+    TexturedMeshState gui_state = {0};
+    _state_reset_controls(&gui_state);
 
     pixels = _load_earth_texture(&texture_width, &texture_height);
     if (pixels == NULL)
@@ -243,8 +409,11 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[2] = 3.0f;
-    camera_desc.up[1] = 1.0f;
+    camera_desc.eye[0] = 0.0f;
+    camera_desc.eye[1] = -3.0f;
+    camera_desc.eye[2] = 0.0f;
+    camera_desc.up[1] = 0.0f;
+    camera_desc.up[2] = 1.0f;
     camera_desc.fov_y = 0.72f;
     camera_desc.near = 0.05f;
     camera_desc.far = 100.0f;
@@ -262,6 +431,7 @@ int main(int argc, char** argv)
 
     DvzVisual* visual = dvz_mesh(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");
+    gui_state.visual = visual;
 
     ok = example_mesh_geometry(visual, sphere);
     EXAMPLE_CHECK(ok, "example_mesh_geometry() failed");
@@ -289,6 +459,7 @@ int main(int argc, char** argv)
 
     ok = dvz_visual_set_field(visual, "texture", texture);
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(texture) failed");
+    _state_apply_material(&gui_state);
 
     int rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
@@ -300,9 +471,14 @@ int main(int argc, char** argv)
     DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "textured mesh");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
+    DvzGuiConfig gui_config = dvz_gui_config();
+    DvzGui* gui = dvz_view_gui(win, &gui_config);
+    EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
+    dvz_view_set_gui_callback(win, _textured_mesh_gui, &gui_state);
+
     DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
-    dvz_arcball_set(arcball, (vec3){+0.55f, 0.0f, +0.25f});
+    dvz_arcball_set(arcball, (vec3){0.0f, 0.0f, +0.25f});
 
     dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
@@ -311,9 +487,10 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(rc == 0, "dvz_view_capture_start() failed");
 
     DvzAnimation* spin = dvz_anim_arcball_spin(
-        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+        scene, arcball, (vec3){0.0f, 0.0f, 1.0f}, gui_state.spin_speed,
         DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
     EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
+    gui_state.spin = spin;
     dvz_anim_start(spin, 0.0);
 
     dvz_app_run(app, frame_count);
