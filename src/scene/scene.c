@@ -492,8 +492,6 @@ static bool _scene_panel_has_pending_adornment_work(const DvzPanel* panel);
 
 static bool _scene_panel_has_pending_visual_work(const DvzPanel* panel);
 
-static bool _scene_visual_has_attr_data(const DvzVisual* visual, const char* attr_name);
-
 static bool _scene_visual_dirty_material_emits_upload(const DvzVisual* visual);
 
 /**
