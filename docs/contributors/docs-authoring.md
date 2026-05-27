@@ -24,9 +24,8 @@ Use these mechanisms before considering a custom site:
 5. Small JavaScript only for progressive enhancement; screenshots, links, text, and run commands
    should remain useful without it.
 
-Keep durable gallery design rules in
-`spec/scene/examples/GALLERY_VISUAL_IDENTITY.md`. Keep example ownership, scenario IDs, lanes, and
-metadata rules in `spec/scene/examples/EXAMPLE_ORGANIZATION.md`.
+Keep durable gallery design rules in `spec/scene/examples/STYLE.md`. Keep example ownership,
+scenario IDs, lanes, and metadata rules in `spec/scene/examples/ORGANIZATION.md`.
 
 Material's `attr_list` and `md_in_html` extensions are already enabled, so pages can use blocks like
 this:
