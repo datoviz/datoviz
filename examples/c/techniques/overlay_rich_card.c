@@ -212,6 +212,7 @@ static bool _add_probe_field(
     rc = dvz_visual_set_texture(field, pixels, FIELD_WIDTH, FIELD_HEIGHT);
     if (rc != 0)
         return false;
+    dvz_visual_set_pick_capabilities(field, DVZ_PICK_CAPABILITY_PIXEL);
     rc = dvz_panel_add_visual(panel, field, &(DvzVisualAttachDesc){.z_layer = -1});
     return rc == 0;
 }
@@ -280,34 +281,34 @@ static const char* _probe_response_label(double intensity)
 
 
 /**
- * Return whether a live probe result differs from the last displayed result.
+ * Return whether a live query result differs from the last displayed result.
  *
  * @param state live probe state
- * @param probe probe result to compare
+ * @param query query result to compare
  * @return true when the card should be refreshed
  */
-static bool _probe_changed(const LiveProbeState* state, const DvzProbeResult* probe)
+static bool _query_changed(const LiveProbeState* state, const DvzQueryResult* query)
 {
-    if (state == NULL || probe == NULL)
+    if (state == NULL || query == NULL)
         return false;
-    if (!state->has_last_result || state->last_hit != probe->hit)
+    if (!state->has_last_result || state->last_hit != query->hit)
         return true;
 
     for (uint32_t i = 0; i < 2; i++)
     {
-        double delta = probe->panel_position[i] - state->last_panel_position[i];
+        double delta = query->panel_position[i] - state->last_panel_position[i];
         if (delta < 0.0)
             delta = -delta;
         if (delta >= 0.5)
             return true;
     }
 
-    if (!probe->hit)
+    if (!query->hit)
         return false;
 
     for (uint32_t i = 0; i < 4; i++)
     {
-        double delta = probe->vector[i] - state->last_rgba[i];
+        double delta = query->vector[i] - state->last_rgba[i];
         if (delta < 0.0)
             delta = -delta;
         if (delta >= (1.0 / 255.0))
@@ -318,22 +319,22 @@ static bool _probe_changed(const LiveProbeState* state, const DvzProbeResult* pr
 
 
 /**
- * Store the last rich-card probe result.
+ * Store the last rich-card query result.
  *
  * @param state live probe state
- * @param probe probe result to store
+ * @param query query result to store
  */
-static void _store_probe_result(LiveProbeState* state, const DvzProbeResult* probe)
+static void _store_query_result(LiveProbeState* state, const DvzQueryResult* query)
 {
-    if (state == NULL || probe == NULL)
+    if (state == NULL || query == NULL)
         return;
 
     state->has_last_result = true;
-    state->last_hit = probe->hit;
-    state->last_panel_position[0] = probe->panel_position[0];
-    state->last_panel_position[1] = probe->panel_position[1];
+    state->last_hit = query->hit;
+    state->last_panel_position[0] = query->panel_position[0];
+    state->last_panel_position[1] = query->panel_position[1];
     for (uint32_t i = 0; i < 4; i++)
-        state->last_rgba[i] = probe->vector[i];
+        state->last_rgba[i] = query->vector[i];
 }
 
 
@@ -394,33 +395,36 @@ static int _set_probe_card_rich_text(DvzOverlayCard* card, const char* source)
 
 
 /**
- * Update the rich overlay card from one resolved GPU image probe result.
+ * Update the rich overlay card from one resolved GPU image query result.
  *
  * @param state live probe state
- * @param probe resolved probe result
+ * @param query resolved query result
  */
-static void _update_probe_card_from_result(LiveProbeState* state, const DvzProbeResult* probe)
+static void _update_probe_card_from_result(LiveProbeState* state, const DvzQueryResult* query)
 {
-    if (state == NULL || state->rich == NULL || probe == NULL)
+    if (state == NULL || state->rich == NULL || query == NULL)
         return;
 
     char source[512] = {0};
     int n = 0;
-    if (probe->hit && probe->value_kind == DVZ_PROBE_VALUE_VEC4)
+    if (
+        query->status == DVZ_QUERY_STATUS_HIT && query->hit &&
+        query->value_kind == DVZ_QUERY_VALUE_VEC4)
     {
-        uint32_t r = _probe_channel_byte(probe->vector[0]);
-        uint32_t g = _probe_channel_byte(probe->vector[1]);
-        uint32_t b = _probe_channel_byte(probe->vector[2]);
-        uint32_t a = _probe_channel_byte(probe->vector[3]);
-        double intensity = (0.2126 * probe->vector[0]) + (0.7152 * probe->vector[1]) +
-                           (0.0722 * probe->vector[2]);
+        uint32_t r = _probe_channel_byte(query->vector[0]);
+        uint32_t g = _probe_channel_byte(query->vector[1]);
+        uint32_t b = _probe_channel_byte(query->vector[2]);
+        uint32_t a = _probe_channel_byte(query->vector[3]);
+        double intensity = (0.2126 * query->vector[0]) + (0.7152 * query->vector[1]) +
+                           (0.0722 * query->vector[2]);
         const char* response = _probe_response_label(intensity);
         n = dvz_snprintf(
             source, sizeof(source),
             "<b>Live image probe</b> at x=%0.0f y=%0.0f. "
             "<u>GPU RGBA(%u,%u,%u,%u)</u> gives intensity %.2f, with "
             "<color=#F7BB54>%s response</color> from the image visual.",
-            probe->panel_position[0], probe->panel_position[1], r, g, b, a, intensity, response);
+            query->panel_position[0], query->panel_position[1], r, g, b, a, intensity,
+            response);
     }
     else
     {
@@ -428,14 +432,14 @@ static void _update_probe_card_from_result(LiveProbeState* state, const DvzProbe
             source, sizeof(source),
             "<b>Live image probe</b> at x=%0.0f y=%0.0f. "
             "<color=#E0567A>No image sample</color> under the cursor.",
-            probe->panel_position[0], probe->panel_position[1]);
+            query->panel_position[0], query->panel_position[1]);
     }
     if (n <= 0 || (size_t)n >= sizeof(source))
         return;
 
     int rc = _set_probe_card_rich_text(state->rich, source);
     if (rc == 0)
-        _store_probe_result(state, probe);
+        _store_query_result(state, query);
 }
 
 
@@ -468,7 +472,7 @@ _overlay_probe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, voi
 
 
 /**
- * Poll resolved probe results and queue the next cursor probe.
+ * Poll resolved query results and queue the next cursor query.
  *
  * @param win view whose frame just completed
  * @param user_data live probe state
@@ -480,11 +484,11 @@ static void _overlay_probe_frame(DvzView* win, void* user_data)
     if (state == NULL)
         return;
 
-    DvzProbeResult probe = {0};
-    while (dvz_scene_poll_probe(state->scene, &probe))
+    DvzQueryResult query = {0};
+    while (dvz_scene_poll_query(state->scene, &query))
     {
-        if (_probe_changed(state, &probe))
-            _update_probe_card_from_result(state, &probe);
+        if (_query_changed(state, &query))
+            _update_probe_card_from_result(state, &query);
     }
 
     if (!state->cursor_valid)
@@ -496,14 +500,14 @@ static void _overlay_probe_frame(DvzView* win, void* user_data)
         return;
 
     state->request_id++;
-    int rc = dvz_panel_probe(
+    int rc = dvz_panel_query(
         state->panel, panel_x, panel_y,
-        &(DvzProbeRequest){
+        &(DvzQueryRequest){
             .request_id = state->request_id,
             .target = DVZ_SCENE_TARGET_PIXEL,
         });
     if (rc != 0)
-        dvz_fprintf(stderr, "dvz_panel_probe() failed\n");
+        dvz_fprintf(stderr, "dvz_panel_query() failed\n");
 }
 
 
