@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "wheel", "tqdm", "pyparsing"]
+requires = ["setuptools", "wheel", "tqdm", "pyparsing", "libclang"]
 build-backend = "setuptools.build_meta"
 
 [project]

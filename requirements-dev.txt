@@ -1,5 +1,6 @@
 imageio
 jsonschema
+libclang
 matplotlib
 mkdocs-material
 mkdocstrings[python]

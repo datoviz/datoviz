@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract Datoviz public C API metadata with clang's JSON AST dump."""
+"""Extract Datoviz public C API metadata with libclang."""
 
 from __future__ import annotations
 
@@ -11,6 +11,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 from typing import Any
+
+from clang import cindex
 
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
@@ -53,6 +55,8 @@ DEFINES = [
     'VK_NO_PROTOTYPES',
 ]
 
+IDENTIFIER_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+
 
 def _run(cmd: list[str], *, cwd: Path, stdout: Any = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
@@ -73,197 +77,174 @@ def _clang_version(clang: str) -> str:
     return result.stdout.splitlines()[0] if result.stdout else ''
 
 
-def _location(node: dict[str, Any]) -> dict[str, Any]:
-    loc = node.get('loc') or {}
-    rng = node.get('range') or {}
-    begin = rng.get('begin') or {}
-    end = rng.get('end') or {}
-    expansion = begin.get('expansionLoc') or {}
-    spelling = begin.get('spellingLoc') or {}
-    loc_parent = loc.get('includedFrom') or {}
-    begin_parent = begin.get('includedFrom') or {}
-    end_parent = end.get('includedFrom') or {}
-    file = (
-        loc.get('file')
-        or expansion.get('file')
-        or spelling.get('file')
-        or loc_parent.get('file')
-        or begin_parent.get('file')
-        or end_parent.get('file')
-    )
-    line = loc.get('line') or expansion.get('line') or spelling.get('line') or begin.get('line')
-    col = loc.get('col') or expansion.get('col') or spelling.get('col') or begin.get('col')
-    return {'file': file, 'line': line, 'column': col}
+def _clang_runtime_version() -> str:
+    try:
+        return str(cindex.conf.lib.clang_getClangVersion())
+    except Exception:
+        return ''
 
 
-def _is_public_location(node: dict[str, Any]) -> bool:
-    file = _location(node).get('file') or ''
-    return file.startswith('include/datoviz/') or '/include/datoviz/' in file
+def _optional_cmd_output(cmd: list[str]) -> str | None:
+    try:
+        return subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
 
 
-def _walk(node: dict[str, Any]):
-    yield node
-    for child in node.get('inner') or []:
-        yield from _walk(child)
+def _compile_args(clang: str) -> list[str]:
+    args = ['-x', 'c', '-std=c11']
+    if platform.system() == 'Darwin':
+        sdk = _optional_cmd_output(['xcrun', '--show-sdk-path'])
+        if sdk:
+            args.extend(['-isysroot', sdk])
+        resource_dir = _optional_cmd_output([clang, '-print-resource-dir'])
+        if resource_dir:
+            args.extend(['-resource-dir', resource_dir])
+    args.extend(f'-I{path}' for path in INCLUDE_DIRS)
+    args.extend(f'-D{name}' for name in DEFINES)
+    return args
 
 
-def _comment_text(node: dict[str, Any]) -> str:
-    parts: list[str] = []
-
-    def visit(comment: dict[str, Any]) -> None:
-        if comment.get('kind') == 'TextComment':
-            text = comment.get('text', '').strip()
-            if text:
-                parts.append(text)
-        for child in comment.get('inner') or []:
-            visit(child)
-
-    for child in node.get('inner') or []:
-        if child.get('kind') == 'FullComment':
-            visit(child)
-            break
-    return ' '.join(parts)
+def _display_path(path: str | None) -> str | None:
+    if not path:
+        return None
+    resolved = Path(path).resolve()
+    try:
+        return str(resolved.relative_to(ROOT_DIR))
+    except ValueError:
+        return str(resolved)
 
 
-def _constant_value(node: dict[str, Any]) -> int | None:
-    for child in _walk(node):
-        value = child.get('value')
-        if value is None:
-            continue
-        try:
-            return int(value, 0)
-        except ValueError:
-            continue
-    return None
+def _location(cursor: cindex.Cursor) -> dict[str, Any]:
+    file = cursor.location.file
+    return {
+        'file': _display_path(file.name if file else None),
+        'line': cursor.location.line or None,
+        'column': cursor.location.column or None,
+    }
 
 
-def _type_info(type_node: dict[str, Any] | None) -> dict[str, Any]:
-    type_node = type_node or {}
-    qual = type_node.get('qualType', '')
-    info = {'qualtype': qual}
-    if type_node.get('desugaredQualType'):
-        info['desugared'] = type_node['desugaredQualType']
-    if type_node.get('typeAliasDeclId'):
-        info['type_alias_id'] = type_node['typeAliasDeclId']
+def _is_public_location(cursor: cindex.Cursor) -> bool:
+    file = _location(cursor).get('file') or ''
+    return file.startswith('include/datoviz/')
+
+
+def _type_info(type_: cindex.Type) -> dict[str, Any]:
+    info = {'qualtype': type_.spelling}
+    canonical = type_.get_canonical().spelling
+    if canonical and canonical != type_.spelling:
+        info['canonical'] = canonical
+    if type_.kind == cindex.TypeKind.CONSTANTARRAY:
+        info['array_size'] = type_.get_array_size()
+        info['element_type'] = type_.get_array_element_type().spelling
     return info
 
 
-def _result_type(function_node: dict[str, Any]) -> dict[str, Any]:
-    qual = function_node.get('type', {}).get('qualType', '')
-    match = re.match(r'^(?P<result>.+?)\s*\(', qual)
-    if match:
-        return {'qualtype': match.group('result').strip()}
-    return {'qualtype': ''}
+def _is_identifier(name: str) -> bool:
+    return bool(IDENTIFIER_RE.match(name))
 
 
-def _parameters(function_node: dict[str, Any]) -> list[dict[str, Any]]:
+def _result_type(cursor: cindex.Cursor) -> dict[str, Any]:
+    return _type_info(cursor.result_type)
+
+
+def _parameters(cursor: cindex.Cursor) -> list[dict[str, Any]]:
     out = []
-    for child in function_node.get('inner') or []:
-        if child.get('kind') != 'ParmVarDecl':
-            continue
-        loc = _location(child)
+    for arg in cursor.get_arguments():
         out.append(
             {
-                'name': child.get('name', ''),
-                'type': _type_info(child.get('type')),
-                'location': loc,
+                'name': arg.spelling,
+                'type': _type_info(arg.type),
+                'location': _location(arg),
             }
         )
     return out
 
 
-def _is_exported_function(function_node: dict[str, Any]) -> bool:
-    if function_node.get('storageClass') == 'static':
+def _is_exported_function(cursor: cindex.Cursor) -> bool:
+    if cursor.storage_class == cindex.StorageClass.STATIC:
         return False
-    for child in function_node.get('inner') or []:
-        if child.get('kind') == 'VisibilityAttr' and child.get('visibility') == 'default':
-            return True
-    return False
+    return cursor.linkage == cindex.LinkageKind.EXTERNAL
 
 
-def _extract_ast(ast: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+def _extract_translation_unit(tu: cindex.TranslationUnit) -> dict[str, list[dict[str, Any]]]:
     functions: dict[str, dict[str, Any]] = {}
     records: dict[str, dict[str, Any]] = {}
     typedefs: dict[str, dict[str, Any]] = {}
-    enums_by_id: dict[str, dict[str, Any]] = {}
-    enum_names_by_id: dict[str, str] = {}
+    enums: dict[str, dict[str, Any]] = {}
 
-    for node in _walk(ast):
-        if not _is_public_location(node):
+    for cursor in tu.cursor.walk_preorder():
+        if not _is_public_location(cursor):
             continue
-        kind = node.get('kind')
-        loc = _location(node)
 
-        if kind == 'TypedefDecl':
-            name = node.get('name', '')
+        kind = cursor.kind
+        loc = _location(cursor)
+
+        if kind == cindex.CursorKind.TYPEDEF_DECL:
+            name = cursor.spelling
             if not name:
                 continue
             typedefs[name] = {
                 'name': name,
-                'type': _type_info(node.get('type')),
+                'type': _type_info(cursor.underlying_typedef_type),
                 'location': loc,
             }
-            for child in node.get('inner') or []:
-                owned = child.get('ownedTagDecl') or {}
-                if owned.get('kind') == 'EnumDecl':
-                    enum_names_by_id[owned.get('id', '')] = name
-                elif owned.get('kind') == 'RecordDecl':
-                    record_name = owned.get('name') or name
-                    records.setdefault(
-                        record_name,
-                        {
-                            'name': record_name,
-                            'kind': 'struct',
-                            'opaque': True,
-                            'location': loc,
-                            'fields': [],
-                        },
-                    )
+            if cursor.underlying_typedef_type.kind == cindex.TypeKind.RECORD:
+                records.setdefault(
+                    name,
+                    {
+                        'name': name,
+                        'kind': 'struct',
+                        'opaque': True,
+                        'location': loc,
+                        'fields': [],
+                    },
+                )
 
-        elif kind == 'EnumDecl':
+        elif kind == cindex.CursorKind.ENUM_DECL:
+            name = cursor.spelling
+            if not name:
+                continue
             values = []
-            next_value = 0
-            for child in node.get('inner') or []:
-                if child.get('kind') != 'EnumConstantDecl':
+            for child in cursor.get_children():
+                if child.kind != cindex.CursorKind.ENUM_CONSTANT_DECL:
                     continue
-                value = _constant_value(child)
-                if value is None:
-                    value = next_value
                 values.append(
                     {
-                        'name': child.get('name', ''),
-                        'value': value,
+                        'name': child.spelling,
+                        'value': child.enum_value,
                         'location': _location(child),
                     }
                 )
-                next_value = value + 1
             if values:
-                enums_by_id[node.get('id', '')] = {
-                    'name': node.get('name', ''),
+                enums[name] = {
+                    'name': name,
                     'location': loc,
                     'values': values,
                 }
 
-        elif kind == 'RecordDecl':
-            name = node.get('name', '')
-            if not name:
+        elif kind in (cindex.CursorKind.STRUCT_DECL, cindex.CursorKind.UNION_DECL):
+            name = cursor.spelling
+            if not name or not _is_identifier(name):
                 continue
-            record = {
+            is_definition = cursor.is_definition()
+            tag = 'union' if kind == cindex.CursorKind.UNION_DECL else 'struct'
+            record: dict[str, Any] = {
                 'name': name,
-                'kind': node.get('tagUsed', 'struct'),
-                'opaque': not bool(node.get('completeDefinition')),
+                'kind': tag,
+                'opaque': not is_definition,
                 'location': loc,
                 'fields': [],
             }
-            if node.get('completeDefinition'):
+            if is_definition:
                 fields = []
-                for child in node.get('inner') or []:
-                    if child.get('kind') != 'FieldDecl':
+                for child in cursor.get_children():
+                    if child.kind != cindex.CursorKind.FIELD_DECL:
                         continue
                     fields.append(
                         {
-                            'name': child.get('name', ''),
-                            'type': _type_info(child.get('type')),
+                            'name': child.spelling,
+                            'type': _type_info(child.type),
                             'location': _location(child),
                         }
                     )
@@ -271,32 +252,25 @@ def _extract_ast(ast: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
             if not records.get(name) or not record['opaque']:
                 records[name] = record
 
-        elif kind == 'FunctionDecl':
-            name = node.get('name', '')
+        elif kind == cindex.CursorKind.FUNCTION_DECL:
+            name = cursor.spelling
             if not name.startswith('dvz_'):
                 continue
-            if not _is_exported_function(node):
+            if not _is_exported_function(cursor):
                 continue
             functions[name] = {
                 'name': name,
                 'location': loc,
-                'result': _result_type(node),
-                'parameters': _parameters(node),
-                'doc': _comment_text(node),
+                'result': _result_type(cursor),
+                'parameters': _parameters(cursor),
+                'doc': (cursor.raw_comment or '').strip(),
             }
-
-    enums = []
-    for enum_id, enum in enums_by_id.items():
-        if not enum['name'] and enum_id in enum_names_by_id:
-            enum['name'] = enum_names_by_id[enum_id]
-        if enum['name']:
-            enums.append(enum)
 
     return {
         'functions': sorted(functions.values(), key=lambda x: x['name']),
         'records': sorted(records.values(), key=lambda x: x['name']),
         'typedefs': sorted(typedefs.values(), key=lambda x: x['name']),
-        'enums': sorted(enums, key=lambda x: x['name']),
+        'enums': sorted(enums.values(), key=lambda x: x['name']),
     }
 
 
@@ -314,15 +288,15 @@ def _merge(target: dict[str, dict[str, Any]], key: str, values: list[dict[str, A
 def _extract_header(clang: str, header: str, tmpdir: Path) -> dict[str, list[dict[str, Any]]]:
     source = tmpdir / (header.replace('/', '_').replace('.', '_') + '.c')
     source.write_text(f'#include "{header}"\n')
-    ast_path = tmpdir / (source.stem + '.json')
-    cmd = [clang, '-x', 'c', '-std=c11']
-    cmd.extend(f'-I{path}' for path in INCLUDE_DIRS)
-    cmd.extend(f'-D{name}' for name in DEFINES)
-    cmd.extend(['-fsyntax-only', '-Xclang', '-ast-dump=json', str(source)])
-    with ast_path.open('w') as f:
-        _run(cmd, cwd=ROOT_DIR, stdout=f)
-    with ast_path.open() as f:
-        return _extract_ast(json.load(f))
+    tu = cindex.Index.create().parse(str(source), args=_compile_args(clang), options=0)
+    errors = [
+        str(diag)
+        for diag in tu.diagnostics
+        if diag.severity >= cindex.Diagnostic.Error
+    ]
+    if errors:
+        raise RuntimeError(f'failed to parse {header}:\n' + '\n'.join(errors))
+    return _extract_translation_unit(tu)
 
 
 def extract_api(headers: list[str], clang: str) -> dict[str, Any]:
@@ -338,7 +312,11 @@ def extract_api(headers: list[str], clang: str) -> dict[str, Any]:
         'schema_version': 1,
         'generator': 'tools/bindings/extract_api.py',
         'platform': platform.platform(),
-        'clang': {'executable': clang, 'version': _clang_version(clang)},
+        'clang': {
+            'executable': clang,
+            'version': _clang_version(clang),
+            'libclang': _clang_runtime_version(),
+        },
         'headers': headers,
         'include_dirs': INCLUDE_DIRS,
         'defines': DEFINES,
