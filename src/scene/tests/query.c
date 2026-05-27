@@ -236,6 +236,117 @@ int test_scene_pixel_query_accepts_square_corner(TstContext* suite, const TstCas
 
 
 
+int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* points = dvz_point(scene, 0);
+    ANN(points);
+    dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
+    vec3 point_pos[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor point_color[1] = {{255, 255, 0, 255}};
+    float point_size[1] = {24.0f};
+    AT(dvz_visual_set_data(points, "position", point_pos, 1) == 0);
+    AT(dvz_visual_set_data(points, "color", point_color, 1) == 0);
+    AT(dvz_visual_set_data(points, "size", point_size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, points, NULL) == 0);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_PIXEL);
+    vec3 image_pos[4] = {
+        {-1.0f, -1.0f, 0.0f},
+        {-1.0f, 1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4] = {0};
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        pixels[4 * i + 0] = 255;
+        pixels[4 * i + 3] = 255;
+    }
+    AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){.z_layer = -1}) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    AT(dvz_panel_query(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){.request_id = 101, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+    AT(dvz_panel_query(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){.request_id = 102, .target = DVZ_SCENE_TARGET_PIXEL}) == 0);
+    AT(dvz_figure_process_queries(figure, runtime, &caps) == 2);
+    AT(scene->pick_result_count == 0);
+    AT(scene->probe_result_count == 0);
+
+    DvzQueryResult item_result = {0};
+    DvzQueryResult pixel = {0};
+    AT(dvz_scene_poll_query(scene, &item_result));
+    AT(dvz_scene_poll_query(scene, &pixel));
+    AT(item_result.hit);
+    AT(item_result.request_id == 101);
+    AT(item_result.visual_family == DVZ_SCENE_VISUAL_FAMILY_POINT);
+    AT(item_result.resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(item_result.item_id == 0);
+    AT(pixel.hit);
+    AT(pixel.request_id == 102);
+    AT(pixel.visual_family == DVZ_SCENE_VISUAL_FAMILY_IMAGE);
+    AT(pixel.resolved_target == DVZ_SCENE_TARGET_PIXEL);
+    AT(pixel.value_kind == DVZ_QUERY_VALUE_VEC4);
+    AT(pixel.vector[0] > 0.9);
+    AT(pixel.vector[1] < 0.1);
+    AT(pixel.vector[2] < 0.1);
+    AT(pixel.vector[3] > 0.9);
+    AT(!dvz_scene_poll_query(scene, &pixel));
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 /**
  * Register scene query tests.
  *
@@ -254,6 +365,7 @@ int test_scene_query(TstSuite* suite)
     TST_CASE(test_scene_query_queue_processes_native_results);
     TST_CASE(test_scene_query_queue_coalesces_pending_requests);
     TST_SCENE_QUERY_GPU_CASE(test_scene_pixel_query_accepts_square_corner);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_query_processes_item_and_pixel_results);
 
     return 0;
 }
