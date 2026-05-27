@@ -68,7 +68,7 @@ label-layout polish can move to RC2 or v0.5.
 | Feature group | v0.4 target | v0.5 target | Later / external |
 |---|---|---|---|
 | Scene/app basics | Retained scene, figures, panels, offscreen/GLFW app, capture, frame callbacks. | Broader hosted/integration polish. | Application frameworks owned above Datoviz. |
-| Core visuals | Point, pixel, marker, primitive, segment/path, image, mesh, sphere, volume, basic text visual hardening. | Vector/arrow visual, richer path grouping, textured mesh/sphere, stronger volume slices. | Tubes/ribbons, skybox/cubemap, advanced domain visuals. |
+| Core visuals | Point, pixel, marker, primitive, segment/path, image, mesh, retained textured mesh, sphere, volume, basic text visual hardening. | Vector/arrow visual, richer path grouping, textured sphere, stronger volume slices. | Tubes/ribbons, skybox/cubemap, advanced domain visuals. |
 | Text/explanatory objects | Release-quality basic rendered text, 2D axes/ticks, continuous colorbars, categorical legends, labels/readouts. | Shared legends/colorbars, richer annotation/callout and label layout. | Full math/TeX, complex shaping, publication typography in GSP/Matplotlib. |
 | Interaction | Point pick, image probe, marker pick, basic selection highlight, linked crosshair/probe. | Mesh/region, path, label, volume pick/probe; lasso/box selection. | Full dashboard interaction models in GSP/VisPy2. |
 | Layout/linking | Grid/subplot layout, linked panzoom x/y, panel reservations. | Dashboard layout helpers, shared legends/colorbars. | Full application/dashboard framework in GSP/VisPy2. |
@@ -122,6 +122,7 @@ These examples should be part of the v0.4 release narrative or required C valida
 | `api/API_SAMPLED_FIELD.md` | `v0.4 required` / `needs-rc1-proof` | sampled fields, image, labels, volume | Keep as the resource-sharing contract test. |
 | `bio/PROTEIN_ARCBALL_VIEWER.md` | `v0.4 required` / `partial-now` | mesh, sphere, materials, SSAO/MSAA, GUI, arcball | Flagship native C showcase; defer labels/picking/molecular surface if needed. |
 | `geo/SHOWCASE_WIND_FIELD.md` | `v0.4 required` / `needs-rc1-proof` | image field, arrows via primitives, paths, panzoom, colorbar | Best 2D showcase; vector visual can be v0.5 replacement. |
+| Textured terrain / planet C showcase | `v0.4 required` / `blocked-by-v0.4-critical-path` | retained textured mesh, UVs, sampled-field texture binding, mesh texture shader, camera path, capture | Required v0.4 visual proof. Use Grand Canyon, Mars, or a deterministic terrain/planet fixture; do not substitute baked vertex colors. |
 | `neuro/ALLEN_IBL_COORDINATE_MESH_VOLUME_PLAN.md` | `v0.4 required` / `partial-now` | volume, mesh transparency, GUI, arcball | Prefer a narrow volume + transparent atlas mesh slice. |
 | LiDAR/dense point cloud C showcase | `v0.4 required` / `ready-now` | point/pixel, EDL, fly/camera, large buffer smoke | Current `examples/c/showcase/lidar.c` can be the concrete target. |
 
@@ -135,6 +136,7 @@ These examples should be present only with visible experimental status and a doc
 | WebGPU fixture dashboard / browser runner | `v0.4 experimental` | DRP2 WebGPU subset, WGSL, browser runtime | Keep examples under `examples/webgpu`; document unsupported commands/features. |
 | WASM scene-to-WebGPU minimal page | `v0.4 experimental` | WASM scene subset, WGSL DRP2 stream transport | Target point, primitive, image, and maybe basic mesh only. |
 | `core/ANIMATION_VIDEO_EXPORT.md` | `v0.4 experimental` | frame callbacks, deterministic capture/video | Keep simple animation/video path; defer transition/camera-path helper polish. |
+| `physics/CFD_VORTICITY_ADVECTION.md` narrow CPU slice | `v0.4 experimental` | dynamic image field, dynamic point/path updates, panzoom, colorbar, probe | CPU-side fluid/particle advection may be a stretch showcase; GPU compute remains later. |
 | `dashboards/STREAMING_DAQ_VIEWER.md` or `bio/PHYSIOLOGY_SIGNAL_WORKBENCH.md` | `v0.4 experimental` | path/pixel updates, axes/text, linked x panzoom | Pick one simple synthetic sustained-update example only if time allows; full workflow is v0.5. |
 | `napari/DENSE_POINTS_SPATIAL_OMICS.md` | `v0.4 experimental` | large point/pixel, basic selection, color mapping | Good stress/example lane if data prep is ready; keep napari integration external. |
 | `neuro/ALLEN_MOUSE_BRAIN_SLICE_EXAMPLE_PLAN.md` | `v0.4 experimental` | image/volume slice, colorbar, GUI controls | Useful if it stays narrow; full atlas exploration is v0.5. |
@@ -180,9 +182,9 @@ stable.
 | `napari/TRACKS_VECTORS_SHAPES_CELL_MOTION.md` | `v0.5` | vector visual, tracks/path identity, selection | Good vector/linked interaction target. |
 | `neuro/DIFFUSION_TRACTOGRAPHY.md` | `v0.5` | packed ragged 3D streamlines, per-streamline identity, direction color, arcball, selection | Make this a good v0.5 showcase, not just a minimal line demo. Use high-quality thin streamlines first; keep tubes/ribbons/out-of-core for later. |
 | `geo/GLOBAL_WIND_PROJECTIONS.md` | `v0.5` | projection transforms, vector visual, graticule/coastline helpers | `SHOWCASE_WIND_FIELD` is the v0.4 subset. |
-| `geo/GRAND_CANYON_FLYOVER.md` | `v0.5` | textured mesh material, camera path, asset cache | Good after material texture slots. |
-| `geo/EARTH.md` | `v0.5` | textured sphere/mesh, cubemap/skybox optional | Keep nonessential skybox for later if needed. |
-| `geo/MARS_TEXTURED_MESH_EXAMPLE_PLAN.md` | `v0.5` | textured terrain/mesh, asset cache | Same lane as terrain/Earth. |
+| Full `geo/GRAND_CANYON_FLYOVER.md` | `v0.5` | terrain asset cache, camera-path polish, optional overlays | A narrow textured terrain proof is v0.4 required; full data/product workflow can follow. |
+| Full `geo/EARTH.md` | `v0.5` | cubemap/skybox, equirectangular sphere texture if not covered by mesh, asset polish | Keep nonessential skybox and full globe workflow for later if needed. |
+| Full `geo/MARS_TEXTURED_MESH_EXAMPLE_PLAN.md` | `v0.5` | GIS preprocessing, layer controls, probe/readout, asset cache | The retained textured-mesh slice is v0.4 required; full Mars terrain assessment can follow. |
 | `engineering/FINITE_ELEMENT_STRESS_VIEWER.md` | `v0.5` | mesh scalar fields, selection, colorbar, maybe isolines | Good applied mesh/field target. |
 | `materials/CRYSTAL_PHONON_EXPLORER.md` | `v0.5` | sphere/mesh, animation, selection, labels | Depends on polished sphere/text/animation. |
 
@@ -197,7 +199,7 @@ These are valuable pressure tests, but they should not shape the v0.4 release ga
 | `compute/MANDELBROT.md` | `later` unless custom shaders are pulled into v0.5 | Needs scene custom material/fullscreen visual API and high-precision parameter policy. |
 | `compute/PARTICLES.md` | `later` unless compute is pulled into v0.5 | Needs compute-written buffers, trails/accumulation, additive particle shaders. |
 | Tractography tube/ribbon and out-of-core extensions | `later` | Adds tube/ribbon geometry, advanced LOD, million-streamline residency, and domain-specific tract resources beyond the v0.5 viewer. |
-| `physics/CFD_VORTICITY_ADVECTION.md` | `later` | Needs vector fields, compute/advection, possibly projection semantics. |
+| Full `physics/CFD_VORTICITY_ADVECTION.md` | `later` | GPU compute/advection, vector visual polish, diagnostics, larger datasets. A CPU-side v0.4 stretch can use dynamic image/point/path updates. |
 | `physics/TOKAMAK_PLASMA_FIELD_LINES.md` | `later` | Needs field-line paths/tubes, vector fields, picking, domain data policies. |
 | `physics/HEP_EVENT_DISPLAY.md` | `later` | Needs complex event geometry, picking, labels, domain interaction. |
 | `geo/ANIMAL_MIGRATION_TRACKS.md` | `later` | Needs geographic transforms, trajectories, timeline/dashboard controls. |
@@ -262,23 +264,29 @@ These decisions refine the feature roadmap:
 3. **Vector/arrow visual can slip to v0.5 only if `SHOWCASE_WIND_FIELD` uses primitive arrows in
    v0.4.** The example should still document the substitution so the semantic vector visual remains
    visible in the roadmap.
-4. **Marker picking is the first picking expansion after point/image.** It is smaller than mesh or
+4. **Retained textured mesh is required for v0.4.** Terrain, planet, Mars, and textured scientific
+   surface examples should use real mesh UVs and texture sampling; baked vertex colors are not an
+   acceptable substitute for the release feature proof.
+5. **Marker picking is the first picking expansion after point/image.** It is smaller than mesh or
    volume picking and protects scatter/selection use cases.
-5. **Tracks and tractography should be a real v0.5 lane.** v0.4 can use path/segment fallbacks, but
+6. **Tracks and tractography should be a real v0.5 lane.** v0.4 can use path/segment fallbacks, but
    v0.5 should deliver polished track/tractography viewers with packed ragged paths,
    per-streamline identity, direction coloring, arcball navigation, basic selection, and
    high-quality thin-line rendering. The future `tube` visual, tube/ribbon geometry, and
    out-of-core million-streamline collections remain later extensions.
-6. **A narrow brain/volume showcase belongs in v0.4, but full atlas explorer belongs in v0.5.** This
+7. **A narrow brain/volume showcase belongs in v0.4, but full atlas explorer belongs in v0.5.** This
    avoids blocking v0.4 on region picking, UI trees, and linked 2D/3D atlas workflows.
-7. **One dense streaming example is enough for v0.4.** Choose DAQ or physiology and keep it simple;
+8. **One dense streaming example is enough for v0.4.** Choose DAQ or physiology and keep it simple;
    reserve full ring-buffer/LOD policies for v0.5.
-8. **Scale bars need an RC1 fixture and the v0.4 update-performance refactor.** The first retained
+9. **CPU-side fluid/particle advection can be a v0.4 stretch; GPU particles remain later.** A
+   vortex-street or particle-flow example can use dynamic image/point/path updates today, while
+   compute-written render buffers need a proper scene compute/framegraph contract.
+10. **Scale bars need an RC1 fixture and the v0.4 update-performance refactor.** The first retained
    scale-bar slices are active; live panzoom/domain updates should not rebuild glyph/text resources
    unless the formatted label or relevant style changed. Richer layout and exotic units can wait.
-9. **Scene-level compute/custom shaders should not block v0.4.** Gray-Scott, Mandelbrot, and
+11. **Scene-level compute/custom shaders should not block v0.4.** Gray-Scott, Mandelbrot, and
    particles should wait until there is a proper scene-level resource/material API.
-10. **WebGPU/WASM should be example-visible in v0.4, but explicitly experimental.** The example
+12. **WebGPU/WASM should be example-visible in v0.4, but explicitly experimental.** The example
    promise is a supported subset, not parity.
 
 
@@ -295,9 +303,10 @@ These decisions refine the feature roadmap:
 9. `VOLUME_SLICE.md`
 10. `PROTEIN_ARCBALL_VIEWER.md`
 11. `SHOWCASE_WIND_FIELD.md`
-12. narrow Allen/IBL volume + transparent mesh showcase
-13. LiDAR/dense point cloud with EDL
-14. WebGPU/WASM minimal browser subset
+12. retained textured terrain / planet showcase
+13. narrow Allen/IBL volume + transparent mesh showcase
+14. LiDAR/dense point cloud with EDL
+15. WebGPU/WASM minimal browser subset
 
 This order follows the release proof path: smallest retained scene -> explanatory objects and scale
 bars -> linked panels and readouts -> picking/selection -> volume/3D/showcases -> experimental

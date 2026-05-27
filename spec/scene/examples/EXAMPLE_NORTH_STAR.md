@@ -42,11 +42,27 @@ release announcements.
 | Molecular Viewer | Atoms as shaded spheres, bonds as segments/cylinders, arcball, labels, selection. | High-quality scientific 3D, lighting/materials, sphere impostors, interaction. |
 | Spatial Omics Explorer | Dense cells/spots, categorical clusters, microscopy underlay, linked selection. | Modern bio workflows, dense points, labels, linked views, hover/readout UI. |
 | Weather Field Dashboard | Scalar field, streamlines, arrows, time animation, colorbar, linked panels. | 2D fields, vectors, animation, dashboard composition. |
+| Textured Terrain Or Planet Surface | One bounded textured mesh terrain or planetary surface, lighting, camera path, capture. | Retained textured mesh, UVs, materials, cinematic 3D, public-demo appeal. |
 | Volume Workbench | MRI/CT/simulation volume, slices, clipping, transfer controls, value probe. | 3D sampled fields, volume inspection, capture/video, probe workflows. |
 | Large Time-Series Workbench | Many traces, linked x panzoom, annotations, sustained updates. | Dense 2D rendering, streaming updates, axes, operational analysis. |
 | Scientific Multi-Panel Figure | Scatter, image, mesh, path, and time-series panels with shared selection. | Figure composition, linked panels, mixed visual families, explanatory objects. |
-| Terrain Or Planet Flyover | Shaded surface, scalar coloring or texture, scale bar, lighting, camera path. | Cinematic 3D, surface meshes, camera animation, public-demo appeal. |
 | Browser Preview | Point, image, primitive, and basic mesh running through a WebGPU/WASM subset. | Portability direction and shared scene semantics beyond native Vulkan. |
+
+
+## v0.4 Front-Page Set
+
+If the first public page can show only six cards or videos, prefer this v0.4 set:
+
+1. **Dense LiDAR Flythrough** — scale, performance, and point-cloud depth cues.
+2. **Molecular Arcball Viewer** — polished scientific 3D, spheres, mesh, and lighting.
+3. **Brain Volume + Transparent Mesh** — neuroscience identity, volume, and transparency.
+4. **Weather Field Dashboard** — 2D fields, vectors/paths, colorbar, and broad domain relevance.
+5. **Textured Terrain Or Planet Surface** — required retained textured mesh proof and cinematic 3D.
+6. **Linked Probe + Colorbar Panels** — interaction, explanatory objects, and multi-panel state.
+
+Use **WebGPU Browser Preview** as a front-page card when the experimental browser subset is stable
+enough to run from documentation. Otherwise keep it in the runtime/integration gallery and use a
+dense 2D signal or labels/spatial-omics card in the first row.
 
 
 ## Visual Family Gallery
@@ -64,6 +80,7 @@ discoverability: users should immediately understand when to use each visual.
 | Path | Trajectories, streamlines, traces, GPS tracks, or neural paths. |
 | Image | Microscopy, satellite tile, simulation scalar field, or camera frame. |
 | Mesh | Shaded scientific surface with scalar attributes. |
+| Textured Mesh | Terrain, planet surface, registered image layer, or textured scientific surface. |
 | Sphere | Molecules, particles, stars, or atomistic simulation. |
 | Volume | 3D scalar field with slicing, transfer, or clipping. |
 | Text | Labels, axis titles, annotations, and readout text. |
@@ -126,6 +143,22 @@ Runtime examples should answer whether Datoviz fits real software, not just whet
 8. Command-stream recording and replay.
 9. Minimal raw Python binding smoke test.
 10. Experimental browser/WebGPU page.
+
+
+## Data Domain Balance
+
+The gallery should not look like it belongs to only one scientific community. The selected v0.4
+examples should cover as many of these domains as practical:
+
+1. neuroscience: brain mesh/volume, labels, and neural points;
+2. molecular or structural biology: protein or molecule;
+3. geospatial or climate: scalar/vector weather field;
+4. planet or terrain science: retained textured mesh surface;
+5. medical/scientific imaging: volume basics or labels/segmentation;
+6. electrophysiology, seismology, or instrumentation: high-density 2D signals;
+7. astronomy or high-dimensional data: dense point/embedding stretch example;
+8. engineering/materials: mesh/surface stretch example;
+9. engine/runtime users: WebGPU, offscreen, DRP2/DVZR, and raw `ctypes`.
 
 
 ## Tutorial Spine

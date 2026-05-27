@@ -68,6 +68,25 @@ ownership, plotting conveniences, notebooks, or ecosystem data loading, it belon
 - Stress/benchmark: capacity and performance examples for large scatter, image grids, streaming,
   repeated updates, descriptor/resource churn, and live-loop frame pacing.
 
+Existing examples may be reorganized aggressively to match these lanes. Prefer fewer, stronger
+public examples over many scripts with unclear public roles:
+
+1. keep tiny one-feature examples, but label them as fixtures or visual-family examples rather than
+   the public story;
+2. promote `protein.c`, `lidar.c`, `brain.c`/`ibl_brain.c`, `labels.c`, `scatter_axes.c`,
+   `image_probe.c`, `linked_panels.c`, and WebGPU fixtures into the v0.4 proof set where they still
+   match the current API;
+3. add a retained textured-mesh terrain/planet example as a v0.4 showcase once the feature slice
+   lands;
+4. add or polish a weather/wind-field example as the main 2D field showcase;
+5. add a composed explanatory-layout example combining axes, colorbar, categorical legend, scale
+   bar, annotation/readout, and panel reserves;
+6. keep GUI examples as integration examples unless they directly support a showcase;
+7. add scenario IDs and metadata for gallery-critical examples before broad documentation
+   migration;
+8. for every selected showcase, record the missing feature list and explicitly mark deferred pieces
+   in the example notes.
+
 
 ## Proposed Layout
 

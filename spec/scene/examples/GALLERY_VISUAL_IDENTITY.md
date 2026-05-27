@@ -143,6 +143,50 @@ Baseline rules for captures:
 4. Avoid clipped legends/labels.
 5. Prefer deterministic random seeds for reproducibility.
 
+Extended screenshot rules:
+
+1. Treat every gallery screenshot as a documentation artifact, not an incidental frame.
+2. Use a consistent capture shape:
+   - showcase: prefer 16:10 or 16:9, for example `1600x1000` or `1600x900`;
+   - visual-family baselines: prefer `1280x960` or another fixed comparison size;
+   - thumbnails: crop from the canonical image rather than rendering a separate composition unless
+     the crop fails.
+3. Use dark neutral backgrounds by default, with light-background variants only for
+   publication-adjacent 2D examples.
+4. Use real or realistic scientific data for showcases. Tiny synthetic data is fine for fixtures,
+   but it should not define the public gallery.
+5. Use deterministic camera poses, data ranges, and style defaults.
+6. Prefer a small recurring colormap set. Avoid rainbow defaults except in explicit colormap
+   comparison or legacy-parity examples.
+7. Capture one clear interaction state when relevant: default, hover, selected, probe, or animated
+   frame.
+8. Avoid visible GUI chrome unless the example is specifically about GUI controls or hosted
+   integration.
+9. Verify every selected gallery image is nonblank and readable at thumbnail size.
+
+
+## 9.1) Video rules
+
+Short videos should demonstrate interaction, scale, or rendering quality without becoming demos of
+manual camera operation.
+
+1. Keep videos short: 5-20 seconds.
+2. Make them loopable when possible.
+3. Show one visual idea per video.
+4. Use smooth camera motion and deterministic animation paths.
+5. Avoid frantic mouse interaction; scripted movement is preferred for documentation assets.
+6. Keep captions minimal and factual, for example `10M points`, `image probe`, `EDL on/off`,
+   `volume slice`, `textured mesh`, or `WebGPU subset`.
+7. Good v0.4 video archetypes:
+   - orbit around protein, brain, sphere cloud, or textured terrain;
+   - fly through LiDAR with EDL/depth cueing;
+   - pan/zoom a scalar field and update a probe readout;
+   - sweep a volume slice or transfer range;
+   - animate a weather/vector field if the vector example lands;
+   - show a bounded high-density signal or CPU fluid/particle update loop.
+8. If video export is backend-dependent, the gallery should show the result but the docs should
+   state the backend requirement clearly.
+
 ## 10) Category-specific styling presets
 
 ### Showcase preset

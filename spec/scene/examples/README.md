@@ -64,6 +64,27 @@ through [EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) so future agent
 examples are blocking v0.4, which are v0.5 targets, and which belong outside Datoviz C.
 
 
+## Current v0.4 Gallery Direction
+
+The current public gallery direction is maintained across the planning documents above, not in a
+single imported scratch file.
+
+1. [EXAMPLE_NORTH_STAR.md](EXAMPLE_NORTH_STAR.md) owns the user-facing gallery thesis, front-page
+   card set, data-domain balance, and aspirational showcase taxonomy.
+2. [EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) owns release promises, including the
+   v0.4 requirement for retained textured mesh and the experimental status of WebGPU/WASM and
+   CPU-side fluid/particle stretch work.
+3. [EXAMPLE_PRIORITIZATION.md](EXAMPLE_PRIORITIZATION.md) owns the implementation order and
+   architecture-pressure ranking.
+4. [GALLERY_VISUAL_IDENTITY.md](GALLERY_VISUAL_IDENTITY.md) owns visual style, screenshot rules,
+   and video rules.
+5. [EXAMPLE_ORGANIZATION.md](EXAMPLE_ORGANIZATION.md) owns repository/API-layer placement,
+   scenario IDs, and lane organization.
+
+If an imported planning note is present locally, treat it as provenance only. Promote durable
+decisions into the files above before relying on them.
+
+
 ## Feature Fixture Matrix
 
 The compact one-feature fixture inventory lives in

@@ -21,24 +21,25 @@ The first gallery-quality batch should not be 3D-only. The best near-term mix is
 
 1. `PROTEIN_ARCBALL_VIEWER`
 2. `SHOWCASE_WIND_FIELD`
-3. `LINKED_PANELS_PROBE_COLORBAR`
-4. Allen/IBL brain volume plus transparent atlas mesh
-5. LiDAR or dense point cloud with EDL
-6. Dense raster, streaming DAQ, or physiology signal workbench
-7. Embedding explorer pair: PD12M image LOD plus Wikipedia semantic atlas
+3. retained textured terrain or planet surface
+4. `LINKED_PANELS_PROBE_COLORBAR`
+5. Allen/IBL brain volume plus transparent atlas mesh
+6. LiDAR or dense point cloud with EDL
+7. Dense raster, streaming DAQ, or CPU fluid/particle advection
+8. Embedding explorer pair: PD12M image LOD plus Wikipedia semantic atlas
 
-This keeps the first batch balanced across 2D, 3D, volume, and dashboard workloads while pressuring
-visuals, controllers, effects, interaction, data updates, and multi-pass runtime behavior. The
-embedding pair is a follow-on dashboard showcase track: it is visually and conceptually strong, but
-it depends on rendered text, overlay cards, large-data policies, and preprocessing/cache
-conventions.
+This keeps the first batch balanced across 2D, 3D, textured surfaces, volume, and dashboard
+workloads while pressuring visuals, controllers, effects, interaction, data updates, and multi-pass
+runtime behavior. The embedding pair is a follow-on dashboard showcase track: it is visually and
+conceptually strong, but it depends on rendered text, overlay cards, large-data policies, and
+preprocessing/cache conventions.
 
 The current code is ahead of older gap notes: `dvz_sphere`, `dvz_volume`, EDL, MSAA, SSAO, depth
 peeling-shaped passes, WBOIT, volume occlusion, fly/turntable controllers, first-class labels,
 categorical legends, broad item-pick first slices, and several polished C GLFW examples already
 exist. The biggest remaining blockers for polished examples are release proof and polish for
-rendered text/axes/colorbars/legends, vector/arrow visuals, richer picking/probe payloads,
-scene-level compute/custom materials, and large-data policies.
+rendered text/axes/colorbars/legends, retained textured mesh, vector/arrow visuals, richer
+picking/probe payloads, scene-level compute/custom materials, and large-data policies.
 
 The current agent-facing recommendation for shiny demo follow-up is tracked in
 [`../../../agents/soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../../../agents/soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
@@ -54,11 +55,12 @@ new visual family.
 | ---: | --- | --- | --- | --- |
 | 1 | `PROTEIN_ARCBALL_VIEWER` | Best immediate eye-candy from the current stack; a C example already exists. | Sphere impostors, mesh/ribbon, SSAO, MSAA, materials, GUI, arcball. | Polish the existing protein viewer as the flagship molecular demo; defer full ball-and-stick, molecular surface, labels, and picking. |
 | 2 | `SHOWCASE_WIND_FIELD` | Best 2D visual showcase candidate with high readiness and no external data requirement. | Image scalar field, primitive arrow geometry, path streamlines, panzoom, vector-glyph gap. | Synthetic climate-like speed background with arrow field and optional streamlines; use primitives now, then replace with a vector visual later. |
-| 3 | `LINKED_PANELS_PROBE_COLORBAR` | Strong scientific 2D UX built directly on existing image probe and multi-panel paths. | Shared sampled fields, image probe, linked panels, colorbar, annotation, text. | Two image panels sharing one field, crosshair/probe state, and a retained colorbar; rendering can start minimal while text/colorbar work lands. |
-| 4 | Allen/IBL brain volume plus transparent mesh | Domain-specific and visually rich; current examples and data paths already exist. | Volume visual, transparent mesh, WBOIT/depth peel, volume occlusion, arcball, GUI. | Volume slice or MIP with selected atlas mesh overlay and opacity controls; defer region picking and full linked 2D subplot. |
-| 5 | LiDAR or dense point cloud with EDL | High visual payoff and useful pressure on dense point rendering. | Point/pixel visuals, EDL, depth cueing, fly camera, large-buffer upload/update policy. | Combine real or prepared LiDAR with EDL/depth cue and a fly camera; keep LOD as a follow-up. |
-| 6 | Dense raster, streaming DAQ, or physiology workbench | Keeps first batch honest for dense 2D operational views. | Pixel/path visuals, partial updates, ring-buffer behavior, linked x panzoom, overlays, axes/text. | Pick one synthetic-data example and focus on sustained updates plus clear 2D interaction. |
-| 7 | Embedding explorer pair | AI-era showcase pair with one image/thumbnails path and one semantic/text path. | Image LOD, dense points, text labels, picking, selected cards, query/search, preprocessing bundles. | Start with PD12M mean-color image positions and Wikivecs colored points; defer thumbnail LOD and semantic query sidecar. |
+| 3 | Textured terrain or planet surface | Required v0.4 proof and high public-demo value. | Retained textured mesh, UVs, sampled-field texture binding, lighting, camera path, capture. | One bounded terrain/planet asset with real texture sampling; defer cubemap, tiled terrain, GIS loaders, and LOD. |
+| 4 | `LINKED_PANELS_PROBE_COLORBAR` | Strong scientific 2D UX built directly on existing image probe and multi-panel paths. | Shared sampled fields, image probe, linked panels, colorbar, annotation, text. | Two image panels sharing one field, crosshair/probe state, and a retained colorbar; rendering can start minimal while text/colorbar work lands. |
+| 5 | Allen/IBL brain volume plus transparent mesh | Domain-specific and visually rich; current examples and data paths already exist. | Volume visual, transparent mesh, WBOIT/depth peel, volume occlusion, arcball, GUI. | Volume slice or MIP with selected atlas mesh overlay and opacity controls; defer region picking and full linked 2D subplot. |
+| 6 | LiDAR or dense point cloud with EDL | High visual payoff and useful pressure on dense point rendering. | Point/pixel visuals, EDL, depth cueing, fly camera, large-buffer upload/update policy. | Combine real or prepared LiDAR with EDL/depth cue and a fly camera; keep LOD as a follow-up. |
+| 7 | Dense raster, streaming DAQ, physiology, or CPU fluid/particle advection | Keeps first batch honest for dense 2D operational views and animation. | Pixel/path/point visuals, sampled-field updates, partial updates, linked x panzoom, axes/text. | Pick one synthetic-data example and focus on sustained updates plus clear 2D interaction. |
+| 8 | Embedding explorer pair | AI-era showcase pair with one image/thumbnails path and one semantic/text path. | Image LOD, dense points, text labels, picking, selected cards, query/search, preprocessing bundles. | Start with PD12M mean-color image positions and Wikivecs colored points; defer thumbnail LOD and semantic query sidecar. |
 
 
 ## Broader Priority Order
@@ -67,17 +69,17 @@ new visual family.
 | ---: | --- | --- | --- | --- |
 | 1 | Protein arcball viewer | High | Multi-pass 3D scene, SSAO, material controls, resource reuse. | Highest immediate visual payoff. |
 | 2 | Global wind field | High | First-class vector semantics, projection transforms, 2D scene polish. | Best 2D showcase bet. |
-| 3 | Linked probe/colorbar panels | Medium-high | Shared resources, probe routing, retained explanatory objects. | Exposes text/colorbar gap quickly. |
-| 4 | Allen/IBL brain volume and mesh | Medium-high | Volume plus transparency plus occlusion. | Strong scientific identity; current examples exist. |
-| 5 | LiDAR / dense point cloud EDL | Medium-high | Large point data, EDL, fly camera, performance. | Good benchmark-style demo. |
-| 6 | Sphere SSAO cloud | Very high | Technique quality, sphere depth/normals, MSAA/SSAO composition. | Beautiful but less domain-specific. |
-| 7 | Dense raster / DAQ / physiology | Medium | 2D streaming, partial updates, linked views, axes. | Important counterweight to 3D demos. |
-| 8 | PD12M image embedding LOD | Medium | Image sprite LOD, large sampled fields, thumbnail packing, panzoom, picking. | Use only PD12M as the public dataset and keep all embedding/reduction work in preprocessing. |
-| 9 | Wikipedia semantic embedding atlas | Medium | Dense points, label LOD, search/query, selected cards, overlay layout. | Use Wikivecs map coordinates first; add N-dimensional vectors and query sidecar later. |
-| 10 | Toy DICOM / volume clipping | Medium | 3D sampled field, slices, crosshair, window/level, 4-panel layout. | Needs better slice semantics and colorbar/text. |
-| 11 | Large labels segmentation | Medium | Integer label textures, random label colors, selection, categorical legends. | First-class `dvz_labels()` path exists; larger sparse-ID and transform pressure tests remain. |
-| 12 | Earth / terrain / Mars flyover | Medium-low | Textured mesh/sphere, cubemap/skybox, asset cache, camera path. | Great gallery material after material textures land. |
-| 13 | Gray-Scott / Mandelbrot / particles | Low for scene-first | Scene-level compute, custom shaders, ping-pong resources. | Very high eye-candy, but should not be forced through ad hoc DRP-only paths. |
+| 3 | Textured terrain / planet / Mars flyover | Medium-high after textured mesh lands | Retained textured mesh, asset/cache, camera path. | Required v0.4 feature proof; cubemap/skybox and tiled terrain can wait. |
+| 4 | Linked probe/colorbar panels | Medium-high | Shared resources, probe routing, retained explanatory objects. | Exposes text/colorbar gap quickly. |
+| 5 | Allen/IBL brain volume and mesh | Medium-high | Volume plus transparency plus occlusion. | Strong scientific identity; current examples exist. |
+| 6 | LiDAR / dense point cloud EDL | Medium-high | Large point data, EDL, fly camera, performance. | Good benchmark-style demo. |
+| 7 | Sphere SSAO cloud | Very high | Technique quality, sphere depth/normals, MSAA/SSAO composition. | Beautiful but less domain-specific. |
+| 8 | Dense raster / DAQ / physiology / CPU fluid | Medium | 2D streaming, partial updates, linked views, axes, field updates. | Important counterweight to 3D demos. |
+| 9 | PD12M image embedding LOD | Medium | Image sprite LOD, large sampled fields, thumbnail packing, panzoom, picking. | Use only PD12M as the public dataset and keep all embedding/reduction work in preprocessing. |
+| 10 | Wikipedia semantic embedding atlas | Medium | Dense points, label LOD, search/query, selected cards, overlay layout. | Use Wikivecs map coordinates first; add N-dimensional vectors and query sidecar later. |
+| 11 | Toy DICOM / volume clipping | Medium | 3D sampled field, slices, crosshair, window/level, 4-panel layout. | Needs better slice semantics and colorbar/text. |
+| 12 | Large labels segmentation | Medium | Integer label textures, random label colors, selection, categorical legends. | First-class `dvz_labels()` path exists; larger sparse-ID and transform pressure tests remain. |
+| 13 | GPU Gray-Scott / Mandelbrot / particles | Low for scene-first | Scene-level compute, custom shaders, ping-pong resources. | Very high eye-candy, but should not be forced through ad hoc DRP-only paths. |
 | 14 | Tractography / tokamak / HEP | Low-medium | Ragged 3D paths, tubes, vector fields, transparency, picking. | Excellent later architecture-pressure demos. |
 
 
@@ -92,7 +94,7 @@ new visual family.
 | Pixel visual | Implemented. | Dense raster, spike plots, large point-like 2D data. | Stress test performance at v0.3 showcase scale. |
 | Marker visual | Implemented first slice. | Marker picking, polished scatter, selected events. | Exact SDF picking, richer style payloads, and selection polish. |
 | Primitive visual | Implemented. | Wind arrows, bars, overlays, simple geometry. | Avoid overusing it as a permanent substitute for semantic visuals. |
-| Mesh visual | Implemented. | Protein ribbon, brain atlas mesh, terrain, finite-element viewer. | Add mesh face/region picking and textured material slots. |
+| Mesh visual | Implemented for retained vertex-colored/lit meshes; retained textured mesh is required for v0.4. | Protein ribbon, brain atlas mesh, terrain, finite-element viewer, textured terrain/planet. | Add mesh texture slot, UV binding, texture shader variant, and later face/region picking. |
 | Path visual | Implemented first stroked slice: line-strip path, subpaths, caps, joins, miter limit. | Wind streamlines, DAQ traces, physiology, tractography fallback. | Add first-class closed-path API, dashes, path/subpath identity picking, and later tubes/ribbons. |
 | Image visual | Implemented. | Wind scalar background, image probe, segmentation underlay, heatmaps. | Add tiled/LOD image policy and richer probe payloads. |
 | Labels visual | Implemented first 2D slice. | Segmentation labels, napari-style overlays, categorical legends. | Add raw label GPU probing, 3D labels slices, and larger sparse-ID pressure tests. |
@@ -125,25 +127,29 @@ new visual family.
    polished 2D example and improves 3D examples through labels, legends, readouts, and scale
    displays.
 
-2. **First-class vector/arrow visual.**
+2. **Retained textured mesh.**
+   Terrain, planet, Mars, and textured scientific surface examples require real UVs and texture
+   sampling in the mesh path. Baked vertex colors are not an acceptable substitute for v0.4.
+
+3. **First-class vector/arrow visual.**
    `SHOWCASE_WIND_FIELD` is the best near-term 2D showcase and should not permanently rely on
    manually built primitive triangles.
 
-3. **Large point/pixel and partial-update policy.**
+4. **Large point/pixel and partial-update policy.**
    LiDAR, dense raster, spatial omics, DAQ, and particle rendering all need confidence in buffer
    reuse, range updates, and high item counts.
 
-4. **Selection and picking beyond points/images.**
+5. **Selection and picking beyond points/images.**
    Marker, mesh region, label, path, and volume picking are the bridge from screenshots to real
    tools.
 
-5. **Scene-level custom material and compute framegraph.**
+6. **Scene-level custom material and compute framegraph.**
    This should follow the first gallery batch. It unlocks Gray-Scott, Mandelbrot, particles, and
    richer postprocess work without bypassing scene semantics.
 
-6. **Textured mesh/sphere/cubemap asset lane.**
-   Earth, Grand Canyon, Mars, terrain, and richer molecular surface examples need texture-aware
-   materials plus a practical cache/download policy.
+7. **Textured sphere/cubemap asset lane.**
+   Earth globe, skybox, and richer planet examples need texture-aware sphere/cubemap support plus a
+   practical cache/download policy after the retained textured-mesh slice lands.
 
 
 ## Notes On Example Staging
@@ -156,6 +162,10 @@ new visual family.
   colorbar, annotation, text, and probe state all meet there.
 - Allen/IBL brain work is a better near-term volume/transparency story than generic volume clipping
   because the current repository already has matching examples and data conventions.
+- Textured terrain or planet surface should be promoted into the first batch because retained
+  textured mesh is now a required v0.4 feature, not a v0.5 nicety.
+- CPU-side fluid/particle advection is a reasonable v0.4 stretch over dynamic image/point/path
+  updates; GPU particles should still wait for scene-level compute resources.
 - Gray-Scott, Mandelbrot, and particles are worth keeping high in the ambition stack, but they
   should wait for scene-level compute/custom resources rather than growing a parallel DRP-only
   example contract.
