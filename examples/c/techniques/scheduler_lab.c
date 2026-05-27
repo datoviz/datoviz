@@ -41,7 +41,7 @@
 #define LAB_HEIGHT 720
 #define LAB_POINT_COUNT 5
 #define LAB_IMAGE_SIZE  32
-#define LAB_HOVER_PROBE_INTERVAL_NS 33000000ULL
+#define LAB_HOVER_QUERY_INTERVAL_NS 33000000ULL
 
 
 
@@ -73,10 +73,10 @@ typedef struct SchedulerLabState
     uint32_t frame_count;
     uint32_t request_count;
     uint32_t mutation_count;
-    uint32_t pick_request_count;
-    uint32_t probe_request_count;
-    uint32_t pick_result_count;
-    uint32_t probe_result_count;
+    uint32_t item_query_request_count;
+    uint32_t pixel_query_request_count;
+    uint32_t item_query_result_count;
+    uint32_t pixel_query_result_count;
 
     uint64_t last_frame_ns;
     uint64_t fps_sample_ns;
@@ -88,10 +88,10 @@ typedef struct SchedulerLabState
     float hover_point_rgba[4];
     float hover_image_rgba[4];
 
-    char last_pick[128];
-    char last_probe[160];
+    char last_item_query[128];
+    char last_pixel_query[160];
 
-    uint64_t hover_probe_ns;
+    uint64_t hover_query_ns;
     bool cursor_valid;
     bool hover_point_color_valid;
     bool hover_image_color_valid;
@@ -123,7 +123,7 @@ static void _lab_update_points(SchedulerLabState* state)
 
 
 /**
- * Upload a small RGBA image texture used by probe requests.
+ * Upload a small RGBA image texture used by pixel query requests.
  *
  * @param state example state
  */
@@ -154,12 +154,12 @@ static void _lab_update_image(SchedulerLabState* state)
 
 
 /**
- * Convert a cursor y coordinate to the image-probe y coordinate used by the displayed texture.
+ * Convert a cursor y coordinate to the image-query y coordinate used by the displayed texture.
  *
  * @param y window y coordinate
- * @return image probe y coordinate
+ * @return image query y coordinate
  */
-static double _lab_image_probe_y(double y)
+static double _lab_image_query_y(double y)
 {
     return (double)LAB_HEIGHT - y;
 }
@@ -187,76 +187,76 @@ static void _lab_set_hover_point_color(SchedulerLabState* state, uint64_t item_i
 
 
 /**
- * Queue a point pick request at a window coordinate.
+ * Queue a point item query request at a window coordinate.
  *
  * @param state example state
  * @param x window x coordinate
  * @param y window y coordinate
  */
-static void _lab_queue_pick_at(SchedulerLabState* state, double x, double y)
+static void _lab_queue_item_query_at(SchedulerLabState* state, double x, double y)
 {
     if (state == NULL || state->panel == NULL)
         return;
-    state->pick_request_count++;
-    DvzPickRequest request = {
-        .request_id = state->pick_request_count,
+    state->item_query_request_count++;
+    DvzQueryRequest request = {
+        .request_id = state->item_query_request_count,
         .target = DVZ_SCENE_TARGET_ITEM,
         .hit_policy = DVZ_PICK_HIT_FRONTMOST,
     };
-    if (dvz_panel_pick(state->panel, x, y, &request) != 0)
-        dvz_fprintf(stderr, "dvz_panel_pick() failed\n");
+    if (dvz_panel_query(state->panel, x, y, &request) != 0)
+        dvz_fprintf(stderr, "dvz_panel_query(item) failed\n");
 }
 
 
 
 /**
- * Request a center pick on the point visual.
+ * Request a center item query on the point visual.
  *
  * @param state example state
  */
-static void _lab_queue_pick(SchedulerLabState* state)
+static void _lab_queue_item_query(SchedulerLabState* state)
 {
-    _lab_queue_pick_at(state, LAB_WIDTH * 0.5, LAB_HEIGHT * 0.5);
+    _lab_queue_item_query_at(state, LAB_WIDTH * 0.5, LAB_HEIGHT * 0.5);
 }
 
 
 
 /**
- * Queue an image probe request at a window coordinate.
+ * Queue an image pixel query request at a window coordinate.
  *
  * @param state example state
  * @param x window x coordinate
  * @param y window y coordinate
  */
-static void _lab_queue_probe_at(SchedulerLabState* state, double x, double y)
+static void _lab_queue_pixel_query_at(SchedulerLabState* state, double x, double y)
 {
     if (state == NULL || state->panel == NULL)
         return;
-    state->probe_request_count++;
-    DvzProbeRequest request = {
-        .request_id = state->probe_request_count,
+    state->pixel_query_request_count++;
+    DvzQueryRequest request = {
+        .request_id = state->pixel_query_request_count,
         .target = DVZ_SCENE_TARGET_PIXEL,
     };
-    if (dvz_panel_probe(state->panel, x, y, &request) != 0)
-        dvz_fprintf(stderr, "dvz_panel_probe() failed\n");
+    if (dvz_panel_query(state->panel, x, y, &request) != 0)
+        dvz_fprintf(stderr, "dvz_panel_query(pixel) failed\n");
 }
 
 
 
 /**
- * Request a center probe on the image visual.
+ * Request a center pixel query on the image visual.
  *
  * @param state example state
  */
-static void _lab_queue_probe(SchedulerLabState* state)
+static void _lab_queue_pixel_query(SchedulerLabState* state)
 {
-    _lab_queue_probe_at(state, LAB_WIDTH * 0.5, LAB_HEIGHT * 0.5);
+    _lab_queue_pixel_query_at(state, LAB_WIDTH * 0.5, LAB_HEIGHT * 0.5);
 }
 
 
 
 /**
- * Queue click picks and throttled hover probes from pointer input.
+ * Queue click item queries and throttled hover pixel queries from pointer input.
  *
  * @param router input router that emitted the event
  * @param event pointer event payload
@@ -280,17 +280,17 @@ static void _lab_pointer(DvzInputRouter* router, const DvzPointerEvent* event, v
     {
         uint64_t now = dvz_time_monotonic_ns();
         if (
-            state->hover_probe_ns == 0 ||
-            now - state->hover_probe_ns >= LAB_HOVER_PROBE_INTERVAL_NS)
+            state->hover_query_ns == 0 ||
+            now - state->hover_query_ns >= LAB_HOVER_QUERY_INTERVAL_NS)
         {
-            state->hover_probe_ns = now;
-            _lab_queue_pick_at(state, event->pos[0], event->pos[1]);
-            _lab_queue_probe_at(state, event->pos[0], _lab_image_probe_y(event->pos[1]));
+            state->hover_query_ns = now;
+            _lab_queue_item_query_at(state, event->pos[0], event->pos[1]);
+            _lab_queue_pixel_query_at(state, event->pos[0], _lab_image_query_y(event->pos[1]));
         }
     }
     else if (event->type == DVZ_POINTER_EVENT_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
     {
-        _lab_queue_pick_at(state, event->pos[0], event->pos[1]);
+        _lab_queue_item_query_at(state, event->pos[0], event->pos[1]);
     }
 }
 
@@ -313,7 +313,7 @@ static void _lab_request_frame(DvzView* win, void* user_data)
 
 
 /**
- * Update FPS counters and consume pick/probe results after each frame.
+ * Update FPS counters and consume query results after each frame.
  *
  * @param win view whose frame just completed
  * @param user_data example state
@@ -341,55 +341,60 @@ static void _lab_frame(DvzView* win, void* user_data)
         state->fps_sample_frames = 0;
     }
 
-    DvzPickResult pick = {0};
-    while (dvz_scene_poll_pick(state->scene, &pick))
+    DvzQueryResult query = {0};
+    while (dvz_scene_poll_query(state->scene, &query))
     {
-        state->pick_result_count++;
-        if (
-            pick.hit && pick.resolved_target == DVZ_SCENE_TARGET_ITEM &&
-            pick.resolved_id < LAB_POINT_COUNT)
+        if (query.resolved_target == DVZ_SCENE_TARGET_PIXEL)
         {
-            _lab_set_hover_point_color(state, pick.resolved_id);
+            state->pixel_query_result_count++;
+            if (
+                query.status == DVZ_QUERY_STATUS_HIT && query.hit &&
+                query.value_kind == DVZ_QUERY_VALUE_VEC4)
+            {
+                state->hover_image_color_valid = true;
+                for (uint32_t i = 0; i < 4; i++)
+                    state->hover_image_rgba[i] = (float)query.vector[i];
+                (void)snprintf(
+                    state->last_pixel_query, sizeof(state->last_pixel_query),
+                    "pixel query #%u: rgba=(%.2f, %.2f, %.2f, %.2f)",
+                    state->pixel_query_result_count, query.vector[0], query.vector[1],
+                    query.vector[2], query.vector[3]);
+            }
+            else
+            {
+                state->hover_image_color_valid = false;
+                (void)snprintf(
+                    state->last_pixel_query, sizeof(state->last_pixel_query),
+                    "pixel query #%u: miss", state->pixel_query_result_count);
+            }
+            continue;
+        }
+
+        state->item_query_result_count++;
+        if (
+            query.status == DVZ_QUERY_STATUS_HIT && query.hit &&
+            query.resolved_target == DVZ_SCENE_TARGET_ITEM && query.resolved_id < LAB_POINT_COUNT)
+        {
+            _lab_set_hover_point_color(state, query.resolved_id);
         }
         else
         {
             state->hover_point_color_valid = false;
         }
-        if (pick.hit && pick.has_data_position)
+        if (query.status == DVZ_QUERY_STATUS_HIT && query.hit && query.has_data_position)
         {
             (void)snprintf(
-                state->last_pick, sizeof(state->last_pick),
-                "pick #%u: item=%" PRIu64 " data=(%.2f, %.2f)", state->pick_result_count,
-                pick.resolved_id, pick.data_position[0], pick.data_position[1]);
+                state->last_item_query, sizeof(state->last_item_query),
+                "item query #%u: item=%" PRIu64 " data=(%.2f, %.2f)",
+                state->item_query_result_count, query.resolved_id, query.data_position[0],
+                query.data_position[1]);
         }
         else
         {
             (void)snprintf(
-                state->last_pick, sizeof(state->last_pick), "pick #%u: %s item=%" PRIu64,
-                state->pick_result_count, pick.hit ? "hit" : "miss", pick.resolved_id);
-        }
-    }
-
-    DvzProbeResult probe = {0};
-    while (dvz_scene_poll_probe(state->scene, &probe))
-    {
-        state->probe_result_count++;
-        if (probe.hit && probe.value_kind == DVZ_PROBE_VALUE_VEC4)
-        {
-            state->hover_image_color_valid = true;
-            for (uint32_t i = 0; i < 4; i++)
-                state->hover_image_rgba[i] = (float)probe.vector[i];
-            (void)snprintf(
-                state->last_probe, sizeof(state->last_probe),
-                "probe #%u: rgba=(%.2f, %.2f, %.2f, %.2f)", state->probe_result_count,
-                probe.vector[0], probe.vector[1], probe.vector[2], probe.vector[3]);
-        }
-        else
-        {
-            state->hover_image_color_valid = false;
-            (void)snprintf(
-                state->last_probe, sizeof(state->last_probe), "probe #%u: miss",
-                state->probe_result_count);
+                state->last_item_query, sizeof(state->last_item_query),
+                "item query #%u: %s item=%" PRIu64, state->item_query_result_count,
+                query.hit ? "hit" : "miss", query.resolved_id);
         }
     }
 
@@ -443,8 +448,8 @@ static void _lab_gui(DvzGui* gui, DvzView* win, void* user_data)
         dvz_gui_text(gui, line);
         (void)snprintf(line, sizeof(line), "mutations: %u", state->mutation_count);
         dvz_gui_text(gui, line);
-        dvz_gui_text(gui, state->last_pick);
-        dvz_gui_text(gui, state->last_probe);
+        dvz_gui_text(gui, state->last_item_query);
+        dvz_gui_text(gui, state->last_pixel_query);
         if (state->cursor_valid)
         {
             (void)snprintf(
@@ -491,10 +496,10 @@ static void _lab_gui(DvzGui* gui, DvzView* win, void* user_data)
             _lab_update_image(state);
             request_next = true;
         }
-        if (dvz_gui_button(gui, "Queue pick"))
-            _lab_queue_pick(state);
-        if (dvz_gui_button(gui, "Queue probe"))
-            _lab_queue_probe(state);
+        if (dvz_gui_button(gui, "Queue item query"))
+            _lab_queue_item_query(state);
+        if (dvz_gui_button(gui, "Queue pixel query"))
+            _lab_queue_pixel_query(state);
 
         point_changed |=
             dvz_gui_slider_float(gui, "Point size", &state->point_size, 4.0f, 72.0f);
@@ -566,12 +571,8 @@ int main(int argc, char** argv)
     rc = dvz_visual_set_data(image, "texcoords", texcoords, 4);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(image texcoords) failed");
 
-    rc = dvz_panel_add_visual(
-        panel, image,
-        &(DvzVisualAttachDesc){
-            .z_layer = -1,
-            .controller_mode = DVZ_CONTROLLER_FIXED,
-        });
+    dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_PIXEL);
+    rc = dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){.z_layer = -1});
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(image) failed");
 
     vec3 point_pos[LAB_POINT_COUNT] = {
@@ -608,8 +609,8 @@ int main(int argc, char** argv)
         .show_points = true,
         .show_image = true,
     };
-    (void)snprintf(state.last_pick, sizeof(state.last_pick), "pick: none");
-    (void)snprintf(state.last_probe, sizeof(state.last_probe), "probe: none");
+    (void)snprintf(state.last_item_query, sizeof(state.last_item_query), "item query: none");
+    (void)snprintf(state.last_pixel_query, sizeof(state.last_pixel_query), "pixel query: none");
     for (uint32_t i = 0; i < LAB_POINT_COUNT; i++)
         state.point_colors[i] = point_color[i];
     _lab_update_points(&state);
