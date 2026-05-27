@@ -10,6 +10,7 @@ DRP2, API, and validation specs.
 
 | File | Role |
 | --- | --- |
+| [CATALOG.md](CATALOG.md) | Scenario ID lookup table with stage and owning bundle. |
 | [PLANNING.md](PLANNING.md) | Release staging, gallery priorities, current support gaps, and pickup order. |
 | [FIXTURES.md](FIXTURES.md) | Compact one-feature fixtures and generated DRP2/WebGPU/runtime validation ideas. |
 | [ORGANIZATION.md](ORGANIZATION.md) | Cross-repository ownership, example lanes, scenario IDs, and metadata conventions. |

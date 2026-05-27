@@ -9,7 +9,8 @@
 This file replaces the previous split between north-star, release-staging, prioritization, and gap
 reports. Use it as the planning entry point. Keep detailed scenario shape in `scenarios/`, compact
 fixture coverage in [FIXTURES.md](FIXTURES.md), cross-repository placement in
-[ORGANIZATION.md](ORGANIZATION.md), and shared cache/API policy in [POLICIES.md](POLICIES.md).
+[ORGANIZATION.md](ORGANIZATION.md), scenario ID lookup in [CATALOG.md](CATALOG.md), and shared
+cache/API policy in [POLICIES.md](POLICIES.md).
 
 
 ## Gallery Thesis
