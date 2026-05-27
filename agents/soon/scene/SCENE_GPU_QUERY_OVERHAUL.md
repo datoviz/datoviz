@@ -160,14 +160,22 @@ Committed implementation slices:
 39. `scene: harden labels query failures`
     - labels query eligibility now rejects visuals without an integer label field,
     - tests cover missing labels field and forced labels readback failure without CPU fallback.
+40. `scene: drop dead query texel fields`
+    - removed unused `DvzSceneQueryPlan` texel-coordinate fields left behind after direct CPU
+      labels sampling was deleted.
+41. `scene: add native volume slice sample query`
+    - scalar slice-mode volume sample query now renders a GPU `r32uint` payload and decodes it as a
+      scalar query value,
+    - MIP/composite, integer texture, and RGBA volume sample policies remain unsupported rather than
+      falling back to CPU.
 
 Recorded validation after these commits:
 
 1. `just build`
 2. `just test frame_plan`
 3. `just test pick-probe`
-4. `just test query` with `31/31`
-5. `just test scene` with `451/451`
+4. `just test query` with `32/32`
+5. `just test scene` with `452/452`
 6. `git diff --check`
 7. `python testing/test_scene_query_source_guard.py`
 
@@ -395,6 +403,10 @@ Validation:
 
 Suggested subagent: mesh/volume query agent.
 
+Status: mesh identity query is native. Volume item query uses proxy geometry identity, and scalar
+slice-mode sample query is now GPU-backed through a rendered `r32uint` payload. Richer volume
+payloads and non-slice policies remain deferred.
+
 Primary ownership:
 
 1. `src/scene/visuals/mesh/query.c`
@@ -412,6 +424,8 @@ Tasks:
 5. Return unsupported for DVR/MIP/composite until exact GPU semantics land.
 6. Record MIP and DVR policy tests as skipped/deferred only if the test framework supports that
    clearly; otherwise keep them as TODO comments in the implementation plan.
+7. Extend the volume query payload beyond the scalar baseline to include UVW, voxel/sample id, and
+   displayed RGBA once multi-output query payload support is available.
 
 Validation:
 
@@ -540,7 +554,7 @@ The overhaul is complete when:
 3. generic query code has no visual-family internals,
 4. visual-family query code lives under `src/scene/visuals/<family>/`,
 5. rendered visual queries have no CPU fallback,
-6. labels and volume slice queries no longer sample retained CPU data,
+6. labels and scalar volume slice sample queries no longer sample retained CPU data,
 7. DRP2/FramePlan supports non-4-byte integer query payload readback,
 8. capability failures produce explicit unsupported results,
 9. examples use one panel query instead of manual pick/probe composition,

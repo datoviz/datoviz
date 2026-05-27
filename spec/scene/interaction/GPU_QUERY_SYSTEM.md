@@ -16,8 +16,8 @@ surface if it keeps the architecture ambiguous.
 
 ## Implementation Status
 
-Updated on 2026-05-27 after the native query executor replacement, public pick/probe removal, and
-rendered labels-query slices landed.
+Updated on 2026-05-27 after the native query executor replacement, public pick/probe removal,
+rendered labels-query, and first volume slice sample-query slices landed.
 
 Foundation now present in the tree:
 
@@ -47,8 +47,9 @@ Current implementation state:
 3. `src/scene/request_execute.c` and `src/scene/request_queue.c` have been removed.
 4. The visual-family `query.c` files own eligibility, plan build, decode, and readout for current
    native GPU-backed families.
-5. Native query does not use the old CPU volume slice probe path. Volume sample query currently
-   returns explicit unsupported until a GPU family path lands.
+5. Native query does not use the old CPU volume slice probe path. Scalar volume slice sample query
+   now renders a GPU `r32uint` payload; MIP/composite, integer, and RGBA volume samples still
+   return explicit unsupported until exact GPU policies land.
 6. Labels query is family-owned and now renders through labels query shaders into an `r32uint`
    payload. CPU category lookup and text formatting remain post-GPU readout work.
 7. Old public pick/probe APIs and public pick/probe request/result structs have been removed from
@@ -417,6 +418,11 @@ Recommended deferred policies:
 Until these semantics are implemented, DVR/composite volume query should return unsupported rather
 than a CPU ray or proxy-geometry approximation.
 
+Initial implementation note: scalar slice-mode volume sample query is GPU-backed through a rendered
+one-pixel `r32uint` payload. The first payload carries the sampled scalar quantized through the
+volume value range. UVW, voxel/sample ids, displayed RGBA, integer texture formats, RGBA volumes,
+MIP winner samples, and DVR first-hit policy remain pending.
+
 ### Text, Glyphs, And Annotations
 
 Initial payload:
@@ -481,7 +487,8 @@ Current code implications recorded on 2026-05-27:
 3. Current simple-family identity encoding uses the `r32uint` baseline.
 4. Labels query still computes UV readout coordinates from retained attrs, but the hit/value payload
    comes from the rendered GPU labels query pass rather than retained-field sampling.
-5. Volume slice probing currently uses CPU ray/box math and CPU sampled-field reads.
+5. Scalar volume slice sample query now uses a rendered GPU query shader. Older CPU ray/box and CPU
+   sampled-field query behavior must not return as a fallback.
 6. DRP2 already has explicit texture formats, color attachments, texture-to-buffer copies, and
    readback submissions.
 7. The scene capability snapshot now has query/readback fields, but scene query planning does not
