@@ -144,9 +144,6 @@ static bool _scene_execute_readback_plan(
 static bool _scene_runtime_config_matches(
     const DvzDrp2RuntimeConfig* a, const DvzDrp2RuntimeConfig* b);
 
-static bool _scene_request_executor_prepare(
-    DvzSceneRequestExecutor* executor, DvzDrp2Runtime* source_runtime);
-
 static bool _scene_image_probe_static_versions(
     const DvzVisual* visual, uint64_t* out_position_version, uint64_t* out_texcoord_version,
     uint64_t* out_texture_version);
@@ -1015,8 +1012,7 @@ static bool _scene_runtime_config_matches(
  * @param source_runtime the caller's main DRP2 runtime
  * @return true when the executor is ready
  */
-static bool _scene_request_executor_prepare(
-    DvzSceneRequestExecutor* executor, DvzDrp2Runtime* source_runtime)
+bool _scene_request_executor_prepare(DvzSceneRequestExecutor* executor, DvzDrp2Runtime* source_runtime)
 {
     ANN(executor);
     ANN(source_runtime);

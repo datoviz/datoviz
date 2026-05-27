@@ -451,6 +451,32 @@ bool _emitter_prepare_render_multi(
         bool point_like_desc = desc.kind == DVZ_SCENE_VISUAL_DESC_POINT ||
                                desc.kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
                                desc.kind == DVZ_SCENE_VISUAL_DESC_MARKER;
+        bool query_u32 =
+            render->u.render.picking && point_like_desc && cfg != NULL &&
+            cfg->color_target_format == VK_FORMAT_R32_UINT;
+        if (query_u32)
+        {
+            DvzSceneBuiltinShader query_shader =
+                (desc.kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+                 desc.kind == DVZ_SCENE_VISUAL_DESC_MARKER)
+                    ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_QUERY_U32
+                    : DVZ_SCENE_BUILTIN_SHADER_POINT_QUERY_U32;
+            ok = _runtime_key_append(
+                     shader.fragment_key, sizeof(shader.fragment_key), "_query_u32", report) &&
+                 _runtime_key_append(
+                     shader.pipeline_key, sizeof(shader.pipeline_key), "_query_u32", report);
+            if (!ok)
+                break;
+            shader.fragment_glsl = _builtin_shader_glsl(query_shader, true);
+            shader.fragment_wgsl = NULL;
+            shader.fragment_spirv_key =
+                query_shader == DVZ_SCENE_BUILTIN_SHADER_PIXEL_QUERY_U32
+                    ? "pixel_query_u32_frag"
+                    : "point_query_u32_frag";
+            shader.builtin_family = NULL;
+            shader.builtin_variant = NULL;
+            shader.builtin_pipeline = NULL;
+        }
         if (_scene_alpha_mode_is_blended(alpha_mode))
         {
             ok = _runtime_key_append(
@@ -864,6 +890,11 @@ bool _emitter_prepare_render_multi(
             else if (ok && (volume_occlusion_pass || scene_occlusion_pass))
             {
                 ok = dvz_drp2_stream_pipeline_set_color_target(stream, 0, VK_FORMAT_R32_SFLOAT);
+            }
+            else if (ok && cfg != NULL && cfg->color_target_format != 0)
+            {
+                ok = dvz_drp2_stream_pipeline_set_color_target(
+                    stream, 0, cfg->color_target_format);
             }
             else if (ok && (_scene_alpha_mode_is_blended(alpha_mode) || segment_coverage_blend))
             {
@@ -2744,17 +2775,23 @@ bool _emitter_emit_render(
     {
         /* Point-like visuals: native points for GLSL, instanced quads for WGSL. */
         bool picking = render->u.render.picking;
+        bool query_u32 =
+            picking && cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
         bool depth_cue = visual_meta != NULL && visual_meta->depth_cue_enabled && !picking;
         bool point_style = visual_meta != NULL && visual_meta->point_style_enabled && !is_pixel &&
                            !is_marker && !picking;
-        const char* suffix = picking                    ? "_pick"
+        const char* suffix = query_u32                  ? "_query_u32"
+                             : picking                  ? "_pick"
                              : point_style && depth_cue ? "_cue_style"
                              : point_style              ? "_style"
                              : depth_cue                ? "_cue"
                                                         : "";
 
         DvzSceneBuiltinShader shader = DVZ_SCENE_BUILTIN_SHADER_POINT;
-        if (is_marker)
+        if (query_u32)
+            shader = (is_pixel || is_marker) ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_QUERY_U32
+                                             : DVZ_SCENE_BUILTIN_SHADER_POINT_QUERY_U32;
+        else if (is_marker)
             shader =
                 picking ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK : DVZ_SCENE_BUILTIN_SHADER_MARKER;
         else if (is_pixel)
@@ -2942,10 +2979,18 @@ bool _emitter_emit_render(
     if (is_point_like)
     {
         bool picking = render->u.render.picking;
+        bool query_u32 =
+            picking && cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
         bool depth_cue = visual_meta != NULL && visual_meta->depth_cue_enabled && !picking;
         bool point_style = visual_meta != NULL && visual_meta->point_style_enabled && !is_pixel &&
                            !is_marker && !picking;
-        if (picking)
+        if (query_u32)
+        {
+            vs_spirv_key = (is_pixel || is_marker) ? "pixel_pick_vert" : "point_pick_vert";
+            fs_spirv_key =
+                (is_pixel || is_marker) ? "pixel_query_u32_frag" : "point_query_u32_frag";
+        }
+        else if (picking)
         {
             vs_spirv_key = (is_pixel || is_marker) ? "pixel_pick_vert" : "point_pick_vert";
             fs_spirv_key = (is_pixel || is_marker) ? "pixel_pick_frag" : "point_pick_frag";
@@ -3042,10 +3087,13 @@ bool _emitter_emit_render(
     if (is_point_like)
     {
         bool picking = render->u.render.picking;
+        bool query_u32 =
+            picking && cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
         bool depth_cue = visual_meta != NULL && visual_meta->depth_cue_enabled && !picking;
         bool point_style = visual_meta != NULL && visual_meta->point_style_enabled && !is_pixel &&
                            !is_marker && !picking;
-        const char* suffix = picking                    ? "_pick"
+        const char* suffix = query_u32                  ? "_query_u32"
+                             : picking                  ? "_pick"
                              : point_style && depth_cue ? "_cue_style"
                              : point_style              ? "_style"
                              : depth_cue                ? "_cue"
@@ -3144,6 +3192,8 @@ bool _emitter_emit_render(
             ok = ok && dvz_drp2_stream_create_render_pipeline(
                            stream, pipe_id, vs_id, fs_id, vertex_buffer_count);
         }
+        if (ok && cfg != NULL && cfg->color_target_format != 0)
+            ok = dvz_drp2_stream_pipeline_set_color_target(stream, 0, cfg->color_target_format);
     }
 
     uint64_t color_id = 0;

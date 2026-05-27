@@ -37,9 +37,19 @@
 
 typedef struct DvzSceneQueryPayload DvzSceneQueryPayload;
 typedef struct DvzSceneQueryFamilyOps DvzSceneQueryFamilyOps;
+typedef struct DvzSceneQueryBuildContext DvzSceneQueryBuildContext;
+typedef struct DvzSceneQueryDecodeContext DvzSceneQueryDecodeContext;
+typedef struct DvzSceneQueryReadoutContext DvzSceneQueryReadoutContext;
+typedef struct DvzSceneQueryPlan DvzSceneQueryPlan;
 
 typedef bool (*DvzSceneQueryEligible)(
     const DvzPanel* panel, const DvzVisual* visual, const DvzQueryRequest* request);
+typedef bool (*DvzSceneQueryBuild)(
+    const DvzSceneQueryBuildContext* ctx, DvzSceneQueryPlan* out_plan);
+typedef bool (*DvzSceneQueryDecode)(
+    const DvzSceneQueryDecodeContext* ctx, DvzQueryResult* out_result);
+typedef bool (*DvzSceneQueryReadout)(
+    const DvzSceneQueryReadoutContext* ctx, DvzQueryResult* result);
 
 
 
@@ -53,6 +63,44 @@ struct DvzSceneQueryPayload
 };
 
 
+struct DvzSceneQueryBuildContext
+{
+    DvzFigure* figure;
+    DvzPanel* panel;
+    DvzVisual* visual;
+    const DvzPendingQueryRequest* pending;
+    const DvzCapabilitySnapshot* caps;
+    DvzQueryProfile profile;
+    vec2 request_ndc;
+};
+
+
+struct DvzSceneQueryPlan
+{
+    DvzSceneProbePlan scratch;
+    uint32_t target_width;
+    uint32_t target_height;
+    uint32_t format;
+    uint32_t byte_size;
+};
+
+
+struct DvzSceneQueryDecodeContext
+{
+    const DvzSceneQueryBuildContext* build;
+    const DvzSceneQueryPlan* plan;
+    const uint8_t* bytes;
+    uint32_t byte_size;
+};
+
+
+struct DvzSceneQueryReadoutContext
+{
+    const DvzSceneQueryBuildContext* build;
+    const DvzSceneQueryPlan* plan;
+};
+
+
 struct DvzSceneQueryFamilyOps
 {
     const char* name;
@@ -60,6 +108,9 @@ struct DvzSceneQueryFamilyOps
     uint32_t pick_capabilities;
     uint32_t query_flags;
     DvzSceneQueryEligible eligible;
+    DvzSceneQueryBuild build;
+    DvzSceneQueryDecode decode;
+    DvzSceneQueryReadout readout;
 };
 
 
@@ -73,6 +124,17 @@ uint32_t _dvz_scene_query_registry_count(void);
 const DvzSceneQueryFamilyOps* _dvz_scene_query_registry_get(uint32_t index);
 
 const DvzSceneQueryFamilyOps* _dvz_scene_query_registry_find(DvzSceneVisualFamily family);
+
+bool _dvz_scene_query_execute_family(
+    DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
+    const DvzCapabilitySnapshot* caps, const DvzPendingQueryRequest* pending,
+    const vec2 request_ndc, DvzQueryProfile profile, DvzVisual* visual,
+    const DvzSceneQueryFamilyOps* ops, DvzQueryResult* out_result);
+
+bool _dvz_scene_query_execute_readback(
+    const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
+    DvzFramePlan* plan, uint32_t target_width, uint32_t target_height, uint32_t color_format,
+    uint8_t* bytes, uint32_t byte_size, bool* out_executed);
 
 const DvzSceneQueryFamilyOps* _dvz_scene_query_point_ops(void);
 

@@ -124,6 +124,10 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "point_pick_frag" : "point_pick_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK:
         return fragment ? "pixel_pick_frag" : "pixel_pick_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_POINT_QUERY_U32:
+        return fragment ? "point_query_u32_frag" : "point_pick_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PIXEL_QUERY_U32:
+        return fragment ? "pixel_query_u32_frag" : "pixel_pick_vert";
     case DVZ_SCENE_BUILTIN_SHADER_MARKER:
         return fragment ? "marker_frag" : "marker_vert";
     case DVZ_SCENE_BUILTIN_SHADER_MARKER_SELECTION:

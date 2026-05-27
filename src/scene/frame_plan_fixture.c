@@ -445,6 +445,7 @@ DvzFramePlanEmitConfig dvz_frame_plan_emit_config(void)
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
     cfg.external_color_target = false;
     cfg.color_target_id = DRP2_ID_COLOR_TARGET;
+    cfg.color_target_format = 0;
     cfg.target_width = 4;
     cfg.target_height = 4;
     cfg.device_scale_x = 1.0f;

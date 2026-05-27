@@ -23,6 +23,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "datoviz/scene.h"
+#include "internal.h"
 
 
 
@@ -485,6 +486,32 @@ static DvzVisual* _query_candidate_visual(const DvzPanel* panel, uint32_t capabi
 }
 
 
+/**
+ * Return the family query operation table eligible for one visual.
+ *
+ * @param panel the panel
+ * @param visual the visual
+ * @param request the query request
+ * @return operation table, or NULL when no native family path is eligible
+ */
+static const DvzSceneQueryFamilyOps* _query_family_ops_for_visual(
+    const DvzPanel* panel, const DvzVisual* visual, const DvzQueryRequest* request)
+{
+    ANN(panel);
+    ANN(visual);
+    ANN(request);
+    for (uint32_t i = 0; i < _dvz_scene_query_registry_count(); i++)
+    {
+        const DvzSceneQueryFamilyOps* ops = _dvz_scene_query_registry_get(i);
+        if (ops == NULL || ops->eligible == NULL)
+            continue;
+        if (ops->eligible(panel, visual, request))
+            return ops;
+    }
+    return NULL;
+}
+
+
 
 /**
  * Initialize a query result from one pending request.
@@ -554,6 +581,27 @@ static bool _query_process_pending(
         out_result->status = caps->supports_readback ? DVZ_QUERY_STATUS_UNSUPPORTED_QUERY_PROFILE
                                                      : DVZ_QUERY_STATUS_READBACK_FAILED;
         return true;
+    }
+
+    for (int32_t i = (int32_t)pending->panel->visual_count - 1; i >= 0; i--)
+    {
+        DvzVisual* visual = pending->panel->visuals[i].visual;
+        if (visual == NULL || !visual->visible)
+            continue;
+        if ((visual->pick_capabilities & capability) == 0)
+            continue;
+        const DvzSceneQueryFamilyOps* ops =
+            _query_family_ops_for_visual(pending->panel, visual, &pending->request);
+        if (ops == NULL || ops->build == NULL || ops->decode == NULL)
+            continue;
+        if (_dvz_scene_query_execute_family(
+                figure, runtime, executor, caps, pending, request_ndc, out_result->profile,
+                visual, ops, out_result))
+        {
+            out_result->freshness_serial = pending->freshness_serial;
+            out_result->profile = _query_select_profile(&pending->request, caps);
+            return true;
+        }
     }
 
     DvzVisual* visual = _query_candidate_visual(pending->panel, capability);

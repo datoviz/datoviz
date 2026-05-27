@@ -61,6 +61,9 @@ bool _render_pass_resolve_color_target(
         return false;
     uint32_t width = cfg != NULL && cfg->target_width > 0 ? cfg->target_width : 4;
     uint32_t height = cfg != NULL && cfg->target_height > 0 ? cfg->target_height : 4;
+    uint32_t format = cfg != NULL && cfg->color_target_format != 0 ?
+                          cfg->color_target_format :
+                          VK_FORMAT_R8G8B8A8_UNORM;
     if (
         needs_create || resource->texture_width == 0 || resource->texture_height == 0 ||
         resource->texture_depth == 0)
@@ -68,24 +71,25 @@ bool _render_pass_resolve_color_target(
         resource->texture_width = width;
         resource->texture_height = height;
         resource->texture_depth = 1;
-        resource->texture_format = VK_FORMAT_R8G8B8A8_UNORM;
+        resource->texture_format = format;
         needs_create = true;
     }
     else if (
         width != resource->texture_width || height != resource->texture_height ||
-        resource->texture_depth != 1 || resource->texture_format != VK_FORMAT_R8G8B8A8_UNORM)
+        resource->texture_depth != 1 || resource->texture_format != format)
     {
         resource->texture_width = width;
         resource->texture_height = height;
         resource->texture_depth = 1;
-        resource->texture_format = VK_FORMAT_R8G8B8A8_UNORM;
+        resource->texture_format = format;
         needs_create = true;
     }
     if (needs_create)
     {
         uint32_t usage =
             DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
-        if (!dvz_drp2_stream_create_texture_2d_usage(stream, resource->id, width, height, usage))
+        if (!dvz_drp2_stream_create_texture_2d_format_usage(
+                stream, resource->id, width, height, format, usage))
             return false;
     }
     *out_id = resource->id;
