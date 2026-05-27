@@ -775,6 +775,8 @@ int test_scene_query_queue_processes_native_results(TstContext* suite, const Tst
 
 int test_scene_query_queue_coalesces_pending_requests(TstContext* suite, const TstCase* item);
 
+int test_scene_pixel_query_accepts_square_corner(TstContext* suite, const TstCase* item);
+
 int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstContext* suite, const TstCase* item);
 
 int test_scene_rejects_range_mutation_while_emitted_stream_is_live(TstContext* suite, const TstCase* item);
