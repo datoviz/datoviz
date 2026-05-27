@@ -217,7 +217,7 @@ bool _create_volume_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id)
 {
     ANN(stream);
 
-    DvzDrp2BindGroupLayoutEntry entries[5] = {
+    DvzDrp2BindGroupLayoutEntry entries[6] = {
         {
             .binding = DVZ_SCENE_SHADER_BINDING_VOLUME_TEXTURE,
             .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
@@ -248,8 +248,14 @@ bool _create_volume_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id)
             .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
             .access = DVZ_DRP2_BINDING_ACCESS_READ,
         },
+        {
+            .binding = DVZ_SCENE_SHADER_BINDING_VOLUME_LABEL_LOOKUP,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
     };
-    return dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 5, entries);
+    return dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 6, entries);
 }
 
 
@@ -700,6 +706,40 @@ bool _resolve_volume_dummy_transfer(
 
 
 /**
+ * Resolve a dummy sparse label lookup buffer for non-label volume pipelines.
+ *
+ * @param emitter frame-plan emitter carrying persistent object ids.
+ * @param stream destination DRP2 command stream.
+ * @param out_id resolved dummy buffer id.
+ * @return whether the buffer was resolved.
+ */
+static bool _resolve_volume_dummy_label_lookup(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t* out_id)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(out_id);
+
+    bool is_new = false;
+    uint64_t id = _obj_id(emitter, "_buf_volume_label_lookup_dummy", &is_new);
+    if (id == 0)
+        return false;
+    if (is_new)
+    {
+        uint32_t zero[4] = {0, 0, 0, 0};
+        uint32_t usage = DVZ_DRP2_BUFFER_USAGE_STORAGE | DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+        if (!dvz_drp2_stream_create_buffer(stream, id, sizeof(zero), usage) ||
+            !dvz_drp2_stream_write_buffer_bytes(stream, id, 0, sizeof(zero), zero))
+        {
+            return false;
+        }
+    }
+    *out_id = id;
+    return true;
+}
+
+
+/**
  * Convert retained volume state into the shader uniform payload.
  *
  * @param state retained volume state.
@@ -804,6 +844,16 @@ bool _resolve_volume_bind_group(
         if (!_resolve_volume_dummy_transfer(emitter, stream, &transfer_texture_id))
             return false;
     }
+    uint64_t label_lookup_buffer_id = bind->volume_label_lookup_buffer_id;
+    uint64_t label_lookup_buffer_size = bind->volume_label_lookup_buffer_size;
+    if (label_lookup_buffer_id == 0)
+    {
+        if (!_resolve_volume_dummy_label_lookup(emitter, stream, &label_lookup_buffer_id))
+            return false;
+        label_lookup_buffer_size = 4 * sizeof(uint32_t);
+    }
+    if (label_lookup_buffer_size == 0)
+        label_lookup_buffer_size = 4 * sizeof(uint32_t);
 
     bool is_new = false;
     char params_buf_key[96], params_slot_key[96], bg_key[128];
@@ -816,9 +866,10 @@ bool _resolve_volume_bind_group(
         "_slot_volume_params_%u_%u_%" PRIu64 "_tf_%" PRIu64, bind->volume_visual_index,
         bind->volume_bind_variant, bind->volume_texture_id, transfer_texture_id);
     dvz_snprintf(
-        bg_key, sizeof(bg_key), "_bg_volume_%u_%u_%" PRIu64 "_tf_%" PRIu64 "_depth_%" PRIu64,
+        bg_key, sizeof(bg_key),
+        "_bg_volume_%u_%u_%" PRIu64 "_tf_%" PRIu64 "_depth_%" PRIu64 "_lut_%" PRIu64,
         bind->volume_visual_index, bind->volume_bind_variant, bind->volume_texture_id,
-        transfer_texture_id, depth_texture_id);
+        transfer_texture_id, depth_texture_id, label_lookup_buffer_id);
 
     uint32_t usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
                      DVZ_DRP2_BUFFER_USAGE_COPY_DST;
@@ -834,7 +885,7 @@ bool _resolve_volume_bind_group(
         return false;
     if (is_new)
     {
-        DvzDrp2BindGroupEntry entries[5] = {
+        DvzDrp2BindGroupEntry entries[6] = {
             {
                 .binding = 0,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
@@ -867,8 +918,16 @@ bool _resolve_volume_bind_group(
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
                 .resource_id = transfer_texture_id,
             },
+            {
+                .binding = 5,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+                .resource_id = label_lookup_buffer_id,
+                .offset = 0,
+                .size = label_lookup_buffer_size,
+            },
         };
-        if (!dvz_drp2_stream_create_bind_group_entries(stream, bg_id, bgl_id, 5, entries))
+        if (!dvz_drp2_stream_create_bind_group_entries(stream, bg_id, bgl_id, 6, entries))
             return false;
     }
 

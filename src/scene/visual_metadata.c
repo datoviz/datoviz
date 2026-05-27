@@ -166,6 +166,10 @@ bool _scene_visual_frame_plan_metadata(
                 visual_index, metadata->volume_transfer_texture_id,
                 sizeof(metadata->volume_transfer_texture_id)))
             return false;
+        if (!_scene_resource_key_volume_label_lookup(
+                visual_index, metadata->volume_label_lookup_id,
+                sizeof(metadata->volume_label_lookup_id)))
+            return false;
     }
     if (visual->type == DVZ_VISUAL_TYPE_LABELS)
     {

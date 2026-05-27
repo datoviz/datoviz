@@ -118,6 +118,8 @@ bool _scene_visual_bind_desc(
         out->uses_volume_set1 = caps.uses_volume_set;
         out->volume_texture_id = visual->volume_texture_id;
         out->volume_transfer_texture_id = visual->volume_transfer_texture_id;
+        out->volume_label_lookup_buffer_id = visual->volume_label_lookup_buffer_id;
+        out->volume_label_lookup_buffer_size = visual->volume_label_lookup_buffer_size;
         out->volume_visual_index = visual->volume_visual_index;
         out->volume_transfer_rgba = visual->volume_transfer_rgba;
         out->volume_occluded = visual->volume_occluded;

@@ -23,6 +23,7 @@
 #include "_overflow.h"
 #include "../_scene.h"
 #include "../_scene_emit.h"
+#include "../colorizer.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"
 #include "datoviz/scene.h"
@@ -58,6 +59,81 @@ static bool _colorbar_stream_has_pipeline_label(
             dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
         if (pipeline_label != NULL && strstr(pipeline_label, label) != NULL)
             return true;
+    }
+    return false;
+}
+
+
+/**
+ * Return whether a stream contains a sparse volume-label lookup buffer.
+ *
+ * @param stream the emitted command stream
+ * @param out_buffer_id optional output buffer id
+ * @param out_entries optional output lookup entries
+ * @param out_entry_count optional output entry count
+ * @return whether a lookup payload was found
+ */
+static bool _stream_find_volume_label_lookup(
+    const DvzDrp2CommandStream* stream, uint64_t* out_buffer_id,
+    const DvzSceneLabelLookupEntry** out_entries, uint32_t* out_entry_count)
+{
+    ANN(stream);
+    if (out_buffer_id != NULL)
+        *out_buffer_id = 0;
+    if (out_entries != NULL)
+        *out_entries = NULL;
+    if (out_entry_count != NULL)
+        *out_entry_count = 0;
+
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_WRITE_BUFFER)
+            continue;
+        const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
+        if (label == NULL || strstr(label, "volume_label_lookup") == NULL)
+            continue;
+        if (cmd->u.write_buffer.data_raw == NULL ||
+            cmd->u.write_buffer.size < sizeof(DvzSceneLabelLookupEntry))
+            continue;
+        if (out_buffer_id != NULL)
+            *out_buffer_id = cmd->u.write_buffer.buffer_id;
+        if (out_entries != NULL)
+            *out_entries = (const DvzSceneLabelLookupEntry*)cmd->u.write_buffer.data_raw;
+        if (out_entry_count != NULL)
+            *out_entry_count = (uint32_t)(cmd->u.write_buffer.size /
+                                          sizeof(DvzSceneLabelLookupEntry));
+        return true;
+    }
+    return false;
+}
+
+
+/**
+ * Return whether a stream binds the lookup buffer at volume binding 5.
+ *
+ * @param stream the emitted command stream
+ * @param buffer_id expected lookup buffer id
+ * @return whether the binding was found
+ */
+static bool _stream_binds_volume_label_lookup(const DvzDrp2CommandStream* stream, uint64_t buffer_id)
+{
+    ANN(stream);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+            continue;
+        for (uint32_t j = 0; j < cmd->u.create_bind_group.entry_count; j++)
+        {
+            const DvzDrp2BindGroupEntry* entry = &cmd->u.create_bind_group.entries[j];
+            if (entry->binding == 5 &&
+                entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER &&
+                entry->resource_id == buffer_id)
+            {
+                return true;
+            }
+        }
     }
     return false;
 }
@@ -225,6 +301,21 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
     AT(categorical->category_count == 3);
     AT(categorical->categories[2].category_id == 4000000000LL);
 
+    DvzScaleCategory many_categories[96] = {0};
+    for (uint32_t i = 0; i < 96; i++)
+    {
+        many_categories[i] = (DvzScaleCategory){
+            .category_id = (DvzCategoryId)(1000 + i),
+            .order = i,
+            .label = NULL,
+            .color = {(uint8_t)i, 0, 255, 255},
+        };
+    }
+    AT(dvz_scale_set_categories(categorical, many_categories, 96));
+    AT(categorical->category_count == 96);
+    AT(categorical->category_capacity >= 96);
+    AT(categorical->categories[95].category_id == 1095);
+
     DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
     ANN(continuous);
     AT_EXPECTED_ERROR_STRICT(suite, !dvz_scale_set_categories(continuous, categories, 3));
@@ -232,6 +323,8 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
 
     AT(dvz_scale_set_categories(categorical, NULL, 0));
     AT(categorical->category_count == 0);
+    AT(categorical->category_capacity == 0);
+    AT(categorical->categories == NULL);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2627,7 +2720,7 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
             AT(cmd->u.create_texture.depth == depth);
         }
         if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP &&
-            cmd->u.create_bind_group.entry_count == 5)
+            cmd->u.create_bind_group.entry_count == 6)
         {
             bool binds_volume_texture = false;
             uint64_t binding4_id = 0;
@@ -2900,6 +2993,170 @@ int test_scene_volume_signed_label_composite_uses_first_hit_shader(
     return 0;
 }
 
+
+
+/**
+ * Ensure sparse label volumes emit and bind an SSBO lookup table.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_volume_label_sparse_lookup_buffer(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+    uint32_t labels[8] = {0, 23, 4000000000u, 0, 23, 4000000000u, 0, 23};
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R32_UINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field,
+        &(DvzFieldDataView){
+            .data = labels,
+            .bytes_per_row = 2 * sizeof(uint32_t),
+            .rows_per_image = 2,
+        }));
+    AT(dvz_visual_set_field(volume, "field", field));
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    ANN(scale);
+    DvzScaleCategory categories[] = {
+        {.category_id = 23, .order = 0, .label = "low", .color = {1, 2, 3, 4}},
+        {.category_id = 4000000000LL, .order = 1, .label = "high", .color = {5, 6, 7, 8}},
+    };
+    AT(dvz_scale_set_categories(scale, categories, 2));
+    AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = {.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL};
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    uint64_t lookup_buffer_id = 0;
+    const DvzSceneLabelLookupEntry* entries = NULL;
+    uint32_t entry_count = 0;
+    AT(_stream_find_volume_label_lookup(stream, &lookup_buffer_id, &entries, &entry_count));
+    AT(lookup_buffer_id != 0);
+    ANN(entries);
+    AT(entry_count == 3);
+    AT(entries[0].key == 2);
+    AT(entries[1].key == 23);
+    AT(entries[1].rgba == 0x04030201u);
+    AT(entries[2].key == 4000000000u);
+    AT(entries[2].rgba == 0x08070605u);
+    AT(_stream_binds_volume_label_lookup(stream, lookup_buffer_id));
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure signed sparse label volumes preserve negative keys in the SSBO lookup table.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_volume_signed_label_sparse_lookup_buffer(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+    int32_t labels[8] = {0, -7, 23, 0, -7, 23, 0, -7};
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R32_SINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field,
+        &(DvzFieldDataView){
+            .data = labels,
+            .bytes_per_row = 2 * sizeof(int32_t),
+            .rows_per_image = 2,
+        }));
+    AT(dvz_visual_set_field(volume, "field", field));
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    ANN(scale);
+    DvzScaleCategory categories[] = {
+        {.category_id = -7, .order = 0, .label = "negative", .color = {9, 10, 11, 12}},
+        {.category_id = 23, .order = 1, .label = "positive", .color = {1, 2, 3, 4}},
+    };
+    AT(dvz_scale_set_categories(scale, categories, 2));
+    AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = {.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL};
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    uint64_t lookup_buffer_id = 0;
+    const DvzSceneLabelLookupEntry* entries = NULL;
+    uint32_t entry_count = 0;
+    AT(_stream_find_volume_label_lookup(stream, &lookup_buffer_id, &entries, &entry_count));
+    AT(lookup_buffer_id != 0);
+    ANN(entries);
+    AT(entry_count == 3);
+    AT(entries[0].key == 2);
+    AT(entries[1].key == 23);
+    AT(entries[1].rgba == 0x04030201u);
+    AT(entries[2].key == (uint32_t)(int32_t)-7);
+    AT(entries[2].rgba == 0x0c0b0a09u);
+    AT(_stream_binds_volume_label_lookup(stream, lookup_buffer_id));
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
 
 
 /**
@@ -3765,6 +4022,8 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_volume_label_slice_uses_categorical_scale);
     TST_CASE(test_scene_volume_label_composite_uses_first_hit_shader);
     TST_CASE(test_scene_volume_signed_label_composite_uses_first_hit_shader);
+    TST_CASE(test_scene_volume_label_sparse_lookup_buffer);
+    TST_CASE(test_scene_volume_signed_label_sparse_lookup_buffer);
     TST_CASE(test_scene_volume_label_mip_reports_unsupported);
     TST_CASE(test_scene_volume_visual_metadata_lowering);
     TST_CASE(test_scene_volume_scalar_transfer_function_uploads_rgba);

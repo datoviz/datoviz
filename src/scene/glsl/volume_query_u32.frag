@@ -163,14 +163,14 @@ void main()
     {
         discard;
     }
-    outValue = id + 1u;
+    outValue = id;
 #elif defined(DVZ_VOLUME_LABEL_SINT_QUERY)
     int id = texelFetch(isampler3D(tex, samp), label_coord(uvw), 0).r;
     if (id == 0)
     {
         discard;
     }
-    outValue = uint(id) + 1u;
+    outValue = uint(id);
 #else
     float sample_value = texture(sampler3D(tex, samp), texture_uvw(uvw)).r;
     outValue = encode_scalar(sample_value);

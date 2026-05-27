@@ -205,7 +205,7 @@ void main()
             continue;
         }
         uint key = uint(id);
-        vec4 mapped = id > 0 ? label_palette_color(key) : fallback_label_color(key);
+        vec4 mapped = label_palette_color(key);
         mapped.a *= volume.params.x;
         if (mapped.a <= 0.0) {
             continue;

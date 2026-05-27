@@ -275,7 +275,7 @@ void main()
         discard;
     }
     uint key = uint(id);
-    outColor = id > 0 ? label_palette_color(key) : fallback_label_color(key);
+    outColor = label_palette_color(key);
     outColor.a *= volume.params.x * visibility;
 #else
     vec4 sample_value = texture(sampler3D(tex, samp), texture_uvw(uvw));

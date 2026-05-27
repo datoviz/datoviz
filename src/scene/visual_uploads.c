@@ -1147,6 +1147,20 @@ bool _scene_resource_key_volume_transfer(uint32_t visual_index, char* out, size_
 
 
 /**
+ * Format the per-volume sparse label lookup resource id.
+ *
+ * @param visual_index figure-local visual index
+ * @param out output buffer
+ * @param out_size output buffer size
+ * @return whether the key was written
+ */
+bool _scene_resource_key_volume_label_lookup(uint32_t visual_index, char* out, size_t out_size)
+{
+    return dvz_snprintf(out, out_size, "visual.%u.volume_label_lookup", visual_index) > 0;
+}
+
+
+/**
  * Interpolate retained volume alpha stops at one normalized value.
  *
  * @param state volume state
@@ -1198,6 +1212,35 @@ static bool _scene_volume_uses_color_texture(const DvzVisual* visual)
     }
     return _scene_sample_profile_uses_transfer(&profile) ||
            _scene_sample_profile_is_integer_label(&profile);
+}
+
+
+/**
+ * Return whether a visual needs a sparse label lookup storage buffer.
+ *
+ * @param visual the volume visual
+ * @param out_signed output signed-key flag
+ * @return whether the visual uses an integer label profile
+ */
+static bool _scene_volume_uses_label_lookup(const DvzVisual* visual, bool* out_signed)
+{
+    ANN(visual);
+    if (out_signed != NULL)
+        *out_signed = false;
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || visual->field == NULL)
+        return false;
+    DvzSceneSampleProfile profile = {0};
+    if (!_scene_sample_profile_resolve(
+            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+            &profile))
+    {
+        return false;
+    }
+    if (!_scene_sample_profile_is_integer_label(&profile))
+        return false;
+    if (out_signed != NULL)
+        *out_signed = _scene_sample_profile_is_signed_label(&profile);
+    return true;
 }
 
 
@@ -1309,6 +1352,68 @@ static bool _scene_prepare_volume_transfer_texture(DvzVisual* visual, const void
         rgba[4 * i + 3] = (uint8_t)((float)rgba[4 * i + 3] * alpha + 0.5f);
     }
     *out_data = visual->texture.rgba;
+    return true;
+}
+
+
+/**
+ * Build the sparse label lookup table for a label volume.
+ *
+ * @param visual the volume visual
+ * @param out_data output lookup bytes
+ * @param out_size output byte size
+ * @return whether lookup bytes are available
+ */
+static bool
+_scene_prepare_volume_label_lookup(DvzVisual* visual, const void** out_data, uint64_t* out_size)
+{
+    ANN(visual);
+    ANN(out_data);
+    ANN(out_size);
+    *out_data = NULL;
+    *out_size = 0;
+    bool signed_keys = false;
+    if (!_scene_volume_uses_label_lookup(visual, &signed_keys))
+        return false;
+
+    DvzSceneColorizer colorizer = {0};
+    (void)_scene_colorizer_from_scale(
+        visual->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer);
+    uint32_t entry_count = 1;
+    if (!_scene_colorizer_label_lookup_extent(&colorizer, &entry_count))
+        return false;
+    if (entry_count == 0)
+        entry_count = 1;
+
+    uint64_t size = 0;
+    if (_dvz_mul_u64_overflows(entry_count, sizeof(DvzSceneLabelLookupEntry), &size))
+    {
+        log_error("label volume lookup size overflow");
+        return false;
+    }
+    if (visual->texture.label_lookup == NULL || visual->texture.label_lookup_size != size)
+    {
+        if (visual->texture.label_lookup != NULL)
+            dvz_free(visual->texture.label_lookup);
+        visual->texture.label_lookup = dvz_calloc(size, 1);
+        if (visual->texture.label_lookup == NULL)
+        {
+            visual->texture.label_lookup_size = 0;
+            log_error("label volume lookup allocation failed");
+            return false;
+        }
+        visual->texture.label_lookup_size = size;
+    }
+    if (!_scene_colorizer_build_label_lookup(
+            &colorizer, signed_keys, (DvzSceneLabelLookupEntry*)visual->texture.label_lookup,
+            entry_count))
+    {
+        log_error("label volume lookup build failed");
+        return false;
+    }
+
+    *out_data = visual->texture.label_lookup;
+    *out_size = size;
     return true;
 }
 
@@ -1592,6 +1697,53 @@ _scene_emit_volume_transfer_texture_upload(DvzFramePlan* plan, DvzVisual* visual
 }
 
 
+/**
+ * Emit the sparse label lookup storage-buffer upload for a volume visual.
+ *
+ * @param plan the destination frame plan
+ * @param visual the volume visual
+ * @param visual_index the scene visual index
+ */
+static void
+_scene_emit_volume_label_lookup_upload(DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+{
+    ANN(plan);
+    ANN(visual);
+    if (!_scene_volume_uses_label_lookup(visual, NULL))
+    {
+        return;
+    }
+
+    char lookup_resource_id[128];
+    const void* lookup_data = NULL;
+    uint64_t lookup_size = 0;
+    if (!_scene_resource_key_volume_label_lookup(
+            visual_index, lookup_resource_id, sizeof(lookup_resource_id)) ||
+        !_scene_prepare_volume_label_lookup(visual, &lookup_data, &lookup_size) ||
+        !dvz_frame_plan_upload_bytes(
+            plan, lookup_resource_id, 0, lookup_size, "volume_label_lookup", lookup_data))
+    {
+        log_error("volume label lookup upload failed");
+        return;
+    }
+    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+    node->u.upload.buffer_usage =
+        DVZ_DRP2_BUFFER_USAGE_STORAGE | DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+    node->u.upload.item_stride = sizeof(DvzSceneLabelLookupEntry);
+    if (!dvz_frame_plan_upload_metadata(
+            plan,
+            &(DvzFramePlanUploadMeta){
+                .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
+                .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE,
+                .visual_index = visual_index,
+                .buffer_index = UINT32_MAX,
+            }))
+    {
+        log_error("volume label lookup metadata upload failed");
+    }
+}
+
+
 
 /**
  * Emit family-owned texture uploads after shared buffer uploads.
@@ -1609,6 +1761,7 @@ static void _scene_emit_visual_family_texture_uploads(
     _scene_emit_image_like_texture_upload(figure, plan, visual, visual_index);
     _scene_emit_volume_source_texture_upload(figure, plan, visual, visual_index);
     _scene_emit_volume_transfer_texture_upload(plan, visual, visual_index);
+    _scene_emit_volume_label_lookup_upload(plan, visual, visual_index);
 }
 
 

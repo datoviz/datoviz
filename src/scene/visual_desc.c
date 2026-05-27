@@ -759,6 +759,8 @@ static bool _scene_visual_desc_from_metadata(
             _scene_visual_resource_lookup_label(&emitter->resources, meta->volume_texture_id);
         uint64_t transfer_tex_id = _scene_visual_resource_lookup_label(
             &emitter->resources, meta->volume_transfer_texture_id);
+        uint64_t label_lookup_id = _scene_visual_resource_lookup_label(
+            &emitter->resources, meta->volume_label_lookup_id);
         if (tex_id == 0)
             tex_id = _scene_visual_resource_lookup_label(&emitter->resources, meta->texture_id);
         if (uvw_id == 0 || tex_id == 0)
@@ -807,6 +809,9 @@ static bool _scene_visual_desc_from_metadata(
         out->vbuf_ids[out->vbuf_count++] = uvw_id;
         out->volume_texture_id = tex_id;
         out->volume_transfer_texture_id = transfer_tex_id;
+        out->volume_label_lookup_buffer_id = label_lookup_id;
+        out->volume_label_lookup_buffer_size =
+            _resource_byte_size(&emitter->resources, label_lookup_id);
         out->volume_visual_index = meta->visual_index;
         out->volume_transfer_rgba = meta->volume_transfer_rgba;
         out->volume_occluded = meta->volume_occluded;

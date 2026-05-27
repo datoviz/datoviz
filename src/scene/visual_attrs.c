@@ -1317,7 +1317,9 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
     _scene_release_visual_scale(visual);
     if (scale != NULL)
         _visual_binding_assign(visual, DVZ_VISUAL_BINDING_SCALE, slot_name, scale, false);
-    if (has_bound_profile && _scene_sample_profile_uses_continuous_colorizer(&bound_profile))
+    if (has_bound_profile &&
+        (_scene_sample_profile_uses_continuous_colorizer(&bound_profile) ||
+         _scene_sample_profile_is_integer_label(&bound_profile)))
     {
         _scene_visual_texture_mark_clean(visual);
         visual->texture.dirty = true;

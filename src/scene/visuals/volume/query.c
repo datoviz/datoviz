@@ -166,10 +166,10 @@ static bool _volume_query_label_sample_format(
 
 
 /**
- * Decode an encoded label volume payload word into a category ID.
+ * Decode a raw label volume payload word into a category ID.
  *
  * @param format sampled-field format
- * @param encoded encoded r32uint shader payload
+ * @param encoded raw r32uint shader payload; zero is reserved as miss
  * @param out_id decoded category ID
  * @return true when the format was decoded
  */
@@ -179,7 +179,7 @@ static bool _volume_query_decode_label_sample(
     ANN(out_id);
     if (encoded == 0)
         return false;
-    uint32_t bits = encoded - 1u;
+    uint32_t bits = encoded;
     DvzSceneSampleProfile profile = {0};
     if (!_scene_sample_profile_resolve(
             format, DVZ_FIELD_SEMANTIC_LABEL, DVZ_FIELD_DIM_3D, &profile))

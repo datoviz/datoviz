@@ -40,3 +40,4 @@ bool _scene_ssao_params_resource_key(const char* panel_id, char* out_key, size_t
 bool _scene_image_uses_generated_quads(const DvzVisual* visual);
 
 bool _scene_resource_key_volume_transfer(uint32_t visual_index, char* out, size_t out_size);
+bool _scene_resource_key_volume_label_lookup(uint32_t visual_index, char* out, size_t out_size);

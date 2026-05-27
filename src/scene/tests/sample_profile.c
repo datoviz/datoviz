@@ -208,6 +208,32 @@ static int test_scene_colorizer_categorical_palette(TstContext* suite, const Tst
     AT(palette[2].r == 10);
     AT(palette[2].a == 255);
 
+    DvzScaleCategory sparse[] = {
+        {.category_id = -7, .order = 0, .label = "negative", .color = {1, 2, 3, 4}},
+        {.category_id = 4000000000LL, .order = 1, .label = "high", .color = {5, 6, 7, 8}},
+        {.category_id = 23, .order = 2, .label = "low", .color = {9, 10, 11, 12}},
+    };
+    AT(dvz_scale_set_categories(scale, sparse, 3));
+    AT(_scene_colorizer_from_scale(scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer));
+    AT(!_scene_colorizer_dense_palette_extent(&colorizer, &palette_count));
+
+    uint32_t entry_count = 0;
+    AT(_scene_colorizer_label_lookup_extent(&colorizer, &entry_count));
+    AT(entry_count == 4);
+    DvzSceneLabelLookupEntry entries[4] = {0};
+    AT(_scene_colorizer_build_label_lookup(&colorizer, false, entries, 4));
+    AT(entries[0].key == 2);
+    AT(entries[1].key == 23);
+    AT(entries[1].rgba == 0x0c0b0a09u);
+    AT(entries[2].key == 4000000000u);
+    AT(entries[2].rgba == 0x08070605u);
+
+    AT(_scene_colorizer_build_label_lookup(&colorizer, true, entries, 4));
+    AT(entries[0].key == 2);
+    AT(entries[1].key == 23);
+    AT(entries[2].key == (uint32_t)(int32_t)-7);
+    AT(entries[2].rgba == 0x04030201u);
+
     dvz_scene_destroy(scene);
     return 0;
 }

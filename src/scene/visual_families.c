@@ -135,6 +135,12 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
         visual->texture.rgba = NULL;
         visual->texture.rgba_size = 0;
     }
+    if (visual->texture.label_lookup != NULL)
+    {
+        dvz_free(visual->texture.label_lookup);
+        visual->texture.label_lookup = NULL;
+        visual->texture.label_lookup_size = 0;
+    }
     if (visual->text.strings != NULL)
     {
         for (uint32_t i = 0; i < visual->text.string_count; i++)

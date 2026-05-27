@@ -46,6 +46,10 @@ static void _scene_mark_legend_dirty(DvzLegend* legend);
 static bool _scale_categories_have_duplicate_ids(
     const DvzScaleCategory* categories, uint32_t count);
 
+static bool _scale_reserve_categories(DvzScale* scale, uint32_t capacity);
+
+static void _scale_release_categories(DvzScale* scale);
+
 static int32_t _scale_category_index(const DvzScale* scale, DvzCategoryId id);
 
 static void _scale_category_copy(DvzScaleCategoryState* dst, const DvzScaleCategory* src);
@@ -246,7 +250,9 @@ static void _scene_mark_scale_dirty(DvzScale* scale)
                 visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
                 &profile);
         if ((visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_VOLUME) &&
-            has_profile && _scene_sample_profile_uses_continuous_colorizer(&profile))
+            has_profile &&
+            (_scene_sample_profile_uses_continuous_colorizer(&profile) ||
+             _scene_sample_profile_is_integer_label(&profile)))
         {
             _scene_visual_texture_mark_clean(visual);
             visual->texture.dirty = true;
@@ -418,6 +424,57 @@ static bool _scale_categories_have_duplicate_ids(
         }
     }
     return false;
+}
+
+
+/**
+ * Reserve retained storage for categorical scale entries.
+ *
+ * @param scale the categorical scale
+ * @param capacity required category capacity
+ * @return whether storage was available
+ */
+static bool _scale_reserve_categories(DvzScale* scale, uint32_t capacity)
+{
+    ANN(scale);
+    if (capacity <= scale->category_capacity)
+        return true;
+    if (capacity > DVZ_SCENE_MAX_SCALE_CATEGORIES)
+    {
+        log_error("too many scale categories: %u > %u", capacity, DVZ_SCENE_MAX_SCALE_CATEGORIES);
+        return false;
+    }
+
+    uint64_t size = (uint64_t)capacity * sizeof(DvzScaleCategoryState);
+    DvzScaleCategoryState* categories = dvz_calloc(size, 1);
+    if (categories == NULL)
+        return false;
+    if (scale->categories != NULL && scale->category_count > 0)
+    {
+        dvz_memcpy(
+            categories, size, scale->categories,
+            (uint64_t)scale->category_count * sizeof(DvzScaleCategoryState));
+    }
+    dvz_free(scale->categories);
+    scale->categories = categories;
+    scale->category_capacity = capacity;
+    return true;
+}
+
+
+/**
+ * Release retained storage for categorical scale entries.
+ *
+ * @param scale the categorical scale
+ */
+static void _scale_release_categories(DvzScale* scale)
+{
+    if (scale == NULL)
+        return;
+    dvz_free(scale->categories);
+    scale->categories = NULL;
+    scale->category_count = 0;
+    scale->category_capacity = 0;
 }
 
 
@@ -2117,6 +2174,7 @@ void dvz_scale_destroy(DvzScale* scale)
 {
     if (scale == NULL)
         return;
+    _scale_release_categories(scale);
     scale->scene = NULL;
     scale->colormap = NULL;
     scale->has_domain = false;
@@ -2214,21 +2272,17 @@ bool dvz_scale_set_categories(
     }
     if (categories == NULL || count == 0)
     {
-        scale->category_count = 0;
+        _scale_release_categories(scale);
         _scene_mark_scale_dirty(scale);
         return true;
-    }
-    if (count > DVZ_SCENE_MAX_SCALE_CATEGORIES)
-    {
-        log_error(
-            "too many scale categories: %u > %u", count, DVZ_SCENE_MAX_SCALE_CATEGORIES);
-        return false;
     }
     if (_scale_categories_have_duplicate_ids(categories, count))
     {
         log_error("duplicate scale category id");
         return false;
     }
+    if (!_scale_reserve_categories(scale, count))
+        return false;
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -2284,6 +2338,8 @@ bool dvz_scale_update_categories(
             DVZ_SCENE_MAX_SCALE_CATEGORIES);
         return false;
     }
+    if (!_scale_reserve_categories(scale, scale->category_count + append_count))
+        return false;
 
     for (uint32_t i = 0; i < count; i++)
     {

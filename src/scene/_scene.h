@@ -51,7 +51,7 @@
 #define DVZ_SCENE_MAX_COLORMAPS  64
 #define DVZ_SCENE_MAX_COLORBARS  64
 #define DVZ_SCENE_MAX_LEGENDS    64
-#define DVZ_SCENE_MAX_SCALE_CATEGORIES 64
+#define DVZ_SCENE_MAX_SCALE_CATEGORIES 4096
 #define DVZ_SCENE_MAX_LEGEND_TEXTS (DVZ_SCENE_MAX_SCALE_CATEGORIES + 1)
 #define DVZ_SCENE_MAX_INTERACTIONS 64
 #define DVZ_SCENE_MAX_SELECTIONS 64
@@ -215,6 +215,8 @@ struct DvzVisualTexture
 {
     void* rgba;                 /* owned RGBA8 staging for scalar textures */
     uint64_t rgba_size;         /* bytes */
+    void* label_lookup;         /* owned sparse label lookup staging buffer */
+    uint64_t label_lookup_size; /* bytes */
     void* upload;               /* owned tightly-packed upload scratch for partial texture writes */
     uint64_t upload_size;       /* bytes */
     uint32_t width;             /* pixels */
@@ -722,7 +724,8 @@ struct DvzScale
     bool has_view_range;
     DvzColormap* colormap;
     uint32_t category_count;
-    DvzScaleCategoryState categories[DVZ_SCENE_MAX_SCALE_CATEGORIES];
+    uint32_t category_capacity;
+    DvzScaleCategoryState* categories;
 };
 
 

@@ -585,6 +585,10 @@ int test_scene_volume_label_composite_uses_first_hit_shader(
 int test_scene_volume_signed_label_composite_uses_first_hit_shader(
     TstContext* suite, const TstCase* item);
 
+int test_scene_volume_label_sparse_lookup_buffer(TstContext* suite, const TstCase* item);
+
+int test_scene_volume_signed_label_sparse_lookup_buffer(TstContext* suite, const TstCase* item);
+
 int test_scene_volume_label_mip_reports_unsupported(TstContext* suite, const TstCase* item);
 
 int test_scene_volume_visual_metadata_lowering(TstContext* suite, const TstCase* item);
@@ -810,6 +814,11 @@ int test_scene_volume_query_resolves_sample(TstContext* suite, const TstCase* it
 
 int test_scene_volume_query_resolves_label_sample(TstContext* suite, const TstCase* item);
 
+int test_scene_volume_query_resolves_high_uint_label_sample(
+    TstContext* suite, const TstCase* item);
+
+int test_scene_volume_query_resolves_signed_label_sample(TstContext* suite, const TstCase* item);
+
 int test_scene_volume_query_resolves_sample_uvw_profile(
     TstContext* suite, const TstCase* item);
 
@@ -995,6 +1004,9 @@ int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const 
 int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_volume_label_composite_renders_category(
+    TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_volume_label_composite_renders_sparse_category(
     TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_volume_occlusion_slice_renders(TstContext* suite, const TstCase* item);

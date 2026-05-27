@@ -36,6 +36,15 @@ typedef struct DvzSceneColorizer
 } DvzSceneColorizer;
 
 
+typedef struct DvzSceneLabelLookupEntry
+{
+    uint32_t key;
+    uint32_t rgba;
+    uint32_t metadata_index;
+    uint32_t flags;
+} DvzSceneLabelLookupEntry;
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
@@ -57,3 +66,9 @@ bool _scene_colorizer_build_dense_palette(
     const DvzSceneColorizer* colorizer, DvzColor fallback, DvzColor* out_palette,
     uint32_t palette_count);
 
+bool _scene_colorizer_label_lookup_extent(
+    const DvzSceneColorizer* colorizer, uint32_t* out_entry_count);
+
+bool _scene_colorizer_build_label_lookup(
+    const DvzSceneColorizer* colorizer, bool signed_keys, DvzSceneLabelLookupEntry* out_entries,
+    uint32_t entry_count);

@@ -85,6 +85,8 @@ typedef struct DvzSceneVisualDesc
     float glyph_distance_range_px;
     uint64_t volume_texture_id;
     uint64_t volume_transfer_texture_id;
+    uint64_t volume_label_lookup_buffer_id;
+    uint64_t volume_label_lookup_buffer_size;
     uint32_t volume_visual_index;
     bool depth_cue_enabled;
     bool point_style_enabled;
@@ -202,6 +204,8 @@ typedef struct DvzSceneVisualBindDesc
     bool uses_volume_set1;
     uint64_t volume_texture_id;
     uint64_t volume_transfer_texture_id;
+    uint64_t volume_label_lookup_buffer_id;
+    uint64_t volume_label_lookup_buffer_size;
     uint64_t volume_depth_texture_id;
     uint32_t volume_visual_index;
     uint32_t volume_bind_variant;
