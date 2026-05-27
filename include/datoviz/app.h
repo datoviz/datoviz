@@ -54,6 +54,7 @@ typedef struct DvzWindowExternalSurfaceInfo DvzWindowExternalSurfaceInfo;
 
 typedef void (*DvzViewFrameCallback)(DvzView* view, void* user_data);
 typedef void (*DvzViewRequestFrameCallback)(DvzView* view, void* user_data);
+typedef void (*DvzViewPostCallback)(DvzView* view, void* user_data);
 
 
 
@@ -678,6 +679,34 @@ DVZ_EXPORT bool dvz_view_render_enabled(const DvzView* view);
  * @param view the view
  */
 DVZ_EXPORT void dvz_view_request_frame(DvzView* view);
+
+
+/**
+ * Wake the host scheduler for a view.
+ *
+ * This function is safe to call from another thread. It requests scheduler attention without
+ * executing user-posted callbacks immediately; posted callbacks are drained on the view owner
+ * thread by dvz_view_render_once().
+ *
+ * @param view the view
+ */
+DVZ_EXPORT void dvz_view_wake(DvzView* view);
+
+
+/**
+ * Post a callback to run on the view owner thread.
+ *
+ * The callback is queued from any thread and drained near the start of dvz_view_render_once().
+ * The queue stores the callback pointer and user_data value verbatim; the caller must ensure both
+ * remain valid until the callback has run.
+ *
+ * @param view the view
+ * @param callback callback to run on the owner thread
+ * @param user_data opaque pointer forwarded to the callback
+ * @return 0 on success, negative on invalid input or queue overflow
+ */
+DVZ_EXPORT int
+dvz_view_post(DvzView* view, DvzViewPostCallback callback, void* user_data);
 
 
 /**

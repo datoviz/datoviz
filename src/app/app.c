@@ -29,6 +29,7 @@
 #include "_time_utils.h"
 #include "_trace.h"
 #include "datoviz/app.h"
+#include "datoviz/common/mutex.h"
 #include "datoviz/gui.h"
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
@@ -85,6 +86,7 @@
 #define DVZ_APP_CAPTURE_PATH_SIZE 1024
 #define DVZ_APP_CAPTURE_BACKEND_SIZE 64
 #define DVZ_APP_CAPTURE_DEFAULT_FPS 60.0
+#define DVZ_APP_VIEW_POST_CAPACITY 64
 
 
 
@@ -99,6 +101,13 @@ typedef struct DvzAppRuntimeFailure
     uint32_t command_index;
     uint32_t command_count;
 } DvzAppRuntimeFailure;
+
+
+typedef struct DvzViewPostItem
+{
+    DvzViewPostCallback callback;
+    void* user_data;
+} DvzViewPostItem;
 
 
 
@@ -118,6 +127,10 @@ struct DvzView
     void* frame_user_data;
     DvzViewRequestFrameCallback request_frame_callback;
     void* request_frame_user_data;
+    DvzMutex post_mutex;
+    bool post_mutex_initialized;
+    uint32_t post_count;
+    DvzViewPostItem post_items[DVZ_APP_VIEW_POST_CAPACITY];
     DvzAppTraceSnapshot last_trace_snapshot;
     bool has_last_trace_snapshot;
     DvzAppRuntimeFailure last_runtime_failure;
@@ -745,6 +758,100 @@ static void _view_mark_dirty(DvzView* win)
 
 
 /**
+ * Initialize the posted-callback queue for one view.
+ *
+ * @param win view receiving the queue
+ * @return 0 on success, negative on failure
+ */
+static int _view_post_init(DvzView* win)
+{
+    ANN(win);
+    if (win->post_mutex_initialized)
+        return 0;
+    if (dvz_mutex_init(&win->post_mutex) != 0)
+        return -1;
+    win->post_mutex_initialized = true;
+    return 0;
+}
+
+
+/**
+ * Destroy the posted-callback queue for one view.
+ *
+ * @param win view owning the queue
+ */
+static void _view_post_destroy(DvzView* win)
+{
+    ANN(win);
+    if (!win->post_mutex_initialized)
+        return;
+    (void)dvz_mutex_lock(&win->post_mutex);
+    win->post_count = 0;
+    (void)dvz_mutex_unlock(&win->post_mutex);
+    dvz_mutex_destroy(&win->post_mutex);
+    win->post_mutex_initialized = false;
+}
+
+
+/**
+ * Return whether one view has queued owner-thread callbacks.
+ *
+ * @param win view to inspect
+ * @return whether at least one callback is queued
+ */
+static bool _view_has_posted_callbacks(DvzView* win)
+{
+    ANN(win);
+    if (!win->post_mutex_initialized)
+        return false;
+    bool has_items = false;
+    if (dvz_mutex_lock(&win->post_mutex) == 0)
+    {
+        has_items = win->post_count > 0;
+        (void)dvz_mutex_unlock(&win->post_mutex);
+    }
+    return has_items;
+}
+
+
+/**
+ * Drain queued callbacks on the current owner thread.
+ *
+ * @param win view owning the queue
+ */
+static void _view_post_drain(DvzView* win)
+{
+    ANN(win);
+    if (!win->post_mutex_initialized)
+        return;
+
+    DvzViewPostItem items[DVZ_APP_VIEW_POST_CAPACITY] = {0};
+    for (;;)
+    {
+        uint32_t count = 0;
+        if (dvz_mutex_lock(&win->post_mutex) != 0)
+            return;
+        count = win->post_count;
+        if (count > 0)
+        {
+            DvzSize bytes = (DvzSize)count * sizeof(DvzViewPostItem);
+            dvz_memcpy(items, bytes, win->post_items, bytes);
+            win->post_count = 0;
+        }
+        (void)dvz_mutex_unlock(&win->post_mutex);
+
+        if (count == 0)
+            break;
+        for (uint32_t i = 0; i < count; i++)
+        {
+            if (items[i].callback != NULL)
+                items[i].callback(win, items[i].user_data);
+        }
+    }
+}
+
+
+/**
  * Return a valid scale, replacing invalid values with one.
  *
  * @param scale input scale
@@ -1164,6 +1271,8 @@ static bool _view_should_render(DvzView* win, bool continuous, uint64_t now)
             return false;
     }
     if (win->dirty || win->frame_requested)
+        return true;
+    if (_view_has_posted_callbacks(win))
         return true;
     if (_view_has_pending_requests(win))
         return true;
@@ -3129,6 +3238,7 @@ void dvz_app_destroy(DvzApp* app)
         }
         _dvz_app_trace_snapshot_destroy(&win->last_trace_snapshot);
         win->has_last_trace_snapshot = false;
+        _view_post_destroy(win);
     }
     _app_destroy_resources(app);
 #endif
@@ -3173,6 +3283,12 @@ dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t heig
     }
 
     DvzView* win = &app->views[app->view_count];
+    if (_view_post_init(win) != 0)
+    {
+        dvz_canvas_destroy(canvas);
+        dvz_window_destroy(window);
+        return NULL;
+    }
     win->app           = app;
     win->figure        = figure;
     win->window        = window;
@@ -3235,6 +3351,12 @@ dvz_view_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height,
     }
 
     DvzView* win = &app->views[app->view_count];
+    if (_view_post_init(win) != 0)
+    {
+        dvz_canvas_destroy(canvas);
+        dvz_window_destroy(window);
+        return NULL;
+    }
     win->app            = app;
     win->figure         = figure;
     win->window         = window;
@@ -3316,6 +3438,12 @@ DvzView* dvz_view_external_surface(
     }
 
     DvzView* win = &app->views[app->view_count];
+    if (_view_post_init(win) != 0)
+    {
+        dvz_canvas_destroy(canvas);
+        dvz_window_destroy(window);
+        return NULL;
+    }
     win->app        = app;
     win->figure     = figure;
     win->window     = window;
@@ -4298,6 +4426,58 @@ void dvz_view_request_frame(DvzView* win)
 
 
 /**
+ * Wake the host scheduler for a view.
+ *
+ * @param win view requesting scheduler attention
+ */
+void dvz_view_wake(DvzView* win)
+{
+    if (win == NULL)
+        return;
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->app != NULL && win->app->window_host != NULL && win->window != NULL)
+        dvz_window_host_request_frame(win->app->window_host, win->window);
+#endif
+    if (win->request_frame_callback != NULL)
+        win->request_frame_callback(win, win->request_frame_user_data);
+}
+
+
+
+/**
+ * Post a callback to run on the view owner thread.
+ *
+ * @param win view owning the callback queue
+ * @param callback callback to run
+ * @param user_data opaque pointer forwarded to the callback
+ * @return 0 on success, negative on invalid input or overflow
+ */
+int dvz_view_post(DvzView* win, DvzViewPostCallback callback, void* user_data)
+{
+    if (win == NULL || callback == NULL)
+        return -1;
+    if (!win->post_mutex_initialized && _view_post_init(win) != 0)
+        return -1;
+
+    if (dvz_mutex_lock(&win->post_mutex) != 0)
+        return -1;
+    if (win->post_count >= DVZ_APP_VIEW_POST_CAPACITY)
+    {
+        (void)dvz_mutex_unlock(&win->post_mutex);
+        log_error("dvz_view_post() queue overflow");
+        return -1;
+    }
+    win->post_items[win->post_count++] =
+        (DvzViewPostItem){.callback = callback, .user_data = user_data};
+    (void)dvz_mutex_unlock(&win->post_mutex);
+
+    dvz_view_wake(win);
+    return 0;
+}
+
+
+
+/**
  * Register a callback invoked whenever Datoviz requests another frame.
  *
  * @param win view receiving the callback
@@ -4382,6 +4562,7 @@ void dvz_view_set_gui_callback(
 int dvz_view_render_once(DvzView* win)
 {
     ANN(win);
+    _view_post_drain(win);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     if (!win->render_enabled)
