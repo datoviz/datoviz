@@ -791,6 +791,9 @@ int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* ite
 int test_scene_image_query_generated_rect_samples_position(
     TstContext* suite, const TstCase* item);
 
+int test_scene_image_query_panzoom_samples_transformed_position(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_image_sample_query_readback_failure(TstContext* suite, const TstCase* item);
 
 int test_scene_point_query_misses_empty_pixel(TstContext* suite, const TstCase* item);

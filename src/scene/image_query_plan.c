@@ -22,6 +22,7 @@
 #include "datoviz/math/_cglm.h"
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_compat.h"
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
@@ -219,6 +220,7 @@ bool _scene_image_query_plan(
     const void* texcoord_data = NULL;
     uint64_t position_item_count = pos_attr->item_count;
     uint64_t texcoord_item_count = 0;
+    uint64_t draw_vertex_count = position_item_count;
     int extent_idx = -1;
     bool pixel_rect = false;
     bool generated_rect = _image_query_generated_rect(visual, &extent_idx, &pixel_rect);
@@ -237,10 +239,16 @@ bool _scene_image_query_plan(
             texcoord_data = out_plan->query_texcoords;
             position_item_count = vertex_count;
             texcoord_item_count = vertex_count;
+            draw_vertex_count = vertex_count;
         }
         else
         {
-            texcoord_item_count = position_item_count * 6u;
+            if (_dvz_mul_u64_overflows(position_item_count, 6u, &draw_vertex_count))
+            {
+                log_error("image query request vertex count overflow");
+                return false;
+            }
+            texcoord_item_count = draw_vertex_count;
         }
     }
     else
@@ -322,11 +330,34 @@ bool _scene_image_query_plan(
                    plan, "panel.query.image", "target.query.image", false,
                    (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1}) &&
          dvz_frame_plan_render_visual(plan, "query0");
+    DvzFramePlanVisualMeta metadata = {
+        .has_metadata = true,
+        .visual_type = (uint32_t)DVZ_VISUAL_TYPE_IMAGE,
+        .topology = generated_rect ? DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+                                   : DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
+        .vertex_count = draw_vertex_count <= UINT32_MAX ? (uint32_t)draw_vertex_count : 0,
+        .alpha_mode = DVZ_ALPHA_OPAQUE,
+        .depth_test_enabled = false,
+        .field_format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+        .field_semantic = DVZ_FIELD_SEMANTIC_COLOR,
+        .field_width = texture_width,
+        .field_height = texture_height,
+        .field_depth = 1,
+        .image_nearest_sampler = pending->request.target == DVZ_SCENE_TARGET_PIXEL,
+    };
+    dvz_strlcpy(metadata.position_id, "query0_position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.texcoords_id, "query0_texcoords", sizeof(metadata.texcoords_id));
+    dvz_strlcpy(metadata.texture_id, "query0_texture", sizeof(metadata.texture_id));
+    ok = ok && dvz_frame_plan_render_visual_metadata(plan, &metadata);
     DvzFramePlanNode* render = plan != NULL ? dvz_frame_plan_last_render_node(plan) : NULL;
     if (render != NULL)
     {
         DvzMVP mvp = {0};
-        _scene_request_apply_mvp(panel, request_ndc, &mvp);
+        _scene_panel_apply_mvp(panel, &mvp);
+        vec2 target_ndc = {0.0f, 0.0f};
+        vec2 delta = {request_ndc[0] - target_ndc[0], request_ndc[1] - target_ndc[1]};
+        mvp.proj[3][0] -= delta[0];
+        mvp.proj[3][1] -= delta[1];
         render->u.render.has_mvp = true;
         render->u.render.apply_mvp = mvp;
         render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
