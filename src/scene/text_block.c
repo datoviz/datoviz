@@ -1442,6 +1442,30 @@ static bool _text_block_layout_uses_fonts(const DvzTextBlockLayout* layout)
 
 
 
+/**
+ * Return whether two text-block image placement descriptors match exactly.
+ *
+ * @param a first descriptor
+ * @param b second descriptor
+ * @return true when all placement fields are identical
+ */
+static bool _text_block_image_desc_equal(
+    const DvzTextBlockImageDesc* a, const DvzTextBlockImageDesc* b)
+{
+    ANN(a);
+    ANN(b);
+    return a->position[0] == b->position[0] && a->position[1] == b->position[1] &&
+           a->position[2] == b->position[2] && a->extent[0] == b->extent[0] &&
+           a->extent[1] == b->extent[1] && a->position_px[0] == b->position_px[0] &&
+           a->position_px[1] == b->position_px[1] &&
+           a->position_px[2] == b->position_px[2] && a->extent_px[0] == b->extent_px[0] &&
+           a->extent_px[1] == b->extent_px[1] && a->anchor[0] == b->anchor[0] &&
+           a->anchor[1] == b->anchor[1] && a->pixel_space == b->pixel_space &&
+           a->z_layer == b->z_layer && a->controller_mode == b->controller_mode;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -1477,6 +1501,9 @@ void _scene_text_block_set_source(DvzTextBlock* block, const char* source)
     DvzSampledField* image_field = block->image_field;
     uint32_t image_width = block->image_width;
     uint32_t image_height = block->image_height;
+    uint64_t image_raster_version = block->image_raster_version;
+    DvzTextBlockImageDesc image_desc = block->image_desc;
+    bool image_desc_valid = block->image_desc_valid;
     bool image_attached = block->image_attached;
 
     dvz_memset(block, sizeof(DvzTextBlock), 0, sizeof(DvzTextBlock));
@@ -1487,6 +1514,9 @@ void _scene_text_block_set_source(DvzTextBlock* block, const char* source)
     block->image_field = image_field;
     block->image_width = image_width;
     block->image_height = image_height;
+    block->image_raster_version = image_raster_version;
+    block->image_desc = image_desc;
+    block->image_desc_valid = image_desc_valid;
     block->image_attached = image_attached;
 
     if (source == NULL)
@@ -1528,6 +1558,10 @@ void _scene_text_block_destroy(DvzTextBlock* block)
     block->raster_height = 0;
     block->image_width = 0;
     block->image_height = 0;
+    block->image_raster_version = 0;
+    dvz_memset(
+        &block->image_desc, sizeof(DvzTextBlockImageDesc), 0, sizeof(DvzTextBlockImageDesc));
+    block->image_desc_valid = false;
     block->image_attached = false;
 }
 
@@ -2000,6 +2034,7 @@ int _scene_text_block_realize_image(
             return -1;
         block->image_width = block->raster_width;
         block->image_height = block->raster_height;
+        block->image_raster_version = 0;
     }
 
     DvzFieldDataView view = {
@@ -2007,18 +2042,22 @@ int _scene_text_block_realize_image(
         .bytes_per_row = 4u * (uint64_t)block->raster_width,
         .rows_per_image = block->raster_height,
     };
-    if (block->image_width != block->raster_width || block->image_height != block->raster_height)
+    bool image_size_changed =
+        block->image_width != block->raster_width || block->image_height != block->raster_height;
+    if (image_size_changed)
     {
         if (!dvz_sampled_field_resize(
                 block->image_field, block->raster_width, block->raster_height, 1, &view))
             return -1;
         block->image_width = block->raster_width;
         block->image_height = block->raster_height;
+        block->image_raster_version = block->raster_version;
     }
-    else
+    else if (block->image_raster_version != block->raster_version)
     {
         if (!dvz_sampled_field_set_data(block->image_field, &view))
             return -1;
+        block->image_raster_version = block->raster_version;
     }
 
     const char* position_attr = resolved.pixel_space ? "position_px" : "position";
@@ -2047,10 +2086,20 @@ int _scene_text_block_realize_image(
         {.attr_name = extent_attr, .data = extents, .item_count = 1},
         {.attr_name = "anchor", .data = anchors, .item_count = 1},
     };
-    if (dvz_visual_set_data_many(block->image_visual, updates, 3) != 0)
-        return -1;
-    if (!dvz_visual_set_field(block->image_visual, "field", block->image_field))
-        return -1;
+    if (
+        !block->image_desc_valid ||
+        !_text_block_image_desc_equal(&block->image_desc, &resolved))
+    {
+        if (dvz_visual_set_data_many(block->image_visual, updates, 3) != 0)
+            return -1;
+        block->image_desc = resolved;
+        block->image_desc_valid = true;
+    }
+    if (block->image_visual->field != block->image_field)
+    {
+        if (!dvz_visual_set_field(block->image_visual, "field", block->image_field))
+            return -1;
+    }
     if (!block->image_attached)
     {
         if (dvz_panel_add_visual(
@@ -2062,6 +2111,7 @@ int _scene_text_block_realize_image(
             return -1;
         block->image_attached = true;
     }
-    dvz_visual_set_visible(block->image_visual, true);
+    if (!block->image_visual->visible)
+        dvz_visual_set_visible(block->image_visual, true);
     return 0;
 }

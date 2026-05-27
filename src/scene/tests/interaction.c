@@ -555,6 +555,27 @@ int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCas
     AT(card->card.text_visual == NULL || !card->card.text_visual->visible);
     AT(card->card.realized_rect_px[2] >= card->card.content_size_px[0]);
     AT(card->card.realized_rect_px[3] >= card->card.content_size_px[1]);
+    AT(card->rich_block.image_raster_version == card->rich_block.raster_version);
+
+    const DvzVisualAttr* first_position_px =
+        _interaction_visual_attr(card->rich_block.image_visual, "position_px");
+    const DvzVisualAttr* first_extent_px =
+        _interaction_visual_attr(card->rich_block.image_visual, "extent_px");
+    const DvzVisualAttr* first_anchor =
+        _interaction_visual_attr(card->rich_block.image_visual, "anchor");
+    ANN(first_position_px);
+    ANN(first_extent_px);
+    ANN(first_anchor);
+    uint64_t first_position_version = first_position_px->version;
+    uint64_t first_extent_version = first_extent_px->version;
+    uint64_t first_anchor_version = first_anchor->version;
+    uint64_t first_texture_version = card->rich_block.image_visual->texture.version;
+    _scene_prepare_text_visuals(figure);
+    AT(first_position_px->version == first_position_version);
+    AT(first_extent_px->version == first_extent_version);
+    AT(first_anchor->version == first_anchor_version);
+    AT(card->rich_block.image_visual->texture.version == first_texture_version);
+    AT(card->rich_block.image_raster_version == card->rich_block.raster_version);
 
     DvzVisual* image_visual = card->rich_block.image_visual;
     DvzSampledField* image_field = card->rich_block.image_field;

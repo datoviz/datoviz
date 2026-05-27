@@ -56,13 +56,14 @@ typedef struct LiveProbeState
     double figure_width;
     double figure_height;
     bool cursor_valid;
+    bool cursor_dirty;
+    bool query_pending;
     double cursor_x;
     double cursor_y;
     double last_panel_position[2];
     double last_rgba[4];
     bool last_hit;
     bool has_last_result;
-    uint64_t request_id;
 } LiveProbeState;
 
 
@@ -444,6 +445,42 @@ static void _update_probe_card_from_result(LiveProbeState* state, const DvzQuery
 
 
 
+/**
+ * Queue one latest-wins live probe request for the current cursor.
+ *
+ * @param state live probe state
+ */
+static void _queue_probe_query(LiveProbeState* state)
+{
+    if (state == NULL || !state->cursor_valid || state->query_pending)
+        return;
+
+    double panel_x = 0.0;
+    double panel_y = 0.0;
+    if (!_probe_cursor_panel_position(state, &panel_x, &panel_y))
+    {
+        state->cursor_dirty = false;
+        return;
+    }
+
+    int rc = dvz_panel_query(
+        state->panel, panel_x, panel_y,
+        &(DvzQueryRequest){
+            .request_id = 0,
+            .target = DVZ_SCENE_TARGET_PIXEL,
+        });
+    if (rc != 0)
+    {
+        dvz_fprintf(stderr, "dvz_panel_query() failed\n");
+        return;
+    }
+
+    state->cursor_dirty = false;
+    state->query_pending = true;
+}
+
+
+
 /*************************************************************************************************/
 /*  Callbacks                                                                                    */
 /*************************************************************************************************/
@@ -466,6 +503,7 @@ _overlay_probe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, voi
         return;
 
     state->cursor_valid = true;
+    state->cursor_dirty = true;
     state->cursor_x = event->pos[0];
     state->cursor_y = event->pos[1];
 }
@@ -487,27 +525,14 @@ static void _overlay_probe_frame(DvzView* win, void* user_data)
     DvzQueryResult query = {0};
     while (dvz_scene_poll_query(state->scene, &query))
     {
+        if (query.request_id == 0)
+            state->query_pending = false;
         if (_query_changed(state, &query))
             _update_probe_card_from_result(state, &query);
     }
 
-    if (!state->cursor_valid)
-        return;
-
-    double panel_x = 0.0;
-    double panel_y = 0.0;
-    if (!_probe_cursor_panel_position(state, &panel_x, &panel_y))
-        return;
-
-    state->request_id++;
-    int rc = dvz_panel_query(
-        state->panel, panel_x, panel_y,
-        &(DvzQueryRequest){
-            .request_id = state->request_id,
-            .target = DVZ_SCENE_TARGET_PIXEL,
-        });
-    if (rc != 0)
-        dvz_fprintf(stderr, "dvz_panel_query() failed\n");
+    if (state->cursor_dirty)
+        _queue_probe_query(state);
 }
 
 
