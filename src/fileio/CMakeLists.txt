@@ -14,6 +14,7 @@ set_property(
 )
 set_source_files_properties(
     ${PROJECT_SOURCE_DIR}/external/fpng.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/stb_image.cpp
     PROPERTIES
         COMPILE_FLAGS "-w"
 )

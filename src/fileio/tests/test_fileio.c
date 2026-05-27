@@ -14,7 +14,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "_alloc.h"
@@ -28,7 +30,38 @@
 
 
 /*************************************************************************************************/
-/*  Thread tests */
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define EARTH_TEXTURE_PATH "data/textures/world.200412.3x5400x2700.jpg"
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Return whether a fixture file exists.
+ *
+ * @param path file path
+ * @return whether the file can be opened for reading
+ */
+static bool _file_exists(const char* path)
+{
+    ANN(path);
+
+    FILE* fp = fopen(path, "rb");
+    if (fp == NULL)
+        return false;
+    fclose(fp);
+    return true;
+}
+
+
+
+/*************************************************************************************************/
+/*  Tests                                                                                        */
 /*************************************************************************************************/
 
 
@@ -116,6 +149,61 @@ int test_parse_npy(TstContext* suite, const TstCase* tstitem)
 
 
 
+int test_jpeg_bytes_earth(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+    if (!_file_exists(EARTH_TEXTURE_PATH))
+    {
+        tst_skip(suite, "earth JPEG fixture missing");
+        return 0;
+    }
+
+    DvzSize size = 0;
+    unsigned char* bytes = (unsigned char*)dvz_read_file(EARTH_TEXTURE_PATH, &size);
+    AT(bytes != NULL);
+    AT(size > 0);
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint8_t* rgba = dvz_load_jpeg(size, bytes, &width, &height);
+    AT(rgba != NULL);
+    AT(width == 5400);
+    AT(height == 2700);
+    AT(rgba[3] == 255);
+    AT(rgba[4 * ((size_t)width * (height / 2u) + (width / 2u)) + 3] == 255);
+
+    dvz_free(rgba);
+    dvz_free(bytes);
+    return 0;
+}
+
+
+
+int test_jpeg_file_earth(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+    if (!_file_exists(EARTH_TEXTURE_PATH))
+    {
+        tst_skip(suite, "earth JPEG fixture missing");
+        return 0;
+    }
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint8_t* rgba = dvz_read_jpeg(EARTH_TEXTURE_PATH, &width, &height);
+    AT(rgba != NULL);
+    AT(width == 5400);
+    AT(height == 2700);
+    AT(rgba[3] == 255);
+
+    dvz_free(rgba);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -129,6 +217,10 @@ int test_fileio(TstSuite* suite)
     TST_MODULE(suite, "fileio");
     TST_GROUP("png");
     TST_CASE(test_png_1);
+
+    TST_GROUP("jpeg");
+    TST_CASE(test_jpeg_bytes_earth);
+    TST_CASE(test_jpeg_file_earth);
 
     TST_GROUP("npy");
     TST_CASE(test_parse_npy);

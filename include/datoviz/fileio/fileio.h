@@ -166,15 +166,36 @@ uint8_t* dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint3
 
 
 /*************************************************************************************************/
-/*  JPG I/O                                                                                      */
+/*  JPEG I/O                                                                                     */
 /*************************************************************************************************/
 
 /**
- * Read a JPG buffer.
+ * Decode a JPEG image from memory into tightly packed RGBA8 pixels.
  *
+ * @param size size of the JPEG byte buffer
+ * @param bytes JPEG byte buffer
+ * @param[out] width decoded image width
+ * @param[out] height decoded image height
+ * @returns RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
+ *
+ * @note Free the returned buffer with dvz_free().
  */
-// uint8_t* dvz_read_jpg(
-//     unsigned long size, unsigned char* jpg_bytes, uint32_t* out_width, uint32_t* out_height);
+uint8_t*
+dvz_load_jpeg(DvzSize size, const unsigned char* bytes, uint32_t* width, uint32_t* height);
+
+
+
+/**
+ * Read and decode a JPEG image file into tightly packed RGBA8 pixels.
+ *
+ * @param filename path of the JPEG file to open
+ * @param[out] width decoded image width
+ * @param[out] height decoded image height
+ * @returns RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
+ *
+ * @note Free the returned buffer with dvz_free().
+ */
+uint8_t* dvz_read_jpeg(const char* filename, uint32_t* width, uint32_t* height);
 
 
 

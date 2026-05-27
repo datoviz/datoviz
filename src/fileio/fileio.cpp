@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include <vector>
 
 #include "_alloc.h"
@@ -13,6 +14,7 @@
 #include "_log.h"
 #include "datoviz/fileio/fileio.h"
 #include "fpng.h"
+#include "stb_image.h"
 
 #if DVZ_HAS_ZLIB
 #include <zlib.h>
@@ -468,4 +470,89 @@ uint8_t* dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint3
         (size_t)(img_width * img_height * channels));
 
     return output;
+}
+
+
+
+/*************************************************************************************************/
+/*  JPEG I/O                                                                                     */
+/*************************************************************************************************/
+
+/**
+ * Decode a JPEG image from memory into tightly packed RGBA8 pixels.
+ *
+ * @param size size of the JPEG byte buffer
+ * @param bytes JPEG byte buffer
+ * @param width decoded image width
+ * @param height decoded image height
+ * @return RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
+ */
+uint8_t*
+dvz_load_jpeg(DvzSize size, const unsigned char* bytes, uint32_t* width, uint32_t* height)
+{
+    if (width != NULL)
+        *width = 0;
+    if (height != NULL)
+        *height = 0;
+
+    if (size == 0 || size > (DvzSize)INT_MAX || bytes == NULL || width == NULL || height == NULL)
+    {
+        log_error("invalid JPEG buffer");
+        return NULL;
+    }
+
+    int decoded_width = 0;
+    int decoded_height = 0;
+    int decoded_channels = 0;
+    uint8_t* rgba = stbi_load_from_memory(
+        bytes, (int)size, &decoded_width, &decoded_height, &decoded_channels, 4);
+    if (rgba == NULL)
+    {
+        log_error("unable to decode JPEG image: %s", stbi_failure_reason());
+        return NULL;
+    }
+
+    if (decoded_width <= 0 || decoded_height <= 0)
+    {
+        log_error("decoded JPEG image has invalid dimensions");
+        dvz_free(rgba);
+        return NULL;
+    }
+
+    *width = (uint32_t)decoded_width;
+    *height = (uint32_t)decoded_height;
+    return rgba;
+}
+
+
+
+/**
+ * Read and decode a JPEG image file into tightly packed RGBA8 pixels.
+ *
+ * @param filename path of the JPEG file to open
+ * @param width decoded image width
+ * @param height decoded image height
+ * @return RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
+ */
+uint8_t* dvz_read_jpeg(const char* filename, uint32_t* width, uint32_t* height)
+{
+    if (width != NULL)
+        *width = 0;
+    if (height != NULL)
+        *height = 0;
+
+    if (filename == NULL || width == NULL || height == NULL)
+    {
+        log_error("invalid JPEG file arguments");
+        return NULL;
+    }
+
+    DvzSize size = 0;
+    unsigned char* bytes = (unsigned char*)dvz_read_file(filename, &size);
+    if (bytes == NULL)
+        return NULL;
+
+    uint8_t* rgba = dvz_load_jpeg(size, bytes, width, height);
+    dvz_free(bytes);
+    return rgba;
 }
