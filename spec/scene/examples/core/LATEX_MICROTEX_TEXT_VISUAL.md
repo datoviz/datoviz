@@ -5,7 +5,7 @@
 > **Data:** bundled fonts/assets, deterministic inline strings
 > **Validation:** smoke, screenshot/readback, manual visual checklist
 
-See [../SHARED_POLICIES.md](../SHARED_POLICIES.md) for shared example policy. API names below are
+See [../POLICIES.md](../POLICIES.md) for shared example policy. API names below are
 pressure tests, not final public API.
 
 

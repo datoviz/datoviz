@@ -161,7 +161,7 @@ is unavailable on a backend, geometry should still render and the controls shoul
 
 ## Links
 
-- [Shared example policies](../SHARED_POLICIES.md)
+- [Shared example policies](../POLICIES.md)
 - [Frame plan](../../pipeline/FRAME_PLAN.md)
 - [Resource model](../../pipeline/RESOURCE_MODEL.md)
 - [Invalidation and caching](../../pipeline/INVALIDATION_AND_CACHING.md)

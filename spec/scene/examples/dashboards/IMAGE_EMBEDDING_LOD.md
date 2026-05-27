@@ -5,7 +5,7 @@
 > **Data:** PD12M prepared cache with synthetic fallback fixture
 > **Validation:** smoke, manual zoom/pick checklist, bundle validation
 
-See [../SHARED_POLICIES.md](../SHARED_POLICIES.md) for cache/download rules and API caveats.
+See [../POLICIES.md](../POLICIES.md) for cache/download rules and API caveats.
 
 
 ## Summary

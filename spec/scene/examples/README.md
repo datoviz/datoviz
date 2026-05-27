@@ -1,213 +1,48 @@
-# Scene Worked Examples
+# Scene Examples
 
-This directory contains worked examples that pressure-test the current scene specification.
+This directory contains informative worked examples and gallery planning notes for the active v0.4
+scene stack. The examples are pressure tests, not normative API sources. Promote release
+commitments through [PLANNING.md](PLANNING.md), and keep canonical behavior in the main scene,
+DRP2, API, and validation specs.
 
-Most examples are not API proposals. Files under [api/](api/) are deliberate API-shape sketches.
-They are informative, and may use installed-but-not-yet-implemented function names to
-pressure-test the public API shape.
 
-These files are not independent normative sources. They should be read as informative pressure
-tests of the main scene-spec documents.
+## Main Files
 
-Their role is narrower:
+| File | Role |
+| --- | --- |
+| [PLANNING.md](PLANNING.md) | Release staging, gallery priorities, current support gaps, and pickup order. |
+| [FIXTURES.md](FIXTURES.md) | Compact one-feature fixtures and generated DRP2/WebGPU/runtime validation ideas. |
+| [ORGANIZATION.md](ORGANIZATION.md) | Cross-repository ownership, example lanes, scenario IDs, and metadata conventions. |
+| [POLICIES.md](POLICIES.md) | Shared API caveats, data/cache rules, FramePlan/DRP2 references, and metadata block rules. |
+| [STYLE.md](STYLE.md) | Gallery visual identity, screenshots, videos, typography, and accessibility guidance. |
+| [TECHNIQUES.md](TECHNIQUES.md) | Cross-cutting rendering-technique notes that apply to multiple scenarios. |
+| [DECISIONS.md](DECISIONS.md) | Historical decisions from the C example duplication/API cleanup. |
+| [TEMPLATE.md](TEMPLATE.md) | Starting point for new scenario specs. |
 
-1. instantiate the current family contracts,
-2. exercise the transform pipeline,
-3. show how resources feed `FramePlan`,
-4. show which DRP2 command categories are implied.
 
-Cross-cutting lessons that come out of several examples can live at this level. The current note on
-volume, slice, and transparent mesh composition is
-[TRANSPARENCY_OCCLUSION.md](TRANSPARENCY_OCCLUSION.md).
+## Scenario Layout
 
-Shared example policy lives in [SHARED_POLICIES.md](SHARED_POLICIES.md). Use it for API caveats,
-cache/download rules, generic FramePlan/DRP2 references, and compact agent-pickup metadata instead
-of repeating those blocks in each example.
+Scenario files live under [scenarios/](scenarios/) by release/action status:
 
-Embedding explorer examples share data-model, preprocessing, query, and runtime-boundary guidance in
-[dashboards/EMBEDDING_EXPLORER_COMMON.md](dashboards/EMBEDDING_EXPLORER_COMMON.md). Use that note
-when extending the image and semantic embedding atlas examples so their bundle formats and query
-semantics stay aligned.
+| Directory | Meaning |
+| --- | --- |
+| `v04_required/` | Examples that are release narrative items, release proof, or required C smoke paths. |
+| `v04_experimental/` | Stretch or backend-limited examples that can appear with explicit experimental status. |
+| `v05/` | Important next-release examples that should not distort v0.4. |
+| `later/` | Strategic pressure tests beyond v0.5. |
+| `external_gsp/` | Workflows primarily owned by GSP/VisPy2/Matplotlib, with Datoviz keeping low-level fixtures. |
+| `api_sketches/` | API-pressure sketches that are useful for design, but not release promises by themselves. |
 
-Future scientific-visualization directions that extend beyond the current example set are tracked in
-[`../proposals/future/SCIENTIFIC_VISUALIZATION_ROADMAP.md`](../proposals/future/SCIENTIFIC_VISUALIZATION_ROADMAP.md).
-That roadmap links graph/network, unstructured-grid, field, trajectory, ensemble, molecular, and
-out-of-core resource proposals. Existing examples should reuse those notes instead of inventing
-parallel semantics when they grow into those domains.
+Domain labels such as neuroscience, geo, molecular, dashboards, and compute belong in scenario
+metadata instead of the directory structure. This keeps the folder organized by what future agents
+actually need to decide: implement now, keep as fixture, defer, or hand off.
 
 
+## Editing Rules
 
-## Example Planning Documents
-
-Use the example planning documents for distinct jobs:
-
-1. [EXAMPLE_NORTH_STAR.md](EXAMPLE_NORTH_STAR.md) records the aspirational gallery and showcase
-   direction before filtering by current implementation status, release commitments, or existing
-   example inventory.
-2. [EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) classifies examples as
-   `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `later`, or
-   `external/GSP`, and records current readiness separately from release target.
-3. [FEATURE_FIXTURE_MATRIX.md](FEATURE_FIXTURE_MATRIX.md) lists compact one-feature fixtures for
-   C examples, generated DRP2/WebGPU streams, GUI/cimgui, video, and low-level backend coverage.
-4. [EXAMPLE_ORGANIZATION.md](EXAMPLE_ORGANIZATION.md) explains which repository and API layer
-   should own each class of example.
-5. [EXAMPLE_GAP_REPORT.md](EXAMPLE_GAP_REPORT.md) summarizes current scene, DRP2, app, and
-   runtime gaps exposed by the worked examples.
-6. [EXAMPLE_PRIORITIZATION.md](EXAMPLE_PRIORITIZATION.md) ranks example candidates by payoff,
-   feasibility, architecture pressure, and release usefulness.
-7. [EXAMPLE_API_DUPLICATION_DECISIONS.md](EXAMPLE_API_DUPLICATION_DECISIONS.md) records the
-   decisions from the current C example duplication review.
-8. [TEMPLATE.md](TEMPLATE.md) is the starting point for new worked example specs.
-
-Do not use worked example files as release commitments by themselves. Promote release commitments
-through [EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) so future agents can tell which
-examples are blocking v0.4, which are v0.5 targets, and which belong outside Datoviz C.
-
-
-## Current v0.4 Gallery Direction
-
-The current public gallery direction is maintained across the planning documents above, not in a
-single imported scratch file.
-
-1. [EXAMPLE_NORTH_STAR.md](EXAMPLE_NORTH_STAR.md) owns the user-facing gallery thesis, front-page
-   card set, data-domain balance, and aspirational showcase taxonomy.
-2. [EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) owns release promises, including the
-   v0.4 requirement for retained textured mesh and the experimental status of WebGPU/WASM and
-   CPU-side fluid/particle stretch work.
-3. [EXAMPLE_PRIORITIZATION.md](EXAMPLE_PRIORITIZATION.md) owns the implementation order and
-   architecture-pressure ranking.
-4. [GALLERY_VISUAL_IDENTITY.md](GALLERY_VISUAL_IDENTITY.md) owns visual style, screenshot rules,
-   video rules, and the MkDocs Material gallery publishing direction.
-5. [EXAMPLE_ORGANIZATION.md](EXAMPLE_ORGANIZATION.md) owns repository/API-layer placement,
-   scenario IDs, lane organization, and example metadata used to generate gallery pages.
-
-If an imported planning note is present locally, treat it as provenance only. Promote durable
-decisions into the files above before relying on them.
-
-
-## Feature Fixture Matrix
-
-The compact one-feature fixture inventory lives in
-[FEATURE_FIXTURE_MATRIX.md](FEATURE_FIXTURE_MATRIX.md). That matrix is the canonical planning list for
-minimal C examples, generated DRP2/WebGPU fixtures, GUI/cimgui fixtures, video fixtures, and advanced
-low-level `vk`/`vklite`/`canvas`/`stream` examples.
-
-Fixture examples should stay smaller than the worked examples in this directory: one primary feature,
-synthetic in-file data where possible, deterministic offscreen artifacts when practical, and explicit
-CMake/backend gates for GLFW, GUI, CUDA/NVENC, Kvazaar, WebGPU, or platform interop requirements.
-
-## Example Suite Organization
-
-The cross-repo organization plan for Datoviz C examples, Datoviz raw Python examples, vispy2
-GSP examples, vispy2 plot examples, fixtures, showcases, regression examples, and stress tests
-lives in [EXAMPLE_ORGANIZATION.md](EXAMPLE_ORGANIZATION.md).
-
-Use [TEMPLATE.md](TEMPLATE.md) for new example specs. Existing examples should keep their
-domain-specific detail while moving shared policy to [SHARED_POLICIES.md](SHARED_POLICIES.md).
-
-
-## Directory Layout
-
-### `core/`
-
-Small examples that should stay closest to the active v0.4 implementation path.
-
-1. [core/POINT_2D.md](core/POINT_2D.md)
-2. [core/MARKER_PICKING.md](core/MARKER_PICKING.md)
-3. [core/PATH_AXES_2D.md](core/PATH_AXES_2D.md)
-4. [core/VOLUME_SLICE.md](core/VOLUME_SLICE.md)
-5. [core/VOLUME_OFFSCREEN.md](core/VOLUME_OFFSCREEN.md)
-6. [core/SPHERE_IMPOSTOR.md](core/SPHERE_IMPOSTOR.md)
-7. [core/LINKED_PANELS_AXES_PANZOOM.md](core/LINKED_PANELS_AXES_PANZOOM.md)
-8. [core/LINKED_PANELS_PROBE_COLORBAR.md](core/LINKED_PANELS_PROBE_COLORBAR.md)
-9. [core/MOUSE_BRAIN_ATLAS_EXPLORER.md](core/MOUSE_BRAIN_ATLAS_EXPLORER.md)
-10. [core/ANIMATION_VIDEO_EXPORT.md](core/ANIMATION_VIDEO_EXPORT.md)
-11. [core/LATEX_MICROTEX_TEXT_VISUAL.md](core/LATEX_MICROTEX_TEXT_VISUAL.md)
-12. [core/SCALEBAR_2D_3D.md](core/SCALEBAR_2D_3D.md)
-
-### `api/`
-
-API-shape sketches.
-
-1. [api/API_IMAGE_PROBE_PINNED_READOUT.md](api/API_IMAGE_PROBE_PINNED_READOUT.md)
-2. [api/API_MESH_SELECTION_LINK.md](api/API_MESH_SELECTION_LINK.md)
-3. [api/API_SAMPLED_FIELD.md](api/API_SAMPLED_FIELD.md)
-4. [api/API_SCALE_COLORBAR_ANNOTATION.md](api/API_SCALE_COLORBAR_ANNOTATION.md)
-
-### `napari/`
-
-Napari-class image, label, points, tracks, vectors, and orthoslice pressure tests.
-
-### `compute/`
-
-Compute-heavy and shader-heavy examples.
-
-1. [compute/PARTICLES.md](compute/PARTICLES.md)
-2. [compute/GRAY_SCOTT.md](compute/GRAY_SCOTT.md)
-3. [compute/MANDELBROT.md](compute/MANDELBROT.md)
-
-### `astronomy/`
-
-Astronomy and astrophysics examples.
-
-1. [astronomy/ASTRONOMY_MANY_LABELS.md](astronomy/ASTRONOMY_MANY_LABELS.md)
-2. [astronomy/GALAXY.md](astronomy/GALAXY.md)
-
-### `bio/`
-
-Biomedical, molecular, and physiology examples.
-
-1. [bio/PHYSIOLOGY_SIGNAL_WORKBENCH.md](bio/PHYSIOLOGY_SIGNAL_WORKBENCH.md)
-2. [bio/PROTEIN_ARCBALL_VIEWER.md](bio/PROTEIN_ARCBALL_VIEWER.md)
-
-### `engineering/`
-
-Engineering simulation and post-processing examples.
-
-1. [engineering/FINITE_ELEMENT_STRESS_VIEWER.md](engineering/FINITE_ELEMENT_STRESS_VIEWER.md)
-
-### `materials/`
-
-Materials-science examples.
-
-1. [materials/CRYSTAL_PHONON_EXPLORER.md](materials/CRYSTAL_PHONON_EXPLORER.md)
-
-### `neuro/`
-
-Neuroscience, brain-atlas, and tractography examples.
-
-1. [neuro/ALLEN_IBL_COORDINATE_MESH_VOLUME_PLAN.md](neuro/ALLEN_IBL_COORDINATE_MESH_VOLUME_PLAN.md)
-2. [neuro/ALLEN_MOUSE_BRAIN_SLICE_EXAMPLE_PLAN.md](neuro/ALLEN_MOUSE_BRAIN_SLICE_EXAMPLE_PLAN.md)
-3. [neuro/DIFFUSION_TRACTOGRAPHY.md](neuro/DIFFUSION_TRACTOGRAPHY.md)
-
-### `physics/`
-
-Physics, field-line, fluid, plasma, and event-display examples.
-
-1. [physics/CFD_VORTICITY_ADVECTION.md](physics/CFD_VORTICITY_ADVECTION.md)
-2. [physics/HEP_EVENT_DISPLAY.md](physics/HEP_EVENT_DISPLAY.md)
-3. [physics/TOKAMAK_PLASMA_FIELD_LINES.md](physics/TOKAMAK_PLASMA_FIELD_LINES.md)
-
-### `geo/`
-
-Geographic, projection, terrain, atmosphere, and globe examples.
-
-This includes Earth, Mars, wind, flight, animal migration, choropleth, earthquake, and terrain
-examples.
-
-### `dashboards/`
-
-Operational or dense-interface examples with multiple coordinated panels.
-
-1. [dashboards/IMAGE_EMBEDDING_LOD.md](dashboards/IMAGE_EMBEDDING_LOD.md)
-2. [dashboards/SEMANTIC_EMBEDDING_ATLAS.md](dashboards/SEMANTIC_EMBEDDING_ATLAS.md)
-3. [dashboards/MARKET_MICROSTRUCTURE.md](dashboards/MARKET_MICROSTRUCTURE.md)
-4. [dashboards/STREAMING_DAQ_VIEWER.md](dashboards/STREAMING_DAQ_VIEWER.md)
-5. [dashboards/TOY_DICOM_VIEWER.md](dashboards/TOY_DICOM_VIEWER.md)
-
-
-## Common Structure
-
-Each example should stay close to this shape: summary, feature pressure, data/resources, scene
-shape, runtime behavior, minimal target, validation, and open questions. Link to canonical specs for
-the generic resource, transform, FramePlan, DRP2, validation, and cache policy.
+1. Keep scenario files short and specific to the scenario.
+2. Put repeated cache/download/API caveats in [POLICIES.md](POLICIES.md).
+3. Put release status, priority, and blockers in [PLANNING.md](PLANNING.md).
+4. Put visual/screenshot/video direction in [STYLE.md](STYLE.md).
+5. Use scenario IDs from [ORGANIZATION.md](ORGANIZATION.md) when a runnable example, fixture, or
+   generated gallery asset is created.

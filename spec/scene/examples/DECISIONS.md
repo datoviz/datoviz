@@ -175,7 +175,7 @@ payload design continues separately.
 
 ## Related Documents
 
-1. [EXAMPLE_GAP_REPORT.md](EXAMPLE_GAP_REPORT.md)
-2. [EXAMPLE_ORGANIZATION.md](EXAMPLE_ORGANIZATION.md)
+1. [PLANNING.md](PLANNING.md)
+2. [ORGANIZATION.md](ORGANIZATION.md)
 3. [../interaction/CONTROLLERS.md](../interaction/CONTROLLERS.md)
 4. [../visuals/SHARED_ATTRIBUTES.md](../visuals/SHARED_ATTRIBUTES.md)

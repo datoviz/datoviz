@@ -5,7 +5,7 @@
 > **Data:** bundled/cached cubemap and Earth texture with deterministic generated fallback
 > **Validation:** smoke, camera/animation/asset visual checklist
 
-See [../SHARED_POLICIES.md](../SHARED_POLICIES.md) for shared example policy.
+See [../POLICIES.md](../POLICIES.md) for shared example policy.
 
 
 ## Summary

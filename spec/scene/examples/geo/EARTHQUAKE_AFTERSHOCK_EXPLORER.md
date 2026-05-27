@@ -5,7 +5,7 @@
 > **Data:** Ridgecrest 2019 prepared cache with synthetic fallback
 > **Validation:** smoke, coordinate/depth/replay/selection checklist
 
-See [../SHARED_POLICIES.md](../SHARED_POLICIES.md) for shared worked-example policy.
+See [../POLICIES.md](../POLICIES.md) for shared worked-example policy.
 
 
 ## Summary

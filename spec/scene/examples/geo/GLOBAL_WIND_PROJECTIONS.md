@@ -145,7 +145,7 @@ changes. Default density should decimate to roughly `2k-8k` visible arrows; stre
 
 ## Links
 
-- [Shared example policies](../SHARED_POLICIES.md)
+- [Shared example policies](../POLICIES.md)
 - [Transform pipeline](../../pipeline/TRANSFORM_PIPELINE.md)
 - [Frame plan](../../pipeline/FRAME_PLAN.md)
 - [Resource model](../../pipeline/RESOURCE_MODEL.md)

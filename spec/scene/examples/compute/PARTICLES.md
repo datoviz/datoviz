@@ -163,7 +163,7 @@ Wheel zoom or dolly
 
 ## Links
 
-- [Shared example policies](../SHARED_POLICIES.md)
+- [Shared example policies](../POLICIES.md)
 - [Particle system design](../../proposals/active/PARTICLE_SYSTEM_DESIGN.md)
 - [Frame plan](../../pipeline/FRAME_PLAN.md)
 - [Resource model](../../pipeline/RESOURCE_MODEL.md)

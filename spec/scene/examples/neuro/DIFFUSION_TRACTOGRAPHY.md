@@ -144,7 +144,7 @@ Ideal next slice:
 
 ## Links
 
-- [Shared example policies](../SHARED_POLICIES.md)
+- [Shared example policies](../POLICIES.md)
 - [Path visual](../../visuals/PATH.md)
 - [Tube visual](../../visuals/TUBE.md)
 - [Frame plan](../../pipeline/FRAME_PLAN.md)

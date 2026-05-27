@@ -18,7 +18,7 @@ Use this document together with:
    coordination.
 3. [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation deliverables, API/docs inventory,
    RC documentation gates, and final documentation artifacts.
-4. [../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
+4. [../../spec/scene/examples/PLANNING.md](../../spec/scene/examples/PLANNING.md)
    for release example staging.
 5. [../../spec/scene/validation/RENDER_CONFORMANCE.md](../../spec/scene/validation/RENDER_CONFORMANCE.md)
    for the planned render-conformance lane.
@@ -109,7 +109,7 @@ Checklist:
 7. Keep the landed retained scale-bar update-performance churn tests and live example smokes
    represented in release validation.
 8. Reconcile [STATUS.md](STATUS.md),
-   [../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md),
+   [../../spec/scene/examples/PLANNING.md](../../spec/scene/examples/PLANNING.md),
    and the public feature table so completed first slices are not still presented as active
    feature-freeze blockers.
 9. Decide or explicitly defer unresolved API-shape questions that affect RC1 feedback, especially
@@ -290,7 +290,7 @@ Primary references:
 
 1. [../../spec/scene/validation/RENDER_CONFORMANCE.md](../../spec/scene/validation/RENDER_CONFORMANCE.md)
 2. [../../spec/scene/validation/AUTOMATED_TESTING_STRATEGY.md](../../spec/scene/validation/AUTOMATED_TESTING_STRATEGY.md)
-3. [../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
+3. [../../spec/scene/examples/PLANNING.md](../../spec/scene/examples/PLANNING.md)
 
 Checklist:
 

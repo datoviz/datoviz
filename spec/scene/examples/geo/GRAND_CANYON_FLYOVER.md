@@ -171,7 +171,7 @@ If normals are missing, compute them at load time or fall back to unlit texture 
 
 ## Links
 
-- [Shared example policies](../SHARED_POLICIES.md)
+- [Shared example policies](../POLICIES.md)
 - [Frame plan](../../pipeline/FRAME_PLAN.md)
 - [Resource model](../../pipeline/RESOURCE_MODEL.md)
 - [Invalidation and caching](../../pipeline/INVALIDATION_AND_CACHING.md)

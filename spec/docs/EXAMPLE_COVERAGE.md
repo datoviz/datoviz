@@ -5,7 +5,7 @@ public feature should have a focused C example that demonstrates only that visua
 minimum surrounding setup needed to run it.
 
 The aspirational gallery direction is recorded in
-[`../scene/examples/EXAMPLE_NORTH_STAR.md`](../scene/examples/EXAMPLE_NORTH_STAR.md). Use that
+[`../scene/examples/PLANNING.md`](../scene/examples/PLANNING.md). Use that
 document to choose screenshot, video, and showcase targets before reducing them to concrete release
 fixtures and current implementation work.
 

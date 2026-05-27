@@ -154,7 +154,7 @@ Required documentation state:
 
 Use [../../spec/docs/EXAMPLE_COVERAGE.md](../../spec/docs/EXAMPLE_COVERAGE.md) for public
 documentation example coverage, and
-[../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
+[../../spec/scene/examples/PLANNING.md](../../spec/scene/examples/PLANNING.md)
 for release staging.
 
 The release gallery should prove the declared v0.4 feature set with a compact set of native C

@@ -5,7 +5,7 @@
 > **Data:** generated/prepared FEA cache with real-solver import later
 > **Validation:** smoke, visual/picking/performance checklist
 
-See [../SHARED_POLICIES.md](../SHARED_POLICIES.md) for shared worked-example policy.
+See [../POLICIES.md](../POLICIES.md) for shared worked-example policy.
 
 
 ## Summary

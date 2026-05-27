@@ -5,7 +5,7 @@
 > **Data:** CMS Open Data prepared cache with synthetic fallback
 > **Validation:** smoke, visual/picking/provenance/performance checklist
 
-See [../SHARED_POLICIES.md](../SHARED_POLICIES.md) for shared worked-example policy.
+See [../POLICIES.md](../POLICIES.md) for shared worked-example policy.
 
 
 ## Summary

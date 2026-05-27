@@ -20,8 +20,8 @@ Link to canonical specs instead of restating generic policy.
 
 ## Data And Resources
 
-Describe only the data requirements that are specific to this example. For cache, download,
-fallback, and preprocessing policy, link to [SHARED_POLICIES.md](SHARED_POLICIES.md).
+Describe only the data requirements that are specific to this scenario. For cache, download,
+fallback, and preprocessing policy, link to [POLICIES.md](POLICIES.md).
 
 
 ## Scene Shape
@@ -39,6 +39,7 @@ specific to this example.
 ## Minimal Target
 
 State the smallest useful implementation. Keep staged plans short; do not include long pseudocode.
+Put release stage and priority in [PLANNING.md](PLANNING.md), not in individual scenarios.
 
 
 ## Validation

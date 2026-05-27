@@ -6,9 +6,9 @@
 > **Goal:** keep examples discoverable by purpose and API layer while sharing scenario IDs
 
 This document defines repository ownership and layout. Release staging lives in
-[EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md); one-feature fixture ideas live in
-[FEATURE_FIXTURE_MATRIX.md](FEATURE_FIXTURE_MATRIX.md). Shared worked-example policy lives in
-[SHARED_POLICIES.md](SHARED_POLICIES.md).
+[PLANNING.md](PLANNING.md); one-feature fixture ideas live in
+[FIXTURES.md](FIXTURES.md). Shared worked-example policy lives in
+[POLICIES.md](POLICIES.md).
 
 
 ## Goals
@@ -199,7 +199,7 @@ nonblank image, alt text, and a reachable source example.
 
 ## Data, Validation, And Duplication Policy
 
-- Follow [SHARED_POLICIES.md](SHARED_POLICIES.md) for cache/download rules and avoid repeating them
+- Follow [POLICIES.md](POLICIES.md) for cache/download rules and avoid repeating them
   in every worked example.
 - C examples should be smoke-testable; regression examples need deterministic outputs; stress
   examples need measurable bounds.

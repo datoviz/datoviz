@@ -131,8 +131,8 @@ Text/layout lanes:
 
 Analysis notes:
 
-1. [../spec/scene/examples/EXAMPLE_GAP_REPORT.md](../spec/scene/examples/EXAMPLE_GAP_REPORT.md)
-2. [../spec/scene/examples/EXAMPLE_PRIORITIZATION.md](../spec/scene/examples/EXAMPLE_PRIORITIZATION.md)
+1. [../spec/scene/examples/PLANNING.md](../spec/scene/examples/PLANNING.md)
+2. [../spec/scene/examples/PLANNING.md](../spec/scene/examples/PLANNING.md)
 
 ### `done/`
 

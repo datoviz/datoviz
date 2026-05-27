@@ -155,7 +155,7 @@ Replay mode should reveal data progressively and exercise dirty updates when ava
 
 ## Links
 
-- [Shared example policies](../SHARED_POLICIES.md)
+- [Shared example policies](../POLICIES.md)
 - [Dashboard rendering roadmap](../../dashboards/DASHBOARD_RENDERING_ROADMAP.md)
 - [Frame plan](../../pipeline/FRAME_PLAN.md)
 - [Resource model](../../pipeline/RESOURCE_MODEL.md)

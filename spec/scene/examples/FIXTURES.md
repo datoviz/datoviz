@@ -9,7 +9,7 @@ runtime semantics. It records what each fixture should demonstrate, what layer i
 which optional capabilities it requires.
 
 Release staging is not decided in this file. Use
-[EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) to decide whether a fixture or worked
+[PLANNING.md](PLANNING.md) to decide whether a fixture or worked
 example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `later`, or
 `external/GSP`. This matrix should stay focused on small, one-feature validation artifacts.
 
