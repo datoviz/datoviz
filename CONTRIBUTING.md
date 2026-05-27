@@ -16,45 +16,29 @@ The commands are implemented in `justfile`.
 
 ## Python bindings
 
-Datoviz provides two layers of Python bindings:
-
-1. **Low-level bindings** — Automatically generated `ctypes` wrappers for the C API.
-2. **High-level Pythonic API** — A more user-friendly layer built on top of the raw bindings.
+Datoviz v0.4 provides a low-level generated Python binding over the C API. High-level Python
+plotting and object-oriented convenience APIs belong above Datoviz, currently in the GSP/VisPy2
+layer.
 
 ### Low-level ctypes bindings
 
-The low-level bindings are automatically generated from the C headers and written to `datoviz/_ctypes_.py`. This file is committed to the repository but **should not be edited manually**.
+The low-level bindings are automatically generated from the C headers and written to
+`datoviz/_ctypes.py`. This file is committed to the repository but **should not be edited
+manually**.
 
-The C header files are parsed by `tools/parse_headers.py`, which outputs a structured representation to `build/headers.json`. This JSON file serves as the source for both:
+The C header files are parsed by `tools/bindings/extract_api.py`, which outputs a structured
+representation to `build/bindings/datoviz_api.json`. The ctypes generator then reads that JSON:
 
-- The generation of the `ctypes` Python bindings.
-- The generation of the C API documentation.
+- `just api-json` regenerates the extracted C API metadata.
+- `just ctypes` regenerates `datoviz/_ctypes.py`.
+- `just ctypes-check` verifies that the generated file is current.
+- `just ctypes-smoke` imports the package, loads the shared library, and runs a small create/destroy
+  smoke.
 
-C functions such as `dvz_function()` are exposed in Python as `dvz.function()` (after `import datoviz as dvz`).
-C enums like `DVZ_MYENUM` become `dvz.MYENUM` in Python.
+C functions such as `dvz_scene()` are exposed in Python with their exact C names, for example
+`dvz.dvz_scene()` after `import datoviz as dvz`.
 
 This layer is a nearly 1:1 mapping of the C API, useful for advanced users or debugging.
-
-### High-level Pythonic API
-
-Since version **v0.3**, Datoviz also includes a more idiomatic Python API built on top of the `ctypes` layer. This API offers simplified, object-oriented access to Datoviz functionality.
-
-For example:
-
-```python
-import datoviz as dvz
-
-app = dvz.App()
-fig = app.figure()
-panel = fig.panel()
-marker = app.marker(...)
-panel.add(marker)
-app.run()
-```
-
-This Pythonic layer abstracts away many of the lower-level details while retaining full performance and flexibility. It is the recommended entry point for most Python users.
-
-Documentation and examples are being expanded as the API evolves.
 
 
 ## Continuous integration/continuous delivery

@@ -415,12 +415,12 @@ build release="Debug": # && bundledeps
 
 [windows]
 [linux]
-release: headers symbols
+release: symbols
     just build "Release" || just build "Release"
 #
 
 [macos]
-release: headers symbols && bundledeps
+release: symbols && bundledeps
     just build "Release" || just build "Release"
 #
 
@@ -1313,24 +1313,15 @@ buildwheel args='':
 #
 
 
-# -------------------------------------------------------------------------------------------------
-# Shared library
-# -------------------------------------------------------------------------------------------------
-
-headers:
-    @python tools/parse_headers.py
-#
-
-
 [linux]
 [macos]
-symbols: headers
-    @jq -r '.[] | .functions | keys[]' {{justfile_directory()}}/build/headers.json > {{justfile_directory()}}/symbols.map
+symbols: api-json
+    @jq -r '.functions[].name' {{justfile_directory()}}/build/bindings/datoviz_api.json > {{justfile_directory()}}/symbols.map
 #
 
 [windows]
-symbols:
-    @jq -r ".[] | .functions | keys[]" "{{justfile_directory()}}\\build\\headers.json" > "{{justfile_directory()}}\\symbols.map"
+symbols: api-json
+    @jq -r ".functions[].name" "{{justfile_directory()}}\\build\\bindings\\datoviz_api.json" > "{{justfile_directory()}}\\symbols.map"
 #
 
 
@@ -1375,7 +1366,7 @@ tryimport:
     @python -c "import datoviz"
 #
 
-api: headers symbols ctypes doc tryimport # after every API update
+api: symbols ctypes doc tryimport # after every API update
 #
 
 
@@ -1398,26 +1389,6 @@ swiftshader +args:
     VK_ICD_FILENAMES=data/swiftshader/windows/vk_swiftshader_icd.json \
     VK_LOADER_DEBUG=all \
     {{args}}
-#
-
-
-# -------------------------------------------------------------------------------------------------
-# WebAssembly
-# -------------------------------------------------------------------------------------------------
-
-wasm: headers
-    set -e
-    python3 tools/generate_wasm.py
-    ../emsdk/upstream/emscripten/emcc @wasm_sources.txt -o build/datoviz.js \
-        -Iinclude/ -Iinclude/datoviz/ -Isrc/common/ -Iexternal/ \
-        -Iexternal/cglm/include/ \
-        -s MODULARIZE=1 \
-        -s EXPORT_NAME='datoviz' \
-        -s EXPORT_ES6=1 \
-        -s EXPORTED_FUNCTIONS=["$(grep -v '^[[:space:]]*$' wasm_functions.txt | sed 's/^/_/' | paste -sd, -),_free"] \
-        -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap'] \
-        -s ALLOW_MEMORY_GROWTH=1 \
-        -O3
 #
 
 

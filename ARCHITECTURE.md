@@ -189,22 +189,19 @@ The Python API will be layered above `libdatoviz` in three tiers:
 └─────────────────────────────────┘
 ```
 
-### v0.3 binding strategy (carried forward to v0.4)
+### v0.4 raw binding strategy
 
-v0.3 used a code-generation pipeline that is retained for v0.4:
+v0.4 keeps a generated raw ctypes binding, but the old v0.3 parser/emitter has been replaced:
 
-1. `tools/parse_headers.py` — pyparsing-based parser that reads all `include/datoviz/**/*.h`
-   headers and emits a `build/headers.json` description of defines, enums, structs, and all
-   `DVZ_EXPORT`-marked functions with their doxygen docstrings.
+1. `tools/bindings/extract_api.py` — libclang-based extractor that reads the public headers selected
+   by `spec/bindings/ctypes.yml` and emits `build/bindings/datoviz_api.json`.
 
-2. `tools/build_ctypes.py` — reads `headers.json` and generates `datoviz/_ctypes.py`, a pure
-   Python ctypes binding file. It maps C types to ctypes and NumPy dtypes, emits `argtypes` and
-   `restype` for every exported function, and converts doxygen docstrings to NumPy-style
-   docstrings. The output requires no compilation — it loads `libdatoviz.so` at runtime via
-   `ctypes.CDLL()`.
+2. `tools/bindings/generate_ctypes.py` — reads `datoviz_api.json` and generates
+   `datoviz/_ctypes.py`, a pure Python ctypes binding file. The output requires no compilation; it
+   loads the platform `libdatoviz` at runtime.
 
-3. `datoviz/_ctypes.py` — the generated file. Never edited by hand; always regenerated from
-   headers. In v0.3 this file was ~15 000 lines covering the full public API.
+3. `datoviz/_ctypes.py` — the generated file. Never edited by hand; always regenerated through
+   `just ctypes`.
 
 The sugar layer (`datoviz/*.py`) sits above `_ctypes.py` and adds Python ergonomics: keyword
 arguments, NumPy array coercion, context managers, inline colormap shortcuts. It contains no
