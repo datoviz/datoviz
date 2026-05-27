@@ -121,6 +121,16 @@ Committed implementation slices:
     - old labels probe requests are now query shims over family-owned labels query execution.
 25. `25b65c244 scene: route image probes through native query`
     - old image probe requests are now query shims over family-owned image query execution.
+26. `12542e336 examples: use scene query for pick hover`
+    - `pick_hover` now queues item queries and applies selection from `DvzQueryResult`.
+27. `d10429dbc examples: use scene query for image probe`
+    - `image_probe` now queues pixel queries and builds pinned readouts from query results.
+28. `c936aca30 examples: use scene query for labels showcase`
+    - labels showcase hover/click selection now uses segment queries.
+29. `bf9fb4149 examples: use scene query for rich card probe`
+    - rich-card overlay demo now consumes pixel query results.
+30. `aa098676d examples: use scene query in scheduler lab`
+    - scheduler lab now uses item and pixel queries instead of pick/probe requests.
 
 Recorded validation after these commits:
 
@@ -383,8 +393,8 @@ Validation:
 
 Suggested subagent: API/tests/examples agent.
 
-Status: partially landed. Query API, selection adapter, pinned readout adapter, and old pick/probe
-shim inversion exist. Examples, test naming, and old public pick/probe removal remain.
+Status: partially landed. Query API, selection adapter, pinned readout adapter, old pick/probe shim
+inversion, and public example migration exist. Test naming and old public pick/probe removal remain.
 
 Primary ownership:
 
@@ -397,7 +407,7 @@ Primary ownership:
 Tasks:
 
 1. Keep refining the public query API only as needed by native execution.
-2. Convert examples from pick/probe to query.
+2. Keep examples on query. Current `examples/c` no longer calls public pick/probe APIs.
 3. Expand selection and pinned readout tests around native query results.
 4. Remove or privatize public pick/probe entry points.
 5. Rename tests from pick/probe when their behavior is now query-specific.
@@ -475,10 +485,8 @@ paths:
 3. Harden labels query so rendered GPU semantics replace the current direct retained-field
    upload/readback path.
 4. Add GPU volume slice query semantics, then remove the legacy CPU volume slice probe path.
-5. Convert examples from pick/probe to `dvz_panel_query()` where they currently compose request
-   paths manually.
-6. Continue replacing old public pick/probe tests with native query tests as behavior migrates.
-7. Add DRP2/runtime fixtures for `rg32uint` and multi-output query readbacks before relying on those
+5. Continue replacing old public pick/probe tests with native query tests as behavior migrates.
+6. Add DRP2/runtime fixtures for `rg32uint` and multi-output query readbacks before relying on those
    profiles broadly.
 
 
@@ -512,6 +520,7 @@ The overhaul is complete when:
 9. examples use one panel query instead of manual pick/probe composition,
 10. focused scene and DRP2 tests pass.
 
-Current status: criteria 1, 3, 4, 5, and 8 are partially satisfied by the native query and
-family-execution commits. Criterion 5 is satisfied for native query, but old public probe still has
-an intentional CPU volume-slice compatibility path. Criteria 2, 6, 7, and 9 remain open.
+Current status: criteria 1, 3, 4, 5, 8, and 9 are partially satisfied by the native query,
+family-execution, and example-migration commits. Criterion 5 is satisfied for native query, but old
+public probe still has an intentional CPU volume-slice compatibility path. Criteria 2, 6, and 7
+remain open.

@@ -52,7 +52,8 @@ Important transitional state:
    returns explicit unsupported until a GPU family path lands.
 6. Labels query is family-owned but still uses a direct retained-field upload/readback path for raw
    integer label ids. It must move to rendered GPU semantics before the overhaul is complete.
-7. Old public pick/probe APIs remain available during migration.
+7. Old public pick/probe APIs remain available during migration, but `examples/c` now uses the
+   query API directly.
 8. DRP2 and WebGPU parity are not finished: C runtime copy helpers still need full origin/depth and
    multi-output query support, and `rg32uint` needs runtime/readback fixture coverage.
 
