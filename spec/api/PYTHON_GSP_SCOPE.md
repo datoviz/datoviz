@@ -4,7 +4,9 @@ Status: normative v0.4 API and documentation positioning.
 
 This document records the v0.4 ownership split between Datoviz, raw generated Python bindings, GSP,
 and VisPy2. It exists so release notes, public documentation, examples, and future binding work do
-not accidentally recreate the v0.3 Python API inside the Datoviz repository.
+not accidentally recreate the v0.3 Python API inside the Datoviz repository. The complementary
+backend strategy and capability-extension model lives in
+[`GSP_BACKEND_STRATEGY.md`](GSP_BACKEND_STRATEGY.md).
 
 
 ## Decision
@@ -35,6 +37,8 @@ VisPy2 owns the Pythonic user experience above GSP:
    integration when those concepts are user-facing Python APIs;
 4. backend selection and fallback behavior across Datoviz, Matplotlib, and other renderers.
 
+GSP means **Graphics Specification Protocol** in the current Datoviz planning documents.
+
 
 ## Rationale
 
@@ -59,6 +63,26 @@ VisPy2
 
 This lets Datoviz v0.4 release independently as an engine/API/architecture release. GSP and VisPy2
 can then provide the Pythonic scientific visualization layer in a separate release cycle.
+
+
+## Core, Capability, And Extension Boundary
+
+GSP should not become either a Datoviz clone or a lowest-common-denominator plotting API. The
+expected split is:
+
+1. **GSP core**: portable semantic objects such as points, paths, images, meshes, axes, cameras,
+   transforms, colormaps, labels, and layout intent;
+2. **GSP capabilities**: portable requests whose quality or performance varies by backend, such as
+   volumes, 3D interaction, picking/probing, large updates, transparency, and capture;
+3. **backend extensions**: explicitly backend-specific features such as Datoviz PBR, ray tracing,
+   custom shaders, advanced postprocess effects, and out-of-core residency controls.
+
+Backend extensions must be discoverable through capability reporting and should degrade with clear
+warnings when a renderer cannot provide the requested behavior.
+
+Direct Datoviz access remains the correct route for advanced renderer features, native embedding,
+high-throughput streaming, DRP2/runtime validation, custom visuals, and experimental work that is
+not yet portable through GSP.
 
 
 ## Public Documentation Consequences

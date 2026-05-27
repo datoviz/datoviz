@@ -5,7 +5,9 @@ making v0.4 implementation depend on speculative public APIs.
 
 ## Overview
 
-1. [SCIENTIFIC_VISUALIZATION_ROADMAP.md](SCIENTIFIC_VISUALIZATION_ROADMAP.md): orientation index
+1. [LONG_TERM_AMBITION.md](LONG_TERM_AMBITION.md): broad long-term renderer, runtime, scale,
+   ecosystem, and GSP/VisPy2 ambition note.
+2. [SCIENTIFIC_VISUALIZATION_ROADMAP.md](SCIENTIFIC_VISUALIZATION_ROADMAP.md): orientation index
    for future scientific data models and pressure tests.
 
 
