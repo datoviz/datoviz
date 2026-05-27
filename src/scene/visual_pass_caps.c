@@ -27,6 +27,7 @@
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
 #include "datoviz/drp2/enums.h"
+#include "sample_profile.h"
 
 
 /*************************************************************************************************/
@@ -144,24 +145,24 @@ bool _scene_visual_pass_caps_from_visual(
         kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
         break;
     case DVZ_VISUAL_TYPE_LABELS:
+    {
         if (visual->field == NULL)
             return false;
-        switch (visual->field->desc.format)
+        DvzSceneSampleProfile profile = {0};
+        if (!_scene_sample_profile_resolve(
+                visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+                &profile))
         {
-        case DVZ_FIELD_FORMAT_R8_SINT:
-        case DVZ_FIELD_FORMAT_R16_SINT:
-        case DVZ_FIELD_FORMAT_R32_SINT:
-            kind = DVZ_SCENE_VISUAL_DESC_LABELS_SINT;
-            break;
-        case DVZ_FIELD_FORMAT_R8_UINT:
-        case DVZ_FIELD_FORMAT_R16_UINT:
-        case DVZ_FIELD_FORMAT_R32_UINT:
-            kind = DVZ_SCENE_VISUAL_DESC_LABELS_UINT;
-            break;
-        default:
             return false;
         }
+        if (_scene_sample_profile_is_signed_label(&profile))
+            kind = DVZ_SCENE_VISUAL_DESC_LABELS_SINT;
+        else if (_scene_sample_profile_is_unsigned_label(&profile))
+            kind = DVZ_SCENE_VISUAL_DESC_LABELS_UINT;
+        else
+            return false;
         break;
+    }
     case DVZ_VISUAL_TYPE_GLYPH:
         kind = DVZ_SCENE_VISUAL_DESC_GLYPH;
         break;

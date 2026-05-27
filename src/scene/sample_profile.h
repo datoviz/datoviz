@@ -91,3 +91,6 @@ bool _scene_sample_profile_resolve(
 
 bool _scene_sample_profile_is_integer_label(const DvzSceneSampleProfile* profile);
 
+bool _scene_sample_profile_is_unsigned_label(const DvzSceneSampleProfile* profile);
+
+bool _scene_sample_profile_is_signed_label(const DvzSceneSampleProfile* profile);

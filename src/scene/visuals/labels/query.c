@@ -49,21 +49,17 @@ static bool _labels_query_integer_format(
 {
     ANN(out_texture_format);
     ANN(out_bytes_per_texel);
-    switch (format)
+    DvzSceneSampleProfile profile = {0};
+    if (_scene_sample_profile_resolve(
+            format, DVZ_FIELD_SEMANTIC_LABEL, DVZ_FIELD_DIM_2D, &profile) &&
+        _scene_sample_profile_is_integer_label(&profile))
     {
-    case DVZ_FIELD_FORMAT_R8_UINT:
-    case DVZ_FIELD_FORMAT_R8_SINT:
-    case DVZ_FIELD_FORMAT_R16_UINT:
-    case DVZ_FIELD_FORMAT_R16_SINT:
-    case DVZ_FIELD_FORMAT_R32_UINT:
-    case DVZ_FIELD_FORMAT_R32_SINT:
         return _field_format_texture_format(format, out_texture_format) &&
                _field_format_bytes_per_texel(format, out_bytes_per_texel);
-    default:
-        *out_texture_format = 0;
-        *out_bytes_per_texel = 0;
-        return false;
     }
+    *out_texture_format = 0;
+    *out_bytes_per_texel = 0;
+    return false;
 }
 
 
@@ -514,25 +510,25 @@ static bool _labels_query_decode_sample(
     if (encoded == 0)
         return false;
     uint32_t bits = encoded - 1u;
-    switch (format)
+    DvzSceneSampleProfile profile = {0};
+    if (!_scene_sample_profile_resolve(
+            format, DVZ_FIELD_SEMANTIC_LABEL, DVZ_FIELD_DIM_2D, &profile))
     {
-    case DVZ_FIELD_FORMAT_R8_UINT:
-    case DVZ_FIELD_FORMAT_R16_UINT:
-    case DVZ_FIELD_FORMAT_R32_UINT:
+        return false;
+    }
+    if (_scene_sample_profile_is_unsigned_label(&profile))
+    {
         *out_id = (DvzCategoryId)bits;
         return true;
-    case DVZ_FIELD_FORMAT_R8_SINT:
-    case DVZ_FIELD_FORMAT_R16_SINT:
-    case DVZ_FIELD_FORMAT_R32_SINT:
+    }
+    if (_scene_sample_profile_is_signed_label(&profile))
     {
         int32_t v = 0;
         dvz_memcpy(&v, sizeof(v), &bits, sizeof(bits));
         *out_id = (DvzCategoryId)v;
         return true;
     }
-    default:
-        return false;
-    }
+    return false;
 }
 
 

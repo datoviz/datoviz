@@ -28,6 +28,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "sample_profile.h"
 
 
 
@@ -1002,13 +1003,12 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
         log_error("labels visuals require a sampled field with LABEL semantic");
         return false;
     }
-    if (field != NULL && visual->type == DVZ_VISUAL_TYPE_LABELS &&
-        field->desc.format != DVZ_FIELD_FORMAT_R8_UINT &&
-        field->desc.format != DVZ_FIELD_FORMAT_R8_SINT &&
-        field->desc.format != DVZ_FIELD_FORMAT_R16_UINT &&
-        field->desc.format != DVZ_FIELD_FORMAT_R16_SINT &&
-        field->desc.format != DVZ_FIELD_FORMAT_R32_UINT &&
-        field->desc.format != DVZ_FIELD_FORMAT_R32_SINT)
+    DvzSceneSampleProfile profile = {0};
+    bool supported_profile =
+        field != NULL &&
+        _scene_sample_profile_resolve(
+            field->desc.format, field->desc.semantic, field->desc.dim, &profile);
+    if (field != NULL && visual->type == DVZ_VISUAL_TYPE_LABELS && !supported_profile)
     {
         log_error("labels visuals require an R8/R16/R32 signed or unsigned integer field");
         return false;

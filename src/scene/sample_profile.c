@@ -206,3 +206,30 @@ bool _scene_sample_profile_is_integer_label(const DvzSceneSampleProfile* profile
            profile->value_kind == DVZ_SCENE_SAMPLE_VALUE_LABEL_S32;
 }
 
+
+
+/**
+ * Return whether a resolved profile represents unsigned integer labels.
+ *
+ * @param profile the resolved sample profile
+ * @return whether the profile is an unsigned-label profile
+ */
+bool _scene_sample_profile_is_unsigned_label(const DvzSceneSampleProfile* profile)
+{
+    ANN(profile);
+    return profile->value_kind == DVZ_SCENE_SAMPLE_VALUE_LABEL_U32;
+}
+
+
+
+/**
+ * Return whether a resolved profile represents signed integer labels.
+ *
+ * @param profile the resolved sample profile
+ * @return whether the profile is a signed-label profile
+ */
+bool _scene_sample_profile_is_signed_label(const DvzSceneSampleProfile* profile)
+{
+    ANN(profile);
+    return profile->value_kind == DVZ_SCENE_SAMPLE_VALUE_LABEL_S32;
+}

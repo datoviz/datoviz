@@ -27,6 +27,7 @@
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
 #include "datoviz/drp2/enums.h"
+#include "sample_profile.h"
 
 
 /*************************************************************************************************/
@@ -156,33 +157,6 @@ bool _scene_visual_desc_is_image(DvzSceneVisualDescKind kind)
     return kind == DVZ_SCENE_VISUAL_DESC_IMAGE || kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
            kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT || kind == DVZ_SCENE_VISUAL_DESC_GLYPH;
 }
-
-
-/**
- * Return whether a field format is a signed labels format.
- *
- * @param format scene field format
- * @return whether the format is a signed integer label format
- */
-static bool _labels_format_is_signed(uint32_t format)
-{
-    return format == DVZ_FIELD_FORMAT_R8_SINT || format == DVZ_FIELD_FORMAT_R16_SINT ||
-           format == DVZ_FIELD_FORMAT_R32_SINT;
-}
-
-
-/**
- * Return whether a field format is an unsigned labels format.
- *
- * @param format scene field format
- * @return whether the format is an unsigned integer label format
- */
-static bool _labels_format_is_unsigned(uint32_t format)
-{
-    return format == DVZ_FIELD_FORMAT_R8_UINT || format == DVZ_FIELD_FORMAT_R16_UINT ||
-           format == DVZ_FIELD_FORMAT_R32_UINT;
-}
-
 
 
 /**
@@ -717,9 +691,13 @@ static bool _scene_visual_desc_from_metadata(
             out->kind = DVZ_SCENE_VISUAL_DESC_GLYPH;
         else if (meta->visual_type == DVZ_VISUAL_TYPE_LABELS)
         {
-            if (_labels_format_is_signed(meta->field_format))
+            DvzSceneSampleProfile profile = {0};
+            bool ok = _scene_sample_profile_resolve(
+                (DvzFieldFormat)meta->field_format, DVZ_FIELD_SEMANTIC_LABEL, DVZ_FIELD_DIM_2D,
+                &profile);
+            if (ok && _scene_sample_profile_is_signed_label(&profile))
                 out->kind = DVZ_SCENE_VISUAL_DESC_LABELS_SINT;
-            else if (_labels_format_is_unsigned(meta->field_format))
+            else if (ok && _scene_sample_profile_is_unsigned_label(&profile))
                 out->kind = DVZ_SCENE_VISUAL_DESC_LABELS_UINT;
             else
             {
