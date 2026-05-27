@@ -205,16 +205,30 @@ int test_scene_query_volume_sample_is_explicitly_unsupported(TstContext* suite, 
 
 
 /**
- * Ensure image sample queries stay explicit until native value queries land.
+ * Ensure image sample queries resolve through the native GPU value path.
  *
  * @param suite the active test suite
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_query_image_sample_is_explicitly_unsupported(TstContext* suite, const TstCase* item)
+int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
+    TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -227,25 +241,67 @@ int test_scene_query_image_sample_is_explicitly_unsupported(TstContext* suite, c
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
     dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_SAMPLE);
+    vec3 image_pos[4] = {
+        {-1.0f, -1.0f, 0.0f},
+        {-1.0f, 1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4] = {0};
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        pixels[4 * i + 0] = 64;
+        pixels[4 * i + 1] = 128;
+        pixels[4 * i + 2] = 255;
+        pixels[4 * i + 3] = 255;
+    }
+    AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
            &(DvzQueryRequest){.request_id = 35, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
     DvzCapabilitySnapshot caps = {0};
     dvz_capability_snapshot_default(&caps);
-    AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
+    caps.shader_format_glsl = true;
+    AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+    AT(scene->pick_result_count == 0);
     AT(scene->pending_probe_count == 0);
     AT(scene->probe_result_count == 0);
 
     DvzQueryResult query = {0};
     AT(dvz_scene_poll_query(scene, &query));
     AT(query.request_id == 35);
-    AT(!query.hit);
-    AT(query.status == DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY);
+    AT(query.hit);
+    AT(query.status == DVZ_QUERY_STATUS_HIT);
     AT(query.visual_id == _scene_visual_public_id(scene, image));
+    AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_IMAGE);
+    AT(query.raw_target == DVZ_SCENE_TARGET_SAMPLE);
+    AT(query.resolved_target == DVZ_SCENE_TARGET_SAMPLE);
+    AT(query.value_kind == DVZ_QUERY_VALUE_VEC4);
+    AC(query.vector[0], 64.0 / 255.0, 1e-3);
+    AC(query.vector[1], 128.0 / 255.0, 1e-3);
+    AT(query.vector[2] > 0.9);
+    AT(query.vector[3] > 0.9);
+    AT(query.has_display_rgba);
+    AC(query.display_rgba[0], query.vector[0], 1e-12);
     AT(!dvz_scene_poll_query(scene, &query));
 
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1470,7 +1526,7 @@ int test_scene_query(TstSuite* suite)
     TST_CASE(test_scene_query_queue_processes_native_results);
     TST_CASE(test_scene_query_queue_coalesces_pending_requests);
     TST_CASE(test_scene_query_volume_sample_is_explicitly_unsupported);
-    TST_CASE(test_scene_query_image_sample_is_explicitly_unsupported);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_resolves_sample);
     TST_SCENE_QUERY_GPU_CASE(test_scene_point_query_misses_empty_pixel);
     TST_SCENE_QUERY_GPU_CASE(test_scene_pixel_query_accepts_square_corner);
     TST_SCENE_QUERY_GPU_CASE(test_scene_marker_query_accepts_bbox_corner);

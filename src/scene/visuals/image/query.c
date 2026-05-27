@@ -286,7 +286,9 @@ static bool _image_query_eligible(
     ANN(request);
     if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
         return false;
-    if (request->target == DVZ_SCENE_TARGET_PIXEL)
+    if (
+        request->target == DVZ_SCENE_TARGET_PIXEL ||
+        request->target == DVZ_SCENE_TARGET_SAMPLE)
     {
         for (uint32_t i = 0; i < panel->visual_count; i++)
         {
@@ -294,7 +296,10 @@ static bool _image_query_eligible(
             if (attach->visual == visual && attach->controller_mode == DVZ_CONTROLLER_FIXED)
                 return false;
         }
-        return (visual->pick_capabilities & DVZ_PICK_CAPABILITY_PIXEL) != 0;
+        uint32_t capability = request->target == DVZ_SCENE_TARGET_SAMPLE
+                                  ? DVZ_PICK_CAPABILITY_SAMPLE
+                                  : DVZ_PICK_CAPABILITY_PIXEL;
+        return (visual->pick_capabilities & capability) != 0;
     }
     if (request->target != DVZ_SCENE_TARGET_NONE && request->target != DVZ_SCENE_TARGET_ITEM &&
         request->target != DVZ_SCENE_TARGET_OBJECT)
@@ -322,7 +327,9 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
     ANN(ctx->pending);
     ANN(out_plan);
 
-    if (ctx->pending->request.target == DVZ_SCENE_TARGET_PIXEL)
+    if (
+        ctx->pending->request.target == DVZ_SCENE_TARGET_PIXEL ||
+        ctx->pending->request.target == DVZ_SCENE_TARGET_SAMPLE)
     {
         DvzPendingProbeRequest pending = {0};
         pending.panel = ctx->panel;
@@ -330,7 +337,7 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
         pending.y = ctx->pending->y;
         pending.freshness_serial = ctx->pending->freshness_serial;
         pending.request.request_id = ctx->pending->request.request_id;
-        pending.request.target = DVZ_SCENE_TARGET_PIXEL;
+        pending.request.target = ctx->pending->request.target;
         if (!_scene_image_probe_plan(
                 ctx->panel, ctx->visual, &pending, ctx->request_ndc, true, &out_plan->scratch))
         {
@@ -447,8 +454,11 @@ static bool _image_query_decode(const DvzSceneQueryDecodeContext* ctx, DvzQueryR
     ANN(ctx->build->visual);
     ANN(ctx->bytes);
     ANN(out_result);
-    if (ctx->build->pending->request.target == DVZ_SCENE_TARGET_PIXEL)
+    if (
+        ctx->build->pending->request.target == DVZ_SCENE_TARGET_PIXEL ||
+        ctx->build->pending->request.target == DVZ_SCENE_TARGET_SAMPLE)
     {
+        DvzSceneTargetKind target = ctx->build->pending->request.target;
         if (ctx->byte_size < 4)
         {
             out_result->status = DVZ_QUERY_STATUS_DECODE_FAILED;
@@ -460,8 +470,8 @@ static bool _image_query_decode(const DvzSceneQueryDecodeContext* ctx, DvzQueryR
             out_result->visual_id =
                 _scene_visual_public_id(ctx->build->figure->scene, ctx->build->visual);
             out_result->visual_family = DVZ_SCENE_VISUAL_FAMILY_IMAGE;
-            out_result->raw_target = DVZ_SCENE_TARGET_PIXEL;
-            out_result->resolved_target = DVZ_SCENE_TARGET_PIXEL;
+            out_result->raw_target = target;
+            out_result->resolved_target = target;
             out_result->value_kind = DVZ_QUERY_VALUE_NONE;
             return true;
         }
@@ -472,11 +482,15 @@ static bool _image_query_decode(const DvzSceneQueryDecodeContext* ctx, DvzQueryR
             _scene_visual_public_id(ctx->build->figure->scene, ctx->build->visual);
         out_result->visual_family = DVZ_SCENE_VISUAL_FAMILY_IMAGE;
         out_result->payload_version = 1;
-        out_result->raw_target = DVZ_SCENE_TARGET_PIXEL;
-        out_result->resolved_target = DVZ_SCENE_TARGET_PIXEL;
+        out_result->raw_target = target;
+        out_result->resolved_target = target;
         out_result->value_kind = DVZ_QUERY_VALUE_VEC4;
         for (uint32_t i = 0; i < 4; i++)
+        {
             out_result->vector[i] = ctx->bytes[i] / 255.0;
+            out_result->display_rgba[i] = out_result->vector[i];
+        }
+        out_result->has_display_rgba = true;
         dvz_strlcpy(out_result->label, "rgba", sizeof(out_result->label));
         return true;
     }
@@ -521,8 +535,12 @@ static bool _image_query_readout(const DvzSceneQueryReadoutContext* ctx, DvzQuer
 {
     ANN(ctx);
     ANN(result);
-    if (result->resolved_target != DVZ_SCENE_TARGET_PIXEL)
+    if (
+        result->resolved_target != DVZ_SCENE_TARGET_PIXEL &&
+        result->resolved_target != DVZ_SCENE_TARGET_SAMPLE)
+    {
         result->value_kind = DVZ_QUERY_VALUE_NONE;
+    }
     return true;
 }
 
