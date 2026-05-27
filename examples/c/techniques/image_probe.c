@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* image_probe — live image-probe smoke example.
+/* image_probe - live image-query smoke example.
  *
  * Opens a GLFW window showing a non-uniform image. Move the cursor over the panel to issue one
- * image probe per frame through the scene -> DRP2 -> vklite live app path. Click to pin the next
- * resolved image-probe value as a retained readout card. Resolved probe values are printed when
+ * image query per frame through the scene -> DRP2 -> vklite live app path. Click to pin the next
+ * resolved image-query value as a retained readout card. Resolved query values are printed when
  * the sampled RGBA changes.
  *
  * Build:  just example-c visuals/image_probe
@@ -117,24 +117,24 @@ static void _fill_probe_image(uint8_t pixels[IMG * IMG * 4])
 
 
 /**
- * Return whether a probe result differs enough from the last printed value.
+ * Return whether a query result differs enough from the last printed value.
  *
- * @param state image probe example state
- * @param probe probe result to compare
+ * @param state image query example state
+ * @param query query result to compare
  * @return true when the result should be printed
  */
-static bool _probe_changed(const ImageProbeState* state, const DvzProbeResult* probe)
+static bool _query_changed(const ImageProbeState* state, const DvzQueryResult* query)
 {
-    if (state == NULL || probe == NULL)
+    if (state == NULL || query == NULL)
         return false;
-    if (!state->has_last_result || state->last_hit != probe->hit)
+    if (!state->has_last_result || state->last_hit != query->hit)
         return true;
-    if (!probe->hit)
+    if (!query->hit)
         return false;
 
     for (uint32_t i = 0; i < 4; i++)
     {
-        double delta = probe->vector[i] - state->last_rgba[i];
+        double delta = query->vector[i] - state->last_rgba[i];
         if (delta < 0)
             delta = -delta;
         if (delta >= (1.0 / 255.0))
@@ -146,20 +146,20 @@ static bool _probe_changed(const ImageProbeState* state, const DvzProbeResult* p
 
 
 /**
- * Remember the last printed probe result.
+ * Remember the last printed query result.
  *
- * @param state image probe example state
- * @param probe probe result to store
+ * @param state image query example state
+ * @param query query result to store
  */
-static void _store_probe_result(ImageProbeState* state, const DvzProbeResult* probe)
+static void _store_query_result(ImageProbeState* state, const DvzQueryResult* query)
 {
-    if (state == NULL || probe == NULL)
+    if (state == NULL || query == NULL)
         return;
 
     state->has_last_result = true;
-    state->last_hit = probe->hit;
+    state->last_hit = query->hit;
     for (uint32_t i = 0; i < 4; i++)
-        state->last_rgba[i] = probe->vector[i];
+        state->last_rgba[i] = query->vector[i];
 }
 
 
@@ -195,7 +195,7 @@ _image_probe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void*
 
 
 /**
- * Poll probe results and queue the next cursor probe.
+ * Poll query results and queue the next cursor query.
  *
  * @param win view whose frame just completed
  * @param user_data image probe example state
@@ -207,14 +207,14 @@ static void _image_probe_frame(DvzView* win, void* user_data)
     if (state == NULL)
         return;
 
-    DvzProbeResult probe = {0};
-    while (dvz_scene_poll_probe(state->scene, &probe))
+    DvzQueryResult query = {0};
+    while (dvz_scene_poll_query(state->scene, &query))
     {
         if (state->pin_next_result)
         {
-            if (probe.hit)
+            if (query.status == DVZ_QUERY_STATUS_HIT && query.hit)
             {
-                DvzPinnedReadout* readout = dvz_pinned_readout(state->panel, &probe);
+                DvzPinnedReadout* readout = dvz_pinned_readout_query(state->panel, &query);
                 if (readout != NULL)
                 {
                     dvz_pinned_readout_set_format(
@@ -224,41 +224,43 @@ static void _image_probe_frame(DvzView* win, void* user_data)
                 }
                 else
                 {
-                    dvz_fprintf(stderr, "dvz_pinned_readout() failed\n");
+                    dvz_fprintf(stderr, "dvz_pinned_readout_query() failed\n");
                 }
             }
             state->pin_next_result = false;
         }
 
-        if (!_probe_changed(state, &probe))
+        if (!_query_changed(state, &query))
             continue;
 
-        if (probe.hit && probe.value_kind == DVZ_PROBE_VALUE_VEC4)
+        if (
+            query.status == DVZ_QUERY_STATUS_HIT && query.hit &&
+            query.value_kind == DVZ_QUERY_VALUE_VEC4)
         {
             dvz_fprintf(
                 stdout,
-                "probe x=%7.1f y=%7.1f rgba=(%0.3f, %0.3f, %0.3f, %0.3f)\n",
-                probe.has_coordinate ? probe.coordinate[0] : state->cursor_x,
-                probe.has_coordinate ? probe.coordinate[1] : state->cursor_y,
-                probe.vector[0], probe.vector[1], probe.vector[2], probe.vector[3]);
+                "query x=%7.1f y=%7.1f rgba=(%0.3f, %0.3f, %0.3f, %0.3f)\n",
+                query.has_data_position ? query.data_position[0] : state->cursor_x,
+                query.has_data_position ? query.data_position[1] : state->cursor_y,
+                query.vector[0], query.vector[1], query.vector[2], query.vector[3]);
         }
         else
         {
-            dvz_fprintf(stdout, "probe miss x=%7.1f y=%7.1f\n", state->cursor_x, state->cursor_y);
+            dvz_fprintf(stdout, "query miss x=%7.1f y=%7.1f\n", state->cursor_x, state->cursor_y);
         }
-        _store_probe_result(state, &probe);
+        _store_query_result(state, &query);
     }
 
     if (state->cursor_valid)
     {
-        if (dvz_panel_probe(
+        if (dvz_panel_query(
                 state->panel, state->cursor_x, state->cursor_y,
-                &(DvzProbeRequest){
+                &(DvzQueryRequest){
                     .request_id = 0,
                     .target = DVZ_SCENE_TARGET_PIXEL,
                 }) != 0)
         {
-            dvz_fprintf(stderr, "dvz_panel_probe() failed\n");
+            dvz_fprintf(stderr, "dvz_panel_query() failed\n");
         }
     }
 }
@@ -310,6 +312,7 @@ int main(int argc, char** argv)
 
     rc = dvz_visual_set_texture(image, pixels, IMG, IMG);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_texture() failed");
+    dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_PIXEL);
 
     rc = dvz_panel_add_visual(panel, image, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
