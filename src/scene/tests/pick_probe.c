@@ -351,6 +351,90 @@ int test_scene_pick_probe_queues_and_pinned_readout(TstContext* suite, const Tst
 }
 
 
+int test_scene_query_api_bridges_pick_and_probe_results(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    AT(dvz_panel_query(
+           panel, 12.0, 34.0,
+           &(DvzQueryRequest){.request_id = 41, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+    AT(scene->pending_pick_count == 1);
+    AT(scene->pending_picks[0].request.request_id == 41);
+    AT(scene->pending_picks[0].request.target == DVZ_SCENE_TARGET_ITEM);
+
+    AT(dvz_panel_query(
+           panel, 56.0, 78.0,
+           &(DvzQueryRequest){.request_id = 42, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
+    AT(scene->pending_probe_count == 1);
+    AT(scene->pending_probes[0].request.request_id == 42);
+    AT(scene->pending_probes[0].request.target == DVZ_SCENE_TARGET_SAMPLE);
+
+    DvzPickResult pick = {
+        .request_id = 41,
+        .status = DVZ_PICK_STATUS_HIT,
+        .hit = true,
+        .panel_id = 1,
+        .visual_id = 2,
+        .visual_family = DVZ_SCENE_VISUAL_FAMILY_POINT,
+        .resolved_target = DVZ_SCENE_TARGET_ITEM,
+        .resolved_id = 7,
+        .item_id = 7,
+        .panel_position = {12.0, 34.0},
+    };
+    DvzProbeResult probe = {
+        .request_id = 42,
+        .status = DVZ_PROBE_STATUS_HIT,
+        .hit = true,
+        .panel_id = 1,
+        .visual_id = 3,
+        .visual_family = DVZ_SCENE_VISUAL_FAMILY_IMAGE,
+        .target = DVZ_SCENE_TARGET_SAMPLE,
+        .target_id = 9,
+        .value_kind = DVZ_PROBE_VALUE_SCALAR,
+        .scalar = 2.25,
+        .panel_position = {56.0, 78.0},
+        .has_coordinate = true,
+        .coordinate = {0.5, 0.25, 0.0},
+    };
+    dvz_snprintf(probe.label, sizeof(probe.label), "%s", "intensity");
+
+    AT(_dvz_scene_enqueue_pick_result(scene, &pick));
+    AT(_dvz_scene_enqueue_probe_result(scene, &probe));
+
+    DvzQueryResult query = {0};
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.request_id == 41);
+    AT(query.status == DVZ_QUERY_STATUS_HIT);
+    AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_POINT);
+    AT(query.resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(query.resolved_id == 7);
+    AT(query.value_kind == DVZ_QUERY_VALUE_NONE);
+
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.request_id == 42);
+    AT(query.status == DVZ_QUERY_STATUS_HIT);
+    AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_IMAGE);
+    AT(query.resolved_target == DVZ_SCENE_TARGET_SAMPLE);
+    AT(query.resolved_id == 9);
+    AT(query.value_kind == DVZ_QUERY_VALUE_SCALAR);
+    AC(query.scalar, 2.25, 1e-12);
+    AT(query.has_data_position);
+    AC(query.data_position[0], 0.5, 1e-12);
+    AT(strcmp(query.label, "intensity") == 0);
+    AT(!dvz_scene_poll_query(scene, &query));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Ensure polling resolved pick/probe results clears the consumed queue storage.
  *
@@ -2953,6 +3037,7 @@ int test_scene_pick_probe(TstSuite* suite)
     TST_CASE(test_scene_process_requests_coalesces_pending_probes_before_execution);
     TST_CASE(test_scene_pick_probe_unsupported_targets);
     TST_CASE(test_scene_pick_probe_queues_and_pinned_readout);
+    TST_CASE(test_scene_query_api_bridges_pick_and_probe_results);
     TST_CASE(test_scene_poll_pick_probe_clears_consumed_slots);
     TST_CASE(test_scene_pick_request_same_id_supersedes_older_unresolved);
     TST_CASE(test_scene_probe_request_zero_id_keeps_newest_unresolved);

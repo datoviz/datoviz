@@ -395,6 +395,18 @@ DVZ_EXPORT uint32_t dvz_figure_process_requests(
     DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps);
 
 
+/**
+ * Execute queued query requests for one figure through the DRP2 runtime.
+ *
+ * @param figure the figure
+ * @param runtime the DRP2 runtime
+ * @param caps the capability snapshot, or NULL for defaults
+ * @return the number of requests that were consumed from the scene queues
+ */
+DVZ_EXPORT uint32_t dvz_figure_process_queries(
+    DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps);
+
+
 
 /*************************************************************************************************/
 /*  Panel                                                                                        */

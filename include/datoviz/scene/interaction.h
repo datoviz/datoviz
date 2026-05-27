@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/drp2/types.h"
 #include "datoviz/scene/types.h"
 
 
@@ -207,7 +208,51 @@ DVZ_EXPORT void dvz_selection_copy(
 
 
 /*************************************************************************************************/
-/*  Pick and probe requests                                                                      */
+/*  Query requests                                                                               */
+/*************************************************************************************************/
+
+/**
+ * Queue an explicit GPU-backed query request on a panel.
+ *
+ * @param panel the panel
+ * @param x the logical panel x coordinate
+ * @param y the logical panel y coordinate
+ * @param request the request descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_panel_query(
+    DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
+
+
+/**
+ * Poll one resolved query result from the scene.
+ *
+ * @param scene the scene
+ * @param out_result output result
+ * @return true when a result was written
+ */
+DVZ_EXPORT bool dvz_scene_poll_query(DvzScene* scene, DvzQueryResult* out_result);
+
+
+/**
+ * Queue and synchronously resolve a query through a DRP2 runtime.
+ *
+ * @param panel the panel
+ * @param runtime the DRP2 runtime
+ * @param x the logical panel x coordinate
+ * @param y the logical panel y coordinate
+ * @param request the request descriptor, or NULL for defaults
+ * @param out_result output result
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_panel_query_now(
+    DvzPanel* panel, DvzDrp2Runtime* runtime, double x, double y, const DvzQueryRequest* request,
+    DvzQueryResult* out_result);
+
+
+
+/*************************************************************************************************/
+/*  Transitional pick and probe requests                                                         */
 /*************************************************************************************************/
 
 /**
