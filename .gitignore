@@ -94,7 +94,6 @@ bugs
 build*/
 cleaned
 dist
-docs/examples
 docs/gallery/
 experimental
 joblib

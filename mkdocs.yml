@@ -1,9 +1,22 @@
-site_name: Datoviz Documentation
+site_name: Datoviz v0.4 Documentation
 site_url: https://datoviz.org
 repo_url: https://github.com/datoviz/datoviz
 docs_dir: docs
-site_description: '⚡ Datoviz: high-performance scientific data visualization'
+site_description: 'Datoviz v0.4: C-first GPU rendering engine for scientific visualization'
 site_author: Cyrille Rossant
+exclude_docs: |
+  README.md
+  quickstart.md
+  architecture/*
+  blog/*
+  discussions/*
+  gallery/*
+  guide/*
+  tasks/*
+  visuals/*
+  reference/api_c.md
+  reference/api_py.md
+  reference/colormaps.md
 theme:
   name: material
   logo: images/logow.png
@@ -70,54 +83,101 @@ hooks:
   - tools/mkdocs_hooks.py
 nav:
   - Home: 'index.md'
-
-  - Learn:
-    - Overview: 'guide/index.md'
-    - Quickstart: 'quickstart.md'
-    - Main Concepts: 'guide/common.md'
-    - Visuals:
-      - Overview: 'guide/visuals.md'
-      - Basic: 'visuals/basic.md'
-      - Pixel: 'visuals/pixel.md'
-      - Point: 'visuals/point.md'
-      - Marker: 'visuals/marker.md'
-      - Segment: 'visuals/segment.md'
-      - Path: 'visuals/path.md'
-      - Image: 'visuals/image.md'
-      - Wiggle: 'visuals/wiggle.md'
-      - Glyph: 'visuals/glyph.md'
-      - Mesh: 'visuals/mesh.md'
-      - Sphere: 'visuals/sphere.md'
-      - Volume: 'visuals/volume.md'
-      - Slice: 'visuals/slice.md'
-    - Texture: 'guide/texture.md'
-    - Interactivity: 'guide/interactivity.md'
-
-  - Advanced:
-    - Shapes: 'guide/shape.md'
-    - User Input: 'guide/input.md'
-    - Timers and Frame Events: 'guide/events.md'
-    - Graphical User Interfaces: 'guide/gui.md'
-    - Using Datoviz in C: 'guide/c.md'
-    - Datoviz Rendering Protocol (DRP): 'guide/drp.md'
-
-  - Gallery:
-    - Overview: 'gallery/index.md'
-
-  - Blog:
-    - Overview: 'blog/index.md'
-
+  - Start:
+    - What is Datoviz: 'start/what-is-datoviz.md'
+    - Choose your layer: 'start/choose-your-layer.md'
+    - Install: 'start/install.md'
+    - Build from source: 'start/build-from-source.md'
+    - First C program: 'start/first-c-program.md'
+    - Project status: 'start/project-status.md'
+  - Tutorials:
+    - Overview: 'tutorials/index.md'
+    - First scene: 'tutorials/first-scene.md'
+    - Interactive window: 'tutorials/interactive-window.md'
+    - Offscreen capture: 'tutorials/offscreen-capture.md'
+    - Image, colorbar, and probe: 'tutorials/image-colorbar-probe.md'
+    - Mesh with arcball: 'tutorials/mesh-arcball.md'
+    - Multi-panel figure: 'tutorials/multi-panel-figure.md'
+  - Examples:
+    - Overview: 'examples/index.md'
+    - Visual gallery: 'examples/visual-gallery.md'
+    - Feature gallery: 'examples/feature-gallery.md'
+    - Techniques: 'examples/techniques.md'
+    - Showcases: 'examples/showcases.md'
+    - Validation gallery: 'examples/validation-gallery.md'
+  - How-To:
+    - Create a scene: 'how-to/create-a-scene.md'
+    - Create a window: 'how-to/create-a-window.md'
+    - Render offscreen: 'how-to/render-offscreen.md'
+    - Capture an image: 'how-to/capture-an-image.md'
+    - Add a visual: 'how-to/add-a-visual.md'
+    - Update visual data: 'how-to/update-visual-data.md'
+    - Choose a visual family: 'how-to/choose-a-visual-family.md'
+    - Use sampled fields: 'how-to/use-sampled-fields.md'
+    - Use colormaps: 'how-to/use-colormaps.md'
+    - Add axes: 'how-to/add-axes.md'
+    - Add colorbars: 'how-to/add-colorbars.md'
+    - Add annotations: 'how-to/add-annotations.md'
+    - Use panzoom: 'how-to/use-panzoom.md'
+    - Use arcball: 'how-to/use-arcball.md'
+    - Pick and probe: 'how-to/pick-and-probe.md'
+    - Select items: 'how-to/select-items.md'
+    - Create multiple panels: 'how-to/create-multiple-panels.md'
+    - Embed in Qt: 'how-to/embed-in-qt.md'
+    - Use raw ctypes: 'how-to/use-raw-ctypes.md'
+    - Replay DVZR: 'how-to/replay-dvzr.md'
+    - Debug rendering: 'how-to/debug-rendering.md'
+    - Profile performance: 'how-to/profile-performance.md'
   - Reference:
-    - Python API Reference: 'reference/api_py.md'
-    - C API Reference: 'reference/api_c.md'
-    - Colormaps: 'reference/colormaps.md'
-
-  - Discussions:
-    - Architecture: 'discussions/ARCHITECTURE.md'
-    - Build Instructions: 'discussions/BUILD.md'
-    - Contribution Guidelines: 'discussions/CONTRIBUTING.md'
-    - Maintainer Guidelines: 'discussions/MAINTAINERS.md'
-    - License: 'discussions/LICENSE.md'
+    - Overview: 'reference/index.md'
+    - Feature status: 'reference/feature-status.md'
+    - Platform support: 'reference/platform-support.md'
+    - Build options: 'reference/build-options.md'
+    - C API: 'reference/c-api/index.md'
+    - Objects and lifetimes: 'reference/objects-and-lifetimes.md'
+    - Visual families: 'reference/visual-families/index.md'
+    - Visual attributes: 'reference/visual-attributes.md'
+    - Coordinate systems: 'reference/coordinate-systems.md'
+    - Controllers: 'reference/controllers.md'
+    - Queries: 'reference/queries.md'
+    - Callbacks: 'reference/callbacks.md'
+    - Errors and logging: 'reference/errors-and-logging.md'
+    - Raw ctypes: 'reference/ctypes.md'
+    - WebGPU subset: 'reference/webgpu-subset.md'
+    - DRP2: 'reference/drp2/index.md'
+  - Explanation:
+    - Architecture: 'explanation/architecture.md'
+    - Why Datoviz: 'explanation/why-datoviz.md'
+    - Scene model: 'explanation/scene-model.md'
+    - Figure, panel, visual model: 'explanation/figure-panel-visual-model.md'
+    - Coordinate systems: 'explanation/coordinate-systems.md'
+    - Scene to DRP2 runtime: 'explanation/scene-to-drp2-runtime.md'
+    - Retained resources: 'explanation/retained-resources.md'
+    - Frame lifecycle: 'explanation/frame-lifecycle.md'
+    - Invalidation and caching: 'explanation/invalidation-and-caching.md'
+    - GPU resource ownership: 'explanation/gpu-resource-ownership.md'
+    - Interaction model: 'explanation/interaction-model.md'
+    - Query, pick, and probe model: 'explanation/query-pick-probe-model.md'
+    - Performance model: 'explanation/performance-model.md'
+    - Portability and WebGPU: 'explanation/portability-webgpu.md'
+    - GSP and VisPy2 boundary: 'explanation/gsp-vispy2-boundary.md'
+  - Contributors:
+    - Architecture map: 'contributors/architecture-map.md'
+    - Build and test: 'contributors/build-and-test.md'
+    - Coding style: 'contributors/coding-style.md'
+    - Docs authoring: 'contributors/docs-authoring.md'
+    - AI agents: 'contributors/ai-agents.md'
+    - Adding examples: 'contributors/adding-examples.md'
+    - Adding a visual: 'contributors/adding-a-visual.md'
+    - Adding a DRP2 command: 'contributors/adding-a-drp2-command.md'
+    - Adding a WebGPU fixture: 'contributors/adding-a-webgpu-fixture.md'
+    - Release validation: 'contributors/release-validation.md'
 not_in_nav: |
   _old/*
+  architecture/*
+  blog/*
+  discussions/*
   gallery/*
+  guide/*
+  tasks/*
+  visuals/*
