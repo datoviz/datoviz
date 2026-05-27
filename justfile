@@ -1767,7 +1767,7 @@ doc: #gallery #headers
 #
 
 serve:
-    @mkdocs serve -a localhost:8294
+    @uv run --with mkdocs-material --with 'mkdocstrings[python]' mkdocs serve -a localhost:8294
 #
 
 # Publish the mkdocs website on GitHub Pages.
