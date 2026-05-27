@@ -374,8 +374,7 @@ def generate(api: dict) -> tuple[str, list[str]]:
                 doc = function['doc'].replace('"""', "'''")
                 lines.append(f'    {name}.__doc__ = """{doc}"""\n')
             lines.append(f'    {name}.argtypes = [{", ".join(argtypes)}]\n')
-            if result != 'None':
-                lines.append(f'    {name}.restype = {result}\n')
+            lines.append(f'    {name}.restype = {result}\n')
             lines.append('\n\n')
             emitted.append(name)
             continue
