@@ -150,6 +150,7 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(showcase protein showcase/protein.c)
     dvz_add_example(showcase brain showcase/brain.c)
     dvz_add_example(showcase ibl_brain showcase/ibl_brain.c)
+    dvz_add_example(showcase gothic_splat showcase/gothic_splat.c)
     dvz_add_example(showcase spatial_omics showcase/spatial_omics.c)
     dvz_add_example(showcase labels showcase/labels.c)
 

@@ -58,9 +58,10 @@ appears as a multi-megabyte Git blob, fix `.gitattributes` and re-add that file 
 
 Do not commit raw downloads, scratch intermediates, caches, or temporary extraction directories unless a
 preparation script intentionally promotes a source artifact and the provenance explains why it must be
-versioned. Use `.cache/datoviz/examples/<example_id>/` for local downloads and intermediates.
-Use `.cache/datoviz/<dataset_or_example_id>/` for developer-only local render-ready payloads that are
-not being promoted into the data submodule.
+versioned. Use `.cache/datoviz/examples/<example_id>/source/` for local raw sources,
+`.cache/datoviz/examples/<example_id>/work/` for downloads and intermediates, and
+`.cache/datoviz/examples/<example_id>/prepared/` for developer-only render-ready payloads that are not
+being promoted into the data submodule.
 
 Manifests and provenance files are normal text files and should not be stored through LFS.
 

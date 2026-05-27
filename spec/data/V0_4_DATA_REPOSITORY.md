@@ -70,13 +70,16 @@ Use these states consistently:
 Local cache paths belong outside committed data:
 
 ```text
-.cache/datoviz/<dataset_or_example_id>/
 .cache/datoviz/examples/<example_id>/
+  source/
+  prepared/
+  work/
 ```
 
-Use `.cache/datoviz/<dataset_or_example_id>/` for local render-ready payloads consumed directly by
-developer-only examples. Use `.cache/datoviz/examples/<example_id>/` for preparation-script downloads
-and intermediates that feed committed `data/examples/<example_id>/prepared/` bundles.
+Use `source/` for manually supplied or downloaded raw files, `work/` for scratch intermediates, and
+`prepared/` for local render-ready outputs. If the dataset is later promoted to a redistributable v0.4
+bundle, the local `prepared/` files become the input to `data/examples/<example_id>/prepared/` after
+manifest and provenance review.
 
 ## Render-Ready Bundles
 
@@ -114,7 +117,9 @@ Data preparation should be script-first and reproducible:
 ```text
 source data
   -> tools/data/prepare_<example_id>.py
-  -> .cache/datoviz/examples/<example_id>/ for downloads and intermediates
+  -> .cache/datoviz/examples/<example_id>/source/ for raw local sources
+  -> .cache/datoviz/examples/<example_id>/work/ for downloads and intermediates
+  -> .cache/datoviz/examples/<example_id>/prepared/ for local render-ready artifacts
   -> data/examples/<example_id>/prepared/ for committed render-ready artifacts
   -> manifest/provenance validation
 ```
@@ -127,9 +132,9 @@ python tools/data/normalize_manifests.py data/examples/<example_id>
 python tools/data/validate_manifests.py data/examples/<example_id>
 ```
 
-For developer-only local showcase data, preparation scripts may write directly to
-`.cache/datoviz/<dataset_or_example_id>/` and should not touch the data submodule unless the dataset is
-being promoted to a redistributable v0.4 bundle.
+For developer-only local showcase data, examples may consume
+`.cache/datoviz/examples/<example_id>/prepared/` directly. Such scripts should not touch the data
+submodule unless the dataset is being promoted to a redistributable v0.4 bundle.
 
 ## Commit Workflow
 

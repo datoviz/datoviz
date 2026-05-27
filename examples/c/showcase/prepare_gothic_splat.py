@@ -10,8 +10,9 @@ from pathlib import Path
 import numpy as np
 
 
-DEFAULT_INPUT = Path("/home/cyrille/Téléchargements/gothic.ply")
-DEFAULT_OUTPUT = Path(".cache/datoviz/gothic_splat")
+DEFAULT_CACHE = Path(".cache/datoviz/examples/gothic_splat")
+DEFAULT_INPUT = DEFAULT_CACHE / "source" / "gothic.ply"
+DEFAULT_OUTPUT = DEFAULT_CACHE / "prepared"
 SH_C0 = 0.28209479177387814
 
 
@@ -86,6 +87,7 @@ def prepare(
     max_points: int,
     alpha_min: float,
     normalize: bool,
+    flip_y: bool,
 ) -> None:
     input_path = input_path.expanduser().resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -133,6 +135,9 @@ def prepare(
     else:
         pos = np.ascontiguousarray(pos, dtype=np.float32)
 
+    if flip_y:
+        pos[:, 1] *= -1.0
+
     f_dc = np.column_stack(
         [data["f_dc_0"][keep], data["f_dc_1"][keep], data["f_dc_2"][keep]]
     ).astype(np.float32)
@@ -176,6 +181,10 @@ def prepare(
         "normalized": bool(normalize),
         "normalization_center": center.astype(float).tolist(),
         "normalization_scale": float(scene_scale),
+        "orientation_transform": {
+            "flip_y": bool(flip_y),
+            "note": "The Gothic 3DGS source appears vertically inverted in Datoviz scene space.",
+        },
         "arrays": {
             "gothic_splat_pos.npy": "float32 Nx3 center positions",
             "gothic_splat_color.npy": "uint8 Nx4 RGBA colors, DvzColor-compatible",
@@ -191,6 +200,7 @@ def prepare(
     print(f"exported splats: {keep.size:,}")
     print(f"alpha threshold: {alpha_min}")
     print(f"normalized: {normalize}")
+    print(f"flip y: {flip_y}")
 
 
 def main() -> int:
@@ -226,14 +236,31 @@ def main() -> int:
         action="store_true",
         help="normalize positions and scales by the 1st/99th percentile scene extent",
     )
+    parser.add_argument(
+        "--keep-source-y",
+        action="store_true",
+        help="do not flip the source Y axis before writing Datoviz-ready positions",
+    )
     args = parser.parse_args()
 
     if args.max_points < 0:
         raise ValueError("--max-points must be non-negative")
     if not 0 <= args.alpha_min <= 1:
         raise ValueError("--alpha-min must be between 0 and 1")
+    if not args.input.expanduser().exists():
+        raise FileNotFoundError(
+            f"{args.input} does not exist. Place gothic.ply at the default source path or pass "
+            "--input /path/to/gothic.ply"
+        )
 
-    prepare(args.input, args.output_dir, args.max_points, args.alpha_min, args.normalize)
+    prepare(
+        args.input,
+        args.output_dir,
+        args.max_points,
+        args.alpha_min,
+        args.normalize,
+        not args.keep_source_y,
+    )
     return 0
 
 

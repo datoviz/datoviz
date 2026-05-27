@@ -23,12 +23,9 @@ intentionally records them as source artifacts:
 
 ```text
 .cache/datoviz/examples/<example_id>/
-```
-
-Developer-only local payloads that are consumed directly by examples may use:
-
-```text
-.cache/datoviz/<dataset_or_example_id>/
+  source/
+  prepared/
+  work/
 ```
 
 Every committed bundle should include:
