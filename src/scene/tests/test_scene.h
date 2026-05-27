@@ -782,6 +782,8 @@ int test_scene_pixel_query_accepts_square_corner(TstContext* suite, const TstCas
 
 int test_scene_marker_query_accepts_bbox_corner(TstContext* suite, const TstCase* item);
 
+int test_scene_sphere_query_resolves_item(TstContext* suite, const TstCase* item);
+
 int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const TstCase* item);
 
 int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstContext* suite, const TstCase* item);
