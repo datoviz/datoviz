@@ -1537,6 +1537,57 @@ dvz_segment_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap e
 
 
 /**
+ * Return default vector/arrow styling.
+ *
+ * The default style renders a tail-anchored arrow with a triangular end cap. `scale` multiplies
+ * each dense `vector` attribute before endpoint derivation.
+ *
+ * @return default vector style descriptor
+ */
+DVZ_EXPORT DvzVectorStyle dvz_vector_style(void);
+
+
+/**
+ * Create a vector/arrow visual.
+ *
+ * Straight vector items accept dense `position` (vec3 tail/anchor), `vector` (vec3 displacement),
+ * `color` (RGBA8), and `stroke_width` (float pixels). The first native lowering renders each item
+ * through the scene segment stroke pipeline with source item identity preserved.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_vector(DvzScene* scene, uint32_t flags);
+
+
+/**
+ * Create an arrow visual.
+ *
+ * This is an alias for dvz_vector(); arrows are the default presentation mode of the vector
+ * visual family.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_arrow(DvzScene* scene, uint32_t flags);
+
+
+/**
+ * Configure vector/arrow styling.
+ *
+ * The first slice supports visual-wide scale, anchor, endpoint caps, and path join settings.
+ * Passing NULL restores the defaults.
+ *
+ * @param visual the vector visual
+ * @param style style descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_vector_set_style(DvzVisual* visual, const DvzVectorStyle* style);
+
+
+/**
  * Create a primitive visual.
  *
  * Renders raw GPU primitives (point lists, line lists/strips, triangle lists/strips) with

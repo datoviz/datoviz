@@ -373,6 +373,18 @@ struct DvzSceneOcclusionDesc
 typedef struct DvzSceneOcclusionDesc DvzSceneOcclusionDesc;
 
 
+struct DvzVectorStyle
+{
+    float scale;
+    DvzVectorAnchor anchor;
+    DvzSegmentCap start_cap;
+    DvzSegmentCap end_cap;
+    DvzPathJoin join;
+    float miter_limit;
+};
+typedef struct DvzVectorStyle DvzVectorStyle;
+
+
 struct DvzSceneBufferDesc
 {
     uint32_t usage;

@@ -44,8 +44,10 @@ int test_scene_graph(TstSuite* suite)
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_sphere_emit_glsl_executes);
     TST_CASE(test_scene_sphere_mode);
     TST_CASE(test_scene_segment_caps);
+    TST_CASE(test_scene_vector_style_and_bounds);
     TST_CASE(test_scene_path_stroke_style);
     TST_CASE(test_scene_segment_emit_glsl);
+    TST_CASE(test_scene_vector_emit_glsl);
     TST_CASE(test_scene_point_like_lowering_policy);
     TST_CASE(test_scene_splat_api_and_attrs);
     TST_CASE(test_scene_splat_emit_instanced_quads);

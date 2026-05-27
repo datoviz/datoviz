@@ -77,6 +77,7 @@ static const VisualAttrAlias ATTR_ALIASES[] = {
     {DVZ_VISUAL_TYPE_SPHERE, "radius", "size"},
     {DVZ_VISUAL_TYPE_SEGMENT, "stroke_width", "line_width"},
     {DVZ_VISUAL_TYPE_PATH, "stroke_width", "line_width"},
+    {DVZ_VISUAL_TYPE_VECTOR, "stroke_width", "line_width"},
 };
 
 
@@ -151,6 +152,14 @@ static const DvzVisualFamilyAttrDesc SEGMENT_ATTRS[] = {
 };
 
 
+static const DvzVisualFamilyAttrDesc VECTOR_ATTRS[] = {
+    {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"vector", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"color", 4 * sizeof(uint8_t), SRC_COLOR_SEGMENT, false},
+    {"line_width", sizeof(float), SRC_LINE_WIDTH, false},
+};
+
+
 static const DvzVisualFamilyAttrDesc IMAGE_ATTRS[] = {
     {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
     {"extent", 2 * sizeof(float), SRC_ITEM_ONLY, false},
@@ -197,6 +206,8 @@ static const VisualFamilyAttrs FAMILY_ATTRS[] = {
      "position, color, diameter, selection, angle, shape"},
     {DVZ_VISUAL_TYPE_SEGMENT, SEGMENT_ATTRS, DVZ_ARRAY_COUNT(SEGMENT_ATTRS),
      "position_start, position_end, color, stroke_width"},
+    {DVZ_VISUAL_TYPE_VECTOR, VECTOR_ATTRS, DVZ_ARRAY_COUNT(VECTOR_ATTRS),
+     "position, vector, color, stroke_width"},
     {DVZ_VISUAL_TYPE_PATH, PATH_ATTRS, DVZ_ARRAY_COUNT(PATH_ATTRS),
      "position, color, stroke_width"},
     {DVZ_VISUAL_TYPE_IMAGE, IMAGE_ATTRS, DVZ_ARRAY_COUNT(IMAGE_ATTRS),

@@ -114,6 +114,7 @@ typedef enum
     DVZ_VISUAL_TYPE_TEXT      = 12,
     DVZ_VISUAL_TYPE_LABELS    = 13,
     DVZ_VISUAL_TYPE_SPLAT     = 14,
+    DVZ_VISUAL_TYPE_VECTOR    = 15,
 } DvzVisualType;
 
 
@@ -1209,6 +1210,15 @@ struct DvzTextGlyphSpan
 };
 
 
+typedef struct DvzVectorState DvzVectorState;
+
+struct DvzVectorState
+{
+    float scale;
+    DvzVectorAnchor anchor;
+};
+
+
 typedef struct DvzTextVisualState DvzTextVisualState;
 
 struct DvzTextVisualState
@@ -1321,6 +1331,7 @@ struct DvzVisual
     bool                   material_params_dirty;
     DvzSegmentState        segment;
     DvzPathState           path;
+    DvzVectorState         vector;
     DvzTextVisualState     text;
     DvzTextAtlasEncoding   glyph_atlas_encoding;
     float                  glyph_distance_range_px;

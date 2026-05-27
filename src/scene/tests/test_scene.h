@@ -289,6 +289,10 @@ int test_scene_segment_emit_glsl(TstContext* suite, const TstCase* item);
 
 int test_scene_segment_caps(TstContext* suite, const TstCase* item);
 
+int test_scene_vector_style_and_bounds(TstContext* suite, const TstCase* item);
+
+int test_scene_vector_emit_glsl(TstContext* suite, const TstCase* item);
+
 int test_scene_path_stroke_style(TstContext* suite, const TstCase* item);
 
 int test_scene_point_like_lowering_policy(TstContext* suite, const TstCase* item);

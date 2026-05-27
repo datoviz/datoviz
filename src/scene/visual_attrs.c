@@ -1413,6 +1413,8 @@ const char* _visual_type_name(DvzVisualType type)
         return "marker";
     case DVZ_VISUAL_TYPE_SEGMENT:
         return "segment";
+    case DVZ_VISUAL_TYPE_VECTOR:
+        return "vector";
     case DVZ_VISUAL_TYPE_PATH:
         return "path";
     case DVZ_VISUAL_TYPE_IMAGE:

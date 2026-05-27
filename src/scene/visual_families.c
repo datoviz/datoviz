@@ -64,6 +64,18 @@ DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t fla
         visual->segment.end_cap = DVZ_SEGMENT_CAP_BUTT;
         _segment_sync_params(visual);
     }
+    if (type == DVZ_VISUAL_TYPE_VECTOR)
+    {
+        visual->vector.scale = 1.0f;
+        visual->vector.anchor = DVZ_VECTOR_ANCHOR_TAIL;
+        visual->segment.start_cap = DVZ_SEGMENT_CAP_NONE;
+        visual->segment.end_cap = DVZ_SEGMENT_CAP_TRIANGLE_OUT;
+        visual->path.cap_start = DVZ_SEGMENT_CAP_NONE;
+        visual->path.cap_end = DVZ_SEGMENT_CAP_TRIANGLE_OUT;
+        visual->path.join = DVZ_PATH_JOIN_ROUND;
+        visual->path.miter_limit = 4.0f;
+        _segment_sync_params(visual);
+    }
     if (type == DVZ_VISUAL_TYPE_PATH)
     {
         visual->path.cap_start = DVZ_SEGMENT_CAP_ROUND;
@@ -799,6 +811,40 @@ DvzVisual* dvz_segment(DvzScene* scene, uint32_t flags)
     visual->material_params_dirty = true;
     visual->segment.gpu.dirty = true;
     return visual;
+}
+
+
+/**
+ * Create a vector/arrow visual.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual, or NULL on allocation failure
+ */
+DvzVisual* dvz_vector(DvzScene* scene, uint32_t flags)
+{
+    ANN(scene);
+    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_VECTOR, flags);
+    if (visual == NULL)
+        return NULL;
+    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    visual->material_params_dirty = true;
+    visual->segment.gpu.dirty = true;
+    return visual;
+}
+
+
+
+/**
+ * Create an arrow visual.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual, or NULL on allocation failure
+ */
+DvzVisual* dvz_arrow(DvzScene* scene, uint32_t flags)
+{
+    return dvz_vector(scene, flags);
 }
 
 

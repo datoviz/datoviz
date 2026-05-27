@@ -200,7 +200,8 @@ bool _scene_visual_frame_plan_metadata(
                 sizeof(metadata->path_distance_id)))
             return false;
     }
-    if (visual->type == DVZ_VISUAL_TYPE_SEGMENT || _scene_visual_needs_material_params(visual))
+    if (visual->type == DVZ_VISUAL_TYPE_SEGMENT || visual->type == DVZ_VISUAL_TYPE_VECTOR ||
+        _scene_visual_needs_material_params(visual))
     {
         if (!_scene_visual_attr_resource_key(
                 figure, visual, visual_index, "material_params", metadata->material_id,
@@ -216,7 +217,7 @@ bool _scene_visual_frame_plan_metadata(
                 buffer_index, metadata->index_id, sizeof(metadata->index_id)))
             return false;
     }
-    if (visual->type == DVZ_VISUAL_TYPE_SEGMENT ||
+    if (visual->type == DVZ_VISUAL_TYPE_SEGMENT || visual->type == DVZ_VISUAL_TYPE_VECTOR ||
         (visual->type == DVZ_VISUAL_TYPE_PATH &&
          _scene_visual_has_attr_data(visual, "line_width")))
     {
@@ -224,7 +225,7 @@ bool _scene_visual_frame_plan_metadata(
                 figure, visual, visual_index, "index", metadata->index_id,
                 sizeof(metadata->index_id)))
             return false;
-        if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
+        if (visual->type == DVZ_VISUAL_TYPE_SEGMENT || visual->type == DVZ_VISUAL_TYPE_VECTOR)
         {
             if (visual->segment.gpu.vertex_count > UINT32_MAX ||
                 visual->segment.gpu.index_count > UINT32_MAX)

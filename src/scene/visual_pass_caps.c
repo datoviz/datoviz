@@ -138,6 +138,9 @@ bool _scene_visual_pass_caps_from_visual(
     case DVZ_VISUAL_TYPE_SEGMENT:
         kind = DVZ_SCENE_VISUAL_DESC_SEGMENT;
         break;
+    case DVZ_VISUAL_TYPE_VECTOR:
+        kind = DVZ_SCENE_VISUAL_DESC_SEGMENT;
+        break;
     case DVZ_VISUAL_TYPE_PRIMITIVE:
     case DVZ_VISUAL_TYPE_MESH:
         kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
@@ -208,7 +211,8 @@ bool _scene_visual_pass_caps_from_visual(
     bool stroked_path =
         visual->type == DVZ_VISUAL_TYPE_PATH && _scene_visual_has_dense_attr(visual, "line_width");
     bool has_material_resource =
-        has_normals || visual->type == DVZ_VISUAL_TYPE_SEGMENT || stroked_path ||
+        has_normals || visual->type == DVZ_VISUAL_TYPE_SEGMENT ||
+        visual->type == DVZ_VISUAL_TYPE_VECTOR || stroked_path ||
         visual->type == DVZ_VISUAL_TYPE_SPHERE ||
         (point_like && visual->material.depth_cue_enabled) ||
         (visual->type == DVZ_VISUAL_TYPE_POINT && visual->material.point_style_enabled) ||
@@ -270,8 +274,10 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
         const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
         if (meta->has_metadata)
         {
+            bool stroked_path = _scene_visual_meta_is_stroked_path(&emitter->resources, meta);
             bool segment_like = meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT ||
-                                _scene_visual_meta_is_stroked_path(&emitter->resources, meta);
+                                (meta->visual_type == DVZ_VISUAL_TYPE_VECTOR && !stroked_path) ||
+                                stroked_path;
             uint64_t pos_buf = _scene_visual_resource_lookup_label(
                 &emitter->resources, segment_like ? meta->position_start_id : meta->position_id);
             if (pos_buf == 0)

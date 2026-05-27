@@ -155,6 +155,37 @@ void _path_sync_params(DvzVisual* visual)
 
 
 /**
+ * Return default vector/arrow styling.
+ *
+ * @return default vector style descriptor
+ */
+DvzVectorStyle dvz_vector_style(void)
+{
+    DvzVectorStyle style = {
+        .scale = 1.0f,
+        .anchor = DVZ_VECTOR_ANCHOR_TAIL,
+        .start_cap = DVZ_SEGMENT_CAP_NONE,
+        .end_cap = DVZ_SEGMENT_CAP_TRIANGLE_OUT,
+        .join = DVZ_PATH_JOIN_ROUND,
+        .miter_limit = 4.0f,
+    };
+    return style;
+}
+
+
+/**
+ * Return whether one vector anchor enum value is supported.
+ *
+ * @param anchor the vector anchor
+ * @return whether the anchor is valid
+ */
+static bool _vector_anchor_valid(DvzVectorAnchor anchor)
+{
+    return anchor >= DVZ_VECTOR_ANCHOR_TAIL && anchor <= DVZ_VECTOR_ANCHOR_HEAD;
+}
+
+
+/**
  * Release one segment visual's derived GPU upload cache.
  *
  * @param cache the segment GPU cache
@@ -331,6 +362,79 @@ int dvz_segment_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentC
 static bool _path_join_valid(DvzPathJoin join)
 {
     return join >= DVZ_PATH_JOIN_MITER && join <= DVZ_PATH_JOIN_BEVEL;
+}
+
+
+/**
+ * Configure vector/arrow styling.
+ *
+ * @param visual the vector visual
+ * @param style style descriptor, or NULL for defaults
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_vector_set_style(DvzVisual* visual, const DvzVectorStyle* style)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_VECTOR)
+    {
+        log_error("dvz_vector_set_style requires a vector visual");
+        return -1;
+    }
+    DvzVectorStyle defaults = dvz_vector_style();
+    if (style == NULL)
+        style = &defaults;
+    if (!isfinite(style->scale))
+    {
+        log_error("vector scale must be finite");
+        return -1;
+    }
+    if (!_vector_anchor_valid(style->anchor))
+    {
+        log_error("invalid vector anchor");
+        return -1;
+    }
+    if (!_segment_cap_valid(style->start_cap) || !_segment_cap_valid(style->end_cap))
+    {
+        log_error("invalid vector cap");
+        return -1;
+    }
+    if (!_path_join_valid(style->join))
+    {
+        log_error("invalid vector path join");
+        return -1;
+    }
+    if (!isfinite(style->miter_limit) || style->miter_limit <= 0.0f)
+    {
+        log_error("vector miter_limit must be positive and finite");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "update vector style"))
+        return -1;
+
+    bool changed = visual->vector.scale != style->scale || visual->vector.anchor != style->anchor ||
+                   visual->segment.start_cap != style->start_cap ||
+                   visual->segment.end_cap != style->end_cap ||
+                   visual->path.cap_start != style->start_cap ||
+                   visual->path.cap_end != style->end_cap || visual->path.join != style->join ||
+                   visual->path.miter_limit != style->miter_limit;
+    if (!changed)
+        return 0;
+
+    visual->vector.scale = style->scale;
+    visual->vector.anchor = style->anchor;
+    visual->segment.start_cap = style->start_cap;
+    visual->segment.end_cap = style->end_cap;
+    visual->path.cap_start = style->start_cap;
+    visual->path.cap_end = style->end_cap;
+    visual->path.join = style->join;
+    visual->path.miter_limit = style->miter_limit;
+    _segment_sync_params(visual);
+    _visual_bump_version(&visual->material.version);
+    visual->material_params_dirty = true;
+    visual->segment.gpu.dirty = true;
+    visual->path.gpu.dirty = true;
+    _scene_notify_visual_changed(visual);
+    return 0;
 }
 
 

@@ -457,6 +457,163 @@ int test_scene_segment_emit_glsl(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Verify vector defaults, style updates, and endpoint-derived bounds.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_vector_style_and_bounds(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzVisual* visual = dvz_vector(scene, 0);
+    AT(visual != NULL);
+    AT(visual->type == DVZ_VISUAL_TYPE_VECTOR);
+    AT(visual->vector.scale == 1.0f);
+    AT(visual->vector.anchor == DVZ_VECTOR_ANCHOR_TAIL);
+    AT(visual->segment.start_cap == DVZ_SEGMENT_CAP_NONE);
+    AT(visual->segment.end_cap == DVZ_SEGMENT_CAP_TRIANGLE_OUT);
+    AT(visual->material_params.params[0] == (float)DVZ_SEGMENT_CAP_NONE);
+    AT(visual->material_params.params[1] == (float)DVZ_SEGMENT_CAP_TRIANGLE_OUT);
+
+    DvzVectorStyle style = dvz_vector_style();
+    style.scale = 2.0f;
+    style.anchor = DVZ_VECTOR_ANCHOR_CENTER;
+    style.start_cap = DVZ_SEGMENT_CAP_BUTT;
+    style.end_cap = DVZ_SEGMENT_CAP_ROUND;
+    style.join = DVZ_PATH_JOIN_MITER;
+    style.miter_limit = 2.5f;
+    AT(dvz_vector_set_style(visual, &style) == 0);
+    AT(visual->vector.scale == 2.0f);
+    AT(visual->vector.anchor == DVZ_VECTOR_ANCHOR_CENTER);
+    AT(visual->segment.start_cap == DVZ_SEGMENT_CAP_BUTT);
+    AT(visual->segment.end_cap == DVZ_SEGMENT_CAP_ROUND);
+    AT(visual->path.cap_start == DVZ_SEGMENT_CAP_BUTT);
+    AT(visual->path.cap_end == DVZ_SEGMENT_CAP_ROUND);
+    AT(visual->path.join == DVZ_PATH_JOIN_MITER);
+    AT(visual->path.miter_limit == 2.5f);
+
+    float positions[] = {
+        0.0f, 0.0f, 0.0f,
+        1.0f, 1.0f, 0.0f,
+    };
+    float vectors[] = {
+        1.0f, 0.0f, 0.0f,
+        0.0f, 2.0f, 0.0f,
+    };
+    DvzColor colors[2] = {{255, 255, 255, 255}, {255, 0, 0, 255}};
+    float widths[2] = {4.0f, 6.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(visual, "vector", vectors, 2) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width", widths, 2) == 0);
+
+    DvzBounds bounds = {0};
+    AT(dvz_visual_bounds(visual, &bounds) == 0);
+    AT(_bounds_expect(&bounds, 2, -1.0, -1.0, 0.0, +1.0, +3.0, 0.0) == 0);
+
+    AT(dvz_vector_set_style(visual, NULL) == 0);
+    AT(visual->vector.scale == 1.0f);
+    AT(visual->vector.anchor == DVZ_VECTOR_ANCHOR_TAIL);
+
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_vector_set_style(visual, &(DvzVectorStyle){
+                                                            .scale = 1.0f,
+                                                            .anchor = (DvzVectorAnchor)99,
+                                                            .start_cap = DVZ_SEGMENT_CAP_NONE,
+                                                            .end_cap = DVZ_SEGMENT_CAP_BUTT,
+                                                            .join = DVZ_PATH_JOIN_ROUND,
+                                                            .miter_limit = 4.0f,
+                                                        }) < 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify straight vector visuals lower to the segment stroke pipeline.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_vector_emit_glsl(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzVisual* visual = dvz_vector(scene, 0);
+    AT(visual != NULL);
+
+    float positions[] = {
+        -0.8f, -0.4f, 0.0f,
+        -0.2f,  0.2f, 0.0f,
+    };
+    float vectors[] = {
+        1.0f, 0.2f, 0.0f,
+        0.8f, 0.0f, 0.0f,
+    };
+    DvzColor colors[2] = {{255, 64, 32, 255}, {64, 160, 255, 255}};
+    float stroke_widths[2] = {8.0f, 5.0f};
+
+    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(visual, "vector", vectors, 2) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width", stroke_widths, 2) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool found_pipeline = false;
+    bool found_set_index = false;
+    bool found_draw_indexed = false;
+    uint32_t set_vertex_buffer_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+            if (label != NULL && strstr(label, "_pipe_segmentg") == label)
+                found_pipeline = true;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
+            set_vertex_buffer_count++;
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_INDEX_BUFFER)
+            found_set_index = strcmp(cmd->u.set_index_buffer.index_format, "uint32") == 0;
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
+            found_draw_indexed = cmd->u.draw_indexed.index_count == 12;
+    }
+
+    AT(found_pipeline);
+    AT(found_set_index);
+    AT(found_draw_indexed);
+    AT(set_vertex_buffer_count == 4);
+    AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneMaterialParams)) == 1);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Verify the scene point visual backend lowering decision.

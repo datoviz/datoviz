@@ -182,6 +182,14 @@ typedef enum
 
 typedef enum
 {
+    DVZ_VECTOR_ANCHOR_TAIL = 0,
+    DVZ_VECTOR_ANCHOR_CENTER = 1,
+    DVZ_VECTOR_ANCHOR_HEAD = 2,
+} DvzVectorAnchor;
+
+
+typedef enum
+{
     DVZ_PATH_JOIN_MITER = 0,
     DVZ_PATH_JOIN_ROUND = 1,
     DVZ_PATH_JOIN_BEVEL = 2,
