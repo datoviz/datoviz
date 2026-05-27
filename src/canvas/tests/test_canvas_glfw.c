@@ -100,6 +100,31 @@ static bool _canvas_glfw_test_visible(void)
 
 
 /**
+ * Skip a canvas GLFW test when the platform cannot export timeline semaphore handles.
+ *
+ * @param suite The owning test suite.
+ * @param detail A short test-specific detail for the debug log.
+ * @return true when the caller should return immediately.
+ */
+static bool _canvas_glfw_skip_without_exportable_timeline(TstContext* suite, const char* detail)
+{
+    ANN(suite);
+    const VkExternalSemaphoreHandleTypeFlags handle_type = dvz_canvas_timeline_handle_type();
+    if (handle_type != 0)
+    {
+        return false;
+    }
+
+    log_debug(
+        "canvas %s skipped (no exportable external semaphore)",
+        detail != NULL ? detail : "timeline-handle test");
+    tst_skip(suite, "no exportable external semaphore");
+    return true;
+}
+
+
+
+/**
  * Record a fullscreen clear command for the current canvas command buffer.
  *
  * @param canvas owning canvas (unused)
@@ -776,6 +801,11 @@ int test_canvas_video_wait_handle_ready_on_first_start(TstContext* suite, const 
     ANN(suite);
     (void)item;
 
+    if (_canvas_glfw_skip_without_exportable_timeline(suite, "wait-handle readiness test"))
+    {
+        return 0;
+    }
+
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
     AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
@@ -789,7 +819,7 @@ int test_canvas_video_wait_handle_ready_on_first_start(TstContext* suite, const 
     DvzCanvas* canvas = fixture.canvas;
     ANN(canvas);
 
-    if (!canvas->supports_external_semaphore || dvz_canvas_timeline_handle_type() == 0)
+    if (!canvas->supports_external_semaphore)
     {
         log_debug("canvas wait-handle readiness test skipped (no exportable external semaphore)");
         canvas_glfw_fixture_destroy(&fixture);
@@ -857,6 +887,11 @@ int test_canvas_video_wait_handle_export_fallback(TstContext* suite, const TstCa
     ANN(suite);
     (void)item;
 
+    if (_canvas_glfw_skip_without_exportable_timeline(suite, "wait-handle fallback test"))
+    {
+        return 0;
+    }
+
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
     AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
@@ -870,7 +905,7 @@ int test_canvas_video_wait_handle_export_fallback(TstContext* suite, const TstCa
     DvzCanvas* canvas = fixture.canvas;
     ANN(canvas);
 
-    if (!canvas->supports_external_semaphore || dvz_canvas_timeline_handle_type() == 0)
+    if (!canvas->supports_external_semaphore)
     {
         log_debug("canvas wait-handle fallback test skipped (no exportable external semaphore)");
         canvas_glfw_fixture_destroy(&fixture);
@@ -934,6 +969,11 @@ int test_canvas_video_wait_handle_export_fallback_after_recreate(TstContext* sui
     ANN(suite);
     (void)item;
 
+    if (_canvas_glfw_skip_without_exportable_timeline(suite, "recreate fallback test"))
+    {
+        return 0;
+    }
+
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
     AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
@@ -947,7 +987,7 @@ int test_canvas_video_wait_handle_export_fallback_after_recreate(TstContext* sui
     DvzCanvas* canvas = fixture.canvas;
     ANN(canvas);
 
-    if (!canvas->supports_external_semaphore || dvz_canvas_timeline_handle_type() == 0)
+    if (!canvas->supports_external_semaphore)
     {
         log_debug("canvas recreate fallback test skipped (no exportable external semaphore)");
         canvas_glfw_fixture_destroy(&fixture);
@@ -1039,6 +1079,11 @@ int test_canvas_video_sink_start_submit_integration(TstContext* suite, const Tst
     (void)item;
 
     const char* skip_reason = NULL;
+    if (_canvas_glfw_skip_without_exportable_timeline(suite, "video sink integration test"))
+    {
+        return 0;
+    }
+
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
     AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
@@ -1051,9 +1096,7 @@ int test_canvas_video_sink_start_submit_integration(TstContext* suite, const Tst
     DvzCanvas* canvas = fixture.canvas;
     ANN(canvas);
 
-    if (
-        !canvas->supports_external_memory || !canvas->supports_external_semaphore ||
-        dvz_canvas_timeline_handle_type() == 0)
+    if (!canvas->supports_external_memory || !canvas->supports_external_semaphore)
     {
         skip_reason = "external memory/semaphore unsupported";
         goto cleanup;
@@ -1143,6 +1186,11 @@ int test_canvas_video_sink_disable_rebuild(TstContext* suite, const TstCase* ite
 
     const char* skip_reason = NULL;
     bool resumed = false;
+    if (_canvas_glfw_skip_without_exportable_timeline(suite, "video sink disable test"))
+    {
+        return 0;
+    }
+
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
     AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
@@ -1155,9 +1203,7 @@ int test_canvas_video_sink_disable_rebuild(TstContext* suite, const TstCase* ite
     DvzCanvas* canvas = fixture.canvas;
     ANN(canvas);
 
-    if (
-        !canvas->supports_external_memory || !canvas->supports_external_semaphore ||
-        dvz_canvas_timeline_handle_type() == 0)
+    if (!canvas->supports_external_memory || !canvas->supports_external_semaphore)
     {
         skip_reason = "external memory/semaphore unsupported";
         goto cleanup;
@@ -1479,25 +1525,23 @@ int test_canvas_device_lost_fatal_transition(TstContext* suite, const TstCase* i
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
 
-    bool ready = false;
+    dvz_canvas_swapchain_test_force_acquire_status(canvas, DVZ_PRESENT_STATUS_DEVICE_LOST);
+    bool lost = false;
     for (uint32_t i = 0; i < 16; i++)
     {
         dvz_window_host_poll(fixture.host);
+        tst_expect_log_begin(suite, LOG_WARN);
         int frame_rc = dvz_canvas_frame(canvas);
+        (void)tst_expect_error_end(suite);
         if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
         {
             continue;
         }
-        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
-        ready = true;
+        AT(frame_rc < 0);
+        lost = true;
         break;
     }
-    AT(ready);
-
-    dvz_canvas_swapchain_test_force_present_status(canvas, DVZ_PRESENT_STATUS_DEVICE_LOST);
-    tst_expect_log_begin(suite, LOG_WARN);
-    AT(dvz_canvas_submit(canvas) < 0);
-    (void)tst_expect_error_end(suite);
+    AT(lost);
     AT(
         dvz_canvas_present_runtime_state(canvas) ==
         DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST);
