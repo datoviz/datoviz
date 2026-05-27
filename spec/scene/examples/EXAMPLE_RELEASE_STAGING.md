@@ -14,13 +14,15 @@ This file is the staging table for Datoviz examples. It answers:
 
 Read this together with:
 
-1. [`FEATURE_FIXTURE_MATRIX.md`](FEATURE_FIXTURE_MATRIX.md) for one-feature fixture ideas,
-2. [`EXAMPLE_ORGANIZATION.md`](EXAMPLE_ORGANIZATION.md) for repository/API-layer ownership,
-3. [`EXAMPLE_PRIORITIZATION.md`](EXAMPLE_PRIORITIZATION.md)
+1. [`EXAMPLE_NORTH_STAR.md`](EXAMPLE_NORTH_STAR.md) for the aspirational gallery and showcase
+   direction before filtering by current capability or release commitments.
+2. [`FEATURE_FIXTURE_MATRIX.md`](FEATURE_FIXTURE_MATRIX.md) for one-feature fixture ideas,
+3. [`EXAMPLE_ORGANIZATION.md`](EXAMPLE_ORGANIZATION.md) for repository/API-layer ownership,
+4. [`EXAMPLE_PRIORITIZATION.md`](EXAMPLE_PRIORITIZATION.md)
    for visual-payoff ranking,
-4. [`../../../agents/now/STATUS.md`](../../../agents/now/STATUS.md)
+5. [`../../../agents/now/STATUS.md`](../../../agents/now/STATUS.md)
    for the active C implementation critical path.
-5. [`../../api/PYTHON_GSP_SCOPE.md`](../../api/PYTHON_GSP_SCOPE.md)
+6. [`../../api/PYTHON_GSP_SCOPE.md`](../../api/PYTHON_GSP_SCOPE.md)
    for the Datoviz, raw `ctypes`, GSP, and VisPy2 ownership split.
 
 

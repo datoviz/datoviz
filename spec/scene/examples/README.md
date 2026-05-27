@@ -41,20 +41,23 @@ parallel semantics when they grow into those domains.
 
 Use the example planning documents for distinct jobs:
 
-1. [EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) classifies examples as
+1. [EXAMPLE_NORTH_STAR.md](EXAMPLE_NORTH_STAR.md) records the aspirational gallery and showcase
+   direction before filtering by current implementation status, release commitments, or existing
+   example inventory.
+2. [EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) classifies examples as
    `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `later`, or
    `external/GSP`, and records current readiness separately from release target.
-2. [FEATURE_FIXTURE_MATRIX.md](FEATURE_FIXTURE_MATRIX.md) lists compact one-feature fixtures for
+3. [FEATURE_FIXTURE_MATRIX.md](FEATURE_FIXTURE_MATRIX.md) lists compact one-feature fixtures for
    C examples, generated DRP2/WebGPU streams, GUI/cimgui, video, and low-level backend coverage.
-3. [EXAMPLE_ORGANIZATION.md](EXAMPLE_ORGANIZATION.md) explains which repository and API layer
+4. [EXAMPLE_ORGANIZATION.md](EXAMPLE_ORGANIZATION.md) explains which repository and API layer
    should own each class of example.
-4. [EXAMPLE_GAP_REPORT.md](EXAMPLE_GAP_REPORT.md) summarizes current scene, DRP2, app, and
+5. [EXAMPLE_GAP_REPORT.md](EXAMPLE_GAP_REPORT.md) summarizes current scene, DRP2, app, and
    runtime gaps exposed by the worked examples.
-5. [EXAMPLE_PRIORITIZATION.md](EXAMPLE_PRIORITIZATION.md) ranks example candidates by payoff,
+6. [EXAMPLE_PRIORITIZATION.md](EXAMPLE_PRIORITIZATION.md) ranks example candidates by payoff,
    feasibility, architecture pressure, and release usefulness.
-6. [EXAMPLE_API_DUPLICATION_DECISIONS.md](EXAMPLE_API_DUPLICATION_DECISIONS.md) records the
+7. [EXAMPLE_API_DUPLICATION_DECISIONS.md](EXAMPLE_API_DUPLICATION_DECISIONS.md) records the
    decisions from the current C example duplication review.
-7. [TEMPLATE.md](TEMPLATE.md) is the starting point for new worked example specs.
+8. [TEMPLATE.md](TEMPLATE.md) is the starting point for new worked example specs.
 
 Do not use worked example files as release commitments by themselves. Promote release commitments
 through [EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) so future agents can tell which
