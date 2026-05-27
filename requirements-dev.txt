@@ -10,7 +10,6 @@ numpy
 pillow
 psutil
 pymdown-extensions
-pyparsing
 pytest
 ruff
 setuptools

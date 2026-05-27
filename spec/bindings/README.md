@@ -63,6 +63,7 @@ Use these locations for the v0.4 binding rewrite:
 tools/bindings/
   extract_api.py          # C/Clang -> normalized JSON
   generate_ctypes.py      # JSON -> datoviz/_ctypes.py
+  generate_ctypes_abi.py  # C probe -> build/bindings/ctypes_abi.json
   validate_ctypes_abi.py  # ctypes sizeof/offset checks
 
 spec/bindings/
@@ -93,6 +94,7 @@ The binding workflow should be exposed through narrow commands:
 ```text
 just api-json        # generate build/bindings/datoviz_api.json
 just ctypes          # generate datoviz/_ctypes.py from JSON
+just ctypes-abi      # generate build/bindings/ctypes_abi.json
 just ctypes-check    # validate generated ctypes against C ABI facts
 just ctypes-smoke    # import/load/create-destroy smoke
 just bindings        # run the full raw-binding workflow

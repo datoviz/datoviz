@@ -35,7 +35,7 @@ RUN apt-get install -y \
     x11-utils
 
 # Python dependencies
-RUN pip install --break-system-packages numpy tqdm pillow pyparsing pytest wheel setuptools twine mkdocs-material
+RUN pip install --break-system-packages numpy tqdm pillow pytest wheel setuptools twine mkdocs-material
 
 # casey just
 RUN curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash

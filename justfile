@@ -1046,8 +1046,13 @@ ctypes: api-json
     @python tools/bindings/generate_ctypes.py
 #
 
-ctypes-check: api-json
+ctypes-abi: api-json
+    @python tools/bindings/generate_ctypes_abi.py
+#
+
+ctypes-check: api-json ctypes-abi
     @python tools/bindings/generate_ctypes.py --check
+    @PYTHONPATH=. python tools/bindings/validate_ctypes_abi.py
 #
 
 ctypes-smoke:

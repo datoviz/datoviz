@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 
@@ -72,6 +73,7 @@ def _load_library():
 
 dvz = _load_library()
 _MISSING_FUNCTIONS = []
+_DATOVIZ_CTYPES_LAYOUT_RECORDS = []
 
 '''
 
@@ -105,9 +107,147 @@ CTYPE_MAP = {
 }
 
 
+ARRAY_RE = re.compile(r'^(?P<base>.+?)(?P<dims>(?:\[[0-9]+\])+)$')
+DIM_RE = re.compile(r'\[([0-9]+)\]')
+
+
 def _clean_type(qualtype: str) -> str:
     out = ' '.join(qualtype.replace(' *', '*').replace('*', ' * ').split())
-    return out.replace(' const', '').replace('const ', '')
+    return ' '.join(token for token in out.split() if token != 'const')
+
+
+def _array_ctype(
+    qualtype: str, records: set[str], enums: set[str], value_records: set[str] | None = None
+) -> str | None:
+    match = ARRAY_RE.match(_clean_type(qualtype))
+    if not match:
+        return None
+    ctype = _ctype_for(match.group('base').strip(), records, enums, value_records=value_records)
+    if ctype is None:
+        return None
+    for dim in reversed([int(dim) for dim in DIM_RE.findall(match.group('dims'))]):
+        ctype = f'({ctype} * {dim})'
+    return ctype
+
+
+def _pointer_ctype(qualtype: str, records: set[str], enums: set[str]) -> str | None:
+    t = _clean_type(qualtype)
+    if '*' not in t:
+        return None
+    if '(*' in qualtype:
+        return 'ctypes.c_void_p'
+
+    depth = t.count('*')
+    target = t.replace('*', ' ').strip()
+    if target.startswith('struct '):
+        target = target[len('struct ') :]
+    if target.startswith('enum '):
+        target = target[len('enum ') :]
+
+    if target == 'char' and depth == 1:
+        return 'ctypes.c_char_p'
+    if target == 'char' and depth == 2:
+        return 'ctypes.POINTER(ctypes.c_char_p)'
+    if target == 'void' and depth == 1:
+        return 'ctypes.c_void_p'
+    if target in records:
+        base = target
+        for _ in range(depth):
+            base = f'ctypes.POINTER({base})'
+        return base
+
+    base = _ctype_for(target, records, enums)
+    if base is None:
+        return 'ctypes.c_void_p'
+    for _ in range(depth):
+        base = f'ctypes.POINTER({base})'
+    return base
+
+
+def _ctype_for_type(
+    type_info: dict,
+    records: set[str],
+    enums: set[str],
+    value_records: set[str] | None = None,
+) -> str | None:
+    for spelling in (type_info.get('qualtype', ''), type_info.get('canonical', '')):
+        ctype = _array_ctype(spelling, records, enums, value_records=value_records)
+        if ctype is not None:
+            return ctype
+    return _ctype_for(type_info.get('qualtype', ''), records, enums, value_records=value_records)
+
+
+def _unsupported_field_layout(type_info: dict) -> bool:
+    for spelling in (type_info.get('qualtype', ''), type_info.get('canonical', '')):
+        t = _clean_type(spelling)
+        if t.startswith(('vec', 'dvec', 'mat')):
+            return True
+        if ('float[' in t or 'double[' in t) and '*' not in t:
+            return True
+    return False
+
+
+def _record_dependency(type_info: dict, records: set[str]) -> str | None:
+    for spelling in (type_info.get('qualtype', ''), type_info.get('canonical', '')):
+        t = _clean_type(spelling)
+        if '*' in t:
+            continue
+        match = ARRAY_RE.match(t)
+        if match:
+            t = match.group('base').strip()
+        if t.startswith('struct '):
+            t = t[len('struct ') :]
+        if t in records:
+            return t
+    return None
+
+
+def _ordered_records(api: dict, records: set[str]) -> list[dict]:
+    by_name = {record['name']: record for record in api.get('records', []) if record.get('name')}
+    visiting: set[str] = set()
+    visited: set[str] = set()
+    ordered: list[dict] = []
+
+    def visit(name: str) -> None:
+        if name in visited or name in visiting:
+            return
+        record = by_name.get(name)
+        if record is None:
+            return
+        visiting.add(name)
+        if not record.get('opaque'):
+            for field in record.get('fields', []):
+                dep = _record_dependency(field.get('type', {}), records)
+                if dep and dep != name:
+                    visit(dep)
+        visiting.remove(name)
+        visited.add(name)
+        ordered.append(record)
+
+    for name in sorted(by_name):
+        visit(name)
+    return ordered
+
+
+def _layoutable_records(ordered_records: list[dict], records: set[str], enums: set[str]) -> set[str]:
+    out: set[str] = set()
+    for record in ordered_records:
+        name = record.get('name')
+        if not name or record.get('opaque'):
+            continue
+        for field in record.get('fields', []):
+            field_name = field.get('name')
+            if not field_name or _unsupported_field_layout(field.get('type', {})):
+                break
+            dep = _record_dependency(field.get('type', {}), records)
+            if dep and dep not in out:
+                break
+            ctype = _ctype_for_type(field.get('type', {}), records, enums, value_records=out)
+            if ctype is None:
+                break
+        else:
+            out.add(name)
+    return out
 
 
 def _class_name_for_pointer(qualtype: str, records: set[str]) -> str | None:
@@ -124,18 +264,25 @@ def _class_name_for_pointer(qualtype: str, records: set[str]) -> str | None:
     return None
 
 
-def _ctype_for(qualtype: str, records: set[str], enums: set[str]) -> str | None:
+def _ctype_for(
+    qualtype: str,
+    records: set[str],
+    enums: set[str],
+    value_records: set[str] | None = None,
+) -> str | None:
     t = _clean_type(qualtype)
+    ctype = _array_ctype(t, records, enums, value_records=value_records)
+    if ctype is not None:
+        return ctype
+    ctype = _pointer_ctype(t, records, enums)
+    if ctype is not None:
+        return ctype
     if t in CTYPE_MAP:
         return CTYPE_MAP[t]
     if t in enums:
         return 'ctypes.c_int'
     if t in records:
-        return t
-    if t in ('char *', 'const char *'):
-        return 'ctypes.c_char_p'
-    if t in ('void *', 'const void *'):
-        return 'ctypes.c_void_p'
+        return t if value_records is None or t in value_records else None
     cls = _class_name_for_pointer(t, records)
     if cls:
         return f'ctypes.POINTER({cls})'
@@ -160,7 +307,10 @@ def generate(api: dict) -> tuple[str, list[str]]:
             lines.append('    pass\n')
         lines.append('\n\n')
 
-    for record in api.get('records', []):
+    ordered_records = _ordered_records(api, records)
+    layoutable_records = _layoutable_records(ordered_records, records, enums)
+
+    for record in ordered_records:
         name = record.get('name')
         if not name:
             continue
@@ -168,14 +318,46 @@ def generate(api: dict) -> tuple[str, list[str]]:
         lines.append(f'class {name}(ctypes.{base}):\n')
         lines.append('    pass\n\n\n')
 
+    layout_records = []
+    for record in ordered_records:
+        name = record.get('name')
+        if not name or record.get('opaque'):
+            continue
+        if name not in layoutable_records:
+            continue
+        fields = []
+        for field in record.get('fields', []):
+            field_name = field.get('name')
+            if not field_name:
+                break
+            ctype = _ctype_for_type(
+                field.get('type', {}), records, enums, value_records=layoutable_records
+            )
+            if ctype is None:
+                break
+            fields.append((field_name, ctype))
+        else:
+            lines.append(f'{name}._fields_ = [\n')
+            for field_name, ctype in fields:
+                lines.append(f"    ('{field_name}', {ctype}),\n")
+            lines.append(']\n\n\n')
+            layout_records.append(name)
+
     skipped = []
     emitted = []
     for function in api.get('functions', []):
         name = function['name']
-        result = _ctype_for(function.get('result', {}).get('qualtype', 'void'), records, enums)
+        result = _ctype_for_type(
+            function.get('result', {'qualtype': 'void'}),
+            records,
+            enums,
+            value_records=layoutable_records,
+        )
         argtypes = []
         for param in function.get('parameters', []):
-            ctype = _ctype_for(param.get('type', {}).get('qualtype', ''), records, enums)
+            ctype = _ctype_for_type(
+                param.get('type', {}), records, enums, value_records=layoutable_records
+            )
             if ctype is None:
                 break
             argtypes.append(ctype)
@@ -201,6 +383,7 @@ def generate(api: dict) -> tuple[str, list[str]]:
 
     lines.append(f'_GENERATED_FUNCTION_COUNT = {len(emitted)}\n')
     lines.append(f'_SKIPPED_FUNCTIONS = {skipped!r}\n')
+    lines.append(f'_DATOVIZ_CTYPES_LAYOUT_RECORDS = {layout_records!r}\n')
     lines.append("__all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz'))]\n")
     return ''.join(lines), skipped
 

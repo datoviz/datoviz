@@ -34,7 +34,7 @@ ENV PATH=/usr/lib/ccache:/opt/python/cp38-cp38/bin/:$PATH
 
 # Install Python and wheel dependencies
 RUN /opt/python/cp38-cp38/bin/pip install --upgrade pip setuptools wheel && \
-    /opt/python/cp38-cp38/bin/pip install numpy tqdm pillow pyparsing pytest wheel setuptools twine mkdocs-material
+    /opt/python/cp38-cp38/bin/pip install numpy tqdm pillow pytest wheel setuptools twine mkdocs-material
 
 # Install Casey Just
 RUN curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin/
