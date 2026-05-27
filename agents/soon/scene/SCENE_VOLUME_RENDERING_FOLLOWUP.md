@@ -58,8 +58,10 @@ Recommended follow-up commits:
    expectations are stable.
 5. Keep full MPR, isosurfaces, gradient-lighted surfaces, bricking, out-of-core streaming, and
    WebGPU/WGSL parity as separate follow-up lanes unless a specific task activates one of them.
-   Categorical signed/unsigned label volumes are now tracked by
-   [`SCENE_SAMPLED_FIELD_INTERPRETATION_PLAN.md`](SCENE_SAMPLED_FIELD_INTERPRETATION_PLAN.md).
+   Categorical signed/unsigned label volumes are covered by
+   [`../../done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md`](../../done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md)
+   and
+   [`../../../spec/scene/semantics/SAMPLED_FIELD_INTERPRETATION.md`](../../../spec/scene/semantics/SAMPLED_FIELD_INTERPRETATION.md).
 
 
 ## v0.3 Reference

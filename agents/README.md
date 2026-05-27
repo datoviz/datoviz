@@ -47,9 +47,9 @@ If resuming work on the branch:
    [../spec/scene/interaction/GPU_QUERY_SYSTEM.md](../spec/scene/interaction/GPU_QUERY_SYSTEM.md)
    before changing pick/probe/query execution, GPU request readback, visual-family query policy, or
    CPU fallback behavior.
-8. Read [soon/scene/SCENE_SAMPLED_FIELD_INTERPRETATION_PLAN.md](soon/scene/SCENE_SAMPLED_FIELD_INTERPRETATION_PLAN.md)
+8. Read [done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md](done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md)
    and
-   [../spec/scene/proposals/active/SAMPLED_FIELD_INTERPRETATION_ARCHITECTURE.md](../spec/scene/proposals/active/SAMPLED_FIELD_INTERPRETATION_ARCHITECTURE.md)
+   [../spec/scene/semantics/SAMPLED_FIELD_INTERPRETATION.md](../spec/scene/semantics/SAMPLED_FIELD_INTERPRETATION.md)
    before changing sampled-field format/semantic interpretation, categorical colorizers,
    label-volume support, or sampled visual query schemas.
 9. Read [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md) for completed
@@ -119,11 +119,10 @@ Scene feature lanes:
 5. [soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md](soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md)
 6. [soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md](soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md)
 7. [soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md](soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md)
-8. [soon/scene/SCENE_SAMPLED_FIELD_INTERPRETATION_PLAN.md](soon/scene/SCENE_SAMPLED_FIELD_INTERPRETATION_PLAN.md)
-9. [soon/effects/SCENE_MSAA_PLAN.md](soon/effects/SCENE_MSAA_PLAN.md)
-10. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
-11. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
-12. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
+8. [soon/effects/SCENE_MSAA_PLAN.md](soon/effects/SCENE_MSAA_PLAN.md)
+9. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
+10. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
+11. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
 
 For visual-family lanes, durable contracts live under [../spec/scene/visuals](../spec/scene/visuals);
 the `soon/` files above are execution follow-up notes.
@@ -169,6 +168,7 @@ Recently retired or historical notes:
 18. [done/SCENE_SSAO_IMPLEMENTATION_PLAN.md](done/SCENE_SSAO_IMPLEMENTATION_PLAN.md)
 19. [done/SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md](done/SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md)
 20. [done/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md](done/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md)
+21. [done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md](done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md)
 
 ### `later/`
 
