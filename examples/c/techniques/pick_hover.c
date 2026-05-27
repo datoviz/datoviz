@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* pick_hover — interactive point-picking stress test.
+/* pick_hover - interactive point-query stress test.
  *
  * Opens a GLFW window showing a point grid.
- * Move the cursor over the panel to pick one point per frame.
+ * Move the cursor over the panel to query one point per frame.
  * The hovered point grows via dvz_visual_set_data_range(), exercising partial retained updates.
  * Click a point to toggle retained selection; selected points stay bright while others dim.
  * Left-drag to pan, right-drag or scroll to zoom, double-click to reset.
@@ -117,7 +117,7 @@ _hover_pick_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* 
 
 
 /**
- * Consume pick results, update hover styling, and queue the next frame-local pick request.
+ * Consume query results, update hover styling, and queue the next frame-local query request.
  *
  * @param win view whose frame just completed
  * @param user_data hover-pick example state
@@ -129,22 +129,23 @@ static void _hover_pick_frame(DvzView* win, void* user_data)
     if (state == NULL)
         return;
 
-    DvzPickResult pick = {0};
-    bool saw_pick = false;
-    DvzPickResult latest_pick = {0};
+    DvzQueryResult query = {0};
+    bool saw_query = false;
+    DvzQueryResult latest_query = {0};
     uint32_t next_hovered = UINT32_MAX;
-    while (dvz_scene_poll_pick(state->scene, &pick))
+    while (dvz_scene_poll_query(state->scene, &query))
     {
-        saw_pick = true;
-        latest_pick = pick;
-        if (pick.hit && pick.resolved_target == DVZ_SCENE_TARGET_ITEM &&
-            pick.resolved_id < POINT_COUNT)
+        saw_query = true;
+        latest_query = query;
+        if (
+            query.status == DVZ_QUERY_STATUS_HIT && query.hit &&
+            query.resolved_target == DVZ_SCENE_TARGET_ITEM && query.resolved_id < POINT_COUNT)
         {
-            next_hovered = (uint32_t)pick.resolved_id;
+            next_hovered = (uint32_t)query.resolved_id;
         }
     }
 
-    if (saw_pick && next_hovered != state->hovered_index)
+    if (saw_query && next_hovered != state->hovered_index)
     {
         if (state->hovered_index < POINT_COUNT)
             _set_point_size(state, state->hovered_index, BASE_SIZE);
@@ -153,12 +154,14 @@ static void _hover_pick_frame(DvzView* win, void* user_data)
         state->hovered_index = next_hovered;
     }
 
-    if (state->click_pending && saw_pick)
+    if (state->click_pending && saw_query)
     {
-        if (latest_pick.hit && latest_pick.resolved_target == DVZ_SCENE_TARGET_ITEM)
+        if (
+            latest_query.status == DVZ_QUERY_STATUS_HIT && latest_query.hit &&
+            latest_query.resolved_target == DVZ_SCENE_TARGET_ITEM)
         {
-            if (dvz_selection_apply_pick(state->selection, &latest_pick) != 0)
-                fprintf(stderr, "dvz_selection_apply_pick() failed\n");
+            if (dvz_selection_apply_query(state->selection, &latest_query) != 0)
+                fprintf(stderr, "dvz_selection_apply_query() failed\n");
         }
         else
         {
@@ -169,15 +172,15 @@ static void _hover_pick_frame(DvzView* win, void* user_data)
 
     if (state->cursor_valid)
     {
-        if (dvz_panel_pick(
+        if (dvz_panel_query(
                 state->panel, state->cursor_x, state->cursor_y,
-                &(DvzPickRequest){
+                &(DvzQueryRequest){
                     .request_id = 1,
                     .target = DVZ_SCENE_TARGET_ITEM,
                     .hit_policy = DVZ_PICK_HIT_FRONTMOST,
                 }) != 0)
         {
-            fprintf(stderr, "dvz_panel_pick() failed\n");
+            fprintf(stderr, "dvz_panel_query() failed\n");
         }
     }
 }
