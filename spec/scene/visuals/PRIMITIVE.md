@@ -12,8 +12,8 @@ Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 >
 > **v0.4-dev implementation**: landed. `dvz_primitive(scene, topology, flags)` supports
 > `POINT_LIST`, `LINE_LIST`, `LINE_STRIP`, `TRIANGLE_LIST`, `TRIANGLE_STRIP` with `position` +
-> `color` attributes. `size` parameter for `point_list` topology and `PER_GROUP`/`scalar` color
-> modes are not yet wired up.
+> `color` attributes, optional `normal`, optional index-buffer binding, and GPU item picking.
+> `size` parameter for `point_list` topology and scalar color modes are not yet wired up.
 
 
 ## Semantic Purpose
@@ -51,7 +51,8 @@ Vulkan/vklite enum surface.
 | `triangle_list` | independent triangles, three vertices each |
 | `triangle_strip` | connected triangle strip |
 
-No indexed rendering. For indexed geometry use `mesh`.
+An optional `"index"` buffer binding is installed for low-level indexed primitive draws. For
+semantic indexed surface geometry, prefer `mesh`.
 
 
 ## Per-Item Attributes
@@ -74,6 +75,17 @@ Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 
 In v0.3, per-group color was implemented by computing colors CPU-side from a group index
 (`dvz_basic_group`). In v0.4 this is replaced by `color` with `PER_GROUP` source.
+
+
+### `normal`
+
+| Property | Value |
+|---|---|
+| Type | `vec3`, normal in visual space |
+| Accepted sources | `PER_ITEM` only |
+| Typical mutability | `dynamic` |
+
+Optional. Used by primitive material/shading paths when enabled.
 
 
 ## Visual-Wide Parameters

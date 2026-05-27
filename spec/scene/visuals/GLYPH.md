@@ -38,6 +38,11 @@ still being migrated:
 4. focused tests cover text realization, UTF-8 atlas growth, missing-glyph fallback, many-label
    batching, runtime readback, and app/offscreen visible pixels.
 
+The installed low-level glyph visual descriptor is quad/atlas oriented, with `position`, `bounds`,
+`texcoords`, `color`, and `angle` attributes plus a bound 2D atlas field. It does not expose
+`string`, `font_size`, or `char_color` as installed `dvz_visual_set_data()` attributes; those belong
+to semantic text ownership and text lowering.
+
 The v0.4 target is semantic text ownership. `DvzText*` objects own content, style, placement, and
 identity; glyph visuals are derived
 implementation output or an explicit low-level escape hatch for advanced callers.
@@ -45,8 +50,8 @@ implementation output or an explicit low-level escape hatch for advanced callers
 
 ## Item and Group Model
 
-`glyph` is a **span-structured visual**: each span is one string. Characters within each string
-are sub-items managed internally by the scene layer.
+The target semantic glyph model is span-structured: each span is one string. Characters within each
+string are sub-items managed internally by the scene layer.
 
 The user provides data at the string level. The scene layer expands each string into per-character
 geometry using the active font.
@@ -266,7 +271,12 @@ Set at visual creation time. Applies to both `color` and `char_color`.
 
 Standard — see `SHARED_ATTRIBUTES.md`.
 `angle` and `shift` are applied in screen space after the panel transform.
-Picking returns the string index as item identity. Sub-character picking is not supported.
+The target semantic text path returns the string index as item identity. Sub-character picking is
+not supported.
+
+Status on 2026-05-27: low-level `glyph` and internal `text` query families are registered by name,
+but they do not yet provide active build/decode operations. Glyph/text picking remains a target
+capability.
 
 
 ## Relationship To Other Families

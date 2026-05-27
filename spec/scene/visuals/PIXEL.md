@@ -17,17 +17,16 @@ Status on 2026-05-17: the active v0.4 runtime implements the first retained pixe
 The implemented path supports:
 
 1. retained `pixel` visual construction via `dvz_pixel()`;
-2. dense `position`, `color`, and `size` attributes, where `size` is per item and measured in
-   screen pixels;
+2. dense `position`, `color`, and public `pixel_size` attributes, where `pixel_size` is measured
+   in screen pixels and aliases the current internal `size` slot;
 3. GLSL/Vulkan lowering as native square point-list sprites;
 4. WGSL/WebGPU lowering as instanced quads, preserving the same public visual contract;
 5. depth-cue pipeline switching for pixel visuals;
 6. GPU-backed square picking through the scene request path;
 7. offscreen/app smoke coverage proving square marks render nonblank pixels.
 
-The following sections describe the target pixel contract. Constant/default size storage, `shift`,
-scalar color and scale binding, grouped color, and data-space pixel size are planned capabilities
-unless explicitly marked as implemented above.
+The following sections describe the target pixel contract. `shift`, scalar color and scale binding,
+and data-space pixel size are planned capabilities unless explicitly marked as implemented above.
 
 
 ## Semantic Purpose
@@ -75,12 +74,13 @@ Standard `vec2` — see `SHARED_ATTRIBUTES.md`.
 Status on 2026-05-17: not implemented in the active pixel slice.
 
 
-### `size`
+### `pixel_size`
 
 | Property | Value |
 |---|---|
 | Type | `float32`, screen pixels |
-| Accepted sources | `PER_ITEM` only in the active first slice |
+| Storage name | `size` |
+| Accepted sources | `CONSTANT`, `PER_ITEM`, `PER_GROUP` |
 | Typical mutability | `dynamic` or `streaming` |
 
 Side length of each square mark.
@@ -88,7 +88,7 @@ Side length of each square mark.
 
 ## Visual-Wide Parameters
 
-### `size`
+### `pixel_size`
 
 | Property | Value |
 |---|---|
@@ -96,11 +96,11 @@ Side length of each square mark.
 | Default | implementation-defined, suggested 1.0 screen pixels |
 | Mutability | `dynamic` |
 
-Size of every pixel mark. All items share the same size.
+Size of every pixel mark when configured as a constant source. All items share the same size.
 Minimum supported size: 1 physical pixel. Maximum: unspecified, backend-dependent.
 
-Status on 2026-05-17: this visual-wide/default size convenience is not implemented yet. The active
-slice uses dense per-item `size` data.
+Status on 2026-05-27: constant, per-item, and grouped `pixel_size` sources are installed through
+the internal `size` storage slot.
 
 ### `size_space`
 
@@ -119,7 +119,7 @@ limitation instead of silently treating data-space sizes as screen-space sizes.
 | `position` | required | NaN/Inf item skipped and not pickable | no |
 | `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
 | `shift` | `(0, 0)` | NaN component treated as zero shift | yes |
-| `size` | `1 px` | invalid or NaN size falls back to default | yes |
+| `pixel_size` | `1 px` | invalid or NaN size falls back to default | yes |
 
 
 ## Variant Axes
@@ -174,6 +174,6 @@ Standard — see `SHARED_ATTRIBUTES.md`.
 |---|---|
 | `dvz_pixel_position` | `position`, `PER_ITEM` |
 | `dvz_pixel_color` | `color`, now also `CONSTANT`/`PER_GROUP` and `scalar` mode |
-| `dvz_pixel_size` | `size` parameter |
+| `dvz_pixel_size` | `pixel_size` parameter |
 
 v0.4 adds: `shift`, `size_space`, `color_mode = scalar`.

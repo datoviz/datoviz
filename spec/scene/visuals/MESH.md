@@ -70,8 +70,8 @@ triangles.
 | Attribute | Type | Sources | Required | Notes |
 |---|---|---|---|---|
 | `position` | `vec3` | `PER_ITEM` | yes | visual-space vertex position |
-| `color` | shared color | `CONSTANT`, `PER_ITEM` | mode-dependent | used for `color_mode = rgba` or `scalar`; ignored for texture mode |
-| `normal` | `vec3` unit normal | `CONSTANT`, `PER_ITEM` | no | used for Phong; auto-compute flat normals when absent |
+| `color` | shared color | `CONSTANT`, `PER_ITEM`, `PER_GROUP` | mode-dependent | used for `color_mode = rgba` or `scalar`; ignored for texture mode |
+| `normal` | `vec3` unit normal | `PER_ITEM` | no | used for Phong; auto-compute flat normals when absent |
 | `texcoords` | `vec2` in `[0, 1]` | `PER_ITEM` | texture mode only | UV coordinates for texture sampling |
 | `isoline_value` | `float32` | `PER_ITEM` | isolines only | scalar used for contour placement |
 
@@ -173,8 +173,8 @@ texture resource. `color_mode = scalar` requires a color scale and scalar values
 
 Transform model and stage participation are standard; see `SHARED_ATTRIBUTES.md`.
 
-Picking returns face identity, not vertex identity. For indexed geometry, face id is the index
-buffer triplet index. For non-indexed triangles, face id is `vertex_index / 3`.
+The target contract returns face identity. For indexed geometry, face id is the index buffer triplet
+index. For non-indexed triangles, face id is `vertex_index / 3`.
 
 Status on 2026-05-26: the active GPU-backed request path includes item-level mesh picking through
 the rendered mesh target. Mesh face/region identity remains deferred.

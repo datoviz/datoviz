@@ -21,11 +21,13 @@ The implemented path supports:
 4. material/depth state through the shared scene material path;
 5. color, alpha-to-coverage, and G-buffer shader variants;
 6. SSAO/G-buffer participation;
-7. app/offscreen and GLFW example coverage for sphere impostors.
+7. GPU-backed item picking for sphere visuals;
+8. app/offscreen and GLFW example coverage for sphere impostors.
 
 Texture projection variants, per-item material/PBR fields, screen-radius sphere mode, and sphere
-picking remain follow-up work. The active public constructor flags do not reserve a pixel-size
-sphere mode; a future implementation should expose this through the shared `radius_space` contract.
+texture/projection variants remain follow-up work. The active public constructor flags do not
+reserve a pixel-size sphere mode; a future implementation should expose this through the shared
+`radius_space` contract.
 
 
 ## Semantic Purpose
@@ -150,7 +152,7 @@ Standard — see `SHARED_ATTRIBUTES.md`.
 Target picking returns the sphere index. Exact sphere picking should use the same analytic
 ray-sphere intersection as the impostor shader rather than a bounding box.
 
-Status on 2026-05-19: sphere picking is not implemented in the active first slice.
+Status on 2026-05-27: sphere item picking is installed for the GPU query path.
 
 
 ## Relationship To Other Families

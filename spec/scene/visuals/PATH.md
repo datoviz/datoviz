@@ -31,7 +31,8 @@ The implemented path supports:
    positions, color, internal `line_width`, per-vertex role/subpath flags, cumulative distance, and
    indices when `stroke_width` is present;
 9. GLSL/Vulkan frame-plan and DRP2 emission through the `scene.path` stroke pipeline for stroked
-   paths, while `segment` remains the independent endpoint-pair stroke pipeline.
+   paths, while `segment` remains the independent endpoint-pair stroke pipeline;
+10. GPU-backed item picking for stroked paths.
 
 `stroke_width` is the public attribute name. The current retained storage and shader width input
 still use the historical internal name `line_width`.
@@ -39,12 +40,12 @@ still use the historical internal name `line_width`.
 Current limitations:
 
 1. thin line-strip paths do not yet consume explicit subpath lengths;
-2. a first-class closed-path API, dashes, path/subpath identity picking, SVG parsing, filled
+2. a first-class closed-path API, dashes, path/span identity picking, SVG parsing, filled
    paths/polygons, data-space stroke width, analytic curve tessellation helpers, and WGSL lowering
    are deferred.
 
 The following sections describe the target path contract. Closed subpaths, dashes, filled
-paths/polygons, SVG parsing, path picking, data-space stroke width, and fuller backend parity are
+paths/polygons, SVG parsing, path/span picking, data-space stroke width, and fuller backend parity are
 planned capabilities unless explicitly marked as implemented above.
 
 
@@ -93,7 +94,7 @@ The user provides:
 `PER_ITEM` attribute sources are indexed by vertex.
 `PER_SPAN` attribute sources are indexed by path.
 
-Picking returns the path (span) index as item identity, not the vertex index.
+The target picking model returns the path (span) index as item identity, not the vertex index.
 
 
 ## Per-Item (Per-Vertex) Attributes
@@ -112,7 +113,7 @@ Each entry in the flat vertex arrays corresponds to one vertex.
 ### `color`
 
 Standard — see `SHARED_ATTRIBUTES.md`. Per-vertex color produces a gradient along the path.
-Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_SPAN`.
+Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_SPAN`, `PER_GROUP`.
 
 `PER_SPAN` means one color per path (all vertices of a path share the same color).
 `PER_ITEM` means one color per vertex, enabling along-path gradients.
@@ -122,7 +123,8 @@ Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_SPAN`.
 ### `stroke_width`
 
 Standard — see `SHARED_ATTRIBUTES.md`.
-Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_SPAN`.
+Accepted sources: `CONSTANT`, `PER_ITEM` in the active descriptor. `PER_SPAN` is a target
+capability.
 
 Per-point stroke width enables tapered paths. The active first slice averages neighbouring endpoint
 widths when lowering each path edge to the segment stroke pipeline.
@@ -196,8 +198,9 @@ Maximum miter length as a multiple of `stroke_width`. When a miter join would ex
 the join falls back to `bevel` automatically. `4.0` is a standard SVG/PostScript default.
 Set to a large value to disable the limit (allows arbitrarily long miter spikes).
 
-When `stroke_width` is `PER_SPAN`, the miter limit is evaluated per-path using that path's own
-stroke width — a path with a wider stroke uses its width as the reference multiple.
+When target `stroke_width` `PER_SPAN` support is installed, the miter limit is evaluated per-path
+using that path's own stroke width — a path with a wider stroke uses its width as the reference
+multiple.
 
 Status on 2026-05-21: path-specific miter-limit handling is implemented for GLSL/Vulkan stroked
 paths.
@@ -252,10 +255,11 @@ a parameter value. Set at visual creation time.
 ## Transform Model, Stage Participation, Picking
 
 Standard — see `SHARED_ATTRIBUTES.md`.
-Picking returns the path (span) index as item identity.
-Sub-item (vertex) identity is not returned.
+The target contract returns the path span index as item identity. Sub-item vertex identity is not
+returned.
 
-Status on 2026-05-17: path picking is not implemented in the active first slice.
+Status on 2026-05-27: GPU-backed stroked-path item picking is installed, but richer path/span
+identity is still deferred.
 
 
 ## Relationship To Other Families
@@ -280,7 +284,7 @@ dedicated streaming API is needed.
 2. 20 overlaid signal traces — `color` `PER_SPAN`, `stroke_width` `CONSTANT`,
 3. per-vertex colored trajectory — `color` `PER_ITEM` rgba (gradient along path),
 4. scalar-colored fiber bundle — `color` `PER_ITEM` scalar,
-5. per-path-width contour lines — `stroke_width` `PER_SPAN`,
+5. per-path-width contour lines — target `stroke_width` `PER_SPAN`,
 6. closed polygon outlines — `closed = true`, `join = miter`.
 
 
@@ -290,9 +294,10 @@ dedicated streaming API is needed.
 |---|---|
 | `dvz_path_position` with `path_lengths` | `position` `PER_ITEM` + group structure |
 | `dvz_path_color` | `color`, extended sources and scalar mode |
-| `dvz_path_linewidth` | `stroke_width`, now also `PER_ITEM` and `PER_SPAN` |
+| `dvz_path_linewidth` | `stroke_width`, active `PER_ITEM`, target `PER_SPAN` |
 | `dvz_path_cap` | `cap_start` + `cap_end` (split; both default `round`) |
 | `dvz_path_join` | `join`, extended to `miter`/`round`/`bevel` |
 
-v0.4 adds: `PER_SPAN` sources, scalar color mode, `stroke_width_space`, and closed subpath support.
+v0.4 adds: `PER_SPAN` color sources, target `PER_SPAN` stroke widths, scalar color mode,
+`stroke_width_space`, and closed subpath support.
 v0.3 `join` had only `square`/`round`; v0.4 renames `square` to `bevel` and adds `miter`.

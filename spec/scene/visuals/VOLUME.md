@@ -19,11 +19,12 @@ Active bounded features:
 - nearest/linear sampler selection in DRP2/vklite;
 - 256x1 RGBA transfer texture from shared colormap state plus opacity stops;
 - one arbitrary clipping plane plus normalized clipping box;
-- CPU slice probe/readout returning UVW, object coordinate, and sampled value.
+- GPU-backed proxy item/object picking for the rendered volume box.
 
-DVR/MIP picking, isosurfaces, gradient lighting, categorical label volumes, sparse/bricked fields,
-out-of-core streaming, full MPR, and WebGPU/WGSL parity are follow-up work unless explicitly
-activated by a v0.4 task. Exploratory field/out-of-core requirements live in
+DVR/MIP ray-hit picking, slice value probe/readout, isosurfaces, gradient lighting, categorical
+label volumes, sparse/bricked fields, out-of-core streaming, full MPR, and WebGPU/WGSL parity are
+follow-up work unless explicitly activated by a v0.4 task. Exploratory field/out-of-core
+requirements live in
 [`../proposals/future/FIELD_VISUALIZATION_ROADMAP.md`](../proposals/future/FIELD_VISUALIZATION_ROADMAP.md)
 and [`../proposals/future/OUT_OF_CORE_PROGRESSIVE_DESIGN.md`](../proposals/future/OUT_OF_CORE_PROGRESSIVE_DESIGN.md).
 
@@ -120,7 +121,7 @@ Picking support:
 
 | Mode | Status | Payload |
 |---|---|---|
-| `slice` | supported for probe/readout | visual id, slice state, slice-local coords, scene/domain coords when available, sampled value |
+| `slice` | proxy item/object picking installed; value probe deferred | visual id and proxy item identity |
 | `dvr` | deferred unless isosurface active | none in first slice |
 | `isosurface` | target support via depth readback | visual id, level index, reconstructed hit position |
 | `mip` | not first-slice supported | none |

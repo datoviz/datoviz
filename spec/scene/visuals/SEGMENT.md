@@ -22,14 +22,15 @@ The implemented segment supports:
 3. screen-space analytic stroked segments derived from the v0.3 four-vertex/six-index technique;
 4. caps `none`, `round`, `triangle_in`, `triangle_out`, `square`, and `butt`;
 5. `dvz_segment_set_caps()`, with `butt` as the default at both ends;
-6. GLSL/Vulkan frame-plan and DRP2 emission through the segment pipeline.
+6. GLSL/Vulkan frame-plan and DRP2 emission through the segment pipeline;
+7. GPU-backed item picking against the rendered stroke.
 
 `stroke_width` is the public attribute name. The current retained storage, shader input, and DRP2
 resource metadata still use the historical internal name `line_width`.
 
 The following sections describe the target segment contract. Dashes, arrow caps, endpoint shifts,
-`color_end` gradients, scalar/grouped color, data-space stroke width, segment picking, and WGSL
-segment lowering are planned capabilities unless explicitly marked as implemented above.
+`color_end` gradients, scalar/grouped color, data-space stroke width, exact cap-aware picking, and
+WGSL segment lowering are planned capabilities unless explicitly marked as implemented above.
 
 
 ## Semantic Purpose
@@ -77,7 +78,8 @@ dvz_visual_set_data(seg, "position_end",   p1_array, n);
 ### `color`
 
 Standard — see `SHARED_ATTRIBUTES.md`. Color at P0, or uniform color when `color_end` is not set.
-Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
+Accepted sources: `CONSTANT`, `PER_ITEM` in the active descriptor. `PER_GROUP` is a target
+capability.
 
 
 ### `color_end`
@@ -85,7 +87,7 @@ Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 | Property | Value |
 |---|---|
 | Type | same as `color` |
-| Accepted sources | `CONSTANT`, `PER_ITEM`, `PER_GROUP` |
+| Accepted sources | `CONSTANT`, `PER_ITEM`; target `PER_GROUP` |
 | Typical mutability | `dynamic` |
 | Optional | yes — gradient disabled when not set |
 
@@ -98,10 +100,11 @@ Useful for time-colored trajectories, FA-colored fibers, signal-strength connect
 ### `stroke_width`
 
 Standard — see `SHARED_ATTRIBUTES.md`.
-Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
+Accepted sources: `CONSTANT`, `PER_ITEM` in the active descriptor. `PER_GROUP` is a target
+capability.
 Per-item stroke width is the defining capability of `segment` over `primitive` line topologies.
 
-Status on 2026-05-17: the active first slice supports dense per-item `stroke_width`.
+Status on 2026-05-27: the active slice supports constant and dense per-item `stroke_width`.
 
 
 ### `shift`
@@ -109,7 +112,9 @@ Status on 2026-05-17: the active first slice supports dense per-item `stroke_wid
 Standard `vec4` (dual-endpoint form) — see `SHARED_ATTRIBUTES.md`.
 `(dx0, dy0, dx1, dy1)` in screen pixels.
 Useful for aligning segment endpoints precisely to marker centers.
-Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
+Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP` in the target contract.
+
+Status on 2026-05-27: `shift` is not installed in the active descriptor.
 
 
 ## Visual-Wide Parameters
@@ -178,7 +183,8 @@ Standard — see `SHARED_ATTRIBUTES.md`.
 `shift` is applied after the panel transform in screen space.
 Picking returns the segment index as item identity.
 
-Status on 2026-05-17: segment picking is not implemented in the active first slice.
+Status on 2026-05-27: segment item picking is installed for the GPU query path. Richer precision
+against every cap style remains follow-up work.
 
 
 ## Relationship To Other Families
@@ -194,7 +200,7 @@ Status on 2026-05-17: segment picking is not implemented in the active first sli
 
 1. uniform error bars — `P0`/`P1` `PER_ITEM`, `color` `CONSTANT`, `stroke_width` `CONSTANT`,
 2. per-segment colored graph edges — `color` `PER_ITEM` rgba,
-3. multi-group error bars with group-encoded widths — `stroke_width` `PER_GROUP`,
+3. multi-group error bars with group-encoded widths — target `stroke_width` `PER_GROUP`,
 4. time-colored trajectories — gradient, `color` and `color_end` both `PER_ITEM` scalar,
 5. error bar caps aligned to markers — `shift` `PER_ITEM`,
 6. fiber bundle with scalar FA coloring — `color` `PER_ITEM` scalar.
@@ -210,5 +216,5 @@ Status on 2026-05-17: segment picking is not implemented in the active first sli
 | `dvz_segment_shift` | `shift` (`vec4`) |
 | `dvz_segment_cap` | `cap_start`, `cap_end` |
 
-v0.4 adds: `color_end` (gradient), `PER_GROUP` sources, `scalar` color mode,
+v0.4 target adds: `color_end` (gradient), `PER_GROUP` sources, `scalar` color mode,
 `stroke_width_space`.

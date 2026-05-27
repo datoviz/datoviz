@@ -17,7 +17,8 @@ Status on 2026-05-17: the active v0.4 runtime implements the first styled point 
 The implemented path supports:
 
 1. retained `point` visual construction via `dvz_point()`;
-2. dense `position`, `color`, and `size` attributes, where `size` is the screen-space diameter;
+2. dense `position`, `color`, and public `diameter` attributes, where `diameter` aliases the
+   current internal `size` slot and is measured in screen pixels;
 3. antialiased circular rendering;
 4. `dvz_point_style_desc()` and `dvz_point_set_style()` with `edge_color`, `stroke_width`,
    and exclusive `filled`/`stroke`/`outline` aspect semantics;
@@ -27,14 +28,13 @@ The implemented path supports:
 8. existing depth cueing, EDL, alpha-mode, WBOIT/depth-peel, and app/offscreen coverage for point
    visuals.
 
-The following sections describe the target point contract. Constant and grouped attribute sources,
-scalar color/size modes, `shift`, and data-space size are planned capabilities unless explicitly
-marked as implemented above.
+The following sections describe the target point contract. Scalar color/diameter modes, `shift`, and
+data-space diameter are planned capabilities unless explicitly marked as implemented above.
 
 
 ## Semantic Purpose
 
-`point` renders circular point-like marks with per-item size control.
+`point` renders circular point-like marks with per-item diameter control.
 
 It is richer than `pixel` (circular coverage and optional edge/stroke styling) and simpler than
 `marker` (no shape selection or rotation).
@@ -60,11 +60,12 @@ Standard — see `SHARED_ATTRIBUTES.md`.
 Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 
 
-### `size`
+### `diameter`
 
 Standard — see `SHARED_ATTRIBUTES.md`.
+Storage name: `size`.
 Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
-Per-item size is the defining attribute of `point` relative to `pixel`.
+Per-item diameter is the defining attribute of `point` relative to `pixel`.
 
 
 ### `shift`
@@ -77,7 +78,7 @@ Status on 2026-05-17: not implemented in the active point slice.
 
 ## Visual-Wide Parameters
 
-### `size_default`
+### `diameter_default`
 
 | Property | Value |
 |---|---|
@@ -85,8 +86,8 @@ Status on 2026-05-17: not implemented in the active point slice.
 | Default | implementation-defined, suggested 5.0 screen pixels |
 | Mutability | `dynamic` |
 
-Fallback used when `size` source is `CONSTANT` and no value has been set.
-Ignored when `size` source is `PER_ITEM` or `PER_GROUP`.
+Fallback used when `diameter` source is `CONSTANT` and no value has been set.
+Ignored when `diameter` source is `PER_ITEM` or `PER_GROUP`.
 
 
 ### `size_space`
@@ -140,8 +141,8 @@ Edge width for `aspect = stroke` or `aspect = outline`.
 |---|---|---|---|
 | `position` | required | NaN/Inf item skipped and not pickable | no |
 | `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
-| `size` | `size_default` | scalar NaN uses size-scale fallback | yes |
-| `size_default` | family-defined screen size | n/a | yes |
+| `diameter` | `diameter_default` | scalar NaN uses size-scale fallback | yes |
+| `diameter_default` | family-defined screen size | n/a | yes |
 | `aspect` | `filled` | n/a | yes |
 | `edge_color` | black RGBA | n/a | yes |
 | `stroke_width` | 0 screen pixels | n/a | yes |
@@ -154,8 +155,9 @@ Edge width for `aspect = stroke` or `aspect = outline`.
 | `color_mode` | `rgba`, `scalar` | `rgba` |
 | `size_mode` | `direct`, `scalar` | `direct` |
 
-`size_space` is a visual-wide parameter, not a variant axis — it does not affect data layout and
-can change at runtime via `dvz_visual_set_param(visual, "size_space", &space)`.
+`size_space` is a visual-wide parameter for the public `diameter` attribute, not a variant axis. It
+does not affect data layout and can change at runtime via
+`dvz_visual_set_param(visual, "size_space", &space)`.
 
 Both mode axes are set at visual creation time by combining flag constants and passing to
 `dvz_point(scene, flags)`:
@@ -180,7 +182,7 @@ Standard — see `SHARED_ATTRIBUTES.md`.
 
 | Situation | Preferred family |
 |---|---|
-| No per-item size needed | `pixel` |
+| No per-item diameter needed | `pixel` |
 | Need shape, rotation, or edge | `marker` |
 | Need connected geometry | `segment` or `path` |
 | Need raw topology | `primitive` |
@@ -188,12 +190,12 @@ Standard — see `SHARED_ATTRIBUTES.md`.
 
 ## Minimum Cases This Spec Must Support
 
-1. uniform scatter plot — `color` and `size` both `CONSTANT`,
-2. per-point color — `color` `PER_ITEM` rgba, `size` `CONSTANT`,
-3. per-point size — `color` `CONSTANT`, `size` `PER_ITEM` direct,
-4. fully independent points — `color` and `size` both `PER_ITEM`,
-5. bubble chart — `color` `PER_ITEM` scalar, `size` `PER_ITEM` scalar with sqrt scale,
-6. three cell populations with per-type color and size — both `PER_GROUP`,
+1. uniform scatter plot — `color` and `diameter` both `CONSTANT`,
+2. per-point color — `color` `PER_ITEM` rgba, `diameter` `CONSTANT`,
+3. per-point diameter — `color` `CONSTANT`, `diameter` `PER_ITEM` direct,
+4. fully independent points — `color` and `diameter` both `PER_ITEM`,
+5. bubble chart — `color` `PER_ITEM` scalar, `diameter` `PER_ITEM` scalar with sqrt scale,
+6. three cell populations with per-type color and diameter — both `PER_GROUP`,
 7. live neural spike positions, colors fixed by cell type — `position` streaming, `color`
    `PER_GROUP` static.
 
@@ -203,10 +205,10 @@ Standard — see `SHARED_ATTRIBUTES.md`.
 | v0.3 | v0.4 |
 |---|---|
 | `dvz_point_position` | `position`, `PER_ITEM` |
-| `dvz_point_size` | `size`, `PER_ITEM`, `direct` mode |
+| `dvz_point_size` | `diameter`, `PER_ITEM`, `direct` mode |
 | `dvz_point_color` | `color`, `PER_ITEM`, `rgba` mode |
 
-v0.4 adds: `CONSTANT`/`PER_GROUP` sources for `color` and `size`, `scalar` modes, `shift`,
+v0.4 adds: `CONSTANT`/`PER_GROUP` sources for `color` and `diameter`, `scalar` modes, `shift`,
 `size_space`.
 
 

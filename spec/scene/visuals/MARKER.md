@@ -18,7 +18,8 @@ Status on 2026-05-17: the active v0.4 runtime implements the first code-SDF mark
 The implemented path supports:
 
 1. retained `marker` visual construction via `dvz_marker()`;
-2. dense `position`, `color`, `size`, `angle`, and `shape` attributes;
+2. dense `position`, `color`, public `diameter`, `angle`, and `shape` attributes, where
+   `diameter` aliases the current internal `size` slot;
 3. `shape` values stored as `uint32_t` `DvzMarkerShape` values;
 4. built-in code-SDF shapes `disc`, `square`, `triangle`, `diamond`, `cross`, and `ring`;
 5. `dvz_marker_style()` and `dvz_marker_set_style()` with `edge_color`, `stroke_width`, and
@@ -28,7 +29,7 @@ The implemented path supports:
 8. GPU-backed marker picking using the marker sprite bounding box.
 
 The following sections describe the target marker contract. Bitmap, SDF, MSDF, atlas-backed custom
-symbols, scalar color/size modes, `shift`, aspect-ratio/magnitude helpers, data-space sizing, and
+symbols, scalar color/diameter modes, `shift`, aspect-ratio/magnitude helpers, data-space sizing, and
 exact SDF-mask picking are planned capabilities unless explicitly marked as implemented above.
 
 
@@ -98,16 +99,18 @@ Standard — see `SHARED_ATTRIBUTES.md`. Fill color of the marker body.
 Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 
 
-### `size`
+### `diameter`
 
 Standard — see `SHARED_ATTRIBUTES.md`.
+Storage name: `size`.
 Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 
 
 ### `angle`
 
 Standard — see `SHARED_ATTRIBUTES.md`.
-Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
+Accepted sources: `PER_ITEM` in the active descriptor. `CONSTANT` and `PER_GROUP` are target
+capabilities.
 Applied in screen space after the panel transform — markers always face the viewer.
 
 
@@ -172,8 +175,8 @@ Combined with `angle` `PER_ITEM` for oriented ellipses.
 | Typical mutability | `dynamic` or `streaming` |
 | Optional | yes — defaults to `1.0` (no scaling) |
 
-Multiplicative scale applied to `size` per item, after all other size transformations.
-Primary use: quiver plots, where `size` sets the base arrow length and `magnitude` encodes
+Multiplicative scale applied to `diameter` per item, after all other size transformations.
+Primary use: quiver plots, where `diameter` sets the base arrow length and `magnitude` encodes
 the field strength at each position.
 When combined with `shape = arrow` and `angle` `PER_ITEM`, produces a standard 2D vector
 field visualization.
@@ -292,7 +295,7 @@ Must match the declared render mode format.
 |---|---|---|---|
 | `position` | required | NaN/Inf item skipped and not pickable | no |
 | `color`, `edge_color` | fill white, edge transparent | scalar NaN uses scale missing color | yes |
-| `size`, `scale` | family-defined screen size, scale `1` | scalar NaN uses fallback size | yes |
+| `diameter`, `magnitude` | family-defined screen size, scale `1` | scalar NaN uses fallback size | yes |
 | `angle`, `aspect`, `shape` | defaults described above | invalid value is validation error | yes |
 | `shift` | `(0, 0)` | NaN component treated as zero shift | yes |
 
@@ -357,7 +360,7 @@ and emits a diagnostic. `color_mode = scalar` and `size_mode = scalar` follow st
 | `dvz_marker_mode` | `render_mode` axis |
 | `dvz_marker_aspect` | `aspect` parameter |
 | `dvz_marker_shape` | `shape` parameter |
-| `dvz_marker_position/size/color/angle` | same attributes, extended sources and modes |
+| `dvz_marker_position/size/color/angle` | `position`/`diameter`/`color`/`angle`, extended sources and modes |
 | `dvz_marker_edgecolor/linewidth` | `edge_color` and `stroke_width` style fields |
 | `dvz_marker_texture/tex_scale` | unchanged |
 
