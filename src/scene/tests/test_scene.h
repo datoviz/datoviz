@@ -811,6 +811,8 @@ int test_scene_labels_query_high_unsigned_id(TstContext* suite, const TstCase* i
 
 int test_scene_labels_query_rejects_missing_field(TstContext* suite, const TstCase* item);
 
+int test_scene_labels_query_rejects_unsupported_format(TstContext* suite, const TstCase* item);
+
 int test_scene_labels_query_readback_failure(TstContext* suite, const TstCase* item);
 
 int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const TstCase* item);

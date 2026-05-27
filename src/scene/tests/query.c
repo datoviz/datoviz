@@ -2054,6 +2054,64 @@ int test_scene_labels_query_rejects_missing_field(TstContext* suite, const TstCa
 
 
 /**
+ * Ensure labels query rejects non-integer label field formats explicitly.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_labels_query_rejects_unsupported_format(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* labels = dvz_labels(scene, 0);
+    ANN(labels);
+    dvz_visual_set_query_capabilities(labels, DVZ_QUERY_CAPABILITY_ITEM);
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(field);
+    labels->field = field;
+    AT(dvz_panel_add_visual(panel, labels, NULL) == 0);
+
+    AT(dvz_panel_query(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){.request_id = 153, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    AT(dvz_figure_process_queries(figure, NULL, &caps) == 1);
+
+    DvzQueryResult query = {0};
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.request_id == 153);
+    AT(!query.hit);
+    AT(query.status == DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY);
+    AT(query.visual_id == _scene_visual_public_id(scene, labels));
+    AT(query.value_kind == DVZ_QUERY_VALUE_NONE);
+    AT(!dvz_scene_poll_query(scene, &query));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Ensure labels queries fail explicitly when GPU readback fails.
  *
  * @param suite the active test suite
@@ -2308,6 +2366,7 @@ int test_scene_query(TstSuite* suite)
     TST_SCENE_QUERY_GPU_CASE(test_scene_labels_query_resolves_category);
     TST_SCENE_QUERY_GPU_CASE(test_scene_labels_query_high_unsigned_id);
     TST_CASE(test_scene_labels_query_rejects_missing_field);
+    TST_CASE(test_scene_labels_query_rejects_unsupported_format);
     TST_SCENE_QUERY_GPU_CASE(test_scene_labels_query_readback_failure);
     TST_SCENE_QUERY_GPU_CASE(test_scene_query_processes_item_and_pixel_results);
 
