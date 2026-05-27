@@ -438,6 +438,91 @@ int test_scene_sphere_query_resolves_item(TstContext* suite, const TstCase* item
 
 
 
+int test_scene_segment_query_resolves_item(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* segment = dvz_segment(scene, 0);
+    ANN(segment);
+    dvz_visual_set_pick_capabilities(segment, DVZ_PICK_CAPABILITY_ITEM);
+    vec3 segment_start[2] = {
+        {-0.75f, -0.5f, 0.0f},
+        {-0.75f, 0.0f, 0.0f},
+    };
+    vec3 segment_end[2] = {
+        {0.75f, -0.5f, 0.0f},
+        {0.75f, 0.0f, 0.0f},
+    };
+    DvzColor segment_color[2] = {
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+    };
+    float segment_width[2] = {12.0f, 12.0f};
+    AT(dvz_visual_set_data(segment, "position_start", segment_start, 2) == 0);
+    AT(dvz_visual_set_data(segment, "position_end", segment_end, 2) == 0);
+    AT(dvz_visual_set_data(segment, "color", segment_color, 2) == 0);
+    AT(dvz_visual_set_data(segment, "line_width", segment_width, 2) == 0);
+    AT(dvz_segment_set_caps(segment, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT) == 0);
+    AT(dvz_panel_add_visual(panel, segment, NULL) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    AT(dvz_panel_query(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){.request_id = 71, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+    AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+    AT(scene->pick_result_count == 0);
+    AT(scene->probe_result_count == 0);
+
+    DvzQueryResult query = {0};
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.hit);
+    AT(query.request_id == 71);
+    AT(query.status == DVZ_QUERY_STATUS_HIT);
+    AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_SEGMENT);
+    AT(query.resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(query.resolved_id == 1);
+    AT(query.item_id == 1);
+    AT(!dvz_scene_poll_query(scene, &query));
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -570,6 +655,7 @@ int test_scene_query(TstSuite* suite)
     TST_SCENE_QUERY_GPU_CASE(test_scene_pixel_query_accepts_square_corner);
     TST_SCENE_QUERY_GPU_CASE(test_scene_marker_query_accepts_bbox_corner);
     TST_SCENE_QUERY_GPU_CASE(test_scene_sphere_query_resolves_item);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_segment_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_query_processes_item_and_pixel_results);
 
     return 0;

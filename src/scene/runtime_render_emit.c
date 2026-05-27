@@ -451,15 +451,21 @@ bool _emitter_prepare_render_multi(
         bool point_like_desc = desc.kind == DVZ_SCENE_VISUAL_DESC_POINT ||
                                desc.kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
                                desc.kind == DVZ_SCENE_VISUAL_DESC_MARKER;
+        bool segment_query_u32 =
+            render->u.render.picking && desc.kind == DVZ_SCENE_VISUAL_DESC_SEGMENT &&
+            cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
         bool query_u32 =
             render->u.render.picking &&
-            (point_like_desc || desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE) && cfg != NULL &&
-            cfg->color_target_format == VK_FORMAT_R32_UINT;
+            (point_like_desc || desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE ||
+             segment_query_u32) &&
+            cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
         if (query_u32)
         {
             DvzSceneBuiltinShader query_shader = DVZ_SCENE_BUILTIN_SHADER_POINT_QUERY_U32;
             if (desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
                 query_shader = DVZ_SCENE_BUILTIN_SHADER_SPHERE_QUERY_U32;
+            else if (segment_query_u32)
+                query_shader = DVZ_SCENE_BUILTIN_SHADER_SEGMENT_QUERY_U32;
             else if (
                 desc.kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
                 desc.kind == DVZ_SCENE_VISUAL_DESC_MARKER)
@@ -472,7 +478,9 @@ bool _emitter_prepare_render_multi(
                      shader.pipeline_key, sizeof(shader.pipeline_key), "_query_u32", report);
             if (!ok)
                 break;
-            if (desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
+            if (
+                desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE ||
+                query_shader == DVZ_SCENE_BUILTIN_SHADER_SEGMENT_QUERY_U32)
             {
                 ok = _runtime_key_append(
                     shader.vertex_key, sizeof(shader.vertex_key), "_query_u32", report);
@@ -480,12 +488,17 @@ bool _emitter_prepare_render_multi(
                     break;
                 shader.vertex_glsl = _builtin_shader_glsl(query_shader, false);
                 shader.vertex_wgsl = NULL;
-                shader.vertex_spirv_key = "sphere_query_u32_vert";
+                shader.vertex_spirv_key =
+                    query_shader == DVZ_SCENE_BUILTIN_SHADER_SPHERE_QUERY_U32
+                        ? "sphere_query_u32_vert"
+                        : "segment_query_u32_vert";
             }
             shader.fragment_glsl = _builtin_shader_glsl(query_shader, true);
             shader.fragment_wgsl = NULL;
             if (query_shader == DVZ_SCENE_BUILTIN_SHADER_SPHERE_QUERY_U32)
                 shader.fragment_spirv_key = "sphere_query_u32_frag";
+            else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_SEGMENT_QUERY_U32)
+                shader.fragment_spirv_key = "segment_query_u32_frag";
             else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_PIXEL_QUERY_U32)
                 shader.fragment_spirv_key = "pixel_query_u32_frag";
             else
@@ -688,6 +701,14 @@ bool _emitter_prepare_render_multi(
         {
             ok = false;
             break;
+        }
+        if (
+            render->u.render.picking && desc.kind == DVZ_SCENE_VISUAL_DESC_SEGMENT &&
+            cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT &&
+            pipeline.attr_count > 2)
+        {
+            pipeline.strides[2] = sizeof(uint32_t);
+            pipeline.formats[2] = VK_FORMAT_R32_UINT;
         }
         if (gbuffer_pass && desc.kind != DVZ_SCENE_VISUAL_DESC_SPHERE)
             pipeline.needs_material_layout = false;
