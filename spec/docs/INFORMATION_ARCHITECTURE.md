@@ -8,6 +8,10 @@ engine layer. Most scientific users should eventually use VisPy2/GSP for high-le
 Datoviz documentation is for native application developers, backend authors, advanced users of the
 C/raw-binding surface, and contributors.
 
+`mkdocs.yml` is the source of truth for the concrete public navigation. This document mirrors the
+current MkDocs structure and records the intent behind each section. If a page is moved, added, or
+removed in `mkdocs.yml`, update this file in the same change.
+
 
 ## Audiences
 
@@ -22,7 +26,7 @@ C/raw-binding surface, and contributors.
 
 ## Top-Level Structure
 
-Use these public documentation sections:
+Use these public documentation sections, as declared in `mkdocs.yml`:
 
 ```text
 docs/
@@ -43,20 +47,58 @@ This is Diataxis plus two Datoviz-specific additions:
    input for coding agents.
 
 
+## Legacy And Unlisted Docs
+
+The current MkDocs configuration excludes legacy or out-of-scope files from the built v0.4 site:
+
+```text
+README.md
+quickstart.md
+architecture/*
+blog/*
+discussions/*
+gallery/*
+guide/*
+tasks/*
+visuals/*
+reference/api_c.md
+reference/api_py.md
+reference/colormaps.md
+```
+
+MkDocs also marks these paths as intentionally outside the navigation:
+
+```text
+_old/*
+architecture/*
+blog/*
+discussions/*
+gallery/*
+guide/*
+tasks/*
+visuals/*
+```
+
+Do not treat these excluded or unlisted legacy paths as the active v0.4 documentation structure.
+
+
 ## Start
 
 Purpose: orient readers and prevent wrong expectations.
 
-Suggested pages:
+Current MkDocs navigation:
 
 ```text
 start/
-  what-is-datoviz.md
-  choose-your-layer.md
-  install.md
-  build-from-source.md
-  first-c-program.md
-  project-status.md
+  Overview/
+    what-is-datoviz.md
+    choose-your-layer.md
+    project-status.md
+  Setup/
+    install.md
+    build-from-source.md
+  First Steps/
+    first-c-program.md
 ```
 
 `choose-your-layer.md` is required. It should explain:
@@ -74,16 +116,19 @@ Purpose: teach a first-time user by walking through a small complete workflow.
 Tutorials should be few, polished, narrative, and backed by runnable C examples. They should not try
 to enumerate the whole API.
 
-Suggested pages:
+Current MkDocs navigation:
 
 ```text
 tutorials/
-  first-scene.md
-  interactive-window.md
-  offscreen-capture.md
-  image-colorbar-probe.md
-  mesh-arcball.md
-  multi-panel-figure.md
+  index.md
+  Basics/
+    first-scene.md
+    interactive-window.md
+    offscreen-capture.md
+  Scene Workflows/
+    image-colorbar-probe.md
+    mesh-arcball.md
+    multi-panel-figure.md
 ```
 
 Tutorial rules:
@@ -104,16 +149,18 @@ Examples are a public documentation pillar, not an appendix. The rule is:
 2. one public feature gets one dedicated minimal C example;
 3. showcases may compose multiple visuals and features, but they must not replace minimal examples.
 
-Suggested pages:
+Current MkDocs navigation:
 
 ```text
 examples/
   index.md
-  visual-gallery.md
-  feature-gallery.md
-  techniques.md
-  showcases.md
-  validation-gallery.md
+  Galleries/
+    visual-gallery.md
+    feature-gallery.md
+    techniques.md
+  Release Proof/
+    showcases.md
+    validation-gallery.md
 ```
 
 Detailed coverage rules are in [EXAMPLE_COVERAGE.md](EXAMPLE_COVERAGE.md).
@@ -127,32 +174,37 @@ How-to guides are still needed even when every feature has a minimal example. Ex
 smallest working code. How-to guides explain which pattern to use, which ownership rules matter, and
 how to adapt the example to real code.
 
-Suggested pages:
+Current MkDocs navigation:
 
 ```text
 how-to/
-  create-a-scene.md
-  create-a-window.md
-  render-offscreen.md
-  capture-an-image.md
-  add-a-visual.md
-  update-visual-data.md
-  choose-a-visual-family.md
-  use-sampled-fields.md
-  use-colormaps.md
-  add-axes.md
-  add-colorbars.md
-  add-annotations.md
-  use-panzoom.md
-  use-arcball.md
-  pick-and-probe.md
-  select-items.md
-  create-multiple-panels.md
-  embed-in-qt.md
-  use-raw-ctypes.md
-  replay-dvzr.md
-  debug-rendering.md
-  profile-performance.md
+  Scene And Runtime/
+    create-a-scene.md
+    create-a-window.md
+    render-offscreen.md
+    capture-an-image.md
+  Visuals And Data/
+    add-a-visual.md
+    choose-a-visual-family.md
+    update-visual-data.md
+    use-sampled-fields.md
+    use-colormaps.md
+  Layout And Adornments/
+    create-multiple-panels.md
+    add-axes.md
+    add-colorbars.md
+    add-annotations.md
+  Interaction/
+    use-panzoom.md
+    use-arcball.md
+    pick-and-probe.md
+    select-items.md
+  Integration And Debugging/
+    embed-in-qt.md
+    use-raw-ctypes.md
+    replay-dvzr.md
+    debug-rendering.md
+    profile-performance.md
 ```
 
 How-to rules:
@@ -167,26 +219,30 @@ How-to rules:
 
 Purpose: provide exact, complete, dry facts.
 
-Suggested pages:
+Current MkDocs navigation:
 
 ```text
 reference/
   index.md
-  feature-status.md
-  platform-support.md
-  build-options.md
-  c-api/
-  objects-and-lifetimes.md
-  visual-families/
-  visual-attributes.md
-  coordinate-systems.md
-  controllers.md
-  queries.md
-  callbacks.md
-  errors-and-logging.md
-  ctypes.md
-  webgpu-subset.md
-  drp2/
+  Status And Support/
+    feature-status.md
+    platform-support.md
+    build-options.md
+  API/
+    c-api/index.md
+    ctypes.md
+    drp2/index.md
+  Scene Reference/
+    objects-and-lifetimes.md
+    visual-families/index.md
+    visual-attributes.md
+    coordinate-systems.md
+    controllers.md
+    queries.md
+    callbacks.md
+    errors-and-logging.md
+  Backends/
+    webgpu-subset.md
 ```
 
 Reference pages should prefer tables, status labels, signatures, constraints, and links to examples.
@@ -212,25 +268,29 @@ Related API:
 
 Purpose: explain concepts, architecture, and tradeoffs.
 
-Suggested pages:
+Current MkDocs navigation:
 
 ```text
 explanation/
-  architecture.md
-  why-datoviz.md
-  scene-model.md
-  figure-panel-visual-model.md
-  coordinate-systems.md
-  scene-to-drp2-runtime.md
-  retained-resources.md
-  frame-lifecycle.md
-  invalidation-and-caching.md
-  gpu-resource-ownership.md
-  interaction-model.md
-  query-pick-probe-model.md
-  performance-model.md
-  portability-webgpu.md
-  gsp-vispy2-boundary.md
+  System/
+    architecture.md
+    why-datoviz.md
+    gsp-vispy2-boundary.md
+  Scene/
+    scene-model.md
+    figure-panel-visual-model.md
+    coordinate-systems.md
+    interaction-model.md
+  Runtime/
+    scene-to-drp2-runtime.md
+    frame-lifecycle.md
+    retained-resources.md
+    invalidation-and-caching.md
+    gpu-resource-ownership.md
+  Advanced/
+    query-pick-probe-model.md
+    performance-model.md
+    portability-webgpu.md
 ```
 
 Explanation pages should answer why the system is shaped as it is. They should be explicit about
@@ -242,20 +302,23 @@ or runtime contracts.
 
 Purpose: document how humans and agents change Datoviz safely.
 
-Suggested pages:
+Current MkDocs navigation:
 
 ```text
 contributors/
-  architecture-map.md
-  build-and-test.md
-  coding-style.md
-  docs-authoring.md
-  ai-agents.md
-  adding-examples.md
-  adding-a-visual.md
-  adding-a-drp2-command.md
-  adding-a-webgpu-fixture.md
-  release-validation.md
+  Orientation/
+    architecture-map.md
+    build-and-test.md
+    coding-style.md
+  Documentation/
+    docs-authoring.md
+    ai-agents.md
+    adding-examples.md
+  Development/
+    adding-a-visual.md
+    adding-a-drp2-command.md
+    adding-a-webgpu-fixture.md
+    release-validation.md
 ```
 
 Contributor pages may link to `spec/` and `agents/`, but public docs should not become execution

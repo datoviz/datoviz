@@ -185,7 +185,7 @@ screenshot: screenshots/visuals/point.png
 tests:
   - just test scene
 docs:
-  reference: reference/visuals/point.md
+  reference: reference/visual-families/index.md#point
   how_to: how-to/add-a-visual.md
 ```
 

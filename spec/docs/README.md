@@ -3,6 +3,11 @@
 This directory records the documentation structure and authoring rules for the v0.4 public
 documentation rebuild.
 
+`mkdocs.yml` is the current source of truth for the public documentation navigation. The files in
+`spec/docs/` explain the intent, coverage rules, and authoring policy behind that navigation. When
+the MkDocs navigation changes, update these specs to match it instead of treating an older spec list
+as authoritative.
+
 Datoviz v0.4 documentation is C-engine-first. It documents the low-level renderer/runtime,
 native scene/app layer, raw generated `ctypes` bindings, backend portability surface, and
 contributor workflow. It does not recreate the v0.3 Pythonic plotting documentation. High-level

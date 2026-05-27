@@ -67,12 +67,17 @@ contributors:
 3. do not create parallel presentation, frame-stream, Vulkan-wrapper, or renderer paths;
 4. keep high-level scientific plotting out of Datoviz v0.4 docs and code;
 5. keep detailed behavior contracts in `spec/`;
-6. keep public tutorials, examples, how-to pages, reference, and explanations in `docs/`;
+6. keep public start, tutorial, example, how-to, reference, explanation, and contributor pages in
+   `docs/`;
 7. keep execution status and handoff notes in `agents/`;
 8. do not hand-edit generated reference pages;
 9. update example metadata and feature-status tables when public behavior changes;
 10. run `git diff --check` for documentation edits and the narrowest relevant build/test loop for
     code or generated artifacts.
+
+Agents should treat `mkdocs.yml` as the public documentation navigation source of truth. When adding
+or moving user-facing pages, update `mkdocs.yml` and then mirror the intent in `spec/docs/` instead
+of relying on stale page lists in planning notes.
 
 
 ## Documentation Boundaries For Agents
@@ -82,7 +87,7 @@ clear source-of-truth boundaries:
 
 | Content | Location |
 | --- | --- |
-| Public tutorial/how-to/reference/explanation pages | `docs/` |
+| Public start/tutorial/example/how-to/reference/explanation/contributor pages | `docs/` |
 | Documentation architecture and policy | `spec/docs/` |
 | Scene and visual behavior contracts | `spec/scene/` |
 | DRP2 command and fixture contracts | `spec/drp2/` |
@@ -91,13 +96,14 @@ clear source-of-truth boundaries:
 | Generated API/reference output | generated docs path, never hand-edited |
 
 
-## AI-Specific Pages To Add
+## AI-Relevant Pages
 
-The public docs should eventually include:
+The current MkDocs navigation includes these AI-relevant and agent-oriented pages:
 
 ```text
 contributors/ai-agents.md
 contributors/docs-authoring.md
+contributors/adding-examples.md
 start/choose-your-layer.md
 reference/feature-status.md
 reference/objects-and-lifetimes.md
