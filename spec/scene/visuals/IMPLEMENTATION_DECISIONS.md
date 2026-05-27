@@ -1,8 +1,8 @@
 # Scene Visual Family Implementation Decisions
 
 > **Execution Status**
-> - **Status:** `ACTIVE FOLLOW-UP CONTRACT`
-> - **Updated on:** `2026-05-18`
+> - **Status:** `DECISION HISTORY AND FOLLOW-UP LANES`
+> - **Updated on:** `2026-05-27`
 > - **Purpose:** preserve the landed first-slice visual-family decisions and define the remaining
 >   follow-up lanes for pixel, point, marker, segment, path, image, sphere, and mesh consistency.
 
@@ -20,10 +20,13 @@ This note refines:
 7. `spec/scene/visuals/SPHERE.md`
 8. `spec/scene/visuals/MESH.md`
 9. `spec/scene/visuals/VOLUME.md`
-10. `agents/soon/scene/SCENE_POINT_PIXEL_MARKER_FOLLOWUP.md`
-11. `agents/soon/scene/SCENE_VECTOR_VISUALS_PLAN.md`
+10. `spec/scene/visuals/LABELS.md`
+11. `spec/scene/visuals/VECTOR.md`
+12. `spec/scene/visuals/SPLAT.md`
 
-It is authoritative for the first implementation pass when those documents disagree.
+This document is decision history plus remaining-lane guidance. The current source of truth for
+installed status is `README.md` plus the individual family files. When this ledger disagrees with a
+family spec, update this ledger or follow the family spec.
 
 
 ## Shared Rules
@@ -32,9 +35,9 @@ It is authoritative for the first implementation pass when those documents disag
 2. Do not create a parallel renderer, presentation path, Vulkan wrapper, or special app path.
 3. Preserve the public `DvzVisual*` model; do not introduce public visual subtypes.
 4. Keep first-slice attributes dense and explicit unless this note says otherwise.
-5. Defer scalar color/size modes, `PER_GROUP`, `CONSTANT` source optimization, and data-space
-   sizing unless explicitly included below.
-6. Prefer GPU-backed picking because the request path already executes point/image readbacks through
+5. Treat scalar modes, grouped sources, constant-source optimization, and data-space sizing as
+   family-specific capabilities; consult the family specs before assuming they are deferred.
+6. Prefer GPU-backed picking because the request path already executes visual readbacks through
    DRP2/runtime auxiliary streams.
 7. Do not add CPU fallback picking. Unsupported GPU pick precision should return an explicit
    request/result failure status rather than pretending to be a miss.
@@ -60,13 +63,16 @@ It is authoritative for the first implementation pass when those documents disag
    `instance_color`, and optional authored `instance_id`; instance identity must be preserved in
    picking.
 7. Point/marker share a fill/stroke style descriptor; segment/path share a stroke descriptor.
-8. Picking results should distinguish real misses from unsupported target precision and GPU
-   execution/readback failures through `DvzPickStatus`.
+8. Query results should distinguish real misses from unsupported target precision and GPU
+   execution/readback failures through `DvzQueryStatus`.
 
 
 ## Current Landed Status
 
-Status on 2026-05-17: the first implementation batch for the five families has landed.
+Status on 2026-05-27: the broad current-state matrix lives in `README.md`. This section preserves
+the main first-slice decisions and records later corrections that affect the visual specs.
+
+Status on 2026-05-17: the first implementation batch for the five families landed.
 
 Additional visual-consistency updates landed on 2026-05-17:
 
@@ -74,12 +80,22 @@ Additional visual-consistency updates landed on 2026-05-17:
    while preserving the current internal storage names.
 2. `sphere` now uses the generic `dvz_visual_set_data()` path and no longer exposes duplicate
    typed data setters.
-3. `DvzPickResult` has an explicit `DvzPickStatus` so misses, unsupported visuals, outside-panel
+3. Query results have an explicit `DvzQueryStatus` so misses, unsupported visuals, outside-panel
    requests, GPU execution failures, and readback failures are distinguishable.
 4. `mesh` accepts per-instance `instance_transform` data, emits instanced vertex input layouts, and
    lowers draws with the retained instance count.
 5. `image` supports multi-item sampled rectangles through per-item `position` + `extent` and
    optional `tex_rect` atlas coordinates, while keeping the legacy four-corner `texcoords` path.
+
+Additional status corrections recorded on 2026-05-27:
+
+1. `pixel`, `point`, `marker`, `sphere`, `primitive`, `path`, and `mesh` now document their active
+   descriptor sources from `src/scene/visual_family.c`.
+2. Segment, path, sphere, mesh, primitive, image, labels, and volume proxy query support are tracked
+   in the family specs.
+3. Low-level `glyph` is documented as a quad/atlas visual descriptor; semantic `text` ownership is
+   the public text path and glyph/text picking remains deferred.
+4. `labels` is a first-class native visual family, not a composite.
 
 Implemented:
 
@@ -92,11 +108,11 @@ Implemented:
    `cross`, and `ring`, public `position`/`color`/`diameter`/`angle`/`shape`, marker style API, GLSL
    marker rendering, WGSL point-like lowering, and GPU bounding-box picking.
 4. `segment`: public `dvz_segment()`, `position_start`/`position_end` endpoint attributes,
-   per-item `stroke_width`, RGBA color, analytic GLSL stroke quads, non-arrow caps, and cap
-   validation/API.
+   constant/per-item `stroke_width`, RGBA color, analytic GLSL stroke quads, non-arrow caps, cap
+   validation/API, and GPU item picking.
 5. `path`: existing primitive line-strip path plus a stroked path lane when per-point
    `stroke_width` is present, open subpath lengths via `dvz_path_set_subpaths()`, and GLSL lowering
-   through the segment stroke pipeline.
+   through the path-native stroke pipeline with GPU item picking over lowered edges.
 
 Validation recorded after the batch:
 
@@ -110,15 +126,13 @@ decisions.
 
 ## Next Implementation Batch
 
-The next batch should focus on picking and backend parity, in this order:
+The next batch should focus on precision, backend parity, and examples, in this order:
 
-1. Segment/path picking. Add GPU-backed hit requests for screen-space stroked segments first, then
-   reuse the same distance-to-stroke logic for stroked paths. A hit should use the visible
-   `stroke_width / 2` region plus a small tolerance; return the segment index for `segment` and the
-   subpath/path identity for `path`.
-2. Exact marker SDF-mask picking. Keep the current marker bounding-box picker as the broad first
+1. Exact marker SDF-mask picking. Keep the current marker bounding-box picker as the broad first
    pass, then reject hits outside the active code-SDF shape so triangles, crosses, rings, and
    diamonds do not pick in transparent corners.
+2. Richer stroked path identity. Preserve the active stroke hit path, but report path/span identity
+   when the source subpath structure is available.
 3. Segment/path WGSL lowering. Preserve the same public visual contract as GLSL; WebGPU should lower
    the analytic stroke representation transparently rather than exposing a backend-specific API.
 4. Visual-family showcase. Add one compact example or smoke scene containing `pixel`, `point`,
@@ -141,18 +155,17 @@ Implemented first slice:
    `pixel_size`.
 3. Colors are RGBA only.
 4. Sizes are screen-space pixels only.
-5. No `shift`, scalar color, `PER_GROUP`, default-size optimization, or `size_space = data` yet.
-6. GLSL and WGSL emission coverage is in place.
-7. Runtime/offscreen smoke proves pixel draws nonblank square marks.
-8. GPU-backed square picking is in place.
+5. Current descriptor sources include constant, per-item, and grouped `color`/`pixel_size`.
+6. No `shift`, scalar color mode, or `size_space = data` yet.
+7. GLSL and WGSL emission coverage is in place.
+8. Runtime/offscreen smoke proves pixel draws nonblank square marks.
+9. GPU-backed square picking is in place.
 
 Deferred:
 
-1. Constant/default size storage.
-2. `shift`.
-3. Scalar color and scale binding.
-4. Grouped color.
-5. Data-space pixel size.
+1. `shift`.
+2. Scalar color and scale binding.
+3. Data-space pixel size.
 
 
 ## Point
@@ -168,6 +181,7 @@ Implemented first slice:
 6. GPU-backed circular picking is in place.
 7. EDL, depth-cue, alpha-mode, WBOIT, and depth-peel eligibility remain routed through the existing
    point visual pass-capability path.
+8. Current descriptor sources include constant, per-item, and grouped `color`/`diameter`.
 
 Naming:
 
@@ -186,10 +200,8 @@ Backend lowering:
 Deferred:
 
 1. `shift`.
-2. Scalar color/size.
-3. `PER_GROUP`.
-4. Constant source lowering.
-5. `size_space = data`.
+2. Scalar color/diameter modes.
+3. `size_space = data`.
 
 
 ## Marker
@@ -202,8 +214,9 @@ Implemented first slice:
 4. Initial built-in shapes are `disc`, `square`, `triangle`, `diamond`, `cross`, and `ring`.
 5. Use v0.3 marker GLSL SDF code as design prior art and port selectively into the v0.4 shader
    registry and runtime path.
-6. Attributes: `position`, `color`, `diameter`, and `angle`.
-7. Optional per-item shape attribute name: `shape`.
+6. Attributes: `position`, `color`, `diameter`, `angle`, and `shape`.
+7. `color` and `diameter` support constant, per-item, and grouped sources; `angle` and `shape` are
+   dense per-item in the active descriptor.
 8. The `shape` attribute uses `uint32_t`, not `uint8_t`, for alignment and future symbol/atlas
    consistency.
 9. GPU-backed marker picking is in place.
@@ -223,7 +236,7 @@ Deferred:
 2. Atlas-backed markers.
 3. SDF/MSDF marker modes.
 4. Shared marker/glyph atlas infrastructure.
-5. Scalar color and grouped attributes.
+5. Scalar color/diameter modes.
 6. Data-space marker sizing.
 
 Marker render-mode rules:
@@ -264,8 +277,9 @@ Implemented first slice:
 6. Width is screen-space only in the first slice.
 7. Do not implement dashes in the first slice.
 8. Do not implement arrow caps in the first slice; arrows belong to the later marker/attachment lane.
-9. Scalar color, `color_end`, grouped attributes, and segment picking remain deferred.
-10. GLSL/native runtime support is in place; WGSL segment lowering remains deferred.
+9. GPU-backed segment item picking is in place.
+10. Scalar color, `color_end`, and grouped attributes remain deferred.
+11. GLSL/native runtime support is in place; WGSL segment lowering remains deferred.
 
 Deferred:
 
@@ -275,8 +289,7 @@ Deferred:
 4. Scalar color.
 5. Grouped width/color.
 6. Data-space stroke width.
-7. Segment picking.
-8. WGSL support if not completed in the first renderer pass.
+7. WGSL support if not completed in the first renderer pass.
 
 
 ## Path
@@ -285,7 +298,7 @@ Ordering:
 
 1. The segment first slice has landed.
 2. The current path implementation keeps primitive line-strip rendering when `stroke_width` is
-   absent and lowers to the segment stroke pipeline when `stroke_width` is present.
+   absent and lowers to the path-native stroke pipeline when `stroke_width` is present.
 
 Implemented stroked path slice:
 
@@ -297,6 +310,7 @@ Implemented stroked path slice:
 6. Path-specific miter-limit fallback is implemented for the GLSL/Vulkan path pipeline.
 7. Per-point/per-vertex path width is implemented.
 8. Open subpath lengths are preserved explicitly; closed path metadata remains deferred.
+9. GPU-backed stroked path item picking is in place; richer path/span identity remains deferred.
 
 Deferred:
 
@@ -360,9 +374,9 @@ Vector and 3D line-family direction:
 
 1. Exact marker SDF-mask picking, if the bounding-box pick area is too broad for examples.
 2. Segment and path WGSL lowering.
-3. Segment/path picking based on screen-space stroke width.
-4. Path closed-subpath, join, and miter-limit support.
-5. Scalar/grouped/constant-source attribute modes shared across these families.
+3. Richer path/span identity for stroked path picks.
+4. Path closed-subpath API beyond the repeated-point sentinel.
+5. Scalar modes and remaining grouped/constant-source attribute modes shared across these families.
 6. Bitmap/SDF/MSDF marker modes and shared marker/glyph atlas infrastructure.
 7. Dashes, arrow caps, and marker attachments for segment/path.
 
