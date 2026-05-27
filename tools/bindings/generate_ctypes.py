@@ -74,6 +74,91 @@ def _load_library():
 dvz = _load_library()
 _MISSING_FUNCTIONS = []
 _DATOVIZ_CTYPES_LAYOUT_RECORDS = []
+_CALLBACK_KEEPALIVE = {}
+
+
+def _ptr_value(obj):
+    if obj is None:
+        return None
+    if isinstance(obj, int):
+        return obj
+    try:
+        return ctypes.cast(obj, ctypes.c_void_p).value
+    except (ctypes.ArgumentError, TypeError, ValueError):
+        value = getattr(obj, 'value', None)
+        return value if isinstance(value, int) else id(obj)
+
+
+def _callback_user_data_value(obj):
+    if obj is None:
+        return None
+    if isinstance(obj, int):
+        return obj
+    value = getattr(obj, 'value', None)
+    if value is None or isinstance(value, int):
+        return value
+    return _ptr_value(obj)
+
+
+def _callback_subscription_key(callback_type, owner, callback, user_data):
+    return (
+        'subscription',
+        callback_type.__name__,
+        _ptr_value(owner),
+        id(callback),
+        _callback_user_data_value(user_data),
+    )
+
+
+def _callback_setter_key(function_name, callback_type, owner):
+    return ('setter', function_name, callback_type.__name__, _ptr_value(owner))
+
+
+def _callback_global_key(function_name, callback_type):
+    return ('global', function_name, callback_type.__name__)
+
+
+def _callback_coerce(callback_type, callback):
+    if callback is None:
+        return callback_type()
+    if isinstance(callback, callback_type):
+        return callback
+    return callback_type(callback)
+
+
+def _callback_store_subscription(callback_type, owner, callback, user_data):
+    c_callback = _callback_coerce(callback_type, callback)
+    if callback is not None:
+        key = _callback_subscription_key(callback_type, owner, callback, user_data)
+        _CALLBACK_KEEPALIVE[key] = c_callback
+    return c_callback
+
+
+def _callback_pop_subscription(callback_type, owner, callback, user_data):
+    if callback is None:
+        return callback_type()
+    key = _callback_subscription_key(callback_type, owner, callback, user_data)
+    return _CALLBACK_KEEPALIVE.pop(key, None) or _callback_coerce(callback_type, callback)
+
+
+def _callback_store_setter(function_name, callback_type, owner, callback):
+    key = _callback_setter_key(function_name, callback_type, owner)
+    if callback is None:
+        _CALLBACK_KEEPALIVE.pop(key, None)
+        return callback_type()
+    c_callback = _callback_coerce(callback_type, callback)
+    _CALLBACK_KEEPALIVE[key] = c_callback
+    return c_callback
+
+
+def _callback_store_global(function_name, callback_type, callback):
+    key = _callback_global_key(function_name, callback_type)
+    if callback is None:
+        _CALLBACK_KEEPALIVE.pop(key, None)
+        return callback_type()
+    c_callback = _callback_coerce(callback_type, callback)
+    _CALLBACK_KEEPALIVE[key] = c_callback
+    return c_callback
 
 '''
 
@@ -116,13 +201,67 @@ def _clean_type(qualtype: str) -> str:
     return ' '.join(token for token in out.split() if token != 'const')
 
 
+def _split_args(args: str) -> list[str]:
+    args = args.strip()
+    if not args or args == 'void':
+        return []
+    out = []
+    start = 0
+    depth = 0
+    for i, char in enumerate(args):
+        if char == '(':
+            depth += 1
+        elif char == ')':
+            depth -= 1
+        elif char == ',' and depth == 0:
+            out.append(args[start:i].strip())
+            start = i + 1
+    out.append(args[start:].strip())
+    return out
+
+
+def _function_pointer_parts(qualtype: str) -> tuple[str, list[str]] | None:
+    t = ' '.join(qualtype.split())
+    match = re.match(r'^(?P<result>.+?)\s*\(\s*\*\s*\)\s*\((?P<args>.*)\)$', t)
+    if not match:
+        return None
+    return match.group('result').strip(), _split_args(match.group('args'))
+
+
+def _callback_typedefs(api: dict) -> dict[str, dict]:
+    out: dict[str, dict] = {}
+    for typedef in api.get('typedefs', []):
+        name = typedef.get('name')
+        if not name:
+            continue
+        type_info = typedef.get('type', {})
+        for spelling in (type_info.get('canonical', ''), type_info.get('qualtype', '')):
+            parts = _function_pointer_parts(spelling)
+            if parts is None:
+                continue
+            result, args = parts
+            out[name] = {'name': name, 'result': result, 'args': args}
+            break
+    return out
+
+
 def _array_ctype(
-    qualtype: str, records: set[str], enums: set[str], value_records: set[str] | None = None
+    qualtype: str,
+    records: set[str],
+    enums: set[str],
+    value_records: set[str] | None = None,
+    callbacks: set[str] | None = None,
 ) -> str | None:
     match = ARRAY_RE.match(_clean_type(qualtype))
     if not match:
         return None
-    ctype = _ctype_for(match.group('base').strip(), records, enums, value_records=value_records)
+    ctype = _ctype_for(
+        match.group('base').strip(),
+        records,
+        enums,
+        value_records=value_records,
+        callbacks=callbacks,
+    )
     if ctype is None:
         return None
     for dim in reversed([int(dim) for dim in DIM_RE.findall(match.group('dims'))]):
@@ -169,12 +308,21 @@ def _ctype_for_type(
     records: set[str],
     enums: set[str],
     value_records: set[str] | None = None,
+    callbacks: set[str] | None = None,
 ) -> str | None:
     for spelling in (type_info.get('qualtype', ''), type_info.get('canonical', '')):
-        ctype = _array_ctype(spelling, records, enums, value_records=value_records)
+        ctype = _array_ctype(
+            spelling, records, enums, value_records=value_records, callbacks=callbacks
+        )
         if ctype is not None:
             return ctype
-    return _ctype_for(type_info.get('qualtype', ''), records, enums, value_records=value_records)
+    return _ctype_for(
+        type_info.get('qualtype', ''),
+        records,
+        enums,
+        value_records=value_records,
+        callbacks=callbacks,
+    )
 
 
 def _unsupported_field_layout(type_info: dict) -> bool:
@@ -229,7 +377,9 @@ def _ordered_records(api: dict, records: set[str]) -> list[dict]:
     return ordered
 
 
-def _layoutable_records(ordered_records: list[dict], records: set[str], enums: set[str]) -> set[str]:
+def _layoutable_records(
+    ordered_records: list[dict], records: set[str], enums: set[str], callbacks: set[str]
+) -> set[str]:
     out: set[str] = set()
     for record in ordered_records:
         name = record.get('name')
@@ -242,7 +392,9 @@ def _layoutable_records(ordered_records: list[dict], records: set[str], enums: s
             dep = _record_dependency(field.get('type', {}), records)
             if dep and dep not in out:
                 break
-            ctype = _ctype_for_type(field.get('type', {}), records, enums, value_records=out)
+            ctype = _ctype_for_type(
+                field.get('type', {}), records, enums, value_records=out, callbacks=callbacks
+            )
             if ctype is None:
                 break
         else:
@@ -269,9 +421,12 @@ def _ctype_for(
     records: set[str],
     enums: set[str],
     value_records: set[str] | None = None,
+    callbacks: set[str] | None = None,
 ) -> str | None:
     t = _clean_type(qualtype)
-    ctype = _array_ctype(t, records, enums, value_records=value_records)
+    if callbacks is not None and t in callbacks:
+        return t
+    ctype = _array_ctype(t, records, enums, value_records=value_records, callbacks=callbacks)
     if ctype is not None:
         return ctype
     ctype = _pointer_ctype(t, records, enums)
@@ -292,6 +447,8 @@ def _ctype_for(
 def generate(api: dict) -> tuple[str, list[str]]:
     records = {record['name'] for record in api.get('records', []) if record.get('name')}
     enums = {enum['name'] for enum in api.get('enums', []) if enum.get('name')}
+    callback_typedefs = _callback_typedefs(api)
+    callbacks = set(callback_typedefs)
     lines = [HEADER]
 
     for enum in api.get('enums', []):
@@ -308,7 +465,7 @@ def generate(api: dict) -> tuple[str, list[str]]:
         lines.append('\n\n')
 
     ordered_records = _ordered_records(api, records)
-    layoutable_records = _layoutable_records(ordered_records, records, enums)
+    layoutable_records = _layoutable_records(ordered_records, records, enums, callbacks)
 
     for record in ordered_records:
         name = record.get('name')
@@ -317,6 +474,24 @@ def generate(api: dict) -> tuple[str, list[str]]:
         base = 'Union' if record.get('kind') == 'union' else 'Structure'
         lines.append(f'class {name}(ctypes.{base}):\n')
         lines.append('    pass\n\n\n')
+
+    for name in sorted(callback_typedefs):
+        typedef = callback_typedefs[name]
+        result = _ctype_for(
+            typedef['result'], records, enums, value_records=layoutable_records, callbacks=callbacks
+        )
+        if result is None:
+            continue
+        argtypes = []
+        for arg in typedef['args']:
+            ctype = _ctype_for(
+                arg, records, enums, value_records=layoutable_records, callbacks=callbacks
+            )
+            if ctype is None:
+                break
+            argtypes.append(ctype)
+        else:
+            lines.append(f'{name} = ctypes.CFUNCTYPE({", ".join([result, *argtypes])})\n\n\n')
 
     layout_records = []
     for record in ordered_records:
@@ -331,7 +506,11 @@ def generate(api: dict) -> tuple[str, list[str]]:
             if not field_name:
                 break
             ctype = _ctype_for_type(
-                field.get('type', {}), records, enums, value_records=layoutable_records
+                field.get('type', {}),
+                records,
+                enums,
+                value_records=layoutable_records,
+                callbacks=callbacks,
             )
             if ctype is None:
                 break
@@ -352,29 +531,81 @@ def generate(api: dict) -> tuple[str, list[str]]:
             records,
             enums,
             value_records=layoutable_records,
+            callbacks=callbacks,
         )
         argtypes = []
+        callback_param_indices = []
         for param in function.get('parameters', []):
             ctype = _ctype_for_type(
-                param.get('type', {}), records, enums, value_records=layoutable_records
+                param.get('type', {}),
+                records,
+                enums,
+                value_records=layoutable_records,
+                callbacks=callbacks,
             )
             if ctype is None:
                 break
+            if ctype in callbacks:
+                callback_param_indices.append(len(argtypes))
             argtypes.append(ctype)
         else:
             if result is None:
                 skipped.append(name)
                 continue
             lines.append('try:\n')
-            lines.append(f'    {name} = dvz.{name}\n')
+            raw_name = f'_{name}' if callback_param_indices else name
+            lines.append(f'    {raw_name} = dvz.{name}\n')
             lines.append('except AttributeError:\n')
             lines.append(f"    _MISSING_FUNCTIONS.append('{name}')\n")
             lines.append('else:\n')
             if function.get('doc'):
                 doc = function['doc'].replace('"""', "'''")
-                lines.append(f'    {name}.__doc__ = """{doc}"""\n')
-            lines.append(f'    {name}.argtypes = [{", ".join(argtypes)}]\n')
-            lines.append(f'    {name}.restype = {result}\n')
+                lines.append(f'    {raw_name}.__doc__ = """{doc}"""\n')
+            lines.append(f'    {raw_name}.argtypes = [{", ".join(argtypes)}]\n')
+            lines.append(f'    {raw_name}.restype = {result}\n')
+            if callback_param_indices:
+                callback_idx = callback_param_indices[0]
+                callback_type = argtypes[callback_idx]
+                param_names = [param.get('name') or f'arg{i}' for i, param in enumerate(function.get('parameters', []))]
+                signature = ', '.join(param_names)
+                call_args = ', '.join(param_names)
+                callback_name = param_names[callback_idx]
+                owner_name = param_names[0] if callback_idx > 0 and param_names else 'None'
+                user_data_name = (
+                    param_names[callback_idx + 1]
+                    if callback_idx + 1 < len(param_names)
+                    else 'None'
+                )
+                lines.append(f'    def {name}({signature}):\n')
+                if name.startswith('dvz_input_unsubscribe'):
+                    lines.append(
+                        f'        {callback_name} = _callback_pop_subscription'
+                        f'({callback_type}, {owner_name}, {callback_name}, {user_data_name})\n'
+                    )
+                elif name.startswith('dvz_input_subscribe') or name == 'dvz_deq_callback':
+                    lines.append(
+                        f'        {callback_name} = _callback_store_subscription'
+                        f'({callback_type}, {owner_name}, {callback_name}, {user_data_name})\n'
+                    )
+                elif '_set_' in name:
+                    lines.append(
+                        f"        {callback_name} = _callback_store_setter('{name}', "
+                        f'{callback_type}, {owner_name}, {callback_name})\n'
+                    )
+                elif len(param_names) == 1:
+                    lines.append(
+                        f"        {callback_name} = _callback_store_global('{name}', "
+                        f'{callback_type}, {callback_name})\n'
+                    )
+                else:
+                    lines.append(
+                        f'        {callback_name} = _callback_store_subscription'
+                        f'({callback_type}, {owner_name}, {callback_name}, {user_data_name})\n'
+                    )
+                lines.append(f'        return {raw_name}({call_args})\n')
+                lines.append(f'    {name}.__doc__ = {raw_name}.__doc__\n')
+                lines.append(f'    {name}.argtypes = {raw_name}.argtypes\n')
+                lines.append(f'    {name}.restype = {raw_name}.restype\n')
             lines.append('\n\n')
             emitted.append(name)
             continue

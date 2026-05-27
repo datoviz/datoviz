@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import ctypes
 import sys
 from pathlib import Path
 
@@ -44,6 +45,46 @@ def main() -> int:
     scene = dvz.dvz_scene()
     assert bool(scene)
     dvz.dvz_scene_destroy(scene)
+
+    calls: list[int | None] = []
+
+    def on_pointer(_router, _event, user_data):
+        calls.append(user_data)
+
+    router = dvz.dvz_input_router()
+    assert bool(router)
+    user_data = ctypes.c_void_p(1234)
+    dvz.dvz_input_subscribe_pointer(router, on_pointer, user_data)
+    dvz.dvz_pointer_emit_position(
+        router,
+        dvz.DvzPointerEventType.DVZ_POINTER_EVENT_MOVE,
+        1.0,
+        2.0,
+        100.0,
+        100.0,
+        dvz.DvzPointerButton.DVZ_POINTER_BUTTON_NONE,
+        0,
+        1.0,
+        0,
+        None,
+    )
+    assert calls == [1234]
+    dvz.dvz_input_unsubscribe_pointer(router, on_pointer, user_data)
+    dvz.dvz_pointer_emit_position(
+        router,
+        dvz.DvzPointerEventType.DVZ_POINTER_EVENT_MOVE,
+        3.0,
+        4.0,
+        100.0,
+        100.0,
+        dvz.DvzPointerButton.DVZ_POINTER_BUTTON_NONE,
+        0,
+        1.0,
+        0,
+        None,
+    )
+    assert calls == [1234]
+    dvz.dvz_input_router_destroy(router)
 
     print('raw ctypes smoke: OK')
     return 0
