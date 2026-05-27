@@ -5,6 +5,18 @@ scene stack. The examples are pressure tests, not normative API sources. Promote
 commitments through [PLANNING.md](PLANNING.md), and keep canonical behavior in the main scene,
 DRP2, API, and validation specs.
 
+The scenario files were aggressively compressed in commit `81126893b` from the previous
+domain-folder layout. If detailed historical per-example notes are needed, inspect the parent of
+that commit, for example:
+
+```bash
+git show 81126893b^:spec/scene/examples/geo/SHOWCASE_WIND_FIELD.md
+git ls-tree -r --name-only 81126893b^ spec/scene/examples
+```
+
+Treat those historical files as provenance, not active planning. Promote any still-useful detail
+back into the current scenario bundles or [PLANNING.md](PLANNING.md) before relying on it.
+
 
 ## Main Files
 
