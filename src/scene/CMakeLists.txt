@@ -3,6 +3,9 @@
 # -------------------------------------------------------------------------------------------------
 
 file(GLOB SCENE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c*")
+file(GLOB SCENE_QUERY_SRC "${CMAKE_CURRENT_SOURCE_DIR}/query/*.c*")
+file(GLOB SCENE_VISUAL_QUERY_SRC "${CMAKE_CURRENT_SOURCE_DIR}/visuals/*/*.c*")
+list(APPEND SCENE_SRC ${SCENE_QUERY_SRC} ${SCENE_VISUAL_QUERY_SRC})
 
 # Include precompiled SPIR-V shaders if glslc was found.
 if(DVZ_HAS_PRECOMPILED_SHADERS AND DVZ_SHADERS_C)

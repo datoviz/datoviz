@@ -8,6 +8,9 @@
 /*  Scene request execution                                                                      */
 /*************************************************************************************************/
 
+/* TODO(v0.4-query): this file is a migration bridge while the GPU-only panel query system moves
+ * generic orchestration to src/scene/query/ and visual-family policy to scene visual folders. */
+
 
 
 /*************************************************************************************************/
