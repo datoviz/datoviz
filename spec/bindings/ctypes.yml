@@ -1,0 +1,33 @@
+# Initial v0.4 raw ctypes binding policy.
+#
+# The extractor currently uses this list as design input rather than as a strict parser dependency:
+# each public module aggregator is parsed as its own clang translation unit to avoid accidental
+# cross-header conflicts while still covering top-level public headers.
+
+headers:
+  include:
+    - datoviz/app.h
+    - datoviz/canvas.h
+    - datoviz/common.h
+    - datoviz/drp2.h
+    - datoviz/ds.h
+    - datoviz/dvzmath.h
+    - datoviz/fileio.h
+    - datoviz/font.h
+    - datoviz/geom.h
+    - datoviz/gui.h
+    - datoviz/imgui.h
+    - datoviz/input.h
+    - datoviz/runner.h
+    - datoviz/scene.h
+    - datoviz/stream.h
+    - datoviz/thread.h
+    - datoviz/video.h
+    - datoviz/vk.h
+    - datoviz/vklite.h
+    - datoviz/window.h
+
+smoke_symbols:
+  - dvz_time_monotonic_ns
+  - dvz_scene
+  - dvz_scene_destroy

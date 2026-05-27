@@ -62,6 +62,7 @@ datoviz/*.c
 _old*
 _old/
 _*
+!datoviz/__init__.py
 .direnv
 .DS_Store
 .env*

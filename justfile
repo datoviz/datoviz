@@ -1038,8 +1038,23 @@ pydev: # install the Python binding on a development machine
     @pip install -e .
 #
 
-ctypes:
-    @python tools/build_ctypes.py
+api-json:
+    @python tools/bindings/extract_api.py
+#
+
+ctypes: api-json
+    @python tools/bindings/generate_ctypes.py
+#
+
+ctypes-check: api-json
+    @python tools/bindings/generate_ctypes.py --check
+#
+
+ctypes-smoke:
+    @PYTHONPATH=. python tools/bindings/ctypes_smoke.py
+#
+
+bindings: build ctypes ctypes-check ctypes-smoke
 #
 
 pytest:
