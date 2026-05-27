@@ -2,7 +2,7 @@
 
 > **Status:** exploratory roadmap for v0.5+.
 > **Scope:** fast retained interactive dashboards built on the Datoviz scene, DRP2, and app stack.
-> **Primary proving ground:** [`../examples/dashboards/STREAMING_DAQ_VIEWER.md`](../examples/dashboards/STREAMING_DAQ_VIEWER.md).
+> **Primary proving ground:** [`../examples/scenarios/v05/DASHBOARD_AND_STREAMING.md`](../examples/scenarios/v05/DASHBOARD_AND_STREAMING.md).
 
 
 ## Summary

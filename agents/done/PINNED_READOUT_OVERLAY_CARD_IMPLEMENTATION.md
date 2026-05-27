@@ -70,7 +70,7 @@ Read these before changing code in this lane:
    for the probe/readout semantic split.
 3. [`../../spec/scene/semantics/ANNOTATIONS.md`](../../spec/scene/semantics/ANNOTATIONS.md)
    for annotation classes, attachment, placement, contributions, and invalidation.
-4. [`../../spec/scene/examples/api/API_IMAGE_PROBE_PINNED_READOUT.md`](../../spec/scene/examples/api/API_IMAGE_PROBE_PINNED_READOUT.md)
+4. [`../../spec/sce../examples/scenarios/api_sketches/API_PRESSURE_SKETCHES.md`](../../spec/sce../examples/scenarios/api_sketches/API_PRESSURE_SKETCHES.md)
    for the public API pressure test.
 5. [`../../spec/scene/implementation/TEXT_BLOCK_BACKENDS.md`](../../spec/scene/implementation/TEXT_BLOCK_BACKENDS.md)
    for the rich text-block backend contract and follow-up polish.

@@ -326,7 +326,7 @@ and diagnostics. It should not need to understand the full original solver file 
 Add a future example such as:
 
 ```text
-spec/scene/examples/engineering/UNSTRUCTURED_CELL_MESH_VIEWER.md
+spec/scene/examples/scenarios/v05/SCIENTIFIC_3D_AND_FIELDS.md
 ```
 
 First useful slice:

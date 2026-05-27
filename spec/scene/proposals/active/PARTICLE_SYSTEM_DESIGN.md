@@ -19,7 +19,7 @@ memory.
 
 This proposal complements:
 
-1. [../examples/compute/PARTICLES.md](../../examples/compute/PARTICLES.md), which describes the
+1. [../examples/scenarios/later/COMPUTE_AND_CUSTOM_SHADERS.md](../../examples/scenarios/later/COMPUTE_AND_CUSTOM_SHADERS.md), which describes the
    gallery/example
    pressure test;
 2. [../integration/CUPY_CUDA_INTEROP.md](../../integration/CUPY_CUDA_INTEROP.md), which defines the

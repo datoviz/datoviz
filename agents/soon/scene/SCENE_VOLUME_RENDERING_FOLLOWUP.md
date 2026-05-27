@@ -26,7 +26,7 @@ work. Do not duplicate stable volume visual rules here.
 ## Napari Clipping Example Target
 
 The target example is
-[`../../../spec/scene/examples/napari/VOLUME_CLIPPING_3D.md`](../../../spec/scene/examples/napari/VOLUME_CLIPPING_3D.md).
+[`../../../spec/scene/examples/scenarios/v05/NAPARI_PRESSURE_TESTS.md`](../../../spec/scene/examples/scenarios/v05/NAPARI_PRESSURE_TESTS.md).
 It should demonstrate:
 
 1. a small real 3D microscopy or medical-style volume;

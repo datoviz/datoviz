@@ -3,8 +3,8 @@
 > - **Updated on:** `2026-05-18`
 > - **Purpose:** define the proposed retained screen-space overlay layout model for labels, cards,
 >   readouts, legends, and dashboard metadata panels.
-> - **Primary pressure tests:** `../../examples/dashboards/SEMANTIC_EMBEDDING_ATLAS.md`,
->   `../../examples/dashboards/IMAGE_EMBEDDING_LOD.md`, linked probe/colorbar examples, and
+> - **Primary pressure tests:** `../../examples/scenarios/v05/DASHBOARD_AND_STREAMING.md`,
+>   `../../examples/scenarios/v05/DASHBOARD_AND_STREAMING.md`, linked probe/colorbar examples, and
 >   dashboard telemetry.
 
 # Screen-Space Overlay Layout Proposal

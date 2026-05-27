@@ -15,7 +15,7 @@ Durable behavior and pressure-test material now lives in specialized spec files:
    probing caveats.
 2. [`../../../spec/scene/integration/napari/NAPARI.md`](../../../spec/scene/integration/napari/NAPARI.md)
    owns the future napari-backend integration boundary.
-3. [`../../../spec/scene/examples/napari/LARGE_LABELS_SEGMENTATION.md`](../../../spec/scene/examples/napari/LARGE_LABELS_SEGMENTATION.md)
+3. [`../../../spec/scene/examples/scenarios/v05/NAPARI_PRESSURE_TESTS.md`](../../../spec/scene/examples/scenarios/v05/NAPARI_PRESSURE_TESTS.md)
    owns the labels-demo dataset, preprocessing, shader intent, and staged acceptance criteria.
 4. [`../../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md`](../../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
    owns the image probe and segmentation-hover recovery guardrails.
@@ -68,7 +68,7 @@ Recommended example order:
 5. dirty-tile or multiscale level-switching smoke after sampled-field region updates are stable.
 
 The large-label segmentation pressure test should continue to use the dataset and validation policy
-from `spec/scene/examples/napari/LARGE_LABELS_SEGMENTATION.md`.
+from `spec/scene/examples/scenarios/v05/NAPARI_PRESSURE_TESTS.md`.
 
 
 ## Validation

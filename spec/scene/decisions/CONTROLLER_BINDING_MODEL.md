@@ -243,5 +243,5 @@ Implementation of this decision should include tests or examples for:
 
 1. `../interaction/CONTROLLERS.md`
 2. `../semantics/AXES.md`
-3. `../examples/core/LINKED_PANELS_AXES_PANZOOM.md`
+3. `../examples/scenarios/v04_required/CORE_RELEASE_PROOFS.md`
 4. `../api/WASM_PORTABILITY.md`

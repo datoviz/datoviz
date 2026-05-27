@@ -266,7 +266,7 @@ The baseline graph view should not require native multi-draw indirect. WebGPU-fr
 Add a future example such as:
 
 ```text
-spec/scene/examples/compute/GRAPH_FORCE_LAYOUT.md
+spec/scene/examples/scenarios/later/RUNTIME_EXPORT_AND_LARGE_DATA.md
 ```
 
 Suggested features:
