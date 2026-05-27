@@ -37,8 +37,8 @@ The first architecture slice landed in these internal pieces:
 6. Signed and unsigned 3D label volumes support `COMPOSITE` mode as first nonzero label hit along
    the ray.
 7. Label-volume `MIP` is rejected because maximum label id is not categorical semantics.
-8. Label-volume sample query uses the existing 4-byte `r32uint` readback and decodes the label id on
-   the CPU.
+8. Label-volume sample query uses the existing 4-byte `r32uint` readback, returns raw label bits,
+   and decodes the label id on the CPU. Raw zero remains the miss/background sentinel.
 
 
 ## Label Volume Rules

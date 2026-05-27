@@ -20,11 +20,12 @@ Active bounded features:
 - 256x1 RGBA transfer texture from shared colormap state plus opacity stops;
 - one arbitrary clipping plane plus normalized clipping box;
 - GPU-backed proxy item/object picking for the rendered volume box.
+- signed and unsigned integer label volumes in slice and composite modes, with sparse categorical
+  color lookup driven by the bound categorical scale.
 
-DVR/MIP ray-hit picking, slice value probe/readout, isosurfaces, gradient lighting, categorical
-label volumes, sparse/bricked fields, out-of-core streaming, full MPR, and WebGPU/WGSL parity are
-follow-up work unless explicitly activated by a v0.4 task. Exploratory field/out-of-core
-requirements live in
+DVR/MIP ray-hit picking, displayed-RGBA query payloads, isosurfaces, gradient lighting,
+sparse/bricked fields, out-of-core streaming, full MPR, and WebGPU/WGSL parity are follow-up work
+unless explicitly activated by a v0.4 task. Exploratory field/out-of-core requirements live in
 [`../proposals/future/FIELD_VISUALIZATION_ROADMAP.md`](../proposals/future/FIELD_VISUALIZATION_ROADMAP.md)
 and [`../proposals/future/OUT_OF_CORE_PROGRESSIVE_DESIGN.md`](../proposals/future/OUT_OF_CORE_PROGRESSIVE_DESIGN.md).
 
