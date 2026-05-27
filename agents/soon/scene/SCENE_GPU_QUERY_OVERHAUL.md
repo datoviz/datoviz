@@ -171,14 +171,18 @@ Committed implementation slices:
 42. `scene: harden volume sample query tests`
     - tests cover deferred MIP policy rejection, unsupported integer volume sample format rejection,
       and forced GPU readback failure without CPU fallback.
+43. `scene: add rg32 volume sample query profile`
+    - requested `DVZ_QUERY_PROFILE_U64_RG32` volume slice sample queries render an `rg32uint`
+      payload containing scalar value and packed GPU-computed UVW,
+    - non-volume `rg32uint` query profiles remain explicitly unsupported.
 
 Recorded validation after these commits:
 
 1. `just build`
 2. `just test frame_plan`
 3. `just test pick-probe`
-4. `just test query` with `35/35`
-5. `just test scene` with `455/455`
+4. `just test query` with `36/36`
+5. `just test scene` with `456/456`
 6. `git diff --check`
 7. `python testing/test_scene_query_source_guard.py`
 
@@ -407,8 +411,9 @@ Validation:
 Suggested subagent: mesh/volume query agent.
 
 Status: mesh identity query is native. Volume item query uses proxy geometry identity, and scalar
-slice-mode sample query is now GPU-backed through a rendered `r32uint` payload. Richer volume
-payloads and non-slice policies remain deferred.
+slice-mode sample query is now GPU-backed through rendered `r32uint` and requested `rg32uint`
+payloads. The `rg32uint` profile adds GPU-computed UVW. Richer volume payloads and non-slice
+policies remain deferred.
 
 Primary ownership:
 
@@ -427,8 +432,8 @@ Tasks:
 5. Return unsupported for DVR/MIP/composite until exact GPU semantics land.
 6. Record MIP and DVR policy tests as skipped/deferred only if the test framework supports that
    clearly; otherwise keep them as TODO comments in the implementation plan.
-7. Extend the volume query payload beyond the scalar baseline to include UVW, voxel/sample id, and
-   displayed RGBA once multi-output query payload support is available.
+7. Extend the volume query payload beyond scalar plus UVW to include voxel/sample id and displayed
+   RGBA once multi-output query payload support is available.
 
 Validation:
 
