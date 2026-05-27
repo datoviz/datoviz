@@ -262,19 +262,6 @@ static uint32_t _query_target_capability(DvzSceneTargetKind target)
 
 
 /**
- * Return whether a target uses the value/probe legacy adapter.
- *
- * @param target the query target
- * @return true for probe-style targets
- */
-static bool _query_target_uses_probe(DvzSceneTargetKind target)
-{
-    return target == DVZ_SCENE_TARGET_SAMPLE;
-}
-
-
-
-/**
  * Return whether a query profile is supported by the capability snapshot.
  *
  * @param profile the query profile
@@ -501,18 +488,6 @@ static bool _query_process_pending(
         out_result->visual_id = _scene_visual_public_id(figure->scene, visual);
         out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
         return true;
-    }
-
-    if (_query_target_uses_probe(pending->request.target))
-    {
-        DvzProbeResult probe = {0};
-        if (_scene_query_execute_probe_legacy(figure, runtime, executor, caps, pending, &probe))
-        {
-            _dvz_scene_query_from_probe(&probe, out_result);
-            out_result->freshness_serial = pending->freshness_serial;
-            out_result->profile = _query_select_profile(&pending->request, caps);
-            return true;
-        }
     }
 
     out_result->visual_id = _scene_visual_public_id(figure->scene, visual);

@@ -102,9 +102,6 @@ static bool _scene_pick_target_supported(DvzSceneTargetKind target);
 
 static bool _scene_probe_target_supported(DvzSceneTargetKind target);
 
-static bool _scene_take_appended_probe_result(
-    DvzScene* scene, uint32_t old_count, DvzProbeResult* out_result);
-
 static DvzPickResult _scene_pick_miss_result(
     const DvzFigure* figure, const DvzPanel* panel, const DvzPendingPickRequest* pending,
     DvzPickStatus status);
@@ -410,84 +407,6 @@ uint32_t _dvz_figure_process_requests_with_executor(
     }
 
     return processed;
-}
-
-
-
-/**
- * Take the probe result appended by one legacy query adapter call.
- *
- * @param scene the scene
- * @param old_count probe result count before the adapter call
- * @param out_result output probe result
- * @return whether one appended result was found
- */
-static bool _scene_take_appended_probe_result(
-    DvzScene* scene, uint32_t old_count, DvzProbeResult* out_result)
-{
-    ANN(scene);
-    ANN(out_result);
-    if (scene->probe_result_count <= old_count)
-        return false;
-
-    uint32_t index = (scene->probe_result_head + old_count) % DVZ_SCENE_MAX_PROBE_RESULTS;
-    *out_result = scene->probe_results[index].result;
-    dvz_memset(
-        &scene->probe_results[index], sizeof(DvzQueuedProbeResult), 0,
-        sizeof(DvzQueuedProbeResult));
-    scene->probe_result_count = old_count;
-    return true;
-}
-
-
-
-/**
- * Execute one native query through the legacy GPU probe implementation.
- *
- * @param figure the figure
- * @param runtime the caller's main DRP2 runtime
- * @param executor retained request executor
- * @param caps capability snapshot
- * @param pending pending native query
- * @param out_result output probe result
- * @return whether a probe result was produced
- */
-bool _scene_query_execute_probe_legacy(
-    DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
-    const DvzCapabilitySnapshot* caps, const DvzPendingQueryRequest* pending,
-    DvzProbeResult* out_result)
-{
-    ANN(figure);
-    ANN(figure->scene);
-    ANN(executor);
-    ANN(caps);
-    ANN(pending);
-    ANN(out_result);
-    if (runtime == NULL)
-        return false;
-
-    DvzPendingProbeRequest probe = {
-        .panel = pending->panel,
-        .x = pending->x,
-        .y = pending->y,
-        .freshness_serial = 0,
-        .request =
-            {
-                .request_id = pending->request.request_id,
-                .target = pending->request.target,
-                .flags = pending->request.flags,
-            },
-    };
-
-    DvzScene* scene = figure->scene;
-    uint32_t old_count = scene->probe_result_count;
-    if (!_scene_probe_request_has_image_candidate(figure, &probe))
-        return false;
-
-    (void)_scene_request_executor_prepare(executor, runtime);
-    (void)_scene_process_image_probe_request(figure, executor, caps, &probe);
-
-    return _scene_take_appended_probe_result(scene, old_count, out_result);
 }
 
 
