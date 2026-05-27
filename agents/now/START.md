@@ -43,8 +43,8 @@ future scaffolding.
 Current shiny-demo recommendations are recorded in
 [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md):
 vector/arrow visuals are the best new demo unlock, labels probe hardening is now sparse/high-id and
-transform pressure work, explanatory layout proof is mostly validation/polish, and splats are
-attractive but a new visual family.
+transform pressure work, explanatory layout proof is mostly validation/polish, and splats are an
+optional v0.4 experimental showcase if the new visual lands cleanly.
 
 The CPU-side `geom` subset is also active: owned `DvzGeometry` buffers, cube/plane/sphere/surface
 grid generators, bounds, normals, transforms, merges, edges, contours, polygon triangulation, mesh

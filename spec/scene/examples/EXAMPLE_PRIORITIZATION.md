@@ -39,7 +39,9 @@ peeling-shaped passes, WBOIT, volume occlusion, fly/turntable controllers, first
 categorical legends, broad item-pick first slices, and several polished C GLFW examples already
 exist. The biggest remaining blockers for polished examples are release proof and polish for
 rendered text/axes/colorbars/legends, retained textured mesh, vector/arrow visuals, richer
-picking/probe payloads, scene-level compute/custom materials, and large-data policies.
+picking/probe payloads, scene-level compute/custom materials, and large-data policies. A splat
+showcase can join v0.4 as experimental scope if the new visual lands soon, but it should not
+displace the required textured-mesh or release-proof lanes.
 
 The current agent-facing recommendation for shiny demo follow-up is tracked in
 [`../../../agents/soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../../../agents/soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
@@ -74,14 +76,15 @@ new visual family.
 | 5 | Allen/IBL brain volume and mesh | Medium-high | Volume plus transparency plus occlusion. | Strong scientific identity; current examples exist. |
 | 6 | LiDAR / dense point cloud EDL | Medium-high | Large point data, EDL, fly camera, performance. | Good benchmark-style demo. |
 | 7 | Sphere SSAO cloud | Very high | Technique quality, sphere depth/normals, MSAA/SSAO composition. | Beautiful but less domain-specific. |
-| 8 | Dense raster / DAQ / physiology / CPU fluid | Medium | 2D streaming, partial updates, linked views, axes, field updates. | Important counterweight to 3D demos. |
-| 9 | PD12M image embedding LOD | Medium | Image sprite LOD, large sampled fields, thumbnail packing, panzoom, picking. | Use only PD12M as the public dataset and keep all embedding/reduction work in preprocessing. |
-| 10 | Wikipedia semantic embedding atlas | Medium | Dense points, label LOD, search/query, selected cards, overlay layout. | Use Wikivecs map coordinates first; add N-dimensional vectors and query sidecar later. |
-| 11 | Toy DICOM / volume clipping | Medium | 3D sampled field, slices, crosshair, window/level, 4-panel layout. | Needs better slice semantics and colorbar/text. |
-| 12 | Large labels segmentation | Medium | Integer label textures, random label colors, selection, categorical legends. | First-class `dvz_labels()` path exists; larger sparse-ID and transform pressure tests remain. |
-| 13 | GPU Gray-Scott / Mandelbrot / particles | Low for scene-first | Scene-level compute, custom shaders, ping-pong resources. | Very high eye-candy, but should not be forced through ad hoc DRP-only paths. |
-| 14 | 3D network / graph explorer | Low-medium | Mixed nodes/edges, labels-on-demand, linked selection, graph layout/data helpers. | Good v0.5 interaction showcase after labels, path/edge identity, and selection styling mature. |
-| 15 | Tractography / tokamak / HEP | Low-medium | Ragged 3D paths, tubes, vector fields, transparency, picking. | Excellent later architecture-pressure demos. |
+| 8 | Dense splat cloud | Medium-high if visual lands | New visual-family pressure, translucent dense rendering, blend/depth policy, capture. | v0.4 experimental showcase only; keep full Gaussian-splat pipelines later. |
+| 9 | Dense raster / DAQ / physiology / CPU fluid | Medium | 2D streaming, partial updates, linked views, axes, field updates. | Important counterweight to 3D demos. |
+| 10 | PD12M image embedding LOD | Medium | Image sprite LOD, large sampled fields, thumbnail packing, panzoom, picking. | Use only PD12M as the public dataset and keep all embedding/reduction work in preprocessing. |
+| 11 | Wikipedia semantic embedding atlas | Medium | Dense points, label LOD, search/query, selected cards, overlay layout. | Use Wikivecs map coordinates first; add N-dimensional vectors and query sidecar later. |
+| 12 | Toy DICOM / volume clipping | Medium | 3D sampled field, slices, crosshair, window/level, 4-panel layout. | Needs better slice semantics and colorbar/text. |
+| 13 | Large labels segmentation | Medium | Integer label textures, random label colors, selection, categorical legends. | First-class `dvz_labels()` path exists; larger sparse-ID and transform pressure tests remain. |
+| 14 | GPU Gray-Scott / Mandelbrot / particles | Low for scene-first | Scene-level compute, custom shaders, ping-pong resources. | Very high eye-candy, but should not be forced through ad hoc DRP-only paths. |
+| 15 | 3D network / graph explorer | Low-medium | Mixed nodes/edges, labels-on-demand, linked selection, graph layout/data helpers. | Good v0.5 interaction showcase after labels, path/edge identity, and selection styling mature. |
+| 16 | Tractography / tokamak / HEP | Low-medium | Ragged 3D paths, tubes, vector fields, transparency, picking. | Excellent later architecture-pressure demos. |
 
 
 ## Capability Matrix
@@ -93,6 +96,7 @@ new visual family.
 | GUI integration | Implemented in examples. | Protein, volume, LiDAR, transparent mesh, brain. | Keep GUI as example/runtime infrastructure, not scene core. |
 | Point visual | Implemented. | LiDAR, dense raster fallback, galaxy, particles render fallback. | Validate very large counts and stable partial updates. |
 | Pixel visual | Implemented. | Dense raster, spike plots, large point-like 2D data. | Stress test performance at v0.3 showcase scale. |
+| Splat visual | Missing; candidate v0.4 experimental visual if implemented soon. | Dense splat cloud, soft LiDAR/particles, Gaussian-like point-cloud showcase. | Add retained splat visual, depth/blend policy, fixture coverage, and deterministic capture; defer full Gaussian-splat pipelines. |
 | Marker visual | Implemented first slice. | Marker picking, polished scatter, selected events. | Exact SDF picking, richer style payloads, and selection polish. |
 | Primitive visual | Implemented. | Wind arrows, bars, overlays, simple geometry. | Avoid overusing it as a permanent substitute for semantic visuals. |
 | Mesh visual | Implemented for retained vertex-colored/lit meshes; retained textured mesh is required for v0.4. | Protein ribbon, brain atlas mesh, terrain, finite-element viewer, textured terrain/planet. | Add mesh texture slot, UV binding, texture shader variant, and later face/region picking. |
@@ -167,6 +171,8 @@ new visual family.
   textured mesh is now a required v0.4 feature, not a v0.5 nicety.
 - CPU-side fluid/particle advection is a reasonable v0.4 stretch over dynamic image/point/path
   updates; GPU particles should still wait for scene-level compute resources.
+- A dense splat cloud should be a v0.4 experimental showcase candidate if the visual lands soon;
+  keep it explicitly non-blocking and defer full Gaussian-splat asset/pipeline work.
 - Gray-Scott, Mandelbrot, and particles are worth keeping high in the ambition stack, but they
   should wait for scene-level compute/custom resources rather than growing a parallel DRP-only
   example contract.

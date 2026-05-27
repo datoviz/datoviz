@@ -37,7 +37,7 @@ Several earlier-looking gaps are now mostly implemented:
 | 3 | Raw label-id GPU probe | Smaller than a new visual family and directly improves the napari-style labels demo. | Return integer label ids from `dvz_labels()` fields through a labels-specific scene request/readback path; add sparse/high-id stress tests. |
 | 4 | Explanatory layout proof | Low-risk RC proof for already-landed adornment layout pieces. | Add or polish one example combining axes, colorbar, legend, scale bar, and panel reserves without collisions. |
 | 5 | Gallery proof pass | Converts existing showcase code into release confidence. | Run/polish protein, LiDAR, brain, labels, textured terrain/planet, colorbar/legend, and capture paths; tune defaults and record validation. |
-| 6 | Splat visual | Flashy and self-contained, but it is a new visual family and should follow the smaller proof lanes unless visual impact is the priority. | Implement a narrow point-cloud splat/Gaussian-like visual with a dense example and explicit deferred scope. |
+| 6 | Splat visual | Flashy and self-contained; now acceptable as a v0.4 experimental showcase target if the new visual lands cleanly. | Implement a retained point-cloud splat/Gaussian-like visual, add fixture/capture proof, and keep full Gaussian-splat pipelines explicitly deferred. |
 
 
 ## Lane Notes
@@ -96,13 +96,15 @@ new capability that makes the gallery visibly richer.
 ### Splat Visual
 
 No public `dvz_splat()` or `DVZ_VISUAL_TYPE_SPLAT` is installed. Existing splatting documents are
-roadmap material, not active implementation.
+roadmap material, not active implementation. If the visual is implemented soon, the v0.4 target is
+an experimental showcase, not a feature-freeze blocker.
 
 Use [`../../later/SPLATTING_TIERED_PLAN.md`](../../later/SPLATTING_TIERED_PLAN.md) and
 [`../../../spec/scene/proposals/future/SPLATTING_FRAME_PLAN_REQUIREMENTS.md`](../../../spec/scene/proposals/future/SPLATTING_FRAME_PLAN_REQUIREMENTS.md)
-before implementation. Keep the first slice deliberately narrow: dense translucent point-cloud
-splatting or Gaussian-like screen-space splats, one data-driven example, and explicit deferral of
-full differentiable/3D Gaussian-splatting ambitions.
+before implementation. Keep the first slice deliberately narrow: retained splat items with center,
+radius, color, opacity, a documented depth/blending policy, one deterministic fixture, one
+synthetic or LiDAR-like gallery capture, and explicit deferral of full differentiable/3D
+Gaussian-splatting ambitions, trained asset formats, out-of-core scenes, and advanced LOD.
 
 
 ## Practical Choice
@@ -111,4 +113,5 @@ For required v0.4 gallery scope, start with **retained textured mesh** and press
 terrain or planet-surface capture. For an additional shiny feature, start with **vector/arrow
 visual**, then immediately pressure it with a wind-field showcase. For RC1 rigor after those, use
 **raw label-id GPU probing** and the **explanatory layout proof**. For maximum visual novelty after
-the release proof, start the **splat visual** first slice.
+the release proof is stable or the visual lands cleanly, add the **splat visual** as a v0.4
+experimental showcase.

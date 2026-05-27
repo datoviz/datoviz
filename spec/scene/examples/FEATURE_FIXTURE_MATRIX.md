@@ -50,6 +50,7 @@ example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `l
 | Panel | Background color | Implemented | `fixture_panel_background.c` | PNG | scene+app | One panel filled by `dvz_panel_set_background_color()`. |
 | Visual | Point | Implemented | `fixture_point.c` | PNG | scene+app | Three colored points with different sizes. |
 | Visual | Pixel | Implemented | `fixture_pixel.c` | PNG | scene+app | Three screen-space square sprites. |
+| Visual | Splat | Planned v0.4 experimental | `fixture_splat.c` | PNG | scene+app | One deterministic dense splat cloud with center, radius, color, opacity, depth policy, and nonblank capture. |
 | Visual | Sphere impostor | Implemented | `fixture_sphere.c` | PNG | scene+app | Three lit spheres with different radii. |
 | Visual | Primitive triangle | Implemented | `fixture_primitive_triangle.c` | PNG | scene+app | One RGB triangle with `DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST`. |
 | Visual | Primitive line | Implemented | `fixture_primitive_line.c` | PNG | scene+app | One line strip or line list. |
@@ -89,6 +90,7 @@ example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `l
 | Technique | SSAO | Implemented/active | `fixture_ssao_spheres.c` | PNG | scene+app | A few lit spheres with SSAO enabled. |
 | Technique | Volume occlusion | Implemented | `fixture_volume_occlusion.c` | PNG | scene+app | Volume plus embedded points/spheres. |
 | Transparency | Alpha blending | Implemented | `fixture_alpha_blend.c` | PNG | scene+app | Two overlapping translucent quads. |
+| Transparency/stress | Dense splat blending | Planned v0.4 experimental | `fixture_splat_blending.c` | PNG | scene+app | Overlapping splats at several depths to validate the selected blend/depth policy. |
 | Transparency | WBOIT | Implemented | `fixture_wboit.c` | PNG/live | scene+app | One translucent cube between opaque cards. |
 | Transparency | Depth peeling | Implemented | `fixture_depth_peel.c` | PNG/live | scene+app | Two translucent crossing layers. |
 | Transparency | Alpha mask | Draft/API-shaped | `fixture_alpha_mask.c` | PNG | scene+app | Checkerboard alpha mask when runtime path is active. |
@@ -293,6 +295,7 @@ features and should be backed by smaller fixtures for the individual capabilitie
 | Embedding dashboard | `IMAGE_EMBEDDING_LOD.md` | Planned showcase | PD12M image thumbnails, texture-array LOD, panzoom, picking, retained resource reuse. | <=10,000 PD12M items rendered as mean-color rectangles from preprocessed embedding positions. |
 | Embedding dashboard | `SEMANTIC_EMBEDDING_ATLAS.md` | Planned showcase | Dense semantic points, label LOD, title search, selection cards, optional query vectors. | <=100,000 Wikivecs articles rendered as colored points with panzoom and stable pick ids. |
 | Terrain/planet | `GRAND_CANYON_FLYOVER.md` / `EARTH.md` | v0.4 required showcase slice | Retained textured mesh, UVs, sampler state, lit terrain or sphere-like surface, camera/capture. | One deterministic UV-mapped terrain or planet patch using true mesh texture sampling, not baked vertex colors. |
+| Dense splats | Splat / Gaussian-like point cloud | v0.4 experimental if visual lands | New splat visual, dense translucent rendering, blend/depth policy, camera/capture. | One synthetic or LiDAR-like splat cloud with deterministic seed, fixed camera, and nonblank PNG. |
 | Physics | `CFD_VORTICITY_ADVECTION.md` | v0.4 experimental/stretch | Dynamic image updates, particle/path updates, bounded animation loop, optional video capture. | CPU advection updates a small field and point/trail overlay for 64-256 frames. |
 | Frame graph | Debug graph dump | `fixture_frame_plan_graph_debug.c` | Emit deterministic graph debug output with typed resources/passes. |
 | Descriptor refresh | Resize refresh | `fixture_descriptor_refresh_resize.c` | Repeated resize with stable resource ids and refreshed descriptors. |

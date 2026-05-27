@@ -74,6 +74,7 @@ discoverability: users should immediately understand when to use each visual.
 |---|---|
 | Point | Dense embedding, star field, particles, or LiDAR slice. |
 | Pixel | Detector image, occupancy map, dense raster, or heatmap. |
+| Splat | Dense translucent point-cloud splats, Gaussian-like blobs, soft LiDAR, or volumetric particles. |
 | Marker | Categorical scatter with size, shape, hover, and selected items. |
 | Primitive | Semantic glyphs, bars, quads, discs, or simple geometric marks. |
 | Segment | Graph edges, measurement lines, vector stems, or error bars. |
@@ -124,6 +125,7 @@ The feature should be visible without reading the caption.
 | Transparency | Overlapping anatomical regions, surfaces, or particles. |
 | OIT/depth peeling | Correct translucent layering in a busy 3D scene. |
 | Depth cueing | 3D scatter or path scene with distance readability. |
+| Splat blending | Dense Gaussian-like point cloud with visible opacity/depth policy. |
 | Lighting/materials | Flat, lit, and polished material variants of the same mesh. |
 | Clipping | Volume or mesh cutaway revealing internal structure. |
 | Colormap choice | Same scalar field rendered with appropriate sequential/diverging maps. |

@@ -79,7 +79,7 @@ best next choices when the task is to improve examples or add a visible capabili
 | 3 | Raw label-id GPU probe | First `dvz_labels()` raw integer probe slice is implemented for 2D labels fields and no longer depends on hidden RGBA image masks. | Broaden sparse/high-id pressure coverage and optimize the request readback path beyond full-texture copies. |
 | 4 | Explanatory layout proof | Reserve/layout infrastructure exists for axes, colorbars, legends, and scale bars. | Add one composed example and focused validation for predictable adornment composition. |
 | 5 | Gallery proof pass | Protein, LiDAR, brain, labels, and the upcoming textured terrain/planet showcase form the proof set. | Run/capture/tune defaults and fix concrete rough edges before RC1. |
-| 6 | Splat visual | Not implemented and intentionally a new visual family. | Keep after release proof unless maximum visual novelty is the goal. |
+| 6 | Splat visual | Not implemented and intentionally a new visual family; acceptable as v0.4 experimental showcase scope if it lands cleanly. | Add retained splat fixture and dense capture only after required textured-mesh/release-proof lanes stay on track; full Gaussian-splat pipelines remain later. |
 
 The longer rationale is in
 [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
@@ -106,7 +106,7 @@ Good parallel work now:
    non-overlay rich text-block proof, and FreeType-backed private rich text-block rasterization in
    [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md).
 9. **Shiny demo follow-up:** retained textured mesh first, then vector/arrow visual, label GPU
-   probing, explanatory layout proof, gallery proof, and splats as recorded in
+   probing, explanatory layout proof, gallery proof, and optional experimental splats as recorded in
    [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
 
 Avoid parallel edits that touch the same write scope:

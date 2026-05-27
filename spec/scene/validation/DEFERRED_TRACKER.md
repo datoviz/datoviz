@@ -59,6 +59,7 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Selection state synchronization across scenes | `spec/scene/interaction/SELECTION.md` |
 | Selection highlight beyond point/marker mask dimming: image, mesh/path/volume/text, style overlays/effects | `spec/scene/interaction/SELECTION.md`, `spec/scene/proposals/active/SELECTION_HIGHLIGHT_DESIGN.md` |
 | Mesh scalar colormap mode, automatic normal generation, edge overlay, isolines, shape-builder integration, face/region picking, normal maps, multi-texture materials, and PBR beyond the v0.4-required retained diffuse-texture slice | `spec/scene/visuals/MESH.md` |
+| Full Gaussian-splat pipeline beyond the possible v0.4 experimental retained splat visual: trained asset formats, differentiable rendering, out-of-core splat scenes, advanced splat LOD, and production splat asset tooling | `spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`, `spec/scene/examples/EXAMPLE_GAP_REPORT.md` |
 | Custom visual dirty-tracking optimization | `spec/scene/integration/CUSTOM_VISUALS.md` |
 | Per-character glyph orientation | `spec/scene/visuals/GLYPH.md` |
 | Vector export tile-based rendering and SVG-level effects | `spec/scene/export/VECTOR_EXPORT.md` |

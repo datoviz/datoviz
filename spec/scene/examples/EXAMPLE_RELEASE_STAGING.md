@@ -136,6 +136,7 @@ These examples should be present only with visible experimental status and a doc
 | WebGPU fixture dashboard / browser runner | `v0.4 experimental` | DRP2 WebGPU subset, WGSL, browser runtime | Keep examples under `examples/webgpu`; document unsupported commands/features. |
 | WASM scene-to-WebGPU minimal page | `v0.4 experimental` | WASM scene subset, WGSL DRP2 stream transport | Target point, primitive, image, and maybe basic mesh only. |
 | `core/ANIMATION_VIDEO_EXPORT.md` | `v0.4 experimental` | frame callbacks, deterministic capture/video | Keep simple animation/video path; defer transition/camera-path helper polish. |
+| Splat / Gaussian-like point cloud showcase | `v0.4 experimental` | first-class retained splat visual, dense translucent point cloud, blend/depth policy, camera, capture | Include if the `splat` visual lands cleanly before v0.4; do not block release on it. |
 | `physics/CFD_VORTICITY_ADVECTION.md` narrow CPU slice | `v0.4 experimental` | dynamic image field, dynamic point/path updates, panzoom, colorbar, probe | CPU-side fluid/particle advection may be a stretch showcase; GPU compute remains later. |
 | `dashboards/STREAMING_DAQ_VIEWER.md` or `bio/PHYSIOLOGY_SIGNAL_WORKBENCH.md` | `v0.4 experimental` | path/pixel updates, axes/text, linked x panzoom | Pick one simple synthetic sustained-update example only if time allows; full workflow is v0.5. |
 | `napari/DENSE_POINTS_SPATIAL_OMICS.md` | `v0.4 experimental` | large point/pixel, basic selection, color mapping | Good stress/example lane if data prep is ready; keep napari integration external. |
@@ -199,6 +200,7 @@ These are valuable pressure tests, but they should not shape the v0.4 release ga
 | `compute/GRAY_SCOTT.md` | `later` unless compute is pulled into v0.5 | Needs scene-level compute, ping-pong resources, storage textures, custom fullscreen render. |
 | `compute/MANDELBROT.md` | `later` unless custom shaders are pulled into v0.5 | Needs scene custom material/fullscreen visual API and high-precision parameter policy. |
 | `compute/PARTICLES.md` | `later` unless compute is pulled into v0.5 | Needs compute-written buffers, trails/accumulation, additive particle shaders. |
+| Full Gaussian-splat pipeline | `later` | Trained splat asset loading, differentiable rendering, out-of-core splat scenes, advanced splat LOD, and production Gaussian-splat formats remain beyond the first experimental visual. |
 | Tractography tube/ribbon and out-of-core extensions | `later` | Adds tube/ribbon geometry, advanced LOD, million-streamline residency, and domain-specific tract resources beyond the v0.5 viewer. |
 | Full `physics/CFD_VORTICITY_ADVECTION.md` | `later` | GPU compute/advection, vector visual polish, diagnostics, larger datasets. A CPU-side v0.4 stretch can use dynamic image/point/path updates. |
 | `physics/TOKAMAK_PLASMA_FIELD_LINES.md` | `later` | Needs field-line paths/tubes, vector fields, picking, domain data policies. |
@@ -288,12 +290,15 @@ These decisions refine the feature roadmap:
 9. **CPU-side fluid/particle advection can be a v0.4 stretch; GPU particles remain later.** A
    vortex-street or particle-flow example can use dynamic image/point/path updates today, while
    compute-written render buffers need a proper scene compute/framegraph contract.
-10. **Scale bars need an RC1 fixture and the v0.4 update-performance refactor.** The first retained
+10. **Splats can join v0.4 only as experimental showcase scope.** If a first-class retained splat
+   visual lands soon, add one dense Gaussian-like point-cloud showcase with deterministic capture.
+   Do not make splats a feature-freeze blocker, and keep full Gaussian-splat pipelines later.
+11. **Scale bars need an RC1 fixture and the v0.4 update-performance refactor.** The first retained
    scale-bar slices are active; live panzoom/domain updates should not rebuild glyph/text resources
    unless the formatted label or relevant style changed. Richer layout and exotic units can wait.
-11. **Scene-level compute/custom shaders should not block v0.4.** Gray-Scott, Mandelbrot, and
+12. **Scene-level compute/custom shaders should not block v0.4.** Gray-Scott, Mandelbrot, and
    particles should wait until there is a proper scene-level resource/material API.
-12. **WebGPU/WASM should be example-visible in v0.4, but explicitly experimental.** The example
+13. **WebGPU/WASM should be example-visible in v0.4, but explicitly experimental.** The example
    promise is a supported subset, not parity.
 
 
