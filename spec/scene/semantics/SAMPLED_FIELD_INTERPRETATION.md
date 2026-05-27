@@ -74,10 +74,21 @@ multi-word query schemas.
 
 The dense categorical palette was intentionally the first implementation, not the final data model.
 Real atlas and segmentation data often use large sparse ids or signed ids. The long-term GPU
-colorizer should support a sparse lookup table, most likely with a GPU buffer containing
-`label_id -> rgba/metadata index` entries plus an explicit fallback. CPU reindexing to dense ids is
-acceptable for examples or compatibility, but it must preserve the original semantic label id for
-query results, readouts, and external ontology tables.
+colorizer uses the original stored voxel value as the canonical lookup key:
+
+```text
+source voxel value -> sparse GPU label table -> rgba / metadata index
+```
+
+The scene must not silently regenerate a dense CPU-side volume just to fit a palette texture. CPU
+reindexing is acceptable only as an explicit ingestion/import option or when a source dataset already
+ships compact indices. Even then, Datoviz must preserve the original semantic label id for query
+results, readouts, and external ontology tables.
+
+The first GPU lookup table is a read-only storage buffer bound next to the volume texture. It stores
+packed 32-bit label keys plus RGBA colors and metadata indices. A linear scan is acceptable for the
+current categorical-scale limit and keeps the first implementation simple; a sorted table and binary
+search can replace it once larger category tables are supported.
 
 
 ## Example Pressure
