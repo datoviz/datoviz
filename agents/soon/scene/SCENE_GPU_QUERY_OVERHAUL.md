@@ -79,6 +79,22 @@ Committed implementation slices:
      image, labels, volume, text, and glyph.
 6. `5b371244c Let selection and readouts consume query results`
    - selection and pinned readout adapters for `DvzQueryResult`.
+7. `2b11d7324 Add native scene query queues`
+   - native pending/result queues,
+   - query freshness/coalescing,
+   - query processing no longer delegates wholesale to pick/probe requests.
+8. `d741cf662 Route native queries through request executor adapter`
+   - native query processing uses the retained request executor adapter for existing GPU-backed
+     pick/probe plans without leaving public pick/probe results queued.
+9. `fc2c89ed3 Support rg32uint DRP2 texture layout sizing`
+   - DRP2 C format byte sizing now accepts `VK_FORMAT_R32G32_UINT`.
+10. `cfb309c05 Cover pixel visual through native query API`
+    - pixel query coverage through `dvz_panel_query()` / `dvz_figure_process_queries()`.
+11. `d2fc260c8 Cover native query identity and pixel values`
+    - point identity and image pixel-value query coverage.
+12. `590a6881a Keep volume queries from CPU probe fallback`
+    - native query avoids the old CPU volume slice probe path and returns explicit unsupported for
+      volume sample until a GPU family path lands.
 
 Recorded validation after these commits:
 
@@ -139,7 +155,8 @@ Validation:
 Suggested subagent: DRP2/capability agent.
 
 Status: partially landed. Scene capability fields and app population exist; DRP2/WebGPU integer
-format and fixture parity still need work.
+format and fixture parity still need work. `rg32uint` byte sizing is now present in DRP2 C
+validation.
 
 Primary ownership:
 
@@ -206,8 +223,9 @@ Validation:
 
 Suggested subagent: scene query core agent.
 
-Status: partially landed. Public structs/API, queue bridge, result polling, registry, and source
-guard exist. Native query execution, readback decode, and old-path replacement remain.
+Status: partially landed. Public structs/API, native query queues, result polling, registry, source
+guard, and a retained request-executor adapter exist. Family-owned native execution, readback
+decode, and old-path replacement remain.
 
 Primary ownership:
 
@@ -219,10 +237,11 @@ Primary ownership:
 
 Tasks:
 
-1. Replace the bridge in `src/scene/query/queue.c` with real query request queueing and polling.
-2. Preserve latest-request-wins and stale-result rejection behavior.
+1. Split native query execution out of `src/scene/query/queue.c` into `execute.c`, `readback.c`, and
+   result helpers as needed.
+2. Replace the request-executor adapter with family-owned plan builders and decoders.
 3. Use the visual-family query registry to route execution instead of old pick/probe dispatch.
-4. Add generic execution that:
+4. Complete generic execution that:
    - resolves panel coordinates,
    - orders panel visuals,
    - checks generic visibility and controller state,
@@ -420,18 +439,21 @@ edit the same file unless the coordinator explicitly serializes that integration
 
 ## Next Implementation Slice Recommendation
 
-The best next code slice is the native query executor, followed by one simple family:
+The best next code slice is family-owned extraction from the retained request-executor adapter:
 
-1. Add `src/scene/query/execute.c`, `readback.c`, and result helpers as needed.
-2. Make `dvz_panel_query()` enqueue native query requests instead of old pick/probe requests.
-3. Make `dvz_figure_process_queries()` stop delegating to `dvz_figure_process_requests()`.
-4. Use the registry to select family ops and return explicit unsupported statuses.
-5. Port point or pixel query first using `r32uint` identity payload.
-6. Add forced readback-failure tests proving no CPU fallback result appears.
-7. After native query works, make old pick/probe APIs private shims or remove them.
+1. Split `src/scene/query/queue.c` so queueing, execution, result conversion, and readback helpers
+   are separate files.
+2. Add family callbacks to `DvzSceneQueryFamilyOps` for match/eligible/build/decode/readout.
+3. Move pixel, then point, out of `src/scene/request_execute.c` into
+   `src/scene/visuals/pixel/query.c` and `src/scene/visuals/point/query.c`.
+4. Replace RGB24 identity payloads with the `r32uint` baseline.
+5. Keep image probe on the adapter only until its family-owned GPU value path is split out.
+6. Keep labels and volume sample query explicitly unsupported until their GPU family paths exist.
+7. Add forced readback-failure tests proving no CPU fallback result appears.
+8. After family-owned query works, make old pick/probe APIs private shims or remove them.
 
-That slice removes the main architectural ambiguity before mesh, image, labels, and volume semantics
-are migrated.
+That slice removes the main architectural ambiguity that remains: native query owns the public queue,
+but the actual GPU rendering/readback code is still mostly in `request_execute.c`.
 
 
 ## Risk Register
@@ -464,5 +486,6 @@ The overhaul is complete when:
 9. examples use one panel query instead of manual pick/probe composition,
 10. focused scene and DRP2 tests pass.
 
-Current status: criteria 1, 3, and 4 are partially satisfied by the foundation commits. Criteria 2
-and 5-9 remain open and should be treated as the next phase of the overhaul.
+Current status: criteria 1, 3, and 4 are partially satisfied by the foundation/native-queue commits.
+Criterion 5 is partially satisfied for native query because volume CPU probing is blocked there, but
+labels and family-owned GPU paths remain open. Criteria 2 and 6-9 remain open.

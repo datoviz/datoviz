@@ -16,14 +16,14 @@ surface if it keeps the architecture ambiguous.
 
 ## Implementation Status
 
-Updated on 2026-05-27 after the first implementation slice landed.
+Updated on 2026-05-27 after the native queue and adapter slices landed.
 
 Foundation now present in the tree:
 
 1. `DvzQueryRequest`, `DvzQueryResult`, query profiles, query statuses, and value kinds live in the
    public scene headers.
 2. `dvz_panel_query()`, `dvz_scene_poll_query()`, `dvz_figure_process_queries()`, and
-   `dvz_panel_query_now()` provide the new public API bridge.
+   `dvz_panel_query_now()` now use native query pending/result queues.
 3. `DvzCapabilitySnapshot` carries query/readback capability fields, and the app layer populates the
    Vulkan-facing readback and integer-format facts available today.
 4. `DvzFramePlanCopyDesc` and `dvz_frame_plan_copy_ex()` carry source attachment, origin, extent,
@@ -34,20 +34,25 @@ Foundation now present in the tree:
 7. Selection and pinned readout helpers can consume `DvzQueryResult`.
 8. `testing/test_scene_query_source_guard.py` checks that generic query files do not pull in
    visual-family internals.
+9. Native query processing can execute current GPU-backed point-like/pixel/image pick/probe paths
+   through a retained request-executor adapter without queuing public pick/probe requests.
+10. DRP2 texture layout validation now accepts `rg32uint` byte sizing.
 
 Important transitional state:
 
-1. `dvz_panel_query()` currently routes through the old pick/probe request machinery; it is an API
-   bridge, not the final query executor.
-2. `dvz_figure_process_queries()` currently delegates to `dvz_figure_process_requests()`.
-3. `src/scene/request_execute.c` still owns most real execution, readback decode, labels handling,
-   and volume handling.
+1. `src/scene/query/queue.c` owns native query queues, but it still calls an adapter in
+   `src/scene/request_execute.c` for the rendered GPU pick/probe plans that have not yet moved into
+   visual-family query files.
+2. `dvz_figure_process_queries()` no longer delegates to `dvz_figure_process_requests()`.
+3. `src/scene/request_execute.c` still owns most real execution and readback decode.
 4. The visual-family `query.c` files expose operation tables and capabilities only; they do not yet
    build or decode native GPU query plans.
-5. CPU fallback paths still exist in the legacy bridge path, especially labels and volume probing.
-6. Old public pick/probe APIs remain available during migration.
-7. DRP2 and WebGPU parity are not finished: C runtime copy helpers still need full origin/depth and
-   multi-output query support, and `rg32uint` support is not yet validated across all lanes.
+5. Native query does not use the old CPU volume slice probe path. Volume sample query currently
+   returns explicit unsupported until a GPU family path lands.
+6. Labels query is still not a final family-owned GPU path and remains a migration risk.
+7. Old public pick/probe APIs remain available during migration.
+8. DRP2 and WebGPU parity are not finished: C runtime copy helpers still need full origin/depth and
+   multi-output query support, and `rg32uint` needs runtime/readback fixture coverage.
 
 
 ## Summary
