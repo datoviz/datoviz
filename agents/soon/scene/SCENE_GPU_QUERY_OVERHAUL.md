@@ -185,16 +185,23 @@ Committed implementation slices:
     - added CPU query tests for missing profile support and family-level requested-profile rejection.
 47. `scene: cover labels query format rejection`
     - added CPU query coverage for labels visuals with unsupported non-integer label field formats.
+48. `drp2: cover rg32uint query readback`
+    - added an `rg32uint` DRP2 fixture that copies a 1x1 query payload with an 8-byte row pitch,
+    - added a vklite runtime test that renders two `u32` words to `rg32uint` and verifies the
+      downloaded 8-byte payload.
+49. `scene: defer automatic 2xr32 query selection`
+    - stopped default profile selection from choosing `DVZ_QUERY_PROFILE_U64_2XR32` until true
+      two-attachment query execution/readback exists,
+    - added CPU query coverage for the "only 2xr32 is advertised" case.
 
 Recorded validation after these commits:
 
 1. `just build`
-2. `just test frame_plan`
-3. `just test pick-probe`
-4. `just test query` with `39/39`
-5. `just test scene` with `459/459`
+2. `just spec-check` with `124/124` DRP2 fixtures
+3. `direnv exec . just test test_drp2_runtime_vklite_draws_rg32uint_readback`
+4. `just test test_scene_query_does_not_auto_select_2xr32_profile`
+5. `direnv exec . just test query` with `40/40`
 6. `git diff --check`
-7. `python testing/test_scene_query_source_guard.py`
 
 
 ## Decisions Already Chosen
@@ -263,8 +270,8 @@ Tasks:
    formats, query profiles, min texture-copy row-pitch alignment, and max readback size.
 3. Add DRP2 fixtures for:
    - `r32uint` render target write plus readback,
-   - `rg32uint` render target write plus readback,
-   - two `r32uint` attachments plus readback,
+   - `rg32uint` render target write plus readback. Landed.
+   - two `r32uint` attachments plus readback, still deferred.
    - negative unsupported-format capability.
 4. Add WGSL preflight where possible for integer render-target outputs.
 5. Keep Vulkan-specific mapping inside Vulkan/DRP2 implementation code.
@@ -541,23 +548,17 @@ edit the same file unless the coordinator explicitly serializes that integration
 
 ## Next Implementation Slice Recommendation
 
-The next agent should start with query readback profile validation, before adding wider semantic
-payloads:
+The next agent should start from the now-covered single-attachment integer readback path and choose
+one of these narrow slices:
 
-1. Add a DRP2 positive fixture for an `rg32uint` render target copied to a readback buffer. The fixture
-   should prove the 1x1 payload uses an 8-byte byte size and row pitch, not the old 4-byte
-   assumptions.
-2. Add or extend a C runtime test that executes an `rg32uint` render/copy/readback path and verifies
-   the returned 8-byte payload. Prefer a small focused DRP2/runtime test over another scene query
-   test unless scene integration is required.
-3. Commit that fixture/runtime coverage as one slice.
-4. Then handle `DVZ_QUERY_PROFILE_U64_2XR32` explicitly. Either implement true two-attachment
-   execution/readback support or remove/defer it from automatic profile selection until execution can
-   actually consume it.
-5. Only after the profile paths are covered, add displayed RGBA to GPU volume slice queries. The
-   current `rg32uint` profile is already scalar plus UVW, so displayed RGBA likely needs a wider
-   payload shape, multi-output query support, or a separate readout pass.
-6. Leave MIP and DVR/composite volume sample queries explicitly unsupported until exact GPU semantics
+1. Add displayed RGBA to GPU volume slice queries only after choosing the payload shape. The current
+   `rg32uint` profile is already scalar plus UVW, so displayed RGBA likely needs a wider payload,
+   multi-output query support, or a separate readout pass.
+2. If two-word fallback support is needed before displayed RGBA, implement true
+   `DVZ_QUERY_PROFILE_U64_2XR32` execution end to end: two render attachments, two copy/readback
+   records, family decode support, and DRP2/FramePlan tests. Until that lands, the query core must
+   not auto-select this profile.
+3. Keep MIP and DVR/composite volume sample queries explicitly unsupported until exact GPU semantics
    are specified and implemented.
 
 Do not start with broad `pick`/`picking` renames. Some of that terminology still describes the

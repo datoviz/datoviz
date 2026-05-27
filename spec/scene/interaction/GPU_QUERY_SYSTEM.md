@@ -63,7 +63,8 @@ Current implementation state:
 10. The unused CPU point-pick fallback and `DVZ_PICK_TRACE` hook have been removed from scene
     internals.
 11. DRP2 and WebGPU parity are not finished: C runtime copy helpers still need full origin/depth and
-   multi-output query support, and `rg32uint` needs runtime/readback fixture coverage.
+   multi-output query support. `rg32uint` now has DRP2 fixture and vklite runtime readback coverage;
+   two-attachment `2xr32` query execution remains deferred and is not auto-selected.
 
 
 ## Summary
@@ -183,7 +184,8 @@ The query format ladder should be explicit and backend-neutral. Preferred profil
 
 1. `DVZ_QUERY_PROFILE_U32_R32`: one `r32uint` identity attachment; required baseline if possible.
 2. `DVZ_QUERY_PROFILE_U64_RG32`: one `rg32uint` identity attachment; preferred when supported.
-3. `DVZ_QUERY_PROFILE_U64_2XR32`: two `r32uint` attachments; fallback when `rg32uint` is absent.
+3. `DVZ_QUERY_PROFILE_U64_2XR32`: two `r32uint` attachments; future fallback when `rg32uint` is
+   absent. It must not be auto-selected until true two-attachment query execution/readback exists.
 4. `DVZ_QUERY_PROFILE_UNSUPPORTED`: explicit failure when no acceptable GPU path exists.
 
 Do not use `rgb*` render-target formats for query payloads. Three-component render-target support is
@@ -494,8 +496,12 @@ Current code implications recorded on 2026-05-27:
    readback submissions.
 7. The scene capability snapshot now has query/readback fields, but scene query planning does not
    yet use them to select profiles or reject unsupported visuals.
-8. `r32uint` and `rg32uint` already exist in DRP2 schema/serialization. Runtime C format handling and
-   WebGPU preflight still need to be hardened before `rg32uint` can be treated as a portable path.
+8. `r32uint` and `rg32uint` already exist in DRP2 schema/serialization. `rg32uint` readback now has
+   fixture and vklite runtime coverage; WebGPU preflight still needs to be hardened before it can be
+   treated as a portable path.
+9. `DVZ_QUERY_PROFILE_U64_2XR32` is a named future fallback, but no visual family currently builds a
+   two-attachment query plan and FramePlan/DRP2 emission does not consume two query readbacks for one
+   result. Default profile selection therefore stops after `r32uint` and `rg32uint`.
 
 
 ## Relationship To Other Specs
