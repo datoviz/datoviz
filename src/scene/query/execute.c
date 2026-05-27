@@ -57,6 +57,8 @@ bool _dvz_scene_query_execute_family(
     ANN(visual);
     ANN(ops);
     ANN(out_result);
+    out_result->visual_id = _scene_visual_public_id(figure->scene, visual);
+    out_result->visual_family = ops->family;
     if (ops->build == NULL || ops->decode == NULL)
         return false;
     if (profile != DVZ_QUERY_PROFILE_U32_R32)

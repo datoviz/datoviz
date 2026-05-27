@@ -780,6 +780,8 @@ int test_scene_query_volume_sample_is_explicitly_unsupported(
 
 int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* item);
 
+int test_scene_image_sample_query_readback_failure(TstContext* suite, const TstCase* item);
+
 int test_scene_point_query_misses_empty_pixel(TstContext* suite, const TstCase* item);
 
 int test_scene_pixel_query_accepts_square_corner(TstContext* suite, const TstCase* item);
