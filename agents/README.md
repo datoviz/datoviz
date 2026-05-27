@@ -77,9 +77,10 @@ If resuming work on the branch:
    [done/DRP2_SCENE_SAFETY.md](done/DRP2_SCENE_SAFETY.md) when touching the completed first
    scene -> DRP2 -> runtime slice.
 17. Read [done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
+   [done/SCENE_CONTROLLER_PRIMITIVE_EXTRACTION.md](done/SCENE_CONTROLLER_PRIMITIVE_EXTRACTION.md),
    and [done/SCENE_TURNTABLE_CONTROLLER_PLAN.md](done/SCENE_TURNTABLE_CONTROLLER_PLAN.md) before
-   changing scene-owned controller binding, panel-local input routing, or camera controller
-   semantics.
+   changing controller primitives, scene-owned controller binding, panel-local input routing, or
+   camera controller semantics.
 
 
 ## Directory Layout

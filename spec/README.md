@@ -18,6 +18,8 @@ Do not use it for execution planning or broad architecture essays.
   rules
 - `scene/`: scene-layer requirements, consumer-side object model, retained object semantics, and
   implementation boundary notes
+- `SCENE_SPLIT_REFACTOR_PLAN.md`: durable scene split/refactor architecture plan for promoting
+  reusable pieces out of the scene layer
 
 
 ## Rules
