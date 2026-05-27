@@ -1,7 +1,7 @@
 # Scene GPU Query Overhaul
 
 > **Execution Status**
-> - **Status:** `IN PROGRESS - FOUNDATION LANDED`
+> - **Status:** `IN PROGRESS - FAMILY EXECUTION LANDED`
 > - **Updated on:** `2026-05-27`
 > - **Purpose:** give the next agent team an immediately actionable plan for replacing scene
 >   pick/probe with a GPU-only query system.
@@ -95,6 +95,32 @@ Committed implementation slices:
 12. `590a6881a Keep volume queries from CPU probe fallback`
     - native query avoids the old CPU volume slice probe path and returns explicit unsupported for
       volume sample until a GPU family path lands.
+13. `e9c3befe4 scene: stop query pick adapter fallback`
+    - native query no longer falls back through public pick queues.
+14. `78f09486e scene: remove unused query pick adapter`
+    - removed the unused native-query-to-pick adapter surface.
+15. `6d53c33de scene: stop native query probe adapter fallback`
+    - native query no longer falls back through public probe queues.
+16. `5c66418da scene: trim unused query ops fields`
+    - simplified the family operation contract around the callbacks actually used by native query.
+17. `efac8cbab scene: add native image sample queries`
+    - image pixel/sample value queries now return native query results.
+18. `2273c35c4 scene: cover image sample query readback failure`
+    - forced image readback failures now produce query failures instead of CPU results.
+19. `bdf3e9c68 scene: fill native query framebuffer position`
+    - query results carry framebuffer coordinates.
+20. `a24b87155 scene: expose native query pending executor`
+    - legacy shims can reuse the native query executor directly.
+21. `eb0bdd118 scene: honor panel order in native queries`
+    - native query candidate traversal follows panel visual order.
+22. `fdc1b761d scene: route legacy picks through native query`
+    - old public pick requests are now query shims.
+23. `eecd91546 scene: remove legacy pick executor bridge`
+    - removed the old pick plan/resolve code from `request_execute.c`.
+24. `6dfa2bf93 scene: route labels probes through native query`
+    - old labels probe requests are now query shims over family-owned labels query execution.
+25. `25b65c244 scene: route image probes through native query`
+    - old image probe requests are now query shims over family-owned image query execution.
 
 Recorded validation after these commits:
 
@@ -102,7 +128,7 @@ Recorded validation after these commits:
 2. `just test frame_plan`
 3. `just test pick-probe`
 4. `just test query`
-5. `just test scene` with `463/463`
+5. `just test scene` with `482/482`
 6. `git diff --check`
 7. `python testing/test_scene_query_source_guard.py`
 
@@ -223,9 +249,10 @@ Validation:
 
 Suggested subagent: scene query core agent.
 
-Status: partially landed. Public structs/API, native query queues, result polling, registry, source
-guard, and a retained request-executor adapter exist. Family-owned native execution, readback
-decode, and old-path replacement remain.
+Status: mostly landed for the current GPU-backed families. Public structs/API, native query queues,
+result polling, registry, source guard, split execution/readback/result helpers, family-owned build
+and decode callbacks, and legacy pick/probe shim inversion exist. Volume slice remains intentionally
+outside native query until a GPU family path lands.
 
 Primary ownership:
 
@@ -237,11 +264,10 @@ Primary ownership:
 
 Tasks:
 
-1. Split native query execution out of `src/scene/query/queue.c` into `execute.c`, `readback.c`, and
-   result helpers as needed.
-2. Replace the request-executor adapter with family-owned plan builders and decoders.
+1. Keep native query execution split across `queue.c`, `execute.c`, `readback.c`, and `result.c`.
+2. Keep family-owned plan builders and decoders as the execution boundary.
 3. Use the visual-family query registry to route execution instead of old pick/probe dispatch.
-4. Complete generic execution that:
+4. Continue hardening generic execution that:
    - resolves panel coordinates,
    - orders panel visuals,
    - checks generic visibility and controller state,
@@ -357,8 +383,8 @@ Validation:
 
 Suggested subagent: API/tests/examples agent.
 
-Status: partially landed. Query API, selection adapter, and pinned readout adapter exist. Examples,
-tests, and old public pick/probe removal remain.
+Status: partially landed. Query API, selection adapter, pinned readout adapter, and old pick/probe
+shim inversion exist. Examples, test naming, and old public pick/probe removal remain.
 
 Primary ownership:
 
@@ -439,21 +465,21 @@ edit the same file unless the coordinator explicitly serializes that integration
 
 ## Next Implementation Slice Recommendation
 
-The best next code slice is family-owned extraction from the retained request-executor adapter:
+The best next code slice is cleanup around the remaining legacy bridge and the non-final family
+paths:
 
-1. Split `src/scene/query/queue.c` so queueing, execution, result conversion, and readback helpers
-   are separate files.
-2. Add family callbacks to `DvzSceneQueryFamilyOps` for match/eligible/build/decode/readout.
-3. Move pixel, then point, out of `src/scene/request_execute.c` into
-   `src/scene/visuals/pixel/query.c` and `src/scene/visuals/point/query.c`.
-4. Replace RGB24 identity payloads with the `r32uint` baseline.
-5. Keep image probe on the adapter only until its family-owned GPU value path is split out.
-6. Keep labels and volume sample query explicitly unsupported until their GPU family paths exist.
-7. Add forced readback-failure tests proving no CPU fallback result appears.
-8. After family-owned query works, make old pick/probe APIs private shims or remove them.
-
-That slice removes the main architectural ambiguity that remains: native query owns the public queue,
-but the actual GPU rendering/readback code is still mostly in `request_execute.c`.
+1. Keep `src/scene/request_execute.c` limited to old public pick/probe queue consumption, status
+   conversion, and the intentional legacy CPU volume-slice probe path.
+2. Move duplicate legacy-probe routing checks out of `request_execute.c` only when equivalent native
+   query ordering semantics are covered by tests.
+3. Harden labels query so rendered GPU semantics replace the current direct retained-field
+   upload/readback path.
+4. Add GPU volume slice query semantics, then remove the legacy CPU volume slice probe path.
+5. Convert examples from pick/probe to `dvz_panel_query()` where they currently compose request
+   paths manually.
+6. Continue replacing old public pick/probe tests with native query tests as behavior migrates.
+7. Add DRP2/runtime fixtures for `rg32uint` and multi-output query readbacks before relying on those
+   profiles broadly.
 
 
 ## Risk Register
@@ -486,6 +512,6 @@ The overhaul is complete when:
 9. examples use one panel query instead of manual pick/probe composition,
 10. focused scene and DRP2 tests pass.
 
-Current status: criteria 1, 3, and 4 are partially satisfied by the foundation/native-queue commits.
-Criterion 5 is partially satisfied for native query because volume CPU probing is blocked there, but
-labels and family-owned GPU paths remain open. Criteria 2 and 6-9 remain open.
+Current status: criteria 1, 3, 4, 5, and 8 are partially satisfied by the native query and
+family-execution commits. Criterion 5 is satisfied for native query, but old public probe still has
+an intentional CPU volume-slice compatibility path. Criteria 2, 6, 7, and 9 remain open.

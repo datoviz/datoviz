@@ -16,7 +16,8 @@ surface if it keeps the architecture ambiguous.
 
 ## Implementation Status
 
-Updated on 2026-05-27 after the native queue and adapter slices landed.
+Updated on 2026-05-27 after the native queue, simple-family execution, and legacy shim
+inversion slices landed.
 
 Foundation now present in the tree:
 
@@ -34,22 +35,23 @@ Foundation now present in the tree:
 7. Selection and pinned readout helpers can consume `DvzQueryResult`.
 8. `testing/test_scene_query_source_guard.py` checks that generic query files do not pull in
    visual-family internals.
-9. Native query processing can execute current GPU-backed point-like/pixel/image pick/probe paths
-   through a retained request-executor adapter without queuing public pick/probe requests.
+9. Native query processing executes current GPU-backed point-like, pixel, image, and labels query
+   paths through visual-family operation tables, with generic orchestration in `src/scene/query/`.
 10. DRP2 texture layout validation now accepts `rg32uint` byte sizing.
 
 Important transitional state:
 
-1. `src/scene/query/queue.c` owns native query queues, but it still calls an adapter in
-   `src/scene/request_execute.c` for the rendered GPU pick/probe plans that have not yet moved into
-   visual-family query files.
+1. `src/scene/query/queue.c` owns native query queues, while `src/scene/query/execute.c`,
+   `readback.c`, and `result.c` own execution/readback/result helpers.
 2. `dvz_figure_process_queries()` no longer delegates to `dvz_figure_process_requests()`.
-3. `src/scene/request_execute.c` still owns most real execution and readback decode.
-4. The visual-family `query.c` files expose operation tables and capabilities only; they do not yet
-   build or decode native GPU query plans.
+3. `src/scene/request_execute.c` is now a legacy pick/probe bridge: old public pick/probe requests
+   call native query for GPU-backed pick, image probe, and labels probe compatibility.
+4. The visual-family `query.c` files own eligibility, plan build, decode, and readout for current
+   native GPU-backed families.
 5. Native query does not use the old CPU volume slice probe path. Volume sample query currently
    returns explicit unsupported until a GPU family path lands.
-6. Labels query is still not a final family-owned GPU path and remains a migration risk.
+6. Labels query is family-owned but still uses a direct retained-field upload/readback path for raw
+   integer label ids. It must move to rendered GPU semantics before the overhaul is complete.
 7. Old public pick/probe APIs remain available during migration.
 8. DRP2 and WebGPU parity are not finished: C runtime copy helpers still need full origin/depth and
    multi-output query support, and `rg32uint` needs runtime/readback fixture coverage.
@@ -467,13 +469,13 @@ Tests should also cover:
 
 Current code implications recorded on 2026-05-27:
 
-1. `src/scene/request_execute.c` mixes generic request orchestration, visual-family policy, GPU
-   readback, labels probing, volume probing, and result decode.
-2. FramePlan copy nodes now carry query readback metadata, but the old execution path still mostly
-   consumes one-pixel, four-byte payloads.
-3. Current identity encoding is a 24-bit RGB item id, not a robust query payload format.
-4. Labels probing currently computes UVs from retained CPU attrs and reads from retained field data
-   through a temporary GPU copy path.
+1. `src/scene/request_execute.c` still owns old public pick/probe queue consumption, status
+   conversion, and the intentional legacy CPU volume-slice probe path.
+2. FramePlan copy nodes now carry query readback metadata, but multi-output query attachments and
+   broader copy-origin/depth coverage remain incomplete.
+3. Current simple-family identity encoding uses the `r32uint` baseline.
+4. Labels probing currently computes UVs from retained CPU attrs and reads raw field data through a
+   temporary GPU copy path.
 5. Volume slice probing currently uses CPU ray/box math and CPU sampled-field reads.
 6. DRP2 already has explicit texture formats, color attachments, texture-to-buffer copies, and
    readback submissions.
