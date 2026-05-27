@@ -1,7 +1,6 @@
 # Visual Family: `splat`
 
-Status: proposed v0.4 experimental visual family. No public `dvz_splat()` constructor or
-`DVZ_VISUAL_TYPE_SPLAT` enum value is installed yet.
+Status: implemented v0.4 experimental visual family with a narrow first slice.
 
 This document defines a deliberately small screen-space Gaussian splat contract. It refines
 `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.md`,
@@ -14,11 +13,15 @@ formats remain future work. The broader frame-plan pressure is recorded in
 
 ## Current Implementation Status
 
-Status on 2026-05-27: `splat` is concept/spec only.
+Status on 2026-05-27: `splat` has a retained scene API and render path.
 
-The active runtime does not implement retained splat state, shader variants, DRP2 lowering,
-request/readback behavior, or public C API. The first implementation should remain a normal
-retained scene visual and must not introduce a parallel renderer path.
+The active runtime implements `DVZ_VISUAL_TYPE_SPLAT`, public `dvz_splat()`, retained
+`position`/`color`/`sigma` attributes, finite-positive `sigma` validation, GLSL and WGSL shader
+variants, and DRP2 lowering through the normal scene visual path.
+
+This first slice intentionally omits `angle`, separate `opacity`, WBOIT/depth-peel shader variants,
+and request/readback behavior. It renders axis-aligned screen-space Gaussian billboards with
+source-over alpha blending and center-depth testing.
 
 
 ## Semantic Purpose
@@ -74,15 +77,15 @@ Standard deviations along the local ellipse axes. Both components must be finite
 The isotropic case uses `sigma_x == sigma_y`.
 
 
-### `angle`
+### `angle` (deferred)
 
 Standard — see `SHARED_ATTRIBUTES.md`.
 
-Applied in screen space to the local ellipse axes. Defaults to `0` if absent. A first
-implementation may make this visual-wide if optional per-item attributes are not ready.
+Applied in screen space to the local ellipse axes. The current first slice does not expose this
+attribute; all ellipses are axis-aligned in screen space.
 
 
-### `opacity`
+### `opacity` (deferred)
 
 | Property | Value |
 |---|---|
@@ -92,8 +95,8 @@ implementation may make this visual-wide if optional per-item attributes are not
 | Typical mutability | `dynamic` |
 | Optional | yes |
 
-Multiplies the color alpha after Gaussian evaluation. Defaults to `1.0`. This is a convenience for
-scalar opacity updates; users can also encode opacity in `color.a`.
+Multiplies the color alpha after Gaussian evaluation. The current first slice uses `color.a`
+directly and does not expose a separate opacity attribute.
 
 
 ## Visual-Wide Parameters
@@ -170,12 +173,11 @@ The default splat path is transparent:
 |---|---|
 | Depth test | enabled |
 | Depth write | disabled |
-| Alpha mode | `DVZ_ALPHA_BLENDED`, unless the user selects `DVZ_ALPHA_WBOIT` |
+| Alpha mode | `DVZ_ALPHA_BLENDED` |
 | Fragment depth | center depth |
 
-The visual participates in the same transparent-stage routing as other alpha-enabled scene visuals.
-Weighted blended OIT is the preferred quality path when available. Exact sorted compositing is not a
-v0.4 requirement.
+The visual participates in the same source-over transparent-stage routing as other blended scene
+visuals. Weighted blended OIT and exact sorted compositing are deferred.
 
 
 ## Picking And Requests
@@ -199,7 +201,7 @@ The preferred v0.4 rendering path is an instanced billboard:
 
 1. one logical instance per splat,
 2. four generated or static quad corners,
-3. per-instance `position`, `color`, `sigma`, optional `angle`, optional `opacity`,
+3. per-instance `position`, `color`, `sigma`,
 4. vertex expansion in screen space,
 5. fragment Gaussian opacity evaluation.
 
@@ -210,8 +212,8 @@ draws, CPU/GPU sort, tile bins, or a splat-specific runtime escape hatch.
 ## Minimum Cases This Spec Must Support
 
 1. isotropic soft points: per-item `position`, `color`, and equal `sigma` components,
-2. anisotropic uncertainty ellipses: per-item `sigma` and `angle`,
-3. translucent density cloud: low-alpha colors with WBOIT when available,
+2. anisotropic uncertainty ellipses: per-item `sigma`,
+3. translucent density cloud: low-alpha colors with source-over blending,
 4. streaming kernels: range updates of `position`, `color`, and `sigma`,
 5. sparse overlaid kernels with opaque geometry depth-tested by center depth.
 
