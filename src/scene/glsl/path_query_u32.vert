@@ -1,0 +1,153 @@
+#version 450
+
+#include "common.glsl"
+
+layout(set = 1, binding = 0) uniform SceneMaterial {
+    vec4 lightDir;
+    vec4 params;
+    vec4 model;
+    vec4 baseColorFactor;
+    vec4 standardParams;
+    vec4 emissiveRim;
+    vec4 depthCue;
+    vec4 depthCueColor;
+    vec4 depthCueExtra;
+} material;
+
+layout(location = 0) in vec3 inPositionPrev;
+layout(location = 1) in vec3 inPositionCurr;
+layout(location = 2) in vec3 inPositionNext;
+layout(location = 3) in uint inId;
+layout(location = 4) in float inLineWidth;
+layout(location = 5) in uint inPathFlags;
+layout(location = 6) in float inPathDistance;
+
+layout(location = 0) out vec2 fragCoord;
+layout(location = 1) out float fragLength;
+layout(location = 2) out float fragLineWidth;
+layout(location = 3) out float fragHasPrev;
+layout(location = 4) out float fragHasNext;
+layout(location = 5) out float fragBevelDistance;
+layout(location = 6) flat out uint fragId;
+
+const uint SIDE_NEGATIVE = 0x01u;
+const uint ENDPOINT_END = 0x02u;
+const uint HAS_PREV = 0x04u;
+const uint HAS_NEXT = 0x08u;
+
+vec2 clipToPixel(vec4 clip)
+{
+    vec2 ndc = clip.xy / max(abs(clip.w), 1e-6);
+    return (ndc * 0.5 + 0.5) * viewport.rect.zw;
+}
+
+vec4 pixelToClip(vec2 pixel, float depth)
+{
+    vec2 ndc = pixel / max(viewport.rect.zw, vec2(1.0)) * 2.0 - 1.0;
+    return vec4(ndc, depth, 1.0);
+}
+
+vec2 safeNormalize(vec2 v, vec2 fallback)
+{
+    float n = length(v);
+    if (n <= 1e-6)
+        return fallback;
+    return v / n;
+}
+
+float capExtension(int capType, float halfWidth)
+{
+    if (capType == 0 || capType == 5)
+        return 0.0;
+    return halfWidth;
+}
+
+void main()
+{
+    bool sideNegative = (inPathFlags & SIDE_NEGATIVE) != 0u;
+    bool endpointEnd = (inPathFlags & ENDPOINT_END) != 0u;
+    bool hasPrev = (inPathFlags & HAS_PREV) != 0u;
+    bool hasNext = (inPathFlags & HAS_NEXT) != 0u;
+    float side = sideNegative ? -1.0 : 1.0;
+
+    vec4 prevClip = transform(inPositionPrev);
+    vec4 currClip = transform(inPositionCurr);
+    vec4 nextClip = transform(inPositionNext);
+    vec2 prevPx = clipToPixel(prevClip);
+    vec2 currPx = clipToPixel(currClip);
+    vec2 nextPx = clipToPixel(nextClip);
+
+    vec2 dirIn = safeNormalize(currPx - prevPx, vec2(1.0, 0.0));
+    vec2 dirOut = safeNormalize(nextPx - currPx, dirIn);
+    if (!hasPrev)
+        dirIn = dirOut;
+    if (!hasNext)
+        dirOut = dirIn;
+    vec2 normalIn = vec2(-dirIn.y, dirIn.x);
+    vec2 normalOut = vec2(-dirOut.y, dirOut.x);
+
+    float aa = 1.0;
+    float strokeWidth = max(inLineWidth, 0.0);
+    float halfWidth = strokeWidth * 0.5 + 1.5 * aa;
+    int joinType = int(round(material.params.z));
+    float miterLimit = max(material.params.w, 1.0);
+
+    vec2 tangent = endpointEnd ? dirIn : dirOut;
+    vec2 segmentNormal = endpointEnd ? normalIn : normalOut;
+    float lengthPx = endpointEnd ? length(currPx - prevPx) : length(nextPx - currPx);
+    float along = endpointEnd ? lengthPx : 0.0;
+    float tangentOffset = 0.0;
+
+    vec2 normal = segmentNormal;
+    vec2 miter = segmentNormal;
+    float miterScale = 1.0;
+    if (hasPrev && hasNext)
+    {
+        miter = safeNormalize(normalIn + normalOut, segmentNormal);
+        float denom = dot(miter, segmentNormal);
+        miterScale = denom > 1e-3 ? 1.0 / denom : 1.0;
+        if (joinType == 1 || joinType == 2)
+            normal = miter * miterScale;
+        else if (joinType == 0 && miterScale <= miterLimit)
+            normal = miter * miterScale;
+    }
+
+    int capType = endpointEnd ? int(round(material.params.y)) : int(round(material.params.x));
+    if (!hasPrev && !endpointEnd)
+        tangentOffset = -capExtension(capType, halfWidth);
+    else if (!hasNext && endpointEnd)
+        tangentOffset = capExtension(capType, halfWidth);
+
+    vec2 pixel = currPx + normal * side * halfWidth + tangent * tangentOffset;
+    gl_Position = pixelToClip(pixel, currClip.z / max(abs(currClip.w), 1e-6));
+
+    fragBevelDistance = -halfWidth;
+    if (hasPrev && hasNext && joinType == 2)
+    {
+        float turn = dirIn.x * dirOut.y - dirIn.y * dirOut.x;
+        float outerSide = turn > 0.0 ? -1.0 : 1.0;
+        vec2 bevelStart = currPx + normalIn * outerSide * halfWidth;
+        vec2 bevelEnd = currPx + normalOut * outerSide * halfWidth;
+        vec2 bevelDir = safeNormalize(bevelEnd - bevelStart, segmentNormal);
+        vec2 bevelNormal = vec2(-bevelDir.y, bevelDir.x);
+        vec2 outerMiter = currPx + miter * outerSide * miterScale * halfWidth;
+        if (dot(outerMiter - bevelStart, bevelNormal) < 0.0)
+            bevelNormal = -bevelNormal;
+        fragBevelDistance = dot(pixel - bevelStart, bevelNormal);
+    }
+    if (hasPrev && hasNext && (joinType == 1 || joinType == 2))
+    {
+        vec2 segmentStartPx = endpointEnd ? prevPx : currPx;
+        fragCoord =
+            vec2(dot(pixel - segmentStartPx, tangent), dot(pixel - currPx, segmentNormal));
+    }
+    else
+    {
+        fragCoord = vec2(along + tangentOffset, side * halfWidth);
+    }
+    fragLength = lengthPx;
+    fragLineWidth = strokeWidth;
+    fragHasPrev = hasPrev ? 1.0 : 0.0;
+    fragHasNext = hasNext ? 1.0 : 0.0;
+    fragId = inId;
+}
