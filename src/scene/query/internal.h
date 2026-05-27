@@ -136,6 +136,13 @@ bool _dvz_scene_query_execute_readback(
     DvzFramePlan* plan, uint32_t target_width, uint32_t target_height, uint32_t color_format,
     uint8_t* bytes, uint32_t byte_size, bool* out_executed);
 
+void _dvz_scene_query_drop_superseded_results(
+    DvzScene* scene, const DvzPanel* panel, uint64_t request_id);
+
+bool _dvz_scene_query_push_result(
+    DvzScene* scene, DvzPanel* panel, uint64_t freshness_serial,
+    const DvzQueryResult* result);
+
 void _dvz_scene_query_from_pick(const DvzPickResult* pick, DvzQueryResult* out_result);
 
 void _dvz_scene_query_from_probe(const DvzProbeResult* probe, DvzQueryResult* out_result);

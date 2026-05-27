@@ -93,52 +93,6 @@ static void _query_track_request_serial(
 
 
 /**
- * Return the latest query freshness serial for one request scope.
- *
- * @param scene the scene
- * @param panel the panel
- * @param request_id the request id
- * @return latest freshness serial, or zero when absent
- */
-static uint64_t
-_query_latest_request_serial(const DvzScene* scene, const DvzPanel* panel, uint64_t request_id)
-{
-    ANN(scene);
-    ANN(panel);
-    for (uint32_t i = 0; i < scene->query_scope_count; i++)
-    {
-        const DvzRequestFreshnessScope* scope = &scene->query_scopes[i];
-        if (scope->panel == panel && _query_request_ids_share_scope(scope->request_id, request_id))
-            return scope->freshness_serial;
-    }
-    return 0;
-}
-
-
-
-/**
- * Return whether a query request/result scope is still current.
- *
- * @param scene the scene
- * @param panel the panel
- * @param request_id the request id
- * @param freshness_serial the originating freshness serial
- * @return true when the result is current
- */
-static bool _query_request_is_current(
-    const DvzScene* scene, const DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial)
-{
-    ANN(scene);
-    ANN(panel);
-    if (freshness_serial == 0)
-        return true;
-    uint64_t latest_serial = _query_latest_request_serial(scene, panel, request_id);
-    return latest_serial == 0 || latest_serial == freshness_serial;
-}
-
-
-
-/**
  * Return whether a pending query is superseded by a newer request.
  *
  * @param pending the pending query
@@ -186,40 +140,6 @@ static void _query_drop_superseded_requests(
             sizeof(DvzPendingQueryRequest));
     }
     scene->pending_query_count = write;
-}
-
-
-
-/**
- * Drop queued query results superseded by a newer panel query.
- *
- * @param scene the scene
- * @param panel the panel
- * @param request_id the new request id
- */
-static void _query_drop_superseded_results(
-    DvzScene* scene, const DvzPanel* panel, uint64_t request_id)
-{
-    ANN(scene);
-    ANN(panel);
-    DvzQueuedQueryResult kept[DVZ_SCENE_MAX_QUERY_RESULTS] = {0};
-    uint32_t kept_count = 0;
-    for (uint32_t i = 0; i < scene->query_result_count; i++)
-    {
-        uint32_t index = (scene->query_result_head + i) % DVZ_SCENE_MAX_QUERY_RESULTS;
-        DvzQueuedQueryResult queued = scene->query_results[index];
-        if (queued.panel == panel &&
-            _query_request_ids_share_scope(queued.result.request_id, request_id))
-        {
-            continue;
-        }
-        kept[kept_count++] = queued;
-    }
-    dvz_memset(scene->query_results, sizeof(scene->query_results), 0, sizeof(scene->query_results));
-    for (uint32_t i = 0; i < kept_count; i++)
-        scene->query_results[i] = kept[i];
-    scene->query_result_head = 0;
-    scene->query_result_count = kept_count;
 }
 
 
@@ -298,41 +218,6 @@ static void _query_remove_pending_at(DvzScene* scene, uint32_t index)
     dvz_memset(
         &scene->pending_queries[scene->pending_query_count], sizeof(DvzPendingQueryRequest), 0,
         sizeof(DvzPendingQueryRequest));
-}
-
-
-
-/**
- * Push one native query result.
- *
- * @param scene the scene
- * @param panel the panel
- * @param freshness_serial the originating freshness serial
- * @param result the result
- * @return true on success
- */
-static bool _query_push_result(
-    DvzScene* scene, DvzPanel* panel, uint64_t freshness_serial, const DvzQueryResult* result)
-{
-    ANN(scene);
-    ANN(result);
-    if (panel != NULL &&
-        !_query_request_is_current(scene, panel, result->request_id, freshness_serial))
-    {
-        return true;
-    }
-    if (scene->query_result_count >= DVZ_SCENE_MAX_QUERY_RESULTS)
-    {
-        log_error("query result queue is full");
-        return false;
-    }
-    uint32_t index =
-        (scene->query_result_head + scene->query_result_count) % DVZ_SCENE_MAX_QUERY_RESULTS;
-    scene->query_results[index].panel = panel;
-    scene->query_results[index].freshness_serial = freshness_serial;
-    scene->query_results[index].result = *result;
-    scene->query_result_count++;
-    return true;
 }
 
 
@@ -656,7 +541,7 @@ int dvz_panel_query(DvzPanel* panel, double x, double y, const DvzQueryRequest* 
         local = *request;
 
     _query_drop_superseded_requests(scene, panel, local.request_id);
-    _query_drop_superseded_results(scene, panel, local.request_id);
+    _dvz_scene_query_drop_superseded_results(scene, panel, local.request_id);
     if (scene->pending_query_count >= DVZ_SCENE_MAX_PENDING_REQUESTS)
     {
         log_error("query request queue is full");
@@ -673,48 +558,6 @@ int dvz_panel_query(DvzPanel* panel, double x, double y, const DvzQueryRequest* 
     _query_track_request_serial(scene, panel, local.request_id, pending->freshness_serial);
     _scene_notify_request_frame(panel->figure);
     return 0;
-}
-
-
-
-/**
- * Poll one resolved query result.
- *
- * @param scene the scene
- * @param out_result output query result
- * @return true when a result was written
- */
-bool dvz_scene_poll_query(DvzScene* scene, DvzQueryResult* out_result)
-{
-    ANN(scene);
-    ANN(out_result);
-
-    if (scene->query_result_count > 0)
-    {
-        uint32_t index = scene->query_result_head;
-        *out_result = scene->query_results[index].result;
-        dvz_memset(
-            &scene->query_results[index], sizeof(DvzQueuedQueryResult), 0,
-            sizeof(DvzQueuedQueryResult));
-        scene->query_result_head = (index + 1) % DVZ_SCENE_MAX_QUERY_RESULTS;
-        scene->query_result_count--;
-        return true;
-    }
-
-    DvzPickResult pick = {0};
-    if (dvz_scene_poll_pick(scene, &pick))
-    {
-        _dvz_scene_query_from_pick(&pick, out_result);
-        return true;
-    }
-
-    DvzProbeResult probe = {0};
-    if (dvz_scene_poll_probe(scene, &probe))
-    {
-        _dvz_scene_query_from_probe(&probe, out_result);
-        return true;
-    }
-    return false;
 }
 
 
@@ -760,7 +603,8 @@ uint32_t dvz_figure_process_queries(
 
         DvzQueryResult result = {0};
         if (_query_process_pending(figure, runtime, &executor, caps, &pending, &result))
-            (void)_query_push_result(scene, pending.panel, pending.freshness_serial, &result);
+            (void)_dvz_scene_query_push_result(
+                scene, pending.panel, pending.freshness_serial, &result);
 
         _query_remove_pending_at(scene, i);
         processed++;
