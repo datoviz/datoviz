@@ -76,9 +76,13 @@ Remaining `geom` work is optional unless a release example needs it.
 3. [`../done/TEST_RUNNER_MODERNIZATION.md`](../done/TEST_RUNNER_MODERNIZATION.md) and
    [`../later/TEST_RUNNER_SCHEDULING.md`](../later/TEST_RUNNER_SCHEDULING.md) before changing test
    scheduling, process sharding, CI orchestration, or skip/reporting behavior.
-4. [`../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md`](../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
+4. [`../soon/scene/SCENE_GPU_QUERY_OVERHAUL.md`](../soon/scene/SCENE_GPU_QUERY_OVERHAUL.md) and
+   [`../../spec/scene/interaction/GPU_QUERY_SYSTEM.md`](../../spec/scene/interaction/GPU_QUERY_SYSTEM.md)
+   before changing pick/probe/query execution, GPU request readback, visual-family query policy, or
+   CPU fallback behavior.
+5. [`../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md`](../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
    before changing image/labels probe coordinates, panzoom probe mapping, or CPU fallback behavior.
-5. [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md)
+6. [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md)
    before changing pinned readout cards, selected-item metadata cards, public overlay cards, or
    private rich text-block lowering.
 

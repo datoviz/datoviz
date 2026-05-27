@@ -5,6 +5,12 @@
 > - **Updated on:** `2026-05-26`
 > - **Purpose:** record the current pick/probe findings after the old `scene.c` request-path split.
 
+> **Superseded for new work:** for implementation planning, use
+> [`../soon/scene/SCENE_GPU_QUERY_OVERHAUL.md`](../soon/scene/SCENE_GPU_QUERY_OVERHAUL.md). For
+> durable semantics, use
+> [`../../spec/scene/interaction/GPU_QUERY_SYSTEM.md`](../../spec/scene/interaction/GPU_QUERY_SYSTEM.md).
+> This file remains useful as an audit snapshot of the pre-overhaul request path.
+
 ## Context
 
 The original monolithic `scene.c` request path has already been split into files such as

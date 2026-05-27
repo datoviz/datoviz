@@ -9,6 +9,11 @@ text/layout implementation slices, and controller work.
 Stable scene semantics and example analysis belong under `spec/scene/`; keep only executable
 pickup order, validation notes, and unresolved implementation choices here.
 
+For the GPU-only scene query overhaul, start with
+[`scene/SCENE_GPU_QUERY_OVERHAUL.md`](scene/SCENE_GPU_QUERY_OVERHAUL.md), then read the durable
+architecture in
+[`../../spec/scene/interaction/GPU_QUERY_SYSTEM.md`](../../spec/scene/interaction/GPU_QUERY_SYSTEM.md).
+
 Text shaping, layout, atlas, cache, and DRP2 emission contracts belong in
 [../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md).
 

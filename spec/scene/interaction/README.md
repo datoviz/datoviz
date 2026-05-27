@@ -8,14 +8,16 @@ selection state, or animation timing.
 
 ## Files
 
-1. [PICKING.md](PICKING.md): scene-side picking, identity round-trip, grouped hits, and readback.
+1. [GPU_QUERY_SYSTEM.md](GPU_QUERY_SYSTEM.md): GPU-only query architecture replacing public
+   pick/probe.
 2. [PANEL_QUERY.md](PANEL_QUERY.md): unified under-cursor query model replacing public pick/probe.
-3. [SELECTION.md](SELECTION.md): selection state, highlight rendering, linking, and lasso behavior.
-4. [CONTROLLERS.md](CONTROLLERS.md): panel controllers, transform ownership, and event routing.
-5. [CAMERA_CONTROLLERS.md](CAMERA_CONTROLLERS.md): fly, pivot-orbit, and turntable camera
+3. [PICKING.md](PICKING.md): scene-side picking, identity round-trip, grouped hits, and readback.
+4. [SELECTION.md](SELECTION.md): selection state, highlight rendering, linking, and lasso behavior.
+5. [CONTROLLERS.md](CONTROLLERS.md): panel controllers, transform ownership, and event routing.
+6. [CAMERA_CONTROLLERS.md](CAMERA_CONTROLLERS.md): fly, pivot-orbit, and turntable camera
    controller semantics.
-6. [EVENT_CALLBACKS.md](EVENT_CALLBACKS.md): callback delivery and observer semantics.
-7. [ANIMATION.md](ANIMATION.md): scene clocks, timelines, easing, and video export coordination.
+7. [EVENT_CALLBACKS.md](EVENT_CALLBACKS.md): callback delivery and observer semantics.
+8. [ANIMATION.md](ANIMATION.md): scene clocks, timelines, easing, and video export coordination.
 
 
 ## Active Proposal Inputs

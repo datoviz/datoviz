@@ -196,22 +196,24 @@ Read the scene spec in this order during review.
 1. [validation/VALIDATION.md](validation/VALIDATION.md) — validation rules and error classes
 2. [validation/ADAPTATION.md](validation/ADAPTATION.md) — explicit fallback and simplification policy
 3. [pipeline/INVALIDATION_AND_CACHING.md](pipeline/INVALIDATION_AND_CACHING.md) — dirty scopes and reuse rules
-4. [interaction/PICKING.md](interaction/PICKING.md) — picking identity and readback behavior
-5. [interaction/CONTROLLERS.md](interaction/CONTROLLERS.md) — event routing and interaction ownership
-6. [interaction/ANIMATION.md](interaction/ANIMATION.md) — scene clock, animation objects, easing, camera keyframes, video export
-7. [integration/EXTERNAL_UI.md](integration/EXTERNAL_UI.md) — boundary with app-owned UI frameworks
-8. [interaction/SELECTION.md](interaction/SELECTION.md) — scene-level selection state, highlight rendering, cross-visual linking, and lasso
-9. [export/IMAGE_EXPORT.md](export/IMAGE_EXPORT.md) — still image capture, render scale, panel-as-texture
-10. [integration/HIGH_DPI.md](integration/HIGH_DPI.md) — device pixel ratio, logical vs physical pixels, DPI change handling
-11. [semantics/TRANSPARENCY.md](semantics/TRANSPARENCY.md) — alpha modes and render pass structure
-12. [semantics/NONLINEAR_TRANSFORMS.md](semantics/NONLINEAR_TRANSFORMS.md) — non-linear coordinate transforms
-13. [export/VECTOR_EXPORT.md](export/VECTOR_EXPORT.md) — v0.4 decision to leave
+4. [interaction/GPU_QUERY_SYSTEM.md](interaction/GPU_QUERY_SYSTEM.md) — GPU-only panel query
+   architecture replacing public pick/probe
+5. [interaction/PICKING.md](interaction/PICKING.md) — picking identity and readback behavior
+6. [interaction/CONTROLLERS.md](interaction/CONTROLLERS.md) — event routing and interaction ownership
+7. [interaction/ANIMATION.md](interaction/ANIMATION.md) — scene clock, animation objects, easing, camera keyframes, video export
+8. [integration/EXTERNAL_UI.md](integration/EXTERNAL_UI.md) — boundary with app-owned UI frameworks
+9. [interaction/SELECTION.md](interaction/SELECTION.md) — scene-level selection state, highlight rendering, cross-visual linking, and lasso
+10. [export/IMAGE_EXPORT.md](export/IMAGE_EXPORT.md) — still image capture, render scale, panel-as-texture
+11. [integration/HIGH_DPI.md](integration/HIGH_DPI.md) — device pixel ratio, logical vs physical pixels, DPI change handling
+12. [semantics/TRANSPARENCY.md](semantics/TRANSPARENCY.md) — alpha modes and render pass structure
+13. [semantics/NONLINEAR_TRANSFORMS.md](semantics/NONLINEAR_TRANSFORMS.md) — non-linear coordinate transforms
+14. [export/VECTOR_EXPORT.md](export/VECTOR_EXPORT.md) — v0.4 decision to leave
     publication-oriented vector export to GSP/Matplotlib
-14. [integration/CUSTOM_VISUALS.md](integration/CUSTOM_VISUALS.md) — user-defined visual families
-15. [integration/THREAD_SAFETY.md](integration/THREAD_SAFETY.md) — threading model and async data handoff
-16. [interaction/EVENT_CALLBACKS.md](interaction/EVENT_CALLBACKS.md) — scene event observer system
-17. [semantics/CLIPPING.md](semantics/CLIPPING.md) — per-visual clip modes
-18. [validation/DIAGNOSTICS.md](validation/DIAGNOSTICS.md) — shared diagnostic shape across the stack
+15. [integration/CUSTOM_VISUALS.md](integration/CUSTOM_VISUALS.md) — user-defined visual families
+16. [integration/THREAD_SAFETY.md](integration/THREAD_SAFETY.md) — threading model and async data handoff
+17. [interaction/EVENT_CALLBACKS.md](interaction/EVENT_CALLBACKS.md) — scene event observer system
+18. [semantics/CLIPPING.md](semantics/CLIPPING.md) — per-visual clip modes
+19. [validation/DIAGNOSTICS.md](validation/DIAGNOSTICS.md) — shared diagnostic shape across the stack
 
 ### 6. Worked examples
 

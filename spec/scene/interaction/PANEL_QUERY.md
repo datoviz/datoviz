@@ -6,6 +6,10 @@
 > - **Purpose:** replace separate public picking and probing concepts with one authoritative
 >   "what is under this panel pixel?" query model.
 
+For the long-term GPU-only architecture and implementation invariants, read
+[`GPU_QUERY_SYSTEM.md`](GPU_QUERY_SYSTEM.md). This file records the high-level public interaction
+direction; `GPU_QUERY_SYSTEM.md` is the more detailed source of truth for the overhaul.
+
 This document records the aggressive v0.4 direction for scene interaction queries. The branch does
 not need to preserve the older public pick/probe split if removing it gives a simpler and more
 correct architecture.
