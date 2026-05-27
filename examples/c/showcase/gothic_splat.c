@@ -6,13 +6,15 @@
 
 /* gothic_splat - Gothic Gaussian-splat showcase.
  *
- * This example loads the v0.4 Gothic splat cache arrays, renders them with dvz_splat(), and uses a
- * fly controller like the LIDAR showcase.
+ * This example loads the v0.4 Gothic splat cache arrays, renders them with dvz_splat() and WBOIT,
+ * and uses a fly controller like the LIDAR showcase.
  *
  * Prepare: python examples/c/showcase/prepare_gothic_splat.py
  * Build:   just example-c showcase/gothic_splat
  * Run:     ./build/examples/c/showcase/gothic_splat
  * Smoke:   ./build/examples/c/showcase/gothic_splat 60
+ * Tuning:  pass --source-over to compare the old blend path, --edl to enable EDL, or
+ *          --alpha-scale=0.05 to adjust per-splat opacity.
  */
 
 
@@ -26,6 +28,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "_alloc.h"
@@ -51,6 +54,7 @@
 #define GOTHIC_SIGMA_SCALE 900.0f
 #define GOTHIC_SIGMA_MIN   0.5f
 #define GOTHIC_SIGMA_MAX   9.0f
+#define GOTHIC_ALPHA_SCALE 0.08f
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
@@ -116,6 +120,34 @@ static uint32_t _stride(int argc, char** argv)
 
 
 /**
+ * Return the requested alpha attenuation factor.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return alpha scale clamped to [0, 1]
+ */
+static float _alpha_scale(int argc, char** argv)
+{
+    const char* value = NULL;
+    float scale = GOTHIC_ALPHA_SCALE;
+    if (example_arg_value(argc, argv, "--alpha-scale", &value) ||
+        example_arg_value_prefix(argc, argv, "--alpha-scale=", &value))
+    {
+        char* end = NULL;
+        float parsed = strtof(value, &end);
+        if (end != value && end != NULL && *end == '\0' && isfinite(parsed))
+            scale = parsed;
+    }
+    if (scale < 0.0f)
+        scale = 0.0f;
+    if (scale > 1.0f)
+        scale = 1.0f;
+    return scale;
+}
+
+
+
+/**
  * Join a directory path and basename.
  *
  * @param dir directory path
@@ -168,6 +200,28 @@ static float _clamp_sigma(float sigma)
     if (sigma > GOTHIC_SIGMA_MAX)
         sigma = GOTHIC_SIGMA_MAX;
     return sigma;
+}
+
+
+
+/**
+ * Apply the Gothic showcase alpha attenuation factor to one color.
+ *
+ * @param alpha source alpha byte
+ * @param alpha_scale attenuation factor in [0, 1]
+ * @return attenuated alpha byte
+ */
+static uint8_t _scale_alpha(uint8_t alpha, float alpha_scale)
+{
+    if (alpha == 0 || alpha_scale <= 0.0f)
+        return 0;
+
+    float scaled = roundf((float)alpha * alpha_scale);
+    if (!isfinite(scaled) || scaled < 1.0f)
+        scaled = 1.0f;
+    if (scaled > 255.0f)
+        scaled = 255.0f;
+    return (uint8_t)scaled;
 }
 
 
@@ -287,11 +341,12 @@ static void _screen_ellipse_from_splat(const vec3 scale, const vec4 quat, vec2 s
  *
  * @param data_dir directory containing Gothic splat .npy arrays
  * @param stride sampling stride
+ * @param alpha_scale source alpha attenuation factor
  * @param dataset output dataset
  * @return whether loading and validation succeeded
  */
 static bool _load_gothic_dataset(
-    const char* data_dir, uint32_t stride, GothicSplatDataset* dataset)
+    const char* data_dir, uint32_t stride, float alpha_scale, GothicSplatDataset* dataset)
 {
     ANN(data_dir);
     ANN(dataset);
@@ -397,6 +452,7 @@ static bool _load_gothic_dataset(
         dataset->positions[dst][1] = positions[src][1];
         dataset->positions[dst][2] = positions[src][2];
         dataset->colors[dst] = colors[src];
+        dataset->colors[dst].a = _scale_alpha(colors[src].a, alpha_scale);
         _screen_ellipse_from_splat(
             scales[src], quats[src], dataset->sigma[dst], &dataset->angles[dst]);
         dst++;
@@ -409,7 +465,8 @@ static bool _load_gothic_dataset(
     dvz_free(positions);
 
     dvz_fprintf(
-        stderr, "loaded Gothic splat dataset with %u splats (stride=%u)\n", dataset->count, stride);
+        stderr, "loaded Gothic splat dataset with %u splats (stride=%u, alpha_scale=%.3f)\n",
+        dataset->count, stride, alpha_scale);
     return true;
 }
 
@@ -513,7 +570,10 @@ int main(int argc, char** argv)
 
     const char* data_dir = _data_dir(argc, argv);
     uint32_t stride = _stride(argc, argv);
-    bool ok = _load_gothic_dataset(data_dir, stride, &dataset);
+    float alpha_scale = _alpha_scale(argc, argv);
+    bool source_over = example_arg_has(argc, argv, "--source-over");
+    bool edl_enabled = example_arg_has(argc, argv, "--edl");
+    bool ok = _load_gothic_dataset(data_dir, stride, alpha_scale, &dataset);
     EXAMPLE_CHECK(ok, "failed to load Gothic splat data");
 
     vec3 center = {0};
@@ -544,13 +604,16 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
     dvz_panel_set_background_color(panel, 0.018f, 0.020f, 0.024f, 1.0f);
 
-    DvzEdlDesc edl = {
-        .radius = 2.0f,
-        .strength = 0.42f,
-        .depth_scale = 0.70f,
-    };
-    ok = dvz_panel_set_edl(panel, &edl);
-    EXAMPLE_CHECK(ok, "dvz_panel_set_edl() failed");
+    if (edl_enabled)
+    {
+        DvzEdlDesc edl = {
+            .radius = 2.0f,
+            .strength = 0.42f,
+            .depth_scale = 0.70f,
+        };
+        ok = dvz_panel_set_edl(panel, &edl);
+        EXAMPLE_CHECK(ok, "dvz_panel_set_edl() failed");
+    }
 
     DvzVisual* visual = dvz_splat(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_splat() failed");
@@ -566,6 +629,12 @@ int main(int argc, char** argv)
 
     rc = dvz_visual_set_depth_test(visual, true);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_depth_test() failed");
+
+    if (!source_over)
+    {
+        rc = dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_WBOIT);
+        EXAMPLE_CHECK(rc == 0, "dvz_visual_set_alpha_mode() failed");
+    }
 
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");

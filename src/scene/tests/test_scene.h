@@ -293,6 +293,8 @@ int test_scene_vector_style_and_bounds(TstContext* suite, const TstCase* item);
 
 int test_scene_vector_emit_glsl(TstContext* suite, const TstCase* item);
 
+int test_scene_vector_curved_emit_glsl(TstContext* suite, const TstCase* item);
+
 int test_scene_path_stroke_style(TstContext* suite, const TstCase* item);
 
 int test_scene_point_like_lowering_policy(TstContext* suite, const TstCase* item);
@@ -699,6 +701,8 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
 int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCase* item);
+
+int test_scene_splat_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCase* item);
 
 int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstContext* suite, const TstCase* item);
 

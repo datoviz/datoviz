@@ -289,16 +289,23 @@ static bool _scene_shader_desc_splat(
 
     bool picking = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_PICKING);
     bool wboit = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_WBOIT_ACCUM);
-    if (picking || wboit)
+    if (picking)
         return false;
 
-    dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_splat%s", format_tag);
-    dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_splat%s", format_tag);
-    dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_splat%s", format_tag);
-    _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_SPLAT);
-    _scene_shader_desc_set_identity(out, "scene.splat", "default");
+    dvz_snprintf(
+        out->vertex_key, sizeof(out->vertex_key), "_vs_splat%s%s",
+        wboit ? "_wboit" : "", format_tag);
+    dvz_snprintf(
+        out->fragment_key, sizeof(out->fragment_key), "_fs_splat%s%s",
+        wboit ? "_wboit" : "", format_tag);
+    dvz_snprintf(
+        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_splat%s%s",
+        wboit ? "_wboit" : "", format_tag);
+    _scene_shader_desc_set_builtin(
+        out, wboit ? DVZ_SCENE_BUILTIN_SHADER_SPLAT_WBOIT : DVZ_SCENE_BUILTIN_SHADER_SPLAT);
+    _scene_shader_desc_set_identity(out, "scene.splat", wboit ? "wboit" : "default");
     out->vertex_spirv_key = "splat_vert";
-    out->fragment_spirv_key = "splat_frag";
+    out->fragment_spirv_key = wboit ? "splat_wboit_frag" : "splat_frag";
     return true;
 }
 

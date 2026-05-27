@@ -3877,6 +3877,91 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
 
 
 /**
+ * Verify WBOIT splat visuals lower to a two-target accumulation pipeline.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_splat_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* splat = dvz_splat(scene, 0);
+    AT(splat != NULL);
+
+    vec3 positions[2] = {{-0.25f, 0.0f, 0.0f}, {+0.25f, 0.0f, 0.0f}};
+    DvzColor colors[2] = {{255, 128, 64, 32}, {64, 128, 255, 32}};
+    vec2 sigma[2] = {{6.0f, 3.0f}, {4.0f, 7.0f}};
+    float angles[2] = {0.3f, -0.5f};
+    AT(dvz_visual_set_data(splat, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(splat, "color", colors, 2) == 0);
+    AT(dvz_visual_set_data(splat, "sigma", sigma, 2) == 0);
+    AT(dvz_visual_set_data(splat, "angle", angles, 2) == 0);
+    AT(dvz_visual_set_alpha_mode(splat, DVZ_ALPHA_WBOIT) == 0);
+    AT(dvz_panel_add_visual(panel, splat, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.max_color_attachments = 2;
+    caps.render_target_format_rgba16float = true;
+    caps.render_target_format_r16float = true;
+    caps.supports_render_target_sampling = true;
+    caps.supports_color_blending = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    bool has_splat_wboit_shader = false;
+    bool has_splat_wboit_pipeline = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+        {
+            has_splat_wboit_shader =
+                has_splat_wboit_shader ||
+                (strcmp(command->u.create_shader_module.builtin_family, "scene.splat") == 0 &&
+                 strcmp(command->u.create_shader_module.builtin_variant, "wboit") == 0);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            has_splat_wboit_pipeline =
+                has_splat_wboit_pipeline ||
+                (command->u.create_render_pipeline.binding_count == 4 &&
+                 command->u.create_render_pipeline.color_target_count == 2 &&
+                 command->u.create_render_pipeline.color_targets[0].blend_enabled &&
+                 command->u.create_render_pipeline.color_targets[1].blend_enabled);
+        }
+    }
+    AT(has_splat_wboit_shader);
+    AT(has_splat_wboit_pipeline);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Verify scene DRP2 contract validation catches emitted pipeline policy drift.
  *
  * @param suite the active test suite

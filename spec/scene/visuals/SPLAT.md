@@ -19,9 +19,10 @@ The active runtime implements `DVZ_VISUAL_TYPE_SPLAT`, public `dvz_splat()`, ret
 `position`/`color`/`sigma`/`angle` attributes, finite-positive `sigma` validation, finite `angle`
 validation, GLSL and WGSL shader variants, and DRP2 lowering through the normal scene visual path.
 
-This first slice intentionally omits separate `opacity`, WBOIT/depth-peel shader variants, and
+This first slice intentionally omits separate `opacity`, depth-peel shader variants, and
 request/readback behavior. It renders rotated screen-space Gaussian billboards with source-over
-alpha blending and center-depth testing.
+alpha blending by default, or with the existing scene WBOIT accumulation path when the visual opts
+into `DVZ_ALPHA_WBOIT`.
 
 
 ## Semantic Purpose
@@ -176,8 +177,9 @@ The default splat path is transparent:
 | Alpha mode | `DVZ_ALPHA_BLENDED` |
 | Fragment depth | center depth |
 
-The visual participates in the same source-over transparent-stage routing as other blended scene
-visuals. Weighted blended OIT and exact sorted compositing are deferred.
+The visual participates in the same transparent-stage routing as other scene visuals. The
+source-over path remains the default; `DVZ_ALPHA_WBOIT` routes splats through the graph-backed WBOIT
+accumulation and resolve passes. Exact sorted compositing is deferred.
 
 
 ## Picking And Requests

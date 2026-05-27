@@ -122,6 +122,8 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "pixel_cue_frag" : "pixel_cue_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SPLAT:
         return fragment ? "splat_frag" : "splat_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_SPLAT_WBOIT:
+        return fragment ? "splat_wboit_frag" : "splat_vert";
     case DVZ_SCENE_BUILTIN_SHADER_POINT_PICK:
         return fragment ? "point_pick_frag" : "point_pick_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK:

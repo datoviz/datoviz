@@ -48,6 +48,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_path_stroke_style);
     TST_CASE(test_scene_segment_emit_glsl);
     TST_CASE(test_scene_vector_emit_glsl);
+    TST_CASE(test_scene_vector_curved_emit_glsl);
     TST_CASE(test_scene_point_like_lowering_policy);
     TST_CASE(test_scene_splat_api_and_attrs);
     TST_CASE(test_scene_splat_emit_instanced_quads);
@@ -126,6 +127,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_visual_alpha_mode_emits_depth_peel_drp2);
     TST_CASE(test_scene_visual_alpha_mode_requires_wboit_capabilities);
     TST_CASE(test_scene_visual_alpha_mode_emits_wboit_drp2);
+    TST_CASE(test_scene_splat_alpha_mode_emits_wboit_drp2);
     TST_CASE(test_scene_drp2_contract_checker_rejects_pipeline_drift);
     TST_CASE(test_scene_drp2_contract_checker_rejects_raster_drift);
     TST_CASE(test_scene_alpha_mode_toggle_refreshes_drp2_contracts);
