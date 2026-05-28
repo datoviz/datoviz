@@ -26,9 +26,9 @@ candidates are:
    scale-bar, and text-font ownership now have first-pass owner files.
 3. `src/scene/domain/field.c`: public domain object state, sampled interpretation, generated
    visual glue, and upload dirtiness are still mixed.
-4. `src/scene/visuals/`: descriptor and attribute helper ownership has a first split, but wide
-   visual-family helper files and shared headers should only be split further when a stable owner
-   boundary is clear.
+4. `src/scene/visuals/`: descriptor and attribute helper ownership has a first split. Point-like
+   draw hooks have moved into family folders, but wide visual-family helper files and shared
+   headers should only be split further when a stable owner boundary is clear.
 5. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
    multiple ownership boundaries at once.
 
@@ -254,7 +254,8 @@ Current ownership:
    resolution, and runtime bind/pipeline/shader/draw descriptor dispatch. Retained lowering,
    bind-descriptor bodies, and normal pipeline-descriptor bodies now live in active family folders.
    The shared default pass-capability hook lives in `visuals/pass_caps.c`, leaving
-   `visuals/registry/` as registration glue.
+   `visuals/registry/` as registration glue. Point-like draw hooks now live in `point/draw.c`,
+   `pixel/draw.c`, and `marker/draw.c`; other families still use the shared default draw helper.
 
 Guardrail: do not split the remaining visual pipeline helpers by enum case alone. The long-term
 direction is a registry-driven visual-family contract, not more generic switch files. Treat

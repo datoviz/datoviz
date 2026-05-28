@@ -94,5 +94,5 @@ bool _scene_visual_shader_desc_resolve(
     const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
     const char* format_tag, DvzSceneVisualShaderDesc* out);
 
-bool _scene_visual_draw_desc_resolve(
+bool _scene_visual_default_draw_desc(
     const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out);

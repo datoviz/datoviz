@@ -31,7 +31,7 @@
  * @param out the output draw descriptor
  * @return whether draw metadata was resolved
  */
-bool _scene_visual_draw_desc_resolve(
+bool _scene_visual_default_draw_desc(
     const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out)
 {
     ANN(visual);
