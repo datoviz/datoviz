@@ -30,7 +30,10 @@
 #include "glyph/internal.h"
 #include "image/internal.h"
 #include "labels/internal.h"
+#include "marker/internal.h"
 #include "path/internal.h"
+#include "pixel/internal.h"
+#include "point/internal.h"
 #include "registry/registry.h"
 #include "segment/internal.h"
 #include "sphere/internal.h"
@@ -188,119 +191,6 @@ void _scene_shader_desc_set_identity(
 
 
 /**
- * Resolve point-like shader metadata from feature flags.
- *
- * @param visual_name the visual key stem
- * @param features the shader features
- * @param format_tag the shader-format cache-key suffix
- * @param out the output shader descriptor
- * @return whether a shader descriptor was resolved
- */
-static bool _scene_shader_desc_point_like(
-    const char* visual_name, const DvzSceneShaderFeatures* features, const char* format_tag,
-    DvzSceneVisualShaderDesc* out)
-{
-    ANN(visual_name);
-    ANN(features);
-    ANN(format_tag);
-    ANN(out);
-
-    bool picking = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_PICKING);
-    bool depth_cue = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_DEPTH_CUE);
-    bool point_style = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_POINT_STYLE);
-    bool selection = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_SELECTION_MASK) &&
-                     !depth_cue && !point_style;
-
-    const char* suffix = picking                    ? "_pick"
-                         : selection                ? "_select"
-                         : point_style && depth_cue ? "_cue_style"
-                         : point_style              ? "_style"
-                         : depth_cue                ? "_cue"
-                                                    : "";
-    dvz_snprintf(
-        out->vertex_key, sizeof(out->vertex_key), "_vs_%s%s%s", visual_name, suffix, format_tag);
-    dvz_snprintf(
-        out->fragment_key, sizeof(out->fragment_key), "_fs_%s%s%s", visual_name, suffix,
-        format_tag);
-    dvz_snprintf(
-        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_%s%s%s", visual_name, suffix,
-        format_tag);
-
-    DvzSceneBuiltinShader shader = DVZ_SCENE_BUILTIN_SHADER_POINT;
-    if (features->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
-        shader = picking     ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK
-                 : selection ? DVZ_SCENE_BUILTIN_SHADER_MARKER_SELECTION
-                             : DVZ_SCENE_BUILTIN_SHADER_MARKER;
-    else if (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
-        shader = picking     ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK
-                 : depth_cue ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE
-                             : DVZ_SCENE_BUILTIN_SHADER_PIXEL;
-    else if (picking)
-        shader = DVZ_SCENE_BUILTIN_SHADER_POINT_PICK;
-    else if (selection)
-        shader = DVZ_SCENE_BUILTIN_SHADER_POINT_SELECTION;
-    else if (point_style)
-        shader = depth_cue ? DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE_DEPTH_CUE
-                           : DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE;
-    else
-        shader =
-            depth_cue ? DVZ_SCENE_BUILTIN_SHADER_POINT_DEPTH_CUE : DVZ_SCENE_BUILTIN_SHADER_POINT;
-
-    _scene_shader_desc_set_builtin(out, shader);
-    _scene_shader_desc_set_identity(
-        out,
-        features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL    ? "scene.pixel"
-        : features->kind == DVZ_SCENE_VISUAL_DESC_MARKER ? "scene.marker"
-                                                         : "scene.point",
-        picking                    ? "pick"
-        : selection                ? "selection"
-        : point_style && depth_cue ? "style_depth_cue"
-        : point_style              ? "style"
-        : depth_cue                ? "depth_cue"
-                                   : "default");
-    if (!picking)
-    {
-        if (features->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
-        {
-            out->vertex_spirv_key = selection ? "marker_select_vert" : "marker_vert";
-            out->fragment_spirv_key = selection ? "marker_select_frag" : "marker_frag";
-        }
-        else if (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
-        {
-            out->vertex_spirv_key = depth_cue ? "pixel_cue_vert" : "pixel_vert";
-            out->fragment_spirv_key = depth_cue ? "pixel_cue_frag" : "pixel_frag";
-        }
-        else if (point_style)
-        {
-            out->vertex_spirv_key = depth_cue ? "point_cue_style_vert" : "point_style_vert";
-            out->fragment_spirv_key = depth_cue ? "point_cue_style_frag" : "point_style_frag";
-        }
-        else
-        {
-            out->vertex_spirv_key = selection   ? "point_select_vert"
-                                    : depth_cue ? "point_cue_vert"
-                                                : "point_vert";
-            out->fragment_spirv_key = selection   ? "point_select_frag"
-                                      : depth_cue ? "point_cue_frag"
-                                                  : "point_frag";
-        }
-    }
-    else
-    {
-        out->vertex_spirv_key = features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
-                                        features->kind == DVZ_SCENE_VISUAL_DESC_MARKER
-                                    ? "pixel_pick_vert"
-                                    : "point_pick_vert";
-        out->fragment_spirv_key = features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
-                                          features->kind == DVZ_SCENE_VISUAL_DESC_MARKER
-                                      ? "pixel_pick_frag"
-                                      : "point_pick_frag";
-    }
-    return true;
-}
-
-
-/**
  * Resolve primitive shader metadata from feature flags.
  *
  * @param features the shader features
@@ -431,17 +321,20 @@ bool _scene_visual_shader_desc_resolve(
     switch (visual->kind)
     {
     case DVZ_SCENE_VISUAL_DESC_PIXEL:
-        return _scene_shader_desc_point_like("pixel", &features, format_tag, out);
+        return _scene_pixel_visual_shader_desc(
+            visual, picking, wboit_accumulation, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_SPLAT:
         return _scene_splat_visual_shader_desc(
             visual, picking, wboit_accumulation, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_POINT:
-        return _scene_shader_desc_point_like("point", &features, format_tag, out);
+        return _scene_point_visual_shader_desc(
+            visual, picking, wboit_accumulation, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_MARKER:
-        return _scene_shader_desc_point_like("marker", &features, format_tag, out);
+        return _scene_marker_visual_shader_desc(
+            visual, picking, wboit_accumulation, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_SPHERE:
         return _scene_sphere_visual_shader_desc(

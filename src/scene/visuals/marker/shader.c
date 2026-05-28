@@ -6,18 +6,16 @@
 
 
 /*************************************************************************************************/
-/*  Pixel visual internals                                                                       */
+/*  Marker visual shader descriptors                                                             */
 /*************************************************************************************************/
-
-#pragma once
-
-
 
 /*************************************************************************************************/
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene_emit/visual_lowering.h"
+#include "marker/internal.h"
+
+#include "point/internal.h"
 
 
 
@@ -25,20 +23,20 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-bool _scene_pixel_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
-
-bool _scene_pixel_visual_bind_desc(
-    const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
-    DvzSceneVisualBindDesc* out);
-
-bool _scene_pixel_visual_pipeline_desc(
-    const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
-    bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
-    DvzSceneVisualPipelineDesc* out);
-
-bool _scene_pixel_visual_shader_desc(
+/**
+ * Resolve marker visual shader metadata.
+ *
+ * @param visual the visual descriptor
+ * @param picking whether the render pass is a picking pass
+ * @param wboit_accumulation whether the pass is an order-independent transparency pass
+ * @param format_tag shader-format cache-key suffix
+ * @param out the output shader descriptor
+ * @return whether a shader descriptor was resolved
+ */
+bool _scene_marker_visual_shader_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
-    const char* format_tag, DvzSceneVisualShaderDesc* out);
-
-bool _scene_pixel_visual_draw_desc(
-    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out);
+    const char* format_tag, DvzSceneVisualShaderDesc* out)
+{
+    return _scene_point_like_visual_shader_desc(
+        "marker", visual, picking, wboit_accumulation, format_tag, out);
+}

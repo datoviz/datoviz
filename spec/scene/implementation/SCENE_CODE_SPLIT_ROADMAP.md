@@ -27,7 +27,7 @@ candidates are:
 3. `src/scene/domain/field.c`: public domain object state, sampled interpretation, generated
    visual glue, and upload dirtiness are still mixed.
 4. `src/scene/visuals/`: descriptor and attribute helper ownership has a first split. Draw hooks
-   have moved into active family folders, and the first segment/path/sphere/splat plus
+   have moved into active family folders, and point-like, segment/path/sphere/splat, plus
    image/labels/glyph shader bodies have moved into family folders. Wide visual-family helper files
    and shared headers should only be split further when a stable owner boundary is clear.
 5. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
@@ -256,8 +256,8 @@ Current ownership:
    bind-descriptor bodies, and normal pipeline-descriptor bodies now live in active family folders.
    The shared default pass-capability hook lives in `visuals/pass_caps.c`, leaving
    `visuals/registry/` as registration glue. Draw hooks now live in active family folders and call
-   the shared default draw helper until family-specific draw policy is needed. Segment, path,
-   sphere, splat, image, labels, and glyph shader hooks are family-owned; the generic shader
+   the shared default draw helper until family-specific draw policy is needed. Point-like, segment,
+   path, sphere, splat, image, labels, and glyph shader hooks are family-owned; the generic shader
    resolver still handles families that need descriptor-kind fallback.
 
 Guardrail: do not split the remaining visual pipeline helpers by enum case alone. The long-term
