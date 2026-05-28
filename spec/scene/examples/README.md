@@ -28,6 +28,7 @@ back into the current scenario bundles or [PLANNING.md](PLANNING.md) before rely
 | [ORGANIZATION.md](ORGANIZATION.md) | Cross-repository ownership, example lanes, scenario IDs, and metadata conventions. |
 | [POLICIES.md](POLICIES.md) | Shared API caveats, data/cache rules, FramePlan/DRP2 references, and metadata block rules. |
 | [STYLE.md](STYLE.md) | Gallery visual identity, screenshots, videos, typography, and accessibility guidance. |
+| [EXECUTION.md](EXECUTION.md) | One-at-a-time migration loop, old-example handling, metadata, and validation workflow. |
 | [TECHNIQUES.md](TECHNIQUES.md) | Cross-cutting rendering-technique notes that apply to multiple scenarios. |
 | [DECISIONS.md](DECISIONS.md) | Historical decisions from the C example duplication/API cleanup. |
 | [TEMPLATE.md](TEMPLATE.md) | Starting point for new scenario specs. |
@@ -57,5 +58,6 @@ actually need to decide: implement now, keep as fixture, defer, or hand off.
 2. Put repeated cache/download/API caveats in [POLICIES.md](POLICIES.md).
 3. Put release status, priority, and blockers in [PLANNING.md](PLANNING.md).
 4. Put visual/screenshot/video direction in [STYLE.md](STYLE.md).
-5. Use scenario IDs from [ORGANIZATION.md](ORGANIZATION.md) when a runnable example, fixture, or
+5. Put old-example migration and per-example execution workflow in [EXECUTION.md](EXECUTION.md).
+6. Use scenario IDs from [ORGANIZATION.md](ORGANIZATION.md) when a runnable example, fixture, or
    generated gallery asset is created.
