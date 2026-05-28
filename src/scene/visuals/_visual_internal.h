@@ -34,7 +34,6 @@ bool _attr_is_instance_attribute(const char* name);
 uint32_t _attr_item_size(DvzVisualType type, const char* name);
 bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item_size);
 bool _attr_source_supported(DvzVisualType type, const char* name, DvzVisualAttrSource source);
-int _attr_index(const DvzVisual* visual, const char* name);
 bool _visual_data_update_contains_attr(
     DvzVisualType type, const DvzVisualDataUpdate* updates, uint32_t update_count,
     const char* attr_name);
@@ -62,8 +61,6 @@ void _volume_state_default(DvzVolumeState* state);
 bool _point_style_enabled(const DvzPointStyleDesc* style);
 DvzPointStyleDesc _marker_style_to_point_style(const DvzMarkerStyle* style);
 void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPointStyleDesc* style);
-bool _image_uses_generated_quads(const DvzVisual* visual);
-bool _image_generated_quad_cache_rebuild(const DvzFigure* figure, DvzVisual* visual);
 void _image_gpu_cache_free(DvzImageGpuCache* cache);
 DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t flags);
 void _scene_release_visual_scale(DvzVisual* visual);

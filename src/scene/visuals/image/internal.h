@@ -34,3 +34,7 @@ bool _image_query_attr(
 bool _image_query_generated_rect_geometry(
     const DvzVisual* visual, DvzSceneQueryScratch* scratch, bool include_ids,
     bool include_texcoords, uint64_t* out_vertex_count);
+
+bool _image_uses_generated_quads(const DvzVisual* visual);
+
+bool _image_generated_quad_cache_rebuild(const DvzFigure* figure, DvzVisual* visual);

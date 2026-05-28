@@ -23,6 +23,7 @@
 #include "_overflow.h"
 #include "_scene.h"
 #include "_visual_internal.h"
+#include "image/internal.h"
 
 
 /*************************************************************************************************/
