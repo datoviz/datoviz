@@ -14,8 +14,10 @@ frame planning, or runtime handoff.
 4. [INVALIDATION_AND_CACHING.md](INVALIDATION_AND_CACHING.md): dirty scopes, reuse, redraw, and uploads.
 5. [FRAME_PLAN.md](FRAME_PLAN.md): canonical producer-side frame artifact.
 6. [FRAME_PLAN_SERIALIZATION.md](FRAME_PLAN_SERIALIZATION.md): debug and fixture shape for frame plans.
-7. [FRAME_LIFECYCLE.md](FRAME_LIFECYCLE.md): update, build, emit, and runtime handoff flow.
-8. [DRAW_RESOURCE_VALIDATION_PLAN.md](DRAW_RESOURCE_VALIDATION_PLAN.md): staged hardening plan for
+7. [FRAME_PLAN_TERMINAL_GRAPH.md](FRAME_PLAN_TERMINAL_GRAPH.md): terminal-readable FramePlan graph
+   debug view.
+8. [FRAME_LIFECYCLE.md](FRAME_LIFECYCLE.md): update, build, emit, and runtime handoff flow.
+9. [DRAW_RESOURCE_VALIDATION_PLAN.md](DRAW_RESOURCE_VALIDATION_PLAN.md): staged hardening plan for
    validating draw counts against bound resource contents.
 
 
