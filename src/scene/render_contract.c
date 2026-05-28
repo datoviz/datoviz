@@ -280,7 +280,7 @@ static void _draw_raster_state_contract(
         *out_cull_mode = VK_CULL_MODE_NONE;
         *out_front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     }
-    else if (facts->visual_type == DVZ_VISUAL_TYPE_VOLUME)
+    else if (_scene_visual_desc_is_volume((DvzSceneVisualDescKind)facts->desc_kind))
     {
         *out_has_raster_state = true;
         *out_cull_mode = VK_CULL_MODE_BACK_BIT;
@@ -1421,7 +1421,10 @@ static bool _contract_validate_drp2_raster_state(
     bool has_raster_state = false;
     uint32_t cull_mode = 0;
     uint32_t front_face = 0;
-    DvzSceneDrawFacts facts = {.visual_type = meta->visual_type};
+    DvzSceneDrawFacts facts = {
+        .visual_type = meta->visual_type,
+        .desc_kind = meta->desc_kind,
+    };
     _draw_raster_state_contract(
         &facts, pass_role, &has_raster_state, &cull_mode, &front_face);
 
@@ -2213,7 +2216,7 @@ bool _scene_draw_contract_resolve(
     out->samples_scene_occlusion = facts->scene_occluded && ordinary_visual_pass;
     out->writes_volume_occlusion_depth =
         pass_role == DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION &&
-        facts->visual_type == DVZ_VISUAL_TYPE_VOLUME;
+        _scene_visual_desc_is_volume((DvzSceneVisualDescKind)facts->desc_kind);
     out->writes_scene_occlusion_depth =
         pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION && facts->scene_occluder;
     out->needs_common_set = facts->uses_common_set;
@@ -2221,19 +2224,23 @@ bool _scene_draw_contract_resolve(
     out->needs_image_set = facts->uses_image_set;
     out->needs_labels_set = false;
     out->needs_glyph_set = false;
-    if (facts->visual_type == DVZ_VISUAL_TYPE_LABELS && out->needs_image_set)
+    if (
+        ((DvzSceneVisualDescKind)facts->desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
+         (DvzSceneVisualDescKind)facts->desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT) &&
+        out->needs_image_set)
     {
         out->needs_image_set = false;
         out->needs_labels_set = true;
     }
-    if (facts->visual_type == DVZ_VISUAL_TYPE_GLYPH && out->needs_image_set)
+    if ((DvzSceneVisualDescKind)facts->desc_kind == DVZ_SCENE_VISUAL_DESC_GLYPH &&
+        out->needs_image_set)
     {
         out->needs_image_set = false;
         out->needs_glyph_set = true;
     }
     out->needs_volume_set = facts->uses_volume_set;
     if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER &&
-        facts->visual_type != DVZ_VISUAL_TYPE_SPHERE)
+        !_scene_visual_desc_is_sphere((DvzSceneVisualDescKind)facts->desc_kind))
         out->needs_material_set = false;
     if (scene_depth_pass)
     {
@@ -2303,6 +2310,7 @@ bool _scene_draw_contract_from_visual(
 
     DvzSceneDrawFacts facts = {
         .visual_type = (uint32_t)visual->type,
+        .desc_kind = (uint32_t)caps.kind,
         .alpha_mode = visual->alpha_mode,
         .can_depth_test = caps.can_depth_test,
         .can_write_depth = caps.can_write_depth,

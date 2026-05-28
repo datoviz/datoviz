@@ -140,6 +140,7 @@ typedef struct DvzSceneBlendTargetContract
 typedef struct DvzSceneDrawFacts
 {
     uint32_t visual_type;
+    uint32_t desc_kind;
     DvzAlphaMode alpha_mode;
 
     bool can_depth_test;
