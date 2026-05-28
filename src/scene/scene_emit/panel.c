@@ -649,6 +649,44 @@ static bool _scene_append_visual_to_render_pass(
 
 
 /**
+ * Count visible drawable visuals attached to one panel.
+ *
+ * @param figure the parent figure
+ * @param panel the panel
+ * @return number of visuals with drawable position data
+ */
+static uint32_t _scene_panel_drawable_visual_count(const DvzFigure* figure, const DvzPanel* panel)
+{
+    ANN(figure);
+    ANN(panel);
+    uint32_t count = 0;
+    for (uint32_t vi = 0; vi < panel->visual_count; vi++)
+    {
+        const DvzVisual* visual = panel->visuals[vi].visual;
+        if (visual == NULL || !visual->visible)
+            continue;
+        if (visual->type == DVZ_VISUAL_TYPE_TEXT)
+            continue;
+        uint32_t visual_index = 0;
+        if (!_figure_visual_index(figure, visual, &visual_index))
+            continue;
+        const char* position_attr = _scene_visual_draw_position_attr(visual);
+        int pos_idx = _attr_index(visual, position_attr);
+        if (pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0)
+        {
+            count++;
+            continue;
+        }
+        log_warn(
+            "%s visual (index %u) has no '%s' data — it will render nothing",
+            _visual_type_name(visual->type), visual_index, position_attr);
+    }
+    return count;
+}
+
+
+
+/**
  * Emit one panel render node into a frame plan.
  *
  * @param figure the parent figure
@@ -671,26 +709,7 @@ bool _scene_emit_panel_render_ex(
 
     char panel_id[64];
     dvz_snprintf(panel_id, sizeof(panel_id), "%s_p%u", figure_id, panel_index);
-    uint32_t drawable_count = 0;
-    for (uint32_t vi = 0; vi < panel->visual_count; vi++)
-    {
-        DvzVisual* visual = panel->visuals[vi].visual;
-        if (visual == NULL || !visual->visible)
-            continue;
-        if (visual->type == DVZ_VISUAL_TYPE_TEXT)
-            continue;
-        uint32_t vidx = 0;
-        if (!_figure_visual_index(figure, visual, &vidx))
-            continue;
-        const char* position_attr = _scene_visual_draw_position_attr(visual);
-        int pos_idx = _attr_index(visual, position_attr);
-        if (pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0)
-            drawable_count++;
-        else
-            log_warn(
-                "%s visual (index %u) has no '%s' data — it will render nothing",
-                _visual_type_name(visual->type), vidx, position_attr);
-    }
+    uint32_t drawable_count = _scene_panel_drawable_visual_count(figure, panel);
 
     if (drawable_count == 0)
     {
