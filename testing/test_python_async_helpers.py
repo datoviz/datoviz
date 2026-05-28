@@ -42,10 +42,10 @@ def test_pointer_event_wrapper_layout_matches_c_abi():
         records = json.load(f).get('records', {})
 
     layout_classes = {
-        'DvzPointerWheelEvent': dvz_events._PointerWheelRaw,
-        'DvzPointerDragEvent': dvz_events._PointerDragRaw,
-        'DvzPointerEventUnion': dvz_events._PointerContentRaw,
-        'DvzPointerEvent': dvz_events._PointerEventRaw,
+        'DvzPointerWheelEvent': dvz_events.raw.DvzPointerWheelEvent,
+        'DvzPointerDragEvent': dvz_events.raw.DvzPointerDragEvent,
+        'DvzPointerEventUnion': dvz_events.raw.DvzPointerEventUnion,
+        'DvzPointerEvent': dvz_events.raw.DvzPointerEvent,
     }
     for name, cls in layout_classes.items():
         assert name in records

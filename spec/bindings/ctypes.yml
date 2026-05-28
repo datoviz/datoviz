@@ -32,6 +32,13 @@ smoke_symbols:
   - dvz_scene
   - dvz_scene_destroy
 
+layout_records:
+  include:
+    - DvzPointerWheelEvent
+    - DvzPointerDragEvent
+    - DvzPointerEventUnion
+    - DvzPointerEvent
+
 skipped_functions:
   reason: >
     Current generator output excludes functions whose signatures still require by-value records,

@@ -12,6 +12,7 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DEFAULT_INPUT = ROOT_DIR / 'build' / 'bindings' / 'datoviz_api.json'
 DEFAULT_OUTPUT = ROOT_DIR / 'datoviz' / '_ctypes.py'
+DEFAULT_POLICY = ROOT_DIR / 'spec' / 'bindings' / 'ctypes.yml'
 
 HEADER = '''\
 """
@@ -410,17 +411,59 @@ def _ordered_records(api: dict, records: set[str]) -> list[dict]:
     return ordered
 
 
+def _layout_records_from_policy(path: Path) -> set[str]:
+    if not path.exists():
+        return set()
+    try:
+        import yaml  # type: ignore
+
+        with path.open() as f:
+            policy = yaml.safe_load(f) or {}
+        include = policy.get('layout_records', {}).get('include', [])
+        if isinstance(include, list) and all(isinstance(item, str) for item in include):
+            return set(include)
+    except ModuleNotFoundError:
+        pass
+
+    out: set[str] = set()
+    in_layout = False
+    in_include = False
+    for line in path.read_text().splitlines():
+        stripped = line.strip()
+        if stripped == 'layout_records:':
+            in_layout = True
+            in_include = False
+            continue
+        if in_layout and not line.startswith(' ') and stripped:
+            break
+        if in_layout and stripped == 'include:':
+            in_include = True
+            continue
+        if in_include and stripped.startswith('- '):
+            out.add(stripped[2:].strip())
+        elif in_include and stripped and not stripped.startswith('#'):
+            break
+    return out
+
+
 def _layoutable_records(
-    ordered_records: list[dict], records: set[str], enums: set[str], callbacks: set[str]
+    ordered_records: list[dict],
+    records: set[str],
+    enums: set[str],
+    callbacks: set[str],
+    forced_records: set[str] | None = None,
 ) -> set[str]:
     out: set[str] = set()
+    forced_records = forced_records or set()
     for record in ordered_records:
         name = record.get('name')
         if not name or record.get('opaque'):
             continue
         for field in record.get('fields', []):
             field_name = field.get('name')
-            if not field_name or _unsupported_field_layout(field.get('type', {})):
+            if not field_name:
+                break
+            if name not in forced_records and _unsupported_field_layout(field.get('type', {})):
                 break
             dep = _record_dependency(field.get('type', {}), records)
             if dep and dep not in out:
@@ -477,7 +520,7 @@ def _ctype_for(
     return None
 
 
-def generate(api: dict) -> tuple[str, list[str]]:
+def generate(api: dict, *, forced_layout_records: set[str] | None = None) -> tuple[str, list[str]]:
     records = {record['name'] for record in api.get('records', []) if record.get('name')}
     enums = {enum['name'] for enum in api.get('enums', []) if enum.get('name')}
     callback_typedefs = _callback_typedefs(api)
@@ -498,7 +541,9 @@ def generate(api: dict) -> tuple[str, list[str]]:
         lines.append('\n\n')
 
     ordered_records = _ordered_records(api, records)
-    layoutable_records = _layoutable_records(ordered_records, records, enums, callbacks)
+    layoutable_records = _layoutable_records(
+        ordered_records, records, enums, callbacks, forced_records=forced_layout_records
+    )
 
     for record in ordered_records:
         name = record.get('name')
@@ -655,12 +700,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', type=Path, default=DEFAULT_INPUT)
     parser.add_argument('--output', type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument('--policy', type=Path, default=DEFAULT_POLICY)
     parser.add_argument('--check', action='store_true', help='fail if the generated file is stale')
     args = parser.parse_args()
 
     with args.input.open() as f:
         api = json.load(f)
-    text, skipped = generate(api)
+    text, skipped = generate(api, forced_layout_records=_layout_records_from_policy(args.policy))
 
     if args.check:
         current = args.output.read_text() if args.output.exists() else ''

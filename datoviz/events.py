@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import ctypes
 import inspect
 import warnings
 from dataclasses import dataclass
@@ -25,36 +24,6 @@ _POINTER_EVENT_NAMES = {
 }
 
 
-class _PointerWheelRaw(ctypes.Structure):
-    _fields_ = [("dir", ctypes.c_float * 2)]
-
-
-class _PointerDragRaw(ctypes.Structure):
-    _fields_ = [
-        ("press_pos", ctypes.c_float * 2),
-        ("last_pos", ctypes.c_float * 2),
-        ("shift", ctypes.c_float * 2),
-        ("is_press_valid", ctypes.c_bool),
-    ]
-
-
-class _PointerContentRaw(ctypes.Union):
-    _fields_ = [("w", _PointerWheelRaw), ("d", _PointerDragRaw)]
-
-
-class _PointerEventRaw(ctypes.Structure):
-    _fields_ = [
-        ("type", ctypes.c_int),
-        ("content", _PointerContentRaw),
-        ("pos", ctypes.c_float * 2),
-        ("button", ctypes.c_int),
-        ("mods", ctypes.c_int),
-        ("content_scale", ctypes.c_float),
-        ("timestamp_ns", ctypes.c_uint64),
-        ("user_data", ctypes.c_void_p),
-    ]
-
-
 @dataclass(frozen=True)
 class PointerEvent:
     """Copied pointer event passed to Python handlers."""
@@ -73,7 +42,7 @@ Handler = Callable[[PointerEvent], Awaitable[Any] | Any]
 
 
 def _copy_pointer_event(event_ptr) -> PointerEvent:
-    event = ctypes.cast(event_ptr, ctypes.POINTER(_PointerEventRaw)).contents
+    event = event_ptr.contents
     return PointerEvent(
         type=raw.DvzPointerEventType(event.type),
         x=float(event.pos[0]),
