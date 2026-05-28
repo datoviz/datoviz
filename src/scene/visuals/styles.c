@@ -124,41 +124,6 @@ void _image_gpu_cache_free(DvzImageGpuCache* cache)
 
 
 /**
- * Configure segment endpoint caps.
- *
- * @param visual the segment visual
- * @param start_cap cap applied to the start endpoint
- * @param end_cap cap applied to the end endpoint
- * @return 0 on success, -1 on validation error
- */
-int dvz_segment_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap end_cap)
-{
-    ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_SEGMENT)
-    {
-        log_error("dvz_segment_set_caps requires a segment visual");
-        return -1;
-    }
-    if (!_stroke_cap_valid(start_cap) || !_stroke_cap_valid(end_cap))
-    {
-        log_error("invalid segment cap");
-        return -1;
-    }
-    if (!_scene_visual_mutation_allowed(visual->scene, "update segment caps"))
-        return -1;
-
-    if (visual->segment.start_cap == start_cap && visual->segment.end_cap == end_cap)
-        return 0;
-    visual->segment.start_cap = start_cap;
-    visual->segment.end_cap = end_cap;
-    _segment_sync_params(visual);
-    _visual_bump_version(&visual->material.version);
-    visual->material_params_dirty = true;
-    _scene_notify_visual_changed(visual);
-    return 0;
-}
-
-/**
  * Configure vector/arrow styling.
  *
  * @param visual the vector visual

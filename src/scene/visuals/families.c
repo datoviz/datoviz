@@ -702,26 +702,6 @@ void dvz_visual_set_visible(DvzVisual* visual, bool visible)
 
 
 /**
- * Create a segment visual.
- *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual, or NULL on allocation failure
- */
-DvzVisual* dvz_segment(DvzScene* scene, uint32_t flags)
-{
-    ANN(scene);
-    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_SEGMENT, flags);
-    if (visual == NULL)
-        return NULL;
-    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    visual->material_params_dirty = true;
-    visual->segment.gpu.dirty = true;
-    return visual;
-}
-
-
-/**
  * Create a vector/arrow visual.
  *
  * @param scene the scene
