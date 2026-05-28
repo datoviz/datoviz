@@ -66,6 +66,11 @@ void _scene_visual_pipeline_desc_apply_query_pick(
     const DvzSceneVisualDesc* visual, uint32_t color_target_format,
     DvzSceneVisualPipelineDesc* pipeline);
 
+void _scene_visual_pipeline_desc_apply_pass_policy(
+    const DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role, bool force_point_depth,
+    uint32_t pass_sample_count, bool pass_alpha_to_coverage,
+    DvzSceneVisualPipelineDesc* pipeline);
+
 bool _scene_visual_shader_desc_apply_query_pick(
     const DvzSceneVisualDesc* visual, uint32_t color_target_format,
     DvzSceneVisualShaderDesc* shader, bool* out_applied);

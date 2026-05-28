@@ -368,28 +368,9 @@ bool _emitter_prepare_render_multi(
         if (render->u.render.picking && cfg != NULL)
             _scene_visual_pipeline_desc_apply_query_pick(
                 &desc, cfg->color_target_format, &pipeline);
-        if (gbuffer_pass && desc.kind != DVZ_SCENE_VISUAL_DESC_SPHERE)
-            pipeline.needs_material_layout = false;
-        if (scene_occlusion_pass)
-        {
-            pipeline.needs_image_layout = false;
-            pipeline.needs_glyph_layout = false;
-            pipeline.needs_material_layout = false;
-            pipeline.needs_scene_occlusion_layout = false;
-            pipeline.has_depth_state = true;
-            pipeline.depth_write_enabled = true;
-            pipeline.depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
-        }
-        if (force_point_depth && point_like_desc)
-        {
-            pipeline.has_depth_state = true;
-            pipeline.depth_write_enabled = true;
-            pipeline.depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
-        }
-        if (pass_sample_count > 1 &&
-            (desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE || point_like_desc) &&
-            pass_alpha_to_coverage)
-            pipeline.alpha_to_coverage = true;
+        _scene_visual_pipeline_desc_apply_pass_policy(
+            &desc, render->u.render.pass_role, force_point_depth, pass_sample_count,
+            pass_alpha_to_coverage, &pipeline);
         if (ok && is_new)
         {
             uint64_t material_bgl_id = 0;
