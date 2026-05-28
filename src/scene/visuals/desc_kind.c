@@ -176,6 +176,52 @@ bool _scene_visual_meta_is_stroked_path(
 
 
 /**
+ * Return a compact visual descriptor kind name for diagnostics.
+ *
+ * @param kind visual descriptor kind
+ * @return the visual descriptor kind name
+ */
+const char* _scene_visual_desc_kind_name(DvzSceneVisualDescKind kind)
+{
+    switch (kind)
+    {
+    case DVZ_SCENE_VISUAL_DESC_POINT:
+        return "point";
+    case DVZ_SCENE_VISUAL_DESC_PIXEL:
+        return "pixel";
+    case DVZ_SCENE_VISUAL_DESC_SPLAT:
+        return "splat";
+    case DVZ_SCENE_VISUAL_DESC_MARKER:
+        return "marker";
+    case DVZ_SCENE_VISUAL_DESC_SPHERE:
+        return "sphere";
+    case DVZ_SCENE_VISUAL_DESC_SEGMENT:
+        return "segment";
+    case DVZ_SCENE_VISUAL_DESC_PATH:
+        return "path";
+    case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
+        return "primitive";
+    case DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH:
+        return "textured_mesh";
+    case DVZ_SCENE_VISUAL_DESC_IMAGE:
+        return "image";
+    case DVZ_SCENE_VISUAL_DESC_LABELS_SINT:
+    case DVZ_SCENE_VISUAL_DESC_LABELS_UINT:
+        return "labels";
+    case DVZ_SCENE_VISUAL_DESC_GLYPH:
+        return "glyph";
+    case DVZ_SCENE_VISUAL_DESC_VOLUME:
+    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT:
+    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT:
+        return "volume";
+    case DVZ_SCENE_VISUAL_DESC_NONE:
+    default:
+        return "unknown";
+    }
+}
+
+
+/**
  * Return the default visual family for one descriptor kind.
  *
  * @param kind visual descriptor kind

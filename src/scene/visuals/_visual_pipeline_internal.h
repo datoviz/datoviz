@@ -54,7 +54,13 @@ bool _scene_visual_desc_is_path(DvzSceneVisualDescKind kind);
 
 bool _scene_visual_desc_is_stroke(DvzSceneVisualDescKind kind);
 
+const char* _scene_visual_desc_kind_name(DvzSceneVisualDescKind kind);
+
 DvzVisualType _scene_visual_desc_default_type(DvzSceneVisualDescKind kind);
+
+bool _scene_visual_fallback_pipeline_desc(
+    DvzSceneVisualDescKind kind, uint32_t vertex_buffer_count, bool instanced_point_like,
+    DvzSceneVisualPipelineDesc* out);
 
 uint64_t _scene_render_visual_resource_id(
     const DvzFramePlanEmitter* emitter, const char* encoded_visual_id,

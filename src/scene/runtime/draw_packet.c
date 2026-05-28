@@ -35,52 +35,6 @@
 /*************************************************************************************************/
 
 /**
- * Return a compact visual-kind name for draw resource diagnostics.
- *
- * @param kind visual descriptor kind
- * @return the visual-kind name
- */
-static const char* _draw_packet_kind_name(DvzSceneVisualDescKind kind)
-{
-    switch (kind)
-    {
-    case DVZ_SCENE_VISUAL_DESC_POINT:
-        return "point";
-    case DVZ_SCENE_VISUAL_DESC_PIXEL:
-        return "pixel";
-    case DVZ_SCENE_VISUAL_DESC_SPLAT:
-        return "splat";
-    case DVZ_SCENE_VISUAL_DESC_MARKER:
-        return "marker";
-    case DVZ_SCENE_VISUAL_DESC_SPHERE:
-        return "sphere";
-    case DVZ_SCENE_VISUAL_DESC_SEGMENT:
-        return "segment";
-    case DVZ_SCENE_VISUAL_DESC_PATH:
-        return "path";
-    case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
-        return "primitive";
-    case DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH:
-        return "textured_mesh";
-    case DVZ_SCENE_VISUAL_DESC_IMAGE:
-        return "image";
-    case DVZ_SCENE_VISUAL_DESC_LABELS_SINT:
-    case DVZ_SCENE_VISUAL_DESC_LABELS_UINT:
-        return "labels";
-    case DVZ_SCENE_VISUAL_DESC_GLYPH:
-        return "glyph";
-    case DVZ_SCENE_VISUAL_DESC_VOLUME:
-    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT:
-    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT:
-        return "volume";
-    case DVZ_SCENE_VISUAL_DESC_NONE:
-    default:
-        return "unknown";
-    }
-}
-
-
-/**
  * Return a compact resource-role name for draw resource diagnostics.
  *
  * @param state resource id state
@@ -175,7 +129,7 @@ static bool _draw_packet_resource_count(
             message, sizeof(message),
             "scene draw resource validation failed: visual=%s role=%s resource_id=%" PRIu64
             " byte_size=%" PRIu64 " stride=%" PRIu32,
-            _draw_packet_kind_name(kind), role, id, byte_size, stride);
+            _scene_visual_desc_kind_name(kind), role, id, byte_size, stride);
         _diagnostic(report, message);
         return false;
     }
@@ -214,7 +168,7 @@ static bool _draw_packet_validate(const SceneDrawPacket* packet, DvzDiagnosticRe
                 message, sizeof(message),
                 "scene draw resource validation failed: visual=%s role=%s resource_id=%" PRIu64
                 " draw_count=%" PRIu64 " logical_count=%" PRIu64,
-                _draw_packet_kind_name(packet->kind), vertex->role, vertex->buffer_id,
+                _scene_visual_desc_kind_name(packet->kind), vertex->role, vertex->buffer_id,
                 draw_count, vertex->logical_count);
             _diagnostic(report, message);
             return false;
@@ -231,8 +185,8 @@ static bool _draw_packet_validate(const SceneDrawPacket* packet, DvzDiagnosticRe
                 message, sizeof(message),
                 "scene draw resource validation failed: visual=%s role=index resource_id=%" PRIu64
                 " draw_count=%" PRIu64 " logical_count=%" PRIu64,
-                _draw_packet_kind_name(packet->kind), packet->index_buffer_id, draw_count,
-                packet->index_logical_count);
+                _scene_visual_desc_kind_name(packet->kind), packet->index_buffer_id,
+                draw_count, packet->index_logical_count);
             _diagnostic(report, message);
             return false;
         }
@@ -270,7 +224,8 @@ static bool _draw_packet_fill_vertex_buffers(
             message, sizeof(message),
             "scene draw resource validation failed: visual=%s binding_count=%" PRIu32
             " vbuf_count=%" PRIu32,
-            _draw_packet_kind_name(visual->kind), pipeline->binding_count, visual->vbuf_count);
+            _scene_visual_desc_kind_name(visual->kind), pipeline->binding_count,
+            visual->vbuf_count);
         _diagnostic(report, message);
         return false;
     }
@@ -406,67 +361,11 @@ bool _scene_draw_packet_init_fallback(
     visual.instance_count = instance_count;
     visual.vbuf_count = vertex_buffer_count;
 
-    uint32_t binding_count =
-        kind == DVZ_SCENE_VISUAL_DESC_MARKER ? 5
-        : kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH || kind == DVZ_SCENE_VISUAL_DESC_SPLAT ? 4
-        : kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL
-            ? 3
-            : 2;
-    if (binding_count > vertex_buffer_count)
-        binding_count = vertex_buffer_count;
-    pipeline.binding_count = binding_count;
     for (uint32_t i = 0; i < vertex_buffer_count; i++)
         visual.vbuf_ids[i] = vertex_buffer_ids[i];
-    for (uint32_t i = 0; i < binding_count; i++)
-        pipeline.step_modes[i] = DVZ_DRP2_VERTEX_STEP_MODE_VERTEX;
-
-    if (kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
-        kind == DVZ_SCENE_VISUAL_DESC_MARKER)
-    {
-        pipeline.strides[0] = 3 * sizeof(float);
-        pipeline.strides[1] = 4 * sizeof(uint8_t);
-        pipeline.strides[2] = sizeof(float);
-        if (kind == DVZ_SCENE_VISUAL_DESC_MARKER && binding_count >= 5)
-        {
-            pipeline.strides[3] = sizeof(float);
-            pipeline.strides[4] = sizeof(uint32_t);
-        }
-        if (instanced_point_like)
-        {
-            for (uint32_t i = 0; i < binding_count; i++)
-                pipeline.step_modes[i] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
-        }
-    }
-    else if (kind == DVZ_SCENE_VISUAL_DESC_SPLAT)
-    {
-        pipeline.strides[0] = 3 * sizeof(float);
-        pipeline.strides[1] = 4 * sizeof(uint8_t);
-        pipeline.strides[2] = 2 * sizeof(float);
-        if (binding_count >= 4)
-            pipeline.strides[3] = sizeof(float);
-        if (instanced_point_like)
-        {
-            for (uint32_t i = 0; i < binding_count; i++)
-                pipeline.step_modes[i] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
-        }
-    }
-    else if (kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE)
-    {
-        pipeline.strides[0] = 3 * sizeof(float);
-        pipeline.strides[1] = 4 * sizeof(uint8_t);
-    }
-    else if (kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
-    {
-        pipeline.strides[0] = 3 * sizeof(float);
-        pipeline.strides[1] = 4 * sizeof(uint8_t);
-        pipeline.strides[2] = 3 * sizeof(float);
-        pipeline.strides[3] = 2 * sizeof(float);
-    }
-    else
-    {
-        pipeline.strides[0] = 3 * sizeof(float);
-        pipeline.strides[1] = 2 * sizeof(float);
-    }
+    if (!_scene_visual_fallback_pipeline_desc(
+            kind, vertex_buffer_count, instanced_point_like, &pipeline))
+        return false;
 
     return _scene_draw_packet_init(
         state, &visual, &pipeline, pipeline_id, bg_set0, bg_set1, 0, 0,
