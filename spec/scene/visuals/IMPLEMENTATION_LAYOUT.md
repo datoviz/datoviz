@@ -22,6 +22,10 @@ Landed on 2026-05-28:
    `dvz_path_set_subpaths()`.
 9. `vector/api.c` owns `dvz_vector_style()`, `dvz_vector()`, `dvz_arrow()`,
    `dvz_vector_set_style()`, and `dvz_vector_set_subpaths()`.
+10. `stroke/quad.c` owns segment stroke-quad cache construction and straight-vector endpoint/cache
+    construction.
+11. `stroke/path.c` owns path-stroke adjacency, flag, distance, and index cache construction for
+    both path visuals and curved vector visuals.
 
 Existing family folders already owned their GPU query implementations through `query.c`. The first
 refactor step makes each family folder own the public family API and the family-local style or mode
@@ -124,13 +128,14 @@ unstaged unless explicitly approved for that commit.
 
 ## Next Candidates
 
-The next useful extractions are larger than the simple families:
+The stroke-family cache extraction is complete for the current segment/path/vector slice. Keep
+frame-plan orchestration in plan code; only move more geometry/cache construction when an extracted
+file can own a coherent family slice without copying dispatch policy.
 
-1. `segment`: stroke-quad derived upload/cache builders currently in
-   `src/scene/plan/visual_lowering_uploads.c`.
-2. `path`: path-stroke derived upload/cache builders currently in
-   `src/scene/plan/visual_lowering_uploads.c`.
-3. `vector`: endpoint/cache glue that delegates to segment-like or path-like stroke lowering.
+Useful next candidates:
 
-Keep frame-plan orchestration in plan code. Move geometry/cache construction only when the extracted
-file can own a coherent stroke-family slice without copying segment/path/vector lowering logic.
+1. image/labels generated-quad cache construction, currently still in
+   `src/scene/plan/visual_lowering_uploads.c`;
+2. family-local bounds reducers once the shared bounds reducer has clear independent slices;
+3. visual-family query helper deduplication where segment/path/vector query files still share
+   temporary upload and offscreen-target logic.
