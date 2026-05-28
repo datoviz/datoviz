@@ -40,3 +40,9 @@ void _field_copy_full_data(
 bool _field_read_scalar(const DvzSampledField* field, uint64_t sample_index, double* out_value);
 
 bool _field_ensure_upload(DvzSampledField* field, uint64_t byte_size);
+
+void _scene_visual_texture_mark_full_dirty(
+    DvzVisual* visual, const DvzSampledFieldDesc* desc);
+
+void _scene_visual_texture_mark_region_dirty(
+    DvzVisual* visual, const DvzSampledFieldDesc* desc, DvzFieldRegion region);
