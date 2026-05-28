@@ -36,10 +36,9 @@ Important current state:
    and normal pipeline descriptors are now implemented in the active family folders, while shared
    default pass-capability resolution lives in `visuals/pass_caps.c`.
 8. `visuals/attrs.c` and `visuals/desc.c` are smaller after the first split, and image/labels/volume
-   metadata fill has moved behind family hooks. Point-like draw descriptor hooks now live in their
-   family folders and call the shared default draw helper. The final architecture still needs
-   upload, query, bounds, remaining draw hooks, and the current generic shader bodies to migrate
-   into family-owned files.
+   metadata fill has moved behind family hooks. Draw descriptor hooks now live in active family
+   folders and call the shared default draw helper. The final architecture still needs upload,
+   query, bounds, and the current generic shader bodies to migrate into family-owned files.
 9. `scene_emit/uploads.c`, `annotation/text.c`, `annotation/axis.c`, and `domain/field.c` remain the
    highest-value mixed-ownership files.
 
@@ -74,10 +73,9 @@ this section when a slice is completed.
 
 2. Move draw descriptor bodies into family folders.
    - Current root: `src/scene/visuals/draw_desc.c`.
-   - Status on 2026-05-28: started with point-like families. `point/draw.c`, `pixel/draw.c`, and
-     `marker/draw.c` own their family hooks and delegate to `_scene_visual_default_draw_desc()`.
-     Continue with stroke/mesh/primitive/texture families before deleting the generic registry
-     default from normal family registrations.
+   - Status on 2026-05-28: completed for active families. Family `draw.c` files own the hooks and
+     currently delegate to `_scene_visual_default_draw_desc()` until a family needs custom draw-count
+     policy.
    - Add a shared default draw helper if most families still use `vertex_count`, `instance_count`,
      `index_buffer_id`, `index_format`, and `index_count` directly.
    - Register family draw hooks that call the default helper first, then move any generated or

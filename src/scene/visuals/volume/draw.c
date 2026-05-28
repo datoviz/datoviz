@@ -6,18 +6,17 @@
 
 
 /*************************************************************************************************/
-/*  Glyph visual internals                                                                       */
+/*  Volume visual draw descriptors                                                               */
 /*************************************************************************************************/
-
-#pragma once
-
-
 
 /*************************************************************************************************/
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene_emit/visual_lowering.h"
+#include "volume/internal.h"
+
+#include "_assertions.h"
+#include "registry/registry.h"
 
 
 
@@ -25,16 +24,17 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-bool _scene_glyph_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
-
-bool _scene_glyph_visual_bind_desc(
-    const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
-    DvzSceneVisualBindDesc* out);
-
-bool _scene_glyph_visual_pipeline_desc(
-    const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
-    bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
-    DvzSceneVisualPipelineDesc* out);
-
-bool _scene_glyph_visual_draw_desc(
-    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out);
+/**
+ * Resolve volume visual draw-count metadata.
+ *
+ * @param visual the visual descriptor
+ * @param out the output draw descriptor
+ * @return whether draw metadata was resolved
+ */
+bool _scene_volume_visual_draw_desc(
+    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out)
+{
+    ANN(visual);
+    ANN(out);
+    return _scene_visual_default_draw_desc(visual, out);
+}
