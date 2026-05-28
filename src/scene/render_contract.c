@@ -20,6 +20,7 @@
 #include "_compat.h"
 #include "_scene_resource_key.h"
 #include "_technique.h"
+#include "_visual_lowering.h"
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
 #include "../drp2/_stream.h"
@@ -2316,7 +2317,7 @@ bool _scene_draw_contract_from_visual(
         .can_write_depth = caps.can_write_depth,
         .writes_depth = caps.writes_depth && forward_depth_compare,
         .samples_depth = caps.samples_depth,
-        .volume_occluded = visual->volume_occluded,
+        .volume_occluded = _scene_visual_lowering_volume_occluded(visual),
         .scene_occluded = visual->scene_occluded,
         .scene_occluder = visual->scene_occluder,
         .uses_segment_pipeline = _scene_visual_desc_is_stroke(caps.kind),

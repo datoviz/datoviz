@@ -306,7 +306,8 @@ static bool _scene_panel_has_visible_volume_occlusion_target(const DvzPanel* pan
     {
         const DvzVisual* visual = panel->visuals[i].visual;
         if (visual == NULL || !visual->visible || visual->type == DVZ_VISUAL_TYPE_TEXT ||
-            !visual->volume_occluded || visual == panel->volume_occluder_visual)
+            !_scene_visual_lowering_volume_occluded(visual) ||
+            visual == panel->volume_occluder_visual)
             continue;
         int pos_idx = _attr_index(visual, _scene_visual_draw_position_attr(visual));
         if (pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0)

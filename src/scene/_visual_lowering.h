@@ -54,3 +54,5 @@ DvzSceneVisualDescKind _scene_visual_lowering_desc_kind(const DvzVisual* visual)
 
 bool _scene_visual_lowering_fill_metadata(
     const DvzVisual* visual, DvzFramePlanVisualMeta* metadata);
+
+bool _scene_visual_lowering_volume_occluded(const DvzVisual* visual);

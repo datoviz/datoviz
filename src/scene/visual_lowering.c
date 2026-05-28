@@ -350,3 +350,17 @@ bool _scene_visual_lowering_fill_metadata(
     }
     return true;
 }
+
+
+
+/**
+ * Return whether one visual samples the panel volume-occlusion target.
+ *
+ * @param visual the retained visual
+ * @return whether volume occlusion is enabled for the visual
+ */
+bool _scene_visual_lowering_volume_occluded(const DvzVisual* visual)
+{
+    ANN(visual);
+    return visual->volume_occluded;
+}
