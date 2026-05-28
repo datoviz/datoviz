@@ -433,6 +433,8 @@ bool dvz_panel_set_reserve(DvzPanel* panel, const DvzPanelReserve* reserve)
     DvzPanelReserve next = reserve != NULL ? *reserve : (DvzPanelReserve){0};
     if (!_panel_reserve_valid(panel, &next))
         return false;
+    panel->layout_reserve_enabled = false;
+    panel->layout_reserve = dvz_panel_layout_reserve();
     if (_panel_reserve_equal(&panel->base_reserve, &next))
         return true;
     panel->base_reserve = next;
@@ -554,6 +556,28 @@ bool dvz_panel_set_layout_reserve(DvzPanel* panel, const DvzPanelLayoutReserve* 
     if (!_panel_layout_reserve_valid(&next))
         return false;
 
+    panel->layout_reserve_enabled = true;
+    panel->layout_reserve = next;
+    return _scene_panel_refresh_layout_reserve(panel);
+}
+
+
+/**
+ * Refresh one panel's pixel reserve from its normalized layout reserve.
+ *
+ * @param panel the panel
+ * @return whether the reserve is valid after refresh
+ */
+bool _scene_panel_refresh_layout_reserve(DvzPanel* panel)
+{
+    if (panel == NULL)
+        return false;
+    if (!panel->layout_reserve_enabled)
+        return true;
+    DvzPanelLayoutReserve next = panel->layout_reserve;
+    if (!_panel_layout_reserve_valid(&next))
+        return false;
+
     float width = 0.0f;
     float height = 0.0f;
     _scene_panel_pixel_size(panel, &width, &height);
@@ -563,7 +587,13 @@ bool dvz_panel_set_layout_reserve(DvzPanel* panel, const DvzPanelLayoutReserve* 
         .top_px = 0.5f * next.top * height,
         .bottom_px = 0.5f * next.bottom * height,
     };
-    return dvz_panel_set_reserve(panel, &pixel_reserve);
+    if (!_panel_reserve_valid(panel, &pixel_reserve))
+        return false;
+    if (_panel_reserve_equal(&panel->base_reserve, &pixel_reserve))
+        return true;
+    panel->base_reserve = pixel_reserve;
+    _panel_update_reserve(panel);
+    return true;
 }
 
 
@@ -578,6 +608,11 @@ bool dvz_panel_get_layout_reserve(DvzPanel* panel, DvzPanelLayoutReserve* out)
 {
     if (panel == NULL || out == NULL)
         return false;
+    if (panel->layout_reserve_enabled)
+    {
+        *out = panel->layout_reserve;
+        return true;
+    }
     float width = 0.0f;
     float height = 0.0f;
     _scene_panel_pixel_size(panel, &width, &height);
