@@ -4,12 +4,15 @@
 from __future__ import annotations
 
 import asyncio
+import ctypes
+import json
 from pathlib import Path
 
 import pytest
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
+ABI_PATH = ROOT_DIR / 'build' / 'bindings' / 'ctypes_abi.json'
 
 
 def _library_exists() -> bool:
@@ -21,6 +24,32 @@ def _library_exists() -> bool:
 
 def _add_one(value: int) -> int:
     return value + 1
+
+
+def _assert_record_layout(cls, record: dict) -> None:
+    assert ctypes.sizeof(cls) == record['size']
+    assert ctypes.alignment(cls) == record['align']
+    for field_name, offset in record.get('fields', {}).items():
+        assert hasattr(cls, field_name)
+        assert getattr(cls, field_name).offset == offset
+
+
+@pytest.mark.skipif(not ABI_PATH.exists(), reason='ctypes ABI facts have not been generated')
+def test_pointer_event_wrapper_layout_matches_c_abi():
+    import datoviz.events as dvz_events
+
+    with ABI_PATH.open() as f:
+        records = json.load(f).get('records', {})
+
+    layout_classes = {
+        'DvzPointerWheelEvent': dvz_events._PointerWheelRaw,
+        'DvzPointerDragEvent': dvz_events._PointerDragRaw,
+        'DvzPointerEventUnion': dvz_events._PointerContentRaw,
+        'DvzPointerEvent': dvz_events._PointerEventRaw,
+    }
+    for name, cls in layout_classes.items():
+        assert name in records
+        _assert_record_layout(cls, records[name])
 
 
 @pytest.mark.skipif(not _library_exists(), reason='libdatoviz has not been built')
