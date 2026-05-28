@@ -740,25 +740,6 @@ DvzVisual* dvz_pixel(DvzScene* scene, uint32_t flags)
 
 
 /**
- * Create a marker visual.
- *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual, or NULL on allocation failure
- */
-DvzVisual* dvz_marker(DvzScene* scene, uint32_t flags)
-{
-    ANN(scene);
-    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_MARKER, flags);
-    if (visual == NULL)
-        return NULL;
-    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST;
-    visual->material_params_dirty = true;
-    return visual;
-}
-
-
-/**
  * Create a sphere impostor visual.
  *
  * @param scene the scene
