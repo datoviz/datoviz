@@ -2378,31 +2378,6 @@ bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action)
 }
 
 
-/**
- * Copy optional public formatting state into retained scene storage.
- *
- * @param dst the destination format state
- * @param src the source descriptor, or NULL to clear the destination
- */
-void _scene_format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* src)
-{
-    ANN(dst);
-    dvz_memset(dst, sizeof(DvzSceneFormatState), 0, sizeof(DvzSceneFormatState));
-    if (src == NULL)
-        return;
-    dst->precision = src->precision;
-    dst->scientific = src->scientific;
-    dst->trim_trailing_zeros = src->trim_trailing_zeros;
-    dst->show_unit = src->show_unit;
-    if (src->unit != NULL)
-        dvz_strlcpy(dst->unit, src->unit, sizeof(dst->unit));
-    if (src->prefix != NULL)
-        dvz_strlcpy(dst->prefix, src->prefix, sizeof(dst->prefix));
-    if (src->suffix != NULL)
-        dvz_strlcpy(dst->suffix, src->suffix, sizeof(dst->suffix));
-}
-
-
 /*************************************************************************************************/
 /*  Scene                                                                                        */
 /*************************************************************************************************/
