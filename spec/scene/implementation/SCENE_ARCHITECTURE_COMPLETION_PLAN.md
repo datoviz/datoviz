@@ -40,10 +40,13 @@ Important current state:
    metadata fill has moved behind family hooks. Draw descriptor hooks now live in active family
    folders and call the shared default draw helper. Active-family shader descriptor bodies now live
    in family folders for point, pixel, marker, segment, path, sphere, splat, image, labels, glyph,
-   primitive, mesh, volume, vector, and text. The final architecture still needs upload, query, and
-   remaining bounds logic to migrate into family-owned files.
-9. `scene_emit/uploads.c`, `annotation/text.c`, `annotation/axis.c`, and `domain/field.c` remain the
-   highest-value mixed-ownership files.
+   primitive, mesh, volume, vector, and text. Generic dense-attribute, index-buffer, and
+   material-trigger upload emission now lives in `scene_emit/upload_support.c`, leaving
+   `scene_emit/uploads.c` as the panel-visible visual upload orchestrator. The final architecture
+   still needs upload, query, and remaining bounds logic to migrate into family-owned files.
+9. `annotation/text.c`, `annotation/axis.c`, `domain/field.c`, and the remaining family-specific
+   payload construction reachable from scene emission remain the highest-value mixed-ownership
+   areas.
 
 The current `desc_untyped_compat.c` path is an intermediate compatibility step, not the desired
 final architecture. Normal v0.4 scene output emits explicit typed metadata and should not require
@@ -103,7 +106,9 @@ this section when a slice is completed.
      live in `visuals/volume/upload.c` without changing the existing transfer/lookup repeated
      upload policy. Generic sampled-field texture upload payload construction now lives in
      `domain/field_texture.c`, leaving `scene_emit/texture_upload.c` responsible for FramePlan
-     upload-node insertion.
+     upload-node insertion. Generic dense-attribute upload, retained index-buffer upload, and
+     material-trigger upload checks now live in `scene_emit/upload_support.c`, leaving
+     `scene_emit/uploads.c` to orchestrate upload phases for panel-visible visuals.
    - Keep orchestration in `scene_emit/`: resource-key allocation, upload-node ordering,
      dependencies, dirty-range merge policy, and FramePlan node insertion.
    - Move pure family payload construction into `visuals/<family>/upload.c` or existing family
@@ -274,7 +279,8 @@ visual-owned descriptors and registry hooks. Retained visual bounds now routes t
 with segment, vector, image, mesh, volume, sphere, and glyph reducers in family-owned files and the
 remaining position-attribute default handled by a shared hook. Generic position-topology and
 material-parameter upload decisions now use registry flags instead of enum lists in
-`scene_emit/uploads.c`. Continue by migrating upload, query, and remaining bounds logic into
+`scene_emit/uploads.c`; dense attributes, index buffers, and material-trigger checks now emit
+through support helpers. Continue by migrating upload, query, and remaining bounds logic into
 family-owned files incrementally.
 
 Steps:

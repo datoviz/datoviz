@@ -26,6 +26,8 @@ candidates are:
    subsystem. Image/glyph RGBA texture upload payload decisions also live in the image family, and
    volume source/transfer/label-lookup payload decisions live in the volume family. Generic
    sampled-field texture upload payload construction now lives in `domain/field_texture.c`.
+   Dense-attribute, retained index-buffer, and material-trigger upload emission now live in
+   `scene_emit/upload_support.c`, leaving `scene_emit/uploads.c` as phase orchestration.
 2. `src/scene/annotation/text.c` and `axis.c`: retained annotation objects, layout/reserve policy,
    generated visuals, and text/glyph lowering are still mixed. Scale, colorbar, legend, colormap,
    scale-bar, and text-font ownership now have first-pass owner files.
@@ -138,9 +140,10 @@ Current scene-emission ownership:
 
 1. `scene_emit/core.c`: retained scene -> FramePlan facade.
 2. `scene_emit/panel.c`: panel render lowering and pass scheduling.
-3. `scene_emit/uploads.c`: generic retained visual upload loop and upload-node orchestration.
+3. `scene_emit/uploads.c`: panel-visible visual upload phase orchestration.
 4. `scene_emit/derived_upload.c`: derived-geometry upload orchestration for family-owned payloads.
-5. `scene_emit/upload_support.c`: shared upload metadata/resource-role helpers.
+5. `scene_emit/upload_support.c`: shared upload metadata/resource-role helpers plus dense-attribute,
+   index-buffer, and material-trigger upload emission.
 6. `scene_emit/metadata.c`: typed visual metadata emission.
 7. `scene_emit/visual_lowering.c` and `scene_emit/visual_lowering.h`: visual-family lowering
    decisions shared by scene emission, render contracts, visuals, and query paths.
@@ -271,7 +274,7 @@ Current ownership:
    family reducers for segment, vector, image, mesh, volume, sphere, and glyph and a shared default
    dense-position hook for the remaining active families. The generic upload path now reads
    position-topology and material-parameter upload policy from registry flags instead of local enum
-   lists.
+   lists, and shared dense/index/material upload emission is factored into upload support helpers.
 
 Guardrail: do not split the remaining visual pipeline helpers by enum case alone. The long-term
 direction is a registry-driven visual-family contract, not more generic switch files. Treat
