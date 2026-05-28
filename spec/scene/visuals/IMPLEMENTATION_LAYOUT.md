@@ -15,6 +15,13 @@ Landed on 2026-05-28:
 3. `pixel/api.c` owns `dvz_pixel()`.
 4. `sphere/api.c` owns `dvz_sphere()` and `dvz_sphere_mode()`.
 5. `splat/api.c` owns `dvz_splat()`.
+6. `stroke/common.c` owns shared stroke cap/join validation, stroke-quad cache release, path-stroke
+   cache release, and path-backed subpath copying.
+7. `segment/api.c` owns `dvz_segment()` and `dvz_segment_set_caps()`.
+8. `path/api.c` owns `dvz_path()`, `dvz_path_set_caps()`, `dvz_path_set_join()`, and
+   `dvz_path_set_subpaths()`.
+9. `vector/api.c` owns `dvz_vector_style()`, `dvz_vector()`, `dvz_arrow()`,
+   `dvz_vector_set_style()`, and `dvz_vector_set_subpaths()`.
 
 Existing family folders already owned their GPU query implementations through `query.c`. The first
 refactor step makes each family folder own the public family API and the family-local style or mode
@@ -119,11 +126,11 @@ unstaged unless explicitly approved for that commit.
 
 The next useful extractions are larger than the simple families:
 
-1. `segment`: constructor, cap validation, cap setters, and segment GPU cache helpers.
-2. `path`: constructor, subpath/stroke cap/join setters, path validation, and path GPU cache
-   helpers.
-3. `vector`: constructor and vector style/sync helpers.
+1. `segment`: stroke-quad derived upload/cache builders currently in
+   `src/scene/plan/visual_lowering_uploads.c`.
+2. `path`: path-stroke derived upload/cache builders currently in
+   `src/scene/plan/visual_lowering_uploads.c`.
+3. `vector`: endpoint/cache glue that delegates to segment-like or path-like stroke lowering.
 
-These should be handled one family at a time. `segment`, `path`, and `vector` share stroke and
-derived-cache patterns, so expect a small shared helper boundary to emerge rather than forcing every
-helper into a single family file immediately.
+Keep frame-plan orchestration in plan code. Move geometry/cache construction only when the extracted
+file can own a coherent stroke-family slice without copying segment/path/vector lowering logic.
