@@ -687,6 +687,36 @@ static uint32_t _scene_panel_drawable_visual_count(const DvzFigure* figure, cons
 
 
 /**
+ * Resolve the framebuffer-scaled panel viewport uniform.
+ *
+ * @param figure the parent figure
+ * @param panel the panel
+ * @param out output viewport uniform
+ */
+static void _scene_panel_viewport_uniform(
+    const DvzFigure* figure, const DvzPanel* panel, DvzSceneViewportUniform* out)
+{
+    ANN(figure);
+    ANN(panel);
+    ANN(out);
+    _scene_panel_pixel_rect(panel, &out->x, &out->y, &out->width, &out->height);
+    float framebuffer_scale_x =
+        figure->device_scale_x > 0.0f ? figure->device_scale_x * figure->render_scale : 1.0f;
+    float framebuffer_scale_y =
+        figure->device_scale_y > 0.0f ? figure->device_scale_y * figure->render_scale : 1.0f;
+    if (framebuffer_scale_x <= 0.0f)
+        framebuffer_scale_x = 1.0f;
+    if (framebuffer_scale_y <= 0.0f)
+        framebuffer_scale_y = 1.0f;
+    out->x *= framebuffer_scale_x;
+    out->y *= framebuffer_scale_y;
+    out->width *= framebuffer_scale_x;
+    out->height *= framebuffer_scale_y;
+}
+
+
+
+/**
  * Emit one panel render node into a frame plan.
  *
  * @param figure the parent figure
@@ -723,21 +753,7 @@ bool _scene_emit_panel_render_ex(
     DvzMVP panel_apply_mvp;
     _scene_panel_apply_mvp(panel, &panel_apply_mvp);
     DvzSceneViewportUniform panel_viewport = {0};
-    _scene_panel_pixel_rect(
-        panel, &panel_viewport.x, &panel_viewport.y, &panel_viewport.width,
-        &panel_viewport.height);
-    float framebuffer_scale_x =
-        figure->device_scale_x > 0.0f ? figure->device_scale_x * figure->render_scale : 1.0f;
-    float framebuffer_scale_y =
-        figure->device_scale_y > 0.0f ? figure->device_scale_y * figure->render_scale : 1.0f;
-    if (framebuffer_scale_x <= 0.0f)
-        framebuffer_scale_x = 1.0f;
-    if (framebuffer_scale_y <= 0.0f)
-        framebuffer_scale_y = 1.0f;
-    panel_viewport.x *= framebuffer_scale_x;
-    panel_viewport.y *= framebuffer_scale_y;
-    panel_viewport.width *= framebuffer_scale_x;
-    panel_viewport.height *= framebuffer_scale_y;
+    _scene_panel_viewport_uniform(figure, panel, &panel_viewport);
     DvzPanelDesc plot_desc = _scene_panel_plot_desc(panel);
 
     const uint32_t invalid_node = UINT32_MAX;
