@@ -25,6 +25,21 @@
 
 
 /*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct DvzImageTextureUploadPayload
+{
+    DvzFieldRegion region;
+    const void* data;
+    uint64_t byte_size;
+    uint32_t allocation_width;
+    uint32_t allocation_height;
+} DvzImageTextureUploadPayload;
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -42,5 +57,7 @@ bool _image_generated_quad_cache_rebuild(const DvzFigure* figure, DvzVisual* vis
 bool _image_generated_quad_upload_payloads(
     const DvzFigure* figure, DvzVisual* visual, DvzVisualUploadPayload* out_payloads,
     uint32_t* out_count);
+
+bool _image_texture_upload_payload(DvzVisual* visual, DvzImageTextureUploadPayload* out);
 
 void _image_gpu_cache_free(DvzImageGpuCache* cache);

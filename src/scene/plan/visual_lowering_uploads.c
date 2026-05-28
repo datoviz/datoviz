@@ -684,29 +684,23 @@ static void _scene_emit_image_like_texture_upload(
         return;
     }
 
-    DvzFieldRegion upload_region = {0};
-    const void* upload_data = NULL;
-    if (!_scene_prepare_image_texture(visual, &upload_region, &upload_data))
-        return;
     char tex_resource_id[128];
     if (!_scene_visual_texture_resource_key(
             figure, visual, visual_index, tex_resource_id, sizeof(tex_resource_id)))
         return;
-    uint64_t bytes = 0;
-    if (!_field_region_byte_size(DVZ_FIELD_FORMAT_RGBA8_UNORM, &upload_region, &bytes))
-    {
-        log_error("image visual texture upload size overflow");
+    DvzImageTextureUploadPayload payload = {0};
+    if (!_image_texture_upload_payload(visual, &payload))
         return;
-    }
 
-    dvz_frame_plan_upload_bytes(plan, tex_resource_id, 0, bytes, "texture", upload_data);
+    dvz_frame_plan_upload_bytes(
+        plan, tex_resource_id, 0, payload.byte_size, "texture", payload.data);
     _scene_attach_upload_metadata(
         plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
         DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D, UINT32_MAX, 0);
-    dvz_frame_plan_upload_set_texture_extent(plan, upload_region.width, upload_region.height);
+    dvz_frame_plan_upload_set_texture_extent(plan, payload.region.width, payload.region.height);
     dvz_frame_plan_upload_set_texture_allocation_extent(
-        plan, visual->texture.width, visual->texture.height);
-    dvz_frame_plan_upload_set_texture_region(plan, upload_region.x, upload_region.y);
+        plan, payload.allocation_width, payload.allocation_height);
+    dvz_frame_plan_upload_set_texture_region(plan, payload.region.x, payload.region.y);
 }
 
 
