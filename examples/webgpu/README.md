@@ -84,15 +84,22 @@ Supported commands in this first slice:
 - `SetVertexBuffer`
 - `SetIndexBuffer`
 - `SetBindGroup`
+- `SetViewport`
+- `SetScissor`
+- `SetBlendConstant`
+- `SetStencilReference`
 - `Draw`
 - `DrawIndexed`
 - `EndRenderPass`
+- `CopyBufferToBuffer`
 - `CopyBufferToTexture`
 - `CopyTextureToBuffer`
 - `CopyTextureToTexture`
 - `FinishCommandEncoder`
 - `QueueSubmit`
-- `QueueSubmitReply`, `Error`, and destroy commands are accepted as no-op fixture markers.
+- `QueueSubmitReply` and `Error` are accepted as diagnostic/reply markers.
+- Destroy commands validate DRP2 object lifetimes and release browser objects when WebGPU exposes a
+  destroy hook.
 
 Manual checks:
 

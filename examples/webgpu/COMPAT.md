@@ -61,8 +61,13 @@ The PoC currently executes these DRP2 commands:
 - `SetVertexBuffer`
 - `SetIndexBuffer`
 - `SetBindGroup`
+- `SetViewport`
+- `SetScissor`
+- `SetBlendConstant`
+- `SetStencilReference`
 - `Draw`
 - `DrawIndexed`
+- `CopyBufferToBuffer`
 - `CopyBufferToTexture`
 - `CopyTextureToBuffer`
 - `CopyTextureToTexture`
@@ -122,8 +127,9 @@ forms. The fixture dashboard requires explicit bind-group layout and render-pipe
 - Bind-group layout `visibility`, storage `access`, render-pipeline `vertex_buffers`, and
   render-pipeline `color_targets` are required by the fixture dashboard. Standalone demo streams
   still use DRP2 defaults and shader-source inference as compatibility fallbacks.
-- Destroy commands are accepted as no-op lifecycle markers; the PoC relies on JavaScript object
-  lifetime instead of implementing DRP2 object-use lifetime validation.
+- Destroy commands validate live-object dependencies, use-after-destroy, recorded-work references,
+  and submitted-work references. The runner calls native WebGPU `destroy()` only for object types
+  that expose it and otherwise tombstones the DRP2 object id.
 
 
 ## DRP2 Contract Gaps Exposed
