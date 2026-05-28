@@ -971,7 +971,12 @@ int test_frame_plan_graph_ascii(TstContext* suite, const TstCase* item)
     char* text = dvz_frame_plan_graph_ascii(plan, DVZ_FRAME_PLAN_ASCII_VERBOSE);
     ANN(text);
     AT(strstr(text, "FramePlan figure=figure.ascii frame=31") != NULL);
+    AT(strstr(text, "Flow:") != NULL);
     AT(strstr(text, "[render #0]") != NULL);
+    AT(strstr(
+           text,
+           "depth_attachment_write sampled (panel0.depth) "
+           "──▶ [render #1 panel0.ssao]") != NULL);
     AT(strstr(text, "id: panel0.opaque") != NULL);
     AT(strstr(text, "depth[clear/store]") != NULL);
     AT(strstr(text, "(panel0.depth) texture panel per_frame usage=depth,sampled") != NULL);

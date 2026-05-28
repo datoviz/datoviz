@@ -472,6 +472,40 @@ static const char* _ascii_branch(uint32_t flags, bool last)
 
 
 /**
+ * Return the vertical continuation glyph for the requested mode.
+ *
+ * @param flags the terminal graph flags
+ * @return the vertical continuation glyph
+ */
+static const char* _ascii_vertical(uint32_t flags)
+{
+    return (flags & DVZ_FRAME_PLAN_ASCII_ASCII_ONLY) != 0 ? "|" : "│";
+}
+
+
+
+/**
+ * Append a compact pass label.
+ *
+ * @param builder the text builder
+ * @param plan the FramePlan
+ * @param pass_index the graph pass index
+ */
+static void
+_ascii_append_pass_label(AsciiBuilder* builder, const DvzFramePlan* plan, uint32_t pass_index)
+{
+    ANN(builder);
+    ANN(plan);
+    ASSERT(pass_index < plan->graph_pass_count);
+    const DvzFrameGraphPass* pass = &plan->graph_passes[pass_index];
+    _ascii_append(
+        builder, "[%s #%" PRIu32 " %s]", _ascii_graph_pass_kind_name(pass->kind), pass_index,
+        pass->id);
+}
+
+
+
+/**
  * Append a compact resource node line.
  *
  * @param builder the text builder
@@ -505,6 +539,84 @@ static void _ascii_append_resource_inline(
     }
     _ascii_append(builder, "\n");
     (void)flags;
+}
+
+
+
+/**
+ * Count dependencies produced by one graph pass.
+ *
+ * @param plan the FramePlan
+ * @param producer_pass_index the producer graph pass index
+ * @return the number of dependencies produced by the pass
+ */
+static uint32_t
+_ascii_producer_dependency_count(const DvzFramePlan* plan, uint32_t producer_pass_index)
+{
+    ANN(plan);
+    uint32_t count = 0;
+    uint32_t dependency_count = dvz_frame_plan_graph_dependency_count(plan);
+    for (uint32_t i = 0; i < dependency_count; i++)
+    {
+        DvzFrameGraphDependency dep = {0};
+        if (!dvz_frame_plan_graph_dependency_get(plan, i, &dep))
+            continue;
+        if (dep.producer_pass_index == producer_pass_index)
+            count++;
+    }
+    return count;
+}
+
+
+
+/**
+ * Append the pass-to-pass flow sketch inferred from graph dependencies.
+ *
+ * @param builder the text builder
+ * @param plan the FramePlan
+ * @param flags the terminal graph flags
+ */
+static void _ascii_append_flow(AsciiBuilder* builder, const DvzFramePlan* plan, uint32_t flags)
+{
+    ANN(builder);
+    ANN(plan);
+    uint32_t dependency_count = dvz_frame_plan_graph_dependency_count(plan);
+    if (dependency_count == 0)
+        return;
+
+    _ascii_append(builder, "Flow:\n");
+    for (uint32_t pass_index = 0; pass_index < plan->graph_pass_count; pass_index++)
+    {
+        uint32_t pass_dependency_count = _ascii_producer_dependency_count(plan, pass_index);
+        if (pass_dependency_count == 0)
+            continue;
+
+        _ascii_append_pass_label(builder, plan, pass_index);
+        _ascii_append(builder, "\n");
+
+        uint32_t emitted = 0;
+        for (uint32_t i = 0; i < dependency_count; i++)
+        {
+            DvzFrameGraphDependency dep = {0};
+            if (!dvz_frame_plan_graph_dependency_get(plan, i, &dep))
+                continue;
+            if (dep.producer_pass_index != pass_index)
+                continue;
+
+            emitted++;
+            bool last = emitted == pass_dependency_count;
+            _ascii_append(
+                builder, "  %s %s %s (%s) %s ", _ascii_branch(flags, last),
+                _ascii_graph_access_usage_name(dep.producer_usage),
+                _ascii_graph_access_usage_name(dep.consumer_usage), dep.resource_id,
+                _ascii_arrow(flags));
+            _ascii_append_pass_label(builder, plan, dep.consumer_pass_index);
+            _ascii_append(builder, "\n");
+            if (!last)
+                _ascii_append(builder, "  %s\n", _ascii_vertical(flags));
+        }
+        _ascii_append(builder, "\n");
+    }
 }
 
 
@@ -770,6 +882,8 @@ char* dvz_frame_plan_graph_ascii(const DvzFramePlan* plan, uint32_t flags)
         dvz_frame_plan_graph_dependency_count(plan));
 
     _ascii_append_plan_nodes(&builder, plan, flags);
+
+    _ascii_append_flow(&builder, plan, flags);
 
     for (uint32_t i = 0; i < plan->graph_pass_count; i++)
         _ascii_append_pass(&builder, plan, i, flags);
