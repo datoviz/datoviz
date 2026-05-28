@@ -59,6 +59,8 @@ void _text_panel_pixel_to_clip(
 void _text_placement_alignment(
     const DvzTextPlacement* placement, float width, float height, float* out_x, float* out_y);
 
+bool _text_prepare_visual(DvzFigure* figure, DvzText* text);
+
 bool _text_visual_prepare(
     DvzFigure* figure, DvzPanel* panel, const DvzPanelAttach* attach, DvzVisual* visual);
 
