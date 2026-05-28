@@ -66,3 +66,35 @@ next work should prove the user-facing shape in real interactive Python contexts
    PYTHONPATH=. pytest -q testing/test_python_async_helpers.py testing/test_ctypes_raw_smoke.py
    direnv exec . python tools/bindings/ctypes_render_smoke.py
    ```
+
+
+## 2026-05-28 Running-Loop Smoke
+
+A quick hosted-loop smoke passed in a plain Python process with an already-running `asyncio` loop.
+The smoke created a tiny offscreen point scene, wrapped the raw `DvzView*` with `Host.view()`, then
+called `host.run()` from inside `asyncio.run()`. `Host.run()` returned an `asyncio.Task` instead of
+blocking, `view.request_frame()` woke the hosted render loop, and `host.stop()` shut it down cleanly.
+
+Command shape:
+
+```text
+PYTHONPATH=. python - <<'PY'
+import asyncio
+...
+task = host.run()
+assert isinstance(task, asyncio.Task)
+view.request_frame()
+host.stop()
+await task
+PY
+```
+
+Result:
+
+```text
+host running-loop visual smoke: OK
+```
+
+This proves the core IPython/notebook requirement that the helper can schedule work when a Python
+event loop is already active. A real IPython or Jupyter smoke is still useful later for environment
+integration, but the blocking-loop risk is covered by this focused check.
