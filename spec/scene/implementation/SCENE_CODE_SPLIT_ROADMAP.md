@@ -19,8 +19,10 @@ tracks source-split progress; the completion plan defines the end state.
 As of 2026-05-28 after the scene-plan folder removal, the highest-value split
 candidates are:
 
-1. `src/scene/scene_emit/uploads.c`: some derived payload builders remain in scene-emission code.
-   Continue moving only pure cache/data construction into family or subsystem helpers.
+1. `src/scene/scene_emit/uploads.c` and `scene_emit/derived_upload.c`: some derived payload
+   orchestration remains in scene-emission code. Continue moving only pure cache/data construction
+   into family or subsystem helpers; image generated-quad cache/payload decisions now live in the
+   image family.
 2. `src/scene/annotation/text.c` and `axis.c`: retained annotation objects, layout/reserve policy,
    generated visuals, and text/glyph lowering are still mixed. Scale, colorbar, legend, colormap,
    scale-bar, and text-font ownership now have first-pass owner files.
@@ -62,7 +64,7 @@ Continue from `spec/scene/visuals/IMPLEMENTATION_LAYOUT.md`.
 1. Move remaining pure builders from `scene_emit/uploads.c` into family or subsystem
    files only when the helper owns a coherent payload:
    1. mesh generated/index/upload payload helpers;
-   2. labels/image generated query or upload payload helpers;
+   2. remaining labels/image generated query or upload payload helpers;
    3. glyph/text derived buffer helpers;
    4. any remaining stroke cache math shared by render and query paths.
 2. Keep FramePlan resource-key allocation, upload-node creation, and upload ordering in
@@ -131,10 +133,11 @@ Current scene-emission ownership:
 
 1. `scene_emit/core.c`: retained scene -> FramePlan facade.
 2. `scene_emit/panel.c`: panel render lowering and pass scheduling.
-3. `scene_emit/uploads.c`: visual upload lowering and upload-node orchestration.
-4. `scene_emit/upload_support.c`: shared upload metadata/resource-role helpers.
-5. `scene_emit/metadata.c`: typed visual metadata emission.
-6. `scene_emit/visual_lowering.c` and `scene_emit/visual_lowering.h`: visual-family lowering
+3. `scene_emit/uploads.c`: generic retained visual upload loop and upload-node orchestration.
+4. `scene_emit/derived_upload.c`: derived-geometry upload orchestration for family-owned payloads.
+5. `scene_emit/upload_support.c`: shared upload metadata/resource-role helpers.
+6. `scene_emit/metadata.c`: typed visual metadata emission.
+7. `scene_emit/visual_lowering.c` and `scene_emit/visual_lowering.h`: visual-family lowering
    decisions shared by scene emission, render contracts, visuals, and query paths.
 7. `scene_emit/image_query.c`: image query FramePlan generation.
 8. `scene_emit/scene_emit.h` and `scene_emit/internal.h`: narrow scene-emission declarations.

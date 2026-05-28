@@ -58,6 +58,9 @@ bool _image_generated_quad_cache_rebuild(const DvzFigure* figure, DvzVisual* vis
 bool _image_generated_quad_upload_payloads(
     const DvzFigure* figure, DvzVisual* visual, DvzVisualUploadPayload* out_payloads,
     uint32_t* out_count);
+bool _image_generated_quad_derived_upload_payloads(
+    const DvzFigure* figure, DvzVisual* visual, bool attrs_dirty,
+    DvzVisualUploadPayload* out_payloads, uint32_t* out_count, bool* out_handled);
 
 bool _image_texture_upload_payload(DvzVisual* visual, DvzImageTextureUploadPayload* out);
 

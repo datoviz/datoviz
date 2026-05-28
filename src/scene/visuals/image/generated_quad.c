@@ -254,3 +254,38 @@ bool _image_generated_quad_upload_payloads(
     *out_count = 2;
     return true;
 }
+
+
+
+/**
+ * Resolve dirty generated-quad upload payloads for one image-like visual.
+ *
+ * @param figure parent figure
+ * @param visual the image-like visual
+ * @param attrs_dirty whether retained visual attributes have a pending dirty range
+ * @param out_payloads output payload descriptors
+ * @param out_count output payload count
+ * @param out_handled whether generated quads own dense attribute upload handling
+ * @return whether the payload decision succeeded
+ */
+bool _image_generated_quad_derived_upload_payloads(
+    const DvzFigure* figure, DvzVisual* visual, bool attrs_dirty,
+    DvzVisualUploadPayload* out_payloads, uint32_t* out_count, bool* out_handled)
+{
+    ANN(figure);
+    ANN(visual);
+    ANN(out_payloads);
+    ANN(out_count);
+    ANN(out_handled);
+    *out_count = 0;
+    *out_handled = _image_uses_generated_quads(visual);
+    if (!*out_handled)
+        return true;
+
+    bool dirty = visual->image_gpu.dirty || attrs_dirty;
+    if (!dirty)
+        return true;
+
+    return _image_generated_quad_cache_rebuild(figure, visual) &&
+           _image_generated_quad_upload_payloads(figure, visual, out_payloads, out_count);
+}
