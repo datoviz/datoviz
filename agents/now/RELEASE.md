@@ -171,6 +171,18 @@ Checklist:
 4. Add one browser-visible demo, fixture dashboard, or runnable page.
 5. Keep scene semantics shared; do not fork a WebGPU-only scene contract.
 
+Current automated evidence:
+
+1. `just webgpu-fixture-preflight` passes `39/39` strict WebGPU fixture checks.
+2. `just webgpu-runner-smoke` passes the browserless WebGPU runner smoke over `37` positive DRP2
+   fixtures, `2` WebGPU attachment streams, and `81` semantic negative fixtures.
+3. Scene-emitted WGSL fixtures exist for point, primitive, and image visuals.
+4. The committed runner subset covers the current point/primitive/image scene fixtures, texture
+   sampling, multiple color attachments, depth attachments, copy commands, compute dispatch,
+   readback, dynamic buffer updates, and destroy/lifetime validation.
+5. The remaining RC1 proof is a real browser dashboard result and an explicit decision on whether
+   WASM scene emission is required before feature freeze or remains an experimental follow-up.
+
 Suggested validation:
 
 1. `just webgpu-fixture-preflight`

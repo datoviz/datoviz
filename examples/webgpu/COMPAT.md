@@ -50,25 +50,25 @@ The PoC currently executes these DRP2 commands:
 - `RendererHelloReply`
 - `Error` as a no-op diagnostic marker
 - `CreateBuffer`
-- `DestroyBuffer` as a no-op lifecycle marker
+- `DestroyBuffer`
 - `WriteBuffer`
 - `CreateTexture`
-- `DestroyTexture` as a no-op lifecycle marker
+- `DestroyTexture`
 - `CreateTextureView`
-- `DestroyTextureView` as a no-op lifecycle marker
+- `DestroyTextureView`
 - `WriteTexture`
 - `CreateSampler`
-- `DestroySampler` as a no-op lifecycle marker
+- `DestroySampler`
 - `CreateBindGroupLayout`
-- `DestroyBindGroupLayout` as a no-op lifecycle marker
+- `DestroyBindGroupLayout`
 - `CreateBindGroup`
-- `DestroyBindGroup` as a no-op lifecycle marker
+- `DestroyBindGroup`
 - `CreateShaderModule`
-- `DestroyShaderModule` as a no-op lifecycle marker
+- `DestroyShaderModule`
 - `CreateRenderPipeline`
-- `DestroyRenderPipeline` as a no-op lifecycle marker
+- `DestroyRenderPipeline`
 - `CreateComputePipeline`
-- `DestroyComputePipeline` as a no-op lifecycle marker
+- `DestroyComputePipeline`
 - `BeginCommandEncoder`
 - `FinishCommandEncoder`
 - `BeginRenderPass`
@@ -117,7 +117,7 @@ The PoC supports the fixture subset of:
 - WGSL shader modules only
 - `rgba8unorm`, `bgra8unorm`, and `depth32float` textures
 - `r32uint` integer render targets for picking-style readback fixtures
-- one color attachment per render pass
+- one or more color attachments per render pass for the committed fixture subset
 - `point-list`, `line-list`, `line-strip`, `triangle-list`, and `triangle-strip` topology
 - `uint16` and `uint32` index buffers
 - sampled texture bindings

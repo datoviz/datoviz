@@ -61,7 +61,7 @@ Primary references:
 | Grid layout and linked panels | `Partial / RC proof` | grid/panel tests, `examples/c/techniques/linked_panels.c` | Prove release examples resize and link predictably; defer richer dashboard layout. |
 | Visual families | `Mostly first-slice active; retained textured mesh missing` | point, pixel, marker, primitive, mesh, path/segment, image, labels, volume, sphere, polygon/composite examples/tests | Land mesh texture binding/shader path, fill release-example gaps, and mark unsupported variants explicitly. |
 | Pick, probe, selection | `Broader first slices landed` | point/pixel/marker/sphere/stroke/primitive/image/mesh/volume item-pick tests, image/probe tests, label segment-probe tests, selection-mask tests, `examples/c/techniques/pick_hover.c` | Richer payloads, linked-panel probe state, exact marker/path semantics, mesh face/region identity, volume ray hits, and text picking remain follow-up. |
-| WebGPU/WASM | `Partial / blocker` | `examples/webgpu/`, `tools/webgpu_fixture_preflight.py`, DRP2 WGSL fixtures | Document and smoke the experimental subset. |
+| WebGPU/WASM | `Partial / RC1 browser proof` | `examples/webgpu/`, `examples/webgpu/COMPAT.md`, `tools/webgpu_fixture_preflight.py`, `tools/webgpu_runner_smoke.mjs`, DRP2 WGSL point/primitive/image fixtures; `just webgpu-fixture-preflight` passes `39/39`, `just webgpu-runner-smoke` passes `37 + 2 + 81` | Record real browser dashboard result, keep WASM scene-emission as the remaining experimental-path blocker. |
 | Raw `ctypes` | `Done for RC1` | `tools/bindings/extract_api.py`, `tools/bindings/generate_ctypes.py`, `tools/bindings/generate_ctypes_abi.py`, `tools/bindings/ctypes_package_smoke.py`, `testing/test_ctypes_raw_smoke.py`, `examples/python/raw/`, `just bindings` | Broaden ABI/pointer policy only when richer raw examples require it. |
 | Runtime hardening | `Ongoing` | DRP2/vklite/app tests and completed lifetime records | Fix concrete lifetime, resize, descriptor, repeated-frame, or churn bugs as examples expose them. |
 | Scene source split | `Ongoing / structural` | [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md), [`../soon/scene/SCENE_CODE_SPLIT_ROADMAP.md`](../soon/scene/SCENE_CODE_SPLIT_ROADMAP.md) | The old scene `plan/` bucket is gone; FramePlan, scene emission, render contracts, runtime render emission, core scene, visual descriptor-kind, colormap, domain-buffer, and query-policy slices are split. Continue annotation/domain, visual attrs/desc, remaining derived-payload, and focused-test boundaries without changing semantics. |
@@ -97,7 +97,8 @@ Good parallel work now:
 3. **Example proof:** C examples and fixture/gateway smokes that use already-implemented features.
 4. **Runtime hardening:** focused scene -> DRP2 -> vklite/canvas/app lifetime or churn fixes with
    narrow tests.
-5. **WebGPU parity:** `examples/webgpu`, DRP2 fixtures/preflight, WGSL emission, and diagnostics.
+5. **WebGPU parity:** `examples/webgpu`, DRP2 fixtures/preflight, runner smoke, browser dashboard
+   proof, WGSL emission, and diagnostics.
 6. **API/docs inventory:** work from [`DOCUMENTATION.md`](DOCUMENTATION.md) that classifies actual
    v0.4 behavior.
 7. **Scene source split:** staged cleanup from

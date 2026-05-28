@@ -122,15 +122,22 @@ substitution.
 The browser runtime should implement every active DRP2 command used by the supported subset, or
 return explicit unsupported-feature diagnostics.
 
-Immediate active-command parity priorities:
+Implemented active-command parity in the committed browser runner includes:
 
 1. `SetViewport`;
 2. `SetScissor`;
 3. `SetBlendConstant`;
 4. `SetStencilReference`;
 5. `CopyBufferToBuffer`;
-6. real destroy/lifetime behavior;
+6. destroy/lifetime validation for use-after-destroy and recorded/submitted-work references;
 7. multiple color attachments and color-target validation.
+
+Immediate runtime hardening priorities are now:
+
+1. real browser dashboard evidence for the committed subset;
+2. repeated-frame resource preservation checks;
+3. browser capability reporting and explicit unsupported-feature diagnostics;
+4. removal of remaining demo-local shortcuts where practical.
 
 Deferred commands stay deferred until a concrete use case promotes them into the active DRP2
 contract:

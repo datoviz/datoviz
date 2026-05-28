@@ -1,6 +1,6 @@
 # DRP2 WebGPU PoC
 
-This directory contains an experimental browser WebGPU replayer for a very small DRP2 stream.
+This directory contains an experimental browser WebGPU replayer for a narrow DRP2 fixture subset.
 
 Run from the repository root:
 
@@ -14,14 +14,14 @@ Then open:
 http://localhost:8765/examples/webgpu/
 ```
 
-The fixture dashboard runs the committed positive DRP2 fixture manifest against the browser WebGPU
-runner:
+The fixture dashboard runs the committed positive DRP2 fixture manifest, WebGPU-specific attachment
+streams, and semantic negative fixture parity checks against the browser WebGPU runner:
 
 ```text
 http://localhost:8765/examples/webgpu/fixtures.html
 ```
 
-Refresh the committed fixture manifest after adding or removing positive fixtures:
+Refresh the committed fixture manifest after adding or removing positive or negative fixtures:
 
 ```bash
 node examples/webgpu/generate_fixture_manifest.mjs
@@ -64,7 +64,8 @@ http://localhost:8765/examples/webgpu/?stream=attachment_multi_color_wgsl
 http://localhost:8765/examples/webgpu/?stream=attachment_depth_wgsl
 ```
 
-All streams use `texture_id: 0` as a PoC-local alias for the current browser canvas texture.
+Standalone demo streams may use `texture_id: 0` as a PoC-local alias for the current browser canvas
+texture. Strict dashboard fixtures use explicit resources except for browser-canvas streams.
 
 Supported commands in this first slice:
 
@@ -102,6 +103,13 @@ Supported commands in this first slice:
 - `QueueSubmitReply` and `Error` are accepted as diagnostic/reply markers.
 - Destroy commands validate DRP2 object lifetimes and release browser objects when WebGPU exposes a
   destroy hook.
+
+Browserless validation from the repository root:
+
+```bash
+just webgpu-fixture-preflight
+just webgpu-runner-smoke
+```
 
 Manual checks:
 
