@@ -30,7 +30,7 @@ Important current state:
    classifiers infer point, splat, primitive, image, and textured-mesh descriptors from resource
    roles/tags only for explicit compatibility fixtures.
 7. `visuals/registry/` owns the first private `DvzVisualFamilyOps` table. It currently covers
-   family identity, retained visual lowering, retained visual metadata fill, retained visual
+   family identity, retained visual lowering, retained visual bounds, retained visual metadata fill,
    pass-capability resolution, bind descriptors, pipeline descriptors, shader descriptors, and draw
    descriptors, with tests enforcing active-family coverage. Retained lowering, bind descriptors,
    and normal pipeline descriptors are now implemented in the active family folders, while shared
@@ -40,7 +40,7 @@ Important current state:
    folders and call the shared default draw helper. Active-family shader descriptor bodies now live
    in family folders for point, pixel, marker, segment, path, sphere, splat, image, labels, glyph,
    primitive, mesh, volume, vector, and text. The final architecture still needs upload, query, and
-   bounds logic to migrate into family-owned files.
+   remaining bounds logic to migrate into family-owned files.
 9. `scene_emit/uploads.c`, `annotation/text.c`, `annotation/axis.c`, and `domain/field.c` remain the
    highest-value mixed-ownership files.
 
@@ -261,7 +261,7 @@ Goal: generic code calls visual-family operations instead of visual-family switc
 
 Status as of 2026-05-28: in progress. `src/scene/visuals/registry/` now contains the private
 `DvzVisualFamilyOps` table, every active `DvzVisualType` is registered, and
-`test_scene_visual_family_registry_coverage` enforces identity, lowering, pass-capability,
+`test_scene_visual_family_registry_coverage` enforces identity, lowering, bounds, pass-capability,
 bind-descriptor, pipeline-descriptor, shader-descriptor, and draw-descriptor hooks. Retained visual
 lowering is implemented in each active family folder. Image, labels, and volume metadata fill now
 routes through family hooks. Bind descriptors, normal pipeline descriptors, active-family shader
@@ -269,8 +269,10 @@ descriptors, and draw descriptor hooks are implemented in the active family fold
 pass-capability resolution uses a shared default hook in `visuals/pass_caps.c`; runtime bind
 selection, runtime pipeline selection, runtime shader selection, special/pass shader policy, pass
 pipeline policy, pass binding policy, and runtime draw-count packetization now route through
-visual-owned descriptors and registry hooks. Continue by migrating upload, query, and bounds logic
-into family-owned files incrementally.
+visual-owned descriptors and registry hooks. Retained visual bounds now routes through the registry,
+with segment, vector, image, mesh, volume, sphere, and glyph reducers in family-owned files and the
+remaining position-attribute default handled by a shared hook. Continue by migrating upload, query,
+and remaining bounds logic into family-owned files incrementally.
 
 Steps:
 

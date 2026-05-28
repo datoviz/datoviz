@@ -27,6 +27,8 @@
 
 bool _scene_mesh_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
 
+bool _scene_mesh_visual_bounds(const DvzVisual* visual, DvzBounds* out, bool* out_force_3d);
+
 bool _mesh_bounds_from_position_attrs(const DvzVisual* visual, DvzBounds* out);
 
 bool _scene_mesh_visual_bind_desc(

@@ -137,3 +137,22 @@ bool _mesh_bounds_from_position_attrs(const DvzVisual* visual, DvzBounds* out)
 
     return _mesh_bounds_from_instances(visual, &base, out);
 }
+
+
+
+/**
+ * Resolve bounds for a mesh visual through the visual-family registry.
+ *
+ * @param visual the mesh visual
+ * @param out output bounds
+ * @param out_force_3d output flag indicating whether flat bounds should still be treated as 3D
+ * @return whether bounds were produced
+ */
+bool _scene_mesh_visual_bounds(const DvzVisual* visual, DvzBounds* out, bool* out_force_3d)
+{
+    ANN(visual);
+    ANN(out);
+    ANN(out_force_3d);
+    *out_force_3d = false;
+    return _mesh_bounds_from_position_attrs(visual, out);
+}

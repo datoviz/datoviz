@@ -20,7 +20,9 @@
 #include "_assertions.h"
 #include "_visual_internal.h"
 #include "bounds_internal.h"
+#include "segment/internal.h"
 #include "stroke/internal.h"
+#include "vector/internal.h"
 
 
 
@@ -46,6 +48,26 @@ bool _stroke_bounds_from_segment(const DvzVisual* visual, DvzBounds* out)
     _bounds_include_vec3f(out, (const float*)start->data, start->item_count);
     _bounds_include_vec3f(out, (const float*)end->data, end->item_count);
     return out->valid;
+}
+
+
+
+/**
+ * Resolve bounds for a segment visual through the visual-family registry.
+ *
+ * @param visual the segment visual
+ * @param out output bounds
+ * @param out_force_3d output flag indicating whether flat bounds should still be treated as 3D
+ * @return whether bounds were produced
+ */
+bool _scene_segment_visual_bounds(
+    const DvzVisual* visual, DvzBounds* out, bool* out_force_3d)
+{
+    ANN(visual);
+    ANN(out);
+    ANN(out_force_3d);
+    *out_force_3d = false;
+    return _stroke_bounds_from_segment(visual, out);
 }
 
 
@@ -96,4 +118,25 @@ bool _stroke_bounds_from_vector(const DvzVisual* visual, DvzBounds* out)
         _bounds_include_point(out, end[0], end[1], end[2]);
     }
     return out->valid;
+}
+
+
+
+/**
+ * Resolve bounds for a vector visual through the visual-family registry.
+ *
+ * @param visual the vector visual
+ * @param out output bounds
+ * @param out_force_3d output flag indicating whether flat bounds should still be treated as 3D
+ * @return whether bounds were produced
+ */
+bool _scene_vector_visual_bounds(const DvzVisual* visual, DvzBounds* out, bool* out_force_3d)
+{
+    ANN(visual);
+    ANN(out);
+    ANN(out_force_3d);
+    *out_force_3d = false;
+    if (_stroke_bounds_from_vector(visual, out))
+        return true;
+    return _scene_visual_default_bounds(visual, out, out_force_3d);
 }

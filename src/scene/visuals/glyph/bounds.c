@@ -19,6 +19,7 @@
 
 #include "_assertions.h"
 #include "bounds_internal.h"
+#include "glyph/internal.h"
 
 
 
@@ -53,4 +54,23 @@ bool _glyph_bounds_from_rect(const DvzVisual* visual, DvzBounds* out)
         _bounds_include_point(out, x + (double)rect[4 * i + 2], y + (double)rect[4 * i + 3], z);
     }
     return out->valid;
+}
+
+
+
+/**
+ * Resolve bounds for a glyph visual through the visual-family registry.
+ *
+ * @param visual the glyph visual
+ * @param out output bounds
+ * @param out_force_3d output flag indicating whether flat bounds should still be treated as 3D
+ * @return whether bounds were produced
+ */
+bool _scene_glyph_visual_bounds(const DvzVisual* visual, DvzBounds* out, bool* out_force_3d)
+{
+    ANN(visual);
+    ANN(out);
+    ANN(out_force_3d);
+    *out_force_3d = false;
+    return _glyph_bounds_from_rect(visual, out);
 }

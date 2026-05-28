@@ -267,7 +267,9 @@ Current ownership:
    the shared default draw helper until family-specific draw policy is needed. Point, pixel, marker,
    segment, path, sphere, splat, image, labels, glyph, primitive, mesh, volume, vector, and text
    shader hooks are family-owned; the generic shader resolver keeps shared helpers and
-   compatibility/pass-policy dispatch.
+   compatibility/pass-policy dispatch. Bounds dispatch now routes through the same registry, with
+   family reducers for segment, vector, image, mesh, volume, sphere, and glyph and a shared default
+   dense-position hook for the remaining active families.
 
 Guardrail: do not split the remaining visual pipeline helpers by enum case alone. The long-term
 direction is a registry-driven visual-family contract, not more generic switch files. Treat

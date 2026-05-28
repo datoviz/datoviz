@@ -27,6 +27,8 @@
 
 bool _scene_glyph_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
 
+bool _scene_glyph_visual_bounds(const DvzVisual* visual, DvzBounds* out, bool* out_force_3d);
+
 bool _scene_glyph_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out);

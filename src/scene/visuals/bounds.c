@@ -30,9 +30,7 @@
 #include "_scene.h"
 #include "_visual_internal.h"
 #include "bounds_internal.h"
-#include "mesh/internal.h"
-#include "stroke/internal.h"
-#include "volume/internal.h"
+#include "registry/registry.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
 
@@ -209,6 +207,25 @@ static bool _bounds_from_position_attr(
         return false;
     _bounds_include_vec3f(out, (const float*)attr->data, attr->item_count);
     return out->valid;
+}
+
+
+
+/**
+ * Compute the default bounds for visuals backed by a dense position attribute.
+ *
+ * @param visual the visual
+ * @param out output bounds
+ * @param out_force_3d output flag indicating whether flat bounds should still be treated as 3D
+ * @return whether bounds were produced
+ */
+bool _scene_visual_default_bounds(const DvzVisual* visual, DvzBounds* out, bool* out_force_3d)
+{
+    ANN(visual);
+    ANN(out);
+    ANN(out_force_3d);
+    *out_force_3d = false;
+    return _bounds_from_position_attr(visual, "position", out);
 }
 
 
@@ -628,47 +645,11 @@ int dvz_visual_bounds(const DvzVisual* visual, DvzBounds* out)
     _bounds_reset(out);
 
     bool force_3d = false;
-    if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
-    {
-        (void)_stroke_bounds_from_segment(visual, out);
-    }
-    else if (visual->type == DVZ_VISUAL_TYPE_VECTOR)
-    {
-        if (!_stroke_bounds_from_vector(visual, out))
-            (void)_bounds_from_position_attr(visual, "position", out);
-    }
-    else if (visual->type == DVZ_VISUAL_TYPE_SPHERE)
-    {
-        force_3d = true;
-        (void)_sphere_bounds_from_radius(visual, out);
-    }
-    else if (visual->type == DVZ_VISUAL_TYPE_IMAGE)
-    {
-        (void)_image_bounds_from_extent(visual, out);
-    }
-    else if (visual->type == DVZ_VISUAL_TYPE_GLYPH)
-    {
-        (void)_glyph_bounds_from_rect(visual, out);
-    }
-    else if (visual->type == DVZ_VISUAL_TYPE_VOLUME)
-    {
-        force_3d = true;
-        (void)_volume_bounds_from_state(visual, out);
-    }
-    else
-    {
-        if (visual->type == DVZ_VISUAL_TYPE_MESH)
-        {
-            (void)_mesh_bounds_from_position_attrs(visual, out);
-        }
-        else
-        {
-            DvzBounds position_bounds = {0};
-            _bounds_reset(&position_bounds);
-            (void)_bounds_from_position_attr(visual, "position", &position_bounds);
-            _bounds_include_bounds(out, &position_bounds);
-        }
-    }
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(visual->type);
+    if (ops == NULL || ops->resolve_bounds == NULL)
+        return -1;
+
+    (void)ops->resolve_bounds(visual, out, &force_3d);
 
     _bounds_finalize(out, force_3d);
     return out->valid ? 0 : -1;

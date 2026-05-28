@@ -19,6 +19,7 @@
 
 #include "_assertions.h"
 #include "bounds_internal.h"
+#include "image/internal.h"
 
 
 
@@ -72,4 +73,23 @@ bool _image_bounds_from_extent(const DvzVisual* visual, DvzBounds* out)
         _bounds_include_point(out, x0 + w, y0 + h, z);
     }
     return out->valid;
+}
+
+
+
+/**
+ * Resolve bounds for an image visual through the visual-family registry.
+ *
+ * @param visual the image visual
+ * @param out output bounds
+ * @param out_force_3d output flag indicating whether flat bounds should still be treated as 3D
+ * @return whether bounds were produced
+ */
+bool _scene_image_visual_bounds(const DvzVisual* visual, DvzBounds* out, bool* out_force_3d)
+{
+    ANN(visual);
+    ANN(out);
+    ANN(out_force_3d);
+    *out_force_3d = false;
+    return _image_bounds_from_extent(visual, out);
 }

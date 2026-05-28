@@ -70,6 +70,8 @@ void _image_gpu_cache_free(DvzImageGpuCache* cache);
 
 bool _scene_image_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
 
+bool _scene_image_visual_bounds(const DvzVisual* visual, DvzBounds* out, bool* out_force_3d);
+
 bool _scene_image_visual_fill_metadata(
     const DvzVisual* visual, const DvzVisualLowering* lowering,
     DvzFramePlanVisualMeta* metadata);
