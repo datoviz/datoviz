@@ -64,4 +64,3 @@ void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPointStyl
 void _image_gpu_cache_free(DvzImageGpuCache* cache);
 DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t flags);
 void _scene_release_visual_scale(DvzVisual* visual);
-int _volume_apply_bounds_geometry(DvzVisual* visual);
