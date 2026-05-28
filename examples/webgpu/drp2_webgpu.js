@@ -347,6 +347,50 @@ function mapTextureFormat(format) {
 
 
 
+function supportedTextureFormats(canvasFormat) {
+  const formats = [
+    "r16float",
+    "r32uint",
+    "rg32uint",
+    "rgba8unorm",
+    "bgra8unorm",
+    "rgba16float",
+    "depth32float",
+  ];
+  if (canvasFormat !== undefined && !formats.includes(canvasFormat)) {
+    formats.push(canvasFormat);
+  }
+  return formats;
+}
+
+
+
+function runtimeCapabilities(device, canvasFormat, adapter = null) {
+  const limits = device?.limits ?? adapter?.limits ?? {};
+  const maxTextureDimension2d = limits.maxTextureDimension2D ?? limits.maxTextureDimension2d;
+  const capabilities = {
+    supported_shader_formats: ["wgsl"],
+    supported_texture_formats: supportedTextureFormats(canvasFormat),
+    supported_sample_counts: [1, 4],
+    supports_fp64: false,
+  };
+  if (Number.isFinite(maxTextureDimension2d)) {
+    capabilities.max_texture_dimension_2d = maxTextureDimension2d;
+  }
+  return capabilities;
+}
+
+
+
+function effectiveCapabilities(runtimeCaps, streamCaps) {
+  return {
+    ...(runtimeCaps ?? {}),
+    ...(streamCaps ?? {}),
+  };
+}
+
+
+
 function textureFormatBytes(format) {
   switch (format) {
     case "r16float":
@@ -958,8 +1002,7 @@ function requireUsage(record, usage) {
 
 
 
-function validateTextureCapabilities(stream, command, format, extent) {
-  const capabilities = stream.capabilities ?? {};
+function validateTextureCapabilities(capabilities, command, format, extent) {
   if (
     Array.isArray(capabilities.supported_texture_formats) &&
     !capabilities.supported_texture_formats.includes(format)
@@ -1295,8 +1338,9 @@ export async function initWebGPU() {
 
   const format = navigator.gpu.getPreferredCanvasFormat();
   resizeCanvasToDisplaySize(device, context, format);
+  const capabilities = runtimeCapabilities(device, format, adapter);
 
-  return { device, context, format };
+  return { device, context, format, capabilities };
 }
 
 
@@ -1825,6 +1869,10 @@ export class Drp2WebGpuRuntime {
 
 
 export async function executeDrp2Stream(device, context, canvasFormat, stream, options = {}) {
+  const capabilities = effectiveCapabilities(
+    options.capabilities ?? runtimeCapabilities(device, canvasFormat),
+    stream.capabilities,
+  );
   const state = options.state ?? createExecutionState();
   const buffers = state.buffers;
   const textures = state.textures;
@@ -1912,7 +1960,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       case "CreateTexture": {
         const textureFormat = mapTextureFormat(required(command.format, "CreateTexture needs format"));
         const extent = commandExtent(command);
-        validateTextureCapabilities(stream, command, textureFormat, extent);
+        validateTextureCapabilities(capabilities, command, textureFormat, extent);
         registerObject(
           state,
           textures,
@@ -2108,12 +2156,18 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       }
 
       case "CreateShaderModule": {
+        if (
+          Array.isArray(capabilities.supported_shader_formats) &&
+          !capabilities.supported_shader_formats.includes(command.format)
+        ) {
+          throw new Error(`shader format ${command.format} is not supported by capabilities`);
+        }
         if (command.format !== "wgsl") {
           throw new Error(`unsupported shader format: ${command.format}`);
         }
         if (
           command.required_features?.includes("fp64") &&
-          stream.capabilities?.supports_fp64 === false
+          capabilities.supports_fp64 === false
         ) {
           throw new Error("shader module requires feature fp64");
         }
@@ -2839,7 +2893,7 @@ export async function executeDrp2StreamChecked(
 
 async function main() {
   try {
-    const { device, context, format } = await initWebGPU();
+    const { device, context, format, capabilities } = await initWebGPU();
     const params = new URLSearchParams(window.location.search);
     let streamName = params.get("stream") ?? "indexed_quad_wgsl";
     let stream = null;
@@ -2928,7 +2982,7 @@ async function main() {
       streamName = streamConfig.name;
       stream = await response.json();
       applyStreamCanvasAspect(stream);
-      runtime = new Drp2WebGpuRuntime(device, context, format);
+      runtime = new Drp2WebGpuRuntime(device, context, format, { capabilities });
       await runtime.load(stream);
       configureInteraction(streamConfig);
       frameIndex = 0;

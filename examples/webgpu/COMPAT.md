@@ -129,6 +129,22 @@ The PoC supports the fixture subset of:
 - compute pipelines, compute passes, and direct workgroup dispatch for the positive fixture subset
 
 
+## Capability Reporting
+
+`initWebGPU()` returns a DRP2-shaped capability snapshot alongside the adapter device, canvas
+context, and canvas format. The browser runtime uses that snapshot as the default capability set and
+lets fixture-level `capabilities` entries narrow it for negative tests. The current snapshot reports:
+
+- `supported_shader_formats`: `wgsl`
+- `supported_texture_formats`: the committed WebGPU texture subset plus the preferred canvas format
+- `supported_sample_counts`: `1` and `4`
+- `max_texture_dimension_2d` when exposed by the WebGPU device limits
+- `supports_fp64`: `false`
+
+The fixture dashboard stores this snapshot in the summary tooltip so browser runs can report the
+capability context that was used for validation.
+
+
 ## PoC-Local Adaptations
 
 These are compatibility choices in the browser runner for ad hoc demo streams and older command

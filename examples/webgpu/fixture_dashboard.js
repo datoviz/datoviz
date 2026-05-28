@@ -117,6 +117,7 @@ async function runPositiveFixture(fixture, stream) {
     runtime.format,
     stream,
     {
+      capabilities: runtime.capabilities,
       requireExplicitBindGroupLayouts: true,
       requireExplicitPipelineMetadata: true,
     },
@@ -132,7 +133,9 @@ async function runPositiveFixture(fixture, stream) {
 async function runNegativeFixture(fixture, stream) {
   const expected = expectedFailureDetail(stream);
   try {
-    await executeDrp2StreamChecked(runtime.device, runtime.context, runtime.format, stream);
+    await executeDrp2StreamChecked(runtime.device, runtime.context, runtime.format, stream, {
+      capabilities: runtime.capabilities,
+    });
   } catch (error) {
     if (errorMatchesExpected(error, expected)) {
       setFixtureStatus(fixture, "pass", expectedDetail(expected));
@@ -221,6 +224,7 @@ function addFixture(path, kind = "fixture") {
 async function main() {
   try {
     runtime = await initWebGPU();
+    summaryEl.title = `WebGPU capabilities: ${JSON.stringify(runtime.capabilities)}`;
     const response = await fetch("./fixture_manifest.json", { cache: "no-cache" });
     if (!response.ok) {
       throw new Error(`failed to load fixture manifest: ${response.status} ${response.statusText}`);
