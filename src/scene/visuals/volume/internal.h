@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "_scene.h"
+#include "scene_emit/visual_lowering.h"
 
 
 
@@ -69,3 +70,5 @@ bool _volume_source_texture_payload(DvzVisual* visual, DvzVolumeTextureUploadPay
 bool _volume_transfer_texture_payload(DvzVisual* visual, DvzVolumeTransferTexturePayload* out);
 
 bool _volume_label_lookup_payload(DvzVisual* visual, const void** out_data, uint64_t* out_size);
+
+bool _scene_volume_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);

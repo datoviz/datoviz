@@ -20,7 +20,9 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_visual_pipeline_internal.h"
+#include "glyph/internal.h"
 #include "image/internal.h"
+#include "labels/internal.h"
 #include "marker/internal.h"
 #include "mesh/internal.h"
 #include "pixel/internal.h"
@@ -29,168 +31,17 @@
 #include "path/internal.h"
 #include "scene_emit/visual_lowering.h"
 #include "segment/internal.h"
-#include "sample_profile.h"
 #include "splat/internal.h"
 #include "sphere/internal.h"
+#include "text/internal.h"
 #include "vector/internal.h"
+#include "volume/internal.h"
 
 
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Initialize reusable lowering facts with the default position attribute.
- *
- * @param out output lowering facts
- */
-static void _lowering_init(DvzVisualLowering* out)
-{
-    ANN(out);
-    dvz_memset(out, sizeof(DvzVisualLowering), 0, sizeof(DvzVisualLowering));
-    out->draw_position_attr = "position";
-}
-
-
-
-/**
- * Resolve label texture descriptor kind from the retained field profile.
- *
- * @param visual the retained labels visual
- * @param out the output descriptor kind
- * @return whether the field profile is supported
- */
-static bool _lowering_labels_desc_kind(const DvzVisual* visual, DvzSceneVisualDescKind* out)
-{
-    ANN(visual);
-    ANN(out);
-    if (visual->field == NULL)
-        return false;
-    DvzSceneSampleProfile profile = {0};
-    if (!_scene_sample_profile_resolve(
-            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
-            &profile))
-    {
-        return false;
-    }
-    if (_scene_sample_profile_is_signed_label(&profile))
-    {
-        *out = DVZ_SCENE_VISUAL_DESC_LABELS_SINT;
-        return true;
-    }
-    if (_scene_sample_profile_is_unsigned_label(&profile))
-    {
-        *out = DVZ_SCENE_VISUAL_DESC_LABELS_UINT;
-        return true;
-    }
-    return false;
-}
-
-
-
-/**
- * Resolve volume texture descriptor kind from the retained field profile.
- *
- * @param visual the retained volume visual
- * @param out the output descriptor kind
- * @return whether the descriptor kind was resolved
- */
-static bool _lowering_volume_desc_kind(const DvzVisual* visual, DvzSceneVisualDescKind* out)
-{
-    ANN(visual);
-    ANN(out);
-    *out = DVZ_SCENE_VISUAL_DESC_VOLUME;
-    if (visual->field == NULL)
-        return true;
-
-    DvzSceneSampleProfile profile = {0};
-    if (!_scene_sample_profile_resolve(
-            visual->field->desc.format, visual->field->desc.semantic, DVZ_FIELD_DIM_3D,
-            &profile))
-    {
-        return true;
-    }
-    if (_scene_sample_profile_is_signed_label(&profile))
-        *out = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT;
-    else if (_scene_sample_profile_is_unsigned_label(&profile))
-        *out = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT;
-    return true;
-}
-
-
-
-/**
- * Resolve labels visual lowering facts.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return whether lowering facts were resolved
- */
-static bool _lower_labels(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    _lowering_init(out);
-    out->renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD;
-    return _lowering_labels_desc_kind(visual, &out->desc_kind);
-}
-
-
-
-/**
- * Resolve glyph visual lowering facts.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return whether lowering facts were resolved
- */
-static bool _lower_glyph(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    (void)visual;
-    _lowering_init(out);
-    out->renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD;
-    out->desc_kind = DVZ_SCENE_VISUAL_DESC_GLYPH;
-    return true;
-}
-
-
-
-/**
- * Resolve volume visual lowering facts.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return whether lowering facts were resolved
- */
-static bool _lower_volume(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    _lowering_init(out);
-    out->renderable_kind = DVZ_RENDERABLE_VOLUME_PROXY;
-    return _lowering_volume_desc_kind(visual, &out->desc_kind);
-}
-
-
-
-/**
- * Reject retained text visual lowering; text synchronizes glyph visuals before render emission.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return false because text visuals are semantic parents, not renderable draws
- */
-static bool _lower_text(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    (void)visual;
-    _lowering_init(out);
-    out->renderable_kind = DVZ_RENDERABLE_NONE;
-    out->desc_kind = DVZ_SCENE_VISUAL_DESC_NONE;
-    return false;
-}
-
-
 
 /**
  * Resolve generic pass capabilities from retained visual and family lowering facts.
@@ -381,8 +232,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
     {DVZ_VISUAL_TYPE_MESH, "mesh", _scene_mesh_visual_lowering, _resolve_pass_caps,
      _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
-    {DVZ_VISUAL_TYPE_VOLUME, "volume", _lower_volume, _resolve_pass_caps, _resolve_bind_desc,
-     _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
+    {DVZ_VISUAL_TYPE_VOLUME, "volume", _scene_volume_visual_lowering, _resolve_pass_caps,
+     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
     {DVZ_VISUAL_TYPE_PRIMITIVE, "primitive", _scene_primitive_visual_lowering, _resolve_pass_caps,
      _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
@@ -390,14 +241,14 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
     {DVZ_VISUAL_TYPE_SPHERE, "sphere", _scene_sphere_visual_lowering, _resolve_pass_caps,
      _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
-    {DVZ_VISUAL_TYPE_GLYPH, "glyph", _lower_glyph, _resolve_pass_caps, _resolve_bind_desc,
-     _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
+    {DVZ_VISUAL_TYPE_GLYPH, "glyph", _scene_glyph_visual_lowering, _resolve_pass_caps,
+     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
-    {DVZ_VISUAL_TYPE_TEXT, "text", _lower_text, _resolve_pass_caps, _resolve_bind_desc,
-     _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
+    {DVZ_VISUAL_TYPE_TEXT, "text", _scene_text_visual_lowering, _resolve_pass_caps,
+     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
-    {DVZ_VISUAL_TYPE_LABELS, "labels", _lower_labels, _resolve_pass_caps, _resolve_bind_desc,
-     _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
+    {DVZ_VISUAL_TYPE_LABELS, "labels", _scene_labels_visual_lowering, _resolve_pass_caps,
+     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
     {DVZ_VISUAL_TYPE_SPLAT, "splat", _scene_splat_visual_lowering, _resolve_pass_caps,
      _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
