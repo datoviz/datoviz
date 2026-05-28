@@ -111,8 +111,9 @@ this section when a slice is completed.
    - Commit by payload family so test failures are attributable.
 
 4. Finish bounds and query family ownership.
-   - Bounds is partly split; remove remaining generic visual branches that compute family semantics
-     outside family folders or explicit shared visual subsystems such as `visuals/stroke/`.
+   - Bounds is partly split; volume retained-state bounds now live in `visuals/volume/bounds.c`.
+     Remove remaining generic visual branches that compute family semantics outside family folders
+     or explicit shared visual subsystems such as `visuals/stroke/`.
    - Query has family files already; finish moving target capability, scratch geometry, native
      result decoding, and unsupported-policy decisions out of generic query code.
    - Keep the query executor, request queue, readback scheduling, and retained request processing

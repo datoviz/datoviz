@@ -31,6 +31,7 @@
 #include "_visual_internal.h"
 #include "bounds_internal.h"
 #include "stroke/internal.h"
+#include "volume/internal.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
 
@@ -651,17 +652,7 @@ int dvz_visual_bounds(const DvzVisual* visual, DvzBounds* out)
     else if (visual->type == DVZ_VISUAL_TYPE_VOLUME)
     {
         force_3d = true;
-        for (uint32_t i = 0; i < 3; i++)
-        {
-            if (!isfinite(visual->volume.bounds_min[i]) || !isfinite(visual->volume.bounds_max[i]))
-                return -1;
-        }
-        _bounds_include_point(
-            out, visual->volume.bounds_min[0], visual->volume.bounds_min[1],
-            visual->volume.bounds_min[2]);
-        _bounds_include_point(
-            out, visual->volume.bounds_max[0], visual->volume.bounds_max[1],
-            visual->volume.bounds_max[2]);
+        (void)_volume_bounds_from_state(visual, out);
     }
     else
     {

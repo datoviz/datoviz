@@ -34,7 +34,8 @@ candidates are:
 4. `src/scene/visuals/`: descriptor and attribute helper ownership has a first split. Draw hooks
    have moved into active family folders, and active-family shader descriptor bodies have moved into
    family folders. Wide visual-family helper files and shared headers should only be split further
-   when a stable owner boundary is clear.
+   when a stable owner boundary is clear. Volume retained-state bounds now live in the volume
+   family.
 5. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
    multiple ownership boundaries at once.
 

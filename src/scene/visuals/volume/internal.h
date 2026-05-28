@@ -77,6 +77,8 @@ bool _volume_label_lookup_payload(DvzVisual* visual, const void** out_data, uint
 bool _volume_label_lookup_payload_if_needed(
     DvzVisual* visual, const void** out_data, uint64_t* out_size, bool* out_handled);
 
+bool _volume_bounds_from_state(const DvzVisual* visual, DvzBounds* out);
+
 bool _scene_volume_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
 
 bool _scene_volume_visual_fill_metadata(
