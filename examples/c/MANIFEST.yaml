@@ -30,7 +30,7 @@ examples:
     style_preset: features
     capture: 1280x960
     interaction_state: default
-    current_source: examples/c/techniques/scatter_axes.c
+    current_source: examples/c/features/axes_2d.c
     target_source: examples/c/features/axes_2d.c
     validation: smoke+screenshot
 

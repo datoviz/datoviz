@@ -10,7 +10,7 @@ removing any source file.
 | Scenario ID | Current source | Target source | Action |
 | --- | --- | --- | --- |
 | `point_2d` | `visuals/point.c` | `visuals/point.c` | Polished in place as the reference baseline. |
-| `path_axes_2d` | `techniques/scatter_axes.c` | `features/axes_2d.c` | Promote to feature lane after axes/text style pass. |
+| `path_axes_2d` | `features/axes_2d.c` | `features/axes_2d.c` | Added as a deterministic path plus axes baseline; keep old scatter axes as a lab for now. |
 | `linked_panels_axes_panzoom` | `techniques/linked_panels.c` | `features/panel_linked_axes.c` | Promote after linked panzoom/axes behavior is verified. |
 | `scale_bar` | `annotations/scalebar_2d_3d.c` | `features/scalebar.c` | Promote scale-bar proof; keep minimal variant as regression if useful. |
 | `api_pressure` | `techniques/image_probe.c` | `features/api_pressure.c` | Split only if the broad API-pressure version diverges from image probe. |

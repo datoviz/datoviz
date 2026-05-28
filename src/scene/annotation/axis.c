@@ -1145,18 +1145,6 @@ static void _axis_update_visual(DvzAxis* axis)
     _axis_plot_interval(&axis->panel->axes[DVZ_DIM_X], &x0, &x1);
     _axis_plot_interval(&axis->panel->axes[DVZ_DIM_Y], &y0, &y1);
 
-    if (axis->style.show_spine)
-    {
-        if (axis->dim == DVZ_DIM_X)
-            _axis_append_line_rect(
-                axis, &vertex_count, positions, colors, x0, y0, x1, y0, z,
-                axis->style.spine_width, axis->style.spine_color);
-        else
-            _axis_append_line_rect(
-                axis, &vertex_count, positions, colors, x0, y0, x0, y1, z,
-                axis->style.spine_width, axis->style.spine_color);
-    }
-
     double visible_min = 0.0;
     double visible_max = 0.0;
     if (!_axis_visible_domain(axis, &visible_min, &visible_max))
@@ -1165,6 +1153,7 @@ static void _axis_update_visual(DvzAxis* axis)
         return;
     }
     _axis_compute_ticks(axis);
+
     for (uint32_t i = 0; i < axis->tick_count; i++)
     {
         float plot_min = axis->dim == DVZ_DIM_X ? x0 : y0;
@@ -1173,7 +1162,8 @@ static void _axis_update_visual(DvzAxis* axis)
             _axis_data_to_visual(axis->ticks[i], visible_min, visible_max, plot_min, plot_max);
         if (p < plot_min - 0.0001f || p > plot_max + 0.0001f)
             continue;
-        if (axis->style.show_grid)
+        bool boundary_grid = fabsf(p - plot_min) <= 0.0001f || fabsf(p - plot_max) <= 0.0001f;
+        if (axis->style.show_grid && !(axis->style.show_spine && boundary_grid))
         {
             if (axis->dim == DVZ_DIM_X)
                 _axis_append_line_rect(
@@ -1184,6 +1174,36 @@ static void _axis_update_visual(DvzAxis* axis)
                     axis, &vertex_count, positions, colors, x0, p, x1, p, z,
                     axis->style.grid_width, axis->style.grid_color);
         }
+    }
+
+    if (axis->style.show_spine)
+    {
+        if (axis->dim == DVZ_DIM_X)
+        {
+            float y = y0 + 0.5f * axis->style.spine_width *
+                               _axis_visual_pixel_size(axis, DVZ_DIM_Y);
+            _axis_append_line_rect(
+                axis, &vertex_count, positions, colors, x0, y, x1, y, z, axis->style.spine_width,
+                axis->style.spine_color);
+        }
+        else
+        {
+            float x = x0 + 0.5f * axis->style.spine_width *
+                               _axis_visual_pixel_size(axis, DVZ_DIM_X);
+            _axis_append_line_rect(
+                axis, &vertex_count, positions, colors, x, y0, x, y1, z, axis->style.spine_width,
+                axis->style.spine_color);
+        }
+    }
+
+    for (uint32_t i = 0; i < axis->tick_count; i++)
+    {
+        float plot_min = axis->dim == DVZ_DIM_X ? x0 : y0;
+        float plot_max = axis->dim == DVZ_DIM_X ? x1 : y1;
+        float p =
+            _axis_data_to_visual(axis->ticks[i], visible_min, visible_max, plot_min, plot_max);
+        if (p < plot_min - 0.0001f || p > plot_max + 0.0001f)
+            continue;
         if (axis->style.show_major_ticks)
         {
             float len = _axis_tick_length(axis, axis->style.major_tick_length);
