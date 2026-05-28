@@ -39,6 +39,12 @@ bool _text_utf8_next(const char* string, uint32_t* inout_index, uint32_t* out_co
 void _text_measure_cells(
     const char* string, uint32_t* out_columns, uint32_t* out_lines, uint32_t* out_visible);
 
+float _text_bitmap_layout_scale(const DvzTextStyle* style);
+
+DvzSampledField* _text_bitmap_atlas_field(DvzScene* scene);
+
+void _text_bitmap_atlas_uv(uint32_t ascii, float out[4]);
+
 float _text_sdf_layout_scale(const DvzTextStyle* style, const DvzTextAtlas* atlas);
 
 void _text_sdf_measure(
