@@ -21,6 +21,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/math/_cglm.h"
+#include "image/internal.h"
 #include "_visual_pipeline.h"
 #include "../../query/internal.h"
 #include "_alloc.h"
@@ -34,34 +35,6 @@
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Return whether one retained attribute has valid dense data.
- *
- * @param visual the visual
- * @param attr_name retained attribute name
- * @param item_size expected item size
- * @param out_attr output attribute
- * @return true when the attribute is present and dense
- */
-static bool _image_query_attr(
-    const DvzVisual* visual, const char* attr_name, uint32_t item_size,
-    const DvzVisualAttr** out_attr)
-{
-    ANN(visual);
-    ANN(attr_name);
-    ANN(out_attr);
-    int attr_idx = _attr_index(visual, attr_name);
-    if (attr_idx < 0)
-        return false;
-    const DvzVisualAttr* attr = &visual->attrs[attr_idx];
-    if (attr->data == NULL || attr->item_count == 0 || attr->item_size != item_size)
-        return false;
-    *out_attr = attr;
-    return true;
-}
-
-
 
 /**
  * Allocate one temporary image query buffer with checked size arithmetic.
@@ -272,20 +245,14 @@ static bool _image_query_geometry(
         return false;
     const float* position = (const float*)pos_attr->data;
 
-    uint64_t item_count = 1;
     uint64_t vertex_count = 6;
     const DvzVisualAttr* extent_attr = NULL;
     bool generated_quads = _image_query_attr(visual, "extent", sizeof(vec2), &extent_attr);
     if (generated_quads)
     {
-        if (extent_attr->item_count != pos_attr->item_count)
-            return false;
-        item_count = pos_attr->item_count;
-        if (_dvz_mul_u64_overflows(item_count, 6, &vertex_count) || vertex_count > UINT32_MAX)
-        {
-            log_error("image query request buffer size overflow");
-            return false;
-        }
+        (void)extent_attr;
+        return _image_query_generated_rect_geometry(
+            visual, scratch, true, false, out_vertex_count);
     }
     else if (pos_attr->item_count != 4 && pos_attr->item_count != 6)
     {
@@ -299,43 +266,7 @@ static bool _image_query_geometry(
         return false;
     }
 
-    if (generated_quads)
-    {
-        const float* extent = (const float*)extent_attr->data;
-        const DvzVisualAttr* anchor_attr = NULL;
-        bool has_anchor = _image_query_attr(visual, "anchor", sizeof(vec2), &anchor_attr);
-        if (has_anchor && anchor_attr->item_count != pos_attr->item_count)
-        {
-            _scene_query_scratch_destroy(scratch);
-            return false;
-        }
-        const float* anchor = has_anchor ? (const float*)anchor_attr->data : NULL;
-        for (uint64_t i = 0; i < item_count; i++)
-        {
-            float x = position[3 * i + 0];
-            float y = position[3 * i + 1];
-            float z = position[3 * i + 2];
-            float w = extent[2 * i + 0];
-            float h = extent[2 * i + 1];
-            float ax = anchor != NULL ? anchor[2 * i + 0] : 0.0f;
-            float ay = anchor != NULL ? anchor[2 * i + 1] : 0.0f;
-            float x0 = x - 0.5f * (ax + 1.0f) * w;
-            float x1 = x0 + w;
-            float y0 = y - 0.5f * (ay + 1.0f) * h;
-            float y1 = y0 + h;
-            const float quad_pos[6][3] = {
-                {x0, y0, z}, {x0, y1, z}, {x1, y0, z},
-                {x1, y0, z}, {x0, y1, z}, {x1, y1, z},
-            };
-            for (uint32_t j = 0; j < 6; j++)
-            {
-                uint64_t dst = 6 * i + j;
-                dvz_memcpy(scratch->query_positions[dst], sizeof(vec3), quad_pos[j], sizeof(vec3));
-                scratch->query_ids[dst] = (uint32_t)i + 1u;
-            }
-        }
-    }
-    else if (pos_attr->item_count == 4)
+    if (pos_attr->item_count == 4)
     {
         const uint32_t order[6] = {0, 1, 2, 2, 1, 3};
         for (uint32_t j = 0; j < 6; j++)

@@ -22,6 +22,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/math/_cglm.h"
+#include "image/internal.h"
 #include "colorizer.h"
 #include "_visual_lowering.h"
 #include "../../query/internal.h"
@@ -376,74 +377,14 @@ static bool _labels_query_geometry(
     const DvzVisualAttr* pos_attr = NULL;
     if (!_labels_query_attr(visual, "position", sizeof(vec3), &pos_attr))
         return false;
-    const float* position = (const float*)pos_attr->data;
 
     const DvzVisualAttr* extent_attr = NULL;
     if (_labels_query_attr(visual, "extent", sizeof(vec2), &extent_attr))
     {
-        if (extent_attr->item_count != pos_attr->item_count)
-            return false;
-
+        (void)extent_attr;
         uint64_t vertex_count = 0;
-        if (_dvz_mul_u64_overflows(pos_attr->item_count, 6, &vertex_count) ||
-            vertex_count > UINT32_MAX)
-        {
-            log_error("labels query geometry size overflow");
+        if (!_image_query_generated_rect_geometry(visual, scratch, false, true, &vertex_count))
             return false;
-        }
-
-        scratch->query_positions = (vec3*)dvz_calloc(vertex_count, sizeof(vec3));
-        scratch->query_texcoords = (vec2*)dvz_calloc(vertex_count, sizeof(vec2));
-        if (scratch->query_positions == NULL || scratch->query_texcoords == NULL)
-        {
-            log_error("labels query geometry allocation failed");
-            _scene_query_scratch_destroy(scratch);
-            return false;
-        }
-
-        const float* extent = (const float*)extent_attr->data;
-        const DvzVisualAttr* anchor_attr = NULL;
-        const bool has_anchor =
-            _labels_query_attr(visual, "anchor", sizeof(vec2), &anchor_attr) &&
-            anchor_attr->item_count == pos_attr->item_count;
-        const float* anchor = has_anchor ? (const float*)anchor_attr->data : NULL;
-        const DvzVisualAttr* tex_rect_attr = NULL;
-        const bool has_tex_rect =
-            _labels_query_attr(visual, "tex_rect", 4 * sizeof(float), &tex_rect_attr) &&
-            tex_rect_attr->item_count == pos_attr->item_count;
-        const float* tex_rect = has_tex_rect ? (const float*)tex_rect_attr->data : NULL;
-
-        for (uint64_t i = 0; i < pos_attr->item_count; i++)
-        {
-            const float x = position[3 * i + 0];
-            const float y = position[3 * i + 1];
-            const float z = position[3 * i + 2];
-            const float w = extent[2 * i + 0];
-            const float h = extent[2 * i + 1];
-            const float ax = anchor != NULL ? anchor[2 * i + 0] : 0.0f;
-            const float ay = anchor != NULL ? anchor[2 * i + 1] : 0.0f;
-            const float x0 = x - 0.5f * (ax + 1.0f) * w;
-            const float x1 = x0 + w;
-            const float y0 = y - 0.5f * (ay + 1.0f) * h;
-            const float y1 = y0 + h;
-            const float u0 = tex_rect != NULL ? tex_rect[4 * i + 0] : 0.0f;
-            const float v0 = tex_rect != NULL ? tex_rect[4 * i + 1] : 0.0f;
-            const float u1 = tex_rect != NULL ? tex_rect[4 * i + 2] : 1.0f;
-            const float v1 = tex_rect != NULL ? tex_rect[4 * i + 3] : 1.0f;
-            const float quad_pos[6][3] = {
-                {x0, y0, z}, {x0, y1, z}, {x1, y0, z},
-                {x1, y0, z}, {x0, y1, z}, {x1, y1, z},
-            };
-            const float quad_uv[6][2] = {
-                {u0, v0}, {u0, v1}, {u1, v0}, {u1, v0}, {u0, v1}, {u1, v1},
-            };
-            for (uint32_t j = 0; j < 6; j++)
-            {
-                const uint64_t dst = 6 * i + j;
-                dvz_memcpy(scratch->query_positions[dst], sizeof(vec3), quad_pos[j], sizeof(vec3));
-                dvz_memcpy(scratch->query_texcoords[dst], sizeof(vec2), quad_uv[j], sizeof(vec2));
-            }
-        }
         *out_position_data = scratch->query_positions;
         *out_texcoord_data = scratch->query_texcoords;
         *out_vertex_count = vertex_count;
