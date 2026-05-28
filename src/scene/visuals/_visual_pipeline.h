@@ -173,6 +173,7 @@ typedef struct DvzSceneVisualPipelineDesc
     uint32_t offsets[DVZ_SCENE_MAX_NODE_RESOURCES];
     bool needs_common_layout;
     bool needs_image_layout;
+    bool uses_textured_mesh_layout;
     bool needs_labels_layout;
     bool needs_glyph_layout;
     bool needs_volume_layout;

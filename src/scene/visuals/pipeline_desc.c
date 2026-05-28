@@ -297,6 +297,7 @@ static bool _pipeline_apply_fixed_visual(
     else if (visual->kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
     {
         out->needs_image_layout = caps->uses_image_set;
+        out->uses_textured_mesh_layout = caps->uses_image_set;
         _pipeline_apply_standard_depth_state(
             caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op, out);
     }

@@ -273,7 +273,7 @@ bool _emitter_prepare_render_multi(
                     break;
                 }
             }
-            if (pipeline.needs_image_layout && desc.kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
+            if (pipeline.needs_image_layout && pipeline.uses_textured_mesh_layout)
             {
                 ok = ok &&
                      _resolve_textured_mesh_bind_group_layout(
@@ -398,8 +398,7 @@ bool _emitter_prepare_render_multi(
                 {
                     _pipeline_bind_group_layouts(
                         &pipeline, common_bgl_id,
-                        desc.kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH ? textured_mesh_bgl_id
-                                                                         : img_bgl_id,
+                        pipeline.uses_textured_mesh_layout ? textured_mesh_bgl_id : img_bgl_id,
                         labels_bgl_id, glyph_bgl_id, volume_bgl_id, material_bgl_id,
                         scene_occlusion_bgl_id,
                         scene_occlusion_uses_set2, layouts, &layout_count);
