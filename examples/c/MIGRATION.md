@@ -9,7 +9,7 @@ removing any source file.
 
 | Scenario ID | Current source | Target source | Action |
 | --- | --- | --- | --- |
-| `point_2d` | `visuals/point.c` | `visuals/point.c` | Polish in place as the reference baseline. |
+| `point_2d` | `visuals/point.c` | `visuals/point.c` | Polished in place as the reference baseline. |
 | `path_axes_2d` | `techniques/scatter_axes.c` | `features/axes_2d.c` | Promote to feature lane after axes/text style pass. |
 | `linked_panels_axes_panzoom` | `techniques/linked_panels.c` | `features/panel_linked_axes.c` | Promote after linked panzoom/axes behavior is verified. |
 | `scale_bar` | `annotations/scalebar_2d_3d.c` | `features/scalebar.c` | Promote scale-bar proof; keep minimal variant as regression if useful. |
@@ -83,3 +83,10 @@ removing any source file.
 | `tools/frame_plan_graph_debug.c` | diagnostic | Keep non-gallery. |
 | `tools/text_msdf_*` | diagnostic/lab | Keep non-gallery until text backend diagnostics are public. |
 | `tools/hosted_glfw_smoke.c` | runtime | Move to `runtime/hosted_glfw_smoke.c` when indexed. |
+
+
+## Stress Examples
+
+| Current source | Target role | Action |
+| --- | --- | --- |
+| `stress/point_stress.c` | stress | Preserved from the former high-count `visuals/point.c` workbench. |

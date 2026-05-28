@@ -127,6 +127,8 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(visuals sphere visuals/sphere.c)
     dvz_add_example(visuals text visuals/text.c)
 
+    dvz_add_example(stress point_stress stress/point_stress.c)
+
     dvz_add_example(techniques depth_cue techniques/depth_cue.c)
     dvz_add_example(techniques depth_peel techniques/depth_peel.c)
     dvz_add_example(techniques edl techniques/edl.c)
