@@ -46,6 +46,99 @@ final architecture. Normal v0.4 scene output emits explicit typed metadata and s
 runtime code to infer a visual family from a list of resource ids.
 
 
+## Immediate Next Execution Queue
+
+Future agents continuing the current split should start here. Work in this order unless a regression
+requires a narrower interruption. Make small commits after each coherent ownership move, and update
+this section when a slice is completed.
+
+1. Move normal shader descriptor bodies into family folders.
+   - Current root: `src/scene/visuals/shader_desc.c`.
+   - Add family-owned shader files only where real code moves, likely:
+     `point/shader.c`, `pixel/shader.c`, `marker/shader.c`, `splat/shader.c`,
+     `sphere/shader.c`, `segment/shader.c`, `path/shader.c`, `vector/shader.c`,
+     `primitive/shader.c`, `mesh/shader.c`, `image/shader.c`, `labels/shader.c`,
+     `glyph/shader.c`, `text/shader.c`, and `volume/shader.c`.
+   - Keep genuinely cross-family helpers centralized: cache-key suffix append, built-in shader
+     source attachment, built-in identity metadata, pass-policy overrides, query shader overrides,
+     GLSL variant creation, and depth-peel fragment selection.
+   - Preserve the special/pass shader policy API until a later pass can decide whether those
+     policies belong in family hooks or in technique policy.
+   - Suggested commits: point-like shaders; stroke/mesh/primitive shaders; texture/semantic
+     shaders; optional docs checkpoint.
+   - Validate each commit with `git diff --check`, `just build`, and
+     `direnv exec . just test scene-graph`; include `direnv exec . just test fields` for
+     image/labels/volume shader slices.
+
+2. Move draw descriptor bodies into family folders.
+   - Current root: `src/scene/visuals/draw_desc.c`.
+   - Add a shared default draw helper if most families still use `vertex_count`, `instance_count`,
+     `index_buffer_id`, `index_format`, and `index_count` directly.
+   - Register family draw hooks that call the default helper first, then move any generated or
+     family-specific draw-count logic into the owning family as it appears.
+   - Done when adding a visual with nonstandard draw counts does not require editing generic
+     visual or runtime draw packet code.
+
+3. Move upload/cache payload builders out of generic scene emission.
+   - Primary root: `src/scene/scene_emit/uploads.c`.
+   - Keep orchestration in `scene_emit/`: resource-key allocation, upload-node ordering,
+     dependencies, dirty-range merge policy, and FramePlan node insertion.
+   - Move pure family payload construction into `visuals/<family>/upload.c` or existing family
+     upload/cache files: point/mesh/indexed typed data, stroke generated geometry, image generated
+     quads and texture payloads, volume source/transfer/label textures, labels lookup payloads.
+   - Commit by payload family so test failures are attributable.
+
+4. Finish bounds and query family ownership.
+   - Bounds is partly split; remove remaining generic visual branches that compute family semantics
+     outside family folders or explicit shared visual subsystems such as `visuals/stroke/`.
+   - Query has family files already; finish moving target capability, scratch geometry, native
+     result decoding, and unsupported-policy decisions out of generic query code.
+   - Keep the query executor, request queue, readback scheduling, and retained request processing
+     generic.
+
+5. Kill normal-path untyped descriptor compatibility.
+   - Ensure query-generated render nodes and every normal retained visual render node emit typed
+     metadata.
+   - Add an architecture test/debug assertion that a normal render visual without typed metadata
+     fails before runtime inference.
+   - Delete `visuals/desc_untyped_compat.c` if no explicit fixture/import path still needs it; if
+     it remains, keep it behind an explicit compatibility flag and document its callers.
+
+6. Finish domain and annotation ownership.
+   - Split `domain/field.c` into lifecycle/public setters, sampled interpretation, scale binding,
+     and generated visual synchronization.
+   - Split `annotation/text.c` into retained text state, layout, glyph/quad synchronization, and
+     renderer payloads.
+   - Split `annotation/axis.c` into retained axis state, tick generation, layout reserve, and
+     generated visual ownership.
+   - Keep rendering semantics in visual families, not in domain or annotation orchestration.
+
+7. Split coarse scene CMake targets.
+   - Implement the target layers described below: `datoviz_scene_frame_plan`,
+     `datoviz_scene_core`, `datoviz_scene_visuals`, `datoviz_scene_runtime`, and
+     `datoviz_scene_app`.
+   - Do not create one target per visual family unless a concrete consumer or build problem proves
+     the need.
+   - Validate that planning-only/core/visual/runtime/app subsets can build without accidental
+     app/window/runtime dependencies.
+
+8. Shrink broad private headers and add architecture checks.
+   - Audit `_scene.h`, `_visual_internal.h`, `_visual_pipeline.h`, and
+     `_visual_pipeline_internal.h`.
+   - Move declarations into owning-folder headers and keep only stable cross-subsystem contracts in
+     broad headers.
+   - Add tests/checks for typed metadata completeness, explicit compatibility use, registry
+     coverage, absence of normal runtime visual switches, and CMake layer dependency boundaries.
+
+9. Final cleanup and confidence pass.
+   - Remove transitional v0.4-dev names such as remaining `legacy` terminology where it is only a
+     migration artifact.
+   - Move completed agent plans out of active queues and update roadmap records from pending work
+     to final ownership.
+   - Run `git diff --check`, `just build`, `direnv exec . just test scene`, and any relevant DRP2
+     checks before declaring the architecture cleanup complete.
+
+
 ## Target Architecture
 
 The final architecture should make generic scene code depend on visual-family operations, not on

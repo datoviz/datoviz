@@ -28,6 +28,8 @@ release criteria, or long implementation history.
    [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md)
    and
    [`../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md).
+   The immediate scene-refactor execution queue is in
+   `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` under **Immediate Next Execution Queue**.
 7. For DRP2 commands, fixtures, schemas, or scene code that emits DRP2, read
    [`../../spec/drp2/README.md`](../../spec/drp2/README.md) and
    [`../../spec/drp2/AGENT_SPEC_PHASE.md`](../../spec/drp2/AGENT_SPEC_PHASE.md).
