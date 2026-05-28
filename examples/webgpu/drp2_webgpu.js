@@ -1535,6 +1535,49 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         break;
       }
 
+      case "SetViewport": {
+        const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        if (passRecord.kind !== "render") {
+          throw new Error("SetViewport requires a render pass");
+        }
+        passRecord.pass.setViewport(
+          command.x,
+          command.y,
+          command.width,
+          command.height,
+          command.min_depth,
+          command.max_depth,
+        );
+        break;
+      }
+
+      case "SetScissor": {
+        const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        if (passRecord.kind !== "render") {
+          throw new Error("SetScissor requires a render pass");
+        }
+        passRecord.pass.setScissorRect(command.x, command.y, command.width, command.height);
+        break;
+      }
+
+      case "SetBlendConstant": {
+        const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        if (passRecord.kind !== "render") {
+          throw new Error("SetBlendConstant requires a render pass");
+        }
+        passRecord.pass.setBlendConstant(required(command.color, "SetBlendConstant needs color"));
+        break;
+      }
+
+      case "SetStencilReference": {
+        const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        if (passRecord.kind !== "render") {
+          throw new Error("SetStencilReference requires a render pass");
+        }
+        passRecord.pass.setStencilReference(command.reference);
+        break;
+      }
+
       case "Draw": {
         const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
         if (passRecord.kind !== "render") {
@@ -1668,6 +1711,29 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
             );
           }
         }
+        break;
+      }
+
+      case "CopyBufferToBuffer": {
+        const encoder = required(
+          encoders.get(command.encoder_id),
+          `unknown command encoder ${command.encoder_id}`,
+        );
+        const srcBuffer = required(
+          buffers.get(command.src_buffer_id),
+          `unknown source buffer ${command.src_buffer_id}`,
+        );
+        const dstBuffer = required(
+          buffers.get(command.dst_buffer_id),
+          `unknown destination buffer ${command.dst_buffer_id}`,
+        );
+        encoder.copyBufferToBuffer(
+          srcBuffer,
+          command.src_offset ?? 0,
+          dstBuffer,
+          command.dst_offset ?? 0,
+          command.size,
+        );
         break;
       }
 
