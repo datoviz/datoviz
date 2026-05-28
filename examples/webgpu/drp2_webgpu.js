@@ -1115,8 +1115,137 @@ function beginRenderPass(context, textures, encoders, command) {
 
 
 
+function objectLabel(kind) {
+  return kind.replaceAll("_", " ");
+}
+
+
+
+function registerObject(state, map, id, object, kind) {
+  if (state.objects.has(id)) {
+    throw new Error(`duplicate or reused object id ${id}`);
+  }
+  const record = {
+    id,
+    kind,
+    object,
+    destroyed: false,
+    dependencies: [],
+    dependents: 0,
+    openRefs: 0,
+    recordedRefs: 0,
+    submittedRefs: 0,
+  };
+  state.objects.set(id, record);
+  map.set(id, object);
+  return record;
+}
+
+
+
+function requireLiveRecord(state, id, kind) {
+  const record = state.objects.get(id);
+  if (record === undefined) {
+    throw new Error(`unknown ${objectLabel(kind)} ${id}`);
+  }
+  if (record.kind !== kind) {
+    throw new Error(`object ${id} is ${objectLabel(record.kind)}, not ${objectLabel(kind)}`);
+  }
+  if (record.destroyed) {
+    throw new Error(`${objectLabel(kind)} ${id} is destroyed`);
+  }
+  return record;
+}
+
+
+
+function retainDependency(owner, dependency) {
+  dependency.dependents++;
+  owner.dependencies.push(dependency);
+}
+
+
+
+function releaseDependencies(owner) {
+  for (const dependency of owner.dependencies) {
+    dependency.dependents = Math.max(0, dependency.dependents - 1);
+  }
+  owner.dependencies = [];
+}
+
+
+
+function destroyObject(map, record) {
+  if (record.destroyed) {
+    throw new Error(`${objectLabel(record.kind)} ${record.id} is already destroyed`);
+  }
+  if (record.dependents > 0) {
+    throw new Error(`${objectLabel(record.kind)} ${record.id} is still referenced by live objects`);
+  }
+  if (record.openRefs > 0) {
+    throw new Error(`${objectLabel(record.kind)} ${record.id} is still referenced by open work`);
+  }
+  if (record.recordedRefs > 0) {
+    throw new Error(`${objectLabel(record.kind)} ${record.id} is still referenced by recorded work`);
+  }
+  if (record.submittedRefs > 0) {
+    throw new Error(`${objectLabel(record.kind)} ${record.id} is still referenced by submitted work`);
+  }
+  if (typeof record.object.destroy === "function") {
+    record.object.destroy();
+  }
+  releaseDependencies(record);
+  record.destroyed = true;
+  map.delete(record.id);
+}
+
+
+
+function addEncoderRef(state, encoderRefs, encoderId, id, kind) {
+  const record = requireLiveRecord(state, id, kind);
+  const refs = required(encoderRefs.get(encoderId), `unknown command encoder ${encoderId}`);
+  if (!refs.has(record)) {
+    refs.add(record);
+    record.openRefs++;
+  }
+  return record;
+}
+
+
+
+function finishEncoderRefs(encoderRefs, commandBuffers, encoderId, commandBufferId, commandBuffer) {
+  const refs = required(encoderRefs.get(encoderId), `unknown command encoder ${encoderId}`);
+  for (const record of refs) {
+    record.openRefs = Math.max(0, record.openRefs - 1);
+    record.recordedRefs++;
+  }
+  commandBuffers.set(commandBufferId, {
+    commandBuffer,
+    refs,
+    submitted: false,
+  });
+  encoderRefs.delete(encoderId);
+}
+
+
+
+function submitCommandBuffer(record) {
+  if (record.submitted) {
+    throw new Error("command buffer has already been submitted");
+  }
+  for (const objectRecord of record.refs) {
+    objectRecord.recordedRefs = Math.max(0, objectRecord.recordedRefs - 1);
+    objectRecord.submittedRefs++;
+  }
+  record.submitted = true;
+  return record.commandBuffer;
+}
+
+
+
 function createExecutionState() {
   return {
+    objects: new Map(),
     buffers: new Map(),
     textures: new Map(),
     textureViews: new Map(),
@@ -1249,6 +1378,7 @@ export class Drp2WebGpuRuntime {
   }
 
   writeBuffer(bufferId, offset, bytes) {
+    requireLiveRecord(this.state, bufferId, "buffer");
     const buffer = required(this.state.buffers.get(bufferId), `unknown buffer ${bufferId}`);
     this.device.queue.writeBuffer(buffer, offset, bytes, 0, bytes.byteLength);
   }
@@ -1267,6 +1397,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
   const shaders = state.shaders;
   const pipelines = state.pipelines;
   const encoders = new Map();
+  const encoderRefs = new Map();
   const passes = new Map();
   const commandBuffers = new Map();
   const pendingTightTextureCopies = [];
@@ -1279,17 +1410,21 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         break;
 
       case "CreateBuffer":
-        buffers.set(
+        registerObject(
+          state,
+          buffers,
           command.id,
           device.createBuffer({
             label: command.label,
             size: required(command.size, "CreateBuffer needs size"),
             usage: mapBufferUsage(command.usage),
           }),
+          "buffer",
         );
         break;
 
       case "WriteBuffer": {
+        requireLiveRecord(state, command.buffer_id, "buffer");
         const buffer = required(
           buffers.get(command.buffer_id),
           `unknown buffer ${command.buffer_id}`,
@@ -1304,7 +1439,9 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       }
 
       case "CreateTexture":
-        textures.set(
+        registerObject(
+          state,
+          textures,
           command.id,
           device.createTexture({
             label: command.label,
@@ -1319,19 +1456,29 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
             format: mapTextureFormat(required(command.format, "CreateTexture needs format")),
             usage: mapTextureUsage(command.usage),
           }),
+          "texture",
         );
         break;
 
       case "CreateTextureView": {
+        const textureRecord = requireLiveRecord(state, command.texture_id, "texture");
         const texture = required(
           textures.get(command.texture_id),
           `unknown texture ${command.texture_id}`,
         );
-        textureViews.set(command.id, texture.createView(makeTextureViewDescriptor(command)));
+        const record = registerObject(
+          state,
+          textureViews,
+          command.id,
+          texture.createView(makeTextureViewDescriptor(command)),
+          "texture_view",
+        );
+        retainDependency(record, textureRecord);
         break;
       }
 
       case "WriteTexture": {
+        requireLiveRecord(state, command.texture_id, "texture");
         const texture = required(
           textures.get(command.texture_id),
           `unknown texture ${command.texture_id}`,
@@ -1365,7 +1512,9 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       }
 
       case "CreateSampler":
-        samplers.set(
+        registerObject(
+          state,
+          samplers,
           command.id,
           device.createSampler({
             label: command.label,
@@ -1376,11 +1525,14 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
             addressModeV: mapAddressMode(command.address_mode_v),
             addressModeW: mapAddressMode(command.address_mode_w),
           }),
+          "sampler",
         );
         break;
 
       case "CreateBindGroupLayout":
-        bindGroupLayouts.set(
+        registerObject(
+          state,
+          bindGroupLayouts,
           command.id,
           {
             entries: required(command.entries, "CreateBindGroupLayout needs entries"),
@@ -1390,15 +1542,42 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
                 makeBindGroupLayoutEntry(entry, "read_write", options)),
             }),
           },
+          "bind_group_layout",
         );
         break;
 
       case "CreateBindGroup": {
+        const bindGroupLayoutRecord = requireLiveRecord(
+          state,
+          command.bind_group_layout_id,
+          "bind_group_layout",
+        );
+        const dependencies = [bindGroupLayoutRecord];
+        for (const entry of required(command.entries, "CreateBindGroup needs entries")) {
+          switch (entry.resource_kind) {
+            case "buffer":
+              dependencies.push(requireLiveRecord(state, entry.resource_id, "buffer"));
+              break;
+            case "texture":
+              dependencies.push(requireLiveRecord(state, entry.resource_id, "texture"));
+              break;
+            case "texture_view":
+              dependencies.push(requireLiveRecord(state, entry.resource_id, "texture_view"));
+              break;
+            case "sampler":
+              dependencies.push(requireLiveRecord(state, entry.resource_id, "sampler"));
+              break;
+            default:
+              throw new Error(`unsupported bind-group resource_kind: ${entry.resource_kind}`);
+          }
+        }
         const bindGroupLayout = required(
           bindGroupLayouts.get(command.bind_group_layout_id),
           `unknown bind-group layout ${command.bind_group_layout_id}`,
         );
-        bindGroups.set(
+        const record = registerObject(
+          state,
+          bindGroups,
           command.id,
           {
             layoutId: command.bind_group_layout_id,
@@ -1413,7 +1592,11 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
               samplers,
             ),
           },
+          "bind_group",
         );
+        for (const dependency of dependencies) {
+          retainDependency(record, dependency);
+        }
         break;
       }
 
@@ -1430,36 +1613,88 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         if (errors.length > 0) {
           throw new Error(errors.map((message) => message.message).join("\n"));
         }
-        shaders.set(command.id, {
-          module,
-          entryPoint: command.entry_point ?? "main",
-          stage: command.stage,
-          code: command.code,
-        });
+        registerObject(
+          state,
+          shaders,
+          command.id,
+          {
+            module,
+            entryPoint: command.entry_point ?? "main",
+            stage: command.stage,
+            code: command.code,
+          },
+          "shader_module",
+        );
         break;
       }
 
-      case "CreateRenderPipeline":
-        pipelines.set(
+      case "CreateRenderPipeline": {
+        const dependencies = [
+          requireLiveRecord(state, command.vertex_shader_module_id, "shader_module"),
+          requireLiveRecord(state, command.fragment_shader_module_id, "shader_module"),
+          ...(command.bind_group_layout_ids ?? []).map((id) =>
+            requireLiveRecord(state, id, "bind_group_layout"),
+          ),
+        ];
+        const record = registerObject(
+          state,
+          pipelines,
           command.id,
           makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, options),
+          "render_pipeline",
         );
+        for (const dependency of dependencies) {
+          retainDependency(record, dependency);
+        }
         break;
+      }
 
-      case "CreateComputePipeline":
-        pipelines.set(
+      case "CreateComputePipeline": {
+        const dependencies = [
+          requireLiveRecord(state, command.compute_shader_module_id, "shader_module"),
+          ...(command.bind_group_layout_ids ?? []).map((id) =>
+            requireLiveRecord(state, id, "bind_group_layout"),
+          ),
+        ];
+        const record = registerObject(
+          state,
+          pipelines,
           command.id,
           makeComputePipeline(device, shaders, bindGroupLayouts, command, options),
+          "compute_pipeline",
         );
+        for (const dependency of dependencies) {
+          retainDependency(record, dependency);
+        }
         break;
+      }
 
       case "BeginCommandEncoder":
         encoders.set(command.id, device.createCommandEncoder({ label: command.label }));
+        encoderRefs.set(command.id, new Set());
         break;
 
       case "BeginRenderPass":
+        for (const attachment of required(
+          command.color_attachments,
+          "BeginRenderPass needs color_attachments",
+        )) {
+          if (attachment.texture_id !== 0) {
+            addEncoderRef(state, encoderRefs, command.encoder_id, attachment.texture_id, "texture");
+          }
+        }
+        if (command.depth_stencil_attachment !== undefined) {
+          addEncoderRef(
+            state,
+            encoderRefs,
+            command.encoder_id,
+            command.depth_stencil_attachment.texture_id,
+            "texture",
+          );
+        }
         passes.set(command.id, {
           kind: "render",
+          encoderId: command.encoder_id,
           pass: beginRenderPass(context, textures, encoders, command),
         });
         break;
@@ -1471,6 +1706,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         );
         passes.set(command.id, {
           kind: "compute",
+          encoderId: command.encoder_id,
           pass: encoder.beginComputePass({ label: command.label }),
         });
         break;
@@ -1481,6 +1717,13 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         const pipelineRecord = required(
           pipelines.get(command.pipeline_id),
           `unknown pipeline ${command.pipeline_id}`,
+        );
+        addEncoderRef(
+          state,
+          encoderRefs,
+          passRecord.encoderId,
+          command.pipeline_id,
+          passRecord.kind === "render" ? "render_pipeline" : "compute_pipeline",
         );
         passRecord.pipeline = pipelineRecord;
         passRecord.pass.setPipeline(pipelineRecord.pipeline);
@@ -1496,6 +1739,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           buffers.get(command.buffer_id),
           `unknown buffer ${command.buffer_id}`,
         );
+        addEncoderRef(state, encoderRefs, passRecord.encoderId, command.buffer_id, "buffer");
         passRecord.pass.setVertexBuffer(command.slot ?? 0, buffer, command.offset ?? 0);
         break;
       }
@@ -1509,6 +1753,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           buffers.get(command.buffer_id),
           `unknown buffer ${command.buffer_id}`,
         );
+        addEncoderRef(state, encoderRefs, passRecord.encoderId, command.buffer_id, "buffer");
         passRecord.pass.setIndexBuffer(buffer, mapIndexFormat(command.index_format), command.offset ?? 0);
         break;
       }
@@ -1531,6 +1776,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           textureViews,
           samplers,
         );
+        addEncoderRef(state, encoderRefs, passRecord.encoderId, command.bind_group_id, "bind_group");
         passRecord.pass.setBindGroup(slot, bindGroup, []);
         break;
       }
@@ -1641,6 +1887,8 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           encoders.get(command.encoder_id),
           `unknown command encoder ${command.encoder_id}`,
         );
+        addEncoderRef(state, encoderRefs, command.encoder_id, command.src_texture_id, "texture");
+        addEncoderRef(state, encoderRefs, command.encoder_id, command.dst_buffer_id, "buffer");
         const texture = required(
           textures.get(command.src_texture_id),
           `unknown source texture ${command.src_texture_id}`,
@@ -1719,6 +1967,8 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           encoders.get(command.encoder_id),
           `unknown command encoder ${command.encoder_id}`,
         );
+        addEncoderRef(state, encoderRefs, command.encoder_id, command.src_buffer_id, "buffer");
+        addEncoderRef(state, encoderRefs, command.encoder_id, command.dst_buffer_id, "buffer");
         const srcBuffer = required(
           buffers.get(command.src_buffer_id),
           `unknown source buffer ${command.src_buffer_id}`,
@@ -1742,6 +1992,8 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           encoders.get(command.encoder_id),
           `unknown command encoder ${command.encoder_id}`,
         );
+        addEncoderRef(state, encoderRefs, command.encoder_id, command.src_buffer_id, "buffer");
+        addEncoderRef(state, encoderRefs, command.encoder_id, command.dst_texture_id, "texture");
         const buffer = required(
           buffers.get(command.src_buffer_id),
           `unknown source buffer ${command.src_buffer_id}`,
@@ -1782,6 +2034,8 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           encoders.get(command.encoder_id),
           `unknown command encoder ${command.encoder_id}`,
         );
+        addEncoderRef(state, encoderRefs, command.encoder_id, command.src_texture_id, "texture");
+        addEncoderRef(state, encoderRefs, command.encoder_id, command.dst_texture_id, "texture");
         const srcTexture = required(
           textures.get(command.src_texture_id),
           `unknown source texture ${command.src_texture_id}`,
@@ -1826,7 +2080,13 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           encoders.get(command.encoder_id),
           `unknown command encoder ${command.encoder_id}`,
         );
-        commandBuffers.set(command.command_buffer_id, encoder.finish());
+        finishEncoderRefs(
+          encoderRefs,
+          commandBuffers,
+          command.encoder_id,
+          command.command_buffer_id,
+          encoder.finish(),
+        );
         encoders.delete(command.encoder_id);
         break;
       }
@@ -1834,7 +2094,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       case "QueueSubmit": {
         const ids = command.command_buffer_ids ?? [command.command_buffer_id];
         const submitBuffers = ids.map((id) =>
-          required(commandBuffers.get(id), `unknown command buffer ${id}`),
+          submitCommandBuffer(required(commandBuffers.get(id), `unknown command buffer ${id}`)),
         );
         device.queue.submit(submitBuffers);
         const readbacks = command.readbacks ?? [];
@@ -1842,6 +2102,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           await device.queue.onSubmittedWorkDone();
         }
         for (const readback of readbacks) {
+          requireLiveRecord(state, readback.buffer_id, "buffer");
           const buffer = required(
             buffers.get(readback.buffer_id),
             `unknown readback buffer ${readback.buffer_id}`,
@@ -1866,15 +2127,54 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
 
       case "QueueSubmitReply":
       case "Error":
+        break;
+
       case "DestroyBuffer":
+        destroyObject(buffers, requireLiveRecord(state, command.buffer_id, "buffer"));
+        break;
+
       case "DestroyTexture":
+        destroyObject(textures, requireLiveRecord(state, command.texture_id, "texture"));
+        break;
+
       case "DestroyTextureView":
+        destroyObject(textureViews, requireLiveRecord(state, command.id, "texture_view"));
+        break;
+
       case "DestroySampler":
+        destroyObject(samplers, requireLiveRecord(state, command.id, "sampler"));
+        break;
+
       case "DestroyBindGroupLayout":
+        destroyObject(
+          bindGroupLayouts,
+          requireLiveRecord(state, command.bind_group_layout_id, "bind_group_layout"),
+        );
+        break;
+
       case "DestroyBindGroup":
+        destroyObject(bindGroups, requireLiveRecord(state, command.bind_group_id, "bind_group"));
+        break;
+
       case "DestroyShaderModule":
+        destroyObject(
+          shaders,
+          requireLiveRecord(state, command.shader_module_id, "shader_module"),
+        );
+        break;
+
       case "DestroyRenderPipeline":
+        destroyObject(
+          pipelines,
+          requireLiveRecord(state, command.render_pipeline_id, "render_pipeline"),
+        );
+        break;
+
       case "DestroyComputePipeline":
+        destroyObject(
+          pipelines,
+          requireLiveRecord(state, command.compute_pipeline_id, "compute_pipeline"),
+        );
         break;
 
       default:
