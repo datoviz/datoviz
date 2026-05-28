@@ -8,7 +8,7 @@ import ctypes
 import tempfile
 from pathlib import Path
 
-import datoviz as dvz
+import datoviz.raw as dvz
 
 
 def _void_p(array: ctypes.Array) -> ctypes.c_void_p:

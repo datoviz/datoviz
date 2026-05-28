@@ -30,12 +30,10 @@ def _smoke_symbols() -> list[str]:
 def main() -> int:
     sys.path.insert(0, str(ROOT_DIR))
 
-    import datoviz as dvz  # noqa: PLC0415
-    import datoviz.raw as raw  # noqa: PLC0415
+    import datoviz.raw as dvz  # noqa: PLC0415
 
     for symbol in _smoke_symbols():
-        assert hasattr(dvz, symbol), f'missing datoviz.{symbol}'
-        assert hasattr(raw, symbol), f'missing datoviz.raw.{symbol}'
+        assert hasattr(dvz, symbol), f'missing datoviz.raw.{symbol}'
 
     t0 = dvz.dvz_time_monotonic_ns()
     t1 = dvz.dvz_time_monotonic_ns()

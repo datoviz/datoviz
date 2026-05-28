@@ -1,5 +1,12 @@
-"""Datoviz raw ctypes package entry point."""
+"""Datoviz Python package entry point."""
 
-from .raw import *  # noqa: F403
-from .events import EventSource, PointerEvent, View
-from .loop import AppLoop, run, run_async, run_process, run_thread, shutdown_executors
+
+__all__ = ['Host']
+
+
+def __getattr__(name):
+    if name == 'Host':
+        from .host import Host
+
+        return Host
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')

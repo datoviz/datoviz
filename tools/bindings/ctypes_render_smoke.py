@@ -22,7 +22,7 @@ def _load_example(name: str, path: Path):
 
 
 def _run_view_post_smoke() -> None:
-    import datoviz as dvz  # noqa: PLC0415
+    import datoviz.raw as dvz  # noqa: PLC0415
 
     scene = dvz.dvz_scene()
     if not scene:

@@ -27,9 +27,9 @@ surface should make native events easy to consume without recreating the v0.3 pl
 The convenience layer should allow this pattern:
 
 ```python
-@view.on("click")
+@view.pointer("click")
 async def click(ev):
-    result = await dvz.run_process(expensive_compute, ev.x, ev.y)
+    result = await host.run_process(expensive_compute, ev.x, ev.y)
     visual.set_data(result)
 ```
 
@@ -40,8 +40,8 @@ Python/event owner thread after awaited work completes. Scene/view mutation happ
 Thread and process helpers should be explicit:
 
 ```python
-result = await dvz.run_thread(load_large_array, path)
-result = await dvz.run_process(segment_volume, volume_id)
+result = await host.run_thread(load_large_array, path)
+result = await host.run_process(segment_volume, volume_id)
 ```
 
 `run_thread()` is appropriate for I/O or native work that releases the GIL. `run_process()` is the

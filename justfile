@@ -284,7 +284,7 @@ checkstructs:
         """
         with open(json_path, "r") as f:
             sizes = json.load(f)
-        import datoviz as dvz
+        import datoviz.raw as dvz
         for name, size_c in sizes.items():
             obj = getattr(dvz, name)
             assert obj

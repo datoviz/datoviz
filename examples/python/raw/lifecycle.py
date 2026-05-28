@@ -3,13 +3,12 @@
 
 from __future__ import annotations
 
-import datoviz as dvz
-import datoviz.raw as raw
+import datoviz.raw as dvz
 
 
 def main() -> int:
     t0 = dvz.dvz_time_monotonic_ns()
-    t1 = raw.dvz_time_monotonic_ns()
+    t1 = dvz.dvz_time_monotonic_ns()
     assert t1 >= t0
 
     scene = dvz.dvz_scene()

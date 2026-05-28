@@ -17,15 +17,14 @@ WORK_DIR = ROOT_DIR / 'build' / 'bindings' / 'package_smoke'
 
 SMOKE_CODE = r'''
 from pathlib import Path
-import datoviz as dvz
-import datoviz.raw as raw
+import datoviz.raw as dvz
 import datoviz._ctypes as impl
 
-assert hasattr(dvz, "dvz_time_monotonic_ns")
-assert hasattr(raw, "dvz_scene")
+assert not hasattr(__import__("datoviz"), "dvz_time_monotonic_ns")
+assert hasattr(dvz, "dvz_scene")
 assert Path(impl.dvz._name).exists(), impl.dvz._name
 t0 = dvz.dvz_time_monotonic_ns()
-t1 = raw.dvz_time_monotonic_ns()
+t1 = dvz.dvz_time_monotonic_ns()
 assert isinstance(t0, int)
 assert t1 >= t0
 scene = dvz.dvz_scene()

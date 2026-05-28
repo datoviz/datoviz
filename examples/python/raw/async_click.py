@@ -9,7 +9,8 @@ import ctypes
 import tempfile
 from pathlib import Path
 
-import datoviz as dvz
+import datoviz.raw as dvz
+from datoviz.host import Host
 
 
 def _void_p(array: ctypes.Array) -> ctypes.c_void_p:
@@ -26,7 +27,7 @@ async def _run(output: Path) -> int:
         raise RuntimeError('dvz_scene() failed')
 
     app = None
-    wrapped_view = None
+    host = None
     try:
         figure = dvz.dvz_figure(scene, 128, 128, 0)
         if not figure:
@@ -76,21 +77,20 @@ async def _run(output: Path) -> int:
             print('raw async click: SKIP (dvz_view_offscreen() failed)')
             return 0
 
-        wrapped_view = dvz.View(raw_view)
-        wrapped_view.bind_loop()
+        host = Host(app, fps=30.0)
+        view = host.view(raw_view)
         clicked = asyncio.Event()
 
-        @wrapped_view.on('click')
+        @view.pointer('click')
         async def click(ev):
-            diameter = await dvz.run_thread(_diameter_from_click, ev.x)
+            diameter = await host.run_thread(_diameter_from_click, ev.x)
             diameters[0] = diameter
             if dvz.dvz_visual_set_data(visual, b'diameter', _void_p(diameters), 3) != 0:
                 raise RuntimeError('dvz_visual_set_data(diameter) failed')
-            wrapped_view.request_frame()
+            view.request_frame()
             clicked.set()
 
-        app_loop = dvz.AppLoop(app, views=[raw_view], fps=30.0)
-        task = asyncio.create_task(app_loop.run_async())
+        task = asyncio.create_task(host.run_async())
         try:
             await asyncio.sleep(0)
             router = dvz.dvz_view_input(raw_view)
@@ -110,10 +110,10 @@ async def _run(output: Path) -> int:
                 None,
             )
             await asyncio.wait_for(clicked.wait(), timeout=2.0)
-            app_loop.stop()
+            host.stop()
             await task
         finally:
-            app_loop.stop()
+            host.stop()
             if not task.done():
                 await task
 
@@ -127,8 +127,8 @@ async def _run(output: Path) -> int:
         print(f'raw async click: OK ({output})')
         return 0
     finally:
-        if wrapped_view is not None:
-            wrapped_view.close()
+        if host is not None:
+            host.close()
         if app:
             dvz.dvz_app_destroy(app)
         dvz.dvz_scene_destroy(scene)
