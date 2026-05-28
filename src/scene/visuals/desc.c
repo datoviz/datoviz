@@ -49,6 +49,7 @@ static bool _scene_visual_desc_from_metadata(
     ANN(meta);
     ANN(out);
 
+    out->visual_type = meta->visual_type;
     out->depth_test_enabled = meta->depth_test_enabled;
     out->depth_compare_op =
         meta->depth_compare_op != 0 ? meta->depth_compare_op : VK_COMPARE_OP_LESS_OR_EQUAL;
@@ -647,6 +648,7 @@ bool _scene_visual_desc_from_render(
     if (is_point)
     {
         out->kind = DVZ_SCENE_VISUAL_DESC_POINT;
+        out->visual_type = DVZ_VISUAL_TYPE_POINT;
         out->point_like_kind = DVZ_SCENE_POINT_LIKE_POINT;
     }
     else if (is_splat)
@@ -663,6 +665,7 @@ bool _scene_visual_desc_from_render(
         if (color_id == 0 || sigma_id == 0 || angle_id == 0)
             return false;
         out->kind = DVZ_SCENE_VISUAL_DESC_SPLAT;
+        out->visual_type = DVZ_VISUAL_TYPE_SPLAT;
         out->vbuf_ids[0] = pos_buf;
         out->vbuf_ids[1] = color_id;
         out->vbuf_ids[2] = sigma_id;
@@ -675,6 +678,7 @@ bool _scene_visual_desc_from_render(
     else if (is_textured_mesh)
     {
         out->kind = DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
+        out->visual_type = DVZ_VISUAL_TYPE_MESH;
         out->image_texture_id = mesh_tex;
         out->vbuf_ids[0] = mesh_pos;
         out->vbuf_ids[1] = mesh_color;
@@ -684,10 +688,14 @@ bool _scene_visual_desc_from_render(
         out->has_normal = true;
     }
     else if (is_primitive)
+    {
         out->kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+        out->visual_type = DVZ_VISUAL_TYPE_PRIMITIVE;
+    }
     else
     {
         out->kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
+        out->visual_type = DVZ_VISUAL_TYPE_IMAGE;
         out->image_texture_id = img_tex;
         out->vbuf_ids[0] = img_pos;
         out->vbuf_ids[1] = img_uv;

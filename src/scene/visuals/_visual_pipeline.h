@@ -70,6 +70,7 @@ typedef enum
 typedef struct DvzSceneVisualDesc
 {
     DvzSceneVisualDescKind kind;
+    uint32_t visual_type;
     DvzScenePointLikeKind point_like_kind;
     bool has_normal;
     bool depth_test_enabled;
