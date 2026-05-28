@@ -333,6 +333,83 @@ bool _scene_visual_attrs_dirty(const DvzVisual* visual)
 
 
 /**
+ * Emit dirty dense attribute uploads for one retained visual.
+ *
+ * @param figure the figure
+ * @param plan the destination frame plan
+ * @param visual the visual
+ * @param visual_index the scene visual index
+ * @param upload_position_topology whether position uploads carry the visual topology
+ * @param emitted_buffers scene-buffer emission guards shared across the upload pass
+ */
+void _scene_emit_visual_dense_attr_uploads(
+    const DvzFigure* figure, DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
+    bool upload_position_topology, bool* emitted_buffers)
+{
+    ANN(figure);
+    ANN(figure->scene);
+    ANN(plan);
+    ANN(visual);
+    ANN(emitted_buffers);
+    for (uint32_t ai = 0; ai < visual->attr_count; ai++)
+    {
+        const DvzVisualAttr* attr = &visual->attrs[ai];
+        if (attr->buffer != NULL)
+        {
+            uint32_t buffer_idx = _scene_buffer_index(figure->scene, attr->buffer);
+            if (buffer_idx == UINT32_MAX || emitted_buffers[buffer_idx])
+                continue;
+            char buffer_resource_id[128];
+            if (!_scene_resource_key_buffer(
+                    buffer_idx, buffer_resource_id, sizeof(buffer_resource_id)))
+                continue;
+            bool has_cpu_data = attr->buffer->data != NULL;
+            if ((has_cpu_data && attr->buffer->dirty) || !has_cpu_data)
+            {
+                dvz_frame_plan_upload_bytes(
+                    plan, buffer_resource_id, 0, attr->buffer->desc.byte_size, attr->name,
+                    attr->buffer->data);
+                _scene_attach_upload_metadata(
+                    plan, visual, visual_index, _scene_attr_frame_plan_role(attr->name),
+                    DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, buffer_idx, attr->item_count);
+                DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+                node->u.upload.external = !has_cpu_data;
+                node->u.upload.buffer_usage = _scene_buffer_drp2_usage(attr->buffer->desc.usage);
+                node->u.upload.item_stride = attr->buffer->desc.stride;
+                if (upload_position_topology && strcmp(attr->name, "position") == 0)
+                    dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
+            }
+            emitted_buffers[buffer_idx] = true;
+            continue;
+        }
+        if (attr->dirty_item_count == 0 || attr->data == NULL || attr->item_count == 0)
+            continue;
+        char resource_id[128];
+        if (!_scene_visual_attr_resource_key(
+                figure, visual, visual_index, attr->name, resource_id, sizeof(resource_id)))
+        {
+            continue;
+        }
+        uint64_t byte_offset = (uint64_t)attr->dirty_first_item * attr->item_size;
+        uint64_t byte_size = (uint64_t)attr->dirty_item_count * attr->item_size;
+        const void* data_ptr = (const uint8_t*)attr->data + byte_offset;
+        DvzFramePlanResourceRole role = _scene_attr_frame_plan_role(attr->name);
+        if (!_scene_frame_plan_upload_style_bytes(
+                figure, plan, resource_id, byte_offset, byte_size, attr->name, data_ptr, role))
+        {
+            continue;
+        }
+        _scene_attach_upload_metadata(
+            plan, visual, visual_index, role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX,
+            attr->item_count);
+        if (upload_position_topology && strcmp(attr->name, "position") == 0)
+            dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
+    }
+}
+
+
+
+/**
  * Emit derived buffer payloads prepared by one visual family helper.
  *
  * @param figure the figure
@@ -397,4 +474,3 @@ void _scene_emit_visual_buffer_payloads(
         }
     }
 }
-
