@@ -26,16 +26,13 @@
 #include "_log.h"
 #include "_scene.h"
 #include "sample_profile.h"
+#include "scale_internal.h"
 
 
 
 /*************************************************************************************************/
 /*  Function prototypes                                                                          */
 /*************************************************************************************************/
-
-static void _scene_mark_scale_dirty(DvzScale* scale);
-
-static void _scene_mark_colormap_dirty(DvzColormap* colormap);
 
 static void _scene_texture_bump_version(DvzVisual* visual);
 
@@ -104,136 +101,12 @@ static void _colorbar_fail(DvzColorbar* colorbar, DvzDiagnosticReport* report, c
  * @param out_rgba the output RGBA color
  * @return true when a color was written
  */
-static bool _colormap_sample_stops(
-    const DvzColormapStop* stops, uint32_t count, double t, uint8_t out_rgba[4])
-{
-    ANN(stops);
-    ANN(out_rgba);
-    if (count < 2)
-        return false;
-    const DvzColormapStop* lo = &stops[0];
-    const DvzColormapStop* hi = &stops[count - 1];
-    for (uint32_t i = 1; i < count; i++)
-    {
-        if (t <= stops[i].position)
-        {
-            lo = &stops[i - 1];
-            hi = &stops[i];
-            break;
-        }
-    }
-    double span = hi->position - lo->position;
-    double u = span > 0.0 ? (t - lo->position) / span : 0.0;
-    if (u < 0.0)
-        u = 0.0;
-    if (u > 1.0)
-        u = 1.0;
-    for (uint32_t c = 0; c < 4; c++)
-    {
-        double value = (1.0 - u) * lo->rgba[c] + u * hi->rgba[c];
-        out_rgba[c] = (uint8_t)(value + 0.5);
-    }
-    return true;
-}
-
-
-
-/**
- * Return a compact built-in colormap stop table.
- *
- * @param builtin the built-in colormap
- * @param out_count output stop count
- * @return the static stop table, or NULL
- */
-static const DvzColormapStop*
-_colormap_builtin_stops(DvzBuiltinColormap builtin, uint32_t* out_count)
-{
-    ANN(out_count);
-    static const DvzColormapStop viridis[] = {
-        {.position = 0.00, .rgba = {68, 1, 84, 255}},
-        {.position = 0.25, .rgba = {59, 82, 139, 255}},
-        {.position = 0.50, .rgba = {33, 145, 140, 255}},
-        {.position = 0.75, .rgba = {94, 201, 98, 255}},
-        {.position = 1.00, .rgba = {253, 231, 37, 255}},
-    };
-    static const DvzColormapStop magma[] = {
-        {.position = 0.00, .rgba = {0, 0, 4, 255}},
-        {.position = 0.25, .rgba = {80, 18, 123, 255}},
-        {.position = 0.50, .rgba = {182, 54, 121, 255}},
-        {.position = 0.75, .rgba = {251, 136, 97, 255}},
-        {.position = 1.00, .rgba = {252, 253, 191, 255}},
-    };
-    static const DvzColormapStop plasma[] = {
-        {.position = 0.00, .rgba = {13, 8, 135, 255}},
-        {.position = 0.25, .rgba = {126, 3, 168, 255}},
-        {.position = 0.50, .rgba = {204, 71, 120, 255}},
-        {.position = 0.75, .rgba = {248, 149, 64, 255}},
-        {.position = 1.00, .rgba = {240, 249, 33, 255}},
-    };
-    static const DvzColormapStop inferno[] = {
-        {.position = 0.00, .rgba = {0, 0, 4, 255}},
-        {.position = 0.25, .rgba = {87, 16, 110, 255}},
-        {.position = 0.50, .rgba = {188, 55, 84, 255}},
-        {.position = 0.75, .rgba = {249, 142, 9, 255}},
-        {.position = 1.00, .rgba = {252, 255, 164, 255}},
-    };
-    static const DvzColormapStop cividis[] = {
-        {.position = 0.00, .rgba = {0, 32, 76, 255}},
-        {.position = 0.25, .rgba = {59, 78, 109, 255}},
-        {.position = 0.50, .rgba = {124, 123, 120, 255}},
-        {.position = 0.75, .rgba = {188, 172, 103, 255}},
-        {.position = 1.00, .rgba = {255, 233, 69, 255}},
-    };
-    static const DvzColormapStop turbo[] = {
-        {.position = 0.00, .rgba = {48, 18, 59, 255}},
-        {.position = 0.20, .rgba = {55, 91, 178, 255}},
-        {.position = 0.40, .rgba = {49, 205, 207, 255}},
-        {.position = 0.60, .rgba = {135, 255, 88, 255}},
-        {.position = 0.80, .rgba = {255, 170, 36, 255}},
-        {.position = 1.00, .rgba = {122, 4, 3, 255}},
-    };
-    static const DvzColormapStop gray[] = {
-        {.position = 0.00, .rgba = {0, 0, 0, 255}},
-        {.position = 1.00, .rgba = {255, 255, 255, 255}},
-    };
-    switch (builtin)
-    {
-    case DVZ_BUILTIN_COLORMAP_VIRIDIS:
-        *out_count = DVZ_ARRAY_COUNT(viridis);
-        return viridis;
-    case DVZ_BUILTIN_COLORMAP_MAGMA:
-        *out_count = DVZ_ARRAY_COUNT(magma);
-        return magma;
-    case DVZ_BUILTIN_COLORMAP_PLASMA:
-        *out_count = DVZ_ARRAY_COUNT(plasma);
-        return plasma;
-    case DVZ_BUILTIN_COLORMAP_INFERNO:
-        *out_count = DVZ_ARRAY_COUNT(inferno);
-        return inferno;
-    case DVZ_BUILTIN_COLORMAP_CIVIDIS:
-        *out_count = DVZ_ARRAY_COUNT(cividis);
-        return cividis;
-    case DVZ_BUILTIN_COLORMAP_TURBO:
-        *out_count = DVZ_ARRAY_COUNT(turbo);
-        return turbo;
-    case DVZ_BUILTIN_COLORMAP_GRAY:
-        *out_count = DVZ_ARRAY_COUNT(gray);
-        return gray;
-    case DVZ_BUILTIN_COLORMAP_NONE:
-    default:
-        *out_count = 0;
-        return NULL;
-    }
-}
-
-
-
 /**
  * Mark visuals depending on one scale as needing refreshed texture data.
  *
  * @param scale the scale
  */
-static void _scene_mark_scale_dirty(DvzScale* scale)
+void _scene_mark_scale_dirty(DvzScale* scale)
 {
     if (scale == NULL || scale->scene == NULL)
         return;
@@ -293,25 +166,6 @@ static void _scene_texture_bump_version(DvzVisual* visual)
         visual->texture.version == UINT64_MAX ? 1 : visual->texture.version + 1;
 }
 
-
-
-/**
- * Mark visuals depending on one colormap as needing refreshed texture data.
- *
- * @param colormap the colormap
- */
-static void _scene_mark_colormap_dirty(DvzColormap* colormap)
-{
-    if (colormap == NULL || colormap->scene == NULL)
-        return;
-    DvzScene* scene = colormap->scene;
-    for (uint32_t i = 0; i < scene->scale_count; i++)
-    {
-        DvzScale* scale = &scene->scales[i];
-        if (scale->scene == scene && scale->colormap == colormap)
-            _scene_mark_scale_dirty(scale);
-    }
-}
 
 
 /**
@@ -2054,86 +1908,6 @@ static bool _legend_needs_visual_update(const DvzLegend* legend)
 /*************************************************************************************************/
 
 /**
- * Resolve one RGBA color from a retained colormap.
- *
- * @param colormap the colormap, or NULL for grayscale fallback
- * @param t the normalized scalar value
- * @param out_rgba the output RGBA color
- * @return true when a color was written
- */
-bool _scene_color_from_colormap(
-    const DvzColormap* colormap, double t, uint8_t out_rgba[4])
-{
-    ANN(out_rgba);
-    if (t < 0.0)
-        t = 0.0;
-    if (t > 1.0)
-        t = 1.0;
-
-    if (colormap != NULL && colormap->stop_count >= 2)
-    {
-        return _colormap_sample_stops(colormap->stops, colormap->stop_count, t, out_rgba);
-    }
-
-    if (colormap != NULL)
-    {
-        uint32_t builtin_count = 0;
-        const DvzColormapStop* builtin =
-            _colormap_builtin_stops(colormap->builtin, &builtin_count);
-        if (builtin != NULL && builtin_count >= 2)
-            return _colormap_sample_stops(builtin, builtin_count, t, out_rgba);
-    }
-
-    uint8_t gray = (uint8_t)(255.0 * t + 0.5);
-    out_rgba[0] = gray;
-    out_rgba[1] = gray;
-    out_rgba[2] = gray;
-    out_rgba[3] = 255;
-    return true;
-}
-
-
-
-/**
- * Sample a scene-owned colormap at a normalized coordinate.
- *
- * @param colormap the colormap, or NULL for grayscale fallback
- * @param t normalized scalar coordinate
- * @param out the output RGBA color
- * @return true when a color was written
- */
-bool dvz_colormap_sample(const DvzColormap* colormap, double t, DvzColor* out)
-{
-    ANN(out);
-    uint8_t rgba[4] = {0};
-    const bool ok = _scene_color_from_colormap(colormap, t, rgba);
-    *out = dvz_color_rgba(rgba[0], rgba[1], rgba[2], rgba[3]);
-    return ok;
-}
-
-
-
-/**
- * Sample a built-in colormap at a normalized coordinate.
- *
- * @param builtin the built-in colormap selector
- * @param t normalized scalar coordinate
- * @param out the output RGBA color
- * @return true when a color was written
- */
-bool dvz_colormap_builtin_sample(DvzBuiltinColormap builtin, double t, DvzColor* out)
-{
-    ANN(out);
-    DvzColormap colormap = {
-        .kind = DVZ_COLORMAP_CONTINUOUS,
-        .builtin = builtin,
-    };
-    return dvz_colormap_sample(&colormap, t, out);
-}
-
-
-
-/**
  * Create a scene-owned scale object.
  *
  * @param scene the scene
@@ -2390,114 +2164,6 @@ bool dvz_scale_remove_categories(DvzScale* scale, const DvzCategoryId* ids, uint
     if (changed)
         _scene_mark_scale_dirty(scale);
     return true;
-}
-
-
-
-/**
- * Create a scene-owned colormap object.
- *
- * @param scene the scene
- * @param desc the colormap descriptor, or NULL for defaults
- * @return the colormap, or NULL on allocation failure
- */
-DvzColormap* dvz_colormap(DvzScene* scene, const DvzColormapDesc* desc)
-{
-    ANN(scene);
-    if (scene->colormap_count >= DVZ_SCENE_MAX_COLORMAPS)
-    {
-        log_error("maximum colormap count reached");
-        return NULL;
-    }
-    DvzColormap* colormap = &scene->colormaps[scene->colormap_count++];
-    dvz_memset(colormap, sizeof(DvzColormap), 0, sizeof(DvzColormap));
-    colormap->scene = scene;
-    colormap->kind = desc != NULL ? desc->kind : DVZ_COLORMAP_CONTINUOUS;
-    colormap->builtin = desc != NULL ? desc->builtin : DVZ_BUILTIN_COLORMAP_NONE;
-    if (desc != NULL)
-    {
-        colormap->center = desc->center;
-        colormap->has_center = desc->center != 0.0;
-        if (desc->label != NULL)
-            dvz_strlcpy(colormap->label, desc->label, sizeof(colormap->label));
-    }
-    return colormap;
-}
-
-
-
-/**
- * Create a scene-owned built-in colormap object.
- *
- * @param scene the scene
- * @param builtin the built-in colormap selector
- * @return the colormap, or NULL on allocation failure
- */
-DvzColormap* dvz_colormap_builtin(DvzScene* scene, DvzBuiltinColormap builtin)
-{
-    DvzColormapDesc desc = {
-        .kind = DVZ_COLORMAP_CONTINUOUS,
-        .builtin = builtin,
-    };
-    return dvz_colormap(scene, &desc);
-}
-
-
-
-/**
- * Destroy a colormap object.
- *
- * @param colormap the colormap
- */
-void dvz_colormap_destroy(DvzColormap* colormap)
-{
-    if (colormap == NULL)
-        return;
-    colormap->scene = NULL;
-    colormap->stop_count = 0;
-    colormap->has_center = false;
-}
-
-
-
-/**
- * Set custom color stops on a colormap.
- *
- * @param colormap the colormap
- * @param stops the color stops
- * @param count the number of stops
- */
-void dvz_colormap_set_stops(DvzColormap* colormap, const DvzColormapStop* stops, uint32_t count)
-{
-    ANN(colormap);
-    if (count > DVZ_SCENE_MAX_COLOR_STOPS)
-    {
-        log_error("too many color stops: %u > %u", count, DVZ_SCENE_MAX_COLOR_STOPS);
-        return;
-    }
-    if (count > 0)
-        ANN(stops);
-    colormap->stop_count = count;
-    if (count > 0)
-        dvz_memcpy(
-            colormap->stops, sizeof(colormap->stops), stops, count * sizeof(DvzColormapStop));
-    _scene_mark_colormap_dirty(colormap);
-}
-
-
-
-/**
- * Set the diverging center on a colormap.
- *
- * @param colormap the colormap
- * @param center the semantic center value
- */
-void dvz_colormap_set_center(DvzColormap* colormap, double center)
-{
-    ANN(colormap);
-    colormap->center = center;
-    colormap->has_center = true;
-    _scene_mark_colormap_dirty(colormap);
 }
 
 
