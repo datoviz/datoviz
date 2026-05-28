@@ -48,6 +48,7 @@ SUPPORTED_TEXTURE_FORMATS = {
     'depth32float',
     'r16float',
     'r32uint',
+    'rg32uint',
     'rgba8unorm',
     'rgba16float',
 }
@@ -310,7 +311,7 @@ class WebGPUFixturePreflight:
         self, index: int, pipeline_id: int, color_target: Dict[str, Any]
     ) -> None:
         fmt = self._texture_format(color_target.get('format'))
-        if color_target.get('blend') is not None and fmt in {'depth32float', 'r32uint'}:
+        if color_target.get('blend') is not None and fmt in {'depth32float', 'r32uint', 'rg32uint'}:
             raise WebGPUPreflightFailure(
                 index, f'render pipeline {pipeline_id} color target format {fmt} does not support blending'
             )

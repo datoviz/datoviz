@@ -297,6 +297,7 @@ function mapTextureFormat(format) {
   switch (format) {
     case "r16float":
     case "r32uint":
+    case "rg32uint":
     case "rgba8unorm":
     case "bgra8unorm":
     case "rgba16float":
@@ -420,7 +421,10 @@ function colorTargetFormat(canvasFormat, target) {
 
 
 function validateColorTargetState(format, target) {
-  if (target.blend !== undefined && (format === "r32uint" || format === "depth32float")) {
+  if (
+    target.blend !== undefined &&
+    (format === "r32uint" || format === "rg32uint" || format === "depth32float")
+  ) {
     throw new Error(`color target format ${format} does not support blending`);
   }
   if (target.write_mask !== undefined && target.write_mask.includes("all") && target.write_mask.length > 1) {

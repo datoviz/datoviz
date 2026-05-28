@@ -99,6 +99,13 @@ def test_webgpu_preflight_wboit_fixture_passes() -> None:
     preflight.validate_fixture(fixture)
 
 
+def test_webgpu_preflight_rg32uint_query_fixture_passes() -> None:
+    preflight = WebGPUFixturePreflight(ROOT_DIR)
+    fixture = _load_fixture('spec/drp2/fixtures/positive/query_rg32uint_readback.json')
+
+    preflight.validate_fixture(fixture)
+
+
 def test_webgpu_preflight_rejects_missing_scene_common_viewport_binding() -> None:
     broken = _load_strict_stream('examples/webgpu/streams/scene_point_wgsl.json')
     for command in broken['commands']:

@@ -13,6 +13,7 @@
     "/spec/drp2/fixtures/positive/pressure_picking_readback.json",
     "/spec/drp2/fixtures/positive/pressure_static_geometry.json",
     "/spec/drp2/fixtures/positive/pressure_texture_sample.json",
+    "/spec/drp2/fixtures/positive/query_rg32uint_readback.json",
     "/spec/drp2/fixtures/positive/queue_submit_basic.json",
     "/spec/drp2/fixtures/positive/queue_submit_readback_basic.json",
     "/spec/drp2/fixtures/positive/render_pass_draw_with_bind_group.json",
@@ -37,5 +38,9 @@
     "/spec/drp2/fixtures/positive/wboit_accumulation_resolve.json",
     "/spec/drp2/fixtures/positive/write_buffer_basic.json",
     "/spec/drp2/fixtures/positive/write_texture_basic.json"
+  ],
+  "webgpu_streams": [
+    "/examples/webgpu/streams/attachment_multi_color_wgsl.json",
+    "/examples/webgpu/streams/attachment_depth_wgsl.json"
   ]
 }

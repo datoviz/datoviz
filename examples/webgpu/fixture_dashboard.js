@@ -22,7 +22,7 @@ function setSummary() {
     counts[fixture.status] = (counts[fixture.status] ?? 0) + 1;
   }
   summaryEl.textContent =
-    `${fixtures.length} positive fixtures: ` +
+    `${fixtures.length} WebGPU checks: ` +
     `${counts.pass} pass, ${counts.unsupported} unsupported, ${counts.fail} fail`;
 }
 
@@ -39,7 +39,7 @@ function setFixtureStatus(fixture, status, detail = "") {
 
 
 function unsupportedMessage(error) {
-  const message = error?.message ?? String(error);
+  const message = error?.detail ?? error?.message ?? String(error);
   if (
     message.startsWith("unsupported ") ||
     message.includes("unsupported DRP2 command") ||
@@ -48,6 +48,26 @@ function unsupportedMessage(error) {
     return message;
   }
   return null;
+}
+
+
+
+function errorDetail(error) {
+  if (error?.commandIndex !== undefined || error?.code !== undefined || error?.cmd !== undefined) {
+    const parts = [];
+    if (error.commandIndex !== undefined) {
+      parts.push(`command_index=${error.commandIndex}`);
+    }
+    if (error.cmd !== undefined && error.cmd !== null) {
+      parts.push(`cmd=${error.cmd}`);
+    }
+    if (error.code !== undefined) {
+      parts.push(`code=${error.code}`);
+    }
+    const detail = error.detail ?? error.message ?? String(error);
+    return `${parts.join(" ")}: ${detail}`;
+  }
+  return error?.message ?? String(error);
 }
 
 
@@ -77,9 +97,9 @@ async function runFixture(fixture) {
   } catch (error) {
     const unsupported = unsupportedMessage(error);
     if (unsupported !== null) {
-      setFixtureStatus(fixture, "unsupported", unsupported);
+      setFixtureStatus(fixture, "unsupported", errorDetail(error));
     } else {
-      setFixtureStatus(fixture, "fail", error?.message ?? String(error));
+      setFixtureStatus(fixture, "fail", errorDetail(error));
     }
   }
 }
@@ -104,14 +124,17 @@ async function runAll() {
 
 
 
-function addFixture(path) {
+function addFixture(path, kind = "fixture") {
   const tr = document.createElement("tr");
   const nameTd = document.createElement("td");
   const statusTd = document.createElement("td");
   const detailTd = document.createElement("td");
+  const kindEl = document.createElement("span");
   const code = document.createElement("code");
 
+  kindEl.textContent = `${kind} `;
   code.textContent = basename(path);
+  nameTd.appendChild(kindEl);
   nameTd.appendChild(code);
   statusTd.textContent = "pending";
   statusTd.className = "status-pending";
@@ -124,6 +147,7 @@ function addFixture(path) {
 
   fixtures.push({
     path,
+    kind,
     status: "pending",
     statusEl: statusTd,
     detailEl: detailTd,
@@ -141,7 +165,10 @@ async function main() {
     }
     const manifest = await response.json();
     for (const path of manifest.positive) {
-      addFixture(path);
+      addFixture(path, "fixture");
+    }
+    for (const path of manifest.webgpu_streams ?? []) {
+      addFixture(path, "stream");
     }
     runAllEl.disabled = false;
     runAllEl.addEventListener("click", () => {

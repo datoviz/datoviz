@@ -11,6 +11,10 @@ const paths = readdirSync(fixtureDir)
 const manifest = {
   generated_from: "spec/drp2/fixtures/positive/*.json",
   positive: paths,
+  webgpu_streams: [
+    "/examples/webgpu/streams/attachment_multi_color_wgsl.json",
+    "/examples/webgpu/streams/attachment_depth_wgsl.json",
+  ],
 };
 
 writeFileSync(
