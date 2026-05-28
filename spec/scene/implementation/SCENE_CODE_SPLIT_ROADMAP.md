@@ -14,19 +14,15 @@ As of 2026-05-28, the highest-value split candidates are:
 
 1. `src/scene/core/scene.c`: broad object creation, lifecycle, slots, buffers, visuals, fields,
    panels, and emitted-stream bookkeeping still share one translation unit.
-2. `src/scene/runtime/render_emit.c`: runtime command emission still combines pass setup,
-   descriptor/bind decisions, visual draw emission, draw-count resolution, and graph/pass routing.
-3. `src/scene/plan/render_contract.c`: visual contract resolution and pass/resource contract
-   diagnostics are still broad enough to hide policy changes.
-4. `src/scene/plan/visual_lowering_uploads.c`: some derived payload builders remain in plan code.
+2. `src/scene/plan/visual_lowering_uploads.c`: some derived payload builders remain in plan code.
    Continue moving only pure cache/data construction into family or subsystem helpers.
-5. `src/scene/annotation/text.c`, `axis.c`, and `scale.c`: retained annotation objects,
+3. `src/scene/annotation/text.c`, `axis.c`, and `scale.c`: retained annotation objects,
    layout/reserve policy, generated visuals, and text/glyph lowering are still mixed.
-6. `src/scene/domain/field.c` and `polygon.c`: public domain object state, sampled interpretation,
+4. `src/scene/domain/field.c` and `polygon.c`: public domain object state, sampled interpretation,
    generated visual glue, and upload dirtiness are still mixed.
-7. `src/scene/query/execute.c`: request execution is split better than before, but visual-family
+5. `src/scene/query/execute.c`: request execution is split better than before, but visual-family
    target policy and runtime readback orchestration should stay visibly separate.
-8. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
+6. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
    multiple ownership boundaries at once.
 
 
@@ -99,9 +95,10 @@ filter, then full `direnv exec . just test scene`.
 
 ### 3. Split Render Contract Resolution
 
-Target `src/scene/plan/render_contract.c` after the FramePlan facade is stable.
+Status: completed on 2026-05-28. Keep the current ownership unless later contract work exposes
+new coupling.
 
-Suggested ownership:
+Current ownership:
 
 1. `render_contract.c`: top-level contract build/validate facade.
 2. `render_contract_visual.c`: visual-family contract assembly from resolved descriptors.
@@ -114,16 +111,20 @@ requirements. They should not decide new visual semantics.
 
 ### 4. Split Runtime Render Emission
 
-Target `src/scene/runtime/render_emit.c` only after plan contracts are easier to inspect.
+Status: completed on 2026-05-28. Keep the current ownership unless later runtime work exposes new
+coupling.
 
-Suggested ownership:
+Current ownership:
 
-1. `render_emit.c`: top-level pass/visual emission facade.
-2. `render_emit_pass.c`: render-pass begin/end, viewport/scissor, graph/pass target selection.
-3. `render_emit_visual.c`: resolved visual draw command emission.
-4. `render_emit_bindings.c`: descriptor-set and bind-group selection from resolved plan metadata.
-5. `render_emit_counts.c`: draw-count, index-count, instance-count, and generated-cache count
-   resolution.
+1. `render_emit.c`: shared runtime-emitter labels, object-key helpers, and depth-peeling shader
+   key helpers.
+2. `render_emit_passes.c`: render-pass setup, graph/plain pass routing, target lookup, clear-only,
+   texture, and compute-assisted render emission.
+3. `render_emit_prepare.c`: per-visual draw preparation, pipeline selection, bind selection, and
+   draw-count resolution.
+4. `render_emit_draws.c`: viewport/scissor setup and prepared draw command emission.
+5. `render_emit_bindings.c`: descriptor-set and bind-group selection helpers split from visual
+   preparation.
 
 Keep resource creation, uploads, graph targets, draw packet assembly, common bindings, and render
 pass helpers in their current runtime files unless a move removes real duplication.
