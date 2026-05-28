@@ -1,0 +1,97 @@
+{
+  "name": "attachment_depth_wgsl",
+  "version": { "major": 2, "minor": 0 },
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "webgpu-example"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "webgpu-runner"
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": "canvas",
+      "height": "canvas",
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["RENDER_ATTACHMENT"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 2,
+      "dimension": "2d",
+      "width": "canvas",
+      "height": "canvas",
+      "depth": 1,
+      "format": "depth32float",
+      "usage": ["RENDER_ATTACHMENT"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9000,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@vertex fn main(@builtin(vertex_index) idx: u32) -> @builtin(position) vec4f { var pos = array<vec3f, 3>(vec3f(-0.8, -0.8, 0.2), vec3f(0.8, -0.8, 0.2), vec3f(0.0, 0.8, 0.2)); return vec4f(pos[idx], 1.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9001,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(0.2, 0.8, 0.4, 1.0); }"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 10,
+      "vertex_buffer_slots": 0,
+      "vertex_shader_module_id": 9000,
+      "fragment_shader_module_id": 9001,
+      "topology": "triangle-list",
+      "vertex_buffers": [],
+      "depth_stencil": {
+        "format": "depth32float",
+        "depth_write_enabled": true,
+        "depth_compare": "less"
+      },
+      "color_targets": [{ "format": "rgba8unorm", "write_mask": ["all"] }]
+    },
+    { "cmd": "BeginCommandEncoder", "id": 20 },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 21,
+      "encoder_id": 20,
+      "color_attachments": [
+        {
+          "texture_id": 1,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": { "r": 0, "g": 0, "b": 0, "a": 1 }
+        }
+      ],
+      "depth_stencil_attachment": {
+        "texture_id": 2,
+        "depth_load_op": "clear",
+        "depth_store_op": "store",
+        "depth_clear_value": 1
+      }
+    },
+    { "cmd": "SetPipeline", "pass_id": 21, "pipeline_id": 10 },
+    { "cmd": "Draw", "pass_id": 21, "vertex_count": 3, "instance_count": 1 },
+    { "cmd": "EndRenderPass", "pass_id": 21 },
+    { "cmd": "FinishCommandEncoder", "encoder_id": 20, "command_buffer_id": 30 },
+    { "cmd": "QueueSubmit", "command_buffer_id": 30 }
+  ]
+}

@@ -60,6 +60,8 @@ http://localhost:8765/examples/webgpu/?stream=indexed_quad_wgsl
 http://localhost:8765/examples/webgpu/?stream=scene_primitive_wgsl
 http://localhost:8765/examples/webgpu/?stream=scene_point_wgsl
 http://localhost:8765/examples/webgpu/?stream=scene_image_wgsl
+http://localhost:8765/examples/webgpu/?stream=attachment_multi_color_wgsl
+http://localhost:8765/examples/webgpu/?stream=attachment_depth_wgsl
 ```
 
 All streams use `texture_id: 0` as a PoC-local alias for the current browser canvas texture.

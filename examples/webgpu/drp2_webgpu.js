@@ -19,6 +19,8 @@ export const STREAMS = [
   },
   { name: "scene_primitive_wgsl", label: "Scene primitive (WGSL)" },
   { name: "scene_point_wgsl", label: "Scene points (WGSL)" },
+  { name: "attachment_multi_color_wgsl", label: "Attachment validation (multi-color)" },
+  { name: "attachment_depth_wgsl", label: "Attachment validation (depth)" },
   { name: "mesh_dvzr_wgsl", label: "DVZR mesh replay (WGSL)" },
   { name: "indexed_quad_wgsl", label: "Indexed quad" },
   { name: "texture_sampling_wgsl", label: "Texture sampling" },

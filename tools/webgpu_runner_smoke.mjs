@@ -2,9 +2,18 @@
 
 import { readFile } from 'node:fs/promises';
 
+const fakeCanvas = {
+  width: 640,
+  height: 480,
+  style: {
+    setProperty() {},
+    removeProperty() {},
+  },
+};
+
 globalThis.document = {
-  querySelector() {
-    return null;
+  querySelector(selector) {
+    return selector === '#viewport' ? fakeCanvas : null;
   },
   createElement() {
     return {};
@@ -143,6 +152,83 @@ const header = [
   },
 ];
 
+const exampleStreams = [
+  'examples/webgpu/streams/attachment_multi_color_wgsl.json',
+  'examples/webgpu/streams/attachment_depth_wgsl.json',
+];
+
+const triangleShaders = [
+  {
+    cmd: 'CreateShaderModule',
+    id: 9000,
+    stage: 'VERTEX',
+    format: 'wgsl',
+    entry_point: 'main',
+    code: '@vertex fn main(@builtin(vertex_index) idx: u32) -> @builtin(position) vec4f { var pos = array<vec2f, 3>(vec2f(-0.8, -0.8), vec2f(0.8, -0.8), vec2f(0.0, 0.8)); return vec4f(pos[idx], 0.0, 1.0); }',
+  },
+  {
+    cmd: 'CreateShaderModule',
+    id: 9001,
+    stage: 'FRAGMENT',
+    format: 'wgsl',
+    entry_point: 'main',
+    code: '@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 0.0, 0.0, 1.0); }',
+  },
+];
+
+function texture(id, format) {
+  return {
+    cmd: 'CreateTexture',
+    id,
+    dimension: '2d',
+    width: 4,
+    height: 4,
+    depth: 1,
+    format,
+    usage: ['RENDER_ATTACHMENT'],
+    mip_level_count: 1,
+    sample_count: 1,
+  };
+}
+
+function renderPipeline(colorTargets, depthStencil = undefined) {
+  const command = {
+    cmd: 'CreateRenderPipeline',
+    id: 10,
+    vertex_buffer_slots: 0,
+    vertex_shader_module_id: 9000,
+    fragment_shader_module_id: 9001,
+    topology: 'triangle-list',
+    color_targets: colorTargets,
+  };
+  if (depthStencil !== undefined) {
+    command.depth_stencil = depthStencil;
+  }
+  return command;
+}
+
+function renderPass(colorAttachments, depthStencilAttachment = undefined) {
+  const command = {
+    cmd: 'BeginRenderPass',
+    id: 21,
+    encoder_id: 20,
+    color_attachments: colorAttachments,
+  };
+  if (depthStencilAttachment !== undefined) {
+    command.depth_stencil_attachment = depthStencilAttachment;
+  }
+  return command;
+}
+
+function colorAttachment(textureId, loadOp = 'clear') {
+  return {
+    texture_id: textureId,
+    load_op: loadOp,
+    store_op: 'store',
+    clear_value: { r: 0, g: 0, b: 0, a: 1 },
+  };
+}
+
 async function loadJson(path) {
   return JSON.parse(await readFile(path, 'utf8'));
 }
@@ -166,6 +252,18 @@ async function main() {
   const manifest = await loadJson('examples/webgpu/fixture_manifest.json');
   for (const entry of manifest.positive) {
     const path = entry.startsWith('/') ? entry.slice(1) : entry;
+    const stream = await loadJson(path);
+    try {
+      await executeDrp2Stream(device, context, 'bgra8unorm', stream, {
+        requireExplicitBindGroupLayouts: true,
+        requireExplicitPipelineMetadata: true,
+      });
+    } catch (error) {
+      throw new Error(`${path}: ${error.message}`);
+    }
+  }
+
+  for (const path of exampleStreams) {
     const stream = await loadJson(path);
     try {
       await executeDrp2Stream(device, context, 'bgra8unorm', stream, {
@@ -243,7 +341,106 @@ async function main() {
     'recorded work',
   );
 
-  console.log(`PASS WebGPU runner smoke fixtures=${manifest.positive.length}`);
+  await expectFailure(
+    executeDrp2Stream,
+    {
+      commands: [
+        ...header,
+        texture(1, 'rgba8unorm'),
+        texture(2, 'rgba8unorm'),
+        ...triangleShaders,
+        renderPipeline([{ format: 'rgba8unorm', write_mask: ['all'] }]),
+        { cmd: 'BeginCommandEncoder', id: 20 },
+        renderPass([colorAttachment(1), colorAttachment(2)]),
+        { cmd: 'SetPipeline', pass_id: 21, pipeline_id: 10 },
+      ],
+    },
+    'color target count',
+  );
+
+  await expectFailure(
+    executeDrp2Stream,
+    {
+      commands: [
+        ...header,
+        texture(1, 'r16float'),
+        ...triangleShaders,
+        renderPipeline([{ format: 'rgba8unorm', write_mask: ['all'] }]),
+        { cmd: 'BeginCommandEncoder', id: 20 },
+        renderPass([colorAttachment(1)]),
+        { cmd: 'SetPipeline', pass_id: 21, pipeline_id: 10 },
+      ],
+    },
+    'does not match render pass',
+  );
+
+  await expectFailure(
+    executeDrp2Stream,
+    {
+      commands: [
+        ...header,
+        texture(1, 'rgba8unorm'),
+        ...triangleShaders,
+        renderPipeline(
+          [{ format: 'rgba8unorm', write_mask: ['all'] }],
+          { format: 'depth32float', depth_write_enabled: true, depth_compare: 'less' },
+        ),
+        { cmd: 'BeginCommandEncoder', id: 20 },
+        renderPass([colorAttachment(1)]),
+        { cmd: 'SetPipeline', pass_id: 21, pipeline_id: 10 },
+      ],
+    },
+    'depth_stencil format',
+  );
+
+  await expectFailure(
+    executeDrp2Stream,
+    {
+      commands: [
+        ...header,
+        ...triangleShaders,
+        renderPipeline([
+          {
+            format: 'r32uint',
+            blend: {
+              color: { src_factor: 'one', dst_factor: 'zero', operation: 'add' },
+              alpha: { src_factor: 'one', dst_factor: 'zero', operation: 'add' },
+            },
+          },
+        ]),
+      ],
+    },
+    'does not support blending',
+  );
+
+  await expectFailure(
+    executeDrp2Stream,
+    {
+      commands: [
+        ...header,
+        ...triangleShaders,
+        renderPipeline([{ format: 'rgba8unorm', write_mask: ['all', 'red'] }]),
+      ],
+    },
+    'write_mask cannot combine all',
+  );
+
+  await expectFailure(
+    executeDrp2Stream,
+    {
+      commands: [
+        ...header,
+        texture(1, 'rgba8unorm'),
+        { cmd: 'BeginCommandEncoder', id: 20 },
+        renderPass([colorAttachment(1, 'preserve')]),
+      ],
+    },
+    'unsupported load_op',
+  );
+
+  console.log(
+    `PASS WebGPU runner smoke fixtures=${manifest.positive.length} streams=${exampleStreams.length}`,
+  );
 }
 
 await main();
