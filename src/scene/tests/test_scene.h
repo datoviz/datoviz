@@ -229,6 +229,8 @@ int test_frame_plan_query_readback_copy_metadata(TstContext* suite, const TstCas
 
 int test_frame_plan_graph_static_multipass(TstContext* suite, const TstCase* item);
 
+int test_frame_plan_graph_ascii(TstContext* suite, const TstCase* item);
+
 int test_frame_plan_graph_dependencies_dump(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* item);

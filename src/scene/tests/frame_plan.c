@@ -883,6 +883,115 @@ int test_frame_plan_graph_static_multipass(TstContext* suite, const TstCase* ite
 }
 
 
+
+/**
+ * Ensure the FramePlan graph terminal view includes passes, resources, and dependencies.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_graph_ascii(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.ascii", 31);
+    ANN(plan);
+
+    DvzFrameGraphResource rt = {0};
+    dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
+    rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+    rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    rt.width = 128;
+    rt.height = 96;
+    rt.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
+    rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_BORROWED;
+    AT(dvz_frame_plan_graph_resource(plan, &rt));
+
+    DvzFrameGraphResource depth = {0};
+    dvz_strlcpy(depth.id, "panel0.depth", sizeof(depth.id));
+    depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_PANEL;
+    depth.width = 128;
+    depth.height = 96;
+    depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT |
+                        DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &depth));
+
+    DvzFrameGraphResource ssao = {0};
+    dvz_strlcpy(ssao.id, "panel0.ssao", sizeof(ssao.id));
+    ssao.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    ssao.extent_kind = DVZ_FRAME_GRAPH_EXTENT_PANEL;
+    ssao.width = 128;
+    ssao.height = 96;
+    ssao.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                       DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    ssao.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &ssao));
+
+    DvzFrameGraphAttachment color = {0};
+    dvz_strlcpy(color.resource_id, "rt", sizeof(color.resource_id));
+    color.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    color.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    color.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphAttachment depth_attachment = {0};
+    dvz_strlcpy(depth_attachment.resource_id, "panel0.depth", sizeof(depth_attachment.resource_id));
+    depth_attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    depth_attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    depth_attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+    depth_attachment.clear_depth = 1.0f;
+
+    DvzFrameGraphPass opaque = {0};
+    dvz_strlcpy(opaque.id, "panel0.opaque", sizeof(opaque.id));
+    dvz_strlcpy(opaque.panel_id, "panel0", sizeof(opaque.panel_id));
+    opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    opaque.has_viewport = true;
+    opaque.viewport = (DvzFrameGraphRect){0.0f, 0.0f, 128.0f, 96.0f};
+    AT(dvz_frame_graph_pass_color_attachment(&opaque, &color));
+    AT(dvz_frame_graph_pass_depth_attachment(&opaque, &depth_attachment));
+    AT(dvz_frame_plan_graph_pass(plan, &opaque));
+
+    DvzFrameGraphAttachment ssao_color = {0};
+    dvz_strlcpy(ssao_color.resource_id, "panel0.ssao", sizeof(ssao_color.resource_id));
+    ssao_color.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    ssao_color.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    ssao_color.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphPass ssao_pass = {0};
+    dvz_strlcpy(ssao_pass.id, "panel0.ssao", sizeof(ssao_pass.id));
+    dvz_strlcpy(ssao_pass.panel_id, "panel0", sizeof(ssao_pass.panel_id));
+    ssao_pass.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_read(&ssao_pass, "panel0.depth", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_color_attachment(&ssao_pass, &ssao_color));
+    AT(dvz_frame_plan_graph_pass(plan, &ssao_pass));
+
+    char* text = dvz_frame_plan_graph_ascii(plan, DVZ_FRAME_PLAN_ASCII_VERBOSE);
+    ANN(text);
+    AT(strstr(text, "FramePlan figure=figure.ascii frame=31") != NULL);
+    AT(strstr(text, "[render #0]") != NULL);
+    AT(strstr(text, "id: panel0.opaque") != NULL);
+    AT(strstr(text, "depth[clear/store]") != NULL);
+    AT(strstr(text, "(panel0.depth) texture panel per_frame usage=depth,sampled") != NULL);
+    AT(strstr(
+           text,
+           "[render #0 panel0.opaque] -> [render #1 panel0.ssao] via (panel0.depth) "
+           "depth_attachment_write -> sampled") != NULL);
+    dvz_frame_plan_graph_ascii_destroy(text);
+
+    char* ascii = dvz_frame_plan_graph_ascii(plan, DVZ_FRAME_PLAN_ASCII_ASCII_ONLY);
+    ANN(ascii);
+    AT(strstr(ascii, "->") != NULL);
+    dvz_frame_plan_graph_ascii_destroy(ascii);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
 /**
  * Ensure the internal FramePlan graph reports read-before-write mistakes.
  *
@@ -1765,6 +1874,7 @@ int test_scene_frame_plan(TstSuite* suite)
     TST_CASE(test_frame_plan_readbacks);
     TST_CASE(test_frame_plan_query_readback_copy_metadata);
     TST_CASE(test_frame_plan_graph_static_multipass);
+    TST_CASE(test_frame_plan_graph_ascii);
     TST_CASE(test_frame_plan_graph_dependencies_dump);
     TST_CASE(test_frame_plan_graph_depth_peeling_shape);
     TST_CASE(test_frame_plan_graph_gbuffer_shape);

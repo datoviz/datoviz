@@ -29,6 +29,12 @@
 #define DVZ_FRAME_PLAN_INITIAL_GRAPH_PASS_CAPACITY 16
 #define DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES 8
 #define DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS 4
+#define DVZ_FRAME_PLAN_ASCII_COMPACT 0x01u
+#define DVZ_FRAME_PLAN_ASCII_VERBOSE 0x02u
+#define DVZ_FRAME_PLAN_ASCII_SHOW_UPLOADS 0x04u
+#define DVZ_FRAME_PLAN_ASCII_SHOW_READBACKS 0x08u
+#define DVZ_FRAME_PLAN_ASCII_ASCII_ONLY 0x10u
+#define DVZ_FRAME_PLAN_ASCII_MAX_WIDTH_120 0x20u
 
 
 
@@ -547,3 +553,7 @@ bool dvz_frame_graph_pass_depth_attachment(
 bool dvz_frame_plan_graph_validate(const DvzFramePlan* plan, DvzDiagnosticReport* report);
 
 char* dvz_frame_plan_graph_dump(const DvzFramePlan* plan);
+
+char* dvz_frame_plan_graph_ascii(const DvzFramePlan* plan, uint32_t flags);
+
+void dvz_frame_plan_graph_ascii_destroy(char* text);
