@@ -58,6 +58,9 @@ bool _scene_frame_plan_upload_style_bytes(
 
 bool _scene_visual_attrs_dirty(const DvzVisual* visual);
 
+bool _scene_emit_visual_material_upload(
+    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index);
+
 void _scene_emit_visual_buffer_payloads(
     const DvzFigure* figure, DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
     const DvzVisualUploadPayload* payloads, uint32_t payload_count, uint32_t position_topology);
