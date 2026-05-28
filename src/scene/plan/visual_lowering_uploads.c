@@ -325,285 +325,89 @@ static bool _scene_frame_plan_upload_style_bytes(
 }
 
 
+
 /**
- * Emit derived GPU uploads for one segment visual.
+ * Return whether one visual has dirty source attributes.
  *
- * @param plan the destination frame plan
- * @param visual the segment visual
- * @param visual_index the scene visual index
+ * @param visual the visual
+ * @return whether any source attribute has a pending dirty range
  */
-static void _scene_emit_segment_uploads(
-    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+static bool _scene_visual_attrs_dirty(const DvzVisual* visual)
 {
-    ANN(figure);
-    ANN(plan);
     ANN(visual);
-    DvzSegmentGpuCache* cache = &visual->segment.gpu;
-    bool dirty = cache->dirty;
     for (uint32_t i = 0; i < visual->attr_count; i++)
-        dirty = dirty || visual->attrs[i].dirty_item_count > 0;
-    if (!dirty)
-        return;
-    if (!_stroke_quad_segment_cache_rebuild(visual))
-        return;
-
-    const struct
     {
-        const char* name;
-        const void* data;
-        uint32_t item_size;
-        DvzFramePlanResourceRole role;
-    } uploads[] = {
-        {"position_start", cache->position_start, 3 * sizeof(float),
-         DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_START},
-        {"position_end", cache->position_end, 3 * sizeof(float),
-         DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_END},
-        {"color", cache->color, sizeof(DvzColor), DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR},
-        {"line_width", cache->line_width, sizeof(float), DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH},
-    };
-
-    for (uint32_t i = 0; i < 4; i++)
-    {
-        char resource_id[128];
-        if (!_scene_visual_attr_resource_key(
-                figure, visual, visual_index, uploads[i].name, resource_id, sizeof(resource_id)))
-            continue;
-        uint64_t byte_size = 0;
-        if (_dvz_mul_u64_overflows(cache->vertex_count, uploads[i].item_size, &byte_size))
-            continue;
-        if (!_scene_frame_plan_upload_style_bytes(
-                figure, plan, resource_id, 0, byte_size, uploads[i].name, uploads[i].data,
-                uploads[i].role))
-            continue;
-        _scene_attach_upload_metadata(
-            plan, visual, visual_index, uploads[i].role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
-            UINT32_MAX, cache->vertex_count);
+        if (visual->attrs[i].dirty_item_count > 0)
+            return true;
     }
-
-    char index_id[128];
-    if (_scene_visual_attr_resource_key(
-            figure, visual, visual_index, "index", index_id, sizeof(index_id)))
-    {
-        uint64_t byte_size = 0;
-        if (!_dvz_mul_u64_overflows(cache->index_count, sizeof(uint32_t), &byte_size))
-        {
-            dvz_frame_plan_upload_bytes(plan, index_id, 0, byte_size, "index", cache->indices);
-            _scene_attach_upload_metadata(
-                plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
-                DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX, cache->index_count);
-            DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
-            node->u.upload.buffer_usage =
-                DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
-            node->u.upload.item_stride = sizeof(uint32_t);
-        }
-    }
+    return false;
 }
 
 
+
 /**
- * Emit derived GPU uploads for one straight vector visual.
+ * Emit derived buffer payloads prepared by one visual family helper.
  *
+ * @param figure the figure
  * @param plan the destination frame plan
- * @param visual the vector visual
+ * @param visual the visual
  * @param visual_index the scene visual index
+ * @param payloads prepared payload descriptors
+ * @param payload_count number of prepared payload descriptors
+ * @param position_topology topology to set on position payloads, or zero to leave unset
  */
-static void _scene_emit_vector_uploads(
-    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+static void _scene_emit_visual_buffer_payloads(
+    const DvzFigure* figure, DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
+    const DvzVisualUploadPayload* payloads, uint32_t payload_count, uint32_t position_topology)
 {
     ANN(figure);
     ANN(plan);
     ANN(visual);
-    DvzSegmentGpuCache* cache = &visual->vector.stroke_gpu;
-    bool dirty = cache->dirty;
-    for (uint32_t i = 0; i < visual->attr_count; i++)
-        dirty = dirty || visual->attrs[i].dirty_item_count > 0;
-    if (!dirty)
-        return;
-    if (!_stroke_quad_vector_cache_rebuild(visual))
-        return;
-
-    const struct
+    ANN(payloads);
+    for (uint32_t i = 0; i < payload_count; i++)
     {
-        const char* name;
-        const void* data;
-        uint32_t item_size;
-        DvzFramePlanResourceRole role;
-    } uploads[] = {
-        {"position_start", cache->position_start, 3 * sizeof(float),
-         DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_START},
-        {"position_end", cache->position_end, 3 * sizeof(float),
-         DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_END},
-        {"color", cache->color, sizeof(DvzColor), DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR},
-        {"line_width", cache->line_width, sizeof(float), DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH},
-    };
-
-    for (uint32_t i = 0; i < 4; i++)
-    {
+        const DvzVisualUploadPayload* payload = &payloads[i];
         char resource_id[128];
         if (!_scene_visual_attr_resource_key(
-                figure, visual, visual_index, uploads[i].name, resource_id, sizeof(resource_id)))
-            continue;
-        uint64_t byte_size = 0;
-        if (_dvz_mul_u64_overflows(cache->vertex_count, uploads[i].item_size, &byte_size))
-            continue;
-        if (!_scene_frame_plan_upload_style_bytes(
-                figure, plan, resource_id, 0, byte_size, uploads[i].name, uploads[i].data,
-                uploads[i].role))
-            continue;
-        _scene_attach_upload_metadata(
-            plan, visual, visual_index, uploads[i].role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
-            UINT32_MAX, cache->vertex_count);
-    }
-
-    char index_id[128];
-    if (_scene_visual_attr_resource_key(
-            figure, visual, visual_index, "index", index_id, sizeof(index_id)))
-    {
-        uint64_t byte_size = 0;
-        if (!_dvz_mul_u64_overflows(cache->index_count, sizeof(uint32_t), &byte_size))
+                figure, visual, visual_index, payload->name, resource_id, sizeof(resource_id)))
         {
-            dvz_frame_plan_upload_bytes(plan, index_id, 0, byte_size, "index", cache->indices);
-            _scene_attach_upload_metadata(
-                plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
-                DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX, cache->index_count);
+            continue;
+        }
+        uint64_t byte_size = 0;
+        if (_dvz_mul_u64_overflows(payload->item_count, payload->item_size, &byte_size))
+            continue;
+
+        DvzFramePlanResourceRole role = payload->index
+                                            ? DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX
+                                            : _scene_attr_frame_plan_role(payload->name);
+        if (payload->index)
+        {
+            if (!dvz_frame_plan_upload_bytes(
+                    plan, resource_id, 0, byte_size, payload->name, payload->data))
+            {
+                continue;
+            }
+        }
+        else if (!_scene_frame_plan_upload_style_bytes(
+                     figure, plan, resource_id, 0, byte_size, payload->name, payload->data, role))
+        {
+            continue;
+        }
+
+        _scene_attach_upload_metadata(
+            plan, visual, visual_index, role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX,
+            payload->item_count);
+        if (payload->index)
+        {
             DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
             node->u.upload.buffer_usage =
                 DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
-            node->u.upload.item_stride = sizeof(uint32_t);
+            node->u.upload.item_stride = payload->item_size;
         }
-    }
-}
-
-
-/**
- * Emit derived GPU uploads for one stroked path visual.
- *
- * @param plan the destination frame plan
- * @param visual the path visual
- * @param visual_index the scene visual index
- */
-static void _scene_emit_path_uploads(
-    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
-{
-    ANN(figure);
-    ANN(plan);
-    ANN(visual);
-    DvzPathGpuCache* cache =
-        visual->type == DVZ_VISUAL_TYPE_VECTOR ? &visual->vector.path_gpu : &visual->path.gpu;
-    bool dirty = cache->dirty;
-    for (uint32_t i = 0; i < visual->attr_count; i++)
-        dirty = dirty || visual->attrs[i].dirty_item_count > 0;
-    if (!dirty)
-        return;
-    if (!_path_stroke_cache_rebuild(visual))
-        return;
-
-    const struct
-    {
-        const char* name;
-        const void* data;
-        uint32_t item_size;
-        DvzFramePlanResourceRole role;
-    } uploads[] = {
-        {"position_start", cache->position_prev, 3 * sizeof(float),
-         DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_START},
-        {"position", cache->position_curr, 3 * sizeof(float), DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION},
-        {"position_end", cache->position_next, 3 * sizeof(float),
-         DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_END},
-        {"color", cache->color, sizeof(DvzColor), DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR},
-        {"line_width", cache->line_width, sizeof(float), DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH},
-        {"path_flags", cache->path_flags, sizeof(uint32_t), DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_FLAGS},
-        {"path_distance", cache->path_distance, sizeof(float),
-         DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_DISTANCE},
-    };
-
-    for (uint32_t i = 0; i < 7; i++)
-    {
-        char resource_id[128];
-        if (!_scene_visual_attr_resource_key(
-                figure, visual, visual_index, uploads[i].name, resource_id, sizeof(resource_id)))
-            continue;
-        uint64_t byte_size = 0;
-        if (_dvz_mul_u64_overflows(cache->vertex_count, uploads[i].item_size, &byte_size))
-            continue;
-        if (!_scene_frame_plan_upload_style_bytes(
-                figure, plan, resource_id, 0, byte_size, uploads[i].name, uploads[i].data,
-                uploads[i].role))
-            continue;
-        _scene_attach_upload_metadata(
-            plan, visual, visual_index, uploads[i].role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
-            UINT32_MAX, cache->vertex_count);
-    }
-
-    char index_id[128];
-    if (_scene_visual_attr_resource_key(
-            figure, visual, visual_index, "index", index_id, sizeof(index_id)))
-    {
-        uint64_t byte_size = 0;
-        if (!_dvz_mul_u64_overflows(cache->index_count, sizeof(uint32_t), &byte_size))
+        else if (position_topology != 0 && strcmp(payload->name, "position") == 0)
         {
-            dvz_frame_plan_upload_bytes(plan, index_id, 0, byte_size, "index", cache->indices);
-            _scene_attach_upload_metadata(
-                plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
-                DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX, cache->index_count);
-            DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
-            node->u.upload.buffer_usage =
-                DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
-            node->u.upload.item_stride = sizeof(uint32_t);
+            dvz_frame_plan_upload_set_topology(plan, position_topology);
         }
-    }
-}
-
-
-/**
- * Emit derived GPU uploads for one per-item image visual.
- *
- * @param plan the destination frame plan
- * @param visual the image visual
- * @param visual_index the scene visual index
- */
-static void _scene_emit_image_uploads(
-    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
-{
-    ANN(figure);
-    ANN(plan);
-    ANN(visual);
-    DvzImageGpuCache* cache = &visual->image_gpu;
-    bool dirty = cache->dirty;
-    for (uint32_t i = 0; i < visual->attr_count; i++)
-        dirty = dirty || visual->attrs[i].dirty_item_count > 0;
-    if (!dirty)
-        return;
-    if (!_image_generated_quad_cache_rebuild(figure, visual))
-        return;
-
-    const struct
-    {
-        const char* name;
-        const void* data;
-        uint32_t item_size;
-        DvzFramePlanResourceRole role;
-    } uploads[] = {
-        {"position", cache->position, 3 * sizeof(float), DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION},
-        {"texcoords", cache->texcoords, 2 * sizeof(float), DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS},
-    };
-
-    for (uint32_t i = 0; i < 2; i++)
-    {
-        char resource_id[128];
-        if (!_scene_visual_attr_resource_key(
-                figure, visual, visual_index, uploads[i].name, resource_id, sizeof(resource_id)))
-            continue;
-        uint64_t byte_size = 0;
-        if (_dvz_mul_u64_overflows(cache->vertex_count, uploads[i].item_size, &byte_size))
-            continue;
-        dvz_frame_plan_upload_bytes(
-            plan, resource_id, 0, byte_size, uploads[i].name, uploads[i].data);
-        _scene_attach_upload_metadata(
-            plan, visual, visual_index, uploads[i].role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
-            UINT32_MAX, cache->vertex_count);
-        if (strcmp(uploads[i].name, "position") == 0)
-            dvz_frame_plan_upload_set_topology(plan, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     }
 }
 
@@ -785,14 +589,29 @@ static bool _scene_emit_visual_family_derived_uploads(
     if (lowering.renderable_kind == DVZ_RENDERABLE_STROKE_QUAD &&
         lowering.desc_kind == DVZ_SCENE_VISUAL_DESC_SEGMENT)
     {
+        DvzVisualUploadPayload payloads[DVZ_VISUAL_UPLOAD_PAYLOAD_MAX] = {0};
+        uint32_t payload_count = 0;
+        bool dirty = _scene_visual_attrs_dirty(visual);
         if (lowering.needs_vector_params_sync)
         {
             _vector_sync_params(visual);
-            _scene_emit_vector_uploads(figure, plan, visual, visual_index);
+            dirty = dirty || visual->vector.stroke_gpu.dirty;
+            if (dirty && _stroke_quad_vector_cache_rebuild(visual) &&
+                _stroke_quad_vector_upload_payloads(visual, payloads, &payload_count))
+            {
+                _scene_emit_visual_buffer_payloads(
+                    figure, plan, visual, visual_index, payloads, payload_count, 0);
+            }
         }
         else
         {
-            _scene_emit_segment_uploads(figure, plan, visual, visual_index);
+            dirty = dirty || visual->segment.gpu.dirty;
+            if (dirty && _stroke_quad_segment_cache_rebuild(visual) &&
+                _stroke_quad_segment_upload_payloads(visual, payloads, &payload_count))
+            {
+                _scene_emit_visual_buffer_payloads(
+                    figure, plan, visual, visual_index, payloads, payload_count, 0);
+            }
         }
         *out_finished_visual = true;
         return _scene_emit_visual_material_upload(figure, plan, visual, visual_index);
@@ -801,13 +620,32 @@ static bool _scene_emit_visual_family_derived_uploads(
     {
         if (lowering.needs_vector_params_sync)
             _vector_sync_params(visual);
-        _scene_emit_path_uploads(figure, plan, visual, visual_index);
+        DvzVisualUploadPayload payloads[DVZ_VISUAL_UPLOAD_PAYLOAD_MAX] = {0};
+        uint32_t payload_count = 0;
+        DvzPathGpuCache* cache =
+            visual->type == DVZ_VISUAL_TYPE_VECTOR ? &visual->vector.path_gpu : &visual->path.gpu;
+        bool dirty = cache->dirty || _scene_visual_attrs_dirty(visual);
+        if (dirty && _path_stroke_cache_rebuild(visual) &&
+            _path_stroke_upload_payloads(visual, payloads, &payload_count))
+        {
+            _scene_emit_visual_buffer_payloads(
+                figure, plan, visual, visual_index, payloads, payload_count, 0);
+        }
         *out_finished_visual = true;
         return _scene_emit_visual_material_upload(figure, plan, visual, visual_index);
     }
     if (_image_uses_generated_quads(visual))
     {
-        _scene_emit_image_uploads(figure, plan, visual, visual_index);
+        DvzVisualUploadPayload payloads[DVZ_VISUAL_UPLOAD_PAYLOAD_MAX] = {0};
+        uint32_t payload_count = 0;
+        bool dirty = visual->image_gpu.dirty || _scene_visual_attrs_dirty(visual);
+        if (dirty && _image_generated_quad_cache_rebuild(figure, visual) &&
+            _image_generated_quad_upload_payloads(figure, visual, payloads, &payload_count))
+        {
+            _scene_emit_visual_buffer_payloads(
+                figure, plan, visual, visual_index, payloads, payload_count,
+                VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+        }
         *out_skip_dense_attrs = true;
     }
     return true;

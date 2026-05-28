@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Image visual internals                                                                       */
+/*  Visual upload payload descriptors                                                            */
 /*************************************************************************************************/
 
 #pragma once
@@ -19,28 +19,25 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "_scene.h"
-#include "upload.h"
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_VISUAL_UPLOAD_PAYLOAD_MAX 8
 
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
 
-bool _image_query_attr(
-    const DvzVisual* visual, const char* attr_name, uint32_t item_size,
-    const DvzVisualAttr** out_attr);
-
-bool _image_query_generated_rect_geometry(
-    const DvzVisual* visual, DvzSceneQueryScratch* scratch, bool include_ids,
-    bool include_texcoords, uint64_t* out_vertex_count);
-
-bool _image_uses_generated_quads(const DvzVisual* visual);
-
-bool _image_generated_quad_cache_rebuild(const DvzFigure* figure, DvzVisual* visual);
-bool _image_generated_quad_upload_payloads(
-    const DvzFigure* figure, DvzVisual* visual, DvzVisualUploadPayload* out_payloads,
-    uint32_t* out_count);
-
-void _image_gpu_cache_free(DvzImageGpuCache* cache);
+typedef struct DvzVisualUploadPayload
+{
+    const char* name;
+    const void* data;
+    uint32_t item_size;
+    uint64_t item_count;
+    bool index;
+} DvzVisualUploadPayload;

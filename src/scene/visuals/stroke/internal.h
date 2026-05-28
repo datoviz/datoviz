@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "_scene.h"
+#include "upload.h"
 
 
 
@@ -42,6 +43,12 @@ void _path_stroke_gpu_cache_free(DvzPathGpuCache* cache);
 bool _stroke_quad_segment_cache_rebuild(DvzVisual* visual);
 bool _stroke_quad_vector_cache_rebuild(DvzVisual* visual);
 bool _path_stroke_cache_rebuild(DvzVisual* visual);
+bool _stroke_quad_segment_upload_payloads(
+    DvzVisual* visual, DvzVisualUploadPayload* out_payloads, uint32_t* out_count);
+bool _stroke_quad_vector_upload_payloads(
+    DvzVisual* visual, DvzVisualUploadPayload* out_payloads, uint32_t* out_count);
+bool _path_stroke_upload_payloads(
+    DvzVisual* visual, DvzVisualUploadPayload* out_payloads, uint32_t* out_count);
 
 bool _stroke_query_attr(
     const DvzVisual* visual, const char* attr_name, uint32_t item_size,

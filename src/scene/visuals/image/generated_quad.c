@@ -215,3 +215,42 @@ bool _image_generated_quad_cache_rebuild(const DvzFigure* figure, DvzVisual* vis
     cache->dirty = false;
     return true;
 }
+
+
+
+/**
+ * Fill generated image-quad upload payload descriptors.
+ *
+ * @param figure parent figure
+ * @param visual the image-like visual
+ * @param out_payloads output payload descriptors
+ * @param out_count output payload count
+ * @return whether payload descriptors were written
+ */
+bool _image_generated_quad_upload_payloads(
+    const DvzFigure* figure, DvzVisual* visual, DvzVisualUploadPayload* out_payloads,
+    uint32_t* out_count)
+{
+    ANN(figure);
+    ANN(visual);
+    ANN(out_payloads);
+    ANN(out_count);
+    (void)figure;
+    *out_count = 0;
+    DvzImageGpuCache* cache = &visual->image_gpu;
+
+    out_payloads[0] = (DvzVisualUploadPayload){
+        .name = "position",
+        .data = cache->position,
+        .item_size = 3 * sizeof(float),
+        .item_count = cache->vertex_count,
+    };
+    out_payloads[1] = (DvzVisualUploadPayload){
+        .name = "texcoords",
+        .data = cache->texcoords,
+        .item_size = 2 * sizeof(float),
+        .item_count = cache->vertex_count,
+    };
+    *out_count = 2;
+    return true;
+}
