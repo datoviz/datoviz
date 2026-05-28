@@ -729,6 +729,25 @@ static float _axis_data_to_visual(
 
 
 /**
+ * Map one fixed panel coordinate through the inverse panzoom extent.
+ *
+ * @param extent full-panel inverse panzoom extent as xmin, xmax, ymin, ymax
+ * @param lo_idx extent minimum index for the axis dimension
+ * @param hi_idx extent maximum index for the axis dimension
+ * @param value fixed panel coordinate in [-1, +1]
+ * @return untransformed visual coordinate
+ */
+static float _axis_inverse_panzoom_coord(
+    const float extent[4], uint32_t lo_idx, uint32_t hi_idx, float value)
+{
+    ANN(extent);
+    return 0.5f * (extent[lo_idx] + extent[hi_idx]) +
+           0.5f * value * (extent[hi_idx] - extent[lo_idx]);
+}
+
+
+
+/**
  * Map one visual coordinate to data coordinates for an axis.
  *
  * @param axis the axis
@@ -768,8 +787,13 @@ static bool _axis_visible_domain(const DvzAxis* axis, double* out_min, double* o
         (void)_scene_panel_panzoom_extent(axis->panel, extent);
     uint32_t lo_idx = axis->dim == DVZ_DIM_X ? 0 : 2;
     uint32_t hi_idx = axis->dim == DVZ_DIM_X ? 1 : 3;
-    double a = _axis_visual_to_data(axis, extent[lo_idx]);
-    double b = _axis_visual_to_data(axis, extent[hi_idx]);
+    float visual_min = -1.0f;
+    float visual_max = +1.0f;
+    _axis_plot_interval(axis, &visual_min, &visual_max);
+    float a_visual = _axis_inverse_panzoom_coord(extent, lo_idx, hi_idx, visual_min);
+    float b_visual = _axis_inverse_panzoom_coord(extent, lo_idx, hi_idx, visual_max);
+    double a = _axis_visual_to_data(axis, a_visual);
+    double b = _axis_visual_to_data(axis, b_visual);
     *out_min = fmin(a, b);
     *out_max = fmax(a, b);
     return isfinite(*out_min) && isfinite(*out_max) && *out_max > *out_min;

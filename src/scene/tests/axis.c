@@ -219,6 +219,63 @@ static uint32_t _axis_test_horizontal_grid_line_count(DvzAxis* axis)
 }
 
 
+/**
+ * Return whether a vertical grid line exists near one expected center.
+ *
+ * @param axis the X axis
+ * @param expected_x expected fixed visual x coordinate
+ * @param tolerance accepted absolute visual-coordinate distance
+ * @param out_x closest matching grid-line center, or NULL
+ * @return whether a matching vertical grid line was found
+ */
+static bool _axis_test_find_vertical_grid_center(
+    DvzAxis* axis, float expected_x, float tolerance, float* out_x)
+{
+    ANN(axis);
+    ANN(axis->visual);
+    DvzVisualDataView positions_view = {0};
+    DvzVisualDataView colors_view = {0};
+    int res = dvz_visual_data(axis->visual, "position", &positions_view);
+    ASSERT(res == 0);
+    res = dvz_visual_data(axis->visual, "color", &colors_view);
+    ASSERT(res == 0);
+    const float* positions = (const float*)positions_view.data;
+    const uint8_t* colors = (const uint8_t*)colors_view.data;
+    float best_x = 0.0f;
+    float best_distance = 1e9f;
+    bool found = false;
+    for (uint32_t i = 0; i + 5 < positions_view.item_count; i += 6)
+    {
+        if (memcmp(&colors[4 * i], axis->style.grid_color, 4) != 0)
+            continue;
+        float min_x = positions[3 * i + 0];
+        float max_x = positions[3 * i + 0];
+        float min_y = positions[3 * i + 1];
+        float max_y = positions[3 * i + 1];
+        for (uint32_t j = 1; j < 6; j++)
+        {
+            min_x = fminf(min_x, positions[3 * (i + j) + 0]);
+            max_x = fmaxf(max_x, positions[3 * (i + j) + 0]);
+            min_y = fminf(min_y, positions[3 * (i + j) + 1]);
+            max_y = fmaxf(max_y, positions[3 * (i + j) + 1]);
+        }
+        if (max_x - min_x > 0.02f || max_y - min_y < 0.25f)
+            continue;
+        float center_x = 0.5f * (min_x + max_x);
+        float distance = fabsf(center_x - expected_x);
+        if (distance < best_distance)
+        {
+            best_distance = distance;
+            best_x = center_x;
+            found = true;
+        }
+    }
+    if (out_x != NULL)
+        *out_x = best_x;
+    return found && best_distance <= tolerance;
+}
+
+
 /*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
@@ -951,6 +1008,66 @@ int test_axis_panzoom_visible_domain(TstContext* suite, const TstCase* item)
 }
 
 
+static int test_axis_panzoom_layout_aligns_grid_to_plot(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 1280, 960, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    AT(dvz_panel_set_layout_reserve(
+        panel, &(DvzPanelLayoutReserve){.left = 0.16f, .right = 0.05f, .bottom = 0.15f,
+                                        .top = 0.05f}));
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -2.0, 2.0) == 0);
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    ANN(x_axis);
+    ANN(y_axis);
+    AT(dvz_axis_set_grid(x_axis, true));
+    AT(dvz_axis_set_grid(y_axis, true));
+
+    DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
+    ANN(pz);
+    dvz_panzoom_zoom(pz, (vec2){1.20f, 1.0f});
+    dvz_panzoom_pan(pz, (vec2){0.30f, 0.0f});
+
+    float data[] = {0.0f, 0.0f, 0.0f};
+    float visual[3] = {0};
+    AT(dvz_panel_data_to_visual_positions(panel, data, visual, 1) == 0);
+    float expected_x = pz->zoom[0] * (visual[0] + pz->pan[0]);
+
+    float plot[4] = {0};
+    _scene_panel_plot_visual_rect(panel, plot);
+    double visible_min = 0.0;
+    double visible_max = 0.0;
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &visible_min, &visible_max));
+    double expected_min =
+        10.0 * (((double)plot[0] / (double)pz->zoom[0] - (double)pz->pan[0]) -
+                (double)plot[0]) /
+        ((double)plot[1] - (double)plot[0]);
+    double expected_max =
+        10.0 * (((double)plot[1] / (double)pz->zoom[0] - (double)pz->pan[0]) -
+                (double)plot[0]) /
+        ((double)plot[1] - (double)plot[0]);
+    AT(fabs(visible_min - expected_min) < 1e-6);
+    AT(fabs(visible_max - expected_max) < 1e-6);
+
+    _scene_prepare_axis_visuals(figure);
+    float grid_x = 0.0f;
+    AT(_axis_test_find_vertical_grid_center(x_axis, expected_x, 0.005f, &grid_x));
+    AT(fabsf(grid_x - expected_x) < 0.005f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 static int test_axis_zoom_out_in_grid_regression(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -1212,6 +1329,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_layout_reserve);
     TST_CASE(test_panel_visible_domain);
     TST_CASE(test_axis_panzoom_visible_domain);
+    TST_CASE(test_axis_panzoom_layout_aligns_grid_to_plot);
     TST_CASE(test_axis_zoom_out_in_grid_regression);
     TST_CASE(test_axis_panzoom_resize_visual_smoke);
     TST_CASE(test_axis_static_prepare_idempotent);
