@@ -100,12 +100,28 @@ def _callback_user_data_value(obj):
     return _ptr_value(obj)
 
 
+def _callback_identity(callback):
+    if callback is None:
+        return None
+    try:
+        ptr = ctypes.cast(callback, ctypes.c_void_p).value
+    except (ctypes.ArgumentError, TypeError, ValueError):
+        ptr = None
+    if ptr is not None:
+        return ('ctypes', ptr)
+    self_obj = getattr(callback, '__self__', None)
+    func = getattr(callback, '__func__', None)
+    if self_obj is not None and func is not None:
+        return ('method', id(self_obj), id(func))
+    return ('object', id(callback))
+
+
 def _callback_subscription_key(callback_type, owner, callback, user_data):
     return (
         'subscription',
         callback_type.__name__,
         _ptr_value(owner),
-        id(callback),
+        _callback_identity(callback),
         _callback_user_data_value(user_data),
     )
 

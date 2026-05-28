@@ -86,6 +86,48 @@ def main() -> int:
     assert calls == [1234]
     dvz.dvz_input_router_destroy(router)
 
+    class PointerRecorder:
+        def __init__(self):
+            self.calls: list[int | None] = []
+
+        def on_pointer(self, _router, _event, user_data):
+            self.calls.append(user_data)
+
+    recorder = PointerRecorder()
+    router = dvz.dvz_input_router()
+    assert bool(router)
+    dvz.dvz_input_subscribe_pointer(router, recorder.on_pointer, user_data)
+    dvz.dvz_pointer_emit_position(
+        router,
+        dvz.DvzPointerEventType.DVZ_POINTER_EVENT_MOVE,
+        5.0,
+        6.0,
+        100.0,
+        100.0,
+        dvz.DvzPointerButton.DVZ_POINTER_BUTTON_NONE,
+        0,
+        1.0,
+        0,
+        None,
+    )
+    assert recorder.calls == [1234]
+    dvz.dvz_input_unsubscribe_pointer(router, recorder.on_pointer, user_data)
+    dvz.dvz_pointer_emit_position(
+        router,
+        dvz.DvzPointerEventType.DVZ_POINTER_EVENT_MOVE,
+        7.0,
+        8.0,
+        100.0,
+        100.0,
+        dvz.DvzPointerButton.DVZ_POINTER_BUTTON_NONE,
+        0,
+        1.0,
+        0,
+        None,
+    )
+    assert recorder.calls == [1234]
+    dvz.dvz_input_router_destroy(router)
+
     print('raw ctypes smoke: OK')
     return 0
 
