@@ -103,3 +103,37 @@ def test_async_pointer_event_dispatch():
             dvz.dvz_input_router_destroy(router)
 
     asyncio.run(run_case())
+
+
+@pytest.mark.skipif(not _library_exists(), reason='libdatoviz has not been built')
+def test_async_pointer_handler_without_loop_is_skipped():
+    import datoviz as dvz
+
+    router = dvz.dvz_input_router()
+    assert bool(router)
+    source = dvz.EventSource(router)
+    seen = []
+
+    @source.on("move")
+    async def on_move(ev):
+        seen.append((ev.x, ev.y))
+
+    try:
+        with pytest.warns(RuntimeWarning, match='bind_loop'):
+            dvz.dvz_pointer_emit_position(
+                router,
+                dvz.DvzPointerEventType.DVZ_POINTER_EVENT_MOVE,
+                7.0,
+                8.0,
+                100.0,
+                100.0,
+                dvz.DvzPointerButton.DVZ_POINTER_BUTTON_NONE,
+                0,
+                1.0,
+                42,
+                None,
+            )
+        assert seen == []
+    finally:
+        source.close()
+        dvz.dvz_input_router_destroy(router)

@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import ctypes
 import inspect
+import warnings
 from dataclasses import dataclass
 from typing import Any, Awaitable, Callable
 
@@ -85,6 +86,12 @@ def _copy_pointer_event(event_ptr) -> PointerEvent:
     )
 
 
+def _close_awaitable(result: Awaitable[Any]) -> None:
+    close = getattr(result, 'close', None)
+    if callable(close):
+        close()
+
+
 class EventSource:
     """Subscribe async Python handlers to a Datoviz input router."""
 
@@ -132,7 +139,13 @@ class EventSource:
                     loop = asyncio.get_running_loop()
                     self._loop = loop
                 except RuntimeError:
-                    asyncio.run(result)
+                    _close_awaitable(result)
+                    warnings.warn(
+                        'async Datoviz handlers require EventSource.bind_loop() or a running '
+                        'asyncio loop; handler was skipped',
+                        RuntimeWarning,
+                        stacklevel=2,
+                    )
                     return
             loop.call_soon_threadsafe(loop.create_task, result)
 
