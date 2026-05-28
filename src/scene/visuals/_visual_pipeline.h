@@ -225,6 +225,17 @@ typedef struct DvzSceneVisualBindDesc
 } DvzSceneVisualBindDesc;
 
 
+typedef struct DvzSceneVisualDrawDesc
+{
+    uint32_t vertex_count;
+    uint32_t instance_count;
+    bool indexed;
+    uint64_t index_buffer_id;
+    uint32_t index_count;
+    const char* index_format;
+} DvzSceneVisualDrawDesc;
+
+
 
 typedef struct DvzScenePointLoweringDesc
 {
@@ -295,6 +306,9 @@ bool _scene_visual_pipeline_desc(
 bool _scene_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out);
+
+bool _scene_visual_draw_desc(
+    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out);
 
 bool _scene_point_like_lowering_desc(
     DvzScenePointLikeKind kind, DvzSceneShaderFormat shader_format, uint32_t item_count,

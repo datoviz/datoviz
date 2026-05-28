@@ -52,6 +52,9 @@ typedef bool (*DvzVisualFamilyShaderDescFn)(
     const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
     const char* format_tag, DvzSceneVisualShaderDesc* out);
 
+typedef bool (*DvzVisualFamilyDrawDescFn)(
+    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out);
+
 struct DvzVisualFamilyOps
 {
     DvzVisualType type;
@@ -61,6 +64,7 @@ struct DvzVisualFamilyOps
     DvzVisualFamilyBindDescFn resolve_bind_desc;
     DvzVisualFamilyPipelineDescFn resolve_pipeline_desc;
     DvzVisualFamilyShaderDescFn resolve_shader_desc;
+    DvzVisualFamilyDrawDescFn resolve_draw_desc;
 };
 
 
@@ -85,3 +89,6 @@ bool _scene_visual_pipeline_desc_resolve(
 bool _scene_visual_shader_desc_resolve(
     const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
     const char* format_tag, DvzSceneVisualShaderDesc* out);
+
+bool _scene_visual_draw_desc_resolve(
+    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out);
