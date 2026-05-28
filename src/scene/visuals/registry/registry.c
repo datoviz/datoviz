@@ -221,11 +221,11 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      _scene_marker_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
     {DVZ_VISUAL_TYPE_SEGMENT, "segment", _scene_segment_visual_lowering, _resolve_pass_caps,
-     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
-     _scene_visual_draw_desc_resolve, NULL},
+     _scene_segment_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
+     _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
     {DVZ_VISUAL_TYPE_PATH, "path", _scene_path_visual_lowering, _resolve_pass_caps,
-     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
-     _scene_visual_draw_desc_resolve, NULL},
+     _scene_path_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
+     _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
     {DVZ_VISUAL_TYPE_IMAGE, "image", _scene_image_visual_lowering, _resolve_pass_caps,
      _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve, _scene_image_visual_fill_metadata},
@@ -254,8 +254,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      _scene_splat_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
     {DVZ_VISUAL_TYPE_VECTOR, "vector", _scene_vector_visual_lowering, _resolve_pass_caps,
-     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
-     _scene_visual_draw_desc_resolve, NULL},
+     _scene_vector_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
+     _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
 };
 
 

@@ -26,3 +26,7 @@
 /*************************************************************************************************/
 
 bool _scene_path_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
+
+bool _scene_path_visual_bind_desc(
+    const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
+    DvzSceneVisualBindDesc* out);
