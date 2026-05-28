@@ -20,8 +20,10 @@ Important current state:
 1. `scene_emit/` still owns retained scene to FramePlan orchestration.
 2. `frame_plan/` owns backend-neutral pass, resource, dependency, readback, and debug structures.
 3. `render_contract/` checks planned visual/resource/draw state against runtime requirements.
-4. `runtime/` emits DRP2 from resolved FramePlan state, but still contains some visual-family
-   assumptions in preparation and pass-emission paths.
+4. `runtime/` emits DRP2 from resolved FramePlan state. The normal render preparation path now
+   consumes visual descriptors and capability flags without branching on concrete visual families;
+   remaining runtime visual-family assumptions are concentrated in the explicit untyped
+   compatibility/pass-emission fallback path.
 5. `visuals/desc.c` lowers typed visual metadata into runtime descriptors. Its untyped descriptor
    fallback is now guarded by an explicit FramePlan compatibility flag.
 6. `visuals/desc_untyped_compat.c` quarantines the current untyped fallback classifiers. These
@@ -143,8 +145,9 @@ Status as of 2026-05-28: in progress. `src/scene/visuals/registry/` now contains
 `test_scene_visual_family_registry_coverage` enforces identity, lowering, pass-capability,
 bind-descriptor, pipeline-descriptor, shader-descriptor, and draw-descriptor hooks. Retained visual
 lowering, retained visual pass-capability resolution, runtime bind selection, runtime pipeline
-selection, runtime shader selection, and runtime draw-count packetization now route through the
-registry. Continue by migrating metadata, upload, query, bounds, and the current generic
+selection, runtime shader selection, special/pass shader policy, pass pipeline policy, pass binding
+policy, and runtime draw-count packetization now route through visual-owned descriptors and registry
+hooks. Continue by migrating metadata, upload, query, bounds, and the current generic
 descriptor/pipeline/shader bodies into family-owned files incrementally.
 
 Steps:
@@ -205,6 +208,14 @@ Done criteria:
 ### 4. Make Runtime Render Emission Descriptor-Driven
 
 Goal: runtime consumes resolved descriptors and render contracts; it does not know visual semantics.
+
+Status as of 2026-05-28: normal `runtime/render_emit_prepare.c` no longer branches on concrete
+visual families for shader selection, pass shader policy, pipeline policy, bind policy, textured-mesh
+layout selection, picking query overrides, or draw-count packetization. It still creates generic DRP2
+objects, bind groups, pipeline layouts, and draw packets from descriptors. The remaining runtime
+visual-family branching is mostly in `runtime/render_emit_passes.c`, where it supports the explicit
+untyped compatibility fallback and should be retired or quarantined behind compatibility fixtures
+after normal scene output is guaranteed to carry typed metadata.
 
 Steps:
 
