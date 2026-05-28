@@ -3,8 +3,8 @@
 This note records the current browser WebGPU proof-of-concept compatibility surface.
 
 The WebGPU runner is a strict subset check, not a full DRP2 backend. It tracks the active DRP2
-command surface and validates the currently portable fixture slice: `37` positive DRP2 fixtures plus
-`2` WebGPU-only attachment streams.
+command surface and validates the currently portable fixture slice: `37` positive DRP2 fixtures,
+`2` WebGPU-only attachment streams, and `81` expected-failure semantic negative fixtures.
 
 
 ## Fixture Dashboard
@@ -25,18 +25,21 @@ The committed dashboard manifest currently covers:
 
 - `37` positive DRP2 fixtures under `spec/drp2/fixtures/positive`
 - `2` WebGPU-only strict stream checks under `examples/webgpu/streams`
-- `39` total dashboard rows
+- `81` semantic negative fixtures under `spec/drp2/fixtures/negative`
+- `120` total dashboard rows
 
 Current status as of this note:
 
 - positive fixture count: `37`
 - WebGPU stream count: `2`
-- expected browser dashboard result for the committed subset: `39 pass, 0 unsupported, 0 fail`
+- negative parity fixture count: `81`
+- expected browser dashboard result for the committed subset: `120 pass, 0 unsupported, 0 fail`
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
-runner can execute the committed portable fixtures and WebGPU-specific attachment probes. It does not
-mean deferred DRP2 commands or every future schema command are browser-supported.
+runner can execute the committed portable fixtures and WebGPU-specific attachment probes, and reject
+the semantic negative fixtures with the expected `commandIndex`, `cmd`, and `code`. It does not mean
+deferred DRP2 commands or every future schema command are browser-supported.
 
 
 ## Supported Commands

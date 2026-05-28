@@ -72,28 +72,90 @@ function errorDetail(error) {
 
 
 
+function expectedFailureDetail(stream) {
+  const expected = stream.expected ?? {};
+  const expectedCmd = stream.commands?.[expected.command_index]?.cmd;
+  return {
+    commandIndex: expected.command_index,
+    cmd: expectedCmd,
+    code: expected.code,
+  };
+}
+
+
+
+function errorMatchesExpected(error, expected) {
+  return (
+    error?.commandIndex === expected.commandIndex &&
+    error?.cmd === expected.cmd &&
+    error?.code === expected.code
+  );
+}
+
+
+
+function expectedDetail(expected) {
+  return `expected command_index=${expected.commandIndex} cmd=${expected.cmd} code=${expected.code}`;
+}
+
+
+
+async function fetchStream(path) {
+  const response = await fetch(path, { cache: "no-cache" });
+  if (!response.ok) {
+    throw new Error(`${response.status} ${response.statusText}`);
+  }
+  return await response.json();
+}
+
+
+
+async function runPositiveFixture(fixture, stream) {
+  const result = await executeDrp2StreamChecked(
+    runtime.device,
+    runtime.context,
+    runtime.format,
+    stream,
+    {
+      requireExplicitBindGroupLayouts: true,
+      requireExplicitPipelineMetadata: true,
+    },
+  );
+  const detail = result.readbacks.length > 0
+    ? `readbacks=${result.readbacks.length}, nonzero=${result.readbacks[0].summary.nonzero}`
+    : "no WebGPU errors";
+  setFixtureStatus(fixture, "pass", detail);
+}
+
+
+
+async function runNegativeFixture(fixture, stream) {
+  const expected = expectedFailureDetail(stream);
+  try {
+    await executeDrp2StreamChecked(runtime.device, runtime.context, runtime.format, stream);
+  } catch (error) {
+    if (errorMatchesExpected(error, expected)) {
+      setFixtureStatus(fixture, "pass", expectedDetail(expected));
+    } else {
+      setFixtureStatus(fixture, "fail", `${expectedDetail(expected)}; got ${errorDetail(error)}`);
+    }
+    return;
+  }
+
+  setFixtureStatus(fixture, "fail", `${expectedDetail(expected)}; got success`);
+}
+
+
+
 async function runFixture(fixture) {
   setFixtureStatus(fixture, "running");
   try {
-    const response = await fetch(fixture.path, { cache: "no-cache" });
-    if (!response.ok) {
-      throw new Error(`${response.status} ${response.statusText}`);
+    const stream = await fetchStream(fixture.path);
+    if (fixture.kind === "negative") {
+      await runNegativeFixture(fixture, stream);
+    } else {
+      await runPositiveFixture(fixture, stream);
     }
-    const stream = await response.json();
-    const result = await executeDrp2StreamChecked(
-      runtime.device,
-      runtime.context,
-      runtime.format,
-      stream,
-      {
-        requireExplicitBindGroupLayouts: true,
-        requireExplicitPipelineMetadata: true,
-      },
-    );
-    const detail = result.readbacks.length > 0
-      ? `readbacks=${result.readbacks.length}, nonzero=${result.readbacks[0].summary.nonzero}`
-      : "no WebGPU errors";
-    setFixtureStatus(fixture, "pass", detail);
   } catch (error) {
     const unsupported = unsupportedMessage(error);
     if (unsupported !== null) {
@@ -169,6 +231,9 @@ async function main() {
     }
     for (const path of manifest.webgpu_streams ?? []) {
       addFixture(path, "stream");
+    }
+    for (const path of manifest.negative_parity ?? []) {
+      addFixture(path, "negative");
     }
     runAllEl.disabled = false;
     runAllEl.addEventListener("click", () => {
