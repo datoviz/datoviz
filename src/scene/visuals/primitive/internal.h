@@ -30,3 +30,8 @@ bool _scene_primitive_visual_lowering(const DvzVisual* visual, DvzVisualLowering
 bool _scene_primitive_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out);
+
+bool _scene_primitive_visual_pipeline_desc(
+    const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
+    bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
+    DvzSceneVisualPipelineDesc* out);
