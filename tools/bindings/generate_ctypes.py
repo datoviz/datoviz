@@ -60,15 +60,32 @@ def _candidate_library_paths():
 
 def _load_library():
     errors = []
+    missing = []
     for path in _candidate_library_paths():
         if not path.exists():
+            missing.append(str(path))
             continue
         try:
             return ctypes.cdll.LoadLibrary(str(path))
         except OSError as exc:
             errors.append(f'{path}: {exc}')
-    details = '; '.join(errors) if errors else 'no candidate file exists'
-    raise RuntimeError(f'Unable to load libdatoviz ({details})')
+    loader_env_names = ('LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH', 'PATH')
+    loader_env = ', '.join(
+        f'{name}={os.environ.get(name, "")!r}' for name in loader_env_names
+    )
+    context = (
+        f'platform={platform.system()!r}; '
+        f'DATOVIZ_LIBRARY={os.environ.get("DATOVIZ_LIBRARY", "")!r}; '
+        f'{loader_env}'
+    )
+    details = []
+    if errors:
+        details.append('load errors: ' + '; '.join(errors))
+    if missing:
+        details.append('missing candidates: ' + ', '.join(missing))
+    if not details:
+        details.append('no candidate path was generated')
+    raise RuntimeError(f'Unable to load libdatoviz ({context}; {"; ".join(details)})')
 
 
 dvz = _load_library()
