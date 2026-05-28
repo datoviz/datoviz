@@ -97,6 +97,12 @@ void _stroke_query_apply_render_state(
     uint32_t target_height);
 void _stroke_query_mark_last_upload_index(DvzFramePlan* plan, uint32_t stride);
 void _stroke_query_mark_last_upload_uniform(DvzFramePlan* plan);
+bool _stroke_quad_query_geometry(
+    const DvzVisual* visual, DvzSceneQueryScratch* scratch, uint64_t* out_vertex_count,
+    uint64_t* out_index_count);
+bool _path_stroke_query_geometry(
+    const DvzVisual* visual, DvzSceneQueryScratch* scratch, uint64_t* out_vertex_count,
+    uint64_t* out_index_count);
 bool _image_uses_generated_quads(const DvzVisual* visual);
 bool _image_generated_quad_cache_rebuild(const DvzFigure* figure, DvzVisual* visual);
 int _stroke_set_path_subpaths(
