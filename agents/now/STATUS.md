@@ -64,6 +64,7 @@ Primary references:
 | WebGPU/WASM | `Partial / blocker` | `examples/webgpu/`, `tools/webgpu_fixture_preflight.py`, DRP2 WGSL fixtures | Document and smoke the experimental subset. |
 | Raw `ctypes` | `Done for RC1` | `tools/bindings/extract_api.py`, `tools/bindings/generate_ctypes.py`, `tools/bindings/generate_ctypes_abi.py`, `tools/bindings/ctypes_package_smoke.py`, `testing/test_ctypes_raw_smoke.py`, `examples/python/raw/`, `just bindings` | Broaden ABI/pointer policy only when richer raw examples require it. |
 | Runtime hardening | `Ongoing` | DRP2/vklite/app tests and completed lifetime records | Fix concrete lifetime, resize, descriptor, repeated-frame, or churn bugs as examples expose them. |
+| Scene source split | `Ongoing / structural` | [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md), [`../soon/scene/SCENE_CODE_SPLIT_ROADMAP.md`](../soon/scene/SCENE_CODE_SPLIT_ROADMAP.md) | Continue staged visual-helper, frame-plan, runtime-emission, core scene, annotation/domain, query, and test boundary splits without changing semantics. |
 | API inventory and docs | `Blocker for RC1` | [`DOCUMENTATION.md`](DOCUMENTATION.md), public headers under `include/datoviz/` | Produce public surface/status table and known-gap notes. |
 
 
@@ -99,13 +100,17 @@ Good parallel work now:
 5. **WebGPU parity:** `examples/webgpu`, DRP2 fixtures/preflight, WGSL emission, and diagnostics.
 6. **API/docs inventory:** work from [`DOCUMENTATION.md`](DOCUMENTATION.md) that classifies actual
    v0.4 behavior.
-7. **RC2 polish:** text placement/DPI, axes formatter/clipping, shared layout, richer legends,
+7. **Scene source split:** staged cleanup from
+   [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md),
+   starting with derived payload helpers, then frame-plan internals, render contracts, runtime
+   emission, core scene ownership, annotation/domain helpers, query boundaries, and focused tests.
+8. **RC2 polish:** text placement/DPI, axes formatter/clipping, shared layout, richer legends,
    richer readouts, and broader pick/probe payloads.
-8. **Pinned readout/card lane:** completed private C card shell, rendered pinned image readouts,
+9. **Pinned readout/card lane:** completed private C card shell, rendered pinned image readouts,
    selected-item metadata cards, public overlay card API, rich overlay card API, example proof,
    non-overlay rich text-block proof, and FreeType-backed private rich text-block rasterization in
    [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md).
-9. **Shiny demo follow-up:** retained textured mesh first, then vector/arrow visual, label GPU
+10. **Shiny demo follow-up:** retained textured mesh first, then vector/arrow visual, label GPU
    probing, explanatory layout proof, gallery proof, and optional experimental splats as recorded in
    [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
 

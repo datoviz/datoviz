@@ -21,6 +21,8 @@ behavior instead of restating it here.
    volume occlusion, shader feature, and validation contract.
 6. [TRANSPARENCY_MSAA.md](TRANSPARENCY_MSAA.md): implementation-facing WBOIT, depth peeling,
    MSAA, alpha-to-coverage, and validation contract.
+7. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): implementation-facing roadmap for
+   splitting scene frame-plan, runtime, core, annotation, domain, query, and visual helper code.
 
 ## Current priorities
 
@@ -35,3 +37,6 @@ behavior instead of restating it here.
    durable occlusion implementation rules live in `OCCLUSION_EFFECTS.md`.
 7. Keep transparency, depth-peeling, and MSAA execution plans in `agents/soon/` focused on
    remaining slices while durable implementation rules live in `TRANSPARENCY_MSAA.md`.
+8. Keep broad scene source splits staged through `SCENE_CODE_SPLIT_ROADMAP.md`; preserve
+   frame-plan orchestration, runtime execution, and visual-family helper boundaries as separate
+   ownership layers.

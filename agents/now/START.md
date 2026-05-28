@@ -23,7 +23,11 @@ release criteria, or long implementation history.
    [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
 5. For scene semantics, public scene API shape, frame planning, visual families, interaction,
    annotations, scales, or runtime boundaries, read [`../../spec/scene/README.md`](../../spec/scene/README.md).
-6. For DRP2 commands, fixtures, schemas, or scene code that emits DRP2, read
+6. For broad `src/scene` source splits across visual helpers, frame-plan files, runtime emission,
+   core scene ownership, query execution, annotations, or domain helpers, read
+   [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md)
+   and [`../soon/scene/SCENE_CODE_SPLIT_ROADMAP.md`](../soon/scene/SCENE_CODE_SPLIT_ROADMAP.md).
+7. For DRP2 commands, fixtures, schemas, or scene code that emits DRP2, read
    [`../../spec/drp2/README.md`](../../spec/drp2/README.md) and
    [`../../spec/drp2/AGENT_SPEC_PHASE.md`](../../spec/drp2/AGENT_SPEC_PHASE.md).
 
@@ -85,6 +89,9 @@ Remaining `geom` work is optional unless a release example needs it.
 6. [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md)
    before changing pinned readout cards, selected-item metadata cards, public overlay cards, or
    private rich text-block lowering.
+7. [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md)
+   before broad source-file splits in `src/scene/plan`, `src/scene/runtime`, `src/scene/core`,
+   `src/scene/annotation`, `src/scene/domain`, `src/scene/query`, or visual helper folders.
 
 
 ## Validation Defaults

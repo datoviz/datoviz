@@ -172,7 +172,8 @@ unstaged unless explicitly approved for that commit.
 The stroke-family cache, query-helper, query-geometry, and bounds extractions are complete for the
 current segment/path/vector slice. Keep frame-plan orchestration in plan code; only move more
 geometry/cache construction when an extracted file can own a coherent family slice without copying
-dispatch policy.
+dispatch policy. For broader scene source splitting beyond visuals, use
+[`../implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../implementation/SCENE_CODE_SPLIT_ROADMAP.md).
 
 Useful next candidates:
 
