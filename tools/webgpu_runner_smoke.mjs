@@ -63,6 +63,9 @@ const pass = () => ({
 });
 
 const device = {
+  limits: {
+    maxTextureDimension2D: 8192,
+  },
   queue: {
     writeBuffer() {},
     writeTexture() {},
@@ -112,6 +115,10 @@ const device = {
   },
   createComputePipeline() {
     return {};
+  },
+  pushErrorScope() {},
+  async popErrorScope() {
+    return null;
   },
   createCommandEncoder() {
     return {
@@ -297,8 +304,49 @@ async function expectNegativeFixtureParity(executeDrp2Stream, path) {
   throw new Error(`${path}: expected WebGPU runner failure`);
 }
 
+function comparableResourceStats(stats) {
+  const { refs: _refs, ...stable } = stats;
+  return stable;
+}
+
+function assertResourceStatsStable(actual, expected, label) {
+  const actualText = JSON.stringify(actual);
+  const expectedText = JSON.stringify(expected);
+  if (actualText !== expectedText) {
+    throw new Error(`${label}: expected ${expectedText}, got ${actualText}`);
+  }
+}
+
+async function smokeRepeatedRuntimeFrames(Drp2WebGpuRuntime) {
+  const stream = await loadJson('examples/webgpu/streams/scene_point_wgsl.json');
+  const runtime = new Drp2WebGpuRuntime(device, context, 'rgba8unorm', {
+    requireExplicitBindGroupLayouts: true,
+    requireExplicitPipelineMetadata: true,
+  });
+  await runtime.load(stream);
+
+  const stableStats = comparableResourceStats(runtime.resourceStats());
+  for (let i = 0; i < 10; i++) {
+    await runtime.render();
+    const stats = runtime.resourceStats();
+    assertResourceStatsStable(
+      comparableResourceStats(stats),
+      stableStats,
+      `resource stats changed after repeated frame ${i + 1}`,
+    );
+    if (stats.refs.open !== 0 || stats.refs.recorded !== 0) {
+      throw new Error(
+        `resource refs leaked after repeated frame ${i + 1}: ` +
+          `open=${stats.refs.open} recorded=${stats.refs.recorded}`,
+      );
+    }
+  }
+}
+
 async function main() {
-  const { executeDrp2Stream } = await import('../examples/webgpu/drp2_webgpu.js');
+  const { Drp2WebGpuRuntime, executeDrp2Stream } = await import(
+    '../examples/webgpu/drp2_webgpu.js'
+  );
 
   const manifest = await loadJson('examples/webgpu/fixture_manifest.json');
   for (const entry of manifest.positive) {
@@ -500,6 +548,8 @@ async function main() {
   for (const path of negativePaths) {
     await expectNegativeFixtureParity(executeDrp2Stream, path);
   }
+
+  await smokeRepeatedRuntimeFrames(Drp2WebGpuRuntime);
 
   console.log(
     `PASS WebGPU runner smoke fixtures=${manifest.positive.length} ` +

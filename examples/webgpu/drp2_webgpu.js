@@ -1741,6 +1741,43 @@ function createExecutionState() {
 
 
 
+function resourceStats(state) {
+  const byKind = {};
+  let destroyedObjects = 0;
+  let openRefs = 0;
+  let recordedRefs = 0;
+  let submittedRefs = 0;
+  for (const record of state.objects.values()) {
+    byKind[record.kind] = (byKind[record.kind] ?? 0) + 1;
+    if (record.destroyed) {
+      destroyedObjects++;
+    }
+    openRefs += record.openRefs ?? 0;
+    recordedRefs += record.recordedRefs ?? 0;
+    submittedRefs += record.submittedRefs ?? 0;
+  }
+  return {
+    objects: state.objects.size,
+    destroyedObjects,
+    buffers: state.buffers.size,
+    textures: state.textures.size,
+    textureViews: state.textureViews.size,
+    samplers: state.samplers.size,
+    bindGroupLayouts: state.bindGroupLayouts.size,
+    bindGroups: state.bindGroups.size,
+    shaders: state.shaders.size,
+    pipelines: state.pipelines.size,
+    byKind,
+    refs: {
+      open: openRefs,
+      recorded: recordedRefs,
+      submitted: submittedRefs,
+    },
+  };
+}
+
+
+
 function splitStreamCommands(stream) {
   const commands = required(stream.commands, "DRP2 stream needs commands");
   if (Number.isInteger(stream.setup_command_count)) {
@@ -1863,6 +1900,10 @@ export class Drp2WebGpuRuntime {
     requireLiveRecord(this.state, bufferId, "buffer");
     const buffer = required(this.state.buffers.get(bufferId), `unknown buffer ${bufferId}`);
     this.device.queue.writeBuffer(buffer, offset, bytes, 0, bytes.byteLength);
+  }
+
+  resourceStats() {
+    return resourceStats(this.state);
   }
 }
 
