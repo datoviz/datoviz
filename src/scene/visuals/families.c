@@ -702,24 +702,6 @@ void dvz_visual_set_visible(DvzVisual* visual, bool visible)
 
 
 /**
- * Create a point visual.
- *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual, or NULL on allocation failure
- */
-DvzVisual* dvz_point(DvzScene* scene, uint32_t flags)
-{
-    ANN(scene);
-    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_POINT, flags);
-    if (visual == NULL)
-        return NULL;
-    return visual;
-}
-
-
-
-/**
  * Create a Gaussian splat visual.
  *
  * @param scene the scene
