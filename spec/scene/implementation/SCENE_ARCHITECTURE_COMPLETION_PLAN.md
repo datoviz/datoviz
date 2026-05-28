@@ -45,10 +45,26 @@ Important current state:
    primitive, mesh, volume, vector, and text. Generic dense-attribute, index-buffer, and
    material-trigger upload emission now lives in `scene_emit/upload_support.c`, leaving
    `scene_emit/uploads.c` as the panel-visible visual upload orchestrator. The final architecture
-   still needs upload, query, and remaining bounds logic to migrate into family-owned files.
+   still needs the remaining pure upload/cache builders, query scratch/result ownership, and any
+   residual family-specific bounds logic to migrate into family-owned files.
 9. `annotation/text.c`, `annotation/axis.c`, `domain/field.c`, and the remaining family-specific
    payload construction reachable from scene emission remain the highest-value mixed-ownership
    areas.
+
+Latest pickup snapshot:
+
+1. The retained textured-mesh first slice exists and should be treated as active code, not future
+   scaffolding.
+2. The most recent scene-source split commits through `aa18c3c88` completed the upload-support and
+   panel-helper cleanup passes. Do not restart by re-extracting dense/index/material upload emission
+   or panel drawable/viewport helpers.
+3. The best next implementation slices are now query-family ownership, normal-path typed metadata
+   enforcement, and annotation/domain ownership. Remaining upload work should be limited to pure
+   family payload builders when a concrete builder is still mixed into scene emission.
+4. Last focused validation recorded for this split was `just build`,
+   `direnv exec . just test scene-graph` (`157/157`), and `git diff --check`. Broad `query`
+   validation still has known GPU readback failures that need separate investigation before query
+   closure is claimed.
 
 The current `desc_untyped_compat.c` path is an intermediate compatibility step, not the desired
 final architecture. Normal v0.4 scene output emits explicit typed metadata and should not require
@@ -99,7 +115,7 @@ this section when a slice is completed.
 
 3. Move upload/cache payload builders out of generic scene emission.
    - Primary root: `src/scene/scene_emit/uploads.c`.
-   - Status on 2026-05-28: started. `scene_emit/derived_upload.c` now owns the derived-geometry
+   - Status on 2026-05-28: mostly split. `scene_emit/derived_upload.c` now owns the derived-geometry
      upload orchestration that used to live in `uploads.c`, while the image family owns the
      generated-quad dirty/cache/payload decision in `visuals/image/generated_quad.c` and the
      stroke subsystem owns stroke-quad/path-stroke dirty/cache/payload decisions in
@@ -116,15 +132,20 @@ this section when a slice is completed.
    - Move pure family payload construction into `visuals/<family>/upload.c` or existing family
      upload/cache files: point/mesh/indexed typed data, stroke generated geometry, image generated
      quads and texture payloads, volume source/transfer/label textures, labels lookup payloads.
+     Before opening a new upload slice, confirm that the target helper still lives outside its
+     owner; many formerly generic helpers have already moved.
    - Commit by payload family so test failures are attributable.
 
 4. Finish bounds and query family ownership.
    - Bounds is partly split; volume retained-state bounds now live in `visuals/volume/bounds.c`,
-     and mesh position/instance-transform bounds now live in `visuals/mesh/bounds.c`. Remove
-     remaining generic visual branches that compute family semantics outside family folders or
-     explicit shared visual subsystems such as `visuals/stroke/`.
-   - Query has family files already; finish moving target capability, scratch geometry, native
-     result decoding, and unsupported-policy decisions out of generic query code.
+     mesh position/instance-transform bounds now live in `visuals/mesh/bounds.c`, and additional
+     family reducers exist for segment, vector, image, sphere, glyph, and stroke. Remove remaining
+     generic visual branches that compute family semantics outside family folders or explicit
+     shared visual subsystems such as `visuals/stroke/`.
+   - Query has family files and a registry already. Finish moving scratch geometry, native result
+     decoding, and unsupported-policy decisions out of generic query or scene-emission code. In
+     particular, inspect `scene_emit/image_query.c` and the family `query.c` files before changing
+     the executor.
    - Keep the query executor, request queue, readback scheduling, and retained request processing
      generic.
 

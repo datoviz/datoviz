@@ -63,7 +63,7 @@ Primary references:
 | WebGPU/WASM | `Browser proof done / WASM emission pending` | `examples/webgpu/`, `examples/webgpu/COMPAT.md`, `tools/webgpu_fixture_preflight.py`, `tools/webgpu_runner_smoke.mjs`, DRP2 WGSL point/primitive/image fixtures; `just webgpu-fixture-preflight` passes `39/39`, `just webgpu-runner-smoke` passes `37 + 2 + 81` plus repeated runtime frames, browser dashboard passed `120/120` on 2026-05-28 after `183812f27` | Keep WASM scene-emission and browser capability diagnostics as the remaining experimental-path blockers. |
 | Raw `ctypes` | `Done for RC1` | `tools/bindings/extract_api.py`, `tools/bindings/generate_ctypes.py`, `tools/bindings/generate_ctypes_abi.py`, `tools/bindings/ctypes_package_smoke.py`, `testing/test_ctypes_raw_smoke.py`, `examples/python/raw/`, `just bindings` | Broaden ABI/pointer policy only when richer raw examples require it. |
 | Runtime hardening | `Ongoing` | DRP2/vklite/app tests and completed lifetime records | Fix concrete lifetime, resize, descriptor, repeated-frame, or churn bugs as examples expose them. |
-| Scene source split | `Ongoing / structural` | [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md), [`../soon/scene/SCENE_CODE_SPLIT_ROADMAP.md`](../soon/scene/SCENE_CODE_SPLIT_ROADMAP.md) | The old scene `plan/` bucket is gone; FramePlan, scene emission, render contracts, runtime render emission, core scene, visual descriptor-kind, colormap, domain-buffer, and query-policy slices are split. Continue annotation/domain, visual attrs/desc, remaining derived-payload, and focused-test boundaries without changing semantics. |
+| Scene source split | `Ongoing / structural` | [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md), [`../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md) | The old scene `plan/` bucket is gone; FramePlan, scene emission, render contracts, runtime render emission, core scene, visual descriptor-kind, colormap, domain-buffer, query-policy, upload-support, and panel-helper slices are split. Next pickup is query-family ownership, typed metadata enforcement, then annotation/domain cleanup; only move remaining upload payload builders after confirming they are still mixed into scene emission. |
 | API inventory and docs | `Blocker for RC1` | [`DOCUMENTATION.md`](DOCUMENTATION.md), public headers under `include/datoviz/` | Produce public surface/status table and known-gap notes. |
 
 
@@ -100,10 +100,10 @@ Good parallel work now:
    v0.4 behavior.
 6. **Scene source split:** staged cleanup from
    [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md),
-   continuing with annotation/domain helpers, visual descriptor/attribute boundaries, remaining
-   derived payload helpers, and focused tests. FramePlan internals, scene emission, render
-   contracts, runtime render emission, core scene ownership, first colormap/domain-buffer slices,
-   and query policy were split on 2026-05-28.
+   continuing with query-family ownership, normal typed-metadata enforcement, annotation/domain
+   helpers, and focused tests. FramePlan internals, scene emission, render contracts, runtime
+   render emission, core scene ownership, first colormap/domain-buffer slices, query policy,
+   upload-support helpers, and panel helpers were split on 2026-05-28.
 7. **RC2 polish:** text placement/DPI, axes formatter/clipping, shared layout, richer legends,
    richer readouts, and broader pick/probe payloads.
 8. **Pinned readout/card lane:** completed private C card shell, rendered pinned image readouts,

@@ -15,14 +15,19 @@ criteria.
 
 ## Pickup Order
 
-1. Continue low-risk payload/helper extraction from scene-emission support only where the extracted
+1. Continue query-family ownership. Start with `scene_emit/image_query.c` and family
+   `visuals/*/query.c` files; move scratch geometry, result decoding, and unsupported-policy
+   decisions into family owners while keeping queueing, freshness, executor lifecycle, and readback
+   scheduling generic.
+2. Eliminate normal untyped descriptor inference: make all active scene/query render paths emit
+   explicit `DvzFramePlanVisualMeta`, then delete or quarantine `desc_untyped_compat.c` behind an
+   explicit compatibility-only path.
+3. Continue annotation/domain helper splits where generated visuals and public object state are mixed.
+4. Continue low-risk payload/helper extraction from scene-emission support only where the extracted
    owner builds family data or cache payloads without taking over FramePlan ordering.
-2. Continue annotation/domain helper splits where generated visuals and public object state are mixed.
-3. Eliminate normal untyped descriptor inference: make all active scene/query render paths emit
-   explicit `DvzFramePlanVisualMeta`, then delete or quarantine the current `desc_legacy.c` path.
-4. Introduce the visual-family registry and migrate generic switches into family operations.
 5. Continue visual-family payload/helper splits only when a clear owner boundary appears; the first
-   descriptor/attribute split inside `src/scene/visuals/` is complete.
+   descriptor/attribute split inside `src/scene/visuals/` is complete, and the active registry
+   already owns lowering, bounds, pass caps, bind, pipeline, shader, and draw hooks.
 6. Tighten remaining query/interaction boundaries without changing picking semantics accidentally.
 7. Split scene CMake targets into coarse reusable layers once the registry and family boundaries are
    clear; do not split per visual family unless a concrete consumer needs it.
@@ -35,9 +40,12 @@ into shared helpers, bindings, draw emission, visual preparation, and pass emiss
 split into notify, format state, frame trace, panel geometry/layout, grid, controllers, and figure
 emission owners. Follow-up slices also split visual descriptor-kind helpers, colormap annotation
 ownership, scale-bar/colorbar/legend/text-font annotation ownership, scene domain buffers, and
-field/polygon helpers, visual descriptor/attribute helpers, and query target/profile policy. The old
-`src/scene/plan/` folder was removed; its ownership now lives in `src/scene/frame_plan/`,
-`src/scene/scene_emit/`, and `src/scene/render_contract/`.
+field/polygon helpers, visual descriptor/attribute helpers, query target/profile policy, upload
+support helpers, and panel drawable/viewport helpers. The old `src/scene/plan/` folder was removed;
+its ownership now lives in `src/scene/frame_plan/`, `src/scene/scene_emit/`, and
+`src/scene/render_contract/`. Last focused validation for the split was `just build`,
+`direnv exec . just test scene-graph` (`157/157`), and `git diff --check`; broad query validation
+still has known GPU readback failures that need separate investigation.
 
 
 ## Validation

@@ -58,6 +58,13 @@ grid generators, bounds, normals, transforms, merges, edges, contours, polygon t
 upload, polygon scene helpers, semantic polygon/polygon-set composites, and focused tests/examples.
 Remaining `geom` work is optional unless a release example needs it.
 
+For the large scene source/architecture refactor, the latest pickup is after the upload-support and
+panel-helper split commits through `aa18c3c88`. Start with query-family ownership, typed metadata
+enforcement, and annotation/domain cleanup in
+[`../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md);
+do not reopen dense/index/material upload emission or panel drawable/viewport helper extraction
+unless a new regression points there.
+
 
 ## Guardrails
 

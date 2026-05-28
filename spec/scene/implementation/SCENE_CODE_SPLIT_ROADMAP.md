@@ -19,26 +19,25 @@ tracks source-split progress; the completion plan defines the end state.
 As of 2026-05-28 after the scene-plan folder removal, the highest-value split
 candidates are:
 
-1. `src/scene/scene_emit/uploads.c` and `scene_emit/derived_upload.c`: some derived payload
-   orchestration remains in scene-emission code. Continue moving only pure cache/data construction
-   into family or subsystem helpers; image generated-quad cache/payload decisions now live in the
-   image family, and stroke-quad/path-stroke cache/payload decisions now live in the stroke
-   subsystem. Image/glyph RGBA texture upload payload decisions also live in the image family, and
-   volume source/transfer/label-lookup payload decisions live in the volume family. Generic
-   sampled-field texture upload payload construction now lives in `domain/field_texture.c`.
-   Dense-attribute, retained index-buffer, and material-trigger upload emission now live in
-   `scene_emit/upload_support.c`, leaving `scene_emit/uploads.c` as phase orchestration.
+1. `src/scene/query/`, `scene_emit/image_query.c`, and family `visuals/*/query.c` files: query has
+   a registry and split executor/policy/readback files, but scratch geometry, native result
+   decoding, and unsupported-policy ownership should be checked family by family. Keep queueing,
+   request freshness, executor lifecycle, and readback scheduling generic.
 2. `src/scene/annotation/text.c` and `axis.c`: retained annotation objects, layout/reserve policy,
    generated visuals, and text/glyph lowering are still mixed. Scale, colorbar, legend, colormap,
    scale-bar, and text-font ownership now have first-pass owner files.
 3. `src/scene/domain/field.c`: public domain object state, sampled interpretation, generated
    visual glue, and upload dirtiness are still mixed.
-4. `src/scene/visuals/`: descriptor and attribute helper ownership has a first split. Draw hooks
+4. `src/scene/scene_emit/uploads.c` and `scene_emit/derived_upload.c`: the upload path is mostly
+   phase orchestration now. Continue moving only pure cache/data construction into family or
+   subsystem helpers when a concrete mixed helper remains; do not re-extract dense/index/material
+   upload emission or panel helper code that already moved.
+5. `src/scene/visuals/`: descriptor and attribute helper ownership has a first split. Draw hooks
    have moved into active family folders, and active-family shader descriptor bodies have moved into
    family folders. Wide visual-family helper files and shared headers should only be split further
    when a stable owner boundary is clear. Volume retained-state bounds now live in the volume
    family, and mesh position/instance-transform bounds now live in the mesh family.
-5. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
+6. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
    multiple ownership boundaries at once.
 
 
@@ -63,7 +62,36 @@ candidates are:
 
 ## Recommended Sequence
 
-### 1. Finish Low-Risk Derived Payload Extraction
+### 1. Finish Query-Family Ownership
+
+Status: next recommended pickup after the upload-support and panel-helper cleanup passes completed
+on 2026-05-28.
+
+Current ownership:
+
+1. `query/policy.c`: target capability, query-profile selection, candidate visual selection,
+   family-op eligibility, and framebuffer coordinate policy.
+2. `query/execute.c`: retained executor schema reset, static-upload bookkeeping, native family
+   execution, and readback orchestration.
+3. `query/queue.c`, `query/readback.c`, `query/result.c`, and `query/registry.c`: request queue,
+   readback routing, result freshness, and family-op lookup.
+4. `visuals/<family>/query.c`: family query hooks for active queryable families.
+
+Next moves:
+
+1. Move remaining scratch-geometry builders out of generic scene-emission files when the geometry
+   is family-specific. `scene_emit/image_query.c` is the first file to audit.
+2. Move native result decoding and unsupported-target decisions into the owning family query file
+   where practical.
+3. Keep query queueing, request freshness, readback scheduling, and executor lifecycle generic.
+4. Add focused tests that distinguish orchestration behavior from family payload/result behavior.
+
+Validation: `just build`, `git diff --check`, and focused query tests. The broad `query` filter had
+known GPU readback failures after the latest split and should be treated as a separate cleanup item
+before declaring the query lane closed.
+
+
+### 2. Finish Low-Risk Derived Payload Extraction
 
 Continue from `spec/scene/visuals/IMPLEMENTATION_LAYOUT.md`.
 
@@ -83,7 +111,7 @@ Continue from `spec/scene/visuals/IMPLEMENTATION_LAYOUT.md`.
 Validation: `just build`, `git diff --check`, and `direnv exec . just test scene`.
 
 
-### 2. Split FramePlan Internals
+### 3. Split FramePlan Internals
 
 Status: completed on 2026-05-28. Keep the current ownership unless a later behavior change exposes
 new coupling.
@@ -113,7 +141,7 @@ Validation: focused `direnv exec . just test scene/frame-plan` if available thro
 filter, then full `direnv exec . just test scene`.
 
 
-### 3. Split Render Contract Resolution
+### 4. Split Render Contract Resolution
 
 Status: completed on 2026-05-28. Keep the current ownership unless later contract work exposes
 new coupling.
@@ -131,7 +159,7 @@ Guardrail: contract files should report mismatches between declared plan state a
 requirements. They should not decide new visual semantics.
 
 
-### 4. Move Scene Emission Out Of The Old Plan Folder
+### 5. Move Scene Emission Out Of The Old Plan Folder
 
 Status: completed on 2026-05-28. The old `src/scene/plan/` folder has been removed; its ownership
 is now split across `frame_plan/`, `render_contract/`, and `scene_emit/`.
@@ -155,7 +183,7 @@ Guardrail: `scene_emit/` owns retained scene lowering into FramePlan nodes. It s
 runtime execution or backend resource realization.
 
 
-### 5. Split Runtime Render Emission
+### 6. Split Runtime Render Emission
 
 Status: completed on 2026-05-28. Keep the current ownership unless later runtime work exposes new
 coupling.
@@ -180,7 +208,7 @@ offscreen/app smoke when command-buffer lifetime, render targets, graph resource
 are touched.
 
 
-### 6. Split Core Scene Ownership
+### 7. Split Core Scene Ownership
 
 Status: first batch completed on 2026-05-28. Keep the current ownership unless later work exposes
 new coupling.
@@ -203,7 +231,7 @@ Guardrail: `_scene.h` remains broad after this batch. Prefer local private heade
 subsystem declarations instead of growing it further.
 
 
-### 7. Split Annotation And Domain Helpers
+### 8. Split Annotation And Domain Helpers
 
 Status: first annotation/domain batches completed on 2026-05-28.
 
@@ -244,7 +272,7 @@ Domain candidates:
 4. any remaining polygon/polygon-set scene visual glue that a later behavior change exposes.
 
 
-### 8. Split Visual Descriptor And Attribute Helpers
+### 9. Split Visual Descriptor And Attribute Helpers
 
 Status: first visual descriptor/attribute batch completed on 2026-05-28.
 
@@ -287,7 +315,7 @@ See
 [`SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](SCENE_ARCHITECTURE_COMPLETION_PLAN.md).
 
 
-### 9. Tighten Query And Interaction Boundaries
+### 10. Tighten Query And Interaction Boundaries
 
 Status: query policy split started on 2026-05-28. `query/policy.c` owns target capability,
 query-profile selection, drawable candidate selection, family-op eligibility lookup, and
@@ -304,7 +332,7 @@ next split should be policy-driven:
 4. do not combine request-path cleanup with new picking semantics unless the feature requires it.
 
 
-### 10. Rebalance Tests With Each Split
+### 11. Rebalance Tests With Each Split
 
 Do not perform a mechanical test-file split first. Move or add tests when an implementation split
 creates a new stable boundary:
