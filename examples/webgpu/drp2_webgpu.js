@@ -72,6 +72,67 @@ function required(value, message) {
 
 
 
+export class Drp2WebGpuError extends Error {
+  constructor(commandIndex, command, code, detail, cause = null) {
+    super(`command ${commandIndex} ${command?.cmd ?? "Unknown"}: ${detail}`);
+    this.name = "Drp2WebGpuError";
+    this.commandIndex = commandIndex;
+    this.cmd = command?.cmd ?? null;
+    this.code = code;
+    this.detail = detail;
+    if (cause !== null) {
+      this.cause = cause;
+    }
+  }
+}
+
+
+
+function classifyDrp2WebGpuError(message) {
+  if (message.startsWith("unsupported ") || message.includes("unsupported DRP2 command")) {
+    return "DRP2_ERR_UNSUPPORTED_CAPABILITY";
+  }
+  if (message.startsWith("unknown ")) {
+    return "DRP2_ERR_INVALID_ID";
+  }
+  if (message.includes("duplicate or reused object id")) {
+    return "DRP2_ERR_DUPLICATE_ID";
+  }
+  if (message.includes(" is ") && message.includes(", not ")) {
+    return "DRP2_ERR_WRONG_OBJECT_TYPE";
+  }
+  if (message.includes("requires a render pass") || message.includes("requires a compute pass")) {
+    return "DRP2_ERR_PASS_MISMATCH";
+  }
+  if (
+    message.includes("destroyed") ||
+    message.includes("referenced by") ||
+    message.includes("already been submitted") ||
+    message.includes("has no bound pipeline")
+  ) {
+    return "DRP2_ERR_INVALID_STATE";
+  }
+  return "DRP2_ERR_INVALID_ARGUMENT";
+}
+
+
+
+function wrapDrp2WebGpuError(commandIndex, command, error) {
+  if (error instanceof Drp2WebGpuError) {
+    return error;
+  }
+  const detail = error?.message ?? String(error);
+  return new Drp2WebGpuError(
+    commandIndex,
+    command,
+    classifyDrp2WebGpuError(detail),
+    detail,
+    error,
+  );
+}
+
+
+
 function mapLoadOp(loadOp) {
   if (loadOp === undefined || loadOp === "clear" || loadOp === "load") {
     return loadOp ?? "clear";
@@ -1488,9 +1549,11 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
   const commandBuffers = new Map();
   const pendingTightTextureCopies = [];
   const readbackReplies = [];
+  const commands = options.commands ?? stream.commands;
 
-  for (const command of options.commands ?? stream.commands) {
-    switch (command.cmd) {
+  for (const [commandIndex, command] of commands.entries()) {
+    try {
+      switch (command.cmd) {
       case "HelloRenderer":
       case "RendererHelloReply":
         break;
@@ -2277,6 +2340,9 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
 
       default:
         throw new Error(`unsupported DRP2 command in WebGPU PoC: ${command.cmd}`);
+      }
+    } catch (error) {
+      throw wrapDrp2WebGpuError(commandIndex, command, error);
     }
   }
 

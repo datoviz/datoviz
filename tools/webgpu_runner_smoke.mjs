@@ -233,15 +233,20 @@ async function loadJson(path) {
   return JSON.parse(await readFile(path, 'utf8'));
 }
 
-async function expectFailure(executeDrp2Stream, stream, expectedText) {
+async function expectFailure(executeDrp2Stream, stream, expectedText, expected = {}) {
   try {
     await executeDrp2Stream(device, context, 'bgra8unorm', stream);
   } catch (error) {
     const message = String(error.message);
-    if (message.includes(expectedText)) {
-      return;
+    if (!message.includes(expectedText)) {
+      throw new Error(`expected "${expectedText}" failure, got "${message}"`);
     }
-    throw new Error(`expected "${expectedText}" failure, got "${message}"`);
+    for (const [key, value] of Object.entries(expected)) {
+      if (error[key] !== value) {
+        throw new Error(`expected error.${key}=${value}, got ${error[key]}`);
+      }
+    }
+    return;
   }
   throw new Error(`expected "${expectedText}" failure`);
 }
@@ -315,6 +320,7 @@ async function main() {
       ],
     },
     'destroyed',
+    { commandIndex: 4, cmd: 'WriteBuffer', code: 'DRP2_ERR_INVALID_STATE' },
   );
 
   await expectFailure(
