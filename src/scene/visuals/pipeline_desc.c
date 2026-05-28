@@ -145,7 +145,7 @@ static const PipelineFixedLayout FIXED_PIPELINE_LAYOUTS[] = {
  * @param format vertex input format
  * @param stride vertex buffer stride in bytes
  */
-static void _pipeline_attr(
+void _scene_visual_pipeline_attr(
     DvzSceneVisualPipelineDesc* out, uint32_t index, uint32_t binding, uint32_t location,
     uint32_t format, uint32_t stride)
 {
@@ -175,7 +175,7 @@ static void _pipeline_instance_transform(
     ANN(out);
     for (uint32_t i = 0; i < 4; i++)
     {
-        _pipeline_attr(
+        _scene_visual_pipeline_attr(
             out, first_attr + i, binding, 3 + i, VK_FORMAT_R32G32B32A32_SFLOAT,
             16 * sizeof(float));
         out->offsets[first_attr + i] = i * 4 * sizeof(float);
@@ -194,7 +194,7 @@ static void _pipeline_instance_transform(
  * @param alpha_mode visual alpha mode
  * @param out pipeline descriptor to update
  */
-static void _pipeline_apply_standard_depth_state(
+void _scene_visual_pipeline_apply_standard_depth_state(
     const DvzSceneVisualPassCaps* caps, bool pass_needs_depth, bool wboit_accumulation,
     DvzAlphaMode alpha_mode, uint32_t depth_compare_op, DvzSceneVisualPipelineDesc* out)
 {
@@ -250,7 +250,8 @@ static void _pipeline_apply_fixed_layout(
     for (uint32_t i = 0; i < layout->attr_count; i++)
     {
         const PipelineFixedAttr* attr = &layout->attrs[i];
-        _pipeline_attr(out, i, attr->binding, attr->location, attr->format, attr->stride);
+        _scene_visual_pipeline_attr(
+            out, i, attr->binding, attr->location, attr->format, attr->stride);
     }
 }
 
@@ -286,7 +287,7 @@ static bool _pipeline_apply_fixed_visual(
         visual->kind == DVZ_SCENE_VISUAL_DESC_PATH)
     {
         out->needs_material_layout = caps->needs_material_layout;
-        _pipeline_apply_standard_depth_state(
+        _scene_visual_pipeline_apply_standard_depth_state(
             caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op, out);
     }
     else if (
@@ -298,7 +299,7 @@ static bool _pipeline_apply_fixed_visual(
     {
         out->needs_image_layout = caps->uses_image_set;
         out->uses_textured_mesh_layout = caps->uses_image_set;
-        _pipeline_apply_standard_depth_state(
+        _scene_visual_pipeline_apply_standard_depth_state(
             caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op, out);
     }
     else if (
@@ -364,87 +365,19 @@ bool _scene_visual_pipeline_desc_resolve(
 
     switch (visual->kind)
     {
-    case DVZ_SCENE_VISUAL_DESC_SPLAT:
-        if (picking)
-            return false;
-        out->vertex_buffer_count = 4;
-        out->binding_count = 4;
-        out->attr_count = 4;
-        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
-        _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32G32_SFLOAT, 2 * sizeof(float));
-        _pipeline_attr(out, 3, 3, 3, VK_FORMAT_R32_SFLOAT, sizeof(float));
-        out->step_modes[0] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
-        out->step_modes[1] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
-        out->step_modes[2] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
-        out->step_modes[3] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
-        out->needs_common_layout = caps.uses_common_set;
-        _pipeline_apply_standard_depth_state(
-            &caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op,
-            out);
-        return true;
-
-    case DVZ_SCENE_VISUAL_DESC_PIXEL:
-    case DVZ_SCENE_VISUAL_DESC_POINT:
-    case DVZ_SCENE_VISUAL_DESC_SPHERE:
-    case DVZ_SCENE_VISUAL_DESC_MARKER:
-        if (visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
-        {
-            uint32_t attr_count = picking ? 2 : 5;
-            if (visual->has_selection_mask && !picking)
-                attr_count++;
-            out->vertex_buffer_count = visual->has_selection_mask ? 6 : 5;
-            out->binding_count = out->vertex_buffer_count;
-            out->attr_count = attr_count;
-            _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-            _pipeline_attr(
-                out, 1, picking ? 2 : 1, picking ? 2 : 1,
-                picking ? VK_FORMAT_R32_SFLOAT : VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
-            _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32_SFLOAT, sizeof(float));
-            _pipeline_attr(out, 3, 3, 3, VK_FORMAT_R32_SFLOAT, sizeof(float));
-            _pipeline_attr(out, 4, 4, 4, VK_FORMAT_R32_UINT, sizeof(uint32_t));
-            if (visual->has_selection_mask && !picking)
-                _pipeline_attr(out, 5, 5, 5, VK_FORMAT_R8_UINT, sizeof(uint8_t));
-            out->needs_common_layout = caps.uses_common_set;
-            out->needs_material_layout = caps.needs_material_layout && !picking;
-            _pipeline_apply_standard_depth_state(
-                &caps, pass_needs_depth, wboit_accumulation, alpha_mode,
-                visual->depth_compare_op, out);
-            return true;
-        }
-
-        out->vertex_buffer_count = visual->has_selection_mask ? 4 : 3;
-        out->binding_count = out->vertex_buffer_count;
-        out->attr_count = visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE ? 3
-                          : picking                                    ? 2
-                          : visual->has_selection_mask                 ? 4
-                                                                       : 3;
-        uint32_t color_binding = picking && visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE ? 2 : 1;
-        uint32_t color_format = picking && visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE
-                                    ? VK_FORMAT_R32_SFLOAT
-                                    : VK_FORMAT_R8G8B8A8_UNORM;
-        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-        _pipeline_attr(out, 1, color_binding, color_binding, color_format, 4 * sizeof(uint8_t));
-        _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32_SFLOAT, sizeof(float));
-        if (visual->has_selection_mask && !picking)
-            _pipeline_attr(out, 3, 3, 5, VK_FORMAT_R8_UINT, sizeof(uint8_t));
-        out->needs_common_layout = caps.uses_common_set;
-        out->needs_material_layout = caps.needs_material_layout && !picking;
-        _pipeline_apply_standard_depth_state(
-            &caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op,
-            out);
-        return true;
-
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
         out->vertex_buffer_count =
             (visual->has_normal ? 3u : 2u) + (visual->has_instance_transform ? 1u : 0u);
         out->binding_count = out->vertex_buffer_count;
         out->attr_count =
             (visual->has_normal ? 3u : 2u) + (visual->has_instance_transform ? 4u : 0u);
-        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
+        _scene_visual_pipeline_attr(
+            out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+        _scene_visual_pipeline_attr(
+            out, 1, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
         if (visual->has_normal)
-            _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+            _scene_visual_pipeline_attr(
+                out, 2, 2, 2, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
         if (visual->has_instance_transform)
         {
             uint32_t transform_binding = visual->has_normal ? 3 : 2;
@@ -452,7 +385,7 @@ bool _scene_visual_pipeline_desc_resolve(
         }
         out->needs_common_layout = caps.uses_common_set;
         out->needs_material_layout = caps.needs_material_layout && !picking;
-        _pipeline_apply_standard_depth_state(
+        _scene_visual_pipeline_apply_standard_depth_state(
             &caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op,
             out);
         return true;
