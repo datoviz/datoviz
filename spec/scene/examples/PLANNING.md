@@ -1,7 +1,7 @@
 # Scene Example Planning
 
 > **Status:** active planning
-> **Updated on:** 2026-05-27
+> **Updated on:** 2026-05-28
 > **Scope:** worked example specs, release staging, gallery priorities, and current support gaps
 > **Purpose:** keep one source of truth for which examples matter, when they matter, and what still
 > blocks them.
@@ -58,8 +58,8 @@ annotations, scale bars, and first GPU-backed point/marker/image/labels/volume r
 The main remaining polish or feature gaps are:
 
 1. release proof for text, axes, colorbars, legends, annotations, and scale bars;
-2. retained textured mesh with UVs, mesh-bound textures, texture shader variant, material
-   integration, fixture coverage, and one deterministic terrain/planet example;
+2. fixture/gallery proof for retained textured mesh, now that UVs, mesh-bound textures, texture
+   shader variant, and material integration are implemented;
 3. vector/arrow visuals so wind, flow, and track examples stop relying on primitive triangles;
 4. richer picking/probe payloads for marker exact hit tests, mesh regions, paths, labels, text, and
    volume ray hits;
@@ -84,7 +84,7 @@ The main remaining polish or feature gaps are:
 | `api_pressure` | `needs-rc1-proof` | image probe, sampled fields, scale/colorbar/annotation | Keep as API-level contract pressure, not separate release promises. |
 | `protein_arcball_viewer` | `partial-now` | mesh, sphere, materials, SSAO/MSAA, GUI, arcball | Flagship native C showcase; defer labels/picking/molecular surface if needed. |
 | `showcase_wind_field` | `needs-rc1-proof` | image field, primitive arrows, paths, panzoom, colorbar | Best near-term 2D showcase; vector visual can replace primitives later. |
-| `textured_terrain_or_planet` | `blocked-by-v0.4-critical-path` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof. Do not substitute baked vertex colors. |
+| `textured_terrain_or_planet` | `needs-rc1-proof` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof. Current source is `examples/c/visuals/textured_mesh.c`; promote or add a showcase/fixture capture. |
 | `brain_volume_mesh` | `partial-now` | volume, transparent mesh, GUI, arcball | Narrow Allen/IBL brain slice for v0.4; full atlas explorer is v0.5. |
 | `dense_point_cloud_edl` | `ready-now` | large points/pixels, EDL, fly/camera | Use LiDAR or synthetic dense cloud as performance/showcase proof. |
 
@@ -136,7 +136,7 @@ The main remaining polish or feature gaps are:
 ## Feature Priority
 
 1. Text, axes, annotations, legends, colorbars, and scale bars.
-2. Retained textured mesh.
+2. Retained textured-mesh proof capture.
 3. Vector/arrow visual.
 4. Large point/pixel/path partial-update policy.
 5. Selection and picking beyond points/images.

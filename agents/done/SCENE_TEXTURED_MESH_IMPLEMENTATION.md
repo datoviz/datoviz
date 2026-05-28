@@ -1,19 +1,37 @@
-# Scene Textured Mesh Plan
+# Scene Textured Mesh Implementation
 
 > **Execution Status**
-> - **Status:** `READY FOR IMPLEMENTATION`
-> - **Updated on:** `2026-05-27`
-> - **Purpose:** hand off the retained textured-mesh feature-freeze blocker to a future agent.
-> - **Audience:** agents implementing mesh UV texture binding in the active scene -> DRP2 runtime.
+> - **Status:** `IMPLEMENTED FIRST SLICE`
+> - **Updated on:** `2026-05-28`
+> - **Purpose:** record the retained textured-mesh slice that landed for the active scene -> DRP2
+>   runtime.
+> - **Audience:** agents validating, polishing, or extending mesh UV texture binding.
 
-Use this file as the implementation starting point for retained textured mesh. The feature is a
-v0.4 release blocker for the terrain/planet gallery proof. Keep this lane narrow and do not create
-a parallel renderer, frame stream, Vulkan wrapper, or mesh renderer.
+Use this file as the completed implementation record for the first retained textured-mesh slice.
+The feature is no longer an implementation blocker. The remaining release work is fixture/gallery
+proof, validation, and any concrete polish exposed by the `textured_mesh` example or future
+terrain/planet showcase.
+
+
+## Landed Evidence
+
+1. Public API and comments expose mesh texture mode through `DvzMeshColorMode`,
+   `dvz_mesh_set_color_mode()`, `texcoords`, and `dvz_visual_set_field(mesh, "texture", field)`.
+2. `src/scene/domain/field_texture.c` accepts mesh `"texture"` bindings for same-scene 2D
+   `DVZ_FIELD_FORMAT_RGBA8_UNORM` sampled fields.
+3. `src/scene/visuals/mesh/lowering.c`, `pipeline.c`, and related descriptor code lower texture
+   color mode to the textured-mesh descriptor, bind layout, and pipeline metadata.
+4. `src/scene/runtime/render_emit_bindings.c` resolves the textured-mesh material/texture/sampler
+   bind-group layout.
+5. GLSL and WGSL built-ins exist for `mesh_textured`.
+6. Focused scene tests cover mesh texture field binding and textured mesh scene emission.
+7. `examples/c/visuals/textured_mesh.c` renders a UV sphere with an RGBA texture, material controls,
+   capture support, and generated fallback texture data when optional `data` assets are absent.
 
 
 ## Target Slice
 
-Implement one explicit retained textured-mesh path:
+The implemented first slice covers one explicit retained textured-mesh path:
 
 1. mesh vertex positions and optional indices use the existing mesh path;
 2. `texcoords` is a per-vertex `vec2f` attribute;
@@ -72,7 +90,10 @@ Do not auto-enable texture mode when a texture is bound. Make the caller choose 
 explicitly so missing color attributes do not silently change rendering behavior.
 
 
-## Implementation Steps
+## Implementation Record
+
+The original implementation checklist is preserved below for traceability. Items in this section
+were completed by the commits that added and then polished retained textured mesh.
 
 1. Public headers:
    - add `DvzMeshColorMode` to `include/datoviz/scene/enums.h`;
@@ -89,18 +110,16 @@ explicitly so missing color attributes do not silently change rendering behavior
      bindings.
 
 3. Frame-plan uploads:
-   - extend `src/scene/visual_uploads.c` to emit mesh texture uploads through
+   - extend scene emission to emit mesh texture uploads through
      `_scene_emit_sampled_field_texture_upload()`;
    - in texture mode, require non-empty `texcoords` and a bound texture field;
    - in texture mode, do not require vertex `color`;
    - keep existing vertex-color mesh behavior unchanged.
 
 4. Typed metadata and descriptor lowering:
-   - add a textured-mesh visual descriptor kind in `src/scene/_visual_pipeline.h`;
-   - extend `src/scene/visual_metadata.c` to include `texcoords_id`, `texture_id`, and material id
-     for textured mesh;
-   - extend `src/scene/visual_desc.c` so mesh + texture mode lowers to textured mesh, not generic
-     primitive.
+   - add a textured-mesh visual descriptor kind;
+   - include `texcoords_id`, `texture_id`, and material id for textured mesh metadata;
+   - lower mesh + texture mode to textured mesh, not generic primitive.
 
 5. Bind-group ABI:
    - add mesh texture/material binding constants in `src/scene/_scene_shader_abi.h`;
@@ -108,11 +127,11 @@ explicitly so missing color attributes do not silently change rendering behavior
      - binding 0: material params uniform;
      - binding 1: sampled texture;
      - binding 2: sampler;
-   - extend `src/scene/visual_bind_desc.c` and `src/scene/runtime_bind_groups.c`;
+   - extend visual bind descriptors and runtime bind-group resolution;
    - ensure scene occlusion uses set 2 when set 1 is occupied by the textured-mesh layout.
 
 6. Pipeline and shaders:
-   - add pipeline layout variants in `src/scene/visual_pipeline_desc.c`;
+   - add pipeline layout variants;
    - unlit textured layout: `position`, `texcoords`;
    - lit textured layout: `position`, `texcoords`, `normal`;
    - add shader registry enum/resource entries;
@@ -133,9 +152,10 @@ explicitly so missing color attributes do not silently change rendering behavior
    - do not let `dvz_mesh_set_geometry()` enable texture mode.
 
 
-## Tests And Proof
+## Tests And Proof Status
 
-Add focused scene tests before or with the implementation:
+Focused scene coverage now exists for the landed slice. Keep broadening proof around release
+fixtures and showcase capture:
 
 1. textured mesh rejects texture mode without `texcoords`;
 2. textured mesh rejects texture mode without a bound texture field;
@@ -146,8 +166,10 @@ Add focused scene tests before or with the implementation:
 7. textured mesh bind group layout has material + texture + sampler;
 8. scene occlusion still binds correctly when textured mesh occupies set 1.
 
-Add a deterministic C proof example using generated pixels, not binary assets. Prefer a terrain or
-planet-surface mesh with UVs and one capture/smoke path.
+The current deterministic/live proof is `examples/c/visuals/textured_mesh.c`, which uses the Earth
+texture from the `data` submodule when available and generated texture data otherwise. A dedicated
+`fixture_mesh_textured.c` and promoted `textured_terrain_or_planet` showcase remain release-proof
+work, not core feature implementation work.
 
 
 ## Validation

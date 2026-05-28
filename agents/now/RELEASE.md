@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE RELEASE ROADMAP`
-> - **Updated on:** `2026-05-27`
+> - **Updated on:** `2026-05-28`
 > - **Purpose:** provide the step-by-step route from the current v0.4 branch to `v0.4.0`
 > - **Audience:** maintainers and agents coordinating feature freeze, release candidates, and final
 >   release work
@@ -32,10 +32,9 @@ implemented enough that they should not be treated as primary feature-freeze blo
 readouts currently have public/bookkeeping state and formatting; richer rendered readout UI can be
 polish or v0.5 work unless a release example depends on it.
 
-The gallery strategy now makes retained textured mesh a required v0.4 feature, with no baked-color
-workaround. Feature freeze therefore also requires a narrow UV-mapped mesh texture slice and a
-deterministic terrain or planet-surface proof before the final v0.4 gallery can be considered
-honest.
+The gallery strategy still requires true retained textured mesh, with no baked-color workaround.
+The narrow UV-mapped mesh texture slice has landed; remaining release work is deterministic
+terrain/planet or fixture capture proof before the final v0.4 gallery can be considered honest.
 
 Scale-bar rendering is present, including the retained update-performance refactor captured in
 [../done/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR.md](../done/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR.md).
@@ -45,16 +44,21 @@ style are unchanged.
 The remaining feature-freeze blockers are:
 
 1. **WebGPU/WASM experimental path:** a documented and tested browser/backend subset, not full
-   native parity.
-2. **Retained textured mesh:** UV attributes, mesh-bound sampled textures, texture-mode mesh
-   shader/pipeline variant, sampler defaults, material/lighting integration, fixture coverage, and
-   a deterministic terrain or planet-surface C example.
-3. **Raw `ctypes` API:** generated low-level Python bindings that honestly track the v0.4 C API.
-4. **v0.3 visible parity audit:** visible capability parity or explicit deferral, not source/API
+   native parity; browser proof exists, while WASM scene-emission disposition remains open.
+2. **v0.3 visible parity audit:** visible capability parity or explicit deferral, not source/API
    compatibility.
-5. **Public API/status cleanup:** supported, experimental, advanced/unstable, deferred, and
+3. **Public API/status cleanup:** supported, experimental, advanced/unstable, deferred, and
    external/GSP labels are clear.
-6. **Release example proof:** a compact set of examples demonstrates the declared feature set.
+4. **Release example proof:** a compact set of examples demonstrates the declared feature set,
+   including retained textured mesh.
+
+Completed RC1-critical lanes that must remain in validation:
+
+1. **Raw `ctypes` API:** generated low-level Python bindings track the intended v0.4 C API surface;
+   keep `just bindings` in release validation.
+2. **Retained textured mesh:** UV attributes, mesh-bound sampled textures, texture-mode mesh
+   shader/pipeline variant, sampler defaults, material integration, focused tests, and a live C
+   proof example have landed; keep fixture/gallery capture proof in release validation.
 
 
 ## Scope Decisions
@@ -100,8 +104,8 @@ Checklist:
    `external/GSP`.
 3. Close or explicitly defer every item in [STATUS.md](STATUS.md) that is still
    listed as feature-freeze critical.
-4. Land or explicitly re-scope the retained textured-mesh blocker; the release plan currently
-   treats it as required, not deferrable.
+4. Keep retained textured mesh in RC validation and add or promote the deterministic terrain/planet
+   or fixture capture proof.
 5. Verify that text, axes, ticks, axis labels, colorbars, annotations, and scale bars are represented
    in examples/tests and are not stale planning-only claims.
 6. Decide whether any rendered pinned readout work is required for release examples; otherwise mark

@@ -17,15 +17,15 @@ Update on 2026-05-24: CPU-side `geom` helpers can derive unique mesh edges and u
 contour segments. The first live overlay example lowers those derived outputs to `segment` visuals;
 this does not make edge overlay or isolines native mesh runtime features yet.
 
-Update on 2026-05-27: retained textured mesh is required for the v0.4 release example set, not a
-later workaroundable feature. The minimum slice is `texcoords`, a 2D sampled-field or texture
-resource bound by mesh visuals, a `color_mode = texture` shader/pipeline variant, texture sampling
-combined with the active lighting/material path, retained texture replacement or layer switching,
-sampler defaults, deterministic tests, and one C terrain or planet-surface example. Baked vertex
-colors are useful fallbacks for other examples, but they do not satisfy the textured-mesh release
-requirement.
+Update on 2026-05-28: the retained textured-mesh first slice is implemented. Mesh visuals support
+`texcoords`, a 2D RGBA sampled field bound through the `"texture"` slot, explicit
+`DVZ_MESH_COLOR_TEXTURE`, texture shader/pipeline variants, sampler defaults, and composition with
+the active material path. Focused scene tests cover field binding and textured-mesh emission, and
+`examples/c/visuals/textured_mesh.c` provides the current proof example. Remaining release work is
+promoting or adding a deterministic terrain/planet fixture or showcase capture. Baked vertex colors
+remain useful fallbacks for other examples, but they do not replace textured-mesh validation.
 
-Scalar colormap mode, automatic normal generation, edge overlay, isolines, shape-builder
+Scalar colormap mode, automatic normal generation, edge overlay, isolines, richer shape-builder
 integration, and face/region picking remain target capabilities unless marked above as implemented.
 
 ## Purpose

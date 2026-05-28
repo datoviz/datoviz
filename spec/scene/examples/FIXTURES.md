@@ -55,7 +55,7 @@ example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `l
 | Visual | Primitive triangle | Implemented | `fixture_primitive_triangle.c` | PNG | scene+app | One RGB triangle with `DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST`. |
 | Visual | Primitive line | Implemented | `fixture_primitive_line.c` | PNG | scene+app | One line strip or line list. |
 | Visual | Mesh | Implemented | `fixture_mesh.c` | PNG | scene+app | One indexed tetrahedron or cube. |
-| Visual | Textured mesh | Required v0.4 | `fixture_mesh_textured.c` | PNG | scene+app | One UV-mapped quad or small terrain grid with a 4x4 RGBA texture sampled by the mesh shader and lit. |
+| Visual | Textured mesh | Implemented / needs fixture promotion | `fixture_mesh_textured.c` | PNG | scene+app | One UV-mapped quad or small terrain grid with a 4x4 RGBA texture sampled by the mesh shader and lit; current broad proof is `examples/c/visuals/textured_mesh.c`. |
 | Visual | Path | Implemented | `fixture_path.c` | PNG | scene+app | One five-point polyline. |
 | Visual | Image | Implemented | `fixture_image.c` | PNG | scene+app | One 4x4 RGBA checkerboard on a quad. |
 | Visual | Volume slice | Implemented | `fixture_volume_slice.c` | PNG | scene+app | One tiny 3D scalar field rendered as a slice. |

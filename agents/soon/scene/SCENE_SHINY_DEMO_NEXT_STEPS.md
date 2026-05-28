@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `RECOMMENDED FOLLOW-UP DISPATCH`
-> - **Updated on:** `2026-05-27`
+> - **Updated on:** `2026-05-28`
 > - **Purpose:** record the current recommendation for high-payoff v0.4 RC1 or early v0.4+
 >   showcase work after text, overlays, legends, colorbars, labels, and scale bars landed.
 > - **Audience:** agents choosing the next moderately complicated feature or gallery-polish lane.
@@ -22,39 +22,40 @@ Several earlier-looking gaps are now mostly implemented:
    high-value label gap is larger-field, transform, and request-path pressure testing.
 2. **Explanatory layout:** axes, colorbars, legends, scale bars, and panel reserve plumbing exist.
    The remaining gap is a composed proof example, not core layout infrastructure.
-3. **Showcases:** protein, LiDAR, brain, and labels examples mostly exist. The remaining work is
-   default tuning, screenshots/captures, smoke validation, and gallery polish.
-4. **Textured mesh:** the gallery strategy now requires a true retained textured-mesh terrain or
-   planet-surface proof for v0.4. Baked vertex colors are not an acceptable substitute for this
-   lane.
+3. **Textured mesh:** the retained UV/textured-mesh slice is implemented, including mesh texture
+   field binding, texture color mode, material integration, shaders, focused scene tests, and the
+   `examples/c/visuals/textured_mesh.c` proof. The remaining work is gallery/fixture promotion and
+   capture validation for the terrain or planet story.
+4. **Showcases:** protein, LiDAR, brain, labels, and textured mesh examples mostly exist. The
+   remaining work is default tuning, screenshots/captures, smoke validation, and gallery polish.
 
 
 ## Recommended Order
 
 | Priority | Lane | Why it is next | First useful slice |
 | ---: | --- | --- | --- |
-| 1 | Retained textured mesh | Required for the v0.4 terrain/planet showcase and useful for many mesh examples; current retained mesh path does not yet bind textures as material input. | Add UV upload, mesh texture binding, `color_mode = texture`, sampler defaults, lighting/material integration, fixture coverage, and a terrain/planet capture. |
+| 1 | Gallery proof pass | Converts existing showcase code into release confidence. | Run/polish protein, LiDAR, brain, labels, textured mesh or terrain/planet, colorbar/legend, and capture paths; tune defaults and record validation. |
 | 2 | Vector/arrow visual | Best new semantic visual for scientific demos; unlocks wind, CFD, displacement, normals, trajectories, and napari-style vectors. | Add a first-class arrow/vector visual or tightly scoped arrow helper, then use it in the wind-field showcase. |
 | 3 | Label probe hardening | Smaller than a new visual family and directly improves the napari-style labels demo. | Stress raw label-id probing under transforms, larger fields, request churn, and gallery-style hover/click readout. |
 | 4 | Explanatory layout proof | Low-risk RC proof for already-landed adornment layout pieces. | Add or polish one example combining axes, colorbar, legend, scale bar, and panel reserves without collisions. |
-| 5 | Gallery proof pass | Converts existing showcase code into release confidence. | Run/polish protein, LiDAR, brain, labels, textured terrain/planet, colorbar/legend, and capture paths; tune defaults and record validation. |
-| 6 | Splat visual | Flashy and self-contained; now acceptable as a v0.4 experimental showcase target if the new visual lands cleanly. | Implement a retained point-cloud splat/Gaussian-like visual, add fixture/capture proof, and keep full Gaussian-splat pipelines explicitly deferred. |
+| 5 | Splat visual | Flashy and self-contained; now acceptable as a v0.4 experimental showcase target if the new visual lands cleanly. | Implement a retained point-cloud splat/Gaussian-like visual, add fixture/capture proof, and keep full Gaussian-splat pipelines explicitly deferred. |
 
 
 ## Lane Notes
 
 ### Retained Textured Mesh
 
-Use [`SCENE_TEXTURED_MESH_PLAN.md`](SCENE_TEXTURED_MESH_PLAN.md) as the implementation handoff.
+The implementation record is
+[`../../done/SCENE_TEXTURED_MESH_IMPLEMENTATION.md`](../../done/SCENE_TEXTURED_MESH_IMPLEMENTATION.md).
 
-The first slice should stay deliberately narrow: a mesh resource with `texcoords`, one 2D RGBA
-sampled texture or field bound as mesh material input, `color_mode = texture`, linear/nearest
-sampler defaults, and composition with the current lighting/material path. It should prove
-replacement or layer switching without recreating unrelated mesh buffers.
+The first slice is active: a mesh resource with `texcoords`, one 2D RGBA sampled field bound as
+mesh material input, `color_mode = texture`, sampler defaults, and composition with the current
+lighting/material path.
 
-The pressure example is a deterministic terrain or planet-surface C example with one screenshot
-capture. Defer cubemaps, skyboxes, multi-texture materials, normal maps, PBR, terrain LOD, asset
-download/cache automation, and mesh face picking unless the first showcase exposes a concrete need.
+The remaining pressure work is a deterministic terrain or planet-surface C example or fixture with
+one screenshot capture. Defer cubemaps, skyboxes, multi-texture materials, normal maps, PBR,
+terrain LOD, asset download/cache automation, and mesh face picking unless the release proof
+exposes a concrete need.
 
 ### Vector/Arrow Visual
 
@@ -112,9 +113,9 @@ Gaussian-splatting ambitions, trained asset formats, out-of-core scenes, and adv
 
 ## Practical Choice
 
-For required v0.4 gallery scope, start with **retained textured mesh** and pressure it with a
-terrain or planet-surface capture. For an additional shiny feature, start with **vector/arrow
-visual**, then immediately pressure it with a wind-field showcase. For RC1 rigor after those, use
-**raw label-id GPU probing** and the **explanatory layout proof**. For maximum visual novelty after
-the release proof is stable or the visual lands cleanly, add the **splat visual** as a v0.4
-experimental showcase.
+For required v0.4 gallery scope, start with the **gallery proof pass**, especially textured mesh or
+terrain/planet capture. For an additional shiny feature, start with **vector/arrow visual**, then
+immediately pressure it with a wind-field showcase. For RC1 rigor after those, use **raw label-id
+GPU probing** and the **explanatory layout proof**. For maximum visual novelty after the release
+proof is stable or the visual lands cleanly, add the **splat visual** as a v0.4 experimental
+showcase.
