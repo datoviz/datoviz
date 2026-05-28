@@ -703,6 +703,8 @@ bool _panel_reserve_valid(const DvzPanel* panel, const DvzPanelReserve* reserve)
 float _scene_scale_or_one(float scale);
 void _scene_figure_mark_screen_space_dirty(DvzFigure* figure);
 void _panel_mark_layout_changed(DvzPanel* panel);
+bool _panel_desc_valid(DvzPanelDesc desc);
+bool _scene_panel_set_desc_internal(DvzPanel* panel, DvzPanelDesc desc);
 
 bool _dvz_figure_fly_update(DvzFigure* figure, double dt);
 
