@@ -347,7 +347,7 @@ set_property(GLOBAL PROPERTY DVZ_ALL_TARGETS "")
 # Shader precompilation — builtin scene visual shaders compiled to SPIR-V at build time.
 # -------------------------------------------------------------------------------------------------
 
-set(GLSL_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/scene/glsl")
+set(GLSL_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/scene/shaders/glsl")
 if(EXISTS "${GLSL_SOURCE_DIR}")
     file(GLOB GLSL_STAGE_SOURCES
         "${GLSL_SOURCE_DIR}/*.vert"
@@ -440,7 +440,7 @@ endif()
 # WGSL embedding — browser/WebGPU-ready scene shader variants.
 # -------------------------------------------------------------------------------------------------
 
-set(WGSL_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/scene/wgsl")
+set(WGSL_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/scene/shaders/wgsl")
 if(EXISTS "${WGSL_SOURCE_DIR}")
     file(GLOB WGSL_SOURCES "${WGSL_SOURCE_DIR}/*.wgsl")
 else()
