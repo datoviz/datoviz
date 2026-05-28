@@ -6,6 +6,7 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
+import re
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -13,6 +14,9 @@ from tools.webgpu_fixture_preflight import WebGPUFixturePreflight, WebGPUPreflig
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
+
+ACTIVE_SCHEMA_RE = re.compile(r'- `commands/([^`/]+)\.json`')
+JS_CASE_RE = re.compile(r'case "([^"]+)":')
 
 
 def _load_fixture(relative_path: str) -> dict:
@@ -28,6 +32,19 @@ def _load_strict_stream(relative_path: str) -> dict:
     return fixture
 
 
+def _active_schema_commands() -> set[str]:
+    readme = (ROOT_DIR / 'spec/drp2/schema/README.md').read_text(encoding='utf-8')
+    active_section = readme.split('Deferred, non-authoritative files:', maxsplit=1)[0]
+    return set(ACTIVE_SCHEMA_RE.findall(active_section))
+
+
+def _webgpu_js_command_cases() -> set[str]:
+    source = (ROOT_DIR / 'examples/webgpu/drp2_webgpu.js').read_text(encoding='utf-8')
+    start = source.index('export async function executeDrp2Stream')
+    end = source.index('export async function executeDrp2StreamChecked')
+    return set(JS_CASE_RE.findall(source[start:end]))
+
+
 def test_webgpu_preflight_manifest_passes() -> None:
     preflight = WebGPUFixturePreflight(ROOT_DIR)
     fixtures = preflight.discover([])
@@ -35,6 +52,19 @@ def test_webgpu_preflight_manifest_passes() -> None:
 
     assert fixtures
     assert all(result.passed for result in results)
+
+
+def test_webgpu_command_coverage_matches_active_schema() -> None:
+    active_commands = _active_schema_commands()
+    webgpu_cases = _webgpu_js_command_cases()
+
+    missing = sorted(active_commands - webgpu_cases)
+
+    assert active_commands
+    assert not missing, (
+        'active DRP2 commands need a WebGPU switch case, either implemented or explicitly '
+        f'rejected: {missing}'
+    )
 
 
 def test_webgpu_preflight_rejects_short_vertex_buffer() -> None:

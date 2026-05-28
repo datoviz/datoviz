@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preflight DRP2 positive fixtures against the WebGPU fixture-runner contract."""
+"""Preflight DRP2 fixtures and WebGPU streams against the fixture-runner contract."""
 
 from __future__ import annotations
 
@@ -75,7 +75,7 @@ class WGSLBindingRequirement:
 
 @dataclass
 class WebGPUPreflightResult:
-    """Store the preflight result for one positive fixture."""
+    """Store the preflight result for one fixture or stream."""
 
     fixture_path: str
     fixture_name: str
@@ -94,7 +94,7 @@ class WebGPUPreflightFailure(Exception):
 
 
 class WebGPUFixturePreflight:
-    """Check positive DRP2 fixtures against strict WebGPU dashboard assumptions."""
+    """Check DRP2 fixtures and streams against strict WebGPU dashboard assumptions."""
 
     def __init__(self, root_dir: Path) -> None:
         self.root_dir = root_dir
@@ -116,7 +116,7 @@ class WebGPUFixturePreflight:
 
         manifest = self._load_json(manifest_path or DEFAULT_MANIFEST_PATH)
         paths = []
-        for entry in manifest.get('positive', []):
+        for entry in manifest.get('positive', []) + manifest.get('webgpu_streams', []):
             relative = entry[1:] if entry.startswith('/') else entry
             paths.append((self.root_dir / relative).resolve())
         return sorted(paths)
@@ -127,7 +127,7 @@ class WebGPUFixturePreflight:
         return [self.run_fixture(path) for path in fixture_paths]
 
     def run_fixture(self, fixture_path: Path) -> WebGPUPreflightResult:
-        """Run WebGPU preflight checks for one positive fixture."""
+        """Run WebGPU preflight checks for one fixture or stream."""
 
         fixture = self._load_json(fixture_path)
         try:

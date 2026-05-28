@@ -2,6 +2,10 @@
 
 This note records the current browser WebGPU proof-of-concept compatibility surface.
 
+The WebGPU runner is a strict subset check, not a full DRP2 backend. It tracks the active DRP2
+command surface and validates the currently portable fixture slice: `37` positive DRP2 fixtures plus
+`2` WebGPU-only attachment streams.
+
 
 ## Fixture Dashboard
 
@@ -17,15 +21,22 @@ Then open:
 http://localhost:8765/examples/webgpu/fixtures.html
 ```
 
-The committed manifest currently covers the `35` positive DRP2 fixtures under
-`spec/drp2/fixtures/positive`.
+The committed dashboard manifest currently covers:
+
+- `37` positive DRP2 fixtures under `spec/drp2/fixtures/positive`
+- `2` WebGPU-only strict stream checks under `examples/webgpu/streams`
+- `39` total dashboard rows
 
 Current status as of this note:
 
-- positive fixture count: `35`
-- last manual dashboard run before adding C-emitted WGSL scene fixtures:
-  `32 pass, 0 unsupported, 0 fail`
-- remaining unsupported positive fixture group: none in the committed positive fixture manifest
+- positive fixture count: `37`
+- WebGPU stream count: `2`
+- expected browser dashboard result for the committed subset: `39 pass, 0 unsupported, 0 fail`
+- remaining unsupported entries in the committed subset: none
+
+This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
+runner can execute the committed portable fixtures and WebGPU-specific attachment probes. It does not
+mean deferred DRP2 commands or every future schema command are browser-supported.
 
 
 ## Supported Commands
@@ -53,11 +64,15 @@ The PoC currently executes these DRP2 commands:
 - `DestroyShaderModule` as a no-op lifecycle marker
 - `CreateRenderPipeline`
 - `DestroyRenderPipeline` as a no-op lifecycle marker
+- `CreateComputePipeline`
+- `DestroyComputePipeline` as a no-op lifecycle marker
 - `BeginCommandEncoder`
 - `FinishCommandEncoder`
 - `BeginRenderPass`
 - `EndRenderPass`
-- `SetPipeline` for render passes
+- `BeginComputePass`
+- `EndComputePass`
+- `SetPipeline` for render and compute passes
 - `SetVertexBuffer`
 - `SetIndexBuffer`
 - `SetBindGroup`
@@ -67,6 +82,7 @@ The PoC currently executes these DRP2 commands:
 - `SetStencilReference`
 - `Draw`
 - `DrawIndexed`
+- `DispatchWorkgroups`
 - `CopyBufferToBuffer`
 - `CopyBufferToTexture`
 - `CopyTextureToBuffer`
@@ -77,10 +93,18 @@ The PoC currently executes these DRP2 commands:
 
 ## Unsupported Commands
 
-All commands used by the committed positive fixture manifest are currently supported.
+All active commands listed in `spec/drp2/schema/README.md` currently have a WebGPU runner switch case,
+either as executable behavior or as explicit lifecycle/diagnostic handling.
 
-Indirect draw/dispatch commands and explicit pipeline-layout/resource-barrier commands are not active in
-the current DRP2 command surface and are not implemented in the PoC.
+The following schema files are deferred and non-authoritative for the current DRP2 command surface, so
+the WebGPU runner rejects them through the unsupported-command path if they appear in an ad hoc stream:
+
+- `CreatePipelineLayout`
+- `DestroyPipelineLayout`
+- `ResourceBarrier`
+- `DrawIndirect`
+- `DrawIndexedIndirect`
+- `DispatchWorkgroupsIndirect`
 
 
 ## Supported Fields And Narrow Mappings
@@ -152,3 +176,13 @@ The same strict fixture assumptions are checked without a browser by:
 ```bash
 just webgpu-fixture-preflight
 ```
+
+The broader browserless WebGPU smoke path also executes the `37 + 2` subset with a fake WebGPU device
+and checks the manifest's `16` selected negative DRP2 fixtures for parity of `commandIndex`, `cmd`,
+and `code`:
+
+```bash
+just webgpu-runner-smoke
+```
+
+Both checks are part of `just spec-check`.

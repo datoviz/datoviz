@@ -157,6 +157,25 @@ const exampleStreams = [
   'examples/webgpu/streams/attachment_depth_wgsl.json',
 ];
 
+const negativeFixtureParity = [
+  'spec/drp2/fixtures/negative/invalid_bind_group_sampler_unknown_id.json',
+  'spec/drp2/fixtures/negative/invalid_capability_shader_module_format.json',
+  'spec/drp2/fixtures/negative/invalid_create_sampler_duplicate.json',
+  'spec/drp2/fixtures/negative/invalid_duplicate_buffer_id.json',
+  'spec/drp2/fixtures/negative/invalid_end_wrong_pass_kind.json',
+  'spec/drp2/fixtures/negative/invalid_pipeline_vertex_buffers_slot_mismatch.json',
+  'spec/drp2/fixtures/negative/invalid_queue_submit_readback_unknown_buffer.json',
+  'spec/drp2/fixtures/negative/invalid_queue_submit_reused_command_buffer.json',
+  'spec/drp2/fixtures/negative/invalid_queue_submit_unknown_command_buffer.json',
+  'spec/drp2/fixtures/negative/invalid_set_blend_constant_in_compute_pass.json',
+  'spec/drp2/fixtures/negative/invalid_set_scissor_in_compute_pass.json',
+  'spec/drp2/fixtures/negative/invalid_set_stencil_reference_in_compute_pass.json',
+  'spec/drp2/fixtures/negative/invalid_set_viewport_in_compute_pass.json',
+  'spec/drp2/fixtures/negative/invalid_texture_view_unknown_texture.json',
+  'spec/drp2/fixtures/negative/invalid_unknown_buffer_id_write.json',
+  'spec/drp2/fixtures/negative/invalid_wrong_object_type_destroy.json',
+];
+
 const triangleShaders = [
   {
     cmd: 'CreateShaderModule',
@@ -251,6 +270,33 @@ async function expectFailure(executeDrp2Stream, stream, expectedText, expected =
   throw new Error(`expected "${expectedText}" failure`);
 }
 
+async function expectNegativeFixtureParity(executeDrp2Stream, path) {
+  const stream = await loadJson(path);
+  const expected = stream.expected;
+  if (expected?.outcome !== 'error') {
+    throw new Error(`${path}: negative fixture needs expected.outcome=error`);
+  }
+
+  try {
+    await executeDrp2Stream(device, context, 'bgra8unorm', stream);
+  } catch (error) {
+    const expectedCmd = stream.commands[expected.command_index]?.cmd;
+    const checks = {
+      commandIndex: expected.command_index,
+      cmd: expectedCmd,
+      code: expected.code,
+    };
+    for (const [key, value] of Object.entries(checks)) {
+      if (error[key] !== value) {
+        throw new Error(`${path}: expected error.${key}=${value}, got ${error[key]}`);
+      }
+    }
+    return;
+  }
+
+  throw new Error(`${path}: expected WebGPU runner failure`);
+}
+
 async function main() {
   const { executeDrp2Stream } = await import('../examples/webgpu/drp2_webgpu.js');
 
@@ -268,7 +314,10 @@ async function main() {
     }
   }
 
-  for (const path of exampleStreams) {
+  const streamPaths = (manifest.webgpu_streams ?? exampleStreams).map((entry) =>
+    entry.startsWith('/') ? entry.slice(1) : entry,
+  );
+  for (const path of streamPaths) {
     const stream = await loadJson(path);
     try {
       await executeDrp2Stream(device, context, 'bgra8unorm', stream, {
@@ -279,6 +328,10 @@ async function main() {
       throw new Error(`${path}: ${error.message}`);
     }
   }
+
+  const negativePaths = (manifest.negative_parity ?? negativeFixtureParity).map((entry) =>
+    entry.startsWith('/') ? entry.slice(1) : entry,
+  );
 
   await executeDrp2Stream(device, context, 'bgra8unorm', {
     commands: [
@@ -444,8 +497,13 @@ async function main() {
     'unsupported load_op',
   );
 
+  for (const path of negativePaths) {
+    await expectNegativeFixtureParity(executeDrp2Stream, path);
+  }
+
   console.log(
-    `PASS WebGPU runner smoke fixtures=${manifest.positive.length} streams=${exampleStreams.length}`,
+    `PASS WebGPU runner smoke fixtures=${manifest.positive.length} ` +
+      `streams=${streamPaths.length} negatives=${negativePaths.length}`,
   );
 }
 

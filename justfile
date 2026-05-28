@@ -1100,6 +1100,7 @@ shader-abi-check:
 spec-check: shader-abi-check
     @.venv/bin/python tools/drp2_fixture_runner.py
     @.venv/bin/python tools/webgpu_fixture_preflight.py
+    @node tools/webgpu_runner_smoke.mjs
     @.venv/bin/pytest -q testing/test_drp2_fixture_runner.py
     @.venv/bin/pytest -q testing/test_webgpu_fixture_preflight.py
     @.venv/bin/pytest -q testing/test_dvztest_scheduler.py
