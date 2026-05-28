@@ -659,20 +659,6 @@ static const DvzPanelAttach* _panel_attach_from_visual_index(
 
 
 /**
- * Add a diagnostic message if a report was provided.
- *
- * @param report the optional diagnostic report
- * @param message the diagnostic message
- */
-void _contract_report(DvzDiagnosticReport* report, const char* message)
-{
-    if (report != NULL)
-        (void)dvz_diagnostic_report_add(report, message);
-}
-
-
-
-/**
  * Return the graph pass matching one render node.
  *
  * @param plan the FramePlan
