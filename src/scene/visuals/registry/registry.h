@@ -43,6 +43,11 @@ typedef bool (*DvzVisualFamilyBindDescFn)(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out);
 
+typedef bool (*DvzVisualFamilyPipelineDescFn)(
+    const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
+    bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
+    DvzSceneVisualPipelineDesc* out);
+
 struct DvzVisualFamilyOps
 {
     DvzVisualType type;
@@ -50,6 +55,7 @@ struct DvzVisualFamilyOps
     DvzVisualFamilyLoweringFn resolve_lowering;
     DvzVisualFamilyPassCapsFn resolve_pass_caps;
     DvzVisualFamilyBindDescFn resolve_bind_desc;
+    DvzVisualFamilyPipelineDescFn resolve_pipeline_desc;
 };
 
 
@@ -65,3 +71,8 @@ uint32_t _scene_visual_family_ops_count(void);
 const DvzVisualFamilyOps* _scene_visual_family_ops_at(uint32_t index);
 
 bool _scene_visual_family_ops_registered(DvzVisualType type);
+
+bool _scene_visual_pipeline_desc_resolve(
+    const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
+    bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
+    DvzSceneVisualPipelineDesc* out);

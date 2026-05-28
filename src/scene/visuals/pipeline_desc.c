@@ -27,6 +27,7 @@
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
 #include "datoviz/drp2/enums.h"
+#include "registry/registry.h"
 
 
 /*************************************************************************************************/
@@ -333,11 +334,13 @@ static bool _pipeline_apply_fixed_visual(
  * @param visual the visual descriptor
  * @param picking whether the render pass is a picking pass
  * @param pass_needs_depth whether the containing render pass has a depth attachment
+ * @param wboit_accumulation whether the pass is an order-independent transparency pass
+ * @param alpha_mode visual alpha mode
  * @param controller_mode controller attachment mode for the visual
  * @param out the output pipeline descriptor
  * @return whether a pipeline descriptor was resolved
  */
-bool _scene_visual_pipeline_desc(
+bool _scene_visual_pipeline_desc_resolve(
     const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth, bool wboit_accumulation,
     DvzAlphaMode alpha_mode, DvzControllerMode controller_mode, DvzSceneVisualPipelineDesc* out)
 {
@@ -470,4 +473,32 @@ bool _scene_visual_pipeline_desc(
     default:
         return false;
     }
+}
+
+
+/**
+ * Resolve vertex-layout and depth-state metadata through the visual-family registry.
+ *
+ * @param visual the visual descriptor
+ * @param picking whether the render pass is a picking pass
+ * @param pass_needs_depth whether the containing render pass has a depth attachment
+ * @param wboit_accumulation whether the pass is an order-independent transparency pass
+ * @param alpha_mode visual alpha mode
+ * @param controller_mode controller attachment mode for the visual
+ * @param out the output pipeline descriptor
+ * @return whether a pipeline descriptor was resolved
+ */
+bool _scene_visual_pipeline_desc(
+    const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth, bool wboit_accumulation,
+    DvzAlphaMode alpha_mode, DvzControllerMode controller_mode, DvzSceneVisualPipelineDesc* out)
+{
+    ANN(visual);
+    ANN(out);
+    dvz_memset(out, sizeof(DvzSceneVisualPipelineDesc), 0, sizeof(DvzSceneVisualPipelineDesc));
+
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops((DvzVisualType)visual->visual_type);
+    if (ops == NULL || ops->resolve_pipeline_desc == NULL)
+        return false;
+    return ops->resolve_pipeline_desc(
+        visual, picking, pass_needs_depth, wboit_accumulation, alpha_mode, controller_mode, out);
 }
