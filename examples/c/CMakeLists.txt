@@ -128,6 +128,7 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(visuals text visuals/text.c)
 
     dvz_add_example(features axes_2d features/axes_2d.c)
+    dvz_add_example(features panel_linked_axes features/panel_linked_axes.c)
 
     dvz_add_example(stress point_stress stress/point_stress.c)
 

@@ -41,7 +41,7 @@ examples:
     style_preset: features
     capture: 1280x960
     interaction_state: default
-    current_source: examples/c/techniques/linked_panels.c
+    current_source: examples/c/features/panel_linked_axes.c
     target_source: examples/c/features/panel_linked_axes.c
     validation: smoke+interaction
 

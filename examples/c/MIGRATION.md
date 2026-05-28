@@ -11,7 +11,7 @@ removing any source file.
 | --- | --- | --- | --- |
 | `point_2d` | `visuals/point.c` | `visuals/point.c` | Polished in place as the reference baseline. |
 | `path_axes_2d` | `features/axes_2d.c` | `features/axes_2d.c` | Added as a deterministic path plus axes baseline; keep old scatter axes as a lab for now. |
-| `linked_panels_axes_panzoom` | `techniques/linked_panels.c` | `features/panel_linked_axes.c` | Promote after linked panzoom/axes behavior is verified. |
+| `linked_panels_axes_panzoom` | `features/panel_linked_axes.c` | `features/panel_linked_axes.c` | Added as a deterministic two-panel shared-X panzoom plus axes baseline; keep old linked panels as a lab for now. |
 | `scale_bar` | `annotations/scalebar_2d_3d.c` | `features/scalebar.c` | Promote scale-bar proof; keep minimal variant as regression if useful. |
 | `api_pressure` | `techniques/image_probe.c` | `features/api_pressure.c` | Split only if the broad API-pressure version diverges from image probe. |
 | `linked_panels_probe_colorbar` | `techniques/image_probe.c` | `features/panel_probe_colorbar.c` | Compose image probe, colorbar, readout, and linked state. |

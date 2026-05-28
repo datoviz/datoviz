@@ -26,6 +26,7 @@
 #include "_technique.h"
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
+#include "render_contract/render_contract.h"
 #include "registry/registry.h"
 #include "scene_emit/visual_lowering.h"
 #include "datoviz/drp2/enums.h"
@@ -178,6 +179,13 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
             continue;
 
         const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
+        if (meta->has_draw_contract)
+        {
+            if ((meta->draw_depth_policy &
+                 (DVZ_SCENE_DEPTH_POLICY_TEST | DVZ_SCENE_DEPTH_POLICY_WRITE)) != 0)
+                return true;
+            continue;
+        }
         if (meta->has_metadata)
         {
             bool stroked_path = _scene_visual_meta_is_stroked_path(&emitter->resources, meta);

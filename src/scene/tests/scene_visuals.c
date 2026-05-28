@@ -7280,6 +7280,38 @@ int test_scene_visual_depth_test(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_depth_test(visual, true) == 0);
     AT(dvz_visual_depth_test(visual));
 
+    DvzFigure* figure = dvz_figure(scene, 96, 96, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel_full(figure);
+    AT(panel != NULL);
+    DvzVisual* point = dvz_point(scene, 0);
+    AT(point != NULL);
+
+    vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor colors[1] = {{80, 180, 240, 220}};
+    float diameters[1] = {8.0f};
+    AT(dvz_visual_set_data(point, "position", positions, 1) == 0);
+    AT(dvz_visual_set_data(point, "color", colors, 1) == 0);
+    AT(dvz_visual_set_data(point, "diameter", diameters, 1) == 0);
+    AT(dvz_visual_set_alpha_mode(point, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_visual_set_depth_test(point, false) == 0);
+    AT(dvz_panel_add_visual(panel, point, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.supports_color_blending = true;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    emit_cfg.target_width = 96;
+    emit_cfg.target_height = 96;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream != NULL);
+    dvz_drp2_stream_destroy(stream);
+
     dvz_scene_destroy(scene);
     return 0;
 }
