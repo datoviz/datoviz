@@ -21,6 +21,7 @@
 #include <stdint.h>
 
 #include "_scene.h"
+#include "_shader_registry.h"
 #include "_visual_pipeline.h"
 
 
@@ -93,6 +94,12 @@ bool _scene_visual_default_pass_caps(
 bool _scene_visual_shader_desc_resolve(
     const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
     const char* format_tag, DvzSceneVisualShaderDesc* out);
+
+void _scene_shader_desc_set_builtin(
+    DvzSceneVisualShaderDesc* out, DvzSceneBuiltinShader shader);
+
+void _scene_shader_desc_set_identity(
+    DvzSceneVisualShaderDesc* out, const char* family, const char* variant);
 
 bool _scene_visual_default_draw_desc(
     const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out);

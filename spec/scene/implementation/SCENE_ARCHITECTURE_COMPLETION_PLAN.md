@@ -37,8 +37,9 @@ Important current state:
    default pass-capability resolution lives in `visuals/pass_caps.c`.
 8. `visuals/attrs.c` and `visuals/desc.c` are smaller after the first split, and image/labels/volume
    metadata fill has moved behind family hooks. Draw descriptor hooks now live in active family
-   folders and call the shared default draw helper. The final architecture still needs upload,
-   query, bounds, and the current generic shader bodies to migrate into family-owned files.
+   folders and call the shared default draw helper. Segment, path, sphere, and splat shader bodies
+   have moved into family folders. The final architecture still needs upload, query, bounds, and
+   the remaining generic shader bodies to migrate into family-owned files.
 9. `scene_emit/uploads.c`, `annotation/text.c`, `annotation/axis.c`, and `domain/field.c` remain the
    highest-value mixed-ownership files.
 
@@ -55,6 +56,9 @@ this section when a slice is completed.
 
 1. Move normal shader descriptor bodies into family folders.
    - Current root: `src/scene/visuals/shader_desc.c`.
+   - Status on 2026-05-28: started with `segment/shader.c`, `path/shader.c`,
+     `sphere/shader.c`, and `splat/shader.c`. The generic shader resolver remains as the fallback
+     dispatcher for families that can lower to another descriptor kind.
    - Add family-owned shader files only where real code moves, likely:
      `point/shader.c`, `pixel/shader.c`, `marker/shader.c`, `splat/shader.c`,
      `sphere/shader.c`, `segment/shader.c`, `path/shader.c`, `vector/shader.c`,
