@@ -29,3 +29,5 @@ void _frame_plan_copy_label(char* dst, uint64_t dst_size, const char* src);
 DvzFramePlanNode* _frame_plan_append_node(DvzFramePlan* plan, DvzFramePlanNodeType type);
 
 DvzFramePlanNode* _frame_plan_last_node(DvzFramePlan* plan, DvzFramePlanNodeType type);
+
+const char* _frame_graph_access_usage_name(DvzFrameGraphAccessUsage usage);
