@@ -68,3 +68,7 @@ bool _scene_image_visual_lowering(const DvzVisual* visual, DvzVisualLowering* ou
 bool _scene_image_visual_fill_metadata(
     const DvzVisual* visual, const DvzVisualLowering* lowering,
     DvzFramePlanVisualMeta* metadata);
+
+bool _scene_image_visual_bind_desc(
+    const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
+    DvzSceneVisualBindDesc* out);

@@ -80,3 +80,35 @@ bool _scene_image_visual_fill_metadata(
     metadata->image_pixel_space = visual->image_gpu.pixel_space;
     return true;
 }
+
+
+
+/**
+ * Resolve image visual bind-group role metadata.
+ *
+ * @param visual the visual descriptor
+ * @param controller_mode the visual's panel controller attachment mode
+ * @param out the output bind descriptor
+ * @return whether a bind descriptor was resolved
+ */
+bool _scene_image_visual_bind_desc(
+    const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
+    DvzSceneVisualBindDesc* out)
+{
+    ANN(visual);
+    ANN(out);
+    dvz_memset(out, sizeof(DvzSceneVisualBindDesc), 0, sizeof(DvzSceneVisualBindDesc));
+    out->uses_scene_occlusion_set2 = visual->scene_occluded;
+    out->scene_occlusion = visual->scene_occlusion;
+    out->controller_mode = controller_mode;
+
+    DvzSceneVisualPassCaps caps = {0};
+    if (!_scene_visual_pass_caps_from_desc(visual, DVZ_ALPHA_OPAQUE, controller_mode, &caps))
+        return false;
+    out->uses_common_set0 = caps.uses_common_set;
+    out->uses_fixed_common = caps.fixed_controller;
+    out->uses_image_set1 = caps.uses_image_set;
+    out->image_texture_id = visual->image_texture_id;
+    out->image_nearest_sampler = visual->image_nearest_sampler;
+    return true;
+}

@@ -43,3 +43,24 @@ bool _scene_text_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out
     out->desc_kind = DVZ_SCENE_VISUAL_DESC_NONE;
     return false;
 }
+
+
+
+/**
+ * Reject retained text visual bind descriptors; text lowers through generated glyph visuals.
+ *
+ * @param visual the visual descriptor
+ * @param controller_mode the visual's panel controller attachment mode
+ * @param out the output bind descriptor
+ * @return false because retained text visuals are semantic parents
+ */
+bool _scene_text_visual_bind_desc(
+    const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
+    DvzSceneVisualBindDesc* out)
+{
+    ANN(visual);
+    ANN(out);
+    (void)controller_mode;
+    dvz_memset(out, sizeof(DvzSceneVisualBindDesc), 0, sizeof(DvzSceneVisualBindDesc));
+    return false;
+}
