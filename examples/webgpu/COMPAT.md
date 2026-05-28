@@ -34,7 +34,8 @@ Current status as of this note:
 - WebGPU stream count: `2`
 - negative parity fixture count: `81`
 - expected browser dashboard result for the committed subset: `120 pass, 0 unsupported, 0 fail`
-- recorded browser dashboard result on 2026-05-28: `120 pass, 0 unsupported, 0 fail`
+- recorded browser dashboard result on 2026-05-28 after the repeated-runtime-frame smoke slice
+  (`183812f27`): `120 pass, 0 unsupported, 0 fail`
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

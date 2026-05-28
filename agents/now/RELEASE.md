@@ -180,7 +180,8 @@ Current automated evidence:
 4. The committed runner subset covers the current point/primitive/image scene fixtures, texture
    sampling, multiple color attachments, depth attachments, copy commands, compute dispatch,
    readback, dynamic buffer updates, and destroy/lifetime validation.
-5. The browser fixture dashboard passed `120/120` checks on 2026-05-28.
+5. The browser fixture dashboard passed `120/120` checks on 2026-05-28 after the
+   repeated-runtime-frame smoke slice (`183812f27`).
 6. The remaining RC1 decision is whether WASM scene emission is required before feature freeze or
    remains an experimental follow-up.
 
