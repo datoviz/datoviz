@@ -29,3 +29,14 @@ DvzFieldRegion _field_full_region(const DvzSampledFieldDesc* desc);
 
 bool _field_regions_union(
     const DvzFieldRegion* a, const DvzFieldRegion* b, DvzFieldRegion* out);
+
+bool _field_data_view_valid(
+    const DvzSampledFieldDesc* desc, const DvzFieldDataView* view,
+    const DvzFieldRegion* region);
+
+void _field_copy_full_data(
+    const DvzSampledFieldDesc* desc, const DvzFieldDataView* view, void* dst);
+
+bool _field_read_scalar(const DvzSampledField* field, uint64_t sample_index, double* out_value);
+
+bool _field_ensure_upload(DvzSampledField* field, uint64_t byte_size);
