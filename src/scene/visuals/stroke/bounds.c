@@ -19,6 +19,8 @@
 
 #include "_assertions.h"
 #include "_visual_internal.h"
+#include "bounds_internal.h"
+#include "stroke/internal.h"
 
 
 

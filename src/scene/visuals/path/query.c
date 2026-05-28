@@ -24,6 +24,7 @@
 #include "datoviz/math/_cglm.h"
 #include "_visual_internal.h"
 #include "_visual_pipeline.h"
+#include "stroke/internal.h"
 #include "../../query/internal.h"
 #include "_alloc.h"
 #include "_assertions.h"

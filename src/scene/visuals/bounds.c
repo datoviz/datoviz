@@ -29,6 +29,8 @@
 #include "_overflow.h"
 #include "_scene.h"
 #include "_visual_internal.h"
+#include "bounds_internal.h"
+#include "stroke/internal.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
 

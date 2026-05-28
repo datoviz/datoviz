@@ -33,6 +33,7 @@
 #include "_visual_pipeline.h"
 #include "_visual_internal.h"
 #include "_visual_lowering.h"
+#include "stroke/internal.h"
 #include "volume/internal.h"
 #include "colorizer.h"
 #include "datoviz/drp2/runtime.h"

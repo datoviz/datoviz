@@ -20,6 +20,7 @@
 #include "_log.h"
 #include "_scene.h"
 #include "_visual_internal.h"
+#include "stroke/internal.h"
 #include "datoviz/scene.h"
 
 

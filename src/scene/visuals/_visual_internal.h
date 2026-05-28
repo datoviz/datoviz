@@ -62,52 +62,8 @@ void _volume_state_default(DvzVolumeState* state);
 bool _point_style_enabled(const DvzPointStyleDesc* style);
 DvzPointStyleDesc _marker_style_to_point_style(const DvzMarkerStyle* style);
 void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPointStyleDesc* style);
-bool _stroke_cap_valid(DvzSegmentCap cap);
-bool _stroke_join_valid(DvzPathJoin join);
-const DvzVisualAttr*
-_bounds_attr(const DvzVisual* visual, const char* attr_name, uint32_t item_size);
-void _bounds_include_point(DvzBounds* out, double x, double y, double z);
-void _bounds_include_vec3f(DvzBounds* out, const float* data, uint64_t item_count);
-void _segment_sync_params(DvzVisual* visual);
-void _path_sync_params(DvzVisual* visual);
-void _vector_sync_params(DvzVisual* visual);
-bool _stroke_bounds_from_segment(const DvzVisual* visual, DvzBounds* out);
-bool _stroke_bounds_from_vector(const DvzVisual* visual, DvzBounds* out);
-bool _sphere_bounds_from_radius(const DvzVisual* visual, DvzBounds* out);
-void _sphere_bounds_expand_wire_overlay(const DvzVisual* visual, DvzBounds* bounds);
-bool _image_bounds_from_extent(const DvzVisual* visual, DvzBounds* out);
-bool _glyph_bounds_from_rect(const DvzVisual* visual, DvzBounds* out);
-bool _mesh_bounds_from_instances(
-    const DvzVisual* visual, const DvzBounds* base, DvzBounds* out);
-void _stroke_quad_gpu_cache_free(DvzSegmentGpuCache* cache);
-void _path_stroke_gpu_cache_free(DvzPathGpuCache* cache);
-bool _stroke_quad_segment_cache_rebuild(DvzVisual* visual);
-bool _stroke_quad_vector_cache_rebuild(DvzVisual* visual);
-bool _path_stroke_cache_rebuild(DvzVisual* visual);
-bool _stroke_query_attr(
-    const DvzVisual* visual, const char* attr_name, uint32_t item_size,
-    const DvzVisualAttr** out_attr);
-bool _stroke_query_alloc(
-    const char* label, void** out_ptr, uint64_t count, uint64_t item_size);
-bool _stroke_query_target_extent(
-    const DvzFigure* figure, const DvzPanel* panel, uint32_t* out_target_width,
-    uint32_t* out_target_height);
-void _stroke_query_apply_render_state(
-    DvzFramePlan* plan, const DvzPanel* panel, const float* request_ndc, uint32_t target_width,
-    uint32_t target_height);
-void _stroke_query_mark_last_upload_index(DvzFramePlan* plan, uint32_t stride);
-void _stroke_query_mark_last_upload_uniform(DvzFramePlan* plan);
-bool _stroke_quad_query_geometry(
-    const DvzVisual* visual, DvzSceneQueryScratch* scratch, uint64_t* out_vertex_count,
-    uint64_t* out_index_count);
-bool _path_stroke_query_geometry(
-    const DvzVisual* visual, DvzSceneQueryScratch* scratch, uint64_t* out_vertex_count,
-    uint64_t* out_index_count);
 bool _image_uses_generated_quads(const DvzVisual* visual);
 bool _image_generated_quad_cache_rebuild(const DvzFigure* figure, DvzVisual* visual);
-int _stroke_set_path_subpaths(
-    DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths, const char* label,
-    uint32_t** out_lengths, uint32_t* out_count, DvzPathGpuCache* cache);
 void _image_gpu_cache_free(DvzImageGpuCache* cache);
 DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t flags);
 void _scene_release_visual_scale(DvzVisual* visual);
