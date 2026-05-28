@@ -18,6 +18,7 @@
 /*************************************************************************************************/
 
 #include "_scene_emit.h"
+#include "upload.h"
 
 
 
@@ -41,3 +42,22 @@ bool _scene_image_uses_generated_quads(const DvzVisual* visual);
 
 bool _scene_resource_key_volume_transfer(uint32_t visual_index, char* out, size_t out_size);
 bool _scene_resource_key_volume_label_lookup(uint32_t visual_index, char* out, size_t out_size);
+
+DvzFramePlanResourceRole _scene_attr_frame_plan_role(const char* attr_name);
+
+uint32_t _scene_buffer_drp2_usage(uint32_t usage);
+
+bool _scene_attach_upload_metadata(
+    DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
+    DvzFramePlanResourceRole role, DvzFramePlanResourceKind kind, uint32_t buffer_index,
+    uint64_t logical_item_count);
+
+bool _scene_frame_plan_upload_style_bytes(
+    const DvzFigure* figure, DvzFramePlan* plan, const char* resource_id, uint64_t byte_offset,
+    uint64_t byte_size, const char* data_tag, const void* data, DvzFramePlanResourceRole role);
+
+bool _scene_visual_attrs_dirty(const DvzVisual* visual);
+
+void _scene_emit_visual_buffer_payloads(
+    const DvzFigure* figure, DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
+    const DvzVisualUploadPayload* payloads, uint32_t payload_count, uint32_t position_topology);
