@@ -191,19 +191,18 @@ static void _scene_emit_volume_source_texture_upload(
     ANN(figure);
     ANN(plan);
     ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || visual->field == NULL ||
-        (!visual->texture.dirty && !visual->field->dirty))
-    {
+
+    bool handled = false;
+    DvzVolumeTextureUploadPayload payload = {0};
+    if (!_volume_source_texture_payload_if_dirty(visual, &payload, &handled) || !handled ||
+        payload.byte_size == 0)
         return;
-    }
 
     char tex_resource_id[128];
     if (!_scene_visual_texture_resource_key(
             figure, visual, visual_index, tex_resource_id, sizeof(tex_resource_id)))
         return;
-    DvzVolumeTextureUploadPayload payload = {0};
-    if (!_volume_source_texture_payload(visual, &payload) ||
-        !dvz_frame_plan_upload_bytes(plan, tex_resource_id, 0, payload.byte_size, "field",
+    if (!dvz_frame_plan_upload_bytes(plan, tex_resource_id, 0, payload.byte_size, "field",
                                      payload.data) ||
         !dvz_frame_plan_upload_metadata(
             plan,
@@ -243,16 +242,20 @@ static void _scene_emit_volume_transfer_texture_upload(
 {
     ANN(plan);
     ANN(visual);
-    if (!_volume_uses_color_texture(visual))
+
+    bool handled = false;
+    DvzVolumeTransferTexturePayload payload = {0};
+    if (!_volume_transfer_texture_payload_if_needed(visual, &payload, &handled))
     {
+        log_error("volume transfer texture upload failed");
         return;
     }
+    if (!handled)
+        return;
 
     char transfer_resource_id[128];
-    DvzVolumeTransferTexturePayload payload = {0};
     if (!_scene_resource_key_volume_transfer(
             visual_index, transfer_resource_id, sizeof(transfer_resource_id)) ||
-        !_volume_transfer_texture_payload(visual, &payload) ||
         !dvz_frame_plan_upload_bytes(
             plan, transfer_resource_id, 0, payload.byte_size, "volume_transfer", payload.data) ||
         !dvz_frame_plan_upload_metadata(
@@ -286,17 +289,22 @@ static void _scene_emit_volume_label_lookup_upload(
 {
     ANN(plan);
     ANN(visual);
-    if (!_volume_uses_label_lookup(visual, NULL))
-    {
-        return;
-    }
 
-    char lookup_resource_id[128];
+    bool handled = false;
     const void* lookup_data = NULL;
     uint64_t lookup_size = 0;
+    if (!_volume_label_lookup_payload_if_needed(
+            visual, &lookup_data, &lookup_size, &handled))
+    {
+        log_error("volume label lookup upload failed");
+        return;
+    }
+    if (!handled)
+        return;
+
+    char lookup_resource_id[128];
     if (!_scene_resource_key_volume_label_lookup(
             visual_index, lookup_resource_id, sizeof(lookup_resource_id)) ||
-        !_volume_label_lookup_payload(visual, &lookup_data, &lookup_size) ||
         !dvz_frame_plan_upload_bytes(
             plan, lookup_resource_id, 0, lookup_size, "volume_label_lookup", lookup_data))
     {
