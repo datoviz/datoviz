@@ -64,9 +64,15 @@ DvzPointStyleDesc _marker_style_to_point_style(const DvzMarkerStyle* style);
 void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPointStyleDesc* style);
 bool _stroke_cap_valid(DvzSegmentCap cap);
 bool _stroke_join_valid(DvzPathJoin join);
+const DvzVisualAttr*
+_bounds_attr(const DvzVisual* visual, const char* attr_name, uint32_t item_size);
+void _bounds_include_point(DvzBounds* out, double x, double y, double z);
+void _bounds_include_vec3f(DvzBounds* out, const float* data, uint64_t item_count);
 void _segment_sync_params(DvzVisual* visual);
 void _path_sync_params(DvzVisual* visual);
 void _vector_sync_params(DvzVisual* visual);
+bool _stroke_bounds_from_segment(const DvzVisual* visual, DvzBounds* out);
+bool _stroke_bounds_from_vector(const DvzVisual* visual, DvzBounds* out);
 void _stroke_quad_gpu_cache_free(DvzSegmentGpuCache* cache);
 void _path_stroke_gpu_cache_free(DvzPathGpuCache* cache);
 bool _stroke_quad_segment_cache_rebuild(DvzVisual* visual);

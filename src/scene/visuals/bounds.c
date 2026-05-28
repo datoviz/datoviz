@@ -100,7 +100,7 @@ static void _bounds_finalize(DvzBounds* out, bool force_3d)
  * @param y y coordinate
  * @param z z coordinate
  */
-static void _bounds_include_point(DvzBounds* out, double x, double y, double z)
+void _bounds_include_point(DvzBounds* out, double x, double y, double z)
 {
     ANN(out);
     if (!isfinite(x) || !isfinite(y) || !isfinite(z))
@@ -149,7 +149,7 @@ static void _bounds_include_bounds(DvzBounds* out, const DvzBounds* bounds)
  * @param item_size expected item byte size
  * @return the attribute, or NULL when unavailable
  */
-static const DvzVisualAttr*
+const DvzVisualAttr*
 _bounds_attr(const DvzVisual* visual, const char* attr_name, uint32_t item_size)
 {
     ANN(visual);
@@ -172,7 +172,7 @@ _bounds_attr(const DvzVisual* visual, const char* attr_name, uint32_t item_size)
  * @param data packed vec3f data
  * @param item_count number of positions
  */
-static void _bounds_include_vec3f(DvzBounds* out, const float* data, uint64_t item_count)
+void _bounds_include_vec3f(DvzBounds* out, const float* data, uint64_t item_count)
 {
     ANN(out);
     ANN(data);
@@ -204,77 +204,6 @@ static bool _bounds_from_position_attr(
     if (attr == NULL)
         return false;
     _bounds_include_vec3f(out, (const float*)attr->data, attr->item_count);
-    return out->valid;
-}
-
-
-
-/**
- * Compute bounds for segment endpoint attributes.
- *
- * @param visual the segment visual
- * @param out output bounds
- * @return whether bounds were produced
- */
-static bool _bounds_from_segment(const DvzVisual* visual, DvzBounds* out)
-{
-    ANN(visual);
-    ANN(out);
-    const DvzVisualAttr* start = _bounds_attr(visual, "position_start", 3 * sizeof(float));
-    const DvzVisualAttr* end = _bounds_attr(visual, "position_end", 3 * sizeof(float));
-    if (start == NULL || end == NULL || start->item_count != end->item_count)
-        return false;
-    _bounds_include_vec3f(out, (const float*)start->data, start->item_count);
-    _bounds_include_vec3f(out, (const float*)end->data, end->item_count);
-    return out->valid;
-}
-
-
-/**
- * Compute bounds for straight vector endpoint attributes.
- *
- * @param visual the vector visual
- * @param out output bounds
- * @return whether bounds were produced
- */
-static bool _bounds_from_vector(const DvzVisual* visual, DvzBounds* out)
-{
-    ANN(visual);
-    ANN(out);
-    const DvzVisualAttr* position = _bounds_attr(visual, "position", 3 * sizeof(float));
-    const DvzVisualAttr* vector = _bounds_attr(visual, "vector", 3 * sizeof(float));
-    if (position == NULL || vector == NULL || position->item_count != vector->item_count)
-        return false;
-
-    const float* pos = (const float*)position->data;
-    const float* vec = (const float*)vector->data;
-    float scale = visual->vector.scale;
-    float tail_factor = 0.0f;
-    float head_factor = 1.0f;
-    if (visual->vector.anchor == DVZ_VECTOR_ANCHOR_CENTER)
-    {
-        tail_factor = -0.5f;
-        head_factor = 0.5f;
-    }
-    else if (visual->vector.anchor == DVZ_VECTOR_ANCHOR_HEAD)
-    {
-        tail_factor = -1.0f;
-        head_factor = 0.0f;
-    }
-
-    for (uint64_t i = 0; i < position->item_count; i++)
-    {
-        double start[3] = {0};
-        double end[3] = {0};
-        for (uint32_t k = 0; k < 3; k++)
-        {
-            double delta = (double)vec[3 * i + k] * (double)scale;
-            start[k] = (double)pos[3 * i + k] + (double)tail_factor * delta;
-            end[k] = (double)pos[3 * i + k] + (double)head_factor * delta;
-        }
-        _bounds_include_point(out, start[0], start[1], start[2]);
-        _bounds_include_point(out, end[0], end[1], end[2]);
-    }
     return out->valid;
 }
 
@@ -925,11 +854,11 @@ int dvz_visual_bounds(const DvzVisual* visual, DvzBounds* out)
     bool force_3d = false;
     if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
     {
-        (void)_bounds_from_segment(visual, out);
+        (void)_stroke_bounds_from_segment(visual, out);
     }
     else if (visual->type == DVZ_VISUAL_TYPE_VECTOR)
     {
-        if (!_bounds_from_vector(visual, out))
+        if (!_stroke_bounds_from_vector(visual, out))
             (void)_bounds_from_position_attr(visual, "position", out);
     }
     else if (visual->type == DVZ_VISUAL_TYPE_SPHERE)
