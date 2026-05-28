@@ -27,6 +27,9 @@
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
 #include "datoviz/drp2/enums.h"
+#include "glyph/internal.h"
+#include "image/internal.h"
+#include "labels/internal.h"
 #include "path/internal.h"
 #include "registry/registry.h"
 #include "segment/internal.h"
@@ -471,55 +474,17 @@ bool _scene_visual_shader_desc_resolve(
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
-        dvz_snprintf(
-            out->vertex_key, sizeof(out->vertex_key), "_vs_img%s%s",
-            visual->image_pixel_space ? "_px" : "", format_tag);
-        dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_img%s", format_tag);
-        dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_img%s%s",
-            visual->image_pixel_space ? "_px" : "", format_tag);
-        _scene_shader_desc_set_builtin(
-            out, visual->image_pixel_space ? DVZ_SCENE_BUILTIN_SHADER_IMAGE_PIXEL
-                                           : DVZ_SCENE_BUILTIN_SHADER_IMAGE);
-        _scene_shader_desc_set_identity(
-            out, "scene.image", visual->image_pixel_space ? "pixel" : "default");
-        out->vertex_spirv_key = visual->image_pixel_space ? "image_pixel_vert" : "image_vert";
-        out->fragment_spirv_key = "image_frag";
-        return true;
+        return _scene_image_visual_shader_desc(
+            visual, picking, wboit_accumulation, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_LABELS_SINT:
-        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_labels_sint%s", format_tag);
-        dvz_snprintf(
-            out->fragment_key, sizeof(out->fragment_key), "_fs_labels_sint%s", format_tag);
-        dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_labels_sint%s", format_tag);
-        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_LABELS_SINT);
-        _scene_shader_desc_set_identity(out, "scene.labels", "sint");
-        out->vertex_spirv_key = "image_vert";
-        out->fragment_spirv_key = "labels_sint_frag";
-        return true;
-
     case DVZ_SCENE_VISUAL_DESC_LABELS_UINT:
-        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_labels_uint%s", format_tag);
-        dvz_snprintf(
-            out->fragment_key, sizeof(out->fragment_key), "_fs_labels_uint%s", format_tag);
-        dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_labels_uint%s", format_tag);
-        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT);
-        _scene_shader_desc_set_identity(out, "scene.labels", "uint");
-        out->vertex_spirv_key = "image_vert";
-        out->fragment_spirv_key = "labels_uint_frag";
-        return true;
+        return _scene_labels_visual_shader_desc(
+            visual, picking, wboit_accumulation, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_GLYPH:
-        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_glyph%s", format_tag);
-        dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_glyph%s", format_tag);
-        dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_glyph%s", format_tag);
-        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_GLYPH);
-        _scene_shader_desc_set_identity(out, "scene.glyph", "msdf");
-        out->vertex_spirv_key = "glyph_vert";
-        out->fragment_spirv_key = "glyph_frag";
-        return true;
+        return _scene_glyph_visual_shader_desc(
+            visual, picking, wboit_accumulation, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
     {
