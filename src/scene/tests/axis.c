@@ -24,6 +24,7 @@
 #include "_scene.h"
 #include "scene_emit/scene_emit.h"
 #include "datoviz/drp2/stream.h"
+#include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
 #include "test_scene.h"
 #include "testing.h"
@@ -154,12 +155,12 @@ static uint32_t _axis_test_inward_minor_tick_line_count(DvzAxis* axis)
 static uint32_t _axis_test_vertical_grid_line_count(DvzAxis* axis)
 {
     ANN(axis);
-    ANN(axis->visual);
+    ANN(axis->grid_visual);
     DvzVisualDataView positions_view = {0};
     DvzVisualDataView colors_view = {0};
-    int res = dvz_visual_data(axis->visual, "position", &positions_view);
+    int res = dvz_visual_data(axis->grid_visual, "position", &positions_view);
     ASSERT(res == 0);
-    res = dvz_visual_data(axis->visual, "color", &colors_view);
+    res = dvz_visual_data(axis->grid_visual, "color", &colors_view);
     ASSERT(res == 0);
     const float* positions = (const float*)positions_view.data;
     const uint8_t* colors = (const uint8_t*)colors_view.data;
@@ -175,7 +176,16 @@ static uint32_t _axis_test_vertical_grid_line_count(DvzAxis* axis)
             min_y = fminf(min_y, positions[3 * (i + j) + 1]);
             max_y = fmaxf(max_y, positions[3 * (i + j) + 1]);
         }
-        if (min_y <= -1.0f + 1e-4f && max_y >= +1.0f - 1e-4f)
+        float min_x = positions[3 * i + 0];
+        float max_x = positions[3 * i + 0];
+        for (uint32_t j = 1; j < 6; j++)
+        {
+            min_x = fminf(min_x, positions[3 * (i + j) + 0]);
+            max_x = fmaxf(max_x, positions[3 * (i + j) + 0]);
+        }
+        float span_x = max_x - min_x;
+        float span_y = max_y - min_y;
+        if (span_x <= span_y && span_y > 1e-6f)
             count++;
     }
     return count;
@@ -191,12 +201,12 @@ static uint32_t _axis_test_vertical_grid_line_count(DvzAxis* axis)
 static uint32_t _axis_test_horizontal_grid_line_count(DvzAxis* axis)
 {
     ANN(axis);
-    ANN(axis->visual);
+    ANN(axis->grid_visual);
     DvzVisualDataView positions_view = {0};
     DvzVisualDataView colors_view = {0};
-    int res = dvz_visual_data(axis->visual, "position", &positions_view);
+    int res = dvz_visual_data(axis->grid_visual, "position", &positions_view);
     ASSERT(res == 0);
-    res = dvz_visual_data(axis->visual, "color", &colors_view);
+    res = dvz_visual_data(axis->grid_visual, "color", &colors_view);
     ASSERT(res == 0);
     const float* positions = (const float*)positions_view.data;
     const uint8_t* colors = (const uint8_t*)colors_view.data;
@@ -212,7 +222,16 @@ static uint32_t _axis_test_horizontal_grid_line_count(DvzAxis* axis)
             min_x = fminf(min_x, positions[3 * (i + j) + 0]);
             max_x = fmaxf(max_x, positions[3 * (i + j) + 0]);
         }
-        if (min_x <= -1.0f + 1e-4f && max_x >= +1.0f - 1e-4f)
+        float min_y = positions[3 * i + 1];
+        float max_y = positions[3 * i + 1];
+        for (uint32_t j = 1; j < 6; j++)
+        {
+            min_y = fminf(min_y, positions[3 * (i + j) + 1]);
+            max_y = fmaxf(max_y, positions[3 * (i + j) + 1]);
+        }
+        float span_x = max_x - min_x;
+        float span_y = max_y - min_y;
+        if (span_y <= span_x && span_x > 1e-6f)
             count++;
     }
     return count;
@@ -223,7 +242,7 @@ static uint32_t _axis_test_horizontal_grid_line_count(DvzAxis* axis)
  * Return whether a vertical grid line exists near one expected center.
  *
  * @param axis the X axis
- * @param expected_x expected fixed visual x coordinate
+ * @param expected_x expected source visual x coordinate
  * @param tolerance accepted absolute visual-coordinate distance
  * @param out_x closest matching grid-line center, or NULL
  * @return whether a matching vertical grid line was found
@@ -232,12 +251,12 @@ static bool _axis_test_find_vertical_grid_center(
     DvzAxis* axis, float expected_x, float tolerance, float* out_x)
 {
     ANN(axis);
-    ANN(axis->visual);
+    ANN(axis->grid_visual);
     DvzVisualDataView positions_view = {0};
     DvzVisualDataView colors_view = {0};
-    int res = dvz_visual_data(axis->visual, "position", &positions_view);
+    int res = dvz_visual_data(axis->grid_visual, "position", &positions_view);
     ASSERT(res == 0);
-    res = dvz_visual_data(axis->visual, "color", &colors_view);
+    res = dvz_visual_data(axis->grid_visual, "color", &colors_view);
     ASSERT(res == 0);
     const float* positions = (const float*)positions_view.data;
     const uint8_t* colors = (const uint8_t*)colors_view.data;
@@ -259,7 +278,9 @@ static bool _axis_test_find_vertical_grid_center(
             min_y = fminf(min_y, positions[3 * (i + j) + 1]);
             max_y = fmaxf(max_y, positions[3 * (i + j) + 1]);
         }
-        if (max_x - min_x > 0.02f || max_y - min_y < 0.25f)
+        float span_x = max_x - min_x;
+        float span_y = max_y - min_y;
+        if (span_x > span_y || span_y <= 1e-6f)
             continue;
         float center_x = 0.5f * (min_x + max_x);
         float distance = fabsf(center_x - expected_x);
@@ -273,6 +294,97 @@ static bool _axis_test_find_vertical_grid_center(
     if (out_x != NULL)
         *out_x = best_x;
     return found && best_distance <= tolerance;
+}
+
+
+/**
+ * Return whether a horizontal grid line exists near one expected center.
+ *
+ * @param axis the Y axis
+ * @param expected_y expected source visual y coordinate
+ * @param tolerance accepted absolute visual-coordinate distance
+ * @param out_y closest matching grid-line center, or NULL
+ * @return whether a matching horizontal grid line was found
+ */
+static bool _axis_test_find_horizontal_grid_center(
+    DvzAxis* axis, float expected_y, float tolerance, float* out_y)
+{
+    ANN(axis);
+    ANN(axis->grid_visual);
+    DvzVisualDataView positions_view = {0};
+    DvzVisualDataView colors_view = {0};
+    int res = dvz_visual_data(axis->grid_visual, "position", &positions_view);
+    ASSERT(res == 0);
+    res = dvz_visual_data(axis->grid_visual, "color", &colors_view);
+    ASSERT(res == 0);
+    const float* positions = (const float*)positions_view.data;
+    const uint8_t* colors = (const uint8_t*)colors_view.data;
+    float best_y = 0.0f;
+    float best_distance = 1e9f;
+    bool found = false;
+    for (uint32_t i = 0; i + 5 < positions_view.item_count; i += 6)
+    {
+        if (memcmp(&colors[4 * i], axis->style.grid_color, 4) != 0)
+            continue;
+        float min_x = positions[3 * i + 0];
+        float max_x = positions[3 * i + 0];
+        float min_y = positions[3 * i + 1];
+        float max_y = positions[3 * i + 1];
+        for (uint32_t j = 1; j < 6; j++)
+        {
+            min_x = fminf(min_x, positions[3 * (i + j) + 0]);
+            max_x = fmaxf(max_x, positions[3 * (i + j) + 0]);
+            min_y = fminf(min_y, positions[3 * (i + j) + 1]);
+            max_y = fmaxf(max_y, positions[3 * (i + j) + 1]);
+        }
+        float span_x = max_x - min_x;
+        float span_y = max_y - min_y;
+        if (span_y > span_x || span_x <= 1e-6f)
+            continue;
+        float center_y = 0.5f * (min_y + max_y);
+        float distance = fabsf(center_y - expected_y);
+        if (distance < best_distance)
+        {
+            best_distance = distance;
+            best_y = center_y;
+            found = true;
+        }
+    }
+    if (out_y != NULL)
+        *out_y = best_y;
+    return found && best_distance <= tolerance;
+}
+
+
+/**
+ * Project one visual-space position with the same MVP uploaded for APPLY visuals.
+ *
+ * @param mvp panel MVP
+ * @param position visual-space position
+ * @param dim output coordinate dimension
+ * @param out_coord projected coordinate before Vulkan Y/depth correction
+ * @return whether the coordinate was written
+ */
+static bool _axis_test_apply_mvp_coord(
+    DvzMVP* mvp, const vec3 position, DvzDim dim, float* out_coord)
+{
+    ANN(mvp);
+    ANN(out_coord);
+    uint32_t coord = (uint32_t)dim;
+    if (coord > (uint32_t)DVZ_DIM_Z)
+        return false;
+
+    vec4 p = {position[0], position[1], position[2], 1.0f};
+    vec4 tmp0 = {0};
+    vec4 tmp1 = {0};
+    vec4 clip = {0};
+    glm_mat4_mulv(mvp->model, p, tmp0);
+    glm_mat4_mulv(mvp->view, tmp0, tmp1);
+    glm_mat4_mulv(mvp->proj, tmp1, clip);
+    if (!isfinite(clip[coord]) || !isfinite(clip[3]) || fabsf(clip[3]) <= 1e-12f)
+        return false;
+    *out_coord = clip[coord] / clip[3];
+    return isfinite(*out_coord);
 }
 
 
@@ -295,11 +407,15 @@ int test_axis_domain_and_ticks(TstContext* suite, const TstCase* item)
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);
+    AT(dvz_axis_set_grid(axis, true));
     AT(axis->enabled);
     AT(axis->visual != NULL);
     AT(axis->visual->type == DVZ_VISUAL_TYPE_PRIMITIVE);
-    AT(panel->visual_count == 1);
+    AT(axis->grid_visual != NULL);
+    AT(axis->grid_visual->type == DVZ_VISUAL_TYPE_PRIMITIVE);
+    AT(panel->visual_count == 2);
     AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
+    AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
 
     _scene_prepare_axis_visuals(figure);
     AT(axis->tick_count >= 5);
@@ -310,7 +426,8 @@ int test_axis_domain_and_ticks(TstContext* suite, const TstCase* item)
 
     AT(dvz_axis_set_grid(axis, true));
     _scene_prepare_axis_visuals(figure);
-    AT(axis->visual->attrs[0].item_count > 0);
+    AT(axis->grid_visual->visible);
+    AT(axis->grid_visual->attrs[0].item_count > 0);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1040,7 +1157,10 @@ static int test_axis_panzoom_layout_aligns_grid_to_plot(TstContext* suite, const
     float data[] = {0.0f, 0.0f, 0.0f};
     float visual[3] = {0};
     AT(dvz_panel_data_to_visual_positions(panel, data, visual, 1) == 0);
-    float expected_x = pz->zoom[0] * (visual[0] + pz->pan[0]);
+    DvzMVP apply_mvp = {0};
+    _scene_panel_apply_mvp(panel, &apply_mvp);
+    float expected_x = 0.0f;
+    AT(_axis_test_apply_mvp_coord(&apply_mvp, visual, DVZ_DIM_X, &expected_x));
 
     float plot[4] = {0};
     _scene_panel_plot_visual_rect(panel, plot);
@@ -1060,9 +1180,259 @@ static int test_axis_panzoom_layout_aligns_grid_to_plot(TstContext* suite, const
 
     _scene_prepare_axis_visuals(figure);
     float grid_x = 0.0f;
-    AT(_axis_test_find_vertical_grid_center(x_axis, expected_x, 0.005f, &grid_x));
-    AT(fabsf(grid_x - expected_x) < 0.005f);
+    AT(_axis_test_find_vertical_grid_center(x_axis, visual[0], 1e-5f, &grid_x));
+    AT(fabsf(grid_x - visual[0]) < 1e-5f);
+    vec3 grid_pos = {grid_x, visual[1], visual[2]};
+    float grid_projected_x = 0.0f;
+    AT(_axis_test_apply_mvp_coord(&apply_mvp, grid_pos, DVZ_DIM_X, &grid_projected_x));
+    AT(fabsf(grid_projected_x - expected_x) < 1e-5f);
 
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Check that raw visual-space grid lines and points share the same APPLY transform.
+ *
+ * @param suite the test suite
+ * @param item the test case
+ * @return zero on success
+ */
+static int test_axis_raw_visual_panzoom_alignment(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 1280, 960, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    AT(dvz_panel_set_layout_reserve(
+        panel, &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.04f, .bottom = 0.12f,
+                                        .top = 0.04f}));
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    ANN(x_axis);
+    ANN(y_axis);
+    AT(dvz_axis_set_grid(x_axis, true));
+    AT(dvz_axis_set_grid(y_axis, true));
+
+    DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
+    ticks.target_count = 11;
+    ticks.min_pixel_spacing = 75.0f;
+    ticks.minor_per_interval = 0;
+    AT(dvz_axis_set_tick_policy(x_axis, &ticks));
+    AT(dvz_axis_set_tick_policy(y_axis, &ticks));
+
+    DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
+    ANN(pz);
+    dvz_panzoom_zoom(pz, (vec2){2.0f, 2.0f});
+    dvz_panzoom_pan(pz, (vec2){0.20f, -0.10f});
+
+    float plot[4] = {0};
+    _scene_panel_plot_visual_rect(panel, plot);
+    double visible_min = 0.0;
+    double visible_max = 0.0;
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &visible_min, &visible_max));
+    double expected_min = -(double)pz->pan[1] + (double)plot[2] / (double)pz->zoom[1];
+    double expected_max = -(double)pz->pan[1] + (double)plot[3] / (double)pz->zoom[1];
+    AT(fabs(visible_min - expected_min) < 1e-6);
+    AT(fabs(visible_max - expected_max) < 1e-6);
+
+    vec3 visual = {0.0f, 0.0f, 0.0f};
+    DvzMVP apply_mvp = {0};
+    _scene_panel_apply_mvp(panel, &apply_mvp);
+    float expected_x = 0.0f;
+    float expected_y = 0.0f;
+    AT(_axis_test_apply_mvp_coord(&apply_mvp, visual, DVZ_DIM_X, &expected_x));
+    AT(_axis_test_apply_mvp_coord(&apply_mvp, visual, DVZ_DIM_Y, &expected_y));
+
+    _scene_prepare_axis_visuals(figure);
+    float grid_x = 0.0f;
+    float grid_y = 0.0f;
+    AT(_axis_test_find_vertical_grid_center(x_axis, visual[0], 1e-5f, &grid_x));
+    AT(_axis_test_find_horizontal_grid_center(y_axis, visual[1], 1e-5f, &grid_y));
+    AT(fabsf(grid_x - visual[0]) < 1e-5f);
+    AT(fabsf(grid_y - visual[1]) < 1e-5f);
+    vec3 grid_x_pos = {grid_x, visual[1], visual[2]};
+    vec3 grid_y_pos = {visual[0], grid_y, visual[2]};
+    float grid_projected_x = 0.0f;
+    float grid_projected_y = 0.0f;
+    AT(_axis_test_apply_mvp_coord(&apply_mvp, grid_x_pos, DVZ_DIM_X, &grid_projected_x));
+    AT(_axis_test_apply_mvp_coord(&apply_mvp, grid_y_pos, DVZ_DIM_Y, &grid_projected_y));
+    AT(fabsf(grid_projected_x - expected_x) < 1e-5f);
+    AT(fabsf(grid_projected_y - expected_y) < 1e-5f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Check integer lattice points against generated grid lines after panzoom.
+ *
+ * @param suite the test suite
+ * @param item the test case
+ * @return zero on success
+ */
+static int test_axis_integer_lattice_panzoom_alignment(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 1280, 960, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    const uint32_t lattice_max = 20;
+    const uint32_t side = lattice_max + 1;
+    const uint32_t count = side * side;
+    vec3* data = (vec3*)dvz_calloc(count, sizeof(vec3));
+    vec3* visual = (vec3*)dvz_calloc(count, sizeof(vec3));
+    DvzColor* colors = (DvzColor*)dvz_calloc(count, sizeof(DvzColor));
+    float* diameters = (float*)dvz_calloc(count, sizeof(float));
+    ANN(data);
+    ANN(visual);
+    ANN(colors);
+    ANN(diameters);
+
+    for (uint32_t j = 0; j < side; j++)
+    {
+        for (uint32_t i = 0; i < side; i++)
+        {
+            uint32_t idx = j * side + i;
+            data[idx][0] = (float)i;
+            data[idx][1] = (float)j;
+            data[idx][2] = 0.0f;
+            colors[idx] = dvz_color_rgba(90, 210, 230, 230);
+            diameters[idx] = 7.0f;
+        }
+    }
+
+    AT(dvz_panel_set_layout_reserve(
+        panel, &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.04f, .bottom = 0.12f,
+                                        .top = 0.04f}));
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, (double)lattice_max) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, (double)lattice_max) == 0);
+    AT(dvz_panel_data_to_visual_positions(panel, (const float*)data, (float*)visual, count) == 0);
+
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = visual, .item_count = count},
+        {.attr_name = "color", .data = colors, .item_count = count},
+        {.attr_name = "diameter", .data = diameters, .item_count = count},
+    };
+    AT(dvz_visual_set_data_many(point, updates, 3) == 0);
+    AT(dvz_panel_add_visual(panel, point, NULL) == 0);
+
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    ANN(x_axis);
+    ANN(y_axis);
+    AT(dvz_axis_set_grid(x_axis, true));
+    AT(dvz_axis_set_grid(y_axis, true));
+    DvzAxisTickPolicy policy = dvz_axis_tick_policy();
+    policy.target_count = 11;
+    policy.min_pixel_spacing = 75.0f;
+    policy.minor_per_interval = 0;
+    AT(dvz_axis_set_tick_policy(x_axis, &policy));
+    AT(dvz_axis_set_tick_policy(y_axis, &policy));
+
+    DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
+    ANN(pz);
+    dvz_panzoom_zoom(pz, (vec2){1.65f, 1.45f});
+    dvz_panzoom_pan(pz, (vec2){-0.22f, 0.18f});
+
+    _scene_prepare_axis_visuals(figure);
+    DvzMVP apply_mvp = {0};
+    _scene_panel_apply_mvp(panel, &apply_mvp);
+
+    DvzFramePlan* plan = dvz_frame_plan("axis.integer_lattice", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    AT(dvz_frame_plan_node_count(plan) == 1);
+    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
+    ANN(render);
+    AT(render->u.render.visual_count == 5);
+    uint32_t apply_count = 0;
+    uint32_t fixed_count = 0;
+    for (uint32_t i = 0; i < render->u.render.visual_count; i++)
+    {
+        if (render->u.render.controller_modes[i] == DVZ_CONTROLLER_FIXED)
+            fixed_count++;
+        else
+            apply_count++;
+    }
+    AT(apply_count == 3);
+    AT(fixed_count == 2);
+    AT(render->u.render.has_mvp);
+    AT(fabsf(render->u.render.apply_mvp.proj[0][0] - apply_mvp.proj[0][0]) < 1e-6f);
+    AT(fabsf(render->u.render.apply_mvp.proj[1][1] - apply_mvp.proj[1][1]) < 1e-6f);
+    dvz_frame_plan_destroy(plan);
+
+    uint32_t x_checks = 0;
+    for (uint32_t ti = 0; ti < x_axis->tick_count; ti++)
+    {
+        double value = x_axis->ticks[ti];
+        double rounded = round(value);
+        if (fabs(value - rounded) > 1e-9 || rounded < 0.0 || rounded > (double)lattice_max)
+            continue;
+        uint32_t idx = (lattice_max / 2u) * side + (uint32_t)rounded;
+        float expected_x = 0.0f;
+        AT(_axis_test_apply_mvp_coord(&apply_mvp, visual[idx], DVZ_DIM_X, &expected_x));
+        float plot[4] = {0};
+        _scene_panel_plot_visual_rect(panel, plot);
+        if (expected_x < plot[0] || expected_x > plot[1])
+            continue;
+        float grid_x = 0.0f;
+        AT(_axis_test_find_vertical_grid_center(x_axis, visual[idx][0], 1e-5f, &grid_x));
+        AT(fabsf(grid_x - visual[idx][0]) < 1e-5f);
+        vec3 grid_pos = {grid_x, visual[idx][1], visual[idx][2]};
+        float grid_projected_x = 0.0f;
+        AT(_axis_test_apply_mvp_coord(&apply_mvp, grid_pos, DVZ_DIM_X, &grid_projected_x));
+        AT(fabsf(grid_projected_x - expected_x) < 1e-5f);
+        x_checks++;
+    }
+
+    uint32_t y_checks = 0;
+    for (uint32_t ti = 0; ti < y_axis->tick_count; ti++)
+    {
+        double value = y_axis->ticks[ti];
+        double rounded = round(value);
+        if (fabs(value - rounded) > 1e-9 || rounded < 0.0 || rounded > (double)lattice_max)
+            continue;
+        uint32_t idx = (uint32_t)rounded * side + (lattice_max / 2u);
+        float expected_y = 0.0f;
+        AT(_axis_test_apply_mvp_coord(&apply_mvp, visual[idx], DVZ_DIM_Y, &expected_y));
+        float plot[4] = {0};
+        _scene_panel_plot_visual_rect(panel, plot);
+        if (expected_y < plot[2] || expected_y > plot[3])
+            continue;
+        float grid_y = 0.0f;
+        AT(_axis_test_find_horizontal_grid_center(y_axis, visual[idx][1], 1e-5f, &grid_y));
+        AT(fabsf(grid_y - visual[idx][1]) < 1e-5f);
+        vec3 grid_pos = {visual[idx][0], grid_y, visual[idx][2]};
+        float grid_projected_y = 0.0f;
+        AT(_axis_test_apply_mvp_coord(&apply_mvp, grid_pos, DVZ_DIM_Y, &grid_projected_y));
+        AT(fabsf(grid_projected_y - expected_y) < 1e-5f);
+        y_checks++;
+    }
+
+    AT(x_checks >= 3);
+    AT(y_checks >= 3);
+
+    dvz_free(diameters);
+    dvz_free(colors);
+    dvz_free(visual);
+    dvz_free(data);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1196,6 +1566,8 @@ static int test_axis_static_prepare_idempotent(TstContext* suite, const TstCase*
     _scene_prepare_text_visuals(figure);
     AT(_axis_test_attr_dirty_item_count(axis->visual, "position") == 0);
     AT(_axis_test_attr_dirty_item_count(axis->visual, "color") == 0);
+    AT(_axis_test_attr_dirty_item_count(axis->grid_visual, "position") == 0);
+    AT(_axis_test_attr_dirty_item_count(axis->grid_visual, "color") == 0);
     AT(!_scene_figure_has_pending_render_work(figure));
 
     dvz_scene_destroy(scene);
@@ -1228,6 +1600,7 @@ static int test_axis_visual_clip_rect_panel(TstContext* suite, const TstCase* it
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);
+    AT(dvz_axis_set_grid(axis, true));
 
     DvzVisual* point = dvz_point(scene, 0);
     ANN(point);
@@ -1249,9 +1622,18 @@ static int test_axis_visual_clip_rect_panel(TstContext* suite, const TstCase* it
     AT(dvz_frame_plan_node_count(plan) == 1);
     const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
     ANN(render);
-    AT(render->u.render.visual_count == 2);
-    AT(render->u.render.visual_metadata[0].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT);
-    AT(render->u.render.visual_metadata[1].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PANEL);
+    AT(render->u.render.visual_count == 3);
+    uint32_t panel_clip_count = 0;
+    uint32_t plot_clip_count = 0;
+    for (uint32_t i = 0; i < render->u.render.visual_count; i++)
+    {
+        if (render->u.render.visual_metadata[i].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PANEL)
+            panel_clip_count++;
+        if (render->u.render.visual_metadata[i].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT)
+            plot_clip_count++;
+    }
+    AT(panel_clip_count == 1);
+    AT(plot_clip_count == 2);
 
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
@@ -1330,6 +1712,8 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_panel_visible_domain);
     TST_CASE(test_axis_panzoom_visible_domain);
     TST_CASE(test_axis_panzoom_layout_aligns_grid_to_plot);
+    TST_CASE(test_axis_raw_visual_panzoom_alignment);
+    TST_CASE(test_axis_integer_lattice_panzoom_alignment);
     TST_CASE(test_axis_zoom_out_in_grid_regression);
     TST_CASE(test_axis_panzoom_resize_visual_smoke);
     TST_CASE(test_axis_static_prepare_idempotent);

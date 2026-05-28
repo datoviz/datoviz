@@ -405,9 +405,31 @@ static bool _scene_visual_is_axis_derived(const DvzPanel* panel, const DvzVisual
         const DvzAxis* axis = &panel->axes[dim];
         if (axis->panel != panel)
             continue;
-        if (visual == axis->visual || visual == axis->text_visual)
+        if (visual == axis->visual || visual == axis->grid_visual || visual == axis->text_visual)
             return true;
         if (axis->text_visual != NULL && visual == axis->text_visual->text.glyph_visual)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Return whether a visual is an axis grid contribution.
+ *
+ * @param panel the panel owning axis handles
+ * @param visual the visual to classify
+ * @return whether the visual is an axis grid
+ */
+static bool _scene_visual_is_axis_grid(const DvzPanel* panel, const DvzVisual* visual)
+{
+    ANN(panel);
+    ANN(visual);
+    for (uint32_t dim = 0; dim < 2; dim++)
+    {
+        const DvzAxis* axis = &panel->axes[dim];
+        if (axis->panel == panel && visual == axis->grid_visual)
             return true;
     }
     return false;
@@ -426,6 +448,8 @@ static DvzFramePlanClipRect _scene_visual_clip_rect(const DvzPanel* panel, const
 {
     ANN(panel);
     ANN(visual);
+    if (_scene_visual_is_axis_grid(panel, visual))
+        return DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
     if (visual == panel->background_visual || visual->type == DVZ_VISUAL_TYPE_GLYPH ||
         _scene_visual_is_axis_derived(panel, visual) ||
         _scene_visual_is_colorbar_derived(panel, visual) ||

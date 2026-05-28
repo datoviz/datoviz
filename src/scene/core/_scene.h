@@ -1483,6 +1483,7 @@ struct DvzAxis
     bool tick_cache_valid;
     double ticks[DVZ_SCENE_MAX_AXIS_TICKS];
     DvzVisual* visual;
+    DvzVisual* grid_visual;
     DvzVisual* text_visual;
     uint32_t text_count;
     char text_labels[DVZ_SCENE_MAX_AXIS_TICKS + 1][DVZ_SCENE_LABEL_SIZE];
