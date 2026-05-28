@@ -24,3 +24,9 @@ bool _text_visual_prepare(
     DvzFigure* figure, DvzPanel* panel, const DvzPanelAttach* attach, DvzVisual* visual);
 
 bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotation);
+
+DvzFont* _text_sdf_font(DvzScene* scene, const DvzTextStyle* style);
+
+DvzTextAtlas* _text_font_atlas(DvzFont* font, const DvzTextAtlasSpec* spec);
+
+uint64_t _text_scene_font_version_sum(const DvzScene* scene);
