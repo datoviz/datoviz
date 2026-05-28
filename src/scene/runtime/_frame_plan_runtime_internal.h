@@ -406,7 +406,7 @@ bool _emitter_emit_scene_graph_renders(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* readback, const DvzFramePlanEmitConfig* cfg,
     DvzDiagnosticReport* report);
-bool _emitter_emit_render(
+bool _emitter_emit_render_compat(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const uint64_t* vertex_buffer_ids,
     uint32_t vertex_buffer_count, const DvzFramePlanNode* readback, bool clear,

@@ -57,7 +57,7 @@
  * @param cfg the emission config
  * @return whether the commands were emitted
  */
-bool _emitter_emit_render(
+bool _emitter_emit_render_compat(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const uint64_t* vertex_buffer_ids,
     uint32_t vertex_buffer_count, const DvzFramePlanNode* readback, bool clear,

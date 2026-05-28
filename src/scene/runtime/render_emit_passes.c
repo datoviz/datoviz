@@ -1501,7 +1501,7 @@ bool _emitter_emit_plain_renders(
         {
             scene_cache.pipeline_id = 0;
             scene_cache.bg_set0 = 0;
-            ok = _emitter_emit_render(
+            ok = _emitter_emit_render_compat(
                 emitter, stream, plan, render, vertex_buffer_ids, vertex_buffer_count,
                 render_count == 0 ? readback : NULL, render_count == 0, cfg,
                 is_scene_node ? &scene_cache : NULL, report);
