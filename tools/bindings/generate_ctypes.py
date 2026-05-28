@@ -344,19 +344,24 @@ def _ctype_for_type(
     value_records: set[str] | None = None,
     callbacks: set[str] | None = None,
 ) -> str | None:
-    for spelling in (type_info.get('qualtype', ''), type_info.get('canonical', '')):
+    spellings = [type_info.get('qualtype', ''), type_info.get('canonical', '')]
+    for spelling in spellings:
         ctype = _array_ctype(
             spelling, records, enums, value_records=value_records, callbacks=callbacks
         )
         if ctype is not None:
             return ctype
-    return _ctype_for(
-        type_info.get('qualtype', ''),
-        records,
-        enums,
-        value_records=value_records,
-        callbacks=callbacks,
-    )
+    for spelling in spellings:
+        ctype = _ctype_for(
+            spelling,
+            records,
+            enums,
+            value_records=value_records,
+            callbacks=callbacks,
+        )
+        if ctype is not None:
+            return ctype
+    return None
 
 
 def _unsupported_field_layout(type_info: dict) -> bool:
@@ -511,6 +516,8 @@ def _ctype_for(
     if t in CTYPE_MAP:
         return CTYPE_MAP[t]
     if t in enums:
+        return 'ctypes.c_int'
+    if t.startswith('enum '):
         return 'ctypes.c_int'
     if t in records:
         return t if value_records is None or t in value_records else None
