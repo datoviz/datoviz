@@ -13,7 +13,9 @@ and API specs; this file defines ownership, module boundaries, migration order, 
 As of 2026-05-28, the old flat `src/scene/plan/` folder is gone. Its former ownership is split
 across `frame_plan/`, `scene_emit/`, and `render_contract/`. Runtime render emission, core scene
 ownership, render-contract files, frame-plan internals, several annotation/domain helpers, polygon
-helpers, and the first visual descriptor/attribute slices have been split.
+helpers, and the first visual descriptor/attribute slices have been split. `scene_emit/uploads.c`
+is now phase orchestration over support/family helpers, and `scene_emit/panel.c` has first-pass
+helpers for drawable filtering/counting and framebuffer-scaled viewport setup.
 
 Important current state:
 

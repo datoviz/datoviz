@@ -139,7 +139,8 @@ is now split across `frame_plan/`, `render_contract/`, and `scene_emit/`.
 Current scene-emission ownership:
 
 1. `scene_emit/core.c`: retained scene -> FramePlan facade.
-2. `scene_emit/panel.c`: panel render lowering and pass scheduling.
+2. `scene_emit/panel.c`: panel render lowering and pass scheduling; drawable guards/counting and
+   framebuffer-scaled viewport setup now have local helpers.
 3. `scene_emit/uploads.c`: panel-visible visual upload phase orchestration.
 4. `scene_emit/derived_upload.c`: derived-geometry upload orchestration for family-owned payloads.
 5. `scene_emit/upload_support.c`: shared upload metadata/resource-role helpers plus dense-attribute,
