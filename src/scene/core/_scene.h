@@ -695,11 +695,6 @@ struct DvzAnimation
 
 
 /*************************************************************************************************/
-/*  Camera                                                                                       */
-/*************************************************************************************************/
-
-DvzCamera* _dvz_camera(const DvzCameraDesc* desc);
-
 void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out);
 bool _scene_panel_panzoom_extent(const DvzPanel* panel, float out[4]);
 
