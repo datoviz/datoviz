@@ -89,8 +89,30 @@ export class Drp2WebGpuError extends Error {
 
 
 function classifyDrp2WebGpuError(message) {
+  if (message.includes("requires feature")) {
+    return "DRP2_ERR_FEATURE_REQUIRED";
+  }
+  if (message.includes("unsupported DRP2 version")) {
+    return "DRP2_ERR_UNSUPPORTED_VERSION";
+  }
   if (message.startsWith("unsupported ") || message.includes("unsupported DRP2 command")) {
     return "DRP2_ERR_UNSUPPORTED_CAPABILITY";
+  }
+  if (message.includes("not supported by capabilities")) {
+    return "DRP2_ERR_UNSUPPORTED_CAPABILITY";
+  }
+  if (message.includes("out of range") || message.includes("exceeds")) {
+    return "DRP2_ERR_OUT_OF_RANGE";
+  }
+  if (
+    message.includes("lacks") ||
+    message.includes("usage") ||
+    message.includes("referenced by")
+  ) {
+    return "DRP2_ERR_USAGE";
+  }
+  if (message.startsWith("unknown pass") || message.startsWith("unknown command encoder")) {
+    return "DRP2_ERR_INVALID_STATE";
   }
   if (message.startsWith("unknown ")) {
     return "DRP2_ERR_INVALID_ID";
@@ -106,11 +128,26 @@ function classifyDrp2WebGpuError(message) {
   }
   if (
     message.includes("destroyed") ||
-    message.includes("referenced by") ||
     message.includes("already been submitted") ||
-    message.includes("has no bound pipeline")
+    message.includes("has no bound pipeline") ||
+    message.includes("handshake") ||
+    message.includes("diagnostic Error before") ||
+    message.includes("open pass") ||
+    message.includes("before a pipeline") ||
+    message.includes("missing vertex buffer") ||
+    message.includes("missing index buffer") ||
+    message.includes("dynamic offset count") ||
+    message.includes("does not match pipeline slot")
   ) {
     return "DRP2_ERR_INVALID_STATE";
+  }
+  if (
+    message.includes("bytes_per_row") ||
+    message.includes("rows_per_image") ||
+    message.includes("texture payload") ||
+    message.includes("texture layout")
+  ) {
+    return "DRP2_ERR_LAYOUT";
   }
   return "DRP2_ERR_INVALID_ARGUMENT";
 }
@@ -303,6 +340,25 @@ function mapTextureFormat(format) {
     case "rgba16float":
     case "depth32float":
       return format;
+    default:
+      throw new Error(`unsupported texture format: ${format}`);
+  }
+}
+
+
+
+function textureFormatBytes(format) {
+  switch (format) {
+    case "r16float":
+      return 2;
+    case "r32uint":
+    case "rgba8unorm":
+    case "bgra8unorm":
+    case "depth32float":
+      return 4;
+    case "rg32uint":
+    case "rgba16float":
+      return 8;
     default:
       throw new Error(`unsupported texture format: ${format}`);
   }
@@ -654,6 +710,15 @@ function makeBindGroupLayoutEntry(entry, storageAccess = "read_write", options =
         visibility: shaderStageVisibility(entry.visibility, ["FRAGMENT", "COMPUTE"]),
         buffer: { type: storageAccess === "read" ? "read-only-storage" : "storage" },
       };
+    case "storage_texture":
+      return {
+        binding,
+        visibility: shaderStageVisibility(entry.visibility, ["COMPUTE"]),
+        storageTexture: {
+          access: entry.access ?? "write-only",
+          format: mapTextureFormat(entry.format ?? "rgba8unorm"),
+        },
+      };
     default:
       throw new Error(`unsupported bind-group layout binding_type: ${entry.binding_type}`);
   }
@@ -752,6 +817,82 @@ function makeBindGroup(device, bindGroupLayout, command, buffers, textures, text
 
 
 
+function resourceKindForBindingType(bindingType) {
+  switch (bindingType) {
+    case "uniform_buffer":
+    case "storage_buffer":
+      return "buffer";
+    case "sampled_texture":
+    case "storage_texture":
+      return "texture";
+    case "sampler":
+      return "sampler";
+    default:
+      throw new Error(`unsupported bind-group layout binding_type: ${bindingType}`);
+  }
+}
+
+
+
+function validateBindGroupEntry(layoutEntry, entry, resourceRecord) {
+  if (layoutEntry.binding_type !== entry.binding_type) {
+    throw new Error(`bind-group entry binding type does not match layout binding ${entry.binding}`);
+  }
+  const expectedKind = resourceKindForBindingType(layoutEntry.binding_type);
+  const textureViewAllowed =
+    expectedKind === "texture" && entry.resource_kind === "texture_view";
+  if (entry.resource_kind !== expectedKind && !textureViewAllowed) {
+    throw new Error(`bind-group entry resource kind does not match layout binding ${entry.binding}`);
+  }
+  if (entry.resource_kind === "texture_view") {
+    return;
+  }
+  if (layoutEntry.binding_type === "sampled_texture") {
+    requireUsage(resourceRecord, "TEXTURE_BINDING");
+  } else if (layoutEntry.binding_type === "storage_texture") {
+    requireUsage(resourceRecord, "STORAGE_BINDING");
+  } else if (layoutEntry.binding_type === "uniform_buffer") {
+    requireUsage(resourceRecord, "UNIFORM");
+  } else if (layoutEntry.binding_type === "storage_buffer") {
+    requireUsage(resourceRecord, "STORAGE");
+  }
+  if (layoutEntry.has_dynamic_offset && (entry.offset === undefined || entry.size === undefined)) {
+    throw new Error(`dynamic bind-group binding ${entry.binding} needs offset and size`);
+  }
+}
+
+
+
+function dynamicLayoutEntries(layoutRecord) {
+  return layoutRecord.entries.filter((entry) => entry.has_dynamic_offset);
+}
+
+
+
+function validateDynamicOffsets(state, layoutRecord, bindGroupRecord, dynamicOffsets) {
+  const dynamicEntries = dynamicLayoutEntries(layoutRecord);
+  if (dynamicOffsets.length !== dynamicEntries.length) {
+    throw new Error(
+      `dynamic offset count ${dynamicOffsets.length} does not match layout count ${dynamicEntries.length}`,
+    );
+  }
+  for (let i = 0; i < dynamicEntries.length; i++) {
+    const layoutEntry = dynamicEntries[i];
+    const bindEntry = bindGroupRecord.entries.find((entry) => entry.binding === layoutEntry.binding);
+    if (bindEntry === undefined || bindEntry.resource_kind !== "buffer") {
+      throw new Error(`dynamic bind-group binding ${layoutEntry.binding} needs buffer resource`);
+    }
+    const baseOffset = bindEntry.offset ?? 0;
+    const size = required(bindEntry.size, `dynamic bind-group binding ${layoutEntry.binding} needs size`);
+    const record = requireLiveRecord(state, bindEntry.resource_id, "buffer");
+    if (baseOffset + dynamicOffsets[i] + size > record.size) {
+      throw new Error(`dynamic offset for binding ${layoutEntry.binding} is out of range`);
+    }
+  }
+}
+
+
+
 function bindGroupForSet(device, passRecord, slot, bindGroupRecord, command, buffers, textures, textureViews, samplers) {
   const layout = passRecord.pipeline?.bindGroupLayouts?.[slot];
   if (layout === undefined && (command.dynamic_offsets ?? []).length === 0) {
@@ -785,6 +926,100 @@ function makeTextureViewDescriptor(command) {
     baseArrayLayer: command.layer_range?.base ?? 0,
     arrayLayerCount: command.layer_range?.count,
   };
+}
+
+
+
+function commandExtent(command) {
+  return {
+    width: resolveTextureExtentValue(command.width, "width"),
+    height: resolveTextureExtentValue(command.height, "height"),
+    depth: command.depth ?? 1,
+  };
+}
+
+
+
+function mipExtent(textureRecord, mipLevel) {
+  return {
+    width: Math.max(1, textureRecord.width >> mipLevel),
+    height: Math.max(1, textureRecord.height >> mipLevel),
+    depth: textureRecord.depth,
+  };
+}
+
+
+
+function requireUsage(record, usage) {
+  if (!record.usage?.has(usage)) {
+    throw new Error(`${objectLabel(record.kind)} ${record.id} lacks ${usage} usage`);
+  }
+}
+
+
+
+function validateTextureCapabilities(stream, command, format, extent) {
+  const capabilities = stream.capabilities ?? {};
+  if (
+    Array.isArray(capabilities.supported_texture_formats) &&
+    !capabilities.supported_texture_formats.includes(format)
+  ) {
+    throw new Error(`texture format ${format} is not supported by capabilities`);
+  }
+  const sampleCount = command.sample_count ?? 1;
+  if (
+    Array.isArray(capabilities.supported_sample_counts) &&
+    !capabilities.supported_sample_counts.includes(sampleCount)
+  ) {
+    throw new Error(`sample count ${sampleCount} is not supported by capabilities`);
+  }
+  const maxTextureDimension2d = capabilities.max_texture_dimension_2d;
+  if (
+    (command.dimension ?? "2d") === "2d" &&
+    Number.isFinite(maxTextureDimension2d) &&
+    (extent.width > maxTextureDimension2d || extent.height > maxTextureDimension2d)
+  ) {
+    throw new Error(`2d texture extent ${extent.width}x${extent.height} is not supported by capabilities`);
+  }
+}
+
+
+
+function validateTextureRange(textureRecord, mipLevel, origin, size) {
+  if (mipLevel >= textureRecord.mipLevelCount) {
+    throw new Error(`mip level ${mipLevel} is out of range`);
+  }
+  const extent = mipExtent(textureRecord, mipLevel);
+  if (
+    (origin.x ?? 0) + required(size.width, "texture copy size needs width") > extent.width ||
+    (origin.y ?? 0) + required(size.height, "texture copy size needs height") > extent.height ||
+    (origin.z ?? 0) + (size.depth ?? 1) > extent.depth
+  ) {
+    throw new Error("texture range is out of range");
+  }
+}
+
+
+
+function validateTextureLayout(textureRecord, size, bytesPerRow, rowsPerImage, payloadSize = null) {
+  const rowBytes = required(size.width, "texture layout size needs width") *
+    textureFormatBytes(textureRecord.format);
+  const height = required(size.height, "texture layout size needs height");
+  const depth = size.depth ?? 1;
+  if (bytesPerRow < rowBytes) {
+    throw new Error(`bytes_per_row ${bytesPerRow} is smaller than row layout ${rowBytes}`);
+  }
+  if (depth > 1 && rowsPerImage < height) {
+    throw new Error(`rows_per_image ${rowsPerImage} is smaller than texture layout height ${height}`);
+  }
+  if (payloadSize !== null) {
+    const requiredBytes = depth > 1
+      ? (depth - 1) * rowsPerImage * bytesPerRow + (height - 1) * bytesPerRow + rowBytes
+      : (height - 1) * bytesPerRow + rowBytes;
+    if (payloadSize < requiredBytes) {
+      throw new Error(`texture payload ${payloadSize} is smaller than layout footprint ${requiredBytes}`);
+    }
+  }
 }
 
 
@@ -1075,6 +1310,12 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, 
     shaders.get(command.fragment_shader_module_id),
     `unknown fragment shader module ${command.fragment_shader_module_id}`,
   );
+  if (vertexShader.stage !== undefined && vertexShader.stage !== "VERTEX") {
+    throw new Error(`vertex shader module ${command.vertex_shader_module_id} has invalid stage`);
+  }
+  if (fragmentShader.stage !== undefined && fragmentShader.stage !== "FRAGMENT") {
+    throw new Error(`fragment shader module ${command.fragment_shader_module_id} has invalid stage`);
+  }
 
   if (options.requireExplicitPipelineMetadata && command.vertex_buffers === undefined) {
     throw new Error(`render pipeline ${command.id} needs explicit vertex_buffers`);
@@ -1100,9 +1341,11 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, 
     : "auto";
 
   return {
+    bindGroupLayoutIds,
     bindGroupLayouts: pipelineBindGroupLayouts,
     colorTargetFormats,
     depthStencilFormat: pipelineDepthStencilFormat,
+    vertexBufferSlots: command.vertex_buffer_slots ?? (command.vertex_buffers ?? []).length,
     pipeline: device.createRenderPipeline({
       label: command.label,
       layout,
@@ -1131,6 +1374,9 @@ function makeComputePipeline(device, shaders, bindGroupLayouts, command, options
     shaders.get(command.compute_shader_module_id),
     `unknown compute shader module ${command.compute_shader_module_id}`,
   );
+  if (shader.stage !== undefined && shader.stage !== "COMPUTE") {
+    throw new Error(`compute shader module ${command.compute_shader_module_id} has invalid stage`);
+  }
   const bindGroupLayoutIds = command.bind_group_layout_ids ?? [];
   const pipelineBindGroupLayouts = bindGroupLayoutIds.map((id) =>
     specializeBindGroupLayout(
@@ -1147,6 +1393,7 @@ function makeComputePipeline(device, shaders, bindGroupLayouts, command, options
     : "auto";
 
   return {
+    bindGroupLayoutIds,
     bindGroupLayouts: pipelineBindGroupLayouts,
     pipeline: device.createComputePipeline({
       label: command.label,
@@ -1260,6 +1507,46 @@ function validateRenderPipelineForPass(passRecord, pipelineRecord, pipelineId) {
         `${pipelineRecord.depthStencilFormat ?? "none"} does not match render pass ` +
         `${passRecord.id} attachment format ${passRecord.depthStencilFormat ?? "none"}`,
     );
+  }
+}
+
+
+
+function requireNoOpenPass(passes, encoderId) {
+  for (const passRecord of passes.values()) {
+    if (passRecord.encoderId === encoderId) {
+      throw new Error(`command encoder ${encoderId} has an open pass`);
+    }
+  }
+}
+
+
+
+function requireBoundPipeline(passRecord) {
+  if (passRecord.pipeline === undefined) {
+    throw new Error("pass has no bound pipeline");
+  }
+  return passRecord.pipeline;
+}
+
+
+
+function validateRenderDrawState(passRecord) {
+  const pipeline = requireBoundPipeline(passRecord);
+  const vertexBufferSlots = pipeline.vertexBufferSlots ?? 0;
+  for (let slot = 0; slot < vertexBufferSlots; slot++) {
+    if (!passRecord.vertexBuffers.has(slot)) {
+      throw new Error(`missing vertex buffer slot ${slot}`);
+    }
+  }
+}
+
+
+
+function validateIndexedDrawState(passRecord) {
+  validateRenderDrawState(passRecord);
+  if (!passRecord.hasIndexBuffer) {
+    throw new Error("missing index buffer");
   }
 }
 
@@ -1554,9 +1841,35 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
   const pendingTightTextureCopies = [];
   const readbackReplies = [];
   const commands = options.commands ?? stream.commands;
+  const enforceHandshake = options.commands === undefined;
+  let sessionState = "initial";
 
   for (const [commandIndex, command] of commands.entries()) {
     try {
+      if (enforceHandshake) {
+        if (command.cmd === "HelloRenderer") {
+          if (sessionState !== "initial") {
+            throw new Error("handshake already started");
+          }
+          if (command.version?.major !== 2) {
+            throw new Error(`unsupported DRP2 version ${command.version?.major ?? "unknown"}`);
+          }
+          sessionState = "hello";
+        } else if (command.cmd === "RendererHelloReply") {
+          if (sessionState !== "hello") {
+            throw new Error("handshake reply without pending hello");
+          }
+          sessionState = command.status === "ok" ? "ready" : "failed";
+        } else if (command.cmd === "Error") {
+          if (sessionState === "initial") {
+            throw new Error("diagnostic Error before handshake");
+          }
+        } else if (sessionState === "failed") {
+          throw new Error("handshake failed before active command");
+        } else if (sessionState !== "ready") {
+          throw new Error("handshake is not ready");
+        }
+      }
       switch (command.cmd) {
       case "HelloRenderer":
       case "RendererHelloReply":
@@ -1573,11 +1886,13 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
             usage: mapBufferUsage(command.usage),
           }),
           "buffer",
+          { size: required(command.size, "CreateBuffer needs size"), usage: new Set(command.usage ?? []) },
         );
         break;
 
       case "WriteBuffer": {
-        requireLiveRecord(state, command.buffer_id, "buffer");
+        const bufferRecord = requireLiveRecord(state, command.buffer_id, "buffer");
+        requireUsage(bufferRecord, "COPY_DST");
         const buffer = required(
           buffers.get(command.buffer_id),
           `unknown buffer ${command.buffer_id}`,
@@ -1587,12 +1902,17 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         if (size !== bytes.byteLength) {
           throw new Error(`WriteBuffer size ${size} does not match payload size ${bytes.byteLength}`);
         }
+        if ((command.offset ?? 0) + size > bufferRecord.size) {
+          throw new Error("WriteBuffer range is out of range");
+        }
         device.queue.writeBuffer(buffer, command.offset ?? 0, bytes, 0, bytes.byteLength);
         break;
       }
 
       case "CreateTexture": {
         const textureFormat = mapTextureFormat(required(command.format, "CreateTexture needs format"));
+        const extent = commandExtent(command);
+        validateTextureCapabilities(stream, command, textureFormat, extent);
         registerObject(
           state,
           textures,
@@ -1600,9 +1920,9 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           device.createTexture({
             label: command.label,
             size: {
-              width: resolveTextureExtentValue(command.width, "width"),
-              height: resolveTextureExtentValue(command.height, "height"),
-              depthOrArrayLayers: command.depth ?? 1,
+              width: extent.width,
+              height: extent.height,
+              depthOrArrayLayers: extent.depth,
             },
             mipLevelCount: command.mip_level_count ?? 1,
             sampleCount: command.sample_count ?? 1,
@@ -1611,7 +1931,16 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
             usage: mapTextureUsage(command.usage),
           }),
           "texture",
-          { format: textureFormat },
+          {
+            format: textureFormat,
+            width: extent.width,
+            height: extent.height,
+            depth: extent.depth,
+            mipLevelCount: command.mip_level_count ?? 1,
+            sampleCount: command.sample_count ?? 1,
+            dimension: command.dimension ?? "2d",
+            usage: new Set(command.usage ?? []),
+          },
         );
         break;
       }
@@ -1638,7 +1967,8 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       }
 
       case "WriteTexture": {
-        requireLiveRecord(state, command.texture_id, "texture");
+        const textureRecord = requireLiveRecord(state, command.texture_id, "texture");
+        requireUsage(textureRecord, "COPY_DST");
         const texture = required(
           textures.get(command.texture_id),
           `unknown texture ${command.texture_id}`,
@@ -1646,10 +1976,15 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         const bytes = await decodePayload(command, "WriteTexture");
         const size = required(command.size, "WriteTexture needs size");
         const origin = command.origin ?? { x: 0, y: 0, z: 0 };
+        const mipLevel = command.mip_level ?? 0;
+        const rowsPerImage = command.rows_per_image ?? size.height;
+        const bytesPerRow = required(command.bytes_per_row, "WriteTexture needs bytes_per_row");
+        validateTextureRange(textureRecord, mipLevel, origin, size);
+        validateTextureLayout(textureRecord, size, bytesPerRow, rowsPerImage, bytes.byteLength);
         device.queue.writeTexture(
           {
             texture,
-            mipLevel: command.mip_level ?? 0,
+            mipLevel,
             origin: {
               x: origin.x ?? 0,
               y: origin.y ?? 0,
@@ -1659,8 +1994,8 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           bytes,
           {
             offset: 0,
-            bytesPerRow: required(command.bytes_per_row, "WriteTexture needs bytes_per_row"),
-            rowsPerImage: command.rows_per_image ?? size.height,
+            bytesPerRow,
+            rowsPerImage,
           },
           {
             width: required(size.width, "WriteTexture size needs width"),
@@ -1695,6 +2030,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           bindGroupLayouts,
           command.id,
           {
+            id: command.id,
             entries: required(command.entries, "CreateBindGroupLayout needs entries"),
             layout: device.createBindGroupLayout({
               label: command.label,
@@ -1712,36 +2048,47 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           command.bind_group_layout_id,
           "bind_group_layout",
         );
-        const dependencies = [bindGroupLayoutRecord];
-        for (const entry of required(command.entries, "CreateBindGroup needs entries")) {
-          switch (entry.resource_kind) {
-            case "buffer":
-              dependencies.push(requireLiveRecord(state, entry.resource_id, "buffer"));
-              break;
-            case "texture":
-              dependencies.push(requireLiveRecord(state, entry.resource_id, "texture"));
-              break;
-            case "texture_view":
-              dependencies.push(requireLiveRecord(state, entry.resource_id, "texture_view"));
-              break;
-            case "sampler":
-              dependencies.push(requireLiveRecord(state, entry.resource_id, "sampler"));
-              break;
-            default:
-              throw new Error(`unsupported bind-group resource_kind: ${entry.resource_kind}`);
-          }
-        }
         const bindGroupLayout = required(
           bindGroupLayouts.get(command.bind_group_layout_id),
           `unknown bind-group layout ${command.bind_group_layout_id}`,
         );
+        const entries = required(command.entries, "CreateBindGroup needs entries");
+        if (entries.length !== bindGroupLayout.entries.length) {
+          throw new Error("bind-group entry count does not match layout");
+        }
+        const dependencies = [bindGroupLayoutRecord];
+        for (const entry of entries) {
+          const layoutEntry = bindGroupLayout.entries.find((item) => item.binding === entry.binding);
+          if (layoutEntry === undefined) {
+            throw new Error(`bind-group entry binding ${entry.binding} is not in layout`);
+          }
+          let resourceRecord = null;
+          switch (entry.resource_kind) {
+            case "buffer":
+              resourceRecord = requireLiveRecord(state, entry.resource_id, "buffer");
+              break;
+            case "texture":
+              resourceRecord = requireLiveRecord(state, entry.resource_id, "texture");
+              break;
+            case "texture_view":
+              resourceRecord = requireLiveRecord(state, entry.resource_id, "texture_view");
+              break;
+            case "sampler":
+              resourceRecord = requireLiveRecord(state, entry.resource_id, "sampler");
+              break;
+            default:
+              throw new Error(`unsupported bind-group resource_kind: ${entry.resource_kind}`);
+          }
+          validateBindGroupEntry(layoutEntry, entry, resourceRecord);
+          dependencies.push(resourceRecord);
+        }
         const record = registerObject(
           state,
           bindGroups,
           command.id,
           {
             layoutId: command.bind_group_layout_id,
-            entries: required(command.entries, "CreateBindGroup needs entries"),
+            entries,
             bindGroup: makeBindGroup(
               device,
               bindGroupLayout,
@@ -1763,6 +2110,12 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       case "CreateShaderModule": {
         if (command.format !== "wgsl") {
           throw new Error(`unsupported shader format: ${command.format}`);
+        }
+        if (
+          command.required_features?.includes("fp64") &&
+          stream.capabilities?.supports_fp64 === false
+        ) {
+          throw new Error("shader module requires feature fp64");
         }
         const module = device.createShaderModule({
           label: command.label,
@@ -1859,6 +2212,8 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           encoderId: command.encoder_id,
           colorAttachmentFormats: attachmentFormats.colorAttachmentFormats,
           depthStencilFormat: attachmentFormats.depthStencilFormat,
+          vertexBuffers: new Set(),
+          hasIndexBuffer: false,
           pass: beginRenderPass(context, textures, encoders, command),
         });
         break;
@@ -1873,6 +2228,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           id: command.id,
           kind: "compute",
           encoderId: command.encoder_id,
+          pipeline: undefined,
           pass: encoder.beginComputePass({ label: command.label }),
         });
         break;
@@ -1904,8 +2260,10 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           buffers.get(command.buffer_id),
           `unknown buffer ${command.buffer_id}`,
         );
+        requireUsage(requireLiveRecord(state, command.buffer_id, "buffer"), "VERTEX");
         addEncoderRef(state, encoderRefs, passRecord.encoderId, command.buffer_id, "buffer");
         passRecord.pass.setVertexBuffer(command.slot ?? 0, buffer, command.offset ?? 0);
+        passRecord.vertexBuffers.add(command.slot ?? 0);
         break;
       }
 
@@ -1918,18 +2276,30 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           buffers.get(command.buffer_id),
           `unknown buffer ${command.buffer_id}`,
         );
+        requireUsage(requireLiveRecord(state, command.buffer_id, "buffer"), "INDEX");
         addEncoderRef(state, encoderRefs, passRecord.encoderId, command.buffer_id, "buffer");
         passRecord.pass.setIndexBuffer(buffer, mapIndexFormat(command.index_format), command.offset ?? 0);
+        passRecord.hasIndexBuffer = true;
         break;
       }
 
       case "SetBindGroup": {
         const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        const pipelineRecord = requireBoundPipeline(passRecord);
         const bindGroupRecord = required(
           bindGroups.get(command.bind_group_id),
           `unknown bind group ${command.bind_group_id}`,
         );
         const slot = command.slot ?? 0;
+        const expectedLayoutId = pipelineRecord.bindGroupLayoutIds?.[slot];
+        if (expectedLayoutId !== undefined && expectedLayoutId !== bindGroupRecord.layoutId) {
+          throw new Error(`bind group layout does not match pipeline slot ${slot}`);
+        }
+        const layoutRecord = required(
+          bindGroupLayouts.get(bindGroupRecord.layoutId),
+          `unknown bind-group layout ${bindGroupRecord.layoutId}`,
+        );
+        validateDynamicOffsets(state, layoutRecord, bindGroupRecord, command.dynamic_offsets ?? []);
         const bindGroup = bindGroupForSet(
           device,
           passRecord,
@@ -1994,6 +2364,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         if (passRecord.kind !== "render") {
           throw new Error("Draw requires a render pass");
         }
+        validateRenderDrawState(passRecord);
         passRecord.pass.draw(
           command.vertex_count,
           command.instance_count ?? 1,
@@ -2008,6 +2379,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         if (passRecord.kind !== "render") {
           throw new Error("DrawIndexed requires a render pass");
         }
+        validateIndexedDrawState(passRecord);
         passRecord.pass.drawIndexed(
           command.index_count,
           command.instance_count ?? 1,
@@ -2023,6 +2395,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         if (passRecord.kind !== "compute") {
           throw new Error("DispatchWorkgroups requires a compute pass");
         }
+        requireBoundPipeline(passRecord);
         passRecord.pass.dispatchWorkgroups(command.x ?? 1, command.y ?? 1, command.z ?? 1);
         break;
       }
@@ -2048,12 +2421,27 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       }
 
       case "CopyTextureToBuffer": {
+        requireNoOpenPass(passes, command.encoder_id);
         const encoder = required(
           encoders.get(command.encoder_id),
           `unknown command encoder ${command.encoder_id}`,
         );
-        addEncoderRef(state, encoderRefs, command.encoder_id, command.src_texture_id, "texture");
-        addEncoderRef(state, encoderRefs, command.encoder_id, command.dst_buffer_id, "buffer");
+        const textureRecord = addEncoderRef(
+          state,
+          encoderRefs,
+          command.encoder_id,
+          command.src_texture_id,
+          "texture",
+        );
+        const bufferRecord = addEncoderRef(
+          state,
+          encoderRefs,
+          command.encoder_id,
+          command.dst_buffer_id,
+          "buffer",
+        );
+        requireUsage(textureRecord, "COPY_SRC");
+        requireUsage(bufferRecord, "COPY_DST");
         const texture = required(
           textures.get(command.src_texture_id),
           `unknown source texture ${command.src_texture_id}`,
@@ -2072,6 +2460,17 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         let dstBuffer = buffer;
         let dstOffset = command.dst_offset ?? 0;
         let copyBytesPerRow = bytesPerRow;
+        const mipLevel = command.src_mip_level ?? 0;
+        validateTextureRange(textureRecord, mipLevel, origin, size);
+        validateTextureLayout(textureRecord, size, bytesPerRow, rowsPerImage);
+        const layoutBytes = (size.depth ?? 1) > 1
+          ? ((size.depth ?? 1) - 1) * rowsPerImage * bytesPerRow +
+              (size.height - 1) * bytesPerRow +
+              size.width * textureFormatBytes(textureRecord.format)
+          : (size.height - 1) * bytesPerRow + size.width * textureFormatBytes(textureRecord.format);
+        if ((command.dst_offset ?? 0) + layoutBytes > bufferRecord.size) {
+          throw new Error("CopyTextureToBuffer destination range is out of range");
+        }
 
         if (bytesPerRow % 256 !== 0) {
           copyBytesPerRow = alignedBytesPerRow(bytesPerRow);
@@ -2094,7 +2493,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         encoder.copyTextureToBuffer(
           {
             texture,
-            mipLevel: command.src_mip_level ?? 0,
+            mipLevel,
             origin: {
               x: origin.x ?? 0,
               y: origin.y ?? 0,
@@ -2128,12 +2527,33 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       }
 
       case "CopyBufferToBuffer": {
+        requireNoOpenPass(passes, command.encoder_id);
         const encoder = required(
           encoders.get(command.encoder_id),
           `unknown command encoder ${command.encoder_id}`,
         );
-        addEncoderRef(state, encoderRefs, command.encoder_id, command.src_buffer_id, "buffer");
-        addEncoderRef(state, encoderRefs, command.encoder_id, command.dst_buffer_id, "buffer");
+        const srcRecord = addEncoderRef(
+          state,
+          encoderRefs,
+          command.encoder_id,
+          command.src_buffer_id,
+          "buffer",
+        );
+        const dstRecord = addEncoderRef(
+          state,
+          encoderRefs,
+          command.encoder_id,
+          command.dst_buffer_id,
+          "buffer",
+        );
+        requireUsage(srcRecord, "COPY_SRC");
+        requireUsage(dstRecord, "COPY_DST");
+        if ((command.src_offset ?? 0) + command.size > srcRecord.size) {
+          throw new Error("CopyBufferToBuffer source range is out of range");
+        }
+        if ((command.dst_offset ?? 0) + command.size > dstRecord.size) {
+          throw new Error("CopyBufferToBuffer destination range is out of range");
+        }
         const srcBuffer = required(
           buffers.get(command.src_buffer_id),
           `unknown source buffer ${command.src_buffer_id}`,
@@ -2153,12 +2573,27 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       }
 
       case "CopyBufferToTexture": {
+        requireNoOpenPass(passes, command.encoder_id);
         const encoder = required(
           encoders.get(command.encoder_id),
           `unknown command encoder ${command.encoder_id}`,
         );
-        addEncoderRef(state, encoderRefs, command.encoder_id, command.src_buffer_id, "buffer");
-        addEncoderRef(state, encoderRefs, command.encoder_id, command.dst_texture_id, "texture");
+        const bufferRecord = addEncoderRef(
+          state,
+          encoderRefs,
+          command.encoder_id,
+          command.src_buffer_id,
+          "buffer",
+        );
+        const textureRecord = addEncoderRef(
+          state,
+          encoderRefs,
+          command.encoder_id,
+          command.dst_texture_id,
+          "texture",
+        );
+        requireUsage(bufferRecord, "COPY_SRC");
+        requireUsage(textureRecord, "COPY_DST");
         const buffer = required(
           buffers.get(command.src_buffer_id),
           `unknown source buffer ${command.src_buffer_id}`,
@@ -2169,16 +2604,21 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         );
         const origin = command.dst_origin ?? { x: 0, y: 0, z: 0 };
         const size = required(command.size, "CopyBufferToTexture needs size");
+        const bytesPerRow = required(command.bytes_per_row, "CopyBufferToTexture needs bytes_per_row");
+        const rowsPerImage = command.rows_per_image ?? size.height;
+        const mipLevel = command.dst_mip_level ?? 0;
+        validateTextureRange(textureRecord, mipLevel, origin, size);
+        validateTextureLayout(textureRecord, size, bytesPerRow, rowsPerImage);
         encoder.copyBufferToTexture(
           {
             buffer,
             offset: command.src_offset ?? 0,
-            bytesPerRow: required(command.bytes_per_row, "CopyBufferToTexture needs bytes_per_row"),
-            rowsPerImage: command.rows_per_image ?? size.height,
+            bytesPerRow,
+            rowsPerImage,
           },
           {
             texture,
-            mipLevel: command.dst_mip_level ?? 0,
+            mipLevel,
             origin: {
               x: origin.x ?? 0,
               y: origin.y ?? 0,
@@ -2195,12 +2635,27 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       }
 
       case "CopyTextureToTexture": {
+        requireNoOpenPass(passes, command.encoder_id);
         const encoder = required(
           encoders.get(command.encoder_id),
           `unknown command encoder ${command.encoder_id}`,
         );
-        addEncoderRef(state, encoderRefs, command.encoder_id, command.src_texture_id, "texture");
-        addEncoderRef(state, encoderRefs, command.encoder_id, command.dst_texture_id, "texture");
+        const srcRecord = addEncoderRef(
+          state,
+          encoderRefs,
+          command.encoder_id,
+          command.src_texture_id,
+          "texture",
+        );
+        const dstRecord = addEncoderRef(
+          state,
+          encoderRefs,
+          command.encoder_id,
+          command.dst_texture_id,
+          "texture",
+        );
+        requireUsage(srcRecord, "COPY_SRC");
+        requireUsage(dstRecord, "COPY_DST");
         const srcTexture = required(
           textures.get(command.src_texture_id),
           `unknown source texture ${command.src_texture_id}`,
@@ -2212,10 +2667,14 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         const srcOrigin = command.src_origin ?? { x: 0, y: 0, z: 0 };
         const dstOrigin = command.dst_origin ?? { x: 0, y: 0, z: 0 };
         const size = required(command.size, "CopyTextureToTexture needs size");
+        const srcMipLevel = command.src_mip_level ?? 0;
+        const dstMipLevel = command.dst_mip_level ?? 0;
+        validateTextureRange(srcRecord, srcMipLevel, srcOrigin, size);
+        validateTextureRange(dstRecord, dstMipLevel, dstOrigin, size);
         encoder.copyTextureToTexture(
           {
             texture: srcTexture,
-            mipLevel: command.src_mip_level ?? 0,
+            mipLevel: srcMipLevel,
             origin: {
               x: srcOrigin.x ?? 0,
               y: srcOrigin.y ?? 0,
@@ -2224,7 +2683,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           },
           {
             texture: dstTexture,
-            mipLevel: command.dst_mip_level ?? 0,
+            mipLevel: dstMipLevel,
             origin: {
               x: dstOrigin.x ?? 0,
               y: dstOrigin.y ?? 0,
@@ -2241,6 +2700,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       }
 
       case "FinishCommandEncoder": {
+        requireNoOpenPass(passes, command.encoder_id);
         const encoder = required(
           encoders.get(command.encoder_id),
           `unknown command encoder ${command.encoder_id}`,
@@ -2258,6 +2718,9 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
 
       case "QueueSubmit": {
         const ids = command.command_buffer_ids ?? [command.command_buffer_id];
+        if (new Set(ids).size !== ids.length) {
+          throw new Error("duplicate command buffer id in QueueSubmit");
+        }
         const submitBuffers = ids.map((id) =>
           submitCommandBuffer(required(commandBuffers.get(id), `unknown command buffer ${id}`)),
         );
@@ -2267,13 +2730,17 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           await device.queue.onSubmittedWorkDone();
         }
         for (const readback of readbacks) {
-          requireLiveRecord(state, readback.buffer_id, "buffer");
+          const bufferRecord = requireLiveRecord(state, readback.buffer_id, "buffer");
+          requireUsage(bufferRecord, "MAP_READ");
           const buffer = required(
             buffers.get(readback.buffer_id),
             `unknown readback buffer ${readback.buffer_id}`,
           );
           const offset = readback.offset ?? 0;
           const size = required(readback.size, "readback needs size");
+          if (offset + size > bufferRecord.size) {
+            throw new Error("readback range is out of range");
+          }
           await buffer.mapAsync(GPUMapMode.READ, offset, size);
           const mapped = buffer.getMappedRange(offset, size);
           const bytes = new Uint8Array(mapped.slice(0));

@@ -178,7 +178,7 @@ just webgpu-fixture-preflight
 ```
 
 The broader browserless WebGPU smoke path also executes the `37 + 2` subset with a fake WebGPU device
-and checks the manifest's `16` selected negative DRP2 fixtures for parity of `commandIndex`, `cmd`,
+and checks the manifest's `81` DRP2 semantic negative fixtures for parity of `commandIndex`, `cmd`,
 and `code`:
 
 ```bash
