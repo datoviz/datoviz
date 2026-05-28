@@ -723,23 +723,6 @@ DvzVisual* dvz_splat(DvzScene* scene, uint32_t flags)
 
 
 /**
- * Create a pixel visual.
- *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual, or NULL on allocation failure
- */
-DvzVisual* dvz_pixel(DvzScene* scene, uint32_t flags)
-{
-    ANN(scene);
-    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_PIXEL, flags);
-    if (visual == NULL)
-        return NULL;
-    return visual;
-}
-
-
-/**
  * Create a sphere impostor visual.
  *
  * @param scene the scene
