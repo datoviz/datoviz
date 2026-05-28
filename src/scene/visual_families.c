@@ -68,13 +68,11 @@ DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t fla
     {
         visual->vector.scale = 1.0f;
         visual->vector.anchor = DVZ_VECTOR_ANCHOR_TAIL;
-        visual->segment.start_cap = DVZ_SEGMENT_CAP_NONE;
-        visual->segment.end_cap = DVZ_SEGMENT_CAP_TRIANGLE_OUT;
-        visual->path.cap_start = DVZ_SEGMENT_CAP_NONE;
-        visual->path.cap_end = DVZ_SEGMENT_CAP_TRIANGLE_OUT;
-        visual->path.join = DVZ_PATH_JOIN_ROUND;
-        visual->path.miter_limit = 4.0f;
-        _segment_sync_params(visual);
+        visual->vector.start_cap = DVZ_SEGMENT_CAP_NONE;
+        visual->vector.end_cap = DVZ_SEGMENT_CAP_TRIANGLE_OUT;
+        visual->vector.join = DVZ_PATH_JOIN_ROUND;
+        visual->vector.miter_limit = 4.0f;
+        _vector_sync_params(visual);
     }
     if (type == DVZ_VISUAL_TYPE_PATH)
     {
@@ -105,10 +103,15 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
         dvz_visual_set_visible(visual->text.glyph_visual, false);
     _segment_gpu_cache_free(&visual->segment.gpu);
     _path_gpu_cache_free(&visual->path.gpu);
+    _segment_gpu_cache_free(&visual->vector.stroke_gpu);
+    _path_gpu_cache_free(&visual->vector.path_gpu);
     _image_gpu_cache_free(&visual->image_gpu);
     dvz_free(visual->path.subpath_lengths);
     visual->path.subpath_lengths = NULL;
     visual->path.subpath_count = 0;
+    dvz_free(visual->vector.subpath_lengths);
+    visual->vector.subpath_lengths = NULL;
+    visual->vector.subpath_count = 0;
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
         if (visual->attrs[i].data != NULL)
@@ -829,7 +832,8 @@ DvzVisual* dvz_vector(DvzScene* scene, uint32_t flags)
         return NULL;
     visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     visual->material_params_dirty = true;
-    visual->segment.gpu.dirty = true;
+    visual->vector.stroke_gpu.dirty = true;
+    visual->vector.path_gpu.dirty = true;
     return visual;
 }
 
@@ -921,13 +925,20 @@ DvzVisual* dvz_path(DvzScene* scene, uint32_t flags)
  * @param subpath_count number of subpaths
  * @param lengths point count for each subpath
  * @param label label used in diagnostics
+ * @param out_lengths owner pointer updated with the copied subpath lengths
+ * @param out_count owner count updated with the subpath count
+ * @param cache derived path-stroke cache dirtied by the subpath change
  * @return 0 on success, -1 on error
  */
 static int _visual_set_path_subpaths(
-    DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths, const char* label)
+    DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths, const char* label,
+    uint32_t** out_lengths, uint32_t* out_count, DvzPathGpuCache* cache)
 {
     ANN(visual);
     ANN(label);
+    ANN(out_lengths);
+    ANN(out_count);
+    ANN(cache);
     if (!_scene_visual_mutation_allowed(visual->scene, "update path-backed subpaths"))
         return -1;
     if (subpath_count > 0 && lengths == NULL)
@@ -964,10 +975,10 @@ static int _visual_set_path_subpaths(
         }
     }
 
-    dvz_free(visual->path.subpath_lengths);
-    visual->path.subpath_lengths = copy;
-    visual->path.subpath_count = subpath_count;
-    visual->path.gpu.dirty = true;
+    dvz_free(*out_lengths);
+    *out_lengths = copy;
+    *out_count = subpath_count;
+    cache->dirty = true;
     if (visual->type == DVZ_VISUAL_TYPE_VECTOR)
         _visual_material_mark_dirty(visual);
     _scene_notify_visual_changed(visual);
@@ -991,7 +1002,9 @@ int dvz_path_set_subpaths(DvzVisual* visual, uint32_t subpath_count, const uint3
         log_error("dvz_path_set_subpaths requires a path visual");
         return -1;
     }
-    return _visual_set_path_subpaths(visual, subpath_count, lengths, "path");
+    return _visual_set_path_subpaths(
+        visual, subpath_count, lengths, "path", &visual->path.subpath_lengths,
+        &visual->path.subpath_count, &visual->path.gpu);
 }
 
 
@@ -1011,7 +1024,9 @@ int dvz_vector_set_subpaths(DvzVisual* visual, uint32_t subpath_count, const uin
         log_error("dvz_vector_set_subpaths requires a vector visual");
         return -1;
     }
-    return _visual_set_path_subpaths(visual, subpath_count, lengths, "vector");
+    return _visual_set_path_subpaths(
+        visual, subpath_count, lengths, "vector", &visual->vector.subpath_lengths,
+        &visual->vector.subpath_count, &visual->vector.path_gpu);
 }
 
 

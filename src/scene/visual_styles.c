@@ -155,6 +155,21 @@ void _path_sync_params(DvzVisual* visual)
 
 
 /**
+ * Store vector-owned cap/join state into the shared material payload used by vector lowerings.
+ *
+ * @param visual the vector visual
+ */
+void _vector_sync_params(DvzVisual* visual)
+{
+    ANN(visual);
+    visual->material_params.params[0] = (float)visual->vector.start_cap;
+    visual->material_params.params[1] = (float)visual->vector.end_cap;
+    visual->material_params.params[2] = (float)visual->vector.join;
+    visual->material_params.params[3] = visual->vector.miter_limit;
+}
+
+
+/**
  * Return default vector/arrow styling.
  *
  * @return default vector style descriptor
@@ -412,27 +427,24 @@ int dvz_vector_set_style(DvzVisual* visual, const DvzVectorStyle* style)
         return -1;
 
     bool changed = visual->vector.scale != style->scale || visual->vector.anchor != style->anchor ||
-                   visual->segment.start_cap != style->start_cap ||
-                   visual->segment.end_cap != style->end_cap ||
-                   visual->path.cap_start != style->start_cap ||
-                   visual->path.cap_end != style->end_cap || visual->path.join != style->join ||
-                   visual->path.miter_limit != style->miter_limit;
+                   visual->vector.start_cap != style->start_cap ||
+                   visual->vector.end_cap != style->end_cap ||
+                   visual->vector.join != style->join ||
+                   visual->vector.miter_limit != style->miter_limit;
     if (!changed)
         return 0;
 
     visual->vector.scale = style->scale;
     visual->vector.anchor = style->anchor;
-    visual->segment.start_cap = style->start_cap;
-    visual->segment.end_cap = style->end_cap;
-    visual->path.cap_start = style->start_cap;
-    visual->path.cap_end = style->end_cap;
-    visual->path.join = style->join;
-    visual->path.miter_limit = style->miter_limit;
-    _segment_sync_params(visual);
+    visual->vector.start_cap = style->start_cap;
+    visual->vector.end_cap = style->end_cap;
+    visual->vector.join = style->join;
+    visual->vector.miter_limit = style->miter_limit;
+    _vector_sync_params(visual);
     _visual_bump_version(&visual->material.version);
     visual->material_params_dirty = true;
-    visual->segment.gpu.dirty = true;
-    visual->path.gpu.dirty = true;
+    visual->vector.stroke_gpu.dirty = true;
+    visual->vector.path_gpu.dirty = true;
     _scene_notify_visual_changed(visual);
     return 0;
 }

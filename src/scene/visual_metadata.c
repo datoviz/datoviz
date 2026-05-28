@@ -230,14 +230,21 @@ bool _scene_visual_frame_plan_metadata(
             return false;
         if (visual->type == DVZ_VISUAL_TYPE_VECTOR && vector_path_mode)
         {
-            if (visual->path.gpu.vertex_count > UINT32_MAX ||
-                visual->path.gpu.index_count > UINT32_MAX)
+            if (visual->vector.path_gpu.vertex_count > UINT32_MAX ||
+                visual->vector.path_gpu.index_count > UINT32_MAX)
                 return false;
-            metadata->vertex_count = (uint32_t)visual->path.gpu.vertex_count;
-            metadata->index_count = (uint32_t)visual->path.gpu.index_count;
+            metadata->vertex_count = (uint32_t)visual->vector.path_gpu.vertex_count;
+            metadata->index_count = (uint32_t)visual->vector.path_gpu.index_count;
         }
-        else if (visual->type == DVZ_VISUAL_TYPE_SEGMENT ||
-                 visual->type == DVZ_VISUAL_TYPE_VECTOR)
+        else if (visual->type == DVZ_VISUAL_TYPE_VECTOR)
+        {
+            if (visual->vector.stroke_gpu.vertex_count > UINT32_MAX ||
+                visual->vector.stroke_gpu.index_count > UINT32_MAX)
+                return false;
+            metadata->vertex_count = (uint32_t)visual->vector.stroke_gpu.vertex_count;
+            metadata->index_count = (uint32_t)visual->vector.stroke_gpu.index_count;
+        }
+        else if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
         {
             if (visual->segment.gpu.vertex_count > UINT32_MAX ||
                 visual->segment.gpu.index_count > UINT32_MAX)

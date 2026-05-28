@@ -475,10 +475,15 @@ int test_scene_vector_style_and_bounds(TstContext* suite, const TstCase* item)
     AT(visual->type == DVZ_VISUAL_TYPE_VECTOR);
     AT(visual->vector.scale == 1.0f);
     AT(visual->vector.anchor == DVZ_VECTOR_ANCHOR_TAIL);
-    AT(visual->segment.start_cap == DVZ_SEGMENT_CAP_NONE);
-    AT(visual->segment.end_cap == DVZ_SEGMENT_CAP_TRIANGLE_OUT);
+    AT(visual->vector.start_cap == DVZ_SEGMENT_CAP_NONE);
+    AT(visual->vector.end_cap == DVZ_SEGMENT_CAP_TRIANGLE_OUT);
     AT(visual->material_params.params[0] == (float)DVZ_SEGMENT_CAP_NONE);
     AT(visual->material_params.params[1] == (float)DVZ_SEGMENT_CAP_TRIANGLE_OUT);
+    AT(visual->segment.start_cap == 0);
+    AT(visual->segment.end_cap == 0);
+    AT(visual->path.cap_start == 0);
+    AT(visual->path.cap_end == 0);
+    AT(visual->path.join == 0);
 
     DvzVectorStyle style = dvz_vector_style();
     style.scale = 2.0f;
@@ -490,12 +495,15 @@ int test_scene_vector_style_and_bounds(TstContext* suite, const TstCase* item)
     AT(dvz_vector_set_style(visual, &style) == 0);
     AT(visual->vector.scale == 2.0f);
     AT(visual->vector.anchor == DVZ_VECTOR_ANCHOR_CENTER);
-    AT(visual->segment.start_cap == DVZ_SEGMENT_CAP_BUTT);
-    AT(visual->segment.end_cap == DVZ_SEGMENT_CAP_ROUND);
-    AT(visual->path.cap_start == DVZ_SEGMENT_CAP_BUTT);
-    AT(visual->path.cap_end == DVZ_SEGMENT_CAP_ROUND);
-    AT(visual->path.join == DVZ_PATH_JOIN_MITER);
-    AT(visual->path.miter_limit == 2.5f);
+    AT(visual->vector.start_cap == DVZ_SEGMENT_CAP_BUTT);
+    AT(visual->vector.end_cap == DVZ_SEGMENT_CAP_ROUND);
+    AT(visual->vector.join == DVZ_PATH_JOIN_MITER);
+    AT(visual->vector.miter_limit == 2.5f);
+    AT(visual->segment.start_cap == 0);
+    AT(visual->segment.end_cap == 0);
+    AT(visual->path.cap_start == 0);
+    AT(visual->path.cap_end == 0);
+    AT(visual->path.join == 0);
 
     float positions[] = {
         0.0f, 0.0f, 0.0f,
@@ -519,6 +527,8 @@ int test_scene_vector_style_and_bounds(TstContext* suite, const TstCase* item)
     AT(dvz_vector_set_style(visual, NULL) == 0);
     AT(visual->vector.scale == 1.0f);
     AT(visual->vector.anchor == DVZ_VECTOR_ANCHOR_TAIL);
+    AT(visual->vector.start_cap == DVZ_SEGMENT_CAP_NONE);
+    AT(visual->vector.end_cap == DVZ_SEGMENT_CAP_TRIANGLE_OUT);
 
     AT_EXPECTED_ERROR_STRICT(suite, dvz_vector_set_style(visual, &(DvzVectorStyle){
                                                             .scale = 1.0f,
@@ -579,6 +589,12 @@ int test_scene_vector_emit_glsl(TstContext* suite, const TstCase* item)
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
+    AT(visual->segment.gpu.vertex_count == 0);
+    AT(visual->segment.gpu.index_count == 0);
+    AT(visual->path.gpu.vertex_count == 0);
+    AT(visual->path.gpu.index_count == 0);
+    AT(visual->vector.stroke_gpu.vertex_count == 8);
+    AT(visual->vector.stroke_gpu.index_count == 12);
 
     bool found_pipeline = false;
     bool found_set_index = false;
@@ -665,6 +681,14 @@ int test_scene_vector_curved_emit_glsl(TstContext* suite, const TstCase* item)
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
+    AT(visual->segment.gpu.vertex_count == 0);
+    AT(visual->segment.gpu.index_count == 0);
+    AT(visual->path.gpu.vertex_count == 0);
+    AT(visual->path.gpu.index_count == 0);
+    AT(visual->vector.subpath_count == 2);
+    AT(visual->vector.subpath_lengths != NULL);
+    AT(visual->vector.path_gpu.vertex_count == 12);
+    AT(visual->vector.path_gpu.index_count == 18);
 
     bool found_pipeline = false;
     bool found_set_index = false;

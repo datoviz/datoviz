@@ -351,13 +351,20 @@ static bool _path_query_geometry(
     if (width_attr->item_count != point_count || point_count < 2)
         return false;
 
+    const uint32_t* subpath_lengths = visual->type == DVZ_VISUAL_TYPE_VECTOR
+                                          ? visual->vector.subpath_lengths
+                                          : visual->path.subpath_lengths;
+    uint32_t subpath_count = visual->type == DVZ_VISUAL_TYPE_VECTOR
+                                 ? visual->vector.subpath_count
+                                 : visual->path.subpath_count;
+
     uint64_t segment_count = 0;
     uint64_t consumed = 0;
-    if (visual->path.subpath_count > 0)
+    if (subpath_count > 0)
     {
-        for (uint32_t i = 0; i < visual->path.subpath_count; i++)
+        for (uint32_t i = 0; i < subpath_count; i++)
         {
-            uint32_t length = visual->path.subpath_lengths[i];
+            uint32_t length = subpath_lengths[i];
             consumed += length;
             if (length >= 2)
                 segment_count += length - 1;
@@ -401,11 +408,10 @@ static bool _path_query_geometry(
     const float* line_width = (const float*)width_attr->data;
     uint64_t segment = 0;
     uint64_t offset = 0;
-    uint32_t subpath_count = visual->path.subpath_count > 0 ? visual->path.subpath_count : 1;
-    for (uint32_t sp = 0; sp < subpath_count; sp++)
+    uint32_t effective_subpath_count = subpath_count > 0 ? subpath_count : 1;
+    for (uint32_t sp = 0; sp < effective_subpath_count; sp++)
     {
-        uint32_t length = visual->path.subpath_count > 0 ? visual->path.subpath_lengths[sp]
-                                                         : (uint32_t)point_count;
+        uint32_t length = subpath_count > 0 ? subpath_lengths[sp] : (uint32_t)point_count;
         bool closed = _path_query_subpath_is_closed(position, offset, length);
         float cumulative = 0.0f;
         for (uint32_t i = 0; i + 1 < length; i++)

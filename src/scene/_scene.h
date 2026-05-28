@@ -1141,9 +1141,9 @@ struct DvzSceneMaterialState
 };
 
 
-typedef struct DvzSegmentGpuCache DvzSegmentGpuCache;
+typedef struct DvzStrokeQuadGpuCache DvzStrokeQuadGpuCache;
 
-struct DvzSegmentGpuCache
+struct DvzStrokeQuadGpuCache
 {
     float* position_start;
     float* position_end;
@@ -1157,6 +1157,9 @@ struct DvzSegmentGpuCache
 };
 
 
+typedef DvzStrokeQuadGpuCache DvzSegmentGpuCache;
+
+
 typedef struct DvzSegmentState DvzSegmentState;
 
 struct DvzSegmentState
@@ -1167,9 +1170,9 @@ struct DvzSegmentState
 };
 
 
-typedef struct DvzPathGpuCache DvzPathGpuCache;
+typedef struct DvzPathStrokeGpuCache DvzPathStrokeGpuCache;
 
-struct DvzPathGpuCache
+struct DvzPathStrokeGpuCache
 {
     float* position_prev;
     float* position_curr;
@@ -1185,6 +1188,9 @@ struct DvzPathGpuCache
     uint64_t index_count;
     bool dirty;
 };
+
+
+typedef DvzPathStrokeGpuCache DvzPathGpuCache;
 
 
 typedef struct DvzPathState DvzPathState;
@@ -1216,6 +1222,14 @@ struct DvzVectorState
 {
     float scale;
     DvzVectorAnchor anchor;
+    DvzSegmentCap start_cap;
+    DvzSegmentCap end_cap;
+    DvzPathJoin join;
+    float miter_limit;
+    uint32_t* subpath_lengths;
+    uint32_t subpath_count;
+    DvzStrokeQuadGpuCache stroke_gpu;
+    DvzPathStrokeGpuCache path_gpu;
 };
 
 
