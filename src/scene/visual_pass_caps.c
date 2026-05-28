@@ -280,9 +280,9 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
         if (meta->has_metadata)
         {
             bool stroked_path = _scene_visual_meta_is_stroked_path(&emitter->resources, meta);
-            bool segment_like = meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT ||
-                                (meta->visual_type == DVZ_VISUAL_TYPE_VECTOR && !stroked_path) ||
-                                stroked_path;
+            DvzRenderableKind renderable_kind =
+                _scene_visual_meta_renderable_kind(&emitter->resources, meta);
+            bool segment_like = renderable_kind == DVZ_RENDERABLE_STROKE_QUAD || stroked_path;
             uint64_t pos_buf = _scene_visual_resource_lookup_label(
                 &emitter->resources, segment_like ? meta->position_start_id : meta->position_id);
             if (pos_buf == 0)

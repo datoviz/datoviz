@@ -93,6 +93,57 @@ bool _scene_visual_meta_is_primitive(uint32_t visual_type)
 
 
 /**
+ * Return the renderable primitive kind represented by typed visual metadata.
+ *
+ * @param state resource id state
+ * @param meta typed visual metadata
+ * @return renderable primitive kind
+ */
+DvzRenderableKind _scene_visual_meta_renderable_kind(
+    const ConverterState* state, const DvzFramePlanVisualMeta* meta)
+{
+    ANN(state);
+    ANN(meta);
+    if (meta->renderable_kind != DVZ_RENDERABLE_NONE)
+        return (DvzRenderableKind)meta->renderable_kind;
+
+    switch (meta->visual_type)
+    {
+    case DVZ_VISUAL_TYPE_POINT:
+    case DVZ_VISUAL_TYPE_PIXEL:
+    case DVZ_VISUAL_TYPE_MARKER:
+    case DVZ_VISUAL_TYPE_SPHERE:
+    case DVZ_VISUAL_TYPE_SPLAT:
+        return DVZ_RENDERABLE_POINT_LIKE;
+    case DVZ_VISUAL_TYPE_SEGMENT:
+        return DVZ_RENDERABLE_STROKE_QUAD;
+    case DVZ_VISUAL_TYPE_VECTOR:
+        return _scene_visual_resource_lookup_label(state, meta->path_flags_id) != 0 &&
+                       _scene_visual_resource_lookup_label(state, meta->path_distance_id) != 0
+                   ? DVZ_RENDERABLE_PATH_STROKE
+                   : DVZ_RENDERABLE_STROKE_QUAD;
+    case DVZ_VISUAL_TYPE_PATH:
+        return _scene_visual_resource_lookup_label(state, meta->path_flags_id) != 0 &&
+                       _scene_visual_resource_lookup_label(state, meta->path_distance_id) != 0
+                   ? DVZ_RENDERABLE_PATH_STROKE
+                   : DVZ_RENDERABLE_INDEXED_MESH;
+    case DVZ_VISUAL_TYPE_PRIMITIVE:
+    case DVZ_VISUAL_TYPE_MESH:
+        return DVZ_RENDERABLE_INDEXED_MESH;
+    case DVZ_VISUAL_TYPE_IMAGE:
+    case DVZ_VISUAL_TYPE_LABELS:
+    case DVZ_VISUAL_TYPE_GLYPH:
+        return DVZ_RENDERABLE_TEXTURED_QUAD;
+    case DVZ_VISUAL_TYPE_VOLUME:
+        return DVZ_RENDERABLE_VOLUME_PROXY;
+    case DVZ_VISUAL_TYPE_NONE:
+    default:
+        return DVZ_RENDERABLE_NONE;
+    }
+}
+
+
+/**
  * Return whether typed path metadata has derived stroke resources.
  *
  * @param state the resource state
@@ -104,7 +155,7 @@ bool _scene_visual_meta_is_stroked_path(
 {
     ANN(state);
     ANN(meta);
-    if (meta->visual_type != DVZ_VISUAL_TYPE_PATH && meta->visual_type != DVZ_VISUAL_TYPE_VECTOR)
+    if (_scene_visual_meta_renderable_kind(state, meta) != DVZ_RENDERABLE_PATH_STROKE)
         return false;
     return _scene_visual_resource_lookup_label(state, meta->position_start_id) != 0 &&
            _scene_visual_resource_lookup_label(state, meta->position_id) != 0 &&
@@ -439,8 +490,8 @@ static bool _scene_visual_desc_from_metadata(
         *error = NULL;
 
     bool stroked_path = _scene_visual_meta_is_stroked_path(&emitter->resources, meta);
-    bool segment_like = meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT ||
-                        (meta->visual_type == DVZ_VISUAL_TYPE_VECTOR && !stroked_path);
+    bool segment_like =
+        _scene_visual_meta_renderable_kind(&emitter->resources, meta) == DVZ_RENDERABLE_STROKE_QUAD;
     bool stroke_like = segment_like || stroked_path;
     const char* primary_position_id = stroke_like ? meta->position_start_id : meta->position_id;
     uint64_t pos_buf =
@@ -1208,8 +1259,8 @@ bool _emitter_resolve_render_vertex_buffers(
         if (meta->has_metadata)
         {
             bool stroked_path = _scene_visual_meta_is_stroked_path(&emitter->resources, meta);
-            bool segment_like = meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT ||
-                                (meta->visual_type == DVZ_VISUAL_TYPE_VECTOR && !stroked_path);
+            bool segment_like = _scene_visual_meta_renderable_kind(&emitter->resources, meta) ==
+                                DVZ_RENDERABLE_STROKE_QUAD;
             if (stroked_path)
             {
                 if (!_append_resource_key(
@@ -1324,8 +1375,8 @@ bool _scene_render_visual_has_position_resource(
     if (meta->has_metadata)
     {
         bool stroked_path = _scene_visual_meta_is_stroked_path(&emitter->resources, meta);
-        bool segment_like = meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT ||
-                            (meta->visual_type == DVZ_VISUAL_TYPE_VECTOR && !stroked_path);
+        bool segment_like = _scene_visual_meta_renderable_kind(&emitter->resources, meta) ==
+                            DVZ_RENDERABLE_STROKE_QUAD;
         return _scene_visual_resource_lookup_label(
                    &emitter->resources,
                    (segment_like || stroked_path) ? meta->position_start_id : meta->position_id) !=

@@ -276,12 +276,25 @@ typedef enum DvzFramePlanClipRect
 } DvzFramePlanClipRect;
 
 
+typedef enum DvzRenderableKind
+{
+    DVZ_RENDERABLE_NONE = 0,
+    DVZ_RENDERABLE_POINT_LIKE,
+    DVZ_RENDERABLE_STROKE_QUAD,
+    DVZ_RENDERABLE_PATH_STROKE,
+    DVZ_RENDERABLE_INDEXED_MESH,
+    DVZ_RENDERABLE_TEXTURED_QUAD,
+    DVZ_RENDERABLE_VOLUME_PROXY,
+} DvzRenderableKind;
+
+
 
 typedef struct DvzFramePlanVisualMeta
 {
     bool has_metadata;
     DvzFramePlanClipRect clip_rect;
     uint32_t visual_type;
+    uint32_t renderable_kind;
     uint32_t visual_index;
     uint32_t buffer_index;
     uint32_t topology;

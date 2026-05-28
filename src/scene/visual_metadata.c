@@ -42,6 +42,50 @@
 /*************************************************************************************************/
 
 /**
+ * Return the reusable renderable primitive kind emitted by one retained visual.
+ *
+ * @param visual the retained visual
+ * @return renderable primitive kind
+ */
+static DvzRenderableKind _scene_visual_renderable_kind(const DvzVisual* visual)
+{
+    ANN(visual);
+    switch (visual->type)
+    {
+    case DVZ_VISUAL_TYPE_POINT:
+    case DVZ_VISUAL_TYPE_PIXEL:
+    case DVZ_VISUAL_TYPE_MARKER:
+    case DVZ_VISUAL_TYPE_SPHERE:
+    case DVZ_VISUAL_TYPE_SPLAT:
+        return DVZ_RENDERABLE_POINT_LIKE;
+    case DVZ_VISUAL_TYPE_SEGMENT:
+        return DVZ_RENDERABLE_STROKE_QUAD;
+    case DVZ_VISUAL_TYPE_VECTOR:
+        return !_scene_visual_has_attr_data(visual, "vector") &&
+                       _scene_visual_has_attr_data(visual, "line_width")
+                   ? DVZ_RENDERABLE_PATH_STROKE
+                   : DVZ_RENDERABLE_STROKE_QUAD;
+    case DVZ_VISUAL_TYPE_PATH:
+        return _scene_visual_has_attr_data(visual, "line_width") ? DVZ_RENDERABLE_PATH_STROKE
+                                                                 : DVZ_RENDERABLE_INDEXED_MESH;
+    case DVZ_VISUAL_TYPE_PRIMITIVE:
+    case DVZ_VISUAL_TYPE_MESH:
+        return DVZ_RENDERABLE_INDEXED_MESH;
+    case DVZ_VISUAL_TYPE_IMAGE:
+    case DVZ_VISUAL_TYPE_LABELS:
+    case DVZ_VISUAL_TYPE_GLYPH:
+        return DVZ_RENDERABLE_TEXTURED_QUAD;
+    case DVZ_VISUAL_TYPE_VOLUME:
+        return DVZ_RENDERABLE_VOLUME_PROXY;
+    case DVZ_VISUAL_TYPE_NONE:
+    default:
+        return DVZ_RENDERABLE_NONE;
+    }
+}
+
+
+
+/**
  * Build typed FramePlan metadata for one retained visual.
  *
  * @param figure the parent figure
@@ -62,6 +106,7 @@ bool _scene_visual_frame_plan_metadata(
     dvz_memset(metadata, sizeof(DvzFramePlanVisualMeta), 0, sizeof(DvzFramePlanVisualMeta));
     metadata->has_metadata = true;
     metadata->visual_type = (uint32_t)visual->type;
+    metadata->renderable_kind = (uint32_t)_scene_visual_renderable_kind(visual);
     metadata->visual_index = visual_index;
     metadata->buffer_index = UINT32_MAX;
     metadata->topology = (uint32_t)visual->topology;

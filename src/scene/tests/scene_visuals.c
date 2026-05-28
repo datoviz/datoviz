@@ -384,6 +384,7 @@ int test_scene_segment_emit_glsl(TstContext* suite, const TstCase* item)
     ANN(render);
     AT(dvz_frame_plan_render_pass_role(render) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
     AT(render->u.render.visual_count == 1);
+    AT(render->u.render.visual_metadata[0].renderable_kind == DVZ_RENDERABLE_STROKE_QUAD);
     AT(
         render->u.render.visual_metadata[0].draw_blend_policy ==
         DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE);

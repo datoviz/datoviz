@@ -481,6 +481,7 @@ static bool _volume_query_build_sample(
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;
     metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_VOLUME;
+    metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_VOLUME_PROXY;
     metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
@@ -678,6 +679,7 @@ static bool _volume_query_build(
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;
     metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_PRIMITIVE;
+    metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_INDEXED_MESH;
     metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;

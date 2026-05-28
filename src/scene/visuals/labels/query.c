@@ -671,6 +671,7 @@ static bool _labels_query_build(
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;
     metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_LABELS;
+    metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_TEXTURED_QUAD;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
     metadata.depth_compare_op = ctx->visual->depth_compare_op;
