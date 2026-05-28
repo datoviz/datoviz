@@ -27,15 +27,39 @@ def _smoke_symbols() -> list[str]:
     return symbols
 
 
+def _expected_skipped_symbols() -> list[str]:
+    symbols: list[str] = []
+    in_skipped = False
+    in_expected = False
+    for line in POLICY_PATH.read_text().splitlines():
+        stripped = line.strip()
+        if stripped == 'skipped_functions:':
+            in_skipped = True
+            in_expected = False
+            continue
+        if in_skipped and not line.startswith(' ') and stripped:
+            break
+        if in_skipped and stripped == 'expected:':
+            in_expected = True
+            continue
+        if in_expected and stripped.startswith('- '):
+            symbols.append(stripped[2:].strip())
+        elif in_expected and stripped and not stripped.startswith('#'):
+            break
+    return symbols
+
+
 def main() -> int:
     sys.path.insert(0, str(ROOT_DIR))
 
     import datoviz as dvz  # noqa: PLC0415
+    import datoviz._ctypes as impl  # noqa: PLC0415
     import datoviz.raw as raw  # noqa: PLC0415
 
     for symbol in _smoke_symbols():
         assert hasattr(dvz, symbol), f'missing datoviz.{symbol}'
         assert hasattr(raw, symbol), f'missing datoviz.raw.{symbol}'
+    assert sorted(impl._SKIPPED_FUNCTIONS) == sorted(_expected_skipped_symbols())
 
     t0 = dvz.dvz_time_monotonic_ns()
     t1 = dvz.dvz_time_monotonic_ns()
