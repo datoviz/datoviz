@@ -19,6 +19,7 @@
 
 #include "_assertions.h"
 #include "bounds_internal.h"
+#include "mesh/internal.h"
 
 
 
@@ -72,7 +73,7 @@ _mesh_bounds_include_transformed_point(
  * @param out output bounds
  * @return whether bounds were produced
  */
-bool _mesh_bounds_from_instances(
+static bool _mesh_bounds_from_instances(
     const DvzVisual* visual, const DvzBounds* base, DvzBounds* out)
 {
     ANN(visual);
@@ -106,4 +107,33 @@ bool _mesh_bounds_from_instances(
         }
     }
     return out->valid;
+}
+
+
+
+/**
+ * Compute mesh bounds from position attributes and optional per-instance transforms.
+ *
+ * @param visual the mesh visual
+ * @param out output bounds
+ * @return whether bounds were produced
+ */
+bool _mesh_bounds_from_position_attrs(const DvzVisual* visual, DvzBounds* out)
+{
+    ANN(visual);
+    ANN(out);
+    if (visual->type != DVZ_VISUAL_TYPE_MESH)
+        return false;
+
+    const DvzVisualAttr* attr = _bounds_attr(visual, "position", 3 * sizeof(float));
+    if (attr == NULL)
+        return false;
+
+    DvzBounds base = {0};
+    _bounds_reset(&base);
+    _bounds_include_vec3f(&base, (const float*)attr->data, attr->item_count);
+    if (!base.valid)
+        return false;
+
+    return _mesh_bounds_from_instances(visual, &base, out);
 }

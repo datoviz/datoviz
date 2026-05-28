@@ -35,7 +35,7 @@ candidates are:
    have moved into active family folders, and active-family shader descriptor bodies have moved into
    family folders. Wide visual-family helper files and shared headers should only be split further
    when a stable owner boundary is clear. Volume retained-state bounds now live in the volume
-   family.
+   family, and mesh position/instance-transform bounds now live in the mesh family.
 5. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
    multiple ownership boundaries at once.
 

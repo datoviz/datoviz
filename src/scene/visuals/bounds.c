@@ -30,6 +30,7 @@
 #include "_scene.h"
 #include "_visual_internal.h"
 #include "bounds_internal.h"
+#include "mesh/internal.h"
 #include "stroke/internal.h"
 #include "volume/internal.h"
 #include "datoviz/math/_cglm.h"
@@ -62,7 +63,7 @@
  *
  * @param out output bounds
  */
-static void _bounds_reset(DvzBounds* out)
+void _bounds_reset(DvzBounds* out)
 {
     ANN(out);
     out->valid = false;
@@ -656,13 +657,17 @@ int dvz_visual_bounds(const DvzVisual* visual, DvzBounds* out)
     }
     else
     {
-        DvzBounds position_bounds = {0};
-        _bounds_reset(&position_bounds);
-        (void)_bounds_from_position_attr(visual, "position", &position_bounds);
-        if (position_bounds.valid && visual->type == DVZ_VISUAL_TYPE_MESH)
-            (void)_mesh_bounds_from_instances(visual, &position_bounds, out);
+        if (visual->type == DVZ_VISUAL_TYPE_MESH)
+        {
+            (void)_mesh_bounds_from_position_attrs(visual, out);
+        }
         else
+        {
+            DvzBounds position_bounds = {0};
+            _bounds_reset(&position_bounds);
+            (void)_bounds_from_position_attr(visual, "position", &position_bounds);
             _bounds_include_bounds(out, &position_bounds);
+        }
     }
 
     _bounds_finalize(out, force_3d);
