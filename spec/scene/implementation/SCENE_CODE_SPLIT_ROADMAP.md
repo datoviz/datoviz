@@ -243,17 +243,20 @@ Current ownership:
 3. `visuals/attr_data.c`: dense/string/range attribute data mutation, validation, and versioning.
 4. `visuals/visual_bindings.c`: retained visual binding slot assignment, lookup, and clearing.
 5. `visuals/visual_lookup.c`: scene-global visual index lookup and visual type names.
-6. `visuals/desc.c`: render-node visual descriptor assembly from typed metadata and legacy ids.
+6. `visuals/desc.c`: render-node visual descriptor assembly from typed metadata and explicit
+   untyped compatibility ids.
 7. `visuals/desc_resources.c`: render visual resource-key/id resolution and persistent vertex-buffer
    lookup.
-8. `visuals/desc_legacy.c`: legacy resource-list classifiers for point, splat, primitive, image,
-   and textured mesh descriptors.
+8. `visuals/desc_untyped_compat.c`: explicit compatibility resource-list classifiers for point,
+   splat, primitive, image, and textured mesh descriptors.
+9. `visuals/registry/`: first `DvzVisualFamilyOps` table, active-family coverage test, retained
+   visual lowering, and retained visual pass-capability resolution.
 
 Guardrail: do not split the remaining visual pipeline helpers by enum case alone. The long-term
 direction is a registry-driven visual-family contract, not more generic switch files. Treat
-`visuals/desc_legacy.c` as temporary containment for untyped descriptor inference: normal scene
-output should move to explicit typed metadata everywhere, then the legacy path should be deleted or
-kept only behind explicit compatibility. See
+`visuals/desc_untyped_compat.c` as temporary containment for untyped descriptor inference: normal
+scene output now uses explicit typed metadata, and the compatibility path should be deleted when the
+remaining low-level fixture/import use cases are migrated. See
 [`SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](SCENE_ARCHITECTURE_COMPLETION_PLAN.md).
 
 

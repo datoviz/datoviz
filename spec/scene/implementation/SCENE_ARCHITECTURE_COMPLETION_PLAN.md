@@ -22,17 +22,22 @@ Important current state:
 3. `render_contract/` checks planned visual/resource/draw state against runtime requirements.
 4. `runtime/` emits DRP2 from resolved FramePlan state, but still contains some visual-family
    assumptions in preparation and pass-emission paths.
-5. `visuals/desc.c` lowers typed visual metadata into runtime descriptors, but it still has a
-   fallback for untyped render visuals.
-6. `visuals/desc_legacy.c` quarantines the current untyped fallback classifiers. These classifiers
-   infer point, splat, primitive, image, and textured-mesh descriptors from resource roles/tags.
-7. `visuals/attrs.c` and `visuals/desc.c` are smaller after the first split, but the final
-   architecture still needs visual-family operations instead of broad generic dispatch.
-8. `scene_emit/uploads.c`, `annotation/text.c`, `annotation/axis.c`, and `domain/field.c` remain the
+5. `visuals/desc.c` lowers typed visual metadata into runtime descriptors. Its untyped descriptor
+   fallback is now guarded by an explicit FramePlan compatibility flag.
+6. `visuals/desc_untyped_compat.c` quarantines the current untyped fallback classifiers. These
+   classifiers infer point, splat, primitive, image, and textured-mesh descriptors from resource
+   roles/tags only for explicit compatibility fixtures.
+7. `visuals/registry/` owns the first private `DvzVisualFamilyOps` table. It currently covers
+   family identity, retained visual lowering, and retained visual pass-capability resolution, with
+   tests enforcing active-family coverage.
+8. `visuals/attrs.c` and `visuals/desc.c` are smaller after the first split, but the final
+   architecture still needs the pipeline, shader, bind, metadata, upload, query, and bounds
+   contracts to migrate into visual-family operations.
+9. `scene_emit/uploads.c`, `annotation/text.c`, `annotation/axis.c`, and `domain/field.c` remain the
    highest-value mixed-ownership files.
 
-The current `desc_legacy.c` path is an intermediate containment step, not the desired final
-architecture. Normal v0.4 scene output should emit explicit typed metadata and should not require
+The current `desc_untyped_compat.c` path is an intermediate compatibility step, not the desired
+final architecture. Normal v0.4 scene output emits explicit typed metadata and should not require
 runtime code to infer a visual family from a list of resource ids.
 
 
@@ -131,6 +136,13 @@ Done criteria:
 ### 2. Introduce The Visual-Family Registry
 
 Goal: generic code calls visual-family operations instead of visual-family switch statements.
+
+Status as of 2026-05-28: started. `src/scene/visuals/registry/` now contains the private
+`DvzVisualFamilyOps` table, every active `DvzVisualType` is registered, and
+`test_scene_visual_family_registry_coverage` enforces identity, lowering, and pass-capability hooks.
+Retained visual lowering and retained visual pass-capability resolution now route through the
+registry. Continue by migrating descriptor-kind pipeline, shader, bind-layout, draw-count,
+metadata, upload, query, and bounds hooks incrementally.
 
 Steps:
 
