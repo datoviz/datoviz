@@ -18,7 +18,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
-#include "../_scene.h"
+#include "_scene.h"
 
 
 

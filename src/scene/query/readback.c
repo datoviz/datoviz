@@ -20,7 +20,7 @@
 
 #include "datoviz/drp2/runtime.h"
 #include "../../drp2/_stream.h"
-#include "../_scene.h"
+#include "_scene.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "internal.h"

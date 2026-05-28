@@ -34,7 +34,7 @@
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
 #include "../drp2/_stream.h"
-#include "../scene/_scene.h"
+#include "_scene.h"
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
 #include "../gui/_gui.h"
 #endif

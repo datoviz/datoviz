@@ -29,7 +29,7 @@
 #include "render_contract.h"
 #include "datoviz/drp2/runtime.h"
 #include "datoviz/math/_cglm.h"
-#include "../drp2/_stream.h"
+#include "../../drp2/_stream.h"
 #include "_scene.h"
 #include "_technique.h"
 #include "datoviz/scene.h"

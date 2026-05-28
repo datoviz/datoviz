@@ -15,7 +15,7 @@
 /*************************************************************************************************/
 
 #include "_assertions.h"
-#include "../../_visual_internal.h"
+#include "_visual_internal.h"
 #include "../../query/internal.h"
 
 

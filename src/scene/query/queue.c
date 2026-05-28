@@ -17,7 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "../_scene.h"
+#include "_scene.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"

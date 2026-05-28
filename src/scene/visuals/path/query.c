@@ -22,7 +22,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/math/_cglm.h"
-#include "../../_visual_pipeline.h"
+#include "_visual_pipeline.h"
 #include "../../query/internal.h"
 #include "_alloc.h"
 #include "_assertions.h"

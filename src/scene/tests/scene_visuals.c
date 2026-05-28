@@ -18,7 +18,7 @@
 #include <math.h>
 
 #include "scene_graph_utils.h"
-#include "../_frame_plan_runtime_internal.h"
+#include "_frame_plan_runtime_internal.h"
 #include "datoviz/geom.h"
 
 

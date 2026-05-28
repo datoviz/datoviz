@@ -22,7 +22,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
-#include "../_frame_plan_emit.h"
+#include "_frame_plan_emit.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"

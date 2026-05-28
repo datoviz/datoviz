@@ -19,7 +19,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "../_frame_plan_emit.h"
+#include "_frame_plan_emit.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
 #include "testing.h"

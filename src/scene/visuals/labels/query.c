@@ -23,7 +23,7 @@
 
 #include "datoviz/math/_cglm.h"
 #include "../../colorizer.h"
-#include "../../_visual_lowering.h"
+#include "_visual_lowering.h"
 #include "../../query/internal.h"
 #include "_alloc.h"
 #include "_assertions.h"

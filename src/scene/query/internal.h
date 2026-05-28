@@ -19,7 +19,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "../_scene.h"
+#include "_scene.h"
 
 
 

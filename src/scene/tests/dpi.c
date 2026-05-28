@@ -19,7 +19,7 @@
 
 #include "_assertions.h"
 #include "../../drp2/_stream.h"
-#include "../_frame_plan.h"
+#include "_frame_plan.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
 #include "test_scene.h"
