@@ -451,6 +451,45 @@ def _layout_records_from_policy(path: Path) -> set[str]:
     return out
 
 
+def _callback_policy_from_policy(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    try:
+        import yaml  # type: ignore
+
+        with path.open() as f:
+            policy = yaml.safe_load(f) or {}
+        groups = policy.get('callback_functions', {})
+        out: dict[str, str] = {}
+        if isinstance(groups, dict):
+            for kind, names in groups.items():
+                if isinstance(kind, str) and isinstance(names, list):
+                    for name in names:
+                        if isinstance(name, str):
+                            out[name] = kind
+        return out
+    except ModuleNotFoundError:
+        pass
+
+    out: dict[str, str] = {}
+    in_callbacks = False
+    current_kind: str | None = None
+    for line in path.read_text().splitlines():
+        stripped = line.strip()
+        if stripped == 'callback_functions:':
+            in_callbacks = True
+            current_kind = None
+            continue
+        if in_callbacks and not line.startswith(' ') and stripped:
+            break
+        if in_callbacks and stripped.endswith(':'):
+            current_kind = stripped[:-1]
+            continue
+        if in_callbacks and current_kind is not None and stripped.startswith('- '):
+            out[stripped[2:].strip()] = current_kind
+    return out
+
+
 def _layoutable_records(
     ordered_records: list[dict],
     records: set[str],
@@ -527,11 +566,17 @@ def _ctype_for(
     return None
 
 
-def generate(api: dict, *, forced_layout_records: set[str] | None = None) -> tuple[str, list[str]]:
+def generate(
+    api: dict,
+    *,
+    forced_layout_records: set[str] | None = None,
+    callback_policy: dict[str, str] | None = None,
+) -> tuple[str, list[str]]:
     records = {record['name'] for record in api.get('records', []) if record.get('name')}
     enums = {enum['name'] for enum in api.get('enums', []) if enum.get('name')}
     callback_typedefs = _callback_typedefs(api)
     callbacks = set(callback_typedefs)
+    callback_policy = callback_policy or {}
     lines = [HEADER]
 
     for enum in api.get('enums', []):
@@ -662,22 +707,30 @@ def generate(api: dict, *, forced_layout_records: set[str] | None = None) -> tup
                     else 'None'
                 )
                 lines.append(f'    def {name}({signature}):\n')
-                if name.startswith('dvz_input_unsubscribe'):
+                callback_kind = callback_policy.get(name)
+                if callback_kind == 'unsubscribe' or (
+                    callback_kind is None and name.startswith('dvz_input_unsubscribe')
+                ):
                     lines.append(
                         f'        {callback_name} = _callback_pop_subscription'
                         f'({callback_type}, {owner_name}, {callback_name}, {user_data_name})\n'
                     )
-                elif name.startswith('dvz_input_subscribe') or name == 'dvz_deq_callback':
+                elif callback_kind == 'subscription' or (
+                    callback_kind is None
+                    and (name.startswith('dvz_input_subscribe') or name == 'dvz_deq_callback')
+                ):
                     lines.append(
                         f'        {callback_name} = _callback_store_subscription'
                         f'({callback_type}, {owner_name}, {callback_name}, {user_data_name})\n'
                     )
-                elif '_set_' in name:
+                elif callback_kind == 'setter' or (callback_kind is None and '_set_' in name):
                     lines.append(
                         f"        {callback_name} = _callback_store_setter('{name}', "
                         f'{callback_type}, {owner_name}, {callback_name})\n'
                     )
-                elif len(param_names) == 1:
+                elif callback_kind == 'global' or (
+                    callback_kind is None and len(param_names) == 1
+                ):
                     lines.append(
                         f"        {callback_name} = _callback_store_global('{name}', "
                         f'{callback_type}, {callback_name})\n'
@@ -713,7 +766,11 @@ def main() -> int:
 
     with args.input.open() as f:
         api = json.load(f)
-    text, skipped = generate(api, forced_layout_records=_layout_records_from_policy(args.policy))
+    text, skipped = generate(
+        api,
+        forced_layout_records=_layout_records_from_policy(args.policy),
+        callback_policy=_callback_policy_from_policy(args.policy),
+    )
 
     if args.check:
         current = args.output.read_text() if args.output.exists() else ''

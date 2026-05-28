@@ -45,6 +45,31 @@ layout_records:
     - DvzTurntableDesc
     - DvzVideoEncoderConfig
 
+callback_functions:
+  subscription:
+    - dvz_anim_timer
+    - dvz_deq_callback
+    - dvz_input_subscribe_event
+    - dvz_input_subscribe_keyboard
+    - dvz_input_subscribe_pointer
+    - dvz_input_subscribe_resize
+    - dvz_input_subscribe_scale
+    - dvz_view_post
+  unsubscribe:
+    - dvz_input_unsubscribe_event
+    - dvz_input_unsubscribe_keyboard
+    - dvz_input_unsubscribe_pointer
+    - dvz_input_unsubscribe_resize
+    - dvz_input_unsubscribe_scale
+  setter:
+    - dvz_canvas_set_draw_callback
+    - dvz_view_set_frame_callback
+    - dvz_view_set_gui_callback
+    - dvz_view_set_request_frame_callback
+  global:
+    - dvz_error_callback
+    - dvz_thread
+
 skipped_functions:
   reason: >
     Current generator output excludes functions whose signatures still require by-value records,
