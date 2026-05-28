@@ -24,6 +24,33 @@
 
 
 /*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct DvzVolumeTextureUploadPayload
+{
+    DvzFieldRegion region;
+    const void* data;
+    uint64_t byte_size;
+    uint32_t texture_format;
+    uint32_t bytes_per_texel;
+    uint32_t allocation_width;
+    uint32_t allocation_height;
+    uint32_t allocation_depth;
+} DvzVolumeTextureUploadPayload;
+
+
+
+typedef struct DvzVolumeTransferTexturePayload
+{
+    const void* data;
+    uint64_t byte_size;
+    uint32_t width;
+} DvzVolumeTransferTexturePayload;
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -36,3 +63,9 @@ uint32_t _volume_transfer_texture_width(const DvzVisual* visual);
 bool _volume_prepare_transfer_texture(DvzVisual* visual, const void** out_data);
 
 bool _volume_prepare_label_lookup(DvzVisual* visual, const void** out_data, uint64_t* out_size);
+
+bool _volume_source_texture_payload(DvzVisual* visual, DvzVolumeTextureUploadPayload* out);
+
+bool _volume_transfer_texture_payload(DvzVisual* visual, DvzVolumeTransferTexturePayload* out);
+
+bool _volume_label_lookup_payload(DvzVisual* visual, const void** out_data, uint64_t* out_size);

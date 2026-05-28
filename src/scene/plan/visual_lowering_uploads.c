@@ -734,18 +734,10 @@ static void _scene_emit_volume_source_texture_upload(
     if (!_scene_visual_texture_resource_key(
             figure, visual, visual_index, tex_resource_id, sizeof(tex_resource_id)))
         return;
-    DvzFieldRegion upload_region = {0};
-    const void* upload_data = NULL;
-    uint32_t texture_format = 0;
-    uint32_t bytes_per_texel = 0;
-    uint64_t bytes = 0;
-    if (!_scene_prepare_volume_texture(
-            visual, &upload_region, &upload_data, &texture_format, &bytes_per_texel) ||
-        !_field_region_byte_size(
-            texture_format == VK_FORMAT_R8G8B8A8_UNORM ? DVZ_FIELD_FORMAT_RGBA8_UNORM
-                                                       : visual->field->desc.format,
-            &upload_region, &bytes) ||
-        !dvz_frame_plan_upload_bytes(plan, tex_resource_id, 0, bytes, "field", upload_data) ||
+    DvzVolumeTextureUploadPayload payload = {0};
+    if (!_volume_source_texture_payload(visual, &payload) ||
+        !dvz_frame_plan_upload_bytes(plan, tex_resource_id, 0, payload.byte_size, "field",
+                                     payload.data) ||
         !dvz_frame_plan_upload_metadata(
             plan,
             &(DvzFramePlanUploadMeta){
@@ -754,14 +746,14 @@ static void _scene_emit_volume_source_texture_upload(
                 .visual_index = UINT32_MAX,
                 .buffer_index = UINT32_MAX,
             }) ||
-        !dvz_frame_plan_upload_set_texture_format(plan, texture_format, bytes_per_texel) ||
+        !dvz_frame_plan_upload_set_texture_format(
+            plan, payload.texture_format, payload.bytes_per_texel) ||
         !dvz_frame_plan_upload_set_texture_3d_extent(
-            plan, upload_region.width, upload_region.height, upload_region.depth) ||
+            plan, payload.region.width, payload.region.height, payload.region.depth) ||
         !dvz_frame_plan_upload_set_texture_3d_allocation_extent(
-            plan, visual->field->desc.width, visual->field->desc.height,
-            visual->field->desc.depth) ||
+            plan, payload.allocation_width, payload.allocation_height, payload.allocation_depth) ||
         !dvz_frame_plan_upload_set_texture_3d_region(
-            plan, upload_region.x, upload_region.y, upload_region.z))
+            plan, payload.region.x, payload.region.y, payload.region.z))
     {
         log_error("volume visual texture upload failed");
         return;
@@ -780,8 +772,8 @@ static void _scene_emit_volume_source_texture_upload(
  * @param visual the volume visual
  * @param visual_index the scene visual index
  */
-static void
-_scene_emit_volume_transfer_texture_upload(DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+static void _scene_emit_volume_transfer_texture_upload(
+    DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
 {
     ANN(plan);
     ANN(visual);
@@ -791,14 +783,12 @@ _scene_emit_volume_transfer_texture_upload(DvzFramePlan* plan, DvzVisual* visual
     }
 
     char transfer_resource_id[128];
-    const void* transfer_data = NULL;
-    uint32_t width = _volume_transfer_texture_width(visual);
-    uint64_t upload_size = (uint64_t)width * 4ull;
+    DvzVolumeTransferTexturePayload payload = {0};
     if (!_scene_resource_key_volume_transfer(
             visual_index, transfer_resource_id, sizeof(transfer_resource_id)) ||
-        !_volume_prepare_transfer_texture(visual, &transfer_data) ||
+        !_volume_transfer_texture_payload(visual, &payload) ||
         !dvz_frame_plan_upload_bytes(
-            plan, transfer_resource_id, 0, upload_size, "volume_transfer", transfer_data) ||
+            plan, transfer_resource_id, 0, payload.byte_size, "volume_transfer", payload.data) ||
         !dvz_frame_plan_upload_metadata(
             plan,
             &(DvzFramePlanUploadMeta){
@@ -808,8 +798,8 @@ _scene_emit_volume_transfer_texture_upload(DvzFramePlan* plan, DvzVisual* visual
                 .buffer_index = UINT32_MAX,
             }) ||
         !dvz_frame_plan_upload_set_texture_format(plan, VK_FORMAT_R8G8B8A8_UNORM, 4) ||
-        !dvz_frame_plan_upload_set_texture_extent(plan, width, 1) ||
-        !dvz_frame_plan_upload_set_texture_allocation_extent(plan, width, 1) ||
+        !dvz_frame_plan_upload_set_texture_extent(plan, payload.width, 1) ||
+        !dvz_frame_plan_upload_set_texture_allocation_extent(plan, payload.width, 1) ||
         !dvz_frame_plan_upload_set_texture_region(plan, 0, 0))
     {
         log_error("volume transfer texture upload failed");
@@ -825,8 +815,8 @@ _scene_emit_volume_transfer_texture_upload(DvzFramePlan* plan, DvzVisual* visual
  * @param visual the volume visual
  * @param visual_index the scene visual index
  */
-static void
-_scene_emit_volume_label_lookup_upload(DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+static void _scene_emit_volume_label_lookup_upload(
+    DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
 {
     ANN(plan);
     ANN(visual);
@@ -840,7 +830,7 @@ _scene_emit_volume_label_lookup_upload(DvzFramePlan* plan, DvzVisual* visual, ui
     uint64_t lookup_size = 0;
     if (!_scene_resource_key_volume_label_lookup(
             visual_index, lookup_resource_id, sizeof(lookup_resource_id)) ||
-        !_volume_prepare_label_lookup(visual, &lookup_data, &lookup_size) ||
+        !_volume_label_lookup_payload(visual, &lookup_data, &lookup_size) ||
         !dvz_frame_plan_upload_bytes(
             plan, lookup_resource_id, 0, lookup_size, "volume_label_lookup", lookup_data))
     {

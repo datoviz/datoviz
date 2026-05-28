@@ -16,6 +16,8 @@
 
 #include <stdint.h>
 
+#include <vulkan/vulkan_core.h>
+
 #include "volume/internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
@@ -318,4 +320,86 @@ bool _volume_prepare_label_lookup(DvzVisual* visual, const void** out_data, uint
     *out_data = visual->texture.label_lookup;
     *out_size = size;
     return true;
+}
+
+
+
+/**
+ * Prepare the source 3D texture upload payload for a volume visual.
+ *
+ * @param visual the volume visual
+ * @param out output texture upload payload
+ * @return whether the payload is available
+ */
+bool _volume_source_texture_payload(DvzVisual* visual, DvzVolumeTextureUploadPayload* out)
+{
+    ANN(visual);
+    ANN(out);
+    dvz_memset(
+        out, sizeof(DvzVolumeTextureUploadPayload), 0, sizeof(DvzVolumeTextureUploadPayload));
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || visual->field == NULL)
+        return false;
+
+    if (!_scene_prepare_volume_texture(
+            visual, &out->region, &out->data, &out->texture_format, &out->bytes_per_texel))
+    {
+        return false;
+    }
+
+    DvzFieldFormat byte_format = out->texture_format == VK_FORMAT_R8G8B8A8_UNORM
+                                     ? DVZ_FIELD_FORMAT_RGBA8_UNORM
+                                     : visual->field->desc.format;
+    if (!_field_region_byte_size(byte_format, &out->region, &out->byte_size))
+        return false;
+    out->allocation_width = visual->field->desc.width;
+    out->allocation_height = visual->field->desc.height;
+    out->allocation_depth = visual->field->desc.depth;
+    return true;
+}
+
+
+
+/**
+ * Prepare the scalar transfer texture upload payload for a volume visual.
+ *
+ * @param visual the volume visual
+ * @param out output transfer texture upload payload
+ * @return whether the payload is available
+ */
+bool _volume_transfer_texture_payload(DvzVisual* visual, DvzVolumeTransferTexturePayload* out)
+{
+    ANN(visual);
+    ANN(out);
+    dvz_memset(
+        out, sizeof(DvzVolumeTransferTexturePayload), 0,
+        sizeof(DvzVolumeTransferTexturePayload));
+    if (!_volume_uses_color_texture(visual))
+        return false;
+    out->width = _volume_transfer_texture_width(visual);
+    out->byte_size = (uint64_t)out->width * 4ull;
+    return _volume_prepare_transfer_texture(visual, &out->data);
+}
+
+
+
+/**
+ * Prepare the sparse label lookup upload payload for a volume visual.
+ *
+ * @param visual the volume visual
+ * @param out_data output lookup bytes
+ * @param out_size output byte size
+ * @return whether lookup bytes are available
+ */
+bool _volume_label_lookup_payload(DvzVisual* visual, const void** out_data, uint64_t* out_size)
+{
+    ANN(visual);
+    ANN(out_data);
+    ANN(out_size);
+    if (!_volume_uses_label_lookup(visual, NULL))
+    {
+        *out_data = NULL;
+        *out_size = 0;
+        return false;
+    }
+    return _volume_prepare_label_lookup(visual, out_data, out_size);
 }
