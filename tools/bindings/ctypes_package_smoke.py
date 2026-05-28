@@ -126,6 +126,7 @@ def _copy_package_root(path: Path) -> None:
                 shutil.copy2(source, package_dir / source.name)
 
     shutil.copy2(ROOT_DIR / 'pyproject.toml', path / 'pyproject.toml')
+    shutil.copy2(ROOT_DIR / 'README.md', path / 'README.md')
 
 
 def wheel_smoke() -> None:
