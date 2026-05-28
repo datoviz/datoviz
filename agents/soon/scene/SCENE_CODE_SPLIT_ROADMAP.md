@@ -11,16 +11,19 @@ as the source of truth before broad `src/scene` refactors.
 
 ## Pickup Order
 
-1. Finish low-risk derived payload extraction from `plan/visual_lowering_uploads.c`.
-2. Split core scene ownership once plan/runtime churn is easier to inspect.
-3. Split annotation/domain helpers where generated visuals and public object state are mixed.
-4. Tighten query/interaction boundaries without changing picking semantics accidentally.
+1. Continue low-risk derived payload extraction from `plan/visual_lowering_uploads.c`.
+2. Continue annotation/domain helper splits where generated visuals and public object state are mixed.
+3. Continue visual descriptor/attribute splits inside `src/scene/visuals/`.
+4. Tighten remaining query/interaction boundaries without changing picking semantics accidentally.
 
 Completed on 2026-05-28: FramePlan internals were split into lifecycle/facade, node helpers,
 capabilities, diagnostics, upload resources, graph resources, node passes, graph passes,
 dependencies, graph validation, graph helpers, and readback owner files. Render contracts were
 split into facade, diagnostics, resources, and visual assembly. Runtime render emission was split
-into shared helpers, bindings, draw emission, visual preparation, and pass emission.
+into shared helpers, bindings, draw emission, visual preparation, and pass emission. Core scene was
+split into notify, format state, frame trace, panel geometry/layout, grid, controllers, and figure
+emission owners. Follow-up slices also split visual descriptor-kind helpers, colormap annotation
+ownership, scene domain buffers, and query target/profile policy.
 
 
 ## Validation

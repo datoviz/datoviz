@@ -10,19 +10,17 @@ scene specs; this file only defines safe source-ownership direction for refactor
 
 ## Current Pressure Points
 
-As of 2026-05-28, the highest-value split candidates are:
+As of 2026-05-28 after the first source-split batch, the highest-value split candidates are:
 
-1. `src/scene/core/scene.c`: broad object creation, lifecycle, slots, buffers, visuals, fields,
-   panels, and emitted-stream bookkeeping still share one translation unit.
-2. `src/scene/plan/visual_lowering_uploads.c`: some derived payload builders remain in plan code.
+1. `src/scene/plan/visual_lowering_uploads.c`: some derived payload builders remain in plan code.
    Continue moving only pure cache/data construction into family or subsystem helpers.
-3. `src/scene/annotation/text.c`, `axis.c`, and `scale.c`: retained annotation objects,
+2. `src/scene/annotation/text.c`, `axis.c`, and `scale.c`: retained annotation objects,
    layout/reserve policy, generated visuals, and text/glyph lowering are still mixed.
-4. `src/scene/domain/field.c` and `polygon.c`: public domain object state, sampled interpretation,
+3. `src/scene/domain/field.c` and `polygon.c`: public domain object state, sampled interpretation,
    generated visual glue, and upload dirtiness are still mixed.
-5. `src/scene/query/execute.c`: request execution is split better than before, but visual-family
-   target policy and runtime readback orchestration should stay visibly separate.
-6. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
+4. `src/scene/visuals/desc.c` and `attrs.c`: descriptor resolution, retained metadata, and binding
+   updates are better than before but still carry several ownership concerns.
+5. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
    multiple ownership boundaries at once.
 
 
@@ -136,26 +134,40 @@ are touched.
 
 ### 5. Split Core Scene Ownership
 
-Target `src/scene/core/scene.c` after frame-plan/runtime churn is under control.
+Status: first batch completed on 2026-05-28. Keep the current ownership unless later work exposes
+new coupling.
 
-Suggested ownership:
+Current ownership:
 
-1. `scene.c`: public facade, scene lifecycle, and high-level object ownership.
-2. `figure.c`: figure creation, destruction, emitted-stream bookkeeping, and frame callbacks.
-3. `panel.c`: panel creation, layout attachment, panel-local controller pointers, and bounds state.
-4. `visual.c`: visual slot allocation, visual lifecycle, visual lookup, and visual-level dirty
-   marking.
-5. `buffer.c`: scene buffer creation, mutation, view binding, and live-stream mutation guards.
-6. `field.c` facade or bridge: public sampled-field object entry points that delegate to
-   `src/scene/domain/field.c` for interpretation and upload state.
+1. `scene.c`: scene lifecycle plus figure and panel facade functions.
+2. `scene_notify.c`: request-frame callbacks and visual/buffer mutation notifications.
+3. `format_state.c`: shared format-state copying.
+4. `frame_trace.c`: figure ids and FramePlan tracing.
+5. `panel_geometry.c`: panel pixel/plot geometry and MVP helpers.
+6. `panel_layout.c`: reserve/padding/layout policy and screen-space invalidation.
+7. `grid.c`: grid tracks, margins, spans, and panel layout resolution.
+8. `controllers.c`: controller lifecycle, links, panel input dispatch, fly stepping, and panel
+   camera/controller APIs.
+9. `figure_emit.c`: figure emission, pending-render checks, emitted-stream ownership, and live-stream
+   mutation guards.
 
-Guardrail: do not split `_scene.h` into many private headers in the same commit. First move code
-behind the existing contract; then narrow headers once dependencies are visible.
+Guardrail: `_scene.h` remains broad after this batch. Prefer local private headers for later narrow
+subsystem declarations instead of growing it further.
 
 
 ### 6. Split Annotation And Domain Helpers
 
-Do this after core object ownership is less tangled.
+Status: started on 2026-05-28.
+
+Completed first slices:
+
+1. `annotation/colormap.c`: colormap sampling, built-in stop tables, colormap object lifecycle, and
+   colormap-driven scale dirtiness.
+2. `annotation/scale_internal.h`: narrow annotation-private scale dirty hook used by colormaps.
+3. `domain/buffer.c`: scene buffer lifecycle, buffer payload mutation, visual buffer binding, copied
+   visual index data, buffer reset/index helpers, and visual buffer release.
+
+Continue after these slices.
 
 Annotation candidates:
 
@@ -174,6 +186,11 @@ Domain candidates:
 
 
 ### 7. Tighten Query And Interaction Boundaries
+
+Status: query policy split started on 2026-05-28. `query/policy.c` owns target capability,
+query-profile selection, drawable candidate selection, family-op eligibility lookup, and
+framebuffer coordinate policy. `query/execute.c` now keeps retained executor schema reset,
+static-upload bookkeeping, native family execution, and readback orchestration.
 
 The query folder already has queue, executor, readback, registry, result, and execute files. The
 next split should be policy-driven:
