@@ -1098,12 +1098,45 @@ shader-abi-check:
 #
 
 spec-check: shader-abi-check
-    @.venv/bin/python tools/drp2_fixture_runner.py
-    @.venv/bin/python tools/webgpu_fixture_preflight.py
-    @node tools/webgpu_runner_smoke.mjs
-    @.venv/bin/pytest -q testing/test_drp2_fixture_runner.py
-    @.venv/bin/pytest -q testing/test_webgpu_fixture_preflight.py
-    @.venv/bin/pytest -q testing/test_dvztest_scheduler.py
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    tmpdir="$(mktemp -d)"
+    trap 'rm -rf "$tmpdir"' EXIT
+
+    names=()
+    pids=()
+    logs=()
+
+    run_check() {
+        local name="$1"
+        shift
+        local log="$tmpdir/${#names[@]}.log"
+        names+=("$name")
+        logs+=("$log")
+        "$@" >"$log" 2>&1 &
+        pids+=("$!")
+    }
+
+    run_check "drp2 fixture runner" .venv/bin/python tools/drp2_fixture_runner.py
+    run_check "webgpu fixture preflight" .venv/bin/python tools/webgpu_fixture_preflight.py
+    run_check "webgpu runner smoke" node tools/webgpu_runner_smoke.mjs
+    run_check "drp2 fixture tests" .venv/bin/pytest -q testing/test_drp2_fixture_runner.py
+    run_check "webgpu preflight tests" .venv/bin/pytest -q testing/test_webgpu_fixture_preflight.py
+    run_check "scheduler tests" .venv/bin/pytest -q testing/test_dvztest_scheduler.py
+
+    status=0
+    for i in "${!pids[@]}"; do
+        if wait "${pids[$i]}"; then
+            printf 'PASS %s\n' "${names[$i]}"
+        else
+            printf 'FAIL %s\n' "${names[$i]}"
+            status=1
+        fi
+        cat "${logs[$i]}"
+    done
+
+    exit "$status"
 #
 
 
