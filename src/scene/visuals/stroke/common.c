@@ -56,6 +56,52 @@ bool _stroke_join_valid(DvzPathJoin join)
 
 
 /**
+ * Store segment cap state into the shared material payload used by segment shaders.
+ *
+ * @param visual the segment visual
+ */
+void _segment_sync_params(DvzVisual* visual)
+{
+    ANN(visual);
+    visual->material_params.params[0] = (float)visual->segment.start_cap;
+    visual->material_params.params[1] = (float)visual->segment.end_cap;
+}
+
+
+
+/**
+ * Store path cap/join state into the shared material payload used by path shaders.
+ *
+ * @param visual the path visual
+ */
+void _path_sync_params(DvzVisual* visual)
+{
+    ANN(visual);
+    visual->material_params.params[0] = (float)visual->path.cap_start;
+    visual->material_params.params[1] = (float)visual->path.cap_end;
+    visual->material_params.params[2] = (float)visual->path.join;
+    visual->material_params.params[3] = visual->path.miter_limit;
+}
+
+
+
+/**
+ * Store vector-owned cap/join state into the shared material payload used by vector lowerings.
+ *
+ * @param visual the vector visual
+ */
+void _vector_sync_params(DvzVisual* visual)
+{
+    ANN(visual);
+    visual->material_params.params[0] = (float)visual->vector.start_cap;
+    visual->material_params.params[1] = (float)visual->vector.end_cap;
+    visual->material_params.params[2] = (float)visual->vector.join;
+    visual->material_params.params[3] = visual->vector.miter_limit;
+}
+
+
+
+/**
  * Release one stroke-quad visual's derived GPU upload cache.
  *
  * @param cache the stroke-quad GPU cache

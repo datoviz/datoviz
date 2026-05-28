@@ -4,39 +4,33 @@
  * SPDX-License-Identifier: MIT
  */
 
+
 /*************************************************************************************************/
-/*  Image visual internals                                                                       */
+/*  Image visual cache                                                                           */
 /*************************************************************************************************/
-
-#pragma once
-
-
 
 /*************************************************************************************************/
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "_scene.h"
-
+#include "_alloc.h"
+#include "image/internal.h"
 
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-bool _image_query_attr(
-    const DvzVisual* visual, const char* attr_name, uint32_t item_size,
-    const DvzVisualAttr** out_attr);
-
-bool _image_query_generated_rect_geometry(
-    const DvzVisual* visual, DvzSceneQueryScratch* scratch, bool include_ids,
-    bool include_texcoords, uint64_t* out_vertex_count);
-
-bool _image_uses_generated_quads(const DvzVisual* visual);
-
-bool _image_generated_quad_cache_rebuild(const DvzFigure* figure, DvzVisual* visual);
-
-void _image_gpu_cache_free(DvzImageGpuCache* cache);
+/**
+ * Release one image visual's derived rectangle upload cache.
+ *
+ * @param cache the image GPU cache
+ */
+void _image_gpu_cache_free(DvzImageGpuCache* cache)
+{
+    if (cache == NULL)
+        return;
+    dvz_free(cache->position);
+    dvz_free(cache->texcoords);
+    dvz_memset(cache, sizeof(DvzImageGpuCache), 0, sizeof(DvzImageGpuCache));
+}

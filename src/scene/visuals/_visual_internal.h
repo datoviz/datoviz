@@ -61,6 +61,5 @@ void _volume_state_default(DvzVolumeState* state);
 bool _point_style_enabled(const DvzPointStyleDesc* style);
 DvzPointStyleDesc _marker_style_to_point_style(const DvzMarkerStyle* style);
 void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPointStyleDesc* style);
-void _image_gpu_cache_free(DvzImageGpuCache* cache);
 DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t flags);
 void _scene_release_visual_scale(DvzVisual* visual);
