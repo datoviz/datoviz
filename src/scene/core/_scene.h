@@ -697,6 +697,9 @@ struct DvzAnimation
 /*************************************************************************************************/
 void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out);
 bool _scene_panel_panzoom_extent(const DvzPanel* panel, float out[4]);
+void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, float* out_height);
+bool _panel_padding_valid(const DvzPanel* panel, const DvzPanelReserve* padding);
+bool _panel_reserve_valid(const DvzPanel* panel, const DvzPanelReserve* reserve);
 
 bool _dvz_figure_fly_update(DvzFigure* figure, double dt);
 
