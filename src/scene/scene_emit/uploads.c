@@ -84,32 +84,7 @@ void _scene_emit_visual_uploads(
                         continue;
                 }
             }
-            if (visual->buffer != NULL && visual->buffer->data != NULL)
-            {
-                uint32_t buffer_idx = _scene_buffer_index(figure->scene, visual->buffer);
-                if (visual->buffer->dirty && buffer_idx != UINT32_MAX &&
-                    !emitted_buffers[buffer_idx])
-                {
-                    char buffer_resource_id[128];
-                    if (!_scene_resource_key_buffer(
-                            buffer_idx, buffer_resource_id, sizeof(buffer_resource_id)))
-                        continue;
-                    dvz_frame_plan_upload_bytes(
-                        plan, buffer_resource_id, 0, visual->buffer->desc.byte_size, "index",
-                        visual->buffer->data);
-                    _scene_attach_upload_metadata(
-                        plan, visual, vidx, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
-                        DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, buffer_idx,
-                        visual->buffer->desc.stride > 0
-                            ? visual->buffer->desc.byte_size / visual->buffer->desc.stride
-                            : 0);
-                    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
-                    node->u.upload.buffer_usage =
-                        DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
-                    node->u.upload.item_stride = visual->buffer->desc.stride;
-                    emitted_buffers[buffer_idx] = true;
-                }
-            }
+            _scene_emit_visual_index_buffer_upload(figure, plan, visual, vidx, emitted_buffers);
             _scene_emit_visual_family_texture_uploads(figure, plan, visual, vidx);
         }
     }

@@ -410,6 +410,51 @@ void _scene_emit_visual_dense_attr_uploads(
 
 
 /**
+ * Emit the retained index buffer upload for one visual when it is dirty.
+ *
+ * @param figure the figure
+ * @param plan the destination frame plan
+ * @param visual the visual
+ * @param visual_index the scene visual index
+ * @param emitted_buffers scene-buffer emission guards shared across the upload pass
+ */
+void _scene_emit_visual_index_buffer_upload(
+    const DvzFigure* figure, DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
+    bool* emitted_buffers)
+{
+    ANN(figure);
+    ANN(figure->scene);
+    ANN(plan);
+    ANN(visual);
+    ANN(emitted_buffers);
+    if (visual->buffer == NULL || visual->buffer->data == NULL)
+        return;
+
+    uint32_t buffer_idx = _scene_buffer_index(figure->scene, visual->buffer);
+    if (!visual->buffer->dirty || buffer_idx == UINT32_MAX || emitted_buffers[buffer_idx])
+        return;
+
+    char buffer_resource_id[128];
+    if (!_scene_resource_key_buffer(buffer_idx, buffer_resource_id, sizeof(buffer_resource_id)))
+        return;
+    dvz_frame_plan_upload_bytes(
+        plan, buffer_resource_id, 0, visual->buffer->desc.byte_size, "index",
+        visual->buffer->data);
+    _scene_attach_upload_metadata(
+        plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
+        DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, buffer_idx,
+        visual->buffer->desc.stride > 0
+            ? visual->buffer->desc.byte_size / visual->buffer->desc.stride
+            : 0);
+    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+    node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
+    node->u.upload.item_stride = visual->buffer->desc.stride;
+    emitted_buffers[buffer_idx] = true;
+}
+
+
+
+/**
  * Emit derived buffer payloads prepared by one visual family helper.
  *
  * @param figure the figure

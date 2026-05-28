@@ -65,6 +65,10 @@ void _scene_emit_visual_dense_attr_uploads(
     const DvzFigure* figure, DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
     bool upload_position_topology, bool* emitted_buffers);
 
+void _scene_emit_visual_index_buffer_upload(
+    const DvzFigure* figure, DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
+    bool* emitted_buffers);
+
 bool _scene_emit_visual_family_derived_uploads(
     const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index,
     bool* out_skip_dense_attrs, bool* out_finished_visual);
