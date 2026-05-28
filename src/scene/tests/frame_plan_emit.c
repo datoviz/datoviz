@@ -1377,6 +1377,41 @@ int test_frame_plan_emit_drp2_static_render_glsl(TstContext* suite, const TstCas
 }
 
 
+static int test_frame_plan_emitter_rejects_untyped_visual_metadata(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.convert.untyped_metadata", 16);
+    ANN(plan);
+
+    AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &cfg);
+    AT(stream == NULL);
+    AT(dvz_diagnostic_report_count(&report) >= 1);
+    AT(strcmp(dvz_diagnostic_report_get(&report, 0), "render visual missing typed metadata") == 0);
+
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
 int test_frame_plan_emit_drp2_rejects_unsupported_shader_format(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -2915,6 +2950,7 @@ int test_scene_frame_plan_emit(TstSuite* suite)
 
     TST_CASE(test_frame_plan_emit_drp2_static_render);
     TST_CASE(test_frame_plan_emit_drp2_static_render_glsl);
+    TST_CASE(test_frame_plan_emitter_rejects_untyped_visual_metadata);
     TST_CASE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);
     TST_CASE(test_frame_plan_emit_drp2_rejects_small_caps);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE

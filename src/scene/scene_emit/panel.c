@@ -488,12 +488,14 @@ static bool _scene_transparent_contract_needs_depth(
  * @param visual the visual
  * @param attach the panel attachment
  * @param visual_index the visual index within the figure
+ * @param report optional diagnostic report
  * @return whether the visual was appended
  */
 static bool _scene_append_visual_to_render_pass(
     const DvzFigure* figure, DvzFramePlan* plan, DvzFramePlanNode* node, const DvzPanel* panel,
     const DvzVisual* visual, const DvzPanelAttach* attach, uint32_t visual_index,
-    const DvzSceneOcclusionDesc* scene_occlusion, const DvzVolumeOcclusionDesc* volume_occlusion)
+    const DvzSceneOcclusionDesc* scene_occlusion, const DvzVolumeOcclusionDesc* volume_occlusion,
+    DvzDiagnosticReport* report)
 {
     ANN(figure);
     ANN(plan);
@@ -521,101 +523,100 @@ static bool _scene_append_visual_to_render_pass(
 
     DvzFramePlanVisualMeta metadata = {0};
     bool has_metadata = _scene_visual_frame_plan_metadata(figure, visual, visual_index, &metadata);
-    if (has_metadata)
+    if (!has_metadata)
     {
-        metadata.clip_rect = _scene_visual_clip_rect(panel, visual);
-        if (metadata.has_volume && volume_occlusion == NULL)
-        {
-            metadata.volume_occluded = false;
-            metadata.has_volume_occlusion = false;
-        }
-        if (metadata.has_volume && volume_occlusion != NULL)
-        {
-            metadata.has_volume_occlusion = true;
-            metadata.volume_occlusion = *volume_occlusion;
-        }
-        if (scene_occlusion == NULL)
-            metadata.scene_occluded = false;
-        if (metadata.scene_occluded && scene_occlusion != NULL)
-        {
-            metadata.has_scene_occlusion = true;
-            metadata.scene_occlusion = *scene_occlusion;
-        }
-        DvzSceneDrawContract draw_contract = {0};
-        if (!_scene_draw_contract_from_visual(
-                visual, attach, node->u.render.pass_role, &draw_contract))
+        _scene_emit_graph_report(
+            report, "visual %s has no typed FramePlan metadata", visual_id);
+        return false;
+    }
+    metadata.clip_rect = _scene_visual_clip_rect(panel, visual);
+    if (metadata.has_volume && volume_occlusion == NULL)
+    {
+        metadata.volume_occluded = false;
+        metadata.has_volume_occlusion = false;
+    }
+    if (metadata.has_volume && volume_occlusion != NULL)
+    {
+        metadata.has_volume_occlusion = true;
+        metadata.volume_occlusion = *volume_occlusion;
+    }
+    if (scene_occlusion == NULL)
+        metadata.scene_occluded = false;
+    if (metadata.scene_occluded && scene_occlusion != NULL)
+    {
+        metadata.has_scene_occlusion = true;
+        metadata.scene_occlusion = *scene_occlusion;
+    }
+    DvzSceneDrawContract draw_contract = {0};
+    if (!_scene_draw_contract_from_visual(visual, attach, node->u.render.pass_role, &draw_contract))
+        return false;
+    if (scene_occlusion == NULL)
+    {
+        draw_contract.samples_scene_occlusion = false;
+        draw_contract.needs_scene_occlusion_set = false;
+        draw_contract.shader_feature_mask &=
+            ~((uint32_t)DVZ_SCENE_SHADER_FEATURE_SAMPLE_SCENE_OCCLUSION);
+        draw_contract.bind_group_layout_mask &=
+            ~((uint32_t)DVZ_SCENE_BIND_GROUP_REQUIREMENT_SCENE_OCCLUSION);
+    }
+    if (volume_occlusion == NULL)
+    {
+        draw_contract.samples_volume_occlusion = false;
+        draw_contract.shader_feature_mask &=
+            ~((uint32_t)DVZ_SCENE_SHADER_FEATURE_SAMPLE_VOLUME_OCCLUSION);
+    }
+    if (!_scene_draw_contract_id(
+            node->u.render.pass_contract_id, visual_index, metadata.draw_contract_id,
+            sizeof(metadata.draw_contract_id)))
+        return false;
+    metadata.has_draw_contract = true;
+    metadata.draw_depth_policy = draw_contract.depth_policy;
+    metadata.draw_blend_policy = (uint32_t)draw_contract.blend_policy;
+    metadata.draw_shader_feature_mask = draw_contract.shader_feature_mask;
+    metadata.draw_bind_group_layout_mask = draw_contract.bind_group_layout_mask;
+    if (draw_contract.samples_volume_occlusion)
+    {
+        if (!_scene_resource_key_panel_graph(
+                node->u.render.panel_id, "volume_occlusion.depth",
+                metadata.draw_volume_occlusion_resource_id,
+                sizeof(metadata.draw_volume_occlusion_resource_id)))
             return false;
-        if (scene_occlusion == NULL)
-        {
-            draw_contract.samples_scene_occlusion = false;
-            draw_contract.needs_scene_occlusion_set = false;
-            draw_contract.shader_feature_mask &=
-                ~((uint32_t)DVZ_SCENE_SHADER_FEATURE_SAMPLE_SCENE_OCCLUSION);
-            draw_contract.bind_group_layout_mask &=
-                ~((uint32_t)DVZ_SCENE_BIND_GROUP_REQUIREMENT_SCENE_OCCLUSION);
-        }
-        if (volume_occlusion == NULL)
-        {
-            draw_contract.samples_volume_occlusion = false;
-            draw_contract.shader_feature_mask &=
-                ~((uint32_t)DVZ_SCENE_SHADER_FEATURE_SAMPLE_VOLUME_OCCLUSION);
-        }
-        if (!_scene_draw_contract_id(
-                node->u.render.pass_contract_id, visual_index, metadata.draw_contract_id,
-                sizeof(metadata.draw_contract_id)))
+        if (!_scene_resource_key_panel_graph(
+                node->u.render.panel_id, "volume_occlusion",
+                metadata.draw_volume_occlusion_producer_pass_id,
+                sizeof(metadata.draw_volume_occlusion_producer_pass_id)))
             return false;
-        metadata.has_draw_contract = true;
-        metadata.draw_depth_policy = draw_contract.depth_policy;
-        metadata.draw_blend_policy = (uint32_t)draw_contract.blend_policy;
-        metadata.draw_shader_feature_mask = draw_contract.shader_feature_mask;
-        metadata.draw_bind_group_layout_mask = draw_contract.bind_group_layout_mask;
-        if (draw_contract.samples_volume_occlusion)
-        {
-            if (!_scene_resource_key_panel_graph(
-                    node->u.render.panel_id, "volume_occlusion.depth",
-                    metadata.draw_volume_occlusion_resource_id,
-                    sizeof(metadata.draw_volume_occlusion_resource_id)))
-                return false;
-            if (!_scene_resource_key_panel_graph(
-                    node->u.render.panel_id, "volume_occlusion",
-                    metadata.draw_volume_occlusion_producer_pass_id,
-                    sizeof(metadata.draw_volume_occlusion_producer_pass_id)))
-                return false;
-            metadata.draw_volume_occlusion_bind_set = DVZ_SCENE_SHADER_SET_VISUAL;
-            metadata.draw_volume_occlusion_bind_binding = 3;
-        }
-        if (draw_contract.samples_scene_occlusion)
-        {
-            if (!_scene_resource_key_panel_graph(
-                    node->u.render.panel_id, "scene_occlusion.depth",
-                    metadata.draw_scene_occlusion_resource_id,
-                    sizeof(metadata.draw_scene_occlusion_resource_id)))
-                return false;
-            if (!_scene_resource_key_panel_graph(
-                    node->u.render.panel_id, "scene_occlusion",
-                    metadata.draw_scene_occlusion_producer_pass_id,
-                    sizeof(metadata.draw_scene_occlusion_producer_pass_id)))
-                return false;
-            bool scene_occlusion_uses_set2 =
-                draw_contract.needs_image_set || draw_contract.needs_labels_set ||
-                draw_contract.needs_glyph_set || draw_contract.needs_volume_set ||
-                draw_contract.needs_material_set;
-            metadata.draw_scene_occlusion_bind_set = scene_occlusion_uses_set2
-                                                         ? DVZ_SCENE_SHADER_SET_SCENE_OCCLUSION
-                                                         : DVZ_SCENE_SHADER_SET_VISUAL;
-            metadata.draw_scene_occlusion_bind_binding = 0;
-        }
+        metadata.draw_volume_occlusion_bind_set = DVZ_SCENE_SHADER_SET_VISUAL;
+        metadata.draw_volume_occlusion_bind_binding = 3;
+    }
+    if (draw_contract.samples_scene_occlusion)
+    {
+        if (!_scene_resource_key_panel_graph(
+                node->u.render.panel_id, "scene_occlusion.depth",
+                metadata.draw_scene_occlusion_resource_id,
+                sizeof(metadata.draw_scene_occlusion_resource_id)))
+            return false;
+        if (!_scene_resource_key_panel_graph(
+                node->u.render.panel_id, "scene_occlusion",
+                metadata.draw_scene_occlusion_producer_pass_id,
+                sizeof(metadata.draw_scene_occlusion_producer_pass_id)))
+            return false;
+        bool scene_occlusion_uses_set2 =
+            draw_contract.needs_image_set || draw_contract.needs_labels_set ||
+            draw_contract.needs_glyph_set || draw_contract.needs_volume_set ||
+            draw_contract.needs_material_set;
+        metadata.draw_scene_occlusion_bind_set = scene_occlusion_uses_set2
+                                                     ? DVZ_SCENE_SHADER_SET_SCENE_OCCLUSION
+                                                     : DVZ_SCENE_SHADER_SET_VISUAL;
+        metadata.draw_scene_occlusion_bind_binding = 0;
     }
 
     uint32_t slot = node->u.render.visual_count++;
     dvz_strlcpy(node->u.render.visuals[slot], visual_id, sizeof(node->u.render.visuals[slot]));
-    if (has_metadata)
-    {
-        dvz_memcpy(
-            &node->u.render.visual_metadata[slot], sizeof(DvzFramePlanVisualMeta), &metadata,
-            sizeof(DvzFramePlanVisualMeta));
-        node->u.render.visual_metadata[slot].has_metadata = true;
-    }
+    dvz_memcpy(
+        &node->u.render.visual_metadata[slot], sizeof(DvzFramePlanVisualMeta), &metadata,
+        sizeof(DvzFramePlanVisualMeta));
+    node->u.render.visual_metadata[slot].has_metadata = true;
     node->u.render.controller_modes[slot] = attach->controller_mode;
     return true;
 }
@@ -697,6 +698,7 @@ bool _scene_emit_panel_render_ex(
 
     const uint32_t invalid_node = UINT32_MAX;
     uint32_t scene_occlusion_node = invalid_node;
+    bool graph_ok = true;
     bool scene_occlusion_enabled = _scene_panel_has_visible_scene_occlusion_target(panel);
     if (scene_occlusion_enabled)
     {
@@ -722,9 +724,10 @@ bool _scene_emit_panel_render_ex(
                 DvzFramePlanNode* node = _scene_frame_plan_node_mut(plan, scene_occlusion_node);
                 if (node == NULL)
                     continue;
-                (void)_scene_append_visual_to_render_pass(
-                    figure, plan, node, panel, visual, attach, vidx, &panel->scene_occlusion,
-                    volume_occlusion);
+                if (!_scene_append_visual_to_render_pass(
+                        figure, plan, node, panel, visual, attach, vidx, &panel->scene_occlusion,
+                        volume_occlusion, report))
+                    graph_ok = false;
             }
         }
     }
@@ -749,9 +752,10 @@ bool _scene_emit_panel_render_ex(
                 DvzFramePlanNode* node = _scene_frame_plan_node_mut(plan, volume_occlusion_node);
                 if (node != NULL)
                 {
-                    (void)_scene_append_visual_to_render_pass(
-                        figure, plan, node, panel, panel->volume_occluder_visual, &attach,
-                        occluder_index, NULL, &panel->volume_occlusion);
+                    if (!_scene_append_visual_to_render_pass(
+                            figure, plan, node, panel, panel->volume_occluder_visual, &attach,
+                            occluder_index, NULL, &panel->volume_occlusion, report))
+                        graph_ok = false;
                 }
             }
         }
@@ -786,7 +790,6 @@ bool _scene_emit_panel_render_ex(
     bool has_transparent = false;
     bool opaque_needs_depth = false;
     bool transparent_needs_depth = false;
-    bool graph_ok = true;
     for (uint32_t i = 0; i < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; i++)
         depth_peel_iter_nodes[i] = invalid_node;
     for (uint32_t k = 0; k < panel->visual_count; k++)
@@ -846,10 +849,11 @@ bool _scene_emit_panel_render_ex(
             DvzFramePlanNode* node = _scene_frame_plan_node_mut(plan, gbuffer_node);
             if (node == NULL)
                 continue;
-            (void)_scene_append_visual_to_render_pass(
-                figure, plan, node, panel, visual, attach, vidx,
-                scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
-                volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
+            if (!_scene_append_visual_to_render_pass(
+                    figure, plan, node, panel, visual, attach, vidx,
+                    scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
+                    volume_occlusion_enabled ? &panel->volume_occlusion : NULL, report))
+                graph_ok = false;
         }
 
         if (opaque_node == invalid_node)
@@ -862,10 +866,11 @@ bool _scene_emit_panel_render_ex(
         DvzFramePlanNode* node = _scene_frame_plan_node_mut(plan, opaque_node);
         if (node == NULL)
             continue;
-        (void)_scene_append_visual_to_render_pass(
-            figure, plan, node, panel, visual, attach, vidx,
-            scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
-            volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
+        if (!_scene_append_visual_to_render_pass(
+                figure, plan, node, panel, visual, attach, vidx,
+                scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
+                volume_occlusion_enabled ? &panel->volume_occlusion : NULL, report))
+            graph_ok = false;
         bool edl_depth_visual = edl_enabled && caps.eligible_for_depth_postprocess;
         opaque_needs_depth = opaque_needs_depth || caps.writes_depth || edl_depth_visual;
         edl_has_depth_producer = edl_has_depth_producer || edl_depth_visual;
@@ -932,10 +937,11 @@ bool _scene_emit_panel_render_ex(
             DvzFramePlanNode* node = _scene_frame_plan_node_mut(plan, blended_nodes[blend_idx]);
             if (node == NULL)
                 continue;
-            (void)_scene_append_visual_to_render_pass(
-                figure, plan, node, panel, visual, attach, vidx,
-                scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
-                volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
+            if (!_scene_append_visual_to_render_pass(
+                    figure, plan, node, panel, visual, attach, vidx,
+                    scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
+                    volume_occlusion_enabled ? &panel->volume_occlusion : NULL, report))
+                graph_ok = false;
             blended_needs_depth[blend_idx] = blended_needs_depth[blend_idx] || draw_needs_depth;
             blended_writes_depth[blend_idx] = blended_writes_depth[blend_idx] || draw_writes_depth;
             transparent_needs_depth = transparent_needs_depth || draw_needs_depth;
@@ -994,20 +1000,22 @@ bool _scene_emit_panel_render_ex(
             DvzFramePlanNode* init_node = _scene_frame_plan_node_mut(plan, depth_peel_init_node);
             if (init_node == NULL)
                 continue;
-            (void)_scene_append_visual_to_render_pass(
-                figure, plan, init_node, panel, visual, attach, vidx,
-                scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
-                volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
+            if (!_scene_append_visual_to_render_pass(
+                    figure, plan, init_node, panel, visual, attach, vidx,
+                    scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
+                    volume_occlusion_enabled ? &panel->volume_occlusion : NULL, report))
+                graph_ok = false;
             for (uint32_t iter_idx = 0; iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter_idx++)
             {
                 DvzFramePlanNode* iter_node =
                     _scene_frame_plan_node_mut(plan, depth_peel_iter_nodes[iter_idx]);
                 if (iter_node == NULL)
                     continue;
-                (void)_scene_append_visual_to_render_pass(
-                    figure, plan, iter_node, panel, visual, attach, vidx,
-                    scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
-                    volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
+                if (!_scene_append_visual_to_render_pass(
+                        figure, plan, iter_node, panel, visual, attach, vidx,
+                        scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
+                        volume_occlusion_enabled ? &panel->volume_occlusion : NULL, report))
+                    graph_ok = false;
             }
             transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
             continue;
@@ -1024,10 +1032,11 @@ bool _scene_emit_panel_render_ex(
         DvzFramePlanNode* node = _scene_frame_plan_node_mut(plan, transparent_node);
         if (node == NULL)
             continue;
-        (void)_scene_append_visual_to_render_pass(
-            figure, plan, node, panel, visual, attach, vidx,
-            scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
-            volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
+        if (!_scene_append_visual_to_render_pass(
+                figure, plan, node, panel, visual, attach, vidx,
+                scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
+                volume_occlusion_enabled ? &panel->volume_occlusion : NULL, report))
+            graph_ok = false;
         transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
     }
 

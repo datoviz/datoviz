@@ -1387,6 +1387,12 @@ bool _emitter_emit_render(
         visual_meta = &render->u.render.visual_metadata[0];
         desc_kind = _scene_visual_meta_desc_kind(&emitter->resources, visual_meta);
     }
+    if (render->u.render.visual_count > 0 && visual_meta == NULL &&
+        !render->u.render.allow_untyped_visuals)
+    {
+        _diagnostic(report, "render visual missing typed metadata");
+        return false;
+    }
 
     /* Detect point-like visual data (position + color + size attributes). */
     bool is_point = _is_point_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
