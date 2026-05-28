@@ -1052,6 +1052,7 @@ ctypes-abi: api-json
 
 ctypes-check: api-json ctypes-abi
     @python tools/bindings/generate_ctypes.py --check
+    @python tools/bindings/validate_ctypes_policy.py
     @PYTHONPATH=. python tools/bindings/validate_ctypes_abi.py
 #
 
