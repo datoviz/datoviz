@@ -21,6 +21,7 @@
 #include <stdint.h>
 
 #include "_scene.h"
+#include "_visual_pipeline.h"
 
 
 
@@ -34,11 +35,16 @@ typedef struct DvzVisualLowering DvzVisualLowering;
 typedef bool (*DvzVisualFamilyLoweringFn)(
     const DvzVisual* visual, DvzVisualLowering* out);
 
+typedef bool (*DvzVisualFamilyPassCapsFn)(
+    const DvzVisual* visual, const DvzPanelAttach* attach, const DvzVisualLowering* lowering,
+    DvzSceneVisualPassCaps* out);
+
 struct DvzVisualFamilyOps
 {
     DvzVisualType type;
     const char* name;
     DvzVisualFamilyLoweringFn resolve_lowering;
+    DvzVisualFamilyPassCapsFn resolve_pass_caps;
 };
 
 

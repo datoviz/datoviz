@@ -8578,6 +8578,7 @@ int test_scene_visual_family_registry_coverage(TstContext* suite, const TstCase*
         ANN(ops->name);
         AT(ops->name[0] != '\0');
         ANN(ops->resolve_lowering);
+        ANN(ops->resolve_pass_caps);
         AT(_scene_visual_family_ops_registered(active_types[i]));
     }
 

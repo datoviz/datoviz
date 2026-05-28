@@ -26,6 +26,7 @@
 #include "_technique.h"
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
+#include "registry/registry.h"
 #include "scene_emit/visual_lowering.h"
 #include "datoviz/drp2/enums.h"
 
@@ -45,7 +46,7 @@
  * @param depth_cue_enabled whether retained material state enables depth cueing
  * @param out the output pass capabilities
  */
-static void _scene_visual_pass_caps_resolve(
+void _scene_visual_pass_caps_resolve(
     DvzSceneVisualDescKind kind, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
     bool has_normals, bool has_material_resource, bool depth_cue_enabled, bool depth_test_enabled,
     DvzSceneVisualPassCaps* out)
@@ -122,28 +123,10 @@ bool _scene_visual_pass_caps_from_visual(
     DvzVisualLowering lowering = {0};
     if (!_scene_visual_lowering_resolve(visual, &lowering))
         return false;
-    DvzRenderableKind renderable_kind = lowering.renderable_kind;
-    DvzSceneVisualDescKind kind = lowering.desc_kind;
-
-    bool has_normals = false;
-    if (_scene_visual_desc_is_primitive(kind) || kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
-    {
-        int normal_idx = _attr_index(visual, "normal");
-        has_normals = normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&
-                      visual->attrs[normal_idx].item_count > 0;
-    }
-
-    bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
-                      kind == DVZ_SCENE_VISUAL_DESC_MARKER;
-    bool stroke = renderable_kind == DVZ_RENDERABLE_STROKE_QUAD ||
-                  renderable_kind == DVZ_RENDERABLE_PATH_STROKE;
-    bool has_material_resource =
-        has_normals || stroke || _scene_visual_desc_is_sphere(kind) ||
-        (point_like && lowering.needs_material_params);
-    _scene_visual_pass_caps_resolve(
-        kind, visual->alpha_mode, attach->controller_mode, has_normals, has_material_resource,
-        visual->material.depth_cue_enabled, visual->depth_test_enabled, out);
-    return true;
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(visual->type);
+    if (ops == NULL || ops->resolve_pass_caps == NULL)
+        return false;
+    return ops->resolve_pass_caps(visual, attach, &lowering, out);
 }
 
 

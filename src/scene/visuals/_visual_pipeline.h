@@ -276,6 +276,11 @@ bool _scene_visual_pass_caps_from_desc(
     const DvzSceneVisualDesc* visual, DvzAlphaMode alpha_mode,
     DvzControllerMode controller_mode, DvzSceneVisualPassCaps* out);
 
+void _scene_visual_pass_caps_resolve(
+    DvzSceneVisualDescKind kind, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
+    bool has_normals, bool has_material_resource, bool depth_cue_enabled,
+    bool depth_test_enabled, DvzSceneVisualPassCaps* out);
+
 bool _scene_visual_shader_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
     const char* format_tag,

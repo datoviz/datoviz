@@ -19,6 +19,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_visual_pipeline_internal.h"
 #include "scene_emit/visual_lowering.h"
 #include "sample_profile.h"
 
@@ -454,26 +455,68 @@ static bool _lower_text(const DvzVisual* visual, DvzVisualLowering* out)
 
 
 
+/**
+ * Resolve generic pass capabilities from retained visual and family lowering facts.
+ *
+ * @param visual the retained visual
+ * @param attach the panel attachment
+ * @param lowering resolved visual lowering facts
+ * @param out output pass capabilities
+ * @return whether capabilities were resolved
+ */
+static bool _resolve_pass_caps(
+    const DvzVisual* visual, const DvzPanelAttach* attach, const DvzVisualLowering* lowering,
+    DvzSceneVisualPassCaps* out)
+{
+    ANN(visual);
+    ANN(attach);
+    ANN(lowering);
+    ANN(out);
+
+    DvzSceneVisualDescKind kind = lowering->desc_kind;
+    bool has_normals = false;
+    if (_scene_visual_desc_is_primitive(kind) || kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
+    {
+        int normal_idx = _attr_index(visual, "normal");
+        has_normals = normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&
+                      visual->attrs[normal_idx].item_count > 0;
+    }
+
+    bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+                      kind == DVZ_SCENE_VISUAL_DESC_MARKER;
+    bool stroke = lowering->renderable_kind == DVZ_RENDERABLE_STROKE_QUAD ||
+                  lowering->renderable_kind == DVZ_RENDERABLE_PATH_STROKE;
+    bool has_material_resource =
+        has_normals || stroke || _scene_visual_desc_is_sphere(kind) ||
+        (point_like && lowering->needs_material_params);
+    _scene_visual_pass_caps_resolve(
+        kind, visual->alpha_mode, attach->controller_mode, has_normals, has_material_resource,
+        visual->material.depth_cue_enabled, visual->depth_test_enabled, out);
+    return true;
+}
+
+
+
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
 static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
-    {DVZ_VISUAL_TYPE_POINT, "point", _lower_point},
-    {DVZ_VISUAL_TYPE_PIXEL, "pixel", _lower_pixel},
-    {DVZ_VISUAL_TYPE_MARKER, "marker", _lower_marker},
-    {DVZ_VISUAL_TYPE_SEGMENT, "segment", _lower_segment},
-    {DVZ_VISUAL_TYPE_PATH, "path", _lower_path},
-    {DVZ_VISUAL_TYPE_IMAGE, "image", _lower_image},
-    {DVZ_VISUAL_TYPE_MESH, "mesh", _lower_mesh},
-    {DVZ_VISUAL_TYPE_VOLUME, "volume", _lower_volume},
-    {DVZ_VISUAL_TYPE_PRIMITIVE, "primitive", _lower_primitive},
-    {DVZ_VISUAL_TYPE_SPHERE, "sphere", _lower_sphere},
-    {DVZ_VISUAL_TYPE_GLYPH, "glyph", _lower_glyph},
-    {DVZ_VISUAL_TYPE_TEXT, "text", _lower_text},
-    {DVZ_VISUAL_TYPE_LABELS, "labels", _lower_labels},
-    {DVZ_VISUAL_TYPE_SPLAT, "splat", _lower_splat},
-    {DVZ_VISUAL_TYPE_VECTOR, "vector", _lower_vector},
+    {DVZ_VISUAL_TYPE_POINT, "point", _lower_point, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_PIXEL, "pixel", _lower_pixel, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_MARKER, "marker", _lower_marker, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_SEGMENT, "segment", _lower_segment, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_PATH, "path", _lower_path, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_IMAGE, "image", _lower_image, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_MESH, "mesh", _lower_mesh, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_VOLUME, "volume", _lower_volume, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_PRIMITIVE, "primitive", _lower_primitive, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_SPHERE, "sphere", _lower_sphere, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_GLYPH, "glyph", _lower_glyph, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_TEXT, "text", _lower_text, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_LABELS, "labels", _lower_labels, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_SPLAT, "splat", _lower_splat, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_VECTOR, "vector", _lower_vector, _resolve_pass_caps},
 };
 
 
