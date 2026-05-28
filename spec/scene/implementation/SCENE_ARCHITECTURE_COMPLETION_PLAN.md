@@ -28,11 +28,12 @@ Important current state:
    classifiers infer point, splat, primitive, image, and textured-mesh descriptors from resource
    roles/tags only for explicit compatibility fixtures.
 7. `visuals/registry/` owns the first private `DvzVisualFamilyOps` table. It currently covers
-   family identity, retained visual lowering, and retained visual pass-capability resolution, with
-   tests enforcing active-family coverage.
+   family identity, retained visual lowering, retained visual pass-capability resolution, bind
+   descriptors, pipeline descriptors, shader descriptors, and draw descriptors, with tests
+   enforcing active-family coverage.
 8. `visuals/attrs.c` and `visuals/desc.c` are smaller after the first split, but the final
-   architecture still needs the pipeline, shader, bind, metadata, upload, query, and bounds
-   contracts to migrate into visual-family operations.
+   architecture still needs the metadata, upload, query, bounds, and per-family contract bodies to
+   migrate into visual-family operations.
 9. `scene_emit/uploads.c`, `annotation/text.c`, `annotation/axis.c`, and `domain/field.c` remain the
    highest-value mixed-ownership files.
 
@@ -137,12 +138,14 @@ Done criteria:
 
 Goal: generic code calls visual-family operations instead of visual-family switch statements.
 
-Status as of 2026-05-28: started. `src/scene/visuals/registry/` now contains the private
+Status as of 2026-05-28: in progress. `src/scene/visuals/registry/` now contains the private
 `DvzVisualFamilyOps` table, every active `DvzVisualType` is registered, and
-`test_scene_visual_family_registry_coverage` enforces identity, lowering, and pass-capability hooks.
-Retained visual lowering and retained visual pass-capability resolution now route through the
-registry. Continue by migrating descriptor-kind pipeline, shader, bind-layout, draw-count,
-metadata, upload, query, and bounds hooks incrementally.
+`test_scene_visual_family_registry_coverage` enforces identity, lowering, pass-capability,
+bind-descriptor, pipeline-descriptor, shader-descriptor, and draw-descriptor hooks. Retained visual
+lowering, retained visual pass-capability resolution, runtime bind selection, runtime pipeline
+selection, runtime shader selection, and runtime draw-count packetization now route through the
+registry. Continue by migrating metadata, upload, query, bounds, and the current generic
+descriptor/pipeline/shader bodies into family-owned files incrementally.
 
 Steps:
 
@@ -157,7 +160,8 @@ Done criteria:
 
 1. Registry coverage is enforced by tests.
 2. Generic code can look up family operations without including family-private headers.
-3. New visual-family code has a single obvious registration point.
+3. Runtime draw packetization no longer owns descriptor-kind fallback layout policy.
+4. New visual-family code has a single obvious registration point.
 
 
 ### 3. Move Visual-Specific Logic Into Family Folders
@@ -205,8 +209,11 @@ Goal: runtime consumes resolved descriptors and render contracts; it does not kn
 Steps:
 
 1. Move draw-count, instance-count, topology, and generated-draw policy into visual metadata or
-   visual-family pipeline/draw contracts.
-2. Move bind-layout selection and shader-variant requirements into family descriptors.
+   visual-family pipeline/draw contracts. Draw-count packetization now has a registry hook; finish
+   moving per-family bodies out of generic descriptor switch files.
+2. Move bind-layout selection and shader-variant requirements into family descriptors. Runtime now
+   dispatches these through registry hooks; finish moving the bodies from root-level helpers into
+   family folders.
 3. Keep `runtime/render_emit_prepare.c` focused on assembling generic prepared draw packets.
 4. Keep `runtime/render_emit_draws.c` focused on viewport/scissor and DRP2 draw commands.
 5. Keep `runtime/render_emit_passes.c` focused on pass setup, graph/plain pass routing, targets,

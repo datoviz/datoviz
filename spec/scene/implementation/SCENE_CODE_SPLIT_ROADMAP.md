@@ -250,13 +250,16 @@ Current ownership:
 8. `visuals/desc_untyped_compat.c`: explicit compatibility resource-list classifiers for point,
    splat, primitive, image, and textured mesh descriptors.
 9. `visuals/registry/`: first `DvzVisualFamilyOps` table, active-family coverage test, retained
-   visual lowering, and retained visual pass-capability resolution.
+   visual lowering, retained visual pass-capability resolution, and runtime bind/pipeline/shader/
+   draw descriptor dispatch.
 
 Guardrail: do not split the remaining visual pipeline helpers by enum case alone. The long-term
 direction is a registry-driven visual-family contract, not more generic switch files. Treat
 `visuals/desc_untyped_compat.c` as temporary containment for untyped descriptor inference: normal
 scene output now uses explicit typed metadata, and the compatibility path should be deleted when the
-remaining low-level fixture/import use cases are migrated. See
+remaining low-level fixture/import use cases are migrated. The next visual split should move
+registry hook implementations into family-owned files instead of adding more root-level visual
+switches. See
 [`SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](SCENE_ARCHITECTURE_COMPLETION_PLAN.md).
 
 
