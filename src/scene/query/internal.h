@@ -158,6 +158,20 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_registry_get(uint32_t index);
 
 const DvzSceneQueryFamilyOps* _dvz_scene_query_registry_find(DvzSceneVisualFamily family);
 
+uint32_t _dvz_scene_query_target_capability(DvzSceneTargetKind target);
+
+DvzQueryProfile _dvz_scene_query_select_profile(
+    const DvzQueryRequest* request, const DvzCapabilitySnapshot* caps);
+
+bool _dvz_scene_query_framebuffer_position(
+    const DvzFigure* figure, const DvzPanel* panel, double x, double y,
+    uint32_t out_position[2]);
+
+DvzVisual* _dvz_scene_query_candidate_visual(const DvzPanel* panel, uint32_t capability);
+
+const DvzSceneQueryFamilyOps* _dvz_scene_query_family_ops_for_visual(
+    const DvzPanel* panel, const DvzVisual* visual, const DvzQueryRequest* request);
+
 bool _dvz_scene_query_execute_family(
     DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
     const DvzCapabilitySnapshot* caps, const DvzPendingQueryRequest* pending,
