@@ -176,6 +176,52 @@ bool _scene_visual_meta_is_stroked_path(
 
 
 /**
+ * Return the default visual family for one descriptor kind.
+ *
+ * @param kind visual descriptor kind
+ * @return the visual type, or NONE when the kind has no default family
+ */
+DvzVisualType _scene_visual_desc_default_type(DvzSceneVisualDescKind kind)
+{
+    switch (kind)
+    {
+    case DVZ_SCENE_VISUAL_DESC_POINT:
+        return DVZ_VISUAL_TYPE_POINT;
+    case DVZ_SCENE_VISUAL_DESC_PIXEL:
+        return DVZ_VISUAL_TYPE_PIXEL;
+    case DVZ_SCENE_VISUAL_DESC_SPLAT:
+        return DVZ_VISUAL_TYPE_SPLAT;
+    case DVZ_SCENE_VISUAL_DESC_MARKER:
+        return DVZ_VISUAL_TYPE_MARKER;
+    case DVZ_SCENE_VISUAL_DESC_SPHERE:
+        return DVZ_VISUAL_TYPE_SPHERE;
+    case DVZ_SCENE_VISUAL_DESC_SEGMENT:
+        return DVZ_VISUAL_TYPE_SEGMENT;
+    case DVZ_SCENE_VISUAL_DESC_PATH:
+        return DVZ_VISUAL_TYPE_PATH;
+    case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
+        return DVZ_VISUAL_TYPE_PRIMITIVE;
+    case DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH:
+        return DVZ_VISUAL_TYPE_MESH;
+    case DVZ_SCENE_VISUAL_DESC_IMAGE:
+        return DVZ_VISUAL_TYPE_IMAGE;
+    case DVZ_SCENE_VISUAL_DESC_LABELS_SINT:
+    case DVZ_SCENE_VISUAL_DESC_LABELS_UINT:
+        return DVZ_VISUAL_TYPE_LABELS;
+    case DVZ_SCENE_VISUAL_DESC_GLYPH:
+        return DVZ_VISUAL_TYPE_GLYPH;
+    case DVZ_SCENE_VISUAL_DESC_VOLUME:
+    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT:
+    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT:
+        return DVZ_VISUAL_TYPE_VOLUME;
+    case DVZ_SCENE_VISUAL_DESC_NONE:
+    default:
+        return DVZ_VISUAL_TYPE_NONE;
+    }
+}
+
+
+/**
  * Return whether one retained visual has dense data for an attribute.
  *
  * @param visual the retained visual

@@ -21,10 +21,10 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "_scene.h"
 #include "frame_plan/emit.h"
 #include "_frame_plan_runtime_internal.h"
 #include "_visual_pipeline.h"
+#include "_visual_pipeline_internal.h"
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
@@ -78,53 +78,6 @@ static const char* _draw_packet_kind_name(DvzSceneVisualDescKind kind)
         return "unknown";
     }
 }
-
-
-/**
- * Return the default visual family for one fallback descriptor kind.
- *
- * @param kind visual descriptor kind
- * @return the visual type, or NONE when the kind has no fallback family
- */
-static DvzVisualType _draw_packet_fallback_visual_type(DvzSceneVisualDescKind kind)
-{
-    switch (kind)
-    {
-    case DVZ_SCENE_VISUAL_DESC_POINT:
-        return DVZ_VISUAL_TYPE_POINT;
-    case DVZ_SCENE_VISUAL_DESC_PIXEL:
-        return DVZ_VISUAL_TYPE_PIXEL;
-    case DVZ_SCENE_VISUAL_DESC_SPLAT:
-        return DVZ_VISUAL_TYPE_SPLAT;
-    case DVZ_SCENE_VISUAL_DESC_MARKER:
-        return DVZ_VISUAL_TYPE_MARKER;
-    case DVZ_SCENE_VISUAL_DESC_SPHERE:
-        return DVZ_VISUAL_TYPE_SPHERE;
-    case DVZ_SCENE_VISUAL_DESC_SEGMENT:
-        return DVZ_VISUAL_TYPE_SEGMENT;
-    case DVZ_SCENE_VISUAL_DESC_PATH:
-        return DVZ_VISUAL_TYPE_PATH;
-    case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
-        return DVZ_VISUAL_TYPE_PRIMITIVE;
-    case DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH:
-        return DVZ_VISUAL_TYPE_MESH;
-    case DVZ_SCENE_VISUAL_DESC_IMAGE:
-        return DVZ_VISUAL_TYPE_IMAGE;
-    case DVZ_SCENE_VISUAL_DESC_LABELS_SINT:
-    case DVZ_SCENE_VISUAL_DESC_LABELS_UINT:
-        return DVZ_VISUAL_TYPE_LABELS;
-    case DVZ_SCENE_VISUAL_DESC_GLYPH:
-        return DVZ_VISUAL_TYPE_GLYPH;
-    case DVZ_SCENE_VISUAL_DESC_VOLUME:
-    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT:
-    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT:
-        return DVZ_VISUAL_TYPE_VOLUME;
-    case DVZ_SCENE_VISUAL_DESC_NONE:
-    default:
-        return DVZ_VISUAL_TYPE_NONE;
-    }
-}
-
 
 
 /**
@@ -448,7 +401,7 @@ bool _scene_draw_packet_init_fallback(
     DvzSceneVisualDesc visual = {0};
     DvzSceneVisualPipelineDesc pipeline = {0};
     visual.kind = kind;
-    visual.visual_type = _draw_packet_fallback_visual_type(kind);
+    visual.visual_type = _scene_visual_desc_default_type(kind);
     visual.vertex_count = vertex_count;
     visual.instance_count = instance_count;
     visual.vbuf_count = vertex_buffer_count;

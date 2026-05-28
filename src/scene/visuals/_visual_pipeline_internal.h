@@ -54,6 +54,8 @@ bool _scene_visual_desc_is_path(DvzSceneVisualDescKind kind);
 
 bool _scene_visual_desc_is_stroke(DvzSceneVisualDescKind kind);
 
+DvzVisualType _scene_visual_desc_default_type(DvzSceneVisualDescKind kind);
+
 uint64_t _scene_render_visual_resource_id(
     const DvzFramePlanEmitter* emitter, const char* encoded_visual_id,
     DvzFramePlanResourceRole role);
