@@ -136,15 +136,11 @@ static void _scene_emit_image_like_texture_upload(
     ANN(figure);
     ANN(plan);
     ANN(visual);
-    if ((visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH &&
-         visual->type != DVZ_VISUAL_TYPE_LABELS && visual->type != DVZ_VISUAL_TYPE_MESH) ||
-        visual->field == NULL || (!visual->texture.dirty && !visual->field->dirty))
-    {
-        return;
-    }
 
     if (visual->type == DVZ_VISUAL_TYPE_LABELS || visual->type == DVZ_VISUAL_TYPE_MESH)
     {
+        if (visual->field == NULL || (!visual->texture.dirty && !visual->field->dirty))
+            return;
         char tex_resource_id[128];
         if (!_scene_visual_texture_resource_key(
                 figure, visual, visual_index, tex_resource_id, sizeof(tex_resource_id)))
@@ -157,12 +153,17 @@ static void _scene_emit_image_like_texture_upload(
         return;
     }
 
+    bool handled = false;
+    DvzImageTextureUploadPayload payload = {0};
+    if (!_image_texture_upload_payload_if_dirty(visual, &payload, &handled) || !handled ||
+        payload.byte_size == 0)
+    {
+        return;
+    }
+
     char tex_resource_id[128];
     if (!_scene_visual_texture_resource_key(
             figure, visual, visual_index, tex_resource_id, sizeof(tex_resource_id)))
-        return;
-    DvzImageTextureUploadPayload payload = {0};
-    if (!_image_texture_upload_payload(visual, &payload))
         return;
 
     dvz_frame_plan_upload_bytes(

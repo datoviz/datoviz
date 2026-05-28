@@ -48,3 +48,28 @@ bool _image_texture_upload_payload(DvzVisual* visual, DvzImageTextureUploadPaylo
     out->allocation_height = visual->texture.height;
     return true;
 }
+
+
+
+/**
+ * Prepare a dirty RGBA texture upload payload for an image or glyph visual.
+ *
+ * @param visual the image-like visual
+ * @param out output texture upload payload
+ * @param out_handled whether the visual is handled by image texture upload logic
+ * @return whether the payload decision succeeded
+ */
+bool _image_texture_upload_payload_if_dirty(
+    DvzVisual* visual, DvzImageTextureUploadPayload* out, bool* out_handled)
+{
+    ANN(visual);
+    ANN(out);
+    ANN(out_handled);
+    dvz_memset(out, sizeof(DvzImageTextureUploadPayload), 0, sizeof(DvzImageTextureUploadPayload));
+    *out_handled = visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_GLYPH;
+    if (!*out_handled)
+        return true;
+    if (visual->field == NULL || (!visual->texture.dirty && !visual->field->dirty))
+        return true;
+    return _image_texture_upload_payload(visual, out);
+}

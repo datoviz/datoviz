@@ -23,7 +23,7 @@ candidates are:
    orchestration remains in scene-emission code. Continue moving only pure cache/data construction
    into family or subsystem helpers; image generated-quad cache/payload decisions now live in the
    image family, and stroke-quad/path-stroke cache/payload decisions now live in the stroke
-   subsystem.
+   subsystem. Image/glyph RGBA texture upload payload decisions also live in the image family.
 2. `src/scene/annotation/text.c` and `axis.c`: retained annotation objects, layout/reserve policy,
    generated visuals, and text/glyph lowering are still mixed. Scale, colorbar, legend, colormap,
    scale-bar, and text-font ownership now have first-pass owner files.

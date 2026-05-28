@@ -97,7 +97,8 @@ this section when a slice is completed.
      upload orchestration that used to live in `uploads.c`, while the image family owns the
      generated-quad dirty/cache/payload decision in `visuals/image/generated_quad.c` and the
      stroke subsystem owns stroke-quad/path-stroke dirty/cache/payload decisions in
-     `visuals/stroke/upload.c`.
+     `visuals/stroke/upload.c`. Image/glyph RGBA texture upload dirty/payload decisions now live
+     in `visuals/image/upload.c`.
    - Keep orchestration in `scene_emit/`: resource-key allocation, upload-node ordering,
      dependencies, dirty-range merge policy, and FramePlan node insertion.
    - Move pure family payload construction into `visuals/<family>/upload.c` or existing family
