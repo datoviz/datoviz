@@ -28,6 +28,7 @@
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "example_style.h"
 
 
 
@@ -303,48 +304,6 @@ static void _fill_cursor_lines(
 
 
 /**
- * Apply the shared graphite-cyan axis style.
- *
- * @param axis axis to style
- * @param vertical whether this is the vertical axis
- * @return true when the style update succeeds
- */
-static bool _style_axis(DvzAxis* axis, bool vertical)
-{
-    ANN(axis);
-
-    DvzAxisStyle style = dvz_axis_style();
-    style.spine_width = 1.5f;
-    style.major_tick_width = 1.5f;
-    style.minor_tick_width = 1.0f;
-    style.grid_width = 1.0f;
-    style.tick_size_px = 11.0f;
-    style.label_size_px = 14.0f;
-    style.tick_gap_px = 7.0f;
-    style.label_gap_px = vertical ? 54.0f : 32.0f;
-    style.spine_color[0] = 201;
-    style.spine_color[1] = 209;
-    style.spine_color[2] = 217;
-    style.spine_color[3] = 255;
-    style.major_tick_color[0] = 201;
-    style.major_tick_color[1] = 209;
-    style.major_tick_color[2] = 217;
-    style.major_tick_color[3] = 255;
-    style.minor_tick_color[0] = 140;
-    style.minor_tick_color[1] = 151;
-    style.minor_tick_color[2] = 165;
-    style.minor_tick_color[3] = 210;
-    style.grid_color[0] = 48;
-    style.grid_color[1] = 54;
-    style.grid_color[2] = 61;
-    style.grid_color[3] = 145;
-    style.show_grid = true;
-    return dvz_axis_set_style(axis, &style);
-}
-
-
-
-/**
  * Configure retained X/Y axes on one panel.
  *
  * @param panel target panel
@@ -370,7 +329,16 @@ static bool _add_axes(DvzPanel* panel, const char* x_label, const char* y_label)
         return false;
     if (!dvz_axis_set_tick_policy(y_axis, &ticks))
         return false;
-    if (!_style_axis(x_axis, false) || !_style_axis(y_axis, true))
+    ExampleAxisStyleOptions style = example_graphite_cyan_axis_options();
+    style.tick_size_px = 11.0f;
+    style.label_size_px = 14.0f;
+    style.tick_gap_px = 7.0f;
+    style.x_label_gap_px = 32.0f;
+    style.y_label_gap_px = 42.0f;
+    style.minor_tick_alpha = 210;
+    style.grid_alpha = 145;
+    if (!example_graphite_cyan_apply_axis_style(x_axis, false, &style) ||
+        !example_graphite_cyan_apply_axis_style(y_axis, true, &style))
         return false;
     if (!dvz_axis_set_grid(x_axis, true) || !dvz_axis_set_grid(y_axis, true))
         return false;
@@ -744,10 +712,10 @@ static bool _configure_panel(DvzPanel* panel, float bottom)
 {
     ANN(panel);
 
-    dvz_panel_set_background_color(panel, 0.062f, 0.074f, 0.098f, 1.0f);
+    example_graphite_cyan_set_panel_background(panel);
     return dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.17f, .right = 0.04f, .bottom = bottom,
-                                        .top = 0.06f});
+        panel, &(DvzPanelLayoutReserve){.left = 0.20f, .right = 0.06f, .bottom = bottom,
+                                        .top = 0.07f});
 }
 
 
@@ -778,10 +746,10 @@ int main(int argc, char** argv)
     DvzGrid* grid = dvz_figure_grid(figure, 3, 2);
     EXAMPLE_CHECK(grid != NULL, "dvz_figure_grid() failed");
     bool ok = dvz_grid_set_margins(
-        grid, &(DvzPanelReserve){.left_px = 64.0f, .right_px = 28.0f, .top_px = 28.0f,
+        grid, &(DvzPanelReserve){.left_px = 36.0f, .right_px = 30.0f, .top_px = 24.0f,
                                  .bottom_px = 30.0f});
     EXAMPLE_CHECK(ok, "dvz_grid_set_margins() failed");
-    ok = dvz_grid_set_gutter(grid, 28.0f, 24.0f);
+    ok = dvz_grid_set_gutter(grid, 28.0f, 26.0f);
     EXAMPLE_CHECK(ok, "dvz_grid_set_gutter() failed");
 
     DvzPanel* signal = dvz_grid_panel(grid, 0, 0);
@@ -792,17 +760,17 @@ int main(int argc, char** argv)
         signal != NULL && events != NULL && residuals != NULL && summary != NULL,
         "dvz_grid_panel() failed");
 
-    ok = _configure_panel(signal, 0.12f);
+    ok = _configure_panel(signal, 0.20f);
     EXAMPLE_CHECK(ok, "_configure_panel(signal) failed");
-    ok = _configure_panel(events, 0.12f);
+    ok = _configure_panel(events, 0.20f);
     EXAMPLE_CHECK(ok, "_configure_panel(events) failed");
-    ok = _configure_panel(residuals, 0.17f);
+    ok = _configure_panel(residuals, 0.36f);
     EXAMPLE_CHECK(ok, "_configure_panel(residuals) failed");
     ok = dvz_panel_set_layout_reserve(
-        summary, &(DvzPanelLayoutReserve){.left = 0.19f, .right = 0.07f, .bottom = 0.10f,
-                                          .top = 0.05f});
+        summary, &(DvzPanelLayoutReserve){.left = 0.20f, .right = 0.08f, .bottom = 0.13f,
+                                          .top = 0.06f});
     EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve(summary) failed");
-    dvz_panel_set_background_color(summary, 0.062f, 0.074f, 0.098f, 1.0f);
+    example_graphite_cyan_set_panel_background(summary);
 
     ok = _set_domains(signal, 0.0, 12.0, -1.6, 1.6);
     EXAMPLE_CHECK(ok, "_set_domains(signal) failed");

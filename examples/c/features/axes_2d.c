@@ -30,6 +30,7 @@
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "example_style.h"
 
 
 
@@ -118,48 +119,6 @@ static bool _upload_path(
 
 
 
-/**
- * Apply the shared graphite-cyan axis style.
- *
- * @param axis axis to style
- * @param vertical whether this is the vertical axis
- * @return true when the style update succeeds
- */
-static bool _style_axis(DvzAxis* axis, bool vertical)
-{
-    ANN(axis);
-
-    DvzAxisStyle style = dvz_axis_style();
-    style.spine_width = 1.5f;
-    style.major_tick_width = 1.5f;
-    style.minor_tick_width = 1.0f;
-    style.grid_width = 1.0f;
-    style.tick_size_px = 13.0f;
-    style.label_size_px = 16.0f;
-    style.tick_gap_px = 8.0f;
-    style.label_gap_px = vertical ? 58.0f : 38.0f;
-    style.spine_color[0] = 201;
-    style.spine_color[1] = 209;
-    style.spine_color[2] = 217;
-    style.spine_color[3] = 255;
-    style.major_tick_color[0] = 201;
-    style.major_tick_color[1] = 209;
-    style.major_tick_color[2] = 217;
-    style.major_tick_color[3] = 255;
-    style.minor_tick_color[0] = 140;
-    style.minor_tick_color[1] = 151;
-    style.minor_tick_color[2] = 165;
-    style.minor_tick_color[3] = 220;
-    style.grid_color[0] = 48;
-    style.grid_color[1] = 54;
-    style.grid_color[2] = 61;
-    style.grid_color[3] = 160;
-    style.show_grid = true;
-    return dvz_axis_set_style(axis, &style);
-}
-
-
-
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -191,7 +150,7 @@ int main(int argc, char** argv)
 
     DvzPanel* panel = dvz_panel_full(figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    dvz_panel_set_background_color(panel, 0.055f, 0.067f, 0.090f, 1.0f);
+    example_graphite_cyan_set_panel_background(panel);
 
     bool ok = dvz_panel_set_layout_reserve(
         panel, &(DvzPanelLayoutReserve){.left = 0.16f, .right = 0.05f, .bottom = 0.15f,
@@ -227,9 +186,9 @@ int main(int argc, char** argv)
     ok = dvz_axis_set_tick_policy(y_axis, &ticks);
     EXAMPLE_CHECK(ok, "dvz_axis_set_tick_policy() failed for Y");
 
-    ok = _style_axis(x_axis, false);
+    ok = example_graphite_cyan_apply_axis_style(x_axis, false, NULL);
     EXAMPLE_CHECK(ok, "dvz_axis_set_style() failed for X");
-    ok = _style_axis(y_axis, true);
+    ok = example_graphite_cyan_apply_axis_style(y_axis, true, NULL);
     EXAMPLE_CHECK(ok, "dvz_axis_set_style() failed for Y");
 
     ok = dvz_axis_set_grid(x_axis, true);

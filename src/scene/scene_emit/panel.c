@@ -390,6 +390,31 @@ static bool _scene_visual_is_legend_derived(const DvzPanel* panel, const DvzVisu
 }
 
 
+/**
+ * Return whether a visual is owned by a panel axis adornment.
+ *
+ * @param panel the panel owning axis handles
+ * @param visual the visual to classify
+ * @return whether the visual is axis-derived
+ */
+static bool _scene_visual_is_axis_derived(const DvzPanel* panel, const DvzVisual* visual)
+{
+    ANN(panel);
+    ANN(visual);
+    for (uint32_t dim = 0; dim < 2; dim++)
+    {
+        const DvzAxis* axis = &panel->axes[dim];
+        if (axis->panel != panel)
+            continue;
+        if (visual == axis->visual || visual == axis->text_visual)
+            return true;
+        if (axis->text_visual != NULL && visual == axis->text_visual->text.glyph_visual)
+            return true;
+    }
+    return false;
+}
+
+
 
 /**
  * Return the clip rectangle one visual should use within its panel render pass.
@@ -403,6 +428,7 @@ static DvzFramePlanClipRect _scene_visual_clip_rect(const DvzPanel* panel, const
     ANN(panel);
     ANN(visual);
     if (visual == panel->background_visual || visual->type == DVZ_VISUAL_TYPE_GLYPH ||
+        _scene_visual_is_axis_derived(panel, visual) ||
         _scene_visual_is_colorbar_derived(panel, visual) ||
         _scene_visual_is_legend_derived(panel, visual))
     {

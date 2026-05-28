@@ -1086,6 +1086,62 @@ static int test_axis_static_prepare_idempotent(TstContext* suite, const TstCase*
 }
 
 
+/**
+ * Ensure axis geometry uses the panel clip so outward ticks survive plot scissoring.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return zero on success
+ */
+static int test_axis_visual_clip_rect_panel(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 240, 180, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_layout_reserve(
+        panel, &(DvzPanelLayoutReserve){.left = 0.25f, .right = 0.05f, .bottom = 0.25f,
+                                        .top = 0.05f}));
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+    vec3 pos = {0.0f, 0.0f, 0.0f};
+    DvzColor color = {255, 255, 255, 255};
+    float size = 8.0f;
+    AT(dvz_visual_set_data(point, "position", pos, 1) == 0);
+    AT(dvz_visual_set_data(point, "color", &color, 1) == 0);
+    AT(dvz_visual_set_data(point, "size", &size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, point, NULL) == 0);
+
+    _scene_prepare_axis_visuals(figure);
+    AT(axis->visual != NULL);
+    AT(axis->visual->visible);
+
+    DvzFramePlan* plan = dvz_frame_plan("axis.clip_rect_panel", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    AT(dvz_frame_plan_node_count(plan) == 1);
+    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
+    ANN(render);
+    AT(render->u.render.visual_count == 2);
+    AT(render->u.render.visual_metadata[0].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT);
+    AT(render->u.render.visual_metadata[1].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PANEL);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_axis_dynamic_segment_draw_count(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -1159,6 +1215,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_zoom_out_in_grid_regression);
     TST_CASE(test_axis_panzoom_resize_visual_smoke);
     TST_CASE(test_axis_static_prepare_idempotent);
+    TST_CASE(test_axis_visual_clip_rect_panel);
     TST_CASE(test_axis_dynamic_segment_draw_count);
     return 0;
 }
