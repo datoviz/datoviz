@@ -338,13 +338,31 @@ function mapColorWriteMask(writeMask) {
 
 
 function makeColorTarget(canvasFormat, target) {
-  const streamFormat = required(target.format, "color target needs format");
-  const format = streamFormat === "canvas" ? canvasFormat : mapTextureFormat(streamFormat);
+  const format = colorTargetFormat(canvasFormat, target);
+  validateColorTargetState(format, target);
   return {
     format,
     blend: mapBlendState(target.blend),
     writeMask: mapColorWriteMask(target.write_mask),
   };
+}
+
+
+
+function colorTargetFormat(canvasFormat, target) {
+  const streamFormat = required(target.format, "color target needs format");
+  return streamFormat === "canvas" ? canvasFormat : mapTextureFormat(streamFormat);
+}
+
+
+
+function validateColorTargetState(format, target) {
+  if (target.blend !== undefined && (format === "r32uint" || format === "depth32float")) {
+    throw new Error(`color target format ${format} does not support blending`);
+  }
+  if (target.write_mask !== undefined && target.write_mask.includes("all") && target.write_mask.length > 1) {
+    throw new Error("color target write_mask cannot combine all with individual channels");
+  }
 }
 
 
@@ -506,6 +524,14 @@ function makeDepthStencil(command) {
     depthWriteEnabled: state.depth_write_enabled ?? false,
     depthCompare: mapDepthCompare(state.depth_compare),
   };
+}
+
+
+
+function depthStencilFormat(command) {
+  return command.depth_stencil === undefined
+    ? null
+    : mapTextureFormat(required(command.depth_stencil.format, "depth_stencil needs format"));
 }
 
 
@@ -991,6 +1017,11 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, 
   }
 
   const colorTargets = command.color_targets ?? [defaultColorTarget(fragmentShader)];
+  const colorTargetFormats = colorTargets.map((target) => colorTargetFormat(canvasFormat, target));
+  colorTargets.forEach((target, index) =>
+    validateColorTargetState(colorTargetFormats[index], target),
+  );
+  const pipelineDepthStencilFormat = depthStencilFormat(command);
   const bindGroupLayoutIds = command.bind_group_layout_ids ?? [];
   const pipelineBindGroupLayouts = bindGroupLayoutIds.map((id) =>
     required(bindGroupLayouts.get(id), `unknown bind-group layout ${id}`),
@@ -1003,6 +1034,8 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, 
 
   return {
     bindGroupLayouts: pipelineBindGroupLayouts,
+    colorTargetFormats,
+    depthStencilFormat: pipelineDepthStencilFormat,
     pipeline: device.createRenderPipeline({
       label: command.label,
       layout,
@@ -1115,13 +1148,63 @@ function beginRenderPass(context, textures, encoders, command) {
 
 
 
+function attachmentTextureFormat(state, canvasFormat, attachment) {
+  if (attachment.texture_id === 0) {
+    return canvasFormat;
+  }
+  return requireLiveRecord(state, attachment.texture_id, "texture").format;
+}
+
+
+
+function renderPassAttachmentFormats(state, canvasFormat, command) {
+  const attachments = required(command.color_attachments, "BeginRenderPass needs color_attachments");
+  const colorAttachmentFormats = attachments.map((attachment) =>
+    attachmentTextureFormat(state, canvasFormat, attachment),
+  );
+  const depthStencilFormat = command.depth_stencil_attachment === undefined
+    ? null
+    : attachmentTextureFormat(state, canvasFormat, command.depth_stencil_attachment);
+  return { colorAttachmentFormats, depthStencilFormat };
+}
+
+
+
+function validateRenderPipelineForPass(passRecord, pipelineRecord, pipelineId) {
+  if (pipelineRecord.colorTargetFormats.length !== passRecord.colorAttachmentFormats.length) {
+    throw new Error(
+      `render pipeline ${pipelineId} color target count ${pipelineRecord.colorTargetFormats.length}` +
+        ` does not match render pass ${passRecord.id} color attachment count ` +
+        `${passRecord.colorAttachmentFormats.length}`,
+    );
+  }
+  for (let i = 0; i < pipelineRecord.colorTargetFormats.length; i++) {
+    if (pipelineRecord.colorTargetFormats[i] !== passRecord.colorAttachmentFormats[i]) {
+      throw new Error(
+        `render pipeline ${pipelineId} color target ${i} format ` +
+          `${pipelineRecord.colorTargetFormats[i]} does not match render pass ${passRecord.id} ` +
+          `attachment format ${passRecord.colorAttachmentFormats[i]}`,
+      );
+    }
+  }
+  if (pipelineRecord.depthStencilFormat !== passRecord.depthStencilFormat) {
+    throw new Error(
+      `render pipeline ${pipelineId} depth_stencil format ` +
+        `${pipelineRecord.depthStencilFormat ?? "none"} does not match render pass ` +
+        `${passRecord.id} attachment format ${passRecord.depthStencilFormat ?? "none"}`,
+    );
+  }
+}
+
+
+
 function objectLabel(kind) {
   return kind.replaceAll("_", " ");
 }
 
 
 
-function registerObject(state, map, id, object, kind) {
+function registerObject(state, map, id, object, kind, metadata = {}) {
   if (state.objects.has(id)) {
     throw new Error(`duplicate or reused object id ${id}`);
   }
@@ -1135,6 +1218,7 @@ function registerObject(state, map, id, object, kind) {
     openRefs: 0,
     recordedRefs: 0,
     submittedRefs: 0,
+    ...metadata,
   };
   state.objects.set(id, record);
   map.set(id, object);
@@ -1438,7 +1522,8 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         break;
       }
 
-      case "CreateTexture":
+      case "CreateTexture": {
+        const textureFormat = mapTextureFormat(required(command.format, "CreateTexture needs format"));
         registerObject(
           state,
           textures,
@@ -1453,15 +1538,20 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
             mipLevelCount: command.mip_level_count ?? 1,
             sampleCount: command.sample_count ?? 1,
             dimension: command.dimension ?? "2d",
-            format: mapTextureFormat(required(command.format, "CreateTexture needs format")),
+            format: textureFormat,
             usage: mapTextureUsage(command.usage),
           }),
           "texture",
+          { format: textureFormat },
         );
         break;
+      }
 
       case "CreateTextureView": {
         const textureRecord = requireLiveRecord(state, command.texture_id, "texture");
+        const textureViewFormat = command.format === undefined
+          ? textureRecord.format
+          : mapTextureFormat(command.format);
         const texture = required(
           textures.get(command.texture_id),
           `unknown texture ${command.texture_id}`,
@@ -1472,6 +1562,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           command.id,
           texture.createView(makeTextureViewDescriptor(command)),
           "texture_view",
+          { format: textureViewFormat },
         );
         retainDependency(record, textureRecord);
         break;
@@ -1674,7 +1765,8 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         encoderRefs.set(command.id, new Set());
         break;
 
-      case "BeginRenderPass":
+      case "BeginRenderPass": {
+        const attachmentFormats = renderPassAttachmentFormats(state, canvasFormat, command);
         for (const attachment of required(
           command.color_attachments,
           "BeginRenderPass needs color_attachments",
@@ -1693,11 +1785,15 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           );
         }
         passes.set(command.id, {
+          id: command.id,
           kind: "render",
           encoderId: command.encoder_id,
+          colorAttachmentFormats: attachmentFormats.colorAttachmentFormats,
+          depthStencilFormat: attachmentFormats.depthStencilFormat,
           pass: beginRenderPass(context, textures, encoders, command),
         });
         break;
+      }
 
       case "BeginComputePass": {
         const encoder = required(
@@ -1705,6 +1801,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           `unknown command encoder ${command.encoder_id}`,
         );
         passes.set(command.id, {
+          id: command.id,
           kind: "compute",
           encoderId: command.encoder_id,
           pass: encoder.beginComputePass({ label: command.label }),
@@ -1714,17 +1811,16 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
 
       case "SetPipeline": {
         const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        const pipelineKind = passRecord.kind === "render" ? "render_pipeline" : "compute_pipeline";
+        requireLiveRecord(state, command.pipeline_id, pipelineKind);
         const pipelineRecord = required(
           pipelines.get(command.pipeline_id),
           `unknown pipeline ${command.pipeline_id}`,
         );
-        addEncoderRef(
-          state,
-          encoderRefs,
-          passRecord.encoderId,
-          command.pipeline_id,
-          passRecord.kind === "render" ? "render_pipeline" : "compute_pipeline",
-        );
+        if (passRecord.kind === "render") {
+          validateRenderPipelineForPass(passRecord, pipelineRecord, command.pipeline_id);
+        }
+        addEncoderRef(state, encoderRefs, passRecord.encoderId, command.pipeline_id, pipelineKind);
         passRecord.pipeline = pipelineRecord;
         passRecord.pass.setPipeline(pipelineRecord.pipeline);
         break;
