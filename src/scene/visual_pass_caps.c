@@ -35,6 +35,50 @@
 /*************************************************************************************************/
 
 /**
+ * Return the reusable renderable primitive kind emitted by one retained visual.
+ *
+ * @param visual the retained visual
+ * @return renderable primitive kind
+ */
+static DvzRenderableKind _scene_pass_visual_renderable_kind(const DvzVisual* visual)
+{
+    ANN(visual);
+    switch (visual->type)
+    {
+    case DVZ_VISUAL_TYPE_POINT:
+    case DVZ_VISUAL_TYPE_PIXEL:
+    case DVZ_VISUAL_TYPE_MARKER:
+    case DVZ_VISUAL_TYPE_SPHERE:
+    case DVZ_VISUAL_TYPE_SPLAT:
+        return DVZ_RENDERABLE_POINT_LIKE;
+    case DVZ_VISUAL_TYPE_SEGMENT:
+        return DVZ_RENDERABLE_STROKE_QUAD;
+    case DVZ_VISUAL_TYPE_VECTOR:
+        return !_scene_visual_has_dense_attr(visual, "vector") &&
+                       _scene_visual_has_dense_attr(visual, "line_width")
+                   ? DVZ_RENDERABLE_PATH_STROKE
+                   : DVZ_RENDERABLE_STROKE_QUAD;
+    case DVZ_VISUAL_TYPE_PATH:
+        return _scene_visual_has_dense_attr(visual, "line_width") ? DVZ_RENDERABLE_PATH_STROKE
+                                                                  : DVZ_RENDERABLE_INDEXED_MESH;
+    case DVZ_VISUAL_TYPE_PRIMITIVE:
+    case DVZ_VISUAL_TYPE_MESH:
+        return DVZ_RENDERABLE_INDEXED_MESH;
+    case DVZ_VISUAL_TYPE_IMAGE:
+    case DVZ_VISUAL_TYPE_LABELS:
+    case DVZ_VISUAL_TYPE_GLYPH:
+        return DVZ_RENDERABLE_TEXTURED_QUAD;
+    case DVZ_VISUAL_TYPE_VOLUME:
+        return DVZ_RENDERABLE_VOLUME_PROXY;
+    case DVZ_VISUAL_TYPE_NONE:
+    default:
+        return DVZ_RENDERABLE_NONE;
+    }
+}
+
+
+
+/**
  * Resolve common pass capabilities from normalized visual facts.
  *
  * @param kind the visual descriptor kind
@@ -119,6 +163,7 @@ bool _scene_visual_pass_caps_from_visual(
     ANN(attach);
     ANN(out);
 
+    DvzRenderableKind renderable_kind = _scene_pass_visual_renderable_kind(visual);
     DvzSceneVisualDescKind kind = DVZ_SCENE_VISUAL_DESC_NONE;
     switch (visual->type)
     {
@@ -139,10 +184,8 @@ bool _scene_visual_pass_caps_from_visual(
         kind = DVZ_SCENE_VISUAL_DESC_SEGMENT;
         break;
     case DVZ_VISUAL_TYPE_VECTOR:
-        kind = !_scene_visual_has_dense_attr(visual, "vector") &&
-                       _scene_visual_has_dense_attr(visual, "line_width")
-                   ? DVZ_SCENE_VISUAL_DESC_PATH
-                   : DVZ_SCENE_VISUAL_DESC_SEGMENT;
+        kind = renderable_kind == DVZ_RENDERABLE_PATH_STROKE ? DVZ_SCENE_VISUAL_DESC_PATH
+                                                             : DVZ_SCENE_VISUAL_DESC_SEGMENT;
         break;
     case DVZ_VISUAL_TYPE_PRIMITIVE:
     case DVZ_VISUAL_TYPE_MESH:
@@ -151,9 +194,8 @@ bool _scene_visual_pass_caps_from_visual(
             kind = DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
         break;
     case DVZ_VISUAL_TYPE_PATH:
-        kind = _scene_visual_has_dense_attr(visual, "line_width")
-                   ? DVZ_SCENE_VISUAL_DESC_PATH
-                   : DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+        kind = renderable_kind == DVZ_RENDERABLE_PATH_STROKE ? DVZ_SCENE_VISUAL_DESC_PATH
+                                                             : DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
         break;
     case DVZ_VISUAL_TYPE_IMAGE:
         kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
@@ -211,14 +253,10 @@ bool _scene_visual_pass_caps_from_visual(
 
     bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
                       kind == DVZ_SCENE_VISUAL_DESC_MARKER;
-    bool stroked_path =
-        (visual->type == DVZ_VISUAL_TYPE_PATH || visual->type == DVZ_VISUAL_TYPE_VECTOR) &&
-        _scene_visual_has_dense_attr(visual, "line_width") &&
-        (visual->type != DVZ_VISUAL_TYPE_VECTOR || !_scene_visual_has_dense_attr(visual, "vector"));
+    bool stroke = renderable_kind == DVZ_RENDERABLE_STROKE_QUAD ||
+                  renderable_kind == DVZ_RENDERABLE_PATH_STROKE;
     bool has_material_resource =
-        has_normals || visual->type == DVZ_VISUAL_TYPE_SEGMENT ||
-        visual->type == DVZ_VISUAL_TYPE_VECTOR || stroked_path ||
-        visual->type == DVZ_VISUAL_TYPE_SPHERE ||
+        has_normals || stroke || visual->type == DVZ_VISUAL_TYPE_SPHERE ||
         (point_like && visual->material.depth_cue_enabled) ||
         (visual->type == DVZ_VISUAL_TYPE_POINT && visual->material.point_style_enabled) ||
         visual->type == DVZ_VISUAL_TYPE_MARKER;

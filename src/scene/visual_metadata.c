@@ -106,7 +106,8 @@ bool _scene_visual_frame_plan_metadata(
     dvz_memset(metadata, sizeof(DvzFramePlanVisualMeta), 0, sizeof(DvzFramePlanVisualMeta));
     metadata->has_metadata = true;
     metadata->visual_type = (uint32_t)visual->type;
-    metadata->renderable_kind = (uint32_t)_scene_visual_renderable_kind(visual);
+    DvzRenderableKind renderable_kind = _scene_visual_renderable_kind(visual);
+    metadata->renderable_kind = (uint32_t)renderable_kind;
     metadata->visual_index = visual_index;
     metadata->buffer_index = UINT32_MAX;
     metadata->topology = (uint32_t)visual->topology;
@@ -132,7 +133,7 @@ bool _scene_visual_frame_plan_metadata(
     }
 
     const char* vertex_count_attr =
-        visual->type == DVZ_VISUAL_TYPE_SEGMENT ? "position_start" : "position";
+        renderable_kind == DVZ_RENDERABLE_STROKE_QUAD ? "position_start" : "position";
     int vertex_count_idx = _attr_index(visual, vertex_count_attr);
     if (vertex_count_idx >= 0)
     {
@@ -233,11 +234,10 @@ bool _scene_visual_frame_plan_metadata(
             figure, visual, visual_index, "selection", metadata->selection_id,
             sizeof(metadata->selection_id)))
         return false;
-    bool vector_path_mode =
-        visual->type == DVZ_VISUAL_TYPE_VECTOR && !_scene_visual_has_attr_data(visual, "vector") &&
-        _scene_visual_has_attr_data(visual, "line_width");
-    if ((visual->type == DVZ_VISUAL_TYPE_PATH && _scene_visual_has_attr_data(visual, "line_width")) ||
-        vector_path_mode)
+    bool path_stroke = renderable_kind == DVZ_RENDERABLE_PATH_STROKE;
+    bool stroke_quad = renderable_kind == DVZ_RENDERABLE_STROKE_QUAD;
+    bool stroke = path_stroke || stroke_quad;
+    if (path_stroke)
     {
         if (!_scene_visual_attr_resource_key(
                 figure, visual, visual_index, "path_flags", metadata->path_flags_id,
@@ -248,8 +248,7 @@ bool _scene_visual_frame_plan_metadata(
                 sizeof(metadata->path_distance_id)))
             return false;
     }
-    if (visual->type == DVZ_VISUAL_TYPE_SEGMENT || visual->type == DVZ_VISUAL_TYPE_VECTOR ||
-        _scene_visual_needs_material_params(visual))
+    if (stroke || _scene_visual_needs_material_params(visual))
     {
         if (!_scene_visual_attr_resource_key(
                 figure, visual, visual_index, "material_params", metadata->material_id,
@@ -265,15 +264,13 @@ bool _scene_visual_frame_plan_metadata(
                 buffer_index, metadata->index_id, sizeof(metadata->index_id)))
             return false;
     }
-    if (visual->type == DVZ_VISUAL_TYPE_SEGMENT || visual->type == DVZ_VISUAL_TYPE_VECTOR ||
-        (visual->type == DVZ_VISUAL_TYPE_PATH &&
-         _scene_visual_has_attr_data(visual, "line_width")))
+    if (stroke)
     {
         if (!_scene_visual_attr_resource_key(
                 figure, visual, visual_index, "index", metadata->index_id,
                 sizeof(metadata->index_id)))
             return false;
-        if (visual->type == DVZ_VISUAL_TYPE_VECTOR && vector_path_mode)
+        if (visual->type == DVZ_VISUAL_TYPE_VECTOR && path_stroke)
         {
             if (visual->vector.path_gpu.vertex_count > UINT32_MAX ||
                 visual->vector.path_gpu.index_count > UINT32_MAX)
