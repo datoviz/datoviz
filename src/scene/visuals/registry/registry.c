@@ -20,8 +20,12 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_visual_pipeline_internal.h"
+#include "marker/internal.h"
+#include "pixel/internal.h"
+#include "point/internal.h"
 #include "scene_emit/visual_lowering.h"
 #include "sample_profile.h"
+#include "splat/internal.h"
 
 
 
@@ -140,91 +144,6 @@ static bool _lowering_volume_desc_kind(const DvzVisual* visual, DvzSceneVisualDe
         *out = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT;
     else if (_scene_sample_profile_is_unsigned_label(&profile))
         *out = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT;
-    return true;
-}
-
-
-
-/**
- * Resolve point visual lowering facts.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return whether lowering facts were resolved
- */
-static bool _lower_point(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    _lowering_init(out);
-    out->renderable_kind = DVZ_RENDERABLE_POINT_LIKE;
-    out->desc_kind = DVZ_SCENE_VISUAL_DESC_POINT;
-    out->point_like_kind = DVZ_SCENE_POINT_LIKE_POINT;
-    out->has_point_like_kind = true;
-    out->point_style_enabled = visual->material.point_style_enabled;
-    out->needs_material_params =
-        visual->material.depth_cue_enabled || visual->material.point_style_enabled;
-    return true;
-}
-
-
-
-/**
- * Resolve pixel visual lowering facts.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return whether lowering facts were resolved
- */
-static bool _lower_pixel(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    _lowering_init(out);
-    out->renderable_kind = DVZ_RENDERABLE_POINT_LIKE;
-    out->desc_kind = DVZ_SCENE_VISUAL_DESC_PIXEL;
-    out->point_like_kind = DVZ_SCENE_POINT_LIKE_PIXEL;
-    out->has_point_like_kind = true;
-    out->needs_material_params = visual->material.depth_cue_enabled;
-    return true;
-}
-
-
-
-/**
- * Resolve marker visual lowering facts.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return whether lowering facts were resolved
- */
-static bool _lower_marker(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    (void)visual;
-    _lowering_init(out);
-    out->renderable_kind = DVZ_RENDERABLE_POINT_LIKE;
-    out->desc_kind = DVZ_SCENE_VISUAL_DESC_MARKER;
-    out->point_like_kind = DVZ_SCENE_POINT_LIKE_MARKER;
-    out->has_point_like_kind = true;
-    out->needs_material_params = true;
-    return true;
-}
-
-
-
-/**
- * Resolve splat visual lowering facts.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return whether lowering facts were resolved
- */
-static bool _lower_splat(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    (void)visual;
-    _lowering_init(out);
-    out->renderable_kind = DVZ_RENDERABLE_POINT_LIKE;
-    out->desc_kind = DVZ_SCENE_VISUAL_DESC_SPLAT;
     return true;
 }
 
@@ -623,14 +542,14 @@ static bool _resolve_bind_desc(
 /*************************************************************************************************/
 
 static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
-    {DVZ_VISUAL_TYPE_POINT, "point", _lower_point, _resolve_pass_caps, _resolve_bind_desc,
-     _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
+    {DVZ_VISUAL_TYPE_POINT, "point", _scene_point_visual_lowering, _resolve_pass_caps,
+     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
-    {DVZ_VISUAL_TYPE_PIXEL, "pixel", _lower_pixel, _resolve_pass_caps, _resolve_bind_desc,
-     _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
+    {DVZ_VISUAL_TYPE_PIXEL, "pixel", _scene_pixel_visual_lowering, _resolve_pass_caps,
+     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
-    {DVZ_VISUAL_TYPE_MARKER, "marker", _lower_marker, _resolve_pass_caps, _resolve_bind_desc,
-     _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
+    {DVZ_VISUAL_TYPE_MARKER, "marker", _scene_marker_visual_lowering, _resolve_pass_caps,
+     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
     {DVZ_VISUAL_TYPE_SEGMENT, "segment", _lower_segment, _resolve_pass_caps, _resolve_bind_desc,
      _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
@@ -662,8 +581,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
     {DVZ_VISUAL_TYPE_LABELS, "labels", _lower_labels, _resolve_pass_caps, _resolve_bind_desc,
      _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
-    {DVZ_VISUAL_TYPE_SPLAT, "splat", _lower_splat, _resolve_pass_caps, _resolve_bind_desc,
-     _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
+    {DVZ_VISUAL_TYPE_SPLAT, "splat", _scene_splat_visual_lowering, _resolve_pass_caps,
+     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
     {DVZ_VISUAL_TYPE_VECTOR, "vector", _lower_vector, _resolve_pass_caps, _resolve_bind_desc,
      _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
