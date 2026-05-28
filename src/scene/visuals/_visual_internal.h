@@ -69,6 +69,8 @@ void _path_sync_params(DvzVisual* visual);
 void _vector_sync_params(DvzVisual* visual);
 void _stroke_quad_gpu_cache_free(DvzSegmentGpuCache* cache);
 void _path_stroke_gpu_cache_free(DvzPathGpuCache* cache);
+bool _stroke_quad_segment_cache_rebuild(DvzVisual* visual);
+bool _stroke_quad_vector_cache_rebuild(DvzVisual* visual);
 int _stroke_set_path_subpaths(
     DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths, const char* label,
     uint32_t** out_lengths, uint32_t* out_count, DvzPathGpuCache* cache);
