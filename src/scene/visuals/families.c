@@ -101,10 +101,10 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
         return;
     if (visual->type == DVZ_VISUAL_TYPE_TEXT && visual->text.glyph_visual != NULL)
         dvz_visual_set_visible(visual->text.glyph_visual, false);
-    _segment_gpu_cache_free(&visual->segment.gpu);
-    _path_gpu_cache_free(&visual->path.gpu);
-    _segment_gpu_cache_free(&visual->vector.stroke_gpu);
-    _path_gpu_cache_free(&visual->vector.path_gpu);
+    _stroke_quad_gpu_cache_free(&visual->segment.gpu);
+    _path_stroke_gpu_cache_free(&visual->path.gpu);
+    _stroke_quad_gpu_cache_free(&visual->vector.stroke_gpu);
+    _path_stroke_gpu_cache_free(&visual->vector.path_gpu);
     _image_gpu_cache_free(&visual->image_gpu);
     dvz_free(visual->path.subpath_lengths);
     visual->path.subpath_lengths = NULL;

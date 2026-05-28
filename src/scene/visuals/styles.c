@@ -34,18 +34,6 @@
 /*************************************************************************************************/
 
 /**
- * Return whether one segment cap enum value is supported by the first slice.
- *
- * @param cap the segment cap
- * @return whether the cap is valid
- */
-bool _segment_cap_valid(DvzSegmentCap cap)
-{
-    return cap >= DVZ_SEGMENT_CAP_NONE && cap <= DVZ_SEGMENT_CAP_BUTT;
-}
-
-
-/**
  * Store segment cap state into the shared material payload used by segment shaders.
  *
  * @param visual the segment visual
@@ -120,45 +108,6 @@ static bool _vector_anchor_valid(DvzVectorAnchor anchor)
 
 
 /**
- * Release one segment visual's derived GPU upload cache.
- *
- * @param cache the segment GPU cache
- */
-void _segment_gpu_cache_free(DvzSegmentGpuCache* cache)
-{
-    if (cache == NULL)
-        return;
-    dvz_free(cache->position_start);
-    dvz_free(cache->position_end);
-    dvz_free(cache->color);
-    dvz_free(cache->line_width);
-    dvz_free(cache->indices);
-    dvz_memset(cache, sizeof(DvzSegmentGpuCache), 0, sizeof(DvzSegmentGpuCache));
-}
-
-
-/**
- * Release one path visual's derived GPU upload cache.
- *
- * @param cache the path GPU cache
- */
-void _path_gpu_cache_free(DvzPathGpuCache* cache)
-{
-    if (cache == NULL)
-        return;
-    dvz_free(cache->position_prev);
-    dvz_free(cache->position_curr);
-    dvz_free(cache->position_next);
-    dvz_free(cache->color);
-    dvz_free(cache->line_width);
-    dvz_free(cache->path_flags);
-    dvz_free(cache->path_distance);
-    dvz_free(cache->indices);
-    dvz_memset(cache, sizeof(DvzPathGpuCache), 0, sizeof(DvzPathGpuCache));
-}
-
-
-/**
  * Release one image visual's derived rectangle upload cache.
  *
  * @param cache the image GPU cache
@@ -190,7 +139,7 @@ int dvz_segment_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentC
         log_error("dvz_segment_set_caps requires a segment visual");
         return -1;
     }
-    if (!_segment_cap_valid(start_cap) || !_segment_cap_valid(end_cap))
+    if (!_stroke_cap_valid(start_cap) || !_stroke_cap_valid(end_cap))
     {
         log_error("invalid segment cap");
         return -1;
@@ -208,18 +157,6 @@ int dvz_segment_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentC
     _scene_notify_visual_changed(visual);
     return 0;
 }
-
-/**
- * Return whether one path join enum value is supported by the first slice.
- *
- * @param join the path join
- * @return whether the join is valid
- */
-static bool _path_join_valid(DvzPathJoin join)
-{
-    return join >= DVZ_PATH_JOIN_MITER && join <= DVZ_PATH_JOIN_BEVEL;
-}
-
 
 /**
  * Configure vector/arrow styling.
@@ -249,12 +186,12 @@ int dvz_vector_set_style(DvzVisual* visual, const DvzVectorStyle* style)
         log_error("invalid vector anchor");
         return -1;
     }
-    if (!_segment_cap_valid(style->start_cap) || !_segment_cap_valid(style->end_cap))
+    if (!_stroke_cap_valid(style->start_cap) || !_stroke_cap_valid(style->end_cap))
     {
         log_error("invalid vector cap");
         return -1;
     }
-    if (!_path_join_valid(style->join))
+    if (!_stroke_join_valid(style->join))
     {
         log_error("invalid vector path join");
         return -1;
@@ -307,7 +244,7 @@ int dvz_path_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap 
         log_error("dvz_path_set_caps requires a path visual");
         return -1;
     }
-    if (!_segment_cap_valid(start_cap) || !_segment_cap_valid(end_cap))
+    if (!_stroke_cap_valid(start_cap) || !_stroke_cap_valid(end_cap))
     {
         log_error("invalid path cap");
         return -1;
@@ -343,7 +280,7 @@ int dvz_path_set_join(DvzVisual* visual, DvzPathJoin join, float miter_limit)
         log_error("dvz_path_set_join requires a path visual");
         return -1;
     }
-    if (!_path_join_valid(join))
+    if (!_stroke_join_valid(join))
     {
         log_error("invalid path join");
         return -1;
