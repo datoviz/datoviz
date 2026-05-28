@@ -72,6 +72,19 @@ void _path_stroke_gpu_cache_free(DvzPathGpuCache* cache);
 bool _stroke_quad_segment_cache_rebuild(DvzVisual* visual);
 bool _stroke_quad_vector_cache_rebuild(DvzVisual* visual);
 bool _path_stroke_cache_rebuild(DvzVisual* visual);
+bool _stroke_query_attr(
+    const DvzVisual* visual, const char* attr_name, uint32_t item_size,
+    const DvzVisualAttr** out_attr);
+bool _stroke_query_alloc(
+    const char* label, void** out_ptr, uint64_t count, uint64_t item_size);
+bool _stroke_query_target_extent(
+    const DvzFigure* figure, const DvzPanel* panel, uint32_t* out_target_width,
+    uint32_t* out_target_height);
+void _stroke_query_apply_render_state(
+    DvzFramePlan* plan, const DvzPanel* panel, const float* request_ndc, uint32_t target_width,
+    uint32_t target_height);
+void _stroke_query_mark_last_upload_index(DvzFramePlan* plan, uint32_t stride);
+void _stroke_query_mark_last_upload_uniform(DvzFramePlan* plan);
 bool _image_uses_generated_quads(const DvzVisual* visual);
 bool _image_generated_quad_cache_rebuild(const DvzFigure* figure, DvzVisual* visual);
 int _stroke_set_path_subpaths(

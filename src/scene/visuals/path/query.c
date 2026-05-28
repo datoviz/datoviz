@@ -22,6 +22,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/math/_cglm.h"
+#include "_visual_internal.h"
 #include "_visual_pipeline.h"
 #include "../../query/internal.h"
 #include "_alloc.h"
@@ -48,167 +49,6 @@
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Return whether one retained attribute has valid dense data.
- *
- * @param visual the visual
- * @param attr_name retained attribute name
- * @param item_size expected item size
- * @param out_attr output attribute
- * @return true when the attribute is present and dense
- */
-static bool _path_query_attr(
-    const DvzVisual* visual, const char* attr_name, uint32_t item_size,
-    const DvzVisualAttr** out_attr)
-{
-    ANN(visual);
-    ANN(attr_name);
-    ANN(out_attr);
-    int attr_idx = _attr_index(visual, attr_name);
-    if (attr_idx < 0)
-        return false;
-    const DvzVisualAttr* attr = &visual->attrs[attr_idx];
-    if (attr->data == NULL || attr->item_count == 0 || attr->item_size != item_size)
-        return false;
-    *out_attr = attr;
-    return true;
-}
-
-
-
-/**
- * Allocate one temporary path query buffer with checked size arithmetic.
- *
- * @param out_ptr output pointer
- * @param count item count
- * @param item_size item byte size
- * @return true when allocation succeeds
- */
-static bool _path_query_alloc(void** out_ptr, uint64_t count, uint64_t item_size)
-{
-    ANN(out_ptr);
-    uint64_t bytes = 0;
-    if (_dvz_mul_u64_overflows(count, item_size, &bytes) || bytes > SIZE_MAX)
-    {
-        log_error("path query request buffer size overflow");
-        return false;
-    }
-    void* ptr = dvz_calloc((size_t)count, (size_t)item_size);
-    if (ptr == NULL && bytes > 0)
-    {
-        log_error("path query request buffer allocation failed");
-        return false;
-    }
-    *out_ptr = ptr;
-    return true;
-}
-
-
-
-/**
- * Return the offscreen query target extent for one panel.
- *
- * @param figure parent figure
- * @param panel panel receiving the query
- * @param out_target_width output target width
- * @param out_target_height output target height
- * @return true when the extent is valid
- */
-static bool _path_query_target_extent(
-    const DvzFigure* figure, const DvzPanel* panel, uint32_t* out_target_width,
-    uint32_t* out_target_height)
-{
-    ANN(figure);
-    ANN(panel);
-    ANN(out_target_width);
-    ANN(out_target_height);
-    double panel_width = panel->desc.width * (double)figure->width;
-    double panel_height = panel->desc.height * (double)figure->height;
-    if (panel_width <= 0.0 || panel_height <= 0.0)
-        return false;
-    uint32_t target_width = (uint32_t)(panel_width + 0.5);
-    uint32_t target_height = (uint32_t)(panel_height + 0.5);
-    *out_target_width = target_width == 0 ? 1 : target_width;
-    *out_target_height = target_height == 0 ? 1 : target_height;
-    return true;
-}
-
-
-
-/**
- * Apply the request-centered MVP and viewport to a query render node.
- *
- * @param plan frame plan
- * @param panel panel receiving the query
- * @param request_ndc request coordinate in panel-local NDC
- * @param target_width offscreen target width
- * @param target_height offscreen target height
- */
-static void _path_query_apply_render_state(
-    DvzFramePlan* plan, const DvzPanel* panel, const vec2 request_ndc, uint32_t target_width,
-    uint32_t target_height)
-{
-    ANN(plan);
-    ANN(panel);
-    ANN(request_ndc);
-    DvzFramePlanNode* render = dvz_frame_plan_last_render_node(plan);
-    if (render == NULL)
-        return;
-
-    DvzMVP mvp = {0};
-    _scene_panel_apply_mvp(panel, &mvp);
-    vec2 target_ndc = {
-        -1.0f + 1.0f / (float)target_width,
-        1.0f - 1.0f / (float)target_height,
-    };
-    vec2 delta = {request_ndc[0] - target_ndc[0], request_ndc[1] - target_ndc[1]};
-    mvp.proj[3][0] -= delta[0];
-    mvp.proj[3][1] -= delta[1];
-    render->u.render.has_mvp = true;
-    render->u.render.apply_mvp = mvp;
-    render->u.render.has_viewport = true;
-    render->u.render.viewport =
-        (DvzSceneViewportUniform){0.0f, 0.0f, (float)target_width, (float)target_height};
-    render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
-}
-
-
-
-/**
- * Mark the most recent upload node as an index buffer.
- *
- * @param plan the frame plan
- * @param stride index item stride in bytes
- */
-static void _path_query_mark_last_upload_index(DvzFramePlan* plan, uint32_t stride)
-{
-    ANN(plan);
-    DvzFramePlanNode* node = plan->count > 0 ? &plan->nodes[plan->count - 1] : NULL;
-    if (node == NULL || node->type != DVZ_FRAME_PLAN_NODE_UPLOAD)
-        return;
-    node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
-    node->u.upload.item_stride = stride;
-}
-
-
-
-/**
- * Mark the most recent upload node as a material uniform buffer.
- *
- * @param plan the frame plan
- */
-static void _path_query_mark_last_upload_uniform(DvzFramePlan* plan)
-{
-    ANN(plan);
-    DvzFramePlanNode* node = plan->count > 0 ? &plan->nodes[plan->count - 1] : NULL;
-    if (node == NULL || node->type != DVZ_FRAME_PLAN_NODE_UPLOAD)
-        return;
-    node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_UNIFORM;
-    node->u.upload.item_stride = sizeof(DvzSceneMaterialParams);
-}
-
-
 
 /**
  * Return packed path vertex flags for one temporary query vertex.
@@ -343,8 +183,8 @@ static bool _path_query_geometry(
 
     const DvzVisualAttr* pos_attr = NULL;
     const DvzVisualAttr* width_attr = NULL;
-    if (!_path_query_attr(visual, "position", sizeof(vec3), &pos_attr) ||
-        !_path_query_attr(visual, "line_width", sizeof(float), &width_attr))
+    if (!_stroke_query_attr(visual, "position", sizeof(vec3), &pos_attr) ||
+        !_stroke_query_attr(visual, "line_width", sizeof(float), &width_attr))
     {
         return false;
     }
@@ -390,17 +230,25 @@ static bool _path_query_geometry(
         return false;
     }
 
-    if (!_path_query_alloc(
+    if (!_stroke_query_alloc(
+            "path",
             (void**)&scratch->query_position_start, vertex_count, 3 * sizeof(float)) ||
-        !_path_query_alloc(
+        !_stroke_query_alloc(
+            "path",
             (void**)&scratch->query_position_curr, vertex_count, 3 * sizeof(float)) ||
-        !_path_query_alloc(
+        !_stroke_query_alloc(
+            "path",
             (void**)&scratch->query_position_end, vertex_count, 3 * sizeof(float)) ||
-        !_path_query_alloc((void**)&scratch->query_ids, vertex_count, sizeof(uint32_t)) ||
-        !_path_query_alloc((void**)&scratch->query_line_width, vertex_count, sizeof(float)) ||
-        !_path_query_alloc((void**)&scratch->query_path_flags, vertex_count, sizeof(uint32_t)) ||
-        !_path_query_alloc((void**)&scratch->query_path_distance, vertex_count, sizeof(float)) ||
-        !_path_query_alloc((void**)&scratch->query_indices, index_count, sizeof(uint32_t)))
+        !_stroke_query_alloc(
+            "path", (void**)&scratch->query_ids, vertex_count, sizeof(uint32_t)) ||
+        !_stroke_query_alloc(
+            "path", (void**)&scratch->query_line_width, vertex_count, sizeof(float)) ||
+        !_stroke_query_alloc(
+            "path", (void**)&scratch->query_path_flags, vertex_count, sizeof(uint32_t)) ||
+        !_stroke_query_alloc(
+            "path", (void**)&scratch->query_path_distance, vertex_count, sizeof(float)) ||
+        !_stroke_query_alloc(
+            "path", (void**)&scratch->query_indices, index_count, sizeof(uint32_t)))
     {
         return false;
     }
@@ -529,7 +377,7 @@ static bool _path_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQuer
 
     uint32_t target_width = 0;
     uint32_t target_height = 0;
-    if (!_path_query_target_extent(ctx->figure, ctx->panel, &target_width, &target_height))
+    if (!_stroke_query_target_extent(ctx->figure, ctx->panel, &target_width, &target_height))
         return false;
 
     uint64_t vertex_count = 0;
@@ -585,12 +433,12 @@ static bool _path_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQuer
          dvz_frame_plan_upload_bytes(
              plan, "query0_index", 0, index_bytes, "index", out_plan->scratch.query_indices);
     if (ok)
-        _path_query_mark_last_upload_index(plan, sizeof(uint32_t));
+        _stroke_query_mark_last_upload_index(plan, sizeof(uint32_t));
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "query0_material", 0, sizeof(DvzSceneMaterialParams), "material_params",
                    &ctx->visual->material_params);
     if (ok)
-        _path_query_mark_last_upload_uniform(plan);
+        _stroke_query_mark_last_upload_uniform(plan);
 
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;
@@ -621,7 +469,7 @@ static bool _path_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQuer
          dvz_frame_plan_render_visual(plan, "query0") &&
          dvz_frame_plan_render_visual_metadata(plan, &metadata);
     if (ok)
-        _path_query_apply_render_state(
+        _stroke_query_apply_render_state(
             plan, ctx->panel, ctx->request_ndc, target_width, target_height);
 
     DvzFramePlanCopyDesc copy = {
