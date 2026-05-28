@@ -9,6 +9,8 @@ making v0.4 implementation depend on speculative public APIs.
    ecosystem, and GSP/VisPy2 ambition note.
 2. [SCIENTIFIC_VISUALIZATION_ROADMAP.md](SCIENTIFIC_VISUALIZATION_ROADMAP.md): orientation index
    for future scientific data models and pressure tests.
+3. [FIGURE_GUIDES.md](FIGURE_GUIDES.md): coordinate-reference, span, and guide-mark model for
+   future cross-panel annotations linked to panel domains and controllers.
 
 
 ## Semantic Resources
