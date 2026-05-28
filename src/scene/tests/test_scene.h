@@ -231,6 +231,8 @@ int test_frame_plan_graph_static_multipass(TstContext* suite, const TstCase* ite
 
 int test_frame_plan_graph_ascii(TstContext* suite, const TstCase* item);
 
+int test_frame_plan_trace_env(TstContext* suite, const TstCase* item);
+
 int test_frame_plan_graph_dependencies_dump(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* item);

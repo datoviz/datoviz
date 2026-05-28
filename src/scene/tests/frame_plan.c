@@ -998,6 +998,50 @@ int test_frame_plan_graph_ascii(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Ensure FramePlan graph trace environment parsing and change filtering stay deterministic.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_trace_env(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    AT(_scene_frame_plan_trace_mode_from_env(NULL) == DVZ_FRAME_PLAN_TRACE_NONE);
+    AT(_scene_frame_plan_trace_mode_from_env("0") == DVZ_FRAME_PLAN_TRACE_NONE);
+    AT(_scene_frame_plan_trace_mode_from_env("off") == DVZ_FRAME_PLAN_TRACE_NONE);
+    AT(_scene_frame_plan_trace_mode_from_env("1") == DVZ_FRAME_PLAN_TRACE_NORMAL);
+    AT(_scene_frame_plan_trace_mode_from_env("normal") == DVZ_FRAME_PLAN_TRACE_NORMAL);
+    AT(_scene_frame_plan_trace_mode_from_env("ascii") == DVZ_FRAME_PLAN_TRACE_NORMAL);
+    AT(_scene_frame_plan_trace_mode_from_env("full") == DVZ_FRAME_PLAN_TRACE_FULL);
+    AT(_scene_frame_plan_trace_mode_from_env("ascii-full") == DVZ_FRAME_PLAN_TRACE_FULL);
+
+    AT(
+        (_scene_frame_plan_trace_flags_from_env("ascii") &
+         DVZ_FRAME_PLAN_ASCII_ASCII_ONLY) != 0);
+    AT(
+        (_scene_frame_plan_trace_flags_from_env("full") &
+         DVZ_FRAME_PLAN_ASCII_ASCII_ONLY) == 0);
+    AT(
+        (_scene_frame_plan_trace_flags_from_env("full-ascii") &
+         DVZ_FRAME_PLAN_ASCII_ASCII_ONLY) != 0);
+
+    DvzFigure figure = {0};
+    AT(!_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_NONE, &figure, "graph"));
+    AT(_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_NORMAL, &figure, "graph"));
+    figure.has_last_frame_plan_trace = true;
+    figure.last_frame_plan_trace = "graph";
+    AT(!_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_NORMAL, &figure, "graph"));
+    AT(_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_NORMAL, &figure, "graph2"));
+    AT(_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_FULL, &figure, "graph"));
+    return 0;
+}
+
+
+
+/**
  * Ensure the internal FramePlan graph reports read-before-write mistakes.
  *
  * @param suite the active test suite
@@ -1880,6 +1924,7 @@ int test_scene_frame_plan(TstSuite* suite)
     TST_CASE(test_frame_plan_query_readback_copy_metadata);
     TST_CASE(test_frame_plan_graph_static_multipass);
     TST_CASE(test_frame_plan_graph_ascii);
+    TST_CASE(test_frame_plan_trace_env);
     TST_CASE(test_frame_plan_graph_dependencies_dump);
     TST_CASE(test_frame_plan_graph_depth_peeling_shape);
     TST_CASE(test_frame_plan_graph_gbuffer_shape);
