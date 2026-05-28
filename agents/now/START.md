@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DEVELOPMENT DISPATCH`
-> - **Updated on:** `2026-05-26`
+> - **Updated on:** `2026-05-28`
 > - **Purpose:** tell agents where to start without duplicating the release roadmap or feature
 >   gateboard.
 
@@ -26,7 +26,8 @@ release criteria, or long implementation history.
 6. For broad `src/scene` source splits across visual helpers, frame-plan files, runtime emission,
    core scene ownership, query execution, annotations, or domain helpers, read
    [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md)
-   and [`../soon/scene/SCENE_CODE_SPLIT_ROADMAP.md`](../soon/scene/SCENE_CODE_SPLIT_ROADMAP.md).
+   and
+   [`../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md).
 7. For DRP2 commands, fixtures, schemas, or scene code that emits DRP2, read
    [`../../spec/drp2/README.md`](../../spec/drp2/README.md) and
    [`../../spec/drp2/AGENT_SPEC_PHASE.md`](../../spec/drp2/AGENT_SPEC_PHASE.md).
