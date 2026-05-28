@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -18,6 +19,17 @@ def _library_exists() -> bool:
     return any((ROOT_DIR / 'build' / 'src' / name).exists() for name in names) or any(
         (ROOT_DIR / 'build' / name).exists() for name in names
     )
+
+
+def test_raw_import_reports_missing_generated_binding(tmp_path, monkeypatch):
+    package_dir = tmp_path / 'probe'
+    package_dir.mkdir()
+    (package_dir / '__init__.py').write_text('')
+    shutil.copy2(ROOT_DIR / 'datoviz' / 'raw.py', package_dir / 'raw.py')
+    monkeypatch.syspath_prepend(str(tmp_path))
+
+    with pytest.raises(RuntimeError, match='just ctypes'):
+        __import__('probe.raw')
 
 
 @pytest.mark.skipif(not _library_exists(), reason='libdatoviz has not been built')
