@@ -529,17 +529,14 @@ static bool _scene_emit_visual_material_upload(
         (DvzSceneMaterialParams*)dvz_malloc(sizeof(DvzSceneMaterialParams));
     if (params == NULL)
         return false;
-    *params = visual->material_params;
     DvzVisualLowering lowering = {0};
     bool has_lowering = _scene_visual_lowering_resolve(visual, &lowering);
     bool point_style_scaled =
         has_lowering && lowering.point_style_enabled &&
         (lowering.desc_kind == DVZ_SCENE_VISUAL_DESC_POINT ||
          lowering.desc_kind == DVZ_SCENE_VISUAL_DESC_MARKER);
-    if (point_style_scaled)
-    {
-        params->params[0] *= _scene_screen_scale(figure);
-    }
+    _material_params_upload_payload(
+        visual, point_style_scaled, _scene_screen_scale(figure), params);
     if (!dvz_frame_plan_upload_bytes(
             plan, material_resource_id, 0, sizeof(DvzSceneMaterialParams), "material_params",
             params))
