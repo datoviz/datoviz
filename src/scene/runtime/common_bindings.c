@@ -20,7 +20,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "_frame_plan_emit.h"
+#include "frame_plan/emit.h"
 #include "_scene_common_bindings.h"
 #include "_scene_shader_abi.h"
 #include "datoviz/drp2.h"

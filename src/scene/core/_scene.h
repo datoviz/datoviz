@@ -14,7 +14,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "_frame_plan.h"
+#include "frame_plan/frame_plan.h"
 #include "datoviz/drp2/runtime.h"
 #include "datoviz/drp2/types.h"
 #include "datoviz/geom/types.h"

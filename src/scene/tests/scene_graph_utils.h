@@ -26,7 +26,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
-#include "_frame_plan.h"
+#include "frame_plan/frame_plan.h"
 #include "_scene.h"
 #include "_scene_emit.h"
 #include "_scene_shader_abi.h"

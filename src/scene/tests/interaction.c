@@ -22,7 +22,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "../../drp2/_stream.h"
-#include "_frame_plan.h"
+#include "frame_plan/frame_plan.h"
 #include "_scale_ticks.h"
 #include "_scene.h"
 #include "_scene_emit.h"

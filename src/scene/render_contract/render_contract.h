@@ -20,7 +20,7 @@
 #include <stdint.h>
 
 #include "datoviz/drp2/types.h"
-#include "_frame_plan.h"
+#include "frame_plan/frame_plan.h"
 #include "_scene.h"
 
 

@@ -19,8 +19,8 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "_frame_plan.h"
-#include "_frame_plan_emit.h"
+#include "frame_plan/frame_plan.h"
+#include "frame_plan/emit.h"
 #include "_scene_resource_key.h"
 #include "_scene.h"
 #include "_technique.h"

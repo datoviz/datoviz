@@ -20,7 +20,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "_assertions.h"
-#include "_frame_plan_emit.h"
+#include "frame_plan/emit.h"
 #include "_render_pass.h"
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"

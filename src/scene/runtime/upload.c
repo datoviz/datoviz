@@ -21,7 +21,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "_frame_plan_emit.h"
+#include "frame_plan/emit.h"
 #include "_frame_plan_runtime_upload.h"
 #include "_overflow.h"
 #include "datoviz/drp2.h"

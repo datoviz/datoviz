@@ -16,8 +16,8 @@
 
 #include <stdint.h>
 
-#include "_frame_plan_internal.h"
-#include "frame_plan_graph_internal.h"
+#include "internal.h"
+#include "graph/internal.h"
 
 
 

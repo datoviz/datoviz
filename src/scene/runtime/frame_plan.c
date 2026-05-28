@@ -19,8 +19,8 @@
 #include <stdint.h>
 
 #include "_assertions.h"
-#include "_frame_plan.h"
-#include "_frame_plan_emit.h"
+#include "frame_plan/frame_plan.h"
+#include "frame_plan/emit.h"
 #include "_frame_plan_runtime_internal.h"
 #include "_frame_plan_runtime_upload.h"
 #include "_render_pass.h"

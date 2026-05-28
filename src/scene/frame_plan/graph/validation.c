@@ -19,8 +19,8 @@
 #include <string.h>
 
 #include "_assertions.h"
-#include "_frame_plan_internal.h"
-#include "frame_plan_graph_internal.h"
+#include "frame_plan/internal.h"
+#include "internal.h"
 
 
 

@@ -25,7 +25,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_controllers.h"
-#include "_frame_plan.h"
+#include "frame_plan/frame_plan.h"
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene_emit.h"

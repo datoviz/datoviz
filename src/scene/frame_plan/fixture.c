@@ -21,7 +21,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "_frame_plan_emit.h"
+#include "frame_plan/emit.h"
 #include "_overflow.h"
 #include "_shader_registry.h"
 #include "datoviz/drp2/stream.h"

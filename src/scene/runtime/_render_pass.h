@@ -19,8 +19,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "_frame_plan.h"
-#include "_frame_plan_emit.h"
+#include "frame_plan/frame_plan.h"
+#include "frame_plan/emit.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
 

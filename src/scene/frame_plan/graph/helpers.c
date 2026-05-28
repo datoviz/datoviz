@@ -21,8 +21,8 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "_frame_plan_internal.h"
-#include "frame_plan_graph_internal.h"
+#include "frame_plan/internal.h"
+#include "internal.h"
 
 
 

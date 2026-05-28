@@ -20,7 +20,7 @@
 #include <string.h>
 
 #include "_compat.h"
-#include "plan/_frame_plan.h"
+#include "frame_plan/frame_plan.h"
 #include "techniques/_technique.h"
 
 
