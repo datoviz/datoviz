@@ -118,7 +118,7 @@ static bool _mesh_bounds_from_instances(
  * @param out output bounds
  * @return whether bounds were produced
  */
-bool _mesh_bounds_from_position_attrs(const DvzVisual* visual, DvzBounds* out)
+static bool _mesh_bounds_from_position_attrs(const DvzVisual* visual, DvzBounds* out)
 {
     ANN(visual);
     ANN(out);

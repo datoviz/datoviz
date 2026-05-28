@@ -34,7 +34,7 @@
  * @param out output bounds
  * @return whether bounds were produced
  */
-bool _glyph_bounds_from_rect(const DvzVisual* visual, DvzBounds* out)
+static bool _glyph_bounds_from_rect(const DvzVisual* visual, DvzBounds* out)
 {
     ANN(visual);
     ANN(out);

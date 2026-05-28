@@ -34,7 +34,7 @@
  * @param out output bounds
  * @return whether bounds were produced
  */
-bool _image_bounds_from_extent(const DvzVisual* visual, DvzBounds* out)
+static bool _image_bounds_from_extent(const DvzVisual* visual, DvzBounds* out)
 {
     ANN(visual);
     ANN(out);

@@ -37,7 +37,7 @@
  * @param out output bounds
  * @return whether bounds were produced
  */
-bool _stroke_bounds_from_segment(const DvzVisual* visual, DvzBounds* out)
+static bool _stroke_bounds_from_segment(const DvzVisual* visual, DvzBounds* out)
 {
     ANN(visual);
     ANN(out);
@@ -79,7 +79,7 @@ bool _scene_segment_visual_bounds(
  * @param out output bounds
  * @return whether bounds were produced
  */
-bool _stroke_bounds_from_vector(const DvzVisual* visual, DvzBounds* out)
+static bool _stroke_bounds_from_vector(const DvzVisual* visual, DvzBounds* out)
 {
     ANN(visual);
     ANN(out);

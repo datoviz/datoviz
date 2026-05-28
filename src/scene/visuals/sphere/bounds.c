@@ -35,7 +35,7 @@
  * @param out output bounds
  * @return whether bounds were produced
  */
-bool _sphere_bounds_from_radius(const DvzVisual* visual, DvzBounds* out)
+static bool _sphere_bounds_from_radius(const DvzVisual* visual, DvzBounds* out)
 {
     ANN(visual);
     ANN(out);

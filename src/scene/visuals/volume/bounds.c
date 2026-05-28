@@ -35,7 +35,7 @@
  * @param out output bounds
  * @return whether bounds were produced
  */
-bool _volume_bounds_from_state(const DvzVisual* visual, DvzBounds* out)
+static bool _volume_bounds_from_state(const DvzVisual* visual, DvzBounds* out)
 {
     ANN(visual);
     ANN(out);
