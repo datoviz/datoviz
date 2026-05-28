@@ -51,3 +51,6 @@ bool _scene_visual_lowering_resolve(const DvzVisual* visual, DvzVisualLowering* 
 DvzRenderableKind _scene_visual_lowering_renderable_kind(const DvzVisual* visual);
 
 DvzSceneVisualDescKind _scene_visual_lowering_desc_kind(const DvzVisual* visual);
+
+bool _scene_visual_lowering_fill_metadata(
+    const DvzVisual* visual, DvzFramePlanVisualMeta* metadata);

@@ -22,6 +22,7 @@
 
 #include "datoviz/math/_cglm.h"
 #include "../../colorizer.h"
+#include "../../_visual_lowering.h"
 #include "../../query/internal.h"
 #include "../../sample_profile.h"
 #include "_alloc.h"
@@ -482,6 +483,7 @@ static bool _volume_query_build_sample(
     metadata.has_metadata = true;
     metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_VOLUME;
     metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_VOLUME_PROXY;
+    metadata.desc_kind = (uint32_t)_scene_visual_lowering_desc_kind(ctx->visual);
     metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
@@ -680,6 +682,7 @@ static bool _volume_query_build(
     metadata.has_metadata = true;
     metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_PRIMITIVE;
     metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_INDEXED_MESH;
+    metadata.desc_kind = (uint32_t)DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
     metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;

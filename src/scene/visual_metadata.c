@@ -32,9 +32,9 @@
 #include "_scene_shader_abi.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
+#include "_visual_pipeline_internal.h"
 #include "_visual_lowering.h"
 #include "datoviz/drp2/runtime.h"
-#include "sample_profile.h"
 #include "render_contract.h"
 
 
@@ -151,26 +151,10 @@ bool _scene_visual_frame_plan_metadata(
     if (!_scene_visual_texture_resource_key(
             figure, visual, visual_index, metadata->texture_id, sizeof(metadata->texture_id)))
         return false;
-    if (visual->type == DVZ_VISUAL_TYPE_VOLUME)
+    if (!_scene_visual_lowering_fill_metadata(visual, metadata))
+        return false;
+    if (_scene_visual_desc_is_volume(lowering.desc_kind))
     {
-        metadata->has_volume = true;
-        metadata->volume_state = visual->volume;
-        metadata->volume_occluded = visual->volume_occluded;
-        DvzSceneSampleProfile profile = {0};
-        metadata->volume_transfer_rgba =
-            visual->field != NULL &&
-            _scene_sample_profile_resolve(
-                visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
-                &profile) &&
-            _scene_sample_profile_is_direct_rgba(&profile);
-        if (visual->field != NULL)
-        {
-            metadata->field_format = (uint32_t)visual->field->desc.format;
-            metadata->field_semantic = (uint32_t)visual->field->desc.semantic;
-            metadata->field_width = visual->field->desc.width;
-            metadata->field_height = visual->field->desc.height;
-            metadata->field_depth = visual->field->desc.depth;
-        }
         dvz_strlcpy(
             metadata->volume_texture_id, metadata->texture_id,
             sizeof(metadata->volume_texture_id));
@@ -182,11 +166,6 @@ bool _scene_visual_frame_plan_metadata(
                 visual_index, metadata->volume_label_lookup_id,
                 sizeof(metadata->volume_label_lookup_id)))
             return false;
-    }
-    if (visual->type == DVZ_VISUAL_TYPE_LABELS)
-    {
-        metadata->has_labels = true;
-        metadata->labels_state = visual->labels;
     }
     if (!_scene_attr_resource_key(
             figure, visual, visual_index, "normal", metadata->normal_id,
@@ -244,15 +223,6 @@ bool _scene_visual_frame_plan_metadata(
             return false;
         metadata->vertex_count = (uint32_t)vertex_count;
         metadata->index_count = (uint32_t)index_count;
-    }
-    if ((visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_LABELS) &&
-        _scene_image_uses_generated_quads(visual))
-    {
-        if (visual->image_gpu.vertex_count > UINT32_MAX)
-            return false;
-        if (visual->image_gpu.vertex_count > 0)
-            metadata->vertex_count = (uint32_t)visual->image_gpu.vertex_count;
-        metadata->image_pixel_space = visual->image_gpu.pixel_space;
     }
     return true;
 }
