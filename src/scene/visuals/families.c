@@ -703,63 +703,6 @@ void dvz_visual_set_visible(DvzVisual* visual, bool visible)
 
 
 /**
- * Create a primitive visual.
- *
- * @param scene the scene
- * @param topology the primitive topology
- * @param flags variant flags
- * @return the visual, or NULL on allocation failure
- */
-DvzVisual* dvz_primitive(DvzScene* scene, DvzPrimitiveTopology topology, uint32_t flags)
-{
-    ANN(scene);
-    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_PRIMITIVE, flags);
-    if (visual == NULL)
-        return NULL;
-    visual->topology = topology;
-    visual->material_params_dirty = true;
-    return visual;
-}
-
-
-
-/**
- * Create a mesh visual.
- *
- * First-slice mesh visuals reuse the indexed primitive triangle-list execution path.
- *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual, or NULL on allocation failure
- */
-DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags)
-{
-    ANN(scene);
-    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_MESH, flags);
-    if (visual == NULL)
-        return NULL;
-    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    visual->material_params_dirty = true;
-    return visual;
-}
-
-
-
-/**
- * Create an image visual.
- *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual, or NULL on allocation failure
- */
-DvzVisual* dvz_image(DvzScene* scene, uint32_t flags)
-{
-    ANN(scene);
-    return _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_IMAGE, flags);
-}
-
-
-/**
  * Create a labels visual.
  *
  * @param scene the scene
@@ -1156,27 +1099,6 @@ int _scene_adornment_text_visual_set_renderer(DvzVisual* visual, DvzTextRenderer
     return _scene_text_visual_set_renderer(visual, _scene_adornment_text_renderer(renderer));
 }
 
-
-
-/**
- * Create a glyph visual.
- *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual, or NULL on allocation failure
- */
-DvzVisual* dvz_glyph(DvzScene* scene, uint32_t flags)
-{
-    ANN(scene);
-    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_GLYPH, flags);
-    if (visual != NULL)
-    {
-        visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-        visual->glyph_atlas_encoding = DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB;
-        visual->glyph_distance_range_px = 4.0f;
-    }
-    return visual;
-}
 
 
 /**
