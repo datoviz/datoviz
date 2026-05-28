@@ -42,6 +42,9 @@ const DvzFrameGraphPass* _contract_graph_pass_for_render(
 bool _contract_validate_graph_backed_render_nodes(
     const DvzFramePlan* plan, DvzDiagnosticReport* report);
 
+const DvzPanel* _contract_panel_for_render(
+    const DvzFigure* figure, const DvzFramePlan* plan, const DvzFramePlanNode* render);
+
 DvzSceneAttachmentUse* _contract_append_attachment(
     DvzScenePassContract* contract, const char* resource_id, DvzSceneAttachmentRole role);
 
