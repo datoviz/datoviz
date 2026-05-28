@@ -26,6 +26,12 @@ Landed on 2026-05-28:
     construction.
 11. `stroke/path.c` owns path-stroke adjacency, flag, distance, and index cache construction for
     both path visuals and curved vector visuals.
+12. `image/generated_quad.c` owns generated image/labels quad cache construction and the predicate
+    for image-like visuals that need generated quads before upload.
+13. `stroke/query.c` owns shared segment/path/vector query buffer allocation, offscreen target
+    extent calculation, query render-state targeting, and query upload metadata marking.
+14. `stroke/bounds.c` owns stroke-family bounds reducers for segment endpoint attributes and
+    straight-vector endpoint expansion.
 
 Existing family folders already owned their GPU query implementations through `query.c`. The first
 refactor step makes each family folder own the public family API and the family-local style or mode
@@ -48,6 +54,17 @@ Additional files are appropriate once a family grows enough local logic:
   lower.c     family-specific lowering helpers, once extracted from shared plan files
   upload.c    family-specific derived upload/cache helpers
   bounds.c    family-specific bounds helpers, if the shared reducer becomes too large
+```
+
+Subsystem folders are appropriate when several families share a real implementation boundary:
+
+```text
+src/scene/visuals/stroke/
+  common.c    cap/join validation, shared subpath copying, shared cache release
+  quad.c      straight stroke-quad cache construction for segment and straight-vector lowering
+  path.c      path-stroke adjacency/cache construction for path and curved-vector lowering
+  query.c     shared stroke query mechanics
+  bounds.c    shared stroke bounds reducers
 ```
 
 Do not create empty placeholder files. A family folder should contain only code it owns today.
@@ -77,7 +94,8 @@ The first pass deliberately did not move these shared dispatch files:
 3. `shader_desc.c`, `pipeline*.c`, `bind_desc.c`, and `pass_caps.c`: shader and pipeline selection
    still encode cross-family backend policy.
 4. `bounds.c`: the current reducer is shared and may be split only after family-local reducers are
-   clearer.
+   clearer. The stroke endpoint reducers have moved to `stroke/bounds.c`; cross-family dispatch,
+   panel projection, and generated bounds overlay synchronization stay in the shared reducer.
 5. `plan/visual_lowering*.c` and `runtime/render_emit.c`: lowering and runtime emission still
    coordinate multiple visual families and DRP2 resource lifetimes.
 
@@ -128,14 +146,14 @@ unstaged unless explicitly approved for that commit.
 
 ## Next Candidates
 
-The stroke-family cache extraction is complete for the current segment/path/vector slice. Keep
-frame-plan orchestration in plan code; only move more geometry/cache construction when an extracted
-file can own a coherent family slice without copying dispatch policy.
+The stroke-family cache, query-helper, and endpoint-bounds extractions are complete for the current
+segment/path/vector slice. Keep frame-plan orchestration in plan code; only move more geometry/cache
+construction when an extracted file can own a coherent family slice without copying dispatch policy.
 
 Useful next candidates:
 
-1. image/labels generated-quad cache construction, currently still in
-   `src/scene/plan/visual_lowering_uploads.c`;
-2. family-local bounds reducers once the shared bounds reducer has clear independent slices;
-3. visual-family query helper deduplication where segment/path/vector query files still share
-   temporary upload and offscreen-target logic.
+1. family-local bounds reducers for sphere/image/glyph/mesh once each slice has a clean helper
+   boundary and does not pull overlay or projection policy along with it;
+2. additional image/labels family extraction around query or upload code if ownership is clear;
+3. a later lowering pass that moves only geometry/cache construction out of plan files while keeping
+   frame-plan orchestration in `src/scene/plan/`.
