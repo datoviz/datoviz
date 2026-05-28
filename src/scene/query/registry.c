@@ -22,10 +22,26 @@
 
 
 /*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef const DvzSceneQueryFamilyOps* (*DvzSceneQueryFamilyOpsFn)(void);
+
+
+
+/*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_SCENE_QUERY_FAMILY_COUNT 14
+static const DvzSceneQueryFamilyOpsFn QUERY_FAMILY_OPS[] = {
+    _dvz_scene_query_point_ops,     _dvz_scene_query_pixel_ops,
+    _dvz_scene_query_marker_ops,    _dvz_scene_query_sphere_ops,
+    _dvz_scene_query_vector_ops,    _dvz_scene_query_segment_ops,
+    _dvz_scene_query_path_ops,      _dvz_scene_query_primitive_ops,
+    _dvz_scene_query_mesh_ops,      _dvz_scene_query_image_ops,
+    _dvz_scene_query_labels_ops,    _dvz_scene_query_volume_ops,
+    _dvz_scene_query_text_ops,      _dvz_scene_query_glyph_ops,
+};
 
 
 
@@ -40,7 +56,7 @@
  */
 uint32_t _dvz_scene_query_registry_count(void)
 {
-    return DVZ_SCENE_QUERY_FAMILY_COUNT;
+    return DVZ_ARRAY_COUNT(QUERY_FAMILY_OPS);
 }
 
 
@@ -53,39 +69,9 @@ uint32_t _dvz_scene_query_registry_count(void)
  */
 const DvzSceneQueryFamilyOps* _dvz_scene_query_registry_get(uint32_t index)
 {
-    switch (index)
-    {
-    case 0:
-        return _dvz_scene_query_point_ops();
-    case 1:
-        return _dvz_scene_query_pixel_ops();
-    case 2:
-        return _dvz_scene_query_marker_ops();
-    case 3:
-        return _dvz_scene_query_sphere_ops();
-    case 4:
-        return _dvz_scene_query_vector_ops();
-    case 5:
-        return _dvz_scene_query_segment_ops();
-    case 6:
-        return _dvz_scene_query_path_ops();
-    case 7:
-        return _dvz_scene_query_primitive_ops();
-    case 8:
-        return _dvz_scene_query_mesh_ops();
-    case 9:
-        return _dvz_scene_query_image_ops();
-    case 10:
-        return _dvz_scene_query_labels_ops();
-    case 11:
-        return _dvz_scene_query_volume_ops();
-    case 12:
-        return _dvz_scene_query_text_ops();
-    case 13:
-        return _dvz_scene_query_glyph_ops();
-    default:
+    if (index >= DVZ_ARRAY_COUNT(QUERY_FAMILY_OPS))
         return NULL;
-    }
+    return QUERY_FAMILY_OPS[index]();
 }
 
 
