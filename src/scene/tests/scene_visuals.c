@@ -8581,6 +8581,7 @@ int test_scene_visual_family_registry_coverage(TstContext* suite, const TstCase*
         ANN(ops->resolve_pass_caps);
         ANN(ops->resolve_bind_desc);
         ANN(ops->resolve_pipeline_desc);
+        ANN(ops->resolve_shader_desc);
         AT(_scene_visual_family_ops_registered(active_types[i]));
     }
 

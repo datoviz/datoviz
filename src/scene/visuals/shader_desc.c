@@ -27,6 +27,7 @@
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
 #include "datoviz/drp2/enums.h"
+#include "registry/registry.h"
 
 
 /*************************************************************************************************/
@@ -515,11 +516,12 @@ static bool _scene_shader_desc_sphere(
  *
  * @param visual the visual descriptor
  * @param picking whether the render pass is a picking pass
+ * @param wboit_accumulation whether the pass is an order-independent transparency pass
  * @param format_tag the shader-format cache-key suffix
  * @param out the output shader descriptor
  * @return whether a shader descriptor was resolved
  */
-bool _scene_visual_shader_desc(
+bool _scene_visual_shader_desc_resolve(
     const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
     const char* format_tag, DvzSceneVisualShaderDesc* out)
 {
@@ -707,4 +709,30 @@ bool _scene_visual_shader_desc(
     default:
         return false;
     }
+}
+
+
+/**
+ * Resolve shader and pipeline cache-key metadata through the visual-family registry.
+ *
+ * @param visual the visual descriptor
+ * @param picking whether the render pass is a picking pass
+ * @param wboit_accumulation whether the pass is an order-independent transparency pass
+ * @param format_tag the shader-format cache-key suffix
+ * @param out the output shader descriptor
+ * @return whether a shader descriptor was resolved
+ */
+bool _scene_visual_shader_desc(
+    const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
+    const char* format_tag, DvzSceneVisualShaderDesc* out)
+{
+    ANN(visual);
+    ANN(format_tag);
+    ANN(out);
+    dvz_memset(out, sizeof(DvzSceneVisualShaderDesc), 0, sizeof(DvzSceneVisualShaderDesc));
+
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops((DvzVisualType)visual->visual_type);
+    if (ops == NULL || ops->resolve_shader_desc == NULL)
+        return false;
+    return ops->resolve_shader_desc(visual, picking, wboit_accumulation, format_tag, out);
 }

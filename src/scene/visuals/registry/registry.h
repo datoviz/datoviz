@@ -48,6 +48,10 @@ typedef bool (*DvzVisualFamilyPipelineDescFn)(
     bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
     DvzSceneVisualPipelineDesc* out);
 
+typedef bool (*DvzVisualFamilyShaderDescFn)(
+    const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
+    const char* format_tag, DvzSceneVisualShaderDesc* out);
+
 struct DvzVisualFamilyOps
 {
     DvzVisualType type;
@@ -56,6 +60,7 @@ struct DvzVisualFamilyOps
     DvzVisualFamilyPassCapsFn resolve_pass_caps;
     DvzVisualFamilyBindDescFn resolve_bind_desc;
     DvzVisualFamilyPipelineDescFn resolve_pipeline_desc;
+    DvzVisualFamilyShaderDescFn resolve_shader_desc;
 };
 
 
@@ -76,3 +81,7 @@ bool _scene_visual_pipeline_desc_resolve(
     const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
     bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
     DvzSceneVisualPipelineDesc* out);
+
+bool _scene_visual_shader_desc_resolve(
+    const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
+    const char* format_tag, DvzSceneVisualShaderDesc* out);
