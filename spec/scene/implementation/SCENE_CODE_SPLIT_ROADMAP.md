@@ -18,10 +18,11 @@ candidates are:
 2. `src/scene/annotation/text.c` and `axis.c`: retained annotation objects, layout/reserve policy,
    generated visuals, and text/glyph lowering are still mixed. Scale, colorbar, legend, colormap,
    scale-bar, and text-font ownership now have first-pass owner files.
-3. `src/scene/domain/field.c` and `polygon.c`: public domain object state, sampled interpretation,
-   generated visual glue, and upload dirtiness are still mixed.
-4. `src/scene/visuals/desc.c` and `attrs.c`: descriptor resolution, retained metadata, and binding
-   updates are better than before but still carry several ownership concerns.
+3. `src/scene/domain/field.c`: public domain object state, sampled interpretation, generated
+   visual glue, and upload dirtiness are still mixed.
+4. `src/scene/visuals/`: descriptor and attribute helper ownership has a first split, but wide
+   visual-family helper files and shared headers should only be split further when a stable owner
+   boundary is clear.
 5. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
    multiple ownership boundaries at once.
 
@@ -221,10 +222,32 @@ Domain candidates:
 1. sampled-field object lifecycle and public setters;
 2. sampled interpretation and label/scale binding;
 3. generated visual synchronization for image, volume, labels, colorbar, and legends;
-4. polygon/polygon-set geometry construction versus scene visual glue.
+4. any remaining polygon/polygon-set scene visual glue that a later behavior change exposes.
 
 
-### 8. Tighten Query And Interaction Boundaries
+### 8. Split Visual Descriptor And Attribute Helpers
+
+Status: first visual descriptor/attribute batch completed on 2026-05-28.
+
+Current ownership:
+
+1. `visuals/attrs.c`: public attribute source, mutability, buffer, and scale-binding facade.
+2. `visuals/attr_schema.c`: visual attribute names, supported attributes, source policy, and
+   attribute lookup/creation helpers.
+3. `visuals/attr_data.c`: dense/string/range attribute data mutation, validation, and versioning.
+4. `visuals/visual_bindings.c`: retained visual binding slot assignment, lookup, and clearing.
+5. `visuals/visual_lookup.c`: scene-global visual index lookup and visual type names.
+6. `visuals/desc.c`: render-node visual descriptor assembly from typed metadata and legacy ids.
+7. `visuals/desc_resources.c`: render visual resource-key/id resolution and persistent vertex-buffer
+   lookup.
+8. `visuals/desc_legacy.c`: legacy resource-list classifiers for point, splat, primitive, image,
+   and textured mesh descriptors.
+
+Guardrail: do not split the remaining visual pipeline helpers by enum case alone. Prefer the current
+ownership unless a behavior change exposes real duplication or a narrower stable owner.
+
+
+### 9. Tighten Query And Interaction Boundaries
 
 Status: query policy split started on 2026-05-28. `query/policy.c` owns target capability,
 query-profile selection, drawable candidate selection, family-op eligibility lookup, and
@@ -241,7 +264,7 @@ next split should be policy-driven:
 4. do not combine request-path cleanup with new picking semantics unless the feature requires it.
 
 
-### 9. Rebalance Tests With Each Split
+### 10. Rebalance Tests With Each Split
 
 Do not perform a mechanical test-file split first. Move or add tests when an implementation split
 creates a new stable boundary:
