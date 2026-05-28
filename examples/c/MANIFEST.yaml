@@ -1,0 +1,167 @@
+version: 1
+status: initial_overhaul_manifest
+source_of_truth:
+  planning: ../../spec/scene/examples/PLANNING.md
+  execution: ../../spec/scene/examples/EXECUTION.md
+  style: ../../spec/scene/examples/STYLE.md
+
+defaults:
+  palette: graphite_cyan
+  visual_capture: 1280x960
+  showcase_capture: 1600x1000
+  seed: 12345
+
+examples:
+  - id: point_2d
+    title: 2D Points
+    stage: v0.4_required
+    lane: visuals
+    style_preset: visuals
+    capture: 1280x960
+    interaction_state: default
+    current_source: examples/c/visuals/point.c
+    target_source: examples/c/visuals/point.c
+    validation: smoke+screenshot
+
+  - id: path_axes_2d
+    title: Path With 2D Axes
+    stage: v0.4_required
+    lane: features
+    style_preset: features
+    capture: 1280x960
+    interaction_state: default
+    current_source: examples/c/techniques/scatter_axes.c
+    target_source: examples/c/features/axes_2d.c
+    validation: smoke+screenshot
+
+  - id: linked_panels_axes_panzoom
+    title: Linked Panels With Axes
+    stage: v0.4_required
+    lane: features
+    style_preset: features
+    capture: 1280x960
+    interaction_state: default
+    current_source: examples/c/techniques/linked_panels.c
+    target_source: examples/c/features/panel_linked_axes.c
+    validation: smoke+interaction
+
+  - id: scale_bar
+    title: Scale Bars
+    stage: v0.4_required
+    lane: features
+    style_preset: features
+    capture: 1280x960
+    interaction_state: default
+    current_source: examples/c/annotations/scalebar_2d_3d.c
+    target_source: examples/c/features/scalebar.c
+    validation: smoke+screenshot
+
+  - id: api_pressure
+    title: API Pressure
+    stage: v0.4_required
+    lane: features
+    style_preset: features
+    capture: 1280x960
+    interaction_state: probe
+    current_source: examples/c/techniques/image_probe.c
+    target_source: examples/c/features/api_pressure.c
+    validation: smoke+readback
+
+  - id: linked_panels_probe_colorbar
+    title: Linked Probe And Colorbar
+    stage: v0.4_required
+    lane: features
+    style_preset: features
+    capture: 1280x960
+    interaction_state: probe
+    current_source: examples/c/techniques/image_probe.c
+    target_source: examples/c/features/panel_probe_colorbar.c
+    validation: smoke+readback+screenshot
+
+  - id: marker_picking
+    title: Marker Picking
+    stage: v0.4_required
+    lane: features
+    style_preset: features
+    capture: 1280x960
+    interaction_state: selected
+    current_source: examples/c/techniques/pick_hover.c
+    target_source: examples/c/features/pick_marker.c
+    validation: smoke+interaction
+
+  - id: volume
+    title: Volume
+    stage: v0.4_required
+    lane: visuals
+    style_preset: visuals
+    capture: 1280x960
+    interaction_state: default
+    current_source: examples/c/visuals/volume.c
+    target_source: examples/c/visuals/volume.c
+    validation: smoke+screenshot
+
+  - id: protein_arcball_viewer
+    title: Protein Arcball Viewer
+    stage: v0.4_required
+    lane: showcases
+    style_preset: showcase
+    capture: 1600x1000
+    interaction_state: default
+    current_source: examples/c/showcase/protein.c
+    target_source: examples/c/showcases/protein_arcball_viewer.c
+    validation: smoke+screenshot+manual
+
+  - id: showcase_wind_field
+    title: Wind Field
+    stage: v0.4_required
+    lane: showcases
+    style_preset: showcase
+    capture: 1600x1000
+    interaction_state: default
+    current_source: null
+    target_source: examples/c/showcases/wind_field.c
+    validation: smoke+screenshot
+
+  - id: textured_terrain_or_planet
+    title: Textured Terrain Or Planet
+    stage: v0.4_required
+    lane: showcases
+    style_preset: showcase
+    capture: 1600x1000
+    interaction_state: default
+    current_source: examples/c/visuals/textured_mesh.c
+    target_source: examples/c/showcases/textured_terrain_or_planet.c
+    validation: smoke+screenshot
+
+  - id: brain_volume_mesh
+    title: Brain Volume And Mesh
+    stage: v0.4_required
+    lane: showcases
+    style_preset: showcase
+    capture: 1600x1000
+    interaction_state: default
+    current_source: examples/c/showcase/brain.c
+    target_source: examples/c/showcases/brain_volume_mesh.c
+    validation: smoke+screenshot+manual
+
+  - id: dense_point_cloud_edl
+    title: Dense Point Cloud With EDL
+    stage: v0.4_required
+    lane: showcases
+    style_preset: showcase
+    capture: 1600x1000
+    interaction_state: default
+    current_source: examples/c/showcase/lidar.c
+    target_source: examples/c/showcases/dense_point_cloud_edl.c
+    validation: smoke+screenshot+performance
+
+  - id: webgpu_browser_subset
+    title: WebGPU Browser Subset
+    stage: v0.4_experimental
+    lane: advanced
+    style_preset: features
+    capture: 1280x960
+    interaction_state: default
+    current_source: examples/webgpu/index.html
+    target_source: examples/webgpu/index.html
+    validation: fixture+browser-smoke
