@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "_scene.h"
+#include "scene_emit/visual_lowering.h"
 #include "upload.h"
 
 
@@ -61,3 +62,5 @@ bool _image_generated_quad_upload_payloads(
 bool _image_texture_upload_payload(DvzVisual* visual, DvzImageTextureUploadPayload* out);
 
 void _image_gpu_cache_free(DvzImageGpuCache* cache);
+
+bool _scene_image_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);

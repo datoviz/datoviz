@@ -20,12 +20,16 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_visual_pipeline_internal.h"
+#include "image/internal.h"
 #include "marker/internal.h"
+#include "mesh/internal.h"
 #include "pixel/internal.h"
 #include "point/internal.h"
+#include "primitive/internal.h"
 #include "scene_emit/visual_lowering.h"
 #include "sample_profile.h"
 #include "splat/internal.h"
+#include "sphere/internal.h"
 
 
 
@@ -150,26 +154,6 @@ static bool _lowering_volume_desc_kind(const DvzVisual* visual, DvzSceneVisualDe
 
 
 /**
- * Resolve sphere visual lowering facts.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return whether lowering facts were resolved
- */
-static bool _lower_sphere(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    (void)visual;
-    _lowering_init(out);
-    out->renderable_kind = DVZ_RENDERABLE_POINT_LIKE;
-    out->desc_kind = DVZ_SCENE_VISUAL_DESC_SPHERE;
-    out->needs_material_params = true;
-    return true;
-}
-
-
-
-/**
  * Resolve segment visual lowering facts.
  *
  * @param visual the retained visual
@@ -235,68 +219,6 @@ static bool _lower_path(const DvzVisual* visual, DvzVisualLowering* out)
                          : DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
     out->needs_material_params = out->renderable_kind == DVZ_RENDERABLE_PATH_STROKE;
     out->path_stroke_cache = &visual->path.gpu;
-    return true;
-}
-
-
-
-/**
- * Resolve primitive visual lowering facts.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return whether lowering facts were resolved
- */
-static bool _lower_primitive(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    _lowering_init(out);
-    out->renderable_kind = DVZ_RENDERABLE_INDEXED_MESH;
-    out->desc_kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
-    out->needs_material_params = _lowering_has_attr_data(visual, "normal");
-    return true;
-}
-
-
-
-/**
- * Resolve mesh visual lowering facts.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return whether lowering facts were resolved
- */
-static bool _lower_mesh(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    _lowering_init(out);
-    out->renderable_kind = DVZ_RENDERABLE_INDEXED_MESH;
-    out->desc_kind = visual->field != NULL ? DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH
-                                           : DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
-    out->needs_material_params = _lowering_has_attr_data(visual, "normal");
-    return true;
-}
-
-
-
-/**
- * Resolve image visual lowering facts.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return whether lowering facts were resolved
- */
-static bool _lower_image(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    _lowering_init(out);
-    out->renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD;
-    out->desc_kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
-    if (_lowering_has_attr_data(visual, "position_px") &&
-        _lowering_has_attr_data(visual, "extent_px"))
-    {
-        out->draw_position_attr = "position_px";
-    }
     return true;
 }
 
@@ -557,20 +479,20 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
     {DVZ_VISUAL_TYPE_PATH, "path", _lower_path, _resolve_pass_caps, _resolve_bind_desc,
      _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
-    {DVZ_VISUAL_TYPE_IMAGE, "image", _lower_image, _resolve_pass_caps, _resolve_bind_desc,
-     _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
+    {DVZ_VISUAL_TYPE_IMAGE, "image", _scene_image_visual_lowering, _resolve_pass_caps,
+     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
-    {DVZ_VISUAL_TYPE_MESH, "mesh", _lower_mesh, _resolve_pass_caps, _resolve_bind_desc,
-     _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
+    {DVZ_VISUAL_TYPE_MESH, "mesh", _scene_mesh_visual_lowering, _resolve_pass_caps,
+     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
     {DVZ_VISUAL_TYPE_VOLUME, "volume", _lower_volume, _resolve_pass_caps, _resolve_bind_desc,
      _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
-    {DVZ_VISUAL_TYPE_PRIMITIVE, "primitive", _lower_primitive, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_PRIMITIVE, "primitive", _scene_primitive_visual_lowering, _resolve_pass_caps,
      _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
-    {DVZ_VISUAL_TYPE_SPHERE, "sphere", _lower_sphere, _resolve_pass_caps, _resolve_bind_desc,
-     _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
+    {DVZ_VISUAL_TYPE_SPHERE, "sphere", _scene_sphere_visual_lowering, _resolve_pass_caps,
+     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
     {DVZ_VISUAL_TYPE_GLYPH, "glyph", _lower_glyph, _resolve_pass_caps, _resolve_bind_desc,
      _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
