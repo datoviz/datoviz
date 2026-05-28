@@ -100,7 +100,9 @@ this section when a slice is completed.
      `visuals/stroke/upload.c`. Image/glyph RGBA texture upload dirty/payload decisions now live
      in `visuals/image/upload.c`, and volume source/transfer/label-lookup payload decisions now
      live in `visuals/volume/upload.c` without changing the existing transfer/lookup repeated
-     upload policy.
+     upload policy. Generic sampled-field texture upload payload construction now lives in
+     `domain/field_texture.c`, leaving `scene_emit/texture_upload.c` responsible for FramePlan
+     upload-node insertion.
    - Keep orchestration in `scene_emit/`: resource-key allocation, upload-node ordering,
      dependencies, dirty-range merge policy, and FramePlan node insertion.
    - Move pure family payload construction into `visuals/<family>/upload.c` or existing family

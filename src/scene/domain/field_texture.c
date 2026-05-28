@@ -495,6 +495,41 @@ bool _scene_prepare_field_texture(
 }
 
 
+
+/**
+ * Prepare sampled-field texture upload metadata and payload bytes.
+ *
+ * @param field the sampled field
+ * @param out output texture upload payload
+ * @return whether the payload is ready for FramePlan upload emission
+ */
+bool _scene_sampled_field_texture_upload_payload(
+    DvzSampledField* field, DvzSampledFieldTextureUploadPayload* out)
+{
+    ANN(field);
+    ANN(out);
+    dvz_memset(
+        out, sizeof(DvzSampledFieldTextureUploadPayload), 0,
+        sizeof(DvzSampledFieldTextureUploadPayload));
+    if (!_scene_prepare_field_texture(field, &out->region, &out->data))
+        return false;
+
+    if (!_field_region_byte_size(field->desc.format, &out->region, &out->byte_size) ||
+        !_field_format_bytes_per_texel(field->desc.format, &out->bytes_per_texel) ||
+        !_field_format_texture_format(field->desc.format, &out->texture_format))
+    {
+        log_error("sampled field texture upload size or format conversion failed");
+        return false;
+    }
+
+    out->allocation_width = field->desc.width;
+    out->allocation_height = field->desc.height;
+    out->allocation_depth = field->desc.depth;
+    out->texture_3d = field->desc.dim == DVZ_FIELD_DIM_3D;
+    return true;
+}
+
+
 bool _scene_prepare_volume_texture(
     DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data,
     uint32_t* out_format, uint32_t* out_bytes_per_texel)

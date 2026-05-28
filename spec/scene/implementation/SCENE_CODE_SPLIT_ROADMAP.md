@@ -24,7 +24,8 @@ candidates are:
    into family or subsystem helpers; image generated-quad cache/payload decisions now live in the
    image family, and stroke-quad/path-stroke cache/payload decisions now live in the stroke
    subsystem. Image/glyph RGBA texture upload payload decisions also live in the image family, and
-   volume source/transfer/label-lookup payload decisions live in the volume family.
+   volume source/transfer/label-lookup payload decisions live in the volume family. Generic
+   sampled-field texture upload payload construction now lives in `domain/field_texture.c`.
 2. `src/scene/annotation/text.c` and `axis.c`: retained annotation objects, layout/reserve policy,
    generated visuals, and text/glyph lowering are still mixed. Scale, colorbar, legend, colormap,
    scale-bar, and text-font ownership now have first-pass owner files.
