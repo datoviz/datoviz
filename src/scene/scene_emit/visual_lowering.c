@@ -17,7 +17,7 @@
 #include "_assertions.h"
 #include "_scene.h"
 #include "_visual_internal.h"
-#include "_visual_lowering.h"
+#include "scene_emit/visual_lowering.h"
 #include "_visual_pipeline_internal.h"
 #include "sample_profile.h"
 

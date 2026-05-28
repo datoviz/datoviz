@@ -21,10 +21,10 @@
 #include "_compat.h"
 #include "_overflow.h"
 #include "_scene.h"
-#include "_scene_emit_internal.h"
+#include "scene_emit/internal.h"
 #include "_scene_resource_key.h"
 #include "_visual_internal.h"
-#include "_visual_lowering.h"
+#include "scene_emit/visual_lowering.h"
 #include "datoviz/drp2/runtime.h"
 
 

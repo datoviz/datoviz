@@ -22,7 +22,7 @@
 
 #include "datoviz/math/_cglm.h"
 #include "colorizer.h"
-#include "_visual_lowering.h"
+#include "scene_emit/visual_lowering.h"
 #include "../../query/internal.h"
 #include "sample_profile.h"
 #include "_alloc.h"

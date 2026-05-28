@@ -25,7 +25,7 @@
 #include "frame_plan/frame_plan.h"
 #include "_scale_ticks.h"
 #include "_scene.h"
-#include "_scene_emit.h"
+#include "scene_emit/scene_emit.h"
 #include "datoviz/scene.h"
 #include "test_scene.h"
 #include "testing.h"

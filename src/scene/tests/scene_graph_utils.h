@@ -28,7 +28,7 @@
 #include "_log.h"
 #include "frame_plan/frame_plan.h"
 #include "_scene.h"
-#include "_scene_emit.h"
+#include "scene_emit/scene_emit.h"
 #include "_scene_shader_abi.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"

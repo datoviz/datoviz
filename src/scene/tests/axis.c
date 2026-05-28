@@ -22,7 +22,7 @@
 #include "_assertions.h"
 #include "../../drp2/_stream.h"
 #include "_scene.h"
-#include "_scene_emit.h"
+#include "scene_emit/scene_emit.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
 #include "test_scene.h"

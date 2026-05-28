@@ -28,7 +28,7 @@
 #include "frame_plan/frame_plan.h"
 #include "_log.h"
 #include "_overflow.h"
-#include "_scene_emit.h"
+#include "scene_emit/scene_emit.h"
 #include "render_contract/render_contract.h"
 #include "datoviz/drp2/runtime.h"
 #include "datoviz/math/_cglm.h"

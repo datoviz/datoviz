@@ -23,7 +23,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_scene.h"
-#include "_scene_emit.h"
+#include "scene_emit/scene_emit.h"
 #include "datoviz/scene.h"
 
 

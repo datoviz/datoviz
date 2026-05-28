@@ -23,7 +23,7 @@
 #include "_compat.h"
 #include "frame_plan/frame_plan.h"
 #include "_log.h"
-#include "_scene_emit.h"
+#include "scene_emit/scene_emit.h"
 #include "_technique.h"
 #include "datoviz/drp2/runtime.h"
 #include "../../drp2/_stream.h"

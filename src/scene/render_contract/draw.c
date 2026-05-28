@@ -20,7 +20,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "_visual_lowering.h"
+#include "scene_emit/visual_lowering.h"
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
 

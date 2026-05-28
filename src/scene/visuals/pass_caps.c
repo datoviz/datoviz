@@ -26,7 +26,7 @@
 #include "_technique.h"
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
-#include "_visual_lowering.h"
+#include "scene_emit/visual_lowering.h"
 #include "datoviz/drp2/enums.h"
 
 
