@@ -37,10 +37,10 @@ Important current state:
    default pass-capability resolution lives in `visuals/pass_caps.c`.
 8. `visuals/attrs.c` and `visuals/desc.c` are smaller after the first split, and image/labels/volume
    metadata fill has moved behind family hooks. Draw descriptor hooks now live in active family
-   folders and call the shared default draw helper. Point-like, segment, path, sphere, splat,
-   image, labels, glyph, primitive, and mesh shader bodies have moved into family folders. The
-   final architecture still needs upload, query, bounds, and the remaining generic shader bodies to
-   migrate into family-owned files.
+   folders and call the shared default draw helper. Active-family shader descriptor bodies now live
+   in family folders for point, pixel, marker, segment, path, sphere, splat, image, labels, glyph,
+   primitive, mesh, volume, vector, and text. The final architecture still needs upload, query, and
+   bounds logic to migrate into family-owned files.
 9. `scene_emit/uploads.c`, `annotation/text.c`, `annotation/axis.c`, and `domain/field.c` remain the
    highest-value mixed-ownership files.
 
@@ -57,12 +57,13 @@ this section when a slice is completed.
 
 1. Move normal shader descriptor bodies into family folders.
    - Current root: `src/scene/visuals/shader_desc.c`.
-   - Status on 2026-05-28: started with point-like `point/shader.c`, `pixel/shader.c`,
+   - Status on 2026-05-28: completed with point-like `point/shader.c`, `pixel/shader.c`,
      `marker/shader.c`, plus `segment/shader.c`, `path/shader.c`, `sphere/shader.c`,
      `splat/shader.c`, `image/shader.c`, `labels/shader.c`, `glyph/shader.c`,
-     `primitive/shader.c`, and `mesh/shader.c`. The generic shader resolver remains as the fallback
-     dispatcher for families that can lower to another descriptor kind.
-   - Add family-owned shader files only where real code moves, likely:
+     `primitive/shader.c`, `mesh/shader.c`, `volume/shader.c`, `vector/shader.c`, and
+     `text/shader.c`. The generic shader resolver remains for cross-family helpers, compatibility
+     descriptor-kind dispatch, and pass/special shader policy.
+   - Family-owned shader files now exist only where a family owns concrete shader policy:
      `point/shader.c`, `pixel/shader.c`, `marker/shader.c`, `splat/shader.c`,
      `sphere/shader.c`, `segment/shader.c`, `path/shader.c`, `vector/shader.c`,
      `primitive/shader.c`, `mesh/shader.c`, `image/shader.c`, `labels/shader.c`,
@@ -72,10 +73,10 @@ this section when a slice is completed.
      GLSL variant creation, and depth-peel fragment selection.
    - Preserve the special/pass shader policy API until a later pass can decide whether those
      policies belong in family hooks or in technique policy.
-   - Suggested commits: point-like shaders; stroke/mesh/primitive shaders; texture/semantic
-     shaders; optional docs checkpoint.
-   - Validate each commit with `git diff --check`, `just build`, and
-     `direnv exec . just test scene-graph`; include `direnv exec . just test fields` for
+   - Completed commits: point-like shaders; simple/stroke shaders; texture/semantic shaders;
+     primitive/mesh shaders; volume/vector/text shaders.
+   - Validation used `git diff --check`, `just build`, and
+     `direnv exec . just test scene-graph`; `direnv exec . just test fields` covered
      image/labels/volume shader slices.
 
 2. Move draw descriptor bodies into family folders.
@@ -251,13 +252,13 @@ Status as of 2026-05-28: in progress. `src/scene/visuals/registry/` now contains
 `test_scene_visual_family_registry_coverage` enforces identity, lowering, pass-capability,
 bind-descriptor, pipeline-descriptor, shader-descriptor, and draw-descriptor hooks. Retained visual
 lowering is implemented in each active family folder. Image, labels, and volume metadata fill now
-routes through family hooks. Bind descriptors and normal pipeline descriptors are implemented in the
-active family folders. Retained visual pass-capability resolution uses a shared default hook in
-`visuals/pass_caps.c`; runtime bind selection, runtime pipeline selection, runtime shader selection,
-special/pass shader policy, pass pipeline policy, pass binding policy, and runtime draw-count
-packetization now route through visual-owned descriptors and registry hooks. Continue by migrating
-upload, query, bounds, and the current generic shader/draw bodies into family-owned files
-incrementally.
+routes through family hooks. Bind descriptors, normal pipeline descriptors, active-family shader
+descriptors, and draw descriptor hooks are implemented in the active family folders. Retained visual
+pass-capability resolution uses a shared default hook in `visuals/pass_caps.c`; runtime bind
+selection, runtime pipeline selection, runtime shader selection, special/pass shader policy, pass
+pipeline policy, pass binding policy, and runtime draw-count packetization now route through
+visual-owned descriptors and registry hooks. Continue by migrating upload, query, and bounds logic
+into family-owned files incrementally.
 
 Steps:
 
@@ -283,9 +284,9 @@ Goal: each active visual owns its own semantics below `src/scene/visuals/<family
 Status as of 2026-05-28: active family folders now own retained lowering for point, pixel, marker,
 splat, sphere, segment, path, vector, primitive, mesh, image, glyph, labels, volume, and text.
 They also own bind descriptors and normal pipeline descriptors. Image, labels, and volume own their
-normal FramePlan metadata fill hooks. The next high-value family-folder moves are upload/cache
-payload builders, bounds reducers, query policy/result decoding, and the shader/draw bodies still
-shared in root visual helper files.
+normal FramePlan metadata fill hooks. Active-family shader and draw descriptor hooks are
+family-owned. The next high-value family-folder moves are upload/cache payload builders, bounds
+reducers, and query policy/result decoding.
 
 Recommended family layout:
 

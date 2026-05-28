@@ -39,55 +39,15 @@
 #include "segment/internal.h"
 #include "sphere/internal.h"
 #include "splat/internal.h"
+#include "text/internal.h"
+#include "vector/internal.h"
+#include "volume/internal.h"
 #include "mesh/internal.h"
-
-
-/*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-typedef enum
-{
-    DVZ_SCENE_SHADER_FEATURE_NONE = 0,
-    DVZ_SCENE_SHADER_FEATURE_PICKING = 1u << 0,
-    DVZ_SCENE_SHADER_FEATURE_DEPTH_CUE = 1u << 1,
-    DVZ_SCENE_SHADER_FEATURE_LIGHTING = 1u << 2,
-    DVZ_SCENE_SHADER_FEATURE_WBOIT_ACCUM = 1u << 3,
-    DVZ_SCENE_SHADER_FEATURE_VOLUME_MIP = 1u << 4,
-    DVZ_SCENE_SHADER_FEATURE_VOLUME_COMPOSITE = 1u << 5,
-    DVZ_SCENE_SHADER_FEATURE_POINT_STYLE = 1u << 6,
-    DVZ_SCENE_SHADER_FEATURE_INSTANCING = 1u << 7,
-    DVZ_SCENE_SHADER_FEATURE_SELECTION_MASK = 1u << 8,
-} DvzSceneShaderFeatureFlag;
-
-
-typedef struct DvzSceneShaderFeatures
-{
-    DvzSceneVisualDescKind kind;
-    uint32_t topology;
-    uint32_t flags;
-} DvzSceneShaderFeatures;
-
 
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
-
-/**
- * Return whether one shader-feature flag is set.
- *
- * @param features the shader feature descriptor
- * @param flag the feature flag
- * @return whether the flag is present
- */
-static bool
-_shader_features_has(const DvzSceneShaderFeatures* features, DvzSceneShaderFeatureFlag flag)
-{
-    ANN(features);
-    return (features->flags & (uint32_t)flag) != 0;
-}
-
 
 /**
  * Append a suffix to one shader cache key.
@@ -107,53 +67,6 @@ static bool _shader_key_append(char* key, size_t size, const char* suffix)
         return false;
     dvz_snprintf(key + len, size - len, "%s", suffix);
     return true;
-}
-
-
-
-/**
- * Resolve shader feature flags from a visual descriptor and pass mode.
- *
- * @param visual the visual descriptor
- * @param picking whether the pass writes pick ids
- * @param wboit_accumulation whether the pass is the WBOIT accumulation pass
- * @param out the output feature descriptor
- */
-static void _scene_shader_features_resolve(
-    const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
-    DvzSceneShaderFeatures* out)
-{
-    ANN(visual);
-    ANN(out);
-    dvz_memset(out, sizeof(DvzSceneShaderFeatures), 0, sizeof(DvzSceneShaderFeatures));
-
-    out->kind = visual->kind;
-    out->topology = visual->topology;
-    if (picking)
-        out->flags |= DVZ_SCENE_SHADER_FEATURE_PICKING;
-    if (wboit_accumulation)
-        out->flags |= DVZ_SCENE_SHADER_FEATURE_WBOIT_ACCUM;
-    if (visual->depth_cue_enabled && (visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
-                                      visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL))
-        out->flags |= DVZ_SCENE_SHADER_FEATURE_DEPTH_CUE;
-    if (visual->point_style_enabled && visual->kind == DVZ_SCENE_VISUAL_DESC_POINT)
-        out->flags |= DVZ_SCENE_SHADER_FEATURE_POINT_STYLE;
-    if (visual->has_selection_mask && !picking &&
-        (visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
-         visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER))
-    {
-        out->flags |= DVZ_SCENE_SHADER_FEATURE_SELECTION_MASK;
-    }
-    if (visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE && visual->material_buffer_id != 0)
-        out->flags |= DVZ_SCENE_SHADER_FEATURE_LIGHTING;
-    if (visual->has_normal)
-        out->flags |= DVZ_SCENE_SHADER_FEATURE_LIGHTING;
-    if (visual->has_instance_transform)
-        out->flags |= DVZ_SCENE_SHADER_FEATURE_INSTANCING;
-    if (visual->volume_state.render_mode == DVZ_VOLUME_RENDER_MIP)
-        out->flags |= DVZ_SCENE_SHADER_FEATURE_VOLUME_MIP;
-    if (visual->volume_state.render_mode == DVZ_VOLUME_RENDER_COMPOSITE)
-        out->flags |= DVZ_SCENE_SHADER_FEATURE_VOLUME_COMPOSITE;
 }
 
 
@@ -211,9 +124,6 @@ bool _scene_visual_shader_desc_resolve(
     ANN(out);
     dvz_memset(out, sizeof(DvzSceneVisualShaderDesc), 0, sizeof(DvzSceneVisualShaderDesc));
 
-    DvzSceneShaderFeatures features = {0};
-    _scene_shader_features_resolve(visual, picking, wboit_accumulation, &features);
-
     switch (visual->kind)
     {
     case DVZ_SCENE_VISUAL_DESC_PIXEL:
@@ -266,84 +176,10 @@ bool _scene_visual_shader_desc_resolve(
             visual, picking, wboit_accumulation, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
-    {
-        bool mip = _shader_features_has(&features, DVZ_SCENE_SHADER_FEATURE_VOLUME_MIP);
-        bool composite =
-            _shader_features_has(&features, DVZ_SCENE_SHADER_FEATURE_VOLUME_COMPOSITE);
-        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_vol_slice%s", format_tag);
-        dvz_snprintf(
-            out->fragment_key, sizeof(out->fragment_key),
-            composite ? "_fs_vol_composite%s"
-            : mip     ? "_fs_vol_mip%s"
-                      : "_fs_vol_slice%s",
-            format_tag);
-        dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key),
-            composite ? "_pipe_vol_composite%s"
-            : mip     ? "_pipe_vol_mip%s"
-                      : "_pipe_vol_slice%s",
-            format_tag);
-        DvzSceneBuiltinShader shader = composite ? DVZ_SCENE_BUILTIN_SHADER_VOLUME_COMPOSITE
-                                       : mip     ? DVZ_SCENE_BUILTIN_SHADER_VOLUME_MIP
-                                                 : DVZ_SCENE_BUILTIN_SHADER_VOLUME_SLICE;
-        _scene_shader_desc_set_builtin(out, shader);
-        _scene_shader_desc_set_identity(
-            out, "scene.volume",
-            composite ? "composite"
-            : mip     ? "mip"
-                      : "slice");
-        out->vertex_spirv_key = "volume_slice_vert";
-        out->fragment_spirv_key = composite ? "volume_composite_frag"
-                                  : mip     ? "volume_mip_frag"
-                                            : "volume_slice_frag";
-        return true;
-    }
-
     case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT:
-    {
-        bool composite =
-            _shader_features_has(&features, DVZ_SCENE_SHADER_FEATURE_VOLUME_COMPOSITE);
-        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_vol_labels_sint%s", format_tag);
-        dvz_snprintf(
-            out->fragment_key, sizeof(out->fragment_key),
-            composite ? "_fs_vol_labels_sint_composite%s" : "_fs_vol_labels_sint%s", format_tag);
-        dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key),
-            composite ? "_pipe_vol_labels_sint_composite%s" : "_pipe_vol_labels_sint%s",
-            format_tag);
-        _scene_shader_desc_set_builtin(
-            out, composite ? DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_SINT_COMPOSITE
-                           : DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_SINT_SLICE);
-        _scene_shader_desc_set_identity(
-            out, "scene.volume", composite ? "labels_sint_composite" : "labels_sint_slice");
-        out->vertex_spirv_key = "volume_slice_vert";
-        out->fragment_spirv_key =
-            composite ? "volume_labels_sint_composite_frag" : "volume_labels_sint_slice_frag";
-        return true;
-    }
-
     case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT:
-    {
-        bool composite =
-            _shader_features_has(&features, DVZ_SCENE_SHADER_FEATURE_VOLUME_COMPOSITE);
-        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_vol_labels_uint%s", format_tag);
-        dvz_snprintf(
-            out->fragment_key, sizeof(out->fragment_key),
-            composite ? "_fs_vol_labels_uint_composite%s" : "_fs_vol_labels_uint%s", format_tag);
-        dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key),
-            composite ? "_pipe_vol_labels_uint_composite%s" : "_pipe_vol_labels_uint%s",
-            format_tag);
-        _scene_shader_desc_set_builtin(
-            out, composite ? DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_UINT_COMPOSITE
-                           : DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_UINT_SLICE);
-        _scene_shader_desc_set_identity(
-            out, "scene.volume", composite ? "labels_uint_composite" : "labels_uint_slice");
-        out->vertex_spirv_key = "volume_slice_vert";
-        out->fragment_spirv_key =
-            composite ? "volume_labels_uint_composite_frag" : "volume_labels_uint_slice_frag";
-        return true;
-    }
+        return _scene_volume_visual_shader_desc(
+            visual, picking, wboit_accumulation, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_NONE:
     default:

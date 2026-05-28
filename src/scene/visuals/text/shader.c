@@ -6,18 +6,16 @@
 
 
 /*************************************************************************************************/
-/*  Vector visual internals                                                                      */
+/*  Text visual shader descriptors                                                               */
 /*************************************************************************************************/
-
-#pragma once
-
-
 
 /*************************************************************************************************/
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene_emit/visual_lowering.h"
+#include "text/internal.h"
+
+#include "_assertions.h"
 
 
 
@@ -25,20 +23,24 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-bool _scene_vector_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
-
-bool _scene_vector_visual_bind_desc(
-    const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
-    DvzSceneVisualBindDesc* out);
-
-bool _scene_vector_visual_pipeline_desc(
-    const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
-    bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
-    DvzSceneVisualPipelineDesc* out);
-
-bool _scene_vector_visual_shader_desc(
+/**
+ * Reject retained text visual shader metadata.
+ *
+ * @param visual the visual descriptor
+ * @param picking whether the render pass is a picking pass
+ * @param wboit_accumulation whether the pass is an order-independent transparency pass
+ * @param format_tag shader-format cache-key suffix
+ * @param out the output shader descriptor
+ * @return false because retained text visuals lower through generated glyph visuals
+ */
+bool _scene_text_visual_shader_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
-    const char* format_tag, DvzSceneVisualShaderDesc* out);
-
-bool _scene_vector_visual_draw_desc(
-    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out);
+    const char* format_tag, DvzSceneVisualShaderDesc* out)
+{
+    ANN(visual);
+    ANN(format_tag);
+    ANN(out);
+    (void)picking;
+    (void)wboit_accumulation;
+    return false;
+}

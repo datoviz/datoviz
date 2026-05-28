@@ -6,18 +6,18 @@
 
 
 /*************************************************************************************************/
-/*  Vector visual internals                                                                      */
+/*  Vector visual shader descriptors                                                             */
 /*************************************************************************************************/
-
-#pragma once
-
-
 
 /*************************************************************************************************/
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene_emit/visual_lowering.h"
+#include "vector/internal.h"
+
+#include "_assertions.h"
+#include "path/internal.h"
+#include "segment/internal.h"
 
 
 
@@ -25,20 +25,30 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-bool _scene_vector_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
-
-bool _scene_vector_visual_bind_desc(
-    const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
-    DvzSceneVisualBindDesc* out);
-
-bool _scene_vector_visual_pipeline_desc(
-    const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
-    bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
-    DvzSceneVisualPipelineDesc* out);
-
+/**
+ * Resolve vector visual shader metadata through the lowered descriptor kind.
+ *
+ * @param visual the visual descriptor
+ * @param picking whether the render pass is a picking pass
+ * @param wboit_accumulation whether the pass is an order-independent transparency pass
+ * @param format_tag shader-format cache-key suffix
+ * @param out the output shader descriptor
+ * @return whether a shader descriptor was resolved
+ */
 bool _scene_vector_visual_shader_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
-    const char* format_tag, DvzSceneVisualShaderDesc* out);
-
-bool _scene_vector_visual_draw_desc(
-    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out);
+    const char* format_tag, DvzSceneVisualShaderDesc* out)
+{
+    ANN(visual);
+    if (visual->kind == DVZ_SCENE_VISUAL_DESC_SEGMENT)
+    {
+        return _scene_segment_visual_shader_desc(
+            visual, picking, wboit_accumulation, format_tag, out);
+    }
+    if (visual->kind == DVZ_SCENE_VISUAL_DESC_PATH)
+    {
+        return _scene_path_visual_shader_desc(
+            visual, picking, wboit_accumulation, format_tag, out);
+    }
+    return false;
+}

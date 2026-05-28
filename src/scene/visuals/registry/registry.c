@@ -66,7 +66,7 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
     {DVZ_VISUAL_TYPE_VOLUME, "volume", _scene_volume_visual_lowering,
      _scene_visual_default_pass_caps,
      _scene_volume_visual_bind_desc, _scene_volume_visual_pipeline_desc,
-     _scene_visual_shader_desc_resolve, _scene_volume_visual_draw_desc,
+     _scene_volume_visual_shader_desc, _scene_volume_visual_draw_desc,
      _scene_volume_visual_fill_metadata},
     {DVZ_VISUAL_TYPE_PRIMITIVE, "primitive", _scene_primitive_visual_lowering,
      _scene_visual_default_pass_caps,
@@ -81,7 +81,7 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      _scene_glyph_visual_shader_desc, _scene_glyph_visual_draw_desc, NULL},
     {DVZ_VISUAL_TYPE_TEXT, "text", _scene_text_visual_lowering, _scene_visual_default_pass_caps,
      _scene_text_visual_bind_desc, _scene_text_visual_pipeline_desc,
-     _scene_visual_shader_desc_resolve, _scene_text_visual_draw_desc, NULL},
+     _scene_text_visual_shader_desc, _scene_text_visual_draw_desc, NULL},
     {DVZ_VISUAL_TYPE_LABELS, "labels", _scene_labels_visual_lowering,
      _scene_visual_default_pass_caps,
      _scene_labels_visual_bind_desc, _scene_labels_visual_pipeline_desc,
@@ -93,7 +93,7 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
     {DVZ_VISUAL_TYPE_VECTOR, "vector", _scene_vector_visual_lowering,
      _scene_visual_default_pass_caps,
      _scene_vector_visual_bind_desc, _scene_vector_visual_pipeline_desc,
-     _scene_visual_shader_desc_resolve, _scene_vector_visual_draw_desc, NULL},
+     _scene_vector_visual_shader_desc, _scene_vector_visual_draw_desc, NULL},
 };
 
 

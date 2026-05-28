@@ -27,10 +27,9 @@ candidates are:
 3. `src/scene/domain/field.c`: public domain object state, sampled interpretation, generated
    visual glue, and upload dirtiness are still mixed.
 4. `src/scene/visuals/`: descriptor and attribute helper ownership has a first split. Draw hooks
-   have moved into active family folders, and point-like, segment/path/sphere/splat,
-   image/labels/glyph, plus primitive/mesh shader bodies have moved into family folders. Wide
-   visual-family helper files and shared headers should only be split further when a stable owner
-   boundary is clear.
+   have moved into active family folders, and active-family shader descriptor bodies have moved into
+   family folders. Wide visual-family helper files and shared headers should only be split further
+   when a stable owner boundary is clear.
 5. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
    multiple ownership boundaries at once.
 
@@ -257,17 +256,18 @@ Current ownership:
    bind-descriptor bodies, and normal pipeline-descriptor bodies now live in active family folders.
    The shared default pass-capability hook lives in `visuals/pass_caps.c`, leaving
    `visuals/registry/` as registration glue. Draw hooks now live in active family folders and call
-   the shared default draw helper until family-specific draw policy is needed. Point-like, segment,
-   path, sphere, splat, image, labels, glyph, primitive, and mesh shader hooks are family-owned; the
-   generic shader resolver still handles families that need descriptor-kind fallback.
+   the shared default draw helper until family-specific draw policy is needed. Point, pixel, marker,
+   segment, path, sphere, splat, image, labels, glyph, primitive, mesh, volume, vector, and text
+   shader hooks are family-owned; the generic shader resolver keeps shared helpers and
+   compatibility/pass-policy dispatch.
 
 Guardrail: do not split the remaining visual pipeline helpers by enum case alone. The long-term
 direction is a registry-driven visual-family contract, not more generic switch files. Treat
 `visuals/desc_untyped_compat.c` as temporary containment for untyped descriptor inference: normal
 scene output now uses explicit typed metadata, and the compatibility path should be deleted when the
 remaining low-level fixture/import use cases are migrated. The next visual split should move upload,
-query, bounds, and shader/draw hook bodies into family-owned files instead of adding more root-level
-visual switches. See
+query, and bounds logic into family-owned files instead of adding more root-level visual switches.
+See
 [`SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](SCENE_ARCHITECTURE_COMPLETION_PLAN.md).
 
 
