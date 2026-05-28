@@ -35,6 +35,10 @@ Active scene ADR files:
 2. [COLOR_FIELD_PRIMITIVE_EVALUATION.md](COLOR_FIELD_PRIMITIVE_EVALUATION.md): Stage 3 and Stage
    4 split-plan decision to keep `color` and `field` as scene-owned candidates until a concrete
    non-scene consumer appears.
+3. [TEXT_PRIMITIVE_EVALUATION.md](TEXT_PRIMITIVE_EVALUATION.md): Stage 5 split-plan decision to
+   keep `text` scene-owned until pure CPU shaping/layout has a concrete non-scene consumer.
+4. [GEOMETRY_GENERATOR_ADDITIONS.md](GEOMETRY_GENERATOR_ADDITIONS.md): Stage 6 split-plan decision
+   to add new `geom` generators only when active visual or example work needs CPU geometry.
 
 The former active design records now live in
 [../proposals](../proposals). Treat that directory as the staging area for unsettled or
