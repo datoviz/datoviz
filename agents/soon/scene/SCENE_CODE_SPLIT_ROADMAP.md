@@ -15,7 +15,8 @@ criteria.
 
 ## Pickup Order
 
-1. Continue low-risk derived payload extraction from `scene_emit/uploads.c`.
+1. Continue low-risk payload/helper extraction from scene-emission support only where the extracted
+   owner builds family data or cache payloads without taking over FramePlan ordering.
 2. Continue annotation/domain helper splits where generated visuals and public object state are mixed.
 3. Eliminate normal untyped descriptor inference: make all active scene/query render paths emit
    explicit `DvzFramePlanVisualMeta`, then delete or quarantine the current `desc_legacy.c` path.

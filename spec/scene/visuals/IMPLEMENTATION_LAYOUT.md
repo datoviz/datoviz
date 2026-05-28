@@ -42,7 +42,7 @@ Landed on 2026-05-28:
 16. `image/query_quad.c` owns generated extent/anchor/tex-rect query geometry shared by image and
     labels query paths.
 17. `volume/upload.c` owns volume transfer texture and sparse label lookup buffer construction;
-    FramePlan upload node orchestration remains in `scene_emit/uploads.c`.
+    FramePlan upload node insertion remains in scene-emission support helpers.
 18. `stroke/internal.h`, `image/internal.h`, `volume/internal.h`, and `bounds_internal.h` keep
     subsystem helper declarations out of the broad `_visual_internal.h` surface.
 
@@ -110,10 +110,11 @@ The first pass deliberately did not move these shared dispatch files:
 4. `bounds.c`: cross-family bounds dispatch, panel projection, and generated bounds overlay
    synchronization stay in the shared reducer. Clean family-local visual-space reducers have moved
    to their family folders or to `stroke/bounds.c`.
-5. `scene_emit/visual_lowering*.c`, `scene_emit/uploads.c`, and `runtime/render_emit.c`: lowering
-   and runtime emission still coordinate multiple visual families and DRP2 resource lifetimes.
-   Extracted helpers should build data/cache payloads only; scene-emission code should keep
-   resource-key, upload-node, and ordering policy.
+5. `scene_emit/visual_lowering*.c`, `scene_emit/uploads.c`, `scene_emit/upload_support.c`, and
+   `runtime/render_emit.c`: lowering, upload support, and runtime emission still coordinate
+   multiple visual families and DRP2 resource lifetimes. Extracted family helpers should build
+   data/cache payloads only; scene-emission support should keep resource-key, upload-node, and
+   ordering policy.
 
 Move these later only when the extracted family file can own a coherent slice without duplicating
 dispatch policy. The target is not one file per enum case; the target is a visual-family operation
@@ -184,7 +185,7 @@ dispatch policy. For broader scene source splitting beyond visuals, use
 
 Useful next candidates:
 
-1. continue reducing `scene_emit/uploads.c` only where the moved helper builds data or
+1. continue reducing scene-emission upload support only where the moved helper builds data or
    cache payloads and does not own FramePlan ordering;
 2. consider similar private-header cleanup for image, volume, or bounds helpers if subsystem
    surfaces grow;
