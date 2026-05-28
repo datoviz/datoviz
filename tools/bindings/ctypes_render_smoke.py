@@ -12,6 +12,15 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parents[2]
 
 
+def _load_example(name: str, path: Path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f'cannot load {path}')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _run_view_post_smoke() -> None:
     import datoviz as dvz  # noqa: PLC0415
 
@@ -55,15 +64,15 @@ def _run_view_post_smoke() -> None:
 
 def main() -> int:
     sys.path.insert(0, str(ROOT_DIR))
-    example_path = ROOT_DIR / 'examples' / 'python' / 'raw' / 'offscreen_point.py'
-    spec = importlib.util.spec_from_file_location('datoviz_raw_offscreen_point', example_path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f'cannot load {example_path}')
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    raw_examples = ROOT_DIR / 'examples' / 'python' / 'raw'
+    offscreen = _load_example('datoviz_raw_offscreen_point', raw_examples / 'offscreen_point.py')
+    async_click = _load_example('datoviz_raw_async_click', raw_examples / 'async_click.py')
 
     _run_view_post_smoke()
-    return module.main([])
+    rc = offscreen.main([])
+    if rc != 0:
+        return rc
+    return async_click.main([])
 
 
 if __name__ == '__main__':
