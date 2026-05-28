@@ -15,6 +15,9 @@ Each document defines:
 These documents refine `../semantics/VISUAL_FAMILY_RULES.md` and `../semantics/VISUAL_CONTRACT.md` with enough concrete
 detail to implement or validate each family.
 
+Implementation ownership notes for the current `src/scene/visuals/<family>/` layout live in
+[`IMPLEMENTATION_LAYOUT.md`](IMPLEMENTATION_LAYOUT.md).
+
 
 ## Visuals Versus Composites
 
