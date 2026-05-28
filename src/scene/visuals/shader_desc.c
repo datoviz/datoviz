@@ -77,6 +77,27 @@ _shader_features_has(const DvzSceneShaderFeatures* features, DvzSceneShaderFeatu
 }
 
 
+/**
+ * Append a suffix to one shader cache key.
+ *
+ * @param key destination key buffer
+ * @param size key buffer size
+ * @param suffix suffix to append
+ * @return whether the suffix fit
+ */
+static bool _shader_key_append(char* key, size_t size, const char* suffix)
+{
+    ANN(key);
+    ANN(suffix);
+    size_t len = strlen(key);
+    size_t extra = strlen(suffix);
+    if (len >= size || extra >= size - len)
+        return false;
+    dvz_snprintf(key + len, size - len, "%s", suffix);
+    return true;
+}
+
+
 
 /**
  * Resolve shader feature flags from a visual descriptor and pass mode.
@@ -709,6 +730,145 @@ bool _scene_visual_shader_desc_resolve(
     default:
         return false;
     }
+}
+
+
+/**
+ * Apply integer query shader overrides to one picking shader descriptor when needed.
+ *
+ * @param visual the visual descriptor
+ * @param color_target_format picking color target format
+ * @param shader shader descriptor to update
+ * @param out_applied whether a query shader override was applied
+ * @return whether the descriptor was updated successfully
+ */
+bool _scene_visual_shader_desc_apply_query_pick(
+    const DvzSceneVisualDesc* visual, uint32_t color_target_format,
+    DvzSceneVisualShaderDesc* shader, bool* out_applied)
+{
+    ANN(visual);
+    ANN(shader);
+    ANN(out_applied);
+    *out_applied = false;
+
+    bool point_like = visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
+                      visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+                      visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER;
+    bool segment_query =
+        visual->kind == DVZ_SCENE_VISUAL_DESC_SEGMENT &&
+        color_target_format == VK_FORMAT_R32_UINT;
+    bool path_query =
+        visual->kind == DVZ_SCENE_VISUAL_DESC_PATH &&
+        color_target_format == VK_FORMAT_R32_UINT;
+    bool primitive_query =
+        visual->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
+        color_target_format == VK_FORMAT_R32_UINT;
+    bool labels_query =
+        (visual->kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
+         visual->kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT) &&
+        color_target_format == VK_FORMAT_R32_UINT;
+    bool volume_query_u32 =
+        (visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME ||
+         visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT ||
+         visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT) &&
+        color_target_format == VK_FORMAT_R32_UINT;
+    bool volume_query_rg32 =
+        visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME &&
+        color_target_format == VK_FORMAT_R32G32_UINT;
+    bool query =
+        (point_like || visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE || segment_query ||
+         path_query || primitive_query || labels_query || volume_query_u32 || volume_query_rg32) &&
+        (color_target_format == VK_FORMAT_R32_UINT ||
+         color_target_format == VK_FORMAT_R32G32_UINT);
+    if (!query)
+        return true;
+
+    DvzSceneBuiltinShader query_shader = DVZ_SCENE_BUILTIN_SHADER_POINT_QUERY_U32;
+    if (visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
+        query_shader = DVZ_SCENE_BUILTIN_SHADER_SPHERE_QUERY_U32;
+    else if (segment_query)
+        query_shader = DVZ_SCENE_BUILTIN_SHADER_SEGMENT_QUERY_U32;
+    else if (path_query)
+        query_shader = DVZ_SCENE_BUILTIN_SHADER_PATH_QUERY_U32;
+    else if (primitive_query)
+        query_shader = DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_U32;
+    else if (
+        visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+        visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
+    {
+        query_shader = DVZ_SCENE_BUILTIN_SHADER_PIXEL_QUERY_U32;
+    }
+    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT)
+        query_shader = DVZ_SCENE_BUILTIN_SHADER_LABELS_SINT_QUERY_U32;
+    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT)
+        query_shader = DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT_QUERY_U32;
+    else if (volume_query_u32)
+    {
+        query_shader = visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT
+                           ? DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_SINT_QUERY_U32
+                       : visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT
+                           ? DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_UINT_QUERY_U32
+                           : DVZ_SCENE_BUILTIN_SHADER_VOLUME_QUERY_U32;
+    }
+    else if (volume_query_rg32)
+        query_shader = DVZ_SCENE_BUILTIN_SHADER_VOLUME_QUERY_RG32;
+
+    if (!_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), "_query_u32") ||
+        !_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_query_u32"))
+    {
+        return false;
+    }
+
+    if (
+        visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE ||
+        query_shader == DVZ_SCENE_BUILTIN_SHADER_SEGMENT_QUERY_U32 ||
+        query_shader == DVZ_SCENE_BUILTIN_SHADER_PATH_QUERY_U32 ||
+        query_shader == DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_U32)
+    {
+        if (!_shader_key_append(shader->vertex_key, sizeof(shader->vertex_key), "_query_u32"))
+            return false;
+        shader->vertex_glsl = _builtin_shader_glsl(query_shader, false);
+        shader->vertex_wgsl = NULL;
+        shader->vertex_spirv_key =
+            query_shader == DVZ_SCENE_BUILTIN_SHADER_SPHERE_QUERY_U32
+                ? "sphere_query_u32_vert"
+            : query_shader == DVZ_SCENE_BUILTIN_SHADER_SEGMENT_QUERY_U32
+                ? "segment_query_u32_vert"
+            : query_shader == DVZ_SCENE_BUILTIN_SHADER_PATH_QUERY_U32 ? "path_query_u32_vert"
+                                                                      : "primitive_query_u32_vert";
+    }
+
+    shader->fragment_glsl = _builtin_shader_glsl(query_shader, true);
+    shader->fragment_wgsl = NULL;
+    if (query_shader == DVZ_SCENE_BUILTIN_SHADER_SPHERE_QUERY_U32)
+        shader->fragment_spirv_key = "sphere_query_u32_frag";
+    else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_SEGMENT_QUERY_U32)
+        shader->fragment_spirv_key = "segment_query_u32_frag";
+    else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_PATH_QUERY_U32)
+        shader->fragment_spirv_key = "path_query_u32_frag";
+    else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_U32)
+        shader->fragment_spirv_key = "primitive_query_u32_frag";
+    else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_PIXEL_QUERY_U32)
+        shader->fragment_spirv_key = "pixel_query_u32_frag";
+    else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_LABELS_SINT_QUERY_U32)
+        shader->fragment_spirv_key = "labels_sint_query_u32_frag";
+    else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT_QUERY_U32)
+        shader->fragment_spirv_key = "labels_uint_query_u32_frag";
+    else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_VOLUME_QUERY_U32)
+        shader->fragment_spirv_key = "volume_query_u32_frag";
+    else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_VOLUME_QUERY_RG32)
+        shader->fragment_spirv_key = "volume_query_rg32_frag";
+    else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_SINT_QUERY_U32)
+        shader->fragment_spirv_key = "volume_labels_sint_query_u32_frag";
+    else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_VOLUME_LABELS_UINT_QUERY_U32)
+        shader->fragment_spirv_key = "volume_labels_uint_query_u32_frag";
+    else
+        shader->fragment_spirv_key = "point_query_u32_frag";
+    shader->builtin_family = NULL;
+    shader->builtin_variant = NULL;
+    shader->builtin_pipeline = NULL;
+    *out_applied = true;
+    return true;
 }
 
 

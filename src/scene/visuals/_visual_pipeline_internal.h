@@ -62,6 +62,10 @@ bool _scene_visual_fallback_pipeline_desc(
     DvzSceneVisualDescKind kind, uint32_t vertex_buffer_count, bool instanced_point_like,
     DvzSceneVisualPipelineDesc* out);
 
+bool _scene_visual_shader_desc_apply_query_pick(
+    const DvzSceneVisualDesc* visual, uint32_t color_target_format,
+    DvzSceneVisualShaderDesc* shader, bool* out_applied);
+
 uint64_t _scene_render_visual_resource_id(
     const DvzFramePlanEmitter* emitter, const char* encoded_visual_id,
     DvzFramePlanResourceRole role);
