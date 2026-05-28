@@ -8,8 +8,9 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-GLSL_DIR = REPO_ROOT / "src" / "scene" / "glsl"
-WGSL_DIR = REPO_ROOT / "src" / "scene" / "wgsl"
+SCENE_SHADER_DIR = REPO_ROOT / "src" / "scene" / "shaders"
+GLSL_DIR = SCENE_SHADER_DIR / "glsl"
+WGSL_DIR = SCENE_SHADER_DIR / "wgsl"
 
 # WGSL variants intentionally supported by the current WebGPU-oriented scene slice.
 SUPPORTED_WGSL_SHADER_PAIRS = [
@@ -70,12 +71,12 @@ def _failures() -> list[str]:
     for name in COMMON_GLSL_VERTEX_SHADERS:
         text = (GLSL_DIR / name).read_text(encoding="utf8")
         if '#include "common.glsl"' not in text:
-            failures.append(f"missing common.glsl include: src/scene/glsl/{name}")
+            failures.append(f"missing common.glsl include: src/scene/shaders/glsl/{name}")
 
     for name in COMMON_WGSL_VERTEX_SHADERS:
         text = (WGSL_DIR / name).read_text(encoding="utf8")
         if '#include "common.wgsl"' not in text:
-            failures.append(f"missing common.wgsl include: src/scene/wgsl/{name}")
+            failures.append(f"missing common.wgsl include: src/scene/shaders/wgsl/{name}")
 
     for stem in SUPPORTED_WGSL_SHADER_PAIRS:
         for stage in ["vert", "frag"]:
