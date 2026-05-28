@@ -8,7 +8,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "render_contract_internal.h"
+#include "internal.h"
 
 #include <string.h>
 

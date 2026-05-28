@@ -29,7 +29,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene_emit.h"
-#include "render_contract.h"
+#include "render_contract/render_contract.h"
 #include "datoviz/drp2/runtime.h"
 #include "datoviz/math/_cglm.h"
 #include "../../drp2/_stream.h"

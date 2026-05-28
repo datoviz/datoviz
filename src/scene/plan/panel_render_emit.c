@@ -34,7 +34,7 @@
 #include "_visual_pipeline.h"
 #include "_visual_lowering.h"
 #include "datoviz/drp2/runtime.h"
-#include "render_contract.h"
+#include "render_contract/render_contract.h"
 
 
 /*************************************************************************************************/

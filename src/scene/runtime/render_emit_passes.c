@@ -39,7 +39,7 @@
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
-#include "render_contract.h"
+#include "render_contract/render_contract.h"
 
 
 /*************************************************************************************************/

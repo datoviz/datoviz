@@ -27,7 +27,7 @@
 #include "_technique.h"
 #include "datoviz/drp2/runtime.h"
 #include "../../drp2/_stream.h"
-#include "render_contract.h"
+#include "render_contract/render_contract.h"
 #include "_scene.h"
 #include "datoviz/scene.h"
 

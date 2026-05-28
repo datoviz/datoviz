@@ -14,7 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "render_contract_internal.h"
+#include "internal.h"
 
 #include <stdlib.h>
 #include <string.h>

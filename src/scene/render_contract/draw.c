@@ -14,7 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "render_contract_internal.h"
+#include "internal.h"
 
 #include <vulkan/vulkan_core.h>
 

@@ -32,7 +32,7 @@
 #include "_scene_shader_abi.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
-#include "render_contract.h"
+#include "render_contract/render_contract.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"
 #include "datoviz/math/_cglm.h"
