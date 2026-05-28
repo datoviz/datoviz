@@ -40,7 +40,7 @@
 
 #define WIDTH       1280u
 #define HEIGHT      960u
-#define POINT_COUNT 640u
+#define POINT_COUNT 960u
 
 static const float TAU = 6.28318530718f;
 
@@ -69,10 +69,10 @@ static void _fill_points(vec3* positions, DvzColor* colors, float* diameters, ui
     {
         const float t = (float)i * inv_count;
         const float arm = (float)(i % 5u);
-        const float local = (float)(i / 5u) / (float)(POINT_COUNT / 5u);
+        const float local = (float)(i / 5u) / (float)(count / 5u);
         const float theta = TAU * (local * 2.15f + arm / 5.0f);
-        const float radius = 0.10f + 0.82f * sqrtf(local);
-        const float wave = 0.055f * sinf(12.0f * local + 1.7f * arm);
+        const float radius = 0.10f + 0.86f * sqrtf(local);
+        const float wave = 0.045f * sinf(12.0f * local + 1.7f * arm);
 
         positions[i][0] = (radius + wave) * cosf(theta);
         positions[i][1] = (radius - 0.5f * wave) * sinf(theta);
@@ -85,7 +85,7 @@ static void _fill_points(vec3* positions, DvzColor* colors, float* diameters, ui
         const uint8_t b = (uint8_t)(175.0f + 60.0f * (1.0f - warm));
         colors[i] = dvz_color_rgba(r, g, b, 245);
 
-        diameters[i] = 6.0f + 4.0f * (0.5f + 0.5f * sinf(TAU * (3.0f * t + 0.17f)));
+        diameters[i] = 3.8f + 2.8f * (0.5f + 0.5f * sinf(TAU * (3.0f * t + 0.17f)));
     }
 }
 
