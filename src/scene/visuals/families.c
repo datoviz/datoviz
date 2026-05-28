@@ -702,42 +702,6 @@ void dvz_visual_set_visible(DvzVisual* visual, bool visible)
 
 
 /**
- * Create a vector/arrow visual.
- *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual, or NULL on allocation failure
- */
-DvzVisual* dvz_vector(DvzScene* scene, uint32_t flags)
-{
-    ANN(scene);
-    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_VECTOR, flags);
-    if (visual == NULL)
-        return NULL;
-    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    visual->material_params_dirty = true;
-    visual->vector.stroke_gpu.dirty = true;
-    visual->vector.path_gpu.dirty = true;
-    return visual;
-}
-
-
-
-/**
- * Create an arrow visual.
- *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual, or NULL on allocation failure
- */
-DvzVisual* dvz_arrow(DvzScene* scene, uint32_t flags)
-{
-    return dvz_vector(scene, flags);
-}
-
-
-
-/**
  * Create a primitive visual.
  *
  * @param scene the scene
@@ -776,29 +740,6 @@ DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags)
     visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     visual->material_params_dirty = true;
     return visual;
-}
-
-
-
-/**
- * Set explicit subpath lengths for a curved vector visual.
- *
- * @param visual the vector visual
- * @param subpath_count number of subpaths
- * @param lengths point count for each subpath
- * @return 0 on success, -1 on error
- */
-int dvz_vector_set_subpaths(DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths)
-{
-    ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_VECTOR)
-    {
-        log_error("dvz_vector_set_subpaths requires a vector visual");
-        return -1;
-    }
-    return _stroke_set_path_subpaths(
-        visual, subpath_count, lengths, "vector", &visual->vector.subpath_lengths,
-        &visual->vector.subpath_count, &visual->vector.path_gpu);
 }
 
 
