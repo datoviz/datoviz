@@ -333,6 +333,32 @@ bool _scene_visual_attrs_dirty(const DvzVisual* visual)
 
 
 /**
+ * Emit material-parameter upload for one visual when registry policy and dirty state require it.
+ *
+ * @param figure the figure
+ * @param plan the destination frame plan
+ * @param visual the visual
+ * @param visual_index the scene visual index
+ * @param upload_material_params whether this family participates in generic material uploads
+ * @return whether emission can continue for this visual
+ */
+bool _scene_emit_visual_material_upload_if_needed(
+    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index,
+    bool upload_material_params)
+{
+    ANN(figure);
+    ANN(plan);
+    ANN(visual);
+    if (!upload_material_params)
+        return true;
+    if (!_scene_visual_needs_material_params(visual) || !visual->material_params_dirty)
+        return true;
+    return _scene_emit_visual_material_upload(figure, plan, visual, visual_index);
+}
+
+
+
+/**
  * Emit dirty dense attribute uploads for one retained visual.
  *
  * @param figure the figure

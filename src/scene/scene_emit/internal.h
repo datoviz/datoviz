@@ -61,6 +61,10 @@ bool _scene_visual_attrs_dirty(const DvzVisual* visual);
 bool _scene_emit_visual_material_upload(
     const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index);
 
+bool _scene_emit_visual_material_upload_if_needed(
+    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index,
+    bool upload_material_params);
+
 void _scene_emit_visual_dense_attr_uploads(
     const DvzFigure* figure, DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
     bool upload_position_topology, bool* emitted_buffers);
