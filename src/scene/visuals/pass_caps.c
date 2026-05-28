@@ -107,6 +107,44 @@ void _scene_visual_pass_caps_resolve(
 
 
 /**
+ * Resolve generic pass capabilities from retained visual and family lowering facts.
+ *
+ * @param visual the retained visual
+ * @param attach the panel attachment
+ * @param lowering resolved visual lowering facts
+ * @param out output pass capabilities
+ * @return whether capabilities were resolved
+ */
+bool _scene_visual_default_pass_caps(
+    const DvzVisual* visual, const DvzPanelAttach* attach, const DvzVisualLowering* lowering,
+    DvzSceneVisualPassCaps* out)
+{
+    ANN(visual);
+    ANN(attach);
+    ANN(lowering);
+    ANN(out);
+
+    DvzSceneVisualDescKind kind = lowering->desc_kind;
+    bool has_normals =
+        (_scene_visual_desc_is_primitive(kind) || kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH) &&
+        _scene_visual_has_dense_attr(visual, "normal");
+
+    bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+                      kind == DVZ_SCENE_VISUAL_DESC_MARKER;
+    bool stroke = lowering->renderable_kind == DVZ_RENDERABLE_STROKE_QUAD ||
+                  lowering->renderable_kind == DVZ_RENDERABLE_PATH_STROKE;
+    bool has_material_resource =
+        has_normals || stroke || _scene_visual_desc_is_sphere(kind) ||
+        (point_like && lowering->needs_material_params);
+    _scene_visual_pass_caps_resolve(
+        kind, visual->alpha_mode, attach->controller_mode, has_normals, has_material_resource,
+        visual->material.depth_cue_enabled, visual->depth_test_enabled, out);
+    return true;
+}
+
+
+
+/**
  * Resolve pass capabilities from one retained visual attachment.
  *
  * @param visual the retained visual

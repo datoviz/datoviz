@@ -17,8 +17,6 @@
 
 #include "registry/registry.h"
 
-#include "_assertions.h"
-#include "_visual_pipeline_internal.h"
 #include "glyph/internal.h"
 #include "image/internal.h"
 #include "labels/internal.h"
@@ -36,104 +34,64 @@
 #include "vector/internal.h"
 #include "volume/internal.h"
 
-
-
-/*************************************************************************************************/
-/*  Helpers                                                                                      */
-/*************************************************************************************************/
-
-/**
- * Resolve generic pass capabilities from retained visual and family lowering facts.
- *
- * @param visual the retained visual
- * @param attach the panel attachment
- * @param lowering resolved visual lowering facts
- * @param out output pass capabilities
- * @return whether capabilities were resolved
- */
-static bool _resolve_pass_caps(
-    const DvzVisual* visual, const DvzPanelAttach* attach, const DvzVisualLowering* lowering,
-    DvzSceneVisualPassCaps* out)
-{
-    ANN(visual);
-    ANN(attach);
-    ANN(lowering);
-    ANN(out);
-
-    DvzSceneVisualDescKind kind = lowering->desc_kind;
-    bool has_normals = false;
-    if (_scene_visual_desc_is_primitive(kind) || kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
-    {
-        int normal_idx = _attr_index(visual, "normal");
-        has_normals = normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&
-                      visual->attrs[normal_idx].item_count > 0;
-    }
-
-    bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
-                      kind == DVZ_SCENE_VISUAL_DESC_MARKER;
-    bool stroke = lowering->renderable_kind == DVZ_RENDERABLE_STROKE_QUAD ||
-                  lowering->renderable_kind == DVZ_RENDERABLE_PATH_STROKE;
-    bool has_material_resource =
-        has_normals || stroke || _scene_visual_desc_is_sphere(kind) ||
-        (point_like && lowering->needs_material_params);
-    _scene_visual_pass_caps_resolve(
-        kind, visual->alpha_mode, attach->controller_mode, has_normals, has_material_resource,
-        visual->material.depth_cue_enabled, visual->depth_test_enabled, out);
-    return true;
-}
-
-
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
 static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
-    {DVZ_VISUAL_TYPE_POINT, "point", _scene_point_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_POINT, "point", _scene_point_visual_lowering, _scene_visual_default_pass_caps,
      _scene_point_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
-    {DVZ_VISUAL_TYPE_PIXEL, "pixel", _scene_pixel_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_PIXEL, "pixel", _scene_pixel_visual_lowering, _scene_visual_default_pass_caps,
      _scene_pixel_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
-    {DVZ_VISUAL_TYPE_MARKER, "marker", _scene_marker_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_MARKER, "marker", _scene_marker_visual_lowering,
+     _scene_visual_default_pass_caps,
      _scene_marker_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
-    {DVZ_VISUAL_TYPE_SEGMENT, "segment", _scene_segment_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_SEGMENT, "segment", _scene_segment_visual_lowering,
+     _scene_visual_default_pass_caps,
      _scene_segment_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
-    {DVZ_VISUAL_TYPE_PATH, "path", _scene_path_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_PATH, "path", _scene_path_visual_lowering, _scene_visual_default_pass_caps,
      _scene_path_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
-    {DVZ_VISUAL_TYPE_IMAGE, "image", _scene_image_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_IMAGE, "image", _scene_image_visual_lowering, _scene_visual_default_pass_caps,
      _scene_image_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve,
      _scene_image_visual_fill_metadata},
-    {DVZ_VISUAL_TYPE_MESH, "mesh", _scene_mesh_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_MESH, "mesh", _scene_mesh_visual_lowering, _scene_visual_default_pass_caps,
      _scene_mesh_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
-    {DVZ_VISUAL_TYPE_VOLUME, "volume", _scene_volume_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_VOLUME, "volume", _scene_volume_visual_lowering,
+     _scene_visual_default_pass_caps,
      _scene_volume_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve,
      _scene_volume_visual_fill_metadata},
-    {DVZ_VISUAL_TYPE_PRIMITIVE, "primitive", _scene_primitive_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_PRIMITIVE, "primitive", _scene_primitive_visual_lowering,
+     _scene_visual_default_pass_caps,
      _scene_primitive_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
-    {DVZ_VISUAL_TYPE_SPHERE, "sphere", _scene_sphere_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_SPHERE, "sphere", _scene_sphere_visual_lowering,
+     _scene_visual_default_pass_caps,
      _scene_sphere_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
-    {DVZ_VISUAL_TYPE_GLYPH, "glyph", _scene_glyph_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_GLYPH, "glyph", _scene_glyph_visual_lowering, _scene_visual_default_pass_caps,
      _scene_glyph_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
-    {DVZ_VISUAL_TYPE_TEXT, "text", _scene_text_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_TEXT, "text", _scene_text_visual_lowering, _scene_visual_default_pass_caps,
      _scene_text_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
-    {DVZ_VISUAL_TYPE_LABELS, "labels", _scene_labels_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_LABELS, "labels", _scene_labels_visual_lowering,
+     _scene_visual_default_pass_caps,
      _scene_labels_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve,
      _scene_labels_visual_fill_metadata},
-    {DVZ_VISUAL_TYPE_SPLAT, "splat", _scene_splat_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_SPLAT, "splat", _scene_splat_visual_lowering, _scene_visual_default_pass_caps,
      _scene_splat_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
-    {DVZ_VISUAL_TYPE_VECTOR, "vector", _scene_vector_visual_lowering, _resolve_pass_caps,
+    {DVZ_VISUAL_TYPE_VECTOR, "vector", _scene_vector_visual_lowering,
+     _scene_visual_default_pass_caps,
      _scene_vector_visual_bind_desc, _scene_visual_pipeline_desc_resolve,
      _scene_visual_shader_desc_resolve, _scene_visual_draw_desc_resolve, NULL},
 };

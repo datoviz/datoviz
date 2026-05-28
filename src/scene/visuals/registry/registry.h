@@ -86,6 +86,10 @@ const DvzVisualFamilyOps* _scene_visual_family_ops_at(uint32_t index);
 
 bool _scene_visual_family_ops_registered(DvzVisualType type);
 
+bool _scene_visual_default_pass_caps(
+    const DvzVisual* visual, const DvzPanelAttach* attach, const DvzVisualLowering* lowering,
+    DvzSceneVisualPassCaps* out);
+
 bool _scene_visual_pipeline_desc_resolve(
     const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
     bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
