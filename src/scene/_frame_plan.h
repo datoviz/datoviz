@@ -295,6 +295,8 @@ typedef struct DvzFramePlanVisualMeta
     DvzFramePlanClipRect clip_rect;
     uint32_t visual_type;
     uint32_t renderable_kind;
+    uint32_t desc_kind;
+    uint32_t point_like_kind;
     uint32_t visual_index;
     uint32_t buffer_index;
     uint32_t topology;

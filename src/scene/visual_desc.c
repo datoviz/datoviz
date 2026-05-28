@@ -27,7 +27,6 @@
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
 #include "datoviz/drp2/enums.h"
-#include "sample_profile.h"
 
 
 /*************************************************************************************************/
@@ -89,6 +88,36 @@ bool _scene_visual_meta_is_primitive(uint32_t visual_type)
 {
     return visual_type == DVZ_VISUAL_TYPE_PRIMITIVE || visual_type == DVZ_VISUAL_TYPE_MESH ||
            visual_type == DVZ_VISUAL_TYPE_PATH;
+}
+
+
+/**
+ * Return the descriptor kind represented by typed visual metadata.
+ *
+ * @param state resource id state
+ * @param meta typed visual metadata
+ * @return visual descriptor kind
+ */
+DvzSceneVisualDescKind _scene_visual_meta_desc_kind(
+    const ConverterState* state, const DvzFramePlanVisualMeta* meta)
+{
+    ANN(state);
+    ANN(meta);
+    if (meta->desc_kind != DVZ_SCENE_VISUAL_DESC_NONE)
+        return (DvzSceneVisualDescKind)meta->desc_kind;
+
+    DvzRenderableKind renderable_kind = _scene_visual_meta_renderable_kind(state, meta);
+    if (renderable_kind == DVZ_RENDERABLE_STROKE_QUAD)
+        return DVZ_SCENE_VISUAL_DESC_SEGMENT;
+    if (renderable_kind == DVZ_RENDERABLE_PATH_STROKE)
+        return DVZ_SCENE_VISUAL_DESC_PATH;
+    if (renderable_kind == DVZ_RENDERABLE_INDEXED_MESH)
+        return DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+    if (renderable_kind == DVZ_RENDERABLE_TEXTURED_QUAD)
+        return DVZ_SCENE_VISUAL_DESC_IMAGE;
+    if (renderable_kind == DVZ_RENDERABLE_VOLUME_PROXY)
+        return DVZ_SCENE_VISUAL_DESC_VOLUME;
+    return DVZ_SCENE_VISUAL_DESC_NONE;
 }
 
 
@@ -490,8 +519,10 @@ static bool _scene_visual_desc_from_metadata(
         *error = NULL;
 
     bool stroked_path = _scene_visual_meta_is_stroked_path(&emitter->resources, meta);
-    bool segment_like =
-        _scene_visual_meta_renderable_kind(&emitter->resources, meta) == DVZ_RENDERABLE_STROKE_QUAD;
+    DvzRenderableKind renderable_kind =
+        _scene_visual_meta_renderable_kind(&emitter->resources, meta);
+    DvzSceneVisualDescKind desc_kind = _scene_visual_meta_desc_kind(&emitter->resources, meta);
+    bool segment_like = renderable_kind == DVZ_RENDERABLE_STROKE_QUAD;
     bool stroke_like = segment_like || stroked_path;
     const char* primary_position_id = stroke_like ? meta->position_start_id : meta->position_id;
     uint64_t pos_buf =
@@ -517,9 +548,18 @@ static bool _scene_visual_desc_from_metadata(
     if (meta->vertex_count > 0)
         out->vertex_count = meta->vertex_count;
 
-    DvzScenePointLikeKind point_like_kind = DVZ_SCENE_POINT_LIKE_POINT;
-    if (_scene_visual_meta_point_like_kind(meta->visual_type, &point_like_kind))
+    bool point_like_desc = desc_kind == DVZ_SCENE_VISUAL_DESC_POINT ||
+                           desc_kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+                           desc_kind == DVZ_SCENE_VISUAL_DESC_MARKER;
+    if (point_like_desc)
     {
+        DvzScenePointLikeKind point_like_kind = DVZ_SCENE_POINT_LIKE_POINT;
+        if (meta->point_like_kind != UINT32_MAX)
+            point_like_kind = (DvzScenePointLikeKind)meta->point_like_kind;
+        else if (desc_kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
+            point_like_kind = DVZ_SCENE_POINT_LIKE_PIXEL;
+        else if (desc_kind == DVZ_SCENE_VISUAL_DESC_MARKER)
+            point_like_kind = DVZ_SCENE_POINT_LIKE_MARKER;
         uint64_t color_id =
             _scene_visual_resource_lookup_label(&emitter->resources, meta->color_id);
         uint64_t size_id = _scene_visual_resource_lookup_label(&emitter->resources, meta->size_id);
@@ -545,9 +585,7 @@ static bool _scene_visual_desc_from_metadata(
                 *error = "typed marker metadata missing angle/shape resource";
             return false;
         }
-        out->kind = point_like_kind == DVZ_SCENE_POINT_LIKE_PIXEL    ? DVZ_SCENE_VISUAL_DESC_PIXEL
-                    : point_like_kind == DVZ_SCENE_POINT_LIKE_MARKER ? DVZ_SCENE_VISUAL_DESC_MARKER
-                                                                     : DVZ_SCENE_VISUAL_DESC_POINT;
+        out->kind = desc_kind;
         out->point_like_kind = point_like_kind;
         out->vbuf_ids[out->vbuf_count++] = color_id;
         out->vbuf_ids[out->vbuf_count++] = size_id;
@@ -567,7 +605,7 @@ static bool _scene_visual_desc_from_metadata(
         return true;
     }
 
-    if (meta->visual_type == DVZ_VISUAL_TYPE_SPLAT)
+    if (desc_kind == DVZ_SCENE_VISUAL_DESC_SPLAT)
     {
         uint64_t color_id =
             _scene_visual_resource_lookup_label(&emitter->resources, meta->color_id);
@@ -698,7 +736,7 @@ static bool _scene_visual_desc_from_metadata(
         return true;
     }
 
-    if (meta->visual_type == DVZ_VISUAL_TYPE_SPHERE)
+    if (desc_kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
     {
         uint64_t color_id =
             _scene_visual_resource_lookup_label(&emitter->resources, meta->color_id);
@@ -718,7 +756,8 @@ static bool _scene_visual_desc_from_metadata(
         return true;
     }
 
-    if (_scene_visual_meta_is_primitive(meta->visual_type))
+    if (desc_kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE ||
+        desc_kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
     {
         uint64_t color_id =
             _scene_visual_resource_lookup_label(&emitter->resources, meta->color_id);
@@ -737,7 +776,7 @@ static bool _scene_visual_desc_from_metadata(
             out->vbuf_ids[out->vbuf_count++] = normal_id;
             out->has_normal = true;
         }
-        uint64_t texture_id = meta->visual_type == DVZ_VISUAL_TYPE_MESH
+        uint64_t texture_id = desc_kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH
                                   ? _scene_visual_resource_lookup_label(
                                         &emitter->resources, meta->texture_id)
                                   : 0;
@@ -761,7 +800,7 @@ static bool _scene_visual_desc_from_metadata(
         }
         uint64_t instance_transform_id =
             _scene_visual_resource_lookup_label(&emitter->resources, meta->instance_transform_id);
-        if (meta->visual_type == DVZ_VISUAL_TYPE_MESH && instance_transform_id != 0)
+        if (instance_transform_id != 0)
         {
             if (out->kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
             {
@@ -796,9 +835,7 @@ static bool _scene_visual_desc_from_metadata(
         out->material_buffer_id =
             _scene_visual_resource_lookup_label(&emitter->resources, meta->material_id);
     }
-    else if (
-        meta->visual_type == DVZ_VISUAL_TYPE_IMAGE || meta->visual_type == DVZ_VISUAL_TYPE_GLYPH ||
-        meta->visual_type == DVZ_VISUAL_TYPE_LABELS)
+    else if (_scene_visual_desc_is_image(desc_kind))
     {
         uint64_t uv_id =
             _scene_visual_resource_lookup_label(&emitter->resources, meta->texcoords_id);
@@ -810,34 +847,19 @@ static bool _scene_visual_desc_from_metadata(
                 *error = "typed image metadata missing texcoords/texture resource";
             return false;
         }
-        if (meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
-            out->kind = DVZ_SCENE_VISUAL_DESC_GLYPH;
-        else if (meta->visual_type == DVZ_VISUAL_TYPE_LABELS)
+        out->kind = desc_kind;
+        if (desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
+            desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT)
         {
-            DvzSceneSampleProfile profile = {0};
-            bool ok = _scene_sample_profile_resolve(
-                (DvzFieldFormat)meta->field_format, DVZ_FIELD_SEMANTIC_LABEL, DVZ_FIELD_DIM_2D,
-                &profile);
-            if (ok && _scene_sample_profile_is_signed_label(&profile))
-                out->kind = DVZ_SCENE_VISUAL_DESC_LABELS_SINT;
-            else if (ok && _scene_sample_profile_is_unsigned_label(&profile))
-                out->kind = DVZ_SCENE_VISUAL_DESC_LABELS_UINT;
-            else
-            {
-                if (error != NULL)
-                    *error = "labels metadata has unsupported integer texture format";
-                return false;
-            }
             out->labels_visual_index = meta->visual_index;
             out->labels_state = meta->labels_state;
         }
-        else
+        else if (desc_kind == DVZ_SCENE_VISUAL_DESC_IMAGE)
         {
-            out->kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
             out->image_pixel_space = meta->image_pixel_space;
             out->image_nearest_sampler = meta->image_nearest_sampler;
         }
-        if (meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
+        if (desc_kind == DVZ_SCENE_VISUAL_DESC_GLYPH)
         {
             uint64_t bounds_id =
                 _scene_visual_resource_lookup_label(&emitter->resources, meta->bounds_id);
@@ -861,7 +883,7 @@ static bool _scene_visual_desc_from_metadata(
             out->vbuf_ids[out->vbuf_count++] = uv_id;
         }
         out->image_texture_id = tex_id;
-        if (meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
+        if (desc_kind == DVZ_SCENE_VISUAL_DESC_GLYPH)
         {
             out->glyph_atlas_encoding = meta->glyph_atlas_encoding;
             out->glyph_distance_range_px =
@@ -869,11 +891,11 @@ static bool _scene_visual_desc_from_metadata(
         }
         out->topology = _resource_topology(&emitter->resources, pos_buf);
         if (out->topology == UINT32_MAX)
-            out->topology = meta->visual_type == DVZ_VISUAL_TYPE_GLYPH
+            out->topology = desc_kind == DVZ_SCENE_VISUAL_DESC_GLYPH
                                 ? VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
                                 : VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
     }
-    else if (meta->visual_type == DVZ_VISUAL_TYPE_VOLUME)
+    else if (_scene_visual_desc_is_volume(desc_kind))
     {
         uint64_t uvw_id =
             _scene_visual_resource_lookup_label(&emitter->resources, meta->texcoords_id);
@@ -897,12 +919,7 @@ static bool _scene_visual_desc_from_metadata(
                 *error = "typed scalar volume metadata missing transfer texture resource";
             return false;
         }
-        DvzSceneSampleProfile profile = {0};
-        bool has_profile =
-            _scene_sample_profile_resolve(
-                (DvzFieldFormat)meta->field_format, (DvzFieldSemantic)meta->field_semantic,
-                DVZ_FIELD_DIM_3D, &profile);
-        if (has_profile && _scene_sample_profile_is_signed_label(&profile))
+        if (desc_kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT)
         {
             if (
                 meta->volume_state.render_mode != DVZ_VOLUME_RENDER_SLICE &&
@@ -914,7 +931,7 @@ static bool _scene_visual_desc_from_metadata(
             }
             out->kind = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT;
         }
-        else if (has_profile && _scene_sample_profile_is_unsigned_label(&profile))
+        else if (desc_kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT)
         {
             if (
                 meta->volume_state.render_mode != DVZ_VOLUME_RENDER_SLICE &&

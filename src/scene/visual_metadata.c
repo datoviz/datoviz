@@ -32,6 +32,7 @@
 #include "_scene_shader_abi.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
+#include "_visual_lowering.h"
 #include "datoviz/drp2/runtime.h"
 #include "sample_profile.h"
 #include "render_contract.h"
@@ -40,50 +41,6 @@
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
-
-/**
- * Return the reusable renderable primitive kind emitted by one retained visual.
- *
- * @param visual the retained visual
- * @return renderable primitive kind
- */
-static DvzRenderableKind _scene_visual_renderable_kind(const DvzVisual* visual)
-{
-    ANN(visual);
-    switch (visual->type)
-    {
-    case DVZ_VISUAL_TYPE_POINT:
-    case DVZ_VISUAL_TYPE_PIXEL:
-    case DVZ_VISUAL_TYPE_MARKER:
-    case DVZ_VISUAL_TYPE_SPHERE:
-    case DVZ_VISUAL_TYPE_SPLAT:
-        return DVZ_RENDERABLE_POINT_LIKE;
-    case DVZ_VISUAL_TYPE_SEGMENT:
-        return DVZ_RENDERABLE_STROKE_QUAD;
-    case DVZ_VISUAL_TYPE_VECTOR:
-        return !_scene_visual_has_attr_data(visual, "vector") &&
-                       _scene_visual_has_attr_data(visual, "line_width")
-                   ? DVZ_RENDERABLE_PATH_STROKE
-                   : DVZ_RENDERABLE_STROKE_QUAD;
-    case DVZ_VISUAL_TYPE_PATH:
-        return _scene_visual_has_attr_data(visual, "line_width") ? DVZ_RENDERABLE_PATH_STROKE
-                                                                 : DVZ_RENDERABLE_INDEXED_MESH;
-    case DVZ_VISUAL_TYPE_PRIMITIVE:
-    case DVZ_VISUAL_TYPE_MESH:
-        return DVZ_RENDERABLE_INDEXED_MESH;
-    case DVZ_VISUAL_TYPE_IMAGE:
-    case DVZ_VISUAL_TYPE_LABELS:
-    case DVZ_VISUAL_TYPE_GLYPH:
-        return DVZ_RENDERABLE_TEXTURED_QUAD;
-    case DVZ_VISUAL_TYPE_VOLUME:
-        return DVZ_RENDERABLE_VOLUME_PROXY;
-    case DVZ_VISUAL_TYPE_NONE:
-    default:
-        return DVZ_RENDERABLE_NONE;
-    }
-}
-
-
 
 /**
  * Build typed FramePlan metadata for one retained visual.
@@ -106,8 +63,14 @@ bool _scene_visual_frame_plan_metadata(
     dvz_memset(metadata, sizeof(DvzFramePlanVisualMeta), 0, sizeof(DvzFramePlanVisualMeta));
     metadata->has_metadata = true;
     metadata->visual_type = (uint32_t)visual->type;
-    DvzRenderableKind renderable_kind = _scene_visual_renderable_kind(visual);
+    DvzVisualLowering lowering = {0};
+    if (!_scene_visual_lowering_resolve(visual, &lowering))
+        return false;
+    DvzRenderableKind renderable_kind = lowering.renderable_kind;
     metadata->renderable_kind = (uint32_t)renderable_kind;
+    metadata->desc_kind = (uint32_t)lowering.desc_kind;
+    metadata->point_like_kind = lowering.has_point_like_kind ? (uint32_t)lowering.point_like_kind
+                                                            : UINT32_MAX;
     metadata->visual_index = visual_index;
     metadata->buffer_index = UINT32_MAX;
     metadata->topology = (uint32_t)visual->topology;
@@ -116,8 +79,7 @@ bool _scene_visual_frame_plan_metadata(
     metadata->depth_test_enabled = visual->depth_test_enabled;
     metadata->depth_compare_op = visual->depth_compare_op;
     metadata->depth_cue_enabled = visual->material.depth_cue_enabled;
-    metadata->point_style_enabled =
-        visual->type == DVZ_VISUAL_TYPE_POINT && visual->material.point_style_enabled;
+    metadata->point_style_enabled = lowering.point_style_enabled;
     metadata->glyph_atlas_encoding = (uint32_t)visual->glyph_atlas_encoding;
     metadata->glyph_distance_range_px = visual->glyph_distance_range_px;
     metadata->scale_index = _scene_scale_index(figure->scene, visual->scale);
@@ -270,38 +232,18 @@ bool _scene_visual_frame_plan_metadata(
                 figure, visual, visual_index, "index", metadata->index_id,
                 sizeof(metadata->index_id)))
             return false;
-        if (visual->type == DVZ_VISUAL_TYPE_VECTOR && path_stroke)
-        {
-            if (visual->vector.path_gpu.vertex_count > UINT32_MAX ||
-                visual->vector.path_gpu.index_count > UINT32_MAX)
-                return false;
-            metadata->vertex_count = (uint32_t)visual->vector.path_gpu.vertex_count;
-            metadata->index_count = (uint32_t)visual->vector.path_gpu.index_count;
-        }
-        else if (visual->type == DVZ_VISUAL_TYPE_VECTOR)
-        {
-            if (visual->vector.stroke_gpu.vertex_count > UINT32_MAX ||
-                visual->vector.stroke_gpu.index_count > UINT32_MAX)
-                return false;
-            metadata->vertex_count = (uint32_t)visual->vector.stroke_gpu.vertex_count;
-            metadata->index_count = (uint32_t)visual->vector.stroke_gpu.index_count;
-        }
-        else if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
-        {
-            if (visual->segment.gpu.vertex_count > UINT32_MAX ||
-                visual->segment.gpu.index_count > UINT32_MAX)
-                return false;
-            metadata->vertex_count = (uint32_t)visual->segment.gpu.vertex_count;
-            metadata->index_count = (uint32_t)visual->segment.gpu.index_count;
-        }
-        else if (visual->type == DVZ_VISUAL_TYPE_PATH)
-        {
-            if (visual->path.gpu.vertex_count > UINT32_MAX ||
-                visual->path.gpu.index_count > UINT32_MAX)
-                return false;
-            metadata->vertex_count = (uint32_t)visual->path.gpu.vertex_count;
-            metadata->index_count = (uint32_t)visual->path.gpu.index_count;
-        }
+        const DvzPathStrokeGpuCache* path_cache = lowering.path_stroke_cache;
+        const DvzStrokeQuadGpuCache* stroke_cache = lowering.stroke_quad_cache;
+        uint64_t vertex_count = path_stroke && path_cache != NULL ? path_cache->vertex_count
+                                : stroke_cache != NULL            ? stroke_cache->vertex_count
+                                                                  : 0;
+        uint64_t index_count = path_stroke && path_cache != NULL ? path_cache->index_count
+                               : stroke_cache != NULL            ? stroke_cache->index_count
+                                                                 : 0;
+        if (vertex_count > UINT32_MAX || index_count > UINT32_MAX)
+            return false;
+        metadata->vertex_count = (uint32_t)vertex_count;
+        metadata->index_count = (uint32_t)index_count;
     }
     if ((visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_LABELS) &&
         _scene_image_uses_generated_quads(visual))

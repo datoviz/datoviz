@@ -32,6 +32,7 @@
 #include "_scene_shader_abi.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
+#include "_visual_lowering.h"
 #include "datoviz/drp2/runtime.h"
 #include "render_contract.h"
 
@@ -49,13 +50,11 @@
 static const char* _scene_visual_draw_position_attr(const DvzVisual* visual)
 {
     ANN(visual);
-    if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
-        return "position_start";
-    if (visual->type == DVZ_VISUAL_TYPE_IMAGE &&
-        _scene_visual_has_attr_data(visual, "position_px") &&
-        _scene_visual_has_attr_data(visual, "extent_px"))
-        return "position_px";
-    return "position";
+    DvzVisualLowering lowering = {0};
+    if (!_scene_visual_lowering_resolve(visual, &lowering) ||
+        lowering.draw_position_attr == NULL)
+        return "position";
+    return lowering.draw_position_attr;
 }
 
 

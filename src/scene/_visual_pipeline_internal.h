@@ -32,6 +32,9 @@ bool _scene_visual_meta_is_primitive(uint32_t visual_type);
 DvzRenderableKind _scene_visual_meta_renderable_kind(
     const ConverterState* state, const DvzFramePlanVisualMeta* meta);
 
+DvzSceneVisualDescKind _scene_visual_meta_desc_kind(
+    const ConverterState* state, const DvzFramePlanVisualMeta* meta);
+
 bool _scene_visual_meta_is_stroked_path(
     const ConverterState* state, const DvzFramePlanVisualMeta* meta);
 

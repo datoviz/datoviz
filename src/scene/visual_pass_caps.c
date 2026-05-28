@@ -26,57 +26,13 @@
 #include "_technique.h"
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
+#include "_visual_lowering.h"
 #include "datoviz/drp2/enums.h"
-#include "sample_profile.h"
 
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
-
-/**
- * Return the reusable renderable primitive kind emitted by one retained visual.
- *
- * @param visual the retained visual
- * @return renderable primitive kind
- */
-static DvzRenderableKind _scene_pass_visual_renderable_kind(const DvzVisual* visual)
-{
-    ANN(visual);
-    switch (visual->type)
-    {
-    case DVZ_VISUAL_TYPE_POINT:
-    case DVZ_VISUAL_TYPE_PIXEL:
-    case DVZ_VISUAL_TYPE_MARKER:
-    case DVZ_VISUAL_TYPE_SPHERE:
-    case DVZ_VISUAL_TYPE_SPLAT:
-        return DVZ_RENDERABLE_POINT_LIKE;
-    case DVZ_VISUAL_TYPE_SEGMENT:
-        return DVZ_RENDERABLE_STROKE_QUAD;
-    case DVZ_VISUAL_TYPE_VECTOR:
-        return !_scene_visual_has_dense_attr(visual, "vector") &&
-                       _scene_visual_has_dense_attr(visual, "line_width")
-                   ? DVZ_RENDERABLE_PATH_STROKE
-                   : DVZ_RENDERABLE_STROKE_QUAD;
-    case DVZ_VISUAL_TYPE_PATH:
-        return _scene_visual_has_dense_attr(visual, "line_width") ? DVZ_RENDERABLE_PATH_STROKE
-                                                                  : DVZ_RENDERABLE_INDEXED_MESH;
-    case DVZ_VISUAL_TYPE_PRIMITIVE:
-    case DVZ_VISUAL_TYPE_MESH:
-        return DVZ_RENDERABLE_INDEXED_MESH;
-    case DVZ_VISUAL_TYPE_IMAGE:
-    case DVZ_VISUAL_TYPE_LABELS:
-    case DVZ_VISUAL_TYPE_GLYPH:
-        return DVZ_RENDERABLE_TEXTURED_QUAD;
-    case DVZ_VISUAL_TYPE_VOLUME:
-        return DVZ_RENDERABLE_VOLUME_PROXY;
-    case DVZ_VISUAL_TYPE_NONE:
-    default:
-        return DVZ_RENDERABLE_NONE;
-    }
-}
-
-
 
 /**
  * Resolve common pass capabilities from normalized visual facts.
@@ -163,85 +119,11 @@ bool _scene_visual_pass_caps_from_visual(
     ANN(attach);
     ANN(out);
 
-    DvzRenderableKind renderable_kind = _scene_pass_visual_renderable_kind(visual);
-    DvzSceneVisualDescKind kind = DVZ_SCENE_VISUAL_DESC_NONE;
-    switch (visual->type)
-    {
-    case DVZ_VISUAL_TYPE_SPLAT:
-        kind = DVZ_SCENE_VISUAL_DESC_SPLAT;
-        break;
-    case DVZ_VISUAL_TYPE_POINT:
-    case DVZ_VISUAL_TYPE_PIXEL:
-    case DVZ_VISUAL_TYPE_MARKER:
-        kind = visual->type == DVZ_VISUAL_TYPE_PIXEL    ? DVZ_SCENE_VISUAL_DESC_PIXEL
-               : visual->type == DVZ_VISUAL_TYPE_MARKER ? DVZ_SCENE_VISUAL_DESC_MARKER
-                                                        : DVZ_SCENE_VISUAL_DESC_POINT;
-        break;
-    case DVZ_VISUAL_TYPE_SPHERE:
-        kind = DVZ_SCENE_VISUAL_DESC_SPHERE;
-        break;
-    case DVZ_VISUAL_TYPE_SEGMENT:
-        kind = DVZ_SCENE_VISUAL_DESC_SEGMENT;
-        break;
-    case DVZ_VISUAL_TYPE_VECTOR:
-        kind = renderable_kind == DVZ_RENDERABLE_PATH_STROKE ? DVZ_SCENE_VISUAL_DESC_PATH
-                                                             : DVZ_SCENE_VISUAL_DESC_SEGMENT;
-        break;
-    case DVZ_VISUAL_TYPE_PRIMITIVE:
-    case DVZ_VISUAL_TYPE_MESH:
-        kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
-        if (visual->type == DVZ_VISUAL_TYPE_MESH && visual->field != NULL)
-            kind = DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
-        break;
-    case DVZ_VISUAL_TYPE_PATH:
-        kind = renderable_kind == DVZ_RENDERABLE_PATH_STROKE ? DVZ_SCENE_VISUAL_DESC_PATH
-                                                             : DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
-        break;
-    case DVZ_VISUAL_TYPE_IMAGE:
-        kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
-        break;
-    case DVZ_VISUAL_TYPE_LABELS:
-    {
-        if (visual->field == NULL)
-            return false;
-        DvzSceneSampleProfile profile = {0};
-        if (!_scene_sample_profile_resolve(
-                visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
-                &profile))
-        {
-            return false;
-        }
-        if (_scene_sample_profile_is_signed_label(&profile))
-            kind = DVZ_SCENE_VISUAL_DESC_LABELS_SINT;
-        else if (_scene_sample_profile_is_unsigned_label(&profile))
-            kind = DVZ_SCENE_VISUAL_DESC_LABELS_UINT;
-        else
-            return false;
-        break;
-    }
-    case DVZ_VISUAL_TYPE_GLYPH:
-        kind = DVZ_SCENE_VISUAL_DESC_GLYPH;
-        break;
-    case DVZ_VISUAL_TYPE_VOLUME:
-        kind = DVZ_SCENE_VISUAL_DESC_VOLUME;
-        if (visual->field != NULL)
-        {
-            DvzSceneSampleProfile profile = {0};
-            if (_scene_sample_profile_resolve(
-                    visual->field->desc.format, visual->field->desc.semantic,
-                    visual->field->desc.dim, &profile))
-            {
-                if (_scene_sample_profile_is_signed_label(&profile))
-                    kind = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT;
-                else if (_scene_sample_profile_is_unsigned_label(&profile))
-                    kind = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT;
-            }
-        }
-        break;
-    case DVZ_VISUAL_TYPE_NONE:
-    default:
+    DvzVisualLowering lowering = {0};
+    if (!_scene_visual_lowering_resolve(visual, &lowering))
         return false;
-    }
+    DvzRenderableKind renderable_kind = lowering.renderable_kind;
+    DvzSceneVisualDescKind kind = lowering.desc_kind;
 
     bool has_normals = false;
     if (_scene_visual_desc_is_primitive(kind) || kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
@@ -256,10 +138,8 @@ bool _scene_visual_pass_caps_from_visual(
     bool stroke = renderable_kind == DVZ_RENDERABLE_STROKE_QUAD ||
                   renderable_kind == DVZ_RENDERABLE_PATH_STROKE;
     bool has_material_resource =
-        has_normals || stroke || visual->type == DVZ_VISUAL_TYPE_SPHERE ||
-        (point_like && visual->material.depth_cue_enabled) ||
-        (visual->type == DVZ_VISUAL_TYPE_POINT && visual->material.point_style_enabled) ||
-        visual->type == DVZ_VISUAL_TYPE_MARKER;
+        has_normals || stroke || _scene_visual_desc_is_sphere(kind) ||
+        (point_like && lowering.needs_material_params);
     _scene_visual_pass_caps_resolve(
         kind, visual->alpha_mode, attach->controller_mode, has_normals, has_material_resource,
         visual->material.depth_cue_enabled, visual->depth_test_enabled, out);
@@ -327,14 +207,18 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
                 continue;
             bool has_color =
                 _scene_visual_resource_lookup_label(&emitter->resources, meta->color_id) != 0;
-            DvzScenePointLikeKind point_like_kind = DVZ_SCENE_POINT_LIKE_POINT;
-            if (_scene_visual_meta_point_like_kind(meta->visual_type, &point_like_kind))
+            DvzSceneVisualDescKind desc_kind =
+                _scene_visual_meta_desc_kind(&emitter->resources, meta);
+            bool point_like = desc_kind == DVZ_SCENE_VISUAL_DESC_POINT ||
+                              desc_kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+                              desc_kind == DVZ_SCENE_VISUAL_DESC_MARKER;
+            if (point_like)
             {
                 if (has_color)
                     return true;
                 continue;
             }
-            if (meta->visual_type == DVZ_VISUAL_TYPE_SPLAT)
+            if (desc_kind == DVZ_SCENE_VISUAL_DESC_SPLAT)
             {
                 bool has_sigma =
                     _scene_visual_resource_lookup_label(&emitter->resources, meta->sigma_id) != 0;
@@ -344,7 +228,7 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
                     return true;
                 continue;
             }
-            if (meta->visual_type == DVZ_VISUAL_TYPE_SPHERE)
+            if (desc_kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
             {
                 bool has_size =
                     _scene_visual_resource_lookup_label(&emitter->resources, meta->size_id) != 0;
@@ -364,7 +248,8 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
                     return true;
                 continue;
             }
-            if (!_scene_visual_meta_is_primitive(meta->visual_type))
+            if (desc_kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
+                desc_kind != DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
                 continue;
             bool has_topology = _resource_topology(&emitter->resources, pos_buf) != UINT32_MAX ||
                                 meta->topology != UINT32_MAX;

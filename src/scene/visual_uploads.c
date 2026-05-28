@@ -34,6 +34,7 @@
 #include "_technique.h"
 #include "_visual_pipeline.h"
 #include "_visual_internal.h"
+#include "_visual_lowering.h"
 #include "colorizer.h"
 #include "sample_profile.h"
 #include "datoviz/drp2/runtime.h"
@@ -149,24 +150,8 @@ bool _scene_visual_has_attr_data(const DvzVisual* visual, const char* attr_name)
 bool _scene_visual_needs_material_params(const DvzVisual* visual)
 {
     ANN(visual);
-    bool point_like = visual->type == DVZ_VISUAL_TYPE_POINT ||
-                      visual->type == DVZ_VISUAL_TYPE_PIXEL ||
-                      visual->type == DVZ_VISUAL_TYPE_MARKER;
-    if (point_like)
-    {
-        return visual->material.depth_cue_enabled ||
-               (visual->type == DVZ_VISUAL_TYPE_POINT && visual->material.point_style_enabled) ||
-               visual->type == DVZ_VISUAL_TYPE_MARKER;
-    }
-    if (visual->type == DVZ_VISUAL_TYPE_SPHERE)
-        return true;
-    if (visual->type == DVZ_VISUAL_TYPE_PATH)
-        return _scene_visual_has_attr_data(visual, "line_width");
-    if (visual->type == DVZ_VISUAL_TYPE_VECTOR)
-        return true;
-    if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE || visual->type == DVZ_VISUAL_TYPE_MESH)
-        return _scene_visual_has_attr_data(visual, "normal");
-    return false;
+    DvzVisualLowering lowering = {0};
+    return _scene_visual_lowering_resolve(visual, &lowering) && lowering.needs_material_params;
 }
 
 
@@ -407,23 +392,6 @@ static bool _vector_required_attrs(const DvzVisual* visual, uint64_t* out_count)
     }
     *out_count = count;
     return true;
-}
-
-
-/**
- * Return whether a vector visual should use curved path lowering.
- *
- * @param visual the vector visual
- * @return whether path-style point data should be used
- */
-static bool _vector_uses_path_mode(const DvzVisual* visual)
-{
-    ANN(visual);
-    return visual->type == DVZ_VISUAL_TYPE_VECTOR &&
-           !_scene_visual_has_attr_data(visual, "vector") &&
-           _scene_visual_has_attr_data(visual, "position") &&
-           _scene_visual_has_attr_data(visual, "color") &&
-           _scene_visual_has_attr_data(visual, "line_width");
 }
 
 
@@ -1690,8 +1658,13 @@ static bool _scene_emit_visual_material_upload(
     if (params == NULL)
         return false;
     *params = visual->material_params;
-    if ((visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_MARKER) &&
-        visual->material.point_style_enabled)
+    DvzVisualLowering lowering = {0};
+    bool has_lowering = _scene_visual_lowering_resolve(visual, &lowering);
+    bool point_style_scaled =
+        has_lowering && lowering.point_style_enabled &&
+        (lowering.desc_kind == DVZ_SCENE_VISUAL_DESC_POINT ||
+         lowering.desc_kind == DVZ_SCENE_VISUAL_DESC_MARKER);
+    if (point_style_scaled)
     {
         params->params[0] *= _scene_screen_scale(figure);
     }
@@ -1737,29 +1710,29 @@ static bool _scene_emit_visual_family_derived_uploads(
     *out_skip_dense_attrs = false;
     *out_finished_visual = false;
 
-    if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
+    DvzVisualLowering lowering = {0};
+    if (!_scene_visual_lowering_resolve(visual, &lowering))
+        return true;
+
+    if (lowering.renderable_kind == DVZ_RENDERABLE_STROKE_QUAD &&
+        lowering.desc_kind == DVZ_SCENE_VISUAL_DESC_SEGMENT)
     {
-        _scene_emit_segment_uploads(figure, plan, visual, visual_index);
-        *out_finished_visual = true;
-        return _scene_emit_visual_material_upload(figure, plan, visual, visual_index);
-    }
-    if (visual->type == DVZ_VISUAL_TYPE_VECTOR)
-    {
-        if (_vector_uses_path_mode(visual))
-        {
-            _vector_sync_params(visual);
-            _scene_emit_path_uploads(figure, plan, visual, visual_index);
-        }
-        else
+        if (lowering.needs_vector_params_sync)
         {
             _vector_sync_params(visual);
             _scene_emit_vector_uploads(figure, plan, visual, visual_index);
         }
+        else
+        {
+            _scene_emit_segment_uploads(figure, plan, visual, visual_index);
+        }
         *out_finished_visual = true;
         return _scene_emit_visual_material_upload(figure, plan, visual, visual_index);
     }
-    if (visual->type == DVZ_VISUAL_TYPE_PATH && _scene_visual_has_attr_data(visual, "line_width"))
+    if (lowering.renderable_kind == DVZ_RENDERABLE_PATH_STROKE)
     {
+        if (lowering.needs_vector_params_sync)
+            _vector_sync_params(visual);
         _scene_emit_path_uploads(figure, plan, visual, visual_index);
         *out_finished_visual = true;
         return _scene_emit_visual_material_upload(figure, plan, visual, visual_index);
