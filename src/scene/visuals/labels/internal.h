@@ -34,3 +34,8 @@ bool _scene_labels_visual_fill_metadata(
 bool _scene_labels_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out);
+
+bool _scene_labels_visual_pipeline_desc(
+    const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
+    bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
+    DvzSceneVisualPipelineDesc* out);
