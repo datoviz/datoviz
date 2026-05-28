@@ -32,6 +32,9 @@ Active scene ADR files:
 1. [CONTROLLER_BINDING_MODEL.md](CONTROLLER_BINDING_MODEL.md): scene-owned opaque controller
    handles, panel dimension binding, full-state sharing through shared handles, partial
    synchronization through controller state links, and WASM-facing controller API constraints.
+2. [COLOR_FIELD_PRIMITIVE_EVALUATION.md](COLOR_FIELD_PRIMITIVE_EVALUATION.md): Stage 3 and Stage
+   4 split-plan decision to keep `color` and `field` as scene-owned candidates until a concrete
+   non-scene consumer appears.
 
 The former active design records now live in
 [../proposals](../proposals). Treat that directory as the staging area for unsettled or
