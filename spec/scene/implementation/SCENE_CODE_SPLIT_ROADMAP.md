@@ -10,12 +10,14 @@ scene specs; this file only defines safe source-ownership direction for refactor
 
 ## Current Pressure Points
 
-As of 2026-05-28 after the first source-split batch, the highest-value split candidates are:
+As of 2026-05-28 after the annotation/domain source-split batches, the highest-value split
+candidates are:
 
 1. `src/scene/plan/visual_lowering_uploads.c`: some derived payload builders remain in plan code.
    Continue moving only pure cache/data construction into family or subsystem helpers.
-2. `src/scene/annotation/text.c`, `axis.c`, and `scale.c`: retained annotation objects,
-   layout/reserve policy, generated visuals, and text/glyph lowering are still mixed.
+2. `src/scene/annotation/text.c` and `axis.c`: retained annotation objects, layout/reserve policy,
+   generated visuals, and text/glyph lowering are still mixed. Scale, colorbar, legend, colormap,
+   scale-bar, and text-font ownership now have first-pass owner files.
 3. `src/scene/domain/field.c` and `polygon.c`: public domain object state, sampled interpretation,
    generated visual glue, and upload dirtiness are still mixed.
 4. `src/scene/visuals/desc.c` and `attrs.c`: descriptor resolution, retained metadata, and binding
@@ -157,14 +159,25 @@ subsystem declarations instead of growing it further.
 
 ### 6. Split Annotation And Domain Helpers
 
-Status: started on 2026-05-28.
+Status: first annotation/domain batches completed on 2026-05-28.
 
 Completed first slices:
 
 1. `annotation/colormap.c`: colormap sampling, built-in stop tables, colormap object lifecycle, and
    colormap-driven scale dirtiness.
-2. `annotation/scale_internal.h`: narrow annotation-private scale dirty hook used by colormaps.
-3. `domain/buffer.c`: scene buffer lifecycle, buffer payload mutation, visual buffer binding, copied
+2. `annotation/scalebar.c`: scale-bar annotation constructor, realization, segment/text visual
+   synchronization, and 2D/3D units-per-pixel resolution.
+3. `annotation/legend.c`: categorical legend lifecycle, panel reserve policy, generated marker/text
+   visuals, layout updates, and preparation.
+4. `annotation/colorbar.c`: continuous colorbar lifecycle, panel reserve policy, ramp/tick/text
+   generated visuals, layout updates, and preparation.
+5. `annotation/text_font.c`: text font resource lifecycle and font-atlas lookup helpers shared by
+   retained text and batched text preparation.
+6. `annotation/scale.c`: retained scale lifecycle and categorical-entry state after colorbar/legend
+   extraction.
+7. `annotation/scale_internal.h`: narrow annotation-private scale/colorbar/legend dirty hooks used
+   by split annotation files.
+8. `domain/buffer.c`: scene buffer lifecycle, buffer payload mutation, visual buffer binding, copied
    visual index data, buffer reset/index helpers, and visual buffer release.
 
 Continue after these slices.
@@ -175,7 +188,7 @@ Annotation candidates:
 2. text layout/reserve helpers;
 3. generated glyph/quad visual synchronization;
 4. axis tick generation versus axis generated-visual ownership;
-5. scale/colorbar/legend layout versus generated visual construction.
+5. remaining colorbar/legend polish only when a later behavior change exposes tighter boundaries.
 
 Domain candidates:
 

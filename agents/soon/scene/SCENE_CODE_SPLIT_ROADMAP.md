@@ -23,7 +23,8 @@ split into facade, diagnostics, resources, and visual assembly. Runtime render e
 into shared helpers, bindings, draw emission, visual preparation, and pass emission. Core scene was
 split into notify, format state, frame trace, panel geometry/layout, grid, controllers, and figure
 emission owners. Follow-up slices also split visual descriptor-kind helpers, colormap annotation
-ownership, scene domain buffers, and query target/profile policy.
+ownership, scale-bar/colorbar/legend/text-font annotation ownership, scene domain buffers, and
+query target/profile policy.
 
 
 ## Validation
