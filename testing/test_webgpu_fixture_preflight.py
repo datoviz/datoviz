@@ -83,6 +83,15 @@ def test_webgpu_preflight_scene_wgsl_stream_bindings_pass() -> None:
         preflight.validate_fixture(_load_strict_stream(relative_path))
 
 
+def test_webgpu_preflight_attachment_streams_pass() -> None:
+    preflight = WebGPUFixturePreflight(ROOT_DIR)
+    for relative_path in (
+        'examples/webgpu/streams/attachment_multi_color_wgsl.json',
+        'examples/webgpu/streams/attachment_depth_wgsl.json',
+    ):
+        preflight.validate_fixture(_load_fixture(relative_path))
+
+
 def test_webgpu_preflight_wboit_fixture_passes() -> None:
     preflight = WebGPUFixturePreflight(ROOT_DIR)
     fixture = _load_fixture('spec/drp2/fixtures/positive/wboit_accumulation_resolve.json')
@@ -140,3 +149,88 @@ def test_webgpu_preflight_rejects_storage_access_mismatch() -> None:
         assert 'group 0 binding 0 uses read storage access' in exc.message
     else:
         raise AssertionError('storage access mismatch unexpectedly passed WebGPU preflight')
+
+
+def test_webgpu_preflight_rejects_color_attachment_count_mismatch() -> None:
+    broken = _load_fixture('examples/webgpu/streams/attachment_multi_color_wgsl.json')
+    for command in broken['commands']:
+        if command['cmd'] == 'CreateRenderPipeline':
+            command['color_targets'] = command['color_targets'][:1]
+            break
+
+    preflight = WebGPUFixturePreflight(ROOT_DIR)
+    try:
+        preflight.validate_fixture(broken)
+    except WebGPUPreflightFailure as exc:
+        assert exc.command_index is not None
+        assert 'color target count 1 does not match render pass' in exc.message
+    else:
+        raise AssertionError('color attachment count mismatch unexpectedly passed preflight')
+
+
+def test_webgpu_preflight_rejects_color_attachment_format_mismatch() -> None:
+    broken = _load_fixture('examples/webgpu/streams/attachment_multi_color_wgsl.json')
+    for command in broken['commands']:
+        if command['cmd'] == 'CreateTexture' and command['id'] == 2:
+            command['format'] = 'r16float'
+            break
+
+    preflight = WebGPUFixturePreflight(ROOT_DIR)
+    try:
+        preflight.validate_fixture(broken)
+    except WebGPUPreflightFailure as exc:
+        assert exc.command_index is not None
+        assert 'color target 1 format rgba8unorm does not match render pass' in exc.message
+    else:
+        raise AssertionError('color attachment format mismatch unexpectedly passed preflight')
+
+
+def test_webgpu_preflight_rejects_depth_attachment_mismatch() -> None:
+    broken = _load_fixture('examples/webgpu/streams/attachment_depth_wgsl.json')
+    for command in broken['commands']:
+        if command['cmd'] == 'BeginRenderPass':
+            del command['depth_stencil_attachment']
+            break
+
+    preflight = WebGPUFixturePreflight(ROOT_DIR)
+    try:
+        preflight.validate_fixture(broken)
+    except WebGPUPreflightFailure as exc:
+        assert exc.command_index is not None
+        assert 'depth_stencil format depth32float does not match render pass' in exc.message
+    else:
+        raise AssertionError('depth attachment mismatch unexpectedly passed preflight')
+
+
+def test_webgpu_preflight_rejects_invalid_color_target_state() -> None:
+    broken = _load_fixture('examples/webgpu/streams/attachment_multi_color_wgsl.json')
+    for command in broken['commands']:
+        if command['cmd'] == 'CreateRenderPipeline':
+            command['color_targets'][0]['write_mask'] = ['all', 'red']
+            break
+
+    preflight = WebGPUFixturePreflight(ROOT_DIR)
+    try:
+        preflight.validate_fixture(broken)
+    except WebGPUPreflightFailure as exc:
+        assert exc.command_index is not None
+        assert 'write_mask cannot combine all' in exc.message
+    else:
+        raise AssertionError('invalid color target state unexpectedly passed preflight')
+
+
+def test_webgpu_preflight_rejects_invalid_load_store_state() -> None:
+    broken = _load_fixture('examples/webgpu/streams/attachment_multi_color_wgsl.json')
+    for command in broken['commands']:
+        if command['cmd'] == 'BeginRenderPass':
+            command['color_attachments'][0]['load_op'] = 'preserve'
+            break
+
+    preflight = WebGPUFixturePreflight(ROOT_DIR)
+    try:
+        preflight.validate_fixture(broken)
+    except WebGPUPreflightFailure as exc:
+        assert exc.command_index is not None
+        assert 'unsupported load_op: preserve' in exc.message
+    else:
+        raise AssertionError('invalid load/store state unexpectedly passed preflight')

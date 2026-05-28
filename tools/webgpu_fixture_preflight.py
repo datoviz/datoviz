@@ -41,6 +41,8 @@ INDEX_FORMAT_BYTES = {
     'uint32': 4,
 }
 
+CANVAS_TEXTURE_FORMAT = 'rgba8unorm'
+
 SUPPORTED_TEXTURE_FORMATS = {
     'bgra8unorm',
     'depth32float',
@@ -154,6 +156,7 @@ class WebGPUFixturePreflight:
         pipelines: Dict[int, Dict[str, Any]] = {}
         shaders: Dict[int, Dict[str, Any]] = {}
         passes: Dict[int, Dict[str, Any]] = {}
+        textures: Dict[int, Dict[str, Any]] = {}
 
         for index, command in enumerate(fixture['commands']):
             cmd = command['cmd']
@@ -161,6 +164,7 @@ class WebGPUFixturePreflight:
                 buffers[command['id']] = command
             elif cmd == 'CreateTexture':
                 self._check_texture_format(index, command.get('format'))
+                textures[command['id']] = command
             elif cmd == 'CreateBindGroupLayout':
                 self._check_bind_group_layout(index, command)
                 bind_group_layouts[command['id']] = command
@@ -174,11 +178,15 @@ class WebGPUFixturePreflight:
             elif cmd == 'BeginComputePass':
                 passes[command['id']] = {'kind': 'compute'}
             elif cmd == 'BeginRenderPass':
+                attachment_formats = self._render_pass_attachment_formats(index, command, textures)
                 passes[command['id']] = {
                     'kind': 'render',
+                    'id': command['id'],
                     'pipeline_id': None,
                     'vertex_buffers': {},
                     'index_buffer': None,
+                    'color_attachment_formats': attachment_formats['color'],
+                    'depth_stencil_format': attachment_formats['depth_stencil'],
                 }
             elif cmd == 'SetPipeline':
                 render_pass = self._require_pass(index, passes, command['pass_id'])
@@ -189,6 +197,9 @@ class WebGPUFixturePreflight:
                         index, f'unknown render pipeline {command["pipeline_id"]}'
                     )
                 render_pass['pipeline_id'] = command['pipeline_id']
+                self._check_pipeline_pass_compatibility(
+                    index, pipelines[command['pipeline_id']], render_pass
+                )
             elif cmd == 'SetVertexBuffer':
                 render_pass = self._require_render_pass(index, passes, command['pass_id'])
                 if command['buffer_id'] not in buffers:
@@ -227,8 +238,13 @@ class WebGPUFixturePreflight:
                 )
 
     def _check_texture_format(self, index: int, fmt: Optional[str]) -> None:
-        if fmt not in SUPPORTED_TEXTURE_FORMATS:
+        if self._texture_format(fmt) not in SUPPORTED_TEXTURE_FORMATS:
             raise WebGPUPreflightFailure(index, f'unsupported texture format {fmt}')
+
+    def _texture_format(self, fmt: Optional[str]) -> Optional[str]:
+        if fmt == 'canvas':
+            return CANVAS_TEXTURE_FORMAT
+        return fmt
 
     def _check_render_pipeline(
         self,
@@ -270,6 +286,14 @@ class WebGPUFixturePreflight:
         depth_stencil = command.get('depth_stencil')
         if depth_stencil is not None:
             self._check_texture_format(index, depth_stencil.get('format'))
+        command['_webgpu_color_target_formats'] = [
+            self._texture_format(target.get('format')) for target in command['color_targets']
+        ]
+        command['_webgpu_depth_stencil_format'] = (
+            None if depth_stencil is None else self._texture_format(depth_stencil.get('format'))
+        )
+        for color_target in command['color_targets']:
+            self._check_color_target_state(index, command['id'], color_target)
         self._check_pipeline_shader_bindings(
             index,
             f'render pipeline {command["id"]}',
@@ -281,6 +305,22 @@ class WebGPUFixturePreflight:
             shaders,
             bind_group_layouts,
         )
+
+    def _check_color_target_state(
+        self, index: int, pipeline_id: int, color_target: Dict[str, Any]
+    ) -> None:
+        fmt = self._texture_format(color_target.get('format'))
+        if color_target.get('blend') is not None and fmt in {'depth32float', 'r32uint'}:
+            raise WebGPUPreflightFailure(
+                index, f'render pipeline {pipeline_id} color target format {fmt} does not support blending'
+            )
+        write_mask = color_target.get('write_mask')
+        if write_mask is not None and 'all' in write_mask and len(write_mask) > 1:
+            raise WebGPUPreflightFailure(
+                index,
+                f'render pipeline {pipeline_id} color target write_mask cannot combine all '
+                'with individual channels',
+            )
 
     def _check_compute_pipeline(
         self,
@@ -513,6 +553,81 @@ class WebGPUFixturePreflight:
         if required > available:
             raise WebGPUPreflightFailure(
                 index, f'index buffer needs {required} bytes but binding has {available}'
+            )
+
+    def _render_pass_attachment_formats(
+        self, index: int, command: Dict[str, Any], textures: Dict[int, Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        color_formats = []
+        for attachment in command.get('color_attachments', []):
+            self._check_load_store_ops(index, attachment)
+            color_formats.append(self._attachment_format(index, attachment, textures))
+
+        depth_stencil_format = None
+        depth_stencil_attachment = command.get('depth_stencil_attachment')
+        if depth_stencil_attachment is not None:
+            self._check_load_store_ops(index, depth_stencil_attachment, depth_stencil=True)
+            depth_stencil_format = self._attachment_format(index, depth_stencil_attachment, textures)
+
+        return {'color': color_formats, 'depth_stencil': depth_stencil_format}
+
+    def _attachment_format(
+        self, index: int, attachment: Dict[str, Any], textures: Dict[int, Dict[str, Any]]
+    ) -> str:
+        texture_id = attachment.get('texture_id')
+        if texture_id == 0:
+            return CANVAS_TEXTURE_FORMAT
+        texture = textures.get(texture_id)
+        if texture is None:
+            raise WebGPUPreflightFailure(index, f'unknown attachment texture {texture_id}')
+        fmt = self._texture_format(texture.get('format'))
+        if fmt not in SUPPORTED_TEXTURE_FORMATS:
+            raise WebGPUPreflightFailure(index, f'unsupported attachment texture format {fmt}')
+        return fmt
+
+    def _check_load_store_ops(
+        self, index: int, attachment: Dict[str, Any], depth_stencil: bool = False
+    ) -> None:
+        load_keys = ['depth_load_op', 'stencil_load_op'] if depth_stencil else ['load_op']
+        store_keys = ['depth_store_op', 'stencil_store_op'] if depth_stencil else ['store_op']
+        for key in load_keys:
+            if key in attachment and attachment[key] not in {'clear', 'load'}:
+                raise WebGPUPreflightFailure(index, f'unsupported {key}: {attachment[key]}')
+        for key in store_keys:
+            if key in attachment and attachment[key] not in {'store', 'discard'}:
+                raise WebGPUPreflightFailure(index, f'unsupported {key}: {attachment[key]}')
+
+    def _check_pipeline_pass_compatibility(
+        self, index: int, pipeline: Dict[str, Any], render_pass: Dict[str, Any]
+    ) -> None:
+        pipeline_color_formats = pipeline['_webgpu_color_target_formats']
+        pass_color_formats = render_pass['color_attachment_formats']
+        if len(pipeline_color_formats) != len(pass_color_formats):
+            raise WebGPUPreflightFailure(
+                index,
+                f'render pipeline {pipeline["id"]} color target count '
+                f'{len(pipeline_color_formats)} does not match render pass {render_pass["id"]} '
+                f'color attachment count {len(pass_color_formats)}',
+            )
+        for target_index, (pipeline_format, pass_format) in enumerate(
+            zip(pipeline_color_formats, pass_color_formats)
+        ):
+            if pipeline_format != pass_format:
+                raise WebGPUPreflightFailure(
+                    index,
+                    f'render pipeline {pipeline["id"]} color target {target_index} format '
+                    f'{pipeline_format} does not match render pass {render_pass["id"]} '
+                    f'attachment format {pass_format}',
+                )
+
+        pipeline_depth_format = pipeline['_webgpu_depth_stencil_format']
+        pass_depth_format = render_pass['depth_stencil_format']
+        if pipeline_depth_format != pass_depth_format:
+            raise WebGPUPreflightFailure(
+                index,
+                f'render pipeline {pipeline["id"]} depth_stencil format '
+                f'{pipeline_depth_format or "none"} does not match render pass {render_pass["id"]} '
+                f'attachment format {pass_depth_format or "none"}',
             )
 
     def _required_vertex_bytes(self, layout: Dict[str, Any], first: int, count: int) -> int:
