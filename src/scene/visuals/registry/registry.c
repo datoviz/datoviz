@@ -496,27 +496,148 @@ static bool _resolve_pass_caps(
 }
 
 
+/**
+ * Resolve bind-group role metadata for one visual descriptor.
+ *
+ * @param visual the visual descriptor
+ * @param controller_mode the visual's panel controller attachment mode
+ * @param out the output bind descriptor
+ * @return whether a bind descriptor was resolved
+ */
+static bool _resolve_bind_desc(
+    const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
+    DvzSceneVisualBindDesc* out)
+{
+    ANN(visual);
+    ANN(out);
+    dvz_memset(out, sizeof(DvzSceneVisualBindDesc), 0, sizeof(DvzSceneVisualBindDesc));
+    out->uses_scene_occlusion_set2 = visual->scene_occluded;
+    out->scene_occlusion = visual->scene_occlusion;
+    out->controller_mode = controller_mode;
+
+    DvzSceneVisualPassCaps caps = {0};
+    if (!_scene_visual_pass_caps_from_desc(visual, DVZ_ALPHA_OPAQUE, controller_mode, &caps))
+        return false;
+
+    switch (visual->kind)
+    {
+    case DVZ_SCENE_VISUAL_DESC_SPLAT:
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_PIXEL:
+    case DVZ_SCENE_VISUAL_DESC_POINT:
+    case DVZ_SCENE_VISUAL_DESC_MARKER:
+    case DVZ_SCENE_VISUAL_DESC_SPHERE:
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_material_set1 = caps.uses_material_set;
+        out->material_buffer_id = visual->material_buffer_id;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_material_set1 = caps.uses_material_set;
+        out->material_buffer_id = visual->material_buffer_id;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH:
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_image_set1 = caps.uses_image_set;
+        out->image_texture_id = visual->image_texture_id;
+        out->image_nearest_sampler = visual->image_nearest_sampler;
+        out->material_buffer_id = visual->material_buffer_id;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_SEGMENT:
+    case DVZ_SCENE_VISUAL_DESC_PATH:
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_material_set1 = caps.uses_material_set;
+        out->material_buffer_id = visual->material_buffer_id;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_IMAGE:
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_image_set1 = caps.uses_image_set;
+        out->image_texture_id = visual->image_texture_id;
+        out->image_nearest_sampler = visual->image_nearest_sampler;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_LABELS_SINT:
+    case DVZ_SCENE_VISUAL_DESC_LABELS_UINT:
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_labels_set1 = caps.uses_image_set;
+        out->labels_texture_id = visual->image_texture_id;
+        out->labels_visual_index = visual->labels_visual_index;
+        out->labels_state = visual->labels_state;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_GLYPH:
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_glyph_set1 = caps.uses_image_set;
+        out->glyph_texture_id = visual->image_texture_id;
+        out->glyph_atlas_encoding = visual->glyph_atlas_encoding;
+        out->glyph_distance_range_px =
+            visual->glyph_distance_range_px > 0.0f ? visual->glyph_distance_range_px : 4.0f;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_VOLUME:
+    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT:
+    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT:
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_volume_set1 = caps.uses_volume_set;
+        out->volume_texture_id = visual->volume_texture_id;
+        out->volume_transfer_texture_id = visual->volume_transfer_texture_id;
+        out->volume_label_lookup_buffer_id = visual->volume_label_lookup_buffer_id;
+        out->volume_label_lookup_buffer_size = visual->volume_label_lookup_buffer_size;
+        out->volume_visual_index = visual->volume_visual_index;
+        out->volume_transfer_rgba = visual->volume_transfer_rgba;
+        out->volume_occluded = visual->volume_occluded;
+        out->volume_occlusion = visual->volume_occlusion;
+        out->volume_state = visual->volume_state;
+        if (
+            visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT ||
+            visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT)
+            out->volume_state.sampling = DVZ_VOLUME_SAMPLING_NEAREST;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_NONE:
+    default:
+        return false;
+    }
+}
+
+
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
 static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
-    {DVZ_VISUAL_TYPE_POINT, "point", _lower_point, _resolve_pass_caps},
-    {DVZ_VISUAL_TYPE_PIXEL, "pixel", _lower_pixel, _resolve_pass_caps},
-    {DVZ_VISUAL_TYPE_MARKER, "marker", _lower_marker, _resolve_pass_caps},
-    {DVZ_VISUAL_TYPE_SEGMENT, "segment", _lower_segment, _resolve_pass_caps},
-    {DVZ_VISUAL_TYPE_PATH, "path", _lower_path, _resolve_pass_caps},
-    {DVZ_VISUAL_TYPE_IMAGE, "image", _lower_image, _resolve_pass_caps},
-    {DVZ_VISUAL_TYPE_MESH, "mesh", _lower_mesh, _resolve_pass_caps},
-    {DVZ_VISUAL_TYPE_VOLUME, "volume", _lower_volume, _resolve_pass_caps},
-    {DVZ_VISUAL_TYPE_PRIMITIVE, "primitive", _lower_primitive, _resolve_pass_caps},
-    {DVZ_VISUAL_TYPE_SPHERE, "sphere", _lower_sphere, _resolve_pass_caps},
-    {DVZ_VISUAL_TYPE_GLYPH, "glyph", _lower_glyph, _resolve_pass_caps},
-    {DVZ_VISUAL_TYPE_TEXT, "text", _lower_text, _resolve_pass_caps},
-    {DVZ_VISUAL_TYPE_LABELS, "labels", _lower_labels, _resolve_pass_caps},
-    {DVZ_VISUAL_TYPE_SPLAT, "splat", _lower_splat, _resolve_pass_caps},
-    {DVZ_VISUAL_TYPE_VECTOR, "vector", _lower_vector, _resolve_pass_caps},
+    {DVZ_VISUAL_TYPE_POINT, "point", _lower_point, _resolve_pass_caps, _resolve_bind_desc},
+    {DVZ_VISUAL_TYPE_PIXEL, "pixel", _lower_pixel, _resolve_pass_caps, _resolve_bind_desc},
+    {DVZ_VISUAL_TYPE_MARKER, "marker", _lower_marker, _resolve_pass_caps, _resolve_bind_desc},
+    {DVZ_VISUAL_TYPE_SEGMENT, "segment", _lower_segment, _resolve_pass_caps, _resolve_bind_desc},
+    {DVZ_VISUAL_TYPE_PATH, "path", _lower_path, _resolve_pass_caps, _resolve_bind_desc},
+    {DVZ_VISUAL_TYPE_IMAGE, "image", _lower_image, _resolve_pass_caps, _resolve_bind_desc},
+    {DVZ_VISUAL_TYPE_MESH, "mesh", _lower_mesh, _resolve_pass_caps, _resolve_bind_desc},
+    {DVZ_VISUAL_TYPE_VOLUME, "volume", _lower_volume, _resolve_pass_caps, _resolve_bind_desc},
+    {DVZ_VISUAL_TYPE_PRIMITIVE, "primitive", _lower_primitive, _resolve_pass_caps,
+     _resolve_bind_desc},
+    {DVZ_VISUAL_TYPE_SPHERE, "sphere", _lower_sphere, _resolve_pass_caps, _resolve_bind_desc},
+    {DVZ_VISUAL_TYPE_GLYPH, "glyph", _lower_glyph, _resolve_pass_caps, _resolve_bind_desc},
+    {DVZ_VISUAL_TYPE_TEXT, "text", _lower_text, _resolve_pass_caps, _resolve_bind_desc},
+    {DVZ_VISUAL_TYPE_LABELS, "labels", _lower_labels, _resolve_pass_caps, _resolve_bind_desc},
+    {DVZ_VISUAL_TYPE_SPLAT, "splat", _lower_splat, _resolve_pass_caps, _resolve_bind_desc},
+    {DVZ_VISUAL_TYPE_VECTOR, "vector", _lower_vector, _resolve_pass_caps, _resolve_bind_desc},
 };
 
 

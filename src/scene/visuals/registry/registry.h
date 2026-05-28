@@ -39,12 +39,17 @@ typedef bool (*DvzVisualFamilyPassCapsFn)(
     const DvzVisual* visual, const DvzPanelAttach* attach, const DvzVisualLowering* lowering,
     DvzSceneVisualPassCaps* out);
 
+typedef bool (*DvzVisualFamilyBindDescFn)(
+    const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
+    DvzSceneVisualBindDesc* out);
+
 struct DvzVisualFamilyOps
 {
     DvzVisualType type;
     const char* name;
     DvzVisualFamilyLoweringFn resolve_lowering;
     DvzVisualFamilyPassCapsFn resolve_pass_caps;
+    DvzVisualFamilyBindDescFn resolve_bind_desc;
 };
 
 
