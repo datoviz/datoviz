@@ -3462,6 +3462,7 @@ int test_scene_sampled_field_3d_emits_runtime_texture_upload(
     AT(_scene_emit_sampled_field_texture_upload(frame0, "tex.field.volume", field));
     AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.color", false));
     AT(dvz_frame_plan_render_visual(frame0, "visual.texture.volume"));
+    AT(dvz_frame_plan_render_allow_untyped_visuals(frame0));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -3526,6 +3527,7 @@ int test_scene_sampled_field_3d_emits_runtime_texture_upload(
     AT(_scene_emit_sampled_field_texture_upload(frame1, "tex.field.volume", field));
     AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.color", false));
     AT(dvz_frame_plan_render_visual(frame1, "visual.texture.volume"));
+    AT(dvz_frame_plan_render_allow_untyped_visuals(frame1));
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream1 =
         dvz_frame_plan_emitter_emit_drp2(emitter, frame1, &caps, &report, &emit_cfg);

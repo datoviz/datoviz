@@ -26,6 +26,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "canvas_internal.h"
+#include "frame_plan/frame_plan.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
 #include "datoviz/input/keyboard.h"
@@ -843,6 +844,7 @@ static void _dvz_canvas_draw_scene_drp2(
                    live_point_size);
     ok = ok && dvz_frame_plan_render(plan, "panel.0", "target.canvas.color", false);
     ok = ok && dvz_frame_plan_render_visual(plan, "visual.point.0");
+    ok = ok && dvz_frame_plan_render_allow_untyped_visuals(plan);
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
