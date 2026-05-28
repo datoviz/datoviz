@@ -651,6 +651,8 @@ int test_scene_pixel_depth_cue_toggle_switches_pipeline(TstContext* suite, const
 
 int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item);
 
+int test_scene_visual_family_registry_coverage(TstContext* suite, const TstCase* item);
+
 int test_scene_draw_contract_resolver_matrix(TstContext* suite, const TstCase* item);
 
 int test_scene_role_work_label_mapping_complete(TstContext* suite, const TstCase* item);

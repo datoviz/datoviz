@@ -1,0 +1,50 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
+
+/*************************************************************************************************/
+/*  Scene visual family registry                                                                 */
+/*************************************************************************************************/
+
+#pragma once
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "_scene.h"
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct DvzVisualFamilyOps DvzVisualFamilyOps;
+struct DvzVisualFamilyOps
+{
+    DvzVisualType type;
+    const char* name;
+};
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+const DvzVisualFamilyOps* _scene_visual_family_ops(DvzVisualType type);
+
+uint32_t _scene_visual_family_ops_count(void);
+
+const DvzVisualFamilyOps* _scene_visual_family_ops_at(uint32_t index);
+
+bool _scene_visual_family_ops_registered(DvzVisualType type);

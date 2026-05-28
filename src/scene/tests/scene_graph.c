@@ -102,6 +102,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_visual_material_setter);
     TST_CASE(test_scene_pixel_depth_cue_toggle_switches_pipeline);
     TST_CASE(test_scene_visual_pass_capabilities);
+    TST_CASE(test_scene_visual_family_registry_coverage);
     TST_CASE(test_scene_draw_contract_resolver_matrix);
     TST_CASE(test_scene_role_work_label_mapping_complete);
     TST_CASE(test_scene_render_contract_validation_errors);

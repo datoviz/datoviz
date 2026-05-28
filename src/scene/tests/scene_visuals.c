@@ -20,6 +20,7 @@
 #include "scene_graph_utils.h"
 #include "_frame_plan_runtime_internal.h"
 #include "datoviz/geom.h"
+#include "registry/registry.h"
 
 
 
@@ -8547,9 +8548,45 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
 
 
 /**
- * Verify the draw-contract resolver matrix maps visual facts and pass roles consistently.
+ * Verify that every active visual type is registered in the family-op table.
  *
  * @param suite the active test suite
  * @param item the active test item
  * @return 0 on success
  */
+int test_scene_visual_family_registry_coverage(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const DvzVisualType active_types[] = {
+        DVZ_VISUAL_TYPE_POINT,     DVZ_VISUAL_TYPE_PIXEL,  DVZ_VISUAL_TYPE_MARKER,
+        DVZ_VISUAL_TYPE_SEGMENT,   DVZ_VISUAL_TYPE_PATH,   DVZ_VISUAL_TYPE_IMAGE,
+        DVZ_VISUAL_TYPE_MESH,      DVZ_VISUAL_TYPE_VOLUME, DVZ_VISUAL_TYPE_PRIMITIVE,
+        DVZ_VISUAL_TYPE_SPHERE,    DVZ_VISUAL_TYPE_GLYPH,  DVZ_VISUAL_TYPE_TEXT,
+        DVZ_VISUAL_TYPE_LABELS,    DVZ_VISUAL_TYPE_SPLAT,  DVZ_VISUAL_TYPE_VECTOR,
+    };
+
+    AT(_scene_visual_family_ops_count() == DVZ_ARRAY_COUNT(active_types));
+    AT(!_scene_visual_family_ops_registered(DVZ_VISUAL_TYPE_NONE));
+
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(active_types); i++)
+    {
+        const DvzVisualFamilyOps* ops = _scene_visual_family_ops(active_types[i]);
+        ANN(ops);
+        AT(ops->type == active_types[i]);
+        ANN(ops->name);
+        AT(ops->name[0] != '\0');
+        AT(_scene_visual_family_ops_registered(active_types[i]));
+    }
+
+    for (uint32_t i = 0; i < _scene_visual_family_ops_count(); i++)
+    {
+        const DvzVisualFamilyOps* ops = _scene_visual_family_ops_at(i);
+        ANN(ops);
+        AT(_scene_visual_family_ops(ops->type) == ops);
+    }
+    AT(_scene_visual_family_ops_at(_scene_visual_family_ops_count()) == NULL);
+
+    return 0;
+}
