@@ -312,3 +312,21 @@ def test_webgpu_preflight_rejects_invalid_load_store_state() -> None:
         assert 'unsupported load_op: preserve' in exc.message
     else:
         raise AssertionError('invalid load/store state unexpectedly passed preflight')
+
+
+def test_webgpu_preflight_rejects_scissor_larger_than_attachment() -> None:
+    broken = _load_fixture('examples/webgpu/streams/attachment_multi_color_wgsl.json')
+    for command in broken['commands']:
+        if command['cmd'] == 'SetScissor':
+            command['width'] = 640
+            command['height'] = 480
+            break
+
+    preflight = WebGPUFixturePreflight(ROOT_DIR)
+    try:
+        preflight.validate_fixture(broken)
+    except WebGPUPreflightFailure as exc:
+        assert exc.command_index is not None
+        assert 'scissor rect 0x0 640x480 exceeds render pass extent 64x64' in exc.message
+    else:
+        raise AssertionError('oversized scissor unexpectedly passed preflight')

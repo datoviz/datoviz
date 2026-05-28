@@ -42,6 +42,8 @@ INDEX_FORMAT_BYTES = {
 }
 
 CANVAS_TEXTURE_FORMAT = 'rgba8unorm'
+CANVAS_TEXTURE_WIDTH = 64
+CANVAS_TEXTURE_HEIGHT = 64
 
 SUPPORTED_TEXTURE_FORMATS = {
     'bgra8unorm',
@@ -191,6 +193,8 @@ class WebGPUFixturePreflight:
                     'index_buffer': None,
                     'color_attachment_formats': attachment_formats['color'],
                     'depth_stencil_format': attachment_formats['depth_stencil'],
+                    'width': attachment_formats['width'],
+                    'height': attachment_formats['height'],
                 }
             elif cmd == 'SetPipeline':
                 render_pass = self._require_pass(index, passes, command['pass_id'])
@@ -227,6 +231,28 @@ class WebGPUFixturePreflight:
                 self._check_draw(index, command, passes, pipelines, buffers)
             elif cmd == 'DrawIndexed':
                 self._check_draw_indexed(index, command, passes, pipelines, buffers)
+            elif cmd == 'SetViewport':
+                render_pass = self._require_render_pass(index, passes, command['pass_id'])
+                self._check_render_rect(
+                    index,
+                    render_pass,
+                    command.get('x', 0),
+                    command.get('y', 0),
+                    command['width'],
+                    command['height'],
+                    'viewport',
+                )
+            elif cmd == 'SetScissor':
+                render_pass = self._require_render_pass(index, passes, command['pass_id'])
+                self._check_render_rect(
+                    index,
+                    render_pass,
+                    command.get('x', 0),
+                    command.get('y', 0),
+                    command['width'],
+                    command['height'],
+                    'scissor',
+                )
 
     def _check_bind_group_layout(self, index: int, command: Dict[str, Any]) -> None:
         for entry in command.get('entries', []):
@@ -567,31 +593,99 @@ class WebGPUFixturePreflight:
         self, index: int, command: Dict[str, Any], textures: Dict[int, Dict[str, Any]]
     ) -> Dict[str, Any]:
         color_formats = []
+        render_width = None
+        render_height = None
         for attachment in command.get('color_attachments', []):
             self._check_load_store_ops(index, attachment)
-            color_formats.append(self._attachment_format(index, attachment, textures))
+            info = self._attachment_info(index, attachment, textures)
+            color_formats.append(info['format'])
+            render_width, render_height = self._merge_attachment_extent(
+                index, render_width, render_height, info
+            )
 
         depth_stencil_format = None
         depth_stencil_attachment = command.get('depth_stencil_attachment')
         if depth_stencil_attachment is not None:
             self._check_load_store_ops(index, depth_stencil_attachment, depth_stencil=True)
-            depth_stencil_format = self._attachment_format(index, depth_stencil_attachment, textures)
+            info = self._attachment_info(index, depth_stencil_attachment, textures)
+            depth_stencil_format = info['format']
+            render_width, render_height = self._merge_attachment_extent(
+                index, render_width, render_height, info
+            )
 
-        return {'color': color_formats, 'depth_stencil': depth_stencil_format}
+        return {
+            'color': color_formats,
+            'depth_stencil': depth_stencil_format,
+            'width': render_width,
+            'height': render_height,
+        }
 
-    def _attachment_format(
+    def _attachment_info(
         self, index: int, attachment: Dict[str, Any], textures: Dict[int, Dict[str, Any]]
-    ) -> str:
+    ) -> Dict[str, Any]:
         texture_id = attachment.get('texture_id')
         if texture_id == 0:
-            return CANVAS_TEXTURE_FORMAT
+            return {
+                'format': CANVAS_TEXTURE_FORMAT,
+                'width': CANVAS_TEXTURE_WIDTH,
+                'height': CANVAS_TEXTURE_HEIGHT,
+            }
         texture = textures.get(texture_id)
         if texture is None:
             raise WebGPUPreflightFailure(index, f'unknown attachment texture {texture_id}')
         fmt = self._texture_format(texture.get('format'))
         if fmt not in SUPPORTED_TEXTURE_FORMATS:
             raise WebGPUPreflightFailure(index, f'unsupported attachment texture format {fmt}')
-        return fmt
+        return {
+            'format': fmt,
+            'width': self._texture_extent_value(texture.get('width'), CANVAS_TEXTURE_WIDTH),
+            'height': self._texture_extent_value(texture.get('height'), CANVAS_TEXTURE_HEIGHT),
+        }
+
+    def _texture_extent_value(self, value: Any, canvas_value: int) -> int:
+        if value == 'canvas':
+            return canvas_value
+        return int(value)
+
+    def _merge_attachment_extent(
+        self,
+        index: int,
+        current_width: Optional[int],
+        current_height: Optional[int],
+        info: Dict[str, Any],
+    ) -> tuple[int, int]:
+        width = info['width']
+        height = info['height']
+        if current_width is not None and (current_width != width or current_height != height):
+            raise WebGPUPreflightFailure(
+                index,
+                f'attachment extent {width}x{height} does not match render pass '
+                f'extent {current_width}x{current_height}',
+            )
+        return width, height
+
+    def _check_render_rect(
+        self,
+        index: int,
+        render_pass: Dict[str, Any],
+        x: float,
+        y: float,
+        width: float,
+        height: float,
+        label: str,
+    ) -> None:
+        if x < 0 or y < 0 or width < 0 or height < 0:
+            raise WebGPUPreflightFailure(index, f'{label} has negative origin or extent')
+        target_width = render_pass.get('width')
+        target_height = render_pass.get('height')
+        if target_width is None or target_height is None:
+            return
+        if x + width > target_width or y + height > target_height:
+            raise WebGPUPreflightFailure(
+                index,
+                f'{label} rect {x}x{y} {width}x{height} exceeds render pass '
+                f'extent {target_width}x{target_height}',
+            )
 
     def _check_load_store_ops(
         self, index: int, attachment: Dict[str, Any], depth_stencil: bool = False
