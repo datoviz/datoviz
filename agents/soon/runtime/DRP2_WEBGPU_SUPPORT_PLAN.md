@@ -24,10 +24,13 @@ Current automated evidence:
 
 1. `just webgpu-fixture-preflight` passes the committed strict subset: `39/39`.
 2. `just webgpu-runner-smoke` passes the browserless runner smoke:
-   `37` positive fixtures, `2` WebGPU streams, and `81` semantic negative fixtures.
+   `37` positive fixtures, `2` WebGPU streams, `81` semantic negative fixtures, and retained
+   `scene_point_wgsl` repeated-frame resource checks.
 3. The strict subset includes point, primitive, and image scene-emitted WGSL fixtures, multiple color
    attachments, depth attachments, copy commands, compute dispatch, readback, dynamic buffer
    updates, and destroy/lifetime validation.
+4. The browser fixture dashboard passed `120/120` rows on `2026-05-28` after the
+   repeated-runtime-frame smoke slice (`183812f27`).
 
 
 ## Remaining WebGPU Runtime Work
@@ -50,8 +53,8 @@ Completed since the initial follow-up note:
 
 Remaining follow-up commits:
 
-1. Run and record the browser fixture dashboard result for RC1, including any browser-specific
-   WebGPU validation errors not visible in the browserless smoke.
+1. Add real-browser retained-runtime stress rows to the fixture dashboard; see
+   [`WEBGPU_BROWSER_RUNTIME_STRESS_PLAN.md`](WEBGPU_BROWSER_RUNTIME_STRESS_PLAN.md).
 2. Add repeated-frame resource preservation checks for the main demo page path, especially resource
    counts across pan/zoom, resize, and stream reload.
 3. Replace remaining standalone-demo compatibility shortcuts where practical: implicit canvas
@@ -65,8 +68,10 @@ Remaining follow-up commits:
 
 ## Immediate Order
 
-1. Capture a real browser dashboard result for the committed subset.
-2. Add repeated-frame/resource-count checks for the browser demo path.
+1. Add browser dashboard retained-runtime stress rows from
+   [`WEBGPU_BROWSER_RUNTIME_STRESS_PLAN.md`](WEBGPU_BROWSER_RUNTIME_STRESS_PLAN.md).
+2. Add repeated-frame/resource-count checks for the browser demo path beyond the fixture dashboard,
+   including interactive update, resize, and stream reload.
 3. Add browser capability reporting and unsupported-feature diagnostics.
 4. Start the portable scene/WASM emission milestone from
    [`SCENE_WASM_WEBGPU_PORT_PLAN.md`](SCENE_WASM_WEBGPU_PORT_PLAN.md).

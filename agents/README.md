@@ -110,10 +110,11 @@ future agent should read when landing in the branch.
 
 Runtime, graph, and backend lanes:
 
-1. [soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md](soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md)
-2. [soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md](soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md)
-3. [soon/effects/SCENE_SCREEN_SPACE_EFFECTS_PLAN.md](soon/effects/SCENE_SCREEN_SPACE_EFFECTS_PLAN.md)
-4. [soon/scene/SCENE_WGSL_SHADER_VARIANTS_PLAN.md](soon/scene/SCENE_WGSL_SHADER_VARIANTS_PLAN.md)
+1. [soon/runtime/WEBGPU_BROWSER_RUNTIME_STRESS_PLAN.md](soon/runtime/WEBGPU_BROWSER_RUNTIME_STRESS_PLAN.md)
+2. [soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md](soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md)
+3. [soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md](soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md)
+4. [soon/effects/SCENE_SCREEN_SPACE_EFFECTS_PLAN.md](soon/effects/SCENE_SCREEN_SPACE_EFFECTS_PLAN.md)
+5. [soon/scene/SCENE_WGSL_SHADER_VARIANTS_PLAN.md](soon/scene/SCENE_WGSL_SHADER_VARIANTS_PLAN.md)
 
 Scene feature lanes:
 
