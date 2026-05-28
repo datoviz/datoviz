@@ -26,3 +26,5 @@
 /*************************************************************************************************/
 
 void _scene_mark_scale_dirty(DvzScale* scale);
+
+void _scene_mark_legend_dirty(DvzLegend* legend);
