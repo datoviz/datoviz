@@ -873,6 +873,204 @@ bool _scene_visual_shader_desc_apply_query_pick(
 
 
 /**
+ * Resolve shader metadata for graph-driven special render passes.
+ *
+ * @param visual mutable visual descriptor; pass policies may disable material data
+ * @param pass_role render pass role being prepared
+ * @param format_tag shader-format cache-key suffix
+ * @param shader output shader descriptor
+ * @param out_fragment_glsl_variant owned GLSL variant, when one is generated
+ * @param out_handled whether this helper handled the pass role
+ * @param out_skip whether this visual should be skipped for this pass
+ * @return whether the pass-specific shader descriptor was resolved successfully
+ */
+bool _scene_visual_shader_desc_for_pass(
+    DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role, const char* format_tag,
+    DvzSceneVisualShaderDesc* shader, char** out_fragment_glsl_variant, bool* out_handled,
+    bool* out_skip)
+{
+    ANN(visual);
+    ANN(format_tag);
+    ANN(shader);
+    ANN(out_fragment_glsl_variant);
+    ANN(out_handled);
+    ANN(out_skip);
+
+    *out_fragment_glsl_variant = NULL;
+    *out_handled = false;
+    *out_skip = false;
+
+    if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER)
+    {
+        *out_handled = true;
+        if (visual->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && !visual->has_normal)
+        {
+            *out_skip = true;
+            return true;
+        }
+        if (
+            visual->kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
+            visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE)
+        {
+            *out_skip = true;
+            return true;
+        }
+        if (visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE)
+            visual->material_buffer_id = 0;
+        if (visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
+        {
+            dvz_snprintf(
+                shader->vertex_key, sizeof(shader->vertex_key), "_vs_gbuffer_sphere%s",
+                format_tag);
+            dvz_snprintf(
+                shader->fragment_key, sizeof(shader->fragment_key), "_fs_gbuffer_sphere%s",
+                format_tag);
+            dvz_snprintf(
+                shader->pipeline_key, sizeof(shader->pipeline_key), "_pipe_gbuffer_sphere%s",
+                format_tag);
+            shader->vertex_glsl =
+                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER, false);
+            shader->fragment_glsl =
+                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER, true);
+            shader->vertex_spirv_key = "sphere_gbuffer_vert";
+            shader->fragment_spirv_key = "sphere_gbuffer_frag";
+        }
+        else
+        {
+            dvz_snprintf(
+                shader->vertex_key, sizeof(shader->vertex_key), "_vs_gbuffer_prim%s",
+                format_tag);
+            dvz_snprintf(
+                shader->fragment_key, sizeof(shader->fragment_key), "_fs_gbuffer_normal%s",
+                format_tag);
+            dvz_snprintf(
+                shader->pipeline_key, sizeof(shader->pipeline_key), "_pipe_gbuffer_t%u%s",
+                visual->topology, format_tag);
+            shader->vertex_glsl =
+                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_GBUFFER_NORMAL, false);
+            shader->fragment_glsl =
+                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_GBUFFER_NORMAL, true);
+            shader->vertex_spirv_key = "primitive_lit_vert";
+            shader->fragment_spirv_key = "gbuffer_normal_frag";
+        }
+        return true;
+    }
+
+    if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION)
+    {
+        *out_handled = true;
+        if (visual->kind != DVZ_SCENE_VISUAL_DESC_VOLUME)
+        {
+            *out_skip = true;
+            return true;
+        }
+        dvz_snprintf(shader->vertex_key, sizeof(shader->vertex_key), "_vs_vol_occ%s", format_tag);
+        dvz_snprintf(
+            shader->fragment_key, sizeof(shader->fragment_key), "_fs_vol_occ%s", format_tag);
+        dvz_snprintf(
+            shader->pipeline_key, sizeof(shader->pipeline_key), "_pipe_vol_occ%s", format_tag);
+        shader->vertex_glsl =
+            _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH, false);
+        shader->fragment_glsl =
+            _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH, true);
+        shader->vertex_spirv_key = "volume_slice_vert";
+        shader->fragment_spirv_key = "volume_occlusion_depth_frag";
+        shader->builtin_family = "scene.volume";
+        shader->builtin_variant = "occlusion_depth";
+        shader->builtin_pipeline = "scene.volume";
+        return true;
+    }
+
+    if (pass_role != DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION)
+        return true;
+
+    *out_handled = true;
+    if (visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME)
+    {
+        dvz_snprintf(
+            shader->vertex_key, sizeof(shader->vertex_key), "_vs_scene_occ_vol%s", format_tag);
+        dvz_snprintf(
+            shader->fragment_key, sizeof(shader->fragment_key), "_fs_scene_occ_vol%s",
+            format_tag);
+        dvz_snprintf(
+            shader->pipeline_key, sizeof(shader->pipeline_key), "_pipe_scene_occ_vol%s",
+            format_tag);
+        shader->vertex_glsl =
+            _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH, false);
+        shader->fragment_glsl =
+            _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH, true);
+        shader->vertex_spirv_key = "volume_slice_vert";
+        *out_fragment_glsl_variant = _shader_glsl_variant(
+            shader->fragment_glsl, "#define DVZ_SCENE_OCCLUSION_DEPTH_FAR 1\n");
+        shader->fragment_glsl = *out_fragment_glsl_variant;
+        shader->fragment_spirv_key = NULL;
+        return shader->fragment_glsl != NULL;
+    }
+
+    const char* stem = "prim";
+    const char* vertex_spirv_key = "primitive_vert";
+    DvzSceneBuiltinShader vertex_shader = DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE;
+    if (visual->kind == DVZ_SCENE_VISUAL_DESC_POINT)
+    {
+        stem = "point";
+        vertex_spirv_key = "point_vert";
+        vertex_shader = DVZ_SCENE_BUILTIN_SHADER_POINT;
+    }
+    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
+    {
+        stem = "pixel";
+        vertex_spirv_key = "pixel_vert";
+        vertex_shader = DVZ_SCENE_BUILTIN_SHADER_PIXEL;
+    }
+    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
+    {
+        stem = "marker";
+        vertex_spirv_key = "marker_vert";
+        vertex_shader = DVZ_SCENE_BUILTIN_SHADER_MARKER;
+    }
+    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_IMAGE)
+    {
+        stem = visual->image_pixel_space ? "image_px" : "image";
+        vertex_spirv_key = visual->image_pixel_space ? "image_pixel_vert" : "image_vert";
+        vertex_shader = visual->image_pixel_space ? DVZ_SCENE_BUILTIN_SHADER_IMAGE_PIXEL
+                                                  : DVZ_SCENE_BUILTIN_SHADER_IMAGE;
+    }
+    else if (visual->kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE)
+    {
+        *out_skip = true;
+        return true;
+    }
+
+    dvz_snprintf(
+        shader->vertex_key, sizeof(shader->vertex_key), "_vs_scene_occ_%s%s", stem, format_tag);
+    dvz_snprintf(
+        shader->fragment_key, sizeof(shader->fragment_key), "_fs_scene_occ_depth%s", format_tag);
+    dvz_snprintf(
+        shader->pipeline_key, sizeof(shader->pipeline_key), "_pipe_scene_occ_%s_t%u%s", stem,
+        visual->topology, format_tag);
+    shader->vertex_glsl = _builtin_shader_glsl(vertex_shader, false);
+    shader->fragment_glsl =
+        _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SCENE_OCCLUSION_DEPTH, true);
+    shader->vertex_spirv_key = vertex_spirv_key;
+    shader->fragment_spirv_key = "scene_occlusion_depth_frag";
+    if (visual->kind != DVZ_SCENE_VISUAL_DESC_IMAGE)
+    {
+        *out_fragment_glsl_variant = _shader_glsl_variant(
+            shader->fragment_glsl, "#define DVZ_SCENE_OCCLUSION_DEPTH_COLOR 1\n");
+        shader->fragment_glsl = *out_fragment_glsl_variant;
+        shader->fragment_spirv_key = NULL;
+        if (shader->fragment_glsl == NULL)
+            return false;
+    }
+    visual->has_normal = false;
+    visual->material_buffer_id = 0;
+    if (visual->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && visual->vbuf_count > 2)
+        visual->vbuf_count = 2;
+    return true;
+}
+
+
+/**
  * Resolve shader and pipeline cache-key metadata through the visual-family registry.
  *
  * @param visual the visual descriptor

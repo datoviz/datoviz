@@ -131,157 +131,22 @@ bool _emitter_prepare_render_multi(
 
         DvzSceneVisualShaderDesc shader = {0};
         char* scene_occlusion_fragment_glsl = NULL;
-        if (gbuffer_pass)
+        bool special_pass_handled = false;
+        bool special_pass_skip = false;
+        ok = _scene_visual_shader_desc_for_pass(
+            &desc, render->u.render.pass_role, fmt, &shader, &scene_occlusion_fragment_glsl,
+            &special_pass_handled, &special_pass_skip);
+        if (!ok)
         {
-            if (desc.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && !desc.has_normal)
-                continue;
-            if (desc.kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
-                desc.kind != DVZ_SCENE_VISUAL_DESC_SPHERE)
-                continue;
-            if (desc.kind != DVZ_SCENE_VISUAL_DESC_SPHERE)
-                desc.material_buffer_id = 0;
-            if (desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
-            {
-                dvz_snprintf(
-                    shader.vertex_key, sizeof(shader.vertex_key), "_vs_gbuffer_sphere%s", fmt);
-                dvz_snprintf(
-                    shader.fragment_key, sizeof(shader.fragment_key), "_fs_gbuffer_sphere%s", fmt);
-                dvz_snprintf(
-                    shader.pipeline_key, sizeof(shader.pipeline_key), "_pipe_gbuffer_sphere%s",
-                    fmt);
-                shader.vertex_glsl =
-                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER, false);
-                shader.fragment_glsl =
-                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER, true);
-                shader.vertex_spirv_key = "sphere_gbuffer_vert";
-                shader.fragment_spirv_key = "sphere_gbuffer_frag";
-            }
-            else
-            {
-                dvz_snprintf(
-                    shader.vertex_key, sizeof(shader.vertex_key), "_vs_gbuffer_prim%s", fmt);
-                dvz_snprintf(
-                    shader.fragment_key, sizeof(shader.fragment_key), "_fs_gbuffer_normal%s", fmt);
-                dvz_snprintf(
-                    shader.pipeline_key, sizeof(shader.pipeline_key), "_pipe_gbuffer_t%u%s",
-                    desc.topology, fmt);
-                shader.vertex_glsl =
-                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_GBUFFER_NORMAL, false);
-                shader.fragment_glsl =
-                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_GBUFFER_NORMAL, true);
-                shader.vertex_spirv_key = "primitive_lit_vert";
-                shader.fragment_spirv_key = "gbuffer_normal_frag";
-            }
+            _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
+            break;
         }
-        else if (volume_occlusion_pass)
+        if (special_pass_skip)
         {
-            if (desc.kind != DVZ_SCENE_VISUAL_DESC_VOLUME)
-                continue;
-            dvz_snprintf(shader.vertex_key, sizeof(shader.vertex_key), "_vs_vol_occ%s", fmt);
-            dvz_snprintf(shader.fragment_key, sizeof(shader.fragment_key), "_fs_vol_occ%s", fmt);
-            dvz_snprintf(shader.pipeline_key, sizeof(shader.pipeline_key), "_pipe_vol_occ%s", fmt);
-            shader.vertex_glsl =
-                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH, false);
-            shader.fragment_glsl =
-                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH, true);
-            shader.vertex_spirv_key = "volume_slice_vert";
-            shader.fragment_spirv_key = "volume_occlusion_depth_frag";
-            shader.builtin_family = "scene.volume";
-            shader.builtin_variant = "occlusion_depth";
-            shader.builtin_pipeline = "scene.volume";
+            _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
+            continue;
         }
-        else if (scene_occlusion_pass)
-        {
-            if (desc.kind == DVZ_SCENE_VISUAL_DESC_VOLUME)
-            {
-                dvz_snprintf(
-                    shader.vertex_key, sizeof(shader.vertex_key), "_vs_scene_occ_vol%s", fmt);
-                dvz_snprintf(
-                    shader.fragment_key, sizeof(shader.fragment_key), "_fs_scene_occ_vol%s", fmt);
-                dvz_snprintf(
-                    shader.pipeline_key, sizeof(shader.pipeline_key), "_pipe_scene_occ_vol%s",
-                    fmt);
-                shader.vertex_glsl =
-                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH, false);
-                shader.fragment_glsl =
-                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH, true);
-                shader.vertex_spirv_key = "volume_slice_vert";
-                scene_occlusion_fragment_glsl = _shader_glsl_variant(
-                    shader.fragment_glsl, "#define DVZ_SCENE_OCCLUSION_DEPTH_FAR 1\n");
-                shader.fragment_glsl = scene_occlusion_fragment_glsl;
-                shader.fragment_spirv_key = NULL;
-                if (shader.fragment_glsl == NULL)
-                {
-                    ok = false;
-                    break;
-                }
-            }
-            else
-            {
-                const char* stem = "prim";
-                const char* vertex_spirv_key = "primitive_vert";
-                DvzSceneBuiltinShader vertex_shader = DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE;
-                if (desc.kind == DVZ_SCENE_VISUAL_DESC_POINT)
-                {
-                    stem = "point";
-                    vertex_spirv_key = "point_vert";
-                    vertex_shader = DVZ_SCENE_BUILTIN_SHADER_POINT;
-                }
-                else if (desc.kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
-                {
-                    stem = "pixel";
-                    vertex_spirv_key = "pixel_vert";
-                    vertex_shader = DVZ_SCENE_BUILTIN_SHADER_PIXEL;
-                }
-                else if (desc.kind == DVZ_SCENE_VISUAL_DESC_MARKER)
-                {
-                    stem = "marker";
-                    vertex_spirv_key = "marker_vert";
-                    vertex_shader = DVZ_SCENE_BUILTIN_SHADER_MARKER;
-                }
-                else if (desc.kind == DVZ_SCENE_VISUAL_DESC_IMAGE)
-                {
-                    stem = desc.image_pixel_space ? "image_px" : "image";
-                    vertex_spirv_key =
-                        desc.image_pixel_space ? "image_pixel_vert" : "image_vert";
-                    vertex_shader = desc.image_pixel_space ? DVZ_SCENE_BUILTIN_SHADER_IMAGE_PIXEL
-                                                           : DVZ_SCENE_BUILTIN_SHADER_IMAGE;
-                }
-                else if (desc.kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE)
-                    continue;
-
-                dvz_snprintf(
-                    shader.vertex_key, sizeof(shader.vertex_key), "_vs_scene_occ_%s%s", stem, fmt);
-                dvz_snprintf(
-                    shader.fragment_key, sizeof(shader.fragment_key), "_fs_scene_occ_depth%s",
-                    fmt);
-                dvz_snprintf(
-                    shader.pipeline_key, sizeof(shader.pipeline_key), "_pipe_scene_occ_%s_t%u%s",
-                    stem, desc.topology, fmt);
-                shader.vertex_glsl = _builtin_shader_glsl(vertex_shader, false);
-                shader.fragment_glsl =
-                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SCENE_OCCLUSION_DEPTH, true);
-                shader.vertex_spirv_key = vertex_spirv_key;
-                shader.fragment_spirv_key = "scene_occlusion_depth_frag";
-                if (desc.kind != DVZ_SCENE_VISUAL_DESC_IMAGE)
-                {
-                    scene_occlusion_fragment_glsl = _shader_glsl_variant(
-                        shader.fragment_glsl, "#define DVZ_SCENE_OCCLUSION_DEPTH_COLOR 1\n");
-                    shader.fragment_glsl = scene_occlusion_fragment_glsl;
-                    shader.fragment_spirv_key = NULL;
-                    if (shader.fragment_glsl == NULL)
-                    {
-                        ok = false;
-                        break;
-                    }
-                }
-                desc.has_normal = false;
-                desc.material_buffer_id = 0;
-                if (desc.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && desc.vbuf_count > 2)
-                    desc.vbuf_count = 2;
-            }
-        }
-        else if (!_scene_visual_shader_desc(
+        if (!special_pass_handled && !_scene_visual_shader_desc(
                      &desc, render->u.render.picking, wboit_accumulation, fmt, &shader))
             continue;
         DvzAlphaMode alpha_mode = render->u.render.visual_metadata[i].has_metadata

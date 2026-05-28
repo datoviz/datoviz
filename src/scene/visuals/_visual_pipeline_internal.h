@@ -70,6 +70,11 @@ bool _scene_visual_shader_desc_apply_query_pick(
     const DvzSceneVisualDesc* visual, uint32_t color_target_format,
     DvzSceneVisualShaderDesc* shader, bool* out_applied);
 
+bool _scene_visual_shader_desc_for_pass(
+    DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role, const char* format_tag,
+    DvzSceneVisualShaderDesc* shader, char** out_fragment_glsl_variant, bool* out_handled,
+    bool* out_skip);
+
 uint64_t _scene_render_visual_resource_id(
     const DvzFramePlanEmitter* emitter, const char* encoded_visual_id,
     DvzFramePlanResourceRole role);
