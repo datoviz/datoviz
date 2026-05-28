@@ -12,14 +12,17 @@ as the source of truth before broad `src/scene` refactors.
 ## Pickup Order
 
 1. Finish low-risk derived payload extraction from `plan/visual_lowering_uploads.c`.
-2. Split FramePlan internals into lifecycle/facade, resources, passes, dependencies, and readback.
-3. Split render-contract resolution into facade, visual contracts, resource contracts, and
+2. Split render-contract resolution into facade, visual contracts, resource contracts, and
    diagnostics.
-4. Split runtime render emission into pass setup, visual draws, binding selection, and draw-count
+3. Split runtime render emission into pass setup, visual draws, binding selection, and draw-count
    resolution.
-5. Split core scene ownership once plan/runtime churn is easier to inspect.
-6. Split annotation/domain helpers where generated visuals and public object state are mixed.
-7. Tighten query/interaction boundaries without changing picking semantics accidentally.
+4. Split core scene ownership once plan/runtime churn is easier to inspect.
+5. Split annotation/domain helpers where generated visuals and public object state are mixed.
+6. Tighten query/interaction boundaries without changing picking semantics accidentally.
+
+Completed on 2026-05-28: FramePlan internals were split into lifecycle/facade, node helpers,
+capabilities, diagnostics, upload resources, graph resources, node passes, graph passes,
+dependencies, graph validation, graph helpers, and readback owner files.
 
 
 ## Validation

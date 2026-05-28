@@ -16,19 +16,17 @@ As of 2026-05-28, the highest-value split candidates are:
    panels, and emitted-stream bookkeeping still share one translation unit.
 2. `src/scene/runtime/render_emit.c`: runtime command emission still combines pass setup,
    descriptor/bind decisions, visual draw emission, draw-count resolution, and graph/pass routing.
-3. `src/scene/plan/frame_plan.c`: frame-plan lifecycle, resource tables, pass tables, dependency
-   validation, readback bookkeeping, and JSON-facing state share a large file.
-4. `src/scene/plan/render_contract.c`: visual contract resolution and pass/resource contract
+3. `src/scene/plan/render_contract.c`: visual contract resolution and pass/resource contract
    diagnostics are still broad enough to hide policy changes.
-5. `src/scene/plan/visual_lowering_uploads.c`: some derived payload builders remain in plan code.
+4. `src/scene/plan/visual_lowering_uploads.c`: some derived payload builders remain in plan code.
    Continue moving only pure cache/data construction into family or subsystem helpers.
-6. `src/scene/annotation/text.c`, `axis.c`, and `scale.c`: retained annotation objects,
+5. `src/scene/annotation/text.c`, `axis.c`, and `scale.c`: retained annotation objects,
    layout/reserve policy, generated visuals, and text/glyph lowering are still mixed.
-7. `src/scene/domain/field.c` and `polygon.c`: public domain object state, sampled interpretation,
+6. `src/scene/domain/field.c` and `polygon.c`: public domain object state, sampled interpretation,
    generated visual glue, and upload dirtiness are still mixed.
-8. `src/scene/query/execute.c`: request execution is split better than before, but visual-family
+7. `src/scene/query/execute.c`: request execution is split better than before, but visual-family
    target policy and runtime readback orchestration should stay visibly separate.
-9. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
+8. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
    multiple ownership boundaries at once.
 
 
@@ -73,15 +71,23 @@ Validation: `just build`, `git diff --check`, and `direnv exec . just test scene
 
 ### 2. Split FramePlan Internals
 
-Target `src/scene/plan/frame_plan.c` before making larger runtime changes.
+Status: completed on 2026-05-28. Keep the current ownership unless a later behavior change exposes
+new coupling.
 
-Suggested ownership:
+Current ownership:
 
 1. `frame_plan.c`: public/internal frame-plan lifecycle and top-level facade.
-2. `frame_plan_resources.c`: resource table allocation, lookup, reuse, and resource metadata.
-3. `frame_plan_passes.c`: pass table allocation, attachments, draw/upload/readback node appenders.
-4. `frame_plan_dependencies.c`: dependency graph construction and validation diagnostics.
-5. `frame_plan_readback.c`: readback/copy metadata and request-facing bookkeeping.
+2. `frame_plan_nodes.c`: node storage growth, append/last helpers, and node accessors.
+3. `frame_plan_capabilities.c`: capability snapshot defaults and copy helper.
+4. `frame_plan_diagnostics.c`: diagnostic report helpers.
+5. `frame_plan_resources.c`: upload node resources and upload metadata.
+6. `frame_plan_graph_resources.c`: graph resource descriptors.
+7. `frame_plan_passes.c`: compute/render/clear node appenders and render visual metadata.
+8. `frame_plan_graph_passes.c`: graph pass descriptors, access builders, and attachments.
+9. `frame_plan_dependencies.c`: dependency graph count/get facade.
+10. `frame_plan_graph_helpers.c` and `frame_plan_graph_internal.h`: shared graph helper routines.
+11. `frame_plan_graph_validation.c`: graph validation diagnostics.
+12. `frame_plan_readback.c`: readback/copy metadata and request-facing bookkeeping.
 
 Keep existing `frame_plan_ascii.c`, `frame_plan_fixture.c`, `frame_plan_emit.c`,
 `visual_metadata.c`, and `image_query_plan.c` separate. Do not change FramePlan semantics while
