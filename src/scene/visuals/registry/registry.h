@@ -75,6 +75,8 @@ struct DvzVisualFamilyOps
     DvzVisualFamilyShaderDescFn resolve_shader_desc;
     DvzVisualFamilyDrawDescFn resolve_draw_desc;
     DvzVisualFamilyMetadataFn fill_metadata;
+    bool upload_position_topology;
+    bool upload_material_params;
 };
 
 

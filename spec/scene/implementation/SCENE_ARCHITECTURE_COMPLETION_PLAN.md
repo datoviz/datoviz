@@ -32,9 +32,10 @@ Important current state:
 7. `visuals/registry/` owns the first private `DvzVisualFamilyOps` table. It currently covers
    family identity, retained visual lowering, retained visual bounds, retained visual metadata fill,
    pass-capability resolution, bind descriptors, pipeline descriptors, shader descriptors, and draw
-   descriptors, with tests enforcing active-family coverage. Retained lowering, bind descriptors,
-   and normal pipeline descriptors are now implemented in the active family folders, while shared
-   default pass-capability resolution lives in `visuals/pass_caps.c`.
+   descriptors, plus the first generic upload-policy flags, with tests enforcing active-family
+   coverage. Retained lowering, bind descriptors, and normal pipeline descriptors are now
+   implemented in the active family folders, while shared default pass-capability resolution lives
+   in `visuals/pass_caps.c`.
 8. `visuals/attrs.c` and `visuals/desc.c` are smaller after the first split, and image/labels/volume
    metadata fill has moved behind family hooks. Draw descriptor hooks now live in active family
    folders and call the shared default draw helper. Active-family shader descriptor bodies now live
@@ -271,8 +272,10 @@ selection, runtime pipeline selection, runtime shader selection, special/pass sh
 pipeline policy, pass binding policy, and runtime draw-count packetization now route through
 visual-owned descriptors and registry hooks. Retained visual bounds now routes through the registry,
 with segment, vector, image, mesh, volume, sphere, and glyph reducers in family-owned files and the
-remaining position-attribute default handled by a shared hook. Continue by migrating upload, query,
-and remaining bounds logic into family-owned files incrementally.
+remaining position-attribute default handled by a shared hook. Generic position-topology and
+material-parameter upload decisions now use registry flags instead of enum lists in
+`scene_emit/uploads.c`. Continue by migrating upload, query, and remaining bounds logic into
+family-owned files incrementally.
 
 Steps:
 

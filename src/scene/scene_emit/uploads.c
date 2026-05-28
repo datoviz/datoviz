@@ -22,6 +22,7 @@
 #include "_scene.h"
 #include "scene_emit/scene_emit.h"
 #include "scene_emit/internal.h"
+#include "registry/registry.h"
 #include "_scene_resource_key.h"
 #include "_visual_pipeline.h"
 #include "_visual_internal.h"
@@ -75,6 +76,10 @@ void _scene_emit_visual_uploads(
             if (finished_visual)
                 continue;
 
+            const DvzVisualFamilyOps* ops = _scene_visual_family_ops(visual->type);
+            bool upload_position_topology = ops != NULL && ops->upload_position_topology;
+            bool upload_material_params = ops != NULL && ops->upload_material_params;
+
             if (!skip_dense_attrs)
             {
                 for (uint32_t ai = 0; ai < visual->attr_count; ai++)
@@ -104,12 +109,7 @@ void _scene_emit_visual_uploads(
                             node->u.upload.buffer_usage =
                                 _scene_buffer_drp2_usage(attr->buffer->desc.usage);
                             node->u.upload.item_stride = attr->buffer->desc.stride;
-                            if ((visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
-                                 visual->type == DVZ_VISUAL_TYPE_MESH ||
-                                 visual->type == DVZ_VISUAL_TYPE_PATH ||
-                                 visual->type == DVZ_VISUAL_TYPE_SPHERE ||
-                                 visual->type == DVZ_VISUAL_TYPE_GLYPH) &&
-                                strcmp(attr->name, "position") == 0)
+                            if (upload_position_topology && strcmp(attr->name, "position") == 0)
                             {
                                 dvz_frame_plan_upload_set_topology(
                                     plan, (uint32_t)visual->topology);
@@ -139,21 +139,13 @@ void _scene_emit_visual_uploads(
                     _scene_attach_upload_metadata(
                         plan, visual, vidx, role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
                         UINT32_MAX, attr->item_count);
-                    if ((visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
-                         visual->type == DVZ_VISUAL_TYPE_MESH ||
-                         visual->type == DVZ_VISUAL_TYPE_PATH ||
-                         visual->type == DVZ_VISUAL_TYPE_SPHERE ||
-                         visual->type == DVZ_VISUAL_TYPE_GLYPH) &&
-                        strcmp(attr->name, "position") == 0)
+                    if (upload_position_topology && strcmp(attr->name, "position") == 0)
                     {
                         dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
                     }
                 }
             }
-            if (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
-                visual->type == DVZ_VISUAL_TYPE_MARKER ||
-                visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
-                visual->type == DVZ_VISUAL_TYPE_MESH || visual->type == DVZ_VISUAL_TYPE_SPHERE)
+            if (upload_material_params)
             {
                 if (_scene_visual_needs_material_params(visual) && visual->material_params_dirty)
                 {
