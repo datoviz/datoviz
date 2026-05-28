@@ -702,27 +702,6 @@ void dvz_visual_set_visible(DvzVisual* visual, bool visible)
 
 
 /**
- * Create a Gaussian splat visual.
- *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual, or NULL on allocation failure
- */
-DvzVisual* dvz_splat(DvzScene* scene, uint32_t flags)
-{
-    ANN(scene);
-    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_SPLAT, flags);
-    if (visual == NULL)
-        return NULL;
-    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    visual->alpha_mode = DVZ_ALPHA_BLENDED;
-    visual->depth_test_enabled = true;
-    return visual;
-}
-
-
-
-/**
  * Create a segment visual.
  *
  * @param scene the scene
