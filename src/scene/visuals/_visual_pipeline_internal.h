@@ -80,6 +80,13 @@ bool _scene_visual_shader_desc_for_pass(
     DvzSceneVisualShaderDesc* shader, char** out_fragment_glsl_variant, bool* out_handled,
     bool* out_skip);
 
+bool _scene_visual_bind_desc_uses_scene_occlusion_set2(
+    const DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role);
+
+void _scene_visual_bind_desc_apply_pass_policy(
+    DvzSceneVisualBindDesc* bind, DvzFramePlanRenderPassRole pass_role, uint64_t sampled_depth_id,
+    bool sampled_depth_is_volume_occlusion, uint64_t scene_occlusion_depth_id);
+
 uint64_t _scene_render_visual_resource_id(
     const DvzFramePlanEmitter* emitter, const char* encoded_visual_id,
     DvzFramePlanResourceRole role);

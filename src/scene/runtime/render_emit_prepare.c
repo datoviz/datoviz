@@ -260,9 +260,8 @@ bool _emitter_prepare_render_multi(
         }
         bool scene_occluded_shader =
             desc.scene_occluded && scene_occlusion_depth_id != 0 && !scene_occlusion_pass;
-        bool scene_occlusion_uses_set2 = desc.image_texture_id != 0 ||
-                                         desc.volume_texture_id != 0 ||
-                                         (desc.material_buffer_id != 0 && !gbuffer_pass);
+        bool scene_occlusion_uses_set2 = _scene_visual_bind_desc_uses_scene_occlusion_set2(
+            &desc, render->u.render.pass_role);
         if (scene_occluded_shader)
         {
             ok = _runtime_key_append(
@@ -606,36 +605,9 @@ bool _emitter_prepare_render_multi(
             ok = false;
             break;
         }
-        if (scene_occlusion_pass)
-        {
-            bind.uses_image_set1 = false;
-            bind.image_texture_id = 0;
-            bind.uses_glyph_set1 = false;
-            bind.glyph_texture_id = 0;
-            bind.uses_material_set1 = false;
-            bind.material_buffer_id = 0;
-            bind.uses_scene_occlusion_set2 = false;
-            bind.scene_occlusion_depth_texture_id = 0;
-        }
-        bool volume_depth_producer_pass = volume_occlusion_pass || scene_occlusion_pass;
-        if (bind.uses_volume_set1 && !volume_depth_producer_pass && !bind.volume_occluded)
-            bind.volume_occlusion.enabled = false;
-        if (bind.uses_volume_set1 && volume_depth_producer_pass)
-            bind.volume_occlusion.enabled = true;
-        if (bind.uses_volume_set1)
-        {
-            if (volume_depth_producer_pass)
-                bind.volume_bind_variant = 2;
-            else if (sampled_depth_is_volume_occlusion && bind.volume_occluded)
-                bind.volume_bind_variant = 1;
-            else
-                bind.volume_bind_variant = 0;
-        }
-        if (bind.uses_volume_set1 && sampled_depth_id != 0 &&
-            (!sampled_depth_is_volume_occlusion || bind.volume_occluded))
-            bind.volume_depth_texture_id = sampled_depth_id;
-        if (bind.uses_scene_occlusion_set2)
-            bind.scene_occlusion_depth_texture_id = scene_occlusion_depth_id;
+        _scene_visual_bind_desc_apply_pass_policy(
+            &bind, render->u.render.pass_role, sampled_depth_id, sampled_depth_is_volume_occlusion,
+            scene_occlusion_depth_id);
         if (bind.uses_common_set0)
         {
             if (bind.uses_fixed_common)
@@ -669,7 +641,7 @@ bool _emitter_prepare_render_multi(
                                sizeof(DvzSceneMaterialParams));
             vis_bg_set1 = material_bg_id;
         }
-        if (bind.uses_image_set1 && desc.kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
+        if (bind.uses_image_set1 && bind.uses_textured_mesh_set1)
         {
             if (!_resolve_textured_mesh_bind_group_layout(emitter, stream, &textured_mesh_bgl_id))
             {

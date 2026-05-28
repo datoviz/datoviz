@@ -547,6 +547,7 @@ static bool _resolve_bind_desc(
         out->uses_common_set0 = caps.uses_common_set;
         out->uses_fixed_common = caps.fixed_controller;
         out->uses_image_set1 = caps.uses_image_set;
+        out->uses_textured_mesh_set1 = caps.uses_image_set;
         out->image_texture_id = visual->image_texture_id;
         out->image_nearest_sampler = visual->image_nearest_sampler;
         out->material_buffer_id = visual->material_buffer_id;
