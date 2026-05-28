@@ -64,3 +64,7 @@ bool _image_texture_upload_payload(DvzVisual* visual, DvzImageTextureUploadPaylo
 void _image_gpu_cache_free(DvzImageGpuCache* cache);
 
 bool _scene_image_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
+
+bool _scene_image_visual_fill_metadata(
+    const DvzVisual* visual, const DvzVisualLowering* lowering,
+    DvzFramePlanVisualMeta* metadata);

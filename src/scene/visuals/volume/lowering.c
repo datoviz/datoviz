@@ -17,6 +17,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_visual_pipeline_internal.h"
 #include "sample_profile.h"
 
 
@@ -76,4 +77,38 @@ bool _scene_volume_visual_lowering(const DvzVisual* visual, DvzVisualLowering* o
     out->draw_position_attr = "position";
     out->renderable_kind = DVZ_RENDERABLE_VOLUME_PROXY;
     return _volume_desc_kind(visual, &out->desc_kind);
+}
+
+
+
+/**
+ * Fill volume visual FramePlan metadata.
+ *
+ * @param visual the retained visual
+ * @param lowering resolved lowering facts
+ * @param metadata the metadata being built
+ * @return whether metadata was filled
+ */
+bool _scene_volume_visual_fill_metadata(
+    const DvzVisual* visual, const DvzVisualLowering* lowering,
+    DvzFramePlanVisualMeta* metadata)
+{
+    ANN(visual);
+    ANN(lowering);
+    ANN(metadata);
+
+    if (!_scene_visual_desc_is_volume(lowering->desc_kind))
+        return true;
+    metadata->has_volume = true;
+    metadata->volume_state = visual->volume;
+    metadata->volume_occluded = visual->volume_occluded;
+
+    DvzSceneSampleProfile profile = {0};
+    metadata->volume_transfer_rgba =
+        visual->field != NULL &&
+        _scene_sample_profile_resolve(
+            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+            &profile) &&
+        _scene_sample_profile_is_direct_rgba(&profile);
+    return true;
 }

@@ -15,6 +15,8 @@
 
 #include "image/internal.h"
 
+#include <stdint.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_visual_pipeline_internal.h"
@@ -46,5 +48,35 @@ bool _scene_image_visual_lowering(const DvzVisual* visual, DvzVisualLowering* ou
     {
         out->draw_position_attr = "position_px";
     }
+    return true;
+}
+
+
+
+/**
+ * Fill image visual FramePlan metadata.
+ *
+ * @param visual the retained visual
+ * @param lowering resolved lowering facts
+ * @param metadata the metadata being built
+ * @return whether metadata was filled
+ */
+bool _scene_image_visual_fill_metadata(
+    const DvzVisual* visual, const DvzVisualLowering* lowering,
+    DvzFramePlanVisualMeta* metadata)
+{
+    ANN(visual);
+    ANN(lowering);
+    ANN(metadata);
+
+    if (lowering->desc_kind != DVZ_SCENE_VISUAL_DESC_IMAGE)
+        return true;
+    if (!_image_uses_generated_quads(visual))
+        return true;
+    if (visual->image_gpu.vertex_count > UINT32_MAX)
+        return false;
+    if (visual->image_gpu.vertex_count > 0)
+        metadata->vertex_count = (uint32_t)visual->image_gpu.vertex_count;
+    metadata->image_pixel_space = visual->image_gpu.pixel_space;
     return true;
 }

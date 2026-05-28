@@ -26,3 +26,7 @@
 /*************************************************************************************************/
 
 bool _scene_labels_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
+
+bool _scene_labels_visual_fill_metadata(
+    const DvzVisual* visual, const DvzVisualLowering* lowering,
+    DvzFramePlanVisualMeta* metadata);

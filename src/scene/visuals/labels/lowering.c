@@ -15,8 +15,11 @@
 
 #include "labels/internal.h"
 
+#include <stdint.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_visual_pipeline_internal.h"
 #include "sample_profile.h"
 
 
@@ -80,4 +83,43 @@ bool _scene_labels_visual_lowering(const DvzVisual* visual, DvzVisualLowering* o
     out->draw_position_attr = "position";
     out->renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD;
     return _labels_desc_kind(visual, &out->desc_kind);
+}
+
+
+
+/**
+ * Fill labels visual FramePlan metadata.
+ *
+ * @param visual the retained visual
+ * @param lowering resolved lowering facts
+ * @param metadata the metadata being built
+ * @return whether metadata was filled
+ */
+bool _scene_labels_visual_fill_metadata(
+    const DvzVisual* visual, const DvzVisualLowering* lowering,
+    DvzFramePlanVisualMeta* metadata)
+{
+    ANN(visual);
+    ANN(lowering);
+    ANN(metadata);
+
+    if (
+        lowering->desc_kind != DVZ_SCENE_VISUAL_DESC_LABELS_SINT &&
+        lowering->desc_kind != DVZ_SCENE_VISUAL_DESC_LABELS_UINT)
+    {
+        return true;
+    }
+
+    metadata->has_labels = true;
+    metadata->labels_state = visual->labels;
+    bool generated_quads = _scene_visual_has_dense_attr(visual, "extent") ||
+                           _scene_visual_has_dense_attr(visual, "extent_px");
+    if (!generated_quads)
+        return true;
+    if (visual->image_gpu.vertex_count > UINT32_MAX)
+        return false;
+    if (visual->image_gpu.vertex_count > 0)
+        metadata->vertex_count = (uint32_t)visual->image_gpu.vertex_count;
+    metadata->image_pixel_space = visual->image_gpu.pixel_space;
+    return true;
 }
