@@ -24,6 +24,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_frame_plan.h"
+#include "_frame_plan_internal.h"
 #include "_json.h"
 #include "_log.h"
 #include "_overflow.h"
@@ -34,7 +35,14 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static void _copy_label(char* dst, uint64_t dst_size, const char* src)
+/**
+ * Copy a FramePlan label into a fixed-size destination buffer.
+ *
+ * @param dst destination label buffer
+ * @param dst_size destination buffer size
+ * @param src source label string
+ */
+void _frame_plan_copy_label(char* dst, uint64_t dst_size, const char* src)
 {
     ANN(dst);
     ANN(src);
@@ -139,7 +147,14 @@ static bool _ensure_graph_pass_capacity(DvzFramePlan* plan)
 
 
 
-static DvzFramePlanNode* _append_node(DvzFramePlan* plan, DvzFramePlanNodeType type)
+/**
+ * Append a zero-initialized node to a FramePlan.
+ *
+ * @param plan the FramePlan
+ * @param type the node type
+ * @return the appended node, or NULL on failure
+ */
+DvzFramePlanNode* _frame_plan_append_node(DvzFramePlan* plan, DvzFramePlanNodeType type)
 {
     if (plan == NULL)
     {
@@ -160,7 +175,14 @@ static DvzFramePlanNode* _append_node(DvzFramePlan* plan, DvzFramePlanNodeType t
 
 
 
-static DvzFramePlanNode* _last_node(DvzFramePlan* plan, DvzFramePlanNodeType type)
+/**
+ * Return the most recently appended node when it has the expected type.
+ *
+ * @param plan the FramePlan
+ * @param type the expected node type
+ * @return the last node, or NULL when absent or of another type
+ */
+DvzFramePlanNode* _frame_plan_last_node(DvzFramePlan* plan, DvzFramePlanNodeType type)
 {
     if (plan == NULL || plan->count == 0)
         return NULL;
@@ -749,12 +771,12 @@ static bool _graph_dependency_from_access(
     if (out != NULL)
     {
         dvz_memset(out, sizeof(DvzFrameGraphDependency), 0, sizeof(DvzFrameGraphDependency));
-        _copy_label(out->resource_id, DVZ_SCENE_LABEL_SIZE, resource_id);
+        _frame_plan_copy_label(out->resource_id, DVZ_SCENE_LABEL_SIZE, resource_id);
         out->producer_pass_index = producer_index;
         out->consumer_pass_index = consumer_index;
-        _copy_label(
+        _frame_plan_copy_label(
             out->producer_pass_id, DVZ_SCENE_LABEL_SIZE, plan->graph_passes[producer_index].id);
-        _copy_label(
+        _frame_plan_copy_label(
             out->consumer_pass_id, DVZ_SCENE_LABEL_SIZE, plan->graph_passes[consumer_index].id);
         out->producer_usage = producer_usage;
         out->consumer_usage = consumer_usage;
@@ -967,7 +989,7 @@ static bool _graph_validate_attachment(
     }
 
     DvzFrameGraphAccess access = {0};
-    _copy_label(access.resource_id, DVZ_SCENE_LABEL_SIZE, attachment->resource_id);
+    _frame_plan_copy_label(access.resource_id, DVZ_SCENE_LABEL_SIZE, attachment->resource_id);
     access.usage = usage;
     if (!_graph_validate_access(plan, &access, pass_index, report))
         return false;
@@ -1631,7 +1653,7 @@ bool dvz_diagnostic_report_add(DvzDiagnosticReport* report, const char* message)
     ANN(message);
     if (report->count >= DVZ_SCENE_MAX_DIAGNOSTICS)
         return false;
-    _copy_label(
+    _frame_plan_copy_label(
         report->messages[report->count], DVZ_SCENE_DIAGNOSTIC_SIZE, message);
     report->count++;
     return true;
@@ -1682,7 +1704,7 @@ DvzFramePlan* dvz_frame_plan(const char* figure_id, uint64_t frame_index)
     DvzFramePlan* plan = (DvzFramePlan*)dvz_calloc(1, sizeof(DvzFramePlan));
     if (plan == NULL)
         return NULL;
-    _copy_label(plan->figure_id, DVZ_SCENE_LABEL_SIZE, figure_id ? figure_id : "");
+    _frame_plan_copy_label(plan->figure_id, DVZ_SCENE_LABEL_SIZE, figure_id ? figure_id : "");
     plan->frame_index = frame_index;
     plan->capacity = DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY;
     plan->nodes = (DvzFramePlanNode*)dvz_calloc(plan->capacity, sizeof(DvzFramePlanNode));
@@ -1805,13 +1827,13 @@ bool dvz_frame_plan_upload_bytes(
     DvzFramePlan* plan, const char* resource_id, uint64_t byte_offset, uint64_t byte_size,
     const char* data_tag, const void* data)
 {
-    DvzFramePlanNode* node = _append_node(plan, DVZ_FRAME_PLAN_NODE_UPLOAD);
+    DvzFramePlanNode* node = _frame_plan_append_node(plan, DVZ_FRAME_PLAN_NODE_UPLOAD);
     if (node == NULL)
         return false;
-    _copy_label(node->u.upload.resource_id, DVZ_SCENE_LABEL_SIZE, resource_id ? resource_id : "");
+    _frame_plan_copy_label(node->u.upload.resource_id, DVZ_SCENE_LABEL_SIZE, resource_id ? resource_id : "");
     node->u.upload.byte_offset = byte_offset;
     node->u.upload.byte_size = byte_size;
-    _copy_label(node->u.upload.data_tag, DVZ_SCENE_LABEL_SIZE, data_tag ? data_tag : "");
+    _frame_plan_copy_label(node->u.upload.data_tag, DVZ_SCENE_LABEL_SIZE, data_tag ? data_tag : "");
     node->u.upload.data = data;
     node->u.upload.topology = UINT32_MAX;
     return true;
@@ -1992,7 +2014,7 @@ bool dvz_frame_plan_upload_set_texture_3d_region(
  */
 bool dvz_frame_plan_upload_metadata(DvzFramePlan* plan, const DvzFramePlanUploadMeta* metadata)
 {
-    DvzFramePlanNode* node = _last_node(plan, DVZ_FRAME_PLAN_NODE_UPLOAD);
+    DvzFramePlanNode* node = _frame_plan_last_node(plan, DVZ_FRAME_PLAN_NODE_UPLOAD);
     if (node == NULL || metadata == NULL)
         return false;
     dvz_memcpy(
@@ -2017,10 +2039,10 @@ bool dvz_frame_plan_upload_metadata(DvzFramePlan* plan, const DvzFramePlanUpload
 bool dvz_frame_plan_compute(
     DvzFramePlan* plan, const char* shader_key, uint32_t x, uint32_t y, uint32_t z)
 {
-    DvzFramePlanNode* node = _append_node(plan, DVZ_FRAME_PLAN_NODE_COMPUTE);
+    DvzFramePlanNode* node = _frame_plan_append_node(plan, DVZ_FRAME_PLAN_NODE_COMPUTE);
     if (node == NULL)
         return false;
-    _copy_label(node->u.compute.shader_key, DVZ_SCENE_LABEL_SIZE, shader_key ? shader_key : "");
+    _frame_plan_copy_label(node->u.compute.shader_key, DVZ_SCENE_LABEL_SIZE, shader_key ? shader_key : "");
     node->u.compute.dispatch[0] = x;
     node->u.compute.dispatch[1] = y;
     node->u.compute.dispatch[2] = z;
@@ -2038,10 +2060,10 @@ bool dvz_frame_plan_compute(
  */
 bool dvz_frame_plan_compute_read(DvzFramePlan* plan, const char* resource_id)
 {
-    DvzFramePlanNode* node = _last_node(plan, DVZ_FRAME_PLAN_NODE_COMPUTE);
+    DvzFramePlanNode* node = _frame_plan_last_node(plan, DVZ_FRAME_PLAN_NODE_COMPUTE);
     if (node == NULL || node->u.compute.read_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
         return false;
-    _copy_label(
+    _frame_plan_copy_label(
         node->u.compute.reads[node->u.compute.read_count], DVZ_SCENE_LABEL_SIZE,
         resource_id ? resource_id : "");
     node->u.compute.read_count++;
@@ -2059,10 +2081,10 @@ bool dvz_frame_plan_compute_read(DvzFramePlan* plan, const char* resource_id)
  */
 bool dvz_frame_plan_compute_write(DvzFramePlan* plan, const char* resource_id)
 {
-    DvzFramePlanNode* node = _last_node(plan, DVZ_FRAME_PLAN_NODE_COMPUTE);
+    DvzFramePlanNode* node = _frame_plan_last_node(plan, DVZ_FRAME_PLAN_NODE_COMPUTE);
     if (node == NULL || node->u.compute.write_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
         return false;
-    _copy_label(
+    _frame_plan_copy_label(
         node->u.compute.writes[node->u.compute.write_count], DVZ_SCENE_LABEL_SIZE,
         resource_id ? resource_id : "");
     node->u.compute.write_count++;
@@ -2104,11 +2126,11 @@ bool dvz_frame_plan_render_panel_role(
     DvzFramePlan* plan, const char* panel_id, const char* render_target_id, bool picking,
     DvzPanelDesc desc, DvzFramePlanRenderPassRole pass_role)
 {
-    DvzFramePlanNode* node = _append_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
+    DvzFramePlanNode* node = _frame_plan_append_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
     if (node == NULL)
         return false;
-    _copy_label(node->u.render.panel_id, DVZ_SCENE_LABEL_SIZE, panel_id ? panel_id : "");
-    _copy_label(
+    _frame_plan_copy_label(node->u.render.panel_id, DVZ_SCENE_LABEL_SIZE, panel_id ? panel_id : "");
+    _frame_plan_copy_label(
         node->u.render.render_target_id, DVZ_SCENE_LABEL_SIZE,
         render_target_id ? render_target_id : "");
     node->u.render.picking = picking;
@@ -2121,7 +2143,7 @@ bool dvz_frame_plan_render_panel_role(
 
 DvzFramePlanNode* dvz_frame_plan_last_render_node(DvzFramePlan* plan)
 {
-    return _last_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
+    return _frame_plan_last_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
 }
 
 
@@ -2145,11 +2167,11 @@ bool dvz_frame_plan_clear(DvzFramePlan* plan, const char* panel_id, const char* 
 bool dvz_frame_plan_clear_panel(
     DvzFramePlan* plan, const char* panel_id, const char* render_target_id, DvzPanelDesc desc)
 {
-    DvzFramePlanNode* node = _append_node(plan, DVZ_FRAME_PLAN_NODE_CLEAR);
+    DvzFramePlanNode* node = _frame_plan_append_node(plan, DVZ_FRAME_PLAN_NODE_CLEAR);
     if (node == NULL)
         return false;
-    _copy_label(node->u.clear.panel_id, DVZ_SCENE_LABEL_SIZE, panel_id ? panel_id : "");
-    _copy_label(
+    _frame_plan_copy_label(node->u.clear.panel_id, DVZ_SCENE_LABEL_SIZE, panel_id ? panel_id : "");
+    _frame_plan_copy_label(
         node->u.clear.render_target_id, DVZ_SCENE_LABEL_SIZE,
         render_target_id ? render_target_id : "");
     node->u.clear.desc = desc;
@@ -2167,10 +2189,10 @@ bool dvz_frame_plan_clear_panel(
  */
 bool dvz_frame_plan_render_visual(DvzFramePlan* plan, const char* visual_id)
 {
-    DvzFramePlanNode* node = _last_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
+    DvzFramePlanNode* node = _frame_plan_last_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
     if (node == NULL || node->u.render.visual_count >= DVZ_SCENE_MAX_RENDER_VISUALS)
         return false;
-    _copy_label(
+    _frame_plan_copy_label(
         node->u.render.visuals[node->u.render.visual_count], DVZ_SCENE_LABEL_SIZE,
         visual_id ? visual_id : "");
     node->u.render.visual_count++;
@@ -2189,7 +2211,7 @@ bool dvz_frame_plan_render_visual(DvzFramePlan* plan, const char* visual_id)
 bool dvz_frame_plan_render_visual_metadata(
     DvzFramePlan* plan, const DvzFramePlanVisualMeta* metadata)
 {
-    DvzFramePlanNode* node = _last_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
+    DvzFramePlanNode* node = _frame_plan_last_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
     if (node == NULL || metadata == NULL || node->u.render.visual_count == 0)
         return false;
     uint32_t index = node->u.render.visual_count - 1;
@@ -2197,93 +2219,6 @@ bool dvz_frame_plan_render_visual_metadata(
         &node->u.render.visual_metadata[index], sizeof(DvzFramePlanVisualMeta), metadata,
         sizeof(DvzFramePlanVisualMeta));
     node->u.render.visual_metadata[index].has_metadata = true;
-    return true;
-}
-
-
-
-/**
- * Append a copy node.
- *
- * @param plan the FramePlan
- * @param src_resource_id the source resource id
- * @param dst_resource_id the destination resource id
- * @param byte_size the copy size in bytes
- * @return whether the node was appended
- */
-bool dvz_frame_plan_copy(
-    DvzFramePlan* plan, const char* src_resource_id, const char* dst_resource_id,
-    uint64_t byte_size)
-{
-    DvzFramePlanCopyDesc desc = {
-        .src_resource_id = src_resource_id,
-        .dst_resource_id = dst_resource_id,
-        .extent = {1, 1, 1},
-        .bytes_per_texel = byte_size > UINT32_MAX ? UINT32_MAX : (uint32_t)byte_size,
-        .bytes_per_row = byte_size,
-        .rows_per_image = 1,
-        .byte_size = byte_size,
-    };
-    return dvz_frame_plan_copy_ex(plan, &desc);
-}
-
-
-
-/**
- * Append an explicit texture-to-buffer copy node.
- *
- * @param plan the FramePlan
- * @param desc the copy descriptor
- * @return whether the node was appended
- */
-bool dvz_frame_plan_copy_ex(DvzFramePlan* plan, const DvzFramePlanCopyDesc* desc)
-{
-    ANN(desc);
-    DvzFramePlanNode* node = _append_node(plan, DVZ_FRAME_PLAN_NODE_COPY);
-    if (node == NULL)
-        return false;
-    _copy_label(
-        node->u.copy.src_resource_id, DVZ_SCENE_LABEL_SIZE,
-        desc->src_resource_id ? desc->src_resource_id : "");
-    _copy_label(
-        node->u.copy.dst_resource_id, DVZ_SCENE_LABEL_SIZE,
-        desc->dst_resource_id ? desc->dst_resource_id : "");
-    node->u.copy.src_attachment_index = desc->src_attachment_index;
-    node->u.copy.src_origin[0] = desc->src_origin[0];
-    node->u.copy.src_origin[1] = desc->src_origin[1];
-    node->u.copy.src_origin[2] = desc->src_origin[2];
-    node->u.copy.extent[0] = desc->extent[0] != 0 ? desc->extent[0] : 1;
-    node->u.copy.extent[1] = desc->extent[1] != 0 ? desc->extent[1] : 1;
-    node->u.copy.extent[2] = desc->extent[2] != 0 ? desc->extent[2] : 1;
-    node->u.copy.format = desc->format;
-    node->u.copy.bytes_per_texel = desc->bytes_per_texel;
-    node->u.copy.bytes_per_row =
-        desc->bytes_per_row != 0 ? desc->bytes_per_row : desc->byte_size;
-    node->u.copy.rows_per_image = desc->rows_per_image != 0 ? desc->rows_per_image : 1;
-    node->u.copy.dst_offset = desc->dst_offset;
-    node->u.copy.byte_size = desc->byte_size;
-    node->u.copy.request_id = desc->request_id;
-    return true;
-}
-
-
-
-/**
- * Append a readback node.
- *
- * @param plan the FramePlan
- * @param resource_id the resource id
- * @param request_id the request id
- * @return whether the node was appended
- */
-bool dvz_frame_plan_readback(DvzFramePlan* plan, const char* resource_id, const char* request_id)
-{
-    DvzFramePlanNode* node = _append_node(plan, DVZ_FRAME_PLAN_NODE_READBACK);
-    if (node == NULL)
-        return false;
-    _copy_label(
-        node->u.readback.resource_id, DVZ_SCENE_LABEL_SIZE, resource_id ? resource_id : "");
-    _copy_label(node->u.readback.request_id, DVZ_SCENE_LABEL_SIZE, request_id ? request_id : "");
     return true;
 }
 
@@ -2468,7 +2403,7 @@ bool dvz_frame_graph_pass_read(
 
     DvzFrameGraphAccess* access = &pass->reads[pass->read_count++];
     dvz_memset(access, sizeof(DvzFrameGraphAccess), 0, sizeof(DvzFrameGraphAccess));
-    _copy_label(access->resource_id, DVZ_SCENE_LABEL_SIZE, resource_id);
+    _frame_plan_copy_label(access->resource_id, DVZ_SCENE_LABEL_SIZE, resource_id);
     access->usage = usage;
     return true;
 }
@@ -2492,7 +2427,7 @@ bool dvz_frame_graph_pass_write(
 
     DvzFrameGraphAccess* access = &pass->writes[pass->write_count++];
     dvz_memset(access, sizeof(DvzFrameGraphAccess), 0, sizeof(DvzFrameGraphAccess));
-    _copy_label(access->resource_id, DVZ_SCENE_LABEL_SIZE, resource_id);
+    _frame_plan_copy_label(access->resource_id, DVZ_SCENE_LABEL_SIZE, resource_id);
     access->usage = usage;
     return true;
 }
