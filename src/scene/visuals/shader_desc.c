@@ -1071,6 +1071,193 @@ bool _scene_visual_shader_desc_for_pass(
 
 
 /**
+ * Select the depth-peeling fragment shader variant.
+ *
+ * @param lit whether the visual carries normals and uses lit shading
+ * @param back_pass whether the pass writes the back-shell accumulation
+ * @return the built-in shader key
+ */
+static DvzSceneBuiltinShader _shader_depth_peel_fragment(bool lit, bool back_pass)
+{
+    if (lit)
+    {
+        return back_pass ? DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_BACK_LIT
+                         : DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_FRONT_LIT;
+    }
+    return back_pass ? DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_BACK
+                     : DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_FRONT;
+}
+
+
+/**
+ * Return the SPIR-V resource key for one depth-peeling fragment shader.
+ *
+ * @param shader the built-in shader key
+ * @return the embedded SPIR-V key, or NULL when unsupported
+ */
+static const char* _shader_depth_peel_fragment_spirv_key(DvzSceneBuiltinShader shader)
+{
+    switch (shader)
+    {
+    case DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_FRONT:
+        return "depth_peel_front_frag";
+    case DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_BACK:
+        return "depth_peel_back_frag";
+    case DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_FRONT_LIT:
+        return "depth_peel_front_lit_frag";
+    case DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_BACK_LIT:
+        return "depth_peel_back_lit_frag";
+    default:
+        return NULL;
+    }
+}
+
+
+/**
+ * Apply render-pass shader key and source policy after base shader resolution.
+ *
+ * @param visual the visual descriptor
+ * @param pass_role render pass role being prepared
+ * @param alpha_mode visual alpha mode
+ * @param controller_mode controller attachment mode for the visual
+ * @param picking whether the render pass is a picking pass
+ * @param pass_has_depth_attachment whether the pass carries a depth attachment
+ * @param force_point_depth whether point-like visuals must write depth
+ * @param wboit_accumulation whether the pass is WBOIT accumulation
+ * @param pass_sample_count multisample count for the pass
+ * @param pass_alpha_to_coverage whether alpha-to-coverage is enabled for the pass
+ * @param scene_occluded_shader whether the shader samples scene occlusion depth
+ * @param scene_occlusion_uses_set2 whether scene occlusion occupies bind set 2
+ * @param shader shader descriptor to update
+ * @param out_fragment_glsl_variant owned GLSL variant, when one is generated
+ * @param out_segment_coverage_blend whether stroke coverage blending should be configured
+ * @return whether the shader descriptor was updated successfully
+ */
+bool _scene_visual_shader_desc_apply_pass_policy(
+    const DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role,
+    DvzAlphaMode alpha_mode, DvzControllerMode controller_mode, bool picking,
+    bool pass_has_depth_attachment, bool force_point_depth, bool wboit_accumulation,
+    uint32_t pass_sample_count, bool pass_alpha_to_coverage, bool scene_occluded_shader,
+    bool scene_occlusion_uses_set2, DvzSceneVisualShaderDesc* shader,
+    char** out_fragment_glsl_variant, bool* out_segment_coverage_blend)
+{
+    ANN(visual);
+    ANN(shader);
+    ANN(out_fragment_glsl_variant);
+    ANN(out_segment_coverage_blend);
+
+    bool depth_peel_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
+                           pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
+    bool gbuffer_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER;
+    bool point_like = visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
+                      visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+                      visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER;
+    *out_segment_coverage_blend =
+        !picking &&
+        !_scene_alpha_mode_is_blended(alpha_mode) && !wboit_accumulation && !depth_peel_pass &&
+        _scene_visual_desc_is_stroke(visual->kind);
+
+    if (_scene_alpha_mode_is_blended(alpha_mode) &&
+        !_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_blend"))
+    {
+        return false;
+    }
+    if (
+        *out_segment_coverage_blend &&
+        !_shader_key_append(
+            shader->pipeline_key, sizeof(shader->pipeline_key), "_coverage_blend"))
+    {
+        return false;
+    }
+    if (!visual->depth_test_enabled)
+    {
+        if (!_shader_key_append(
+                shader->pipeline_key, sizeof(shader->pipeline_key), "_no_depth_test"))
+            return false;
+    }
+    else if (visual->depth_compare_op == VK_COMPARE_OP_GREATER)
+    {
+        if (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_depth_gt"))
+            return false;
+    }
+
+    if (_scene_alpha_mode_is_depth_peel(alpha_mode))
+    {
+        const char* peel_suffix =
+            pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ? "_peel_init" : "_peel_iter";
+        if (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), peel_suffix) ||
+            !_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), peel_suffix))
+        {
+            return false;
+        }
+        bool back_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
+        DvzSceneBuiltinShader peel_shader =
+            _shader_depth_peel_fragment(visual->has_normal, back_pass);
+        shader->fragment_glsl = _builtin_shader_glsl(peel_shader, true);
+        shader->fragment_spirv_key = _shader_depth_peel_fragment_spirv_key(peel_shader);
+    }
+    if (controller_mode == DVZ_CONTROLLER_FIXED)
+    {
+        if (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_fixed"))
+            return false;
+    }
+    if (pass_has_depth_attachment && !gbuffer_pass && !wboit_accumulation && !depth_peel_pass)
+    {
+        if (!_shader_key_append(
+                shader->pipeline_key, sizeof(shader->pipeline_key),
+                force_point_depth ? "_zwrite" : "_depth"))
+        {
+            return false;
+        }
+    }
+    if (pass_sample_count > 1)
+    {
+        char msaa_suffix[32];
+        dvz_snprintf(msaa_suffix, sizeof(msaa_suffix), "_msaa%u", pass_sample_count);
+        if (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), msaa_suffix))
+            return false;
+        if ((visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE || point_like) && pass_alpha_to_coverage)
+        {
+            if (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_a2c"))
+                return false;
+            if (visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
+            {
+                if (!_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), "_a2c"))
+                    return false;
+                shader->fragment_glsl =
+                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_A2C, true);
+                shader->fragment_spirv_key = "sphere_a2c_frag";
+            }
+        }
+    }
+    if (scene_occluded_shader)
+    {
+        if (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_scene_occ") ||
+            !_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), "_scene_occ"))
+        {
+            return false;
+        }
+        char scene_occlusion_defines[96];
+        dvz_snprintf(
+            scene_occlusion_defines, sizeof(scene_occlusion_defines),
+            "#define DVZ_SCENE_OCCLUSION 1\n#define DVZ_SCENE_OCCLUSION_SET %u\n",
+            scene_occlusion_uses_set2 ? 2u : 1u);
+        *out_fragment_glsl_variant =
+            _shader_glsl_variant(shader->fragment_glsl, scene_occlusion_defines);
+        shader->fragment_glsl = *out_fragment_glsl_variant;
+        shader->fragment_spirv_key = NULL;
+        shader->fragment_wgsl = NULL;
+        shader->builtin_family = NULL;
+        shader->builtin_variant = NULL;
+        shader->builtin_pipeline = NULL;
+        if (shader->fragment_glsl == NULL)
+            return false;
+    }
+    return true;
+}
+
+
+/**
  * Resolve shader and pipeline cache-key metadata through the visual-family registry.
  *
  * @param visual the visual descriptor

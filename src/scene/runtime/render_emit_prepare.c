@@ -152,12 +152,6 @@ bool _emitter_prepare_render_multi(
         DvzAlphaMode alpha_mode = render->u.render.visual_metadata[i].has_metadata
                                       ? render->u.render.visual_metadata[i].alpha_mode
                                       : DVZ_ALPHA_OPAQUE;
-        bool segment_coverage_blend =
-            !render->u.render.picking && _scene_visual_desc_is_stroke(desc.kind) &&
-            !_scene_alpha_mode_is_blended(alpha_mode) && !wboit_accumulation && !depth_peel_pass;
-        bool point_like_desc = desc.kind == DVZ_SCENE_VISUAL_DESC_POINT ||
-                               desc.kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
-                               desc.kind == DVZ_SCENE_VISUAL_DESC_MARKER;
         bool query_shader_applied = false;
         if (render->u.render.picking && cfg != NULL)
         {
@@ -170,124 +164,22 @@ bool _emitter_prepare_render_multi(
             }
             (void)query_shader_applied;
         }
-        if (_scene_alpha_mode_is_blended(alpha_mode))
-        {
-            ok = _runtime_key_append(
-                shader.pipeline_key, sizeof(shader.pipeline_key), "_blend", report);
-            if (!ok)
-                break;
-        }
-        if (segment_coverage_blend)
-        {
-            ok = _runtime_key_append(
-                shader.pipeline_key, sizeof(shader.pipeline_key), "_coverage_blend", report);
-            if (!ok)
-                break;
-        }
-        if (!desc.depth_test_enabled)
-        {
-            ok = _runtime_key_append(
-                shader.pipeline_key, sizeof(shader.pipeline_key), "_no_depth_test", report);
-            if (!ok)
-                break;
-        }
-        else if (desc.depth_compare_op == VK_COMPARE_OP_GREATER)
-        {
-            ok = _runtime_key_append(
-                shader.pipeline_key, sizeof(shader.pipeline_key), "_depth_gt", report);
-            if (!ok)
-                break;
-        }
-        if (_scene_alpha_mode_is_depth_peel(alpha_mode))
-        {
-            const char* peel_suffix =
-                render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT
-                    ? "_peel_init"
-                    : "_peel_iter";
-            ok = _runtime_key_append(
-                     shader.pipeline_key, sizeof(shader.pipeline_key), peel_suffix, report) &&
-                 _runtime_key_append(
-                     shader.fragment_key, sizeof(shader.fragment_key), peel_suffix, report);
-            if (!ok)
-                break;
-            bool back_pass =
-                render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
-            DvzSceneBuiltinShader peel_shader =
-                _depth_peel_fragment_shader(desc.has_normal, back_pass);
-            shader.fragment_glsl = _builtin_shader_glsl(peel_shader, true);
-            shader.fragment_spirv_key = _depth_peel_fragment_spirv_key(peel_shader);
-        }
-        if (render->u.render.controller_modes[i] == DVZ_CONTROLLER_FIXED)
-        {
-            ok = _runtime_key_append(
-                shader.pipeline_key, sizeof(shader.pipeline_key), "_fixed", report);
-            if (!ok)
-                break;
-        }
-        if (pass_has_depth_attachment && !gbuffer_pass && !wboit_accumulation && !depth_peel_pass)
-        {
-            ok = _runtime_key_append(
-                shader.pipeline_key, sizeof(shader.pipeline_key),
-                force_point_depth ? "_zwrite" : "_depth", report);
-            if (!ok)
-                break;
-        }
-        if (pass_sample_count > 1)
-        {
-            ok = _runtime_key_appendf(
-                shader.pipeline_key, sizeof(shader.pipeline_key), report, "_msaa%" PRIu32,
-                pass_sample_count);
-            if (!ok)
-                break;
-            if ((desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE || point_like_desc) &&
-                pass_alpha_to_coverage)
-            {
-                ok = _runtime_key_append(
-                    shader.pipeline_key, sizeof(shader.pipeline_key), "_a2c", report);
-                if (!ok)
-                    break;
-                if (desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
-                {
-                    ok = _runtime_key_append(
-                        shader.fragment_key, sizeof(shader.fragment_key), "_a2c", report);
-                    if (!ok)
-                        break;
-                    shader.fragment_glsl =
-                        _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_A2C, true);
-                    shader.fragment_spirv_key = "sphere_a2c_frag";
-                }
-            }
-        }
         bool scene_occluded_shader =
             desc.scene_occluded && scene_occlusion_depth_id != 0 && !scene_occlusion_pass;
         bool scene_occlusion_uses_set2 = _scene_visual_bind_desc_uses_scene_occlusion_set2(
             &desc, render->u.render.pass_role);
-        if (scene_occluded_shader)
+        bool segment_coverage_blend = false;
+        ok = _scene_visual_shader_desc_apply_pass_policy(
+            &desc, render->u.render.pass_role, alpha_mode, render->u.render.controller_modes[i],
+            render->u.render.picking, pass_has_depth_attachment, force_point_depth,
+            wboit_accumulation, pass_sample_count, pass_alpha_to_coverage, scene_occluded_shader,
+            scene_occlusion_uses_set2, &shader, &scene_occlusion_fragment_glsl,
+            &segment_coverage_blend);
+        if (!ok)
         {
-            ok = _runtime_key_append(
-                     shader.pipeline_key, sizeof(shader.pipeline_key), "_scene_occ", report) &&
-                 _runtime_key_append(
-                     shader.fragment_key, sizeof(shader.fragment_key), "_scene_occ", report);
-            if (!ok)
-                break;
-            char scene_occlusion_defines[96];
-            dvz_snprintf(
-                scene_occlusion_defines, sizeof(scene_occlusion_defines),
-                "#define DVZ_SCENE_OCCLUSION 1\n#define DVZ_SCENE_OCCLUSION_SET %u\n",
-                scene_occlusion_uses_set2 ? 2u : 1u);
-            scene_occlusion_fragment_glsl =
-                _shader_glsl_variant(shader.fragment_glsl, scene_occlusion_defines);
-            shader.fragment_glsl = scene_occlusion_fragment_glsl;
-            shader.fragment_spirv_key = NULL;
-            shader.fragment_wgsl = NULL;
-            shader.builtin_family = NULL;
-            shader.builtin_variant = NULL;
-            shader.builtin_pipeline = NULL;
-            if (shader.fragment_glsl == NULL)
-            {
-                ok = false;
-                break;
-            }
+            _diagnostic(report, "scene pass shader descriptor setup failed");
+            _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
+            break;
         }
 
         /* Shaders (cached). */
