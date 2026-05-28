@@ -29,9 +29,18 @@ Landed on 2026-05-28:
 12. `image/generated_quad.c` owns generated image/labels quad cache construction and the predicate
     for image-like visuals that need generated quads before upload.
 13. `stroke/query.c` owns shared segment/path/vector query buffer allocation, offscreen target
-    extent calculation, query render-state targeting, and query upload metadata marking.
+    extent calculation, query render-state targeting, query upload metadata marking, and temporary
+    stroke query geometry construction for straight and path-backed stroke lowerings.
 14. `stroke/bounds.c` owns stroke-family bounds reducers for segment endpoint attributes and
     straight-vector endpoint expansion.
+15. `sphere/bounds.c`, `image/bounds.c`, `glyph/bounds.c`, and `mesh/bounds.c` own the clean
+    family-local visual-space bounds reducers for those families.
+16. `image/query_quad.c` owns generated extent/anchor/tex-rect query geometry shared by image and
+    labels query paths.
+17. `volume/upload.c` owns volume transfer texture and sparse label lookup buffer construction;
+    FramePlan upload node orchestration remains in `plan/visual_lowering_uploads.c`.
+18. `stroke/internal.h`, `image/internal.h`, `volume/internal.h`, and `bounds_internal.h` keep
+    subsystem helper declarations out of the broad `_visual_internal.h` surface.
 
 Existing family folders already owned their GPU query implementations through `query.c`. The first
 refactor step makes each family folder own the public family API and the family-local style or mode
@@ -65,6 +74,7 @@ src/scene/visuals/stroke/
   path.c      path-stroke adjacency/cache construction for path and curved-vector lowering
   query.c     shared stroke query mechanics
   bounds.c    shared stroke bounds reducers
+  internal.h  private declarations for the stroke subsystem
 ```
 
 Do not create empty placeholder files. A family folder should contain only code it owns today.
@@ -93,11 +103,12 @@ The first pass deliberately did not move these shared dispatch files:
 2. `material.c`: material/depth-cue/alpha state is cross-family and tied to pass capabilities.
 3. `shader_desc.c`, `pipeline*.c`, `bind_desc.c`, and `pass_caps.c`: shader and pipeline selection
    still encode cross-family backend policy.
-4. `bounds.c`: the current reducer is shared and may be split only after family-local reducers are
-   clearer. The stroke endpoint reducers have moved to `stroke/bounds.c`; cross-family dispatch,
-   panel projection, and generated bounds overlay synchronization stay in the shared reducer.
+4. `bounds.c`: cross-family bounds dispatch, panel projection, and generated bounds overlay
+   synchronization stay in the shared reducer. Clean family-local visual-space reducers have moved
+   to their family folders or to `stroke/bounds.c`.
 5. `plan/visual_lowering*.c` and `runtime/render_emit.c`: lowering and runtime emission still
-   coordinate multiple visual families and DRP2 resource lifetimes.
+   coordinate multiple visual families and DRP2 resource lifetimes. Extracted helpers should build
+   data/cache payloads only; plan files should keep resource-key, upload-node, and ordering policy.
 
 Move these later only when the extracted family file can own a coherent slice without duplicating
 dispatch policy. The target is not one file per enum case; the target is stable ownership.
@@ -119,6 +130,18 @@ Family `api.c` files normally need:
 Add `<math.h>`, `<stdbool.h>`, or `_log.h` only when validation needs them. Constructors that call
 `_scene_alloc_visual()` need `_visual_internal.h`; forgetting it produces an implicit declaration
 warning/error even though `_scene.h` is already included.
+
+Use narrower private headers once a helper belongs to a subsystem rather than the broad visual core:
+
+```c
+#include "stroke/internal.h"
+#include "image/internal.h"
+#include "volume/internal.h"
+#include "bounds_internal.h"
+```
+
+Avoid adding new subsystem-specific declarations to `_visual_internal.h` unless the helper is
+genuinely shared by most visual internals.
 
 
 ## CMake Note
@@ -146,14 +169,16 @@ unstaged unless explicitly approved for that commit.
 
 ## Next Candidates
 
-The stroke-family cache, query-helper, and endpoint-bounds extractions are complete for the current
-segment/path/vector slice. Keep frame-plan orchestration in plan code; only move more geometry/cache
-construction when an extracted file can own a coherent family slice without copying dispatch policy.
+The stroke-family cache, query-helper, query-geometry, and bounds extractions are complete for the
+current segment/path/vector slice. Keep frame-plan orchestration in plan code; only move more
+geometry/cache construction when an extracted file can own a coherent family slice without copying
+dispatch policy.
 
 Useful next candidates:
 
-1. family-local bounds reducers for sphere/image/glyph/mesh once each slice has a clean helper
-   boundary and does not pull overlay or projection policy along with it;
-2. additional image/labels family extraction around query or upload code if ownership is clear;
-3. a later lowering pass that moves only geometry/cache construction out of plan files while keeping
-   frame-plan orchestration in `src/scene/plan/`.
+1. continue reducing `plan/visual_lowering_uploads.c` only where the moved helper builds data or
+   cache payloads and does not own FramePlan ordering;
+2. consider similar private-header cleanup for image, volume, or bounds helpers if subsystem
+   surfaces grow;
+3. revisit duplicated path-stroke math between render-cache and query-cache builders only if a
+   shared primitive can improve both paths without obscuring their output layouts.
