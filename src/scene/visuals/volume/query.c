@@ -21,10 +21,10 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/math/_cglm.h"
-#include "../../colorizer.h"
+#include "colorizer.h"
 #include "_visual_lowering.h"
 #include "../../query/internal.h"
-#include "../../sample_profile.h"
+#include "sample_profile.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"

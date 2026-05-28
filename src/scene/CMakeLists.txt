@@ -4,6 +4,8 @@
 
 file(GLOB SCENE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c*")
 file(GLOB SCENE_QUERY_SRC "${CMAKE_CURRENT_SOURCE_DIR}/query/*.c*")
+file(GLOB SCENE_SHADER_SRC "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.c*")
+file(GLOB SCENE_VISUAL_SRC "${CMAKE_CURRENT_SOURCE_DIR}/visuals/*.c*")
 file(GLOB SCENE_VISUAL_QUERY_SRC "${CMAKE_CURRENT_SOURCE_DIR}/visuals/*/*.c*")
 file(GLOB SCENE_ANNOTATION_SRC "${CMAKE_CURRENT_SOURCE_DIR}/annotation/*.c*")
 file(GLOB SCENE_COLOR_SRC "${CMAKE_CURRENT_SOURCE_DIR}/color/*.c*")
@@ -18,6 +20,8 @@ list(
     APPEND
     SCENE_SRC
     ${SCENE_QUERY_SRC}
+    ${SCENE_SHADER_SRC}
+    ${SCENE_VISUAL_SRC}
     ${SCENE_VISUAL_QUERY_SRC}
     ${SCENE_ANNOTATION_SRC}
     ${SCENE_COLOR_SRC}
@@ -74,8 +78,10 @@ target_include_directories(datoviz_scene
     ${CMAKE_CURRENT_SOURCE_DIR}/interaction
     ${CMAKE_CURRENT_SOURCE_DIR}/plan
     ${CMAKE_CURRENT_SOURCE_DIR}/runtime
+    ${CMAKE_CURRENT_SOURCE_DIR}/shaders
     ${CMAKE_CURRENT_SOURCE_DIR}/techniques
     ${CMAKE_CURRENT_SOURCE_DIR}/text
+    ${CMAKE_CURRENT_SOURCE_DIR}/visuals
 )
 
 target_compile_definitions(datoviz_scene PUBLIC ${DVZ_COMPILE_DEFINITIONS})

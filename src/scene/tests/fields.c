@@ -23,7 +23,7 @@
 #include "_overflow.h"
 #include "_scene.h"
 #include "_scene_emit.h"
-#include "../colorizer.h"
+#include "colorizer.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"
 #include "datoviz/scene.h"

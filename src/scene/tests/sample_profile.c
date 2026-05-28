@@ -17,8 +17,8 @@
 #include <string.h>
 
 #include "_assertions.h"
-#include "../colorizer.h"
-#include "../sample_profile.h"
+#include "colorizer.h"
+#include "sample_profile.h"
 #include "datoviz/scene.h"
 #include "test_scene.h"
 #include "testing.h"
