@@ -210,76 +210,6 @@ static bool _bounds_from_position_attr(
 
 
 /**
- * Compute bounds for sphere centers expanded by radii.
- *
- * @param visual the sphere visual
- * @param out output bounds
- * @return whether bounds were produced
- */
-static bool _bounds_from_sphere(const DvzVisual* visual, DvzBounds* out)
-{
-    ANN(visual);
-    ANN(out);
-    const DvzVisualAttr* position = _bounds_attr(visual, "position", 3 * sizeof(float));
-    const DvzVisualAttr* radius_attr = _bounds_attr(visual, "radius", sizeof(float));
-    if (position == NULL || radius_attr == NULL ||
-        position->item_count != radius_attr->item_count)
-        return false;
-
-    const float* pos = (const float*)position->data;
-    const float* radius = (const float*)radius_attr->data;
-    for (uint64_t i = 0; i < position->item_count; i++)
-    {
-        double r = (double)radius[i];
-        if (!isfinite(r) || r < 0.0)
-            continue;
-        double x = (double)pos[3 * i + 0];
-        double y = (double)pos[3 * i + 1];
-        double z = (double)pos[3 * i + 2];
-        _bounds_include_point(out, x - r, y - r, z - r);
-        _bounds_include_point(out, x + r, y + r, z + r);
-    }
-    return out->valid;
-}
-
-
-/**
- * Expand already computed sphere bounds for the generated wire overlay.
- *
- * @param visual the sphere visual
- * @param bounds bounds to expand in place
- */
-static void _bounds_expand_sphere_wire_overlay(const DvzVisual* visual, DvzBounds* bounds)
-{
-    ANN(visual);
-    ANN(bounds);
-    if (visual->type != DVZ_VISUAL_TYPE_SPHERE || !bounds->valid)
-        return;
-
-    const DvzVisualAttr* radius_attr = _bounds_attr(visual, "radius", sizeof(float));
-    if (radius_attr == NULL)
-        return;
-    const float* radius = (const float*)radius_attr->data;
-    double max_radius = 0.0;
-    for (uint64_t i = 0; i < radius_attr->item_count; i++)
-    {
-        double r = (double)radius[i];
-        if (isfinite(r) && r > max_radius)
-            max_radius = r;
-    }
-    if (!(max_radius > 0.0))
-        return;
-
-    const double pad = (sqrt(3.0) - 1.0) * max_radius;
-    for (uint32_t dim = 0; dim < 3; dim++)
-    {
-        bounds->min[dim] -= pad;
-        bounds->max[dim] += pad;
-    }
-}
-
-
-/**
  * Return bounds suitable for a perspective wire overlay.
  *
  * @param visual the visual
@@ -292,166 +222,8 @@ static int _bounds_overlay_source_bounds(const DvzVisual* visual, DvzBounds* out
     ANN(out);
     if (dvz_visual_bounds(visual, out) != 0)
         return -1;
-    _bounds_expand_sphere_wire_overlay(visual, out);
+    _sphere_bounds_expand_wire_overlay(visual, out);
     return 0;
-}
-
-
-
-/**
- * Include one transformed AABB corner in bounds.
- *
- * @param out output bounds
- * @param transform column-major mat4 transform
- * @param x input x coordinate
- * @param y input y coordinate
- * @param z input z coordinate
- */
-static void
-_bounds_include_transformed_point(DvzBounds* out, const float* transform, double x, double y, double z)
-{
-    ANN(out);
-    ANN(transform);
-    double tx = (double)transform[0] * x + (double)transform[4] * y +
-                (double)transform[8] * z + (double)transform[12];
-    double ty = (double)transform[1] * x + (double)transform[5] * y +
-                (double)transform[9] * z + (double)transform[13];
-    double tz = (double)transform[2] * x + (double)transform[6] * y +
-                (double)transform[10] * z + (double)transform[14];
-    double tw = (double)transform[3] * x + (double)transform[7] * y +
-                (double)transform[11] * z + (double)transform[15];
-    if (tw != 0.0)
-    {
-        tx /= tw;
-        ty /= tw;
-        tz /= tw;
-    }
-    _bounds_include_point(out, tx, ty, tz);
-}
-
-
-
-/**
- * Expand mesh bounds by per-instance transforms when available.
- *
- * @param visual the mesh visual
- * @param base base position bounds
- * @param out output bounds
- * @return whether bounds were produced
- */
-static bool _bounds_from_mesh(const DvzVisual* visual, const DvzBounds* base, DvzBounds* out)
-{
-    ANN(visual);
-    ANN(base);
-    ANN(out);
-    const DvzVisualAttr* transforms =
-        _bounds_attr(visual, "instance_transform", 16 * sizeof(float));
-    if (transforms == NULL)
-    {
-        _bounds_include_bounds(out, base);
-        return out->valid;
-    }
-
-    const float* transform = (const float*)transforms->data;
-    for (uint64_t i = 0; i < transforms->item_count; i++)
-    {
-        const float* mat = &transform[16 * i];
-        for (uint32_t x = 0; x < 2; x++)
-        {
-            for (uint32_t y = 0; y < 2; y++)
-            {
-                for (uint32_t z = 0; z < 2; z++)
-                {
-                    double px = x == 0 ? base->min[0] : base->max[0];
-                    double py = y == 0 ? base->min[1] : base->max[1];
-                    double pz = z == 0 ? base->min[2] : base->max[2];
-                    _bounds_include_transformed_point(out, mat, px, py, pz);
-                }
-            }
-        }
-    }
-    return out->valid;
-}
-
-
-
-/**
- * Compute bounds for image visuals.
- *
- * @param visual the image visual
- * @param out output bounds
- * @return whether bounds were produced
- */
-static bool _bounds_from_image(const DvzVisual* visual, DvzBounds* out)
-{
-    ANN(visual);
-    ANN(out);
-    const DvzVisualAttr* position = _bounds_attr(visual, "position", 3 * sizeof(float));
-    if (position == NULL)
-        return false;
-
-    const DvzVisualAttr* extent = _bounds_attr(visual, "extent", 2 * sizeof(float));
-    if (extent == NULL)
-    {
-        _bounds_include_vec3f(out, (const float*)position->data, position->item_count);
-        return out->valid;
-    }
-    if (position->item_count != extent->item_count)
-        return false;
-
-    const float* pos = (const float*)position->data;
-    const float* ext = (const float*)extent->data;
-    const DvzVisualAttr* anchor = _bounds_attr(visual, "anchor", 2 * sizeof(float));
-    const float* anc =
-        anchor != NULL && anchor->item_count == position->item_count ? (const float*)anchor->data
-                                                                     : NULL;
-
-    for (uint64_t i = 0; i < position->item_count; i++)
-    {
-        double x = (double)pos[3 * i + 0];
-        double y = (double)pos[3 * i + 1];
-        double z = (double)pos[3 * i + 2];
-        double w = (double)ext[2 * i + 0];
-        double h = (double)ext[2 * i + 1];
-        double ax = anc != NULL ? (double)anc[2 * i + 0] : 0.0;
-        double ay = anc != NULL ? (double)anc[2 * i + 1] : 0.0;
-        double x0 = x - 0.5 * (ax + 1.0) * w;
-        double y0 = y - 0.5 * (ay + 1.0) * h;
-        _bounds_include_point(out, x0, y0, z);
-        _bounds_include_point(out, x0 + w, y0 + h, z);
-    }
-    return out->valid;
-}
-
-
-
-/**
- * Compute bounds for glyph visuals from anchor positions and local pixel bounds.
- *
- * @param visual the glyph visual
- * @param out output bounds
- * @return whether bounds were produced
- */
-static bool _bounds_from_glyph(const DvzVisual* visual, DvzBounds* out)
-{
-    ANN(visual);
-    ANN(out);
-    const DvzVisualAttr* position = _bounds_attr(visual, "position", 3 * sizeof(float));
-    const DvzVisualAttr* bounds = _bounds_attr(visual, "bounds", 4 * sizeof(float));
-    if (position == NULL || bounds == NULL || position->item_count != bounds->item_count)
-        return false;
-
-    const float* pos = (const float*)position->data;
-    const float* rect = (const float*)bounds->data;
-    for (uint64_t i = 0; i < position->item_count; i++)
-    {
-        double x = (double)pos[3 * i + 0];
-        double y = (double)pos[3 * i + 1];
-        double z = (double)pos[3 * i + 2];
-        _bounds_include_point(out, x + (double)rect[4 * i + 0], y + (double)rect[4 * i + 1], z);
-        _bounds_include_point(out, x + (double)rect[4 * i + 2], y + (double)rect[4 * i + 3], z);
-    }
-    return out->valid;
 }
 
 
@@ -864,15 +636,15 @@ int dvz_visual_bounds(const DvzVisual* visual, DvzBounds* out)
     else if (visual->type == DVZ_VISUAL_TYPE_SPHERE)
     {
         force_3d = true;
-        (void)_bounds_from_sphere(visual, out);
+        (void)_sphere_bounds_from_radius(visual, out);
     }
     else if (visual->type == DVZ_VISUAL_TYPE_IMAGE)
     {
-        (void)_bounds_from_image(visual, out);
+        (void)_image_bounds_from_extent(visual, out);
     }
     else if (visual->type == DVZ_VISUAL_TYPE_GLYPH)
     {
-        (void)_bounds_from_glyph(visual, out);
+        (void)_glyph_bounds_from_rect(visual, out);
     }
     else if (visual->type == DVZ_VISUAL_TYPE_VOLUME)
     {
@@ -895,7 +667,7 @@ int dvz_visual_bounds(const DvzVisual* visual, DvzBounds* out)
         _bounds_reset(&position_bounds);
         (void)_bounds_from_position_attr(visual, "position", &position_bounds);
         if (position_bounds.valid && visual->type == DVZ_VISUAL_TYPE_MESH)
-            (void)_bounds_from_mesh(visual, &position_bounds, out);
+            (void)_mesh_bounds_from_instances(visual, &position_bounds, out);
         else
             _bounds_include_bounds(out, &position_bounds);
     }

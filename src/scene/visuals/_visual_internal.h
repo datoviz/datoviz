@@ -73,6 +73,12 @@ void _path_sync_params(DvzVisual* visual);
 void _vector_sync_params(DvzVisual* visual);
 bool _stroke_bounds_from_segment(const DvzVisual* visual, DvzBounds* out);
 bool _stroke_bounds_from_vector(const DvzVisual* visual, DvzBounds* out);
+bool _sphere_bounds_from_radius(const DvzVisual* visual, DvzBounds* out);
+void _sphere_bounds_expand_wire_overlay(const DvzVisual* visual, DvzBounds* bounds);
+bool _image_bounds_from_extent(const DvzVisual* visual, DvzBounds* out);
+bool _glyph_bounds_from_rect(const DvzVisual* visual, DvzBounds* out);
+bool _mesh_bounds_from_instances(
+    const DvzVisual* visual, const DvzBounds* base, DvzBounds* out);
 void _stroke_quad_gpu_cache_free(DvzSegmentGpuCache* cache);
 void _path_stroke_gpu_cache_free(DvzPathGpuCache* cache);
 bool _stroke_quad_segment_cache_rebuild(DvzVisual* visual);
