@@ -237,17 +237,20 @@ typedef struct DvzScenePointLoweringDesc
 
 
 
-bool _is_point_visual(const ConverterState* state, const uint64_t* ids, uint32_t n);
+bool _scene_untyped_compat_is_point_visual(
+    const ConverterState* state, const uint64_t* ids, uint32_t n);
 
-bool _is_splat_visual(const ConverterState* state, const uint64_t* ids, uint32_t n);
+bool _scene_untyped_compat_is_splat_visual(
+    const ConverterState* state, const uint64_t* ids, uint32_t n);
 
-bool _is_primitive_visual(const ConverterState* state, const uint64_t* ids, uint32_t n);
+bool _scene_untyped_compat_is_primitive_visual(
+    const ConverterState* state, const uint64_t* ids, uint32_t n);
 
-bool _is_image_visual(
+bool _scene_untyped_compat_is_image_visual(
     const ConverterState* state, const uint64_t* ids, uint32_t n,
     uint64_t* out_pos, uint64_t* out_uv, uint64_t* out_tex);
 
-bool _is_textured_mesh_visual(
+bool _scene_untyped_compat_is_textured_mesh_visual(
     const ConverterState* state, const uint64_t* ids, uint32_t n, uint64_t* out_pos,
     uint64_t* out_color, uint64_t* out_normal, uint64_t* out_uv, uint64_t* out_tex);
 

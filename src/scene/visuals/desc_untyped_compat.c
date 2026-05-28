@@ -6,7 +6,7 @@
 
 
 /*************************************************************************************************/
-/*  Scene visual legacy classifiers                                                            */
+/*  Scene visual untyped compatibility classifiers                                               */
 /*************************************************************************************************/
 
 /*************************************************************************************************/
@@ -37,7 +37,8 @@
  * Return true when vertex_buffer_ids[0..n-1] carry data_tags "position", "color", "size"
  * (in any order), which identifies a DvzPoint visual.
  */
-bool _is_point_visual(const ConverterState* state, const uint64_t* ids, uint32_t n)
+bool _scene_untyped_compat_is_point_visual(
+    const ConverterState* state, const uint64_t* ids, uint32_t n)
 {
     if (n < 3)
         return false;
@@ -74,7 +75,8 @@ bool _is_point_visual(const ConverterState* state, const uint64_t* ids, uint32_t
  * @param n resource id count
  * @return whether the ids carry position, color, sigma, and angle resources
  */
-bool _is_splat_visual(const ConverterState* state, const uint64_t* ids, uint32_t n)
+bool _scene_untyped_compat_is_splat_visual(
+    const ConverterState* state, const uint64_t* ids, uint32_t n)
 {
     if (n < 4)
         return false;
@@ -112,7 +114,8 @@ bool _is_splat_visual(const ConverterState* state, const uint64_t* ids, uint32_t
  * Return true when ids carry "position" + "color" with an optional "normal" attribute and
  * a topology hint on the position resource, identifying a DvzPrimitive visual.
  */
-bool _is_primitive_visual(const ConverterState* state, const uint64_t* ids, uint32_t n)
+bool _scene_untyped_compat_is_primitive_visual(
+    const ConverterState* state, const uint64_t* ids, uint32_t n)
 {
     if (n < 2 || n > 3)
         return false;
@@ -161,7 +164,7 @@ bool _is_primitive_visual(const ConverterState* state, const uint64_t* ids, uint
  * Return true when ids carry exactly "position" + "texcoords" + "texture", identifying
  * a DvzImage visual. Outputs the position id, texcoords id, and texture id.
  */
-bool _is_image_visual(
+bool _scene_untyped_compat_is_image_visual(
     const ConverterState* state, const uint64_t* ids, uint32_t n, uint64_t* out_pos,
     uint64_t* out_uv, uint64_t* out_tex)
 {
@@ -222,7 +225,7 @@ bool _is_image_visual(
  * @param out_tex optional texture resource id
  * @return whether the ids identify a textured mesh visual
  */
-bool _is_textured_mesh_visual(
+bool _scene_untyped_compat_is_textured_mesh_visual(
     const ConverterState* state, const uint64_t* ids, uint32_t n, uint64_t* out_pos,
     uint64_t* out_color, uint64_t* out_normal, uint64_t* out_uv, uint64_t* out_tex)
 {
@@ -257,6 +260,5 @@ bool _is_textured_mesh_visual(
         *out_tex = tex;
     return true;
 }
-
 
 

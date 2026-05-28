@@ -62,10 +62,10 @@ static bool _append_resource_key(
 
 
 /**
- * Return the legacy data tag for a typed resource role.
+ * Return the untyped compatibility data tag for a typed resource role.
  *
  * @param role the typed resource role
- * @return the legacy data tag, or NULL when the role has no tag fallback
+ * @return the compatibility data tag, or NULL when the role has no tag fallback
  */
 static const char* _resource_role_tag(DvzFramePlanResourceRole role)
 {
@@ -115,7 +115,7 @@ static const char* _resource_role_tag(DvzFramePlanResourceRole role)
 
 
 /**
- * Resolve the legacy resource key for one encoded render visual and role.
+ * Resolve the untyped compatibility resource key for one encoded render visual and role.
  *
  * @param encoded_visual_id the render-node visual debug id
  * @param role the typed resource role
@@ -149,7 +149,7 @@ static bool _render_visual_resource_key(
 
 
 /**
- * Resolve one legacy render-visual resource id by role.
+ * Resolve one untyped compatibility render-visual resource id by role.
  *
  * @param emitter the persistent emitter
  * @param encoded_visual_id the render-node visual debug id
@@ -170,7 +170,7 @@ uint64_t _scene_render_visual_resource_id(
 
 
 /**
- * Find the first visual resource with a typed role, falling back to legacy tags.
+ * Find the first visual resource with a typed role, falling back to compatibility tags.
  *
  * @param state the resource state
  * @param ids the resource ids
@@ -363,5 +363,4 @@ bool _scene_render_visual_has_position_resource(
                emitter, render->u.render.visuals[visual_index],
                DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION) != 0;
 }
-
 

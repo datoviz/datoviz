@@ -1395,24 +1395,27 @@ bool _emitter_emit_render(
     }
 
     /* Detect point-like visual data (position + color + size attributes). */
-    bool is_point = _is_point_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
+    bool is_point = _scene_untyped_compat_is_point_visual(
+        &emitter->resources, vertex_buffer_ids, vertex_buffer_count);
     bool is_pixel = is_point && desc_kind == DVZ_SCENE_VISUAL_DESC_PIXEL;
     bool is_marker = is_point && desc_kind == DVZ_SCENE_VISUAL_DESC_MARKER;
     bool is_point_like = is_point;
     bool is_splat = !is_point_like && desc_kind == DVZ_SCENE_VISUAL_DESC_SPLAT &&
-                    _is_splat_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
+                    _scene_untyped_compat_is_splat_visual(
+                        &emitter->resources, vertex_buffer_ids, vertex_buffer_count);
     uint64_t mesh_pos = 0, mesh_color = 0, mesh_normal = 0, mesh_uv = 0, mesh_tex = 0;
     bool is_textured_mesh =
         !is_point_like && !is_splat &&
-        _is_textured_mesh_visual(
+        _scene_untyped_compat_is_textured_mesh_visual(
             &emitter->resources, vertex_buffer_ids, vertex_buffer_count, &mesh_pos, &mesh_color,
             &mesh_normal, &mesh_uv, &mesh_tex);
     bool is_primitive =
         !is_point_like && !is_splat && !is_textured_mesh &&
-        _is_primitive_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
+        _scene_untyped_compat_is_primitive_visual(
+            &emitter->resources, vertex_buffer_ids, vertex_buffer_count);
     uint64_t image_pos = 0, image_uv = 0, image_tex = 0;
     bool is_image = !is_point_like && !is_splat && !is_textured_mesh && !is_primitive &&
-                    _is_image_visual(
+                    _scene_untyped_compat_is_image_visual(
                         &emitter->resources, vertex_buffer_ids, vertex_buffer_count, &image_pos,
                         &image_uv, &image_tex);
     bool is_labels = is_image && (desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
