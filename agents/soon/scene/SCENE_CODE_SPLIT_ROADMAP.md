@@ -9,7 +9,8 @@ Use [`../../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../../
 for source-split progress. Use
 [`../../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](../../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md)
 for the final architecture target: explicit typed metadata, registry-driven visual-family
-operations, descriptor-driven runtime emission, reusable CMake layers, and final done criteria.
+operations, descriptor-driven runtime emission, coarse reusable CMake layers, and final done
+criteria.
 
 
 ## Pickup Order
@@ -22,7 +23,8 @@ operations, descriptor-driven runtime emission, reusable CMake layers, and final
 5. Continue visual-family payload/helper splits only when a clear owner boundary appears; the first
    descriptor/attribute split inside `src/scene/visuals/` is complete.
 6. Tighten remaining query/interaction boundaries without changing picking semantics accidentally.
-7. Split scene CMake targets into reusable layers once the registry and family boundaries are clear.
+7. Split scene CMake targets into coarse reusable layers once the registry and family boundaries are
+   clear; do not split per visual family unless a concrete consumer needs it.
 
 Completed on 2026-05-28: FramePlan internals were split into lifecycle/facade, node helpers,
 capabilities, diagnostics, upload resources, graph resources, node passes, graph passes,

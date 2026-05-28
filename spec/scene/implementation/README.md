@@ -25,7 +25,7 @@ behavior instead of restating it here.
    splitting scene frame-plan, runtime, core, annotation, domain, query, and visual helper code.
 8. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): remaining
    end-to-end plan for the final scene architecture, visual-family registry, untyped descriptor
-   removal, reusable CMake layers, and architecture done criteria.
+   removal, coarse reusable CMake layers, and architecture done criteria.
 
 ## Current priorities
 
@@ -43,4 +43,4 @@ behavior instead of restating it here.
 8. Keep broad scene source splits staged through `SCENE_CODE_SPLIT_ROADMAP.md`, and use
    `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` for the final architecture target: explicit visual
    metadata, registry-driven visual-family operations, descriptor-driven runtime emission, and
-   reusable layer-by-layer CMake targets.
+   coarse reusable CMake targets.

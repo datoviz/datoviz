@@ -231,68 +231,71 @@ Done criteria:
 3. Generated visual synchronization is owned by the semantic object that creates those visuals.
 
 
-### 6. Split Scene CMake Targets Into Reusable Layers
+### 6. Split Scene CMake Targets Into Coarse Reusable Layers
 
-Goal: consumers such as VisPy2 can reuse selected scene layers without linking the entire scene
-system.
+Goal: consumers such as VisPy2 can reuse the major scene layers without linking app/runtime pieces
+they do not need. Source folders should be granular; CMake targets should stay coarse and stable
+until a concrete consumer needs finer selection.
 
 Target object/static-library layers:
 
 ```text
-datoviz_scene_core
-datoviz_scene_domain
 datoviz_scene_frame_plan
-datoviz_scene_render_contract
-datoviz_scene_visual_registry
-datoviz_scene_visual_point
-datoviz_scene_visual_pixel
-datoviz_scene_visual_marker
-datoviz_scene_visual_splat
-datoviz_scene_visual_segment
-datoviz_scene_visual_path
-datoviz_scene_visual_image
-datoviz_scene_visual_labels
-datoviz_scene_visual_glyph
-datoviz_scene_visual_mesh
-datoviz_scene_visual_primitive
-datoviz_scene_visual_sphere
-datoviz_scene_visual_volume
-datoviz_scene_scene_emit
-datoviz_scene_runtime_drp2
-datoviz_scene_techniques
-datoviz_scene_app_bridge
+datoviz_scene_core
+datoviz_scene_visuals
+datoviz_scene_runtime
+datoviz_scene_app
 ```
+
+Layer contents:
+
+1. `datoviz_scene_frame_plan`: FramePlan nodes, resources, graph passes, dependencies, readbacks,
+   diagnostics, serialization, and DRP2 fixture/emission facades that do not need retained scene
+   objects.
+2. `datoviz_scene_core`: retained scene/domain/annotation/layout/controller object model without
+   DRP2 runtime execution.
+3. `datoviz_scene_visuals`: visual registry, built-in visual families, visual attributes, bounds,
+   query implementations, metadata builders, and visual pipeline/draw contracts.
+4. `datoviz_scene_runtime`: render-contract validation, techniques, graph-resource realization, and
+   FramePlan to DRP2 runtime emission.
+5. `datoviz_scene_app`: presentation/offscreen/GLFW bridge.
 
 Dependency direction should be acyclic. A practical target is:
 
 ```text
 common/math/geom
   -> frame_plan
-  -> domain/core
-  -> visual_registry + selected visual families
-  -> scene_emit + render_contract
-  -> runtime_drp2
-  -> app_bridge
+  -> scene_core
+  -> scene_visuals
+  -> scene_runtime
+  -> scene_app
 ```
 
 Refine the exact direction while implementing, but keep these rules:
 
-1. visual-family modules may depend on common, math, geom, domain types, frame-plan metadata types,
-   and registry contracts;
-2. visual-family modules must not depend on app or window;
+1. visual-family source modules may depend on common, math, geom, domain/core types, frame-plan
+   metadata types, and registry contracts;
+2. visual-family source modules must not depend on app or window;
 3. scene emission may depend on retained scene/core/domain objects, frame-plan types, and visual
    registry contracts;
 4. render-contract code may depend on frame-plan types and visual-family contracts, but it should
    not create new scene semantics;
-5. generic runtime must not depend on retained scene semantic objects except through FramePlan and
-   resolved contracts;
+5. generic runtime must not depend on app/window and should consume retained scene state only
+   through FramePlan and resolved contracts where practical;
 6. frame-plan must not depend on visual-family implementation files;
-7. app bridge depends on scene and runtime, not the reverse.
+7. app depends on scene runtime, not the reverse.
+
+Do not split visual CMake targets per family by default. The visual registry and source layout
+should make that possible later, but the default target should remain `datoviz_scene_visuals`.
+Consider grouped or per-family visual targets only after there is a concrete reuse, build-time, or
+packaging reason.
 
 Done criteria:
 
-1. CMake can build meaningful subsets for planning-only, selected-visual, and full-runtime users.
-2. VisPy2 can link only the layers it needs for metadata/planning or selected visuals.
+1. CMake can build meaningful subsets for planning-only, scene object model, full runtime, and app
+   users.
+2. VisPy2 can link the coarse layers it needs without pulling in app/window/runtime code
+   accidentally.
 3. The top-level `datoviz` target still assembles the full default stack.
 
 
@@ -385,7 +388,8 @@ The scene refactor can be considered architecturally complete when all of these 
 5. untyped descriptor inference is deleted or isolated behind explicit compatibility;
 6. domain, annotation, visual, scene-emission, frame-plan, render-contract, runtime, technique, and
    app responsibilities are separate and acyclic;
-7. scene CMake targets can be reused layer by layer by external consumers such as VisPy2;
+7. coarse scene CMake targets can be reused by external consumers such as VisPy2 without pulling in
+   app/window/runtime layers accidentally;
 8. broad private headers are reduced to stable contracts;
 9. architecture tests enforce metadata completeness, registry coverage, no generic runtime visual
    switches, and layer dependency boundaries;

@@ -8,8 +8,8 @@ Normative status: informative implementation roadmap. Public semantics remain in
 scene specs; this file only defines safe source-ownership direction for refactors.
 
 For the final architecture target, including the visual-family registry, removal of normal
-untyped/legacy descriptor inference, reusable CMake layers, and done criteria for saying the scene
-architecture is robust, read
+untyped/legacy descriptor inference, coarse reusable CMake layers, and done criteria for saying the
+scene architecture is robust, read
 [`SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](SCENE_ARCHITECTURE_COMPLETION_PLAN.md) first. This file
 tracks source-split progress; the completion plan defines the end state.
 
@@ -317,8 +317,8 @@ This roadmap can move to a completed record only when:
 5. core scene object ownership is split enough that new public object families do not edit a
    monolithic `scene.c`;
 6. annotation/domain helpers have clear generated-visual and public-object boundaries;
-7. scene CMake layers can be reused without pulling in the entire scene runtime when a consumer only
-   needs selected planning or visual-family pieces;
+7. coarse scene CMake layers can be reused without pulling in app/window/runtime code when a
+   consumer only needs planning, scene object-model, or visual-family pieces;
 8. tests name the boundary they protect rather than only the broad scene graph;
 9. the final architecture confidence bar in
    [`SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](SCENE_ARCHITECTURE_COMPLETION_PLAN.md) is satisfied.
