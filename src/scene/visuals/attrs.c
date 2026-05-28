@@ -1332,6 +1332,17 @@ int dvz_visual_set_data_range(
 
 
 
+/**
+ * Bind a scene-owned scale to a named visual slot.
+ *
+ * Image and volume visuals accept the `"colormap"` slot. Labels visuals, and label-volume
+ * render modes, accept the `"labels"` slot.
+ *
+ * @param visual the visual
+ * @param slot_name the semantic slot name
+ * @param scale the scale, or NULL to clear the binding
+ * @return 0 on success, -1 on error
+ */
 int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* scale)
 {
     ANN(visual);

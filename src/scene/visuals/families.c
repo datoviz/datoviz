@@ -698,17 +698,3 @@ void dvz_visual_set_visible(DvzVisual* visual, bool visible)
     visual->visible = visible;
     _scene_notify_visual_changed(visual);
 }
-
-
-
-/**
- * Bind a scene-owned scale to a named visual slot.
- *
- * Image and volume visuals accept the `"colormap"` slot. Other visual families and slot names are
- * rejected until their retained scale wiring is implemented.
- *
- * @param visual the visual
- * @param slot_name the semantic slot name
- * @param scale the scale, or NULL to clear the binding
- * @return 0 on success, -1 on error
- */
