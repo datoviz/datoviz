@@ -26,10 +26,13 @@
 #include "pixel/internal.h"
 #include "point/internal.h"
 #include "primitive/internal.h"
+#include "path/internal.h"
 #include "scene_emit/visual_lowering.h"
+#include "segment/internal.h"
 #include "sample_profile.h"
 #include "splat/internal.h"
 #include "sphere/internal.h"
+#include "vector/internal.h"
 
 
 
@@ -47,42 +50,6 @@ static void _lowering_init(DvzVisualLowering* out)
     ANN(out);
     dvz_memset(out, sizeof(DvzVisualLowering), 0, sizeof(DvzVisualLowering));
     out->draw_position_attr = "position";
-}
-
-
-
-/**
- * Return whether one retained visual has CPU-side data for an attribute.
- *
- * @param visual the retained visual
- * @param attr_name the attribute name
- * @return whether the attribute exists and has data
- */
-static bool _lowering_has_attr_data(const DvzVisual* visual, const char* attr_name)
-{
-    ANN(visual);
-    ANN(attr_name);
-    int attr_idx = _attr_index(visual, attr_name);
-    return attr_idx >= 0 && visual->attrs[attr_idx].data != NULL &&
-           visual->attrs[attr_idx].item_count > 0;
-}
-
-
-
-/**
- * Return whether a vector visual lowers through path-stroke geometry.
- *
- * @param visual the retained visual
- * @return whether the vector has path-style point data
- */
-static bool _lowering_vector_uses_path_stroke(const DvzVisual* visual)
-{
-    ANN(visual);
-    return visual->type == DVZ_VISUAL_TYPE_VECTOR &&
-           !_lowering_has_attr_data(visual, "vector") &&
-           _lowering_has_attr_data(visual, "position") &&
-           _lowering_has_attr_data(visual, "color") &&
-           _lowering_has_attr_data(visual, "line_width");
 }
 
 
@@ -148,77 +115,6 @@ static bool _lowering_volume_desc_kind(const DvzVisual* visual, DvzSceneVisualDe
         *out = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT;
     else if (_scene_sample_profile_is_unsigned_label(&profile))
         *out = DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT;
-    return true;
-}
-
-
-
-/**
- * Resolve segment visual lowering facts.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return whether lowering facts were resolved
- */
-static bool _lower_segment(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    _lowering_init(out);
-    out->renderable_kind = DVZ_RENDERABLE_STROKE_QUAD;
-    out->desc_kind = DVZ_SCENE_VISUAL_DESC_SEGMENT;
-    out->needs_material_params = true;
-    out->draw_position_attr = "position_start";
-    out->stroke_quad_cache = &visual->segment.gpu;
-    return true;
-}
-
-
-
-/**
- * Resolve vector visual lowering facts.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return whether lowering facts were resolved
- */
-static bool _lower_vector(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    _lowering_init(out);
-    out->renderable_kind = _lowering_vector_uses_path_stroke(visual)
-                               ? DVZ_RENDERABLE_PATH_STROKE
-                               : DVZ_RENDERABLE_STROKE_QUAD;
-    out->desc_kind = out->renderable_kind == DVZ_RENDERABLE_PATH_STROKE
-                         ? DVZ_SCENE_VISUAL_DESC_PATH
-                         : DVZ_SCENE_VISUAL_DESC_SEGMENT;
-    out->needs_material_params = true;
-    out->needs_vector_params_sync = true;
-    out->stroke_quad_cache = &visual->vector.stroke_gpu;
-    out->path_stroke_cache = &visual->vector.path_gpu;
-    return true;
-}
-
-
-
-/**
- * Resolve path visual lowering facts.
- *
- * @param visual the retained visual
- * @param out output lowering facts
- * @return whether lowering facts were resolved
- */
-static bool _lower_path(const DvzVisual* visual, DvzVisualLowering* out)
-{
-    ANN(visual);
-    _lowering_init(out);
-    out->renderable_kind = _lowering_has_attr_data(visual, "line_width")
-                               ? DVZ_RENDERABLE_PATH_STROKE
-                               : DVZ_RENDERABLE_INDEXED_MESH;
-    out->desc_kind = out->renderable_kind == DVZ_RENDERABLE_PATH_STROKE
-                         ? DVZ_SCENE_VISUAL_DESC_PATH
-                         : DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
-    out->needs_material_params = out->renderable_kind == DVZ_RENDERABLE_PATH_STROKE;
-    out->path_stroke_cache = &visual->path.gpu;
     return true;
 }
 
@@ -473,11 +369,11 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
     {DVZ_VISUAL_TYPE_MARKER, "marker", _scene_marker_visual_lowering, _resolve_pass_caps,
      _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
-    {DVZ_VISUAL_TYPE_SEGMENT, "segment", _lower_segment, _resolve_pass_caps, _resolve_bind_desc,
-     _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
+    {DVZ_VISUAL_TYPE_SEGMENT, "segment", _scene_segment_visual_lowering, _resolve_pass_caps,
+     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
-    {DVZ_VISUAL_TYPE_PATH, "path", _lower_path, _resolve_pass_caps, _resolve_bind_desc,
-     _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
+    {DVZ_VISUAL_TYPE_PATH, "path", _scene_path_visual_lowering, _resolve_pass_caps,
+     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
     {DVZ_VISUAL_TYPE_IMAGE, "image", _scene_image_visual_lowering, _resolve_pass_caps,
      _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
@@ -506,8 +402,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
     {DVZ_VISUAL_TYPE_SPLAT, "splat", _scene_splat_visual_lowering, _resolve_pass_caps,
      _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
-    {DVZ_VISUAL_TYPE_VECTOR, "vector", _lower_vector, _resolve_pass_caps, _resolve_bind_desc,
-     _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
+    {DVZ_VISUAL_TYPE_VECTOR, "vector", _scene_vector_visual_lowering, _resolve_pass_caps,
+     _resolve_bind_desc, _scene_visual_pipeline_desc_resolve, _scene_visual_shader_desc_resolve,
      _scene_visual_draw_desc_resolve},
 };
 
