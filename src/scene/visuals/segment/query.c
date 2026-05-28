@@ -21,6 +21,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/math/_cglm.h"
+#include "../../_visual_pipeline.h"
 #include "../../query/internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
@@ -437,6 +438,7 @@ static bool _segment_query_build(
     metadata.has_metadata = true;
     metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_SEGMENT;
     metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_STROKE_QUAD;
+    metadata.desc_kind = (uint32_t)DVZ_SCENE_VISUAL_DESC_SEGMENT;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
     metadata.depth_compare_op = ctx->visual->depth_compare_op;

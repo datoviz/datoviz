@@ -23,6 +23,7 @@
 
 #include "datoviz/math/_cglm.h"
 #include "../../colorizer.h"
+#include "../../_visual_lowering.h"
 #include "../../query/internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
@@ -672,6 +673,7 @@ static bool _labels_query_build(
     metadata.has_metadata = true;
     metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_LABELS;
     metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_TEXTURED_QUAD;
+    metadata.desc_kind = (uint32_t)_scene_visual_lowering_desc_kind(ctx->visual);
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
     metadata.depth_compare_op = ctx->visual->depth_compare_op;

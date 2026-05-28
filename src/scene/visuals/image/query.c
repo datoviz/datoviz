@@ -21,6 +21,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/math/_cglm.h"
+#include "../../_visual_pipeline.h"
 #include "../../query/internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
@@ -503,6 +504,7 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
     metadata.has_metadata = true;
     metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_PRIMITIVE;
     metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_INDEXED_MESH;
+    metadata.desc_kind = (uint32_t)DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
     metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;

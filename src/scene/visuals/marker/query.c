@@ -21,6 +21,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/math/_cglm.h"
+#include "../../_visual_pipeline.h"
 #include "../../query/internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
@@ -219,6 +220,8 @@ static bool _marker_query_build(
     metadata.has_metadata = true;
     metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_PIXEL;
     metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_POINT_LIKE;
+    metadata.desc_kind = (uint32_t)DVZ_SCENE_VISUAL_DESC_PIXEL;
+    metadata.point_like_kind = (uint32_t)DVZ_SCENE_POINT_LIKE_PIXEL;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
     metadata.depth_compare_op = ctx->visual->depth_compare_op;
