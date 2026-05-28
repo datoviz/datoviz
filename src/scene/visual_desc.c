@@ -79,19 +79,6 @@ static bool _append_resource_key(
 
 
 /**
- * Return whether a retained visual type uses the primitive pipeline family.
- *
- * @param visual_type the retained visual type
- * @return whether the visual type is primitive-like
- */
-bool _scene_visual_meta_is_primitive(uint32_t visual_type)
-{
-    return visual_type == DVZ_VISUAL_TYPE_PRIMITIVE || visual_type == DVZ_VISUAL_TYPE_MESH ||
-           visual_type == DVZ_VISUAL_TYPE_PATH;
-}
-
-
-/**
  * Return the descriptor kind represented by typed visual metadata.
  *
  * @param state resource id state
@@ -136,39 +123,7 @@ DvzRenderableKind _scene_visual_meta_renderable_kind(
     if (meta->renderable_kind != DVZ_RENDERABLE_NONE)
         return (DvzRenderableKind)meta->renderable_kind;
 
-    switch (meta->visual_type)
-    {
-    case DVZ_VISUAL_TYPE_POINT:
-    case DVZ_VISUAL_TYPE_PIXEL:
-    case DVZ_VISUAL_TYPE_MARKER:
-    case DVZ_VISUAL_TYPE_SPHERE:
-    case DVZ_VISUAL_TYPE_SPLAT:
-        return DVZ_RENDERABLE_POINT_LIKE;
-    case DVZ_VISUAL_TYPE_SEGMENT:
-        return DVZ_RENDERABLE_STROKE_QUAD;
-    case DVZ_VISUAL_TYPE_VECTOR:
-        return _scene_visual_resource_lookup_label(state, meta->path_flags_id) != 0 &&
-                       _scene_visual_resource_lookup_label(state, meta->path_distance_id) != 0
-                   ? DVZ_RENDERABLE_PATH_STROKE
-                   : DVZ_RENDERABLE_STROKE_QUAD;
-    case DVZ_VISUAL_TYPE_PATH:
-        return _scene_visual_resource_lookup_label(state, meta->path_flags_id) != 0 &&
-                       _scene_visual_resource_lookup_label(state, meta->path_distance_id) != 0
-                   ? DVZ_RENDERABLE_PATH_STROKE
-                   : DVZ_RENDERABLE_INDEXED_MESH;
-    case DVZ_VISUAL_TYPE_PRIMITIVE:
-    case DVZ_VISUAL_TYPE_MESH:
-        return DVZ_RENDERABLE_INDEXED_MESH;
-    case DVZ_VISUAL_TYPE_IMAGE:
-    case DVZ_VISUAL_TYPE_LABELS:
-    case DVZ_VISUAL_TYPE_GLYPH:
-        return DVZ_RENDERABLE_TEXTURED_QUAD;
-    case DVZ_VISUAL_TYPE_VOLUME:
-        return DVZ_RENDERABLE_VOLUME_PROXY;
-    case DVZ_VISUAL_TYPE_NONE:
-    default:
-        return DVZ_RENDERABLE_NONE;
-    }
+    return DVZ_RENDERABLE_NONE;
 }
 
 
@@ -312,34 +267,6 @@ bool _scene_visual_desc_is_path(DvzSceneVisualDescKind kind)
 bool _scene_visual_desc_is_stroke(DvzSceneVisualDescKind kind)
 {
     return _scene_visual_desc_is_segment(kind) || _scene_visual_desc_is_path(kind);
-}
-
-
-
-/**
- * Return the point-like family represented by a retained visual type.
- *
- * @param visual_type the retained visual type
- * @param out the output point-like family
- * @return whether the visual type is point-like
- */
-bool _scene_visual_meta_point_like_kind(uint32_t visual_type, DvzScenePointLikeKind* out)
-{
-    ANN(out);
-    switch (visual_type)
-    {
-    case DVZ_VISUAL_TYPE_POINT:
-        *out = DVZ_SCENE_POINT_LIKE_POINT;
-        return true;
-    case DVZ_VISUAL_TYPE_PIXEL:
-        *out = DVZ_SCENE_POINT_LIKE_PIXEL;
-        return true;
-    case DVZ_VISUAL_TYPE_MARKER:
-        *out = DVZ_SCENE_POINT_LIKE_MARKER;
-        return true;
-    default:
-        return false;
-    }
 }
 
 

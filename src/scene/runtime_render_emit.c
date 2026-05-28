@@ -2977,19 +2977,19 @@ bool _emitter_emit_render(
     const char* fmt = _shader_format_tag(cfg);
 
     const DvzFramePlanVisualMeta* visual_meta = NULL;
-    uint32_t visual_type = DVZ_VISUAL_TYPE_NONE;
+    DvzSceneVisualDescKind desc_kind = DVZ_SCENE_VISUAL_DESC_NONE;
     if (render->u.render.visual_count == 1 && render->u.render.visual_metadata[0].has_metadata)
     {
         visual_meta = &render->u.render.visual_metadata[0];
-        visual_type = visual_meta->visual_type;
+        desc_kind = _scene_visual_meta_desc_kind(&emitter->resources, visual_meta);
     }
 
     /* Detect point-like visual data (position + color + size attributes). */
     bool is_point = _is_point_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
-    bool is_pixel = is_point && visual_type == DVZ_VISUAL_TYPE_PIXEL;
-    bool is_marker = is_point && visual_type == DVZ_VISUAL_TYPE_MARKER;
+    bool is_pixel = is_point && desc_kind == DVZ_SCENE_VISUAL_DESC_PIXEL;
+    bool is_marker = is_point && desc_kind == DVZ_SCENE_VISUAL_DESC_MARKER;
     bool is_point_like = is_point;
-    bool is_splat = !is_point_like && visual_type == DVZ_VISUAL_TYPE_SPLAT &&
+    bool is_splat = !is_point_like && desc_kind == DVZ_SCENE_VISUAL_DESC_SPLAT &&
                     _is_splat_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
     uint64_t mesh_pos = 0, mesh_color = 0, mesh_normal = 0, mesh_uv = 0, mesh_tex = 0;
     bool is_textured_mesh =
@@ -3005,17 +3005,10 @@ bool _emitter_emit_render(
                     _is_image_visual(
                         &emitter->resources, vertex_buffer_ids, vertex_buffer_count, &image_pos,
                         &image_uv, &image_tex);
-    bool is_labels = is_image && visual_type == DVZ_VISUAL_TYPE_LABELS;
-    bool is_labels_sint =
-        is_labels && visual_meta != NULL &&
-        (visual_meta->field_format == DVZ_FIELD_FORMAT_R8_SINT ||
-         visual_meta->field_format == DVZ_FIELD_FORMAT_R16_SINT ||
-         visual_meta->field_format == DVZ_FIELD_FORMAT_R32_SINT);
-    bool is_labels_uint =
-        is_labels && visual_meta != NULL &&
-        (visual_meta->field_format == DVZ_FIELD_FORMAT_R8_UINT ||
-         visual_meta->field_format == DVZ_FIELD_FORMAT_R16_UINT ||
-         visual_meta->field_format == DVZ_FIELD_FORMAT_R32_UINT);
+    bool is_labels = is_image && (desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
+                                  desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT);
+    bool is_labels_sint = is_labels && desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT;
+    bool is_labels_uint = is_labels && desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT;
     bool labels_query_u32 = render->u.render.picking && is_labels &&
                             cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT;
     bool image_pixel_space =

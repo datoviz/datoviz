@@ -26,6 +26,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "_visual_pipeline.h"
 
 
 
@@ -333,6 +334,8 @@ bool _scene_image_query_plan(
     DvzFramePlanVisualMeta metadata = {
         .has_metadata = true,
         .visual_type = (uint32_t)DVZ_VISUAL_TYPE_IMAGE,
+        .renderable_kind = (uint32_t)DVZ_RENDERABLE_TEXTURED_QUAD,
+        .desc_kind = (uint32_t)DVZ_SCENE_VISUAL_DESC_IMAGE,
         .topology = generated_rect ? DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
                                    : DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
         .vertex_count = draw_vertex_count <= UINT32_MAX ? (uint32_t)draw_vertex_count : 0,
