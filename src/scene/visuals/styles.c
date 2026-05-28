@@ -209,7 +209,6 @@ int dvz_segment_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentC
     return 0;
 }
 
-
 /**
  * Return whether one path join enum value is supported by the first slice.
  *
@@ -362,40 +361,6 @@ int dvz_path_set_join(DvzVisual* visual, DvzPathJoin join, float miter_limit)
     visual->path.join = join;
     visual->path.miter_limit = miter_limit;
     _path_sync_params(visual);
-    _visual_bump_version(&visual->material.version);
-    visual->material_params_dirty = true;
-    _scene_notify_visual_changed(visual);
-    return 0;
-}
-
-
-/**
- * Set the sphere impostor rendering mode.
- *
- * @param visual the sphere visual
- * @param mode the rendering mode
- * @return 0 on success, -1 on error
- */
-int dvz_sphere_mode(DvzVisual* visual, DvzSphereMode mode)
-{
-    ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_SPHERE)
-    {
-        log_error("dvz_sphere_mode requires a sphere visual");
-        return -1;
-    }
-    if (mode != DVZ_SPHERE_MODE_FAST_IMPOSTOR && mode != DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR)
-    {
-        log_error("invalid sphere rendering mode");
-        return -1;
-    }
-    if (!_scene_visual_mutation_allowed(visual->scene, "update sphere mode"))
-        return -1;
-
-    if (visual->sphere_mode == mode)
-        return 0;
-    visual->sphere_mode = mode;
-    _sphere_params_sync_mode(visual);
     _visual_bump_version(&visual->material.version);
     visual->material_params_dirty = true;
     _scene_notify_visual_changed(visual);

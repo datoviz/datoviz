@@ -723,27 +723,6 @@ DvzVisual* dvz_splat(DvzScene* scene, uint32_t flags)
 
 
 /**
- * Create a sphere impostor visual.
- *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual, or NULL on allocation failure
- */
-DvzVisual* dvz_sphere(DvzScene* scene, uint32_t flags)
-{
-    ANN(scene);
-    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_SPHERE, flags);
-    if (visual == NULL)
-        return NULL;
-    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST;
-    visual->sphere_mode = DVZ_SPHERE_MODE_FAST_IMPOSTOR;
-    _sphere_params_sync_mode(visual);
-    visual->material_params_dirty = true;
-    return visual;
-}
-
-
-/**
  * Create a segment visual.
  *
  * @param scene the scene
