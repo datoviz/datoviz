@@ -24,6 +24,10 @@ def _load_fixture(relative_path: str) -> dict:
         return json.load(stream)
 
 
+def _manifest() -> dict:
+    return _load_fixture('examples/webgpu/fixture_manifest.json')
+
+
 def _load_strict_stream(relative_path: str) -> dict:
     fixture = _load_fixture(relative_path)
     for command in fixture['commands']:
@@ -52,6 +56,25 @@ def test_webgpu_preflight_manifest_passes() -> None:
 
     assert fixtures
     assert all(result.passed for result in results)
+
+
+def test_webgpu_manifest_matches_fixture_tree() -> None:
+    manifest = _manifest()
+    positive = sorted(
+        f'/spec/drp2/fixtures/positive/{path.name}'
+        for path in (ROOT_DIR / 'spec/drp2/fixtures/positive').glob('*.json')
+    )
+    negative = sorted(
+        f'/spec/drp2/fixtures/negative/{path.name}'
+        for path in (ROOT_DIR / 'spec/drp2/fixtures/negative').glob('*.json')
+    )
+
+    assert manifest['positive'] == positive
+    assert manifest['negative_parity'] == negative
+    assert manifest['webgpu_streams'] == [
+        '/examples/webgpu/streams/attachment_multi_color_wgsl.json',
+        '/examples/webgpu/streams/attachment_depth_wgsl.json',
+    ]
 
 
 def test_webgpu_command_coverage_matches_active_schema() -> None:
@@ -101,6 +124,24 @@ def test_webgpu_preflight_rejects_missing_pipeline_metadata() -> None:
         assert 'needs explicit color_targets' in exc.message
     else:
         raise AssertionError('pipeline without color_targets unexpectedly passed WebGPU preflight')
+
+
+def test_webgpu_preflight_rejects_unsupported_shader_format() -> None:
+    fixture = _load_fixture('spec/drp2/fixtures/positive/scene_static_render_from_c.json')
+    broken = copy.deepcopy(fixture)
+    for command in broken['commands']:
+        if command['cmd'] == 'CreateShaderModule':
+            command['format'] = 'glsl'
+            break
+
+    preflight = WebGPUFixturePreflight(ROOT_DIR)
+    try:
+        preflight.validate_fixture(broken)
+    except WebGPUPreflightFailure as exc:
+        assert exc.command_index is not None
+        assert 'unsupported shader format glsl' in exc.message
+    else:
+        raise AssertionError('unsupported shader format unexpectedly passed WebGPU preflight')
 
 
 def test_webgpu_preflight_scene_wgsl_stream_bindings_pass() -> None:

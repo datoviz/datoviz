@@ -23,7 +23,8 @@ function setSummary() {
   }
   summaryEl.textContent =
     `${fixtures.length} WebGPU checks: ` +
-    `${counts.pass} pass, ${counts.unsupported} unsupported, ${counts.fail} fail`;
+    `${counts.pass} pass, ${counts.unsupported} unsupported, ${counts.fail} fail, ` +
+    `${counts.running} running, ${counts.pending} pending`;
 }
 
 
@@ -42,8 +43,7 @@ function unsupportedMessage(error) {
   const message = error?.detail ?? error?.message ?? String(error);
   if (
     message.startsWith("unsupported ") ||
-    message.includes("unsupported DRP2 command") ||
-    message.includes("only one color attachment is supported")
+    message.includes("unsupported DRP2 command")
   ) {
     return message;
   }

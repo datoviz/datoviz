@@ -53,6 +53,8 @@ SUPPORTED_TEXTURE_FORMATS = {
     'rgba16float',
 }
 
+SUPPORTED_SHADER_FORMATS = {'wgsl'}
+
 WGSL_BINDING_RE = re.compile(
     r'@group\(\s*(?P<group>\d+)\s*\)\s*'
     r'@binding\(\s*(?P<binding>\d+)\s*\)\s*'
@@ -170,6 +172,7 @@ class WebGPUFixturePreflight:
                 self._check_bind_group_layout(index, command)
                 bind_group_layouts[command['id']] = command
             elif cmd == 'CreateShaderModule':
+                self._check_shader_format(index, command.get('format'))
                 shaders[command['id']] = command
             elif cmd == 'CreateRenderPipeline':
                 self._check_render_pipeline(index, command, shaders, bind_group_layouts)
@@ -241,6 +244,10 @@ class WebGPUFixturePreflight:
     def _check_texture_format(self, index: int, fmt: Optional[str]) -> None:
         if self._texture_format(fmt) not in SUPPORTED_TEXTURE_FORMATS:
             raise WebGPUPreflightFailure(index, f'unsupported texture format {fmt}')
+
+    def _check_shader_format(self, index: int, fmt: Optional[str]) -> None:
+        if fmt not in SUPPORTED_SHADER_FORMATS:
+            raise WebGPUPreflightFailure(index, f'unsupported shader format {fmt}')
 
     def _texture_format(self, fmt: Optional[str]) -> Optional[str]:
         if fmt == 'canvas':
