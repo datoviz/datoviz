@@ -23,6 +23,9 @@ behavior instead of restating it here.
    MSAA, alpha-to-coverage, and validation contract.
 7. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): implementation-facing roadmap for
    splitting scene frame-plan, runtime, core, annotation, domain, query, and visual helper code.
+8. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): remaining
+   end-to-end plan for the final scene architecture, visual-family registry, untyped descriptor
+   removal, reusable CMake layers, and architecture done criteria.
 
 ## Current priorities
 
@@ -37,6 +40,7 @@ behavior instead of restating it here.
    durable occlusion implementation rules live in `OCCLUSION_EFFECTS.md`.
 7. Keep transparency, depth-peeling, and MSAA execution plans in `agents/soon/` focused on
    remaining slices while durable implementation rules live in `TRANSPARENCY_MSAA.md`.
-8. Keep broad scene source splits staged through `SCENE_CODE_SPLIT_ROADMAP.md`; preserve
-   frame-plan orchestration, runtime execution, and visual-family helper boundaries as separate
-   ownership layers.
+8. Keep broad scene source splits staged through `SCENE_CODE_SPLIT_ROADMAP.md`, and use
+   `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` for the final architecture target: explicit visual
+   metadata, registry-driven visual-family operations, descriptor-driven runtime emission, and
+   reusable layer-by-layer CMake targets.

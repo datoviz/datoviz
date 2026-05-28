@@ -7,6 +7,12 @@ execution, annotations, techniques, and tests.
 Normative status: informative implementation roadmap. Public semantics remain in the specialized
 scene specs; this file only defines safe source-ownership direction for refactors.
 
+For the final architecture target, including the visual-family registry, removal of normal
+untyped/legacy descriptor inference, reusable CMake layers, and done criteria for saying the scene
+architecture is robust, read
+[`SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](SCENE_ARCHITECTURE_COMPLETION_PLAN.md) first. This file
+tracks source-split progress; the completion plan defines the end state.
+
 
 ## Current Pressure Points
 
@@ -243,8 +249,12 @@ Current ownership:
 8. `visuals/desc_legacy.c`: legacy resource-list classifiers for point, splat, primitive, image,
    and textured mesh descriptors.
 
-Guardrail: do not split the remaining visual pipeline helpers by enum case alone. Prefer the current
-ownership unless a behavior change exposes real duplication or a narrower stable owner.
+Guardrail: do not split the remaining visual pipeline helpers by enum case alone. The long-term
+direction is a registry-driven visual-family contract, not more generic switch files. Treat
+`visuals/desc_legacy.c` as temporary containment for untyped descriptor inference: normal scene
+output should move to explicit typed metadata everywhere, then the legacy path should be deleted or
+kept only behind explicit compatibility. See
+[`SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](SCENE_ARCHITECTURE_COMPLETION_PLAN.md).
 
 
 ### 9. Tighten Query And Interaction Boundaries
@@ -296,13 +306,19 @@ For each coherent split:
 
 This roadmap can move to a completed record only when:
 
-1. visual-family helpers own their family-local API, query, bounds, and derived payload builders;
+1. visual-family helpers own their family-local API, query, bounds, metadata, pipeline/draw
+   contract, and derived payload builders;
 2. frame-plan lifecycle, resources, passes, dependencies, and readback bookkeeping have separate
    owner files;
 3. the old `src/scene/plan/` bucket remains gone, with `frame_plan/`, `scene_emit/`, and
    `render_contract/` keeping separate ownership;
-4. runtime render emission separates pass setup, visual draw emission, bindings, and draw counts;
+4. runtime render emission separates pass setup, visual draw emission, bindings, and draw counts,
+   and does not infer normal visual-family semantics from resource tags;
 5. core scene object ownership is split enough that new public object families do not edit a
    monolithic `scene.c`;
 6. annotation/domain helpers have clear generated-visual and public-object boundaries;
-7. tests name the boundary they protect rather than only the broad scene graph.
+7. scene CMake layers can be reused without pulling in the entire scene runtime when a consumer only
+   needs selected planning or visual-family pieces;
+8. tests name the boundary they protect rather than only the broad scene graph;
+9. the final architecture confidence bar in
+   [`SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](SCENE_ARCHITECTURE_COMPLETION_PLAN.md) is satisfied.

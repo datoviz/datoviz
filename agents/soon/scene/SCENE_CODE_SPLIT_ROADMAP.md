@@ -6,16 +6,23 @@
 > - **Purpose:** point agents at the durable scene source-split roadmap without duplicating it.
 
 Use [`../../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md)
-as the source of truth before broad `src/scene` refactors.
+for source-split progress. Use
+[`../../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](../../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md)
+for the final architecture target: explicit typed metadata, registry-driven visual-family
+operations, descriptor-driven runtime emission, reusable CMake layers, and final done criteria.
 
 
 ## Pickup Order
 
 1. Continue low-risk derived payload extraction from `scene_emit/uploads.c`.
 2. Continue annotation/domain helper splits where generated visuals and public object state are mixed.
-3. Continue visual-family payload/helper splits only when a clear owner boundary appears; the first
+3. Eliminate normal untyped descriptor inference: make all active scene/query render paths emit
+   explicit `DvzFramePlanVisualMeta`, then delete or quarantine the current `desc_legacy.c` path.
+4. Introduce the visual-family registry and migrate generic switches into family operations.
+5. Continue visual-family payload/helper splits only when a clear owner boundary appears; the first
    descriptor/attribute split inside `src/scene/visuals/` is complete.
-4. Tighten remaining query/interaction boundaries without changing picking semantics accidentally.
+6. Tighten remaining query/interaction boundaries without changing picking semantics accidentally.
+7. Split scene CMake targets into reusable layers once the registry and family boundaries are clear.
 
 Completed on 2026-05-28: FramePlan internals were split into lifecycle/facade, node helpers,
 capabilities, diagnostics, upload resources, graph resources, node passes, graph passes,

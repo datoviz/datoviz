@@ -3,6 +3,10 @@
 This note records the extraction pattern learned while moving the first simple v0.4 visual
 families into `src/scene/visuals/<family>/`.
 
+For the final long-term architecture, including the visual-family registry, removal of normal
+untyped descriptor inference, generic runtime boundaries, and reusable CMake scene layers, read
+[`../implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](../implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md).
+
 
 ## Status
 
@@ -112,7 +116,9 @@ The first pass deliberately did not move these shared dispatch files:
    resource-key, upload-node, and ordering policy.
 
 Move these later only when the extracted family file can own a coherent slice without duplicating
-dispatch policy. The target is not one file per enum case; the target is stable ownership.
+dispatch policy. The target is not one file per enum case; the target is a visual-family operation
+registry where generic scene/runtime/query code calls family contracts instead of adding concrete
+visual branches.
 
 
 ## Include Pattern
