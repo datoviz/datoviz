@@ -46,6 +46,13 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+/**
+ * Return the configured render-target extent, falling back to fixture dimensions.
+ *
+ * @param cfg optional frame-plan emit configuration.
+ * @param width output width in pixels.
+ * @param height output height in pixels.
+ */
 void _emit_target_extent(const DvzFramePlanEmitConfig* cfg, uint32_t* width, uint32_t* height)
 {
     ANN(width);

@@ -272,6 +272,8 @@ bool _emitter_prepare_render_multi(
     uint64_t depth_peel_sampled_bg_id, uint64_t depth_peel_dummy_bg_id, uint32_t pass_sample_count,
     bool pass_alpha_to_coverage, DvzDiagnosticReport* report, SceneDrawPacket* draws,
     uint32_t* draw_count_out);
+DvzPanelDesc _render_desc_framebuffer_rect(
+    const DvzPanelDesc* desc, const DvzFramePlanEmitConfig* cfg);
 bool _emitter_emit_render_multi_draws(
     DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     const DvzFramePlanEmitConfig* cfg, uint64_t render_pass_id, const SceneDrawPacket* draws,
