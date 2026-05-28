@@ -92,14 +92,14 @@ def _optional_cmd_output(cmd: list[str]) -> str | None:
 
 
 def _compile_args(clang: str) -> list[str]:
-    args = ['-x', 'c', '-std=c11']
+    args = ['-x', 'c', '-std=gnu11']
+    resource_dir = _optional_cmd_output([clang, '-print-resource-dir'])
+    if resource_dir:
+        args.extend(['-resource-dir', resource_dir])
     if platform.system() == 'Darwin':
         sdk = _optional_cmd_output(['xcrun', '--show-sdk-path'])
         if sdk:
             args.extend(['-isysroot', sdk])
-        resource_dir = _optional_cmd_output([clang, '-print-resource-dir'])
-        if resource_dir:
-            args.extend(['-resource-dir', resource_dir])
     args.extend(f'-I{path}' for path in INCLUDE_DIRS)
     args.extend(f'-D{name}' for name in DEFINES)
     return args
