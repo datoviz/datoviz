@@ -44,6 +44,7 @@
 #define PHASE_COUNT       360u
 #define BAND_COUNT        2u
 #define BAND_VERTEX_COUNT (6u * BAND_COUNT)
+#define CURSOR_COUNT      BAND_COUNT
 
 static const float TAU = 6.28318530718f;
 
@@ -263,6 +264,45 @@ static void _fill_bands(double ymin, double ymax, vec3* positions, DvzColor* col
 
 
 /**
+ * Fill fixed-pixel-width cursor lines in one panel's data coordinates.
+ *
+ * @param ymin panel data-domain minimum
+ * @param ymax panel data-domain maximum
+ * @param starts output cursor segment starts
+ * @param ends output cursor segment ends
+ * @param colors output cursor colors
+ * @param widths output cursor line widths
+ */
+static void _fill_cursor_lines(
+    double ymin, double ymax, vec3* starts, vec3* ends, DvzColor* colors, float* widths)
+{
+    ANN(starts);
+    ANN(ends);
+    ANN(colors);
+    ANN(widths);
+
+    const float x[CURSOR_COUNT] = {3.43f, 8.38f};
+    const DvzColor line_colors[CURSOR_COUNT] = {
+        {100, 220, 245, 185},
+        {150, 240, 205, 175},
+    };
+
+    for (uint32_t i = 0; i < CURSOR_COUNT; i++)
+    {
+        starts[i][0] = x[i];
+        starts[i][1] = (float)ymin;
+        starts[i][2] = 0.0f;
+        ends[i][0] = x[i];
+        ends[i][1] = (float)ymax;
+        ends[i][2] = 0.0f;
+        colors[i] = line_colors[i];
+        widths[i] = 2.2f;
+    }
+}
+
+
+
+/**
  * Apply the shared graphite-cyan axis style.
  *
  * @param axis axis to style
@@ -373,6 +413,57 @@ static bool _add_bands(DvzScene* scene, DvzPanel* panel, double ymin, double yma
     if (dvz_visual_set_data(visual, "color", colors, BAND_VERTEX_COUNT) != 0)
         return false;
     if (dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED) != 0)
+        return false;
+    if (dvz_visual_set_depth_test(visual, false) != 0)
+        return false;
+    return dvz_panel_add_visual(panel, visual, NULL) == 0;
+}
+
+
+
+/**
+ * Add synchronized fixed-width cursor lines clipped to one panel.
+ *
+ * @param scene scene owning the visual
+ * @param panel panel receiving the visual
+ * @param ymin panel data-domain minimum
+ * @param ymax panel data-domain maximum
+ * @return true when the cursor lines were added
+ */
+static bool _add_cursor_lines(DvzScene* scene, DvzPanel* panel, double ymin, double ymax)
+{
+    ANN(scene);
+    ANN(panel);
+
+    vec3 starts[CURSOR_COUNT] = {{0}};
+    vec3 ends[CURSOR_COUNT] = {{0}};
+    vec3 visual_starts[CURSOR_COUNT] = {{0}};
+    vec3 visual_ends[CURSOR_COUNT] = {{0}};
+    DvzColor colors[CURSOR_COUNT] = {{0}};
+    float widths[CURSOR_COUNT] = {0};
+    _fill_cursor_lines(ymin, ymax, starts, ends, colors, widths);
+
+    int rc = dvz_panel_data_to_visual_positions(
+        panel, (const float*)starts, (float*)visual_starts, CURSOR_COUNT);
+    if (rc != 0)
+        return false;
+    rc = dvz_panel_data_to_visual_positions(
+        panel, (const float*)ends, (float*)visual_ends, CURSOR_COUNT);
+    if (rc != 0)
+        return false;
+
+    DvzVisual* visual = dvz_segment(scene, 0);
+    if (visual == NULL)
+        return false;
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position_start", .data = visual_starts, .item_count = CURSOR_COUNT},
+        {.attr_name = "position_end", .data = visual_ends, .item_count = CURSOR_COUNT},
+        {.attr_name = "color", .data = colors, .item_count = CURSOR_COUNT},
+        {.attr_name = "stroke_width", .data = widths, .item_count = CURSOR_COUNT},
+    };
+    if (dvz_visual_set_data_many(visual, updates, 4) != 0)
+        return false;
+    if (dvz_segment_set_caps(visual, DVZ_SEGMENT_CAP_SQUARE, DVZ_SEGMENT_CAP_SQUARE) != 0)
         return false;
     if (dvz_visual_set_depth_test(visual, false) != 0)
         return false;
@@ -653,7 +744,7 @@ static bool _configure_panel(DvzPanel* panel, float bottom)
 {
     ANN(panel);
 
-    dvz_panel_set_background_color(panel, 0.055f, 0.067f, 0.090f, 1.0f);
+    dvz_panel_set_background_color(panel, 0.062f, 0.074f, 0.098f, 1.0f);
     return dvz_panel_set_layout_reserve(
         panel, &(DvzPanelLayoutReserve){.left = 0.17f, .right = 0.04f, .bottom = bottom,
                                         .top = 0.06f});
@@ -687,7 +778,7 @@ int main(int argc, char** argv)
     DvzGrid* grid = dvz_figure_grid(figure, 3, 2);
     EXAMPLE_CHECK(grid != NULL, "dvz_figure_grid() failed");
     bool ok = dvz_grid_set_margins(
-        grid, &(DvzPanelReserve){.left_px = 28.0f, .right_px = 28.0f, .top_px = 28.0f,
+        grid, &(DvzPanelReserve){.left_px = 64.0f, .right_px = 28.0f, .top_px = 28.0f,
                                  .bottom_px = 30.0f});
     EXAMPLE_CHECK(ok, "dvz_grid_set_margins() failed");
     ok = dvz_grid_set_gutter(grid, 28.0f, 24.0f);
@@ -711,7 +802,7 @@ int main(int argc, char** argv)
         summary, &(DvzPanelLayoutReserve){.left = 0.19f, .right = 0.07f, .bottom = 0.10f,
                                           .top = 0.05f});
     EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve(summary) failed");
-    dvz_panel_set_background_color(summary, 0.055f, 0.067f, 0.090f, 1.0f);
+    dvz_panel_set_background_color(summary, 0.062f, 0.074f, 0.098f, 1.0f);
 
     ok = _set_domains(signal, 0.0, 12.0, -1.6, 1.6);
     EXAMPLE_CHECK(ok, "_set_domains(signal) failed");
@@ -736,6 +827,12 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(ok, "_add_residual_panel() failed");
     ok = _add_summary_panel(scene, summary);
     EXAMPLE_CHECK(ok, "_add_summary_panel() failed");
+    ok = _add_cursor_lines(scene, signal, -1.6, 1.6);
+    EXAMPLE_CHECK(ok, "_add_cursor_lines(signal) failed");
+    ok = _add_cursor_lines(scene, events, -0.8, 7.8);
+    EXAMPLE_CHECK(ok, "_add_cursor_lines(events) failed");
+    ok = _add_cursor_lines(scene, residuals, -1.0, 1.0);
+    EXAMPLE_CHECK(ok, "_add_cursor_lines(residuals) failed");
 
     ok = _add_axes(signal, NULL, "signal");
     EXAMPLE_CHECK(ok, "_add_axes(signal) failed");
