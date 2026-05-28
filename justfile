@@ -1089,6 +1089,10 @@ webgpu-fixture-preflight *args='':
     @python3 tools/webgpu_fixture_preflight.py {{args}}
 #
 
+webgpu-runner-smoke:
+    @node tools/webgpu_runner_smoke.mjs
+#
+
 shader-abi-check:
     @python3 tools/check_scene_shader_abi.py
 #
