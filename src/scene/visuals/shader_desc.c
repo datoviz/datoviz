@@ -34,10 +34,12 @@
 #include "path/internal.h"
 #include "pixel/internal.h"
 #include "point/internal.h"
+#include "primitive/internal.h"
 #include "registry/registry.h"
 #include "segment/internal.h"
 #include "sphere/internal.h"
 #include "splat/internal.h"
+#include "mesh/internal.h"
 
 
 /*************************************************************************************************/
@@ -191,112 +193,6 @@ void _scene_shader_desc_set_identity(
 
 
 /**
- * Resolve primitive shader metadata from feature flags.
- *
- * @param features the shader features
- * @param format_tag the shader-format cache-key suffix
- * @param out the output shader descriptor
- * @return whether a shader descriptor was resolved
- */
-static bool _scene_shader_desc_primitive(
-    const DvzSceneShaderFeatures* features, const char* format_tag, DvzSceneVisualShaderDesc* out)
-{
-    ANN(features);
-    ANN(format_tag);
-    ANN(out);
-
-    bool lit = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_LIGHTING);
-    bool instanced = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_INSTANCING);
-    bool picking = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_PICKING);
-    if (picking)
-    {
-        dvz_snprintf(
-            out->vertex_key, sizeof(out->vertex_key), "_vs_prim_pick%s%s",
-            instanced ? "_inst" : "", format_tag);
-        dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_prim_pick%s", format_tag);
-        dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_pick_t%u%s%s",
-            features->topology, instanced ? "_inst" : "", format_tag);
-        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_PICK);
-        if (instanced)
-        {
-            out->vertex_glsl =
-                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INSTANCED, false);
-            out->vertex_wgsl =
-                _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INSTANCED, false);
-            out->vertex_spirv_key = "primitive_instanced_vert";
-        }
-        _scene_shader_desc_set_identity(
-            out, "scene.primitive", instanced ? "pick_instanced" : "pick");
-        out->fragment_spirv_key = "primitive_pick_frag";
-        return true;
-    }
-    if (_shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_WBOIT_ACCUM))
-    {
-        DvzSceneBuiltinShader shader =
-            lit ? DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT : DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM;
-        dvz_snprintf(
-            out->vertex_key, sizeof(out->vertex_key), "_vs_wboit_accum_n%u%s", lit ? 1u : 0u,
-            format_tag);
-        dvz_snprintf(
-            out->fragment_key, sizeof(out->fragment_key), "_fs_wboit_accum_n%u%s", lit ? 1u : 0u,
-            format_tag);
-        dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_wboit_accum_t%u_n%u%s",
-            features->topology, lit ? 1u : 0u, format_tag);
-        _scene_shader_desc_set_builtin(out, shader);
-        if (instanced)
-        {
-            DvzSceneBuiltinShader vertex_shader =
-                lit ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_INSTANCED
-                    : DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INSTANCED;
-            out->vertex_glsl = _builtin_shader_glsl(vertex_shader, false);
-            out->vertex_wgsl = _builtin_shader_wgsl(vertex_shader, false);
-            out->vertex_spirv_key =
-                lit ? "primitive_lit_instanced_vert" : "primitive_instanced_vert";
-        }
-        _scene_shader_desc_set_identity(
-            out, "scene.primitive",
-            instanced ? (lit ? "wboit_lit_instanced" : "wboit_instanced")
-                      : (lit ? "wboit_lit" : "wboit"));
-        return true;
-    }
-
-    if (lit)
-    {
-        dvz_snprintf(
-            out->vertex_key, sizeof(out->vertex_key), "_vs_prim_lit%s%s", instanced ? "_inst" : "",
-            format_tag);
-        dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_prim_lit%s", format_tag);
-        dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_lit_t%u%s%s",
-            features->topology, instanced ? "_inst" : "", format_tag);
-        _scene_shader_desc_set_builtin(
-            out, instanced ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_INSTANCED
-                           : DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT);
-        _scene_shader_desc_set_identity(
-            out, "scene.primitive", instanced ? "lit_instanced" : "lit");
-        return true;
-    }
-
-    dvz_snprintf(
-        out->vertex_key, sizeof(out->vertex_key), "_vs_prim%s%s", instanced ? "_inst" : "",
-        format_tag);
-    dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_prim%s", format_tag);
-    dvz_snprintf(
-        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_t%u%s%s", features->topology,
-        instanced ? "_inst" : "", format_tag);
-    _scene_shader_desc_set_builtin(
-        out, instanced ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INSTANCED
-                       : DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE);
-    _scene_shader_desc_set_identity(out, "scene.primitive", instanced ? "instanced" : "default");
-    out->vertex_spirv_key = instanced ? "primitive_instanced_vert" : "primitive_vert";
-    out->fragment_spirv_key = "primitive_frag";
-    return true;
-}
-
-
-/**
  * Resolve shader and pipeline cache-key metadata for one visual descriptor.
  *
  * @param visual the visual descriptor
@@ -349,22 +245,12 @@ bool _scene_visual_shader_desc_resolve(
             visual, picking, wboit_accumulation, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
-        return _scene_shader_desc_primitive(&features, format_tag, out);
+        return _scene_primitive_visual_shader_desc(
+            visual, picking, wboit_accumulation, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH:
-        if (picking || wboit_accumulation)
-            return false;
-        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_mesh_textured%s", format_tag);
-        dvz_snprintf(
-            out->fragment_key, sizeof(out->fragment_key), "_fs_mesh_textured%s", format_tag);
-        dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_mesh_textured_t%u%s",
-            features.topology, format_tag);
-        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_MESH_TEXTURED);
-        _scene_shader_desc_set_identity(out, "scene.mesh", "textured");
-        out->vertex_spirv_key = "mesh_textured_vert";
-        out->fragment_spirv_key = "mesh_textured_frag";
-        return true;
+        return _scene_mesh_visual_shader_desc(
+            visual, picking, wboit_accumulation, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
         return _scene_image_visual_shader_desc(
