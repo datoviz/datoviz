@@ -62,47 +62,28 @@ bool _scene_emit_visual_family_derived_uploads(
     {
         DvzVisualUploadPayload payloads[DVZ_VISUAL_UPLOAD_PAYLOAD_MAX] = {0};
         uint32_t payload_count = 0;
-        bool dirty = _scene_visual_attrs_dirty(visual);
-        if (lowering.needs_vector_params_sync)
-        {
-            _vector_sync_params(visual);
-            dirty = dirty || visual->vector.stroke_gpu.dirty;
-            if (dirty && _stroke_quad_vector_cache_rebuild(visual) &&
-                _stroke_quad_vector_upload_payloads(visual, payloads, &payload_count))
-            {
-                _scene_emit_visual_buffer_payloads(
-                    figure, plan, visual, visual_index, payloads, payload_count, 0);
-            }
-        }
-        else
-        {
-            dirty = dirty || visual->segment.gpu.dirty;
-            if (dirty && _stroke_quad_segment_cache_rebuild(visual) &&
-                _stroke_quad_segment_upload_payloads(visual, payloads, &payload_count))
-            {
-                _scene_emit_visual_buffer_payloads(
-                    figure, plan, visual, visual_index, payloads, payload_count, 0);
-            }
-        }
+        if (!_stroke_quad_segment_derived_upload_payloads(
+                visual, lowering.needs_vector_params_sync, _scene_visual_attrs_dirty(visual),
+                payloads, &payload_count))
+            return false;
+        if (payload_count > 0)
+            _scene_emit_visual_buffer_payloads(
+                figure, plan, visual, visual_index, payloads, payload_count, 0);
         *out_finished_visual = true;
         return _scene_emit_visual_material_upload(figure, plan, visual, visual_index);
     }
 
     if (lowering.renderable_kind == DVZ_RENDERABLE_PATH_STROKE)
     {
-        if (lowering.needs_vector_params_sync)
-            _vector_sync_params(visual);
         DvzVisualUploadPayload payloads[DVZ_VISUAL_UPLOAD_PAYLOAD_MAX] = {0};
         uint32_t payload_count = 0;
-        DvzPathGpuCache* cache =
-            visual->type == DVZ_VISUAL_TYPE_VECTOR ? &visual->vector.path_gpu : &visual->path.gpu;
-        bool dirty = cache->dirty || _scene_visual_attrs_dirty(visual);
-        if (dirty && _path_stroke_cache_rebuild(visual) &&
-            _path_stroke_upload_payloads(visual, payloads, &payload_count))
-        {
+        if (!_path_stroke_derived_upload_payloads(
+                visual, lowering.needs_vector_params_sync, _scene_visual_attrs_dirty(visual),
+                payloads, &payload_count))
+            return false;
+        if (payload_count > 0)
             _scene_emit_visual_buffer_payloads(
                 figure, plan, visual, visual_index, payloads, payload_count, 0);
-        }
         *out_finished_visual = true;
         return _scene_emit_visual_material_upload(figure, plan, visual, visual_index);
     }

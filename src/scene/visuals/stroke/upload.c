@@ -202,3 +202,75 @@ bool _path_stroke_upload_payloads(
     *out_count = 8;
     return true;
 }
+
+
+
+/**
+ * Resolve dirty stroke-quad upload payloads for a segment-like visual.
+ *
+ * @param visual the segment or vector visual
+ * @param vector_params_sync whether vector-owned stroke params must be synchronized first
+ * @param attrs_dirty whether retained visual attributes have a pending dirty range
+ * @param out_payloads output payload descriptors
+ * @param out_count output payload count
+ * @return whether the payload decision succeeded
+ */
+bool _stroke_quad_segment_derived_upload_payloads(
+    DvzVisual* visual, bool vector_params_sync, bool attrs_dirty,
+    DvzVisualUploadPayload* out_payloads, uint32_t* out_count)
+{
+    ANN(visual);
+    ANN(out_payloads);
+    ANN(out_count);
+    *out_count = 0;
+
+    bool dirty = attrs_dirty;
+    if (vector_params_sync)
+    {
+        _vector_sync_params(visual);
+        dirty = dirty || visual->vector.stroke_gpu.dirty;
+        if (!dirty)
+            return true;
+        return _stroke_quad_vector_cache_rebuild(visual) &&
+               _stroke_quad_vector_upload_payloads(visual, out_payloads, out_count);
+    }
+
+    dirty = dirty || visual->segment.gpu.dirty;
+    if (!dirty)
+        return true;
+    return _stroke_quad_segment_cache_rebuild(visual) &&
+           _stroke_quad_segment_upload_payloads(visual, out_payloads, out_count);
+}
+
+
+
+/**
+ * Resolve dirty path-stroke upload payloads for a path-like visual.
+ *
+ * @param visual the path or vector visual
+ * @param vector_params_sync whether vector-owned stroke params must be synchronized first
+ * @param attrs_dirty whether retained visual attributes have a pending dirty range
+ * @param out_payloads output payload descriptors
+ * @param out_count output payload count
+ * @return whether the payload decision succeeded
+ */
+bool _path_stroke_derived_upload_payloads(
+    DvzVisual* visual, bool vector_params_sync, bool attrs_dirty,
+    DvzVisualUploadPayload* out_payloads, uint32_t* out_count)
+{
+    ANN(visual);
+    ANN(out_payloads);
+    ANN(out_count);
+    *out_count = 0;
+
+    if (vector_params_sync)
+        _vector_sync_params(visual);
+    DvzPathGpuCache* cache =
+        visual->type == DVZ_VISUAL_TYPE_VECTOR ? &visual->vector.path_gpu : &visual->path.gpu;
+    bool dirty = cache->dirty || attrs_dirty;
+    if (!dirty)
+        return true;
+
+    return _path_stroke_cache_rebuild(visual) &&
+           _path_stroke_upload_payloads(visual, out_payloads, out_count);
+}

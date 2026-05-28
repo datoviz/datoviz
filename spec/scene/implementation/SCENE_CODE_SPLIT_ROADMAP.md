@@ -22,7 +22,8 @@ candidates are:
 1. `src/scene/scene_emit/uploads.c` and `scene_emit/derived_upload.c`: some derived payload
    orchestration remains in scene-emission code. Continue moving only pure cache/data construction
    into family or subsystem helpers; image generated-quad cache/payload decisions now live in the
-   image family.
+   image family, and stroke-quad/path-stroke cache/payload decisions now live in the stroke
+   subsystem.
 2. `src/scene/annotation/text.c` and `axis.c`: retained annotation objects, layout/reserve policy,
    generated visuals, and text/glyph lowering are still mixed. Scale, colorbar, legend, colormap,
    scale-bar, and text-font ownership now have first-pass owner files.
@@ -66,7 +67,8 @@ Continue from `spec/scene/visuals/IMPLEMENTATION_LAYOUT.md`.
    1. mesh generated/index/upload payload helpers;
    2. remaining labels/image generated query or upload payload helpers;
    3. glyph/text derived buffer helpers;
-   4. any remaining stroke cache math shared by render and query paths.
+   4. any remaining stroke cache math shared by render and query paths beyond render-upload payload
+      decisions.
 2. Keep FramePlan resource-key allocation, upload-node creation, and upload ordering in
    `src/scene/scene_emit/`.
 3. Prefer private headers under the owning subsystem, such as `mesh/internal.h`, `text/internal.h`,
