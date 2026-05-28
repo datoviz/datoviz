@@ -290,6 +290,24 @@ static bool _scene_add_scene_occlusion_reads(DvzFramePlan* plan, const char* pan
 
 
 /**
+ * Return whether one panel visual is visible and drawable.
+ *
+ * @param visual the visual
+ * @return whether the visual has position data
+ */
+static bool _scene_visual_is_visible_drawable(const DvzVisual* visual)
+{
+    if (visual == NULL || !visual->visible)
+        return false;
+    if (visual->type == DVZ_VISUAL_TYPE_TEXT)
+        return false;
+    int pos_idx = _attr_index(visual, _scene_visual_draw_position_attr(visual));
+    return pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0;
+}
+
+
+
+/**
  * Return whether the panel has a visible target for volume occlusion.
  *
  * @param panel the panel
@@ -305,32 +323,13 @@ static bool _scene_panel_has_visible_volume_occlusion_target(const DvzPanel* pan
     for (uint32_t i = 0; i < panel->visual_count; i++)
     {
         const DvzVisual* visual = panel->visuals[i].visual;
-        if (visual == NULL || !visual->visible || visual->type == DVZ_VISUAL_TYPE_TEXT ||
+        if (!_scene_visual_is_visible_drawable(visual) ||
             !_scene_visual_lowering_volume_occluded(visual) ||
             visual == panel->volume_occluder_visual)
             continue;
-        int pos_idx = _attr_index(visual, _scene_visual_draw_position_attr(visual));
-        if (pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0)
-            return true;
+        return true;
     }
     return false;
-}
-
-
-/**
- * Return whether one panel visual is visible and drawable.
- *
- * @param visual the visual
- * @return whether the visual has position data
- */
-static bool _scene_visual_is_visible_drawable(const DvzVisual* visual)
-{
-    if (visual == NULL || !visual->visible)
-        return false;
-    if (visual->type == DVZ_VISUAL_TYPE_TEXT)
-        return false;
-    int pos_idx = _attr_index(visual, _scene_visual_draw_position_attr(visual));
-    return pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0;
 }
 
 
@@ -823,15 +822,10 @@ bool _scene_emit_panel_render_ex(
         uint32_t vi = order[k];
         DvzPanelAttach* attach = &panel->visuals[vi];
         DvzVisual* visual = attach->visual;
-        if (visual == NULL || !visual->visible)
-            continue;
-        if (visual->type == DVZ_VISUAL_TYPE_TEXT)
+        if (!_scene_visual_is_visible_drawable(visual))
             continue;
         uint32_t vidx = 0;
         if (!_figure_visual_index(figure, visual, &vidx))
-            continue;
-        int pos_idx = _attr_index(visual, _scene_visual_draw_position_attr(visual));
-        if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
             continue;
 
         DvzSceneVisualPassCaps caps = {0};
@@ -914,9 +908,7 @@ bool _scene_emit_panel_render_ex(
         uint32_t vi = order[k];
         DvzPanelAttach* attach = &panel->visuals[vi];
         DvzVisual* visual = attach->visual;
-        if (visual == NULL || !visual->visible)
-            continue;
-        if (visual->type == DVZ_VISUAL_TYPE_TEXT)
+        if (!_scene_visual_is_visible_drawable(visual))
             continue;
         DvzSceneVisualPassCaps caps = {0};
         if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))
@@ -925,9 +917,6 @@ bool _scene_emit_panel_render_ex(
             continue;
         uint32_t vidx = 0;
         if (!_figure_visual_index(figure, visual, &vidx))
-            continue;
-        int pos_idx = _attr_index(visual, _scene_visual_draw_position_attr(visual));
-        if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
             continue;
 
         if (caps.draws_in_transparent_blend_pass)
