@@ -29,10 +29,16 @@
 /*************************************************************************************************/
 
 typedef struct DvzVisualFamilyOps DvzVisualFamilyOps;
+typedef struct DvzVisualLowering DvzVisualLowering;
+
+typedef bool (*DvzVisualFamilyLoweringFn)(
+    const DvzVisual* visual, DvzVisualLowering* out);
+
 struct DvzVisualFamilyOps
 {
     DvzVisualType type;
     const char* name;
+    DvzVisualFamilyLoweringFn resolve_lowering;
 };
 
 
