@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import copy
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -1203,13 +1204,18 @@ class DRP2SemanticValidator:
 class DRP2FixtureRunner:
     """Load, validate, and run DRP2 fixtures."""
 
+    _result_cache: Dict[tuple[str, int, int], FixtureResult] = {}
+
     def __init__(self, root_dir: Path) -> None:
         self.root_dir = root_dir
         self.fixtures_dir = root_dir / 'spec' / 'drp2' / 'fixtures'
         self.fixture_schema = self._load_json(FIXTURE_SCHEMA_PATH)
-        self.fixture_validator = self._build_validator(FIXTURE_SCHEMA_PATH, self.fixture_schema)
+        self.fixture_validator = self._build_validator(
+            FIXTURE_SCHEMA_PATH, self._fixture_envelope_schema(self.fixture_schema)
+        )
         self.command_schema = self._load_json(COMMAND_SCHEMA_PATH)
         self.command_validator = self._build_validator(COMMAND_SCHEMA_PATH, self.command_schema)
+        self.command_validators = self._build_command_validators(self.command_schema)
 
     def discover(
         self,
@@ -1251,11 +1257,17 @@ class DRP2FixtureRunner:
     def run_fixture(self, fixture_path: Path) -> FixtureResult:
         """Run one fixture end to end."""
 
+        stat = fixture_path.stat()
+        cache_key = (str(fixture_path.resolve()), stat.st_mtime_ns, stat.st_size)
+        cached = self._result_cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         fixture = self._load_json(fixture_path)
         try:
             self.fixture_validator.validate(fixture)
         except jsonschema.ValidationError as exc:
-            return self._mismatch_result(
+            result = self._mismatch_result(
                 fixture_path,
                 fixture,
                 actual_outcome='error',
@@ -1264,9 +1276,27 @@ class DRP2FixtureRunner:
                 actual_command_index=None,
                 message=f'fixture envelope validation failed: {exc.message}',
             )
+            self._result_cache[cache_key] = result
+            return result
+
+        prefix_error = self._validate_success_prefix(fixture)
+        if prefix_error is not None:
+            result = self._mismatch_result(
+                fixture_path,
+                fixture,
+                actual_outcome='error',
+                actual_phase=None,
+                actual_code=None,
+                actual_command_index=None,
+                message=prefix_error,
+            )
+            self._result_cache[cache_key] = result
+            return result
 
         actual = self._evaluate_fixture(fixture)
-        return self._to_result(fixture_path, fixture, actual)
+        result = self._to_result(fixture_path, fixture, actual)
+        self._result_cache[cache_key] = result
+        return result
 
     def _evaluate_fixture(self, fixture: Dict[str, Any]) -> Dict[str, Any]:
         commands = fixture['commands']
@@ -1280,7 +1310,7 @@ class DRP2FixtureRunner:
                     'code': None,
                     'command_index': None,
                     'message': 'schema-negative fixture unexpectedly passed command schema validation',
-                }
+            }
             return failure
 
         failure = self._validate_command_stream(commands, stop_on_first=True)
@@ -1323,7 +1353,11 @@ class DRP2FixtureRunner:
         self, commands: Sequence[Dict[str, Any]], stop_on_first: bool
     ) -> Optional[Dict[str, Any]]:
         for index, command in enumerate(commands):
-            errors = sorted(self.command_validator.iter_errors(command), key=lambda err: list(err.path))
+            validator = self.command_validator
+            cmd = command.get('cmd')
+            if isinstance(cmd, str):
+                validator = self.command_validators.get(cmd, self.command_validator)
+            errors = sorted(validator.iter_errors(command), key=lambda err: list(err.path))
             if errors:
                 error = errors[0]
                 return {
@@ -1392,6 +1426,44 @@ class DRP2FixtureRunner:
     def _load_json(path: Path) -> Dict[str, Any]:
         with path.open('r', encoding='utf-8') as stream:
             return json.load(stream)
+
+    @staticmethod
+    def _fixture_envelope_schema(schema: Dict[str, Any]) -> Dict[str, Any]:
+        schema_copy = copy.deepcopy(schema)
+        schema_copy.pop('allOf', None)
+        schema_copy['properties']['commands'] = {
+            'type': 'array',
+            'items': {'type': 'object'},
+        }
+        return schema_copy
+
+    def _validate_success_prefix(self, fixture: Dict[str, Any]) -> Optional[str]:
+        expected = fixture.get('expected', {})
+        if expected.get('outcome') != 'success':
+            return None
+        commands = fixture.get('commands', [])
+        if len(commands) < 2:
+            return 'successful fixture needs at least HelloRenderer and RendererHelloReply'
+        if commands[0].get('cmd') != 'HelloRenderer':
+            return 'successful fixture first command must be HelloRenderer'
+        if commands[1].get('cmd') != 'RendererHelloReply':
+            return 'successful fixture second command must be RendererHelloReply'
+        return None
+
+    def _build_command_validators(
+        self, command_schema: Dict[str, Any]
+    ) -> Dict[str, jsonschema.protocols.Validator]:
+        validators: Dict[str, jsonschema.protocols.Validator] = {}
+        for entry in command_schema.get('oneOf', []):
+            ref = entry.get('$ref')
+            if not isinstance(ref, str) or not ref.startswith('./'):
+                continue
+            schema_path = COMMAND_SCHEMA_PATH.parent / ref[2:]
+            schema = self._load_json(schema_path)
+            cmd = schema.get('properties', {}).get('cmd', {}).get('const')
+            if isinstance(cmd, str):
+                validators[cmd] = self._build_validator(schema_path, schema)
+        return validators
 
     @staticmethod
     def _build_validator(path: Path, schema: Dict[str, Any]) -> jsonschema.protocols.Validator:
