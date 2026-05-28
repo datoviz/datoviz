@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "_scene.h"
@@ -104,6 +105,49 @@ static int _volume_apply_bounds_geometry(DvzVisual* visual)
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Initialize retained volume-state defaults.
+ *
+ * @param state the volume state
+ */
+void _volume_state_default(DvzVolumeState* state)
+{
+    ANN(state);
+    dvz_memset(state, sizeof(DvzVolumeState), 0, sizeof(DvzVolumeState));
+    state->opacity = 1.0f;
+    state->sampling = DVZ_VOLUME_SAMPLING_LINEAR;
+    state->render_mode = DVZ_VOLUME_RENDER_COMPOSITE;
+    state->slice_axis = DVZ_VOLUME_AXIS_Z;
+    state->slice_position = 0.5;
+    state->step_count = 64;
+    state->clip_min[0] = 0.0;
+    state->clip_min[1] = 0.0;
+    state->clip_min[2] = 0.0;
+    state->clip_max[0] = 1.0;
+    state->clip_max[1] = 1.0;
+    state->clip_max[2] = 1.0;
+    state->clip_plane_point[0] = 0.5;
+    state->clip_plane_point[1] = 0.5;
+    state->clip_plane_point[2] = 0.5;
+    state->clip_plane_normal[0] = 1.0;
+    state->bounds_min[0] = -1.0;
+    state->bounds_min[1] = -1.0;
+    state->bounds_min[2] = -1.0;
+    state->bounds_max[0] = +1.0;
+    state->bounds_max[1] = +1.0;
+    state->bounds_max[2] = +1.0;
+    state->axis_order[0] = 0;
+    state->axis_order[1] = 1;
+    state->axis_order[2] = 2;
+    state->value_min = 0.0;
+    state->value_max = 1.0;
+    state->alpha_stops[0] = (DvzVolumeAlphaStop){.position = 0.0, .alpha = 0.0f};
+    state->alpha_stops[1] = (DvzVolumeAlphaStop){.position = 1.0, .alpha = 1.0f};
+    state->alpha_stop_count = 2;
+}
+
+
 
 /**
  * Create a volume visual.

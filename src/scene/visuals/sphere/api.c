@@ -27,6 +27,21 @@
 /*************************************************************************************************/
 
 /**
+ * Mirror the retained sphere mode into the material payload spare slot.
+ *
+ * @param visual the visual
+ */
+void _sphere_params_sync_mode(DvzVisual* visual)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_SPHERE)
+        return;
+    visual->material_params.depth_cue_extra[3] = (float)visual->sphere_mode;
+}
+
+
+
+/**
  * Create a sphere impostor visual.
  *
  * @param scene the scene

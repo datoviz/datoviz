@@ -70,6 +70,26 @@ static void _labels_state_mark_dirty(DvzVisual* visual)
 /*************************************************************************************************/
 
 /**
+ * Initialize retained labels-state defaults.
+ *
+ * @param state the labels state
+ */
+void _labels_state_default(DvzLabelsState* state)
+{
+    ANN(state);
+    dvz_memset(state, sizeof(DvzLabelsState), 0, sizeof(DvzLabelsState));
+    state->opacity = 1.0f;
+    state->background_id = 0;
+    state->boundary_width_px = 1.0f;
+    state->boundary_color = (DvzColor){255, 255, 255, 255};
+    state->fallback_seed = 0;
+    state->slice_axis = DVZ_VOLUME_AXIS_Z;
+    state->slice_position = 0.5;
+}
+
+
+
+/**
  * Create a labels visual.
  *
  * @param scene the scene
