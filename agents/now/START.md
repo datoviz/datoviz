@@ -90,8 +90,9 @@ Remaining `geom` work is optional unless a release example needs it.
    before changing pinned readout cards, selected-item metadata cards, public overlay cards, or
    private rich text-block lowering.
 7. [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md)
-   before broad source-file splits in `src/scene/plan`, `src/scene/runtime`, `src/scene/core`,
-   `src/scene/annotation`, `src/scene/domain`, `src/scene/query`, or visual helper folders.
+   before broad source-file splits in `src/scene/frame_plan`, `src/scene/scene_emit`,
+   `src/scene/render_contract`, `src/scene/runtime`, `src/scene/core`, `src/scene/annotation`,
+   `src/scene/domain`, `src/scene/query`, or visual helper folders.
 
 
 ## Validation Defaults

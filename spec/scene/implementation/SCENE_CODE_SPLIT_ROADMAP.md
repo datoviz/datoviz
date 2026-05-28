@@ -10,10 +10,10 @@ scene specs; this file only defines safe source-ownership direction for refactor
 
 ## Current Pressure Points
 
-As of 2026-05-28 after the annotation/domain source-split batches, the highest-value split
+As of 2026-05-28 after the scene-plan folder removal, the highest-value split
 candidates are:
 
-1. `src/scene/plan/visual_lowering_uploads.c`: some derived payload builders remain in plan code.
+1. `src/scene/scene_emit/uploads.c`: some derived payload builders remain in scene-emission code.
    Continue moving only pure cache/data construction into family or subsystem helpers.
 2. `src/scene/annotation/text.c` and `axis.c`: retained annotation objects, layout/reserve policy,
    generated visuals, and text/glyph lowering are still mixed. Scale, colorbar, legend, colormap,
@@ -31,16 +31,16 @@ candidates are:
 1. Preserve the scene -> FramePlan -> DRP2 -> runtime boundary. Source files may move, but
    dependencies should not point backward from runtime execution into scene semantics.
 2. Do not move orchestration into family helpers. Family and subsystem helpers may build geometry,
-   cache payloads, upload bytes, or validation-local decisions; plan code keeps resource keys,
+   cache payloads, upload bytes, or validation-local decisions; `scene_emit/` keeps resource keys,
    upload nodes, dependency ordering, dirty-state policy, and pass scheduling.
-3. Runtime files should emit already-resolved plan state. They should not infer visual-family
-   semantics that the visual or plan layer could resolve earlier.
+3. Runtime files should emit already-resolved FramePlan state. They should not infer visual-family
+   semantics that the visual or scene-emission layer could resolve earlier.
 4. Keep graph-technique files as graph builders and technique policy owners; keep generic
    graph-resource realization in runtime files.
 5. Split by stable ownership, not by enum case. A smaller file is not a win if it duplicates policy
    or forces cross-file mutation of the same object invariants.
 6. Use private subsystem headers once declarations are local to a folder. Avoid growing broad
-   headers such as `_scene.h`, `_frame_plan.h`, or `_visual_internal.h` for narrow helpers.
+   headers such as `_scene.h`, `frame_plan/frame_plan.h`, or `_visual_internal.h` for narrow helpers.
 7. Each commit should be behavior-preserving unless the commit message and tests make a targeted
    behavior change explicit.
 
@@ -51,16 +51,17 @@ candidates are:
 
 Continue from `spec/scene/visuals/IMPLEMENTATION_LAYOUT.md`.
 
-1. Move remaining pure builders from `plan/visual_lowering_uploads.c` into family or subsystem
+1. Move remaining pure builders from `scene_emit/uploads.c` into family or subsystem
    files only when the helper owns a coherent payload:
    1. mesh generated/index/upload payload helpers;
    2. labels/image generated query or upload payload helpers;
    3. glyph/text derived buffer helpers;
    4. any remaining stroke cache math shared by render and query paths.
 2. Keep FramePlan resource-key allocation, upload-node creation, and upload ordering in
-   `src/scene/plan/`.
+   `src/scene/scene_emit/`.
 3. Prefer private headers under the owning subsystem, such as `mesh/internal.h`, `text/internal.h`,
-   or a narrow plan helper header, instead of adding family details to `_visual_internal.h`.
+   or a narrow `scene_emit/` helper header, instead of adding family details to
+   `_visual_internal.h`.
 
 Validation: `just build`, `git diff --check`, and `direnv exec . just test scene`.
 
@@ -72,22 +73,24 @@ new coupling.
 
 Current ownership:
 
-1. `frame_plan.c`: public/internal frame-plan lifecycle and top-level facade.
-2. `frame_plan_nodes.c`: node storage growth, append/last helpers, and node accessors.
-3. `frame_plan_capabilities.c`: capability snapshot defaults and copy helper.
-4. `frame_plan_diagnostics.c`: diagnostic report helpers.
-5. `frame_plan_resources.c`: upload node resources and upload metadata.
-6. `frame_plan_graph_resources.c`: graph resource descriptors.
-7. `frame_plan_passes.c`: compute/render/clear node appenders and render visual metadata.
-8. `frame_plan_graph_passes.c`: graph pass descriptors, access builders, and attachments.
-9. `frame_plan_dependencies.c`: dependency graph count/get facade.
-10. `frame_plan_graph_helpers.c` and `frame_plan_graph_internal.h`: shared graph helper routines.
-11. `frame_plan_graph_validation.c`: graph validation diagnostics.
-12. `frame_plan_readback.c`: readback/copy metadata and request-facing bookkeeping.
+1. `frame_plan/core.c`: public/internal frame-plan lifecycle and top-level facade.
+2. `frame_plan/nodes.c`: node storage growth, append/last helpers, and node accessors.
+3. `frame_plan/capabilities.c`: capability snapshot defaults and copy helper.
+4. `frame_plan/diagnostics.c`: diagnostic report helpers.
+5. `frame_plan/resources.c`: upload node resources and upload metadata.
+6. `frame_plan/graph/resources.c`: graph resource descriptors.
+7. `frame_plan/passes.c`: compute/render/clear node appenders and render visual metadata.
+8. `frame_plan/graph/passes.c`: graph pass descriptors, access builders, and attachments.
+9. `frame_plan/dependencies.c`: dependency graph count/get facade.
+10. `frame_plan/graph/helpers.c` and `frame_plan/graph/internal.h`: shared graph helper routines.
+11. `frame_plan/graph/validation.c`: graph validation diagnostics.
+12. `frame_plan/readback.c`: readback/copy metadata and request-facing bookkeeping.
+13. `frame_plan/ascii.c`: terminal graph/debug text output.
+14. `frame_plan/json.c`: FramePlan JSON/debug serialization.
+15. `frame_plan/fixture.c`: deterministic fixture-mode FramePlan -> DRP2 emission.
+16. `frame_plan/emit.c`: shared FramePlan -> DRP2 emission facade.
 
-Keep existing `frame_plan_ascii.c`, `frame_plan_fixture.c`, `frame_plan_emit.c`,
-`visual_metadata.c`, and `image_query_plan.c` separate. Do not change FramePlan semantics while
-moving code.
+Do not change FramePlan semantics while moving code.
 
 Validation: focused `direnv exec . just test scene/frame-plan` if available through the runner
 filter, then full `direnv exec . just test scene`.
@@ -100,16 +103,39 @@ new coupling.
 
 Current ownership:
 
-1. `render_contract.c`: top-level contract build/validate facade.
-2. `render_contract_visual.c`: visual-family contract assembly from resolved descriptors.
-3. `render_contract_resources.c`: resource-role and bind-layout compatibility checks.
-4. `render_contract_diagnostics.c`: drift/error messages and debug summaries.
+1. `render_contract/core.c`: top-level contract build/validate facade.
+2. `render_contract/visual.c`: visual-family contract assembly from resolved descriptors.
+3. `render_contract/resources.c`: resource-role and bind-layout compatibility checks.
+4. `render_contract/draw.c`: draw/resource compatibility checks against retained visual metadata.
+5. `render_contract/drp2.c`: DRP2 command-stream contract checks.
+6. `render_contract/diagnostics.c`: drift/error messages and debug summaries.
 
 Guardrail: contract files should report mismatches between declared plan state and runtime-facing
 requirements. They should not decide new visual semantics.
 
 
-### 4. Split Runtime Render Emission
+### 4. Move Scene Emission Out Of The Old Plan Folder
+
+Status: completed on 2026-05-28. The old `src/scene/plan/` folder has been removed; its ownership
+is now split across `frame_plan/`, `render_contract/`, and `scene_emit/`.
+
+Current scene-emission ownership:
+
+1. `scene_emit/core.c`: retained scene -> FramePlan facade.
+2. `scene_emit/panel.c`: panel render lowering and pass scheduling.
+3. `scene_emit/uploads.c`: visual upload lowering and upload-node orchestration.
+4. `scene_emit/upload_support.c`: shared upload metadata/resource-role helpers.
+5. `scene_emit/metadata.c`: typed visual metadata emission.
+6. `scene_emit/visual_lowering.c` and `scene_emit/visual_lowering.h`: visual-family lowering
+   decisions shared by scene emission, render contracts, visuals, and query paths.
+7. `scene_emit/image_query.c`: image query FramePlan generation.
+8. `scene_emit/scene_emit.h` and `scene_emit/internal.h`: narrow scene-emission declarations.
+
+Guardrail: `scene_emit/` owns retained scene lowering into FramePlan nodes. It should not grow
+runtime execution or backend resource realization.
+
+
+### 5. Split Runtime Render Emission
 
 Status: completed on 2026-05-28. Keep the current ownership unless later runtime work exposes new
 coupling.
@@ -134,7 +160,7 @@ offscreen/app smoke when command-buffer lifetime, render targets, graph resource
 are touched.
 
 
-### 5. Split Core Scene Ownership
+### 6. Split Core Scene Ownership
 
 Status: first batch completed on 2026-05-28. Keep the current ownership unless later work exposes
 new coupling.
@@ -157,7 +183,7 @@ Guardrail: `_scene.h` remains broad after this batch. Prefer local private heade
 subsystem declarations instead of growing it further.
 
 
-### 6. Split Annotation And Domain Helpers
+### 7. Split Annotation And Domain Helpers
 
 Status: first annotation/domain batches completed on 2026-05-28.
 
@@ -198,7 +224,7 @@ Domain candidates:
 4. polygon/polygon-set geometry construction versus scene visual glue.
 
 
-### 7. Tighten Query And Interaction Boundaries
+### 8. Tighten Query And Interaction Boundaries
 
 Status: query policy split started on 2026-05-28. `query/policy.c` owns target capability,
 query-profile selection, drawable candidate selection, family-op eligibility lookup, and
@@ -215,7 +241,7 @@ next split should be policy-driven:
 4. do not combine request-path cleanup with new picking semantics unless the feature requires it.
 
 
-### 8. Rebalance Tests With Each Split
+### 9. Rebalance Tests With Each Split
 
 Do not perform a mechanical test-file split first. Move or add tests when an implementation split
 creates a new stable boundary:
@@ -250,8 +276,10 @@ This roadmap can move to a completed record only when:
 1. visual-family helpers own their family-local API, query, bounds, and derived payload builders;
 2. frame-plan lifecycle, resources, passes, dependencies, and readback bookkeeping have separate
    owner files;
-3. runtime render emission separates pass setup, visual draw emission, bindings, and draw counts;
-4. core scene object ownership is split enough that new public object families do not edit a
+3. the old `src/scene/plan/` bucket remains gone, with `frame_plan/`, `scene_emit/`, and
+   `render_contract/` keeping separate ownership;
+4. runtime render emission separates pass setup, visual draw emission, bindings, and draw counts;
+5. core scene object ownership is split enough that new public object families do not edit a
    monolithic `scene.c`;
-5. annotation/domain helpers have clear generated-visual and public-object boundaries;
-6. tests name the boundary they protect rather than only the broad scene graph.
+6. annotation/domain helpers have clear generated-visual and public-object boundaries;
+7. tests name the boundary they protect rather than only the broad scene graph.

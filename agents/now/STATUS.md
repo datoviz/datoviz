@@ -64,7 +64,7 @@ Primary references:
 | WebGPU/WASM | `Partial / blocker` | `examples/webgpu/`, `tools/webgpu_fixture_preflight.py`, DRP2 WGSL fixtures | Document and smoke the experimental subset. |
 | Raw `ctypes` | `Done for RC1` | `tools/bindings/extract_api.py`, `tools/bindings/generate_ctypes.py`, `tools/bindings/generate_ctypes_abi.py`, `tools/bindings/ctypes_package_smoke.py`, `testing/test_ctypes_raw_smoke.py`, `examples/python/raw/`, `just bindings` | Broaden ABI/pointer policy only when richer raw examples require it. |
 | Runtime hardening | `Ongoing` | DRP2/vklite/app tests and completed lifetime records | Fix concrete lifetime, resize, descriptor, repeated-frame, or churn bugs as examples expose them. |
-| Scene source split | `Ongoing / structural` | [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md), [`../soon/scene/SCENE_CODE_SPLIT_ROADMAP.md`](../soon/scene/SCENE_CODE_SPLIT_ROADMAP.md) | Core scene, visual descriptor-kind, colormap, domain-buffer, and query-policy slices are split; continue annotation/domain, visual attrs/desc, and remaining derived-payload/test boundaries without changing semantics. |
+| Scene source split | `Ongoing / structural` | [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md), [`../soon/scene/SCENE_CODE_SPLIT_ROADMAP.md`](../soon/scene/SCENE_CODE_SPLIT_ROADMAP.md) | The old scene `plan/` bucket is gone; FramePlan, scene emission, render contracts, runtime render emission, core scene, visual descriptor-kind, colormap, domain-buffer, and query-policy slices are split. Continue annotation/domain, visual attrs/desc, remaining derived-payload, and focused-test boundaries without changing semantics. |
 | API inventory and docs | `Blocker for RC1` | [`DOCUMENTATION.md`](DOCUMENTATION.md), public headers under `include/datoviz/` | Produce public surface/status table and known-gap notes. |
 
 
@@ -103,9 +103,9 @@ Good parallel work now:
 7. **Scene source split:** staged cleanup from
    [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md),
    continuing with annotation/domain helpers, visual descriptor/attribute boundaries, remaining
-   derived payload helpers, and focused tests. FramePlan internals, render contracts, runtime render
-   emission, core scene ownership, first colormap/domain-buffer slices, and query policy were split
-   on 2026-05-28.
+   derived payload helpers, and focused tests. FramePlan internals, scene emission, render
+   contracts, runtime render emission, core scene ownership, first colormap/domain-buffer slices,
+   and query policy were split on 2026-05-28.
 8. **RC2 polish:** text placement/DPI, axes formatter/clipping, shared layout, richer legends,
    richer readouts, and broader pick/probe payloads.
 9. **Pinned readout/card lane:** completed private C card shell, rendered pinned image readouts,

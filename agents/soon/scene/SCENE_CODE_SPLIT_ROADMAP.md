@@ -11,7 +11,7 @@ as the source of truth before broad `src/scene` refactors.
 
 ## Pickup Order
 
-1. Continue low-risk derived payload extraction from `plan/visual_lowering_uploads.c`.
+1. Continue low-risk derived payload extraction from `scene_emit/uploads.c`.
 2. Continue annotation/domain helper splits where generated visuals and public object state are mixed.
 3. Continue visual descriptor/attribute splits inside `src/scene/visuals/`.
 4. Tighten remaining query/interaction boundaries without changing picking semantics accidentally.
@@ -24,7 +24,8 @@ into shared helpers, bindings, draw emission, visual preparation, and pass emiss
 split into notify, format state, frame trace, panel geometry/layout, grid, controllers, and figure
 emission owners. Follow-up slices also split visual descriptor-kind helpers, colormap annotation
 ownership, scale-bar/colorbar/legend/text-font annotation ownership, scene domain buffers, and
-query target/profile policy.
+query target/profile policy. The old `src/scene/plan/` folder was removed; its ownership now lives
+in `src/scene/frame_plan/`, `src/scene/scene_emit/`, and `src/scene/render_contract/`.
 
 
 ## Validation
