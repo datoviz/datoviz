@@ -155,15 +155,13 @@ The policy layer should mark the ownership rule and the emitter should choose a 
 The documented import style for the raw v0.4 binding is:
 
 ```python
-import datoviz as dvz
+import datoviz.raw as dvz
 
 scene = dvz.dvz_scene()
 dvz.dvz_scene_destroy(scene)
 ```
 
-`datoviz/__init__.py` should re-export the raw API so the package import is useful by default.
-
-`datoviz/raw.py` should also exist as an explicit public raw module:
+`datoviz/raw.py` is the explicit public raw module:
 
 ```python
 from ._ctypes import *  # noqa
@@ -174,9 +172,13 @@ path and should not be edited by hand.
 
 The intended roles are:
 
-1. `datoviz.__init__`: public package entry point, re-exporting the raw v0.4 API;
-2. `datoviz.raw`: stable explicit raw binding module;
+1. `datoviz.raw`: stable explicit raw binding module;
+2. `datoviz.__init__`: curated package entry point, not a blanket raw re-export;
 3. `datoviz._ctypes`: generated implementation detail.
+
+The top-level package may expose selected helper APIs for hosted Python integration, but it should
+not promise that `import datoviz as dvz` is the raw binding. This prevents raw C symbols and Python
+helper objects from competing for one namespace.
 
 
 ## Naming Policy
@@ -277,5 +279,5 @@ For v0.4, keep the two-stage architecture but use the active `tools/bindings/` i
 5. keep source-controlled policy under `spec/bindings/`;
 6. keep `datoviz/_ctypes.py` as generated output;
 7. add `datoviz/raw.py` as the explicit public raw module;
-8. make `import datoviz as dvz` the documented default import;
+8. make `import datoviz.raw as dvz` the documented raw import;
 9. preserve exact `dvz_*`, `Dvz*`, and `DVZ_*` names in the raw surface.

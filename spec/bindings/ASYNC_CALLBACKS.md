@@ -87,16 +87,22 @@ for the first slice.
 
 ## Python Event Loop Integration
 
-Python-hosted integration should drive Datoviz with render-once primitives:
+Python-hosted integration should drive Datoviz with render-once primitives owned by an explicit
+host adapter:
 
 ```python
-await dvz.run_async(app)
-dvz.run(app)
+from datoviz.host import Host
+
+host = Host(app)
+host.view(raw_view)
+
+await host.run_async()
+host.run()
 ```
 
-`dvz.run(app)` adapts to the current Python context:
+`Host.run()` adapts to the current Python context:
 
-1. If no `asyncio` loop is running, call `asyncio.run(dvz.run_async(app))`.
+1. If no `asyncio` loop is running, call `asyncio.run(host.run_async())`.
 2. If a loop is already running, as in IPython or notebooks, schedule a task and return it.
 
 The adapter registers `dvz_view_set_request_frame_callback()` so Datoviz invalidation becomes an

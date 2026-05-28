@@ -14,20 +14,28 @@ next work should prove the user-facing shape in real interactive Python contexts
 
 ## Next Steps
 
-1. Add a small example under `examples/python/raw/async_click.py`.
-   The example should show the intended single-function style:
+1. Keep the small raw async example under `examples/python/raw/async_click.py` aligned with the
+   host-helper shape. The intended style is:
 
    ```python
-   @view.on("click")
+   import datoviz.raw as dvz
+   from datoviz.host import Host
+
+   host = Host(app)
+   view = host.view(raw_view)
+
+   @view.pointer("click")
    async def click(ev):
-       result = await dvz.run_thread(load_or_compute, ev.x, ev.y)
+       result = await host.run_thread(load_or_compute, ev.x, ev.y)
        # mutate scene/view state on the Python owner loop
        view.request_frame()
+
+   host.run()
    ```
 
 2. Run the example in a plain Python script.
-   Use `dvz.run(app, views=[raw_view])` or the current wrapper equivalent so the script path proves
-   that Datoviz can be driven by `dvz_app_render_once()` without entering `dvz_app_run(app, 0)`.
+   Use `Host.run()` so the script path proves that Datoviz can be driven by
+   `dvz_app_render_once()` without entering `dvz_app_run(app, 0)`.
 
 3. Run the same workflow in an IPython terminal.
    Confirm that an already-running event loop is handled by scheduling a task rather than blocking
@@ -37,10 +45,10 @@ next work should prove the user-facing shape in real interactive Python contexts
    Confirm that the event loop remains responsive, async handlers run, and frame requests schedule
    render ticks without requiring a native blocking loop.
 
-5. Decide whether the first wrapper name is acceptable.
-   The current minimal wrapper is `dvz.View(raw_view)`. If this feels too implicit or conflicts with
-   future high-level APIs, add a clearer helper such as `dvz.wrap_view(raw_view)` while keeping the
-   raw pointer available.
+5. Replace the initial top-level helper names with the explicit host namespace.
+   The target public shape is `datoviz.host.Host`, `host.view(raw_view)`,
+   `view.pointer(...)`, `view.keyboard(...)`, `view.resize(...)`, and `view.scale(...)`. Avoid
+   top-level `dvz.View`, generic `EventSource`, and blanket top-level raw re-exports.
 
 6. Add a process-worker example only after there is a meaningful workflow.
    Good candidates are pick/probe post-processing, large file/data loading, or CPU-heavy conversion.
