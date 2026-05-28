@@ -1387,11 +1387,15 @@ bool _emitter_emit_render(
         visual_meta = &render->u.render.visual_metadata[0];
         desc_kind = _scene_visual_meta_desc_kind(&emitter->resources, visual_meta);
     }
-    if (render->u.render.visual_count > 0 && visual_meta == NULL &&
-        !render->u.render.allow_untyped_visuals)
+    if (render->u.render.visual_count > 0 && !render->u.render.allow_untyped_visuals)
     {
-        _diagnostic(report, "render visual missing typed metadata");
-        return false;
+        for (uint32_t i = 0; i < render->u.render.visual_count; i++)
+        {
+            if (render->u.render.visual_metadata[i].has_metadata)
+                continue;
+            _diagnostic(report, "render visual missing typed metadata");
+            return false;
+        }
     }
 
     /* Detect point-like visual data (position + color + size attributes). */
