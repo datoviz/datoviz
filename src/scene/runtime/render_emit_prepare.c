@@ -500,29 +500,9 @@ bool _emitter_prepare_render_multi(
             ok = false;
             break;
         }
-        if (
-            render->u.render.picking && desc.kind == DVZ_SCENE_VISUAL_DESC_SEGMENT &&
-            cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT &&
-            pipeline.attr_count > 2)
-        {
-            pipeline.strides[2] = sizeof(uint32_t);
-            pipeline.formats[2] = VK_FORMAT_R32_UINT;
-        }
-        if (
-            render->u.render.picking && desc.kind == DVZ_SCENE_VISUAL_DESC_PATH && cfg != NULL &&
-            cfg->color_target_format == VK_FORMAT_R32_UINT && pipeline.attr_count > 3)
-        {
-            pipeline.strides[3] = sizeof(uint32_t);
-            pipeline.formats[3] = VK_FORMAT_R32_UINT;
-        }
-        if (
-            render->u.render.picking && desc.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
-            cfg != NULL && cfg->color_target_format == VK_FORMAT_R32_UINT &&
-            pipeline.attr_count > 1)
-        {
-            pipeline.strides[1] = sizeof(uint32_t);
-            pipeline.formats[1] = VK_FORMAT_R32_UINT;
-        }
+        if (render->u.render.picking && cfg != NULL)
+            _scene_visual_pipeline_desc_apply_query_pick(
+                &desc, cfg->color_target_format, &pipeline);
         if (gbuffer_pass && desc.kind != DVZ_SCENE_VISUAL_DESC_SPHERE)
             pipeline.needs_material_layout = false;
         if (scene_occlusion_pass)
@@ -1100,4 +1080,3 @@ bool _emitter_prepare_render_multi(
     *draw_count_out = draw_count;
     return true;
 }
-

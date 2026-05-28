@@ -583,3 +583,37 @@ bool _scene_visual_fallback_pipeline_desc(
     out->strides[1] = 2 * sizeof(float);
     return true;
 }
+
+
+/**
+ * Apply picking query vertex-format overrides to one pipeline descriptor when needed.
+ *
+ * @param visual the visual descriptor
+ * @param color_target_format picking color target format
+ * @param pipeline pipeline descriptor to update
+ */
+void _scene_visual_pipeline_desc_apply_query_pick(
+    const DvzSceneVisualDesc* visual, uint32_t color_target_format,
+    DvzSceneVisualPipelineDesc* pipeline)
+{
+    ANN(visual);
+    ANN(pipeline);
+    if (color_target_format != VK_FORMAT_R32_UINT)
+        return;
+
+    if (visual->kind == DVZ_SCENE_VISUAL_DESC_SEGMENT && pipeline->attr_count > 2)
+    {
+        pipeline->strides[2] = sizeof(uint32_t);
+        pipeline->formats[2] = VK_FORMAT_R32_UINT;
+    }
+    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_PATH && pipeline->attr_count > 3)
+    {
+        pipeline->strides[3] = sizeof(uint32_t);
+        pipeline->formats[3] = VK_FORMAT_R32_UINT;
+    }
+    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && pipeline->attr_count > 1)
+    {
+        pipeline->strides[1] = sizeof(uint32_t);
+        pipeline->formats[1] = VK_FORMAT_R32_UINT;
+    }
+}

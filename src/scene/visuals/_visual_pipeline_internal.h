@@ -62,6 +62,10 @@ bool _scene_visual_fallback_pipeline_desc(
     DvzSceneVisualDescKind kind, uint32_t vertex_buffer_count, bool instanced_point_like,
     DvzSceneVisualPipelineDesc* out);
 
+void _scene_visual_pipeline_desc_apply_query_pick(
+    const DvzSceneVisualDesc* visual, uint32_t color_target_format,
+    DvzSceneVisualPipelineDesc* pipeline);
+
 bool _scene_visual_shader_desc_apply_query_pick(
     const DvzSceneVisualDesc* visual, uint32_t color_target_format,
     DvzSceneVisualShaderDesc* shader, bool* out_applied);
