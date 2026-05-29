@@ -201,7 +201,7 @@ static void _lab_queue_item_query_at(SchedulerLabState* state, double x, double 
     DvzQueryRequest request = {
         .request_id = state->item_query_request_count,
         .target = DVZ_SCENE_TARGET_ITEM,
-        .hit_policy = DVZ_PICK_HIT_FRONTMOST,
+        .hit_policy = DVZ_QUERY_HIT_FRONTMOST,
     };
     if (dvz_panel_query(state->panel, x, y, &request) != 0)
         dvz_fprintf(stderr, "dvz_panel_query(item) failed\n");

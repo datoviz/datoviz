@@ -42,7 +42,7 @@ targets and richer probe payloads easy to add inconsistently.
 7. Payload fields are still narrower than the public structs imply. `instance_id`,
    `has_data_position`, and `data_position` are not populated by the current pick executor, and there
    is no mesh face/region, image texel, or volume ray-hit payload yet.
-8. `DvzPickHitPolicy` is carried by requests but is not materially applied during native execution.
+8. `DvzQueryHitPolicy` is carried by requests but is not materially applied during native execution.
    Current behavior is effectively one frontmost accepted result.
 9. Some implemented paths are approximate or proxy-based: marker picking uses pixel/bounds-style
    acceptance rather than exact SDF/shape semantics; image picking resolves the quad/item rather than

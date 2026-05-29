@@ -736,7 +736,7 @@ dvz_interaction_bind_panel
 dvz_interaction_destroy
 dvz_interaction_set_auto_pin_readout
 dvz_interaction_set_link_channel
-dvz_interaction_set_pick_hit_policy
+dvz_interaction_set_query_hit_policy
 dvz_interaction_set_selection
 dvz_interpolate
 dvz_interpolate_2D

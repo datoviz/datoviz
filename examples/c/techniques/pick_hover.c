@@ -177,7 +177,7 @@ static void _hover_pick_frame(DvzView* win, void* user_data)
                 &(DvzQueryRequest){
                     .request_id = 1,
                     .target = DVZ_SCENE_TARGET_ITEM,
-                    .hit_policy = DVZ_PICK_HIT_FRONTMOST,
+                    .hit_policy = DVZ_QUERY_HIT_FRONTMOST,
                 }) != 0)
         {
             fprintf(stderr, "dvz_panel_query() failed\n");
