@@ -28,6 +28,7 @@
 #include "_scene_resource_key.h"
 #include "_visual_internal.h"
 #include "datoviz/scene.h"
+#include "registry/registry.h"
 
 
 /*************************************************************************************************/
@@ -137,24 +138,9 @@ void _material_state_default(DvzSceneMaterialState* material, DvzVisualType visu
     material->point_style = dvz_point_style_desc();
     material->point_style_enabled = false;
 
-    switch (visual_type)
-    {
-    case DVZ_VISUAL_TYPE_PRIMITIVE:
-    case DVZ_VISUAL_TYPE_MESH:
-    case DVZ_VISUAL_TYPE_PATH:
-    case DVZ_VISUAL_TYPE_SPHERE:
-        material->kind = DVZ_MATERIAL_KIND_LIT;
-        material->model = DVZ_MATERIAL_MODEL_PHONG;
-        break;
-    case DVZ_VISUAL_TYPE_VOLUME:
-        material->kind = DVZ_MATERIAL_KIND_VOLUME;
-        material->model = DVZ_MATERIAL_MODEL_UNLIT;
-        break;
-    default:
-        material->kind = DVZ_MATERIAL_KIND_UNLIT;
-        material->model = DVZ_MATERIAL_MODEL_UNLIT;
-        break;
-    }
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(visual_type);
+    material->kind = ops != NULL ? ops->default_material_kind : DVZ_MATERIAL_KIND_UNLIT;
+    material->model = ops != NULL ? ops->default_material_model : DVZ_MATERIAL_MODEL_UNLIT;
 }
 
 
@@ -167,8 +153,8 @@ void _material_state_default(DvzSceneMaterialState* material, DvzVisualType visu
  */
 bool _material_visual_supported(DvzVisualType visual_type)
 {
-    return visual_type == DVZ_VISUAL_TYPE_PRIMITIVE || visual_type == DVZ_VISUAL_TYPE_MESH ||
-           visual_type == DVZ_VISUAL_TYPE_SPHERE;
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(visual_type);
+    return ops != NULL && ops->supports_material;
 }
 
 
@@ -399,9 +385,8 @@ void _material_params_sync_state(
  */
 bool _material_depth_cue_supported(DvzVisualType visual_type)
 {
-    return visual_type == DVZ_VISUAL_TYPE_POINT || visual_type == DVZ_VISUAL_TYPE_PIXEL ||
-           visual_type == DVZ_VISUAL_TYPE_PRIMITIVE || visual_type == DVZ_VISUAL_TYPE_MESH ||
-           visual_type == DVZ_VISUAL_TYPE_SPHERE;
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(visual_type);
+    return ops != NULL && ops->supports_depth_cue;
 }
 
 
@@ -503,7 +488,8 @@ void _visual_material_mark_dirty(DvzVisual* visual)
 {
     ANN(visual);
     _material_params_sync_state(&_visual_family_state(visual)->material_params, &visual->material);
-    if (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_MARKER)
+    const DvzVisualFamilyOps* ops = visual->ops;
+    if (ops != NULL && ops->sync_point_style_material)
         _point_style_sync_params(&_visual_family_state(visual)->material_params, &visual->material.point_style);
     _sphere_params_sync_mode(visual);
     _visual_bump_version(&visual->material.version);

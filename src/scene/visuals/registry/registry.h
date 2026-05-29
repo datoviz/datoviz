@@ -73,6 +73,10 @@ struct DvzVisualFamilyOps
 {
     DvzVisualType type;
     const char* name;
+    DvzRenderableKind renderable_kind;
+    DvzSceneVisualDescKind desc_kind;
+    DvzMaterialKind default_material_kind;
+    DvzMaterialModel default_material_model;
     DvzVisualFamilyLoweringFn resolve_lowering;
     DvzVisualFamilyBoundsFn resolve_bounds;
     DvzVisualFamilyPassCapsFn resolve_pass_caps;
@@ -92,6 +96,9 @@ struct DvzVisualFamilyOps
     bool sampled_field_texture_upload;
     bool supports_scale;
     bool categorical_scale;
+    bool supports_material;
+    bool supports_depth_cue;
+    bool sync_point_style_material;
 };
 
 
@@ -107,6 +114,12 @@ uint32_t _scene_visual_family_ops_count(void);
 const DvzVisualFamilyOps* _scene_visual_family_ops_at(uint32_t index);
 
 bool _scene_visual_family_ops_registered(DvzVisualType type);
+
+DvzRenderableKind _scene_visual_family_renderable_kind(DvzVisualType type);
+
+DvzSceneVisualDescKind _scene_visual_family_desc_kind(DvzVisualType type);
+
+DvzVisualType _scene_visual_family_desc_default_type(DvzSceneVisualDescKind kind);
 
 bool _scene_visual_default_pass_caps(
     const DvzVisual* visual, const DvzPanelAttach* attach, const DvzVisualLowering* lowering,

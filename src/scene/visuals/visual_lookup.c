@@ -29,6 +29,7 @@
 #include "_visual_family.h"
 #include "_visual_internal.h"
 #include "datoviz/scene.h"
+#include "registry/registry.h"
 #include "sample_profile.h"
 
 
@@ -77,39 +78,6 @@ bool _figure_visual_index(const DvzFigure* figure, const DvzVisual* visual, uint
  */
 const char* _visual_type_name(DvzVisualType type)
 {
-    switch (type)
-    {
-    case DVZ_VISUAL_TYPE_POINT:
-        return "point";
-    case DVZ_VISUAL_TYPE_PIXEL:
-        return "pixel";
-    case DVZ_VISUAL_TYPE_MARKER:
-        return "marker";
-    case DVZ_VISUAL_TYPE_SEGMENT:
-        return "segment";
-    case DVZ_VISUAL_TYPE_VECTOR:
-        return "vector";
-    case DVZ_VISUAL_TYPE_PATH:
-        return "path";
-    case DVZ_VISUAL_TYPE_IMAGE:
-        return "image";
-    case DVZ_VISUAL_TYPE_LABELS:
-        return "labels";
-    case DVZ_VISUAL_TYPE_SPLAT:
-        return "splat";
-    case DVZ_VISUAL_TYPE_TEXT:
-        return "text";
-    case DVZ_VISUAL_TYPE_GLYPH:
-        return "glyph";
-    case DVZ_VISUAL_TYPE_MESH:
-        return "mesh";
-    case DVZ_VISUAL_TYPE_VOLUME:
-        return "volume";
-    case DVZ_VISUAL_TYPE_PRIMITIVE:
-        return "primitive";
-    case DVZ_VISUAL_TYPE_SPHERE:
-        return "sphere";
-    default:
-        return "unknown";
-    }
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(type);
+    return ops != NULL && ops->name != NULL ? ops->name : "unknown";
 }

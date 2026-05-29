@@ -26,6 +26,7 @@
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
 #include "datoviz/drp2/enums.h"
+#include "registry/registry.h"
 
 
 /*************************************************************************************************/
@@ -77,35 +78,7 @@ DvzSceneVisualDescKind _scene_visual_meta_desc_kind(
         if (renderable_kind == DVZ_RENDERABLE_VOLUME_PROXY)
             return DVZ_SCENE_VISUAL_DESC_VOLUME;
     }
-    switch ((DvzVisualType)meta->visual_type)
-    {
-    case DVZ_VISUAL_TYPE_POINT:
-        return DVZ_SCENE_VISUAL_DESC_POINT;
-    case DVZ_VISUAL_TYPE_PIXEL:
-        return DVZ_SCENE_VISUAL_DESC_PIXEL;
-    case DVZ_VISUAL_TYPE_MARKER:
-        return DVZ_SCENE_VISUAL_DESC_MARKER;
-    case DVZ_VISUAL_TYPE_SPLAT:
-        return DVZ_SCENE_VISUAL_DESC_SPLAT;
-    case DVZ_VISUAL_TYPE_SPHERE:
-        return DVZ_SCENE_VISUAL_DESC_SPHERE;
-    case DVZ_VISUAL_TYPE_SEGMENT:
-        return DVZ_SCENE_VISUAL_DESC_SEGMENT;
-    case DVZ_VISUAL_TYPE_PATH:
-        return DVZ_SCENE_VISUAL_DESC_PATH;
-    case DVZ_VISUAL_TYPE_PRIMITIVE:
-    case DVZ_VISUAL_TYPE_MESH:
-        return DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
-    case DVZ_VISUAL_TYPE_IMAGE:
-        return DVZ_SCENE_VISUAL_DESC_IMAGE;
-    case DVZ_VISUAL_TYPE_GLYPH:
-        return DVZ_SCENE_VISUAL_DESC_GLYPH;
-    case DVZ_VISUAL_TYPE_VOLUME:
-        return DVZ_SCENE_VISUAL_DESC_VOLUME;
-    default:
-        break;
-    }
-    return DVZ_SCENE_VISUAL_DESC_NONE;
+    return _scene_visual_family_desc_kind((DvzVisualType)meta->visual_type);
 }
 
 
@@ -124,31 +97,7 @@ DvzRenderableKind _scene_visual_meta_renderable_kind(
     if (meta->renderable_kind != DVZ_RENDERABLE_NONE)
         return (DvzRenderableKind)meta->renderable_kind;
 
-    switch ((DvzVisualType)meta->visual_type)
-    {
-    case DVZ_VISUAL_TYPE_POINT:
-    case DVZ_VISUAL_TYPE_PIXEL:
-    case DVZ_VISUAL_TYPE_MARKER:
-    case DVZ_VISUAL_TYPE_SPLAT:
-    case DVZ_VISUAL_TYPE_SPHERE:
-        return DVZ_RENDERABLE_POINT_LIKE;
-    case DVZ_VISUAL_TYPE_SEGMENT:
-        return DVZ_RENDERABLE_STROKE_QUAD;
-    case DVZ_VISUAL_TYPE_PATH:
-        return DVZ_RENDERABLE_PATH_STROKE;
-    case DVZ_VISUAL_TYPE_PRIMITIVE:
-    case DVZ_VISUAL_TYPE_MESH:
-        return DVZ_RENDERABLE_INDEXED_MESH;
-    case DVZ_VISUAL_TYPE_IMAGE:
-    case DVZ_VISUAL_TYPE_GLYPH:
-    case DVZ_VISUAL_TYPE_LABELS:
-        return DVZ_RENDERABLE_TEXTURED_QUAD;
-    case DVZ_VISUAL_TYPE_VOLUME:
-        return DVZ_RENDERABLE_VOLUME_PROXY;
-    default:
-        break;
-    }
-    return DVZ_RENDERABLE_NONE;
+    return _scene_visual_family_renderable_kind((DvzVisualType)meta->visual_type);
 }
 
 
@@ -230,41 +179,7 @@ const char* _scene_visual_desc_kind_name(DvzSceneVisualDescKind kind)
  */
 DvzVisualType _scene_visual_desc_default_type(DvzSceneVisualDescKind kind)
 {
-    switch (kind)
-    {
-    case DVZ_SCENE_VISUAL_DESC_POINT:
-        return DVZ_VISUAL_TYPE_POINT;
-    case DVZ_SCENE_VISUAL_DESC_PIXEL:
-        return DVZ_VISUAL_TYPE_PIXEL;
-    case DVZ_SCENE_VISUAL_DESC_SPLAT:
-        return DVZ_VISUAL_TYPE_SPLAT;
-    case DVZ_SCENE_VISUAL_DESC_MARKER:
-        return DVZ_VISUAL_TYPE_MARKER;
-    case DVZ_SCENE_VISUAL_DESC_SPHERE:
-        return DVZ_VISUAL_TYPE_SPHERE;
-    case DVZ_SCENE_VISUAL_DESC_SEGMENT:
-        return DVZ_VISUAL_TYPE_SEGMENT;
-    case DVZ_SCENE_VISUAL_DESC_PATH:
-        return DVZ_VISUAL_TYPE_PATH;
-    case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
-        return DVZ_VISUAL_TYPE_PRIMITIVE;
-    case DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH:
-        return DVZ_VISUAL_TYPE_MESH;
-    case DVZ_SCENE_VISUAL_DESC_IMAGE:
-        return DVZ_VISUAL_TYPE_IMAGE;
-    case DVZ_SCENE_VISUAL_DESC_LABELS_SINT:
-    case DVZ_SCENE_VISUAL_DESC_LABELS_UINT:
-        return DVZ_VISUAL_TYPE_LABELS;
-    case DVZ_SCENE_VISUAL_DESC_GLYPH:
-        return DVZ_VISUAL_TYPE_GLYPH;
-    case DVZ_SCENE_VISUAL_DESC_VOLUME:
-    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT:
-    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT:
-        return DVZ_VISUAL_TYPE_VOLUME;
-    case DVZ_SCENE_VISUAL_DESC_NONE:
-    default:
-        return DVZ_VISUAL_TYPE_NONE;
-    }
+    return _scene_visual_family_desc_default_type(kind);
 }
 
 
