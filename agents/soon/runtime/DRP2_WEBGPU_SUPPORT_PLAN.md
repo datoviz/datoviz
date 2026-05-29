@@ -20,6 +20,10 @@ The browser WebGPU path is a narrow experimental replay harness under `examples/
 the target is a tested subset with explicit unsupported-feature diagnostics, not native Vulkan
 feature parity.
 
+The pure WebGPU runner is closed for the v0.4 RC experimental subset as of `c03e89227`. Remaining
+WebGPU/WASM release work should focus on scene/WASM emission and transport, while keeping the
+browser runner in validation.
+
 Current automated evidence:
 
 1. `just webgpu-fixture-preflight` passes the committed strict subset: `39/39`.
@@ -37,6 +41,8 @@ Current automated evidence:
 6. The browser fixture dashboard passed fixture compatibility `120/120` and retained runtime
    stress `7/7`, including demo-session pan/zoom, resize, and stream-reload paths, on
    `2026-05-29` after `a1c0d7306`.
+7. The browser fixture dashboard passed fixture compatibility `120/120` and retained runtime
+   stress `7/7` on `2026-05-29` after the capability-preflight diagnostics slice (`c03e89227`).
 
 
 ## Remaining WebGPU Runtime Work
@@ -60,26 +66,27 @@ Completed since the initial follow-up note:
    texture-sampling, and depth-attachment streams.
 8. Main-demo session stress rows now cover pan/zoom uniform updates, resize-triggered reload, and
    stream reload on the same helper used by the demo page.
+9. Browser capability preflight now reports unsupported commands, shader formats, texture formats,
+   render-target/depth formats, and required-feature failures before command execution.
 
-Remaining follow-up commits:
+Remaining follow-up commits before or during WASM work:
 
 1. Replace remaining standalone-demo compatibility shortcuts where practical: implicit canvas
    aliases, unaligned-offset fallback, and demo-local scene uniform id assumptions. Scene
    interaction must be WASM/scene-owned: browser input should become scene/controller calls, and
    the scene layer should emit DRP2 update commands for the WebGPU runtime to execute directly.
    Do not promote browser-side direct uniform mutation into the app architecture.
-2. Add a DRP2-aligned capability snapshot for the browser runtime and use it to produce explicit
-   unsupported-feature diagnostics before execution.
-3. Keep `CreatePipelineLayout`, `DestroyPipelineLayout`, `ResourceBarrier`, and indirect commands
+2. Keep `CreatePipelineLayout`, `DestroyPipelineLayout`, `ResourceBarrier`, and indirect commands
    deferred until a concrete use case promotes them across DRP2 specs, schemas, native validation,
    WebGPU execution, fixtures, and lifecycle rules together.
 
 
 ## Immediate Order
 
-1. Add browser capability reporting and unsupported-feature diagnostics.
-2. Start the portable scene/WASM emission milestone from
+1. Start the portable scene/WASM emission milestone from
    [`SCENE_WASM_WEBGPU_PORT_PLAN.md`](SCENE_WASM_WEBGPU_PORT_PLAN.md).
+2. Keep the pure WebGPU subset in RC validation with `just webgpu-fixture-preflight`, `just
+   webgpu-runner-smoke`, and the browser dashboard when command behavior changes.
 3. Keep `CreatePipelineLayout` deferred during this work.
 
 

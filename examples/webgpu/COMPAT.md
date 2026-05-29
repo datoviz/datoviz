@@ -6,6 +6,10 @@ The WebGPU runner is a strict subset check, not a full DRP2 backend. It tracks t
 command surface and validates the currently portable fixture slice: `37` positive DRP2 fixtures,
 `2` WebGPU-only attachment streams, and `81` expected-failure semantic negative fixtures.
 
+As of the capability-preflight slice (`c03e89227`), the pure browser WebGPU runner is considered
+closed for the v0.4 RC experimental subset. Remaining WebGPU/WASM release work is scene/WASM
+emission and transport, not additional pure WebGPU command coverage for this subset.
+
 
 ## Fixture Dashboard
 
@@ -41,6 +45,9 @@ Current status as of this note:
   `4 pass, 0 fail`
 - recorded browser dashboard result on 2026-05-29 after the demo-runtime reload stress slice
   (`a1c0d7306`): fixture compatibility `120 pass, 0 unsupported, 0 fail`; retained runtime stress
+  `7 pass, 0 fail`
+- recorded browser dashboard result on 2026-05-29 after the capability-preflight diagnostics slice
+  (`c03e89227`): fixture compatibility `120 pass, 0 unsupported, 0 fail`; retained runtime stress
   `7 pass, 0 fail`
 - remaining unsupported entries in the committed subset: none
 
@@ -150,6 +157,10 @@ lets fixture-level `capabilities` entries narrow it for negative tests. The curr
 
 The fixture dashboard stores this snapshot in the summary tooltip so browser runs can report the
 capability context that was used for validation.
+
+The runner preflights stream-level capabilities before command execution. Unsupported commands and
+unsupported shader, texture, render-target, or depth/stencil capability choices return DRP2-level
+diagnostics before creating browser GPU resources.
 
 
 ## PoC-Local Adaptations
