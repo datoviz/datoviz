@@ -1837,10 +1837,4 @@ void _scene_font_release(DvzFont* font);
 
 EXTERN_C_OFF
 
-void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources);
-
-uint64_t _scene_visual_public_id(const DvzScene* scene, const DvzVisual* visual);
-
-void _scene_panel_visual_order(const DvzPanel* panel, uint32_t* order);
-
 void _dvz_scene_animations_step(DvzScene* scene, uint64_t wall_time_ns);

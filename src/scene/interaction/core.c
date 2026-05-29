@@ -24,6 +24,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_scene.h"
+#include "_visual_internal.h"
 #include "datoviz/scene/overlay.h"
 
 

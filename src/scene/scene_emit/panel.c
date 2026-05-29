@@ -31,6 +31,7 @@
 #include "_scene_resource_key.h"
 #include "_scene_shader_abi.h"
 #include "_technique.h"
+#include "_visual_internal.h"
 #include "_visual_pipeline.h"
 #include "domain/buffer_internal.h"
 #include "scene_emit/visual_lowering.h"

@@ -65,4 +65,7 @@ bool _point_style_enabled(const DvzPointStyleDesc* style);
 DvzPointStyleDesc _marker_style_to_point_style(const DvzMarkerStyle* style);
 void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPointStyleDesc* style);
 DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t flags);
+void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources);
+uint64_t _scene_visual_public_id(const DvzScene* scene, const DvzVisual* visual);
+void _scene_panel_visual_order(const DvzPanel* panel, uint32_t* order);
 void _scene_release_visual_scale(DvzVisual* visual);
