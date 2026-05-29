@@ -18,6 +18,7 @@
 #include <stdint.h>
 
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"

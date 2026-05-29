@@ -19,6 +19,7 @@
 
 #include "_assertions.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "core/panel_layout_internal.h"
 #include "_visual_internal.h"
 

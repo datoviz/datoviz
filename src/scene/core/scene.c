@@ -34,6 +34,7 @@
 #include "datoviz/math/_cglm.h"
 #include "../../drp2/_stream.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "_technique.h"
 #include "_visual_internal.h"
 #include "core/frame_trace_internal.h"

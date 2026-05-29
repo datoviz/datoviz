@@ -35,6 +35,7 @@
 #include "datoviz/scene.h"
 #include "../drp2/_stream.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "core/figure_emit_internal.h"
 #include "interaction/animation_internal.h"
 #include "query/internal.h"

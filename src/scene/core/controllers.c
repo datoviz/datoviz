@@ -23,6 +23,7 @@
 #include "_controllers.h"
 #include "datoviz/math/_cglm.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "datoviz/scene.h"
 
 

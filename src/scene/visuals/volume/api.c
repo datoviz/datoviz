@@ -21,6 +21,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "_visual_internal.h"
 #include "datoviz/scene.h"
 #include "sample_profile.h"

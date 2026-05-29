@@ -24,6 +24,7 @@
 #include "_compat.h"
 #include "_scale_ticks.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "core/panel_layout_internal.h"
 #include "datoviz/scene.h"
 #include "text_internal.h"

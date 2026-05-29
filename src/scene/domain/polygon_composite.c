@@ -17,6 +17,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "polygon_internal.h"

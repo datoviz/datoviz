@@ -28,6 +28,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "field_internal.h"
 #include "sample_profile.h"
 #include "visuals/bindings_internal.h"

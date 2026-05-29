@@ -23,6 +23,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "prepare_internal.h"
 #include "scene_emit/scene_emit.h"
 #include "datoviz/scene.h"

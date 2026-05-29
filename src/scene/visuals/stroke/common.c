@@ -21,6 +21,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "_visual_internal.h"
 #include "stroke/internal.h"
 

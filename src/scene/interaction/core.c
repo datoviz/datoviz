@@ -24,6 +24,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "_visual_internal.h"
 #include "annotation/prepare_internal.h"
 #include "core/format_state_internal.h"

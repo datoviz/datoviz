@@ -25,6 +25,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "core/format_state_internal.h"
 #include "domain/field_internal.h"
 #include "sample_profile.h"
