@@ -1762,9 +1762,6 @@ bool _scene_query_request_ndc(
     const DvzFigure* figure, const DvzPanel* panel, double x, double y, vec2 out_ndc);
 uint64_t _scene_panel_public_id(const DvzFigure* figure, const DvzPanel* panel);
 void _scene_request_apply_mvp(const DvzPanel* panel, const vec2 request_ndc, DvzMVP* out);
-bool _scene_image_query_plan(
-    const DvzPanel* panel, DvzVisual* visual, const DvzPendingQueryRequest* pending,
-    const vec2 request_ndc, bool include_static_uploads, DvzSceneQueryScratch* out_plan);
 void _scene_request_executor_init(DvzSceneRequestExecutor* executor);
 void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor);
 bool _scene_request_executor_prepare(

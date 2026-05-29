@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Scene image query frame plans                                                                */
+/*  Image sample query frame plans                                                               */
 /*************************************************************************************************/
 
 
@@ -20,12 +20,15 @@
 #include <stdint.h>
 
 #include "datoviz/math/_cglm.h"
+#include "image/internal.h"
+#include "../../query/internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "_visual_internal.h"
 #include "_visual_pipeline.h"
 
 
