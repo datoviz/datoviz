@@ -76,6 +76,34 @@ static DvzSampledField* _scene_ensure_owned_image_field(
 /*************************************************************************************************/
 
 /**
+ * Clear all visual bindings that currently reference one sampled field.
+ *
+ * @param field the sampled field being released
+ */
+void _scene_release_field_bindings(DvzSampledField* field)
+{
+    if (field == NULL || field->scene == NULL)
+        return;
+    DvzScene* scene = field->scene;
+    for (uint32_t i = 0; i < scene->visual_count; i++)
+    {
+        DvzVisual* visual = &scene->visuals[i];
+        if (visual->field != field)
+            continue;
+        _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
+        _scene_visual_texture_mark_clean(visual);
+        if (visual->texture.upload != NULL)
+        {
+            dvz_free(visual->texture.upload);
+            visual->texture.upload = NULL;
+            visual->texture.upload_size = 0;
+        }
+    }
+}
+
+
+
+/**
  * Bind a retained sampled field to a texture-backed visual.
  *
  * @param visual the visual

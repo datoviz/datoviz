@@ -21,9 +21,8 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "_scene.h"
-#include "field_internal.h"
-#include "visuals/bindings_internal.h"
 #include "_visual_internal.h"
+#include "field_internal.h"
 
 
 
@@ -154,25 +153,7 @@ bool dvz_sampled_field_destroy(DvzSampledField* field)
         return false;
     if (!_scene_visual_mutation_allowed(field->scene, "destroy sampled field"))
         return false;
-    DvzScene* scene = field->scene;
-    if (scene != NULL)
-    {
-        for (uint32_t i = 0; i < scene->visual_count; i++)
-        {
-            DvzVisual* visual = &scene->visuals[i];
-            if (visual->field == field)
-            {
-                _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
-                _scene_visual_texture_mark_clean(visual);
-                if (visual->texture.upload != NULL)
-                {
-                    dvz_free(visual->texture.upload);
-                    visual->texture.upload = NULL;
-                    visual->texture.upload_size = 0;
-                }
-            }
-        }
-    }
+    _scene_release_field_bindings(field);
     _scene_field_reset(field);
     return true;
 }
