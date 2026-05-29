@@ -59,15 +59,17 @@ Latest pickup snapshot:
 
 1. The retained textured-mesh first slice exists and should be treated as active code, not future
    scaffolding.
-2. The most recent scene-source split commits through `c03db46b9` completed the upload-support,
-   panel-helper, and helper-declaration boundary cleanup passes. Do not restart by re-extracting
-   dense/index/material upload emission, panel drawable/viewport helpers, or the helper
-   declarations already moved into owner-private headers.
-3. The best next implementation slices are now query-family ownership, normal-path typed metadata
-   enforcement, and annotation/domain ownership. Remaining upload work should be limited to pure
-   family payload builders when a concrete builder is still mixed into scene emission.
+2. The most recent scene-source split commits through `b0f24bd51` completed the upload-support,
+   panel-helper, helper-declaration boundary, shared query scratch-helper, and query
+   render-metadata guard cleanup passes. Do not restart by re-extracting dense/index/material
+   upload emission, panel drawable/viewport helpers, the helper declarations already moved into
+   owner-private headers, or the generic query helpers now centralized in `query/scratch.c`.
+3. The best next implementation slices are now remaining query-family ownership,
+   normal-path typed metadata enforcement outside query, and annotation/domain ownership. Remaining
+   upload work should be limited to pure family payload builders when a concrete builder is still
+   mixed into scene emission.
 4. Last focused validation recorded for this split was `git diff --check`, `just build`,
-   `direnv exec . just test scene/query` (`39/39`), `direnv exec . just test scene-graph`
+   `direnv exec . just test scene/query` (`40/40`), `direnv exec . just test scene-graph`
    (`157/157`), and `direnv exec . just test app-offscreen` (`76/76`). The earlier broad query
    GPU readback failures are no longer current blockers.
 
@@ -147,10 +149,9 @@ this section when a slice is completed.
      family reducers exist for segment, vector, image, sphere, glyph, and stroke. Remove remaining
      generic visual branches that compute family semantics outside family folders or explicit
      shared visual subsystems such as `visuals/stroke/`.
-   - Query has family files and a registry already. Finish moving scratch geometry, native result
-     decoding, and unsupported-policy decisions out of generic query or scene-emission code. In
-     particular, inspect `scene_emit/image_query.c` and the family `query.c` files before changing
-     the executor.
+   - Query has family files, a registry, shared scratch helpers, and a render-metadata completeness
+     guard already. Finish moving remaining family scratch geometry, native result decoding, and
+     unsupported-policy decisions into family `query.c` files or narrow shared visual subsystems.
    - Keep the query executor, request queue, readback scheduling, and retained request processing
      generic.
 
@@ -296,7 +297,8 @@ Steps:
 1. Audit every path that creates a render visual and confirm it emits `DvzFramePlanVisualMeta`.
 2. Make query-generated render nodes emit the same metadata model as normal retained scene visuals.
 3. Add a test/debug mode that fails when a normal scene render visual reaches runtime without typed
-   metadata.
+   metadata. Query-generated render plans now have a focused completeness guard and CPU test;
+   continue by enforcing any remaining non-query normal paths.
 4. Keep untyped descriptor inference only for explicit fixture/import compatibility if such a path
    is still needed.
 5. Delete `visuals/desc_untyped_compat.c` if no compatibility path remains; otherwise keep it

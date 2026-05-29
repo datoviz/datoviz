@@ -16,13 +16,15 @@ tracks source-split progress; the completion plan defines the end state.
 
 ## Current Pressure Points
 
-As of 2026-05-29 after the scene-plan folder removal, upload/panel helper passes, and
-helper-declaration boundary pass through `c03db46b9`, the highest-value split candidates are:
+As of 2026-05-29 after the scene-plan folder removal, upload/panel helper passes,
+helper-declaration boundary pass, query scratch-helper sharing, and query render-metadata guard
+through `b0f24bd51`, the highest-value split candidates are:
 
-1. `src/scene/query/`, `scene_emit/image_query.c`, and family `visuals/*/query.c` files: query has
-   a registry and split executor/policy/readback files, but scratch geometry, native result
-   decoding, and unsupported-policy ownership should be checked family by family. Keep queueing,
-   request freshness, executor lifecycle, and readback scheduling generic.
+1. `src/scene/query/` and family `visuals/*/query.c` files: query has a registry, split
+   executor/policy/readback files, shared scratch helpers, and a query render-metadata completeness
+   guard. Family scratch geometry, native result decoding, and unsupported-policy ownership should
+   still be checked family by family. Keep queueing, request freshness, executor lifecycle,
+   metadata completeness checks, and readback scheduling generic.
 2. `src/scene/annotation/text.c` and `axis.c`: retained annotation objects, layout/reserve policy,
    generated visuals, and text/glyph lowering are still mixed. Scale, colorbar, legend, colormap,
    scale-bar, and text-font ownership now have first-pass owner files.
@@ -94,30 +96,33 @@ They should move only when includes and ownership prove the boundary, not as a d
 
 ### 1. Finish Query-Family Ownership
 
-Status: next recommended pickup after the upload-support, panel-helper, and helper-declaration
-boundary cleanup passes completed through 2026-05-29.
+Status: generic query scratch helpers and the query render-metadata guard completed on 2026-05-29.
+The next pickup is family-by-family ownership of remaining scratch geometry, result decoding, and
+unsupported-policy decisions.
 
 Current ownership:
 
 1. `query/policy.c`: target capability, query-profile selection, candidate visual selection,
    family-op eligibility, and framebuffer coordinate policy.
 2. `query/execute.c`: retained executor schema reset, static-upload bookkeeping, native family
-   execution, and readback orchestration.
-3. `query/queue.c`, `query/readback.c`, `query/result.c`, and `query/registry.c`: request queue,
+   execution, query render-metadata completeness checks, and readback orchestration.
+3. `query/scratch.c`: scratch destruction plus shared temporary allocation, dense-attribute,
+   target-extent, request-centered render-state, and render-metadata completeness helpers.
+4. `query/queue.c`, `query/readback.c`, `query/result.c`, and `query/registry.c`: request queue,
    readback routing, result freshness, and family-op lookup.
-4. `visuals/<family>/query.c`: family query hooks for active queryable families.
+5. `visuals/<family>/query.c`: family query hooks for active queryable families.
 
 Next moves:
 
-1. Move remaining scratch-geometry builders out of generic scene-emission files when the geometry
-   is family-specific. `scene_emit/image_query.c` is the first file to audit.
+1. Move remaining scratch-geometry builders into the owning family query file or a narrow shared
+   visual subsystem when the geometry is family-specific.
 2. Move native result decoding and unsupported-target decisions into the owning family query file
    where practical.
 3. Keep query queueing, request freshness, readback scheduling, and executor lifecycle generic.
 4. Add focused tests that distinguish orchestration behavior from family payload/result behavior.
 
 Validation: `just build`, `git diff --check`, and focused query tests. The latest broad
-`direnv exec . just test scene/query` run passed `39/39`; the volume/labels readback failures that
+`direnv exec . just test scene/query` run passed `40/40`; the volume/labels readback failures that
 blocked the earlier split are no longer recorded as current failures.
 
 
@@ -206,8 +211,9 @@ Current scene-emission ownership:
 6. `scene_emit/metadata.c`: typed visual metadata emission.
 7. `scene_emit/visual_lowering.c` and `scene_emit/visual_lowering.h`: visual-family lowering
    decisions shared by scene emission, render contracts, visuals, and query paths.
-7. `scene_emit/image_query.c`: image query FramePlan generation.
-8. `scene_emit/scene_emit.h` and `scene_emit/internal.h`: narrow scene-emission declarations.
+8. Image query FramePlan generation is no longer in `scene_emit/`; it is owned by
+   `visuals/image/query.c` and related image query helpers.
+9. `scene_emit/scene_emit.h` and `scene_emit/internal.h`: narrow scene-emission declarations.
 
 Guardrail: `scene_emit/` owns retained scene lowering into FramePlan nodes. It should not grow
 runtime execution or backend resource realization.
@@ -353,12 +359,12 @@ See
 
 ### 10. Tighten Query And Interaction Boundaries
 
-Status: query policy split started on 2026-05-28 and request-helper declarations were moved into
-`query/internal.h` on 2026-05-29. `query/policy.c` owns target capability, query-profile selection,
-drawable candidate selection, family-op eligibility lookup, and framebuffer coordinate policy.
-`query/execute.c` keeps retained executor schema reset, static-upload bookkeeping, native family
-execution, and readback orchestration. Current focused validation has `scene/query` passing
-`39/39`.
+Status: query policy split started on 2026-05-28; request-helper declarations, shared scratch
+helpers, and render-metadata completeness checks live in `query/` as of 2026-05-29.
+`query/policy.c` owns target capability, query-profile selection, drawable candidate selection,
+family-op eligibility lookup, and framebuffer coordinate policy. `query/execute.c` keeps retained
+executor schema reset, static-upload bookkeeping, native family execution, metadata completeness
+checks, and readback orchestration. Current focused validation has `scene/query` passing `40/40`.
 
 The query folder already has queue, executor, readback, registry, result, and execute files. The
 next split should be policy-driven:
