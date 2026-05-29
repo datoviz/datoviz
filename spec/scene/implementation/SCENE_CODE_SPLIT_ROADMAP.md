@@ -20,9 +20,9 @@ As of 2026-05-29 after the scene-plan folder removal, upload/panel helper passes
 helper-declaration boundary pass, query scratch-helper sharing, query render-metadata guard,
 shared item-id decode, shared item-target eligibility, query native-target policy cleanup,
 sample-target native policy cleanup, FramePlan/render-contract metadata enforcement, typed
-point-like fallback label resolution, vector/stroke query-family decode ownership, field dirty
-propagation cleanup, and scalar field sampling split through `7fb0cc13f`, the highest-value split
-candidates are:
+fallback label resolution for point/pixel/marker/splat/primitive/image/labels/textured mesh,
+vector/stroke query-family decode ownership, field dirty propagation cleanup, and scalar field
+sampling split through `14b1ab6f7`, the highest-value split candidates are:
 
 1. `src/scene/query/` and family `visuals/*/query.c` files: query has a registry, split
    executor/policy/readback files, shared scratch helpers, standard item-id decoding, shared

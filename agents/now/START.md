@@ -63,18 +63,20 @@ panel-helper, helper-declaration boundary, shared query-helper, query render-met
 standard item-id decode, standard item-target eligibility, query native-target policy,
 sample-target native policy, FramePlan/render-contract metadata enforcement, typed point-like
 fallback label resolution, vector/stroke query-family decode ownership, field dirty propagation,
-and scalar field sampling split commits through `7fb0cc13f`. `_scene.h` no longer exposes narrow
-helper declarations; its remaining broadness is shared retained scene object and type definitions.
-Start with annotation/domain cleanup, residual query-family scratch/unsupported-policy ownership,
-deeper typed retained fallback cleanup for non-point families, and standalone candidate assessment in
+scalar field sampling split, and typed splat/primitive/image/labels/textured-mesh fallback label
+resolution commits through `14b1ab6f7`. `_scene.h` no longer exposes narrow helper declarations;
+its remaining broadness is shared retained scene object and type definitions. Start with
+annotation/domain cleanup, residual query-family scratch/unsupported-policy ownership, remaining
+compatibility quarantine for explicit fixture/import paths, and standalone candidate assessment in
 [`../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md);
 do not reopen dense/index/material upload emission, panel drawable/viewport helper extraction, or
 the helper declarations already moved into owner-private headers unless a new regression points
 there. Do not re-split generic query allocation, dense-attribute, target-extent, render-state,
 standard item-id decode, standard item-target eligibility, native/sample target fallback policy,
 vector/segment/path family decode ownership, or render-metadata completeness helpers from
-`src/scene/query/`; render metadata completeness now lives in `frame_plan/`. The closest standalone
-scene layers are currently `frame_plan/`,
+`src/scene/query/`; render metadata completeness now lives in `frame_plan/`, and normal typed WGSL
+fallback label lookup now covers point, pixel, marker, splat, primitive, image/labels, and textured
+mesh. The closest standalone scene layers are currently `frame_plan/`,
 `render_contract/`, `query/`, `text/`,
 `domain/`, and
 `visuals/registry/`; `scene_emit/`, `runtime/`, `techniques/`, and `app/` remain

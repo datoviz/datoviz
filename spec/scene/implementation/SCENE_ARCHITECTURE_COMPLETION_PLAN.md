@@ -26,8 +26,9 @@ Important current state:
 4. `runtime/` emits DRP2 from resolved FramePlan state. The normal render preparation path now
    consumes visual descriptors and capability flags without branching on concrete visual families;
    remaining runtime visual-family assumptions are concentrated in the explicit compatibility and
-   pass-emission fallback paths. The WGSL typed point/pixel/marker fallback now resolves vertex
-   buffers from `DvzFramePlanVisualMeta` labels instead of upload order or untyped tags.
+   pass-emission fallback paths. The WGSL typed fallback path now resolves point, pixel, marker,
+   splat, primitive, image/labels, and textured-mesh resources from `DvzFramePlanVisualMeta` labels
+   instead of upload order or untyped tags.
 5. `visuals/desc.c` lowers typed visual metadata into runtime descriptors. Its untyped descriptor
    fallback is now guarded by an explicit FramePlan compatibility flag.
 6. `visuals/desc_untyped_compat.c` quarantines the current untyped fallback classifiers. These
@@ -69,14 +70,17 @@ Latest pickup snapshot:
    guard, standard item-id decode, standard item-target eligibility, query native-target policy,
    sample-target native policy, FramePlan/render-contract metadata enforcement, typed point-like
    fallback label resolution, vector/stroke query-family decode ownership, field dirty propagation,
-   and scalar field sampling cleanup passes. Do not restart by re-extracting
+   and scalar field sampling cleanup passes. Commits `2910398f1` and `14b1ab6f7` then extended typed
+   fallback label resolution through splat, primitive, image/labels, and textured mesh. Do not
+   restart by re-extracting
    dense/index/material upload emission, panel drawable/viewport helpers, the helper declarations
    already moved into owner-private headers, or the generic query helpers now centralized in
    `query/`.
 3. The best next implementation slices are now annotation/domain ownership, residual query-family
-   scratch/unsupported-policy ownership, and deeper normal-path typed metadata removal from
-   compatibility emission for non-point families. Remaining upload work should be limited to pure
-   family payload builders when a concrete builder is still mixed into scene emission.
+   scratch/unsupported-policy ownership, and explicit compatibility-path quarantine after auditing
+   any fixture/import callers of untyped descriptor inference. Remaining upload work should be
+   limited to pure family payload builders when a concrete builder is still mixed into scene
+   emission.
 4. Last focused validation recorded for this split was `git diff --check`, `just build`,
    `direnv exec . just test scene/query` (`40/40`), `direnv exec . just test fields` (`47/47`),
    focused WGSL typed-fallback and FramePlan static-render filters, earlier
@@ -176,11 +180,11 @@ this section when a slice is completed.
    - Status on 2026-05-29: FramePlan has a render-metadata completeness helper, query execution
      consumes it, the runtime emitter rejects untyped visuals unless the explicit compatibility
      flag is set, render-contract resolution now rejects missing typed metadata unless the
-     compatibility flag is set, and point/pixel/marker WGSL fallback resolves typed metadata labels
-     explicitly.
-   - Next slice: remove compatibility classifiers from typed retained fallback emission for splat,
-     primitive, image/labels, and textured mesh where descriptor identity can come directly from
-     metadata, and make remaining resource-role resolution prefer typed ids over legacy tags.
+     compatibility flag is set, and WGSL fallback resolves typed metadata labels explicitly for
+     point, pixel, marker, splat, primitive, image/labels, and textured mesh.
+   - Next slice: audit the remaining callers of untyped descriptor compatibility and either delete
+     `visuals/desc_untyped_compat.c` or keep it behind an explicit fixture/import compatibility
+     path with tests proving normal retained rendering no longer depends on it.
    - Delete `visuals/desc_untyped_compat.c` if no explicit fixture/import path still needs it; if
      it remains, keep it behind an explicit compatibility flag and document its callers.
 

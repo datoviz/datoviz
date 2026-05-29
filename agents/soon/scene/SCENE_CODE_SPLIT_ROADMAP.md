@@ -22,10 +22,10 @@ criteria.
    decisions into family owners while keeping queueing, freshness, executor lifecycle, metadata
    completeness checks, shared scratch helpers, standard item-id decoding, standard item-target
    eligibility, native/sample target fallback policy, and readback scheduling generic.
-3. Eliminate normal untyped descriptor inference: point/pixel/marker WGSL fallback already resolves
-   typed metadata labels, so continue with splat, primitive, image/labels, and textured-mesh
-   fallback paths before deleting or quarantining `desc_untyped_compat.c` behind an explicit
-   compatibility-only path.
+3. Eliminate normal untyped descriptor inference: point/pixel/marker/splat/primitive/image/labels
+   and textured-mesh WGSL fallback paths now resolve typed metadata labels. Continue by deleting or
+   quarantining `desc_untyped_compat.c` behind an explicit compatibility-only path once fixture or
+   import callers are audited.
 4. Continue low-risk payload/helper extraction from scene-emission support only where the extracted
    owner builds family data or cache payloads without taking over FramePlan ordering.
 5. Continue visual-family payload/helper splits only when a clear owner boundary appears; the first
@@ -48,10 +48,10 @@ support helpers, panel drawable/viewport helpers, and narrow helper declarations
 through `_scene.h`. Query now also has shared scratch helpers, standard item-id decoding, standard
 item-target eligibility, native/sample target fallback policy, and vector/segment/path family
 decode ownership. FramePlan owns render-metadata completeness checks, render contracts reject
-missing typed metadata unless explicit compatibility is enabled, point/pixel/marker WGSL fallback
-uses typed metadata labels, `domain/field_dirty.c` owns sampled-field dirty propagation, and
-`domain/field_sample.c` owns scalar sampled-field interpretation. The old `src/scene/plan/` folder
-was removed; its
+missing typed metadata unless explicit compatibility is enabled, WGSL fallback resolves typed
+metadata labels for point, pixel, marker, splat, primitive, image/labels, and textured mesh,
+`domain/field_dirty.c` owns sampled-field dirty propagation, and `domain/field_sample.c` owns
+scalar sampled-field interpretation. The old `src/scene/plan/` folder was removed; its
 ownership now lives in `src/scene/frame_plan/`, `src/scene/scene_emit/`, and
 `src/scene/render_contract/`. Last focused validation for the split was `git diff --check`,
 `just build`,
