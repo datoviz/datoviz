@@ -1,6 +1,7 @@
 #version 450
 
 #include "common.glsl"
+#include "stroke.glsl"
 
 layout(set = 1, binding = 0) uniform SceneMaterial {
     vec4 lightDir;
@@ -55,13 +56,6 @@ vec2 safeNormalize(vec2 v, vec2 fallback)
     return v / n;
 }
 
-float capExtension(int capType, float halfWidth)
-{
-    if (capType == 0 || capType == 5)
-        return 0.0;
-    return halfWidth;
-}
-
 void main()
 {
     bool sideNegative = (inPathFlags & SIDE_NEGATIVE) != 0u;
@@ -86,9 +80,8 @@ void main()
     vec2 normalIn = vec2(-dirIn.y, dirIn.x);
     vec2 normalOut = vec2(-dirOut.y, dirOut.x);
 
-    float aa = 1.0;
     float strokeWidth = max(inLineWidth, 0.0);
-    float halfWidth = strokeWidth * 0.5 + 1.5 * aa;
+    float halfWidth = dvz_stroke_outer_half_width(strokeWidth);
     int joinType = int(round(material.params.z));
     float miterLimit = max(material.params.w, 1.0);
 
@@ -113,12 +106,19 @@ void main()
     }
 
     int capType = endpointEnd ? int(round(material.params.y)) : int(round(material.params.x));
+    float capHalfWidth = halfWidth;
     if (!hasPrev && !endpointEnd)
-        tangentOffset = -capExtension(capType, halfWidth);
+    {
+        tangentOffset = -dvz_stroke_cap_extension(capType, strokeWidth);
+        capHalfWidth = dvz_stroke_cap_half_width(capType, strokeWidth);
+    }
     else if (!hasNext && endpointEnd)
-        tangentOffset = capExtension(capType, halfWidth);
+    {
+        tangentOffset = dvz_stroke_cap_extension(capType, strokeWidth);
+        capHalfWidth = dvz_stroke_cap_half_width(capType, strokeWidth);
+    }
 
-    vec2 pixel = currPx + normal * side * halfWidth + tangent * tangentOffset;
+    vec2 pixel = currPx + normal * side * capHalfWidth + tangent * tangentOffset;
     gl_Position = pixelToClip(pixel, currClip.z / max(abs(currClip.w), 1e-6));
 
     fragBevelDistance = -halfWidth;
@@ -143,7 +143,7 @@ void main()
     }
     else
     {
-        fragCoord = vec2(along + tangentOffset, side * halfWidth);
+        fragCoord = vec2(along + tangentOffset, side * capHalfWidth);
     }
     fragLength = lengthPx;
     fragLineWidth = strokeWidth;

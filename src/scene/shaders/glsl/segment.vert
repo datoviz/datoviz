@@ -1,6 +1,7 @@
 #version 450
 
 #include "common.glsl"
+#include "stroke.glsl"
 
 layout(set = 1, binding = 0) uniform SceneMaterial {
     vec4 lightDir;
@@ -51,37 +52,42 @@ void main()
         tangent /= lengthPx;
     vec2 normal = vec2(-tangent.y, tangent.x);
 
-    float aa = 1.0;
-    float halfWidth = max(inLineWidth, 0.0) * 0.5 + 1.5 * aa;
+    float strokeWidth = max(inLineWidth, 0.0);
+    int startCap = int(round(material.params.x));
+    int endCap = int(round(material.params.y));
+    float startExtension = dvz_stroke_cap_extension(startCap, strokeWidth);
+    float endExtension = dvz_stroke_cap_extension(endCap, strokeWidth);
+    float startHalfWidth = dvz_stroke_cap_half_width(startCap, strokeWidth);
+    float endHalfWidth = dvz_stroke_cap_half_width(endCap, strokeWidth);
     int vertex = gl_VertexIndex & 3;
     vec2 pixel = startPx;
     float depth = startClip.z / max(abs(startClip.w), 1e-6);
 
     if (vertex == 0)
     {
-        pixel = startPx - tangent * halfWidth + normal * halfWidth;
-        fragCoord = vec2(-halfWidth, halfWidth);
+        pixel = startPx - tangent * startExtension + normal * startHalfWidth;
+        fragCoord = vec2(-startExtension, startHalfWidth);
     }
     else if (vertex == 1)
     {
-        pixel = startPx - tangent * halfWidth - normal * halfWidth;
-        fragCoord = vec2(-halfWidth, -halfWidth);
+        pixel = startPx - tangent * startExtension - normal * startHalfWidth;
+        fragCoord = vec2(-startExtension, -startHalfWidth);
     }
     else if (vertex == 2)
     {
-        pixel = endPx + tangent * halfWidth - normal * halfWidth;
-        fragCoord = vec2(lengthPx + halfWidth, -halfWidth);
+        pixel = endPx + tangent * endExtension - normal * endHalfWidth;
+        fragCoord = vec2(lengthPx + endExtension, -endHalfWidth);
         depth = endClip.z / max(abs(endClip.w), 1e-6);
     }
     else
     {
-        pixel = endPx + tangent * halfWidth + normal * halfWidth;
-        fragCoord = vec2(lengthPx + halfWidth, halfWidth);
+        pixel = endPx + tangent * endExtension + normal * endHalfWidth;
+        fragCoord = vec2(lengthPx + endExtension, endHalfWidth);
         depth = endClip.z / max(abs(endClip.w), 1e-6);
     }
 
     gl_Position = pixelToClip(pixel, depth);
     fragColor = inColor;
     fragLength = lengthPx;
-    fragLineWidth = max(inLineWidth, 0.0);
+    fragLineWidth = strokeWidth;
 }

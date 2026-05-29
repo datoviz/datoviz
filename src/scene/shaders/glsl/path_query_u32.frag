@@ -1,5 +1,7 @@
 #version 450
 
+#include "stroke.glsl"
+
 layout(location = 0) in vec2 fragCoord;
 layout(location = 1) in float fragLength;
 layout(location = 2) in float fragLineWidth;
@@ -22,39 +24,10 @@ layout(set = 1, binding = 0) uniform SceneMaterial {
     vec4 depthCueExtra;
 } material;
 
-float strokeAlpha(float distance, float lineWidth)
-{
-    float aa = 1.0;
-    float halfWidth = max(lineWidth, 0.0) * 0.5;
-    return 1.0 - smoothstep(halfWidth - aa, halfWidth + aa, abs(distance));
-}
-
-float capDistance(int capType, float dx, float dy, float lineWidth)
-{
-    float aa = 1.0;
-    float halfWidth = max(lineWidth, 0.0) * 0.5;
-    float t = max(halfWidth - aa, 0.0);
-    float x = abs(dx);
-    float y = abs(dy);
-
-    if (capType == 0)
-        return 1e6;
-    if (capType == 1)
-        return length(vec2(x, y));
-    if (capType == 2)
-        return max(y, t + x - y);
-    if (capType == 3)
-        return x + y;
-    if (capType == 4)
-        return max(x, y);
-    if (capType == 5)
-        return max(x + t, y);
-    return max(x + t, y);
-}
-
 void main()
 {
     float distance = fragCoord.y;
+    float alpha = dvz_stroke_alpha(distance, fragLineWidth);
     int joinType = int(round(material.params.z));
     if (fragCoord.x < 0.0)
     {
@@ -63,7 +36,8 @@ void main()
             int capType = fragHasPrev < 0.5 ? int(round(material.params.x)) : joinType;
             if (fragHasPrev >= 0.5 && joinType == 0)
                 capType = 5;
-            distance = capDistance(capType, fragCoord.x, fragCoord.y, fragLineWidth);
+            alpha = dvz_stroke_cap_alpha(capType, -fragCoord.x, fragCoord.y, fragLineWidth);
+            distance = dvz_stroke_cap_distance(capType, fragCoord.x, fragCoord.y, fragLineWidth);
         }
     }
     else if (fragCoord.x > fragLength)
@@ -73,12 +47,13 @@ void main()
             int capType = fragHasNext < 0.5 ? int(round(material.params.y)) : joinType;
             if (fragHasNext >= 0.5 && joinType == 0)
                 capType = 5;
-            distance = capDistance(
+            alpha = dvz_stroke_cap_alpha(
+                capType, fragCoord.x - fragLength, fragCoord.y, fragLineWidth);
+            distance = dvz_stroke_cap_distance(
                 capType, fragCoord.x - fragLength, fragCoord.y, fragLineWidth);
         }
     }
 
-    float alpha = strokeAlpha(distance, fragLineWidth);
     float bevelExtent = max(fragLineWidth, 0.0) * 0.5 + 2.0;
     bool bevelOverhang = joinType == 2 &&
                          ((fragCoord.x < bevelExtent && fragHasPrev >= 0.5) ||
@@ -86,7 +61,7 @@ void main()
     if (bevelOverhang)
     {
         float bevelDistance = max(abs(distance), fragBevelDistance - 1.0);
-        alpha = strokeAlpha(bevelDistance, fragLineWidth);
+        alpha = dvz_stroke_alpha(bevelDistance, fragLineWidth);
     }
     if (alpha <= 0.0)
         discard;
