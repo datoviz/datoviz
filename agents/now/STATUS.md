@@ -63,7 +63,7 @@ Primary references:
 | WebGPU/WASM | `Pure WebGPU subset closed / WASM emission pending` | `examples/webgpu/`, `examples/webgpu/COMPAT.md`, `tools/webgpu_fixture_preflight.py`, `tools/webgpu_runner_smoke.mjs`, DRP2 WGSL point/primitive/image fixtures; `just webgpu-fixture-preflight` passes `39/39`, `just webgpu-runner-smoke` passes `37 + 2 + 81` plus repeated runtime, demo-session stress, and capability-preflight diagnostics; browser dashboard passed fixture compatibility `120/120` and retained runtime stress `7/7` on 2026-05-29 after `c03e89227` | Start WASM scene emission and keep the pure WebGPU subset in RC validation. |
 | Raw `ctypes` | `Done for RC1` | `tools/bindings/extract_api.py`, `tools/bindings/generate_ctypes.py`, `tools/bindings/generate_ctypes_abi.py`, `tools/bindings/ctypes_package_smoke.py`, `testing/test_ctypes_raw_smoke.py`, `examples/python/raw/`, `just bindings` | Broaden ABI/pointer policy only when richer raw examples require it. |
 | Runtime hardening | `Ongoing` | DRP2/vklite/app tests and completed lifetime records | Fix concrete lifetime, resize, descriptor, repeated-frame, or churn bugs as examples expose them. |
-| Scene visual boundaries | `Active architecture guardrail phase` | [`../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md), [`../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`](../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md) | The broad scene source split is historical. Do not reopen completed typed-metadata, untyped-compat removal, generic query helper, upload-support, panel-helper, or helper-declaration moves without a regression. Remaining architecture work is to confine visual-specific behavior to family folders or explicit shared visual subsystems, keep generic code registry-driven, and add checks against concrete visual-family switches and family-private includes in generic code. |
+| Scene visual boundaries | `Completed guardrail baseline` | [`../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md), [`../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md), [`../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`](../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md) | Generic visual behavior is registry-driven, family-private includes are guarded, the visual-boundary allowlist is empty, and `just spec-check` enforces the checks. Future visual work should keep behavior in family folders, explicit shared visual subsystems, or registry callbacks. |
 | API inventory and docs | `Blocker for RC1` | [`DOCUMENTATION.md`](DOCUMENTATION.md), public headers under `include/datoviz/` | Produce public surface/status table and known-gap notes. |
 
 
@@ -98,9 +98,11 @@ Good parallel work now:
    proof, WGSL emission, and diagnostics.
 5. **API/docs inventory:** work from [`DOCUMENTATION.md`](DOCUMENTATION.md) that classifies actual
    v0.4 behavior.
-6. **Scene visual boundaries:** use
-   [`../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md)
-   for remaining visual-family architecture work. The broad source split is archived in
+6. **Scene visual boundaries:** maintain the completed guardrail baseline in
+   [`../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md)
+   and the normative rules in
+   [`../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
+   The broad source split is archived in
    [`../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`](../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md);
    do not treat the retired roadmaps as active queues.
 7. **RC2 polish:** text placement/DPI, axes formatter/clipping, shared layout, richer legends,

@@ -23,8 +23,10 @@ release criteria, or long implementation history.
    [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
 5. For scene semantics, public scene API shape, frame planning, visual families, interaction,
    annotations, scales, or runtime boundaries, read [`../../spec/scene/README.md`](../../spec/scene/README.md).
-6. For the remaining scene visual-boundary architecture work, read
+6. For scene visual-boundary rules before changing retained visual families, read
    [`../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
+   The completed implementation baseline is recorded in
+   [`../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
    The older broad source-split roadmap and architecture completion plan are retired pointers, not
    active queues.
 7. For DRP2 commands, fixtures, schemas, or scene code that emits DRP2, read
@@ -55,14 +57,17 @@ grid generators, bounds, normals, transforms, merges, edges, contours, polygon t
 upload, polygon scene helpers, semantic polygon/polygon-set composites, and focused tests/examples.
 Remaining `geom` work is optional unless a release example needs it.
 
-The broad scene source/architecture split is now historical. Completed context is archived in
-[`../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`](../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md).
+The broad scene source/architecture split and visual-boundary guardrail baseline are now historical.
+Completed context is archived in
+[`../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`](../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md)
+and
+[`../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
 Do not reopen dense/index/material upload emission, panel drawable/viewport helper extraction,
 typed metadata enforcement, untyped visual compatibility removal, generic query scratch/decode
 helpers, or the helper declarations already moved into owner-private headers unless a new
-regression points there. The next architecture phase is the visual-boundary guardrail pass:
-generic code should call visual-family operations, while concrete visual behavior should live in
-`src/scene/visuals/<family>/`, explicit shared visual subsystems, or the registration table.
+regression points there. Generic scene code should keep calling visual-family operations, while
+concrete visual behavior should live in `src/scene/visuals/<family>/`, explicit shared visual
+subsystems, or the registration table.
 
 
 ## Guardrails
@@ -102,6 +107,8 @@ generic code should call visual-family operations, while concrete visual behavio
    before changing visual-family boundaries, adding root-level visual switches, including
    family-private visual headers from generic code, or adding family-specific fields to generic
    retained visual state.
+8. [`../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md)
+   for the completed visual-boundary guardrail baseline and validation evidence.
 
 
 ## Validation Defaults

@@ -70,7 +70,8 @@ If resuming work on the branch:
 14. Read [../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md)
    before changing visual-family boundaries, adding root-level visual switches, including
    family-private visual headers from generic code, or adding family-specific fields to generic
-   retained visual state.
+   retained visual state. Read [done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md)
+   for the completed guardrail baseline and validation evidence.
 15. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
    scene API shape or adding new scene object families.
 16. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
