@@ -33,6 +33,7 @@
 #include "_technique.h"
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
+#include "_visual_internal.h"
 #include "annotation/scale_internal.h"
 #include "domain/buffer_internal.h"
 #include "scene_emit/visual_lowering.h"

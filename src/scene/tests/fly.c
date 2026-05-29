@@ -19,6 +19,7 @@
 #include "_assertions.h"
 #include "_controllers.h"
 #include "_scene.h"
+#include "_visual_internal.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
 #include "datoviz/scene/fly.h"

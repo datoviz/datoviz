@@ -22,6 +22,7 @@
 #include "_assertions.h"
 #include "_scene.h"
 #include "_scene_resource_key.h"
+#include "_visual_internal.h"
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
 #include "datoviz/drp2/enums.h"

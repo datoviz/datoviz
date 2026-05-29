@@ -28,6 +28,7 @@
 #include "core/panel_layout_internal.h"
 #include "datoviz/scene.h"
 #include "text_internal.h"
+#include "_visual_internal.h"
 
 
 
@@ -1071,4 +1072,3 @@ bool _text_visual_prepare(
     dvz_free(spans);
     return ok;
 }
-

@@ -25,6 +25,7 @@
 #include "registry/registry.h"
 #include "scene_emit/internal.h"
 #include "visuals/bounds_internal.h"
+#include "_visual_internal.h"
 
 
 

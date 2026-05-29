@@ -20,6 +20,7 @@
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "polygon_internal.h"
+#include "_visual_internal.h"
 
 #include <float.h>
 #include <math.h>

@@ -25,6 +25,7 @@
 #include "domain/buffer_internal.h"
 #include "domain/field_internal.h"
 #include "visuals/bindings_internal.h"
+#include "_visual_internal.h"
 
 
 

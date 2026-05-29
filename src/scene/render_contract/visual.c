@@ -23,6 +23,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_technique.h"
+#include "_visual_internal.h"
 
 
 

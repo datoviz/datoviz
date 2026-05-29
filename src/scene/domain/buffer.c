@@ -27,6 +27,7 @@
 #include "_scene.h"
 #include "buffer_internal.h"
 #include "visuals/bindings_internal.h"
+#include "_visual_internal.h"
 
 
 

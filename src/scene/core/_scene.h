@@ -1727,11 +1727,3 @@ void _scene_notify_buffer_changed(DvzSceneBuffer* buffer);
 /*************************************************************************************************/
 /*  Internal shared scene helpers                                                               */
 /*************************************************************************************************/
-
-int _attr_index(const DvzVisual* visual, const char* name);
-
-const char* _visual_type_name(DvzVisualType type);
-
-bool _figure_visual_index(const DvzFigure* figure, const DvzVisual* visual, uint32_t* out_index);
-
-bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action);

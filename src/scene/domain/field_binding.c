@@ -25,6 +25,7 @@
 #include "field_internal.h"
 #include "sample_profile.h"
 #include "visuals/bindings_internal.h"
+#include "_visual_internal.h"
 
 
 
