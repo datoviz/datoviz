@@ -27,6 +27,8 @@
 
 void _scene_mark_scale_dirty(DvzScale* scale);
 
+uint32_t _scene_scale_index(const DvzScene* scene, const DvzScale* scale);
+
 void _scene_mark_colorbar_dirty(DvzColorbar* colorbar);
 
 void _scene_mark_legend_dirty(DvzLegend* legend);
