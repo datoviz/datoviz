@@ -1,5 +1,6 @@
 import {
   Drp2WebGpuRuntime,
+  WebGpuDemoSession,
   executeDrp2StreamChecked,
   initWebGPU,
 } from "./drp2_webgpu.js";
@@ -9,6 +10,7 @@ const stressRowsEl = document.querySelector("#stress-rows");
 const runAllEl = document.querySelector("#run-all");
 const summaryEl = document.querySelector("#summary");
 const stressSummaryEl = document.querySelector("#stress-summary");
+const viewportEl = document.querySelector("#viewport");
 
 let runtime = null;
 let fixtures = [];
@@ -21,6 +23,11 @@ const STRESS_STREAMS = [
   { name: "runtime repeat: scene_primitive_wgsl", path: "./streams/scene_primitive_wgsl.json" },
   { name: "runtime repeat: texture_sampling_wgsl", path: "./streams/texture_sampling_wgsl.json" },
   { name: "runtime repeat: attachment_depth_wgsl", path: "./streams/attachment_depth_wgsl.json" },
+];
+const DEMO_STRESS_CHECKS = [
+  { name: "demo path: panzoom uniform updates", fn: runDemoPanzoomStress },
+  { name: "demo path: resize reload", fn: runDemoResizeStress },
+  { name: "demo path: stream reload", fn: runDemoStreamReloadStress },
 ];
 
 
@@ -165,6 +172,25 @@ function assertNoOpenRecordedRefs(stats, label) {
 
 
 
+async function createDemoSession(streamName) {
+  const session = new WebGpuDemoSession(
+    runtime.device,
+    runtime.context,
+    runtime.format,
+    runtime.capabilities,
+  );
+  await session.loadStream(streamName);
+  return session;
+}
+
+
+
+function stressDetail(stats, frames) {
+  return `frames=${frames}, objects=${stats.objects}, submitted_refs=${stats.refs.submitted}`;
+}
+
+
+
 async function fetchStream(path) {
   const response = await fetch(path, { cache: "no-cache" });
   if (!response.ok) {
@@ -178,6 +204,10 @@ async function fetchStream(path) {
 async function runStressRow(row) {
   setStressStatus(row, "running");
   try {
+    if (typeof row.fn === "function") {
+      await row.fn(row);
+      return;
+    }
     const stream = await fetchStream(row.path);
     const retainedRuntime = new Drp2WebGpuRuntime(
       runtime.device,
@@ -204,14 +234,75 @@ async function runStressRow(row) {
     }
 
     const stats = retainedRuntime.resourceStats();
-    setStressStatus(
-      row,
-      "pass",
-      `frames=${STRESS_FRAME_COUNT}, objects=${stats.objects}, submitted_refs=${stats.refs.submitted}`,
-    );
+    setStressStatus(row, "pass", stressDetail(stats, STRESS_FRAME_COUNT));
   } catch (error) {
     setStressStatus(row, "fail", errorDetail(error));
   }
+}
+
+
+
+async function runDemoPanzoomStress(row) {
+  const session = await createDemoSession("scene_point_panzoom_wgsl");
+  const stableStats = comparableResourceStats(session.resourceStats());
+  const states = [
+    { zoomX: 1.2, zoomY: 1.1, offsetX: 0.05, offsetY: -0.04 },
+    { zoomX: 1.8, zoomY: 1.4, offsetX: -0.12, offsetY: 0.08 },
+    { zoomX: 0.7, zoomY: 0.9, offsetX: 0.18, offsetY: 0.13 },
+    { zoomX: 1.0, zoomY: 1.0, offsetX: 0.0, offsetY: 0.0 },
+  ];
+  for (let i = 0; i < states.length; i++) {
+    session.setPanzoom(states[i]);
+    await session.render();
+    const stats = session.resourceStats();
+    assertResourceStatsStable(
+      comparableResourceStats(stats),
+      stableStats,
+      `${row.name} frame ${i + 1}`,
+    );
+    assertNoOpenRecordedRefs(stats, `${row.name} frame ${i + 1}`);
+  }
+  setStressStatus(row, "pass", stressDetail(session.resourceStats(), states.length));
+}
+
+
+
+async function runDemoResizeStress(row) {
+  const session = await createDemoSession("scene_point_wgsl");
+  await session.render();
+  const stableStats = comparableResourceStats(session.resourceStats());
+  const oldWidth = viewportEl.width;
+  const oldHeight = viewportEl.height;
+
+  viewportEl.width = 1;
+  viewportEl.height = 1;
+  await session.render();
+  const stats = session.resourceStats();
+  assertResourceStatsStable(comparableResourceStats(stats), stableStats, row.name);
+  assertNoOpenRecordedRefs(stats, row.name);
+
+  viewportEl.width = oldWidth;
+  viewportEl.height = oldHeight;
+  setStressStatus(row, "pass", stressDetail(stats, 2));
+}
+
+
+
+async function runDemoStreamReloadStress(row) {
+  const session = await createDemoSession("scene_point_wgsl");
+  await session.render();
+  const pointStats = comparableResourceStats(session.resourceStats());
+
+  await session.loadStream("texture_sampling_wgsl");
+  await session.render();
+  assertNoOpenRecordedRefs(session.resourceStats(), `${row.name} texture reload`);
+
+  await session.loadStream("scene_point_wgsl");
+  await session.render();
+  const stats = session.resourceStats();
+  assertResourceStatsStable(comparableResourceStats(stats), pointStats, `${row.name} point reload`);
+  assertNoOpenRecordedRefs(stats, `${row.name} point reload`);
+  setStressStatus(row, "pass", stressDetail(stats, 3));
 }
 
 
@@ -365,6 +456,9 @@ async function main() {
       addFixture(path, "negative");
     }
     for (const config of STRESS_STREAMS) {
+      addStressRow(config);
+    }
+    for (const config of DEMO_STRESS_CHECKS) {
       addStressRow(config);
     }
     runAllEl.disabled = false;

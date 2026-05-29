@@ -5,6 +5,8 @@ import { readFile } from 'node:fs/promises';
 const fakeCanvas = {
   width: 640,
   height: 480,
+  clientWidth: 640,
+  clientHeight: 480,
   style: {
     setProperty() {},
     removeProperty() {},
@@ -140,6 +142,7 @@ const device = {
 };
 
 const context = {
+  configure() {},
   getCurrentTexture() {
     return {
       createView() {
@@ -356,8 +359,62 @@ async function smokeRepeatedRuntimeStream(Drp2WebGpuRuntime, path) {
   }
 }
 
+async function smokeDemoPath(WebGpuDemoSession) {
+  const session = new WebGpuDemoSession(device, context, 'rgba8unorm', {
+    supported_shader_formats: ['wgsl'],
+    supported_texture_formats: ['rgba8unorm', 'depth32float'],
+    supported_sample_counts: [1, 4],
+    supports_fp64: false,
+  });
+
+  const pointStream = await loadJson('examples/webgpu/streams/scene_point_wgsl.json');
+  await session.loadStreamObject('scene_point_wgsl', pointStream);
+  await session.render();
+  const pointStats = comparableResourceStats(session.resourceStats());
+
+  fakeCanvas.width = 1;
+  fakeCanvas.height = 1;
+  await session.render();
+  assertResourceStatsStable(
+    comparableResourceStats(session.resourceStats()),
+    pointStats,
+    'demo resize reload changed point resource stats',
+  );
+
+  const panzoomStream = await loadJson('examples/webgpu/streams/scene_point_wgsl.json');
+  await session.loadStreamObject('scene_point_panzoom_wgsl', panzoomStream);
+  const panzoomStats = comparableResourceStats(session.resourceStats());
+  for (const state of [
+    { zoomX: 1.2, zoomY: 1.1, offsetX: 0.05, offsetY: -0.04 },
+    { zoomX: 0.7, zoomY: 0.9, offsetX: -0.11, offsetY: 0.08 },
+  ]) {
+    session.setPanzoom(state);
+    await session.render();
+    assertResourceStatsStable(
+      comparableResourceStats(session.resourceStats()),
+      panzoomStats,
+      'demo panzoom update changed resource stats',
+    );
+  }
+
+  const textureStream = await loadJson('examples/webgpu/streams/texture_sampling_wgsl.json');
+  await session.loadStreamObject('texture_sampling_wgsl', textureStream);
+  await session.render();
+  if (session.resourceStats().refs.open !== 0 || session.resourceStats().refs.recorded !== 0) {
+    throw new Error('demo texture reload leaked open or recorded refs');
+  }
+
+  await session.loadStreamObject('scene_point_wgsl', pointStream);
+  await session.render();
+  assertResourceStatsStable(
+    comparableResourceStats(session.resourceStats()),
+    pointStats,
+    'demo stream reload changed point resource stats',
+  );
+}
+
 async function main() {
-  const { Drp2WebGpuRuntime, executeDrp2Stream } = await import(
+  const { Drp2WebGpuRuntime, WebGpuDemoSession, executeDrp2Stream } = await import(
     '../examples/webgpu/drp2_webgpu.js'
   );
 
@@ -563,6 +620,7 @@ async function main() {
   }
 
   await smokeRepeatedRuntimeFrames(Drp2WebGpuRuntime);
+  await smokeDemoPath(WebGpuDemoSession);
 
   console.log(
     `PASS WebGPU runner smoke fixtures=${manifest.positive.length} ` +

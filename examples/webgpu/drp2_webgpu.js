@@ -39,13 +39,13 @@ function setStatus(message, isError = false) {
 
 
 
-function streamConfigByName(name) {
+export function streamConfigByName(name) {
   return STREAMS.find((item) => item.name === name) ?? STREAMS[0];
 }
 
 
 
-function streamSourceName(config) {
+export function streamSourceName(config) {
   return config.source ?? config.name;
 }
 
@@ -1157,6 +1157,28 @@ function viewportUniformBytes() {
 
 
 
+function defaultPanzoomState() {
+  return {
+    zoomX: 1,
+    zoomY: 1,
+    offsetX: 0,
+    offsetY: 0,
+  };
+}
+
+
+
+function writePanzoomUniforms(runtime, config, state) {
+  runtime.writeBuffer(
+    config.mvpBufferId,
+    0,
+    mvpUniformBytes(state.zoomX, state.zoomY, state.offsetX, state.offsetY),
+  );
+  runtime.writeBuffer(config.viewportBufferId, 0, viewportUniformBytes());
+}
+
+
+
 function clamp(value, minValue, maxValue) {
   return Math.min(maxValue, Math.max(minValue, value));
 }
@@ -1309,12 +1331,7 @@ class PanzoomInteraction {
   }
 
   beforeRender(runtime) {
-    runtime.writeBuffer(
-      this.config.mvpBufferId,
-      0,
-      mvpUniformBytes(this.zoomX, this.zoomY, this.offsetX, this.offsetY),
-    );
-    runtime.writeBuffer(this.config.viewportBufferId, 0, viewportUniformBytes());
+    writePanzoomUniforms(runtime, this.config, this);
   }
 }
 
@@ -1904,6 +1921,108 @@ export class Drp2WebGpuRuntime {
 
   resourceStats() {
     return resourceStats(this.state);
+  }
+}
+
+
+
+export async function fetchWebGpuStream(path) {
+  const response = await fetch(path, { cache: "no-cache" });
+  if (!response.ok) {
+    throw new Error(`failed to load stream: ${response.status} ${response.statusText}`);
+  }
+  return await response.json();
+}
+
+
+
+export class WebGpuDemoSession {
+  constructor(device, context, canvasFormat, capabilities) {
+    this.device = device;
+    this.context = context;
+    this.canvasFormat = canvasFormat;
+    this.capabilities = capabilities;
+    this.streamName = null;
+    this.config = null;
+    this.stream = null;
+    this.runtime = null;
+    this.frameIndex = 0;
+    this.panzoom = defaultPanzoomState();
+  }
+
+  async loadStream(name) {
+    const config = streamConfigByName(name);
+    const sourceName = streamSourceName(config);
+    const stream = await fetchWebGpuStream(`./streams/${sourceName}.json`);
+    return await this.loadStreamObject(config.name, stream);
+  }
+
+  async loadStreamObject(name, stream) {
+    this.config = streamConfigByName(name);
+    this.streamName = this.config.name;
+    this.stream = stream;
+    this.runtime = new Drp2WebGpuRuntime(
+      this.device,
+      this.context,
+      this.canvasFormat,
+      { capabilities: this.capabilities },
+    );
+    applyStreamCanvasAspect(stream);
+    await this.runtime.load(stream);
+    this.frameIndex = 0;
+    this.panzoom = defaultPanzoomState();
+    return this;
+  }
+
+  async reload() {
+    if (this.streamName === null || this.stream === null) {
+      throw new Error("demo session has no loaded stream");
+    }
+    return await this.loadStreamObject(this.streamName, this.stream);
+  }
+
+  frameCount() {
+    return this.runtime?.frames?.length ?? 0;
+  }
+
+  frameTime(index) {
+    return Number(this.runtime?.frames?.[index]?.t ?? 0);
+  }
+
+  setPanzoom(state) {
+    this.panzoom = { ...this.panzoom, ...state };
+  }
+
+  resize() {
+    return resizeCanvasToDisplaySize(this.device, this.context, this.canvasFormat);
+  }
+
+  async render(options = {}) {
+    if (this.runtime === null || this.stream === null) {
+      throw new Error("demo session has no loaded stream");
+    }
+    const resized = options.resize === false ? false : this.resize();
+    if (resized && options.reloadOnResize !== false && this.config?.interactive === undefined) {
+      await this.runtime.load(this.stream);
+    }
+    if (this.config?.interactive?.type === "panzoom" && options.panzoom !== false) {
+      writePanzoomUniforms(
+        this.runtime,
+        this.config.interactive,
+        options.panzoom ?? this.panzoom,
+      );
+    }
+    if (typeof options.beforeRender === "function") {
+      options.beforeRender(this.runtime);
+    }
+    return await this.runtime.render({ frameIndex: options.frameIndex ?? null });
+  }
+
+  resourceStats() {
+    if (this.runtime === null) {
+      throw new Error("demo session has no loaded runtime");
+    }
+    return this.runtime.resourceStats();
   }
 }
 
@@ -2940,6 +3059,7 @@ async function main() {
     let stream = null;
     let streamConfig = streamConfigByName(streamName);
     let runtime = null;
+    let session = null;
     let interaction = null;
     let frameIndex = 0;
     let playing = false;
@@ -2971,9 +3091,9 @@ async function main() {
       }
     };
 
-    const frameCount = () => runtime?.frames?.length ?? 0;
+    const frameCount = () => session?.frameCount() ?? 0;
 
-    const frameTime = (index) => Number(runtime?.frames?.[index]?.t ?? 0);
+    const frameTime = (index) => session?.frameTime(index) ?? 0;
 
     const frameIndexAtTime = (timeSeconds) => {
       const frames = runtime?.frames ?? [];
@@ -3012,19 +3132,16 @@ async function main() {
     };
 
     const loadStream = async (name) => {
-      streamConfig = streamConfigByName(name);
-      const sourceName = streamSourceName(streamConfig);
-      const streamPath = `./streams/${sourceName}.json`;
-      streamNameEl.textContent = streamPath.slice(2);
-      const response = await fetch(streamPath, { cache: "no-cache" });
-      if (!response.ok) {
-        throw new Error(`failed to load stream: ${response.status} ${response.statusText}`);
+      if (session === null) {
+        session = new WebGpuDemoSession(device, context, format, capabilities);
       }
-      streamName = streamConfig.name;
-      stream = await response.json();
-      applyStreamCanvasAspect(stream);
-      runtime = new Drp2WebGpuRuntime(device, context, format, { capabilities });
-      await runtime.load(stream);
+      await session.loadStream(name);
+      streamConfig = session.config;
+      stream = session.stream;
+      runtime = session.runtime;
+      streamName = session.streamName;
+      const streamPath = `./streams/${streamSourceName(streamConfig)}.json`;
+      streamNameEl.textContent = streamPath.slice(2);
       configureInteraction(streamConfig);
       frameIndex = 0;
       stopPlayback();
@@ -3050,15 +3167,16 @@ async function main() {
           if (stream === null) {
             await loadStream(streamName);
           }
-          const resized = resizeCanvasToDisplaySize(device, context, format);
-          if (resized && interaction === null) {
-            await runtime.load(stream);
-          }
-          if (interaction !== null) {
-            interaction.beforeRender(runtime);
-          }
           const count = frameCount();
-          const result = await runtime.render({ frameIndex: count > 0 ? frameIndex : null });
+          const result = await session.render({
+            frameIndex: count > 0 ? frameIndex : null,
+            panzoom: false,
+            beforeRender: interaction !== null ? (activeRuntime) => {
+              interaction.beforeRender(activeRuntime);
+            } : null,
+            reloadOnResize: interaction === null,
+          });
+          runtime = session.runtime;
           if (result.readbacks.length > 0) {
             const readback = result.readbacks[0];
             setStatus(
