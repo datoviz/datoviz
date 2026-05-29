@@ -6,11 +6,11 @@
 
 /* Minimal scale-bar example with one panzoom panel and no data visual.
  *
- * Run:    just example-c scalebar_minimal
- * Bitmap: just example-c scalebar_minimal bitmap
- * Auto:   just example-c scalebar_minimal auto 120
- * Smoke:  just example-c scalebar_minimal 120
- *         just example-c scalebar_minimal bitmap 120
+ * Run:    just example-c regression/scalebar_minimal
+ * Bitmap: just example-c regression/scalebar_minimal bitmap
+ * Auto:   just example-c regression/scalebar_minimal auto 120
+ * Smoke:  just example-c regression/scalebar_minimal 120
+ *         just example-c regression/scalebar_minimal bitmap 120
  */
 
 

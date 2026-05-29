@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* scalebar_2d_3d - retained 2D physical scale bar beside a 3D arcball point panel.
+/* scalebar_2d_3d - lab retained 2D physical scale bar beside a 3D arcball point panel.
  *
- * Build:  just example-c scalebar_2d_3d
- * Run:    ./build/examples/c/annotations/scalebar_2d_3d
- * Smoke:  ./build/examples/c/annotations/scalebar_2d_3d 120
+ * Build:  just example-c lab/scalebar_2d_3d
+ * Run:    ./build/examples/c/lab/scalebar_2d_3d
+ * Smoke:  ./build/examples/c/lab/scalebar_2d_3d 120
  */
 
 

@@ -18,6 +18,7 @@ and low-level rendering stack. The active overhaul process is documented in
 | `advanced/` | Low-level DRP2, vklite, canvas, stream, interop, and diagnostic examples. |
 | `regression/` | Deterministic examples kept primarily for screenshot, readback, or fixture validation. |
 | `stress/` | Capacity, performance, long-loop, and repeated-update examples. |
+| `lab/` | Historical demos and diagnostics kept buildable as source material, not public gallery items. |
 
 
 ## Transitional Folders
@@ -27,7 +28,6 @@ Some existing folders predate the final lane split:
 | Folder | Transitional handling |
 | --- | --- |
 | `showcase/` | Historical singular showcase folder. Promote selected files to `showcases/` when they are polished and indexed. |
-| `annotations/` | Move scale-bar, annotation, and overlay examples to `features/` or `regression/` as they are migrated. |
 | `tools/` | Keep developer tools and low-level generators here until they move to `runtime/`, `advanced/`, or remain intentionally non-gallery tools. |
 
 
