@@ -1795,10 +1795,6 @@ int _scene_text_block_rasterize(DvzTextBlock* block, const DvzTextBlockRasterDes
 int _scene_text_block_realize_image(
     DvzTextBlock* block, DvzPanel* panel, const DvzTextBlockImageDesc* desc);
 
-bool _scene_visual_frame_plan_metadata(
-    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
-    DvzFramePlanVisualMeta* metadata);
-
 void _scene_prepare_axis_visuals(DvzFigure* figure);
 
 void _scene_prepare_colorbar_visuals(DvzFigure* figure, DvzDiagnosticReport* report);

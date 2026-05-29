@@ -65,6 +65,10 @@ bool _scene_emit_visual_material_upload_if_needed(
     const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index,
     bool upload_material_params);
 
+bool _scene_visual_frame_plan_metadata(
+    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
+    DvzFramePlanVisualMeta* metadata);
+
 bool _scene_emit_sampled_field_texture_upload(
     DvzFramePlan* plan, const char* resource_id, DvzSampledField* field);
 

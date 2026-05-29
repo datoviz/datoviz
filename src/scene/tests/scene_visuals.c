@@ -21,6 +21,7 @@
 #include "_frame_plan_runtime_internal.h"
 #include "datoviz/geom.h"
 #include "registry/registry.h"
+#include "scene_emit/internal.h"
 
 
 
