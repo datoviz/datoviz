@@ -11,11 +11,13 @@ Transparency, depth-peeling, and MSAA implementation rules live in
 
 1. [SCENE_MESH_VOLUME_OCCLUSION_PLAN.md](SCENE_MESH_VOLUME_OCCLUSION_PLAN.md): mesh/volume
    occlusion follow-up.
-2. [SCENE_MSAA_PLAN.md](SCENE_MSAA_PLAN.md): MSAA follow-up.
-3. [SCENE_SCREEN_SPACE_EFFECTS_PLAN.md](SCENE_SCREEN_SPACE_EFFECTS_PLAN.md): screen-space effects
+2. [SCENE_DOF_POSTPROCESS_PLAN.md](SCENE_DOF_POSTPROCESS_PLAN.md): depth-of-field
+   post-processing follow-up.
+3. [SCENE_MSAA_PLAN.md](SCENE_MSAA_PLAN.md): MSAA follow-up.
+4. [SCENE_SCREEN_SPACE_EFFECTS_PLAN.md](SCENE_SCREEN_SPACE_EFFECTS_PLAN.md): screen-space effects
    follow-up.
-4. [SCENE_SSAO_QUALITY_PLAN.md](SCENE_SSAO_QUALITY_PLAN.md): SSAO quality follow-up.
-5. [SCENE_TECHNIQUES_MATERIALS_PLAN.md](SCENE_TECHNIQUES_MATERIALS_PLAN.md): techniques and
+5. [SCENE_SSAO_QUALITY_PLAN.md](SCENE_SSAO_QUALITY_PLAN.md): SSAO quality follow-up.
+6. [SCENE_TECHNIQUES_MATERIALS_PLAN.md](SCENE_TECHNIQUES_MATERIALS_PLAN.md): techniques and
    materials follow-up.
 
 Completed baseline records now live in `agents/done/`:
