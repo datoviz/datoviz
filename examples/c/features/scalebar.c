@@ -410,7 +410,7 @@ static bool _add_panel_scalebar(
 
 
 /**
- * Add a world-referenced 3D scale bar to the specimen panel.
+ * Add a view-plane 3D scale bar to the specimen panel.
  *
  * @param panel panel receiving the annotation
  * @return true when the scale bar was added
@@ -422,9 +422,8 @@ static bool _add_world_scalebar(DvzPanel* panel)
     DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
     DvzScaleBarDesc desc = {
         .dimension = DVZ_DIM_X,
-        .reference_mode = DVZ_SCALEBAR_REFERENCE_WORLD_POINT,
-        .reference_position = {-0.95, -0.88, -0.72},
-        .reference_direction = {1.0, 0.0, 0.0},
+        .reference_mode = DVZ_SCALEBAR_REFERENCE_VIEW_PLANE,
+        .reference_position = {0.0, 0.0, 0.0},
         .anchor = DVZ_SCENE_ANCHOR_BOTTOM_RIGHT,
         .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
         .target_length_px = 122.0f,

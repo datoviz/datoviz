@@ -354,14 +354,100 @@ static bool _scalebar_project_world_to_panel_px(
 
 
 /**
+ * Strip model rotation while preserving translation and uniform scale.
+ *
+ * @param src source model matrix
+ * @param dst destination model matrix
+ */
+static void _scalebar_model_without_rotation(mat4 src, mat4 dst)
+{
+    ANN(dst);
+
+    glm_mat4_identity(dst);
+    float sx = glm_vec3_norm((vec3){src[0][0], src[0][1], src[0][2]});
+    float sy = glm_vec3_norm((vec3){src[1][0], src[1][1], src[1][2]});
+    float sz = glm_vec3_norm((vec3){src[2][0], src[2][1], src[2][2]});
+    float scale = 1.0f;
+    uint32_t count = 0;
+    if (isfinite(sx) && sx > 0.0f)
+    {
+        scale += sx;
+        count++;
+    }
+    if (isfinite(sy) && sy > 0.0f)
+    {
+        scale += sy;
+        count++;
+    }
+    if (isfinite(sz) && sz > 0.0f)
+    {
+        scale += sz;
+        count++;
+    }
+    if (count > 0)
+        scale = (scale - 1.0f) / (float)count;
+
+    dst[0][0] = scale;
+    dst[1][1] = scale;
+    dst[2][2] = scale;
+    dst[3][0] = src[3][0];
+    dst[3][1] = src[3][1];
+    dst[3][2] = src[3][2];
+}
+
+
+
+/**
+ * Resolve the camera view-plane direction for a viewer-style 3D scale bar.
+ *
+ * @param desc scale-bar descriptor
+ * @param mvp panel MVP
+ * @param out output normalized data-space direction
+ * @return whether a finite direction was resolved
+ */
+static bool _scalebar_view_plane_direction(const DvzScaleBarDesc* desc, DvzMVP* mvp, vec3 out)
+{
+    ANN(desc);
+    ANN(mvp);
+    ANN(out);
+
+    vec4 view_axis = {1.0f, 0.0f, 0.0f, 0.0f};
+    if (desc->dimension == DVZ_DIM_Y)
+    {
+        view_axis[0] = 0.0f;
+        view_axis[1] = 1.0f;
+    }
+
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    mat4 inv_view = GLM_MAT4_IDENTITY_INIT;
+    glm_mat4_copy(mvp->view, view);
+    glm_mat4_inv(view, inv_view);
+
+    vec4 world_axis = {0};
+    glm_mat4_mulv(inv_view, view_axis, world_axis);
+    out[0] = world_axis[0];
+    out[1] = world_axis[1];
+    out[2] = world_axis[2];
+    if (!isfinite(out[0]) || !isfinite(out[1]) || !isfinite(out[2]))
+        return false;
+    if (glm_vec3_norm(out) <= 0.0f)
+        return false;
+    glm_vec3_normalize(out);
+    return true;
+}
+
+
+
+/**
  * Resolve local world-units-per-pixel for a 3D scale bar.
  *
  * @param annotation scale-bar annotation
+ * @param view_plane whether to resolve a camera-facing view-plane scale
  * @param out_units_per_px output physical units per panel pixel
  * @return whether a finite local scale was resolved
  */
 static bool _scalebar_world_units_per_px(
-    DvzAnnotation* annotation, double* out_units_per_px)
+    DvzAnnotation* annotation, bool view_plane, double* out_units_per_px)
 {
     ANN(annotation);
     ANN(out_units_per_px);
@@ -374,18 +460,26 @@ static bool _scalebar_world_units_per_px(
     if (!isfinite(reference[0]) || !isfinite(reference[1]) || !isfinite(reference[2]))
         return false;
 
-    vec3 direction = {0};
-    if (!_scalebar_reference_direction(desc, direction))
-        return false;
-
     DvzMVP mvp = {0};
     _scene_panel_apply_mvp(annotation->panel, &mvp);
+    if (view_plane)
+    {
+        mat4 model = GLM_MAT4_IDENTITY_INIT;
+        _scalebar_model_without_rotation(mvp.model, model);
+        glm_mat4_copy(model, mvp.model);
+    }
 
     float x0 = 0.0f;
     float y0 = 0.0f;
     float x1 = 0.0f;
     float y1 = 0.0f;
     if (!_scalebar_project_world_to_panel_px(annotation->panel, &mvp, reference, &x0, &y0))
+        return false;
+
+    vec3 direction = {0};
+    bool direction_ok = view_plane ? _scalebar_view_plane_direction(desc, &mvp, direction)
+                                   : _scalebar_reference_direction(desc, direction);
+    if (!direction_ok)
         return false;
 
     vec3 unit_point = {
@@ -700,10 +794,12 @@ bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotation)
         return true;
 
     DvzScaleBarDesc* desc = &annotation->scalebar;
-    if (desc->reference_mode == DVZ_SCALEBAR_REFERENCE_WORLD_POINT)
+    if (desc->reference_mode == DVZ_SCALEBAR_REFERENCE_WORLD_POINT ||
+        desc->reference_mode == DVZ_SCALEBAR_REFERENCE_VIEW_PLANE)
     {
         double units_per_px = 0.0;
-        if (!_scalebar_world_units_per_px(annotation, &units_per_px))
+        bool view_plane = desc->reference_mode == DVZ_SCALEBAR_REFERENCE_VIEW_PLANE;
+        if (!_scalebar_world_units_per_px(annotation, view_plane, &units_per_px))
         {
             _scalebar_hide(annotation);
             return true;

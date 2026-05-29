@@ -1094,6 +1094,86 @@ static int test_scene_scalebar_3d_world_reference(TstContext* suite, const TstCa
 
 
 /**
+ * Check view-plane 3D scale bars track zoom but not arcball rotation.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_scene_scalebar_3d_view_plane_reference(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 400, 200, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[2] = 3.20f;
+    camera_desc.fov_y = 0.74f;
+    DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
+    ANN(camera);
+
+    DvzController* controller = dvz_arcball(scene, NULL);
+    ANN(controller);
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    ANN(arcball);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
+
+    DvzAnnotation* scalebar = dvz_annotation_scalebar(
+        panel,
+        &(DvzScaleBarDesc){
+            .dimension = DVZ_DIM_X,
+            .reference_mode = DVZ_SCALEBAR_REFERENCE_VIEW_PLANE,
+            .reference_position = {0.0, 0.0, 0.0},
+            .anchor = DVZ_SCENE_ANCHOR_BOTTOM_RIGHT,
+            .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
+            .target_length_px = 120.0f,
+            .min_length_px = 70.0f,
+            .max_length_px = 180.0f,
+            .offset_px = {20.0f, 20.0f},
+            .line_width_px = 2.0f,
+            .line_color = {255, 255, 255, 255},
+            .unit = "m",
+            .data_to_unit = 1.0,
+            .label_style = {
+                .size_px = 10.0f,
+                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+                .color = {255, 255, 255, 255},
+            },
+        });
+    ANN(scalebar);
+
+    _scene_prepare_text_visuals(figure);
+    ANN(scalebar->scalebar_visual);
+    ANN(scalebar->visual);
+    AT(scalebar->scalebar_visual->visible);
+    AT(scalebar->visual->visible);
+    double initial_units = scalebar->scalebar_units;
+    float initial_px = scalebar->scalebar_px;
+
+    dvz_arcball_set(arcball, (vec3){+0.70f, -0.40f, +0.30f});
+    _scene_prepare_text_visuals(figure);
+    AC(scalebar->scalebar_units, initial_units, 1e-12);
+    AC(scalebar->scalebar_px, initial_px, 1e-5f);
+
+    dvz_arcball_zoom(arcball, 2.0f);
+    _scene_prepare_text_visuals(figure);
+    AT(scalebar->scalebar_units < initial_units);
+    AT(scalebar->scalebar_px >= 70.0f);
+    AT(scalebar->scalebar_px <= 180.0f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Check render emission does not invalidate scale-bar glyph upload sources.
  *
  * @param suite the active test suite
@@ -2768,6 +2848,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_scalebar_2d_realization);
     TST_CASE(test_scene_scalebar_update_churn);
     TST_CASE(test_scene_scalebar_3d_world_reference);
+    TST_CASE(test_scene_scalebar_3d_view_plane_reference);
     TST_CASE(test_scene_scalebar_render_emit_keeps_upload_sources);
     TST_CASE(test_scene_scalebar_minimal_stream);
     TST_CASE(test_scene_scalebar_2d_3d_stream_order);
