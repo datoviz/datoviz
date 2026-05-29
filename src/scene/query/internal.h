@@ -235,6 +235,21 @@ bool _dvz_scene_query_push_result(
 
 void _scene_query_scratch_destroy(DvzSceneQueryScratch* plan);
 
+bool _dvz_scene_query_alloc(
+    const char* label, void** out_ptr, uint64_t count, uint64_t item_size);
+
+bool _dvz_scene_query_dense_attr(
+    const DvzVisual* visual, const char* attr_name, uint32_t item_size,
+    const DvzVisualAttr** out_attr);
+
+bool _dvz_scene_query_target_extent(
+    const DvzFigure* figure, const DvzPanel* panel, uint32_t* out_target_width,
+    uint32_t* out_target_height);
+
+void _dvz_scene_query_apply_render_state(
+    DvzFramePlan* plan, const DvzPanel* panel, const vec2 request_ndc, uint32_t target_width,
+    uint32_t target_height);
+
 const DvzSceneQueryFamilyOps* _dvz_scene_query_point_ops(void);
 
 const DvzSceneQueryFamilyOps* _dvz_scene_query_pixel_ops(void);

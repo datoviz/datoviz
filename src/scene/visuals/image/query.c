@@ -46,21 +46,7 @@
  */
 static bool _image_query_alloc(void** out_ptr, uint64_t count, uint64_t item_size)
 {
-    ANN(out_ptr);
-    uint64_t bytes = 0;
-    if (_dvz_mul_u64_overflows(count, item_size, &bytes) || bytes > SIZE_MAX)
-    {
-        log_error("image query request buffer size overflow");
-        return false;
-    }
-    void* ptr = dvz_calloc((size_t)count, (size_t)item_size);
-    if (ptr == NULL && bytes > 0)
-    {
-        log_error("image query request buffer allocation failed");
-        return false;
-    }
-    *out_ptr = ptr;
-    return true;
+    return _dvz_scene_query_alloc("image", out_ptr, count, item_size);
 }
 
 
@@ -171,19 +157,7 @@ static bool _image_query_target_extent(
     const DvzFigure* figure, const DvzPanel* panel, uint32_t* out_target_width,
     uint32_t* out_target_height)
 {
-    ANN(figure);
-    ANN(panel);
-    ANN(out_target_width);
-    ANN(out_target_height);
-    double panel_width = panel->desc.width * (double)figure->width;
-    double panel_height = panel->desc.height * (double)figure->height;
-    if (panel_width <= 0.0 || panel_height <= 0.0)
-        return false;
-    uint32_t target_width = (uint32_t)(panel_width + 0.5);
-    uint32_t target_height = (uint32_t)(panel_height + 0.5);
-    *out_target_width = target_width == 0 ? 1 : target_width;
-    *out_target_height = target_height == 0 ? 1 : target_height;
-    return true;
+    return _dvz_scene_query_target_extent(figure, panel, out_target_width, out_target_height);
 }
 
 
@@ -201,28 +175,7 @@ static void _image_query_apply_render_state(
     DvzFramePlan* plan, const DvzPanel* panel, const vec2 request_ndc, uint32_t target_width,
     uint32_t target_height)
 {
-    ANN(plan);
-    ANN(panel);
-    ANN(request_ndc);
-    DvzFramePlanNode* render = dvz_frame_plan_last_render_node(plan);
-    if (render == NULL)
-        return;
-
-    DvzMVP mvp = {0};
-    _scene_panel_apply_mvp(panel, &mvp);
-    vec2 target_ndc = {
-        -1.0f + 1.0f / (float)target_width,
-        1.0f - 1.0f / (float)target_height,
-    };
-    vec2 delta = {request_ndc[0] - target_ndc[0], request_ndc[1] - target_ndc[1]};
-    mvp.proj[3][0] -= delta[0];
-    mvp.proj[3][1] -= delta[1];
-    render->u.render.has_mvp = true;
-    render->u.render.apply_mvp = mvp;
-    render->u.render.has_viewport = true;
-    render->u.render.viewport =
-        (DvzSceneViewportUniform){0.0f, 0.0f, (float)target_width, (float)target_height};
-    render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
+    _dvz_scene_query_apply_render_state(plan, panel, request_ndc, target_width, target_height);
 }
 
 

@@ -195,17 +195,9 @@ static bool _labels_query_attr(
     const DvzVisual* visual, const char* attr_name, uint64_t item_size,
     const DvzVisualAttr** out_attr)
 {
-    ANN(visual);
-    ANN(attr_name);
-    int idx = _attr_index(visual, attr_name);
-    if (idx < 0)
+    if (item_size > UINT32_MAX)
         return false;
-    const DvzVisualAttr* attr = &visual->attrs[idx];
-    if (attr->data == NULL || attr->item_count == 0 || attr->item_size != item_size)
-        return false;
-    if (out_attr != NULL)
-        *out_attr = attr;
-    return true;
+    return _dvz_scene_query_dense_attr(visual, attr_name, (uint32_t)item_size, out_attr);
 }
 
 

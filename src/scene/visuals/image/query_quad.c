@@ -42,21 +42,7 @@
  */
 static bool _image_query_alloc(void** out_ptr, uint64_t count, uint64_t item_size)
 {
-    ANN(out_ptr);
-    uint64_t bytes = 0;
-    if (_dvz_mul_u64_overflows(count, item_size, &bytes) || bytes > SIZE_MAX)
-    {
-        log_error("image query request buffer size overflow");
-        return false;
-    }
-    void* ptr = dvz_calloc((size_t)count, (size_t)item_size);
-    if (ptr == NULL && bytes > 0)
-    {
-        log_error("image query request buffer allocation failed");
-        return false;
-    }
-    *out_ptr = ptr;
-    return true;
+    return _dvz_scene_query_alloc("image", out_ptr, count, item_size);
 }
 
 
@@ -78,17 +64,7 @@ bool _image_query_attr(
     const DvzVisual* visual, const char* attr_name, uint32_t item_size,
     const DvzVisualAttr** out_attr)
 {
-    ANN(visual);
-    ANN(attr_name);
-    ANN(out_attr);
-    int attr_idx = _attr_index(visual, attr_name);
-    if (attr_idx < 0)
-        return false;
-    const DvzVisualAttr* attr = &visual->attrs[attr_idx];
-    if (attr->data == NULL || attr->item_count == 0 || attr->item_size != item_size)
-        return false;
-    *out_attr = attr;
-    return true;
+    return _dvz_scene_query_dense_attr(visual, attr_name, item_size, out_attr);
 }
 
 
