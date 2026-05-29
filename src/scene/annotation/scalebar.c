@@ -24,6 +24,7 @@
 #include "_compat.h"
 #include "_scale_ticks.h"
 #include "_scene.h"
+#include "core/panel_layout_internal.h"
 #include "datoviz/scene.h"
 #include "text_internal.h"
 #include "text/internal.h"
@@ -808,4 +809,3 @@ DvzAnnotation* dvz_annotation_scalebar(DvzPanel* panel, const DvzScaleBarDesc* d
     _scene_notify_request_frame(panel->figure);
     return annotation;
 }
-

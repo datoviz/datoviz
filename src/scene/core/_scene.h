@@ -1734,6 +1734,4 @@ const char* _visual_type_name(DvzVisualType type);
 
 bool _figure_visual_index(const DvzFigure* figure, const DvzVisual* visual, uint32_t* out_index);
 
-float _scene_screen_scale(const DvzFigure* figure);
-
 bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action);
