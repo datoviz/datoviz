@@ -48,10 +48,11 @@ Important current state:
    `scene_emit/uploads.c` as the panel-visible visual upload orchestrator. The final architecture
    still needs the remaining pure upload/cache builders, non-item query result ownership, and any
    residual family-specific bounds logic to migrate into family-owned files. Generic query scratch
-   helpers, standard item-id decoding, and standard item-target eligibility now live in `query/`.
+   helpers, standard item-id decoding, standard item-target eligibility, and native-only target
+   fallback policy now live in `query/`.
 9. `annotation/text.c`, `annotation/axis.c`, `domain/field.c`, and the remaining family-specific
-   payload construction reachable from scene emission remain the highest-value mixed-ownership
-   areas.
+   payload construction reachable from scene emission remain mixed-ownership areas. Field dirty
+   propagation and bound-visual texture dirtiness now live in `domain/field_dirty.c`.
 10. `core/_scene.h` no longer exports narrow helper declarations. It remains broad because shared
     retained scene object and type definitions still live there; the next header shrink target is
     type ownership and include direction rather than more prototype movement.
@@ -60,21 +61,23 @@ Latest pickup snapshot:
 
 1. The retained textured-mesh first slice exists and should be treated as active code, not future
    scaffolding.
-2. The most recent scene-source split commits through `1d2fb3669` completed the upload-support,
+2. The most recent scene-source split commits through `f0b3c756b` completed the upload-support,
    panel-helper, helper-declaration boundary, shared query scratch-helper, query render-metadata
-   guard, standard item-id decode, and standard item-target eligibility cleanup passes. Do not
-   restart by re-extracting
+   guard, standard item-id decode, standard item-target eligibility, query native-target policy,
+   FramePlan/render-contract metadata enforcement, and field dirty propagation cleanup passes. Do
+   not restart by re-extracting
    dense/index/material upload emission, panel drawable/viewport helpers, the helper declarations
    already moved into owner-private headers, or the generic query helpers now centralized in
    `query/`.
-3. The best next implementation slices are now remaining query-family ownership,
-   normal-path typed metadata enforcement outside query, and annotation/domain ownership. Remaining
-   upload work should be limited to pure family payload builders when a concrete builder is still
-   mixed into scene emission.
+3. The best next implementation slices are now remaining query-family ownership, deeper
+   normal-path typed metadata removal from compatibility emission, and annotation/domain ownership.
+   Remaining upload work should be limited to pure family payload builders when a concrete builder
+   is still mixed into scene emission.
 4. Last focused validation recorded for this split was `git diff --check`, `just build`,
-   `direnv exec . just test scene/query` (`40/40`), `direnv exec . just test scene-graph`
-   (`157/157`), and `direnv exec . just test app-offscreen` (`76/76`). The earlier broad query
-   GPU readback failures are no longer current blockers.
+   `direnv exec . just test scene/query` (`40/40`), `direnv exec . just test scene/frame-plan`
+   (`55/55`), `direnv exec . just test scene-graph` (`158/158`), focused sampled-field update
+   filters, and `direnv exec . just test app-offscreen` (`76/76`). The earlier broad query GPU
+   readback failures are no longer current blockers.
 
 The current `desc_untyped_compat.c` path is an intermediate compatibility step, not the desired
 final architecture. Normal v0.4 scene output emits explicit typed metadata and should not require
@@ -163,14 +166,21 @@ this section when a slice is completed.
 5. Kill normal-path untyped descriptor compatibility.
    - Ensure query-generated render nodes and every normal retained visual render node emit typed
      metadata.
-   - Add an architecture test/debug assertion that a normal render visual without typed metadata
-     fails before runtime inference.
+   - Status on 2026-05-29: FramePlan has a render-metadata completeness helper, query execution
+     consumes it, the runtime emitter rejects untyped visuals unless the explicit compatibility
+     flag is set, and render-contract resolution now rejects missing typed metadata unless the
+     compatibility flag is set.
+   - Next slice: remove compatibility classifiers from typed retained fallback emission where
+     descriptor identity can come directly from metadata, and make remaining resource-role
+     resolution prefer typed roles over legacy tags.
    - Delete `visuals/desc_untyped_compat.c` if no explicit fixture/import path still needs it; if
      it remains, keep it behind an explicit compatibility flag and document its callers.
 
 6. Finish domain and annotation ownership.
    - Split `domain/field.c` into lifecycle/public setters, sampled interpretation, scale binding,
      and generated visual synchronization.
+   - Status on 2026-05-29: sampled-field dirty propagation moved from `domain/field.c` to
+     `domain/field_dirty.c`, beside bound-visual texture dirty state and refresh helpers.
    - Split `annotation/text.c` into retained text state, layout, glyph/quad synchronization, and
      renderer payloads.
    - Split `annotation/axis.c` into retained axis state, tick generation, layout reserve, and

@@ -18,21 +18,24 @@ tracks source-split progress; the completion plan defines the end state.
 
 As of 2026-05-29 after the scene-plan folder removal, upload/panel helper passes,
 helper-declaration boundary pass, query scratch-helper sharing, query render-metadata guard,
-shared item-id decode, and shared item-target eligibility through `1d2fb3669`, the highest-value
-split candidates are:
+shared item-id decode, shared item-target eligibility, query native-target policy cleanup,
+FramePlan/render-contract metadata enforcement, and field dirty propagation cleanup through
+`f0b3c756b`, the highest-value split candidates are:
 
 1. `src/scene/query/` and family `visuals/*/query.c` files: query has a registry, split
    executor/policy/readback files, shared scratch helpers, standard item-id decoding, shared
-   item-target eligibility for the simple item families, and a query render-metadata completeness
-   guard. Family scratch geometry, non-item result decoding, and unsupported-policy ownership
-   should still be checked family by family. Keep queueing, request freshness, executor lifecycle,
-   metadata completeness checks, common item decoding, common item-target eligibility, and readback
-   scheduling generic.
+   item-target eligibility for the simple item families, and shared native-target fallback policy.
+   Family scratch geometry, non-item result decoding, and unsupported-policy ownership should still
+   be checked family by family. Keep queueing, request freshness, executor lifecycle, common item
+   decoding, common item-target eligibility, native-target fallback policy, and readback scheduling
+   generic. Keep render metadata completeness in `frame_plan/` and render-contract validation,
+   with query execution only consuming that invariant.
 2. `src/scene/annotation/text.c` and `axis.c`: retained annotation objects, layout/reserve policy,
    generated visuals, and text/glyph lowering are still mixed. Scale, colorbar, legend, colormap,
    scale-bar, and text-font ownership now have first-pass owner files.
-3. `src/scene/domain/field.c`: public domain object state, sampled interpretation, generated
-   visual glue, and upload dirtiness are still mixed.
+3. `src/scene/domain/field.c`: public domain object state, sampled interpretation, and generated
+   visual glue are still mixed. Field dirty propagation and bound-visual texture dirtiness now live
+   in `domain/field_dirty.c`.
 4. `src/scene/scene_emit/uploads.c` and `scene_emit/derived_upload.c`: the upload path is mostly
    phase orchestration now. Continue moving only pure cache/data construction into family or
    subsystem helpers when a concrete mixed helper remains; do not re-extract dense/index/material
@@ -101,18 +104,19 @@ They should move only when includes and ownership prove the boundary, not as a d
 ### 1. Finish Query-Family Ownership
 
 Status: generic query scratch helpers, standard item-id decode, standard item-target eligibility,
-and the query render-metadata guard completed on 2026-05-29. The next pickup is family-by-family
-ownership of remaining scratch geometry, non-item result decoding, and unsupported-policy
-decisions.
+native-only target fallback policy, and FramePlan-owned render-metadata completeness checks
+completed on 2026-05-29. The next pickup is family-by-family ownership of remaining scratch
+geometry, non-item result decoding, and unsupported-policy decisions.
 
 Current ownership:
 
 1. `query/policy.c`: target capability, query-profile selection, candidate visual selection,
-   family-op eligibility, shared item-target eligibility, and framebuffer coordinate policy.
+   family-op eligibility, shared item-target eligibility, native-target fallback policy, and
+   framebuffer coordinate policy.
 2. `query/execute.c`: retained executor schema reset, static-upload bookkeeping, native family
-   execution, query render-metadata completeness checks, and readback orchestration.
+   execution, FramePlan render-metadata completeness consumption, and readback orchestration.
 3. `query/scratch.c`: scratch destruction plus shared temporary allocation, dense-attribute,
-   target-extent, request-centered render-state, and render-metadata completeness helpers.
+   target-extent, and request-centered render-state helpers.
 4. `query/result.c`: result freshness, queue push/poll, and standard r32uint item-id decode.
 5. `query/queue.c`, `query/readback.c`, and `query/registry.c`: request queue, readback routing,
    and family-op lookup.
@@ -129,8 +133,9 @@ Next moves:
 4. Add focused tests that distinguish orchestration behavior from family payload/result behavior.
 
 Validation: `just build`, `git diff --check`, and focused query tests. The latest broad
-`direnv exec . just test scene/query` run passed `40/40`; the volume/labels readback failures that
-blocked the earlier split are no longer recorded as current failures.
+`direnv exec . just test scene/query` run passed `40/40`; `direnv exec . just test scene/frame-plan`
+passed `55/55`; `direnv exec . just test scene-graph` passed `158/158`. The volume/labels readback
+failures that blocked the earlier split are no longer recorded as current failures.
 
 
 ### 2. Finish Low-Risk Derived Payload Extraction

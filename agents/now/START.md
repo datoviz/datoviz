@@ -60,17 +60,19 @@ Remaining `geom` work is optional unless a release example needs it.
 
 For the large scene source/architecture refactor, the latest pickup is after the upload-support,
 panel-helper, helper-declaration boundary, shared query-helper, query render-metadata guard,
-standard item-id decode, and standard item-target eligibility split commits through `1d2fb3669`.
-`_scene.h` no longer exposes narrow
+standard item-id decode, standard item-target eligibility, query native-target policy,
+FramePlan/render-contract metadata enforcement, and field dirty propagation split commits through
+`f0b3c756b`. `_scene.h` no longer exposes narrow
 helper declarations; its remaining broadness is shared retained scene object and type definitions.
-Start with remaining query-family ownership, typed metadata enforcement outside query,
+Start with remaining query-family ownership, deeper typed retained fallback cleanup,
 annotation/domain cleanup, and standalone candidate assessment in
 [`../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md);
 do not reopen dense/index/material upload emission, panel drawable/viewport helper extraction, or
 the helper declarations already moved into owner-private headers unless a new regression points
 there. Do not re-split generic query allocation, dense-attribute, target-extent, render-state,
-standard item-id decode, standard item-target eligibility, or render-metadata completeness helpers
-from `src/scene/query/`. The closest standalone scene layers are currently `frame_plan/`,
+standard item-id decode, standard item-target eligibility, native-target fallback policy, or
+render-metadata completeness helpers from `src/scene/query/`; render metadata completeness now lives
+in `frame_plan/`. The closest standalone scene layers are currently `frame_plan/`,
 `render_contract/`, `query/`, `text/`,
 `domain/`, and
 `visuals/registry/`; `scene_emit/`, `runtime/`, `techniques/`, and `app/` remain
