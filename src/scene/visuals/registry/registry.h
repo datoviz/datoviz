@@ -87,6 +87,11 @@ struct DvzVisualFamilyOps
     DvzVisualFamilyAfterAttrFn after_attr_set;
     bool upload_position_topology;
     bool upload_material_params;
+    bool skip_visual_uploads;
+    bool panel_clip_rect;
+    bool sampled_field_texture_upload;
+    bool supports_scale;
+    bool categorical_scale;
 };
 
 

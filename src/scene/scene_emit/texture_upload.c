@@ -27,6 +27,7 @@
 #include "_scene_resource_key.h"
 #include "colorizer.h"
 #include "image/internal.h"
+#include "registry/registry.h"
 #include "volume/internal.h"
 #include "datoviz/drp2/runtime.h"
 
@@ -129,7 +130,7 @@ static void _scene_emit_image_like_texture_upload(
     ANN(plan);
     ANN(visual);
 
-    if (visual->type == DVZ_VISUAL_TYPE_LABELS || visual->type == DVZ_VISUAL_TYPE_MESH)
+    if (visual->ops != NULL && visual->ops->sampled_field_texture_upload)
     {
         if (_visual_family_state(visual)->field == NULL || (!_visual_family_state(visual)->texture.dirty && !_visual_family_state(visual)->field->dirty))
             return;

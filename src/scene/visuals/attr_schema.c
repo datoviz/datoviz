@@ -52,8 +52,7 @@ const char* _attr_storage_name(DvzVisualType type, const char* name)
 bool _attr_is_instance_attribute(const char* name)
 {
     ANN(name);
-    const DvzVisualFamilyAttrDesc* desc = _visual_family_attr_desc(DVZ_VISUAL_TYPE_MESH, name);
-    return (desc != NULL && desc->instance) || strcmp(name, "instance_color") == 0 ||
+    return strcmp(name, "instance_transform") == 0 || strcmp(name, "instance_color") == 0 ||
            strcmp(name, "instance_id") == 0;
 }
 
@@ -243,4 +242,3 @@ bool _visual_attr_count_consistent(
     }
     return true;
 }
-

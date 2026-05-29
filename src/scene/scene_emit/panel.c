@@ -34,6 +34,7 @@
 #include "_visual_internal.h"
 #include "_visual_pipeline.h"
 #include "domain/buffer_internal.h"
+#include "registry/registry.h"
 #include "scene_emit/visual_lowering.h"
 #include "datoviz/drp2/runtime.h"
 #include "render_contract/render_contract.h"
@@ -301,7 +302,7 @@ static bool _scene_visual_is_visible_drawable(const DvzVisual* visual)
 {
     if (visual == NULL || !visual->visible)
         return false;
-    if (visual->type == DVZ_VISUAL_TYPE_TEXT)
+    if (visual->ops != NULL && visual->ops->skip_visual_uploads)
         return false;
     int pos_idx = _attr_index(visual, _scene_visual_draw_position_attr(visual));
     return pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0;
@@ -452,7 +453,8 @@ static DvzFramePlanClipRect _scene_visual_clip_rect(const DvzPanel* panel, const
     ANN(visual);
     if (_scene_visual_is_axis_grid(panel, visual))
         return DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
-    if (visual == panel->background_visual || visual->type == DVZ_VISUAL_TYPE_GLYPH ||
+    if (visual == panel->background_visual ||
+        (visual->ops != NULL && visual->ops->panel_clip_rect) ||
         _scene_visual_is_axis_derived(panel, visual) ||
         _scene_visual_is_colorbar_derived(panel, visual) ||
         _scene_visual_is_legend_derived(panel, visual))
@@ -691,7 +693,7 @@ static uint32_t _scene_panel_drawable_visual_count(const DvzFigure* figure, cons
         const DvzVisual* visual = panel->visuals[vi].visual;
         if (visual == NULL || !visual->visible)
             continue;
-        if (visual->type == DVZ_VISUAL_TYPE_TEXT)
+        if (visual->ops != NULL && visual->ops->skip_visual_uploads)
             continue;
         uint32_t visual_index = 0;
         if (!_figure_visual_index(figure, visual, &visual_index))

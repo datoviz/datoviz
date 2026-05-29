@@ -58,7 +58,8 @@ void _scene_emit_visual_uploads(
             DvzVisual* visual = panel->visuals[vi].visual;
             if (visual == NULL || !visual->visible)
                 continue;
-            if (visual->type == DVZ_VISUAL_TYPE_TEXT)
+            const DvzVisualFamilyOps* ops = visual->ops;
+            if (ops != NULL && ops->skip_visual_uploads)
                 continue;
             uint32_t vidx = 0;
             if (!_figure_visual_index(figure, visual, &vidx))
@@ -73,7 +74,6 @@ void _scene_emit_visual_uploads(
             if (finished_visual)
                 continue;
 
-            const DvzVisualFamilyOps* ops = _scene_visual_family_ops(visual->type);
             bool upload_position_topology = ops != NULL && ops->upload_position_topology;
             bool upload_material_params = ops != NULL && ops->upload_material_params;
 

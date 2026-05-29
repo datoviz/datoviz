@@ -32,6 +32,7 @@
 #include "bindings_internal.h"
 #include "datoviz/scene.h"
 #include "domain/field_internal.h"
+#include "registry/registry.h"
 #include "sample_profile.h"
 
 
@@ -297,8 +298,7 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
         log_error("cannot bind a scale from a different scene");
         return -1;
     }
-    if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_VOLUME &&
-        visual->type != DVZ_VISUAL_TYPE_LABELS)
+    if (visual->ops == NULL || !visual->ops->supports_scale)
     {
         log_error("dvz_visual_set_scale is only supported for image, volume, and labels visuals");
         return -1;
@@ -310,9 +310,8 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
             _visual_family_state(visual)->field->desc.format, _visual_family_state(visual)->field->desc.semantic, _visual_family_state(visual)->field->desc.dim,
             &bound_profile);
     const bool labels =
-        visual->type == DVZ_VISUAL_TYPE_LABELS ||
-        (visual->type == DVZ_VISUAL_TYPE_VOLUME && has_bound_profile &&
-         _scene_sample_profile_is_integer_label(&bound_profile));
+        visual->ops->categorical_scale ||
+        (has_bound_profile && _scene_sample_profile_is_integer_label(&bound_profile));
     const char* expected_slot = labels ? "labels" : "colormap";
     if (strcmp(slot_name, expected_slot) != 0)
     {
