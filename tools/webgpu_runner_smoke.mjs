@@ -317,8 +317,21 @@ function assertResourceStatsStable(actual, expected, label) {
   }
 }
 
+const RUNTIME_STRESS_STREAMS = [
+  'examples/webgpu/streams/scene_point_wgsl.json',
+  'examples/webgpu/streams/scene_primitive_wgsl.json',
+  'examples/webgpu/streams/texture_sampling_wgsl.json',
+  'examples/webgpu/streams/attachment_depth_wgsl.json',
+];
+
 async function smokeRepeatedRuntimeFrames(Drp2WebGpuRuntime) {
-  const stream = await loadJson('examples/webgpu/streams/scene_point_wgsl.json');
+  for (const path of RUNTIME_STRESS_STREAMS) {
+    await smokeRepeatedRuntimeStream(Drp2WebGpuRuntime, path);
+  }
+}
+
+async function smokeRepeatedRuntimeStream(Drp2WebGpuRuntime, path) {
+  const stream = await loadJson(path);
   const runtime = new Drp2WebGpuRuntime(device, context, 'rgba8unorm', {
     requireExplicitBindGroupLayouts: true,
     requireExplicitPipelineMetadata: true,
@@ -332,11 +345,11 @@ async function smokeRepeatedRuntimeFrames(Drp2WebGpuRuntime) {
     assertResourceStatsStable(
       comparableResourceStats(stats),
       stableStats,
-      `resource stats changed after repeated frame ${i + 1}`,
+      `${path}: resource stats changed after repeated frame ${i + 1}`,
     );
     if (stats.refs.open !== 0 || stats.refs.recorded !== 0) {
       throw new Error(
-        `resource refs leaked after repeated frame ${i + 1}: ` +
+        `${path}: resource refs leaked after repeated frame ${i + 1}: ` +
           `open=${stats.refs.open} recorded=${stats.refs.recorded}`,
       );
     }

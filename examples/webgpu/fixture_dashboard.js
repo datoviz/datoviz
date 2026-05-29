@@ -1,12 +1,27 @@
-import { executeDrp2StreamChecked, initWebGPU } from "./drp2_webgpu.js";
+import {
+  Drp2WebGpuRuntime,
+  executeDrp2StreamChecked,
+  initWebGPU,
+} from "./drp2_webgpu.js";
 
 const rowsEl = document.querySelector("#fixture-rows");
+const stressRowsEl = document.querySelector("#stress-rows");
 const runAllEl = document.querySelector("#run-all");
 const summaryEl = document.querySelector("#summary");
+const stressSummaryEl = document.querySelector("#stress-summary");
 
 let runtime = null;
 let fixtures = [];
+let stressRows = [];
 let running = false;
+
+const STRESS_FRAME_COUNT = 10;
+const STRESS_STREAMS = [
+  { name: "runtime repeat: scene_point_wgsl", path: "./streams/scene_point_wgsl.json" },
+  { name: "runtime repeat: scene_primitive_wgsl", path: "./streams/scene_primitive_wgsl.json" },
+  { name: "runtime repeat: texture_sampling_wgsl", path: "./streams/texture_sampling_wgsl.json" },
+  { name: "runtime repeat: attachment_depth_wgsl", path: "./streams/attachment_depth_wgsl.json" },
+];
 
 
 
@@ -29,12 +44,35 @@ function setSummary() {
 
 
 
+function setStressSummary() {
+  const counts = { pass: 0, fail: 0, pending: 0, running: 0 };
+  for (const row of stressRows) {
+    counts[row.status] = (counts[row.status] ?? 0) + 1;
+  }
+  stressSummaryEl.textContent =
+    `${stressRows.length} runtime stress checks: ` +
+    `${counts.pass} pass, ${counts.fail} fail, ` +
+    `${counts.running} running, ${counts.pending} pending`;
+}
+
+
+
 function setFixtureStatus(fixture, status, detail = "") {
   fixture.status = status;
   fixture.statusEl.textContent = status;
   fixture.statusEl.className = `status-${status}`;
   fixture.detailEl.textContent = detail;
   setSummary();
+}
+
+
+
+function setStressStatus(row, status, detail = "") {
+  row.status = status;
+  row.statusEl.textContent = status;
+  row.statusEl.className = `status-${status}`;
+  row.detailEl.textContent = detail;
+  setStressSummary();
 }
 
 
@@ -100,12 +138,80 @@ function expectedDetail(expected) {
 
 
 
+function comparableResourceStats(stats) {
+  const { refs: _refs, ...stable } = stats;
+  return stable;
+}
+
+
+
+function assertResourceStatsStable(actual, expected, label) {
+  const actualText = JSON.stringify(actual);
+  const expectedText = JSON.stringify(expected);
+  if (actualText !== expectedText) {
+    throw new Error(`${label}: expected ${expectedText}, got ${actualText}`);
+  }
+}
+
+
+
+function assertNoOpenRecordedRefs(stats, label) {
+  if (stats.refs.open !== 0 || stats.refs.recorded !== 0) {
+    throw new Error(
+      `${label}: resource refs leaked open=${stats.refs.open} recorded=${stats.refs.recorded}`,
+    );
+  }
+}
+
+
+
 async function fetchStream(path) {
   const response = await fetch(path, { cache: "no-cache" });
   if (!response.ok) {
     throw new Error(`${response.status} ${response.statusText}`);
   }
   return await response.json();
+}
+
+
+
+async function runStressRow(row) {
+  setStressStatus(row, "running");
+  try {
+    const stream = await fetchStream(row.path);
+    const retainedRuntime = new Drp2WebGpuRuntime(
+      runtime.device,
+      runtime.context,
+      runtime.format,
+      {
+        capabilities: runtime.capabilities,
+        requireExplicitBindGroupLayouts: true,
+        requireExplicitPipelineMetadata: true,
+      },
+    );
+    await retainedRuntime.load(stream);
+
+    const stableStats = comparableResourceStats(retainedRuntime.resourceStats());
+    for (let i = 0; i < STRESS_FRAME_COUNT; i++) {
+      await retainedRuntime.render();
+      const stats = retainedRuntime.resourceStats();
+      assertResourceStatsStable(
+        comparableResourceStats(stats),
+        stableStats,
+        `${row.name} frame ${i + 1}`,
+      );
+      assertNoOpenRecordedRefs(stats, `${row.name} frame ${i + 1}`);
+    }
+
+    const stats = retainedRuntime.resourceStats();
+    setStressStatus(
+      row,
+      "pass",
+      `frames=${STRESS_FRAME_COUNT}, objects=${stats.objects}, submitted_refs=${stats.refs.submitted}`,
+    );
+  } catch (error) {
+    setStressStatus(row, "fail", errorDetail(error));
+  }
 }
 
 
@@ -181,6 +287,9 @@ async function runAll() {
     for (const fixture of fixtures) {
       await runFixture(fixture);
     }
+    for (const row of stressRows) {
+      await runStressRow(row);
+    }
   } finally {
     running = false;
     runAllEl.disabled = false;
@@ -189,7 +298,7 @@ async function runAll() {
 
 
 
-function addFixture(path, kind = "fixture") {
+function addRow(container, name, kind = "") {
   const tr = document.createElement("tr");
   const nameTd = document.createElement("td");
   const statusTd = document.createElement("td");
@@ -197,8 +306,8 @@ function addFixture(path, kind = "fixture") {
   const kindEl = document.createElement("span");
   const code = document.createElement("code");
 
-  kindEl.textContent = `${kind} `;
-  code.textContent = basename(path);
+  kindEl.textContent = kind;
+  code.textContent = name;
   nameTd.appendChild(kindEl);
   nameTd.appendChild(code);
   statusTd.textContent = "pending";
@@ -208,14 +317,30 @@ function addFixture(path, kind = "fixture") {
   tr.appendChild(nameTd);
   tr.appendChild(statusTd);
   tr.appendChild(detailTd);
-  rowsEl.appendChild(tr);
+  container.appendChild(tr);
+
+  return { status: "pending", statusEl: statusTd, detailEl: detailTd };
+}
+
+
+
+function addFixture(path, kind = "fixture") {
+  const row = addRow(rowsEl, basename(path), `${kind} `);
 
   fixtures.push({
     path,
     kind,
-    status: "pending",
-    statusEl: statusTd,
-    detailEl: detailTd,
+    ...row,
+  });
+}
+
+
+
+function addStressRow(config) {
+  const row = addRow(stressRowsEl, config.name);
+  stressRows.push({
+    ...config,
+    ...row,
   });
 }
 
@@ -239,6 +364,9 @@ async function main() {
     for (const path of manifest.negative_parity ?? []) {
       addFixture(path, "negative");
     }
+    for (const config of STRESS_STREAMS) {
+      addStressRow(config);
+    }
     runAllEl.disabled = false;
     runAllEl.addEventListener("click", () => {
       runAll().catch((error) => {
@@ -246,8 +374,10 @@ async function main() {
       });
     });
     setSummary();
+    setStressSummary();
   } catch (error) {
     summaryEl.textContent = error?.message ?? String(error);
+    stressSummaryEl.textContent = "Runtime stress unavailable";
   }
 }
 

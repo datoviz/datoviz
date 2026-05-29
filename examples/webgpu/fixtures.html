@@ -63,6 +63,23 @@
       font-size: 13px;
     }
 
+    section + section {
+      margin-top: 28px;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      color: #e3e8f2;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .section-summary {
+      margin: 0 0 10px;
+      color: #cbd1dc;
+      font-size: 13px;
+    }
+
     th,
     td {
       padding: 8px 10px;
@@ -119,16 +136,33 @@
     </div>
   </header>
   <main>
-    <table>
-      <thead>
-        <tr>
-          <th>Fixture</th>
-          <th>Status</th>
-          <th>Details</th>
-        </tr>
-      </thead>
-      <tbody id="fixture-rows"></tbody>
-    </table>
+    <section>
+      <h2>Fixture Compatibility</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Fixture</th>
+            <th>Status</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody id="fixture-rows"></tbody>
+      </table>
+    </section>
+    <section>
+      <h2>Retained Runtime Stress</h2>
+      <p id="stress-summary" class="section-summary">Loading runtime stress rows</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Check</th>
+            <th>Status</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody id="stress-rows"></tbody>
+      </table>
+    </section>
   </main>
   <canvas id="viewport" width="64" height="64" aria-hidden="true"></canvas>
   <script type="module" src="./fixture_dashboard.js"></script>
