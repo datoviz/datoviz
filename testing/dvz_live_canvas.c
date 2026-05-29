@@ -25,6 +25,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
+#include "_scene.h"
 #include "canvas_internal.h"
 #include "frame_plan/frame_plan.h"
 #include "datoviz/canvas.h"
@@ -844,7 +845,16 @@ static void _dvz_canvas_draw_scene_drp2(
                    live_point_size);
     ok = ok && dvz_frame_plan_render(plan, "panel.0", "target.canvas.color", false);
     ok = ok && dvz_frame_plan_render_visual(plan, "visual.point.0");
-    ok = ok && dvz_frame_plan_render_allow_untyped_visuals(plan);
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.visual_type = DVZ_VISUAL_TYPE_POINT;
+    metadata.renderable_kind = DVZ_RENDERABLE_POINT_LIKE;
+    metadata.vertex_count = 1;
+    metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
+    metadata.depth_test_enabled = true;
+    dvz_strlcpy(metadata.position_id, "visual.point.0_position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.color_id, "visual.point.0_color", sizeof(metadata.color_id));
+    dvz_strlcpy(metadata.size_id, "visual.point.0_size", sizeof(metadata.size_id));
+    ok = ok && dvz_frame_plan_render_visual_metadata(plan, &metadata);
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
