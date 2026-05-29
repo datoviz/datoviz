@@ -207,6 +207,19 @@ bool _dvz_scene_query_item_target_eligible(
 
 
 /**
+ * Return whether a target must be handled by a native family query operation.
+ *
+ * @param target the requested scene target
+ * @return true when generic fallback must not synthesize a runtime failure
+ */
+bool _dvz_scene_query_target_requires_native_family(DvzSceneTargetKind target)
+{
+    return target == DVZ_SCENE_TARGET_PIXEL || target == DVZ_SCENE_TARGET_SEGMENT;
+}
+
+
+
+/**
  * Resolve one panel-local query coordinate to a figure framebuffer coordinate.
  *
  * @param figure the figure

@@ -213,6 +213,8 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_family_ops_for_visual(
 bool _dvz_scene_query_item_target_eligible(
     const DvzVisual* visual, const DvzQueryRequest* request, DvzVisualType type);
 
+bool _dvz_scene_query_target_requires_native_family(DvzSceneTargetKind target);
+
 bool _dvz_scene_query_execute_family(
     DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
     const DvzCapabilitySnapshot* caps, const DvzPendingQueryRequest* pending,

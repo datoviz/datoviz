@@ -279,12 +279,7 @@ static bool _image_query_eligible(
                                   : DVZ_QUERY_CAPABILITY_PIXEL;
         return (visual->query_capabilities & capability) != 0;
     }
-    if (request->target != DVZ_SCENE_TARGET_NONE && request->target != DVZ_SCENE_TARGET_ITEM &&
-        request->target != DVZ_SCENE_TARGET_OBJECT)
-    {
-        return false;
-    }
-    return (visual->query_capabilities & DVZ_QUERY_CAPABILITY_ITEM) != 0;
+    return _dvz_scene_query_item_target_eligible(visual, request, DVZ_VISUAL_TYPE_IMAGE);
 }
 
 

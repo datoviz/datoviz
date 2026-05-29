@@ -196,9 +196,7 @@ bool _dvz_scene_query_process_pending(
         return true;
     }
 
-    if (
-        pending->request.target == DVZ_SCENE_TARGET_PIXEL ||
-        pending->request.target == DVZ_SCENE_TARGET_SEGMENT)
+    if (_dvz_scene_query_target_requires_native_family(pending->request.target))
     {
         out_result->visual_id = _scene_visual_public_id(figure->scene, visual);
         out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
