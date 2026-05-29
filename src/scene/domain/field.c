@@ -30,6 +30,7 @@
 #include "_scene.h"
 #include "field_internal.h"
 #include "sample_profile.h"
+#include "visuals/bindings_internal.h"
 
 
 

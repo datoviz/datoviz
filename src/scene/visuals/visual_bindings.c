@@ -28,6 +28,7 @@
 #include "_scene_resource_key.h"
 #include "_visual_family.h"
 #include "_visual_internal.h"
+#include "bindings_internal.h"
 #include "datoviz/scene.h"
 #include "sample_profile.h"
 
@@ -160,6 +161,5 @@ void _visual_binding_clear(DvzVisual* visual, DvzVisualBindingKind kind)
 {
     _visual_binding_assign(visual, kind, NULL, NULL, false);
 }
-
 
 

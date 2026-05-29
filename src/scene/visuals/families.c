@@ -29,6 +29,7 @@
 #include "_scene.h"
 #include "_scene_resource_key.h"
 #include "_visual_internal.h"
+#include "bindings_internal.h"
 #include "datoviz/scene.h"
 #include "domain/buffer_internal.h"
 #include "domain/field_internal.h"

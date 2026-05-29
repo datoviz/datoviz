@@ -26,6 +26,7 @@
 #include "_overflow.h"
 #include "_scene.h"
 #include "buffer_internal.h"
+#include "visuals/bindings_internal.h"
 
 
 

@@ -1772,14 +1772,6 @@ bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action);
 
 void _scene_format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* src);
 
-const DvzVisualBinding* _visual_binding_const(
-    const DvzVisual* visual, DvzVisualBindingKind kind);
-
-void _visual_binding_assign(
-    DvzVisual* visual, DvzVisualBindingKind kind, const char* slot_name, void* resource, bool owned);
-
-void _visual_binding_clear(DvzVisual* visual, DvzVisualBindingKind kind);
-
 void _scene_text_block_init(DvzTextBlock* block, const char* source);
 
 void _scene_text_block_set_source(DvzTextBlock* block, const char* source);
