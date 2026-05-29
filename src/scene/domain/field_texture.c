@@ -385,44 +385,6 @@ void _scene_release_visual_field(DvzVisual* visual)
 }
 
 
-void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field)
-{
-    if (scene == NULL || field == NULL || field->scene != scene)
-        return;
-    bool any_pending = false;
-    bool any_full = false;
-    DvzFieldRegion merged = {0};
-    for (uint32_t i = 0; i < scene->visual_count; i++)
-    {
-        const DvzVisual* visual = &scene->visuals[i];
-        if (visual->scene != scene || visual->field != field || !visual->texture.field_dirty)
-            continue;
-        any_pending = true;
-        if (visual->texture.field_dirty_full)
-        {
-            any_full = true;
-            merged = _field_full_region(&field->desc);
-            break;
-        }
-        if (merged.width == 0 && merged.height == 0 && merged.depth == 0)
-            merged = visual->texture.field_dirty_region;
-        else if (!_field_regions_union(&merged, &visual->texture.field_dirty_region, &merged))
-        {
-            any_full = true;
-            merged = _field_full_region(&field->desc);
-            break;
-        }
-    }
-    field->dirty = any_pending;
-    field->dirty_full = any_full;
-    if (any_pending)
-        field->dirty_region = merged;
-    else
-        dvz_memset(&field->dirty_region, sizeof(DvzFieldRegion), 0, sizeof(DvzFieldRegion));
-}
-
-
-
 bool _scene_prepare_volume_texture(
     DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data,
     uint32_t* out_format, uint32_t* out_bytes_per_texel)
