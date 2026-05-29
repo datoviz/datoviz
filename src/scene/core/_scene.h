@@ -861,7 +861,7 @@ struct DvzInteractionPolicy
     DvzPanel* panel;
     DvzSelection* selection;
     DvzLinkChannel* link_channel;
-    DvzPickHitPolicy pick_hit_policy;
+    DvzQueryHitPolicy query_hit_policy;
     bool auto_pin_readout;
 };
 

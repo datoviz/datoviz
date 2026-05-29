@@ -141,14 +141,14 @@ int test_scene_interaction_core(TstContext* suite, const TstCase* item)
     dvz_interaction_bind_panel(interaction, panel);
     dvz_interaction_set_selection(interaction, selection);
     dvz_interaction_set_link_channel(interaction, channel);
-    dvz_interaction_set_pick_hit_policy(interaction, DVZ_PICK_HIT_OPAQUE_PREFERRED);
+    dvz_interaction_set_query_hit_policy(interaction, DVZ_QUERY_HIT_OPAQUE_PREFERRED);
     dvz_interaction_set_auto_pin_readout(interaction, true);
 
     AT(panel->interaction == interaction);
     AT(interaction->panel == panel);
     AT(interaction->selection == selection);
     AT(interaction->link_channel == channel);
-    AT(interaction->pick_hit_policy == DVZ_PICK_HIT_OPAQUE_PREFERRED);
+    AT(interaction->query_hit_policy == DVZ_QUERY_HIT_OPAQUE_PREFERRED);
     AT(interaction->auto_pin_readout);
 
     dvz_scene_destroy(scene);

@@ -306,10 +306,10 @@ typedef enum
 
 typedef enum
 {
-    DVZ_PICK_HIT_FRONTMOST = 0,
-    DVZ_PICK_HIT_OPAQUE_PREFERRED,
-    DVZ_PICK_HIT_ALL,
-} DvzPickHitPolicy;
+    DVZ_QUERY_HIT_FRONTMOST = 0,
+    DVZ_QUERY_HIT_OPAQUE_PREFERRED,
+    DVZ_QUERY_HIT_ALL,
+} DvzQueryHitPolicy;
 
 
 typedef enum

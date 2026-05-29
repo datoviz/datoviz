@@ -1112,7 +1112,7 @@ DvzInteractionPolicy* dvz_interaction(DvzScene* scene)
     DvzInteractionPolicy* interaction = &scene->interactions[scene->interaction_count++];
     dvz_memset(interaction, sizeof(DvzInteractionPolicy), 0, sizeof(DvzInteractionPolicy));
     interaction->scene = scene;
-    interaction->pick_hit_policy = DVZ_PICK_HIT_FRONTMOST;
+    interaction->query_hit_policy = DVZ_QUERY_HIT_FRONTMOST;
     return interaction;
 }
 
@@ -1202,16 +1202,16 @@ void dvz_interaction_set_link_channel(
 
 
 /**
- * Set the hit-selection policy used for picking.
+ * Set the hit-selection policy used for panel queries.
  *
  * @param interaction the interaction policy
  * @param policy the hit-selection policy
  */
-void dvz_interaction_set_pick_hit_policy(
-    DvzInteractionPolicy* interaction, DvzPickHitPolicy policy)
+void dvz_interaction_set_query_hit_policy(
+    DvzInteractionPolicy* interaction, DvzQueryHitPolicy policy)
 {
     ANN(interaction);
-    interaction->pick_hit_policy = policy;
+    interaction->query_hit_policy = policy;
 }
 
 

@@ -75,13 +75,13 @@ DVZ_EXPORT void dvz_interaction_set_link_channel(
 
 
 /**
- * Set the hit-selection policy used for picking.
+ * Set the hit-selection policy used for panel queries.
  *
  * @param interaction the interaction policy
  * @param policy the hit-selection policy
  */
-DVZ_EXPORT void dvz_interaction_set_pick_hit_policy(
-    DvzInteractionPolicy* interaction, DvzPickHitPolicy policy);
+DVZ_EXPORT void dvz_interaction_set_query_hit_policy(
+    DvzInteractionPolicy* interaction, DvzQueryHitPolicy policy);
 
 
 /**

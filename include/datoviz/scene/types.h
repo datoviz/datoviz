@@ -609,7 +609,7 @@ struct DvzQueryRequest
 {
     uint64_t request_id;
     DvzSceneTargetKind target;
-    DvzPickHitPolicy hit_policy;
+    DvzQueryHitPolicy hit_policy;
     DvzQueryProfile profile;
     uint32_t flags;
 };
