@@ -214,7 +214,8 @@ bool _dvz_scene_query_item_target_eligible(
  */
 bool _dvz_scene_query_target_requires_native_family(DvzSceneTargetKind target)
 {
-    return target == DVZ_SCENE_TARGET_PIXEL || target == DVZ_SCENE_TARGET_SEGMENT;
+    return target == DVZ_SCENE_TARGET_PIXEL || target == DVZ_SCENE_TARGET_SAMPLE ||
+           target == DVZ_SCENE_TARGET_SEGMENT;
 }
 
 

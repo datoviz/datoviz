@@ -214,7 +214,7 @@ int test_scene_query_volume_sample_is_explicitly_unsupported(TstContext* suite, 
            &(DvzQueryRequest){.request_id = 33, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
     DvzCapabilitySnapshot caps = {0};
     dvz_capability_snapshot_default(&caps);
-    AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
+    AT(dvz_figure_process_queries(figure, NULL, &caps) == 1);
 
     DvzQueryResult query = {0};
     AT(dvz_scene_poll_query(scene, &query));
