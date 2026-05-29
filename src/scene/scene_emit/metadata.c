@@ -34,6 +34,7 @@
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
 #include "annotation/scale_internal.h"
+#include "domain/buffer_internal.h"
 #include "scene_emit/visual_lowering.h"
 #include "datoviz/drp2/runtime.h"
 #include "render_contract/render_contract.h"

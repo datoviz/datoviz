@@ -32,6 +32,7 @@
 #include "_scene_shader_abi.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
+#include "domain/buffer_internal.h"
 #include "scene_emit/visual_lowering.h"
 #include "datoviz/drp2/runtime.h"
 #include "render_contract/render_contract.h"

@@ -22,6 +22,7 @@
 #include "_assertions.h"
 #include "_json.h"
 #include "_scene.h"
+#include "domain/buffer_internal.h"
 #include "domain/field_internal.h"
 
 

@@ -25,6 +25,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "buffer_internal.h"
 
 
 
