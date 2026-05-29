@@ -113,11 +113,14 @@ void _scene_canvas_drp2_draw(
         return;
 
     state->attach_ok = dvz_drp2_runtime_attach_frame_target(state->runtime, 1, frame);
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.buffer_index = UINT32_MAX;
+    dvz_strlcpy(metadata.position_id, "buf.point.position", sizeof(metadata.position_id));
     state->emit_ok = dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position") &&
                      dvz_frame_plan_render(
                          plan, "panel.0", "target.panel.0.color", false) &&
                      dvz_frame_plan_render_visual(plan, "visual.point.0") &&
-                     dvz_frame_plan_render_allow_untyped_visual_compat(plan);
+                     dvz_frame_plan_render_visual_metadata(plan, &metadata);
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
