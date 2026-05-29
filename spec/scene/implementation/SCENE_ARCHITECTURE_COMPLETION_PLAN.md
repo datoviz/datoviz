@@ -25,15 +25,13 @@ Important current state:
 3. `render_contract/` checks planned visual/resource/draw state against runtime requirements.
 4. `runtime/` emits DRP2 from resolved FramePlan state. The normal render preparation path now
    consumes visual descriptors and capability flags without branching on concrete visual families;
-   remaining runtime visual-family assumptions are concentrated in the explicit compatibility and
-   pass-emission fallback paths. The WGSL typed fallback path now resolves point, pixel, marker,
+   remaining runtime visual-family assumptions are concentrated in pass-emission fallback paths.
+   The WGSL typed fallback path now resolves point, pixel, marker,
    splat, primitive, image/labels, and textured-mesh resources from `DvzFramePlanVisualMeta` labels
    instead of upload order or untyped tags.
-5. `visuals/desc.c` lowers typed visual metadata into runtime descriptors. Its untyped descriptor
-   fallback is now guarded by an explicit FramePlan compatibility flag.
-6. `visuals/desc_untyped_compat.c` quarantines the current untyped fallback classifiers. These
-   classifiers infer point, splat, primitive, image, and textured-mesh descriptors from resource
-   roles/tags only for explicit compatibility fixtures.
+5. `visuals/desc.c` lowers typed visual metadata into runtime descriptors and rejects render
+   visuals without metadata.
+6. `visuals/desc_untyped_compat.c` and the FramePlan untyped-compatibility switch are deleted.
 7. `visuals/registry/` owns the first private `DvzVisualFamilyOps` table. It currently covers
    family identity, retained visual lowering, retained visual bounds, retained visual metadata fill,
    pass-capability resolution, bind descriptors, pipeline descriptors, shader descriptors, and draw
@@ -80,10 +78,9 @@ Latest pickup snapshot:
    already moved into owner-private headers, or the generic query helpers now centralized in
    `query/`.
 3. The best next implementation slices are now remaining annotation/domain ownership, residual
-   query-family scratch/unsupported-policy ownership, and explicit compatibility-path quarantine
-   after auditing any fixture/import callers of untyped descriptor inference. Remaining upload work
-   should be limited to pure family payload builders when a concrete builder is still mixed into
-   scene emission.
+   query-family scratch/unsupported-policy ownership, and standalone layer feasibility. Remaining
+   upload work should be limited to pure family payload builders when a concrete builder is still
+   mixed into scene emission.
 4. Last focused validation recorded for this split was `git diff --check`, `just build`,
    `direnv exec . just test scene/query` (`40/40`), `direnv exec . just test fields` (`47/47`),
    `direnv exec . just test scene/frame-plan` (`60/60`), focused WGSL typed-fallback and
@@ -92,9 +89,8 @@ Latest pickup snapshot:
    `direnv exec . just test app-offscreen` (`76/76`). The earlier broad query GPU readback failures
    are no longer current blockers.
 
-The current `desc_untyped_compat.c` path is an intermediate compatibility step, not the desired
-final architecture. Normal v0.4 scene output emits explicit typed metadata and should not require
-runtime code to infer a visual family from a list of resource ids.
+The old `desc_untyped_compat.c` path is gone as of `4a4620013`. Normal v0.4 scene output emits
+explicit typed metadata; runtime code no longer infers a visual family from a list of resource ids.
 
 
 ## Immediate Next Execution Queue
@@ -178,21 +174,10 @@ this section when a slice is completed.
      generic.
 
 5. Kill normal-path untyped descriptor compatibility.
-   - Ensure query-generated render nodes and every normal retained visual render node emit typed
-     metadata.
-   - Status on 2026-05-29: FramePlan has a render-metadata completeness helper, query execution
-     consumes it, the runtime emitter rejects untyped visuals unless the explicit compatibility
-     compatibility flag is set, render-contract resolution now rejects missing typed metadata unless the
-     compatibility flag is set, and WGSL fallback resolves typed metadata labels explicitly for
-     point, pixel, marker, splat, primitive, image/labels, and textured mesh.
-   - Status on 2026-05-29: the FramePlan render flag and helper are now named
-     `allow_untyped_visual_compat` / `dvz_frame_plan_render_allow_untyped_visual_compat()` so new
-     callers must opt into the explicit compatibility path.
-   - Next slice: audit the remaining callers of untyped descriptor compatibility and either delete
-     `visuals/desc_untyped_compat.c` or keep it behind an explicit fixture/import compatibility
-     path with tests proving normal retained rendering no longer depends on it.
-   - Delete `visuals/desc_untyped_compat.c` if no explicit fixture/import path still needs it; if
-     it remains, keep it behind an explicit compatibility flag and document its callers.
+   - Status on 2026-05-29: complete through `4a4620013`. FramePlan render metadata is mandatory,
+     render-contract resolution and runtime render emission reject missing typed metadata, typed
+     fixture render tests no longer use the old escape hatch, and `visuals/desc_untyped_compat.c`
+     plus the `dvz_frame_plan_render_allow_untyped_visual_compat()` API were removed.
 
 6. Finish domain and annotation ownership.
    - Split `domain/field.c` into lifecycle/public setters, sampled interpretation, scale binding,
@@ -226,8 +211,8 @@ this section when a slice is completed.
      layout, visual lifecycle/bindings, and scene notifications.
    - Continue by moving type ownership and stable cross-subsystem contracts out of broad headers
      only when the dependency direction is clear.
-   - Add tests/checks for typed metadata completeness, explicit compatibility use, registry
-     coverage, absence of normal runtime visual switches, and CMake layer dependency boundaries.
+   - Add tests/checks for typed metadata completeness, registry coverage, absence of normal runtime
+     visual switches, and CMake layer dependency boundaries.
 
 9. Final cleanup and confidence pass.
    - Remove transitional v0.4-dev names such as remaining `legacy` terminology where it is only a
@@ -335,17 +320,15 @@ Steps:
 3. Add a test/debug mode that fails when a normal scene render visual reaches runtime without typed
    metadata. Query-generated render plans now have a focused completeness guard and CPU test;
    continue by enforcing any remaining non-query normal paths.
-4. Keep untyped descriptor inference only for explicit fixture/import compatibility if such a path
-   is still needed.
-5. Delete `visuals/desc_untyped_compat.c` if no compatibility path remains; otherwise keep it
-   reachable only through an explicit compatibility switch.
+4. Untyped descriptor inference is removed; do not reintroduce it without a new, explicit import
+   compatibility design.
+5. `visuals/desc_untyped_compat.c` is deleted.
 
 Done criteria:
 
 1. `_scene_visual_desc_from_render()` does not infer normal scene visual families from resource-list
    shape.
-2. `desc_untyped_compat.c` is either gone or only reachable through an explicit compatibility
-   switch.
+2. `desc_untyped_compat.c` is gone.
 3. Tests fail if scene emission omits typed metadata for an active visual.
 
 
@@ -589,7 +572,7 @@ Goal: architecture regressions fail automatically.
 Add tests or checks for:
 
 1. every emitted normal render visual has typed metadata;
-2. untyped descriptor compatibility is explicitly enabled when used;
+2. untyped descriptor inference stays deleted;
 3. every active visual type has registry operations;
 4. generic runtime files do not reference concrete visual-family symbols or names;
 5. generic scene-emission files call family operations instead of family-specific branches;
@@ -651,7 +634,7 @@ The scene refactor can be considered architecturally complete when all of these 
    subsystems such as `visuals/stroke/`;
 3. normal scene output always carries typed visual metadata;
 4. runtime render emission consumes explicit descriptors and contracts only;
-5. untyped descriptor inference is deleted or isolated behind explicit compatibility;
+5. untyped descriptor inference is deleted;
 6. domain, annotation, visual, scene-emission, frame-plan, render-contract, runtime, technique, and
    app responsibilities are separate and acyclic;
 7. coarse scene CMake targets can be reused by external consumers such as VisPy2 without pulling in
