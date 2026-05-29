@@ -34,6 +34,9 @@ Current automated evidence:
    repeated-runtime-frame smoke slice (`183812f27`).
 5. The browser fixture dashboard passed fixture compatibility `120/120` and retained runtime
    stress `4/4` on `2026-05-29` after `292e82899`.
+6. The browser fixture dashboard passed fixture compatibility `120/120` and retained runtime
+   stress `7/7`, including demo-session pan/zoom, resize, and stream-reload paths, on
+   `2026-05-29` after `a1c0d7306`.
 
 
 ## Remaining WebGPU Runtime Work
@@ -55,28 +58,26 @@ Completed since the initial follow-up note:
    subset.
 7. Real-browser retained-runtime stress rows now cover repeated frames for point, primitive,
    texture-sampling, and depth-attachment streams.
+8. Main-demo session stress rows now cover pan/zoom uniform updates, resize-triggered reload, and
+   stream reload on the same helper used by the demo page.
 
 Remaining follow-up commits:
 
-1. Add repeated-frame resource preservation checks for the main demo page path, especially resource
-   counts across pan/zoom, resize, and stream reload.
-2. Replace remaining standalone-demo compatibility shortcuts where practical: implicit canvas
+1. Replace remaining standalone-demo compatibility shortcuts where practical: implicit canvas
    aliases, unaligned-offset fallback, and demo-local scene uniform id assumptions.
-3. Add a DRP2-aligned capability snapshot for the browser runtime and use it to produce explicit
+2. Add a DRP2-aligned capability snapshot for the browser runtime and use it to produce explicit
    unsupported-feature diagnostics before execution.
-4. Keep `CreatePipelineLayout`, `DestroyPipelineLayout`, `ResourceBarrier`, and indirect commands
+3. Keep `CreatePipelineLayout`, `DestroyPipelineLayout`, `ResourceBarrier`, and indirect commands
    deferred until a concrete use case promotes them across DRP2 specs, schemas, native validation,
    WebGPU execution, fixtures, and lifecycle rules together.
 
 
 ## Immediate Order
 
-1. Add repeated-frame/resource-count checks for the browser demo path beyond the fixture dashboard,
-   including interactive update, resize, and stream reload.
-2. Add browser capability reporting and unsupported-feature diagnostics.
-3. Start the portable scene/WASM emission milestone from
+1. Add browser capability reporting and unsupported-feature diagnostics.
+2. Start the portable scene/WASM emission milestone from
    [`SCENE_WASM_WEBGPU_PORT_PLAN.md`](SCENE_WASM_WEBGPU_PORT_PLAN.md).
-4. Keep `CreatePipelineLayout` deferred during this work.
+3. Keep `CreatePipelineLayout` deferred during this work.
 
 
 ## Validation

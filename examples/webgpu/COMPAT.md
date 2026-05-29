@@ -39,6 +39,9 @@ Current status as of this note:
 - recorded browser dashboard result on 2026-05-29 after the retained browser-runtime stress slice
   (`292e82899`): fixture compatibility `120 pass, 0 unsupported, 0 fail`; retained runtime stress
   `4 pass, 0 fail`
+- recorded browser dashboard result on 2026-05-29 after the demo-runtime reload stress slice
+  (`a1c0d7306`): fixture compatibility `120 pass, 0 unsupported, 0 fail`; retained runtime stress
+  `7 pass, 0 fail`
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
@@ -179,6 +182,9 @@ forms. The fixture dashboard requires explicit bind-group layout and render-pipe
   `scene_primitive_wgsl`, `texture_sampling_wgsl`, and `attachment_depth_wgsl` once each, renders
   `10` repeated frames through `Drp2WebGpuRuntime`, and checks stable resource counts with no open
   or recorded references after every frame.
+- The fixture dashboard demo-path stress rows drive the same `WebGpuDemoSession` used by the main
+  demo page through pan/zoom uniform updates, resize-triggered reload, and stream reload while
+  checking stable persistent resource counts and no open or recorded references.
 - Destroy commands validate live-object dependencies, use-after-destroy, recorded-work references,
   and submitted-work references. The runner calls native WebGPU `destroy()` only for object types
   that expose it and otherwise tombstones the DRP2 object id.

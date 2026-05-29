@@ -1,16 +1,17 @@
 # WebGPU Browser Runtime Stress Plan
 
 > **Execution Status**
-> - **Status:** `DONE / FIRST STRESS SLICE LANDED`
+> - **Status:** `DONE / BROWSER AND DEMO STRESS SLICES LANDED`
 > - **Updated on:** `2026-05-29`
-> - **Purpose:** record the first real-browser retained-runtime stress proof after the `120/120`
->   dashboard proof.
+> - **Purpose:** record the real-browser retained-runtime and demo-session stress proofs after the
+>   `120/120` dashboard proof.
 
 
 ## Current Proof
 
 The browser WebGPU fixture dashboard has passed the committed subset after the retained-runtime
-Node smoke landed and after the first real-browser retained-runtime stress slice:
+Node smoke landed, after the first real-browser retained-runtime stress slice, and after the
+main-demo session stress slice:
 
 1. Browser dashboard: `120/120` rows passed on `2026-05-28` after `183812f27`.
 2. Browserless runner smoke: `37` positive DRP2 fixtures, `2` WebGPU attachment streams, and `81`
@@ -20,6 +21,8 @@ Node smoke landed and after the first real-browser retained-runtime stress slice
    resource counts and zero open/recorded refs.
 4. Browser dashboard: fixture compatibility `120 pass, 0 unsupported, 0 fail` and retained runtime
    stress `4 pass, 0 fail` passed on `2026-05-29` after `292e82899`.
+5. Browser dashboard: fixture compatibility `120 pass, 0 unsupported, 0 fail` and retained runtime
+   stress `7 pass, 0 fail` passed on `2026-05-29` after `a1c0d7306`.
 
 
 ## Goal
@@ -32,7 +35,7 @@ future result can say, for example:
 
 ```text
 fixtures: 120 pass, 0 unsupported, 0 fail
-runtime stress: 4 pass, 0 fail
+runtime stress: 7 pass, 0 fail
 ```
 
 
@@ -72,6 +75,8 @@ runtime stress: 4 pass, 0 fail
 
 ## Follow-Up After The First Stress Slice
 
+Completed after the first stress slice:
+
 1. Add an interactive update stress for `scene_point_panzoom_wgsl`.
    - Load the stream once.
    - Update the MVP/viewport buffers through the retained runtime path.
@@ -82,12 +87,14 @@ runtime stress: 4 pass, 0 fail
    - Confirm the retained stream still renders with stable persistent resource counts.
    - Keep canvas-size and target-format mismatches visible as failures.
 
-3. Expand stream coverage only after the first stress rows are stable.
+Remaining follow-up:
+
+1. Expand stream coverage only after the first stress rows are stable.
    - Candidate next streams: `scene_image_wgsl`, `mesh_dvzr_wgsl`, and
      `triangle_offscreen_readback_wgsl`.
    - Add each stream with an explicit reason and expected browser behavior.
 
-4. Record manual browser proof after each dashboard behavior change.
+2. Record manual browser proof after each dashboard behavior change.
    - Update `examples/webgpu/COMPAT.md`.
    - Update `agents/now/STATUS.md` or `agents/now/RELEASE.md` only when the proof changes the
      branch-level release state.
@@ -120,5 +127,5 @@ Expected first proof after this plan lands:
 
 ```text
 fixtures: 120 pass, 0 unsupported, 0 fail
-runtime stress: 4 pass, 0 fail
+runtime stress: 7 pass, 0 fail
 ```
