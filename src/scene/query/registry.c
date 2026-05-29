@@ -50,6 +50,51 @@ static const DvzSceneQueryFamilyOpsFn QUERY_FAMILY_OPS[] = {
 /*************************************************************************************************/
 
 /**
+ * Return the query family corresponding to one retained visual type.
+ *
+ * @param type retained visual type
+ * @return query visual family, or NONE when there is no query family
+ */
+static DvzSceneVisualFamily _query_registry_family_for_visual_type(DvzVisualType type)
+{
+    switch (type)
+    {
+    case DVZ_VISUAL_TYPE_POINT:
+        return DVZ_SCENE_VISUAL_FAMILY_POINT;
+    case DVZ_VISUAL_TYPE_PIXEL:
+        return DVZ_SCENE_VISUAL_FAMILY_PIXEL;
+    case DVZ_VISUAL_TYPE_MARKER:
+        return DVZ_SCENE_VISUAL_FAMILY_MARKER;
+    case DVZ_VISUAL_TYPE_SPHERE:
+        return DVZ_SCENE_VISUAL_FAMILY_SPHERE;
+    case DVZ_VISUAL_TYPE_VECTOR:
+        return DVZ_SCENE_VISUAL_FAMILY_VECTOR;
+    case DVZ_VISUAL_TYPE_SEGMENT:
+        return DVZ_SCENE_VISUAL_FAMILY_SEGMENT;
+    case DVZ_VISUAL_TYPE_PATH:
+        return DVZ_SCENE_VISUAL_FAMILY_PATH;
+    case DVZ_VISUAL_TYPE_PRIMITIVE:
+        return DVZ_SCENE_VISUAL_FAMILY_PRIMITIVE;
+    case DVZ_VISUAL_TYPE_MESH:
+        return DVZ_SCENE_VISUAL_FAMILY_MESH;
+    case DVZ_VISUAL_TYPE_IMAGE:
+        return DVZ_SCENE_VISUAL_FAMILY_IMAGE;
+    case DVZ_VISUAL_TYPE_LABELS:
+        return DVZ_SCENE_VISUAL_FAMILY_LABELS;
+    case DVZ_VISUAL_TYPE_VOLUME:
+        return DVZ_SCENE_VISUAL_FAMILY_VOLUME;
+    case DVZ_VISUAL_TYPE_TEXT:
+        return DVZ_SCENE_VISUAL_FAMILY_TEXT;
+    case DVZ_VISUAL_TYPE_GLYPH:
+        return DVZ_SCENE_VISUAL_FAMILY_GLYPH;
+    default:
+        return DVZ_SCENE_VISUAL_FAMILY_NONE;
+    }
+}
+
+
+
+/**
  * Return the number of registered query visual families.
  *
  * @return registry entry count
@@ -91,4 +136,20 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_registry_find(DvzSceneVisualFamil
             return ops;
     }
     return NULL;
+}
+
+
+
+/**
+ * Find the query family operation table for one retained visual type.
+ *
+ * @param type retained visual type
+ * @return the family ops, or NULL when the type has no registered query family
+ */
+const DvzSceneQueryFamilyOps* _dvz_scene_query_registry_find_visual_type(DvzVisualType type)
+{
+    DvzSceneVisualFamily family = _query_registry_family_for_visual_type(type);
+    if (family == DVZ_SCENE_VISUAL_FAMILY_NONE)
+        return NULL;
+    return _dvz_scene_query_registry_find(family);
 }

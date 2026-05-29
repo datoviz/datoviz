@@ -196,10 +196,15 @@ bool _dvz_scene_query_process_pending(
         return true;
     }
 
-    if (_dvz_scene_query_target_requires_native_family(pending->request.target))
+    const DvzSceneQueryFamilyOps* fallback_ops =
+        _dvz_scene_query_registry_find_visual_type(visual->type);
+    DvzQueryStatus unsupported_status = DVZ_QUERY_STATUS_UNKNOWN;
+    if (
+        fallback_ops != NULL && fallback_ops->reject_unsupported != NULL &&
+        fallback_ops->reject_unsupported(visual, &pending->request, &unsupported_status))
     {
         out_result->visual_id = _scene_visual_public_id(figure->scene, visual);
-        out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+        out_result->status = unsupported_status;
         return true;
     }
 

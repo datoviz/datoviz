@@ -283,6 +283,38 @@ static bool _image_query_eligible(
 }
 
 
+/**
+ * Return an explicit image-query unsupported status for native pixel/sample requests.
+ *
+ * @param visual image visual
+ * @param request query request
+ * @param out_status output unsupported status
+ * @return whether the family owns the rejection
+ */
+static bool _image_query_reject_unsupported(
+    const DvzVisual* visual, const DvzQueryRequest* request, DvzQueryStatus* out_status)
+{
+    ANN(visual);
+    ANN(request);
+    ANN(out_status);
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
+        return false;
+    if (
+        request->target != DVZ_SCENE_TARGET_PIXEL &&
+        request->target != DVZ_SCENE_TARGET_SAMPLE)
+    {
+        return false;
+    }
+    uint32_t capability = request->target == DVZ_SCENE_TARGET_SAMPLE
+                              ? DVZ_QUERY_CAPABILITY_SAMPLE
+                              : DVZ_QUERY_CAPABILITY_PIXEL;
+    if ((visual->query_capabilities & capability) == 0)
+        return false;
+    *out_status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+    return true;
+}
+
+
 
 /**
  * Build an image-family r32uint item query plan.
@@ -542,6 +574,7 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_image_ops(void)
         .family = DVZ_SCENE_VISUAL_FAMILY_IMAGE,
         .eligible = _image_query_eligible,
         .build = _image_query_build,
+        .reject_unsupported = _image_query_reject_unsupported,
         .decode = _image_query_decode,
         .readout = _image_query_readout,
     };

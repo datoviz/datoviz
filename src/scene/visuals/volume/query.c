@@ -568,6 +568,29 @@ static bool _volume_query_eligible(
 }
 
 
+/**
+ * Return an explicit volume-query unsupported status for native sample requests.
+ *
+ * @param visual volume visual
+ * @param request query request
+ * @param out_status output unsupported status
+ * @return whether the family owns the rejection
+ */
+static bool _volume_query_reject_unsupported(
+    const DvzVisual* visual, const DvzQueryRequest* request, DvzQueryStatus* out_status)
+{
+    ANN(visual);
+    ANN(request);
+    ANN(out_status);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || request->target != DVZ_SCENE_TARGET_SAMPLE)
+        return false;
+    if ((visual->query_capabilities & DVZ_QUERY_CAPABILITY_SAMPLE) == 0)
+        return false;
+    *out_status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+    return true;
+}
+
+
 
 /**
  * Build a volume-family r32uint item query plan.
@@ -866,6 +889,7 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_volume_ops(void)
         .eligible = _volume_query_eligible,
         .supports_profile = _volume_query_supports_profile,
         .build = _volume_query_build,
+        .reject_unsupported = _volume_query_reject_unsupported,
         .decode = _volume_query_decode,
         .readout = _volume_query_readout,
     };

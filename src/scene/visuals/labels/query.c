@@ -526,6 +526,29 @@ static bool _labels_query_eligible(
 }
 
 
+/**
+ * Return an explicit labels-query unsupported status for native segment requests.
+ *
+ * @param visual labels visual
+ * @param request query request
+ * @param out_status output unsupported status
+ * @return whether the family owns the rejection
+ */
+static bool _labels_query_reject_unsupported(
+    const DvzVisual* visual, const DvzQueryRequest* request, DvzQueryStatus* out_status)
+{
+    ANN(visual);
+    ANN(request);
+    ANN(out_status);
+    if (visual->type != DVZ_VISUAL_TYPE_LABELS || request->target != DVZ_SCENE_TARGET_SEGMENT)
+        return false;
+    if ((visual->query_capabilities & DVZ_QUERY_CAPABILITY_ITEM) == 0)
+        return false;
+    *out_status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+    return true;
+}
+
+
 
 /**
  * Build a labels-family rendered integer query plan.
@@ -787,6 +810,7 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_labels_ops(void)
         .family = DVZ_SCENE_VISUAL_FAMILY_LABELS,
         .eligible = _labels_query_eligible,
         .build = _labels_query_build,
+        .reject_unsupported = _labels_query_reject_unsupported,
         .decode = _labels_query_decode,
         .readout = _labels_query_readout,
     };

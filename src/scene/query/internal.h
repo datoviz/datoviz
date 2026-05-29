@@ -54,6 +54,8 @@ typedef bool (*DvzSceneQueryExecute)(
     const DvzSceneQueryBuildContext* ctx, DvzSceneRequestExecutor* executor,
     const DvzCapabilitySnapshot* caps, const DvzSceneQueryPlan* plan, uint8_t* bytes,
     uint32_t byte_size, bool* out_executed);
+typedef bool (*DvzSceneQueryRejectUnsupported)(
+    const DvzVisual* visual, const DvzQueryRequest* request, DvzQueryStatus* out_status);
 typedef bool (*DvzSceneQueryDecode)(
     const DvzSceneQueryDecodeContext* ctx, DvzQueryResult* out_result);
 typedef bool (*DvzSceneQueryReadout)(
@@ -164,6 +166,7 @@ struct DvzSceneQueryFamilyOps
     DvzSceneQuerySupportsProfile supports_profile;
     DvzSceneQueryBuild build;
     DvzSceneQueryExecute execute;
+    DvzSceneQueryRejectUnsupported reject_unsupported;
     DvzSceneQueryDecode decode;
     DvzSceneQueryReadout readout;
 };
@@ -196,6 +199,8 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_registry_get(uint32_t index);
 
 const DvzSceneQueryFamilyOps* _dvz_scene_query_registry_find(DvzSceneVisualFamily family);
 
+const DvzSceneQueryFamilyOps* _dvz_scene_query_registry_find_visual_type(DvzVisualType type);
+
 uint32_t _dvz_scene_query_target_capability(DvzSceneTargetKind target);
 
 DvzQueryProfile _dvz_scene_query_select_profile(
@@ -212,8 +217,6 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_family_ops_for_visual(
 
 bool _dvz_scene_query_item_target_eligible(
     const DvzVisual* visual, const DvzQueryRequest* request, DvzVisualType type);
-
-bool _dvz_scene_query_target_requires_native_family(DvzSceneTargetKind target);
 
 bool _dvz_scene_query_execute_family(
     DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
