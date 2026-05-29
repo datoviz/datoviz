@@ -1717,7 +1717,6 @@ struct DvzScene
 /*  Internal interaction helpers                                                                */
 /*************************************************************************************************/
 
-bool _scene_figure_has_pending_render_work(const DvzFigure* figure);
 bool _scene_add_request_frame_callback(
     DvzScene* scene, DvzSceneRequestFrameCallback callback, void* user_data);
 void _scene_remove_request_frame_callback(
