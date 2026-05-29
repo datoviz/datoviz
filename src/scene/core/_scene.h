@@ -1782,8 +1782,6 @@ void _visual_binding_clear(DvzVisual* visual, DvzVisualBindingKind kind);
 
 uint32_t _scene_buffer_index(const DvzScene* scene, const DvzSceneBuffer* buffer);
 
-uint32_t _scene_field_index(const DvzScene* scene, const DvzSampledField* field);
-
 void _scene_text_block_init(DvzTextBlock* block, const char* source);
 
 void _scene_text_block_set_source(DvzTextBlock* block, const char* source);
@@ -1872,8 +1870,6 @@ void _scene_font_release(DvzFont* font);
 EXTERN_C_OFF
 
 void _scene_release_visual_buffer(DvzVisual* visual);
-
-void _scene_field_reset(DvzSampledField* field);
 
 void _scene_buffer_reset(DvzSceneBuffer* buffer);
 

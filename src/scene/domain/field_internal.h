@@ -29,6 +29,10 @@ typedef struct DvzSampledFieldTextureUploadPayload
 } DvzSampledFieldTextureUploadPayload;
 
 
+uint32_t _scene_field_index(const DvzScene* scene, const DvzSampledField* field);
+
+void _scene_field_reset(DvzSampledField* field);
+
 bool _field_format_supported(DvzFieldFormat format);
 
 bool _field_format_is_scalar(DvzFieldFormat format);

@@ -35,6 +35,7 @@
 #include "../../drp2/_stream.h"
 #include "_scene.h"
 #include "_technique.h"
+#include "domain/field_internal.h"
 #include "datoviz/scene.h"
 
 
