@@ -64,7 +64,10 @@ Completed since the initial follow-up note:
 Remaining follow-up commits:
 
 1. Replace remaining standalone-demo compatibility shortcuts where practical: implicit canvas
-   aliases, unaligned-offset fallback, and demo-local scene uniform id assumptions.
+   aliases, unaligned-offset fallback, and demo-local scene uniform id assumptions. Scene
+   interaction must be WASM/scene-owned: browser input should become scene/controller calls, and
+   the scene layer should emit DRP2 update commands for the WebGPU runtime to execute directly.
+   Do not promote browser-side direct uniform mutation into the app architecture.
 2. Add a DRP2-aligned capability snapshot for the browser runtime and use it to produce explicit
    unsupported-feature diagnostics before execution.
 3. Keep `CreatePipelineLayout`, `DestroyPipelineLayout`, `ResourceBarrier`, and indirect commands

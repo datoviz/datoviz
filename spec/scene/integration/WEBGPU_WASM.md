@@ -22,6 +22,12 @@ The scene layer remains the owner of scene semantics, visual lowering, controlle
 selection, resource ids, and request bookkeeping. The browser runtime executes portable DRP2
 streams. It must not know about Datoviz visual families except through the DRP2 contract.
 
+Interaction state follows the same boundary. Browser JavaScript may translate DOM events into
+scene/controller API calls, but the WASM scene layer owns the panzoom/camera/controller math and
+emits the resulting DRP2 updates, such as `WriteBuffer` commands plus frame commands. The WebGPU
+runtime must execute those DRP2 commands directly; it must not mutate scene uniform buffers from
+private buffer ids, visual-family assumptions, or browser-only metadata.
+
 ## Non-Goals
 
 1. Do not port `vk`, `vklite`, `canvas`, `window`, `stream`, `video`, or native `app` directly to
@@ -117,6 +123,10 @@ Strict fixture paths should not depend on proof-of-concept shortcuts such as imp
 ids, missing pipeline metadata fallbacks, hard-coded scene uniform ids, or browser-side shader
 substitution.
 
+Browser-side direct mutation of scene-owned GPU resources is also a proof-of-concept shortcut. It is
+acceptable only for temporary static-JSON demos before the WASM scene layer exists, and should not
+become the browser app architecture.
+
 ## Active WebGPU Command Subset
 
 The browser runtime should implement every active DRP2 command used by the supported subset, or
@@ -189,6 +199,10 @@ Responsibilities:
 
 JavaScript should translate browser events into scene/controller calls. It should not duplicate
 controller math unless that helper is explicitly browser-only.
+
+After WASM scene emission is available, browser interaction should flow through scene/controller
+calls that emit DRP2 update streams. The WebGPU runtime should not expose a separate interaction API
+for updating retained scene buffers.
 
 ## Capability And Diagnostics
 

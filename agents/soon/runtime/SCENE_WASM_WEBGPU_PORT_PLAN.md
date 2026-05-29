@@ -36,8 +36,10 @@ Recommended follow-up commits:
 5. Feed the scene-emitted point stream into the existing WebGPU runner without demo-specific stream
    rewriting.
 6. Add primitive and image scenes after the point milestone is stable.
-7. Add incremental uniform-buffer updates for pan/zoom and resize before attempting large visual
-   payloads.
+7. Add incremental uniform-buffer updates for pan/zoom and resize by routing browser input through
+   WASM scene/controller calls that emit DRP2 `WriteBuffer` and frame-update commands. Do not make
+   the WebGPU runtime mutate scene uniforms through private buffer ids or browser-owned interaction
+   metadata.
 8. Replace JSON/base64 hot-path transport with direct payload spans or a compact binary command
    path once the debugging path is proven.
 9. Add browser app examples only after the runtime can preserve resources across repeated frame
