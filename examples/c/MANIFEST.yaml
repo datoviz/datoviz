@@ -52,7 +52,7 @@ examples:
     style_preset: features
     capture: 1280x960
     interaction_state: default
-    current_source: examples/c/annotations/scalebar_2d_3d.c
+    current_source: examples/c/features/scalebar.c
     target_source: examples/c/features/scalebar.c
     validation: smoke+screenshot
 
