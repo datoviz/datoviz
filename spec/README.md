@@ -21,6 +21,10 @@ Do not use it for execution planning or broad architecture essays.
 - `SCENE_SPLIT_REFACTOR_PLAN.md`: durable scene split/refactor architecture plan for promoting
   reusable pieces out of the scene layer
 
+AI-facing usage policy starts in `docs/AI_DOCUMENTATION.md`. Scene/app defaults, copy-safe examples,
+diagnostic shape, and Python scope then route to `scene/api/`, `scene/examples/`,
+`scene/validation/`, `api/`, and `bindings/` respectively.
+
 
 ## Rules
 

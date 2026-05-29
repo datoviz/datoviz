@@ -4,6 +4,11 @@ Datoviz users and contributors are expected to use LLMs and coding agents. The d
 be structured so agents can retrieve the right context, write correct C examples, respect module
 boundaries, and run the correct validation loops.
 
+Agents are a first-class audience for v0.4 documentation. Many users will ask an assistant to write,
+adapt, or debug Datoviz code instead of reading the whole API directly. The documentation therefore
+has to make the preferred API path easy to infer, examples safe to copy, and failures specific enough
+for generated code to be repaired.
+
 
 ## User-Facing AI Goals
 
@@ -18,6 +23,99 @@ Documentation should make these choices explicit:
 4. start from a named minimal example whenever possible;
 5. preserve Datoviz ownership and destroy rules;
 6. run the documented validation command for the example or subsystem.
+
+
+## Agent-Default API Path
+
+For normal user requests, documentation should steer assistants toward the native scene/app layer:
+
+```text
+figure -> panel -> visual or retained object -> data/resources -> render/show/capture -> pick/probe
+```
+
+The lower layers remain documented, but they should not look like the default answer to ordinary
+visualization prompts:
+
+| User intent | Preferred Datoviz surface | Avoid as default |
+| --- | --- | --- |
+| Create a scientific visualization in C | `scene` and `app` APIs | DRP2, vklite, raw Vulkan |
+| Render offscreen or capture an image | `app`/scene offscreen path | hand-built swapchains |
+| Add point, image, mesh, volume, or text content | public scene visual/object API | custom shaders |
+| Debug generated scene code | scene validation and diagnostics | backend-only error strings |
+| Replay or test renderer protocol behavior | DRP2/DVZR | scene examples as protocol specs |
+| Use Datoviz from Python at low level | `datoviz.raw` or narrow host helpers | invented plotting APIs |
+| Use Pythonic scientific plotting | VisPy2/GSP | Datoviz v0.3-style APIs |
+
+Pages should state this routing directly. If a feature is advanced, backend-specific, or unstable,
+mark it as such instead of letting agents discover it through examples and assume it is the default.
+
+
+## Copy-Safe Examples
+
+Agents learn Datoviz patterns mostly from examples. Every public feature that users are expected to
+request should have at least one complete, current, copy-safe example.
+
+An example is copy-safe when it:
+
+1. starts from the preferred `scene`/`app` ownership pattern;
+2. uses current v0.4 names, not v0.3 Pythonic names;
+3. demonstrates one visual, feature, or runtime path clearly;
+4. declares the backend/runtime assumptions needed to run it;
+5. links to the relevant reference or how-to page;
+6. has a documented validation command or metadata entry;
+7. avoids hidden global state and undocumented cleanup behavior.
+
+When a page includes a code block that is not tested or not copy-safe, it should be labeled as a
+sketch or fragment. Public how-to and tutorial pages should prefer complete examples generated from
+or kept in sync with source files.
+
+
+## Machine-Readable Context
+
+Machine-readable metadata is part of the AI-era documentation contract. Agents and tooling should be
+able to discover the same facts that prose pages expose:
+
+1. public examples and their stable IDs;
+2. visual families and required attributes;
+3. feature status and backend support;
+4. validation commands;
+5. public headers and generated binding symbols;
+6. diagnostic codes and meanings;
+7. known limitations and preferred fallbacks.
+
+The source of truth for these facts should live in `spec/`, generated manifests, or source-controlled
+metadata. Prose pages should link to those sources instead of duplicating detailed API facts.
+
+
+## Agent-Repairable Diagnostics
+
+Documentation should pressure the implementation toward diagnostics that assistants can use to fix
+generated code. Good diagnostics identify the scene-level problem first, then include backend detail
+only as context.
+
+Useful diagnostics include:
+
+1. stable code;
+2. severity;
+3. phase such as validation, frame planning, submission, or completion;
+4. subject kind and subject identity;
+5. expected versus actual values when applicable;
+6. concise message;
+7. actionable hint.
+
+For example:
+
+```text
+SCENE_VISUAL_MISSING_POSITION
+severity=fatal
+phase=validation
+subject=visual:point
+message=Point visual requires position data before rendering.
+hint=Bind the position attribute before submitting the frame.
+```
+
+Avoid diagnostics that only expose backend handles, Vulkan error strings, or assertion locations
+when the failure can be described in scene terms.
 
 
 ## LLM-Friendly Page Design
@@ -55,6 +153,20 @@ This works only if each page links to:
 2. the exact reference entry;
 3. the relevant how-to guide;
 4. validation commands or release proof status.
+
+
+## AI-Era Public Surface Requirements
+
+The v0.4 public documentation should make these requirements visible:
+
+1. one obvious beginner path through `scene` and `app`;
+2. canonical minimal examples for every public visual family;
+3. canonical examples for offscreen capture, updates, picking/probing, and controllers;
+4. explicit ownership and destroy-order rules near every allocating example;
+5. feature status labels that prevent agents from overselling incomplete features;
+6. generated or machine-readable indexes for examples, features, and API symbols;
+7. diagnostics and validation APIs that fail early with scene-level messages;
+8. Python scope boundaries that prevent `datoviz.raw` from being treated as a plotting API.
 
 
 ## Contributor And Agent Boundaries
@@ -111,6 +223,14 @@ reference/objects-and-lifetimes.md
 
 `contributors/ai-agents.md` should be concise and operational. It should explain how to gather
 context, choose the right examples, avoid known anti-patterns, and validate changes.
+
+Canonical AI-facing contracts are split as follows:
+
+1. this file owns documentation policy and AI-facing page design;
+2. `../scene/api/API_SURFACE.md` owns the scene/app default API path;
+3. `../scene/examples/` owns copy-safe example policy and scenario metadata;
+4. `../scene/validation/DIAGNOSTICS.md` owns agent-repairable diagnostic shape;
+5. `../bindings/` and `../api/PYTHON_GSP_SCOPE.md` own Python scope boundaries.
 
 
 ## Anti-Patterns To Prevent

@@ -23,6 +23,13 @@ scientific plotting belongs to VisPy2/GSP, with Datoviz as one rendering backend
 - [AI_DOCUMENTATION.md](AI_DOCUMENTATION.md): LLM-friendly documentation rules and contributor
   boundaries for users and agents.
 
+AI-facing usage contracts are routed through this directory first. Scene-level default API guidance
+lives in [`../scene/api/API_SURFACE.md`](../scene/api/API_SURFACE.md), copy-safe example policy
+lives in [`../scene/examples/`](../scene/examples/), diagnostic shape lives in
+[`../scene/validation/DIAGNOSTICS.md`](../scene/validation/DIAGNOSTICS.md), and Python scope lives
+in [`../api/PYTHON_GSP_SCOPE.md`](../api/PYTHON_GSP_SCOPE.md) plus
+[`../bindings/`](../bindings/).
+
 
 ## Site Generator Decision
 
