@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* image_probe - polished image probe with colorbar and pinned readout.
+/* image_probe - polished image probe with colorbar and live readout.
  *
  * Scenario: image_probe
  * Style: features, graphite_cyan, 1280x960 capture target
@@ -23,6 +23,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
 #include "_assertions.h"
 #include "_compat.h"
@@ -47,6 +48,7 @@
 #define PROBE_REQUEST_ID    1u
 #define PROBE_RING_SEGMENTS 28u
 #define PROBE_SEGMENTS      (PROBE_RING_SEGMENTS + 4u)
+#define PROBE_CARD_TEXT     "rgba --"
 
 static const float TAU = 6.28318530718f;
 
@@ -62,14 +64,15 @@ struct ImageProbeState
 {
     DvzScene* scene;
     DvzPanel* panel;
+    DvzVisual* probe_segments;
+    DvzVisual* probe_dot;
+    DvzOverlayCard* probe_card;
     bool cursor_valid;
     double cursor_x;
     double cursor_y;
     double last_rgba[4];
     bool last_hit;
     bool has_last_result;
-    bool pin_next_result;
-    uint32_t pinned_count;
 };
 
 
@@ -284,39 +287,104 @@ static bool _add_probe_image(
 
 
 /**
- * Fill data-space crosshair and ring segments around the deterministic probe point.
+ * Convert a panel-local probe position to the normalized image data domain.
  *
+ * @param panel target panel
+ * @param panel_x panel-local X coordinate in logical pixels
+ * @param panel_y panel-local Y coordinate in logical pixels
+ * @param out_x output normalized data X
+ * @param out_y output normalized data Y
+ * @return true when the position is inside the plot rectangle
+ */
+static bool
+_probe_panel_to_data(DvzPanel* panel, double panel_x, double panel_y, float* out_x, float* out_y)
+{
+    if (panel == NULL || out_x == NULL || out_y == NULL)
+        return false;
+
+    DvzRect plot = {0};
+    if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
+        return false;
+
+    const double x = (panel_x - (double)plot.x) / (double)plot.width;
+    const double y = 1.0 - (panel_y - (double)plot.y) / (double)plot.height;
+    if (x < 0.0 || x > 1.0 || y < 0.0 || y > 1.0)
+        return false;
+
+    *out_x = (float)x;
+    *out_y = (float)y;
+    return true;
+}
+
+
+
+/**
+ * Convert a normalized image data position to a panel-local probe position.
+ *
+ * @param panel target panel
+ * @param x normalized data X
+ * @param y normalized data Y
+ * @param out_panel output panel-local logical pixels
+ * @return true when the position was converted
+ */
+static bool _probe_data_to_panel(DvzPanel* panel, float x, float y, float out_panel[2])
+{
+    if (panel == NULL || out_panel == NULL)
+        return false;
+
+    DvzRect plot = {0};
+    if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
+        return false;
+
+    out_panel[0] = plot.x + x * plot.width;
+    out_panel[1] = plot.y + (1.0f - y) * plot.height;
+    return true;
+}
+
+
+
+/**
+ * Fill data-space crosshair and ring segments around a probe point.
+ *
+ * @param panel target panel
+ * @param x normalized probe X coordinate
+ * @param y normalized probe Y coordinate
  * @param starts output segment starts
  * @param ends output segment ends
  * @param colors output segment colors
  * @param widths output segment widths
+ * @return true when marker geometry was filled
  */
-static void
-_fill_probe_marker(vec3 starts[PROBE_SEGMENTS], vec3 ends[PROBE_SEGMENTS],
-                   DvzColor colors[PROBE_SEGMENTS], float widths[PROBE_SEGMENTS])
+static bool _fill_probe_marker(
+    DvzPanel* panel, float x, float y, vec3 starts[PROBE_SEGMENTS], vec3 ends[PROBE_SEGMENTS],
+    DvzColor colors[PROBE_SEGMENTS], float widths[PROBE_SEGMENTS])
 {
+    ANN(panel);
     ANN(starts);
     ANN(ends);
     ANN(colors);
     ANN(widths);
 
+    DvzRect plot = {0};
+    if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
+        return false;
+
     const DvzColor cyan = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
-    const DvzColor amber = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
-    const float x = PROBE_X;
-    const float y = PROBE_Y;
-    const float gap = 0.028f;
-    const float arm = 0.105f;
+    const float gap_x = 6.0f / plot.width;
+    const float gap_y = 6.0f / plot.height;
+    const float arm_x = 20.0f / plot.width;
+    const float arm_y = 20.0f / plot.height;
     const vec3 cross_starts[4] = {
-        {x - arm, y, 0.02f},
-        {x + gap, y, 0.02f},
-        {x, y - arm, 0.02f},
-        {x, y + gap, 0.02f},
+        {x - arm_x, y, 0.02f},
+        {x + gap_x, y, 0.02f},
+        {x, y - arm_y, 0.02f},
+        {x, y + gap_y, 0.02f},
     };
     const vec3 cross_ends[4] = {
-        {x - gap, y, 0.02f},
-        {x + arm, y, 0.02f},
-        {x, y - gap, 0.02f},
-        {x, y + arm, 0.02f},
+        {x - gap_x, y, 0.02f},
+        {x + arm_x, y, 0.02f},
+        {x, y - gap_y, 0.02f},
+        {x, y + arm_y, 0.02f},
     };
 
     for (uint32_t i = 0; i < 4u; i++)
@@ -329,11 +397,11 @@ _fill_probe_marker(vec3 starts[PROBE_SEGMENTS], vec3 ends[PROBE_SEGMENTS],
         ends[i][2] = cross_ends[i][2];
         colors[i] = cyan;
         colors[i].a = 245u;
-        widths[i] = 2.8f;
+        widths[i] = 1.8f;
     }
 
-    const float rx = 0.043f;
-    const float ry = 0.043f * ((float)WIDTH / (float)HEIGHT);
+    const float rx = 12.0f / plot.width;
+    const float ry = 12.0f / plot.height;
     for (uint32_t i = 0; i < PROBE_RING_SEGMENTS; i++)
     {
         const uint32_t k = i + 4u;
@@ -345,24 +413,29 @@ _fill_probe_marker(vec3 starts[PROBE_SEGMENTS], vec3 ends[PROBE_SEGMENTS],
         ends[k][0] = x + rx * cosf(a1);
         ends[k][1] = y + ry * sinf(a1);
         ends[k][2] = 0.02f;
-        colors[k] = i % 2u == 0u ? cyan : amber;
-        colors[k].a = 230u;
-        widths[k] = 2.4f;
+        colors[k] = cyan;
+        colors[k].a = 225u;
+        widths[k] = 1.7f;
     }
+    return true;
 }
 
 
 
 /**
- * Add the visible deterministic probe marker.
+ * Update the live probe marker to a normalized data position.
  *
- * @param scene scene owning the visual
- * @param panel panel receiving the visual
- * @return true when the marker was added
+ * @param state image probe example state
+ * @param x normalized probe X coordinate
+ * @param y normalized probe Y coordinate
  */
-static bool _add_probe_marker(DvzScene* scene, DvzPanel* panel)
+static void _update_probe_marker(ImageProbeState* state, float x, float y)
 {
-    ANN(scene);
+    if (state == NULL || state->panel == NULL || state->probe_segments == NULL ||
+        state->probe_dot == NULL)
+        return;
+
+    DvzPanel* panel = state->panel;
     ANN(panel);
 
     vec3 starts[PROBE_SEGMENTS] = {{0}};
@@ -371,7 +444,78 @@ static bool _add_probe_marker(DvzScene* scene, DvzPanel* panel)
     vec3 visual_ends[PROBE_SEGMENTS] = {{0}};
     DvzColor colors[PROBE_SEGMENTS] = {{0}};
     float widths[PROBE_SEGMENTS] = {0};
-    _fill_probe_marker(starts, ends, colors, widths);
+    if (!_fill_probe_marker(panel, x, y, starts, ends, colors, widths))
+        return;
+
+    int rc = dvz_panel_data_to_visual_positions(
+        panel, (const float*)starts, (float*)visual_starts, PROBE_SEGMENTS);
+    if (rc != 0)
+        return;
+    rc = dvz_panel_data_to_visual_positions(
+        panel, (const float*)ends, (float*)visual_ends, PROBE_SEGMENTS);
+    if (rc != 0)
+        return;
+
+    DvzVisualDataUpdate segment_updates[] = {
+        {.attr_name = "position_start", .data = visual_starts, .item_count = PROBE_SEGMENTS},
+        {.attr_name = "position_end", .data = visual_ends, .item_count = PROBE_SEGMENTS},
+    };
+    if (dvz_visual_set_data_many(state->probe_segments, segment_updates, 2) != 0)
+        return;
+
+    vec3 dot_data[1] = {{x, y, 0.03f}};
+    vec3 dot_visual[1] = {{0}};
+    rc = dvz_panel_data_to_visual_positions(panel, (const float*)dot_data, (float*)dot_visual, 1);
+    if (rc == 0)
+        (void)dvz_visual_set_data(state->probe_dot, "position", dot_visual, 1);
+}
+
+
+
+/**
+ * Update the live probe marker from a panel-local cursor position.
+ *
+ * @param state image probe example state
+ */
+static void _update_probe_marker_from_cursor(ImageProbeState* state)
+{
+    if (state == NULL || !state->cursor_valid)
+        return;
+
+    float x = 0.0f;
+    float y = 0.0f;
+    if (!_probe_panel_to_data(state->panel, state->cursor_x, state->cursor_y, &x, &y))
+        return;
+    _update_probe_marker(state, x, y);
+}
+
+
+
+/**
+ * Add the visible live probe marker.
+ *
+ * @param scene scene owning the visual
+ * @param panel panel receiving the visual
+ * @param out_segments output segment visual
+ * @param out_dot output center dot visual
+ * @return true when the marker was added
+ */
+static bool _add_probe_marker(
+    DvzScene* scene, DvzPanel* panel, DvzVisual** out_segments, DvzVisual** out_dot)
+{
+    ANN(scene);
+    ANN(panel);
+    ANN(out_segments);
+    ANN(out_dot);
+
+    vec3 starts[PROBE_SEGMENTS] = {{0}};
+    vec3 ends[PROBE_SEGMENTS] = {{0}};
+    vec3 visual_starts[PROBE_SEGMENTS] = {{0}};
+    vec3 visual_ends[PROBE_SEGMENTS] = {{0}};
+    DvzColor colors[PROBE_SEGMENTS] = {{0}};
+    float widths[PROBE_SEGMENTS] = {0};
+    if (!_fill_probe_marker(panel, PROBE_X, PROBE_Y, starts, ends, colors, widths))
+        return false;
 
     int rc = dvz_panel_data_to_visual_positions(
         panel, (const float*)starts, (float*)visual_starts, PROBE_SEGMENTS);
@@ -397,7 +541,41 @@ static bool _add_probe_marker(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_visual_set_depth_test(marker, false) != 0)
         return false;
-    return dvz_panel_add_visual(panel, marker, NULL) == 0;
+    if (dvz_panel_add_visual(panel, marker, NULL) != 0)
+        return false;
+
+    vec3 dot_data[1] = {{PROBE_X, PROBE_Y, 0.03f}};
+    vec3 dot_visual[1] = {{0}};
+    rc = dvz_panel_data_to_visual_positions(panel, (const float*)dot_data, (float*)dot_visual, 1);
+    if (rc != 0)
+        return false;
+
+    DvzVisual* dot = dvz_point(scene, 0);
+    if (dot == NULL)
+        return false;
+    DvzColor dot_color[1] = {example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY)};
+    dot_color[0].a = 245u;
+    float dot_diameter[1] = {6.0f};
+    DvzVisualDataUpdate dot_updates[] = {
+        {.attr_name = "position", .data = dot_visual, .item_count = 1},
+        {.attr_name = "color", .data = dot_color, .item_count = 1},
+        {.attr_name = "diameter", .data = dot_diameter, .item_count = 1},
+    };
+    if (dvz_visual_set_data_many(dot, dot_updates, 3) != 0)
+        return false;
+    DvzPointStyleDesc point_style = dvz_point_style_desc();
+    point_style.aspect = DVZ_SHAPE_ASPECT_FILLED;
+    point_style.stroke_width = 0.0f;
+    if (dvz_point_set_style(dot, &point_style) != 0)
+        return false;
+    if (dvz_visual_set_depth_test(dot, false) != 0)
+        return false;
+    if (dvz_panel_add_visual(panel, dot, NULL) != 0)
+        return false;
+
+    *out_segments = marker;
+    *out_dot = dot;
+    return true;
 }
 
 
@@ -453,6 +631,85 @@ static DvzColorbar* _add_probe_colorbar(DvzScene* scene, DvzPanel* panel)
         dvz_colorbar_set_format(
             colorbar, &(DvzFormatDesc){.precision = 2, .trim_trailing_zeros = true});
     return colorbar;
+}
+
+
+
+/**
+ * Create the compact live probe readout card.
+ *
+ * @param panel panel receiving the overlay
+ * @return created overlay card, or NULL on failure
+ */
+static DvzOverlayCard* _add_probe_card(DvzPanel* panel)
+{
+    ANN(panel);
+
+    DvzOverlay* overlay = dvz_overlay(panel, 0);
+    if (overlay == NULL)
+        return NULL;
+
+    DvzOverlayCardStyle style = dvz_overlay_card_style();
+    style.background_color = dvz_color_rgba(8, 14, 22, 232);
+    style.text_color = dvz_color_rgb(231, 240, 250);
+    style.padding_px[0] = 10.0f;
+    style.padding_px[1] = 6.0f;
+    style.min_width_px = 184.0f;
+    style.height_px = 28.0f;
+    style.glyph_advance_px = 7.0f;
+    style.text_size_px = 13.0f;
+    style.text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    style.max_text_chars = 56u;
+
+    float anchor[2] = {(float)WIDTH * PROBE_X, (float)HEIGHT * (1.0f - PROBE_Y)};
+    (void)_probe_data_to_panel(panel, PROBE_X, PROBE_Y, anchor);
+
+    return dvz_overlay_card(
+        overlay,
+        &(DvzOverlayCardDesc){
+            .text = PROBE_CARD_TEXT,
+            .placement = DVZ_OVERLAY_CARD_PLACEMENT_PIXEL,
+            .anchor_px = {anchor[0], anchor[1]},
+            .offset_px = {14.0f, 14.0f},
+            .style = &style,
+        });
+}
+
+
+
+/**
+ * Update the compact live probe readout card from one query result.
+ *
+ * @param state image query example state
+ * @param query query result to display
+ */
+static void _update_probe_card(ImageProbeState* state, const DvzQueryResult* query)
+{
+    if (state == NULL || state->probe_card == NULL || query == NULL)
+        return;
+
+    float anchor[2] = {(float)query->panel_position[0], (float)query->panel_position[1]};
+    float offset[2] = {14.0f, 14.0f};
+    dvz_overlay_card_set_layout(state->probe_card, anchor, offset);
+
+    char text[128] = {0};
+    if (
+        query->status == DVZ_QUERY_STATUS_HIT && query->hit &&
+        query->value_kind == DVZ_QUERY_VALUE_VEC4)
+    {
+        int n = dvz_snprintf(
+            text, sizeof(text), "rgba %.3f %.3f %.3f %.3f", query->vector[0],
+            query->vector[1], query->vector[2], query->vector[3]);
+        if (n <= 0 || (size_t)n >= sizeof(text))
+            return;
+    }
+    else
+    {
+        int n = dvz_snprintf(text, sizeof(text), "rgba --");
+        if (n <= 0 || (size_t)n >= sizeof(text))
+            return;
+    }
+    dvz_overlay_card_set_text(state->probe_card, text);
 }
 
 
@@ -532,7 +789,7 @@ static void _queue_probe(ImageProbeState* state)
 /*************************************************************************************************/
 
 /**
- * Record the latest cursor position and arm click-to-pin behavior.
+ * Record the latest cursor position and move the live probe marker.
  *
  * @param router input router emitting the event
  * @param event pointer event payload
@@ -551,14 +808,19 @@ _image_probe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void*
     state->cursor_valid = true;
     state->cursor_x = event->pos[0];
     state->cursor_y = event->pos[1];
-    if (event->type == DVZ_POINTER_EVENT_CLICK)
-        state->pin_next_result = true;
+    _update_probe_marker_from_cursor(state);
+    if (state->probe_card != NULL)
+    {
+        float anchor[2] = {(float)state->cursor_x, (float)state->cursor_y};
+        float offset[2] = {14.0f, 14.0f};
+        dvz_overlay_card_set_layout(state->probe_card, anchor, offset);
+    }
 }
 
 
 
 /**
- * Poll image query results, pin requested readouts, and queue the next probe.
+ * Poll image query results, update the live readout, and queue the next probe.
  *
  * @param win view whose frame just completed
  * @param user_data image probe example state
@@ -573,25 +835,7 @@ static void _image_probe_frame(DvzView* win, void* user_data)
     DvzQueryResult query = {0};
     while (dvz_scene_poll_query(state->scene, &query))
     {
-        if (state->pin_next_result)
-        {
-            if (query.status == DVZ_QUERY_STATUS_HIT && query.hit)
-            {
-                DvzPinnedReadout* readout = dvz_pinned_readout_query(state->panel, &query);
-                if (readout != NULL)
-                {
-                    dvz_pinned_readout_set_format(
-                        readout, &(DvzFormatDesc){.precision = 3, .trim_trailing_zeros = true});
-                    state->pinned_count++;
-                    dvz_fprintf(stdout, "pinned image readout %u\n", state->pinned_count);
-                }
-                else
-                {
-                    dvz_fprintf(stderr, "dvz_pinned_readout_query() failed\n");
-                }
-            }
-            state->pin_next_result = false;
-        }
+        _update_probe_card(state, &query);
 
         if (!_query_changed(state, &query))
             continue;
@@ -654,11 +898,16 @@ int main(int argc, char** argv)
     ok = _add_probe_image(scene, panel, pixels);
     EXAMPLE_CHECK(ok, "adding probe image failed");
 
-    ok = _add_probe_marker(scene, panel);
+    DvzVisual* probe_segments = NULL;
+    DvzVisual* probe_dot = NULL;
+    ok = _add_probe_marker(scene, panel, &probe_segments, &probe_dot);
     EXAMPLE_CHECK(ok, "adding probe marker failed");
 
     DvzColorbar* colorbar = _add_probe_colorbar(scene, panel);
     EXAMPLE_CHECK(colorbar != NULL, "adding probe colorbar failed");
+
+    DvzOverlayCard* probe_card = _add_probe_card(panel);
+    EXAMPLE_CHECK(probe_card != NULL, "adding probe readout card failed");
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
@@ -669,13 +918,18 @@ int main(int argc, char** argv)
     DvzInputRouter* router = dvz_view_input(win);
     EXAMPLE_CHECK(router != NULL, "dvz_view_input() failed");
 
+    float initial_probe_px[2] = {(float)WIDTH * PROBE_X, (float)HEIGHT * (1.0f - PROBE_Y)};
+    (void)_probe_data_to_panel(panel, PROBE_X, PROBE_Y, initial_probe_px);
+
     ImageProbeState state = {
         .scene = scene,
         .panel = panel,
+        .probe_segments = probe_segments,
+        .probe_dot = probe_dot,
+        .probe_card = probe_card,
         .cursor_valid = true,
-        .cursor_x = (double)WIDTH * (double)PROBE_X,
-        .cursor_y = (double)HEIGHT * (1.0 - (double)PROBE_Y),
-        .pin_next_result = true,
+        .cursor_x = initial_probe_px[0],
+        .cursor_y = initial_probe_px[1],
     };
     dvz_input_subscribe_pointer(router, _image_probe_pointer, &state);
     dvz_view_set_frame_callback(win, _image_probe_frame, &state);
