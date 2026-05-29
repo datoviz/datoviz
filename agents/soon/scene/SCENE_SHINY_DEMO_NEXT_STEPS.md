@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `RECOMMENDED FOLLOW-UP DISPATCH`
-> - **Updated on:** `2026-05-28`
+> - **Updated on:** `2026-05-29`
 > - **Purpose:** record the current recommendation for high-payoff v0.4 RC1 or early v0.4+
 >   showcase work after text, overlays, legends, colorbars, labels, and scale bars landed.
 > - **Audience:** agents choosing the next moderately complicated feature or gallery-polish lane.
@@ -93,6 +93,11 @@ new layout engine.
 Protein, LiDAR, brain, and labels already have most of the intended runtime features. A future
 agent should first run them, capture screenshots or offscreen frames where possible, tune defaults,
 and fix concrete rough edges exposed by the run.
+
+Optional local moodboard, when present:
+[`../../../_showcase_references/main_showcase_reference.png`](../../../_showcase_references/main_showcase_reference.png).
+This ignored reference image is visual direction only; do not treat it as committed data or an
+expected-output artifact.
 
 Prefer this lane when the goal is RC1 confidence. Prefer vector/arrow or splat when the goal is a
 new capability that makes the gallery visibly richer.
