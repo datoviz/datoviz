@@ -82,7 +82,8 @@ Latest pickup snapshot:
    sampled-field binding release, axis tick planning, and image/labels/volume query unsupported
    policy into owner files. Commits `403e969d8`, `3d54a8a1c`, and `6e572aeec` then centralized
    primitive/mesh indexed query geometry and split axis generated visuals plus layout reserve into
-   annotation-owned files. Do not
+   annotation-owned files. Commits `a72e080b4` and `bc0750097` then centralized point-like and
+   stroke query render-plan assembly. Do not
    restart by re-extracting
    dense/index/material upload emission, panel drawable/viewport helpers, the helper declarations
    already moved into owner-private headers, or the generic query helpers now centralized in
@@ -176,8 +177,9 @@ this section when a slice is completed.
      shared visual subsystems such as `visuals/stroke/`.
    - Query has family files, a registry, shared scratch helpers, standard item-id decoding, shared
      item-target eligibility for the simple item families, sample/native fallback policy, a
-     render-metadata completeness guard, vector/segment/path family decode ownership, and shared
-     primitive/mesh indexed query geometry already.
+     render-metadata completeness guard, vector/segment/path family decode ownership, shared
+     primitive/mesh indexed query geometry, shared point-like query planning, and shared stroke
+     query planning already.
      Finish moving remaining family scratch geometry, non-item native result decoding outside the
      standard item-id path into family `query.c` files or narrow shared visual subsystems. The
      image/labels/volume native-target unsupported fallback now lives behind family hooks; add new

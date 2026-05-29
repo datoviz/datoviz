@@ -67,10 +67,10 @@ scalar field sampling split, and typed splat/primitive/image/labels/textured-mes
 resolution, sampled-field data setter split, typed fixture render cleanup, untyped visual
 compatibility removal, axis text/tick helper splits, sampled-field binding-release ownership, and
 image/labels/volume query unsupported-policy hooks, shared primitive/mesh indexed query geometry,
-and axis generated-visual/layout-reserve splits through `6e572aeec`. `_scene.h` no longer exposes
-narrow helper declarations; its remaining broadness is shared retained scene object and type
-definitions. Start with remaining query-family native-result/bounds ownership, domain/text
-ownership cleanup, and standalone candidate assessment in
+shared point-like/stroke query planning, and axis generated-visual/layout-reserve splits through
+`bc0750097`. `_scene.h` no longer exposes narrow helper declarations; its remaining broadness is
+shared retained scene object and type definitions. Start with remaining query-family native-result
+and bounds ownership, domain/text ownership cleanup, and standalone candidate assessment in
 [`../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md);
 do not reopen dense/index/material upload emission, panel drawable/viewport helper extraction, or
 the helper declarations already moved into owner-private headers unless a new regression points
