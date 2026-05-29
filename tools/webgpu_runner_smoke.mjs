@@ -49,6 +49,8 @@ globalThis.GPUMapMode = { READ: 1 };
 globalThis.atob = (value) => Buffer.from(value, 'base64').toString('binary');
 globalThis.btoa = (value) => Buffer.from(value, 'binary').toString('base64');
 
+let createdBufferCount = 0;
+
 const pass = () => ({
   setPipeline() {},
   setVertexBuffer() {},
@@ -75,6 +77,7 @@ const device = {
     async onSubmittedWorkDone() {},
   },
   createBuffer(desc = {}) {
+    createdBufferCount++;
     return {
       size: desc.size ?? 0,
       destroy() {},
@@ -278,6 +281,17 @@ async function expectFailure(executeDrp2Stream, stream, expectedText, expected =
     return;
   }
   throw new Error(`expected "${expectedText}" failure`);
+}
+
+async function expectCapabilityPreflightFailure(executeDrp2Stream, stream, expectedText, expected) {
+  const before = createdBufferCount;
+  await expectFailure(executeDrp2Stream, stream, expectedText, expected);
+  if (createdBufferCount !== before) {
+    throw new Error(
+      `capability preflight created GPU buffers before failing: ` +
+        `${before} -> ${createdBufferCount}`,
+    );
+  }
 }
 
 async function expectNegativeFixtureParity(executeDrp2Stream, path) {
@@ -613,6 +627,42 @@ async function main() {
       ],
     },
     'unsupported load_op',
+  );
+
+  await expectCapabilityPreflightFailure(
+    executeDrp2Stream,
+    {
+      capabilities: { supported_texture_formats: ['bgra8unorm'] },
+      commands: [
+        ...header,
+        { cmd: 'CreateBuffer', id: 1, size: 4, usage: ['COPY_DST'] },
+        ...triangleShaders,
+        renderPipeline([{ format: 'rgba8unorm', write_mask: ['all'] }]),
+      ],
+    },
+    'color target format rgba8unorm is not supported by capabilities',
+    {
+      commandIndex: 5,
+      cmd: 'CreateRenderPipeline',
+      code: 'DRP2_ERR_UNSUPPORTED_CAPABILITY',
+    },
+  );
+
+  await expectCapabilityPreflightFailure(
+    executeDrp2Stream,
+    {
+      commands: [
+        ...header,
+        { cmd: 'CreateBuffer', id: 1, size: 4, usage: ['COPY_DST'] },
+        { cmd: 'ResourceBarrier' },
+      ],
+    },
+    'unsupported DRP2 command in WebGPU PoC: ResourceBarrier',
+    {
+      commandIndex: 3,
+      cmd: 'ResourceBarrier',
+      code: 'DRP2_ERR_UNSUPPORTED_CAPABILITY',
+    },
   );
 
   for (const path of negativePaths) {

@@ -1028,6 +1028,194 @@ function validateTextureCapabilities(capabilities, command, format, extent) {
 
 
 
+const SUPPORTED_DRP2_COMMANDS = new Set([
+  "HelloRenderer",
+  "RendererHelloReply",
+  "Error",
+  "CreateBuffer",
+  "DestroyBuffer",
+  "WriteBuffer",
+  "CreateTexture",
+  "DestroyTexture",
+  "CreateTextureView",
+  "DestroyTextureView",
+  "WriteTexture",
+  "CreateSampler",
+  "DestroySampler",
+  "CreateBindGroupLayout",
+  "DestroyBindGroupLayout",
+  "CreateBindGroup",
+  "DestroyBindGroup",
+  "CreateShaderModule",
+  "DestroyShaderModule",
+  "CreateRenderPipeline",
+  "DestroyRenderPipeline",
+  "CreateComputePipeline",
+  "DestroyComputePipeline",
+  "BeginCommandEncoder",
+  "FinishCommandEncoder",
+  "BeginRenderPass",
+  "EndRenderPass",
+  "BeginComputePass",
+  "EndComputePass",
+  "SetPipeline",
+  "SetVertexBuffer",
+  "SetIndexBuffer",
+  "SetBindGroup",
+  "SetViewport",
+  "SetScissor",
+  "SetBlendConstant",
+  "SetStencilReference",
+  "Draw",
+  "DrawIndexed",
+  "DispatchWorkgroups",
+  "CopyBufferToBuffer",
+  "CopyBufferToTexture",
+  "CopyTextureToBuffer",
+  "CopyTextureToTexture",
+  "QueueSubmit",
+  "QueueSubmitReply",
+]);
+
+
+
+function unsupportedCapability(commandIndex, command, detail) {
+  throw new Drp2WebGpuError(
+    commandIndex,
+    command,
+    "DRP2_ERR_UNSUPPORTED_CAPABILITY",
+    detail,
+  );
+}
+
+
+
+function featureRequired(commandIndex, command, detail) {
+  throw new Drp2WebGpuError(commandIndex, command, "DRP2_ERR_FEATURE_REQUIRED", detail);
+}
+
+
+
+function requireCapabilityValue(commandIndex, command, capabilities, field, value, label = field) {
+  const supported = capabilities[field];
+  if (Array.isArray(supported) && !supported.includes(value)) {
+    unsupportedCapability(
+      commandIndex,
+      command,
+      `${label} ${value} is not supported by capabilities ${field}=${JSON.stringify(supported)}`,
+    );
+  }
+}
+
+
+
+function validateTextureCapabilityPreflight(commandIndex, command, capabilities) {
+  const format = required(command.format, "CreateTexture needs format");
+  requireCapabilityValue(
+    commandIndex,
+    command,
+    capabilities,
+    "supported_texture_formats",
+    format,
+    "texture format",
+  );
+  const mappedFormat = mapTextureFormat(format);
+  const extent = commandExtent(command);
+  validateTextureCapabilities(capabilities, command, mappedFormat, extent);
+}
+
+
+
+function validateShaderCapabilityPreflight(commandIndex, command, capabilities) {
+  const format = required(command.format, "CreateShaderModule needs format");
+  requireCapabilityValue(
+    commandIndex,
+    command,
+    capabilities,
+    "supported_shader_formats",
+    format,
+    "shader format",
+  );
+  if (format !== "wgsl") {
+    unsupportedCapability(commandIndex, command, `unsupported shader format: ${format}`);
+  }
+  if (command.required_features?.includes("fp64") && capabilities.supports_fp64 === false) {
+    featureRequired(commandIndex, command, "shader module requires feature fp64");
+  }
+}
+
+
+
+function validateRenderPipelineCapabilityPreflight(commandIndex, command, capabilities, canvasFormat) {
+  const colorTargets = command.color_targets ?? [];
+  for (const target of colorTargets) {
+    const format = colorTargetFormat(canvasFormat, target);
+    requireCapabilityValue(
+      commandIndex,
+      command,
+      capabilities,
+      "supported_texture_formats",
+      format,
+      "color target format",
+    );
+  }
+
+  const depthFormat = depthStencilFormat(command);
+  if (depthFormat !== null) {
+    requireCapabilityValue(
+      commandIndex,
+      command,
+      capabilities,
+      "supported_texture_formats",
+      depthFormat,
+      "depth/stencil format",
+    );
+  }
+}
+
+
+
+function validateStreamCapabilities(commands, capabilities, canvasFormat) {
+  for (const [commandIndex, command] of commands.entries()) {
+    try {
+      if (!SUPPORTED_DRP2_COMMANDS.has(command.cmd)) {
+        unsupportedCapability(
+          commandIndex,
+          command,
+          `unsupported DRP2 command in WebGPU PoC: ${command.cmd}`,
+        );
+      }
+
+      switch (command.cmd) {
+        case "CreateTexture":
+          validateTextureCapabilityPreflight(commandIndex, command, capabilities);
+          break;
+
+        case "CreateShaderModule":
+          validateShaderCapabilityPreflight(commandIndex, command, capabilities);
+          break;
+
+        case "CreateRenderPipeline":
+        case "CreateComputePipeline":
+          validateRenderPipelineCapabilityPreflight(
+            commandIndex,
+            command,
+            capabilities,
+            canvasFormat,
+          );
+          break;
+
+        default:
+          break;
+      }
+    } catch (error) {
+      throw wrapDrp2WebGpuError(commandIndex, command, error);
+    }
+  }
+}
+
+
+
 function validateTextureRange(textureRecord, mipLevel, origin, size) {
   if (mipLevel >= textureRecord.mipLevelCount) {
     throw new Error(`mip level ${mipLevel} is out of range`);
@@ -2051,6 +2239,10 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
   const commands = options.commands ?? stream.commands;
   const enforceHandshake = options.commands === undefined;
   let sessionState = "initial";
+
+  if (options.validateCapabilities !== false) {
+    validateStreamCapabilities(commands, capabilities, canvasFormat);
+  }
 
   for (const [commandIndex, command] of commands.entries()) {
     try {
