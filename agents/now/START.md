@@ -64,10 +64,11 @@ standard item-id decode, standard item-target eligibility, query native-target p
 sample-target native policy, FramePlan/render-contract metadata enforcement, typed point-like
 fallback label resolution, vector/stroke query-family decode ownership, field dirty propagation,
 scalar field sampling split, and typed splat/primitive/image/labels/textured-mesh fallback label
-resolution, sampled-field data setter split, typed fixture render cleanup, and untyped visual
-compatibility removal commits through `4a4620013`. `_scene.h` no longer exposes narrow helper declarations; its
+resolution, sampled-field data setter split, typed fixture render cleanup, untyped visual
+compatibility removal, axis text/tick helper splits, sampled-field binding-release ownership, and
+image/labels/volume query unsupported-policy hooks through `7cede7328`. `_scene.h` no longer exposes narrow helper declarations; its
 remaining broadness is shared retained scene object and type definitions. Start with remaining
-annotation/domain cleanup, residual query-family scratch/unsupported-policy ownership, and
+annotation layout/generated-visual cleanup, residual query-family scratch ownership, and
 standalone candidate assessment in
 [`../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md);
 do not reopen dense/index/material upload emission, panel drawable/viewport helper extraction, or

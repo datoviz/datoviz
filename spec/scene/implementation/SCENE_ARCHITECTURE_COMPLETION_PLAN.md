@@ -49,13 +49,17 @@ Important current state:
    still needs the remaining pure upload/cache builders, non-item query result ownership outside
    the standard item-id path, and any residual family-specific bounds logic to migrate into
    family-owned files. Generic query scratch helpers, standard item-id decoding, standard
-   item-target eligibility, native-only target fallback policy, sample-target native policy, and
-   vector/segment/path family decode ownership are now in their owner files.
+   item-target eligibility, native-only target fallback policy, sample-target native policy,
+   vector/segment/path family decode ownership, and image/labels/volume unsupported-policy hooks are
+   now in their owner files.
 9. `annotation/text.c`, `annotation/axis.c`, `domain/field.c`, and the remaining family-specific
    payload construction reachable from scene emission remain mixed-ownership areas. Field dirty
    propagation and bound-visual texture dirtiness now live in `domain/field_dirty.c`, scalar
    sampled-field value interpretation lives in `domain/field_sample.c`, and sampled-field data
-   setters now live beside validation/copy helpers in `domain/field_data.c`.
+   setters now live beside validation/copy helpers in `domain/field_data.c`. Axis text realization
+   now lives in `annotation/axis_text.c`, axis tick/domain planning lives in
+   `annotation/axis_ticks.c`, and sampled-field destroy binding release lives in
+   `domain/field_binding.c`.
 10. `core/_scene.h` no longer exports narrow helper declarations. It remains broad because shared
     retained scene object and type definitions still live there; the next header shrink target is
     type ownership and include direction rather than more prototype movement.
@@ -72,13 +76,16 @@ Latest pickup snapshot:
    and scalar field sampling cleanup passes. Commits `2910398f1` and `14b1ab6f7` then extended typed
    fallback label resolution through splat, primitive, image/labels, and textured mesh. Commits
    `9191b22a1` and `472818e58` then made the untyped FramePlan render path explicitly
-   compatibility-named and moved sampled-field data setters into `domain/field_data.c`. Do not
+   compatibility-named and moved sampled-field data setters into `domain/field_data.c`. Commits
+   `dcdd494f0`, `75439d7a3`, `d1d461e77`, and `7cede7328` then split axis text realization,
+   sampled-field binding release, axis tick planning, and image/labels/volume query unsupported
+   policy into owner files. Do not
    restart by re-extracting
    dense/index/material upload emission, panel drawable/viewport helpers, the helper declarations
    already moved into owner-private headers, or the generic query helpers now centralized in
    `query/`.
-3. The best next implementation slices are now remaining annotation/domain ownership, residual
-   query-family scratch/unsupported-policy ownership, and standalone layer feasibility. Remaining
+3. The best next implementation slices are now residual query-family scratch ownership, remaining
+   annotation layout/generated-visual ownership, and standalone layer feasibility. Remaining
    upload work should be limited to pure family payload builders when a concrete builder is still
    mixed into scene emission.
 4. Last focused validation recorded for this split was `git diff --check`, `just build`,
@@ -168,8 +175,9 @@ this section when a slice is completed.
      item-target eligibility for the simple item families, sample/native fallback policy, a
      render-metadata completeness guard, and vector/segment/path family decode ownership already.
      Finish moving remaining family scratch geometry, non-item native result decoding outside the
-     standard item-id path, and unsupported-policy decisions into family `query.c` files or narrow
-     shared visual subsystems.
+     standard item-id path into family `query.c` files or narrow shared visual subsystems. The
+     image/labels/volume native-target unsupported fallback now lives behind family hooks; add new
+     unsupported decisions there instead of growing generic executor target switches.
    - Keep the query executor, request queue, readback scheduling, and retained request processing
      generic.
 
@@ -186,11 +194,13 @@ this section when a slice is completed.
      `domain/field_dirty.c`, beside bound-visual texture dirty state and refresh helpers. Scalar
      sampled-field interpretation moved from `domain/field_data.c` to `domain/field_sample.c`.
      Public sampled-field payload setters moved from `domain/field.c` to `domain/field_data.c`;
-     `field.c` now keeps lifecycle, geometry, descriptor, and slot ownership.
+     sampled-field destroy binding release moved to `domain/field_binding.c`; `field.c` now keeps
+     lifecycle, geometry, descriptor, and slot ownership.
    - Split `annotation/text.c` into retained text state, layout, glyph/quad synchronization, and
      renderer payloads.
-   - Split `annotation/axis.c` into retained axis state, tick generation, layout reserve, and
-     generated visual ownership.
+   - Status on 2026-05-29: axis text realization moved to `annotation/axis_text.c`, and tick/domain
+     planning moved to `annotation/axis_ticks.c`. The remaining axis work is layout reserve and
+     generated primitive-visual ownership.
    - Keep rendering semantics in visual families, not in domain or annotation orchestration.
 
 7. Split coarse scene CMake targets.

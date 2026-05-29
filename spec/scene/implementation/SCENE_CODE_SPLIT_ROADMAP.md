@@ -22,24 +22,30 @@ shared item-id decode, shared item-target eligibility, query native-target polic
 sample-target native policy cleanup, FramePlan/render-contract metadata enforcement, typed
 fallback label resolution for point/pixel/marker/splat/primitive/image/labels/textured mesh,
 vector/stroke query-family decode ownership, field dirty propagation cleanup, and scalar field
-sampling split through `14b1ab6f7`, the highest-value split candidates are:
+sampling split through `14b1ab6f7`, plus axis text/tick helper splits, sampled-field binding
+release ownership, and image/labels/volume unsupported-policy hooks on 2026-05-29, the
+highest-value split candidates are:
 
 1. `src/scene/query/` and family `visuals/*/query.c` files: query has a registry, split
    executor/policy/readback files, shared scratch helpers, standard item-id decoding, shared
    item-target eligibility for the simple item families, shared native-target fallback policy, and
-   family-owned vector/segment/path item-result decoding. Family scratch geometry, non-item result
-   decoding outside the standard item-id path, and unsupported-policy ownership should still be
-   checked family by family. Keep queueing, request freshness, executor lifecycle, common item
-   decoding, common item-target eligibility, native-target fallback policy, and readback scheduling
-   generic. Keep render metadata completeness in `frame_plan/` and render-contract validation, with
-   query execution only consuming that invariant.
+   family-owned vector/segment/path item-result decoding. Image/labels/volume unsupported native
+   target fallback now lives behind family hooks. Family scratch geometry and non-item result
+   decoding outside the standard item-id path should still be checked family by family. Keep
+   queueing, request freshness, executor lifecycle, common item decoding, common item-target
+   eligibility, native-target fallback policy, and readback scheduling generic. Keep render
+   metadata completeness in `frame_plan/` and render-contract validation, with query execution only
+   consuming that invariant.
 2. `src/scene/annotation/text.c` and `axis.c`: retained annotation objects, layout/reserve policy,
-   generated visuals, and text/glyph lowering are still mixed. Scale, colorbar, legend, colormap,
+   generated visuals, and text/glyph lowering are still mixed. Axis text realization now lives in
+   `axis_text.c`, and axis tick/domain planning lives in `axis_ticks.c`; remaining axis work is
+   layout reserve and generated primitive-visual ownership. Scale, colorbar, legend, colormap,
    scale-bar, and text-font ownership now have first-pass owner files.
 3. `src/scene/domain/field.c`: public domain object state and generated visual glue are still
    mixed. Field dirty propagation and bound-visual texture dirtiness now live in
-   `domain/field_dirty.c`, and scalar sampled-field value interpretation now lives in
-   `domain/field_sample.c`.
+   `domain/field_dirty.c`, scalar sampled-field value interpretation now lives in
+   `domain/field_sample.c`, and sampled-field destroy binding release now lives in
+   `domain/field_binding.c`.
 4. `src/scene/scene_emit/uploads.c` and `scene_emit/derived_upload.c`: the upload path is mostly
    phase orchestration now. Continue moving only pure cache/data construction into family or
    subsystem helpers when a concrete mixed helper remains; do not re-extract dense/index/material
@@ -109,9 +115,9 @@ They should move only when includes and ownership prove the boundary, not as a d
 
 Status: generic query scratch helpers, standard item-id decode, standard item-target eligibility,
 native-only target fallback policy, sample-target native policy, vector/segment/path family decode
-ownership, and FramePlan-owned render-metadata completeness checks completed on 2026-05-29. The next
-pickup is family-by-family ownership of remaining scratch geometry, non-item result decoding outside
-the standard item-id path, and unsupported-policy decisions.
+ownership, image/labels/volume unsupported-policy hooks, and FramePlan-owned render-metadata
+completeness checks completed on 2026-05-29. The next pickup is family-by-family ownership of
+remaining scratch geometry and non-item result decoding outside the standard item-id path.
 
 Current ownership:
 
