@@ -23,6 +23,7 @@
 #include "frame_plan/emit.h"
 #include "_scene_resource_key.h"
 #include "_scene.h"
+#include "_visual_pipeline.h"
 #include "core/frame_trace_internal.h"
 #include "_technique.h"
 #include "../../drp2/_stream.h"
@@ -582,6 +583,188 @@ int test_frame_plan_render_primitive_metadata_wgsl_uses_typed_labels(
             found_pipeline = true;
             AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
             AT(command->u.create_render_pipeline.binding_count == 2);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            found_draw = true;
+            AT(command->u.draw.vertex_count == 3);
+            AT(command->u.draw.instance_count == 1);
+        }
+    }
+    AT(found_pipeline);
+    AT(found_draw);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
+ * Ensure WGSL fallback image emission uses typed metadata labels, not upload roles.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_render_image_metadata_wgsl_uses_typed_labels(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.metadata.wgsl.image.labels", 1);
+    ANN(plan);
+
+    static const uint8_t pixels[2 * 2 * 4] = {
+        255, 0,   0,   255,
+        0,   255, 0,   255,
+        0,   0,   255, 255,
+        255, 255, 255, 255,
+    };
+
+    AT(dvz_frame_plan_upload(plan, "typed-image-uv", 0, 4 * 2 * sizeof(float), ""));
+    AT(dvz_frame_plan_upload_bytes(
+        plan, "typed-image-texture", 0, sizeof(pixels), "", pixels));
+    AT(dvz_frame_plan_upload_set_texture_extent(plan, 2, 2));
+    AT(dvz_frame_plan_upload(plan, "typed-image-position", 0, 4 * 3 * sizeof(float), ""));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "typed-img-quad"));
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.visual_type = DVZ_VISUAL_TYPE_IMAGE;
+    metadata.visual_index = 0;
+    metadata.buffer_index = UINT32_MAX;
+    metadata.topology = UINT32_MAX;
+    dvz_strlcpy(metadata.position_id, "typed-image-position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.texcoords_id, "typed-image-uv", sizeof(metadata.texcoords_id));
+    dvz_strlcpy(metadata.texture_id, "typed-image-texture", sizeof(metadata.texture_id));
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+    caps.shader_format_glsl = false;
+    dvz_diagnostic_report_init(&report);
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &emit_cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    bool found_pipeline = false;
+    bool found_draw = false;
+    const uint32_t count = dvz_drp2_stream_count(stream);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            if (command->u.create_render_pipeline.binding_count != 2)
+                continue;
+            found_pipeline = true;
+            AT(command->u.create_render_pipeline.topology ==
+               VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            found_draw = true;
+            AT(command->u.draw.vertex_count == 4);
+            AT(command->u.draw.instance_count == 1);
+        }
+    }
+    AT(found_pipeline);
+    AT(found_draw);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
+ * Ensure WGSL fallback textured mesh emission uses typed metadata labels, not upload roles.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_render_textured_mesh_metadata_wgsl_uses_typed_labels(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.metadata.wgsl.textured_mesh.labels", 1);
+    ANN(plan);
+
+    static const uint8_t pixels[2 * 2 * 4] = {
+        255, 0,   0,   255,
+        0,   255, 0,   255,
+        0,   0,   255, 255,
+        255, 255, 255, 255,
+    };
+
+    AT(dvz_frame_plan_upload_bytes(
+        plan, "typed-mesh-texture", 0, sizeof(pixels), "", pixels));
+    AT(dvz_frame_plan_upload_set_texture_extent(plan, 2, 2));
+    AT(dvz_frame_plan_upload(plan, "typed-mesh-normal", 0, 3 * 3 * sizeof(float), ""));
+    AT(dvz_frame_plan_upload(plan, "typed-mesh-color", 0, 3 * sizeof(DvzColor), ""));
+    AT(dvz_frame_plan_upload(plan, "typed-mesh-uv", 0, 3 * 2 * sizeof(float), ""));
+    AT(dvz_frame_plan_upload(plan, "typed-mesh-position", 0, 3 * 3 * sizeof(float), ""));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "typed-mesh"));
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.visual_type = DVZ_VISUAL_TYPE_MESH;
+    metadata.desc_kind = DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
+    metadata.visual_index = 0;
+    metadata.buffer_index = UINT32_MAX;
+    metadata.topology = UINT32_MAX;
+    dvz_strlcpy(metadata.position_id, "typed-mesh-position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.color_id, "typed-mesh-color", sizeof(metadata.color_id));
+    dvz_strlcpy(metadata.normal_id, "typed-mesh-normal", sizeof(metadata.normal_id));
+    dvz_strlcpy(metadata.texcoords_id, "typed-mesh-uv", sizeof(metadata.texcoords_id));
+    dvz_strlcpy(metadata.texture_id, "typed-mesh-texture", sizeof(metadata.texture_id));
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+    caps.shader_format_glsl = false;
+    dvz_diagnostic_report_init(&report);
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &emit_cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    bool found_pipeline = false;
+    bool found_draw = false;
+    const uint32_t count = dvz_drp2_stream_count(stream);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            if (command->u.create_render_pipeline.binding_count != 4)
+                continue;
+            found_pipeline = true;
+            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
         }
         else if (command->type == DVZ_DRP2_COMMAND_DRAW)
         {
@@ -2209,6 +2392,8 @@ int test_scene_frame_plan(TstSuite* suite)
     TST_CASE(test_frame_plan_render_visual_metadata_wgsl_uses_typed_labels);
     TST_CASE(test_frame_plan_render_splat_metadata_wgsl_uses_typed_labels);
     TST_CASE(test_frame_plan_render_primitive_metadata_wgsl_uses_typed_labels);
+    TST_CASE(test_frame_plan_render_image_metadata_wgsl_uses_typed_labels);
+    TST_CASE(test_frame_plan_render_textured_mesh_metadata_wgsl_uses_typed_labels);
     TST_CASE(test_frame_plan_render_metadata_complete);
     TST_CASE(test_frame_plan_runtime_uses_graph_pass_order);
     TST_CASE(test_frame_plan_render_visual_metadata_diagnostic);

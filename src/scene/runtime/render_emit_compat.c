@@ -255,40 +255,44 @@ bool _emitter_emit_render_compat(
         }
         if (desc_kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
         {
-            mesh_pos = _scene_visual_resource_by_role(
-                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
-                DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
-            mesh_color = _scene_visual_resource_by_role(
-                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
-                DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR);
-            mesh_normal = _scene_visual_resource_by_role(
-                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
-                DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL);
-            mesh_uv = _scene_visual_resource_by_role(
-                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
-                DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS);
-            mesh_tex = _scene_visual_resource_by_role(
-                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
-                DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE);
-            is_textured_mesh =
-                mesh_pos != 0 && mesh_color != 0 && mesh_normal != 0 && mesh_uv != 0 &&
-                mesh_tex != 0;
+            if (!_typed_lookup_required(
+                    &emitter->resources, visual_meta->position_id,
+                    "typed visual metadata missing position resource", report, &mesh_pos) ||
+                !_typed_lookup_required(
+                    &emitter->resources, visual_meta->color_id,
+                    "typed primitive metadata missing color resource", report, &mesh_color) ||
+                !_typed_lookup_required(
+                    &emitter->resources, visual_meta->normal_id,
+                    "typed textured mesh metadata missing normal/texcoords resource", report,
+                    &mesh_normal) ||
+                !_typed_lookup_required(
+                    &emitter->resources, visual_meta->texcoords_id,
+                    "typed textured mesh metadata missing normal/texcoords resource", report,
+                    &mesh_uv) ||
+                !_typed_lookup_required(
+                    &emitter->resources, visual_meta->texture_id,
+                    "typed textured mesh metadata missing texture resource", report, &mesh_tex))
+                return false;
+            is_textured_mesh = true;
         }
         if (
             desc_kind == DVZ_SCENE_VISUAL_DESC_IMAGE ||
             desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
             desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT)
         {
-            image_pos = _scene_visual_resource_by_role(
-                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
-                DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
-            image_uv = _scene_visual_resource_by_role(
-                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
-                DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS);
-            image_tex = _scene_visual_resource_by_role(
-                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
-                DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE);
-            is_image = image_pos != 0 && image_uv != 0 && image_tex != 0;
+            if (!_typed_lookup_required(
+                    &emitter->resources, visual_meta->position_id,
+                    "typed visual metadata missing position resource", report, &image_pos) ||
+                !_typed_lookup_required(
+                    &emitter->resources, visual_meta->texcoords_id,
+                    "typed image metadata missing texcoords/texture resource", report,
+                    &image_uv) ||
+                !_typed_lookup_required(
+                    &emitter->resources, visual_meta->texture_id,
+                    "typed image metadata missing texcoords/texture resource", report,
+                    &image_tex))
+                return false;
+            is_image = true;
         }
     }
     else

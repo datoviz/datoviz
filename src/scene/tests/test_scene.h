@@ -221,6 +221,10 @@ int test_frame_plan_render_splat_metadata_wgsl_uses_typed_labels(
     TstContext* suite, const TstCase* item);
 int test_frame_plan_render_primitive_metadata_wgsl_uses_typed_labels(
     TstContext* suite, const TstCase* item);
+int test_frame_plan_render_image_metadata_wgsl_uses_typed_labels(
+    TstContext* suite, const TstCase* item);
+int test_frame_plan_render_textured_mesh_metadata_wgsl_uses_typed_labels(
+    TstContext* suite, const TstCase* item);
 int test_frame_plan_render_metadata_complete(TstContext* suite, const TstCase* item);
 int test_frame_plan_render_visual_metadata_diagnostic(TstContext* suite, const TstCase* item);
 int test_frame_plan_draw_resource_validation_rejects_short_position(
