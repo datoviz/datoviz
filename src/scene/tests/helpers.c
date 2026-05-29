@@ -117,7 +117,7 @@ void _scene_canvas_drp2_draw(
                      dvz_frame_plan_render(
                          plan, "panel.0", "target.panel.0.color", false) &&
                      dvz_frame_plan_render_visual(plan, "visual.point.0") &&
-                     dvz_frame_plan_render_allow_untyped_visuals(plan);
+                     dvz_frame_plan_render_allow_untyped_visual_compat(plan);
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);

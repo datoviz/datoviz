@@ -561,7 +561,7 @@ bool _scene_visual_desc_from_render(
     const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[visual_index];
     if (meta->has_metadata)
         return _scene_visual_desc_from_metadata(emitter, meta, out, error);
-    if (!render->u.render.allow_untyped_visuals)
+    if (!render->u.render.allow_untyped_visual_compat)
     {
         if (error != NULL)
             *error = "render visual missing typed metadata";

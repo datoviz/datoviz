@@ -292,7 +292,7 @@ bool _emitter_resolve_render_vertex_buffers(
             continue;
         }
 
-        if (!render->u.render.allow_untyped_visuals)
+        if (!render->u.render.allow_untyped_visual_compat)
             return false;
 
         /* "position" is always required. Other attrs are family-dependent and optional. */
@@ -356,7 +356,7 @@ bool _scene_render_visual_has_position_resource(
                    (segment_like || stroked_path) ? meta->position_start_id : meta->position_id) !=
                0;
     }
-    if (!render->u.render.allow_untyped_visuals)
+    if (!render->u.render.allow_untyped_visual_compat)
         return false;
 
     return _scene_render_visual_resource_id(

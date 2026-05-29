@@ -448,7 +448,7 @@ int test_scene_render_contract_rejects_untyped_visual_metadata(
     DvzScenePassContract contract = {0};
     AT(!_scene_pass_contract_from_render(plan, panel, render, NULL, &contract));
 
-    AT(dvz_frame_plan_render_allow_untyped_visuals(plan));
+    AT(dvz_frame_plan_render_allow_untyped_visual_compat(plan));
     AT(_scene_pass_contract_from_render(plan, panel, render, NULL, &contract));
     AT(contract.draw_count == 0);
 

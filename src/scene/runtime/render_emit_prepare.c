@@ -119,7 +119,7 @@ bool _emitter_prepare_render_multi(
         {
             if (
                 render->u.render.visual_metadata[i].has_metadata ||
-                !render->u.render.allow_untyped_visuals)
+                !render->u.render.allow_untyped_visual_compat)
             {
                 _diagnostic(
                     report, visual_error != NULL ? visual_error : "invalid typed visual metadata");

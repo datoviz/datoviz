@@ -218,7 +218,7 @@ bool _scene_pass_contract_from_render_ex(
         const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
         if (!meta->has_metadata)
         {
-            if (!render->u.render.allow_untyped_visuals)
+            if (!render->u.render.allow_untyped_visual_compat)
                 return false;
             continue;
         }
