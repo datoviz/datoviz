@@ -1890,8 +1890,6 @@ void _scene_font_release(DvzFont* font);
 
 EXTERN_C_OFF
 
-void _scene_release_visual_field(DvzVisual* visual);
-
 void _scene_release_visual_buffer(DvzVisual* visual);
 
 void _scene_field_reset(DvzSampledField* field);

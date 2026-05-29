@@ -72,3 +72,5 @@ void _scene_visual_texture_mark_region_dirty(
     DvzVisual* visual, const DvzSampledFieldDesc* desc, DvzFieldRegion region);
 
 void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field);
+
+void _scene_release_visual_field(DvzVisual* visual);
