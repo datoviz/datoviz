@@ -1658,10 +1658,10 @@ int test_frame_plan_emit_drp2_readback_glsl_executes(TstContext* suite, const Ts
     DvzFramePlan* plan = dvz_frame_plan("figure.readback.glsl.execute", 20);
     ANN(plan);
     AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
-    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_fixture_visual(plan, "visual.pickable.0", "buf.point.position"));
-    AT(dvz_frame_plan_copy(plan, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(plan, "buf.pick.readback", "request.pick.0"));
+    AT(dvz_frame_plan_copy(plan, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(plan, "buf.query.readback", "request.query.0"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -1706,16 +1706,16 @@ int test_frame_plan_emitter_runtime_two_frames_glsl_executes(TstContext* suite, 
     ANN(frame0);
     ANN(frame1);
     AT(dvz_frame_plan_upload(frame0, "buf.point.position", 0, 16, "point.position.0"));
-    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_fixture_visual(frame0, "visual.pickable.0", "buf.point.position"));
-    AT(dvz_frame_plan_copy(frame0, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame0, "buf.pick.readback", "request.pick.0"));
+    AT(dvz_frame_plan_copy(frame0, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame0, "buf.query.readback", "request.query.0"));
 
     AT(dvz_frame_plan_upload(frame1, "buf.point.position", 0, 16, "point.position.1"));
-    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_fixture_visual(frame1, "visual.pickable.0", "buf.point.position"));
-    AT(dvz_frame_plan_copy(frame1, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame1, "buf.pick.readback", "request.pick.1"));
+    AT(dvz_frame_plan_copy(frame1, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame1, "buf.query.readback", "request.query.1"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -1772,19 +1772,19 @@ int test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes(
     ANN(frame1);
     AT(dvz_frame_plan_upload(frame0, "buf.dynamic.position", 0, 16, "point.position.0"));
     AT(dvz_frame_plan_upload(frame0, "buf.dynamic.color", 0, 16, "point.color.0"));
-    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_fixture_visual_ex(
         frame0, "visual.dynamic.0", "buf.dynamic.position", "buf.dynamic.color"));
-    AT(dvz_frame_plan_copy(frame0, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame0, "buf.pick.readback", "request.pick.0"));
+    AT(dvz_frame_plan_copy(frame0, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame0, "buf.query.readback", "request.query.0"));
 
     AT(dvz_frame_plan_upload(frame1, "buf.dynamic.position", 0, 16, "point.position.1"));
     AT(dvz_frame_plan_upload(frame1, "buf.dynamic.color", 0, 16, "point.color.1"));
-    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_fixture_visual_ex(
         frame1, "visual.dynamic.0", "buf.dynamic.position", "buf.dynamic.color"));
-    AT(dvz_frame_plan_copy(frame1, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame1, "buf.pick.readback", "request.pick.1"));
+    AT(dvz_frame_plan_copy(frame1, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame1, "buf.query.readback", "request.query.1"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -1842,22 +1842,22 @@ int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
     AT(_frame_plan_upload_image_fixture_geometry(
         frame0, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame0, "tex.image.rgba", 0, 16, "image.rgba.0"));
-    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_image_fixture_visual(
         frame0, "visual.image.0", "buf.image.position", "buf.image.texcoords",
         "tex.image.rgba"));
-    AT(dvz_frame_plan_copy(frame0, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame0, "buf.pick.readback", "request.pick.0"));
+    AT(dvz_frame_plan_copy(frame0, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame0, "buf.query.readback", "request.query.0"));
 
     AT(_frame_plan_upload_image_fixture_geometry(
         frame1, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame1, "tex.image.rgba", 0, 16, "image.rgba.1"));
-    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_image_fixture_visual(
         frame1, "visual.image.0", "buf.image.position", "buf.image.texcoords",
         "tex.image.rgba"));
-    AT(dvz_frame_plan_copy(frame1, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame1, "buf.pick.readback", "request.pick.1"));
+    AT(dvz_frame_plan_copy(frame1, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame1, "buf.query.readback", "request.query.1"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -1916,19 +1916,19 @@ int test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes(
     AT(dvz_frame_plan_compute(frame0, "copy_positions", 1, 1, 1));
     AT(dvz_frame_plan_compute_read(frame0, "buf.compute.input"));
     AT(dvz_frame_plan_compute_write(frame0, "buf.compute.output"));
-    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_fixture_visual(frame0, "visual.compute.0", "buf.compute.output"));
-    AT(dvz_frame_plan_copy(frame0, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame0, "buf.pick.readback", "request.pick.0"));
+    AT(dvz_frame_plan_copy(frame0, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame0, "buf.query.readback", "request.query.0"));
 
     AT(dvz_frame_plan_upload(frame1, "buf.compute.input", 0, 36, "compute.input.1"));
     AT(dvz_frame_plan_compute(frame1, "copy_positions", 1, 1, 1));
     AT(dvz_frame_plan_compute_read(frame1, "buf.compute.input"));
     AT(dvz_frame_plan_compute_write(frame1, "buf.compute.output"));
-    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_fixture_visual(frame1, "visual.compute.0", "buf.compute.output"));
-    AT(dvz_frame_plan_copy(frame1, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame1, "buf.pick.readback", "request.pick.1"));
+    AT(dvz_frame_plan_copy(frame1, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame1, "buf.query.readback", "request.query.1"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -2159,10 +2159,10 @@ int test_frame_plan_emit_drp2_readback(TstContext* suite, const TstCase* item)
     ANN(plan);
 
     AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
-    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_fixture_visual(plan, "visual.pickable.0", "buf.point.position"));
-    AT(dvz_frame_plan_copy(plan, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(plan, "buf.pick.readback", "request.pick.0"));
+    AT(dvz_frame_plan_copy(plan, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(plan, "buf.query.readback", "request.query.0"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -2408,16 +2408,16 @@ int test_frame_plan_emitter_runtime_two_frames(TstContext* suite, const TstCase*
     ANN(frame0);
     ANN(frame1);
     AT(dvz_frame_plan_upload(frame0, "buf.point.position", 0, 16, "point.position.0"));
-    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_fixture_visual(frame0, "visual.pickable.0", "buf.point.position"));
-    AT(dvz_frame_plan_copy(frame0, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame0, "buf.pick.readback", "request.pick.0"));
+    AT(dvz_frame_plan_copy(frame0, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame0, "buf.query.readback", "request.query.0"));
 
     AT(dvz_frame_plan_upload(frame1, "buf.point.position", 0, 16, "point.position.1"));
-    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_fixture_visual(frame1, "visual.pickable.0", "buf.point.position"));
-    AT(dvz_frame_plan_copy(frame1, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame1, "buf.pick.readback", "request.pick.1"));
+    AT(dvz_frame_plan_copy(frame1, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame1, "buf.query.readback", "request.query.1"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -2487,19 +2487,19 @@ int test_frame_plan_emitter_runtime_dynamic_two_frames(TstContext* suite, const 
     ANN(frame1);
     AT(dvz_frame_plan_upload(frame0, "buf.dynamic.position", 0, 16, "point.position.0"));
     AT(dvz_frame_plan_upload(frame0, "buf.dynamic.color", 0, 16, "point.color.0"));
-    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_fixture_visual_ex(
         frame0, "visual.dynamic.0", "buf.dynamic.position", "buf.dynamic.color"));
-    AT(dvz_frame_plan_copy(frame0, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame0, "buf.pick.readback", "request.pick.0"));
+    AT(dvz_frame_plan_copy(frame0, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame0, "buf.query.readback", "request.query.0"));
 
     AT(dvz_frame_plan_upload(frame1, "buf.dynamic.position", 0, 16, "point.position.1"));
     AT(dvz_frame_plan_upload(frame1, "buf.dynamic.color", 0, 16, "point.color.1"));
-    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_fixture_visual_ex(
         frame1, "visual.dynamic.0", "buf.dynamic.position", "buf.dynamic.color"));
-    AT(dvz_frame_plan_copy(frame1, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame1, "buf.pick.readback", "request.pick.1"));
+    AT(dvz_frame_plan_copy(frame1, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame1, "buf.query.readback", "request.query.1"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -2650,7 +2650,7 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
         frame0, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame0, "tex.resize.rgba", 0, 16, "image.rgba.0"));
     AT(dvz_frame_plan_upload_set_texture_extent(frame0, 2, 2));
-    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_image_fixture_visual(
         frame0, "visual.image.resize", "buf.image.position", "buf.image.texcoords",
         "tex.resize.rgba"));
@@ -2659,7 +2659,7 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
         frame1, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame1, "tex.resize.rgba", 0, 16, "image.rgba.1"));
     AT(dvz_frame_plan_upload_set_texture_extent(frame1, 2, 2));
-    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_image_fixture_visual(
         frame1, "visual.image.resize", "buf.image.position", "buf.image.texcoords",
         "tex.resize.rgba"));
@@ -2668,7 +2668,7 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
         frame2, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame2, "tex.resize.rgba", 0, 64, "image.rgba.2"));
     AT(dvz_frame_plan_upload_set_texture_extent(frame2, 4, 4));
-    AT(dvz_frame_plan_render(frame2, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame2, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_image_fixture_visual(
         frame2, "visual.image.resize", "buf.image.position", "buf.image.texcoords",
         "tex.resize.rgba"));
@@ -2679,7 +2679,7 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
     AT(dvz_frame_plan_upload_set_texture_extent(frame3, 1, 1));
     AT(dvz_frame_plan_upload_set_texture_allocation_extent(frame3, 4, 4));
     AT(dvz_frame_plan_upload_set_texture_region(frame3, 3, 3));
-    AT(dvz_frame_plan_render(frame3, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame3, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_image_fixture_visual(
         frame3, "visual.image.partial", "buf.image.position", "buf.image.texcoords",
         "tex.partial.rgba"));
@@ -2904,22 +2904,22 @@ int test_frame_plan_emitter_runtime_texture_two_frames(TstContext* suite, const 
     AT(_frame_plan_upload_image_fixture_geometry(
         frame0, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame0, "tex.image.rgba", 0, 16, "image.rgba.0"));
-    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_image_fixture_visual(
         frame0, "visual.image.0", "buf.image.position", "buf.image.texcoords",
         "tex.image.rgba"));
-    AT(dvz_frame_plan_copy(frame0, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame0, "buf.pick.readback", "request.pick.0"));
+    AT(dvz_frame_plan_copy(frame0, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame0, "buf.query.readback", "request.query.0"));
 
     AT(_frame_plan_upload_image_fixture_geometry(
         frame1, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame1, "tex.image.rgba", 0, 16, "image.rgba.1"));
-    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_image_fixture_visual(
         frame1, "visual.image.0", "buf.image.position", "buf.image.texcoords",
         "tex.image.rgba"));
-    AT(dvz_frame_plan_copy(frame1, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame1, "buf.pick.readback", "request.pick.1"));
+    AT(dvz_frame_plan_copy(frame1, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame1, "buf.query.readback", "request.query.1"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -3024,19 +3024,19 @@ int test_frame_plan_emitter_runtime_compute_two_frames(TstContext* suite, const 
     AT(dvz_frame_plan_compute(frame0, "copy_positions", 1, 1, 1));
     AT(dvz_frame_plan_compute_read(frame0, "buf.compute.input"));
     AT(dvz_frame_plan_compute_write(frame0, "buf.compute.output"));
-    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_fixture_visual(frame0, "visual.compute.0", "buf.compute.output"));
-    AT(dvz_frame_plan_copy(frame0, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame0, "buf.pick.readback", "request.pick.0"));
+    AT(dvz_frame_plan_copy(frame0, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame0, "buf.query.readback", "request.query.0"));
 
     AT(dvz_frame_plan_upload(frame1, "buf.compute.input", 0, 36, "compute.input.1"));
     AT(dvz_frame_plan_compute(frame1, "copy_positions", 1, 1, 1));
     AT(dvz_frame_plan_compute_read(frame1, "buf.compute.input"));
     AT(dvz_frame_plan_compute_write(frame1, "buf.compute.output"));
-    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_fixture_visual(frame1, "visual.compute.0", "buf.compute.output"));
-    AT(dvz_frame_plan_copy(frame1, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(frame1, "buf.pick.readback", "request.pick.1"));
+    AT(dvz_frame_plan_copy(frame1, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(frame1, "buf.query.readback", "request.query.1"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};

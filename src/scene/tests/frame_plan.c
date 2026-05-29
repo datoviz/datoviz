@@ -1153,10 +1153,10 @@ int test_frame_plan_readbacks(TstContext* suite, const TstCase* item)
     DvzFramePlan* plan = dvz_frame_plan("figure.readback", 9);
     ANN(plan);
 
-    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.query", true));
     AT(dvz_frame_plan_render_visual(plan, "visual.pickable.0"));
-    AT(dvz_frame_plan_copy(plan, "target.panel.0.picking", "buf.pick.readback", 4));
-    AT(dvz_frame_plan_readback(plan, "buf.pick.readback", "request.pick.0"));
+    AT(dvz_frame_plan_copy(plan, "target.panel.0.query", "buf.query.readback", 4));
+    AT(dvz_frame_plan_readback(plan, "buf.query.readback", "request.query.0"));
     AT(dvz_frame_plan_copy(plan, "target.panel.0.color", "buf.offscreen.readback", 1024));
     AT(dvz_frame_plan_readback(plan, "buf.offscreen.readback", "request.export.0"));
 
@@ -1169,10 +1169,10 @@ int test_frame_plan_readbacks(TstContext* suite, const TstCase* item)
     ANN(json);
     AT(strstr(json, "\"picking\": true") != NULL);
     AT(strstr(json, "\"type\": \"copy\"") != NULL);
-    AT(strstr(json, "\"src_resource_id\": \"target.panel.0.picking\"") != NULL);
+    AT(strstr(json, "\"src_resource_id\": \"target.panel.0.query\"") != NULL);
     AT(strstr(json, "\"bytes_per_row\": 4") != NULL);
     AT(strstr(json, "\"rows_per_image\": 1") != NULL);
-    AT(strstr(json, "\"request_id\": \"request.pick.0\"") != NULL);
+    AT(strstr(json, "\"request_id\": \"request.query.0\"") != NULL);
     AT(strstr(json, "\"request_id\": \"request.export.0\"") != NULL);
 
     dvz_frame_plan_json_destroy(json);
