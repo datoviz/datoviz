@@ -81,6 +81,8 @@ bool _scene_prepare_volume_texture(
 bool _scene_prepare_image_texture(
     DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data);
 
+void _scene_mark_field_region_dirty(DvzSampledField* field, DvzFieldRegion region, bool full);
+
 void _scene_visual_texture_mark_clean(DvzVisual* visual);
 
 void _scene_visual_texture_mark_dirty(DvzVisual* visual);

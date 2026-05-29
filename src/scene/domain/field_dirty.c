@@ -17,6 +17,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "field_internal.h"
 
 
@@ -125,6 +126,63 @@ void _scene_visual_texture_mark_region_dirty(
     {
         visual->texture.field_dirty_full = true;
         visual->texture.field_dirty_region = _field_full_region(desc);
+    }
+}
+
+
+
+/**
+ * Mark one sampled-field region and all bound visuals as dirty.
+ *
+ * @param field the sampled field
+ * @param region dirty region
+ * @param full whether the full field must be marked dirty
+ */
+void _scene_mark_field_region_dirty(DvzSampledField* field, DvzFieldRegion region, bool full)
+{
+    if (field == NULL || field->scene == NULL)
+        return;
+    if (full)
+    {
+        region = _field_full_region(&field->desc);
+        field->dirty_region = region;
+        field->dirty = true;
+        field->dirty_full = true;
+    }
+    else if (!field->dirty)
+    {
+        field->dirty_region = region;
+        field->dirty = true;
+        field->dirty_full = false;
+    }
+    else if (field->dirty_full)
+    {
+        field->dirty_region = _field_full_region(&field->desc);
+    }
+    else if (!_field_regions_union(&field->dirty_region, &region, &field->dirty_region))
+    {
+        field->dirty_region = region;
+        field->dirty_full = true;
+    }
+    else
+    {
+        field->dirty_full = false;
+    }
+    field->dirty = true;
+    DvzScene* scene = field->scene;
+    for (uint32_t i = 0; i < scene->visual_count; i++)
+    {
+        DvzVisual* visual = &scene->visuals[i];
+        if (visual->scene == scene && visual->field == field)
+        {
+            if (full)
+            {
+                _scene_visual_texture_mark_full_dirty(visual, &field->desc);
+            }
+            else
+                _scene_visual_texture_mark_region_dirty(visual, &field->desc, region);
+            _scene_notify_visual_changed(visual);
+        }
     }
 }
 

@@ -28,7 +28,6 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
-#include "core/scene_notify_internal.h"
 #include "field_internal.h"
 #include "sample_profile.h"
 #include "visuals/bindings_internal.h"
@@ -41,11 +40,6 @@
 /*************************************************************************************************/
 
 static DvzSampledField* _scene_alloc_field_slot(DvzScene* scene);
-
-static void _scene_mark_field_region_dirty(
-    DvzSampledField* field, DvzFieldRegion region, bool full);
-
-
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
@@ -408,62 +402,4 @@ static DvzSampledField* _scene_alloc_field_slot(DvzScene* scene)
         return field;
     }
     return NULL;
-}
-
-
-
-static void _scene_mark_field_dirty(DvzSampledField* field)
-{
-    if (field == NULL || field->scene == NULL)
-        return;
-    _scene_mark_field_region_dirty(field, _field_full_region(&field->desc), true);
-}
-
-
-static void _scene_mark_field_region_dirty(DvzSampledField* field, DvzFieldRegion region, bool full)
-{
-    if (field == NULL || field->scene == NULL)
-        return;
-    if (full)
-    {
-        region = _field_full_region(&field->desc);
-        field->dirty_region = region;
-        field->dirty = true;
-        field->dirty_full = true;
-    }
-    else if (!field->dirty)
-    {
-        field->dirty_region = region;
-        field->dirty = true;
-        field->dirty_full = false;
-    }
-    else if (field->dirty_full)
-    {
-        field->dirty_region = _field_full_region(&field->desc);
-    }
-    else if (!_field_regions_union(&field->dirty_region, &region, &field->dirty_region))
-    {
-        field->dirty_region = region;
-        field->dirty_full = true;
-    }
-    else
-    {
-        field->dirty_full = false;
-    }
-    field->dirty = true;
-    DvzScene* scene = field->scene;
-    for (uint32_t i = 0; i < scene->visual_count; i++)
-    {
-        DvzVisual* visual = &scene->visuals[i];
-        if (visual->scene == scene && visual->field == field)
-        {
-            if (full)
-            {
-                _scene_visual_texture_mark_full_dirty(visual, &field->desc);
-            }
-            else
-                _scene_visual_texture_mark_region_dirty(visual, &field->desc, region);
-            _scene_notify_visual_changed(visual);
-        }
-    }
 }
