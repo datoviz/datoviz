@@ -107,6 +107,32 @@ static bool _typed_point_like_vertex_buffers(
 
 
 /**
+ * Resolve one required typed metadata resource label.
+ *
+ * @param state the persistent resource state
+ * @param key the metadata resource key
+ * @param message diagnostic emitted when the resource is missing
+ * @param report optional diagnostic report
+ * @param out_id the output resource id
+ * @return whether the resource was resolved
+ */
+static bool _typed_lookup_required(
+    const ConverterState* state, const char* key, const char* message,
+    DvzDiagnosticReport* report, uint64_t* out_id)
+{
+    ANN(state);
+    ANN(message);
+    ANN(out_id);
+    *out_id = _scene_visual_resource_lookup_label(state, key);
+    if (*out_id != 0)
+        return true;
+    _diagnostic(report, message);
+    return false;
+}
+
+
+
+/**
  * Emit runtime-mode static render commands.
  *
  * @param emitter the persistent emitter
@@ -170,6 +196,9 @@ bool _emitter_emit_render_compat(
     uint64_t point_vertex_ids[5];
     uint32_t point_vertex_count = 0;
     uint64_t point_pos = 0;
+    uint64_t splat_pos = 0, splat_color = 0, splat_sigma = 0, splat_angle = 0;
+    uint64_t primitive_vertex_ids[2];
+    uint64_t primitive_pos = 0;
     uint64_t mesh_pos = 0, mesh_color = 0, mesh_normal = 0, mesh_uv = 0, mesh_tex = 0;
     uint64_t image_pos = 0, image_uv = 0, image_tex = 0;
     if (typed_retained_visual)
@@ -188,7 +217,42 @@ bool _emitter_emit_render_compat(
             point_pos = point_vertex_ids[0];
         }
         is_splat = desc_kind == DVZ_SCENE_VISUAL_DESC_SPLAT;
+        if (is_splat)
+        {
+            if (!_typed_lookup_required(
+                    &emitter->resources, visual_meta->position_id,
+                    "typed visual metadata missing position resource", report, &splat_pos) ||
+                !_typed_lookup_required(
+                    &emitter->resources, visual_meta->color_id,
+                    "typed splat metadata missing color/sigma/angle resource", report,
+                    &splat_color) ||
+                !_typed_lookup_required(
+                    &emitter->resources, visual_meta->sigma_id,
+                    "typed splat metadata missing color/sigma/angle resource", report,
+                    &splat_sigma) ||
+                !_typed_lookup_required(
+                    &emitter->resources, visual_meta->angle_id,
+                    "typed splat metadata missing color/sigma/angle resource", report,
+                    &splat_angle))
+                return false;
+        }
         is_primitive = desc_kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+        if (is_primitive)
+        {
+            if (!_typed_lookup_required(
+                    &emitter->resources, visual_meta->position_id,
+                    "typed visual metadata missing position resource", report, &primitive_pos))
+                return false;
+            uint64_t primitive_color = 0;
+            if (!_typed_lookup_required(
+                    &emitter->resources, visual_meta->color_id,
+                    "typed primitive metadata missing color resource", report, &primitive_color))
+                return false;
+            primitive_vertex_ids[0] = primitive_pos;
+            primitive_vertex_ids[1] = primitive_color;
+            vertex_buffer_ids = primitive_vertex_ids;
+            vertex_buffer_count = 2;
+        }
         if (desc_kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
         {
             mesh_pos = _scene_visual_resource_by_role(
@@ -286,18 +350,22 @@ bool _emitter_emit_render_compat(
     uint64_t splat_vertex_ids[4];
     if (is_splat)
     {
-        uint64_t splat_pos = _scene_visual_resource_by_role(
-            &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
-            DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
-        uint64_t splat_color = _scene_visual_resource_by_role(
-            &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
-            DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR);
-        uint64_t splat_sigma = _scene_visual_resource_by_role(
-            &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
-            DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA);
-        uint64_t splat_angle = _scene_visual_resource_by_role(
-            &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
-            DVZ_FRAME_PLAN_RESOURCE_ROLE_ANGLE);
+        if (splat_pos == 0)
+            splat_pos = _scene_visual_resource_by_role(
+                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
+        if (splat_color == 0)
+            splat_color = _scene_visual_resource_by_role(
+                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR);
+        if (splat_sigma == 0)
+            splat_sigma = _scene_visual_resource_by_role(
+                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA);
+        if (splat_angle == 0)
+            splat_angle = _scene_visual_resource_by_role(
+                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                DVZ_FRAME_PLAN_RESOURCE_ROLE_ANGLE);
         if (splat_pos == 0 || splat_color == 0 || splat_sigma == 0 || splat_angle == 0)
             return false;
         splat_vertex_ids[0] = splat_pos;
@@ -462,9 +530,11 @@ bool _emitter_emit_render_compat(
     }
     else if (is_primitive)
     {
-        uint64_t pos_id = _scene_visual_resource_by_role(
-            &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
-            DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
+        uint64_t pos_id = primitive_pos != 0
+                              ? primitive_pos
+                              : _scene_visual_resource_by_role(
+                                    &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                                    DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
         if (pos_id != 0)
         {
             uint64_t sz = _resource_byte_size(&emitter->resources, pos_id);
@@ -472,6 +542,8 @@ bool _emitter_emit_render_compat(
                 vertex_count = (uint32_t)(sz / (3 * sizeof(float)));
             topology = _resource_topology(&emitter->resources, pos_id);
         }
+        if (topology == UINT32_MAX && visual_meta != NULL && visual_meta->topology != UINT32_MAX)
+            topology = visual_meta->topology;
         if (visual_meta != NULL && visual_meta->vertex_count > 0)
             vertex_count = visual_meta->vertex_count;
         /* Primitive visual: pass-through shaders with visual-selected topology. */
