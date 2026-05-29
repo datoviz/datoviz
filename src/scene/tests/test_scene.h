@@ -789,6 +789,8 @@ int test_scene_probe_request_zero_id_rejects_late_result_after_newer_poll(
 int test_scene_query_registry_covers_active_visual_families(
     TstContext* suite, const TstCase* item);
 
+int test_scene_query_rejects_untyped_render_plan(TstContext* suite, const TstCase* item);
+
 int test_scene_query_queue_processes_native_results(TstContext* suite, const TstCase* item);
 
 int test_scene_query_queue_coalesces_pending_requests(TstContext* suite, const TstCase* item);

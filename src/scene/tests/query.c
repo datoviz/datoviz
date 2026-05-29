@@ -88,6 +88,30 @@ int test_scene_query_registry_covers_active_visual_families(TstContext* suite, c
 
 
 
+int test_scene_query_rejects_untyped_render_plan(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.query.untyped_metadata", 1);
+    ANN(plan);
+    AT(_dvz_scene_query_plan_render_metadata_complete(plan));
+
+    AT(dvz_frame_plan_render(plan, "panel.query", "target.query", true));
+    AT(dvz_frame_plan_render_visual(plan, "query0"));
+    AT(!_dvz_scene_query_plan_render_metadata_complete(plan));
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.has_metadata = true;
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+    AT(_dvz_scene_query_plan_render_metadata_complete(plan));
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
 int test_scene_query_queue_processes_native_results(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -3153,6 +3177,7 @@ int test_scene_query(TstSuite* suite)
     TST_GROUP("query");
 
     TST_CASE(test_scene_query_registry_covers_active_visual_families);
+    TST_CASE(test_scene_query_rejects_untyped_render_plan);
     TST_CASE(test_scene_query_queue_processes_native_results);
     TST_CASE(test_scene_query_queue_coalesces_pending_requests);
     TST_CASE(test_scene_query_volume_sample_is_explicitly_unsupported);

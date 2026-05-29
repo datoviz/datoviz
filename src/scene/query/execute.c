@@ -19,6 +19,7 @@
 
 #include "_scene.h"
 #include "_assertions.h"
+#include "_log.h"
 #include "internal.h"
 
 
@@ -285,6 +286,13 @@ bool _dvz_scene_query_execute_family(
     {
         _scene_query_scratch_destroy(&plan.scratch);
         return false;
+    }
+    if (!_dvz_scene_query_plan_render_metadata_complete(plan.scratch.plan))
+    {
+        log_error("query render plan missing typed visual metadata");
+        out_result->status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
+        _scene_query_scratch_destroy(&plan.scratch);
+        return true;
     }
 
     uint8_t bytes[DVZ_SCENE_QUERY_PAYLOAD_WORDS * sizeof(uint32_t)] = {0};

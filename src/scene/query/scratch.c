@@ -189,3 +189,29 @@ void _dvz_scene_query_apply_render_state(
         (DvzSceneViewportUniform){0.0f, 0.0f, (float)target_width, (float)target_height};
     render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
 }
+
+
+
+/**
+ * Return whether every render visual in a query plan carries typed metadata.
+ *
+ * @param plan the query FramePlan, or NULL when no render plan is used
+ * @return true when all render visuals have typed metadata
+ */
+bool _dvz_scene_query_plan_render_metadata_complete(const DvzFramePlan* plan)
+{
+    if (plan == NULL)
+        return true;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        const DvzFramePlanNode* node = &plan->nodes[i];
+        if (node->type != DVZ_FRAME_PLAN_NODE_RENDER)
+            continue;
+        for (uint32_t j = 0; j < node->u.render.visual_count; j++)
+        {
+            if (!node->u.render.visual_metadata[j].has_metadata)
+                return false;
+        }
+    }
+    return true;
+}
