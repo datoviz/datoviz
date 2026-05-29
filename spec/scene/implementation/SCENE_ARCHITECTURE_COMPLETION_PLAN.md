@@ -10,12 +10,13 @@ and API specs; this file defines ownership, module boundaries, migration order, 
 
 ## Current Position
 
-As of 2026-05-28, the old flat `src/scene/plan/` folder is gone. Its former ownership is split
+As of 2026-05-29, the old flat `src/scene/plan/` folder is gone. Its former ownership is split
 across `frame_plan/`, `scene_emit/`, and `render_contract/`. Runtime render emission, core scene
 ownership, render-contract files, frame-plan internals, several annotation/domain helpers, polygon
-helpers, and the first visual descriptor/attribute slices have been split. `scene_emit/uploads.c`
-is now phase orchestration over support/family helpers, and `scene_emit/panel.c` has first-pass
-helpers for drawable filtering/counting and framebuffer-scaled viewport setup.
+helpers, the first visual descriptor/attribute slices, upload/panel helper slices, and the
+helper-declaration boundary pass have been split. `scene_emit/uploads.c` is now phase orchestration
+over support/family helpers, and `scene_emit/panel.c` has first-pass helpers for drawable
+filtering/counting and framebuffer-scaled viewport setup.
 
 Important current state:
 
@@ -50,21 +51,25 @@ Important current state:
 9. `annotation/text.c`, `annotation/axis.c`, `domain/field.c`, and the remaining family-specific
    payload construction reachable from scene emission remain the highest-value mixed-ownership
    areas.
+10. `core/_scene.h` no longer exports narrow helper declarations. It remains broad because shared
+    retained scene object and type definitions still live there; the next header shrink target is
+    type ownership and include direction rather than more prototype movement.
 
 Latest pickup snapshot:
 
 1. The retained textured-mesh first slice exists and should be treated as active code, not future
    scaffolding.
-2. The most recent scene-source split commits through `aa18c3c88` completed the upload-support and
-   panel-helper cleanup passes. Do not restart by re-extracting dense/index/material upload emission
-   or panel drawable/viewport helpers.
+2. The most recent scene-source split commits through `c03db46b9` completed the upload-support,
+   panel-helper, and helper-declaration boundary cleanup passes. Do not restart by re-extracting
+   dense/index/material upload emission, panel drawable/viewport helpers, or the helper
+   declarations already moved into owner-private headers.
 3. The best next implementation slices are now query-family ownership, normal-path typed metadata
    enforcement, and annotation/domain ownership. Remaining upload work should be limited to pure
    family payload builders when a concrete builder is still mixed into scene emission.
-4. Last focused validation recorded for this split was `just build`,
-   `direnv exec . just test scene-graph` (`157/157`), and `git diff --check`. Broad `query`
-   validation still has known GPU readback failures that need separate investigation before query
-   closure is claimed.
+4. Last focused validation recorded for this split was `git diff --check`, `just build`,
+   `direnv exec . just test scene/query` (`39/39`), `direnv exec . just test scene-graph`
+   (`157/157`), and `direnv exec . just test app-offscreen` (`76/76`). The earlier broad query
+   GPU readback failures are no longer current blockers.
 
 The current `desc_untyped_compat.c` path is an intermediate compatibility step, not the desired
 final architecture. Normal v0.4 scene output emits explicit typed metadata and should not require
@@ -178,8 +183,12 @@ this section when a slice is completed.
 8. Shrink broad private headers and add architecture checks.
    - Audit `_scene.h`, `_visual_internal.h`, `_visual_pipeline.h`, and
      `_visual_pipeline_internal.h`.
-   - Move declarations into owning-folder headers and keep only stable cross-subsystem contracts in
-     broad headers.
+   - Status on 2026-05-29: the first declaration-boundary pass moved narrow helper declarations out
+     of `_scene.h` and owner files now include private headers for text, annotation preparation,
+     polygon lifecycle, frame trace, query request helpers, figure emission, format state, panel
+     layout, visual lifecycle/bindings, and scene notifications.
+   - Continue by moving type ownership and stable cross-subsystem contracts out of broad headers
+     only when the dependency direction is clear.
    - Add tests/checks for typed metadata completeness, explicit compatibility use, registry
      coverage, absence of normal runtime visual switches, and CMake layer dependency boundaries.
 
@@ -215,6 +224,23 @@ Target layers:
 9. `scene/techniques`: graph-backed pass construction for MSAA, WBOIT, depth peel, SSAO, EDL, and
    related technique policy.
 10. `scene/app`: presentation-only bridge over scene plus canvas/runtime.
+
+Near-term standalone candidates within this target architecture:
+
+1. `scene/frame_plan` and `scene/render_contract` are closest to standalone today because they
+   already operate on planned resources, passes, metadata, and contracts rather than retained object
+   mutation.
+2. `scene/query` can become a standalone query/readback subsystem after family scratch geometry,
+   result decoding, and unsupported-policy decisions are fully family-owned.
+3. `scene/text` can become a reusable atlas/block/raster layer once retained annotation text state
+   and generated visual synchronization stay in `annotation/`.
+4. `scene/domain` can become a retained-data layer for buffers, sampled fields, field texture
+   payload construction, and polygon storage once field-generated visual synchronization is split
+   from object lifecycle and interpretation.
+5. `scene/visuals/registry` should become the standalone contract between generic scene code and
+   family folders; root visual helpers should shrink toward registry dispatch and shared defaults.
+6. `scene_emit`, `runtime`, `techniques`, and `app` should remain orchestration/runtime layers.
+   They can be separate build targets, but they should not own scene-independent semantics.
 
 Adding a visual family should require adding or editing only:
 
@@ -273,14 +299,15 @@ Steps:
    metadata.
 4. Keep untyped descriptor inference only for explicit fixture/import compatibility if such a path
    is still needed.
-5. Delete `visuals/desc_legacy.c` if no compatibility path remains; otherwise rename it to an
-   explicit compatibility name such as `desc_untyped_compat.c`.
+5. Delete `visuals/desc_untyped_compat.c` if no compatibility path remains; otherwise keep it
+   reachable only through an explicit compatibility switch.
 
 Done criteria:
 
 1. `_scene_visual_desc_from_render()` does not infer normal scene visual families from resource-list
    shape.
-2. `desc_legacy.c` is either gone or only reachable through an explicit compatibility switch.
+2. `desc_untyped_compat.c` is either gone or only reachable through an explicit compatibility
+   switch.
 3. Tests fail if scene emission omits typed metadata for an active visual.
 
 
@@ -288,7 +315,7 @@ Done criteria:
 
 Goal: generic code calls visual-family operations instead of visual-family switch statements.
 
-Status as of 2026-05-28: in progress. `src/scene/visuals/registry/` now contains the private
+Status as of 2026-05-29: in progress. `src/scene/visuals/registry/` now contains the private
 `DvzVisualFamilyOps` table, every active `DvzVisualType` is registered, and
 `test_scene_visual_family_registry_coverage` enforces identity, lowering, bounds, pass-capability,
 bind-descriptor, pipeline-descriptor, shader-descriptor, and draw-descriptor hooks. Retained visual
@@ -327,7 +354,7 @@ Done criteria:
 
 Goal: each active visual owns its own semantics below `src/scene/visuals/<family>/`.
 
-Status as of 2026-05-28: active family folders now own retained lowering for point, pixel, marker,
+Status as of 2026-05-29: active family folders now own retained lowering for point, pixel, marker,
 splat, sphere, segment, path, vector, primitive, mesh, image, glyph, labels, volume, and text.
 They also own bind descriptors and normal pipeline descriptors. Image, labels, and volume own their
 normal FramePlan metadata fill hooks. Active-family shader and draw descriptor hooks are
@@ -372,7 +399,7 @@ Done criteria:
 
 Goal: runtime consumes resolved descriptors and render contracts; it does not know visual semantics.
 
-Status as of 2026-05-28: normal `runtime/render_emit_prepare.c` no longer branches on concrete
+Status as of 2026-05-29: normal `runtime/render_emit_prepare.c` no longer branches on concrete
 visual families for shader selection, pass shader policy, pipeline policy, bind policy, textured-mesh
 layout selection, picking query overrides, or draw-count packetization. It still creates generic DRP2
 objects, bind groups, pipeline layouts, and draw packets from descriptors. The remaining runtime
@@ -495,6 +522,14 @@ Done criteria:
 ### 7. Shrink Broad Private Headers
 
 Goal: private headers reflect module boundaries and do not force broad recompilation.
+
+Status as of 2026-05-29: the first declaration-boundary pass is complete for `_scene.h`. Narrow
+helper declarations have moved to owner-private headers, including `query/internal.h`,
+`core/frame_trace_internal.h`, `core/figure_emit_internal.h`, `core/format_state_internal.h`,
+`core/panel_layout_internal.h`, `core/scene_notify_internal.h`, `domain/polygon_internal.h`,
+`annotation/prepare_internal.h`, `text/text_internal.h`, `visuals/text/internal.h`, and
+`visuals/_visual_internal.h`. The remaining work is reducing broad type dependencies and keeping
+future helper declarations local by default.
 
 Steps:
 

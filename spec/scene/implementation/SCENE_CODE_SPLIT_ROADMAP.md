@@ -16,8 +16,8 @@ tracks source-split progress; the completion plan defines the end state.
 
 ## Current Pressure Points
 
-As of 2026-05-28 after the scene-plan folder removal, the highest-value split
-candidates are:
+As of 2026-05-29 after the scene-plan folder removal, upload/panel helper passes, and
+helper-declaration boundary pass through `c03db46b9`, the highest-value split candidates are:
 
 1. `src/scene/query/`, `scene_emit/image_query.c`, and family `visuals/*/query.c` files: query has
    a registry and split executor/policy/readback files, but scratch geometry, native result
@@ -37,7 +37,11 @@ candidates are:
    family folders. Wide visual-family helper files and shared headers should only be split further
    when a stable owner boundary is clear. Volume retained-state bounds now live in the volume
    family, and mesh position/instance-transform bounds now live in the mesh family.
-6. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
+6. Standalone scene layers: `frame_plan/` and `render_contract/` are closest to reusable
+   `src/scene`-local layers. `query/`, `text/`, `domain/`, and `visuals/registry/` can become more
+   standalone after their remaining dependencies on broad retained-scene types and family-local
+   hooks are narrowed.
+7. Scene tests have useful focused files, but several broad scene-graph/runtime tests still cover
    multiple ownership boundaries at once.
 
 
@@ -60,12 +64,38 @@ candidates are:
    behavior change explicit.
 
 
+## Standalone Extraction Candidates
+
+These are candidates for more independent locations or coarse reusable layers within `src/scene/`.
+They should move only when includes and ownership prove the boundary, not as a directory shuffle.
+
+1. `frame_plan/`: already the cleanest backend-neutral layer. It can become a standalone
+   `datoviz_scene_frame_plan` object target once fixture/debug helpers and include dependencies are
+   checked.
+2. `render_contract/`: already mostly descriptor/FramePlan validation. It can stand apart from
+   retained scene semantics if it keeps reporting mismatches rather than deciding visual behavior.
+3. `query/`: the generic queue, result, readback, policy, registry, and executor files are a real
+   subsystem. The remaining work is to move family scratch geometry, result decoding, and
+   unsupported-policy decisions into family `query.c` files or narrow registry hooks.
+4. `text/`: atlas/block/raster helpers are candidates for a reusable text service under
+   `src/scene/text/`, while retained annotation text and generated visual synchronization should
+   stay in `annotation/`.
+5. `domain/`: buffers, sampled-field interpretation, field texture payload construction, and
+   polygon storage are candidates for a reusable retained-data layer once generated visual
+   synchronization is separated from object state.
+6. `visuals/registry/`: family operation registration and default hooks can become the stable
+   contract between generic scene code and family folders. Root visual helper files should shrink
+   toward registry dispatch plus shared defaults.
+7. `scene_emit/`, `runtime/`, and `techniques/`: keep these as orchestration/runtime layers. They
+   can be separate CMake layers, but they should not become scene-independent semantic owners.
+
+
 ## Recommended Sequence
 
 ### 1. Finish Query-Family Ownership
 
-Status: next recommended pickup after the upload-support and panel-helper cleanup passes completed
-on 2026-05-28.
+Status: next recommended pickup after the upload-support, panel-helper, and helper-declaration
+boundary cleanup passes completed through 2026-05-29.
 
 Current ownership:
 
@@ -86,9 +116,9 @@ Next moves:
 3. Keep query queueing, request freshness, readback scheduling, and executor lifecycle generic.
 4. Add focused tests that distinguish orchestration behavior from family payload/result behavior.
 
-Validation: `just build`, `git diff --check`, and focused query tests. The broad `query` filter had
-known GPU readback failures after the latest split and should be treated as a separate cleanup item
-before declaring the query lane closed.
+Validation: `just build`, `git diff --check`, and focused query tests. The latest broad
+`direnv exec . just test scene/query` run passed `39/39`; the volume/labels readback failures that
+blocked the earlier split are no longer recorded as current failures.
 
 
 ### 2. Finish Low-Risk Derived Payload Extraction
@@ -210,8 +240,8 @@ are touched.
 
 ### 7. Split Core Scene Ownership
 
-Status: first batch completed on 2026-05-28. Keep the current ownership unless later work exposes
-new coupling.
+Status: source split completed on 2026-05-28 and helper-declaration boundary pass completed on
+2026-05-29. Keep the current ownership unless later work exposes new coupling.
 
 Current ownership:
 
@@ -226,9 +256,15 @@ Current ownership:
    camera/controller APIs.
 9. `figure_emit.c`: figure emission, pending-render checks, emitted-stream ownership, and live-stream
    mutation guards.
+10. Narrow helper declarations now live in owner-private headers: text helpers in `text/` and
+    `visuals/text/`, annotation preparation hooks in `annotation/`, polygon lifecycle helpers in
+    `domain/`, frame tracing and figure emission helpers in `core/`, query request helpers in
+    `query/`, format/panel-layout helpers in `core/`, shared visual lifecycle/binding helpers in
+    `visuals/`, and scene notification helpers in `core/`.
 
-Guardrail: `_scene.h` remains broad after this batch. Prefer local private headers for later narrow
-subsystem declarations instead of growing it further.
+Guardrail: `_scene.h` is no longer the bucket for narrow helper declarations. It remains broad
+because it still carries shared retained scene object and type definitions. Future shrink work
+should target type ownership and acyclic includes, not another round of prototype shuffling.
 
 
 ### 8. Split Annotation And Domain Helpers
@@ -317,10 +353,12 @@ See
 
 ### 10. Tighten Query And Interaction Boundaries
 
-Status: query policy split started on 2026-05-28. `query/policy.c` owns target capability,
-query-profile selection, drawable candidate selection, family-op eligibility lookup, and
-framebuffer coordinate policy. `query/execute.c` now keeps retained executor schema reset,
-static-upload bookkeeping, native family execution, and readback orchestration.
+Status: query policy split started on 2026-05-28 and request-helper declarations were moved into
+`query/internal.h` on 2026-05-29. `query/policy.c` owns target capability, query-profile selection,
+drawable candidate selection, family-op eligibility lookup, and framebuffer coordinate policy.
+`query/execute.c` keeps retained executor schema reset, static-upload bookkeeping, native family
+execution, and readback orchestration. Current focused validation has `scene/query` passing
+`39/39`.
 
 The query folder already has queue, executor, readback, registry, result, and execute files. The
 next split should be policy-driven:

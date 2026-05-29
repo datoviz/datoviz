@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `SOON / STRUCTURAL CLEANUP`
-> - **Updated on:** `2026-05-28`
+> - **Updated on:** `2026-05-29`
 > - **Purpose:** point agents at the durable scene source-split roadmap without duplicating it.
 
 Use [`../../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md)
@@ -32,7 +32,7 @@ criteria.
 7. Split scene CMake targets into coarse reusable layers once the registry and family boundaries are
    clear; do not split per visual family unless a concrete consumer needs it.
 
-Completed on 2026-05-28: FramePlan internals were split into lifecycle/facade, node helpers,
+Completed through 2026-05-29: FramePlan internals were split into lifecycle/facade, node helpers,
 capabilities, diagnostics, upload resources, graph resources, node passes, graph passes,
 dependencies, graph validation, graph helpers, and readback owner files. Render contracts were
 split into facade, diagnostics, resources, and visual assembly. Runtime render emission was split
@@ -41,11 +41,18 @@ split into notify, format state, frame trace, panel geometry/layout, grid, contr
 emission owners. Follow-up slices also split visual descriptor-kind helpers, colormap annotation
 ownership, scale-bar/colorbar/legend/text-font annotation ownership, scene domain buffers, and
 field/polygon helpers, visual descriptor/attribute helpers, query target/profile policy, upload
-support helpers, and panel drawable/viewport helpers. The old `src/scene/plan/` folder was removed;
-its ownership now lives in `src/scene/frame_plan/`, `src/scene/scene_emit/`, and
-`src/scene/render_contract/`. Last focused validation for the split was `just build`,
-`direnv exec . just test scene-graph` (`157/157`), and `git diff --check`; broad query validation
-still has known GPU readback failures that need separate investigation.
+support helpers, panel drawable/viewport helpers, and narrow helper declarations formerly exposed
+through `_scene.h`. The old `src/scene/plan/` folder was removed; its ownership now lives in
+`src/scene/frame_plan/`, `src/scene/scene_emit/`, and `src/scene/render_contract/`. Last focused
+validation for the split was `git diff --check`, `just build`,
+`direnv exec . just test scene/query` (`39/39`), `direnv exec . just test scene-graph` (`157/157`),
+and `direnv exec . just test app-offscreen` (`76/76`). The earlier broad query readback failures are
+not current blockers.
+
+Standalone candidates to assess during the next split are `frame_plan/`, `render_contract/`,
+`query/`, `text/`, `domain/`, and `visuals/registry/`. Keep `scene_emit/`, `runtime/`,
+`techniques/`, and `app/` as orchestration/runtime layers even if they become separate CMake
+targets.
 
 
 ## Validation
