@@ -28,23 +28,28 @@
 /*************************************************************************************************/
 
 /**
- * Mark retained image-query static uploads after a successful command execution.
+ * Mark retained static uploads after a successful command execution.
  *
  * @param executor retained query executor
- * @param plan query plan carrying image-query cache versions
+ * @param plan query plan carrying static cache versions
  */
-static void _query_mark_image_static_upload(
+static void _query_mark_static_upload(
     DvzSceneRequestExecutor* executor, const DvzSceneQueryPlan* plan)
 {
     ANN(executor);
     ANN(plan);
-    if (!plan->mark_image_query_static_uploaded || plan->image_query_visual == NULL)
+    if (
+        !plan->mark_static_cache_uploaded || plan->static_cache_visual == NULL ||
+        plan->static_cache_key_count > DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT)
+    {
         return;
-    executor->image_query_visual = plan->image_query_visual;
-    executor->image_query_position_version = plan->image_query_position_version;
-    executor->image_query_texcoord_version = plan->image_query_texcoord_version;
-    executor->image_query_texture_version = plan->image_query_texture_version;
-    executor->image_query_static_upload_count++;
+    }
+    executor->query_static_cache_family = plan->static_cache_family;
+    executor->query_static_cache_visual = plan->static_cache_visual;
+    executor->query_static_cache_key_count = plan->static_cache_key_count;
+    for (uint32_t i = 0; i < plan->static_cache_key_count; i++)
+        executor->query_static_cache_keys[i] = plan->static_cache_keys[i];
+    executor->query_static_cache_upload_count++;
 }
 
 
@@ -296,7 +301,7 @@ bool _dvz_scene_query_execute_family(
             plan.target_height, plan.format, bytes, plan.byte_size, &executed);
     }
     if (executed)
-        _query_mark_image_static_upload(executor, &plan);
+        _query_mark_static_upload(executor, &plan);
     if (!ok)
     {
         out_result->status =

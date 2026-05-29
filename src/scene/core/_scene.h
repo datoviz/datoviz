@@ -1052,15 +1052,15 @@ struct DvzSceneRequestExecutor
     DvzDrp2Runtime* runtime;
     DvzFramePlanEmitter* emitter;
     DvzDrp2RuntimeConfig runtime_cfg;
-    DvzVisual* image_query_visual;
-    uint64_t image_query_position_version;
-    uint64_t image_query_texcoord_version;
-    uint64_t image_query_texture_version;
+    DvzSceneVisualFamily query_static_cache_family;
+    DvzVisual* query_static_cache_visual;
+    uint64_t query_static_cache_keys[4];
+    uint32_t query_static_cache_key_count;
     DvzSceneVisualFamily active_query_family;
     DvzSceneTargetKind active_query_target;
     uint32_t runtime_create_count;
     uint32_t emitter_create_count;
-    uint32_t image_query_static_upload_count;
+    uint32_t query_static_cache_upload_count;
 };
 
 

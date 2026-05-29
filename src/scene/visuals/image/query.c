@@ -148,10 +148,12 @@ static bool _image_query_needs_static_upload(
     ANN(visual);
     if (executor == NULL)
         return true;
-    return executor->image_query_visual != visual ||
-           executor->image_query_position_version != position_version ||
-           executor->image_query_texcoord_version != texcoord_version ||
-           executor->image_query_texture_version != texture_version;
+    return executor->query_static_cache_family != DVZ_SCENE_VISUAL_FAMILY_IMAGE ||
+           executor->query_static_cache_visual != visual ||
+           executor->query_static_cache_key_count != 3 ||
+           executor->query_static_cache_keys[0] != position_version ||
+           executor->query_static_cache_keys[1] != texcoord_version ||
+           executor->query_static_cache_keys[2] != texture_version;
 }
 
 
@@ -374,11 +376,13 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
         }
         if (include_static_uploads)
         {
-            out_plan->mark_image_query_static_uploaded = true;
-            out_plan->image_query_visual = ctx->visual;
-            out_plan->image_query_position_version = position_version;
-            out_plan->image_query_texcoord_version = texcoord_version;
-            out_plan->image_query_texture_version = texture_version;
+            out_plan->mark_static_cache_uploaded = true;
+            out_plan->static_cache_family = DVZ_SCENE_VISUAL_FAMILY_IMAGE;
+            out_plan->static_cache_visual = ctx->visual;
+            out_plan->static_cache_key_count = 3;
+            out_plan->static_cache_keys[0] = position_version;
+            out_plan->static_cache_keys[1] = texcoord_version;
+            out_plan->static_cache_keys[2] = texture_version;
         }
         out_plan->target_width = 1;
         out_plan->target_height = 1;

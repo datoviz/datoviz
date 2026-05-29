@@ -28,6 +28,7 @@
 /*************************************************************************************************/
 
 #define DVZ_SCENE_QUERY_PAYLOAD_WORDS 4
+#define DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT 4
 
 
 
@@ -111,11 +112,11 @@ struct DvzSceneQueryPlan
     uint32_t byte_size;
     DvzSceneQuerySchema schema;
     double uvw[3];
-    bool mark_image_query_static_uploaded;
-    DvzVisual* image_query_visual;
-    uint64_t image_query_position_version;
-    uint64_t image_query_texcoord_version;
-    uint64_t image_query_texture_version;
+    bool mark_static_cache_uploaded;
+    DvzSceneVisualFamily static_cache_family;
+    DvzVisual* static_cache_visual;
+    uint64_t static_cache_keys[DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT];
+    uint32_t static_cache_key_count;
 };
 
 

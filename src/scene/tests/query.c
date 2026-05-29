@@ -786,7 +786,7 @@ int test_scene_image_probe_reuses_retained_request_executor(
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
     AT(scene->query_executor.runtime_create_count == 1);
     AT(scene->query_executor.emitter_create_count == 1);
-    AT(scene->query_executor.image_query_static_upload_count == 1);
+    AT(scene->query_executor.query_static_cache_upload_count == 1);
 
     DvzQueryResult query = {0};
     AT(dvz_scene_poll_query(scene, &query));
@@ -800,7 +800,7 @@ int test_scene_image_probe_reuses_retained_request_executor(
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
     AT(scene->query_executor.runtime_create_count == 1);
     AT(scene->query_executor.emitter_create_count == 1);
-    AT(scene->query_executor.image_query_static_upload_count == 1);
+    AT(scene->query_executor.query_static_cache_upload_count == 1);
 
     AT(dvz_scene_poll_query(scene, &query));
     AT(query.request_id == 602);
