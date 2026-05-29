@@ -60,6 +60,15 @@ void _axis_visual_to_pixels(
 float _axis_data_to_visual(
     double value, double min, double max, float visual_min, float visual_max);
 
+float _axis_inverse_panzoom_coord(
+    const float extent[4], uint32_t lo_idx, uint32_t hi_idx, float value);
+
+float _axis_panzoom_scale(const float extent[4], DvzDim dim);
+
+bool _axis_visible_domain(const DvzAxis* axis, double* out_min, double* out_max);
+
+void _axis_compute_ticks(DvzAxis* axis);
+
 void _axis_hide_text(DvzAxis* axis);
 
 void _axis_update_text(
