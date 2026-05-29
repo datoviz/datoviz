@@ -13,6 +13,10 @@ scene architecture is robust, read
 [`SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](SCENE_ARCHITECTURE_COMPLETION_PLAN.md) first. This file
 tracks source-split progress; the completion plan defines the end state.
 
+For the next major visual-boundary phase, including checks that keep generic code from adding new
+visual-family switches or family-private includes, use
+[`SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
+
 
 ## Current Pressure Points
 

@@ -1,0 +1,195 @@
+# Scene Visual Boundary Guardrails
+
+This note defines the next major visual-architecture refactor phase after the first scene source
+split. The goal is not another file-shuffle. The goal is to make generic scene code depend on a
+visual-family contract instead of concrete visual families.
+
+Normative status: implementation architecture plan. Public visual semantics remain in
+`../semantics/` and `../visuals/`; this file defines internal ownership boundaries, guardrails,
+migration order, and done criteria.
+
+
+## Problem
+
+The current visual layout has active family folders and a private `DvzVisualFamilyOps` registry, but
+some generic files still contain concrete family branches. This keeps the old coupling alive:
+adding or changing a visual can still require edits in root visual helpers, scene emission, query,
+or runtime-adjacent code.
+
+The target architecture should make visual-specific behavior live in:
+
+1. `src/scene/visuals/<family>/`;
+2. explicit shared visual subsystems such as `src/scene/visuals/stroke/`;
+3. the single declarative family registration table.
+
+Generic scene code should orchestrate work. It should not decide how point, mesh, image, volume,
+path, text, or any other concrete visual behaves.
+
+
+## Target Shape
+
+The long-term retained visual object should hold common state plus an opaque family payload:
+
+```c
+typedef struct DvzVisual
+{
+    DvzScene* scene;
+    const DvzVisualFamilyOps* ops;
+    void* family_state;
+
+    bool visible;
+    int32_t z_layer;
+    DvzAlphaMode alpha_mode;
+    bool depth_test_enabled;
+
+    /* Shared bindings and cross-family metadata only. */
+} DvzVisual;
+```
+
+Only family code should cast `family_state`. Generic code should call callbacks:
+
+```c
+visual->ops->bounds(visual, &bounds);
+visual->ops->metadata(visual, &metadata);
+visual->ops->build_uploads(visual, &uploads);
+visual->ops->shader_desc(&desc, picking, wboit, format_tag, &shader);
+visual->ops->draw_desc(&desc, &draw);
+```
+
+The family contract should grow only when a real generic switch is being removed. Candidate
+responsibilities:
+
+1. lifecycle defaults, reset, and family-state destruction;
+2. attribute schema, aliases, dense-data validation, and source policy;
+3. bounds and generated-bounds data;
+4. derived geometry, texture/cache payloads, and upload payload construction;
+5. FramePlan visual metadata emission;
+6. bind, pipeline, shader, pass-capability, and draw descriptors;
+7. query target capability, temporary query geometry, and result decoding;
+8. diagnostics for family-specific contract failures.
+
+Keep orchestration outside family ops. `scene_emit/` still owns resource-key allocation, upload-node
+ordering, pass scheduling, and dependency graph construction. `runtime/` still owns DRP2 emission,
+render target realization, viewport/scissor setup, descriptor refresh, and graph-resource
+execution.
+
+
+## Boundary Rules
+
+Generic code may use these things:
+
+1. `DvzVisualFamilyOps` and registry lookup helpers;
+2. generic capability bits, descriptor structs, and metadata structs;
+3. generic visual categories only when they come from registry flags or descriptor fields;
+4. shared helper APIs in explicitly shared subsystems such as `visuals/stroke/`.
+
+Generic code must not:
+
+1. switch on concrete `DVZ_VISUAL_TYPE_*` values for normal visual behavior;
+2. include family-private headers such as `point/internal.h` or `volume/internal.h`;
+3. inspect family-specific state fields on `DvzVisual`;
+4. infer visual families from resource order, upload order, shader names, or descriptor-kind lists;
+5. add a root-level switch when a new registry callback or descriptor field would express the
+   contract.
+
+Allowed central knowledge:
+
+1. public enum declarations and public constructors;
+2. the declarative registration table;
+3. tests, examples, and specs;
+4. temporary allowlisted migration files, with a cleanup owner and removal condition.
+
+
+## Mechanical Guardrails
+
+Add a repository check, for example `tools/check_scene_visual_boundaries.sh`, and wire it into a
+focused validation recipe before treating this phase as complete.
+
+The check should fail when concrete visual-family names appear in generic implementation paths:
+
+```sh
+VISUAL_ENUM_RE='DVZ_VISUAL_TYPE_'
+VISUAL_ENUM_RE="${VISUAL_ENUM_RE}(POINT|PIXEL|MARKER|SEGMENT|PATH|IMAGE|MESH|VOLUME)"
+VISUAL_ENUM_RE="${VISUAL_ENUM_RE}|DVZ_VISUAL_TYPE_"
+VISUAL_ENUM_RE="${VISUAL_ENUM_RE}(PRIMITIVE|SPHERE|GLYPH|TEXT|LABELS|SPLAT|VECTOR)"
+
+rg \
+  "${VISUAL_ENUM_RE}" \
+  src/scene/scene_emit \
+  src/scene/runtime \
+  src/scene/render_contract \
+  src/scene/query \
+  src/scene/visuals/*.c
+```
+
+It should also fail when family-private headers leak outside family folders and the registration
+table:
+
+```sh
+rg '#include "([a-z_]+/internal\.h)"' src/scene \
+  --glob '!src/scene/visuals/*/*' \
+  --glob '!src/scene/visuals/registry/registry.c'
+```
+
+Start with an explicit allowlist for current transitional files. The allowlist must shrink as each
+migration slice lands. Do not add new allowlist entries without recording why the generic layer
+cannot express the behavior through a contract yet.
+
+Recommended architecture tests:
+
+1. every active visual type has a registry entry and required callbacks;
+2. normal scene render visuals always carry typed metadata;
+3. generic runtime files do not reference concrete visual-family symbols;
+4. generic scene-emission files call family operations instead of family switches;
+5. generic query orchestration uses query family ops for family-specific payload/result behavior;
+6. generic visual root files contain registry dispatch or shared defaults, not concrete-family
+   behavior.
+
+
+## Migration Order
+
+Work in small behavior-preserving slices.
+
+1. Inventory current leaks.
+   - Generate the initial allowlist from current `DVZ_VISUAL_TYPE_*`, `DVZ_SCENE_VISUAL_DESC_*`,
+     and family-private include occurrences.
+   - Classify each occurrence as registration, public constructor, test/spec, shared default,
+     temporary compatibility, or behavior leak.
+2. Move attribute schema ownership.
+   - Move family attribute tables, aliases, expected-attribute diagnostics, and dense-data
+     validation from root visual helpers into family callbacks.
+3. Move descriptor construction ownership.
+   - Shrink `visuals/desc.c` toward typed metadata validation and registry dispatch.
+   - Family code should translate family metadata into bind/pipeline/shader/draw-ready contracts.
+4. Move lifecycle and family state ownership.
+   - Stop growing `DvzVisual` with family-specific fields.
+   - Introduce opaque family state for new or migrated families, then move existing family state
+     gradually.
+5. Move remaining upload/cache builders.
+   - Keep upload orchestration in `scene_emit/`.
+   - Move pure derived geometry, texture payload, lookup payload, and cache construction into
+     family folders or explicit shared subsystems.
+6. Move remaining query ownership.
+   - Keep request queue, framebuffer coordinate policy, readback routing, and standard item-id
+     decode generic.
+   - Move family scratch geometry, non-item result decoding, and unsupported-target decisions into
+     family query hooks.
+7. Enforce the checks.
+   - Wire the boundary script into the normal scene architecture validation path.
+   - Remove allowlist entries after each completed migration.
+
+
+## Done Criteria
+
+The phase is complete when:
+
+1. adding a visual family requires editing only `src/scene/visuals/<family>/`, the registration
+   table, and tests/examples/specs;
+2. generic scene emission, runtime emission, query orchestration, render-contract validation, and
+   root visual helpers do not branch on concrete visual families for normal behavior;
+3. generic files do not include family-private headers;
+4. family-specific retained state is opaque or has a clear migration plan with no new fields added
+   to generic `DvzVisual`;
+5. visual-specific behavior is confined to family folders or explicit shared visual subsystems;
+6. architecture checks enforce the boundary in CI or the default validation workflow;
+7. full scene validation passes after the allowlist reaches the agreed final state.

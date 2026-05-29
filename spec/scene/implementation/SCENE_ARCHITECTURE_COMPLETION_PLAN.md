@@ -7,6 +7,11 @@ on the final scene architecture cleanup.
 Normative status: implementation architecture plan. Public behavior remains in the scene semantics
 and API specs; this file defines ownership, module boundaries, migration order, and done criteria.
 
+The next major visual-architecture phase is defined in
+[`SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](SCENE_VISUAL_BOUNDARY_GUARDRAILS.md). Use that note before
+adding new root-level visual switches, generic-code family-private includes, or family-specific
+state to the generic retained visual object.
+
 
 ## Current Position
 

@@ -26,6 +26,9 @@ behavior instead of restating it here.
 8. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): remaining
    end-to-end plan for the final scene architecture, visual-family registry, untyped descriptor
    removal, coarse reusable CMake layers, and architecture done criteria.
+9. [SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](SCENE_VISUAL_BOUNDARY_GUARDRAILS.md): next major
+   visual-architecture phase for keeping generic scene code registry-driven and confining
+   visual-specific behavior to family folders or explicit shared visual subsystems.
 
 ## Current priorities
 
@@ -44,3 +47,6 @@ behavior instead of restating it here.
    `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` for the final architecture target: explicit visual
    metadata, registry-driven visual-family operations, descriptor-driven runtime emission, and
    coarse reusable CMake targets.
+9. Use `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md` before adding new root-level visual switches,
+   family-private includes from generic code, or family-specific fields to generic retained visual
+   state.

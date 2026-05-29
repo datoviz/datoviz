@@ -240,6 +240,9 @@ Current implementation orientation:
 - [implementation/SCENE_CODE_SPLIT_ROADMAP.md](implementation/SCENE_CODE_SPLIT_ROADMAP.md):
   staged implementation roadmap for splitting scene frame-plan, runtime, core, annotation, domain,
   query, and visual helper code.
+- [implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md):
+  next visual-architecture phase for registry-driven generic scene code and family-owned visual
+  behavior.
 - [core/RUNTIME_BOUNDARY.md](core/RUNTIME_BOUNDARY.md): active scene -> FramePlan -> DRP2 ->
   app/runtime boundary.
 - [pipeline/FRAME_LIFECYCLE.md](pipeline/FRAME_LIFECYCLE.md): update/build/emit/submit flow.
