@@ -195,6 +195,8 @@ bool _dvz_scene_query_push_result(
     DvzScene* scene, DvzPanel* panel, uint64_t freshness_serial,
     const DvzQueryResult* result);
 
+void _scene_query_scratch_destroy(DvzSceneQueryScratch* plan);
+
 const DvzSceneQueryFamilyOps* _dvz_scene_query_point_ops(void);
 
 const DvzSceneQueryFamilyOps* _dvz_scene_query_pixel_ops(void);

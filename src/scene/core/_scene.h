@@ -1765,7 +1765,6 @@ void _scene_request_apply_mvp(const DvzPanel* panel, const vec2 request_ndc, Dvz
 bool _scene_image_query_plan(
     const DvzPanel* panel, DvzVisual* visual, const DvzPendingQueryRequest* pending,
     const vec2 request_ndc, bool include_static_uploads, DvzSceneQueryScratch* out_plan);
-void _scene_query_scratch_destroy(DvzSceneQueryScratch* plan);
 void _scene_request_executor_init(DvzSceneRequestExecutor* executor);
 void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor);
 bool _scene_request_executor_prepare(
