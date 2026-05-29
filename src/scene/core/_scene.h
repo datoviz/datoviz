@@ -1784,22 +1784,6 @@ uint32_t _scene_buffer_index(const DvzScene* scene, const DvzSceneBuffer* buffer
 
 uint32_t _scene_field_index(const DvzScene* scene, const DvzSampledField* field);
 
-bool _field_format_is_scalar(DvzFieldFormat format);
-
-bool _field_format_bytes_per_texel(DvzFieldFormat format, uint32_t* out_bytes);
-
-bool _field_format_texture_format(DvzFieldFormat format, uint32_t* out_format);
-
-bool _field_region_byte_size(
-    DvzFieldFormat format, const DvzFieldRegion* region, uint64_t* out_size);
-
-bool _scene_prepare_volume_texture(
-    DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data,
-    uint32_t* out_format, uint32_t* out_bytes_per_texel);
-
-bool _scene_prepare_image_texture(
-    DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data);
-
 bool _scene_emit_sampled_field_texture_upload(
     DvzFramePlan* plan, const char* resource_id, DvzSampledField* field);
 

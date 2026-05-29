@@ -31,7 +31,13 @@ typedef struct DvzSampledFieldTextureUploadPayload
 
 bool _field_format_supported(DvzFieldFormat format);
 
+bool _field_format_is_scalar(DvzFieldFormat format);
+
 bool _field_format_is_rgba8(DvzFieldFormat format);
+
+bool _field_format_bytes_per_texel(DvzFieldFormat format, uint32_t* out_bytes);
+
+bool _field_format_texture_format(DvzFieldFormat format, uint32_t* out_format);
 
 bool _field_expected_data_size(const DvzSampledFieldDesc* desc, uint64_t* out_size);
 
@@ -43,6 +49,9 @@ DvzFieldRegion _field_full_region(const DvzSampledFieldDesc* desc);
 
 bool _field_regions_union(
     const DvzFieldRegion* a, const DvzFieldRegion* b, DvzFieldRegion* out);
+
+bool _field_region_byte_size(
+    DvzFieldFormat format, const DvzFieldRegion* region, uint64_t* out_size);
 
 bool _field_data_view_valid(
     const DvzSampledFieldDesc* desc, const DvzFieldDataView* view,
@@ -60,6 +69,13 @@ bool _scene_prepare_field_texture(
 
 bool _scene_sampled_field_texture_upload_payload(
     DvzSampledField* field, DvzSampledFieldTextureUploadPayload* out);
+
+bool _scene_prepare_volume_texture(
+    DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data,
+    uint32_t* out_format, uint32_t* out_bytes_per_texel);
+
+bool _scene_prepare_image_texture(
+    DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data);
 
 void _scene_visual_texture_mark_clean(DvzVisual* visual);
 

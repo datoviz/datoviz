@@ -30,6 +30,7 @@
 #include "_scene.h"
 #include "_visual_internal.h"
 #include "_visual_pipeline.h"
+#include "domain/field_internal.h"
 
 
 

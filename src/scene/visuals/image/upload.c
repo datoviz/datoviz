@@ -17,6 +17,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "_scene.h"
+#include "domain/field_internal.h"
 #include "image/internal.h"
 
 

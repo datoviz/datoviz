@@ -24,6 +24,7 @@
 #include "datoviz/math/_cglm.h"
 #include "image/internal.h"
 #include "colorizer.h"
+#include "domain/field_internal.h"
 #include "scene_emit/visual_lowering.h"
 #include "../../query/internal.h"
 #include "_alloc.h"
