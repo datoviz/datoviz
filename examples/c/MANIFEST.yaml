@@ -56,16 +56,16 @@ examples:
     target_source: examples/c/features/scalebar.c
     validation: smoke+screenshot
 
-  - id: api_pressure
-    title: API Pressure
+  - id: image_probe
+    title: Image Probe
     stage: v0.4_required
     lane: features
     style_preset: features
     capture: 1280x960
     interaction_state: probe
-    current_source: examples/c/techniques/image_probe.c
-    target_source: examples/c/features/api_pressure.c
-    validation: smoke+readback
+    current_source: examples/c/features/image_probe.c
+    target_source: examples/c/features/image_probe.c
+    validation: smoke+readback+screenshot
 
   - id: linked_panels_probe_colorbar
     title: Linked Probe And Colorbar

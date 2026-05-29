@@ -81,7 +81,7 @@ The main remaining polish or feature gaps are:
 | `sphere_impostor` | `ready-now` | sphere visual, lighting/depth | Small 3D visual-polish proof. |
 | `volume` | `needs-rc1-proof` | 3D sampled field, slice/render, capture | Keeps volume rendering and export covered. |
 | `scale_bar` | `needs-rc1-proof` | retained scale bars, labels, panzoom/domain updates | Narrow RC1 fixture; richer layout can follow. |
-| `api_pressure` | `needs-rc1-proof` | image probe, sampled fields, scale/colorbar/annotation | Keep as API-level contract pressure, not separate release promises. |
+| `image_probe` | `needs-rc1-proof` | image probe, pixel readback, scale/colorbar/annotation | Keep as the focused public image-query proof, with broader API pressure covered by follow-up examples. |
 | `protein_arcball_viewer` | `partial-now` | mesh, sphere, materials, SSAO/MSAA, GUI, arcball | Flagship native C showcase; defer labels/picking/molecular surface if needed. |
 | `showcase_wind_field` | `needs-rc1-proof` | image field, primitive arrows, paths, panzoom, colorbar | Best near-term 2D showcase; vector visual can replace primitives later. |
 | `textured_terrain_or_planet` | `needs-rc1-proof` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof. Current source is `examples/c/visuals/textured_mesh.c`; promote or add a showcase/fixture capture. |
@@ -150,7 +150,7 @@ The main remaining polish or feature gaps are:
 2. `path_axes_2d`
 3. `linked_panels_axes_panzoom`
 4. `scale_bar`
-5. `api_pressure`
+5. `image_probe`
 6. `linked_panels_probe_colorbar`
 7. `marker_picking`
 8. `volume`

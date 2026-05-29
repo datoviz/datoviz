@@ -13,7 +13,7 @@ removing any source file.
 | `path_axes_2d` | `features/axes_2d.c` | `features/axes_2d.c` | Added as a deterministic path plus axes baseline; keep old scatter axes as a lab for now. |
 | `linked_panels_axes_panzoom` | `features/panel_linked_axes.c` | `features/panel_linked_axes.c` | Added as a deterministic two-panel shared-X panzoom plus axes baseline; keep old linked panels as a lab for now. |
 | `scale_bar` | `features/scalebar.c` | `features/scalebar.c` | Added as the polished public scale-bar proof; old demo remains in `lab/` and minimal variant remains in `regression/`. |
-| `api_pressure` | `techniques/image_probe.c` | `features/api_pressure.c` | Split only if the broad API-pressure version diverges from image probe. |
+| `image_probe` | `techniques/image_probe.c` | `features/image_probe.c` | Added as the polished public image-probe/colorbar/readout proof; old live-query smoke remains under `techniques/`. |
 | `linked_panels_probe_colorbar` | `techniques/image_probe.c` | `features/panel_probe_colorbar.c` | Compose image probe, colorbar, readout, and linked state. |
 | `marker_picking` | `techniques/pick_hover.c` | `features/pick_marker.c` | Promote once marker-specific pick/selection state is proven. |
 | `volume` | `visuals/volume.c` | `visuals/volume.c` | Polish in place as the visual baseline. |

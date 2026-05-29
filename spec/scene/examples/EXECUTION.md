@@ -120,7 +120,7 @@ Use this order for the required public proof set:
 2. `path_axes_2d`
 3. `linked_panels_axes_panzoom`
 4. `scale_bar`
-5. `api_pressure`
+5. `image_probe`
 6. `linked_panels_probe_colorbar`
 7. `marker_picking`
 8. `volume`
