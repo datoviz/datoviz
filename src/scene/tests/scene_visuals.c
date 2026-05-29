@@ -2654,16 +2654,16 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
     DvzSampledField* field = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){
                    .dim = DVZ_FIELD_DIM_2D,
-                   .format = DVZ_FIELD_FORMAT_R8_UINT,
-                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
                    .width = 4,
                    .height = 4,
                    .depth = 1,
                });
     ANN(field);
-    uint8_t base[16] = {0};
+    uint8_t base[4 * 4 * 4] = {0};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = base, .bytes_per_row = 4, .rows_per_image = 4}));
+        field, &(DvzFieldDataView){.data = base, .bytes_per_row = 4 * 4, .rows_per_image = 4}));
     AT(dvz_visual_set_field(image, "field", field));
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
@@ -2671,15 +2671,14 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
     dvz_capability_snapshot_default(&caps);
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = NULL;
-    AT_EXPECTED_ERROR_STRICT(suite, (stream = dvz_figure_emit(figure, &caps, &report)) != NULL);
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
     ANN(stream);
     dvz_drp2_stream_destroy(stream);
 
-    uint8_t patch[2] = {1, 2};
+    uint8_t patch[2 * 4] = {1, 2, 3, 4, 5, 6, 7, 8};
     AT(dvz_sampled_field_update_region(
         field, (DvzFieldRegion){.x = 1, .y = 2, .z = 0, .width = 2, .height = 1, .depth = 1},
-        &(DvzFieldDataView){.data = patch, .bytes_per_row = 2, .rows_per_image = 1}));
+        &(DvzFieldDataView){.data = patch, .bytes_per_row = 2 * 4, .rows_per_image = 1}));
 
     char* json = dvz_scene_json(scene);
     ANN(json);
