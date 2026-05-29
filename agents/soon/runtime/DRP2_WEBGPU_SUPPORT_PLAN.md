@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE / FOLLOW-UP NOTE`
-> - **Updated on:** `2026-05-28`
+> - **Updated on:** `2026-05-29`
 > - **Purpose:** track DRP2/WebGPU runtime pickup order for the experimental browser path.
 
 
@@ -25,12 +25,15 @@ Current automated evidence:
 1. `just webgpu-fixture-preflight` passes the committed strict subset: `39/39`.
 2. `just webgpu-runner-smoke` passes the browserless runner smoke:
    `37` positive fixtures, `2` WebGPU streams, `81` semantic negative fixtures, and retained
-   `scene_point_wgsl` repeated-frame resource checks.
+   repeated-frame resource checks for point, primitive, texture-sampling, and depth-attachment
+   streams.
 3. The strict subset includes point, primitive, and image scene-emitted WGSL fixtures, multiple color
    attachments, depth attachments, copy commands, compute dispatch, readback, dynamic buffer
    updates, and destroy/lifetime validation.
 4. The browser fixture dashboard passed `120/120` rows on `2026-05-28` after the
    repeated-runtime-frame smoke slice (`183812f27`).
+5. The browser fixture dashboard passed fixture compatibility `120/120` and retained runtime
+   stress `4/4` on `2026-05-29` after `292e82899`.
 
 
 ## Remaining WebGPU Runtime Work
@@ -50,32 +53,30 @@ Completed since the initial follow-up note:
    preflight/smoke tests.
 6. Compute dispatch, readback fixtures, and browserless automation are now part of the committed
    subset.
+7. Real-browser retained-runtime stress rows now cover repeated frames for point, primitive,
+   texture-sampling, and depth-attachment streams.
 
 Remaining follow-up commits:
 
-1. Add real-browser retained-runtime stress rows to the fixture dashboard; see
-   [`WEBGPU_BROWSER_RUNTIME_STRESS_PLAN.md`](WEBGPU_BROWSER_RUNTIME_STRESS_PLAN.md).
-2. Add repeated-frame resource preservation checks for the main demo page path, especially resource
+1. Add repeated-frame resource preservation checks for the main demo page path, especially resource
    counts across pan/zoom, resize, and stream reload.
-3. Replace remaining standalone-demo compatibility shortcuts where practical: implicit canvas
+2. Replace remaining standalone-demo compatibility shortcuts where practical: implicit canvas
    aliases, unaligned-offset fallback, and demo-local scene uniform id assumptions.
-4. Add a DRP2-aligned capability snapshot for the browser runtime and use it to produce explicit
+3. Add a DRP2-aligned capability snapshot for the browser runtime and use it to produce explicit
    unsupported-feature diagnostics before execution.
-5. Keep `CreatePipelineLayout`, `DestroyPipelineLayout`, `ResourceBarrier`, and indirect commands
+4. Keep `CreatePipelineLayout`, `DestroyPipelineLayout`, `ResourceBarrier`, and indirect commands
    deferred until a concrete use case promotes them across DRP2 specs, schemas, native validation,
    WebGPU execution, fixtures, and lifecycle rules together.
 
 
 ## Immediate Order
 
-1. Add browser dashboard retained-runtime stress rows from
-   [`WEBGPU_BROWSER_RUNTIME_STRESS_PLAN.md`](WEBGPU_BROWSER_RUNTIME_STRESS_PLAN.md).
-2. Add repeated-frame/resource-count checks for the browser demo path beyond the fixture dashboard,
+1. Add repeated-frame/resource-count checks for the browser demo path beyond the fixture dashboard,
    including interactive update, resize, and stream reload.
-3. Add browser capability reporting and unsupported-feature diagnostics.
-4. Start the portable scene/WASM emission milestone from
+2. Add browser capability reporting and unsupported-feature diagnostics.
+3. Start the portable scene/WASM emission milestone from
    [`SCENE_WASM_WEBGPU_PORT_PLAN.md`](SCENE_WASM_WEBGPU_PORT_PLAN.md).
-5. Keep `CreatePipelineLayout` deferred during this work.
+4. Keep `CreatePipelineLayout` deferred during this work.
 
 
 ## Validation

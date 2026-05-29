@@ -186,7 +186,9 @@ Current automated evidence:
    readback, dynamic buffer updates, and destroy/lifetime validation.
 5. The browser fixture dashboard passed `120/120` checks on 2026-05-28 after the
    repeated-runtime-frame smoke slice (`183812f27`).
-6. The remaining RC1 decision is whether WASM scene emission is required before feature freeze or
+6. The browser fixture dashboard passed fixture compatibility `120/120` and retained runtime
+   stress `4/4` on 2026-05-29 after `292e82899`.
+7. The remaining RC1 decision is whether WASM scene emission is required before feature freeze or
    remains an experimental follow-up.
 
 Suggested validation:

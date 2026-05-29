@@ -36,6 +36,9 @@ Current status as of this note:
 - expected browser dashboard result for the committed subset: `120 pass, 0 unsupported, 0 fail`
 - recorded browser dashboard result on 2026-05-28 after the repeated-runtime-frame smoke slice
   (`183812f27`): `120 pass, 0 unsupported, 0 fail`
+- recorded browser dashboard result on 2026-05-29 after the retained browser-runtime stress slice
+  (`292e82899`): fixture compatibility `120 pass, 0 unsupported, 0 fail`; retained runtime stress
+  `4 pass, 0 fail`
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
@@ -172,6 +175,10 @@ forms. The fixture dashboard requires explicit bind-group layout and render-pipe
 - Bind-group layout `visibility`, storage `access`, render-pipeline `vertex_buffers`, and
   render-pipeline `color_targets` are required by the fixture dashboard. Standalone demo streams
   still use DRP2 defaults and shader-source inference as compatibility fallbacks.
+- The fixture dashboard retained runtime stress section loads `scene_point_wgsl`,
+  `scene_primitive_wgsl`, `texture_sampling_wgsl`, and `attachment_depth_wgsl` once each, renders
+  `10` repeated frames through `Drp2WebGpuRuntime`, and checks stable resource counts with no open
+  or recorded references after every frame.
 - Destroy commands validate live-object dependencies, use-after-destroy, recorded-work references,
   and submitted-work references. The runner calls native WebGPU `destroy()` only for object types
   that expose it and otherwise tombstones the DRP2 object id.

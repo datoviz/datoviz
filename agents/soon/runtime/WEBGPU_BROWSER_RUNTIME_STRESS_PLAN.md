@@ -1,29 +1,30 @@
 # WebGPU Browser Runtime Stress Plan
 
 > **Execution Status**
-> - **Status:** `ACTIVE / NEXT WEBGPU SLICE`
-> - **Updated on:** `2026-05-28`
-> - **Purpose:** add real-browser retained-runtime stress coverage after the `120/120` dashboard proof.
+> - **Status:** `DONE / FIRST STRESS SLICE LANDED`
+> - **Updated on:** `2026-05-29`
+> - **Purpose:** record the first real-browser retained-runtime stress proof after the `120/120`
+>   dashboard proof.
 
 
 ## Current Proof
 
 The browser WebGPU fixture dashboard has passed the committed subset after the retained-runtime
-Node smoke landed:
+Node smoke landed and after the first real-browser retained-runtime stress slice:
 
 1. Browser dashboard: `120/120` rows passed on `2026-05-28` after `183812f27`.
 2. Browserless runner smoke: `37` positive DRP2 fixtures, `2` WebGPU attachment streams, and `81`
    semantic negative fixtures.
-3. Browserless retained runtime smoke: `scene_point_wgsl` renders `10` repeated frames through
-   `Drp2WebGpuRuntime` while checking stable live resource counts and zero open/recorded refs.
-
-This still leaves one important gap: the dashboard proves one-shot browser execution, while the
-retained-runtime repeat check currently runs only against the fake Node WebGPU device.
+3. Browserless retained runtime smoke: point, primitive, texture-sampling, and depth-attachment
+   streams each render `10` repeated frames through `Drp2WebGpuRuntime` while checking stable live
+   resource counts and zero open/recorded refs.
+4. Browser dashboard: fixture compatibility `120 pass, 0 unsupported, 0 fail` and retained runtime
+   stress `4 pass, 0 fail` passed on `2026-05-29` after `292e82899`.
 
 
 ## Goal
 
-Add a dashboard stress mode that exercises `Drp2WebGpuRuntime` repeated rendering on the real
+The landed dashboard stress mode exercises `Drp2WebGpuRuntime` repeated rendering on the real
 browser WebGPU device, without mixing the stress rows into the existing fixture compatibility count.
 
 The dashboard should continue reporting the fixture subset separately from runtime stress so a
@@ -35,7 +36,7 @@ runtime stress: 4 pass, 0 fail
 ```
 
 
-## Action Items
+## Landed Action Items
 
 1. Add a retained-runtime stress section to `examples/webgpu/fixtures.html`.
    - Keep it visually separate from the current fixture table.
