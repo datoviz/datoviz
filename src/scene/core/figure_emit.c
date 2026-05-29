@@ -29,6 +29,7 @@
 #include "../../drp2/_stream.h"
 #include "render_contract/render_contract.h"
 #include "_scene.h"
+#include "domain/field_internal.h"
 #include "datoviz/scene.h"
 
 

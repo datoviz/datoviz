@@ -25,6 +25,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_scene.h"
+#include "domain/field_internal.h"
 #include "sample_profile.h"
 #include "scale_internal.h"
 

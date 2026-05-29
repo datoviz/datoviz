@@ -98,22 +98,6 @@ static DvzSampledField* _scene_ensure_owned_image_field(
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
-/*************************************************************************************************/
-
-/**
- * Advance a retained visual texture version.
- *
- * @param visual the visual whose texture changed
- */
-static void _visual_texture_bump_version(DvzVisual* visual)
-{
-    ANN(visual);
-    visual->texture.version =
-        visual->texture.version == UINT64_MAX ? 1 : visual->texture.version + 1;
-}
-
-/*************************************************************************************************/
 /*  Visual texture API                                                                           */
 /*************************************************************************************************/
 
@@ -196,8 +180,7 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
     {
         _visual_binding_assign(visual, DVZ_VISUAL_BINDING_FIELD, slot_name, field, false);
         _scene_visual_texture_mark_clean(visual);
-        visual->texture.dirty = true;
-        _visual_texture_bump_version(visual);
+        _scene_visual_texture_mark_dirty(visual);
     }
     else
     {
@@ -289,79 +272,6 @@ int dvz_visual_set_texture_f32(
     return 0;
 }
 
-
-
-
-/**
- * Mark one visual texture upload state as clean after a successful emit.
- *
- * @param visual the visual
- */
-void _scene_visual_texture_mark_clean(DvzVisual* visual)
-{
-    ANN(visual);
-    visual->texture.dirty = false;
-    visual->texture.field_dirty = false;
-    visual->texture.field_dirty_full = false;
-    dvz_memset(
-        &visual->texture.field_dirty_region, sizeof(DvzFieldRegion), 0, sizeof(DvzFieldRegion));
-}
-
-
-
-/**
- * Mark one visual texture state as requiring a full field upload.
- *
- * @param visual the visual
- * @param desc the sampled field descriptor
- */
-void _scene_visual_texture_mark_full_dirty(
-    DvzVisual* visual, const DvzSampledFieldDesc* desc)
-{
-    ANN(visual);
-    ANN(desc);
-    visual->texture.dirty = true;
-    visual->texture.field_dirty = true;
-    visual->texture.field_dirty_full = true;
-    visual->texture.field_dirty_region = _field_full_region(desc);
-    _visual_texture_bump_version(visual);
-}
-
-
-
-/**
- * Mark one visual texture state as dirty for one field subregion.
- *
- * @param visual the visual
- * @param desc the sampled field descriptor
- * @param region the dirty field region
- */
-void _scene_visual_texture_mark_region_dirty(
-    DvzVisual* visual, const DvzSampledFieldDesc* desc, DvzFieldRegion region)
-{
-    ANN(visual);
-    ANN(desc);
-    visual->texture.dirty = true;
-    _visual_texture_bump_version(visual);
-    if (!visual->texture.field_dirty)
-    {
-        visual->texture.field_dirty = true;
-        visual->texture.field_dirty_full = false;
-        visual->texture.field_dirty_region = region;
-        return;
-    }
-    if (visual->texture.field_dirty_full)
-    {
-        visual->texture.field_dirty_region = _field_full_region(desc);
-        return;
-    }
-    if (!_field_regions_union(
-            &visual->texture.field_dirty_region, &region, &visual->texture.field_dirty_region))
-    {
-        visual->texture.field_dirty_full = true;
-        visual->texture.field_dirty_region = _field_full_region(desc);
-    }
-}
 
 
 

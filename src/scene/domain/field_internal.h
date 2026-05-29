@@ -61,8 +61,14 @@ bool _scene_prepare_field_texture(
 bool _scene_sampled_field_texture_upload_payload(
     DvzSampledField* field, DvzSampledFieldTextureUploadPayload* out);
 
+void _scene_visual_texture_mark_clean(DvzVisual* visual);
+
+void _scene_visual_texture_mark_dirty(DvzVisual* visual);
+
 void _scene_visual_texture_mark_full_dirty(
     DvzVisual* visual, const DvzSampledFieldDesc* desc);
 
 void _scene_visual_texture_mark_region_dirty(
     DvzVisual* visual, const DvzSampledFieldDesc* desc, DvzFieldRegion region);
+
+void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field);

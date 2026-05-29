@@ -29,6 +29,7 @@
 #include "_visual_family.h"
 #include "_visual_internal.h"
 #include "datoviz/scene.h"
+#include "domain/field_internal.h"
 #include "sample_profile.h"
 
 

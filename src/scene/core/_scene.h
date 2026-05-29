@@ -1824,10 +1824,6 @@ bool _scene_visual_frame_plan_metadata(
 
 bool _scene_color_from_colormap(const DvzColormap* colormap, double t, uint8_t out_rgba[4]);
 
-void _scene_visual_texture_mark_clean(DvzVisual* visual);
-
-void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field);
-
 bool _scene_visual_resource_key(
     const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index, char* out,
     size_t out_size);
