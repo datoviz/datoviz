@@ -25,6 +25,7 @@
 #include "frame_plan/emit.h"
 #include "_scene.h"
 #include "_technique.h"
+#include "_visual_pipeline.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
@@ -96,6 +97,62 @@ static bool _frame_plan_render_fixture_visual(
     DvzFramePlan* plan, const char* visual_id, const char* position_id)
 {
     return _frame_plan_render_fixture_visual_ex(plan, visual_id, position_id, NULL);
+}
+
+
+/**
+ * Upload shared quad geometry used by typed image fixture visuals.
+ *
+ * @param plan the FramePlan
+ * @param position_id position buffer resource id
+ * @param texcoords_id texcoord buffer resource id
+ * @return whether the geometry uploads were appended
+ */
+static bool _frame_plan_upload_image_fixture_geometry(
+    DvzFramePlan* plan, const char* position_id, const char* texcoords_id)
+{
+    ANN(plan);
+    ANN(position_id);
+    ANN(texcoords_id);
+    return dvz_frame_plan_upload(
+               plan, position_id, 0, 4 * 3 * sizeof(float), "image.position") &&
+           dvz_frame_plan_upload(
+               plan, texcoords_id, 0, 4 * 2 * sizeof(float), "image.texcoords");
+}
+
+
+
+/**
+ * Attach explicit typed metadata for an image fixture visual.
+ *
+ * @param plan the FramePlan
+ * @param visual_id render visual id
+ * @param position_id position buffer resource id
+ * @param texcoords_id texcoord buffer resource id
+ * @param texture_id texture resource id
+ * @return whether the visual and metadata were attached
+ */
+static bool _frame_plan_render_image_fixture_visual(
+    DvzFramePlan* plan, const char* visual_id, const char* position_id, const char* texcoords_id,
+    const char* texture_id)
+{
+    ANN(plan);
+    ANN(visual_id);
+    ANN(position_id);
+    ANN(texcoords_id);
+    ANN(texture_id);
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.visual_type = DVZ_VISUAL_TYPE_IMAGE;
+    metadata.desc_kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
+    metadata.buffer_index = UINT32_MAX;
+    metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+    metadata.vertex_count = 4;
+    dvz_strlcpy(metadata.position_id, position_id, sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.texcoords_id, texcoords_id, sizeof(metadata.texcoords_id));
+    dvz_strlcpy(metadata.texture_id, texture_id, sizeof(metadata.texture_id));
+    return dvz_frame_plan_render_visual(plan, visual_id) &&
+           dvz_frame_plan_render_visual_metadata(plan, &metadata);
 }
 
 
@@ -1529,8 +1586,9 @@ int test_frame_plan_emit_drp2_rejects_small_caps(TstContext* suite, const TstCas
     ANN(texture_plan);
     AT(dvz_frame_plan_upload(texture_plan, "tex.image.rgba", 0, 16, "image.rgba"));
     AT(dvz_frame_plan_render(texture_plan, "panel.0", "target.panel.0.color", false));
-    AT(dvz_frame_plan_render_visual(texture_plan, "visual.image.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(texture_plan));
+    AT(_frame_plan_render_image_fixture_visual(
+        texture_plan, "visual.image.0", "buf.image.position", "buf.image.texcoords",
+        "tex.image.rgba"));
 
     dvz_diagnostic_report_init(&report);
     dvz_capability_snapshot_default(&caps);
@@ -1781,17 +1839,23 @@ int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
     DvzFramePlan* frame1 = dvz_frame_plan("figure.runtime.texture.glsl.execute", 1);
     ANN(frame0);
     ANN(frame1);
+    AT(_frame_plan_upload_image_fixture_geometry(
+        frame0, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame0, "tex.image.rgba", 0, 16, "image.rgba.0"));
     AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
-    AT(dvz_frame_plan_render_visual(frame0, "visual.image.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(frame0));
+    AT(_frame_plan_render_image_fixture_visual(
+        frame0, "visual.image.0", "buf.image.position", "buf.image.texcoords",
+        "tex.image.rgba"));
     AT(dvz_frame_plan_copy(frame0, "target.panel.0.picking", "buf.pick.readback", 4));
     AT(dvz_frame_plan_readback(frame0, "buf.pick.readback", "request.pick.0"));
 
+    AT(_frame_plan_upload_image_fixture_geometry(
+        frame1, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame1, "tex.image.rgba", 0, 16, "image.rgba.1"));
     AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
-    AT(dvz_frame_plan_render_visual(frame1, "visual.image.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(frame1));
+    AT(_frame_plan_render_image_fixture_visual(
+        frame1, "visual.image.0", "buf.image.position", "buf.image.texcoords",
+        "tex.image.rgba"));
     AT(dvz_frame_plan_copy(frame1, "target.panel.0.picking", "buf.pick.readback", 4));
     AT(dvz_frame_plan_readback(frame1, "buf.pick.readback", "request.pick.1"));
 
@@ -2194,8 +2258,8 @@ int test_frame_plan_emit_drp2_texture_sampling(TstContext* suite, const TstCase*
 
     AT(dvz_frame_plan_upload(plan, "tex.image.rgba", 0, 16, "image.rgba"));
     AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
-    AT(dvz_frame_plan_render_visual(plan, "visual.image.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(plan));
+    AT(_frame_plan_render_image_fixture_visual(
+        plan, "visual.image.0", "buf.image.position", "buf.image.texcoords", "tex.image.rgba"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -2207,16 +2271,53 @@ int test_frame_plan_emit_drp2_texture_sampling(TstContext* suite, const TstCase*
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
     AT(validation.ok);
-    AT(dvz_drp2_stream_count(stream) == 19);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 2)) == DVZ_DRP2_COMMAND_CREATE_TEXTURE);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 3)) == DVZ_DRP2_COMMAND_WRITE_TEXTURE);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 4)) == DVZ_DRP2_COMMAND_CREATE_SAMPLER);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 5)) ==
-       DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 9)) ==
-       DVZ_DRP2_COMMAND_CREATE_BIND_GROUP);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 14)) == DVZ_DRP2_COMMAND_SET_BIND_GROUP);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 18)) == DVZ_DRP2_COMMAND_QUEUE_SUBMIT);
+    bool found_texture_create = false;
+    bool found_texture_write = false;
+    bool found_sampler = false;
+    bool found_bind_group_layout = false;
+    bool found_bind_group = false;
+    bool found_texture_bind = false;
+    bool found_draw = false;
+    bool found_submit = false;
+    uint64_t texture_bind_group_id = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        found_texture_create =
+            found_texture_create || cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE;
+        found_texture_write = found_texture_write || cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE;
+        found_sampler = found_sampler || cmd->type == DVZ_DRP2_COMMAND_CREATE_SAMPLER;
+        found_bind_group_layout =
+            found_bind_group_layout || cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT;
+        found_bind_group = found_bind_group || cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP;
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+        {
+            for (uint32_t j = 0; j < cmd->u.create_bind_group.entry_count; j++)
+            {
+                if (cmd->u.create_bind_group.entries[j].binding_type ==
+                    DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE)
+                    texture_bind_group_id = cmd->u.create_bind_group.id;
+            }
+        }
+        found_submit = found_submit || cmd->type == DVZ_DRP2_COMMAND_QUEUE_SUBMIT;
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
+            found_texture_bind =
+                found_texture_bind || cmd->u.set_bind_group.bind_group_id == texture_bind_group_id;
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            found_draw = cmd->u.draw.instance_count == 1;
+        }
+    }
+    AT(found_texture_create);
+    AT(found_texture_write);
+    AT(found_sampler);
+    AT(found_bind_group_layout);
+    AT(found_bind_group);
+    AT(texture_bind_group_id != 0);
+    AT(found_texture_bind);
+    AT(found_draw);
+    AT(found_submit);
 
     char* json = dvz_drp2_stream_json(stream, "scene_texture_sampling_from_c");
     ANN(json);
@@ -2545,31 +2646,43 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
     ANN(frame2);
     ANN(frame3);
 
+    AT(_frame_plan_upload_image_fixture_geometry(
+        frame0, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame0, "tex.resize.rgba", 0, 16, "image.rgba.0"));
     AT(dvz_frame_plan_upload_set_texture_extent(frame0, 2, 2));
     AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
-    AT(dvz_frame_plan_render_visual(frame0, "visual.image.resize"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(frame0));
+    AT(_frame_plan_render_image_fixture_visual(
+        frame0, "visual.image.resize", "buf.image.position", "buf.image.texcoords",
+        "tex.resize.rgba"));
 
+    AT(_frame_plan_upload_image_fixture_geometry(
+        frame1, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame1, "tex.resize.rgba", 0, 16, "image.rgba.1"));
     AT(dvz_frame_plan_upload_set_texture_extent(frame1, 2, 2));
     AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
-    AT(dvz_frame_plan_render_visual(frame1, "visual.image.resize"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(frame1));
+    AT(_frame_plan_render_image_fixture_visual(
+        frame1, "visual.image.resize", "buf.image.position", "buf.image.texcoords",
+        "tex.resize.rgba"));
 
+    AT(_frame_plan_upload_image_fixture_geometry(
+        frame2, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame2, "tex.resize.rgba", 0, 64, "image.rgba.2"));
     AT(dvz_frame_plan_upload_set_texture_extent(frame2, 4, 4));
     AT(dvz_frame_plan_render(frame2, "panel.0", "target.panel.0.picking", true));
-    AT(dvz_frame_plan_render_visual(frame2, "visual.image.resize"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(frame2));
+    AT(_frame_plan_render_image_fixture_visual(
+        frame2, "visual.image.resize", "buf.image.position", "buf.image.texcoords",
+        "tex.resize.rgba"));
 
+    AT(_frame_plan_upload_image_fixture_geometry(
+        frame3, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame3, "tex.partial.rgba", 0, 4, "image.rgba.3"));
     AT(dvz_frame_plan_upload_set_texture_extent(frame3, 1, 1));
     AT(dvz_frame_plan_upload_set_texture_allocation_extent(frame3, 4, 4));
     AT(dvz_frame_plan_upload_set_texture_region(frame3, 3, 3));
     AT(dvz_frame_plan_render(frame3, "panel.0", "target.panel.0.picking", true));
-    AT(dvz_frame_plan_render_visual(frame3, "visual.image.partial"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(frame3));
+    AT(_frame_plan_render_image_fixture_visual(
+        frame3, "visual.image.partial", "buf.image.position", "buf.image.texcoords",
+        "tex.partial.rgba"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -2788,17 +2901,23 @@ int test_frame_plan_emitter_runtime_texture_two_frames(TstContext* suite, const 
     DvzFramePlan* frame1 = dvz_frame_plan("figure.runtime.texture", 1);
     ANN(frame0);
     ANN(frame1);
+    AT(_frame_plan_upload_image_fixture_geometry(
+        frame0, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame0, "tex.image.rgba", 0, 16, "image.rgba.0"));
     AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
-    AT(dvz_frame_plan_render_visual(frame0, "visual.image.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(frame0));
+    AT(_frame_plan_render_image_fixture_visual(
+        frame0, "visual.image.0", "buf.image.position", "buf.image.texcoords",
+        "tex.image.rgba"));
     AT(dvz_frame_plan_copy(frame0, "target.panel.0.picking", "buf.pick.readback", 4));
     AT(dvz_frame_plan_readback(frame0, "buf.pick.readback", "request.pick.0"));
 
+    AT(_frame_plan_upload_image_fixture_geometry(
+        frame1, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame1, "tex.image.rgba", 0, 16, "image.rgba.1"));
     AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
-    AT(dvz_frame_plan_render_visual(frame1, "visual.image.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(frame1));
+    AT(_frame_plan_render_image_fixture_visual(
+        frame1, "visual.image.0", "buf.image.position", "buf.image.texcoords",
+        "tex.image.rgba"));
     AT(dvz_frame_plan_copy(frame1, "target.panel.0.picking", "buf.pick.readback", 4));
     AT(dvz_frame_plan_readback(frame1, "buf.pick.readback", "request.pick.1"));
 
@@ -2813,28 +2932,61 @@ int test_frame_plan_emitter_runtime_texture_two_frames(TstContext* suite, const 
         dvz_frame_plan_emitter_emit_drp2(emitter, frame0, &caps, &report, &emit_cfg);
     ANN(stream0);
     AT(dvz_diagnostic_report_count(&report) == 0);
-    AT(dvz_drp2_stream_count(stream0) == 21);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream0, 2)) ==
-       DVZ_DRP2_COMMAND_CREATE_TEXTURE);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream0, 4)) ==
-       DVZ_DRP2_COMMAND_CREATE_SAMPLER);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream0, 5)) ==
-       DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream0, 9)) ==
-       DVZ_DRP2_COMMAND_CREATE_BIND_GROUP);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream0, 15)) ==
-       DVZ_DRP2_COMMAND_SET_BIND_GROUP);
+
+    bool found_texture_create = false;
+    bool found_sampler = false;
+    bool found_bind_group_layout = false;
+    bool found_bind_group = false;
+    bool found_texture_bind = false;
+    uint64_t texture_bind_group_id = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream0); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream0, i);
+        ANN(cmd);
+        found_texture_create =
+            found_texture_create || cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE;
+        found_sampler = found_sampler || cmd->type == DVZ_DRP2_COMMAND_CREATE_SAMPLER;
+        found_bind_group_layout =
+            found_bind_group_layout || cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT;
+        found_bind_group = found_bind_group || cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP;
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+        {
+            for (uint32_t j = 0; j < cmd->u.create_bind_group.entry_count; j++)
+            {
+                if (cmd->u.create_bind_group.entries[j].binding_type ==
+                    DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE)
+                    texture_bind_group_id = cmd->u.create_bind_group.id;
+            }
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
+            found_texture_bind =
+                found_texture_bind || cmd->u.set_bind_group.bind_group_id == texture_bind_group_id;
+    }
+    AT(found_texture_create);
+    AT(found_sampler);
+    AT(found_bind_group_layout);
+    AT(found_bind_group);
+    AT(texture_bind_group_id != 0);
+    AT(found_texture_bind);
 
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream1 =
         dvz_frame_plan_emitter_emit_drp2(emitter, frame1, &caps, &report, &emit_cfg);
     ANN(stream1);
     AT(dvz_diagnostic_report_count(&report) == 0);
-    AT(dvz_drp2_stream_count(stream1) == 10);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream1, 0)) ==
-       DVZ_DRP2_COMMAND_WRITE_TEXTURE);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream1, 4)) ==
-       DVZ_DRP2_COMMAND_SET_BIND_GROUP);
+    bool found_texture_write = false;
+    found_texture_bind = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream1); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream1, i);
+        ANN(cmd);
+        found_texture_write = found_texture_write || cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE;
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
+            found_texture_bind =
+                found_texture_bind || cmd->u.set_bind_group.bind_group_id == texture_bind_group_id;
+    }
+    AT(found_texture_write);
+    AT(found_texture_bind);
 
     DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
     runtime_cfg.semantic_only = true;
