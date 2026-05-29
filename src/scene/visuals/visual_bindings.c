@@ -47,6 +47,9 @@
 DvzVisualBinding* _visual_binding(DvzVisual* visual, DvzVisualBindingKind kind)
 {
     ANN(visual);
+    DvzVisualFamilyState* state = _visual_family_state(visual);
+    if (state == NULL)
+        return NULL;
     uint32_t idx = UINT32_MAX;
     switch (kind)
     {
@@ -63,8 +66,8 @@ DvzVisualBinding* _visual_binding(DvzVisual* visual, DvzVisualBindingKind kind)
         return NULL;
     }
     ASSERT(idx < DVZ_SCENE_MAX_VISUAL_BINDINGS);
-    _visual_family_state(visual)->bindings[idx].kind = kind;
-    return &_visual_family_state(visual)->bindings[idx];
+    state->bindings[idx].kind = kind;
+    return &state->bindings[idx];
 }
 
 
@@ -79,6 +82,9 @@ DvzVisualBinding* _visual_binding(DvzVisual* visual, DvzVisualBindingKind kind)
 const DvzVisualBinding* _visual_binding_const(const DvzVisual* visual, DvzVisualBindingKind kind)
 {
     ANN(visual);
+    DvzVisualFamilyState* state = _visual_family_state(visual);
+    if (state == NULL)
+        return NULL;
     uint32_t idx = UINT32_MAX;
     switch (kind)
     {
@@ -95,7 +101,7 @@ const DvzVisualBinding* _visual_binding_const(const DvzVisual* visual, DvzVisual
         return NULL;
     }
     ASSERT(idx < DVZ_SCENE_MAX_VISUAL_BINDINGS);
-    return &_visual_family_state(visual)->bindings[idx];
+    return &state->bindings[idx];
 }
 
 
@@ -114,8 +120,12 @@ void _visual_binding_assign(
     bool owned)
 {
     ANN(visual);
+    DvzVisualFamilyState* state = _visual_family_state(visual);
+    if (state == NULL)
+        return;
     DvzVisualBinding* binding = _visual_binding(visual, kind);
-    ANN(binding);
+    if (binding == NULL)
+        return;
     binding->resource = resource;
     binding->owned = owned;
     dvz_memset(binding->slot, sizeof(binding->slot), 0, sizeof(binding->slot));
@@ -125,24 +135,23 @@ void _visual_binding_assign(
     switch (kind)
     {
     case DVZ_VISUAL_BINDING_FIELD:
-        _visual_family_state(visual)->field = (DvzSampledField*)resource;
-        _visual_family_state(visual)->field_owned = owned;
-        dvz_memset(_visual_family_state(visual)->field_slot, sizeof(_visual_family_state(visual)->field_slot), 0, sizeof(_visual_family_state(visual)->field_slot));
+        state->field = (DvzSampledField*)resource;
+        state->field_owned = owned;
+        dvz_memset(state->field_slot, sizeof(state->field_slot), 0, sizeof(state->field_slot));
         if (slot_name != NULL && resource != NULL)
-            dvz_strlcpy(_visual_family_state(visual)->field_slot, slot_name, sizeof(_visual_family_state(visual)->field_slot));
+            dvz_strlcpy(state->field_slot, slot_name, sizeof(state->field_slot));
         break;
     case DVZ_VISUAL_BINDING_BUFFER:
-        _visual_family_state(visual)->buffer = (DvzSceneBuffer*)resource;
-        dvz_memset(
-            _visual_family_state(visual)->buffer_slot, sizeof(_visual_family_state(visual)->buffer_slot), 0, sizeof(_visual_family_state(visual)->buffer_slot));
+        state->buffer = (DvzSceneBuffer*)resource;
+        dvz_memset(state->buffer_slot, sizeof(state->buffer_slot), 0, sizeof(state->buffer_slot));
         if (slot_name != NULL && resource != NULL)
-            dvz_strlcpy(_visual_family_state(visual)->buffer_slot, slot_name, sizeof(_visual_family_state(visual)->buffer_slot));
+            dvz_strlcpy(state->buffer_slot, slot_name, sizeof(state->buffer_slot));
         break;
     case DVZ_VISUAL_BINDING_SCALE:
-        _visual_family_state(visual)->scale = (DvzScale*)resource;
-        dvz_memset(_visual_family_state(visual)->scale_slot, sizeof(_visual_family_state(visual)->scale_slot), 0, sizeof(_visual_family_state(visual)->scale_slot));
+        state->scale = (DvzScale*)resource;
+        dvz_memset(state->scale_slot, sizeof(state->scale_slot), 0, sizeof(state->scale_slot));
         if (slot_name != NULL && resource != NULL)
-            dvz_strlcpy(_visual_family_state(visual)->scale_slot, slot_name, sizeof(_visual_family_state(visual)->scale_slot));
+            dvz_strlcpy(state->scale_slot, slot_name, sizeof(state->scale_slot));
         break;
     default:
         break;
@@ -161,5 +170,4 @@ void _visual_binding_clear(DvzVisual* visual, DvzVisualBindingKind kind)
 {
     _visual_binding_assign(visual, kind, NULL, NULL, false);
 }
-
 

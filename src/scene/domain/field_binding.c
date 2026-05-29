@@ -88,15 +88,16 @@ void _scene_release_field_bindings(DvzSampledField* field)
     for (uint32_t i = 0; i < scene->visual_count; i++)
     {
         DvzVisual* visual = &scene->visuals[i];
-        if (_visual_family_state(visual)->field != field)
+        DvzVisualFamilyState* state = _visual_family_state(visual);
+        if (state == NULL || state->field != field)
             continue;
         _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
         _scene_visual_texture_mark_clean(visual);
-        if (_visual_family_state(visual)->texture.upload != NULL)
+        if (state->texture.upload != NULL)
         {
-            dvz_free(_visual_family_state(visual)->texture.upload);
-            _visual_family_state(visual)->texture.upload = NULL;
-            _visual_family_state(visual)->texture.upload_size = 0;
+            dvz_free(state->texture.upload);
+            state->texture.upload = NULL;
+            state->texture.upload_size = 0;
         }
     }
 }
@@ -303,16 +304,19 @@ void _scene_release_visual_field(DvzVisual* visual)
 {
     if (visual == NULL)
         return;
-    DvzSampledField* field = _visual_family_state(visual)->field;
+    DvzVisualFamilyState* state = _visual_family_state(visual);
+    if (state == NULL)
+        return;
+    DvzSampledField* field = state->field;
     const DvzVisualBinding* binding = _visual_binding_const(visual, DVZ_VISUAL_BINDING_FIELD);
-    bool owned = binding != NULL ? binding->owned : _visual_family_state(visual)->field_owned;
+    bool owned = binding != NULL ? binding->owned : state->field_owned;
     _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
     _scene_visual_texture_mark_clean(visual);
-    if (_visual_family_state(visual)->texture.upload != NULL)
+    if (state->texture.upload != NULL)
     {
-        dvz_free(_visual_family_state(visual)->texture.upload);
-        _visual_family_state(visual)->texture.upload = NULL;
-        _visual_family_state(visual)->texture.upload_size = 0;
+        dvz_free(state->texture.upload);
+        state->texture.upload = NULL;
+        state->texture.upload_size = 0;
     }
     if (owned && field != NULL)
         dvz_sampled_field_destroy(field);

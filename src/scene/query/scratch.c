@@ -96,34 +96,6 @@ bool _dvz_scene_query_alloc(
 
 
 /**
- * Return whether one retained visual attribute has valid dense data.
- *
- * @param visual the visual
- * @param attr_name retained attribute name
- * @param item_size expected item size
- * @param out_attr output attribute
- * @return true when the attribute is present and dense
- */
-bool _dvz_scene_query_dense_attr(
-    const DvzVisual* visual, const char* attr_name, uint32_t item_size,
-    const DvzVisualAttr** out_attr)
-{
-    ANN(visual);
-    ANN(attr_name);
-    ANN(out_attr);
-    int attr_idx = _attr_index(visual, attr_name);
-    if (attr_idx < 0)
-        return false;
-    const DvzVisualAttr* attr = &visual->attrs[attr_idx];
-    if (attr->data == NULL || attr->item_count == 0 || attr->item_size != item_size)
-        return false;
-    *out_attr = attr;
-    return true;
-}
-
-
-
-/**
  * Return the offscreen query target extent for one panel.
  *
  * @param figure parent figure
