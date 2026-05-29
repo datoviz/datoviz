@@ -17,14 +17,15 @@ tracks source-split progress; the completion plan defines the end state.
 ## Current Pressure Points
 
 As of 2026-05-29 after the scene-plan folder removal, upload/panel helper passes,
-helper-declaration boundary pass, query scratch-helper sharing, and query render-metadata guard
-through `b0f24bd51`, the highest-value split candidates are:
+helper-declaration boundary pass, query scratch-helper sharing, query render-metadata guard, and
+shared item-id decode through `9a712a432`, the highest-value split candidates are:
 
 1. `src/scene/query/` and family `visuals/*/query.c` files: query has a registry, split
-   executor/policy/readback files, shared scratch helpers, and a query render-metadata completeness
-   guard. Family scratch geometry, native result decoding, and unsupported-policy ownership should
-   still be checked family by family. Keep queueing, request freshness, executor lifecycle,
-   metadata completeness checks, and readback scheduling generic.
+   executor/policy/readback files, shared scratch helpers, standard item-id decoding, and a query
+   render-metadata completeness guard. Family scratch geometry, non-item result decoding, and
+   unsupported-policy ownership should still be checked family by family. Keep queueing, request
+   freshness, executor lifecycle, metadata completeness checks, common item decoding, and readback
+   scheduling generic.
 2. `src/scene/annotation/text.c` and `axis.c`: retained annotation objects, layout/reserve policy,
    generated visuals, and text/glyph lowering are still mixed. Scale, colorbar, legend, colormap,
    scale-bar, and text-font ownership now have first-pass owner files.
@@ -77,8 +78,9 @@ They should move only when includes and ownership prove the boundary, not as a d
 2. `render_contract/`: already mostly descriptor/FramePlan validation. It can stand apart from
    retained scene semantics if it keeps reporting mismatches rather than deciding visual behavior.
 3. `query/`: the generic queue, result, readback, policy, registry, and executor files are a real
-   subsystem. The remaining work is to move family scratch geometry, result decoding, and
-   unsupported-policy decisions into family `query.c` files or narrow registry hooks.
+   subsystem. Scratch helpers and standard item-id decoding are already generic. The remaining work
+   is to move family scratch geometry, non-item result decoding, and unsupported-policy decisions
+   into family `query.c` files or narrow registry hooks.
 4. `text/`: atlas/block/raster helpers are candidates for a reusable text service under
    `src/scene/text/`, while retained annotation text and generated visual synchronization should
    stay in `annotation/`.
@@ -96,9 +98,9 @@ They should move only when includes and ownership prove the boundary, not as a d
 
 ### 1. Finish Query-Family Ownership
 
-Status: generic query scratch helpers and the query render-metadata guard completed on 2026-05-29.
-The next pickup is family-by-family ownership of remaining scratch geometry, result decoding, and
-unsupported-policy decisions.
+Status: generic query scratch helpers, standard item-id decode, and the query render-metadata guard
+completed on 2026-05-29. The next pickup is family-by-family ownership of remaining scratch
+geometry, non-item result decoding, and unsupported-policy decisions.
 
 Current ownership:
 
@@ -108,16 +110,17 @@ Current ownership:
    execution, query render-metadata completeness checks, and readback orchestration.
 3. `query/scratch.c`: scratch destruction plus shared temporary allocation, dense-attribute,
    target-extent, request-centered render-state, and render-metadata completeness helpers.
-4. `query/queue.c`, `query/readback.c`, `query/result.c`, and `query/registry.c`: request queue,
-   readback routing, result freshness, and family-op lookup.
-5. `visuals/<family>/query.c`: family query hooks for active queryable families.
+4. `query/result.c`: result freshness, queue push/poll, and standard r32uint item-id decode.
+5. `query/queue.c`, `query/readback.c`, and `query/registry.c`: request queue, readback routing,
+   and family-op lookup.
+6. `visuals/<family>/query.c`: family query hooks for active queryable families.
 
 Next moves:
 
 1. Move remaining scratch-geometry builders into the owning family query file or a narrow shared
    visual subsystem when the geometry is family-specific.
-2. Move native result decoding and unsupported-target decisions into the owning family query file
-   where practical.
+2. Move non-item native result decoding and unsupported-target decisions into the owning family
+   query file where practical. Keep standard r32uint item-id decoding in `query/result.c`.
 3. Keep query queueing, request freshness, readback scheduling, and executor lifecycle generic.
 4. Add focused tests that distinguish orchestration behavior from family payload/result behavior.
 
@@ -370,8 +373,8 @@ The query folder already has queue, executor, readback, registry, result, and ex
 next split should be policy-driven:
 
 1. keep runtime readback orchestration in query execution files;
-2. keep visual-family query geometry and result decoding in visual-family or query registry
-   helpers;
+2. keep visual-family query geometry and non-item result decoding in visual-family or query
+   registry helpers, while standard item-id decode remains generic;
 3. keep CPU fallback or unsupported-policy decisions explicit and documented;
 4. do not combine request-path cleanup with new picking semantics unless the feature requires it.
 

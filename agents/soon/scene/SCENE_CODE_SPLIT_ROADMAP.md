@@ -16,9 +16,9 @@ criteria.
 ## Pickup Order
 
 1. Continue query-family ownership in family `visuals/*/query.c` files; move remaining scratch
-   geometry, result decoding, and unsupported-policy decisions into family owners while keeping
-   queueing, freshness, executor lifecycle, metadata completeness checks, shared scratch helpers,
-   and readback scheduling generic.
+   geometry, non-item result decoding, and unsupported-policy decisions into family owners while
+   keeping queueing, freshness, executor lifecycle, metadata completeness checks, shared scratch
+   helpers, standard item-id decoding, and readback scheduling generic.
 2. Eliminate normal untyped descriptor inference: make all active scene/query render paths emit
    explicit `DvzFramePlanVisualMeta`, then delete or quarantine `desc_untyped_compat.c` behind an
    explicit compatibility-only path.
@@ -42,10 +42,11 @@ emission owners. Follow-up slices also split visual descriptor-kind helpers, col
 ownership, scale-bar/colorbar/legend/text-font annotation ownership, scene domain buffers, and
 field/polygon helpers, visual descriptor/attribute helpers, query target/profile policy, upload
 support helpers, panel drawable/viewport helpers, and narrow helper declarations formerly exposed
-through `_scene.h`. Query now also has shared scratch helpers and a query render-metadata
-completeness guard. The old `src/scene/plan/` folder was removed; its ownership now lives in
-`src/scene/frame_plan/`, `src/scene/scene_emit/`, and `src/scene/render_contract/`. Last focused
-validation for the split was `git diff --check`, `just build`,
+through `_scene.h`. Query now also has shared scratch helpers, standard item-id decoding, and a
+query render-metadata completeness guard. The old `src/scene/plan/` folder was removed; its
+ownership now lives in `src/scene/frame_plan/`, `src/scene/scene_emit/`, and
+`src/scene/render_contract/`. Last focused validation for the split was `git diff --check`,
+`just build`,
 `direnv exec . just test scene/query` (`40/40`), `direnv exec . just test scene-graph` (`157/157`),
 and `direnv exec . just test app-offscreen` (`76/76`). The earlier broad query readback failures
 are not current blockers.

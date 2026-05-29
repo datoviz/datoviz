@@ -46,8 +46,9 @@ Important current state:
    primitive, mesh, volume, vector, and text. Generic dense-attribute, index-buffer, and
    material-trigger upload emission now lives in `scene_emit/upload_support.c`, leaving
    `scene_emit/uploads.c` as the panel-visible visual upload orchestrator. The final architecture
-   still needs the remaining pure upload/cache builders, query scratch/result ownership, and any
-   residual family-specific bounds logic to migrate into family-owned files.
+   still needs the remaining pure upload/cache builders, non-item query result ownership, and any
+   residual family-specific bounds logic to migrate into family-owned files. Generic query scratch
+   helpers and standard item-id decoding now live in `query/`.
 9. `annotation/text.c`, `annotation/axis.c`, `domain/field.c`, and the remaining family-specific
    payload construction reachable from scene emission remain the highest-value mixed-ownership
    areas.
@@ -59,11 +60,12 @@ Latest pickup snapshot:
 
 1. The retained textured-mesh first slice exists and should be treated as active code, not future
    scaffolding.
-2. The most recent scene-source split commits through `b0f24bd51` completed the upload-support,
-   panel-helper, helper-declaration boundary, shared query scratch-helper, and query
-   render-metadata guard cleanup passes. Do not restart by re-extracting dense/index/material
-   upload emission, panel drawable/viewport helpers, the helper declarations already moved into
-   owner-private headers, or the generic query helpers now centralized in `query/scratch.c`.
+2. The most recent scene-source split commits through `9a712a432` completed the upload-support,
+   panel-helper, helper-declaration boundary, shared query scratch-helper, query render-metadata
+   guard, and standard item-id decode cleanup passes. Do not restart by re-extracting
+   dense/index/material upload emission, panel drawable/viewport helpers, the helper declarations
+   already moved into owner-private headers, or the generic query helpers now centralized in
+   `query/`.
 3. The best next implementation slices are now remaining query-family ownership,
    normal-path typed metadata enforcement outside query, and annotation/domain ownership. Remaining
    upload work should be limited to pure family payload builders when a concrete builder is still
@@ -149,9 +151,10 @@ this section when a slice is completed.
      family reducers exist for segment, vector, image, sphere, glyph, and stroke. Remove remaining
      generic visual branches that compute family semantics outside family folders or explicit
      shared visual subsystems such as `visuals/stroke/`.
-   - Query has family files, a registry, shared scratch helpers, and a render-metadata completeness
-     guard already. Finish moving remaining family scratch geometry, native result decoding, and
-     unsupported-policy decisions into family `query.c` files or narrow shared visual subsystems.
+   - Query has family files, a registry, shared scratch helpers, standard item-id decoding, and a
+     render-metadata completeness guard already. Finish moving remaining family scratch geometry,
+     non-item native result decoding, and unsupported-policy decisions into family `query.c` files
+     or narrow shared visual subsystems.
    - Keep the query executor, request queue, readback scheduling, and retained request processing
      generic.
 
@@ -232,7 +235,7 @@ Near-term standalone candidates within this target architecture:
    already operate on planned resources, passes, metadata, and contracts rather than retained object
    mutation.
 2. `scene/query` can become a standalone query/readback subsystem after family scratch geometry,
-   result decoding, and unsupported-policy decisions are fully family-owned.
+   non-item result decoding, and unsupported-policy decisions are fully family-owned.
 3. `scene/text` can become a reusable atlas/block/raster layer once retained annotation text state
    and generated visual synchronization stay in `annotation/`.
 4. `scene/domain` can become a retained-data layer for buffers, sampled fields, field texture
@@ -332,8 +335,8 @@ with segment, vector, image, mesh, volume, sphere, and glyph reducers in family-
 remaining position-attribute default handled by a shared hook. Generic position-topology and
 material-parameter upload decisions now use registry flags instead of enum lists in
 `scene_emit/uploads.c`; dense attributes, index buffers, and material-trigger checks now emit
-through support helpers. Continue by migrating upload, query, and remaining bounds logic into
-family-owned files incrementally.
+through support helpers. Continue by migrating upload, non-item query result decoding, and
+remaining bounds logic into family-owned files incrementally.
 
 Steps:
 
