@@ -47,6 +47,66 @@
 /*************************************************************************************************/
 
 /**
+ * Resolve typed point-like fallback vertex buffers from visual metadata labels.
+ *
+ * @param state the persistent resource state
+ * @param meta the typed visual metadata
+ * @param desc_kind the point-like descriptor kind
+ * @param out_ids the output vertex buffer ids
+ * @param out_count the output vertex buffer count
+ * @param report optional diagnostic report
+ * @return whether all required buffers were resolved
+ */
+static bool _typed_point_like_vertex_buffers(
+    const ConverterState* state, const DvzFramePlanVisualMeta* meta,
+    DvzSceneVisualDescKind desc_kind, uint64_t* out_ids, uint32_t* out_count,
+    DvzDiagnosticReport* report)
+{
+    ANN(state);
+    ANN(meta);
+    ANN(out_ids);
+    ANN(out_count);
+
+    *out_count = 0;
+    uint64_t position_id = _scene_visual_resource_lookup_label(state, meta->position_id);
+    uint64_t color_id = _scene_visual_resource_lookup_label(state, meta->color_id);
+    uint64_t size_id = _scene_visual_resource_lookup_label(state, meta->size_id);
+    uint64_t angle_id = _scene_visual_resource_lookup_label(state, meta->angle_id);
+    uint64_t shape_id = _scene_visual_resource_lookup_label(state, meta->shape_id);
+
+    if (position_id == 0)
+    {
+        _diagnostic(report, "typed visual metadata missing position resource");
+        return false;
+    }
+    if (color_id == 0 || size_id == 0)
+    {
+        _diagnostic(
+            report, desc_kind == DVZ_SCENE_VISUAL_DESC_POINT
+                        ? "typed point metadata missing color/size resource"
+                        : "typed point-like metadata missing color/size resource");
+        return false;
+    }
+    if (desc_kind == DVZ_SCENE_VISUAL_DESC_MARKER && (angle_id == 0 || shape_id == 0))
+    {
+        _diagnostic(report, "typed marker metadata missing angle/shape resource");
+        return false;
+    }
+
+    out_ids[(*out_count)++] = position_id;
+    out_ids[(*out_count)++] = color_id;
+    out_ids[(*out_count)++] = size_id;
+    if (desc_kind == DVZ_SCENE_VISUAL_DESC_MARKER)
+    {
+        out_ids[(*out_count)++] = angle_id;
+        out_ids[(*out_count)++] = shape_id;
+    }
+    return true;
+}
+
+
+
+/**
  * Emit runtime-mode static render commands.
  *
  * @param emitter the persistent emitter
@@ -101,30 +161,97 @@ bool _emitter_emit_render_compat(
         }
     }
 
-    /* Detect point-like visual data (position + color + size attributes). */
-    bool is_point = _scene_untyped_compat_is_point_visual(
-        &emitter->resources, vertex_buffer_ids, vertex_buffer_count);
+    bool typed_retained_visual = visual_meta != NULL && !render->u.render.allow_untyped_visuals;
+    bool is_point = false;
+    bool is_splat = false;
+    bool is_textured_mesh = false;
+    bool is_primitive = false;
+    bool is_image = false;
+    uint64_t point_vertex_ids[5];
+    uint32_t point_vertex_count = 0;
+    uint64_t point_pos = 0;
+    uint64_t mesh_pos = 0, mesh_color = 0, mesh_normal = 0, mesh_uv = 0, mesh_tex = 0;
+    uint64_t image_pos = 0, image_uv = 0, image_tex = 0;
+    if (typed_retained_visual)
+    {
+        is_point = desc_kind == DVZ_SCENE_VISUAL_DESC_POINT ||
+                   desc_kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+                   desc_kind == DVZ_SCENE_VISUAL_DESC_MARKER;
+        if (is_point)
+        {
+            if (!_typed_point_like_vertex_buffers(
+                    &emitter->resources, visual_meta, desc_kind, point_vertex_ids,
+                    &point_vertex_count, report))
+                return false;
+            vertex_buffer_ids = point_vertex_ids;
+            vertex_buffer_count = point_vertex_count;
+            point_pos = point_vertex_ids[0];
+        }
+        is_splat = desc_kind == DVZ_SCENE_VISUAL_DESC_SPLAT;
+        is_primitive = desc_kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+        if (desc_kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
+        {
+            mesh_pos = _scene_visual_resource_by_role(
+                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
+            mesh_color = _scene_visual_resource_by_role(
+                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR);
+            mesh_normal = _scene_visual_resource_by_role(
+                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL);
+            mesh_uv = _scene_visual_resource_by_role(
+                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS);
+            mesh_tex = _scene_visual_resource_by_role(
+                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE);
+            is_textured_mesh =
+                mesh_pos != 0 && mesh_color != 0 && mesh_normal != 0 && mesh_uv != 0 &&
+                mesh_tex != 0;
+        }
+        if (
+            desc_kind == DVZ_SCENE_VISUAL_DESC_IMAGE ||
+            desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
+            desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT)
+        {
+            image_pos = _scene_visual_resource_by_role(
+                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
+            image_uv = _scene_visual_resource_by_role(
+                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS);
+            image_tex = _scene_visual_resource_by_role(
+                &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE);
+            is_image = image_pos != 0 && image_uv != 0 && image_tex != 0;
+        }
+    }
+    else
+    {
+        /* Detect point-like visual data (position + color + size attributes). */
+        is_point = _scene_untyped_compat_is_point_visual(
+            &emitter->resources, vertex_buffer_ids, vertex_buffer_count);
+        is_splat = !is_point && desc_kind == DVZ_SCENE_VISUAL_DESC_SPLAT &&
+                   _scene_untyped_compat_is_splat_visual(
+                       &emitter->resources, vertex_buffer_ids, vertex_buffer_count);
+        is_textured_mesh =
+            !is_point && !is_splat &&
+            _scene_untyped_compat_is_textured_mesh_visual(
+                &emitter->resources, vertex_buffer_ids, vertex_buffer_count, &mesh_pos,
+                &mesh_color, &mesh_normal, &mesh_uv, &mesh_tex);
+        is_primitive =
+            !is_point && !is_splat && !is_textured_mesh &&
+            _scene_untyped_compat_is_primitive_visual(
+                &emitter->resources, vertex_buffer_ids, vertex_buffer_count);
+        is_image = !is_point && !is_splat && !is_textured_mesh && !is_primitive &&
+                   _scene_untyped_compat_is_image_visual(
+                       &emitter->resources, vertex_buffer_ids, vertex_buffer_count, &image_pos,
+                       &image_uv, &image_tex);
+    }
     bool is_pixel = is_point && desc_kind == DVZ_SCENE_VISUAL_DESC_PIXEL;
     bool is_marker = is_point && desc_kind == DVZ_SCENE_VISUAL_DESC_MARKER;
     bool is_point_like = is_point;
-    bool is_splat = !is_point_like && desc_kind == DVZ_SCENE_VISUAL_DESC_SPLAT &&
-                    _scene_untyped_compat_is_splat_visual(
-                        &emitter->resources, vertex_buffer_ids, vertex_buffer_count);
-    uint64_t mesh_pos = 0, mesh_color = 0, mesh_normal = 0, mesh_uv = 0, mesh_tex = 0;
-    bool is_textured_mesh =
-        !is_point_like && !is_splat &&
-        _scene_untyped_compat_is_textured_mesh_visual(
-            &emitter->resources, vertex_buffer_ids, vertex_buffer_count, &mesh_pos, &mesh_color,
-            &mesh_normal, &mesh_uv, &mesh_tex);
-    bool is_primitive =
-        !is_point_like && !is_splat && !is_textured_mesh &&
-        _scene_untyped_compat_is_primitive_visual(
-            &emitter->resources, vertex_buffer_ids, vertex_buffer_count);
-    uint64_t image_pos = 0, image_uv = 0, image_tex = 0;
-    bool is_image = !is_point_like && !is_splat && !is_textured_mesh && !is_primitive &&
-                    _scene_untyped_compat_is_image_visual(
-                        &emitter->resources, vertex_buffer_ids, vertex_buffer_count, &image_pos,
-                        &image_uv, &image_tex);
     bool is_labels = is_image && (desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
                                   desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT);
     bool is_labels_sint = is_labels && desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT;
@@ -250,9 +377,11 @@ bool _emitter_emit_render_compat(
         vs_wgsl = _builtin_shader_wgsl(shader, false);
         fs_wgsl = _builtin_shader_wgsl(shader, true);
 
-        uint64_t pos_id = _scene_visual_resource_by_role(
-            &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
-            DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
+        uint64_t pos_id = point_pos != 0
+                              ? point_pos
+                              : _scene_visual_resource_by_role(
+                                    &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                                    DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
         if (pos_id != 0)
         {
             uint64_t sz = _resource_byte_size(&emitter->resources, pos_id);
