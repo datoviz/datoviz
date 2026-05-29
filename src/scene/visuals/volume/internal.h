@@ -40,16 +40,10 @@ bool _volume_prepare_transfer_texture(DvzVisual* visual, const void** out_data);
 bool _volume_prepare_label_lookup(DvzVisual* visual, const void** out_data, uint64_t* out_size);
 
 bool _volume_source_texture_payload(DvzVisual* visual, DvzVolumeTextureUploadPayload* out);
-bool _volume_source_texture_payload_if_dirty(
-    DvzVisual* visual, DvzVolumeTextureUploadPayload* out, bool* out_handled);
 
 bool _volume_transfer_texture_payload(DvzVisual* visual, DvzVolumeTransferTexturePayload* out);
-bool _volume_transfer_texture_payload_if_needed(
-    DvzVisual* visual, DvzVolumeTransferTexturePayload* out, bool* out_handled);
 
 bool _volume_label_lookup_payload(DvzVisual* visual, const void** out_data, uint64_t* out_size);
-bool _volume_label_lookup_payload_if_needed(
-    DvzVisual* visual, const void** out_data, uint64_t* out_size, bool* out_handled);
 
 bool _scene_volume_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
 
