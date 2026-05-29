@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "_scene.h"
+#include "_visual_pipeline.h"
 #include "upload.h"
 
 
@@ -27,6 +28,25 @@
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+typedef struct DvzSceneQueryBuildContext DvzSceneQueryBuildContext;
+typedef struct DvzSceneQueryPlan DvzSceneQueryPlan;
+typedef struct DvzSceneQueryReadoutContext DvzSceneQueryReadoutContext;
+
+typedef bool (*DvzStrokeQueryGeometryFn)(
+    const DvzVisual* visual, DvzSceneQueryScratch* scratch, uint64_t* out_vertex_count,
+    uint64_t* out_index_count);
+
+typedef struct
+{
+    const char* label;
+    const char* plan_id;
+    DvzVisualType metadata_visual_type;
+    uint32_t renderable_kind;
+    DvzSceneVisualDescKind desc_kind;
+    bool path_stroke;
+    DvzStrokeQueryGeometryFn geometry;
+} DvzStrokeQueryDesc;
 
 bool _stroke_cap_valid(DvzSegmentCap cap);
 bool _stroke_join_valid(DvzPathJoin join);
@@ -72,6 +92,10 @@ bool _stroke_quad_query_geometry(
 bool _path_stroke_query_geometry(
     const DvzVisual* visual, DvzSceneQueryScratch* scratch, uint64_t* out_vertex_count,
     uint64_t* out_index_count);
+bool _stroke_query_build(
+    const DvzSceneQueryBuildContext* ctx, const DvzStrokeQueryDesc* desc,
+    DvzSceneQueryPlan* out_plan);
+bool _stroke_query_readout(const DvzSceneQueryReadoutContext* ctx, DvzQueryResult* result);
 
 int _stroke_set_path_subpaths(
     DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths, const char* label,
