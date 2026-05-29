@@ -58,8 +58,9 @@ Important current state:
    sampled-field value interpretation lives in `domain/field_sample.c`, and sampled-field data
    setters now live beside validation/copy helpers in `domain/field_data.c`. Axis text realization
    now lives in `annotation/axis_text.c`, axis tick/domain planning lives in
-   `annotation/axis_ticks.c`, and sampled-field destroy binding release lives in
-   `domain/field_binding.c`.
+   `annotation/axis_ticks.c`, axis generated primitive-visual synchronization lives in
+   `annotation/axis_visual.c`, axis reserve aggregation lives in `annotation/axis_layout.c`, and
+   sampled-field destroy binding release lives in `domain/field_binding.c`.
 10. `core/_scene.h` no longer exports narrow helper declarations. It remains broad because shared
     retained scene object and type definitions still live there; the next header shrink target is
     type ownership and include direction rather than more prototype movement.
@@ -79,20 +80,22 @@ Latest pickup snapshot:
    compatibility-named and moved sampled-field data setters into `domain/field_data.c`. Commits
    `dcdd494f0`, `75439d7a3`, `d1d461e77`, and `7cede7328` then split axis text realization,
    sampled-field binding release, axis tick planning, and image/labels/volume query unsupported
-   policy into owner files. Do not
+   policy into owner files. Commits `403e969d8`, `3d54a8a1c`, and `6e572aeec` then centralized
+   primitive/mesh indexed query geometry and split axis generated visuals plus layout reserve into
+   annotation-owned files. Do not
    restart by re-extracting
    dense/index/material upload emission, panel drawable/viewport helpers, the helper declarations
    already moved into owner-private headers, or the generic query helpers now centralized in
    `query/`.
-3. The best next implementation slices are now residual query-family scratch ownership, remaining
-   annotation layout/generated-visual ownership, and standalone layer feasibility. Remaining
+3. The best next implementation slices are now residual query-family native-result/bounds
+   ownership, remaining domain/text ownership cleanup, and standalone layer feasibility. Remaining
    upload work should be limited to pure family payload builders when a concrete builder is still
    mixed into scene emission.
 4. Last focused validation recorded for this split was `git diff --check`, `just build`,
-   `direnv exec . just test scene/query` (`40/40`), `direnv exec . just test fields` (`47/47`),
-   `direnv exec . just test scene/frame-plan` (`60/60`), focused WGSL typed-fallback and
-   FramePlan static-render filters, earlier
-   `direnv exec . just test scene-graph` (`158/158`), focused sampled-field update filters, and
+   `direnv exec . just test scene/query` (`40/40`), `direnv exec . just test scene-graph`
+   (`158/158`), `direnv exec . just test axis` (`23/23`), `direnv exec . just test fields`
+   (`47/47`), `direnv exec . just test scene/frame-plan` (`60/60`), focused WGSL typed-fallback
+   and FramePlan static-render filters, focused sampled-field update filters, and
    `direnv exec . just test app-offscreen` (`76/76`). The earlier broad query GPU readback failures
    are no longer current blockers.
 
@@ -173,7 +176,8 @@ this section when a slice is completed.
      shared visual subsystems such as `visuals/stroke/`.
    - Query has family files, a registry, shared scratch helpers, standard item-id decoding, shared
      item-target eligibility for the simple item families, sample/native fallback policy, a
-     render-metadata completeness guard, and vector/segment/path family decode ownership already.
+     render-metadata completeness guard, vector/segment/path family decode ownership, and shared
+     primitive/mesh indexed query geometry already.
      Finish moving remaining family scratch geometry, non-item native result decoding outside the
      standard item-id path into family `query.c` files or narrow shared visual subsystems. The
      image/labels/volume native-target unsupported fallback now lives behind family hooks; add new
@@ -198,9 +202,9 @@ this section when a slice is completed.
      lifecycle, geometry, descriptor, and slot ownership.
    - Split `annotation/text.c` into retained text state, layout, glyph/quad synchronization, and
      renderer payloads.
-   - Status on 2026-05-29: axis text realization moved to `annotation/axis_text.c`, and tick/domain
-     planning moved to `annotation/axis_ticks.c`. The remaining axis work is layout reserve and
-     generated primitive-visual ownership.
+   - Status on 2026-05-29: axis text realization moved to `annotation/axis_text.c`, tick/domain
+     planning moved to `annotation/axis_ticks.c`, generated primitive-visual synchronization moved
+     to `annotation/axis_visual.c`, and layout reserve moved to `annotation/axis_layout.c`.
    - Keep rendering semantics in visual families, not in domain or annotation orchestration.
 
 7. Split coarse scene CMake targets.
