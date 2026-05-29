@@ -19,23 +19,27 @@ tracks source-split progress; the completion plan defines the end state.
 As of 2026-05-29 after the scene-plan folder removal, upload/panel helper passes,
 helper-declaration boundary pass, query scratch-helper sharing, query render-metadata guard,
 shared item-id decode, shared item-target eligibility, query native-target policy cleanup,
-FramePlan/render-contract metadata enforcement, and field dirty propagation cleanup through
-`f0b3c756b`, the highest-value split candidates are:
+sample-target native policy cleanup, FramePlan/render-contract metadata enforcement, typed
+point-like fallback label resolution, vector/stroke query-family decode ownership, field dirty
+propagation cleanup, and scalar field sampling split through `7fb0cc13f`, the highest-value split
+candidates are:
 
 1. `src/scene/query/` and family `visuals/*/query.c` files: query has a registry, split
    executor/policy/readback files, shared scratch helpers, standard item-id decoding, shared
-   item-target eligibility for the simple item families, and shared native-target fallback policy.
-   Family scratch geometry, non-item result decoding, and unsupported-policy ownership should still
-   be checked family by family. Keep queueing, request freshness, executor lifecycle, common item
+   item-target eligibility for the simple item families, shared native-target fallback policy, and
+   family-owned vector/segment/path item-result decoding. Family scratch geometry, non-item result
+   decoding outside the standard item-id path, and unsupported-policy ownership should still be
+   checked family by family. Keep queueing, request freshness, executor lifecycle, common item
    decoding, common item-target eligibility, native-target fallback policy, and readback scheduling
-   generic. Keep render metadata completeness in `frame_plan/` and render-contract validation,
-   with query execution only consuming that invariant.
+   generic. Keep render metadata completeness in `frame_plan/` and render-contract validation, with
+   query execution only consuming that invariant.
 2. `src/scene/annotation/text.c` and `axis.c`: retained annotation objects, layout/reserve policy,
    generated visuals, and text/glyph lowering are still mixed. Scale, colorbar, legend, colormap,
    scale-bar, and text-font ownership now have first-pass owner files.
-3. `src/scene/domain/field.c`: public domain object state, sampled interpretation, and generated
-   visual glue are still mixed. Field dirty propagation and bound-visual texture dirtiness now live
-   in `domain/field_dirty.c`.
+3. `src/scene/domain/field.c`: public domain object state and generated visual glue are still
+   mixed. Field dirty propagation and bound-visual texture dirtiness now live in
+   `domain/field_dirty.c`, and scalar sampled-field value interpretation now lives in
+   `domain/field_sample.c`.
 4. `src/scene/scene_emit/uploads.c` and `scene_emit/derived_upload.c`: the upload path is mostly
    phase orchestration now. Continue moving only pure cache/data construction into family or
    subsystem helpers when a concrete mixed helper remains; do not re-extract dense/index/material
@@ -89,9 +93,9 @@ They should move only when includes and ownership prove the boundary, not as a d
 4. `text/`: atlas/block/raster helpers are candidates for a reusable text service under
    `src/scene/text/`, while retained annotation text and generated visual synchronization should
    stay in `annotation/`.
-5. `domain/`: buffers, sampled-field interpretation, field texture payload construction, and
-   polygon storage are candidates for a reusable retained-data layer once generated visual
-   synchronization is separated from object state.
+5. `domain/`: buffers, sampled-field interpretation, scalar sampling, field texture payload
+   construction, and polygon storage are candidates for a reusable retained-data layer once
+   generated visual synchronization is separated from object state.
 6. `visuals/registry/`: family operation registration and default hooks can become the stable
    contract between generic scene code and family folders. Root visual helper files should shrink
    toward registry dispatch plus shared defaults.
@@ -104,9 +108,10 @@ They should move only when includes and ownership prove the boundary, not as a d
 ### 1. Finish Query-Family Ownership
 
 Status: generic query scratch helpers, standard item-id decode, standard item-target eligibility,
-native-only target fallback policy, and FramePlan-owned render-metadata completeness checks
-completed on 2026-05-29. The next pickup is family-by-family ownership of remaining scratch
-geometry, non-item result decoding, and unsupported-policy decisions.
+native-only target fallback policy, sample-target native policy, vector/segment/path family decode
+ownership, and FramePlan-owned render-metadata completeness checks completed on 2026-05-29. The next
+pickup is family-by-family ownership of remaining scratch geometry, non-item result decoding outside
+the standard item-id path, and unsupported-policy decisions.
 
 Current ownership:
 
@@ -127,15 +132,18 @@ Next moves:
 1. Move remaining scratch-geometry builders into the owning family query file or a narrow shared
    visual subsystem when the geometry is family-specific.
 2. Move non-item native result decoding and unsupported-target decisions into the owning family
-   query file where practical. Keep standard r32uint item-id decoding in `query/result.c`, and keep
-   the standard item/object eligibility policy in `query/policy.c`.
+   query file where practical. Keep standard r32uint item-id decoding in `query/result.c`; vector,
+   segment, and path now select their own family ids before calling that helper. Keep the standard
+   item/object eligibility policy in `query/policy.c`.
 3. Keep query queueing, request freshness, readback scheduling, and executor lifecycle generic.
 4. Add focused tests that distinguish orchestration behavior from family payload/result behavior.
 
 Validation: `just build`, `git diff --check`, and focused query tests. The latest broad
-`direnv exec . just test scene/query` run passed `40/40`; `direnv exec . just test scene/frame-plan`
-passed `55/55`; `direnv exec . just test scene-graph` passed `158/158`. The volume/labels readback
-failures that blocked the earlier split are no longer recorded as current failures.
+`direnv exec . just test scene/query` run passed `40/40`; `direnv exec . just test fields` passed
+`47/47`; focused WGSL typed-fallback and FramePlan static-render filters passed. Earlier
+`direnv exec . just test scene/frame-plan` and `direnv exec . just test scene-graph` runs passed
+`55/55` and `158/158`. The volume/labels readback failures that blocked the earlier split are no
+longer recorded as current failures.
 
 
 ### 2. Finish Low-Risk Derived Payload Extraction

@@ -25,8 +25,9 @@ Important current state:
 3. `render_contract/` checks planned visual/resource/draw state against runtime requirements.
 4. `runtime/` emits DRP2 from resolved FramePlan state. The normal render preparation path now
    consumes visual descriptors and capability flags without branching on concrete visual families;
-   remaining runtime visual-family assumptions are concentrated in the explicit untyped
-   compatibility/pass-emission fallback path.
+   remaining runtime visual-family assumptions are concentrated in the explicit compatibility and
+   pass-emission fallback paths. The WGSL typed point/pixel/marker fallback now resolves vertex
+   buffers from `DvzFramePlanVisualMeta` labels instead of upload order or untyped tags.
 5. `visuals/desc.c` lowers typed visual metadata into runtime descriptors. Its untyped descriptor
    fallback is now guarded by an explicit FramePlan compatibility flag.
 6. `visuals/desc_untyped_compat.c` quarantines the current untyped fallback classifiers. These
@@ -46,13 +47,15 @@ Important current state:
    primitive, mesh, volume, vector, and text. Generic dense-attribute, index-buffer, and
    material-trigger upload emission now lives in `scene_emit/upload_support.c`, leaving
    `scene_emit/uploads.c` as the panel-visible visual upload orchestrator. The final architecture
-   still needs the remaining pure upload/cache builders, non-item query result ownership, and any
-   residual family-specific bounds logic to migrate into family-owned files. Generic query scratch
-   helpers, standard item-id decoding, standard item-target eligibility, and native-only target
-   fallback policy now live in `query/`.
+   still needs the remaining pure upload/cache builders, non-item query result ownership outside
+   the standard item-id path, and any residual family-specific bounds logic to migrate into
+   family-owned files. Generic query scratch helpers, standard item-id decoding, standard
+   item-target eligibility, native-only target fallback policy, sample-target native policy, and
+   vector/segment/path family decode ownership are now in their owner files.
 9. `annotation/text.c`, `annotation/axis.c`, `domain/field.c`, and the remaining family-specific
    payload construction reachable from scene emission remain mixed-ownership areas. Field dirty
-   propagation and bound-visual texture dirtiness now live in `domain/field_dirty.c`.
+   propagation and bound-visual texture dirtiness now live in `domain/field_dirty.c`, while scalar
+   sampled-field value interpretation lives in `domain/field_sample.c`.
 10. `core/_scene.h` no longer exports narrow helper declarations. It remains broad because shared
     retained scene object and type definitions still live there; the next header shrink target is
     type ownership and include direction rather than more prototype movement.
@@ -61,23 +64,26 @@ Latest pickup snapshot:
 
 1. The retained textured-mesh first slice exists and should be treated as active code, not future
    scaffolding.
-2. The most recent scene-source split commits through `f0b3c756b` completed the upload-support,
+2. The most recent scene-source split commits through `7fb0cc13f` completed the upload-support,
    panel-helper, helper-declaration boundary, shared query scratch-helper, query render-metadata
    guard, standard item-id decode, standard item-target eligibility, query native-target policy,
-   FramePlan/render-contract metadata enforcement, and field dirty propagation cleanup passes. Do
-   not restart by re-extracting
+   sample-target native policy, FramePlan/render-contract metadata enforcement, typed point-like
+   fallback label resolution, vector/stroke query-family decode ownership, field dirty propagation,
+   and scalar field sampling cleanup passes. Do not restart by re-extracting
    dense/index/material upload emission, panel drawable/viewport helpers, the helper declarations
    already moved into owner-private headers, or the generic query helpers now centralized in
    `query/`.
-3. The best next implementation slices are now remaining query-family ownership, deeper
-   normal-path typed metadata removal from compatibility emission, and annotation/domain ownership.
-   Remaining upload work should be limited to pure family payload builders when a concrete builder
-   is still mixed into scene emission.
+3. The best next implementation slices are now annotation/domain ownership, residual query-family
+   scratch/unsupported-policy ownership, and deeper normal-path typed metadata removal from
+   compatibility emission for non-point families. Remaining upload work should be limited to pure
+   family payload builders when a concrete builder is still mixed into scene emission.
 4. Last focused validation recorded for this split was `git diff --check`, `just build`,
-   `direnv exec . just test scene/query` (`40/40`), `direnv exec . just test scene/frame-plan`
-   (`55/55`), `direnv exec . just test scene-graph` (`158/158`), focused sampled-field update
-   filters, and `direnv exec . just test app-offscreen` (`76/76`). The earlier broad query GPU
-   readback failures are no longer current blockers.
+   `direnv exec . just test scene/query` (`40/40`), `direnv exec . just test fields` (`47/47`),
+   focused WGSL typed-fallback and FramePlan static-render filters, earlier
+   `direnv exec . just test scene/frame-plan` (`55/55`), earlier
+   `direnv exec . just test scene-graph` (`158/158`), focused sampled-field update filters, and
+   `direnv exec . just test app-offscreen` (`76/76`). The earlier broad query GPU readback failures
+   are no longer current blockers.
 
 The current `desc_untyped_compat.c` path is an intermediate compatibility step, not the desired
 final architecture. Normal v0.4 scene output emits explicit typed metadata and should not require
@@ -156,10 +162,11 @@ this section when a slice is completed.
      generic visual branches that compute family semantics outside family folders or explicit
      shared visual subsystems such as `visuals/stroke/`.
    - Query has family files, a registry, shared scratch helpers, standard item-id decoding, shared
-     item-target eligibility for the simple item families, and a render-metadata completeness guard
-     already. Finish moving remaining family scratch geometry, non-item native result decoding,
-     and unsupported-policy decisions into family `query.c` files or narrow shared visual
-     subsystems.
+     item-target eligibility for the simple item families, sample/native fallback policy, a
+     render-metadata completeness guard, and vector/segment/path family decode ownership already.
+     Finish moving remaining family scratch geometry, non-item native result decoding outside the
+     standard item-id path, and unsupported-policy decisions into family `query.c` files or narrow
+     shared visual subsystems.
    - Keep the query executor, request queue, readback scheduling, and retained request processing
      generic.
 
@@ -168,11 +175,12 @@ this section when a slice is completed.
      metadata.
    - Status on 2026-05-29: FramePlan has a render-metadata completeness helper, query execution
      consumes it, the runtime emitter rejects untyped visuals unless the explicit compatibility
-     flag is set, and render-contract resolution now rejects missing typed metadata unless the
-     compatibility flag is set.
-   - Next slice: remove compatibility classifiers from typed retained fallback emission where
-     descriptor identity can come directly from metadata, and make remaining resource-role
-     resolution prefer typed roles over legacy tags.
+     flag is set, render-contract resolution now rejects missing typed metadata unless the
+     compatibility flag is set, and point/pixel/marker WGSL fallback resolves typed metadata labels
+     explicitly.
+   - Next slice: remove compatibility classifiers from typed retained fallback emission for splat,
+     primitive, image/labels, and textured mesh where descriptor identity can come directly from
+     metadata, and make remaining resource-role resolution prefer typed ids over legacy tags.
    - Delete `visuals/desc_untyped_compat.c` if no explicit fixture/import path still needs it; if
      it remains, keep it behind an explicit compatibility flag and document its callers.
 
@@ -180,7 +188,8 @@ this section when a slice is completed.
    - Split `domain/field.c` into lifecycle/public setters, sampled interpretation, scale binding,
      and generated visual synchronization.
    - Status on 2026-05-29: sampled-field dirty propagation moved from `domain/field.c` to
-     `domain/field_dirty.c`, beside bound-visual texture dirty state and refresh helpers.
+     `domain/field_dirty.c`, beside bound-visual texture dirty state and refresh helpers. Scalar
+     sampled-field interpretation moved from `domain/field_data.c` to `domain/field_sample.c`.
    - Split `annotation/text.c` into retained text state, layout, glyph/quad synchronization, and
      renderer payloads.
    - Split `annotation/axis.c` into retained axis state, tick generation, layout reserve, and
@@ -250,9 +259,9 @@ Near-term standalone candidates within this target architecture:
    non-item result decoding, and unsupported-policy decisions are fully family-owned.
 3. `scene/text` can become a reusable atlas/block/raster layer once retained annotation text state
    and generated visual synchronization stay in `annotation/`.
-4. `scene/domain` can become a retained-data layer for buffers, sampled fields, field texture
-   payload construction, and polygon storage once field-generated visual synchronization is split
-   from object lifecycle and interpretation.
+4. `scene/domain` can become a retained-data layer for buffers, sampled fields, scalar sampling,
+   field texture payload construction, and polygon storage once field-generated visual
+   synchronization is split from object lifecycle and interpretation.
 5. `scene/visuals/registry` should become the standalone contract between generic scene code and
    family folders; root visual helpers should shrink toward registry dispatch and shared defaults.
 6. `scene_emit`, `runtime`, `techniques`, and `app` should remain orchestration/runtime layers.
