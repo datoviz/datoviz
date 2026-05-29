@@ -44,6 +44,7 @@
 #define FIELD_HEIGHT        192u
 #define PROBE_X             0.68f
 #define PROBE_Y             0.56f
+#define PROBE_REQUEST_ID    1u
 #define PROBE_RING_SEGMENTS 28u
 #define PROBE_SEGMENTS      (PROBE_RING_SEGMENTS + 4u)
 
@@ -68,7 +69,6 @@ struct ImageProbeState
     bool last_hit;
     bool has_last_result;
     bool pin_next_result;
-    uint64_t request_id;
     uint32_t pinned_count;
 };
 
@@ -515,11 +515,10 @@ static void _queue_probe(ImageProbeState* state)
     if (state == NULL || !state->cursor_valid)
         return;
 
-    state->request_id++;
     const int rc = dvz_panel_query(
         state->panel, state->cursor_x, state->cursor_y,
         &(DvzQueryRequest){
-            .request_id = state->request_id,
+            .request_id = PROBE_REQUEST_ID,
             .target = DVZ_SCENE_TARGET_PIXEL,
         });
     if (rc != 0)
