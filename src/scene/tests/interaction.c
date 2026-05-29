@@ -364,10 +364,10 @@ int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const T
     _scene_prepare_text_visuals(figure);
     AT(selection->card.background_visual != NULL);
     AT(selection->card.text_visual != NULL);
-    AT(selection->card.text_visual->text.glyph_visual != NULL);
+    AT(_visual_family_state(selection->card.text_visual)->text.glyph_visual != NULL);
     AT(selection->card.background_visual->visible);
     AT(selection->card.text_visual->visible);
-    AT(selection->card.text_visual->text.glyph_visual->visible);
+    AT(_visual_family_state(selection->card.text_visual)->text.glyph_visual->visible);
     AT(!selection->card.dirty);
 
     dvz_selection_clear(selection);
@@ -375,7 +375,7 @@ int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const T
     AT(!selection->card.visible);
     AT(!selection->card.background_visual->visible);
     AT(!selection->card.text_visual->visible);
-    AT(!selection->card.text_visual->text.glyph_visual->visible);
+    AT(!_visual_family_state(selection->card.text_visual)->text.glyph_visual->visible);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -417,21 +417,21 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
     _scene_prepare_text_visuals(figure);
     AT(card->card.background_visual != NULL);
     AT(card->card.text_visual != NULL);
-    AT(card->card.text_visual->text.glyph_visual != NULL);
-    AT(card->card.text_visual->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
+    AT(_visual_family_state(card->card.text_visual)->text.glyph_visual != NULL);
+    AT(_visual_family_state(card->card.text_visual)->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
     AT(card->card.background_visual->visible);
     AT(card->card.text_visual->visible);
-    AT(card->card.text_visual->text.glyph_visual->visible);
+    AT(_visual_family_state(card->card.text_visual)->text.glyph_visual->visible);
     const DvzVisualAttr* glyph_position =
-        _interaction_visual_attr(card->card.text_visual->text.glyph_visual, "position");
+        _interaction_visual_attr(_visual_family_state(card->card.text_visual)->text.glyph_visual, "position");
     const DvzVisualAttr* glyph_bounds =
-        _interaction_visual_attr(card->card.text_visual->text.glyph_visual, "bounds");
+        _interaction_visual_attr(_visual_family_state(card->card.text_visual)->text.glyph_visual, "bounds");
     const DvzVisualAttr* glyph_texcoords =
-        _interaction_visual_attr(card->card.text_visual->text.glyph_visual, "texcoords");
+        _interaction_visual_attr(_visual_family_state(card->card.text_visual)->text.glyph_visual, "texcoords");
     const DvzVisualAttr* glyph_color =
-        _interaction_visual_attr(card->card.text_visual->text.glyph_visual, "color");
+        _interaction_visual_attr(_visual_family_state(card->card.text_visual)->text.glyph_visual, "color");
     const DvzVisualAttr* glyph_angle =
-        _interaction_visual_attr(card->card.text_visual->text.glyph_visual, "angle");
+        _interaction_visual_attr(_visual_family_state(card->card.text_visual)->text.glyph_visual, "angle");
     ANN(glyph_position);
     ANN(glyph_bounds);
     ANN(glyph_texcoords);
@@ -480,7 +480,7 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
     style.height_px = 28.0f;
     AT(dvz_overlay_card_set_style(card, &style) == 0);
     _scene_prepare_text_visuals(figure);
-    AT(card->card.text_visual->text.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
+    AT(_visual_family_state(card->card.text_visual)->text.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
     AC(card->card.realized_rect_px[3], 28.0f, 1e-6f);
 
     float inset[2] = {12.0f, 14.0f};
@@ -575,12 +575,12 @@ int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCas
     uint64_t first_position_version = first_position_px->version;
     uint64_t first_extent_version = first_extent_px->version;
     uint64_t first_anchor_version = first_anchor->version;
-    uint64_t first_texture_version = card->rich_block.image_visual->texture.version;
+    uint64_t first_texture_version = _visual_family_state(card->rich_block.image_visual)->texture.version;
     _scene_prepare_text_visuals(figure);
     AT(first_position_px->version == first_position_version);
     AT(first_extent_px->version == first_extent_version);
     AT(first_anchor->version == first_anchor_version);
-    AT(card->rich_block.image_visual->texture.version == first_texture_version);
+    AT(_visual_family_state(card->rich_block.image_visual)->texture.version == first_texture_version);
     AT(card->rich_block.image_raster_version == card->rich_block.raster_version);
 
     DvzVisual* image_visual = card->rich_block.image_visual;
@@ -657,13 +657,13 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
 
     DvzVisual* text = _scene_text_visual(scene, 0);
     ANN(text);
-    AT(text->text.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
+    AT(_visual_family_state(text)->text.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
     AT(_scene_text_visual_set_renderer(text, DVZ_TEXT_RENDERER_AUTO) == 0);
-    AT(text->text.renderer == DVZ_TEXT_RENDERER_AUTO);
-    AT(text->text.renderer_version == 1);
+    AT(_visual_family_state(text)->text.renderer == DVZ_TEXT_RENDERER_AUTO);
+    AT(_visual_family_state(text)->text.renderer_version == 1);
     AT(_scene_text_visual_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
-    AT(text->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
-    AT(text->text.renderer_version == 2);
+    AT(_visual_family_state(text)->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
+    AT(_visual_family_state(text)->text.renderer_version == 2);
     const char* strings[2] = {"hello", "world"};
     vec3 positions[2] = {{10.0f, 20.0f, 0.0f}, {80.0f, 24.0f, 0.0f}};
     vec2 text_anchors[2] = {{0.0f, 0.0f}, {0.5f, 0.5f}};
@@ -680,10 +680,10 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
     AT(dvz_visual_set_strings(text, "text", strings, 2) == 0);
     AT(dvz_visual_set_data_many(text, updates, 5) == 0);
     AT(text->type == DVZ_VISUAL_TYPE_TEXT);
-    AT(text->text.string_count == 2);
-    AT(strcmp(text->text.strings[0], "hello") == 0);
-    AT(strcmp(text->text.strings[1], "world") == 0);
-    AT(text->text.strings_version == 1);
+    AT(_visual_family_state(text)->text.string_count == 2);
+    AT(strcmp(_visual_family_state(text)->text.strings[0], "hello") == 0);
+    AT(strcmp(_visual_family_state(text)->text.strings[1], "world") == 0);
+    AT(_visual_family_state(text)->text.strings_version == 1);
     AT(dvz_panel_add_visual(
            panel, text,
            &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
@@ -807,8 +807,8 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
     AT(scalebar->visual->type == DVZ_VISUAL_TYPE_TEXT);
     AT(scalebar->scalebar_visual->visible);
     AT(scalebar->visual->visible);
-    ANN(scalebar->visual->text.glyph_visual);
-    AT(scalebar->visual->text.glyph_visual->visible);
+    AT(_visual_family_state(scalebar->visual)->text.glyph_visual != NULL);
+    AT(_visual_family_state(scalebar->visual)->text.glyph_visual->visible);
     AT(strcmp(scalebar->text, "2 mm") == 0);
     AC(scalebar->scalebar_units, 0.002, 1e-12);
     AC(scalebar->scalebar_px, 80.0f, 1e-5f);
@@ -933,8 +933,8 @@ static int test_scene_scalebar_update_churn(TstContext* suite, const TstCase* it
     ANN(scalebar);
     _scene_prepare_text_visuals(figure);
     ANN(scalebar->visual);
-    ANN(scalebar->visual->text.glyph_visual);
-    DvzVisual* glyph = scalebar->visual->text.glyph_visual;
+    AT(_visual_family_state(scalebar->visual)->text.glyph_visual != NULL);
+    DvzVisual* glyph = _visual_family_state(scalebar->visual)->text.glyph_visual;
 
     const DvzVisualAttr* glyph_position = _interaction_visual_attr(glyph, "position");
     const DvzVisualAttr* glyph_bounds = _interaction_visual_attr(glyph, "bounds");
@@ -952,7 +952,7 @@ static int test_scene_scalebar_update_churn(TstContext* suite, const TstCase* it
     AT(glyph_position->item_count == 72u);
     AT(strcmp(scalebar->text, "2 mm") == 0);
 
-    uint64_t strings_version = scalebar->visual->text.strings_version;
+    uint64_t strings_version = _visual_family_state(scalebar->visual)->text.strings_version;
     uint64_t glyph_position_version = glyph_position->version;
     uint64_t glyph_bounds_version = glyph_bounds->version;
     uint64_t glyph_texcoords_version = glyph_texcoords->version;
@@ -975,7 +975,7 @@ static int test_scene_scalebar_update_churn(TstContext* suite, const TstCase* it
     ANN(glyph_color);
     ANN(glyph_angle);
     ANN(segment_start);
-    AT(scalebar->visual->text.strings_version == strings_version);
+    AT(_visual_family_state(scalebar->visual)->text.strings_version == strings_version);
     AT(glyph_position->version > glyph_position_version);
     AT(glyph_bounds->version == glyph_bounds_version);
     AT(glyph_texcoords->version == glyph_texcoords_version);
@@ -1007,7 +1007,7 @@ static int test_scene_scalebar_update_churn(TstContext* suite, const TstCase* it
     ANN(glyph_texcoords);
     ANN(glyph_color);
     ANN(glyph_angle);
-    AT(scalebar->visual->text.strings_version > strings_version);
+    AT(_visual_family_state(scalebar->visual)->text.strings_version > strings_version);
     AT(glyph_bounds->version > glyph_bounds_version);
     AT(glyph_texcoords->version > glyph_texcoords_version);
     AT(glyph_color->version > glyph_color_version);
@@ -1145,8 +1145,8 @@ static int test_scene_scalebar_render_emit_keeps_upload_sources(
     _scene_emit_visual_uploads(figure, plan, &report);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(scalebar->visual);
-    ANN(scalebar->visual->text.glyph_visual);
-    DvzVisual* glyph = scalebar->visual->text.glyph_visual;
+    AT(_visual_family_state(scalebar->visual)->text.glyph_visual != NULL);
+    DvzVisual* glyph = _visual_family_state(scalebar->visual)->text.glyph_visual;
 
     const DvzVisualAttr* position_attr = NULL;
     for (uint32_t ai = 0; ai < glyph->attr_count; ai++)
@@ -1731,7 +1731,7 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     AT(panel->visual_count == 1);
 
     _scene_prepare_text_visuals(figure);
-    DvzVisual* glyph = text->text.glyph_visual;
+    DvzVisual* glyph = _visual_family_state(text)->text.glyph_visual;
     ANN(glyph);
     AT(panel->visual_count == 2);
     AT(panel->visuals[1].visual == glyph);
@@ -1740,10 +1740,10 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     AT(glyph->visible);
     AT(glyph->alpha_mode == DVZ_ALPHA_BLENDED);
     AT(!glyph->depth_test_enabled);
-    AT(glyph->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA);
-    AT(text->text.realized_version > 0);
-    AT(text->text.span_count == 1);
-    AT(text->text.spans[0].glyph_count == 2);
+    AT(_visual_family_state(glyph)->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA);
+    AT(_visual_family_state(text)->text.realized_version > 0);
+    AT(_visual_family_state(text)->text.span_count == 1);
+    AT(_visual_family_state(text)->text.spans[0].glyph_count == 2);
 
     int pos_idx = _attr_index(glyph, "position");
     int bounds_idx = _attr_index(glyph, "bounds");
@@ -1791,15 +1791,15 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     AT(colors[2] == 255);
     AT(colors[3] == 255);
 
-    ANN(glyph->field);
-    DvzSampledField* atlas = glyph->field;
+    AT(_visual_family_state(glyph)->field != NULL);
+    DvzSampledField* atlas = _visual_family_state(glyph)->field;
     AT(atlas->desc.width == 128);
     AT(atlas->desc.height == 60);
-    AT(glyph->field->dirty);
+    AT(_visual_family_state(glyph)->field->dirty);
 
-    uint64_t old_visual_version = text->text.realized_version;
+    uint64_t old_visual_version = _visual_family_state(text)->text.realized_version;
     _scene_prepare_text_visuals(figure);
-    AT(text->text.realized_version == old_visual_version);
+    AT(_visual_family_state(text)->text.realized_version == old_visual_version);
     AT(panel->visual_count == 2);
 
     strings[0] = "A" "\xCE" "\xA9" "B";
@@ -1811,8 +1811,8 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     AT(glyph->attrs[uv_idx].item_count == 18);
     AT(glyph->attrs[color_idx].item_count == 18);
     AT(glyph->attrs[angle_idx].item_count == 18);
-    AT(glyph->field == atlas);
-    AT(text->text.spans[0].glyph_count == 3);
+    AT(_visual_family_state(glyph)->field == atlas);
+    AT(_visual_family_state(text)->text.spans[0].glyph_count == 3);
 
     strings[0] = "A";
     AT(dvz_visual_set_strings(text, "text", strings, 1) == 0);
@@ -1839,8 +1839,8 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     ANN(positions);
     AC(positions[0][0], -0.9375f, 1e-6f);
     AC(positions[0][1], 0.8333333f, 1e-6f);
-    AT(text->text.visual_figure_width == 320);
-    AT(text->text.visual_figure_height == 240);
+    AT(_visual_family_state(text)->text.visual_figure_width == 320);
+    AT(_visual_family_state(text)->text.visual_figure_height == 240);
 
     dvz_visual_set_visible(text, false);
     _scene_prepare_text_visuals(figure);
@@ -1867,7 +1867,7 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     AT(annotation->visual->type == DVZ_VISUAL_TYPE_GLYPH);
     AT(annotation->visual->visible);
     AT(annotation->visual->alpha_mode == DVZ_ALPHA_BLENDED);
-    AT(annotation->visual->field == atlas);
+    AT(_visual_family_state(annotation->visual)->field == atlas);
     AT(annotation->dirty_flags == DVZ_TEXT_DIRTY_NONE);
     AT(panel->visual_count == 3);
 
@@ -1918,23 +1918,23 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
            &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     _scene_prepare_text_visuals(figure);
-    DvzVisual* glyph = text->text.glyph_visual;
+    DvzVisual* glyph = _visual_family_state(text)->text.glyph_visual;
     ANN(glyph);
     AT(glyph->type == DVZ_VISUAL_TYPE_GLYPH);
     AT(glyph->visible);
-    ANN(glyph->field);
-    AT(glyph->field->desc.width > 128);
-    AT(glyph->field->desc.height > 60);
+    AT(_visual_family_state(glyph)->field != NULL);
+    AT(_visual_family_state(glyph)->field->desc.width > 128);
+    AT(_visual_family_state(glyph)->field->desc.height > 60);
 #if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
-    AT(glyph->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
+    AT(_visual_family_state(glyph)->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
 #else
-    AT(glyph->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA ||
-       glyph->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
+    AT(_visual_family_state(glyph)->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA ||
+       _visual_family_state(glyph)->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
 #endif
     AT(scene->font_count == 1);
     DvzTextAtlas* font_atlas = text_test_atlas(scene, DVZ_TEXT_ATLAS_BACKEND_MSDF, sizes[0]);
     ANN(font_atlas);
-    AT(font_atlas->field == glyph->field);
+    AT(font_atlas->field == _visual_family_state(glyph)->field);
     DvzTextAtlasGlyph* space_glyph = _scene_text_atlas_glyph(font_atlas, ' ');
     ANN(space_glyph);
     AT(space_glyph->advance > 0.0f);
@@ -1968,8 +1968,8 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
         AT(max_alpha > 5);
     }
 #endif
-    AT(text->text.span_count == 1);
-    AT(text->text.spans[0].glyph_count == 2);
+    AT(_visual_family_state(text)->text.span_count == 1);
+    AT(_visual_family_state(text)->text.spans[0].glyph_count == 2);
 
     int pos_idx = _attr_index(glyph, "position");
     int bounds_idx = _attr_index(glyph, "bounds");
@@ -2014,8 +2014,8 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
     ANN(annotation->visual);
     AT(annotation->visual->type == DVZ_VISUAL_TYPE_GLYPH);
     AT(annotation->visual->visible);
-    AT(annotation->visual->field == glyph->field);
-    AT(annotation->visual->glyph_atlas_encoding == glyph->glyph_atlas_encoding);
+    AT(_visual_family_state(annotation->visual)->field == _visual_family_state(glyph)->field);
+    AT(_visual_family_state(annotation->visual)->glyph_atlas_encoding == _visual_family_state(glyph)->glyph_atlas_encoding);
     AT(annotation->dirty_flags == DVZ_TEXT_DIRTY_NONE);
 
     dvz_scene_destroy(scene);
@@ -2074,22 +2074,22 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
            &(DvzVisualAttachDesc){.z_layer = 2, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     _scene_prepare_text_visuals(figure);
-    ANN(small->text.glyph_visual);
-    ANN(large->text.glyph_visual);
+    AT(_visual_family_state(small)->text.glyph_visual != NULL);
+    AT(_visual_family_state(large)->text.glyph_visual != NULL);
 #if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
-    AT(small->text.glyph_visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA);
+    AT(_visual_family_state(_visual_family_state(small)->text.glyph_visual)->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA);
     AT(scene->font_count >= 1);
     DvzTextAtlas* small_atlas =
         text_test_atlas(scene, DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP, small_size[0]);
     ANN(small_atlas);
-    AT(small_atlas->field == small->text.glyph_visual->field);
+    AT(small_atlas->field == _visual_family_state(_visual_family_state(small)->text.glyph_visual)->field);
 #else
-    AT(small->text.glyph_visual->field == scene->text_bitmap_atlas);
+    AT(_visual_family_state(_visual_family_state(small)->text.glyph_visual)->field == scene->text_bitmap_atlas);
 #endif
 #if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
-    AT(large->text.glyph_visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
+    AT(_visual_family_state(_visual_family_state(large)->text.glyph_visual)->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
 #else
-    AT(large->text.glyph_visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA);
+    AT(_visual_family_state(_visual_family_state(large)->text.glyph_visual)->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA);
 #endif
 
     dvz_scene_destroy(scene);
@@ -2215,11 +2215,11 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
     }
     DvzTextAtlasGlyph* utf8_glyph = _scene_text_atlas_glyph(atlas, 0x00E9u);
     ANN(utf8_glyph);
-    ANN(ascii->text.glyph_visual);
-    ANN(utf8->text.glyph_visual);
-    AT(ascii->text.glyph_visual->field == atlas->field);
-    AT(utf8->text.glyph_visual->field == atlas->field);
-    AT(ascii->text.glyph_visual->field == utf8->text.glyph_visual->field);
+    AT(_visual_family_state(ascii)->text.glyph_visual != NULL);
+    AT(_visual_family_state(utf8)->text.glyph_visual != NULL);
+    AT(_visual_family_state(_visual_family_state(ascii)->text.glyph_visual)->field == atlas->field);
+    AT(_visual_family_state(_visual_family_state(utf8)->text.glyph_visual)->field == atlas->field);
+    AT(_visual_family_state(_visual_family_state(ascii)->text.glyph_visual)->field == _visual_family_state(_visual_family_state(utf8)->text.glyph_visual)->field);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2270,8 +2270,8 @@ int test_scene_text_font_atlas_missing_glyph_fallback(TstContext* suite, const T
     ANN(missing);
     AT(missing == fallback);
     AT(atlas->missing_glyph_count > 0);
-    ANN(text->text.glyph_visual);
-    AT(text->text.glyph_visual->attrs[0].item_count > 0);
+    AT(_visual_family_state(text)->text.glyph_visual != NULL);
+    AT(_visual_family_state(text)->text.glyph_visual->attrs[0].item_count > 0);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2330,9 +2330,9 @@ int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* it
            panel, text,
            &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_APPLY}) == 0);
     _scene_prepare_text_visuals(figure);
-    ANN(text->text.glyph_visual);
+    AT(_visual_family_state(text)->text.glyph_visual != NULL);
     AT(panel->visual_count == 2);
-    AT(panel->visuals[1].visual == text->text.glyph_visual);
+    AT(panel->visuals[1].visual == _visual_family_state(text)->text.glyph_visual);
     AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.text.labels", 0);
@@ -2388,13 +2388,13 @@ int test_scene_text_panzoom_glyph_anchor_coordinates(TstContext* suite, const Ts
            &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_APPLY}) == 0);
 
     _scene_prepare_text_visuals(figure);
-    ANN(text->text.glyph_visual);
+    AT(_visual_family_state(text)->text.glyph_visual != NULL);
     AT(panel->visual_count == 2);
-    AT(panel->visuals[1].visual == text->text.glyph_visual);
+    AT(panel->visuals[1].visual == _visual_family_state(text)->text.glyph_visual);
     AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
 
     DvzVisualDataView position_view = {0};
-    AT(dvz_visual_data(text->text.glyph_visual, "position", &position_view) == 0);
+    AT(dvz_visual_data(_visual_family_state(text)->text.glyph_visual, "position", &position_view) == 0);
     AT(position_view.item_count > 0);
     const float* glyph_positions = (const float*)position_view.data;
     ANN(glyph_positions);
@@ -2442,9 +2442,9 @@ int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, con
            &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     _scene_prepare_text_visuals(figure);
-    ANN(text->text.glyph_visual);
+    AT(_visual_family_state(text)->text.glyph_visual != NULL);
     DvzVisualDataView position_view = {0};
-    AT(dvz_visual_data(text->text.glyph_visual, "position", &position_view) == 0);
+    AT(dvz_visual_data(_visual_family_state(text)->text.glyph_visual, "position", &position_view) == 0);
     const float* glyph_positions = (const float*)position_view.data;
     ANN(glyph_positions);
     AC(glyph_positions[0], 0.0f, 1e-6f);
@@ -2452,9 +2452,9 @@ int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, con
 
     panel->visuals[0].controller_mode = DVZ_CONTROLLER_APPLY;
     _scene_prepare_text_visuals(figure);
-    AT(panel->visuals[1].visual == text->text.glyph_visual);
+    AT(panel->visuals[1].visual == _visual_family_state(text)->text.glyph_visual);
     AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
-    AT(dvz_visual_data(text->text.glyph_visual, "position", &position_view) == 0);
+    AT(dvz_visual_data(_visual_family_state(text)->text.glyph_visual, "position", &position_view) == 0);
     glyph_positions = (const float*)position_view.data;
     ANN(glyph_positions);
     AC(glyph_positions[0], positions[0][0], 1e-6f);
@@ -2719,7 +2719,7 @@ int test_scene_text_block_image_lowering(TstContext* suite, const TstCase* item)
     ANN(block.image_visual);
     ANN(block.image_field);
     AT(block.image_visual->visible);
-    AT(block.image_visual->field == block.image_field);
+    AT(_visual_family_state(block.image_visual)->field == block.image_field);
     AT(block.image_field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM);
     AT(block.image_field->desc.width == block.raster_width);
     AT(block.image_field->desc.height == block.raster_height);

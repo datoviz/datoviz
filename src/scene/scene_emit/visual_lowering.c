@@ -110,5 +110,5 @@ bool _scene_visual_lowering_fill_metadata(
 bool _scene_visual_lowering_volume_occluded(const DvzVisual* visual)
 {
     ANN(visual);
-    return visual->volume_occluded;
+    return _visual_family_state(visual)->volume_occluded;
 }

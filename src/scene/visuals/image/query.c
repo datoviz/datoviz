@@ -111,7 +111,7 @@ static bool _image_query_static_versions(
 
     *out_position_version = pos_attr->version;
     *out_texcoord_version = texcoord_version;
-    *out_texture_version = visual->texture.version;
+    *out_texture_version = _visual_family_state(visual)->texture.version;
     return true;
 }
 

@@ -161,9 +161,9 @@ void _axis_hide_text(DvzAxis* axis)
     {
         if (axis->text_visual->visible)
             dvz_visual_set_visible(axis->text_visual, false);
-        if (axis->text_visual->text.glyph_visual != NULL &&
-            axis->text_visual->text.glyph_visual->visible)
-            dvz_visual_set_visible(axis->text_visual->text.glyph_visual, false);
+        if (_visual_family_state(axis->text_visual)->text.glyph_visual != NULL &&
+            _visual_family_state(axis->text_visual)->text.glyph_visual->visible)
+            dvz_visual_set_visible(_visual_family_state(axis->text_visual)->text.glyph_visual, false);
     }
 }
 

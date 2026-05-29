@@ -357,7 +357,7 @@ static bool _scene_visual_is_colorbar_derived(const DvzPanel* panel, const DvzVi
             return true;
         }
         if (colorbar->text_visual != NULL &&
-            visual == colorbar->text_visual->text.glyph_visual)
+            visual == _visual_family_state(colorbar->text_visual)->text.glyph_visual)
         {
             return true;
         }
@@ -384,7 +384,7 @@ static bool _scene_visual_is_legend_derived(const DvzPanel* panel, const DvzVisu
             continue;
         if (visual == legend->mark_visual || visual == legend->text_visual)
             return true;
-        if (legend->text_visual != NULL && visual == legend->text_visual->text.glyph_visual)
+        if (legend->text_visual != NULL && visual == _visual_family_state(legend->text_visual)->text.glyph_visual)
             return true;
     }
     return false;
@@ -409,7 +409,7 @@ static bool _scene_visual_is_axis_derived(const DvzPanel* panel, const DvzVisual
             continue;
         if (visual == axis->visual || visual == axis->grid_visual || visual == axis->text_visual)
             return true;
-        if (axis->text_visual != NULL && visual == axis->text_visual->text.glyph_visual)
+        if (axis->text_visual != NULL && visual == _visual_family_state(axis->text_visual)->text.glyph_visual)
             return true;
     }
     return false;
@@ -556,7 +556,7 @@ static bool _scene_append_visual_to_render_pass(
     ANN(attach);
 
     char visual_id[64];
-    uint32_t buffer_idx = _scene_buffer_index(figure->scene, visual->buffer);
+    uint32_t buffer_idx = _scene_buffer_index(figure->scene, _visual_family_state(visual)->buffer);
     if (buffer_idx != UINT32_MAX)
     {
         if (!_scene_visual_indexed_resource_key(

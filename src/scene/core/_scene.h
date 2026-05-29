@@ -239,6 +239,7 @@ typedef struct DvzFigure  DvzFigure;
 typedef struct DvzGrid    DvzGrid;
 typedef struct DvzPanel   DvzPanel;
 typedef struct DvzVisual  DvzVisual;
+typedef struct DvzVisualFamilyOps DvzVisualFamilyOps;
 typedef struct DvzSampledField DvzSampledField;
 typedef struct DvzSceneBuffer DvzSceneBuffer;
 typedef struct DvzScale   DvzScale;
@@ -1264,6 +1265,7 @@ struct DvzImageGpuCache
 
 typedef struct DvzVisualAttr DvzVisualAttr;
 typedef struct DvzVisualBinding DvzVisualBinding;
+typedef struct DvzVisualFamilyState DvzVisualFamilyState;
 
 typedef enum
 {
@@ -1298,37 +1300,18 @@ struct DvzVisualBinding
 };
 
 
-
-/*************************************************************************************************/
-/*  DvzVisual                                                                                   */
-/*************************************************************************************************/
-
-struct DvzVisual
+struct DvzVisualFamilyState
 {
-    DvzScene*    scene;
-    DvzVisualType type;
-    uint32_t     flags;
-    bool         visible;
-    int32_t      z_layer;
-    DvzAlphaMode alpha_mode;
-    bool         depth_test_enabled;
-    uint32_t     depth_compare_op;
-    DvzSceneMaterialState material;
-
-    DvzPrimitiveTopology topology; /* used by DVZ_VISUAL_TYPE_PRIMITIVE */
+    DvzPrimitiveTopology topology;
     DvzVisualBinding bindings[DVZ_SCENE_MAX_VISUAL_BINDINGS];
-    DvzSampledField* field;        /* used by DVZ_VISUAL_TYPE_IMAGE */
+    DvzSampledField* field;
     char             field_slot[32];
-    bool             field_owned;  /* true for legacy wrapper-created fields */
-    DvzSceneBuffer*  buffer;       /* current slice: primitive index buffer binding */
+    bool             field_owned;
+    DvzSceneBuffer*  buffer;
     char             buffer_slot[32];
-    DvzVisualTexture texture;      /* used by DVZ_VISUAL_TYPE_IMAGE */
-    DvzScale*     scale;           /* first slice: image colormap scale */
-    char          scale_slot[32];  /* semantic binding slot name */
-    uint32_t      query_capabilities;
-    DvzLinkChannel* link_channel;
-    uint64_t*       link_keys;
-    uint32_t        link_key_count;
+    DvzVisualTexture texture;
+    DvzScale*        scale;
+    char             scale_slot[32];
     DvzSceneMaterialParams material_params;
     bool                   material_params_dirty;
     DvzSegmentState        segment;
@@ -1340,18 +1323,49 @@ struct DvzVisual
     DvzImageGpuCache       image_gpu;
     DvzSphereMode          sphere_mode;
     bool                   mesh_default_color;
-    bool                   scene_occluder;
-    bool                   scene_occluded;
     bool                   volume_occluded;
     DvzLabelsState         labels;
     DvzVolumeState         volume;
     uint64_t               labels_realized_version;
     uint64_t               volume_realized_version;
+};
+
+
+/*************************************************************************************************/
+/*  DvzVisual                                                                                   */
+/*************************************************************************************************/
+
+struct DvzVisual
+{
+    DvzScene*    scene;
+    DvzVisualType type;
+    const DvzVisualFamilyOps* ops;
+    void*        family_state;
+    uint32_t     flags;
+    bool         visible;
+    int32_t      z_layer;
+    DvzAlphaMode alpha_mode;
+    bool         depth_test_enabled;
+    uint32_t     depth_compare_op;
+    DvzSceneMaterialState material;
+
+    uint32_t      query_capabilities;
+    DvzLinkChannel* link_channel;
+    uint64_t*       link_keys;
+    uint32_t        link_key_count;
+    bool                   scene_occluder;
+    bool                   scene_occluded;
 
     /* Attribute slots — indexed by attr index (type-specific) */
     uint32_t      attr_count;
     DvzVisualAttr attrs[DVZ_SCENE_MAX_ITEM_ATTRS];
 };
+
+
+static inline DvzVisualFamilyState* _visual_family_state(const DvzVisual* visual)
+{
+    return visual != NULL ? (DvzVisualFamilyState*)visual->family_state : NULL;
+}
 
 
 

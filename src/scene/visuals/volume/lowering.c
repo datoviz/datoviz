@@ -38,12 +38,12 @@ static bool _volume_desc_kind(const DvzVisual* visual, DvzSceneVisualDescKind* o
     ANN(visual);
     ANN(out);
     *out = DVZ_SCENE_VISUAL_DESC_VOLUME;
-    if (visual->field == NULL)
+    if (_visual_family_state(visual)->field == NULL)
         return true;
 
     DvzSceneSampleProfile profile = {0};
     if (!_scene_sample_profile_resolve(
-            visual->field->desc.format, visual->field->desc.semantic, DVZ_FIELD_DIM_3D,
+            _visual_family_state(visual)->field->desc.format, _visual_family_state(visual)->field->desc.semantic, DVZ_FIELD_DIM_3D,
             &profile))
     {
         return true;
@@ -100,14 +100,14 @@ bool _scene_volume_visual_fill_metadata(
     if (!_scene_visual_desc_is_volume(lowering->desc_kind))
         return true;
     metadata->has_volume = true;
-    metadata->volume_state = visual->volume;
-    metadata->volume_occluded = visual->volume_occluded;
+    metadata->volume_state = _visual_family_state(visual)->volume;
+    metadata->volume_occluded = _visual_family_state(visual)->volume_occluded;
 
     DvzSceneSampleProfile profile = {0};
     metadata->volume_transfer_rgba =
-        visual->field != NULL &&
+        _visual_family_state(visual)->field != NULL &&
         _scene_sample_profile_resolve(
-            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+            _visual_family_state(visual)->field->desc.format, _visual_family_state(visual)->field->desc.semantic, _visual_family_state(visual)->field->desc.dim,
             &profile) &&
         _scene_sample_profile_is_direct_rgba(&profile);
     return true;

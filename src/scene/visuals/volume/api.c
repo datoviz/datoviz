@@ -86,8 +86,8 @@ static int _volume_apply_bounds_geometry(DvzVisual* visual)
     {
         for (uint32_t j = 0; j < 3; j++)
         {
-            double min_value = visual->volume.bounds_min[j];
-            double max_value = visual->volume.bounds_max[j];
+            double min_value = _visual_family_state(visual)->volume.bounds_min[j];
+            double max_value = _visual_family_state(visual)->volume.bounds_max[j];
             positions[i][j] = (float)(min_value + (max_value - min_value) * texcoords[i][j]);
         }
     }
@@ -164,7 +164,7 @@ DvzVisual* dvz_volume(DvzScene* scene, uint32_t flags)
     if (visual == NULL)
         return NULL;
 
-    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    _visual_family_state(visual)->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     if (_volume_apply_bounds_geometry(visual) != 0)
         log_error("dvz_volume: failed to apply default bounds");
     return visual;
@@ -194,8 +194,8 @@ int dvz_volume_set_opacity(DvzVisual* visual, float opacity)
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set volume opacity"))
         return -1;
-    visual->volume.opacity = opacity;
-    _visual_bump_version(&visual->volume.version);
+    _visual_family_state(visual)->volume.opacity = opacity;
+    _visual_bump_version(&_visual_family_state(visual)->volume.version);
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -224,8 +224,8 @@ int dvz_volume_set_sampling(DvzVisual* visual, DvzVolumeSamplingMode sampling)
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set volume sampling"))
         return -1;
-    visual->volume.sampling = sampling;
-    _visual_bump_version(&visual->volume.version);
+    _visual_family_state(visual)->volume.sampling = sampling;
+    _visual_bump_version(&_visual_family_state(visual)->volume.version);
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -255,9 +255,9 @@ int dvz_volume_set_render_mode(DvzVisual* visual, DvzVolumeRenderMode mode)
     }
     DvzSceneSampleProfile profile = {0};
     if (
-        mode == DVZ_VOLUME_RENDER_MIP && visual->field != NULL &&
+        mode == DVZ_VOLUME_RENDER_MIP && _visual_family_state(visual)->field != NULL &&
         _scene_sample_profile_resolve(
-            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+            _visual_family_state(visual)->field->desc.format, _visual_family_state(visual)->field->desc.semantic, _visual_family_state(visual)->field->desc.dim,
             &profile) &&
         _scene_sample_profile_is_integer_label(&profile))
     {
@@ -266,8 +266,8 @@ int dvz_volume_set_render_mode(DvzVisual* visual, DvzVolumeRenderMode mode)
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set volume render mode"))
         return -1;
-    visual->volume.render_mode = mode;
-    _visual_bump_version(&visual->volume.version);
+    _visual_family_state(visual)->volume.render_mode = mode;
+    _visual_bump_version(&_visual_family_state(visual)->volume.version);
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -296,8 +296,8 @@ int dvz_volume_set_slice_axis(DvzVisual* visual, DvzVolumeAxis axis)
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set volume slice axis"))
         return -1;
-    visual->volume.slice_axis = axis;
-    _visual_bump_version(&visual->volume.version);
+    _visual_family_state(visual)->volume.slice_axis = axis;
+    _visual_bump_version(&_visual_family_state(visual)->volume.version);
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -326,8 +326,8 @@ int dvz_volume_set_slice_position(DvzVisual* visual, double position)
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set volume slice position"))
         return -1;
-    visual->volume.slice_position = position;
-    _visual_bump_version(&visual->volume.version);
+    _visual_family_state(visual)->volume.slice_position = position;
+    _visual_bump_version(&_visual_family_state(visual)->volume.version);
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -356,8 +356,8 @@ int dvz_volume_set_step_count(DvzVisual* visual, uint32_t step_count)
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set volume step count"))
         return -1;
-    visual->volume.step_count = step_count;
-    _visual_bump_version(&visual->volume.version);
+    _visual_family_state(visual)->volume.step_count = step_count;
+    _visual_bump_version(&_visual_family_state(visual)->volume.version);
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -395,12 +395,12 @@ int dvz_volume_set_bounds(
         return -1;
     for (uint32_t i = 0; i < 3; i++)
     {
-        visual->volume.bounds_min[i] = bounds_min[i];
-        visual->volume.bounds_max[i] = bounds_max[i];
+        _visual_family_state(visual)->volume.bounds_min[i] = bounds_min[i];
+        _visual_family_state(visual)->volume.bounds_max[i] = bounds_max[i];
     }
     if (_volume_apply_bounds_geometry(visual) != 0)
         return -1;
-    _visual_bump_version(&visual->volume.version);
+    _visual_bump_version(&_visual_family_state(visual)->volume.version);
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -439,10 +439,10 @@ int dvz_volume_set_axis_mapping(
         return -1;
     for (uint32_t i = 0; i < 3; i++)
     {
-        visual->volume.axis_order[i] = axis_order[i];
-        visual->volume.axis_flip[i] = axis_flip != NULL ? axis_flip[i] : false;
+        _visual_family_state(visual)->volume.axis_order[i] = axis_order[i];
+        _visual_family_state(visual)->volume.axis_flip[i] = axis_flip != NULL ? axis_flip[i] : false;
     }
-    _visual_bump_version(&visual->volume.version);
+    _visual_bump_version(&_visual_family_state(visual)->volume.version);
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -472,9 +472,9 @@ int dvz_volume_set_value_range(DvzVisual* visual, double min, double max)
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set volume value range"))
         return -1;
-    visual->volume.value_min = min;
-    visual->volume.value_max = max;
-    _visual_bump_version(&visual->volume.version);
+    _visual_family_state(visual)->volume.value_min = min;
+    _visual_family_state(visual)->volume.value_max = max;
+    _visual_bump_version(&_visual_family_state(visual)->volume.version);
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -529,9 +529,9 @@ int dvz_volume_set_alpha_stops(DvzVisual* visual, const DvzVolumeAlphaStop* stop
     if (!_scene_visual_mutation_allowed(visual->scene, "set volume alpha stops"))
         return -1;
     for (uint32_t i = 0; i < count; i++)
-        visual->volume.alpha_stops[i] = sorted[i];
-    visual->volume.alpha_stop_count = count;
-    _visual_bump_version(&visual->volume.version);
+        _visual_family_state(visual)->volume.alpha_stops[i] = sorted[i];
+    _visual_family_state(visual)->volume.alpha_stop_count = count;
+    _visual_bump_version(&_visual_family_state(visual)->volume.version);
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -570,11 +570,11 @@ int dvz_volume_set_clipping_box(
         return -1;
     for (uint32_t i = 0; i < 3; i++)
     {
-        visual->volume.clip_min[i] = clip_min[i];
-        visual->volume.clip_max[i] = clip_max[i];
+        _visual_family_state(visual)->volume.clip_min[i] = clip_min[i];
+        _visual_family_state(visual)->volume.clip_max[i] = clip_max[i];
     }
-    visual->volume.clipping_enabled = true;
-    _visual_bump_version(&visual->volume.version);
+    _visual_family_state(visual)->volume.clipping_enabled = true;
+    _visual_bump_version(&_visual_family_state(visual)->volume.version);
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -621,12 +621,12 @@ int dvz_volume_set_clipping_plane(
     double inv_norm = 1.0 / sqrt(norm2);
     for (uint32_t i = 0; i < 3; i++)
     {
-        visual->volume.clip_plane_point[i] = point[i];
-        visual->volume.clip_plane_normal[i] = normal[i] * inv_norm;
+        _visual_family_state(visual)->volume.clip_plane_point[i] = point[i];
+        _visual_family_state(visual)->volume.clip_plane_normal[i] = normal[i] * inv_norm;
     }
-    visual->volume.clip_plane_keep_positive = keep_positive;
-    visual->volume.clip_plane_enabled = true;
-    _visual_bump_version(&visual->volume.version);
+    _visual_family_state(visual)->volume.clip_plane_keep_positive = keep_positive;
+    _visual_family_state(visual)->volume.clip_plane_enabled = true;
+    _visual_bump_version(&_visual_family_state(visual)->volume.version);
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -649,15 +649,15 @@ int dvz_volume_clear_clipping_plane(DvzVisual* visual)
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "clear volume clipping plane"))
         return -1;
-    visual->volume.clip_plane_enabled = false;
-    visual->volume.clip_plane_keep_positive = false;
-    visual->volume.clip_plane_point[0] = 0.5;
-    visual->volume.clip_plane_point[1] = 0.5;
-    visual->volume.clip_plane_point[2] = 0.5;
-    visual->volume.clip_plane_normal[0] = 1.0;
-    visual->volume.clip_plane_normal[1] = 0.0;
-    visual->volume.clip_plane_normal[2] = 0.0;
-    _visual_bump_version(&visual->volume.version);
+    _visual_family_state(visual)->volume.clip_plane_enabled = false;
+    _visual_family_state(visual)->volume.clip_plane_keep_positive = false;
+    _visual_family_state(visual)->volume.clip_plane_point[0] = 0.5;
+    _visual_family_state(visual)->volume.clip_plane_point[1] = 0.5;
+    _visual_family_state(visual)->volume.clip_plane_point[2] = 0.5;
+    _visual_family_state(visual)->volume.clip_plane_normal[0] = 1.0;
+    _visual_family_state(visual)->volume.clip_plane_normal[1] = 0.0;
+    _visual_family_state(visual)->volume.clip_plane_normal[2] = 0.0;
+    _visual_bump_version(&_visual_family_state(visual)->volume.version);
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -680,22 +680,22 @@ int dvz_volume_clear_clipping(DvzVisual* visual)
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "clear volume clipping"))
         return -1;
-    visual->volume.clipping_enabled = false;
-    visual->volume.clip_min[0] = 0.0;
-    visual->volume.clip_min[1] = 0.0;
-    visual->volume.clip_min[2] = 0.0;
-    visual->volume.clip_max[0] = 1.0;
-    visual->volume.clip_max[1] = 1.0;
-    visual->volume.clip_max[2] = 1.0;
-    visual->volume.clip_plane_enabled = false;
-    visual->volume.clip_plane_keep_positive = false;
-    visual->volume.clip_plane_point[0] = 0.5;
-    visual->volume.clip_plane_point[1] = 0.5;
-    visual->volume.clip_plane_point[2] = 0.5;
-    visual->volume.clip_plane_normal[0] = 1.0;
-    visual->volume.clip_plane_normal[1] = 0.0;
-    visual->volume.clip_plane_normal[2] = 0.0;
-    _visual_bump_version(&visual->volume.version);
+    _visual_family_state(visual)->volume.clipping_enabled = false;
+    _visual_family_state(visual)->volume.clip_min[0] = 0.0;
+    _visual_family_state(visual)->volume.clip_min[1] = 0.0;
+    _visual_family_state(visual)->volume.clip_min[2] = 0.0;
+    _visual_family_state(visual)->volume.clip_max[0] = 1.0;
+    _visual_family_state(visual)->volume.clip_max[1] = 1.0;
+    _visual_family_state(visual)->volume.clip_max[2] = 1.0;
+    _visual_family_state(visual)->volume.clip_plane_enabled = false;
+    _visual_family_state(visual)->volume.clip_plane_keep_positive = false;
+    _visual_family_state(visual)->volume.clip_plane_point[0] = 0.5;
+    _visual_family_state(visual)->volume.clip_plane_point[1] = 0.5;
+    _visual_family_state(visual)->volume.clip_plane_point[2] = 0.5;
+    _visual_family_state(visual)->volume.clip_plane_normal[0] = 1.0;
+    _visual_family_state(visual)->volume.clip_plane_normal[1] = 0.0;
+    _visual_family_state(visual)->volume.clip_plane_normal[2] = 0.0;
+    _visual_bump_version(&_visual_family_state(visual)->volume.version);
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -712,5 +712,5 @@ const DvzVolumeState* dvz_volume_state(const DvzVisual* visual)
 {
     if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_VOLUME)
         return NULL;
-    return &visual->volume;
+    return &_visual_family_state(visual)->volume;
 }

@@ -431,8 +431,8 @@ static void _colorbar_hide(DvzColorbar* colorbar)
     if (colorbar->text_visual != NULL)
     {
         dvz_visual_set_visible(colorbar->text_visual, false);
-        if (colorbar->text_visual->text.glyph_visual != NULL)
-            dvz_visual_set_visible(colorbar->text_visual->text.glyph_visual, false);
+        if (_visual_family_state(colorbar->text_visual)->text.glyph_visual != NULL)
+            dvz_visual_set_visible(_visual_family_state(colorbar->text_visual)->text.glyph_visual, false);
     }
 }
 

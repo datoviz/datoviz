@@ -43,7 +43,7 @@ DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags)
     {
         visual->alpha_mode = DVZ_ALPHA_BLENDED;
         visual->depth_test_enabled = false;
-        visual->text.renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
+        _visual_family_state(visual)->text.renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
     }
     return visual;
 }
@@ -73,10 +73,10 @@ int _scene_text_visual_set_renderer(DvzVisual* visual, DvzTextRenderer renderer)
         log_error("text renderer %d is not implemented for batched text visuals yet", renderer);
         return -1;
     }
-    if (visual->text.renderer != renderer)
+    if (_visual_family_state(visual)->text.renderer != renderer)
     {
-        visual->text.renderer = renderer;
-        visual->text.renderer_version++;
+        _visual_family_state(visual)->text.renderer = renderer;
+        _visual_family_state(visual)->text.renderer_version++;
         _scene_notify_visual_changed(visual);
     }
     return 0;

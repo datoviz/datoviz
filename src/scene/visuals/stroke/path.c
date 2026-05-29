@@ -224,11 +224,11 @@ bool _path_stroke_cache_rebuild(DvzVisual* visual)
         return false;
 
     const uint32_t* subpath_lengths = visual->type == DVZ_VISUAL_TYPE_VECTOR
-                                          ? visual->vector.subpath_lengths
-                                          : visual->path.subpath_lengths;
+                                          ? _visual_family_state(visual)->vector.subpath_lengths
+                                          : _visual_family_state(visual)->path.subpath_lengths;
     uint32_t subpath_count = visual->type == DVZ_VISUAL_TYPE_VECTOR
-                                 ? visual->vector.subpath_count
-                                 : visual->path.subpath_count;
+                                 ? _visual_family_state(visual)->vector.subpath_count
+                                 : _visual_family_state(visual)->path.subpath_count;
 
     uint64_t segment_count = 0;
     uint64_t consumed = 0;
@@ -262,7 +262,7 @@ bool _path_stroke_cache_rebuild(DvzVisual* visual)
     }
 
     DvzPathGpuCache* cache =
-        visual->type == DVZ_VISUAL_TYPE_VECTOR ? &visual->vector.path_gpu : &visual->path.gpu;
+        visual->type == DVZ_VISUAL_TYPE_VECTOR ? &_visual_family_state(visual)->vector.path_gpu : &_visual_family_state(visual)->path.gpu;
     if (!_path_stroke_cache_resize(
             (void**)&cache->position_prev, vertex_count, 3 * sizeof(float)) ||
         !_path_stroke_cache_resize(

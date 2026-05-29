@@ -131,16 +131,16 @@ static void _scene_emit_image_like_texture_upload(
 
     if (visual->type == DVZ_VISUAL_TYPE_LABELS || visual->type == DVZ_VISUAL_TYPE_MESH)
     {
-        if (visual->field == NULL || (!visual->texture.dirty && !visual->field->dirty))
+        if (_visual_family_state(visual)->field == NULL || (!_visual_family_state(visual)->texture.dirty && !_visual_family_state(visual)->field->dirty))
             return;
         char tex_resource_id[128];
         if (!_scene_visual_texture_resource_key(
                 figure, visual, visual_index, tex_resource_id, sizeof(tex_resource_id)))
             return;
-        if (_scene_emit_sampled_field_texture_upload(plan, tex_resource_id, visual->field))
+        if (_scene_emit_sampled_field_texture_upload(plan, tex_resource_id, _visual_family_state(visual)->field))
         {
-            visual->texture.width = visual->field->desc.width;
-            visual->texture.height = visual->field->desc.height;
+            _visual_family_state(visual)->texture.width = _visual_family_state(visual)->field->desc.width;
+            _visual_family_state(visual)->texture.height = _visual_family_state(visual)->field->desc.height;
         }
         return;
     }

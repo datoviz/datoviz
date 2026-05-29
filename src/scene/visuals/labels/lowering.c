@@ -39,11 +39,11 @@ static bool _labels_desc_kind(const DvzVisual* visual, DvzSceneVisualDescKind* o
 {
     ANN(visual);
     ANN(out);
-    if (visual->field == NULL)
+    if (_visual_family_state(visual)->field == NULL)
         return false;
     DvzSceneSampleProfile profile = {0};
     if (!_scene_sample_profile_resolve(
-            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+            _visual_family_state(visual)->field->desc.format, _visual_family_state(visual)->field->desc.semantic, _visual_family_state(visual)->field->desc.dim,
             &profile))
     {
         return false;
@@ -111,16 +111,16 @@ bool _scene_labels_visual_fill_metadata(
     }
 
     metadata->has_labels = true;
-    metadata->labels_state = visual->labels;
+    metadata->labels_state = _visual_family_state(visual)->labels;
     bool generated_quads = _scene_visual_has_dense_attr(visual, "extent") ||
                            _scene_visual_has_dense_attr(visual, "extent_px");
     if (!generated_quads)
         return true;
-    if (visual->image_gpu.vertex_count > UINT32_MAX)
+    if (_visual_family_state(visual)->image_gpu.vertex_count > UINT32_MAX)
         return false;
-    if (visual->image_gpu.vertex_count > 0)
-        metadata->vertex_count = (uint32_t)visual->image_gpu.vertex_count;
-    metadata->image_pixel_space = visual->image_gpu.pixel_space;
+    if (_visual_family_state(visual)->image_gpu.vertex_count > 0)
+        metadata->vertex_count = (uint32_t)_visual_family_state(visual)->image_gpu.vertex_count;
+    metadata->image_pixel_space = _visual_family_state(visual)->image_gpu.pixel_space;
     return true;
 }
 

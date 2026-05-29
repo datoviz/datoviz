@@ -213,8 +213,8 @@ static void _legend_hide(DvzLegend* legend)
     if (legend->text_visual != NULL)
     {
         dvz_visual_set_visible(legend->text_visual, false);
-        if (legend->text_visual->text.glyph_visual != NULL)
-            dvz_visual_set_visible(legend->text_visual->text.glyph_visual, false);
+        if (_visual_family_state(legend->text_visual)->text.glyph_visual != NULL)
+            dvz_visual_set_visible(_visual_family_state(legend->text_visual)->text.glyph_visual, false);
     }
 }
 

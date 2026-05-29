@@ -364,7 +364,7 @@ bool _stroke_query_build(
         _stroke_query_mark_last_upload_index(plan, sizeof(uint32_t));
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "query0_material", 0, sizeof(DvzSceneMaterialParams), "material_params",
-                   &ctx->visual->material_params);
+                   &_visual_family_state(ctx->visual)->material_params);
     if (ok)
         _stroke_query_mark_last_upload_uniform(plan);
 
@@ -541,15 +541,15 @@ bool _stroke_quad_query_geometry(
         float vector_end[3] = {0};
         if (vector_mode)
         {
-            float scale = visual->vector.scale;
+            float scale = _visual_family_state(visual)->vector.scale;
             float head_factor = 1.0f;
             float tail_factor = 0.0f;
-            if (visual->vector.anchor == DVZ_VECTOR_ANCHOR_CENTER)
+            if (_visual_family_state(visual)->vector.anchor == DVZ_VECTOR_ANCHOR_CENTER)
             {
                 tail_factor = -0.5f;
                 head_factor = 0.5f;
             }
-            else if (visual->vector.anchor == DVZ_VECTOR_ANCHOR_HEAD)
+            else if (_visual_family_state(visual)->vector.anchor == DVZ_VECTOR_ANCHOR_HEAD)
             {
                 tail_factor = -1.0f;
                 head_factor = 0.0f;
@@ -620,11 +620,11 @@ bool _path_stroke_query_geometry(
         return false;
 
     const uint32_t* subpath_lengths = visual->type == DVZ_VISUAL_TYPE_VECTOR
-                                          ? visual->vector.subpath_lengths
-                                          : visual->path.subpath_lengths;
+                                          ? _visual_family_state(visual)->vector.subpath_lengths
+                                          : _visual_family_state(visual)->path.subpath_lengths;
     uint32_t subpath_count = visual->type == DVZ_VISUAL_TYPE_VECTOR
-                                 ? visual->vector.subpath_count
-                                 : visual->path.subpath_count;
+                                 ? _visual_family_state(visual)->vector.subpath_count
+                                 : _visual_family_state(visual)->path.subpath_count;
 
     uint64_t segment_count = 0;
     uint64_t consumed = 0;

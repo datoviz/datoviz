@@ -45,8 +45,8 @@ DvzVisual* dvz_path(DvzScene* scene, uint32_t flags)
     DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_PATH, flags);
     if (visual == NULL)
         return NULL;
-    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-    visual->material_params_dirty = true;
+    _visual_family_state(visual)->topology = DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+    _visual_family_state(visual)->material_params_dirty = true;
     return visual;
 }
 
@@ -76,13 +76,13 @@ int dvz_path_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap 
     if (!_scene_visual_mutation_allowed(visual->scene, "update path caps"))
         return -1;
 
-    if (visual->path.cap_start == start_cap && visual->path.cap_end == end_cap)
+    if (_visual_family_state(visual)->path.cap_start == start_cap && _visual_family_state(visual)->path.cap_end == end_cap)
         return 0;
-    visual->path.cap_start = start_cap;
-    visual->path.cap_end = end_cap;
+    _visual_family_state(visual)->path.cap_start = start_cap;
+    _visual_family_state(visual)->path.cap_end = end_cap;
     _path_sync_params(visual);
     _visual_bump_version(&visual->material.version);
-    visual->material_params_dirty = true;
+    _visual_family_state(visual)->material_params_dirty = true;
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -118,13 +118,13 @@ int dvz_path_set_join(DvzVisual* visual, DvzPathJoin join, float miter_limit)
     if (!_scene_visual_mutation_allowed(visual->scene, "update path join"))
         return -1;
 
-    if (visual->path.join == join && visual->path.miter_limit == miter_limit)
+    if (_visual_family_state(visual)->path.join == join && _visual_family_state(visual)->path.miter_limit == miter_limit)
         return 0;
-    visual->path.join = join;
-    visual->path.miter_limit = miter_limit;
+    _visual_family_state(visual)->path.join = join;
+    _visual_family_state(visual)->path.miter_limit = miter_limit;
     _path_sync_params(visual);
     _visual_bump_version(&visual->material.version);
-    visual->material_params_dirty = true;
+    _visual_family_state(visual)->material_params_dirty = true;
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -148,6 +148,6 @@ int dvz_path_set_subpaths(DvzVisual* visual, uint32_t subpath_count, const uint3
         return -1;
     }
     return _stroke_set_path_subpaths(
-        visual, subpath_count, lengths, "path", &visual->path.subpath_lengths,
-        &visual->path.subpath_count, &visual->path.gpu);
+        visual, subpath_count, lengths, "path", &_visual_family_state(visual)->path.subpath_lengths,
+        &_visual_family_state(visual)->path.subpath_count, &_visual_family_state(visual)->path.gpu);
 }

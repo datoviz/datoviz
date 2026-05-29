@@ -138,7 +138,7 @@ bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count)
     color->dirty_first_item = 0;
     color->dirty_item_count = item_count;
     _visual_bump_version(&color->version);
-    visual->mesh_default_color = true;
+    _visual_family_state(visual)->mesh_default_color = true;
     return true;
 }
 
@@ -235,7 +235,7 @@ int dvz_visual_set_data(
         DvzVisualAttr* color = _attr_get_or_create(visual, "color", 4 * sizeof(uint8_t));
         if (color == NULL)
             return -1;
-        if (color->data == NULL || visual->mesh_default_color)
+        if (color->data == NULL || _visual_family_state(visual)->mesh_default_color)
         {
             if (!_mesh_ensure_default_color(visual, item_count))
             {
@@ -246,11 +246,11 @@ int dvz_visual_set_data(
     }
     else if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(attr_name, "color") == 0)
     {
-        visual->mesh_default_color = false;
+        _visual_family_state(visual)->mesh_default_color = false;
     }
     if ((visual->type == DVZ_VISUAL_TYPE_PATH || visual->type == DVZ_VISUAL_TYPE_VECTOR) &&
         strcmp(attr_name, "line_width") == 0)
-        visual->material_params_dirty = true;
+        _visual_family_state(visual)->material_params_dirty = true;
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -345,15 +345,15 @@ int dvz_visual_set_strings(
         copy[i][len] = '\0';
     }
 
-    if (visual->text.strings != NULL)
+    if (_visual_family_state(visual)->text.strings != NULL)
     {
-        for (uint32_t i = 0; i < visual->text.string_count; i++)
-            dvz_free(visual->text.strings[i]);
-        dvz_free(visual->text.strings);
+        for (uint32_t i = 0; i < _visual_family_state(visual)->text.string_count; i++)
+            dvz_free(_visual_family_state(visual)->text.strings[i]);
+        dvz_free(_visual_family_state(visual)->text.strings);
     }
-    visual->text.strings = copy;
-    visual->text.string_count = item_count;
-    visual->text.strings_version++;
+    _visual_family_state(visual)->text.strings = copy;
+    _visual_family_state(visual)->text.string_count = item_count;
+    _visual_family_state(visual)->text.strings_version++;
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -504,7 +504,7 @@ int dvz_visual_set_data_many(
             continue;
         if (_visual_data_update_contains_attr(visual->type, updates, update_count, attr->name))
             continue;
-        if (visual->type == DVZ_VISUAL_TYPE_MESH && visual->mesh_default_color &&
+        if (visual->type == DVZ_VISUAL_TYPE_MESH && _visual_family_state(visual)->mesh_default_color &&
             strcmp(attr->name, "color") == 0 &&
             _visual_data_update_contains_attr(visual->type, updates, update_count, "position"))
         {
@@ -573,9 +573,9 @@ int dvz_visual_set_data_many(
     }
 
     if (mesh_color_updated)
-        visual->mesh_default_color = false;
+        _visual_family_state(visual)->mesh_default_color = false;
     if (path_line_width_updated)
-        visual->material_params_dirty = true;
+        _visual_family_state(visual)->material_params_dirty = true;
     if (mesh_position_updated)
     {
         DvzVisualAttr* color = _attr_get_or_create(visual, "color", 4 * sizeof(uint8_t));
@@ -584,7 +584,7 @@ int dvz_visual_set_data_many(
             dvz_free(prepared);
             return -1;
         }
-        if (color->data == NULL || visual->mesh_default_color)
+        if (color->data == NULL || _visual_family_state(visual)->mesh_default_color)
         {
             if (!_mesh_ensure_default_color(visual, batch_item_count))
             {
@@ -713,9 +713,9 @@ int dvz_visual_set_data_range(
         attr->dirty_item_count = merged_end - merged_first;
     }
     if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(attr_name, "color") == 0)
-        visual->mesh_default_color = false;
+        _visual_family_state(visual)->mesh_default_color = false;
     if (visual->type == DVZ_VISUAL_TYPE_PATH && strcmp(attr_name, "line_width") == 0)
-        visual->material_params_dirty = true;
+        _visual_family_state(visual)->material_params_dirty = true;
     _visual_bump_version(&attr->version);
     _scene_notify_visual_changed(visual);
     return 0;

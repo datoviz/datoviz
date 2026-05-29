@@ -80,11 +80,11 @@ static float _volume_alpha_at(const DvzVolumeState* state, double t)
 bool _volume_uses_color_texture(const DvzVisual* visual)
 {
     ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || visual->field == NULL)
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || _visual_family_state(visual)->field == NULL)
         return false;
     DvzSceneSampleProfile profile = {0};
     if (!_scene_sample_profile_resolve(
-            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+            _visual_family_state(visual)->field->desc.format, _visual_family_state(visual)->field->desc.semantic, _visual_family_state(visual)->field->desc.dim,
             &profile))
     {
         return false;
@@ -107,11 +107,11 @@ bool _volume_uses_label_lookup(const DvzVisual* visual, bool* out_signed)
     ANN(visual);
     if (out_signed != NULL)
         *out_signed = false;
-    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || visual->field == NULL)
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || _visual_family_state(visual)->field == NULL)
         return false;
     DvzSceneSampleProfile profile = {0};
     if (!_scene_sample_profile_resolve(
-            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+            _visual_family_state(visual)->field->desc.format, _visual_family_state(visual)->field->desc.semantic, _visual_family_state(visual)->field->desc.dim,
             &profile))
     {
         return false;
@@ -135,14 +135,14 @@ uint32_t _volume_transfer_texture_width(const DvzVisual* visual)
 {
     ANN(visual);
     uint32_t width = 256;
-    if (visual->field != NULL && visual->field->desc.semantic == DVZ_FIELD_SEMANTIC_LABEL)
+    if (_visual_family_state(visual)->field != NULL && _visual_family_state(visual)->field->desc.semantic == DVZ_FIELD_SEMANTIC_LABEL)
     {
         width = 1;
         DvzSceneColorizer colorizer = {0};
         uint32_t palette_width = 0;
         if (
             _scene_colorizer_from_scale(
-                visual->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer) &&
+                _visual_family_state(visual)->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer) &&
             _scene_colorizer_dense_palette_extent(&colorizer, &palette_width) &&
             palette_width > 0)
             width = palette_width;
@@ -169,7 +169,7 @@ bool _volume_prepare_transfer_texture(DvzVisual* visual, const void** out_data)
 
     DvzSceneSampleProfile profile = {0};
     if (!_scene_sample_profile_resolve(
-            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+            _visual_family_state(visual)->field->desc.format, _visual_family_state(visual)->field->desc.semantic, _visual_family_state(visual)->field->desc.dim,
             &profile))
     {
         return false;
@@ -179,7 +179,7 @@ bool _volume_prepare_transfer_texture(DvzVisual* visual, const void** out_data)
     {
         DvzSceneColorizer colorizer = {0};
         bool has_colorizer = _scene_colorizer_from_scale(
-            visual->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer);
+            _visual_family_state(visual)->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer);
         uint32_t palette_count = 1;
         bool has_dense_palette =
             has_colorizer && _scene_colorizer_dense_palette_extent(&colorizer, &palette_count);
@@ -192,25 +192,25 @@ bool _volume_prepare_transfer_texture(DvzVisual* visual, const void** out_data)
             log_error("label volume palette size overflow");
             return false;
         }
-        if (visual->texture.rgba == NULL || visual->texture.rgba_size != size)
+        if (_visual_family_state(visual)->texture.rgba == NULL || _visual_family_state(visual)->texture.rgba_size != size)
         {
-            if (visual->texture.rgba != NULL)
-                dvz_free(visual->texture.rgba);
-            visual->texture.rgba = dvz_calloc(size, 1);
-            if (visual->texture.rgba == NULL)
+            if (_visual_family_state(visual)->texture.rgba != NULL)
+                dvz_free(_visual_family_state(visual)->texture.rgba);
+            _visual_family_state(visual)->texture.rgba = dvz_calloc(size, 1);
+            if (_visual_family_state(visual)->texture.rgba == NULL)
             {
-                visual->texture.rgba_size = 0;
+                _visual_family_state(visual)->texture.rgba_size = 0;
                 log_error("label volume palette allocation failed");
                 return false;
             }
-            visual->texture.rgba_size = size;
+            _visual_family_state(visual)->texture.rgba_size = size;
         }
 
         DvzColor fallback = {48, 48, 48, 180};
         if (has_dense_palette)
         {
             if (!_scene_colorizer_build_dense_palette(
-                    &colorizer, fallback, (DvzColor*)visual->texture.rgba, palette_count))
+                    &colorizer, fallback, (DvzColor*)_visual_family_state(visual)->texture.rgba, palette_count))
             {
                 log_error("label volume categorical palette build failed");
                 return false;
@@ -218,30 +218,30 @@ bool _volume_prepare_transfer_texture(DvzVisual* visual, const void** out_data)
         }
         else
         {
-            ((DvzColor*)visual->texture.rgba)[0] = (DvzColor){0, 0, 0, 0};
+            ((DvzColor*)_visual_family_state(visual)->texture.rgba)[0] = (DvzColor){0, 0, 0, 0};
         }
-        *out_data = visual->texture.rgba;
+        *out_data = _visual_family_state(visual)->texture.rgba;
         return true;
     }
 
     const uint64_t size = 256ull * 4ull;
-    if (visual->texture.rgba == NULL || visual->texture.rgba_size != size)
+    if (_visual_family_state(visual)->texture.rgba == NULL || _visual_family_state(visual)->texture.rgba_size != size)
     {
-        if (visual->texture.rgba != NULL)
-            dvz_free(visual->texture.rgba);
-        visual->texture.rgba = dvz_calloc(size, 1);
-        if (visual->texture.rgba == NULL)
+        if (_visual_family_state(visual)->texture.rgba != NULL)
+            dvz_free(_visual_family_state(visual)->texture.rgba);
+        _visual_family_state(visual)->texture.rgba = dvz_calloc(size, 1);
+        if (_visual_family_state(visual)->texture.rgba == NULL)
         {
-            visual->texture.rgba_size = 0;
+            _visual_family_state(visual)->texture.rgba_size = 0;
             log_error("volume transfer texture allocation failed");
             return false;
         }
-        visual->texture.rgba_size = size;
+        _visual_family_state(visual)->texture.rgba_size = size;
     }
 
-    uint8_t* rgba = (uint8_t*)visual->texture.rgba;
+    uint8_t* rgba = (uint8_t*)_visual_family_state(visual)->texture.rgba;
     const DvzColormap* colormap =
-        visual->scale != NULL && visual->scale->colormap != NULL ? visual->scale->colormap : NULL;
+        _visual_family_state(visual)->scale != NULL && _visual_family_state(visual)->scale->colormap != NULL ? _visual_family_state(visual)->scale->colormap : NULL;
     for (uint32_t i = 0; i < 256; i++)
     {
         double t = (double)i / 255.0;
@@ -255,10 +255,10 @@ bool _volume_prepare_transfer_texture(DvzVisual* visual, const void** out_data)
             rgba[4 * i + 2] = v;
             rgba[4 * i + 3] = 255;
         }
-        float alpha = _volume_alpha_at(&visual->volume, t);
+        float alpha = _volume_alpha_at(&_visual_family_state(visual)->volume, t);
         rgba[4 * i + 3] = (uint8_t)((float)rgba[4 * i + 3] * alpha + 0.5f);
     }
-    *out_data = visual->texture.rgba;
+    *out_data = _visual_family_state(visual)->texture.rgba;
     return true;
 }
 
@@ -285,7 +285,7 @@ bool _volume_prepare_label_lookup(DvzVisual* visual, const void** out_data, uint
 
     DvzSceneColorizer colorizer = {0};
     (void)_scene_colorizer_from_scale(
-        visual->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer);
+        _visual_family_state(visual)->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer);
     uint32_t entry_count = 1;
     if (!_scene_colorizer_label_lookup_extent(&colorizer, &entry_count))
         return false;
@@ -298,28 +298,28 @@ bool _volume_prepare_label_lookup(DvzVisual* visual, const void** out_data, uint
         log_error("label volume lookup size overflow");
         return false;
     }
-    if (visual->texture.label_lookup == NULL || visual->texture.label_lookup_size != size)
+    if (_visual_family_state(visual)->texture.label_lookup == NULL || _visual_family_state(visual)->texture.label_lookup_size != size)
     {
-        if (visual->texture.label_lookup != NULL)
-            dvz_free(visual->texture.label_lookup);
-        visual->texture.label_lookup = dvz_calloc(size, 1);
-        if (visual->texture.label_lookup == NULL)
+        if (_visual_family_state(visual)->texture.label_lookup != NULL)
+            dvz_free(_visual_family_state(visual)->texture.label_lookup);
+        _visual_family_state(visual)->texture.label_lookup = dvz_calloc(size, 1);
+        if (_visual_family_state(visual)->texture.label_lookup == NULL)
         {
-            visual->texture.label_lookup_size = 0;
+            _visual_family_state(visual)->texture.label_lookup_size = 0;
             log_error("label volume lookup allocation failed");
             return false;
         }
-        visual->texture.label_lookup_size = size;
+        _visual_family_state(visual)->texture.label_lookup_size = size;
     }
     if (!_scene_colorizer_build_label_lookup(
-            &colorizer, signed_keys, (DvzSceneLabelLookupEntry*)visual->texture.label_lookup,
+            &colorizer, signed_keys, (DvzSceneLabelLookupEntry*)_visual_family_state(visual)->texture.label_lookup,
             entry_count))
     {
         log_error("label volume lookup build failed");
         return false;
     }
 
-    *out_data = visual->texture.label_lookup;
+    *out_data = _visual_family_state(visual)->texture.label_lookup;
     *out_size = size;
     return true;
 }
@@ -339,7 +339,7 @@ bool _volume_source_texture_payload(DvzVisual* visual, DvzVolumeTextureUploadPay
     ANN(out);
     dvz_memset(
         out, sizeof(DvzVolumeTextureUploadPayload), 0, sizeof(DvzVolumeTextureUploadPayload));
-    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || visual->field == NULL)
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || _visual_family_state(visual)->field == NULL)
         return false;
 
     if (!_scene_prepare_volume_texture(
@@ -350,12 +350,12 @@ bool _volume_source_texture_payload(DvzVisual* visual, DvzVolumeTextureUploadPay
 
     DvzFieldFormat byte_format = out->texture_format == VK_FORMAT_R8G8B8A8_UNORM
                                      ? DVZ_FIELD_FORMAT_RGBA8_UNORM
-                                     : visual->field->desc.format;
+                                     : _visual_family_state(visual)->field->desc.format;
     if (!_field_region_byte_size(byte_format, &out->region, &out->byte_size))
         return false;
-    out->allocation_width = visual->field->desc.width;
-    out->allocation_height = visual->field->desc.height;
-    out->allocation_depth = visual->field->desc.depth;
+    out->allocation_width = _visual_family_state(visual)->field->desc.width;
+    out->allocation_height = _visual_family_state(visual)->field->desc.height;
+    out->allocation_depth = _visual_family_state(visual)->field->desc.depth;
     return true;
 }
 
@@ -380,7 +380,7 @@ bool _volume_source_texture_payload_if_dirty(
     *out_handled = visual->type == DVZ_VISUAL_TYPE_VOLUME;
     if (!*out_handled)
         return true;
-    if (visual->field == NULL || (!visual->texture.dirty && !visual->field->dirty))
+    if (_visual_family_state(visual)->field == NULL || (!_visual_family_state(visual)->texture.dirty && !_visual_family_state(visual)->field->dirty))
         return true;
     return _volume_source_texture_payload(visual, out);
 }

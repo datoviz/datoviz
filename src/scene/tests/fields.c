@@ -491,7 +491,7 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
     _scene_prepare_legend_visuals(figure, NULL);
     AT(legend->mark_visual != NULL);
     AT(legend->text_visual != NULL);
-    AT(legend->text_visual->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
+    AT(_visual_family_state(legend->text_visual)->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
     AT(legend->mark_visual->visible);
     AT(legend->text_visual->visible);
     AT(legend->entry_count == 4);
@@ -610,7 +610,7 @@ int test_scene_legend_emit_stream_contains_derived_visuals(
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(legend->mark_visual != NULL);
     AT(legend->text_visual != NULL);
-    AT(legend->text_visual->text.glyph_visual != NULL);
+    AT(_visual_family_state(legend->text_visual)->text.glyph_visual != NULL);
 
     bool found_mark_position_label = false;
     bool found_mark_color_label = false;
@@ -716,8 +716,8 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(colorbar->ramp_visual != NULL);
     AT(colorbar->tick_visual != NULL);
     AT(colorbar->text_visual != NULL);
-    AT(colorbar->text_visual->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
-    AT(colorbar->ramp_visual->topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    AT(_visual_family_state(colorbar->text_visual)->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
+    AT(_visual_family_state(colorbar->ramp_visual)->topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     AT(colorbar->ramp_visual->visible);
     AT(colorbar->tick_visual->visible);
     AT(colorbar->text_visual->visible);
@@ -1120,7 +1120,7 @@ int test_scene_colorbar_detached_placement(TstContext* suite, const TstCase* ite
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(colorbar->ramp_visual != NULL);
     AT(colorbar->text_visual != NULL);
-    AT(colorbar->text_visual->text.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
+    AT(_visual_family_state(colorbar->text_visual)->text.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
     DvzVisualDataView pos_view = {0};
     AT(dvz_visual_data(colorbar->ramp_visual, "position", &pos_view) == 0);
     const float* positions = (const float*)pos_view.data;
@@ -1284,7 +1284,7 @@ int test_scene_colorbar_emit_stream_contains_derived_visuals(
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(colorbar->tick_count >= 2);
     AT(colorbar->text_visual != NULL);
-    AT(colorbar->text_visual->text.glyph_visual != NULL);
+    AT(_visual_family_state(colorbar->text_visual)->text.glyph_visual != NULL);
 
     const uint64_t ramp_vertex_count = 6u * 64u;
     const uint64_t ramp_position_size = ramp_vertex_count * 3u * sizeof(float);
@@ -1498,8 +1498,8 @@ int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCas
     ANN(image);
 
     AT(dvz_visual_set_scale(image, "colormap", scale) == 0);
-    AT(image->scale == scale);
-    AT(strcmp(image->scale_slot, "colormap") == 0);
+    AT(_visual_family_state(image)->scale == scale);
+    AT(strcmp(_visual_family_state(image)->scale_slot, "colormap") == 0);
 
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
@@ -1577,8 +1577,8 @@ int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const Ts
     };
     AT(dvz_scale_set_categories(scale, categories, 2));
     AT(dvz_visual_set_scale(labels, "labels", scale) == 0);
-    AT(labels->scale == scale);
-    AT(strcmp(labels->scale_slot, "labels") == 0);
+    AT(_visual_family_state(labels)->scale == scale);
+    AT(strcmp(_visual_family_state(labels)->scale_slot, "labels") == 0);
 
     int32_t values[4] = {0, -1, 42, -1};
     DvzSampledField* field = dvz_sampled_field(
@@ -1595,7 +1595,7 @@ int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const Ts
         field, &(DvzFieldDataView){.data = values, .bytes_per_row = 2 * sizeof(int32_t),
                                    .rows_per_image = 2}));
     AT(dvz_visual_set_field(labels, "field", field));
-    AT(labels->field == field);
+    AT(_visual_family_state(labels)->field == field);
 
     DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
     ANN(continuous);
@@ -1789,8 +1789,8 @@ int test_scene_image_scalar_texture_uses_bound_scale(TstContext* suite, const Ts
 
     DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
     ANN(stream);
-    AT(visual->texture.rgba != NULL);
-    uint8_t* rgba = (uint8_t*)visual->texture.rgba;
+    AT(_visual_family_state(visual)->texture.rgba != NULL);
+    uint8_t* rgba = (uint8_t*)_visual_family_state(visual)->texture.rgba;
     AT(rgba[0] == 255);
     AT(rgba[1] == 0);
     AT(rgba[2] == 0);
@@ -1865,8 +1865,8 @@ int test_scene_image_r16_float_field_uses_bound_scale(TstContext* suite, const T
 
     DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
     ANN(stream);
-    AT(image->texture.rgba != NULL);
-    uint8_t* rgba = (uint8_t*)image->texture.rgba;
+    AT(_visual_family_state(image)->texture.rgba != NULL);
+    uint8_t* rgba = (uint8_t*)_visual_family_state(image)->texture.rgba;
     AT(rgba[0] == 255);
     AT(rgba[1] == 0);
     AT(rgba[2] == 0);
@@ -1941,8 +1941,8 @@ int test_scene_image_r16_snorm_field_uses_bound_scale(TstContext* suite, const T
 
     DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
     ANN(stream);
-    AT(image->texture.rgba != NULL);
-    uint8_t* rgba = (uint8_t*)image->texture.rgba;
+    AT(_visual_family_state(image)->texture.rgba != NULL);
+    uint8_t* rgba = (uint8_t*)_visual_family_state(image)->texture.rgba;
     AT(rgba[0] == 255);
     AT(rgba[1] == 0);
     AT(rgba[2] == 0);
@@ -2120,8 +2120,8 @@ int test_scene_mesh_visual_binds_texture_field(TstContext* suite, const TstCase*
     AT(dvz_sampled_field_set_data(
         rgba, &(DvzFieldDataView){.data = pixels, .bytes_per_row = 2 * 4, .rows_per_image = 2}));
     AT(dvz_visual_set_field(mesh, "texture", rgba));
-    AT(mesh->field == rgba);
-    AT(strcmp(mesh->field_slot, "texture") == 0);
+    AT(_visual_family_state(mesh)->field == rgba);
+    AT(strcmp(_visual_family_state(mesh)->field_slot, "texture") == 0);
 
     DvzSampledField* scalar = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){
@@ -2165,7 +2165,7 @@ int test_scene_volume_visual_binds_3d_field(TstContext* suite, const TstCase* it
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     AT(volume->type == DVZ_VISUAL_TYPE_VOLUME);
-    AT(volume->topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    AT(_visual_family_state(volume)->topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
     DvzVisualDataView position_view = {0};
     DvzVisualDataView texcoord_view = {0};
@@ -2193,9 +2193,9 @@ int test_scene_volume_visual_binds_3d_field(TstContext* suite, const TstCase* it
                });
     ANN(field3d);
     AT(dvz_visual_set_field(volume, "field", field3d));
-    AT(volume->field == field3d);
-    AT(strcmp(volume->field_slot, "field") == 0);
-    AT(volume->texture.dirty);
+    AT(_visual_family_state(volume)->field == field3d);
+    AT(strcmp(_visual_family_state(volume)->field_slot, "field") == 0);
+    AT(_visual_family_state(volume)->texture.dirty);
 
     DvzSampledField* field2d = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){
@@ -2211,8 +2211,8 @@ int test_scene_volume_visual_binds_3d_field(TstContext* suite, const TstCase* it
     AT(_captured_log_contains(suite, "require a 3D sampled field"));
 
     AT(dvz_visual_set_field(volume, "field", NULL));
-    AT(volume->field == NULL);
-    AT(volume->field_slot[0] == '\0');
+    AT(_visual_family_state(volume)->field == NULL);
+    AT(_visual_family_state(volume)->field_slot[0] == '\0');
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2322,7 +2322,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const Ts
     AT(created_entry_face_pipeline);
     AT(drew_box_proxy);
     AT(!field->dirty);
-    AT(!volume->texture.dirty);
+    AT(!_visual_family_state(volume)->texture.dirty);
     dvz_drp2_stream_destroy(stream0);
 
     uint16_t patch[2] = {101, 102};
@@ -2367,7 +2367,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const Ts
     AT(!recreated_texture);
     AT(wrote_partial_texture);
     AT(!field->dirty);
-    AT(!volume->texture.dirty);
+    AT(!_visual_family_state(volume)->texture.dirty);
 
     dvz_drp2_stream_destroy(stream1);
     dvz_scene_destroy(scene);
@@ -2555,8 +2555,8 @@ int test_scene_volume_retained_controls(TstContext* suite, const TstCase* item)
     dvz_colormap_set_stops(colormap, stops, 2);
     dvz_scale_set_colormap(scale, colormap);
     AT(dvz_visual_set_scale(volume, "colormap", scale) == 0);
-    AT(volume->scale == scale);
-    AT(strcmp(volume->scale_slot, "colormap") == 0);
+    AT(_visual_family_state(volume)->scale == scale);
+    AT(strcmp(_visual_family_state(volume)->scale_slot, "colormap") == 0);
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
@@ -2757,7 +2757,7 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
     data = NULL;
 
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_SLICE) == 0);
-    AT(volume->texture.rgba == NULL);
+    AT(_visual_family_state(volume)->texture.rgba == NULL);
     AT(dvz_visual_set_field(volume, "field", field));
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
 
@@ -2874,7 +2874,7 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
     AT(created_dummy_transfer_texture);
     AT(wrote_dummy_transfer_texture);
     AT(matched_start_value);
-    AT(volume->texture.rgba == NULL);
+    AT(_visual_family_state(volume)->texture.rgba == NULL);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
@@ -3445,9 +3445,9 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
     AT(wrote_scalar_texture);
     AT(wrote_transfer_texture);
     AT(wrote_transfer_alpha);
-    AT(volume->texture.rgba != NULL);
+    AT(_visual_family_state(volume)->texture.rgba != NULL);
     AT(!field->dirty);
-    AT(!volume->texture.dirty);
+    AT(!_visual_family_state(volume)->texture.dirty);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
@@ -3664,12 +3664,12 @@ int test_scene_sampled_field_destroy_clears_visual_binding(TstContext* suite, co
     AT(dvz_sampled_field_set_data(
         field, &(DvzFieldDataView){.data = rgba, .bytes_per_row = 8, .rows_per_image = 2}));
     AT(dvz_visual_set_field(image, "field", field));
-    AT(image->field == field);
-    AT(strcmp(image->field_slot, "field") == 0);
+    AT(_visual_family_state(image)->field == field);
+    AT(strcmp(_visual_family_state(image)->field_slot, "field") == 0);
 
     AT(dvz_sampled_field_destroy(field));
-    AT(image->field == NULL);
-    AT(image->field_slot[0] == '\0');
+    AT(_visual_family_state(image)->field == NULL);
+    AT(_visual_family_state(image)->field_slot[0] == '\0');
 
     dvz_scene_destroy(scene);
     return 0;
@@ -3704,8 +3704,8 @@ int test_scene_shared_field_update_marks_two_visuals_dirty(TstContext* suite, co
     AT(dvz_visual_set_field(image0, "field", field));
     AT(dvz_visual_set_field(image1, "field", field));
 
-    image0->texture.dirty = false;
-    image1->texture.dirty = false;
+    _visual_family_state(image0)->texture.dirty = false;
+    _visual_family_state(image1)->texture.dirty = false;
     field->dirty = false;
 
     float patch[1] = {1.0f};
@@ -3714,8 +3714,8 @@ int test_scene_shared_field_update_marks_two_visuals_dirty(TstContext* suite, co
         &(DvzFieldDataView){
             .data = patch, .bytes_per_row = sizeof(float), .rows_per_image = 1}));
     AT(field->dirty);
-    AT(image0->texture.dirty);
-    AT(image1->texture.dirty);
+    AT(_visual_family_state(image0)->texture.dirty);
+    AT(_visual_family_state(image1)->texture.dirty);
 
     dvz_scene_destroy(scene);
     return 0;

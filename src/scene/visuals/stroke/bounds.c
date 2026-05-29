@@ -90,15 +90,15 @@ static bool _stroke_bounds_from_vector(const DvzVisual* visual, DvzBounds* out)
 
     const float* pos = (const float*)position->data;
     const float* vec = (const float*)vector->data;
-    float scale = visual->vector.scale;
+    float scale = _visual_family_state(visual)->vector.scale;
     float tail_factor = 0.0f;
     float head_factor = 1.0f;
-    if (visual->vector.anchor == DVZ_VECTOR_ANCHOR_CENTER)
+    if (_visual_family_state(visual)->vector.anchor == DVZ_VECTOR_ANCHOR_CENTER)
     {
         tail_factor = -0.5f;
         head_factor = 0.5f;
     }
-    else if (visual->vector.anchor == DVZ_VECTOR_ANCHOR_HEAD)
+    else if (_visual_family_state(visual)->vector.anchor == DVZ_VECTOR_ANCHOR_HEAD)
     {
         tail_factor = -1.0f;
         head_factor = 0.0f;

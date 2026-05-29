@@ -423,9 +423,9 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
     AT(panel->background_visual != gradient_visual);
     AT(panel->background_type == DVZ_PANEL_BACKGROUND_IMAGE);
     AT(panel->background_visual->type == DVZ_VISUAL_TYPE_IMAGE);
-    AT(panel->background_visual->field != NULL);
-    AT(panel->background_visual->field->desc.width == 2);
-    AT(panel->background_visual->field->desc.height == 2);
+    AT(_visual_family_state(panel->background_visual)->field != NULL);
+    AT(_visual_family_state(panel->background_visual)->field->desc.width == 2);
+    AT(_visual_family_state(panel->background_visual)->field->desc.height == 2);
     AT(panel->visuals[0].visual == panel->background_visual);
     AT(panel->visuals[0].z_layer == -1);
     AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);

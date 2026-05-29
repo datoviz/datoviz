@@ -43,15 +43,15 @@ static bool _volume_bounds_from_state(const DvzVisual* visual, DvzBounds* out)
         return false;
     for (uint32_t i = 0; i < 3; i++)
     {
-        if (!isfinite(visual->volume.bounds_min[i]) || !isfinite(visual->volume.bounds_max[i]))
+        if (!isfinite(_visual_family_state(visual)->volume.bounds_min[i]) || !isfinite(_visual_family_state(visual)->volume.bounds_max[i]))
             return false;
     }
     _bounds_include_point(
-        out, visual->volume.bounds_min[0], visual->volume.bounds_min[1],
-        visual->volume.bounds_min[2]);
+        out, _visual_family_state(visual)->volume.bounds_min[0], _visual_family_state(visual)->volume.bounds_min[1],
+        _visual_family_state(visual)->volume.bounds_min[2]);
     _bounds_include_point(
-        out, visual->volume.bounds_max[0], visual->volume.bounds_max[1],
-        visual->volume.bounds_max[2]);
+        out, _visual_family_state(visual)->volume.bounds_max[0], _visual_family_state(visual)->volume.bounds_max[1],
+        _visual_family_state(visual)->volume.bounds_max[2]);
     return out->valid;
 }
 

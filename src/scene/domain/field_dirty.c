@@ -34,8 +34,8 @@
 static void _visual_texture_bump_version(DvzVisual* visual)
 {
     ANN(visual);
-    visual->texture.version =
-        visual->texture.version == UINT64_MAX ? 1 : visual->texture.version + 1;
+    _visual_family_state(visual)->texture.version =
+        _visual_family_state(visual)->texture.version == UINT64_MAX ? 1 : _visual_family_state(visual)->texture.version + 1;
 }
 
 
@@ -52,11 +52,11 @@ static void _visual_texture_bump_version(DvzVisual* visual)
 void _scene_visual_texture_mark_clean(DvzVisual* visual)
 {
     ANN(visual);
-    visual->texture.dirty = false;
-    visual->texture.field_dirty = false;
-    visual->texture.field_dirty_full = false;
+    _visual_family_state(visual)->texture.dirty = false;
+    _visual_family_state(visual)->texture.field_dirty = false;
+    _visual_family_state(visual)->texture.field_dirty_full = false;
     dvz_memset(
-        &visual->texture.field_dirty_region, sizeof(DvzFieldRegion), 0, sizeof(DvzFieldRegion));
+        &_visual_family_state(visual)->texture.field_dirty_region, sizeof(DvzFieldRegion), 0, sizeof(DvzFieldRegion));
 }
 
 
@@ -69,7 +69,7 @@ void _scene_visual_texture_mark_clean(DvzVisual* visual)
 void _scene_visual_texture_mark_dirty(DvzVisual* visual)
 {
     ANN(visual);
-    visual->texture.dirty = true;
+    _visual_family_state(visual)->texture.dirty = true;
     _visual_texture_bump_version(visual);
 }
 
@@ -86,10 +86,10 @@ void _scene_visual_texture_mark_full_dirty(
 {
     ANN(visual);
     ANN(desc);
-    visual->texture.dirty = true;
-    visual->texture.field_dirty = true;
-    visual->texture.field_dirty_full = true;
-    visual->texture.field_dirty_region = _field_full_region(desc);
+    _visual_family_state(visual)->texture.dirty = true;
+    _visual_family_state(visual)->texture.field_dirty = true;
+    _visual_family_state(visual)->texture.field_dirty_full = true;
+    _visual_family_state(visual)->texture.field_dirty_region = _field_full_region(desc);
     _visual_texture_bump_version(visual);
 }
 
@@ -107,25 +107,25 @@ void _scene_visual_texture_mark_region_dirty(
 {
     ANN(visual);
     ANN(desc);
-    visual->texture.dirty = true;
+    _visual_family_state(visual)->texture.dirty = true;
     _visual_texture_bump_version(visual);
-    if (!visual->texture.field_dirty)
+    if (!_visual_family_state(visual)->texture.field_dirty)
     {
-        visual->texture.field_dirty = true;
-        visual->texture.field_dirty_full = false;
-        visual->texture.field_dirty_region = region;
+        _visual_family_state(visual)->texture.field_dirty = true;
+        _visual_family_state(visual)->texture.field_dirty_full = false;
+        _visual_family_state(visual)->texture.field_dirty_region = region;
         return;
     }
-    if (visual->texture.field_dirty_full)
+    if (_visual_family_state(visual)->texture.field_dirty_full)
     {
-        visual->texture.field_dirty_region = _field_full_region(desc);
+        _visual_family_state(visual)->texture.field_dirty_region = _field_full_region(desc);
         return;
     }
     if (!_field_regions_union(
-            &visual->texture.field_dirty_region, &region, &visual->texture.field_dirty_region))
+            &_visual_family_state(visual)->texture.field_dirty_region, &region, &_visual_family_state(visual)->texture.field_dirty_region))
     {
-        visual->texture.field_dirty_full = true;
-        visual->texture.field_dirty_region = _field_full_region(desc);
+        _visual_family_state(visual)->texture.field_dirty_full = true;
+        _visual_family_state(visual)->texture.field_dirty_region = _field_full_region(desc);
     }
 }
 
@@ -173,7 +173,7 @@ void _scene_mark_field_region_dirty(DvzSampledField* field, DvzFieldRegion regio
     for (uint32_t i = 0; i < scene->visual_count; i++)
     {
         DvzVisual* visual = &scene->visuals[i];
-        if (visual->scene == scene && visual->field == field)
+        if (visual->scene == scene && _visual_family_state(visual)->field == field)
         {
             if (full)
             {
@@ -204,18 +204,18 @@ void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field)
     for (uint32_t i = 0; i < scene->visual_count; i++)
     {
         const DvzVisual* visual = &scene->visuals[i];
-        if (visual->scene != scene || visual->field != field || !visual->texture.field_dirty)
+        if (visual->scene != scene || _visual_family_state(visual)->field != field || !_visual_family_state(visual)->texture.field_dirty)
             continue;
         any_pending = true;
-        if (visual->texture.field_dirty_full)
+        if (_visual_family_state(visual)->texture.field_dirty_full)
         {
             any_full = true;
             merged = _field_full_region(&field->desc);
             break;
         }
         if (merged.width == 0 && merged.height == 0 && merged.depth == 0)
-            merged = visual->texture.field_dirty_region;
-        else if (!_field_regions_union(&merged, &visual->texture.field_dirty_region, &merged))
+            merged = _visual_family_state(visual)->texture.field_dirty_region;
+        else if (!_field_regions_union(&merged, &_visual_family_state(visual)->texture.field_dirty_region, &merged))
         {
             any_full = true;
             merged = _field_full_region(&field->desc);

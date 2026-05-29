@@ -250,7 +250,7 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         width = (float)columns * glyph_w;
         height = (float)(lines - 1u) * line_h + glyph_h;
     }
-    if (text->visual != NULL && text->visual->field != NULL &&
+    if (text->visual != NULL && _visual_family_state(text->visual)->field != NULL &&
         text->visual_version == text->version &&
         text->visual_atlas_generation == atlas_generation &&
         text->visual_figure_width == figure->width && text->visual_figure_height == figure->height)
@@ -439,9 +439,9 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
 
     if (ok)
     {
-        text->visual->glyph_atlas_encoding =
+        _visual_family_state(text->visual)->glyph_atlas_encoding =
             font_atlas != NULL ? font_atlas->encoding : DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
-        text->visual->glyph_distance_range_px =
+        _visual_family_state(text->visual)->glyph_distance_range_px =
             font_atlas != NULL ? font_atlas->distance_range_px : 1.0f;
         DvzVisualDataUpdate updates[5] = {
             {.attr_name = "position", .data = positions, .item_count = vertex_count},
@@ -526,7 +526,7 @@ static const DvzVisualAttr* _text_visual_attr(const DvzVisual* visual, const cha
 static uint64_t _text_visual_version(const DvzVisual* visual)
 {
     ANN(visual);
-    uint64_t version = visual->text.strings_version + visual->text.renderer_version;
+    uint64_t version = _visual_family_state(visual)->text.strings_version + _visual_family_state(visual)->text.renderer_version;
     for (uint32_t i = 0; i < visual->attr_count; i++)
         version += visual->attrs[i].version;
     return version;
@@ -543,7 +543,7 @@ static uint64_t _text_visual_version(const DvzVisual* visual)
 static uint64_t _text_visual_layout_version(const DvzVisual* visual)
 {
     ANN(visual);
-    uint64_t version = visual->text.strings_version + visual->text.renderer_version;
+    uint64_t version = _visual_family_state(visual)->text.strings_version + _visual_family_state(visual)->text.renderer_version;
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
         if (strcmp(visual->attrs[i].name, "position") == 0)
@@ -576,8 +576,8 @@ static bool _text_visual_update_glyph_positions(
     ANN(attach);
     ANN(visual);
     ANN(position_attr);
-    DvzVisual* glyph_visual = visual->text.glyph_visual;
-    if (glyph_visual == NULL || visual->text.spans == NULL)
+    DvzVisual* glyph_visual = _visual_family_state(visual)->text.glyph_visual;
+    if (glyph_visual == NULL || _visual_family_state(visual)->text.spans == NULL)
         return false;
 
     int glyph_pos_idx = _attr_index(glyph_visual, "position");
@@ -600,11 +600,11 @@ static bool _text_visual_update_glyph_positions(
     }
 
     const float(*target)[3] = (const float(*)[3])position_attr->data;
-    for (uint32_t i = 0; i < visual->text.span_count; i++)
+    for (uint32_t i = 0; i < _visual_family_state(visual)->text.span_count; i++)
     {
         if (i >= position_attr->item_count)
             break;
-        DvzTextGlyphSpan* span = &visual->text.spans[i];
+        DvzTextGlyphSpan* span = &_visual_family_state(visual)->text.spans[i];
         uint64_t first_vertex64 = (uint64_t)span->first_glyph * 6u;
         uint64_t vertex_count64 = (uint64_t)span->glyph_count * 6u;
         if (
@@ -644,11 +644,11 @@ static bool _text_visual_update_glyph_positions(
     if (!ok)
         return false;
     dvz_visual_set_visible(glyph_visual, true);
-    visual->text.realized_version = version;
-    visual->text.realized_layout_version = layout_version;
-    visual->text.realized_controller_mode = attach->controller_mode;
-    visual->text.visual_figure_width = figure->width;
-    visual->text.visual_figure_height = figure->height;
+    _visual_family_state(visual)->text.realized_version = version;
+    _visual_family_state(visual)->text.realized_layout_version = layout_version;
+    _visual_family_state(visual)->text.realized_controller_mode = attach->controller_mode;
+    _visual_family_state(visual)->text.visual_figure_width = figure->width;
+    _visual_family_state(visual)->text.visual_figure_height = figure->height;
     return true;
 }
 
@@ -674,18 +674,18 @@ bool _text_visual_prepare(
         return true;
     if (!visual->visible)
     {
-        if (visual->text.glyph_visual != NULL)
-            dvz_visual_set_visible(visual->text.glyph_visual, false);
+        if (_visual_family_state(visual)->text.glyph_visual != NULL)
+            dvz_visual_set_visible(_visual_family_state(visual)->text.glyph_visual, false);
         return true;
     }
 
-    const uint32_t count = visual->text.string_count;
+    const uint32_t count = _visual_family_state(visual)->text.string_count;
     const DvzVisualAttr* position_attr = _text_visual_attr(visual, "position");
-    if (count == 0 || visual->text.strings == NULL || position_attr == NULL ||
+    if (count == 0 || _visual_family_state(visual)->text.strings == NULL || position_attr == NULL ||
         position_attr->item_count != count)
     {
-        if (visual->text.glyph_visual != NULL)
-            dvz_visual_set_visible(visual->text.glyph_visual, false);
+        if (_visual_family_state(visual)->text.glyph_visual != NULL)
+            dvz_visual_set_visible(_visual_family_state(visual)->text.glyph_visual, false);
         return true;
     }
 
@@ -706,7 +706,7 @@ bool _text_visual_prepare(
     uint64_t layout_version = _text_visual_layout_version(visual);
     float screen_scale = _scene_screen_scale(figure);
 
-    DvzTextRenderer renderer = visual->text.renderer;
+    DvzTextRenderer renderer = _visual_family_state(visual)->text.renderer;
     float spec_size_px = 0.0f;
     if (size_attr != NULL && size_attr->data != NULL)
     {
@@ -738,10 +738,10 @@ bool _text_visual_prepare(
             .renderer = renderer,
         };
         DvzFont* font = _text_sdf_font(visual->scene, &atlas_style);
-        const char* const* strings = (const char* const*)visual->text.strings;
+        const char* const* strings = (const char* const*)_visual_family_state(visual)->text.strings;
         DvzTextAtlasSpec spec = _scene_text_atlas_spec(backend, spec_size_px);
         if (font == NULL || !_scene_text_atlas_ensure_strings(
-                                font, &spec, strings, visual->text.string_count))
+                                font, &spec, strings, _visual_family_state(visual)->text.string_count))
             return false;
         font_atlas = _text_font_atlas(font, &spec);
         ANN(font_atlas);
@@ -759,25 +759,27 @@ bool _text_visual_prepare(
         .controller_mode = attach->controller_mode,
     };
     bool realized_cache_valid =
-        visual->text.glyph_visual != NULL && visual->text.glyph_visual->field != NULL &&
-        visual->text.realized_version == version &&
-        visual->text.atlas_generation == atlas_generation &&
-        visual->text.realized_controller_mode == attach->controller_mode &&
-        fabsf(visual->text.screen_scale - screen_scale) <= 1e-6f &&
-        visual->text.visual_figure_width == figure->width &&
-        visual->text.visual_figure_height == figure->height;
+        _visual_family_state(visual)->text.glyph_visual != NULL &&
+        _visual_family_state(_visual_family_state(visual)->text.glyph_visual)->field != NULL &&
+        _visual_family_state(visual)->text.realized_version == version &&
+        _visual_family_state(visual)->text.atlas_generation == atlas_generation &&
+        _visual_family_state(visual)->text.realized_controller_mode == attach->controller_mode &&
+        fabsf(_visual_family_state(visual)->text.screen_scale - screen_scale) <= 1e-6f &&
+        _visual_family_state(visual)->text.visual_figure_width == figure->width &&
+        _visual_family_state(visual)->text.visual_figure_height == figure->height;
     if (realized_cache_valid)
     {
-        return _text_sync_glyph_visual_attach(panel, visual->text.glyph_visual, &glyph_attach);
+        return _text_sync_glyph_visual_attach(panel, _visual_family_state(visual)->text.glyph_visual, &glyph_attach);
     }
     bool position_only_dirty =
-        visual->text.glyph_visual != NULL && visual->text.glyph_visual->field != NULL &&
-        visual->text.realized_layout_version == layout_version &&
-        visual->text.atlas_generation == atlas_generation &&
-        fabsf(visual->text.screen_scale - screen_scale) <= 1e-6f;
+        _visual_family_state(visual)->text.glyph_visual != NULL &&
+        _visual_family_state(_visual_family_state(visual)->text.glyph_visual)->field != NULL &&
+        _visual_family_state(visual)->text.realized_layout_version == layout_version &&
+        _visual_family_state(visual)->text.atlas_generation == atlas_generation &&
+        fabsf(_visual_family_state(visual)->text.screen_scale - screen_scale) <= 1e-6f;
     if (position_only_dirty)
     {
-        if (!_text_sync_glyph_visual_attach(panel, visual->text.glyph_visual, &glyph_attach))
+        if (!_text_sync_glyph_visual_attach(panel, _visual_family_state(visual)->text.glyph_visual, &glyph_attach))
             return false;
         return _text_visual_update_glyph_positions(
             figure, panel, attach, visual, position_attr, version, layout_version);
@@ -789,7 +791,7 @@ bool _text_visual_prepare(
         uint32_t columns = 0;
         uint32_t lines = 0;
         uint32_t visible = 0;
-        _text_measure_cells(visual->text.strings[i], &columns, &lines, &visible);
+        _text_measure_cells(_visual_family_state(visual)->text.strings[i], &columns, &lines, &visible);
         (void)columns;
         (void)lines;
         uint64_t vertices = 0;
@@ -804,8 +806,8 @@ bool _text_visual_prepare(
     }
     if (vertex_count64 == 0)
     {
-        if (visual->text.glyph_visual != NULL)
-            dvz_visual_set_visible(visual->text.glyph_visual, false);
+        if (_visual_family_state(visual)->text.glyph_visual != NULL)
+            dvz_visual_set_visible(_visual_family_state(visual)->text.glyph_visual, false);
         return true;
     }
     if (vertex_count64 > UINT32_MAX)
@@ -815,8 +817,8 @@ bool _text_visual_prepare(
     }
     uint32_t vertex_count_max = (uint32_t)vertex_count64;
     uint32_t allocation_vertex_count = vertex_count_max;
-    if (visual->text.reserved_glyph_vertices > allocation_vertex_count)
-        allocation_vertex_count = visual->text.reserved_glyph_vertices;
+    if (_visual_family_state(visual)->text.reserved_glyph_vertices > allocation_vertex_count)
+        allocation_vertex_count = _visual_family_state(visual)->text.reserved_glyph_vertices;
 
     uint64_t position_bytes = 0;
     uint64_t bounds_bytes = 0;
@@ -891,14 +893,14 @@ bool _text_visual_prepare(
         {
             scale = _text_sdf_layout_scale(&style, font_atlas);
             _text_sdf_measure(
-                visual->text.strings[i], font_atlas, scale, &width, &height, &visible);
+                _visual_family_state(visual)->text.strings[i], font_atlas, scale, &width, &height, &visible);
             line_h = font_atlas->line_height * scale;
         }
         else
         {
             uint32_t columns = 0;
             uint32_t lines = 0;
-            _text_measure_cells(visual->text.strings[i], &columns, &lines, &visible);
+            _text_measure_cells(_visual_family_state(visual)->text.strings[i], &columns, &lines, &visible);
             scale = _text_bitmap_layout_scale(&style);
             glyph_w = (float)DVZ_TEXT_BITMAP_GLYPH_WIDTH * scale;
             glyph_h = (float)DVZ_TEXT_BITMAP_GLYPH_HEIGHT * scale;
@@ -941,7 +943,7 @@ bool _text_visual_prepare(
         uint32_t byte_index = 0;
         uint32_t cp = 0;
         float cursor_x = 0.0f;
-        while (_text_utf8_next(visual->text.strings[i], &byte_index, &cp))
+        while (_text_utf8_next(_visual_family_state(visual)->text.strings[i], &byte_index, &cp))
         {
             if (cp == '\n')
             {
@@ -1014,27 +1016,27 @@ bool _text_visual_prepare(
     }
 
     bool ok = atlas != NULL;
-    if (ok && visual->text.glyph_visual == NULL)
+    if (ok && _visual_family_state(visual)->text.glyph_visual == NULL)
     {
-        visual->text.glyph_visual = dvz_glyph(visual->scene, 0);
-        if (visual->text.glyph_visual == NULL)
+        _visual_family_state(visual)->text.glyph_visual = dvz_glyph(visual->scene, 0);
+        if (_visual_family_state(visual)->text.glyph_visual == NULL)
             ok = false;
     }
-    if (ok && !_text_sync_glyph_visual_attach(panel, visual->text.glyph_visual, &glyph_attach))
+    if (ok && !_text_sync_glyph_visual_attach(panel, _visual_family_state(visual)->text.glyph_visual, &glyph_attach))
         ok = false;
-    if (ok && dvz_visual_set_alpha_mode(visual->text.glyph_visual, DVZ_ALPHA_BLENDED) != 0)
+    if (ok && dvz_visual_set_alpha_mode(_visual_family_state(visual)->text.glyph_visual, DVZ_ALPHA_BLENDED) != 0)
         ok = false;
-    if (ok && dvz_visual_set_depth_test(visual->text.glyph_visual, false) != 0)
+    if (ok && dvz_visual_set_depth_test(_visual_family_state(visual)->text.glyph_visual, false) != 0)
         ok = false;
     if (ok)
     {
-        visual->text.glyph_visual->glyph_atlas_encoding =
+        _visual_family_state(_visual_family_state(visual)->text.glyph_visual)->glyph_atlas_encoding =
             font_atlas != NULL ? font_atlas->encoding : DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
-        visual->text.glyph_visual->glyph_distance_range_px =
+        _visual_family_state(_visual_family_state(visual)->text.glyph_visual)->glyph_distance_range_px =
             font_atlas != NULL ? font_atlas->distance_range_px : 1.0f;
         uint32_t upload_vertex_count = vertex_count;
-        if (visual->text.reserved_glyph_vertices > upload_vertex_count)
-            upload_vertex_count = visual->text.reserved_glyph_vertices;
+        if (_visual_family_state(visual)->text.reserved_glyph_vertices > upload_vertex_count)
+            upload_vertex_count = _visual_family_state(visual)->text.reserved_glyph_vertices;
         DvzVisualDataUpdate updates[5] = {
             {.attr_name = "position", .data = positions, .item_count = upload_vertex_count},
             {.attr_name = "bounds", .data = bounds, .item_count = upload_vertex_count},
@@ -1042,27 +1044,27 @@ bool _text_visual_prepare(
             {.attr_name = "color", .data = colors, .item_count = upload_vertex_count},
             {.attr_name = "angle", .data = glyph_angles, .item_count = upload_vertex_count},
         };
-        ok = dvz_visual_set_data_many(visual->text.glyph_visual, updates, 5) == 0 &&
-             dvz_visual_set_field(visual->text.glyph_visual, "field", atlas);
+        ok = dvz_visual_set_data_many(_visual_family_state(visual)->text.glyph_visual, updates, 5) == 0 &&
+             dvz_visual_set_field(_visual_family_state(visual)->text.glyph_visual, "field", atlas);
     }
     if (ok)
     {
-        dvz_visual_set_visible(visual->text.glyph_visual, true);
-        dvz_free(visual->text.spans);
-        visual->text.spans = spans;
-        visual->text.span_count = count;
+        dvz_visual_set_visible(_visual_family_state(visual)->text.glyph_visual, true);
+        dvz_free(_visual_family_state(visual)->text.spans);
+        _visual_family_state(visual)->text.spans = spans;
+        _visual_family_state(visual)->text.span_count = count;
         spans = NULL;
-        visual->text.realized_version = version;
-        visual->text.realized_layout_version = layout_version;
-        visual->text.atlas_generation = atlas_generation;
-        visual->text.realized_controller_mode = attach->controller_mode;
-        visual->text.screen_scale = screen_scale;
-        visual->text.visual_figure_width = figure->width;
-        visual->text.visual_figure_height = figure->height;
+        _visual_family_state(visual)->text.realized_version = version;
+        _visual_family_state(visual)->text.realized_layout_version = layout_version;
+        _visual_family_state(visual)->text.atlas_generation = atlas_generation;
+        _visual_family_state(visual)->text.realized_controller_mode = attach->controller_mode;
+        _visual_family_state(visual)->text.screen_scale = screen_scale;
+        _visual_family_state(visual)->text.visual_figure_width = figure->width;
+        _visual_family_state(visual)->text.visual_figure_height = figure->height;
     }
-    else if (visual->text.glyph_visual != NULL)
+    else if (_visual_family_state(visual)->text.glyph_visual != NULL)
     {
-        dvz_visual_set_visible(visual->text.glyph_visual, false);
+        dvz_visual_set_visible(_visual_family_state(visual)->text.glyph_visual, false);
     }
 
     dvz_free(positions);

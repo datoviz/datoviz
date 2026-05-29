@@ -146,7 +146,7 @@ void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer)
         for (uint32_t i = 0; i < scene->visual_count; i++)
         {
             DvzVisual* visual = &scene->visuals[i];
-            if (visual->buffer == buffer)
+            if (_visual_family_state(visual)->buffer == buffer)
                 _visual_binding_clear(visual, DVZ_VISUAL_BINDING_BUFFER);
             for (uint32_t ai = 0; ai < visual->attr_count; ai++)
             {
@@ -333,7 +333,7 @@ void _scene_release_visual_buffer(DvzVisual* visual)
 {
     if (visual == NULL)
         return;
-    DvzSceneBuffer* buffer = visual->buffer;
+    DvzSceneBuffer* buffer = _visual_family_state(visual)->buffer;
     const DvzVisualBinding* binding = _visual_binding_const(visual, DVZ_VISUAL_BINDING_BUFFER);
     bool owned = binding != NULL ? binding->owned : false;
     _visual_binding_clear(visual, DVZ_VISUAL_BINDING_BUFFER);

@@ -3287,8 +3287,8 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
     uint32_t sparse_green = 0;
     uint32_t bounds[4] = {0};
     bool has_bounds =
-        text->text.glyph_visual != NULL &&
-        _app_glyph_pixel_bounds(text->text.glyph_visual, width, height, bounds);
+        _visual_family_state(text)->text.glyph_visual != NULL &&
+        _app_glyph_pixel_bounds(_visual_family_state(text)->text.glyph_visual, width, height, bounds);
     AT(has_bounds);
     for (uint32_t i = 0; i < width * height; i++)
     {

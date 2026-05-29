@@ -247,20 +247,20 @@ int test_scene_sphere_mode(TstContext* suite, const TstCase* item)
     AT(scene != NULL);
     DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     AT(sphere != NULL);
-    AT(sphere->sphere_mode == DVZ_SPHERE_MODE_FAST_IMPOSTOR);
-    AT(sphere->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_FAST_IMPOSTOR);
+    AT(_visual_family_state(sphere)->sphere_mode == DVZ_SPHERE_MODE_FAST_IMPOSTOR);
+    AT(_visual_family_state(sphere)->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_FAST_IMPOSTOR);
 
     AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
-    AT(sphere->sphere_mode == DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
-    AT(sphere->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
-    AT(sphere->material_params_dirty);
+    AT(_visual_family_state(sphere)->sphere_mode == DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
+    AT(_visual_family_state(sphere)->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
+    AT(_visual_family_state(sphere)->material_params_dirty);
 
     AT(_test_set_phong_material(
            sphere, (float[3]){0.0f, 0.0f, 1.0f}, 0.2f, 0.7f, 0.8f, 64.0f) == 0);
-    AT(sphere->sphere_mode == DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
-    AT(sphere->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
+    AT(_visual_family_state(sphere)->sphere_mode == DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
+    AT(_visual_family_state(sphere)->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
     AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_FAST_IMPOSTOR) == 0);
-    AT(sphere->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_FAST_IMPOSTOR);
+    AT(_visual_family_state(sphere)->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_FAST_IMPOSTOR);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -282,16 +282,16 @@ int test_scene_segment_caps(TstContext* suite, const TstCase* item)
     DvzScene* scene = dvz_scene();
     DvzVisual* visual = dvz_segment(scene, 0);
     AT(visual != NULL);
-    AT(visual->segment.start_cap == DVZ_SEGMENT_CAP_BUTT);
-    AT(visual->segment.end_cap == DVZ_SEGMENT_CAP_BUTT);
-    AT(visual->material_params.params[0] == (float)DVZ_SEGMENT_CAP_BUTT);
-    AT(visual->material_params.params[1] == (float)DVZ_SEGMENT_CAP_BUTT);
+    AT(_visual_family_state(visual)->segment.start_cap == DVZ_SEGMENT_CAP_BUTT);
+    AT(_visual_family_state(visual)->segment.end_cap == DVZ_SEGMENT_CAP_BUTT);
+    AT(_visual_family_state(visual)->material_params.params[0] == (float)DVZ_SEGMENT_CAP_BUTT);
+    AT(_visual_family_state(visual)->material_params.params[1] == (float)DVZ_SEGMENT_CAP_BUTT);
 
     AT(dvz_segment_set_caps(visual, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_SQUARE) == 0);
-    AT(visual->segment.start_cap == DVZ_SEGMENT_CAP_ROUND);
-    AT(visual->segment.end_cap == DVZ_SEGMENT_CAP_SQUARE);
-    AT(visual->material_params.params[0] == (float)DVZ_SEGMENT_CAP_ROUND);
-    AT(visual->material_params.params[1] == (float)DVZ_SEGMENT_CAP_SQUARE);
+    AT(_visual_family_state(visual)->segment.start_cap == DVZ_SEGMENT_CAP_ROUND);
+    AT(_visual_family_state(visual)->segment.end_cap == DVZ_SEGMENT_CAP_SQUARE);
+    AT(_visual_family_state(visual)->material_params.params[0] == (float)DVZ_SEGMENT_CAP_ROUND);
+    AT(_visual_family_state(visual)->material_params.params[1] == (float)DVZ_SEGMENT_CAP_SQUARE);
 
     AT_EXPECTED_ERROR_STRICT(
         suite, dvz_segment_set_caps(visual, (DvzSegmentCap)99, DVZ_SEGMENT_CAP_BUTT) < 0);
@@ -316,25 +316,25 @@ int test_scene_path_stroke_style(TstContext* suite, const TstCase* item)
     DvzScene* scene = dvz_scene();
     DvzVisual* visual = dvz_path(scene, 0);
     AT(visual != NULL);
-    AT(visual->path.cap_start == DVZ_SEGMENT_CAP_ROUND);
-    AT(visual->path.cap_end == DVZ_SEGMENT_CAP_ROUND);
-    AT(visual->path.join == DVZ_PATH_JOIN_ROUND);
-    AT(visual->path.miter_limit == 4.0f);
-    AT(visual->material_params.params[0] == (float)DVZ_SEGMENT_CAP_ROUND);
-    AT(visual->material_params.params[1] == (float)DVZ_SEGMENT_CAP_ROUND);
-    AT(visual->material_params.params[2] == (float)DVZ_PATH_JOIN_ROUND);
-    AT(visual->material_params.params[3] == 4.0f);
+    AT(_visual_family_state(visual)->path.cap_start == DVZ_SEGMENT_CAP_ROUND);
+    AT(_visual_family_state(visual)->path.cap_end == DVZ_SEGMENT_CAP_ROUND);
+    AT(_visual_family_state(visual)->path.join == DVZ_PATH_JOIN_ROUND);
+    AT(_visual_family_state(visual)->path.miter_limit == 4.0f);
+    AT(_visual_family_state(visual)->material_params.params[0] == (float)DVZ_SEGMENT_CAP_ROUND);
+    AT(_visual_family_state(visual)->material_params.params[1] == (float)DVZ_SEGMENT_CAP_ROUND);
+    AT(_visual_family_state(visual)->material_params.params[2] == (float)DVZ_PATH_JOIN_ROUND);
+    AT(_visual_family_state(visual)->material_params.params[3] == 4.0f);
 
     AT(dvz_path_set_caps(visual, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_SQUARE) == 0);
     AT(dvz_path_set_join(visual, DVZ_PATH_JOIN_MITER, 2.5f) == 0);
-    AT(visual->path.cap_start == DVZ_SEGMENT_CAP_BUTT);
-    AT(visual->path.cap_end == DVZ_SEGMENT_CAP_SQUARE);
-    AT(visual->path.join == DVZ_PATH_JOIN_MITER);
-    AT(visual->path.miter_limit == 2.5f);
-    AT(visual->material_params.params[0] == (float)DVZ_SEGMENT_CAP_BUTT);
-    AT(visual->material_params.params[1] == (float)DVZ_SEGMENT_CAP_SQUARE);
-    AT(visual->material_params.params[2] == (float)DVZ_PATH_JOIN_MITER);
-    AT(visual->material_params.params[3] == 2.5f);
+    AT(_visual_family_state(visual)->path.cap_start == DVZ_SEGMENT_CAP_BUTT);
+    AT(_visual_family_state(visual)->path.cap_end == DVZ_SEGMENT_CAP_SQUARE);
+    AT(_visual_family_state(visual)->path.join == DVZ_PATH_JOIN_MITER);
+    AT(_visual_family_state(visual)->path.miter_limit == 2.5f);
+    AT(_visual_family_state(visual)->material_params.params[0] == (float)DVZ_SEGMENT_CAP_BUTT);
+    AT(_visual_family_state(visual)->material_params.params[1] == (float)DVZ_SEGMENT_CAP_SQUARE);
+    AT(_visual_family_state(visual)->material_params.params[2] == (float)DVZ_PATH_JOIN_MITER);
+    AT(_visual_family_state(visual)->material_params.params[3] == 2.5f);
 
     AT_EXPECTED_ERROR_STRICT(
         suite, dvz_path_set_caps(visual, (DvzSegmentCap)99, DVZ_SEGMENT_CAP_BUTT) < 0);
@@ -480,17 +480,17 @@ int test_scene_vector_style_and_bounds(TstContext* suite, const TstCase* item)
     DvzVisual* visual = dvz_vector(scene, 0);
     AT(visual != NULL);
     AT(visual->type == DVZ_VISUAL_TYPE_VECTOR);
-    AT(visual->vector.scale == 1.0f);
-    AT(visual->vector.anchor == DVZ_VECTOR_ANCHOR_TAIL);
-    AT(visual->vector.start_cap == DVZ_SEGMENT_CAP_NONE);
-    AT(visual->vector.end_cap == DVZ_SEGMENT_CAP_TRIANGLE_OUT);
-    AT(visual->material_params.params[0] == (float)DVZ_SEGMENT_CAP_NONE);
-    AT(visual->material_params.params[1] == (float)DVZ_SEGMENT_CAP_TRIANGLE_OUT);
-    AT(visual->segment.start_cap == 0);
-    AT(visual->segment.end_cap == 0);
-    AT(visual->path.cap_start == 0);
-    AT(visual->path.cap_end == 0);
-    AT(visual->path.join == 0);
+    AT(_visual_family_state(visual)->vector.scale == 1.0f);
+    AT(_visual_family_state(visual)->vector.anchor == DVZ_VECTOR_ANCHOR_TAIL);
+    AT(_visual_family_state(visual)->vector.start_cap == DVZ_SEGMENT_CAP_NONE);
+    AT(_visual_family_state(visual)->vector.end_cap == DVZ_SEGMENT_CAP_TRIANGLE_OUT);
+    AT(_visual_family_state(visual)->material_params.params[0] == (float)DVZ_SEGMENT_CAP_NONE);
+    AT(_visual_family_state(visual)->material_params.params[1] == (float)DVZ_SEGMENT_CAP_TRIANGLE_OUT);
+    AT(_visual_family_state(visual)->segment.start_cap == 0);
+    AT(_visual_family_state(visual)->segment.end_cap == 0);
+    AT(_visual_family_state(visual)->path.cap_start == 0);
+    AT(_visual_family_state(visual)->path.cap_end == 0);
+    AT(_visual_family_state(visual)->path.join == 0);
 
     DvzVectorStyle style = dvz_vector_style();
     style.scale = 2.0f;
@@ -500,17 +500,17 @@ int test_scene_vector_style_and_bounds(TstContext* suite, const TstCase* item)
     style.join = DVZ_PATH_JOIN_MITER;
     style.miter_limit = 2.5f;
     AT(dvz_vector_set_style(visual, &style) == 0);
-    AT(visual->vector.scale == 2.0f);
-    AT(visual->vector.anchor == DVZ_VECTOR_ANCHOR_CENTER);
-    AT(visual->vector.start_cap == DVZ_SEGMENT_CAP_BUTT);
-    AT(visual->vector.end_cap == DVZ_SEGMENT_CAP_ROUND);
-    AT(visual->vector.join == DVZ_PATH_JOIN_MITER);
-    AT(visual->vector.miter_limit == 2.5f);
-    AT(visual->segment.start_cap == 0);
-    AT(visual->segment.end_cap == 0);
-    AT(visual->path.cap_start == 0);
-    AT(visual->path.cap_end == 0);
-    AT(visual->path.join == 0);
+    AT(_visual_family_state(visual)->vector.scale == 2.0f);
+    AT(_visual_family_state(visual)->vector.anchor == DVZ_VECTOR_ANCHOR_CENTER);
+    AT(_visual_family_state(visual)->vector.start_cap == DVZ_SEGMENT_CAP_BUTT);
+    AT(_visual_family_state(visual)->vector.end_cap == DVZ_SEGMENT_CAP_ROUND);
+    AT(_visual_family_state(visual)->vector.join == DVZ_PATH_JOIN_MITER);
+    AT(_visual_family_state(visual)->vector.miter_limit == 2.5f);
+    AT(_visual_family_state(visual)->segment.start_cap == 0);
+    AT(_visual_family_state(visual)->segment.end_cap == 0);
+    AT(_visual_family_state(visual)->path.cap_start == 0);
+    AT(_visual_family_state(visual)->path.cap_end == 0);
+    AT(_visual_family_state(visual)->path.join == 0);
 
     float positions[] = {
         0.0f, 0.0f, 0.0f,
@@ -532,10 +532,10 @@ int test_scene_vector_style_and_bounds(TstContext* suite, const TstCase* item)
     AT(_bounds_expect(&bounds, 2, -1.0, -1.0, 0.0, +1.0, +3.0, 0.0) == 0);
 
     AT(dvz_vector_set_style(visual, NULL) == 0);
-    AT(visual->vector.scale == 1.0f);
-    AT(visual->vector.anchor == DVZ_VECTOR_ANCHOR_TAIL);
-    AT(visual->vector.start_cap == DVZ_SEGMENT_CAP_NONE);
-    AT(visual->vector.end_cap == DVZ_SEGMENT_CAP_TRIANGLE_OUT);
+    AT(_visual_family_state(visual)->vector.scale == 1.0f);
+    AT(_visual_family_state(visual)->vector.anchor == DVZ_VECTOR_ANCHOR_TAIL);
+    AT(_visual_family_state(visual)->vector.start_cap == DVZ_SEGMENT_CAP_NONE);
+    AT(_visual_family_state(visual)->vector.end_cap == DVZ_SEGMENT_CAP_TRIANGLE_OUT);
 
     AT_EXPECTED_ERROR_STRICT(suite, dvz_vector_set_style(visual, &(DvzVectorStyle){
                                                             .scale = 1.0f,
@@ -596,12 +596,12 @@ int test_scene_vector_emit_glsl(TstContext* suite, const TstCase* item)
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
-    AT(visual->segment.gpu.vertex_count == 0);
-    AT(visual->segment.gpu.index_count == 0);
-    AT(visual->path.gpu.vertex_count == 0);
-    AT(visual->path.gpu.index_count == 0);
-    AT(visual->vector.stroke_gpu.vertex_count == 8);
-    AT(visual->vector.stroke_gpu.index_count == 12);
+    AT(_visual_family_state(visual)->segment.gpu.vertex_count == 0);
+    AT(_visual_family_state(visual)->segment.gpu.index_count == 0);
+    AT(_visual_family_state(visual)->path.gpu.vertex_count == 0);
+    AT(_visual_family_state(visual)->path.gpu.index_count == 0);
+    AT(_visual_family_state(visual)->vector.stroke_gpu.vertex_count == 8);
+    AT(_visual_family_state(visual)->vector.stroke_gpu.index_count == 12);
 
     bool found_pipeline = false;
     bool found_set_index = false;
@@ -688,14 +688,14 @@ int test_scene_vector_curved_emit_glsl(TstContext* suite, const TstCase* item)
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
-    AT(visual->segment.gpu.vertex_count == 0);
-    AT(visual->segment.gpu.index_count == 0);
-    AT(visual->path.gpu.vertex_count == 0);
-    AT(visual->path.gpu.index_count == 0);
-    AT(visual->vector.subpath_count == 2);
-    AT(visual->vector.subpath_lengths != NULL);
-    AT(visual->vector.path_gpu.vertex_count == 12);
-    AT(visual->vector.path_gpu.index_count == 18);
+    AT(_visual_family_state(visual)->segment.gpu.vertex_count == 0);
+    AT(_visual_family_state(visual)->segment.gpu.index_count == 0);
+    AT(_visual_family_state(visual)->path.gpu.vertex_count == 0);
+    AT(_visual_family_state(visual)->path.gpu.index_count == 0);
+    AT(_visual_family_state(visual)->vector.subpath_count == 2);
+    AT(_visual_family_state(visual)->vector.subpath_lengths != NULL);
+    AT(_visual_family_state(visual)->vector.path_gpu.vertex_count == 12);
+    AT(_visual_family_state(visual)->vector.path_gpu.index_count == 18);
 
     bool found_pipeline = false;
     bool found_set_index = false;
@@ -1786,7 +1786,7 @@ int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstContext* suite, 
     AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
     AT(dvz_visual_set_buffer(visual, "index", index_buffer));
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
-    AT(visual->mesh_default_color);
+    AT(_visual_family_state(visual)->mesh_default_color);
     bool found_color_attr = false;
     for (uint32_t i = 0; i < visual->attr_count; i++)
         found_color_attr = found_color_attr || strcmp(visual->attrs[i].name, "color") == 0;
@@ -2500,7 +2500,7 @@ int test_scene_path_repeated_endpoint_closes_subpath(TstContext* suite, const Ts
     const uint32_t has_next = 0x08u;
     const uint32_t subpath_start = 0x10u;
     const uint32_t subpath_end = 0x20u;
-    const DvzPathGpuCache* cache = &visual->path.gpu;
+    const DvzPathGpuCache* cache = &_visual_family_state(visual)->path.gpu;
     AT(cache->segment_count == 4);
     AT(cache->vertex_count == 16);
 
@@ -3457,25 +3457,25 @@ int test_scene_visual_index_data_upload(TstContext* suite, const TstCase* item)
 
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     AT(dvz_visual_set_index_data(mesh, indices, 6) == 0);
-    AT(mesh->buffer != NULL);
-    AT(mesh->buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_INDEX);
-    AT(mesh->buffer->desc.stride == sizeof(DvzIndex));
-    AT(mesh->buffer->desc.byte_size == sizeof(indices));
-    const DvzIndex* stored = mesh->buffer->data;
+    AT(_visual_family_state(mesh)->buffer != NULL);
+    AT(_visual_family_state(mesh)->buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_INDEX);
+    AT(_visual_family_state(mesh)->buffer->desc.stride == sizeof(DvzIndex));
+    AT(_visual_family_state(mesh)->buffer->desc.byte_size == sizeof(indices));
+    const DvzIndex* stored = _visual_family_state(mesh)->buffer->data;
     AT(stored[5] == 3);
 
-    DvzSceneBuffer* old_buffer = mesh->buffer;
+    DvzSceneBuffer* old_buffer = _visual_family_state(mesh)->buffer;
     DvzIndex updated[3] = {0, 2, 1};
     AT(dvz_visual_set_index_data(mesh, updated, 3) == 0);
-    AT(mesh->buffer != old_buffer);
+    AT(_visual_family_state(mesh)->buffer != old_buffer);
     AT(old_buffer->scene == NULL);
-    AT(mesh->buffer->desc.byte_size == sizeof(updated));
-    stored = mesh->buffer->data;
+    AT(_visual_family_state(mesh)->buffer->desc.byte_size == sizeof(updated));
+    stored = _visual_family_state(mesh)->buffer->data;
     AT(stored[1] == 2);
 
     AT(dvz_visual_set_index_data(primitive, indices, 3) == 0);
-    AT(primitive->buffer != NULL);
-    AT(primitive->buffer->desc.byte_size == 3 * sizeof(DvzIndex));
+    AT(_visual_family_state(primitive)->buffer != NULL);
+    AT(_visual_family_state(primitive)->buffer->desc.byte_size == 3 * sizeof(DvzIndex));
 
     AT(dvz_visual_set_index_data(point, indices, 3) == -1);
     AT(dvz_visual_set_index_data(mesh, NULL, 3) == -1);
@@ -3541,10 +3541,10 @@ int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item)
     AT(texcoords[2] == 1.0f);
     AT(texcoords[7] == 1.0f);
 
-    AT(visual->buffer != NULL);
-    AT(visual->buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_INDEX);
-    AT(visual->buffer->desc.stride == sizeof(DvzIndex));
-    AT(visual->buffer->desc.byte_size == 6 * sizeof(DvzIndex));
+    AT(_visual_family_state(visual)->buffer != NULL);
+    AT(_visual_family_state(visual)->buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_INDEX);
+    AT(_visual_family_state(visual)->buffer->desc.stride == sizeof(DvzIndex));
+    AT(_visual_family_state(visual)->buffer->desc.byte_size == 6 * sizeof(DvzIndex));
 
     DvzVisual* point = dvz_point(scene, 0);
     ANN(point);
@@ -3607,8 +3607,8 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     DvzVisualDataView fill_position_view = {0};
     AT(dvz_visual_data(fill, "position", &fill_position_view) == 0);
     AT(fill_position_view.item_count == 4);
-    AT(fill->buffer != NULL);
-    AT(fill->buffer->desc.byte_size == 6 * sizeof(DvzIndex));
+    AT(_visual_family_state(fill)->buffer != NULL);
+    AT(_visual_family_state(fill)->buffer->desc.byte_size == 6 * sizeof(DvzIndex));
 
     DvzVisualDataView fill_color_view = {0};
     AT(dvz_visual_data(fill, "color", &fill_color_view) == 0);
@@ -3621,8 +3621,8 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     DvzVisualDataView stroke_position_view = {0};
     AT(dvz_visual_data(stroke, "position", &stroke_position_view) == 0);
     AT(stroke_position_view.item_count == 5);
-    AT(stroke->path.subpath_count == 1);
-    AT(stroke->path.subpath_lengths[0] == 5);
+    AT(_visual_family_state(stroke)->path.subpath_count == 1);
+    AT(_visual_family_state(stroke)->path.subpath_lengths[0] == 5);
     DvzVisualDataView stroke_width_view = {0};
     AT(dvz_visual_data(stroke, "stroke_width", &stroke_width_view) == 0);
     const float* widths = stroke_width_view.data;
@@ -3677,7 +3677,7 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     AT(fill_position_view.item_count == 8);
     AT(dvz_visual_data(stroke, "position", &stroke_position_view) == 0);
     AT(stroke_position_view.item_count == 10);
-    AT(stroke->path.subpath_count == 2);
+    AT(_visual_family_state(stroke)->path.subpath_count == 2);
 
     dvz_composite_destroy(composite);
     AT(dvz_composite_visual_count(composite) == 0);
@@ -3743,8 +3743,8 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     DvzVisualDataView position_view = {0};
     AT(dvz_visual_data(fill, "position", &position_view) == 0);
     AT(position_view.item_count == 8);
-    AT(fill->buffer != NULL);
-    AT(fill->buffer->desc.byte_size == 12 * sizeof(DvzIndex));
+    AT(_visual_family_state(fill)->buffer != NULL);
+    AT(_visual_family_state(fill)->buffer->desc.byte_size == 12 * sizeof(DvzIndex));
 
     DvzVisualDataView color_view = {0};
     AT(dvz_visual_data(fill, "color", &color_view) == 0);
@@ -3757,7 +3757,7 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     DvzVisualDataView stroke_position_view = {0};
     AT(dvz_visual_data(stroke, "position", &stroke_position_view) == 0);
     AT(stroke_position_view.item_count == 10);
-    AT(stroke->path.subpath_count == 2);
+    AT(_visual_family_state(stroke)->path.subpath_count == 2);
     DvzVisualDataView stroke_width_view = {0};
     AT(dvz_visual_data(stroke, "stroke_width", &stroke_width_view) == 0);
     const float* widths = stroke_width_view.data;
@@ -8012,9 +8012,9 @@ int test_scene_visual_internal_material_state(TstContext* suite, const TstCase* 
     AT(mesh->material.depth_cue_strength == 1.0f);
     AT(mesh->material.depth_cue_density == 3.0f);
     AT(mesh->material.depth_cue_background[3] == 1.0f);
-    AT(mesh->material_params.depth_cue[1] == 1.0f);
-    AT(mesh->material_params.depth_cue[2] == 0.0f);
-    AT(mesh->material_params.depth_cue_extra[2] == 3.0f);
+    AT(_visual_family_state(mesh)->material_params.depth_cue[1] == 1.0f);
+    AT(_visual_family_state(mesh)->material_params.depth_cue[2] == 0.0f);
+    AT(_visual_family_state(mesh)->material_params.depth_cue_extra[2] == 3.0f);
     AT(mesh->material.scalar_scale == 1.0f);
 
     uint64_t point_material_version = point->material.version;
@@ -8034,18 +8034,18 @@ int test_scene_visual_internal_material_state(TstContext* suite, const TstCase* 
     AT(point->material.depth_cue_mode == DVZ_DEPTH_CUE_FADE_TO_BACKGROUND);
     AT(point->material.depth_cue_metric == DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE);
     AT(point->material.depth_cue_falloff == DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL);
-    AT(point->material_params.depth_cue[0] == 0.1f);
-    AT(point->material_params.depth_cue[1] == 0.8f);
-    AT(point->material_params.depth_cue[2] == 0.5f);
-    AT(point->material_params.depth_cue[3] == (float)DVZ_DEPTH_CUE_FADE_TO_BACKGROUND);
-    AT(point->material_params.depth_cue_extra[0] == (float)DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE);
-    AT(point->material_params.depth_cue_extra[1] == (float)DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL);
-    AT(point->material_params.depth_cue_extra[2] == 2.0f);
-    AT(point->material_params.depth_cue_color[2] == 0.06f);
+    AT(_visual_family_state(point)->material_params.depth_cue[0] == 0.1f);
+    AT(_visual_family_state(point)->material_params.depth_cue[1] == 0.8f);
+    AT(_visual_family_state(point)->material_params.depth_cue[2] == 0.5f);
+    AT(_visual_family_state(point)->material_params.depth_cue[3] == (float)DVZ_DEPTH_CUE_FADE_TO_BACKGROUND);
+    AT(_visual_family_state(point)->material_params.depth_cue_extra[0] == (float)DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE);
+    AT(_visual_family_state(point)->material_params.depth_cue_extra[1] == (float)DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL);
+    AT(_visual_family_state(point)->material_params.depth_cue_extra[2] == 2.0f);
+    AT(_visual_family_state(point)->material_params.depth_cue_color[2] == 0.06f);
     AT(point->material.version > point_material_version);
     AT(dvz_visual_set_depth_cue(point, NULL) == 0);
     AT(!point->material.depth_cue_enabled);
-    AT(point->material_params.depth_cue[2] == 0.0f);
+    AT(_visual_family_state(point)->material_params.depth_cue[2] == 0.0f);
 
     AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_WBOIT) == 0);
     AT(mesh->alpha_mode == DVZ_ALPHA_WBOIT);
@@ -8055,11 +8055,11 @@ int test_scene_visual_internal_material_state(TstContext* suite, const TstCase* 
 
     AT(_test_set_phong_material(
            mesh, (float[3]){1.0f, 2.0f, 3.0f}, 0.35f, 0.65f, 0.25f, 32.0f) == 0);
-    AT(mesh->material_params.light_direction[0] == 1.0f);
-    AT(mesh->material_params.light_direction[1] == 2.0f);
-    AT(mesh->material_params.light_direction[2] == 3.0f);
-    AT(mesh->material_params.params[0] == 0.35f);
-    AT(mesh->material_params.params[1] == 0.65f);
+    AT(_visual_family_state(mesh)->material_params.light_direction[0] == 1.0f);
+    AT(_visual_family_state(mesh)->material_params.light_direction[1] == 2.0f);
+    AT(_visual_family_state(mesh)->material_params.light_direction[2] == 3.0f);
+    AT(_visual_family_state(mesh)->material_params.params[0] == 0.35f);
+    AT(_visual_family_state(mesh)->material_params.params[1] == 0.65f);
     AT(mesh->material.light_direction[0] == 1.0f);
     AT(mesh->material.light_direction[1] == 2.0f);
     AT(mesh->material.light_direction[2] == 3.0f);
@@ -8083,18 +8083,18 @@ int test_scene_visual_internal_material_state(TstContext* suite, const TstCase* 
     AT(mesh->material.depth_cue_far == 0.9f);
     AT(mesh->material.depth_cue_strength == 0.75f);
     AT(mesh->material.depth_cue_background[2] == 0.3f);
-    AT(mesh->material_params.depth_cue[0] == 0.25f);
-    AT(mesh->material_params.depth_cue[1] == 0.9f);
-    AT(mesh->material_params.depth_cue[2] == 0.75f);
-    AT(mesh->material_params.depth_cue[3] == (float)DVZ_DEPTH_CUE_DESATURATE);
-    AT(mesh->material_params.depth_cue_color[1] == 0.2f);
+    AT(_visual_family_state(mesh)->material_params.depth_cue[0] == 0.25f);
+    AT(_visual_family_state(mesh)->material_params.depth_cue[1] == 0.9f);
+    AT(_visual_family_state(mesh)->material_params.depth_cue[2] == 0.75f);
+    AT(_visual_family_state(mesh)->material_params.depth_cue[3] == (float)DVZ_DEPTH_CUE_DESATURATE);
+    AT(_visual_family_state(mesh)->material_params.depth_cue_color[1] == 0.2f);
     AT(mesh->material.version > material_version);
 
     material_version = mesh->material.version;
     AT(dvz_visual_set_depth_cue(mesh, NULL) == 0);
     AT(!mesh->material.depth_cue_enabled);
     AT(mesh->material.depth_cue_mode == DVZ_DEPTH_CUE_NONE);
-    AT(mesh->material_params.depth_cue[2] == 0.0f);
+    AT(_visual_family_state(mesh)->material_params.depth_cue[2] == 0.0f);
     AT(mesh->material.version > material_version);
 
     dvz_scene_destroy(scene);
@@ -8169,13 +8169,13 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT(mesh->material.diffuse == 0.70f);
     AT(mesh->material.specular == 0.40f);
     AT(mesh->material.shininess == 48.0f);
-    AT(mesh->material_params.params[0] == 0.15f);
-    AT(mesh->material_params.params[1] == 0.70f);
-    AT(mesh->material_params.params[2] == 0.40f);
-    AT(mesh->material_params.params[3] == 48.0f);
-    AT(mesh->material_params.model[0] == (float)DVZ_MATERIAL_MODEL_PHONG);
-    AT(mesh->material_params.model[1] == 0.5f);
-    AT(mesh->material_params.base_color_factor[0] == 0.75f);
+    AT(_visual_family_state(mesh)->material_params.params[0] == 0.15f);
+    AT(_visual_family_state(mesh)->material_params.params[1] == 0.70f);
+    AT(_visual_family_state(mesh)->material_params.params[2] == 0.40f);
+    AT(_visual_family_state(mesh)->material_params.params[3] == 48.0f);
+    AT(_visual_family_state(mesh)->material_params.model[0] == (float)DVZ_MATERIAL_MODEL_PHONG);
+    AT(_visual_family_state(mesh)->material_params.model[1] == 0.5f);
+    AT(_visual_family_state(mesh)->material_params.base_color_factor[0] == 0.75f);
     AT(mesh->material.version > version);
 
     DvzMaterialDesc standard = dvz_standard_material_desc();
@@ -8194,17 +8194,17 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT(mesh->material.metallic == 0.2f);
     AT(mesh->material.emissive[1] == 0.05f);
     AT(mesh->material.rim_strength == 0.3f);
-    AT(mesh->material_params.params[0] > 0.0f);
-    AT(mesh->material_params.params[1] > 0.0f);
-    AT(mesh->material_params.params[2] == 0.6f);
-    AT(mesh->material_params.params[3] > 1.0f);
-    AT(mesh->material_params.model[0] == (float)DVZ_MATERIAL_MODEL_STANDARD);
-    AT(mesh->material_params.model[1] == 0.9f);
-    AT(mesh->material_params.standard_params[0] == 0.25f);
-    AT(mesh->material_params.standard_params[1] == 0.6f);
-    AT(mesh->material_params.standard_params[2] == 0.2f);
-    AT(mesh->material_params.standard_params[3] == 0.3f);
-    AT(mesh->material_params.emissive_rim[1] == 0.05f);
+    AT(_visual_family_state(mesh)->material_params.params[0] > 0.0f);
+    AT(_visual_family_state(mesh)->material_params.params[1] > 0.0f);
+    AT(_visual_family_state(mesh)->material_params.params[2] == 0.6f);
+    AT(_visual_family_state(mesh)->material_params.params[3] > 1.0f);
+    AT(_visual_family_state(mesh)->material_params.model[0] == (float)DVZ_MATERIAL_MODEL_STANDARD);
+    AT(_visual_family_state(mesh)->material_params.model[1] == 0.9f);
+    AT(_visual_family_state(mesh)->material_params.standard_params[0] == 0.25f);
+    AT(_visual_family_state(mesh)->material_params.standard_params[1] == 0.6f);
+    AT(_visual_family_state(mesh)->material_params.standard_params[2] == 0.2f);
+    AT(_visual_family_state(mesh)->material_params.standard_params[3] == 0.3f);
+    AT(_visual_family_state(mesh)->material_params.emissive_rim[1] == 0.05f);
     AT(mesh->material.version > version);
 
     AT(dvz_visual_set_depth_cue(
@@ -8220,16 +8220,16 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT(mesh->material.model == DVZ_MATERIAL_MODEL_PHONG);
     AT(mesh->alpha_mode == DVZ_ALPHA_OPAQUE);
     AT(mesh->material.depth_cue_enabled);
-    AT(mesh->material_params.depth_cue[2] == 0.4f);
-    AT(mesh->material_params.params[0] == 0.2f);
-    AT(mesh->material_params.params[1] == 0.8f);
+    AT(_visual_family_state(mesh)->material_params.depth_cue[2] == 0.4f);
+    AT(_visual_family_state(mesh)->material_params.params[0] == 0.2f);
+    AT(_visual_family_state(mesh)->material_params.params[1] == 0.8f);
 
     AT(_test_set_phong_material(
            sphere, (float[3]){0.0f, 1.0f, 0.0f}, 0.3f, 0.6f, 0.2f, 16.0f) == 0);
     AT(sphere->material.model == DVZ_MATERIAL_MODEL_PHONG);
     AT(sphere->material.ambient == 0.3f);
-    AT(sphere->material_params.params[3] == 16.0f);
-    AT(sphere->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_FAST_IMPOSTOR);
+    AT(_visual_family_state(sphere)->material_params.params[3] == 16.0f);
+    AT(_visual_family_state(sphere)->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_FAST_IMPOSTOR);
 
 #ifndef __clang_analyzer__
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_material(point, &phong) == -1);

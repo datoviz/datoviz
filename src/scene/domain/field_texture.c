@@ -65,10 +65,10 @@ bool _scene_prepare_volume_texture(
     ANN(out_data);
     ANN(out_format);
     ANN(out_bytes_per_texel);
-    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || visual->field == NULL)
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || _visual_family_state(visual)->field == NULL)
         return false;
 
-    DvzSampledField* field = visual->field;
+    DvzSampledField* field = _visual_family_state(visual)->field;
     if (!_scene_prepare_field_texture(field, out_region, out_data) ||
         !_field_format_texture_format(field->desc.format, out_format) ||
         !_field_format_bytes_per_texel(field->desc.format, out_bytes_per_texel))
@@ -87,12 +87,12 @@ bool _scene_prepare_image_texture(
     ANN(out_data);
     if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH)
         return false;
-    if (visual->field == NULL)
+    if (_visual_family_state(visual)->field == NULL)
     {
         log_error("image or glyph visual requires a bound sampled field");
         return false;
     }
-    const DvzSampledField* field = visual->field;
+    const DvzSampledField* field = _visual_family_state(visual)->field;
     if (field->scene != visual->scene)
     {
         log_error("image or glyph visual field belongs to a different scene");
@@ -109,13 +109,13 @@ bool _scene_prepare_image_texture(
         return false;
     }
 
-    visual->texture.width = field->desc.width;
-    visual->texture.height = field->desc.height;
+    _visual_family_state(visual)->texture.width = field->desc.width;
+    _visual_family_state(visual)->texture.height = field->desc.height;
     *out_region = _field_full_region(&field->desc);
-    if (visual->texture.field_dirty)
-        *out_region = visual->texture.field_dirty_full ? _field_full_region(&field->desc)
-                                                       : visual->texture.field_dirty_region;
-    else if (visual->texture.dirty)
+    if (_visual_family_state(visual)->texture.field_dirty)
+        *out_region = _visual_family_state(visual)->texture.field_dirty_full ? _field_full_region(&field->desc)
+                                                       : _visual_family_state(visual)->texture.field_dirty_region;
+    else if (_visual_family_state(visual)->texture.dirty)
         *out_region = _field_full_region(&field->desc);
 
     if (_field_format_is_rgba8(field->desc.format))
@@ -129,12 +129,12 @@ bool _scene_prepare_image_texture(
 
         uint64_t upload_size = 0;
         if (!_field_region_byte_size(field->desc.format, out_region, &upload_size) ||
-            !_visual_texture_ensure_upload(&visual->texture, upload_size))
+            !_visual_texture_ensure_upload(&_visual_family_state(visual)->texture, upload_size))
         {
             log_error("RGBA image field upload scratch allocation failed");
             return false;
         }
-        uint8_t* dst = (uint8_t*)visual->texture.upload;
+        uint8_t* dst = (uint8_t*)_visual_family_state(visual)->texture.upload;
         const uint8_t* src = (const uint8_t*)field->data;
         uint64_t src_bpr = _field_default_bytes_per_row(&field->desc);
         uint64_t row_bytes = (uint64_t)out_region->width * 4ull;
@@ -145,7 +145,7 @@ bool _scene_prepare_image_texture(
             uint64_t dst_offset = (uint64_t)y * row_bytes;
             dvz_memcpy(dst + dst_offset, row_bytes, src + src_offset, row_bytes);
         }
-        *out_data = visual->texture.upload;
+        *out_data = _visual_family_state(visual)->texture.upload;
         return true;
     }
     if (!_field_format_is_scalar(field->desc.format))
@@ -153,7 +153,7 @@ bool _scene_prepare_image_texture(
         log_error("image or glyph visual does not support sampled field format %d", (int)field->desc.format);
         return false;
     }
-    if (visual->scale == NULL || visual->scale->colormap == NULL)
+    if (_visual_family_state(visual)->scale == NULL || _visual_family_state(visual)->scale->colormap == NULL)
     {
         log_error("scalar image field requires a bound scale with a colormap");
         return false;
@@ -167,32 +167,32 @@ bool _scene_prepare_image_texture(
         log_error("scalar image field RGBA staging size overflow");
         return false;
     }
-    if (visual->texture.rgba == NULL || visual->texture.rgba_size != rgba_size)
+    if (_visual_family_state(visual)->texture.rgba == NULL || _visual_family_state(visual)->texture.rgba_size != rgba_size)
     {
-        if (visual->texture.rgba != NULL)
-            dvz_free(visual->texture.rgba);
-        visual->texture.rgba = dvz_calloc(rgba_size, 1);
-        if (visual->texture.rgba == NULL)
+        if (_visual_family_state(visual)->texture.rgba != NULL)
+            dvz_free(_visual_family_state(visual)->texture.rgba);
+        _visual_family_state(visual)->texture.rgba = dvz_calloc(rgba_size, 1);
+        if (_visual_family_state(visual)->texture.rgba == NULL)
         {
-            visual->texture.rgba_size = 0;
+            _visual_family_state(visual)->texture.rgba_size = 0;
             log_error("scalar image field RGBA staging allocation failed");
             return false;
         }
-        visual->texture.rgba_size = rgba_size;
+        _visual_family_state(visual)->texture.rgba_size = rgba_size;
     }
 
-    uint8_t* rgba = (uint8_t*)visual->texture.rgba;
+    uint8_t* rgba = (uint8_t*)_visual_family_state(visual)->texture.rgba;
     double domain_min = 0.0;
     double domain_max = 1.0;
-    if (visual->scale->has_view_range)
+    if (_visual_family_state(visual)->scale->has_view_range)
     {
-        domain_min = visual->scale->view_min;
-        domain_max = visual->scale->view_max;
+        domain_min = _visual_family_state(visual)->scale->view_min;
+        domain_max = _visual_family_state(visual)->scale->view_max;
     }
-    else if (visual->scale->has_domain)
+    else if (_visual_family_state(visual)->scale->has_domain)
     {
-        domain_min = visual->scale->domain_min;
-        domain_max = visual->scale->domain_max;
+        domain_min = _visual_family_state(visual)->scale->domain_min;
+        domain_max = _visual_family_state(visual)->scale->domain_max;
     }
     double denom = domain_max - domain_min;
     if (denom == 0.0)
@@ -210,25 +210,25 @@ bool _scene_prepare_image_texture(
                 return false;
             }
             double t = (value - domain_min) / denom;
-            _scene_color_from_colormap(visual->scale->colormap, t, &rgba[4 * i]);
+            _scene_color_from_colormap(_visual_family_state(visual)->scale->colormap, t, &rgba[4 * i]);
         }
     }
 
     if (out_region->x == 0 && out_region->y == 0 && out_region->width == field->desc.width &&
         out_region->height == field->desc.height)
     {
-        *out_data = visual->texture.rgba;
+        *out_data = _visual_family_state(visual)->texture.rgba;
         return true;
     }
 
     uint64_t upload_size = 0;
     if (!_field_region_byte_size(DVZ_FIELD_FORMAT_RGBA8_UNORM, out_region, &upload_size) ||
-        !_visual_texture_ensure_upload(&visual->texture, upload_size))
+        !_visual_texture_ensure_upload(&_visual_family_state(visual)->texture, upload_size))
     {
         log_error("scalar image field upload scratch allocation failed");
         return false;
     }
-    uint8_t* dst = (uint8_t*)visual->texture.upload;
+    uint8_t* dst = (uint8_t*)_visual_family_state(visual)->texture.upload;
     uint64_t src_bpr = field->desc.width * 4ull;
     uint64_t row_bytes = (uint64_t)out_region->width * 4ull;
     for (uint32_t y = 0; y < out_region->height; y++)
@@ -238,6 +238,6 @@ bool _scene_prepare_image_texture(
         uint64_t dst_offset = (uint64_t)y * row_bytes;
         dvz_memcpy(dst + dst_offset, row_bytes, rgba + src_offset, row_bytes);
     }
-    *out_data = visual->texture.upload;
+    *out_data = _visual_family_state(visual)->texture.upload;
     return true;
 }

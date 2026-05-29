@@ -267,25 +267,25 @@ static bool _scene_visual_has_pending_render_work(const DvzVisual* visual)
     if (visual == NULL || !visual->visible)
         return false;
 
-    if (_scene_visual_dirty_material_emits_upload(visual) || visual->texture.dirty)
+    if (_scene_visual_dirty_material_emits_upload(visual) || _visual_family_state(visual)->texture.dirty)
         return true;
     if (
         visual->type == DVZ_VISUAL_TYPE_VOLUME &&
-        visual->volume_realized_version != visual->volume.version)
+        _visual_family_state(visual)->volume_realized_version != _visual_family_state(visual)->volume.version)
     {
         return true;
     }
     if (
         visual->type == DVZ_VISUAL_TYPE_LABELS &&
-        visual->labels_realized_version != visual->labels.version)
+        _visual_family_state(visual)->labels_realized_version != _visual_family_state(visual)->labels.version)
     {
         return true;
     }
-    if (visual->field != NULL && visual->field->dirty)
+    if (_visual_family_state(visual)->field != NULL && _visual_family_state(visual)->field->dirty)
         return true;
-    if (visual->buffer != NULL && visual->buffer->dirty)
+    if (_visual_family_state(visual)->buffer != NULL && _visual_family_state(visual)->buffer->dirty)
         return true;
-    if (visual->segment.gpu.dirty || visual->path.gpu.dirty || visual->image_gpu.dirty)
+    if (_visual_family_state(visual)->segment.gpu.dirty || _visual_family_state(visual)->path.gpu.dirty || _visual_family_state(visual)->image_gpu.dirty)
         return true;
 
     for (uint32_t i = 0; i < visual->attr_count; i++)
@@ -328,7 +328,7 @@ static bool _scene_visual_has_attr_data(const DvzVisual* visual, const char* att
  */
 static bool _scene_visual_dirty_material_emits_upload(const DvzVisual* visual)
 {
-    if (visual == NULL || !visual->material_params_dirty)
+    if (visual == NULL || !_visual_family_state(visual)->material_params_dirty)
         return false;
 
     switch (visual->type)
@@ -425,15 +425,15 @@ static bool _scene_panel_has_pending_visual_work(const DvzPanel* panel)
         if (visual != NULL && visual->type == DVZ_VISUAL_TYPE_TEXT)
         {
             const DvzFigure* figure = panel->figure;
-            uint64_t version = visual->text.strings_version + visual->text.renderer_version;
+            uint64_t version = _visual_family_state(visual)->text.strings_version + _visual_family_state(visual)->text.renderer_version;
             for (uint32_t ai = 0; ai < visual->attr_count; ai++)
                 version += visual->attrs[ai].version;
             if (
-                visual->text.string_count > 0 && visual->text.strings != NULL &&
-                (visual->text.realized_version != version ||
+                _visual_family_state(visual)->text.string_count > 0 && _visual_family_state(visual)->text.strings != NULL &&
+                (_visual_family_state(visual)->text.realized_version != version ||
                  (figure != NULL &&
-                  (visual->text.visual_figure_width != figure->width ||
-                   visual->text.visual_figure_height != figure->height))))
+                  (_visual_family_state(visual)->text.visual_figure_width != figure->width ||
+                   _visual_family_state(visual)->text.visual_figure_height != figure->height))))
             {
                 return true;
             }
@@ -467,8 +467,8 @@ static void _scene_commit_emit_success(DvzFigure* figure)
                 if (visual->attrs[ai].buffer != NULL)
                     visual->attrs[ai].buffer->dirty = false;
             }
-            if (visual->buffer != NULL)
-                visual->buffer->dirty = false;
+            if (_visual_family_state(visual)->buffer != NULL)
+                _visual_family_state(visual)->buffer->dirty = false;
             if (
                 visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
                 visual->type == DVZ_VISUAL_TYPE_MARKER ||
@@ -487,7 +487,7 @@ static void _scene_commit_emit_success(DvzFigure* figure)
                                   visual->type == DVZ_VISUAL_TYPE_MARKER;
                 if (point_like || has_normals || visual->type == DVZ_VISUAL_TYPE_SEGMENT ||
                     visual->type == DVZ_VISUAL_TYPE_PATH || visual->type == DVZ_VISUAL_TYPE_SPHERE)
-                    visual->material_params_dirty = false;
+                    _visual_family_state(visual)->material_params_dirty = false;
             }
             if (
                 visual->type == DVZ_VISUAL_TYPE_IMAGE ||
@@ -499,9 +499,9 @@ static void _scene_commit_emit_success(DvzFigure* figure)
                 _scene_visual_texture_mark_clean(visual);
             }
             if (visual->type == DVZ_VISUAL_TYPE_VOLUME)
-                visual->volume_realized_version = visual->volume.version;
+                _visual_family_state(visual)->volume_realized_version = _visual_family_state(visual)->volume.version;
             if (visual->type == DVZ_VISUAL_TYPE_LABELS)
-                visual->labels_realized_version = visual->labels.version;
+                _visual_family_state(visual)->labels_realized_version = _visual_family_state(visual)->labels.version;
         }
     }
     for (uint32_t i = 0; i < figure->scene->field_count; i++)

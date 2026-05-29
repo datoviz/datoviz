@@ -80,10 +80,10 @@ DvzVisual* dvz_vector(DvzScene* scene, uint32_t flags)
     DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_VECTOR, flags);
     if (visual == NULL)
         return NULL;
-    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    visual->material_params_dirty = true;
-    visual->vector.stroke_gpu.dirty = true;
-    visual->vector.path_gpu.dirty = true;
+    _visual_family_state(visual)->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    _visual_family_state(visual)->material_params_dirty = true;
+    _visual_family_state(visual)->vector.stroke_gpu.dirty = true;
+    _visual_family_state(visual)->vector.path_gpu.dirty = true;
     return visual;
 }
 
@@ -149,25 +149,25 @@ int dvz_vector_set_style(DvzVisual* visual, const DvzVectorStyle* style)
     if (!_scene_visual_mutation_allowed(visual->scene, "update vector style"))
         return -1;
 
-    bool changed = visual->vector.scale != style->scale || visual->vector.anchor != style->anchor ||
-                   visual->vector.start_cap != style->start_cap ||
-                   visual->vector.end_cap != style->end_cap ||
-                   visual->vector.join != style->join ||
-                   visual->vector.miter_limit != style->miter_limit;
+    bool changed = _visual_family_state(visual)->vector.scale != style->scale || _visual_family_state(visual)->vector.anchor != style->anchor ||
+                   _visual_family_state(visual)->vector.start_cap != style->start_cap ||
+                   _visual_family_state(visual)->vector.end_cap != style->end_cap ||
+                   _visual_family_state(visual)->vector.join != style->join ||
+                   _visual_family_state(visual)->vector.miter_limit != style->miter_limit;
     if (!changed)
         return 0;
 
-    visual->vector.scale = style->scale;
-    visual->vector.anchor = style->anchor;
-    visual->vector.start_cap = style->start_cap;
-    visual->vector.end_cap = style->end_cap;
-    visual->vector.join = style->join;
-    visual->vector.miter_limit = style->miter_limit;
+    _visual_family_state(visual)->vector.scale = style->scale;
+    _visual_family_state(visual)->vector.anchor = style->anchor;
+    _visual_family_state(visual)->vector.start_cap = style->start_cap;
+    _visual_family_state(visual)->vector.end_cap = style->end_cap;
+    _visual_family_state(visual)->vector.join = style->join;
+    _visual_family_state(visual)->vector.miter_limit = style->miter_limit;
     _vector_sync_params(visual);
     _visual_bump_version(&visual->material.version);
-    visual->material_params_dirty = true;
-    visual->vector.stroke_gpu.dirty = true;
-    visual->vector.path_gpu.dirty = true;
+    _visual_family_state(visual)->material_params_dirty = true;
+    _visual_family_state(visual)->vector.stroke_gpu.dirty = true;
+    _visual_family_state(visual)->vector.path_gpu.dirty = true;
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -191,6 +191,6 @@ int dvz_vector_set_subpaths(DvzVisual* visual, uint32_t subpath_count, const uin
         return -1;
     }
     return _stroke_set_path_subpaths(
-        visual, subpath_count, lengths, "vector", &visual->vector.subpath_lengths,
-        &visual->vector.subpath_count, &visual->vector.path_gpu);
+        visual, subpath_count, lengths, "vector", &_visual_family_state(visual)->vector.subpath_lengths,
+        &_visual_family_state(visual)->vector.subpath_count, &_visual_family_state(visual)->vector.path_gpu);
 }

@@ -48,19 +48,19 @@ static bool _query_geometry_source_vertex_index(
     ANN(visual);
     ANN(out_source_index);
     uint64_t source_index = draw_index;
-    if (visual->buffer != NULL && visual->buffer->data != NULL)
+    if (_visual_family_state(visual)->buffer != NULL && _visual_family_state(visual)->buffer->data != NULL)
     {
-        uint32_t stride = visual->buffer->desc.stride;
+        uint32_t stride = _visual_family_state(visual)->buffer->desc.stride;
         uint64_t offset = 0;
         if (
             stride == 0 ||
             _dvz_mul_u64_overflows(draw_index, stride, &offset) ||
-            offset > visual->buffer->desc.byte_size ||
-            stride > visual->buffer->desc.byte_size - offset)
+            offset > _visual_family_state(visual)->buffer->desc.byte_size ||
+            stride > _visual_family_state(visual)->buffer->desc.byte_size - offset)
         {
             return false;
         }
-        const uint8_t* data = (const uint8_t*)visual->buffer->data + offset;
+        const uint8_t* data = (const uint8_t*)_visual_family_state(visual)->buffer->data + offset;
         if (stride == sizeof(uint16_t))
         {
             uint16_t index = 0;
@@ -114,27 +114,27 @@ bool _scene_query_indexed_primitive_geometry(
     uint64_t vertex_count = pos_attr->item_count;
 
     uint64_t source_index_count = vertex_count;
-    if (visual->buffer != NULL && visual->buffer->data != NULL &&
-        visual->buffer->desc.byte_size > 0 && visual->buffer->desc.stride > 0)
+    if (_visual_family_state(visual)->buffer != NULL && _visual_family_state(visual)->buffer->data != NULL &&
+        _visual_family_state(visual)->buffer->desc.byte_size > 0 && _visual_family_state(visual)->buffer->desc.stride > 0)
     {
-        uint32_t stride = visual->buffer->desc.stride;
+        uint32_t stride = _visual_family_state(visual)->buffer->desc.stride;
         if (stride != sizeof(uint16_t) && stride != sizeof(uint32_t))
         {
             log_error("%s query request index stride must be 16-bit or 32-bit", label);
             return false;
         }
-        if (visual->buffer->desc.byte_size % stride != 0)
+        if (_visual_family_state(visual)->buffer->desc.byte_size % stride != 0)
         {
             log_error("%s query request index buffer size is not stride-aligned", label);
             return false;
         }
-        source_index_count = visual->buffer->desc.byte_size / stride;
+        source_index_count = _visual_family_state(visual)->buffer->desc.byte_size / stride;
     }
 
     uint64_t primitive_count = 0;
     uint64_t draw_vertex_count = 0;
-    uint32_t draw_topology = (uint32_t)visual->topology;
-    switch (visual->topology)
+    uint32_t draw_topology = (uint32_t)_visual_family_state(visual)->topology;
+    switch (_visual_family_state(visual)->topology)
     {
     case DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST:
         primitive_count = source_index_count;
@@ -190,7 +190,7 @@ bool _scene_query_indexed_primitive_geometry(
     {
         uint64_t draw_indices[3] = {0, 0, 0};
         uint32_t prim_vertex_count = 1;
-        switch (visual->topology)
+        switch (_visual_family_state(visual)->topology)
         {
         case DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST:
             draw_indices[0] = prim;

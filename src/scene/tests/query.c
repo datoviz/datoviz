@@ -2923,7 +2923,7 @@ int test_scene_labels_query_rejects_unsupported_format(TstContext* suite, const 
                    .depth = 1,
                });
     ANN(field);
-    labels->field = field;
+    _visual_family_state(labels)->field = field;
     AT(dvz_panel_add_visual(panel, labels, NULL) == 0);
 
     AT(dvz_panel_query(

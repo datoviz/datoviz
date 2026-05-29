@@ -276,28 +276,28 @@ bool _scene_image_query_plan(
     const void* texture_data = NULL;
     uint32_t texture_width = 0;
     uint32_t texture_height = 0;
-    if (include_static_uploads && visual->field != NULL && visual->field->data != NULL &&
-        visual->field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM)
+    if (include_static_uploads && _visual_family_state(visual)->field != NULL && _visual_family_state(visual)->field->data != NULL &&
+        _visual_family_state(visual)->field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM)
     {
-        texture_data = visual->field->data;
-        texture_width = visual->field->desc.width;
-        texture_height = visual->field->desc.height;
+        texture_data = _visual_family_state(visual)->field->data;
+        texture_width = _visual_family_state(visual)->field->desc.width;
+        texture_height = _visual_family_state(visual)->field->desc.height;
     }
     else if (include_static_uploads)
     {
         DvzFieldRegion upload_region = {0};
         const void* upload_data = NULL;
         if (!_scene_prepare_image_texture(visual, &upload_region, &upload_data) ||
-            visual->texture.rgba == NULL || visual->texture.width == 0 ||
-            visual->texture.height == 0)
+            _visual_family_state(visual)->texture.rgba == NULL || _visual_family_state(visual)->texture.width == 0 ||
+            _visual_family_state(visual)->texture.height == 0)
         {
             return false;
         }
         (void)upload_region;
         (void)upload_data;
-        texture_data = visual->texture.rgba;
-        texture_width = visual->texture.width;
-        texture_height = visual->texture.height;
+        texture_data = _visual_family_state(visual)->texture.rgba;
+        texture_width = _visual_family_state(visual)->texture.width;
+        texture_height = _visual_family_state(visual)->texture.height;
     }
 
     uint64_t position_bytes = 0;

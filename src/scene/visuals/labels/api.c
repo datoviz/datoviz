@@ -60,8 +60,8 @@ static bool _labels_state_mutation_allowed(DvzVisual* visual, const char* action
 static void _labels_state_mark_dirty(DvzVisual* visual)
 {
     ANN(visual);
-    _visual_bump_version(&visual->labels.version);
-    visual->image_gpu.dirty = true;
+    _visual_bump_version(&_visual_family_state(visual)->labels.version);
+    _visual_family_state(visual)->image_gpu.dirty = true;
     _scene_notify_visual_changed(visual);
 }
 
@@ -128,7 +128,7 @@ int dvz_labels_set_opacity(DvzVisual* visual, float opacity)
         log_error("labels opacity must be finite and in [0, 1]");
         return -1;
     }
-    visual->labels.opacity = opacity;
+    _visual_family_state(visual)->labels.opacity = opacity;
     _labels_state_mark_dirty(visual);
     return 0;
 }
@@ -147,7 +147,7 @@ int dvz_labels_set_background(DvzVisual* visual, DvzCategoryId label_id)
     ANN(visual);
     if (!_labels_state_mutation_allowed(visual, "set labels background"))
         return -1;
-    visual->labels.background_id = label_id;
+    _visual_family_state(visual)->labels.background_id = label_id;
     _labels_state_mark_dirty(visual);
     return 0;
 }
@@ -166,8 +166,8 @@ int dvz_labels_set_selected(DvzVisual* visual, DvzCategoryId label_id)
     ANN(visual);
     if (!_labels_state_mutation_allowed(visual, "set labels selection"))
         return -1;
-    visual->labels.selected_enabled = true;
-    visual->labels.selected_id = label_id;
+    _visual_family_state(visual)->labels.selected_enabled = true;
+    _visual_family_state(visual)->labels.selected_id = label_id;
     _labels_state_mark_dirty(visual);
     return 0;
 }
@@ -185,8 +185,8 @@ int dvz_labels_clear_selected(DvzVisual* visual)
     ANN(visual);
     if (!_labels_state_mutation_allowed(visual, "clear labels selection"))
         return -1;
-    visual->labels.selected_enabled = false;
-    visual->labels.selected_id = 0;
+    _visual_family_state(visual)->labels.selected_enabled = false;
+    _visual_family_state(visual)->labels.selected_id = 0;
     _labels_state_mark_dirty(visual);
     return 0;
 }
@@ -217,13 +217,13 @@ int dvz_labels_set_hidden(DvzVisual* visual, const DvzCategoryId* ids, uint32_t 
         return -1;
     }
     dvz_memset(
-        visual->labels.hidden_ids, sizeof(visual->labels.hidden_ids), 0,
-        sizeof(visual->labels.hidden_ids));
+        _visual_family_state(visual)->labels.hidden_ids, sizeof(_visual_family_state(visual)->labels.hidden_ids), 0,
+        sizeof(_visual_family_state(visual)->labels.hidden_ids));
     if (count > 0)
         dvz_memcpy(
-            visual->labels.hidden_ids, count * sizeof(DvzCategoryId), ids,
+            _visual_family_state(visual)->labels.hidden_ids, count * sizeof(DvzCategoryId), ids,
             count * sizeof(DvzCategoryId));
-    visual->labels.hidden_count = count;
+    _visual_family_state(visual)->labels.hidden_count = count;
     _labels_state_mark_dirty(visual);
     return 0;
 }
@@ -249,9 +249,9 @@ int dvz_labels_set_boundary(DvzVisual* visual, bool enabled, float width_px, Dvz
         log_error("labels boundary width must be finite and non-negative");
         return -1;
     }
-    visual->labels.boundary_enabled = enabled;
-    visual->labels.boundary_width_px = width_px;
-    visual->labels.boundary_color = color;
+    _visual_family_state(visual)->labels.boundary_enabled = enabled;
+    _visual_family_state(visual)->labels.boundary_width_px = width_px;
+    _visual_family_state(visual)->labels.boundary_color = color;
     _labels_state_mark_dirty(visual);
     return 0;
 }
@@ -270,7 +270,7 @@ int dvz_labels_set_fallback_seed(DvzVisual* visual, uint32_t seed)
     ANN(visual);
     if (!_labels_state_mutation_allowed(visual, "set labels fallback seed"))
         return -1;
-    visual->labels.fallback_seed = seed;
+    _visual_family_state(visual)->labels.fallback_seed = seed;
     _labels_state_mark_dirty(visual);
     return 0;
 }
@@ -294,7 +294,7 @@ int dvz_labels_set_slice_axis(DvzVisual* visual, DvzVolumeAxis axis)
         log_error("unsupported labels slice axis %d", (int)axis);
         return -1;
     }
-    visual->labels.slice_axis = axis;
+    _visual_family_state(visual)->labels.slice_axis = axis;
     _labels_state_mark_dirty(visual);
     return 0;
 }
@@ -318,7 +318,7 @@ int dvz_labels_set_slice_position(DvzVisual* visual, double position)
         log_error("labels slice position must be finite and in [0, 1]");
         return -1;
     }
-    visual->labels.slice_position = position;
+    _visual_family_state(visual)->labels.slice_position = position;
     _labels_state_mark_dirty(visual);
     return 0;
 }
@@ -336,5 +336,5 @@ const DvzLabelsState* dvz_labels_state(const DvzVisual* visual)
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_LABELS)
         return NULL;
-    return &visual->labels;
+    return &_visual_family_state(visual)->labels;
 }

@@ -198,7 +198,7 @@ static void _volume_query_category_label(
     ANN(out_label);
     DvzSceneColorizer colorizer = {0};
     if (_scene_colorizer_from_scale(
-            visual->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer))
+            _visual_family_state(visual)->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer))
         (void)_scene_colorizer_category_label(&colorizer, id, out_label, label_size);
     else
         dvz_snprintf(out_label, label_size, "label %" PRIi64, id);
@@ -361,7 +361,7 @@ static bool _volume_query_build_sample(
     ANN(ctx->pending);
     ANN(out_plan);
 
-    DvzSampledField* field = ctx->visual->field;
+    DvzSampledField* field = _visual_family_state(ctx->visual)->field;
     if (field == NULL || field->data == NULL || field->desc.dim != DVZ_FIELD_DIM_3D ||
         field->desc.width == 0 || field->desc.height == 0 || field->desc.depth == 0)
     {
@@ -453,7 +453,7 @@ static bool _volume_query_build_sample(
     metadata.field_height = field->desc.height;
     metadata.field_depth = field->desc.depth;
     metadata.has_volume = true;
-    metadata.volume_state = ctx->visual->volume;
+    metadata.volume_state = _visual_family_state(ctx->visual)->volume;
     metadata.volume_transfer_rgba = false;
     dvz_strlcpy(metadata.position_id, "volume_query0_position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.texcoords_id, "volume_query0_texcoords", sizeof(metadata.texcoords_id));
@@ -545,24 +545,24 @@ static bool _volume_query_eligible(
     {
         if ((visual->query_capabilities & DVZ_QUERY_CAPABILITY_SAMPLE) == 0)
             return false;
-        if (visual->volume.render_mode != DVZ_VOLUME_RENDER_SLICE)
+        if (_visual_family_state(visual)->volume.render_mode != DVZ_VOLUME_RENDER_SLICE)
             return false;
-        if (visual->field == NULL || visual->field->data == NULL)
+        if (_visual_family_state(visual)->field == NULL || _visual_family_state(visual)->field->data == NULL)
             return false;
         uint32_t texture_format = 0;
         uint32_t bytes_per_texel = 0;
         DvzSceneSampleProfile profile = {0};
         if (!_scene_sample_profile_resolve(
-                visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+                _visual_family_state(visual)->field->desc.format, _visual_family_state(visual)->field->desc.semantic, _visual_family_state(visual)->field->desc.dim,
                 &profile))
         {
             return false;
         }
         if (_scene_sample_profile_is_integer_label(&profile))
             return _volume_query_label_sample_format(
-                visual->field->desc.format, &texture_format, &bytes_per_texel);
+                _visual_family_state(visual)->field->desc.format, &texture_format, &bytes_per_texel);
         return _volume_query_scalar_sample_format(
-            visual->field->desc.format, &texture_format, &bytes_per_texel);
+            _visual_family_state(visual)->field->desc.format, &texture_format, &bytes_per_texel);
     }
     return _dvz_scene_query_item_target_eligible(visual, request, DVZ_VISUAL_TYPE_VOLUME);
 }
@@ -780,7 +780,7 @@ static bool _volume_query_decode(
             out_result->resolved_id = target_id;
             out_result->group_id = target_id;
             out_result->category_id = label_id;
-            out_result->scale = ctx->build->visual->scale;
+            out_result->scale = _visual_family_state(ctx->build->visual)->scale;
             out_result->value_kind = DVZ_QUERY_VALUE_CATEGORY;
             _volume_query_category_label(
                 ctx->build->visual, label_id, out_result->label, sizeof(out_result->label));
@@ -788,7 +788,7 @@ static bool _volume_query_decode(
         }
 
         double t = (double)(encoded - 1u) / DVZ_VOLUME_QUERY_QUANT_MAX;
-        const DvzVolumeState* state = &ctx->build->visual->volume;
+        const DvzVolumeState* state = &_visual_family_state(ctx->build->visual)->volume;
         double value = state->value_min + t * (state->value_max - state->value_min);
         out_result->status = DVZ_QUERY_STATUS_HIT;
         out_result->hit = true;

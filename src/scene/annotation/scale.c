@@ -91,13 +91,13 @@ void _scene_mark_scale_dirty(DvzScale* scale)
     for (uint32_t i = 0; i < scene->visual_count; i++)
     {
         DvzVisual* visual = &scene->visuals[i];
-        if (visual->scene != scene || visual->scale != scale)
+        if (visual->scene != scene || _visual_family_state(visual)->scale != scale)
             continue;
         DvzSceneSampleProfile profile = {0};
         bool has_profile =
-            visual->field != NULL &&
+            _visual_family_state(visual)->field != NULL &&
             _scene_sample_profile_resolve(
-                visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+                _visual_family_state(visual)->field->desc.format, _visual_family_state(visual)->field->desc.semantic, _visual_family_state(visual)->field->desc.dim,
                 &profile);
         if ((visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_VOLUME) &&
             has_profile &&
@@ -105,7 +105,7 @@ void _scene_mark_scale_dirty(DvzScale* scale)
              _scene_sample_profile_is_integer_label(&profile)))
         {
             _scene_visual_texture_mark_clean(visual);
-            visual->texture.dirty = true;
+            _visual_family_state(visual)->texture.dirty = true;
             _scene_texture_bump_version(visual);
             _scene_notify_visual_changed(visual);
         }
@@ -138,8 +138,8 @@ void _scene_mark_scale_dirty(DvzScale* scale)
 static void _scene_texture_bump_version(DvzVisual* visual)
 {
     ANN(visual);
-    visual->texture.version =
-        visual->texture.version == UINT64_MAX ? 1 : visual->texture.version + 1;
+    _visual_family_state(visual)->texture.version =
+        _visual_family_state(visual)->texture.version == UINT64_MAX ? 1 : _visual_family_state(visual)->texture.version + 1;
 }
 
 

@@ -105,15 +105,15 @@ static void _stroke_quad_vector_endpoints(
     ANN(vector);
     ANN(out_start);
     ANN(out_end);
-    float scale = visual->vector.scale;
+    float scale = _visual_family_state(visual)->vector.scale;
     float head_factor = 1.0f;
     float tail_factor = 0.0f;
-    if (visual->vector.anchor == DVZ_VECTOR_ANCHOR_CENTER)
+    if (_visual_family_state(visual)->vector.anchor == DVZ_VECTOR_ANCHOR_CENTER)
     {
         tail_factor = -0.5f;
         head_factor = 0.5f;
     }
-    else if (visual->vector.anchor == DVZ_VECTOR_ANCHOR_HEAD)
+    else if (_visual_family_state(visual)->vector.anchor == DVZ_VECTOR_ANCHOR_HEAD)
     {
         tail_factor = -1.0f;
         head_factor = 0.0f;
@@ -177,7 +177,7 @@ bool _stroke_quad_segment_cache_rebuild(DvzVisual* visual)
         return false;
     }
 
-    DvzSegmentGpuCache* cache = &visual->segment.gpu;
+    DvzSegmentGpuCache* cache = &_visual_family_state(visual)->segment.gpu;
     if (!_stroke_quad_cache_resize(
             (void**)&cache->position_start, vertex_count, 3 * sizeof(float)) ||
         !_stroke_quad_cache_resize(
@@ -248,7 +248,7 @@ bool _stroke_quad_vector_cache_rebuild(DvzVisual* visual)
         return false;
     }
 
-    DvzSegmentGpuCache* cache = &visual->vector.stroke_gpu;
+    DvzSegmentGpuCache* cache = &_visual_family_state(visual)->vector.stroke_gpu;
     if (!_stroke_quad_cache_resize(
             (void**)&cache->position_start, vertex_count, 3 * sizeof(float)) ||
         !_stroke_quad_cache_resize(

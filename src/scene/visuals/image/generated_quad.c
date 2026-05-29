@@ -140,7 +140,7 @@ bool _image_generated_quad_cache_rebuild(const DvzFigure* figure, DvzVisual* vis
         return false;
     }
 
-    DvzImageGpuCache* cache = &visual->image_gpu;
+    DvzImageGpuCache* cache = &_visual_family_state(visual)->image_gpu;
     if (!_image_generated_quad_cache_resize(
             (void**)&cache->position, vertex_count, 3 * sizeof(float)) ||
         !_image_generated_quad_cache_resize(
@@ -237,7 +237,7 @@ bool _image_generated_quad_upload_payloads(
     ANN(out_count);
     (void)figure;
     *out_count = 0;
-    DvzImageGpuCache* cache = &visual->image_gpu;
+    DvzImageGpuCache* cache = &_visual_family_state(visual)->image_gpu;
 
     out_payloads[0] = (DvzVisualUploadPayload){
         .name = "position",
@@ -282,7 +282,7 @@ bool _image_generated_quad_derived_upload_payloads(
     if (!*out_handled)
         return true;
 
-    bool dirty = visual->image_gpu.dirty || attrs_dirty;
+    bool dirty = _visual_family_state(visual)->image_gpu.dirty || attrs_dirty;
     if (!dirty)
         return true;
 

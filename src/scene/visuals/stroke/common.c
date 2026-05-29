@@ -64,8 +64,8 @@ bool _stroke_join_valid(DvzPathJoin join)
 void _segment_sync_params(DvzVisual* visual)
 {
     ANN(visual);
-    visual->material_params.params[0] = (float)visual->segment.start_cap;
-    visual->material_params.params[1] = (float)visual->segment.end_cap;
+    _visual_family_state(visual)->material_params.params[0] = (float)_visual_family_state(visual)->segment.start_cap;
+    _visual_family_state(visual)->material_params.params[1] = (float)_visual_family_state(visual)->segment.end_cap;
 }
 
 
@@ -78,10 +78,10 @@ void _segment_sync_params(DvzVisual* visual)
 void _path_sync_params(DvzVisual* visual)
 {
     ANN(visual);
-    visual->material_params.params[0] = (float)visual->path.cap_start;
-    visual->material_params.params[1] = (float)visual->path.cap_end;
-    visual->material_params.params[2] = (float)visual->path.join;
-    visual->material_params.params[3] = visual->path.miter_limit;
+    _visual_family_state(visual)->material_params.params[0] = (float)_visual_family_state(visual)->path.cap_start;
+    _visual_family_state(visual)->material_params.params[1] = (float)_visual_family_state(visual)->path.cap_end;
+    _visual_family_state(visual)->material_params.params[2] = (float)_visual_family_state(visual)->path.join;
+    _visual_family_state(visual)->material_params.params[3] = _visual_family_state(visual)->path.miter_limit;
 }
 
 
@@ -94,10 +94,10 @@ void _path_sync_params(DvzVisual* visual)
 void _vector_sync_params(DvzVisual* visual)
 {
     ANN(visual);
-    visual->material_params.params[0] = (float)visual->vector.start_cap;
-    visual->material_params.params[1] = (float)visual->vector.end_cap;
-    visual->material_params.params[2] = (float)visual->vector.join;
-    visual->material_params.params[3] = visual->vector.miter_limit;
+    _visual_family_state(visual)->material_params.params[0] = (float)_visual_family_state(visual)->vector.start_cap;
+    _visual_family_state(visual)->material_params.params[1] = (float)_visual_family_state(visual)->vector.end_cap;
+    _visual_family_state(visual)->material_params.params[2] = (float)_visual_family_state(visual)->vector.join;
+    _visual_family_state(visual)->material_params.params[3] = _visual_family_state(visual)->vector.miter_limit;
 }
 
 

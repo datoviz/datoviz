@@ -353,7 +353,7 @@ bool _scene_emit_visual_material_upload_if_needed(
     ANN(visual);
     if (!upload_material_params)
         return true;
-    if (!_scene_visual_needs_material_params(visual) || !visual->material_params_dirty)
+    if (!_scene_visual_needs_material_params(visual) || !_visual_family_state(visual)->material_params_dirty)
         return true;
     return _scene_emit_visual_material_upload(figure, plan, visual, visual_index);
 }
@@ -405,7 +405,7 @@ void _scene_emit_visual_dense_attr_uploads(
                 node->u.upload.buffer_usage = _scene_buffer_drp2_usage(attr->buffer->desc.usage);
                 node->u.upload.item_stride = attr->buffer->desc.stride;
                 if (upload_position_topology && strcmp(attr->name, "position") == 0)
-                    dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
+                    dvz_frame_plan_upload_set_topology(plan, (uint32_t)_visual_family_state(visual)->topology);
             }
             emitted_buffers[buffer_idx] = true;
             continue;
@@ -431,7 +431,7 @@ void _scene_emit_visual_dense_attr_uploads(
             plan, visual, visual_index, role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX,
             attr->item_count);
         if (upload_position_topology && strcmp(attr->name, "position") == 0)
-            dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
+            dvz_frame_plan_upload_set_topology(plan, (uint32_t)_visual_family_state(visual)->topology);
     }
 }
 
@@ -455,28 +455,28 @@ void _scene_emit_visual_index_buffer_upload(
     ANN(plan);
     ANN(visual);
     ANN(emitted_buffers);
-    if (visual->buffer == NULL || visual->buffer->data == NULL)
+    if (_visual_family_state(visual)->buffer == NULL || _visual_family_state(visual)->buffer->data == NULL)
         return;
 
-    uint32_t buffer_idx = _scene_buffer_index(figure->scene, visual->buffer);
-    if (!visual->buffer->dirty || buffer_idx == UINT32_MAX || emitted_buffers[buffer_idx])
+    uint32_t buffer_idx = _scene_buffer_index(figure->scene, _visual_family_state(visual)->buffer);
+    if (!_visual_family_state(visual)->buffer->dirty || buffer_idx == UINT32_MAX || emitted_buffers[buffer_idx])
         return;
 
     char buffer_resource_id[128];
     if (!_scene_resource_key_buffer(buffer_idx, buffer_resource_id, sizeof(buffer_resource_id)))
         return;
     dvz_frame_plan_upload_bytes(
-        plan, buffer_resource_id, 0, visual->buffer->desc.byte_size, "index",
-        visual->buffer->data);
+        plan, buffer_resource_id, 0, _visual_family_state(visual)->buffer->desc.byte_size, "index",
+        _visual_family_state(visual)->buffer->data);
     _scene_attach_upload_metadata(
         plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
         DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, buffer_idx,
-        visual->buffer->desc.stride > 0
-            ? visual->buffer->desc.byte_size / visual->buffer->desc.stride
+        _visual_family_state(visual)->buffer->desc.stride > 0
+            ? _visual_family_state(visual)->buffer->desc.byte_size / _visual_family_state(visual)->buffer->desc.stride
             : 0);
     DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
     node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
-    node->u.upload.item_stride = visual->buffer->desc.stride;
+    node->u.upload.item_stride = _visual_family_state(visual)->buffer->desc.stride;
     emitted_buffers[buffer_idx] = true;
 }
 

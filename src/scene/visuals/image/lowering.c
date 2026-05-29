@@ -73,11 +73,11 @@ bool _scene_image_visual_fill_metadata(
         return true;
     if (!_image_uses_generated_quads(visual))
         return true;
-    if (visual->image_gpu.vertex_count > UINT32_MAX)
+    if (_visual_family_state(visual)->image_gpu.vertex_count > UINT32_MAX)
         return false;
-    if (visual->image_gpu.vertex_count > 0)
-        metadata->vertex_count = (uint32_t)visual->image_gpu.vertex_count;
-    metadata->image_pixel_space = visual->image_gpu.pixel_space;
+    if (_visual_family_state(visual)->image_gpu.vertex_count > 0)
+        metadata->vertex_count = (uint32_t)_visual_family_state(visual)->image_gpu.vertex_count;
+    metadata->image_pixel_space = _visual_family_state(visual)->image_gpu.pixel_space;
     return true;
 }
 

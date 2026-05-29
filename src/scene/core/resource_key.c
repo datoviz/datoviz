@@ -196,7 +196,7 @@ static bool _scene_colorbar_visual_resource_key(
         if (visual == colorbar->text_visual)
             return _format_key(out, out_size, "colorbar.%u.labels", i);
         if (colorbar->text_visual != NULL &&
-            visual == colorbar->text_visual->text.glyph_visual)
+            visual == _visual_family_state(colorbar->text_visual)->text.glyph_visual)
         {
             return _format_key(out, out_size, "colorbar.%u.labels.glyph", i);
         }
@@ -230,7 +230,7 @@ static bool _scene_legend_visual_resource_key(
             return _format_key(out, out_size, "legend.%u.marks", i);
         if (visual == legend->text_visual)
             return _format_key(out, out_size, "legend.%u.labels", i);
-        if (legend->text_visual != NULL && visual == legend->text_visual->text.glyph_visual)
+        if (legend->text_visual != NULL && visual == _visual_family_state(legend->text_visual)->text.glyph_visual)
             return _format_key(out, out_size, "legend.%u.labels.glyph", i);
     }
     return false;

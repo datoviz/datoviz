@@ -41,7 +41,7 @@ bool _stroke_quad_segment_upload_payloads(
     ANN(out_payloads);
     ANN(out_count);
     *out_count = 0;
-    DvzSegmentGpuCache* cache = &visual->segment.gpu;
+    DvzSegmentGpuCache* cache = &_visual_family_state(visual)->segment.gpu;
     out_payloads[0] = (DvzVisualUploadPayload){
         .name = "position_start",
         .data = cache->position_start,
@@ -94,7 +94,7 @@ bool _stroke_quad_vector_upload_payloads(
     ANN(out_payloads);
     ANN(out_count);
     *out_count = 0;
-    DvzSegmentGpuCache* cache = &visual->vector.stroke_gpu;
+    DvzSegmentGpuCache* cache = &_visual_family_state(visual)->vector.stroke_gpu;
     out_payloads[0] = (DvzVisualUploadPayload){
         .name = "position_start",
         .data = cache->position_start,
@@ -148,7 +148,7 @@ bool _path_stroke_upload_payloads(
     ANN(out_count);
     *out_count = 0;
     DvzPathGpuCache* cache =
-        visual->type == DVZ_VISUAL_TYPE_VECTOR ? &visual->vector.path_gpu : &visual->path.gpu;
+        visual->type == DVZ_VISUAL_TYPE_VECTOR ? &_visual_family_state(visual)->vector.path_gpu : &_visual_family_state(visual)->path.gpu;
 
     out_payloads[0] = (DvzVisualUploadPayload){
         .name = "position_start",
@@ -228,14 +228,14 @@ bool _stroke_quad_segment_derived_upload_payloads(
     if (vector_params_sync)
     {
         _vector_sync_params(visual);
-        dirty = dirty || visual->vector.stroke_gpu.dirty;
+        dirty = dirty || _visual_family_state(visual)->vector.stroke_gpu.dirty;
         if (!dirty)
             return true;
         return _stroke_quad_vector_cache_rebuild(visual) &&
                _stroke_quad_vector_upload_payloads(visual, out_payloads, out_count);
     }
 
-    dirty = dirty || visual->segment.gpu.dirty;
+    dirty = dirty || _visual_family_state(visual)->segment.gpu.dirty;
     if (!dirty)
         return true;
     return _stroke_quad_segment_cache_rebuild(visual) &&
@@ -266,7 +266,7 @@ bool _path_stroke_derived_upload_payloads(
     if (vector_params_sync)
         _vector_sync_params(visual);
     DvzPathGpuCache* cache =
-        visual->type == DVZ_VISUAL_TYPE_VECTOR ? &visual->vector.path_gpu : &visual->path.gpu;
+        visual->type == DVZ_VISUAL_TYPE_VECTOR ? &_visual_family_state(visual)->vector.path_gpu : &_visual_family_state(visual)->path.gpu;
     bool dirty = cache->dirty || attrs_dirty;
     if (!dirty)
         return true;

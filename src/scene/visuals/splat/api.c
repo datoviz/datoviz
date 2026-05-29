@@ -38,7 +38,7 @@ DvzVisual* dvz_splat(DvzScene* scene, uint32_t flags)
     DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_SPLAT, flags);
     if (visual == NULL)
         return NULL;
-    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    _visual_family_state(visual)->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     visual->alpha_mode = DVZ_ALPHA_BLENDED;
     visual->depth_test_enabled = true;
     return visual;

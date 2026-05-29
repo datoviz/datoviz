@@ -49,7 +49,7 @@ static DvzSampledField* _scene_ensure_owned_image_field(
     uint32_t height)
 {
     ANN(visual);
-    DvzSampledField* field = visual->field_owned ? visual->field : NULL;
+    DvzSampledField* field = _visual_family_state(visual)->field_owned ? _visual_family_state(visual)->field : NULL;
     if (field != NULL && field->desc.format == format && field->desc.width == width &&
         field->desc.height == height && field->desc.depth == 1)
     {
@@ -88,15 +88,15 @@ void _scene_release_field_bindings(DvzSampledField* field)
     for (uint32_t i = 0; i < scene->visual_count; i++)
     {
         DvzVisual* visual = &scene->visuals[i];
-        if (visual->field != field)
+        if (_visual_family_state(visual)->field != field)
             continue;
         _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
         _scene_visual_texture_mark_clean(visual);
-        if (visual->texture.upload != NULL)
+        if (_visual_family_state(visual)->texture.upload != NULL)
         {
-            dvz_free(visual->texture.upload);
-            visual->texture.upload = NULL;
-            visual->texture.upload_size = 0;
+            dvz_free(_visual_family_state(visual)->texture.upload);
+            _visual_family_state(visual)->texture.upload = NULL;
+            _visual_family_state(visual)->texture.upload_size = 0;
         }
     }
 }
@@ -176,7 +176,7 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
     if (
         field != NULL && visual->type == DVZ_VISUAL_TYPE_VOLUME && supported_profile &&
         _scene_sample_profile_is_integer_label(&profile) &&
-        visual->volume.render_mode == DVZ_VOLUME_RENDER_MIP)
+        _visual_family_state(visual)->volume.render_mode == DVZ_VOLUME_RENDER_MIP)
     {
         log_error("label volumes only support slice and composite render modes");
         return false;
@@ -184,7 +184,7 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
     if (!_scene_visual_mutation_allowed(visual->scene, "bind sampled field"))
         return false;
 
-    if (visual->field != field)
+    if (_visual_family_state(visual)->field != field)
         _scene_release_visual_field(visual);
     if (field != NULL)
     {
@@ -303,16 +303,16 @@ void _scene_release_visual_field(DvzVisual* visual)
 {
     if (visual == NULL)
         return;
-    DvzSampledField* field = visual->field;
+    DvzSampledField* field = _visual_family_state(visual)->field;
     const DvzVisualBinding* binding = _visual_binding_const(visual, DVZ_VISUAL_BINDING_FIELD);
-    bool owned = binding != NULL ? binding->owned : visual->field_owned;
+    bool owned = binding != NULL ? binding->owned : _visual_family_state(visual)->field_owned;
     _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
     _scene_visual_texture_mark_clean(visual);
-    if (visual->texture.upload != NULL)
+    if (_visual_family_state(visual)->texture.upload != NULL)
     {
-        dvz_free(visual->texture.upload);
-        visual->texture.upload = NULL;
-        visual->texture.upload_size = 0;
+        dvz_free(_visual_family_state(visual)->texture.upload);
+        _visual_family_state(visual)->texture.upload = NULL;
+        _visual_family_state(visual)->texture.upload_size = 0;
     }
     if (owned && field != NULL)
         dvz_sampled_field_destroy(field);

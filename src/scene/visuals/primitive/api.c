@@ -39,7 +39,7 @@ DvzVisual* dvz_primitive(DvzScene* scene, DvzPrimitiveTopology topology, uint32_
     DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_PRIMITIVE, flags);
     if (visual == NULL)
         return NULL;
-    visual->topology = topology;
-    visual->material_params_dirty = true;
+    _visual_family_state(visual)->topology = topology;
+    _visual_family_state(visual)->material_params_dirty = true;
     return visual;
 }

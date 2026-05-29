@@ -269,7 +269,7 @@ int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase
            &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     _scene_prepare_text_visuals(figure);
-    ANN(text->text.glyph_visual);
+    AT(_visual_family_state(text)->text.glyph_visual != NULL);
     AT(scene->font_count == 1);
     DvzTextAtlasSpec spec = _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, sizes[0]);
     DvzTextAtlas* atlas = _scene_text_atlas_get(&scene->fonts[0], &spec);
@@ -277,7 +277,7 @@ int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase
     ANN(atlas->field);
     DvzTextAtlasGlyph* utf8_glyph = _scene_text_atlas_glyph(atlas, 0x00E9u);
     ANN(utf8_glyph);
-    AT(text->text.glyph_visual->field == atlas->field);
+    AT(_visual_family_state(_visual_family_state(text)->text.glyph_visual)->field == atlas->field);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);

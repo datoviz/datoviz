@@ -37,7 +37,7 @@ void _sphere_params_sync_mode(DvzVisual* visual)
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_SPHERE)
         return;
-    visual->material_params.depth_cue_extra[3] = (float)visual->sphere_mode;
+    _visual_family_state(visual)->material_params.depth_cue_extra[3] = (float)_visual_family_state(visual)->sphere_mode;
 }
 
 
@@ -55,10 +55,10 @@ DvzVisual* dvz_sphere(DvzScene* scene, uint32_t flags)
     DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_SPHERE, flags);
     if (visual == NULL)
         return NULL;
-    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST;
-    visual->sphere_mode = DVZ_SPHERE_MODE_FAST_IMPOSTOR;
+    _visual_family_state(visual)->topology = DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST;
+    _visual_family_state(visual)->sphere_mode = DVZ_SPHERE_MODE_FAST_IMPOSTOR;
     _sphere_params_sync_mode(visual);
-    visual->material_params_dirty = true;
+    _visual_family_state(visual)->material_params_dirty = true;
     return visual;
 }
 
@@ -87,12 +87,12 @@ int dvz_sphere_mode(DvzVisual* visual, DvzSphereMode mode)
     if (!_scene_visual_mutation_allowed(visual->scene, "update sphere mode"))
         return -1;
 
-    if (visual->sphere_mode == mode)
+    if (_visual_family_state(visual)->sphere_mode == mode)
         return 0;
-    visual->sphere_mode = mode;
+    _visual_family_state(visual)->sphere_mode = mode;
     _sphere_params_sync_mode(visual);
     _visual_bump_version(&visual->material.version);
-    visual->material_params_dirty = true;
+    _visual_family_state(visual)->material_params_dirty = true;
     _scene_notify_visual_changed(visual);
     return 0;
 }

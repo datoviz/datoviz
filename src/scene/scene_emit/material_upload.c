@@ -44,7 +44,7 @@ bool _scene_emit_visual_material_upload(
     ANN(figure);
     ANN(plan);
     ANN(visual);
-    if (!visual->material_params_dirty)
+    if (!_visual_family_state(visual)->material_params_dirty)
         return true;
 
     char material_resource_id[128];

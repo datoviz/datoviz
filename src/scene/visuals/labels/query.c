@@ -483,7 +483,7 @@ static void _labels_query_category_label(
     ANN(out_label);
     DvzSceneColorizer colorizer = {0};
     if (_scene_colorizer_from_scale(
-            visual->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer))
+            _visual_family_state(visual)->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer))
         (void)_scene_colorizer_category_label(&colorizer, id, out_label, label_size);
     else
         dvz_snprintf(out_label, label_size, "label %" PRIi64, id);
@@ -517,12 +517,12 @@ static bool _labels_query_eligible(
     }
     if ((visual->query_capabilities & DVZ_QUERY_CAPABILITY_ITEM) == 0)
         return false;
-    if (visual->field == NULL)
+    if (_visual_family_state(visual)->field == NULL)
         return false;
     uint32_t texture_format = 0;
     uint32_t bytes_per_texel = 0;
     return _labels_query_integer_format(
-        visual->field->desc.format, &texture_format, &bytes_per_texel);
+        _visual_family_state(visual)->field->desc.format, &texture_format, &bytes_per_texel);
 }
 
 
@@ -566,7 +566,7 @@ static bool _labels_query_build(
     ANN(ctx->pending);
     ANN(out_plan);
 
-    DvzSampledField* field = ctx->visual->field;
+    DvzSampledField* field = _visual_family_state(ctx->visual)->field;
     if (field == NULL || field->data == NULL)
         return false;
     if (field->desc.dim != DVZ_FIELD_DIM_2D || field->desc.width == 0 ||
@@ -639,7 +639,7 @@ static bool _labels_query_build(
     metadata.field_width = field->desc.width;
     metadata.field_height = field->desc.height;
     metadata.has_labels = true;
-    metadata.labels_state = ctx->visual->labels;
+    metadata.labels_state = _visual_family_state(ctx->visual)->labels;
     dvz_strlcpy(metadata.position_id, "labels_query0_position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.texcoords_id, "labels_query0_texcoords", sizeof(metadata.texcoords_id));
     dvz_strlcpy(metadata.texture_id, "labels_query0_texture", sizeof(metadata.texture_id));
@@ -740,7 +740,7 @@ static bool _labels_query_decode(
         out_result->value_kind = DVZ_QUERY_VALUE_NONE;
         return true;
     }
-    if (label_id == ctx->build->visual->labels.background_id)
+    if (label_id == _visual_family_state(ctx->build->visual)->labels.background_id)
     {
         out_result->status = DVZ_QUERY_STATUS_MISS;
         out_result->visual_id =
@@ -764,7 +764,7 @@ static bool _labels_query_decode(
     out_result->resolved_id = target_id;
     out_result->group_id = target_id;
     out_result->category_id = label_id;
-    out_result->scale = ctx->build->visual->scale;
+    out_result->scale = _visual_family_state(ctx->build->visual)->scale;
     out_result->has_uvw = true;
     out_result->uvw[0] = ctx->plan->uvw[0];
     out_result->uvw[1] = ctx->plan->uvw[1];

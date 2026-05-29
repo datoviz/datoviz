@@ -40,7 +40,7 @@ DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags)
     DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_MESH, flags);
     if (visual == NULL)
         return NULL;
-    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    visual->material_params_dirty = true;
+    _visual_family_state(visual)->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    _visual_family_state(visual)->material_params_dirty = true;
     return visual;
 }

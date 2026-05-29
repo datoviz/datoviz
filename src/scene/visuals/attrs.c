@@ -305,9 +305,9 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
     }
     DvzSceneSampleProfile bound_profile = {0};
     bool has_bound_profile =
-        visual->field != NULL &&
+        _visual_family_state(visual)->field != NULL &&
         _scene_sample_profile_resolve(
-            visual->field->desc.format, visual->field->desc.semantic, visual->field->desc.dim,
+            _visual_family_state(visual)->field->desc.format, _visual_family_state(visual)->field->desc.semantic, _visual_family_state(visual)->field->desc.dim,
             &bound_profile);
     const bool labels =
         visual->type == DVZ_VISUAL_TYPE_LABELS ||
@@ -339,8 +339,8 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
          _scene_sample_profile_is_integer_label(&bound_profile)))
     {
         _scene_visual_texture_mark_clean(visual);
-        visual->texture.dirty = true;
-        _visual_bump_version(&visual->texture.version);
+        _visual_family_state(visual)->texture.dirty = true;
+        _visual_bump_version(&_visual_family_state(visual)->texture.version);
     }
     _scene_notify_visual_changed(visual);
     return 0;

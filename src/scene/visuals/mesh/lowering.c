@@ -40,7 +40,7 @@ bool _scene_mesh_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out
     dvz_memset(out, sizeof(DvzVisualLowering), 0, sizeof(DvzVisualLowering));
     out->draw_position_attr = "position";
     out->renderable_kind = DVZ_RENDERABLE_INDEXED_MESH;
-    out->desc_kind = visual->field != NULL ? DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH
+    out->desc_kind = _visual_family_state(visual)->field != NULL ? DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH
                                            : DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
     out->needs_material_params = _scene_visual_has_dense_attr(visual, "normal");
     return true;

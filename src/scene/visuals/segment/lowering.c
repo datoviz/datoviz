@@ -41,7 +41,7 @@ bool _scene_segment_visual_lowering(const DvzVisual* visual, DvzVisualLowering* 
     out->renderable_kind = DVZ_RENDERABLE_STROKE_QUAD;
     out->desc_kind = DVZ_SCENE_VISUAL_DESC_SEGMENT;
     out->needs_material_params = true;
-    out->stroke_quad_cache = &visual->segment.gpu;
+    out->stroke_quad_cache = &_visual_family_state(visual)->segment.gpu;
     return true;
 }
 

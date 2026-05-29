@@ -45,8 +45,8 @@ bool _image_texture_upload_payload(DvzVisual* visual, DvzImageTextureUploadPaylo
         log_error("image visual texture upload size overflow");
         return false;
     }
-    out->allocation_width = visual->texture.width;
-    out->allocation_height = visual->texture.height;
+    out->allocation_width = _visual_family_state(visual)->texture.width;
+    out->allocation_height = _visual_family_state(visual)->texture.height;
     return true;
 }
 
@@ -70,7 +70,7 @@ bool _image_texture_upload_payload_if_dirty(
     *out_handled = visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_GLYPH;
     if (!*out_handled)
         return true;
-    if (visual->field == NULL || (!visual->texture.dirty && !visual->field->dirty))
+    if (_visual_family_state(visual)->field == NULL || (!_visual_family_state(visual)->texture.dirty && !_visual_family_state(visual)->field->dirty))
         return true;
     return _image_texture_upload_payload(visual, out);
 }

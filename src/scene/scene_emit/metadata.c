@@ -76,25 +76,25 @@ bool _scene_visual_frame_plan_metadata(
                                                             : UINT32_MAX;
     metadata->visual_index = visual_index;
     metadata->buffer_index = UINT32_MAX;
-    metadata->topology = (uint32_t)visual->topology;
+    metadata->topology = (uint32_t)_visual_family_state(visual)->topology;
     metadata->instance_count = 1;
     metadata->alpha_mode = visual->alpha_mode;
     metadata->depth_test_enabled = visual->depth_test_enabled;
     metadata->depth_compare_op = visual->depth_compare_op;
     metadata->depth_cue_enabled = visual->material.depth_cue_enabled;
     metadata->point_style_enabled = lowering.point_style_enabled;
-    metadata->glyph_atlas_encoding = (uint32_t)visual->glyph_atlas_encoding;
-    metadata->glyph_distance_range_px = visual->glyph_distance_range_px;
-    metadata->scale_index = _scene_scale_index(figure->scene, visual->scale);
+    metadata->glyph_atlas_encoding = (uint32_t)_visual_family_state(visual)->glyph_atlas_encoding;
+    metadata->glyph_distance_range_px = _visual_family_state(visual)->glyph_distance_range_px;
+    metadata->scale_index = _scene_scale_index(figure->scene, _visual_family_state(visual)->scale);
     metadata->scene_occluder = visual->scene_occluder;
     metadata->scene_occluded = visual->scene_occluded;
-    if (visual->field != NULL)
+    if (_visual_family_state(visual)->field != NULL)
     {
-        metadata->field_format = (uint32_t)visual->field->desc.format;
-        metadata->field_semantic = (uint32_t)visual->field->desc.semantic;
-        metadata->field_width = visual->field->desc.width;
-        metadata->field_height = visual->field->desc.height;
-        metadata->field_depth = visual->field->desc.depth;
+        metadata->field_format = (uint32_t)_visual_family_state(visual)->field->desc.format;
+        metadata->field_semantic = (uint32_t)_visual_family_state(visual)->field->desc.semantic;
+        metadata->field_width = _visual_family_state(visual)->field->desc.width;
+        metadata->field_height = _visual_family_state(visual)->field->desc.height;
+        metadata->field_depth = _visual_family_state(visual)->field->desc.depth;
     }
 
     const char* vertex_count_attr =
@@ -200,7 +200,7 @@ bool _scene_visual_frame_plan_metadata(
             return false;
     }
 
-    uint32_t buffer_index = _scene_buffer_index(figure->scene, visual->buffer);
+    uint32_t buffer_index = _scene_buffer_index(figure->scene, _visual_family_state(visual)->buffer);
     if (buffer_index != UINT32_MAX)
     {
         metadata->buffer_index = buffer_index;

@@ -68,8 +68,8 @@ bool _scene_vector_visual_lowering(const DvzVisual* visual, DvzVisualLowering* o
                          : DVZ_SCENE_VISUAL_DESC_SEGMENT;
     out->needs_material_params = true;
     out->needs_vector_params_sync = true;
-    out->stroke_quad_cache = &visual->vector.stroke_gpu;
-    out->path_stroke_cache = &visual->vector.path_gpu;
+    out->stroke_quad_cache = &_visual_family_state(visual)->vector.stroke_gpu;
+    out->path_stroke_cache = &_visual_family_state(visual)->vector.path_gpu;
     return true;
 }
 

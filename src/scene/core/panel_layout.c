@@ -157,18 +157,18 @@ void _scene_figure_mark_screen_space_dirty(DvzFigure* figure)
                 visual->type == DVZ_VISUAL_TYPE_MARKER ||
                 visual->type == DVZ_VISUAL_TYPE_PATH)
             {
-                visual->material_params_dirty = true;
+                _visual_family_state(visual)->material_params_dirty = true;
             }
             if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
-                visual->segment.gpu.dirty = true;
+                _visual_family_state(visual)->segment.gpu.dirty = true;
             if (visual->type == DVZ_VISUAL_TYPE_IMAGE &&
                 _panel_visual_has_attr_data(visual, "position_px") &&
                 _panel_visual_has_attr_data(visual, "extent_px"))
             {
-                visual->image_gpu.dirty = true;
+                _visual_family_state(visual)->image_gpu.dirty = true;
             }
             if (visual->type == DVZ_VISUAL_TYPE_PATH)
-                visual->path.gpu.dirty = true;
+                _visual_family_state(visual)->path.gpu.dirty = true;
         }
     }
 }

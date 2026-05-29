@@ -35,6 +35,7 @@
 #include "domain/buffer_internal.h"
 #include "domain/field_internal.h"
 #include "image/internal.h"
+#include "registry/registry.h"
 #include "stroke/internal.h"
 
 
@@ -49,8 +50,16 @@ DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t fla
         return NULL;
     DvzVisual* visual = &scene->visuals[scene->visual_count++];
     dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
+    DvzVisualFamilyState* state = dvz_calloc(1, sizeof(DvzVisualFamilyState));
+    if (state == NULL)
+    {
+        scene->visual_count--;
+        return NULL;
+    }
     visual->scene = scene;
     visual->type = type;
+    visual->ops = _scene_visual_family_ops(type);
+    visual->family_state = state;
     visual->flags = flags;
     visual->visible = true;
     visual->z_layer = 0;
@@ -58,36 +67,36 @@ DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t fla
     visual->depth_test_enabled = true;
     visual->depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
     _material_state_default(&visual->material, type);
-    _material_params_default(&visual->material_params);
-    _material_params_sync_state(&visual->material_params, &visual->material);
+    _material_params_default(&state->material_params);
+    _material_params_sync_state(&state->material_params, &visual->material);
     if (type == DVZ_VISUAL_TYPE_POINT || type == DVZ_VISUAL_TYPE_MARKER)
-        _point_style_sync_params(&visual->material_params, &visual->material.point_style);
+        _point_style_sync_params(&state->material_params, &visual->material.point_style);
     if (type == DVZ_VISUAL_TYPE_SEGMENT)
     {
-        visual->segment.start_cap = DVZ_SEGMENT_CAP_BUTT;
-        visual->segment.end_cap = DVZ_SEGMENT_CAP_BUTT;
+        state->segment.start_cap = DVZ_SEGMENT_CAP_BUTT;
+        state->segment.end_cap = DVZ_SEGMENT_CAP_BUTT;
         _segment_sync_params(visual);
     }
     if (type == DVZ_VISUAL_TYPE_VECTOR)
     {
-        visual->vector.scale = 1.0f;
-        visual->vector.anchor = DVZ_VECTOR_ANCHOR_TAIL;
-        visual->vector.start_cap = DVZ_SEGMENT_CAP_NONE;
-        visual->vector.end_cap = DVZ_SEGMENT_CAP_TRIANGLE_OUT;
-        visual->vector.join = DVZ_PATH_JOIN_ROUND;
-        visual->vector.miter_limit = 4.0f;
+        state->vector.scale = 1.0f;
+        state->vector.anchor = DVZ_VECTOR_ANCHOR_TAIL;
+        state->vector.start_cap = DVZ_SEGMENT_CAP_NONE;
+        state->vector.end_cap = DVZ_SEGMENT_CAP_TRIANGLE_OUT;
+        state->vector.join = DVZ_PATH_JOIN_ROUND;
+        state->vector.miter_limit = 4.0f;
         _vector_sync_params(visual);
     }
     if (type == DVZ_VISUAL_TYPE_PATH)
     {
-        visual->path.cap_start = DVZ_SEGMENT_CAP_ROUND;
-        visual->path.cap_end = DVZ_SEGMENT_CAP_ROUND;
-        visual->path.join = DVZ_PATH_JOIN_ROUND;
-        visual->path.miter_limit = 4.0f;
+        state->path.cap_start = DVZ_SEGMENT_CAP_ROUND;
+        state->path.cap_end = DVZ_SEGMENT_CAP_ROUND;
+        state->path.join = DVZ_PATH_JOIN_ROUND;
+        state->path.miter_limit = 4.0f;
         _path_sync_params(visual);
     }
-    _labels_state_default(&visual->labels);
-    _volume_state_default(&visual->volume);
+    _labels_state_default(&state->labels);
+    _volume_state_default(&state->volume);
     return visual;
 }
 
@@ -103,19 +112,23 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
 {
     if (visual == NULL)
         return;
-    if (visual->type == DVZ_VISUAL_TYPE_TEXT && visual->text.glyph_visual != NULL)
-        dvz_visual_set_visible(visual->text.glyph_visual, false);
-    _stroke_quad_gpu_cache_free(&visual->segment.gpu);
-    _path_stroke_gpu_cache_free(&visual->path.gpu);
-    _stroke_quad_gpu_cache_free(&visual->vector.stroke_gpu);
-    _path_stroke_gpu_cache_free(&visual->vector.path_gpu);
-    _image_gpu_cache_free(&visual->image_gpu);
-    dvz_free(visual->path.subpath_lengths);
-    visual->path.subpath_lengths = NULL;
-    visual->path.subpath_count = 0;
-    dvz_free(visual->vector.subpath_lengths);
-    visual->vector.subpath_lengths = NULL;
-    visual->vector.subpath_count = 0;
+    DvzVisualFamilyState* state = _visual_family_state(visual);
+    if (state != NULL && visual->type == DVZ_VISUAL_TYPE_TEXT && state->text.glyph_visual != NULL)
+        dvz_visual_set_visible(state->text.glyph_visual, false);
+    if (state != NULL)
+    {
+        _stroke_quad_gpu_cache_free(&state->segment.gpu);
+        _path_stroke_gpu_cache_free(&state->path.gpu);
+        _stroke_quad_gpu_cache_free(&state->vector.stroke_gpu);
+        _path_stroke_gpu_cache_free(&state->vector.path_gpu);
+        _image_gpu_cache_free(&state->image_gpu);
+        dvz_free(state->path.subpath_lengths);
+        state->path.subpath_lengths = NULL;
+        state->path.subpath_count = 0;
+        dvz_free(state->vector.subpath_lengths);
+        state->vector.subpath_lengths = NULL;
+        state->vector.subpath_count = 0;
+    }
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
         if (visual->attrs[i].data != NULL)
@@ -135,11 +148,11 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
         _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
         _visual_binding_clear(visual, DVZ_VISUAL_BINDING_BUFFER);
         _visual_binding_clear(visual, DVZ_VISUAL_BINDING_SCALE);
-        if (visual->texture.upload != NULL)
+        if (state != NULL && state->texture.upload != NULL)
         {
-            dvz_free(visual->texture.upload);
-            visual->texture.upload = NULL;
-            visual->texture.upload_size = 0;
+            dvz_free(state->texture.upload);
+            state->texture.upload = NULL;
+            state->texture.upload_size = 0;
         }
         _scene_visual_texture_mark_clean(visual);
     }
@@ -148,27 +161,32 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
         dvz_free(visual->link_keys);
         visual->link_keys = NULL;
     }
-    if (visual->texture.rgba != NULL)
+    if (state != NULL && state->texture.rgba != NULL)
     {
-        dvz_free(visual->texture.rgba);
-        visual->texture.rgba = NULL;
-        visual->texture.rgba_size = 0;
+        dvz_free(state->texture.rgba);
+        state->texture.rgba = NULL;
+        state->texture.rgba_size = 0;
     }
-    if (visual->texture.label_lookup != NULL)
+    if (state != NULL && state->texture.label_lookup != NULL)
     {
-        dvz_free(visual->texture.label_lookup);
-        visual->texture.label_lookup = NULL;
-        visual->texture.label_lookup_size = 0;
+        dvz_free(state->texture.label_lookup);
+        state->texture.label_lookup = NULL;
+        state->texture.label_lookup_size = 0;
     }
-    if (visual->text.strings != NULL)
+    if (state != NULL && state->text.strings != NULL)
     {
-        for (uint32_t i = 0; i < visual->text.string_count; i++)
-            dvz_free(visual->text.strings[i]);
-        dvz_free(visual->text.strings);
-        visual->text.strings = NULL;
+        for (uint32_t i = 0; i < state->text.string_count; i++)
+            dvz_free(state->text.strings[i]);
+        dvz_free(state->text.strings);
+        state->text.strings = NULL;
     }
-    dvz_free(visual->text.spans);
-    visual->text.spans = NULL;
+    if (state != NULL)
+    {
+        dvz_free(state->text.spans);
+        state->text.spans = NULL;
+        dvz_free(state);
+        visual->family_state = NULL;
+    }
     dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
 }
 

@@ -2096,7 +2096,7 @@ int _scene_text_block_realize_image(
         block->image_desc = resolved;
         block->image_desc_valid = true;
     }
-    if (block->image_visual->field != block->image_field)
+    if (_visual_family_state(block->image_visual)->field != block->image_field)
     {
         if (!dvz_visual_set_field(block->image_visual, "field", block->image_field))
             return -1;

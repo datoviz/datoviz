@@ -41,9 +41,9 @@ DvzVisual* dvz_segment(DvzScene* scene, uint32_t flags)
     DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_SEGMENT, flags);
     if (visual == NULL)
         return NULL;
-    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    visual->material_params_dirty = true;
-    visual->segment.gpu.dirty = true;
+    _visual_family_state(visual)->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    _visual_family_state(visual)->material_params_dirty = true;
+    _visual_family_state(visual)->segment.gpu.dirty = true;
     return visual;
 }
 
@@ -73,13 +73,13 @@ int dvz_segment_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentC
     if (!_scene_visual_mutation_allowed(visual->scene, "update segment caps"))
         return -1;
 
-    if (visual->segment.start_cap == start_cap && visual->segment.end_cap == end_cap)
+    if (_visual_family_state(visual)->segment.start_cap == start_cap && _visual_family_state(visual)->segment.end_cap == end_cap)
         return 0;
-    visual->segment.start_cap = start_cap;
-    visual->segment.end_cap = end_cap;
+    _visual_family_state(visual)->segment.start_cap = start_cap;
+    _visual_family_state(visual)->segment.end_cap = end_cap;
     _segment_sync_params(visual);
     _visual_bump_version(&visual->material.version);
-    visual->material_params_dirty = true;
+    _visual_family_state(visual)->material_params_dirty = true;
     _scene_notify_visual_changed(visual);
     return 0;
 }

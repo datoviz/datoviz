@@ -502,12 +502,12 @@ int _material_apply_depth_cue(DvzSceneMaterialState* material, const DvzDepthCue
 void _visual_material_mark_dirty(DvzVisual* visual)
 {
     ANN(visual);
-    _material_params_sync_state(&visual->material_params, &visual->material);
+    _material_params_sync_state(&_visual_family_state(visual)->material_params, &visual->material);
     if (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_MARKER)
-        _point_style_sync_params(&visual->material_params, &visual->material.point_style);
+        _point_style_sync_params(&_visual_family_state(visual)->material_params, &visual->material.point_style);
     _sphere_params_sync_mode(visual);
     _visual_bump_version(&visual->material.version);
-    visual->material_params_dirty = true;
+    _visual_family_state(visual)->material_params_dirty = true;
     _scene_notify_visual_changed(visual);
 }
 
@@ -527,7 +527,7 @@ void _material_params_upload_payload(
 {
     ANN(visual);
     ANN(out_params);
-    *out_params = visual->material_params;
+    *out_params = _visual_family_state(visual)->material_params;
     if (point_style_scaled)
         out_params->params[0] *= screen_scale;
 }
@@ -675,7 +675,7 @@ int dvz_visual_set_volume_occluded(DvzVisual* visual, bool enabled)
     ANN(visual);
     if (!_scene_visual_mutation_allowed(visual->scene, "set volume occlusion"))
         return -1;
-    visual->volume_occluded = enabled;
+    _visual_family_state(visual)->volume_occluded = enabled;
     _scene_notify_visual_changed(visual);
     return 0;
 }

@@ -760,8 +760,8 @@ static void _scene_card_hide(DvzSceneCard* card)
     if (card->text_visual != NULL)
     {
         dvz_visual_set_visible(card->text_visual, false);
-        if (card->text_visual->text.glyph_visual != NULL)
-            dvz_visual_set_visible(card->text_visual->text.glyph_visual, false);
+        if (_visual_family_state(card->text_visual)->text.glyph_visual != NULL)
+            dvz_visual_set_visible(_visual_family_state(card->text_visual)->text.glyph_visual, false);
     }
 }
 
@@ -814,7 +814,7 @@ static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card)
         if (card->text_visual == NULL)
             return false;
         card->text_visual->visible = false;
-        card->text_visual->text.reserved_glyph_vertices = card->max_text_chars * 6u;
+        _visual_family_state(card->text_visual)->text.reserved_glyph_vertices = card->max_text_chars * 6u;
         if (_scene_adornment_text_visual_set_renderer(card->text_visual, card->text_renderer) != 0)
             return false;
         if (dvz_panel_add_visual(
@@ -824,7 +824,7 @@ static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card)
             return false;
     }
     if (card->content == DVZ_SCENE_CARD_CONTENT_TEXT &&
-        card->text_visual->text.renderer != card->text_renderer)
+        _visual_family_state(card->text_visual)->text.renderer != card->text_renderer)
     {
         if (_scene_adornment_text_visual_set_renderer(card->text_visual, card->text_renderer) != 0)
             return false;
@@ -833,8 +833,8 @@ static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card)
     if (card->content == DVZ_SCENE_CARD_CONTENT_IMAGE && card->text_visual != NULL)
     {
         dvz_visual_set_visible(card->text_visual, false);
-        if (card->text_visual->text.glyph_visual != NULL)
-            dvz_visual_set_visible(card->text_visual->text.glyph_visual, false);
+        if (_visual_family_state(card->text_visual)->text.glyph_visual != NULL)
+            dvz_visual_set_visible(_visual_family_state(card->text_visual)->text.glyph_visual, false);
     }
 
     bool size_changed =

@@ -63,8 +63,8 @@ DvzVisualBinding* _visual_binding(DvzVisual* visual, DvzVisualBindingKind kind)
         return NULL;
     }
     ASSERT(idx < DVZ_SCENE_MAX_VISUAL_BINDINGS);
-    visual->bindings[idx].kind = kind;
-    return &visual->bindings[idx];
+    _visual_family_state(visual)->bindings[idx].kind = kind;
+    return &_visual_family_state(visual)->bindings[idx];
 }
 
 
@@ -95,7 +95,7 @@ const DvzVisualBinding* _visual_binding_const(const DvzVisual* visual, DvzVisual
         return NULL;
     }
     ASSERT(idx < DVZ_SCENE_MAX_VISUAL_BINDINGS);
-    return &visual->bindings[idx];
+    return &_visual_family_state(visual)->bindings[idx];
 }
 
 
@@ -125,24 +125,24 @@ void _visual_binding_assign(
     switch (kind)
     {
     case DVZ_VISUAL_BINDING_FIELD:
-        visual->field = (DvzSampledField*)resource;
-        visual->field_owned = owned;
-        dvz_memset(visual->field_slot, sizeof(visual->field_slot), 0, sizeof(visual->field_slot));
+        _visual_family_state(visual)->field = (DvzSampledField*)resource;
+        _visual_family_state(visual)->field_owned = owned;
+        dvz_memset(_visual_family_state(visual)->field_slot, sizeof(_visual_family_state(visual)->field_slot), 0, sizeof(_visual_family_state(visual)->field_slot));
         if (slot_name != NULL && resource != NULL)
-            dvz_strlcpy(visual->field_slot, slot_name, sizeof(visual->field_slot));
+            dvz_strlcpy(_visual_family_state(visual)->field_slot, slot_name, sizeof(_visual_family_state(visual)->field_slot));
         break;
     case DVZ_VISUAL_BINDING_BUFFER:
-        visual->buffer = (DvzSceneBuffer*)resource;
+        _visual_family_state(visual)->buffer = (DvzSceneBuffer*)resource;
         dvz_memset(
-            visual->buffer_slot, sizeof(visual->buffer_slot), 0, sizeof(visual->buffer_slot));
+            _visual_family_state(visual)->buffer_slot, sizeof(_visual_family_state(visual)->buffer_slot), 0, sizeof(_visual_family_state(visual)->buffer_slot));
         if (slot_name != NULL && resource != NULL)
-            dvz_strlcpy(visual->buffer_slot, slot_name, sizeof(visual->buffer_slot));
+            dvz_strlcpy(_visual_family_state(visual)->buffer_slot, slot_name, sizeof(_visual_family_state(visual)->buffer_slot));
         break;
     case DVZ_VISUAL_BINDING_SCALE:
-        visual->scale = (DvzScale*)resource;
-        dvz_memset(visual->scale_slot, sizeof(visual->scale_slot), 0, sizeof(visual->scale_slot));
+        _visual_family_state(visual)->scale = (DvzScale*)resource;
+        dvz_memset(_visual_family_state(visual)->scale_slot, sizeof(_visual_family_state(visual)->scale_slot), 0, sizeof(_visual_family_state(visual)->scale_slot));
         if (slot_name != NULL && resource != NULL)
-            dvz_strlcpy(visual->scale_slot, slot_name, sizeof(visual->scale_slot));
+            dvz_strlcpy(_visual_family_state(visual)->scale_slot, slot_name, sizeof(_visual_family_state(visual)->scale_slot));
         break;
     default:
         break;

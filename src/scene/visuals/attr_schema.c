@@ -224,7 +224,7 @@ bool _visual_attr_count_consistent(
         bool attr_has_payload = attr->data != NULL || attr->buffer != NULL;
         if (_attr_is_instance_attribute(attr_name) || _attr_is_instance_attribute(attr->name))
             continue;
-        if (visual->type == DVZ_VISUAL_TYPE_MESH && visual->mesh_default_color &&
+        if (visual->type == DVZ_VISUAL_TYPE_MESH && _visual_family_state(visual)->mesh_default_color &&
             strcmp(attr_name, "position") == 0 && strcmp(attr->name, "color") == 0)
         {
             continue;

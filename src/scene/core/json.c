@@ -274,17 +274,17 @@ static void _json_append_visual(
     _json_append(b, ",\"buffer\":");
     _json_append_visual_binding(b, visual, DVZ_VISUAL_BINDING_BUFFER);
     _json_append(b, ",\"field_state\":");
-    if (visual->field != NULL)
+    if (_visual_family_state(visual)->field != NULL)
     {
         _json_append(
             b,
             "{\"pending\":%s,\"full\":%s,\"region\":{\"x\":%u,\"y\":%u,\"z\":%u,"
             "\"width\":%u,\"height\":%u,\"depth\":%u}}",
-            visual->texture.field_dirty ? "true" : "false",
-            visual->texture.field_dirty_full ? "true" : "false",
-            visual->texture.field_dirty_region.x, visual->texture.field_dirty_region.y,
-            visual->texture.field_dirty_region.z, visual->texture.field_dirty_region.width,
-            visual->texture.field_dirty_region.height, visual->texture.field_dirty_region.depth);
+            _visual_family_state(visual)->texture.field_dirty ? "true" : "false",
+            _visual_family_state(visual)->texture.field_dirty_full ? "true" : "false",
+            _visual_family_state(visual)->texture.field_dirty_region.x, _visual_family_state(visual)->texture.field_dirty_region.y,
+            _visual_family_state(visual)->texture.field_dirty_region.z, _visual_family_state(visual)->texture.field_dirty_region.width,
+            _visual_family_state(visual)->texture.field_dirty_region.height, _visual_family_state(visual)->texture.field_dirty_region.depth);
     }
     else
     {

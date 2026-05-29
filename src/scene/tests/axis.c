@@ -532,21 +532,21 @@ static int test_axis_text_labels(TstContext* suite, const TstCase* item)
     ANN(axis->text_visual);
     AT(axis->text_visual->type == DVZ_VISUAL_TYPE_TEXT);
     AT(axis->text_visual->visible);
-    AT(axis->text_visual->text.string_count == axis->tick_count + 1);
-    AT(strcmp(axis->text_visual->text.strings[axis->tick_count], "Time") == 0);
+    AT(_visual_family_state(axis->text_visual)->text.string_count == axis->tick_count + 1);
+    AT(strcmp(_visual_family_state(axis->text_visual)->text.strings[axis->tick_count], "Time") == 0);
     DvzVisualDataView position_view = {0};
     AT(dvz_visual_data(axis->text_visual, "position", &position_view) == 0);
-    AT(position_view.item_count == axis->text_visual->text.string_count);
+    AT(position_view.item_count == _visual_family_state(axis->text_visual)->text.string_count);
 
     _scene_prepare_text_visuals(figure);
-    ANN(axis->text_visual->text.glyph_visual);
-    AT(axis->text_visual->text.glyph_visual->visible);
+    AT(_visual_family_state(axis->text_visual)->text.glyph_visual != NULL);
+    AT(_visual_family_state(axis->text_visual)->text.glyph_visual->visible);
 
     AT(dvz_axis_set_visible(axis, false));
     _scene_prepare_axis_visuals(figure);
     AT(!axis->text_visual->visible);
     _scene_prepare_text_visuals(figure);
-    AT(!axis->text_visual->text.glyph_visual->visible);
+    AT(!_visual_family_state(axis->text_visual)->text.glyph_visual->visible);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -589,10 +589,10 @@ static int test_axis_text_hidpi_scales_glyph_bounds(TstContext* suite, const Tst
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
     ANN(axis->text_visual);
-    ANN(axis->text_visual->text.glyph_visual);
+    AT(_visual_family_state(axis->text_visual)->text.glyph_visual != NULL);
 
     DvzVisualDataView bounds_view = {0};
-    AT(dvz_visual_data(axis->text_visual->text.glyph_visual, "bounds", &bounds_view) == 0);
+    AT(dvz_visual_data(_visual_family_state(axis->text_visual)->text.glyph_visual, "bounds", &bounds_view) == 0);
     const float* bounds = (const float*)bounds_view.data;
     ANN(bounds);
     float max_extent = 0.0f;
@@ -629,18 +629,18 @@ static int test_axis_text_renderer_style(TstContext* suite, const TstCase* item)
     AT(axis->style.text_renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
     _scene_prepare_axis_visuals(figure);
     ANN(axis->text_visual);
-    AT(axis->text_visual->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
+    AT(_visual_family_state(axis->text_visual)->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
 
     DvzAxisStyle style = axis->style;
     style.text_renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
     AT(dvz_axis_set_style(axis, &style));
     _scene_prepare_axis_visuals(figure);
-    AT(axis->text_visual->text.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
+    AT(_visual_family_state(axis->text_visual)->text.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
 
     style.text_renderer = DVZ_TEXT_RENDERER_VECTOR_GPU;
     AT(dvz_axis_set_style(axis, &style));
     _scene_prepare_axis_visuals(figure);
-    AT(axis->text_visual->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
+    AT(_visual_family_state(axis->text_visual)->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -664,14 +664,14 @@ static int test_axis_text_updates_after_domain_change(TstContext* suite, const T
     ANN(axis);
     _scene_prepare_axis_visuals(figure);
     ANN(axis->text_visual);
-    AT(axis->text_visual->text.string_count >= 2);
+    AT(_visual_family_state(axis->text_visual)->text.string_count >= 2);
     char second_before[DVZ_SCENE_LABEL_SIZE] = {0};
-    dvz_strlcpy(second_before, axis->text_visual->text.strings[1], sizeof(second_before));
+    dvz_strlcpy(second_before, _visual_family_state(axis->text_visual)->text.strings[1], sizeof(second_before));
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
     _scene_prepare_axis_visuals(figure);
-    AT(axis->text_visual->text.string_count >= 2);
-    AT(strcmp(axis->text_visual->text.strings[1], second_before) != 0);
+    AT(_visual_family_state(axis->text_visual)->text.string_count >= 2);
+    AT(strcmp(_visual_family_state(axis->text_visual)->text.strings[1], second_before) != 0);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -747,11 +747,11 @@ static int test_axis_text_inset_panel_coordinates(TstContext* suite, const TstCa
     ANN(x_axis->text_visual);
     ANN(y_axis->text_visual);
     char* x_tick_end = NULL;
-    double x_tick = strtod(x_axis->text_visual->text.strings[0], &x_tick_end);
-    AT(x_tick_end != x_axis->text_visual->text.strings[0]);
+    double x_tick = strtod(_visual_family_state(x_axis->text_visual)->text.strings[0], &x_tick_end);
+    AT(x_tick_end != _visual_family_state(x_axis->text_visual)->text.strings[0]);
     char* y_tick_end = NULL;
-    double y_tick = strtod(y_axis->text_visual->text.strings[0], &y_tick_end);
-    AT(y_tick_end != y_axis->text_visual->text.strings[0]);
+    double y_tick = strtod(_visual_family_state(y_axis->text_visual)->text.strings[0], &y_tick_end);
+    AT(y_tick_end != _visual_family_state(y_axis->text_visual)->text.strings[0]);
 
     float panel_x = 0.0f;
     float panel_y = 0.0f;
@@ -794,10 +794,10 @@ static int test_axis_text_inset_panel_coordinates(TstContext* suite, const TstCa
     AC(y_positions[1], expected_y0, 1e-3f);
 
     _scene_prepare_text_visuals(figure);
-    ANN(x_axis->text_visual->text.glyph_visual);
+    AT(_visual_family_state(x_axis->text_visual)->text.glyph_visual != NULL);
     DvzVisualDataView glyph_position_view = {0};
     AT(dvz_visual_data(
-           x_axis->text_visual->text.glyph_visual, "position", &glyph_position_view) == 0);
+           _visual_family_state(x_axis->text_visual)->text.glyph_visual, "position", &glyph_position_view) == 0);
     const float* glyph_positions = (const float*)glyph_position_view.data;
     const float expected_clip_x = 2.0f * expected_x0 / panel_width - 1.0f;
     const float expected_clip_y =

@@ -223,7 +223,7 @@ static bool _scalebar_ensure_visuals(DvzAnnotation* annotation)
         annotation->visual = _scene_text_visual(annotation->scene, 0);
         if (annotation->visual == NULL)
             return false;
-        annotation->visual->text.reserved_glyph_vertices =
+        _visual_family_state(annotation->visual)->text.reserved_glyph_vertices =
             DVZ_SCALEBAR_LABEL_RESERVED_GLYPHS * 6u;
         annotation->visual->visible = false;
         if (dvz_panel_add_visual(
@@ -639,7 +639,7 @@ static bool _scalebar_prepare_overlay_visual(
             {.attr_name = "color", .data = text_colors, .item_count = 1},
             {.attr_name = "angle", .data = angles, .item_count = 1},
         };
-        if (annotation->visual->text.renderer != resolved.renderer &&
+        if (_visual_family_state(annotation->visual)->text.renderer != resolved.renderer &&
             _scene_text_visual_set_renderer(annotation->visual, resolved.renderer) != 0)
             return false;
         if (dvz_visual_set_strings(annotation->visual, "text", labels, 1) != 0 ||
