@@ -25,6 +25,7 @@
 #include "_overflow.h"
 #include "_scale_ticks.h"
 #include "_scene.h"
+#include "core/format_state_internal.h"
 #include "datoviz/scene.h"
 #include "text_internal.h"
 

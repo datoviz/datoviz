@@ -16,6 +16,7 @@
 #include "_alloc.h"
 #include "_compat.h"
 #include "_scene.h"
+#include "core/format_state_internal.h"
 
 
 /*************************************************************************************************/

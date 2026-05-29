@@ -26,6 +26,7 @@
 #include "_scene.h"
 #include "_visual_internal.h"
 #include "annotation/prepare_internal.h"
+#include "core/format_state_internal.h"
 #include "datoviz/scene/overlay.h"
 #include "query/internal.h"
 #include "text/internal.h"
