@@ -80,7 +80,7 @@ Completed RC1-critical lanes that must remain in validation:
 4. Full WebGPU parity with the native Vulkan runtime.
 5. Complex text shaping, TeX/math layout, rich labels, and label collision solving.
 6. Rich rendered pinned readout UI beyond the state/formatting and examples needed for v0.4.
-7. First-class vector/arrow visual, mesh face/region picking, path curve picking, volume DVR/MIP
+7. First-class vector visual polish, mesh face/region picking, path curve picking, volume DVR/MIP
    ray-hit picking, labels GPU probing, lasso selection, scene-level compute, custom shader APIs,
    CUDA interop, LOD/out-of-core policies, and full dashboard/application APIs.
 

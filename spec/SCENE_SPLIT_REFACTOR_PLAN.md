@@ -178,36 +178,35 @@ typedef struct DvzVisualLowering
 The exact names may change during implementation, but generic files should consume the lowering
 result, not `DvzVisualType` branches. A generic branch on `DvzRenderableKind` is acceptable only when
 the branch represents a reusable render primitive. A branch on `DVZ_VISUAL_TYPE_VECTOR`,
-`DVZ_VISUAL_TYPE_SEGMENT`, `DVZ_VISUAL_TYPE_ARROW`, or any other semantic family in generic
+`DVZ_VISUAL_TYPE_SEGMENT`, or any other semantic family in generic
 pipeline, metadata, pass-capability, descriptor, or upload plumbing is not acceptable.
 
 
-## Vector And Arrow Independence Rule
+## Vector Independence Rule
 
-`arrow` is currently an alias for `vector`, but arrow/vector behavior must still be independent from
-the `segment` and `path` retained-family state. Sharing a shader, pipeline, or renderable primitive
-is encouraged; sharing retained state is not.
+Arrowheads are vector style, not a separate visual family or constructor. Vector behavior must still
+be independent from the `segment` and `path` retained-family state. Sharing a shader, pipeline, or
+renderable primitive is encouraged; sharing retained state is not.
 
-Required end state for vector/arrow:
+Required end state for vector:
 
-1. `DvzVisual` stores vector/arrow state in vector-owned fields only. It must not store vector caps,
+1. `DvzVisual` stores vector state in vector-owned fields only. It must not store vector caps,
    style, dirty flags, or upload cache data in `visual->segment` or `visual->path`.
-2. Straight vector/arrow may lower to `stroke_quad`, and curved vector/arrow may lower to
+2. Straight vector may lower to `stroke_quad`, and curved vector may lower to
    `path_stroke`, but those lowerings are renderable primitives shared by clients, not the segment
    or path families.
 3. Segment owns `position_start`/`position_end` semantics. Path owns standalone path semantics.
    Vector owns straight `position`/`vector` semantics and curved point/subpath semantics, computing
    endpoints or expanded path-stroke inputs during vector lowering.
-4. `dvz_arrow()` may remain a public alias for `dvz_vector()` while arrows are the default vector
-   presentation mode, but arrow defaults and future arrow-head options must be represented in
+4. `dvz_vector()` is the only vector-family constructor; vector-head options must be represented in
    vector-owned style/state.
 5. Generic visual, metadata, pass-capability, descriptor, upload, and render-emission files must not
-   contain vector/arrow-specific checks. They should consume `stroke_quad` and `path_stroke`
+   contain vector-specific checks. They should consume `stroke_quad` and `path_stroke`
    lowering facts.
-6. Tests should assert vector/arrow public behavior and emitted renderable descriptors, not
+6. Tests should assert vector public behavior and emitted renderable descriptors, not
    implementation details such as `visual->segment.gpu`, `visual->segment.start_cap`, or path state.
-7. Query results must preserve vector/arrow semantic identity. Shared query builders are acceptable
-   only as renderable-primitive query helpers; vector/arrow query routing should not delegate to
+7. Query results must preserve vector semantic identity. Shared query builders are acceptable
+   only as renderable-primitive query helpers; vector query routing should not delegate to
    segment/path retained-family ownership as the long-term design.
 
 Concrete refactor targets from the current codebase:
@@ -222,8 +221,8 @@ Concrete refactor targets from the current codebase:
    and render-position logic;
 6. move vector query delegation onto renderable-primitive query helpers so vector results retain
    `DVZ_SCENE_VISUAL_FAMILY_VECTOR` without depending on segment/path family ops;
-7. keep segment and path tests focused on their own semantics, keep vector/arrow tests focused on
-   vector/arrow semantics, and cover shared stroke/path renderable primitives with separate tests.
+7. keep segment and path tests focused on their own semantics, keep vector tests focused on vector
+   semantics, and cover shared stroke/path renderable primitives with separate tests.
 
 
 ## Target Module Candidates
@@ -459,11 +458,11 @@ Goal: introduce the semantic-visual-to-renderable-primitive boundary, then reduc
 Preferred order:
 
 1. define the internal renderable-primitive lowering result consumed by generic pipeline code;
-2. route segment and straight vector/arrow through a shared `stroke_quad` lowering primitive without
+2. route segment and straight vector through a shared `stroke_quad` lowering primitive without
    sharing segment retained state;
-3. route path and curved vector/arrow through a shared `path_stroke` lowering primitive without
+3. route path and curved vector through a shared `path_stroke` lowering primitive without
    sharing path retained state;
-4. remove vector/arrow-specific checks from generic visual, descriptor, metadata, pass-capability,
+4. remove vector-specific checks from generic visual, descriptor, metadata, pass-capability,
    upload, render-position, and render-emission paths;
 5. normalize the remaining visual-family lowering so generic pipeline code consumes descriptors
    instead of concrete-family branches;
@@ -479,7 +478,7 @@ Required end state:
 1. adding a visual family does not require adding `if (is_<family>)`, `if (<family>)`, or
    `visual_type == DVZ_VISUAL_TYPE_<FAMILY>` checks to generic visual, render-emission, or pipeline
    plumbing files;
-2. vector/arrow owns vector/arrow state only and does not write to or depend on `visual->segment` or
+2. vector owns vector state only and does not write to or depend on `visual->segment` or
    `visual->path` retained state;
 3. family-specific vertex layouts, shader keys, draw counts, topology, bind-group needs, upload
    resources, material parameters, and pass-capability choices are expressed through
@@ -490,7 +489,7 @@ Required end state:
    behavior applies to only one concrete visual family;
 6. focused scene tests cover at least one retained family and one nontrivial descriptor/lowering path
    so the boundary fails visibly if concrete-family logic leaks back into generic code;
-7. vector/arrow tests fail if straight lowering regresses to segment-owned cache/state, curved
+7. vector tests fail if straight lowering regresses to segment-owned cache/state, curved
    lowering regresses to path-owned cache/state, query routing loses vector semantic identity, or a
    new `DVZ_VISUAL_TYPE_VECTOR`/arrow check appears in generic pipeline plumbing outside
    vector-family owned files.

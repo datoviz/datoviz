@@ -40,8 +40,8 @@ Recommended follow-up commits:
 5. Add dashing after cumulative path-distance metadata and dash phase updates can be tested without
    rebuilding source geometry.
 6. Settle the remaining open questions in the vector visual spec before implementation.
-7. Add arrow/vector-field helpers on top of segment/path plus marker-style arrowheads once picking
-   metadata can map shafts and heads back to the same source item.
+7. Add vector-field helpers and independent vector-head styling once picking metadata can map
+   shafts and heads back to the same source item.
 8. Keep SVG parsing, fills, markers, transforms, and static import as a later subset. Treat SVG as
    an authoring/import layer over Datoviz visuals, not as a separate renderer.
 9. Keep dense 3D streamlines/ribbons and tube meshes behind the 2D stroke backend. Tube work should
@@ -61,14 +61,14 @@ Use v0.3 as behavior reference, not architecture:
 6. `v0.3/src/scene/glsl/graphics_path.frag`
 7. `v0.3/src/scene/visuals/marker.c`
 8. `v0.3/src/scene/sdf.cpp`
-9. `v0.3` arrow shape helpers for later 3D mesh arrows.
+9. `v0.3` arrow shape helpers for later 3D vector-head meshes.
 
 Useful ideas to retain:
 
 1. four-vertex/six-index analytic segment expansion;
 2. Rougier-style shader-based antialiased stroked polylines;
 3. cap, join, miter-limit, dash, and cumulative-length metadata;
-4. marker attachments for arrowheads and SVG-style path markers;
+4. marker attachments for vector heads and SVG-style path markers;
 5. SVG-to-MSDF tooling as an asset path, not a required runtime import path.
 
 Avoid reviving v0.3 batch ownership, direct allocation patterns, geometry-shader assumptions, or a

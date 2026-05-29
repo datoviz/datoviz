@@ -75,7 +75,7 @@ best next choices when the task is to improve examples or add a visible capabili
 | Priority | Lane | Current read | Next action |
 | ---: | --- | --- | --- |
 | 1 | Gallery proof pass | Protein, LiDAR, brain, labels, textured mesh, and WebGPU subset examples form the proof set. | Run/capture/tune defaults, promote or add the textured terrain/planet proof, and fix concrete rough edges before RC1. |
-| 2 | Vector/arrow visual | Missing as a semantic visual; wind-field examples can use primitives only as a temporary bridge. | Start from [`../soon/scene/SCENE_VECTOR_VISUALS_PLAN.md`](../soon/scene/SCENE_VECTOR_VISUALS_PLAN.md), then pressure it with a wind-field showcase. |
+| 2 | Vector visual | First semantic slice exists; wind-field gallery pressure and head-styling polish remain. | Use [`../../spec/scene/visuals/VECTOR.md`](../../spec/scene/visuals/VECTOR.md) and [`../soon/scene/SCENE_VECTOR_VISUALS_PLAN.md`](../soon/scene/SCENE_VECTOR_VISUALS_PLAN.md), then pressure it with a wind-field showcase. |
 | 3 | Label query hardening | Raw `dvz_labels()` integer query and sparse signed/unsigned label-volume lookup are implemented. | Broaden transform, larger-field, request-churn, and readback-efficiency coverage. |
 | 4 | Explanatory layout proof | Reserve/layout infrastructure exists for axes, colorbars, legends, and scale bars. | Add one composed example and focused validation for predictable adornment composition. |
 | 5 | Splat visual | Not implemented and intentionally a new visual family; acceptable as v0.4 experimental showcase scope if it lands cleanly. | Add retained splat fixture and dense capture only after release-proof lanes stay on track; full Gaussian-splat pipelines remain later. |
@@ -111,7 +111,7 @@ Good parallel work now:
    selected-item metadata cards, public overlay card API, rich overlay card API, example proof,
    non-overlay rich text-block proof, and FreeType-backed private rich text-block rasterization in
    [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md).
-9. **Shiny demo follow-up:** gallery proof first, then vector/arrow visual, label GPU probing,
+9. **Shiny demo follow-up:** gallery proof first, then vector visual, label GPU probing,
    explanatory layout proof, and optional experimental splats as recorded in
    [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
 

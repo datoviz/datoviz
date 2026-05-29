@@ -48,7 +48,7 @@ future scaffolding.
 
 Current shiny-demo recommendations are recorded in
 [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md):
-vector/arrow visuals are the best new demo unlock, labels query hardening is now transform,
+vector visuals are the best new demo unlock, labels query hardening is now transform,
 large-field, and request-path pressure work, explanatory layout proof is mostly validation/polish,
 and splats are an optional v0.4 experimental showcase if the new visual lands cleanly.
 

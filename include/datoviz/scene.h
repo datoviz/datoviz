@@ -1537,9 +1537,9 @@ dvz_segment_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap e
 
 
 /**
- * Return default vector/arrow styling.
+ * Return default vector styling.
  *
- * The default style renders a tail-anchored arrow with a triangular end cap. `scale` multiplies
+ * The default style renders a tail-anchored vector with a triangular end cap. `scale` multiplies
  * each dense `vector` attribute before endpoint derivation.
  *
  * @return default vector style descriptor
@@ -1548,14 +1548,14 @@ DVZ_EXPORT DvzVectorStyle dvz_vector_style(void);
 
 
 /**
- * Create a vector/arrow visual.
+ * Create a vector visual.
  *
  * Straight vector items accept dense `position` (vec3 tail/anchor), `vector` (vec3 displacement),
  * `color` (RGBA8), and `stroke_width` (float pixels). The first native lowering renders each item
  * through the scene segment stroke pipeline with source item identity preserved.
  *
- * Curved arrow mode omits `vector`; `position`, `color`, and `stroke_width` are then interpreted
- * as path points, optionally grouped by dvz_vector_set_subpaths().
+ * Curved mode omits `vector`; `position`, `color`, and `stroke_width` are then interpreted as
+ * path points, optionally grouped by dvz_vector_set_subpaths().
  *
  * @param scene the scene
  * @param flags variant flags
@@ -1565,20 +1565,7 @@ DVZ_EXPORT DvzVisual* dvz_vector(DvzScene* scene, uint32_t flags);
 
 
 /**
- * Create an arrow visual.
- *
- * This is an alias for dvz_vector(); arrows are the default presentation mode of the vector
- * visual family.
- *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual
- */
-DVZ_EXPORT DvzVisual* dvz_arrow(DvzScene* scene, uint32_t flags);
-
-
-/**
- * Configure vector/arrow styling.
+ * Configure vector styling.
  *
  * The first slice supports visual-wide scale, anchor, endpoint caps, and path join settings.
  * Passing NULL restores the defaults.
@@ -1591,9 +1578,9 @@ DVZ_EXPORT int dvz_vector_set_style(DvzVisual* visual, const DvzVectorStyle* sty
 
 
 /**
- * Set explicit curved-arrow subpath lengths for a vector visual.
+ * Set explicit curved-vector subpath lengths for a vector visual.
  *
- * When unset in curved mode, all points belong to one open arrow path. Lengths are consumed in
+ * When unset in curved mode, all points belong to one open vector path. Lengths are consumed in
  * order and must sum to the vector visual's path-point count at emission time.
  *
  * @param visual the vector visual

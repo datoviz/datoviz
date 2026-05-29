@@ -48,7 +48,7 @@ static bool _vector_anchor_valid(DvzVectorAnchor anchor)
 /*************************************************************************************************/
 
 /**
- * Return default vector/arrow styling.
+ * Return default vector styling.
  *
  * @return default vector style descriptor
  */
@@ -68,7 +68,7 @@ DvzVectorStyle dvz_vector_style(void)
 
 
 /**
- * Create a vector/arrow visual.
+ * Create a vector visual.
  *
  * @param scene the scene
  * @param flags variant flags
@@ -90,21 +90,7 @@ DvzVisual* dvz_vector(DvzScene* scene, uint32_t flags)
 
 
 /**
- * Create an arrow visual.
- *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual, or NULL on allocation failure
- */
-DvzVisual* dvz_arrow(DvzScene* scene, uint32_t flags)
-{
-    return dvz_vector(scene, flags);
-}
-
-
-
-/**
- * Configure vector/arrow styling.
+ * Configure vector styling.
  *
  * @param visual the vector visual
  * @param style style descriptor, or NULL for defaults

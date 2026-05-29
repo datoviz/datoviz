@@ -1,9 +1,9 @@
 # Visual Family: `vector`
 
-Status: first v0.4 slice implemented. Public `dvz_vector()` / `dvz_arrow()` constructors and
-`DVZ_VISUAL_TYPE_VECTOR` are installed.
+Status: first v0.4 slice implemented. Public `dvz_vector()` and `DVZ_VISUAL_TYPE_VECTOR` are
+installed.
 
-This document defines a vector and arrow visual contract. It refines
+This document defines the vector visual contract. It refines
 `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.md`,
 `../pipeline/ATTRIBUTE_SOURCES.md`, and `../semantics/VISUAL_CONTRACT.md`.
 
@@ -13,11 +13,11 @@ generated shaft/head roles. It must not introduce a parallel renderer path.
 
 ## Objective
 
-Datoviz should expose vector and arrow rendering as one semantic visual contract, not as ad hoc
+Datoviz should expose vector rendering as one semantic visual contract, not as ad hoc
 user-managed `segment`, `path`, `marker`, or `primitive` combinations.
 
 The immediate goal is a clean design target for quiver plots, wind fields, cell-motion vectors,
-load arrows, displacement arrows, lattice vectors, and selected trajectory direction cues. The first
+load vectors, displacement vectors, lattice vectors, and selected trajectory direction cues. The first
 implementation may lower to existing stroke and marker machinery, but users should still interact
 with one logical vector item.
 
@@ -28,20 +28,20 @@ Status on 2026-05-27: `vector` has an active retained scene visual implementatio
 
 Implemented first-slice behavior:
 
-1. public `dvz_vector()` and `dvz_arrow()` constructors;
+1. public `dvz_vector()` constructor;
 2. public `DvzVectorStyle`, `dvz_vector_style()`, and `dvz_vector_set_style()`;
 3. straight vector mode with dense `position`, `vector`, `color`, and `stroke_width` attributes;
-4. curved arrow mode that omits `vector` and interprets `position`, `color`, and `stroke_width`
+4. curved vector mode that omits `vector` and interprets `position`, `color`, and `stroke_width`
    as path points;
-5. public `dvz_vector_set_subpaths()` for curved-arrow path grouping;
+5. public `dvz_vector_set_subpaths()` for curved-vector path grouping;
 6. DRP2 emission through existing segment and path stroke pipelines;
 7. bounds, material parameter refresh, GLSL frame-plan tests, and native item query coverage;
 8. a C smoke example at `examples/c/visuals/vector.c`.
 
-The active arrowhead rendering is cap-based: vector/arrow uses the segment/path triangular cap
-vocabulary, and the visible head size is derived from `stroke_width`. Thin strokes therefore produce
-small, sometimes barely visible heads. Independent head length/width, head-size space, and richer
-head geometry are not implemented yet.
+The active head rendering is cap-based: vector uses the segment/path triangular cap vocabulary, and
+the visible head size is derived from `stroke_width`. Thin strokes therefore produce small,
+sometimes barely visible heads. Independent head length/width, head-size space, and richer head
+geometry are not implemented yet.
 
 Deferred behavior remains: dedicated vector shaders, scalar/magnitude styling, independent
 visual-wide or per-item head dimensions, authored id payloads, WebGPU parity for the vector-specific
@@ -53,7 +53,7 @@ Relevant existing contracts:
 2. [`PATH.md`](PATH.md) owns connected stroked sequences.
 3. [`MARKER.md`](MARKER.md) owns screen-facing symbolic marks,
    including future arrow marker shapes.
-4. [`../api/API_SURFACE.md`](../api/API_SURFACE.md) says vector/arrow APIs may expose one
+4. [`../api/API_SURFACE.md`](../api/API_SURFACE.md) says vector APIs may expose one
    semantic mutation surface while lowering to leaf roles such as `"shaft"` and `"head_end"`.
 5. [`IMPLEMENTATION_DECISIONS.md`](IMPLEMENTATION_DECISIONS.md) records
    that 2D vector fields should lower to segment/marker backends with source item identity
@@ -62,20 +62,18 @@ Relevant existing contracts:
 
 ## Core Direction
 
-Keep `vector` as a first-class visual family.
-
-`arrow` should be a presentation mode of `vector`, not a separate family. A vector item may render
-with no head, one head, or two heads, but the semantic item remains the same origin plus direction
-record.
+Keep `vector` as a first-class visual family. A vector item may render with no head, one head, or
+two heads, but the semantic item remains the same origin plus direction record. Arrowheads are vector
+style, not a separate visual family or constructor.
 
 Required invariants:
 
 1. one source vector item maps to one pickable scene item;
 2. derived shafts and heads preserve source item identity;
 3. vector direction is transformed using scene coordinate semantics, not by screen-space guessing;
-4. 2D arrows use screen-space stroke/head styling by default;
-5. true 3D arrows, tubes, and streamlines remain separate geometry lanes;
-6. dense vector fields should be expressible without CPU-rebuilding arrow geometry every frame.
+4. 2D vector heads use screen-space stroke/head styling by default;
+5. true 3D vector glyphs, tubes, and streamlines remain separate geometry lanes;
+6. dense vector fields should be expressible without CPU-rebuilding head geometry every frame.
 
 
 ## Visual Or Composite Object
@@ -87,7 +85,7 @@ DvzVisual* dvz_vector(DvzScene* scene, uint32_t flags);
 ```
 
 The visual currently lowers directly to existing stroke families instead of owning persistent child
-visuals. Straight vectors lower to the segment stroke path; curved arrows lower to the path stroke
+visuals. Straight vectors lower to the segment stroke path; curved vectors lower to the path stroke
 path. Future generated leaf roles remain acceptable if they become useful:
 
 ```text
@@ -117,7 +115,7 @@ displacement or direction in the same coordinate system unless the visual declar
 vector-space mode.
 
 In curved mode, omit the `vector` attribute. `position` then contains path points and
-`dvz_vector_set_subpaths()` optionally partitions them into open arrow paths. The path endpoint cap
+`dvz_vector_set_subpaths()` optionally partitions them into open vector paths. The path endpoint cap
 settings from `DvzVectorStyle` define arrowheads.
 
 The default anchor is the tail. Other anchors change how the displacement is placed around
@@ -213,7 +211,7 @@ head width.
 
 Explicit magnitude channel for color, opacity, filtering, legends, or labels. When absent, examples
 may derive magnitude from `vector` during preprocessing. The core visual should not require a
-separate magnitude array to render arrows.
+separate magnitude array to render vectors.
 
 
 ### `id`
@@ -253,7 +251,7 @@ the source `position` or `vector` arrays.
 | Default | `false` |
 | Mutability | `dynamic` |
 
-When true, the visual uses only vector direction for geometry length and takes arrow length from a
+When true, the visual uses only vector direction for geometry length and takes displayed length from a
 separate length policy. The first implementation may defer this and require pre-normalized vectors.
 
 
@@ -307,7 +305,7 @@ The semantic set should match the arrow vocabulary already used by marker and se
 | Mutability | `dynamic` |
 
 For dense quiver plots, screen-space heads are the right default because they stay legible while
-zooming. Data-space heads are useful for physical 3D or engineering arrows, but may require a
+zooming. Data-space heads are useful for physical 3D or engineering vectors, but may require a
 geometry lane instead of the first 2D stroke backend.
 
 
@@ -363,7 +361,7 @@ The desired 2D lowering is:
 4. keep a derived-item table mapping every shaft/head primitive back to the source vector index.
 
 This keeps the first slice aligned with the existing segment, marker, and GPU query work. It also
-avoids a second renderer for arrows.
+avoids a second renderer for vector heads.
 
 Open implementation choice:
 
@@ -371,10 +369,10 @@ Open implementation choice:
 2. use code-SDF marker arrows for simpler styling and antialiasing.
 
 The proposal prefers code-SDF or analytic head rendering for the first 2D slice, and reserves mesh
-arrowheads for true 3D arrows.
+heads for true 3D vector glyphs.
 
 Active implementation note: the landed first slice does not yet use marker-style arrow glyphs or
-generated head triangles. Straight vectors and curved arrows currently use the existing segment/path
+generated head triangles. Straight and curved vectors currently use the existing segment/path
 cap shaders with triangular end caps. This is enough to preserve vector semantics and query identity,
 but it cannot make arrowheads visually independent from shaft width.
 
@@ -404,8 +402,8 @@ only one generated role.
 | independent non-directional line segments | `segment` |
 | connected trajectories or contours | `path` |
 | simple orientation-only point glyphs | `marker` with arrow shape |
-| dense quiver or velocity arrows | `vector` |
-| straight engineering load arrows | `vector` first, future 3D geometry when needed |
+| dense quiver or velocity vectors | `vector` |
+| straight engineering load vectors | `vector` first, future 3D geometry when needed |
 | curved annotation arrows | future arrow object over `path` plus head roles |
 | radius-bearing streamlines or fibers | future `tube` |
 | continuous vector field resource | sampled-field/domain helper that can render a `vector` view |
@@ -422,7 +420,7 @@ The smallest useful implementation slice should support:
 5. screen-space `stroke_width`;
 6. 2D panel lowering to existing stroke pipelines with cap-based arrowheads;
 7. GPU picking that maps shaft/cap hits to the same source item;
-8. one example with sparse straight vectors and curved arrows.
+8. one example with sparse straight and curved vectors.
 
 Everything else can follow after this slice is validated. In particular, `head_length`,
 `head_width`, `head_size_space`, and head rendering that remains visible for thin shafts are
@@ -438,7 +436,7 @@ post-first-slice work.
 5. start and double-headed arrows;
 6. vector gradients from tail color to head color;
 7. dashes along vector shafts;
-8. 3D mesh arrows with lighting, depth, materials, and SSAO/G-buffer participation;
+8. 3D mesh vector glyphs with lighting, depth, materials, and SSAO/G-buffer participation;
 9. vector-field sampled resources and GPU-side resampling;
 10. adaptive thinning, density control, and level-of-detail;
 11. streamline, pathline, and tube generation;
@@ -453,7 +451,7 @@ This design should be checked against these existing planned examples:
 1. [`../examples/scenarios/v04_required/SHOWCASES.md`](../examples/scenarios/v04_required/SHOWCASES.md)
    for the v0.4 wind-field showcase.
 2. [`../examples/scenarios/v05/SCIENTIFIC_3D_AND_FIELDS.md`](../examples/scenarios/v05/SCIENTIFIC_3D_AND_FIELDS.md)
-   for tracks, tractography, projection-aware wind, and scientific 3D arrows.
+   for tracks, tractography, projection-aware wind, and scientific 3D vector glyphs.
 3. [Later geospatial and physics scenarios](../examples/scenarios/later/GEOSPATIAL_AND_PHYSICS_LATER.md)
    for later high-complexity field-line and event-display pressure.
 
@@ -468,8 +466,8 @@ This design should be checked against these existing planned examples:
    be a first-class mode?
 4. Should `length_mode = screen` belong in the first API, or remain a later capability after
    nonlinear transform behavior is tested?
-5. Should curved arrows be part of `vector`, part of `path`, or a higher-level arrow object that
-   owns generated `path` plus head roles?
+5. Should curved vectors stay part of `vector`, or should annotation arrows become a higher-level
+   annotation object that owns generated `path` plus head roles?
 
 
 ## Recommended Next Step

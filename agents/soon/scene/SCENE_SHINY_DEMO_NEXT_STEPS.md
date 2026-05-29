@@ -35,7 +35,7 @@ Several earlier-looking gaps are now mostly implemented:
 | Priority | Lane | Why it is next | First useful slice |
 | ---: | --- | --- | --- |
 | 1 | Gallery proof pass | Converts existing showcase code into release confidence. | Run/polish protein, LiDAR, brain, labels, textured mesh or terrain/planet, colorbar/legend, and capture paths; tune defaults and record validation. |
-| 2 | Vector/arrow visual | Best new semantic visual for scientific demos; unlocks wind, CFD, displacement, normals, trajectories, and napari-style vectors. | Add a first-class arrow/vector visual or tightly scoped arrow helper, then use it in the wind-field showcase. |
+| 2 | Vector visual | Best new semantic visual for scientific demos; unlocks wind, CFD, displacement, normals, trajectories, and napari-style vectors. | Pressure the first-class vector visual with a wind-field showcase and polish head styling. |
 | 3 | Label probe hardening | Smaller than a new visual family and directly improves the napari-style labels demo. | Stress raw label-id probing under transforms, larger fields, request churn, and gallery-style hover/click readout. |
 | 4 | Explanatory layout proof | Low-risk RC proof for already-landed adornment layout pieces. | Add or polish one example combining axes, colorbar, legend, scale bar, and panel reserves without collisions. |
 | 5 | Splat visual | Flashy and self-contained; now acceptable as a v0.4 experimental showcase target if the new visual lands cleanly. | Implement a retained point-cloud splat/Gaussian-like visual, add fixture/capture proof, and keep full Gaussian-splat pipelines explicitly deferred. |
@@ -57,15 +57,15 @@ one screenshot capture. Defer cubemaps, skyboxes, multi-texture materials, norma
 terrain LOD, asset download/cache automation, and mesh face picking unless the release proof
 exposes a concrete need.
 
-### Vector/Arrow Visual
+### Vector Visual
 
-No public `dvz_vector()` or `DVZ_VISUAL_TYPE_VECTOR` is installed. Wind-field-style examples can
-temporarily use primitives, but that should not become the permanent semantic model.
+Public `dvz_vector()` and `DVZ_VISUAL_TYPE_VECTOR` are installed. The remaining useful work is
+gallery pressure and styling polish, not a second arrow API.
 
 Use [`SCENE_VECTOR_VISUALS_PLAN.md`](SCENE_VECTOR_VISUALS_PLAN.md) as the execution starting point.
-Keep the first slice narrow: positions, vectors, color, length/scale, optional arrowhead style, and
+Keep follow-up narrow: positions, vectors, color, length/scale, optional vector-head style, and
 panzoom/arcball-compatible transforms. Defer tensor glyphs, streamtube generation, vector-field LOD,
-and advanced per-item metadata unless the first showcase needs them.
+and advanced per-item metadata unless the showcase needs them.
 
 ### Label Probe Hardening
 
@@ -99,7 +99,7 @@ Optional local moodboard, when present:
 This ignored reference image is visual direction only; do not treat it as committed data or an
 expected-output artifact.
 
-Prefer this lane when the goal is RC1 confidence. Prefer vector/arrow or splat when the goal is a
+Prefer this lane when the goal is RC1 confidence. Prefer vector or splat when the goal is a
 new capability that makes the gallery visibly richer.
 
 ### Splat Visual
@@ -119,7 +119,7 @@ Gaussian-splatting ambitions, trained asset formats, out-of-core scenes, and adv
 ## Practical Choice
 
 For required v0.4 gallery scope, start with the **gallery proof pass**, especially textured mesh or
-terrain/planet capture. For an additional shiny feature, start with **vector/arrow visual**, then
+terrain/planet capture. For an additional shiny feature, start with **vector visual**, then
 immediately pressure it with a wind-field showcase. For RC1 rigor after those, use **raw label-id
 GPU probing** and the **explanatory layout proof**. For maximum visual novelty after the release
 proof is stable or the visual lands cleanly, add the **splat visual** as a v0.4 experimental

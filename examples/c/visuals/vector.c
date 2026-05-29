@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* vector - retained vector and curved-arrow visual smoke example.
+/* vector - retained straight and curved vector visual smoke example.
  *
  * Build:  just example-c visuals/vector
  * Run:    ./build/examples/c/visuals/vector
@@ -140,8 +140,8 @@ int main(int argc, char** argv)
         }
     }
 
-    DvzVisual* curved = dvz_arrow(scene, 0);
-    EXAMPLE_CHECK(curved != NULL, "dvz_arrow(curved) failed");
+    DvzVisual* curved = dvz_vector(scene, 0);
+    EXAMPLE_CHECK(curved != NULL, "dvz_vector(curved) failed");
     rc = dvz_visual_set_data(curved, "position", curve_position, CURVE_TOTAL_COUNT);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(curved position) failed");
     rc = dvz_visual_set_data(curved, "color", curve_color, CURVE_TOTAL_COUNT);

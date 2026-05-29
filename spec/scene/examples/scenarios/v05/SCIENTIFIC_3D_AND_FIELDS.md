@@ -15,7 +15,7 @@ mesh opacity/highlight, linked 2D/3D panels, atlas labels/readouts, and UI tree/
 ## `tracks_tractography_vectors`
 
 Merged track for diffusion tractography and napari-style tracks/vectors/shapes. Needs packed ragged
-paths, per-track identity, direction coloring, vector/arrow visuals, basic picking/selection, and
+paths, per-track identity, direction coloring, vector visuals, basic picking/selection, and
 high-quality thin-line rendering. Tubes/ribbons and out-of-core million-streamline collections stay
 later.
 

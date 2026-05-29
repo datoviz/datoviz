@@ -60,7 +60,7 @@ The main remaining polish or feature gaps are:
 1. release proof for text, axes, colorbars, legends, annotations, and scale bars;
 2. fixture/gallery proof for retained textured mesh, now that UVs, mesh-bound textures, texture
    shader variant, and material integration are implemented;
-3. vector/arrow visuals so wind, flow, and track examples stop relying on primitive triangles;
+3. vector visuals so wind, flow, and track examples stop relying on primitive triangles;
 4. richer picking/probe payloads for marker exact hit tests, mesh regions, paths, labels, text, and
    volume ray hits;
 5. large-data policies for ring buffers, visible ranges, LOD, sparse updates, and long live loops;
@@ -83,7 +83,7 @@ The main remaining polish or feature gaps are:
 | `scale_bar` | `needs-rc1-proof` | retained scale bars, labels, panzoom/domain updates | Narrow RC1 fixture; richer layout can follow. |
 | `image_probe` | `needs-rc1-proof` | image probe, pixel readback, scale/colorbar/annotation | Keep as the focused public image-query proof, with broader API pressure covered by follow-up examples. |
 | `protein_arcball_viewer` | `partial-now` | mesh, sphere, materials, SSAO/MSAA, GUI, arcball | Flagship native C showcase; defer labels/picking/molecular surface if needed. |
-| `showcase_wind_field` | `needs-rc1-proof` | image field, primitive arrows, paths, panzoom, colorbar | Best near-term 2D showcase; vector visual can replace primitives later. |
+| `showcase_wind_field` | `needs-rc1-proof` | image field, vector visual, paths, panzoom, colorbar | Best near-term 2D showcase; vector visual should replace primitive arrows. |
 | `textured_terrain_or_planet` | `needs-rc1-proof` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof. Current source is `examples/c/visuals/textured_mesh.c`; promote or add a showcase/fixture capture. |
 | `brain_volume_mesh` | `partial-now` | volume, transparent mesh, GUI, arcball | Narrow Allen/IBL brain slice for v0.4; full atlas explorer is v0.5. |
 | `dense_point_cloud_edl` | `ready-now` | large points/pixels, EDL, fly/camera | Use LiDAR or synthetic dense cloud as performance/showcase proof. |
@@ -137,7 +137,7 @@ The main remaining polish or feature gaps are:
 
 1. Text, axes, annotations, legends, colorbars, and scale bars.
 2. Retained textured-mesh proof capture.
-3. Vector/arrow visual.
+3. Vector visual.
 4. Large point/pixel/path partial-update policy.
 5. Selection and picking beyond points/images.
 6. Scene-level custom material and compute resources.

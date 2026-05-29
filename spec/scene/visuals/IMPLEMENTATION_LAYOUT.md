@@ -24,8 +24,8 @@ Landed on 2026-05-28:
 7. `segment/api.c` owns `dvz_segment()` and `dvz_segment_set_caps()`.
 8. `path/api.c` owns `dvz_path()`, `dvz_path_set_caps()`, `dvz_path_set_join()`, and
    `dvz_path_set_subpaths()`.
-9. `vector/api.c` owns `dvz_vector_style()`, `dvz_vector()`, `dvz_arrow()`,
-   `dvz_vector_set_style()`, and `dvz_vector_set_subpaths()`.
+9. `vector/api.c` owns `dvz_vector_style()`, `dvz_vector()`, `dvz_vector_set_style()`, and
+   `dvz_vector_set_subpaths()`.
 10. `stroke/quad.c` owns segment stroke-quad cache construction and straight-vector endpoint/cache
     construction.
 11. `stroke/path.c` owns path-stroke adjacency, flag, distance, and index cache construction for
