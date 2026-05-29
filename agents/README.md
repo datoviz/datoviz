@@ -6,10 +6,22 @@ Stable scene semantics belong in [../spec/scene](../spec/scene). Current executi
 belong in [now/](now/). Completed or historical records belong in [done/](done/), which is the
 archive for finished agent plans. Long-horizon backlog belongs in [later/](later/).
 
+Stable repo-wide rules that are too detailed for the root
+[../AGENTS.md](../AGENTS.md) entry point live in [rules/](rules/).
+
 
 ## Current Priority
 
-Start with the small active set in [now/](now/). These are the active entry points:
+Start with the root [../AGENTS.md](../AGENTS.md) entry point, then use the detailed rule files as
+needed:
+
+1. [rules/REPO_HYGIENE.md](rules/REPO_HYGIENE.md)
+2. [rules/BUILD_TEST.md](rules/BUILD_TEST.md)
+3. [rules/C_CODING.md](rules/C_CODING.md)
+4. [rules/GRAPHICS_SAFETY.md](rules/GRAPHICS_SAFETY.md)
+5. [rules/SCENE_DRP2.md](rules/SCENE_DRP2.md)
+
+Then read the small active set in [now/](now/). These are the active entry points:
 
 1. [now/START.md](now/START.md)
 2. [now/RELEASE.md](now/RELEASE.md)
@@ -89,6 +101,12 @@ If resuming work on the branch:
 
 
 ## Directory Layout
+
+### `rules/`
+
+Stable repo-wide rules split out of the root `AGENTS.md` file. These files cover repository
+hygiene, build/test expectations, C coding conventions, graphics safety, and the active
+scene/DRP2 path.
 
 ### `now/`
 
