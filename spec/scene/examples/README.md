@@ -52,6 +52,34 @@ metadata instead of the directory structure. This keeps the folder organized by 
 actually need to decide: implement now, keep as fixture, defer, or hand off.
 
 
+## Agent-Copyable Examples
+
+An example is agent-copyable only when it is a complete, current starting point for user code. Mark
+that status in scenario metadata or the generated example manifest instead of relying on prose.
+
+Agent-copyable examples should:
+
+1. use the public `scene`/`app` path unless the example explicitly targets DRP2 or runtime internals;
+2. declare the demonstrated visual family or feature;
+3. keep setup, data binding, rendering, and cleanup visible;
+4. include or link the narrow validation command;
+5. state backend, platform, and optional dependency limits;
+6. avoid old v0.3 API names and invented plotting helpers;
+7. link to the relevant visual, feature, or diagnostics spec.
+
+Use these roles in metadata where possible:
+
+| Role | Meaning |
+| --- | --- |
+| `minimal` | Smallest complete source for one visual or feature; safe agent default. |
+| `update` | Demonstrates retained data updates, partial uploads, or streaming. |
+| `offscreen` | Demonstrates offscreen rendering, capture, or readback. |
+| `interaction` | Demonstrates controllers, picking, probing, selection, or callbacks. |
+| `technique` | Demonstrates a rendering technique with limited composition. |
+| `showcase` | Attractive composed example; not a minimal starting point. |
+| `sketch` | API pressure test or future design sketch; not copy-safe. |
+
+
 ## Editing Rules
 
 1. Keep scenario files short and specific to the scenario.
@@ -61,3 +89,5 @@ actually need to decide: implement now, keep as fixture, defer, or hand off.
 5. Put old-example migration and per-example execution workflow in [EXECUTION.md](EXECUTION.md).
 6. Use scenario IDs from [ORGANIZATION.md](ORGANIZATION.md) when a runnable example, fixture, or
    generated gallery asset is created.
+7. Preserve agent-copyable status when editing examples; downgrade it if the example becomes a
+   sketch, showcase, or backend-limited pressure test.

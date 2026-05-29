@@ -19,6 +19,10 @@ fixtures and current implementation work.
 5. Every example should be linked from the relevant reference and how-to pages.
 6. Examples should have stable identifiers that can be used by docs, tests, release notes, and LLM
    retrieval.
+7. Copy-safe examples should use the preferred scene/app ownership pattern and declare their
+   validation command.
+8. If an example is only an API sketch, pressure test, or showcase, mark it so agents do not copy it
+   as a minimal starting point.
 
 
 ## Suggested Source Layout
@@ -60,6 +64,33 @@ Required dedicated visual examples:
 Adornments and scene features such as axes, colorbars, scale bars, annotations, overlays, and
 controllers belong under feature examples, not visual examples, unless the public API explicitly
 presents them as visual families.
+
+
+## AI-Assisted Coverage Matrix
+
+The table below records the minimum example roles that make common generated-code requests safe.
+`Minimal` examples should be copy-safe by default. `Update`, `offscreen`, and query examples may
+live under `features/` or `runtime/` when they are shared across visual families.
+
+| Visual family | Minimal | Update or streaming | Offscreen/capture | Query or interaction |
+| --- | --- | --- | --- | --- |
+| Point | required | required | required | point picking |
+| Pixel | required | desired | desired | hover/readout if exposed |
+| Marker | required | desired | desired | marker picking if exposed |
+| Primitive | required | desired | desired | primitive picking |
+| Segment | required | desired | desired | stroke/path picking |
+| Path | required | desired | desired | path picking if exposed |
+| Image | required | required | required | image probe |
+| Mesh | required | desired | required | arcball and mesh picking |
+| Sphere | required | desired | required | sphere picking |
+| Volume | required | desired | required | proxy picking or probe |
+| Text/labels | required when public | desired | desired | label probe/readout |
+| Polygon | required when public | desired | desired | polygon selection if exposed |
+
+For every visual family with a public API, agents should be able to find one complete source file
+that answers: "How do I create this visual with valid data?" More advanced examples should then
+answer: "How do I update it?", "How do I render it offscreen?", and "How do I inspect user
+interaction or readback results?"
 
 
 ## Feature Examples
@@ -176,6 +207,8 @@ title: Point visual
 kind: visual
 source: examples/c/visuals/point.c
 status: supported
+agent_copy_safe: true
+role: minimal
 features:
   - scene
   - point
@@ -187,6 +220,8 @@ tests:
 docs:
   reference: reference/visual-families/index.md#point
   how_to: how-to/add-a-visual.md
+notes:
+  - Uses the scene/app ownership pattern.
 ```
 
 This metadata should support:
@@ -196,6 +231,7 @@ This metadata should support:
 3. release checklists;
 4. stable LLM retrieval;
 5. checks for missing examples, screenshots, or reference pages.
+6. automatic filtering of copy-safe examples versus sketches or showcases.
 
 
 ## Minimal Example Rules
@@ -207,3 +243,7 @@ This metadata should support:
 5. Include a short top-of-file comment describing the demonstrated visual or feature.
 6. Keep validation commands in the corresponding docs or metadata, not as stale comments in code.
 7. If an example requires optional runtime support, label the backend and platform constraints.
+8. Avoid unrelated helper abstractions that hide object creation, data binding, or cleanup.
+9. Use current public headers and avoid old v0.3 Pythonic names even in comments.
+10. Keep destroy and cleanup calls visible unless the example intentionally demonstrates borrowed
+    runtime ownership.
