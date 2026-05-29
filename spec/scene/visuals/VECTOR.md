@@ -200,6 +200,44 @@ Current implementation status: deferred. The active cap-based arrowheads do not 
 head width.
 
 
+## Head Sizing Implementation Path
+
+The active implementation renders vector heads as segment/path endpoint caps. In
+`src/scene/shaders/glsl/stroke.glsl`, triangular cap length is derived from `lineWidth * 3.0`, and
+cap half-width is derived from `lineWidth * 1.5`. This makes the current visual easy to lower through
+the shared stroke backend, but it couples two different style decisions:
+
+1. shaft thickness, controlled by `stroke_width`;
+2. head legibility, currently implied by that same `stroke_width`.
+
+This is the main visual limitation for dense quiver and wind-field examples. Thin shafts produce
+tiny heads, while readable heads require thick shafts. The next narrow improvement should decouple
+head size before introducing a broader generated-head pipeline.
+
+Recommended first follow-up:
+
+1. add visual-wide `head_length`, `head_width`, and `head_mode` fields to `DvzVectorStyle`;
+2. keep `head_size_space = screen` as the first supported mode;
+3. pass the resolved head dimensions through the existing vector material/stroke parameter path;
+4. update the stroke cap shader to use explicit head dimensions when they are positive, falling
+   back to the current `lineWidth`-derived formula for compatibility with default styling;
+5. add focused tests that a thin shaft can produce a larger head without changing `stroke_width`;
+6. keep per-item head dimensions deferred until the visual-wide controls prove useful.
+
+`head_mode` should cover `none`, `end`, `start`, and `both`. In the first shader-backed slice, this
+can still map to the existing start/end cap vocabulary. This provides useful public control without
+changing vector draw topology, upload buffer counts, or query identity.
+
+Generated or marker-SDF heads should follow only when the project needs richer head styles:
+
+1. generated head triangles give precise filled/open/chevron geometry and straightforward
+   double-headed vectors, but require derived head buffers and source-item mapping;
+2. marker-SDF heads give high-quality antialiasing and shared marker-style vocabulary, but require
+   reliable orientation, sizing, and query mapping between shaft and head roles;
+3. either route must preserve one source vector item and keep picking/selection resolved to that
+   source item, not to an internal shaft or head primitive.
+
+
 ### `magnitude`
 
 | Property | Value |
