@@ -1784,9 +1784,6 @@ uint32_t _scene_buffer_index(const DvzScene* scene, const DvzSceneBuffer* buffer
 
 uint32_t _scene_field_index(const DvzScene* scene, const DvzSampledField* field);
 
-bool _scene_emit_sampled_field_texture_upload(
-    DvzFramePlan* plan, const char* resource_id, DvzSampledField* field);
-
 void _scene_text_block_init(DvzTextBlock* block, const char* source);
 
 void _scene_text_block_set_source(DvzTextBlock* block, const char* source);
