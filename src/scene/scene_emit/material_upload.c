@@ -18,6 +18,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_scene.h"
+#include "_scene_resource_key.h"
 #include "scene_emit/internal.h"
 #include "scene_emit/visual_lowering.h"
 #include "_visual_internal.h"

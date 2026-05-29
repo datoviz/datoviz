@@ -1799,22 +1799,6 @@ bool _scene_visual_frame_plan_metadata(
     const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
     DvzFramePlanVisualMeta* metadata);
 
-bool _scene_visual_resource_key(
-    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index, char* out,
-    size_t out_size);
-
-bool _scene_visual_attr_resource_key(
-    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
-    const char* attr_name, char* out, size_t out_size);
-
-bool _scene_visual_texture_resource_key(
-    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index, char* out,
-    size_t out_size);
-
-bool _scene_visual_indexed_resource_key(
-    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
-    uint32_t buffer_index, char* out, size_t out_size);
-
 void _scene_prepare_axis_visuals(DvzFigure* figure);
 
 void _scene_prepare_colorbar_visuals(DvzFigure* figure, DvzDiagnosticReport* report);

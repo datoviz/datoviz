@@ -20,6 +20,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "datoviz/scene/types.h"
+
 
 
 /*************************************************************************************************/
@@ -40,6 +42,22 @@ bool _scene_resource_key_visual_texture(uint32_t visual_index, char* out, size_t
 
 bool _scene_resource_key_visual_indexed(
     uint32_t visual_index, uint32_t buffer_index, char* out, size_t out_size);
+
+bool _scene_visual_resource_key(
+    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index, char* out,
+    size_t out_size);
+
+bool _scene_visual_attr_resource_key(
+    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
+    const char* attr_name, char* out, size_t out_size);
+
+bool _scene_visual_texture_resource_key(
+    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index, char* out,
+    size_t out_size);
+
+bool _scene_visual_indexed_resource_key(
+    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
+    uint32_t buffer_index, char* out, size_t out_size);
 
 bool _scene_resource_key_panel_graph(
     const char* panel_id, const char* suffix, char* out, size_t out_size);
