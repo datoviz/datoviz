@@ -259,8 +259,6 @@ void _dvz_scene_query_apply_render_state(
     DvzFramePlan* plan, const DvzPanel* panel, const vec2 request_ndc, uint32_t target_width,
     uint32_t target_height);
 
-bool _dvz_scene_query_plan_render_metadata_complete(const DvzFramePlan* plan);
-
 const DvzSceneQueryFamilyOps* _dvz_scene_query_point_ops(void);
 
 const DvzSceneQueryFamilyOps* _dvz_scene_query_pixel_ops(void);

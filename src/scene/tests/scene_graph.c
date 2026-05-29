@@ -107,6 +107,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_role_work_label_mapping_complete);
     TST_CASE(test_scene_render_contract_validation_errors);
     TST_CASE(test_scene_frame_plan_missing_graph_pass_fails_contract);
+    TST_CASE(test_scene_render_contract_rejects_untyped_visual_metadata);
     TST_CASE(test_scene_panel_graph_failure_reports_specific_diagnostic);
     TST_CASE(test_scene_gbuffer_runtime_lowering);
     TST_CASE(test_scene_frame_plan_node_reallocation_safe);

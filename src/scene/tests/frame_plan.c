@@ -470,6 +470,47 @@ static int test_frame_plan_runtime_uses_graph_pass_order(TstContext* suite, cons
 
 
 /**
+ * Ensure render metadata completeness is a FramePlan invariant, not query-local policy.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_render_metadata_complete(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.metadata.complete", 2);
+    ANN(plan);
+    AT(dvz_frame_plan_render_metadata_complete(plan));
+
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
+    AT(!dvz_frame_plan_render_metadata_complete(plan));
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.visual_type = DVZ_VISUAL_TYPE_POINT;
+    metadata.visual_index = 0;
+    metadata.buffer_index = UINT32_MAX;
+    metadata.topology = UINT32_MAX;
+    dvz_strlcpy(metadata.position_id, "position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.color_id, "color", sizeof(metadata.color_id));
+    dvz_strlcpy(metadata.size_id, "size", sizeof(metadata.size_id));
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+    AT(dvz_frame_plan_render_metadata_complete(plan));
+
+    AT(dvz_frame_plan_render(plan, "panel.1", "target.panel.1.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.compat.0"));
+    AT(dvz_frame_plan_render_allow_untyped_visuals(plan));
+    AT(!dvz_frame_plan_render_metadata_complete(plan));
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
  * Ensure malformed typed FramePlan metadata reports a focused diagnostic.
  *
  * @param suite the active test suite
@@ -1916,6 +1957,7 @@ int test_scene_frame_plan(TstSuite* suite)
     TST_CASE(test_frame_plan_json_escapes_labels);
     TST_CASE(test_scene_resource_keys);
     TST_CASE(test_frame_plan_render_visual_metadata);
+    TST_CASE(test_frame_plan_render_metadata_complete);
     TST_CASE(test_frame_plan_runtime_uses_graph_pass_order);
     TST_CASE(test_frame_plan_render_visual_metadata_diagnostic);
     TST_CASE(test_frame_plan_draw_resource_validation_rejects_short_position);

@@ -417,6 +417,48 @@ int test_scene_frame_plan_missing_graph_pass_fails_contract(TstContext* suite, c
 
 
 /**
+ * Verify render contracts reject missing typed visual metadata unless compatibility is explicit.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_render_contract_rejects_untyped_visual_metadata(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure_0", 0);
+    ANN(plan);
+    AT(dvz_frame_plan_render_panel_role(
+        plan, "figure_0_p0", "target.panel.0.color", false, panel->desc,
+        DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE));
+    AT(dvz_frame_plan_render_visual(plan, "visual.compat.0"));
+    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
+    ANN(render);
+
+    DvzScenePassContract contract = {0};
+    AT(!_scene_pass_contract_from_render(plan, panel, render, NULL, &contract));
+
+    AT(dvz_frame_plan_render_allow_untyped_visuals(plan));
+    AT(_scene_pass_contract_from_render(plan, panel, render, NULL, &contract));
+    AT(contract.draw_count == 0);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify panel graph-emission failures are threaded into diagnostics.
  *
  * @param suite the active test suite

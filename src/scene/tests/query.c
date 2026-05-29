@@ -95,16 +95,16 @@ int test_scene_query_rejects_untyped_render_plan(TstContext* suite, const TstCas
 
     DvzFramePlan* plan = dvz_frame_plan("figure.query.untyped_metadata", 1);
     ANN(plan);
-    AT(_dvz_scene_query_plan_render_metadata_complete(plan));
+    AT(dvz_frame_plan_render_metadata_complete(plan));
 
     AT(dvz_frame_plan_render(plan, "panel.query", "target.query", true));
     AT(dvz_frame_plan_render_visual(plan, "query0"));
-    AT(!_dvz_scene_query_plan_render_metadata_complete(plan));
+    AT(!dvz_frame_plan_render_metadata_complete(plan));
 
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;
     AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
-    AT(_dvz_scene_query_plan_render_metadata_complete(plan));
+    AT(dvz_frame_plan_render_metadata_complete(plan));
 
     dvz_frame_plan_destroy(plan);
     return 0;

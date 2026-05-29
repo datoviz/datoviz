@@ -262,6 +262,32 @@ bool dvz_frame_plan_render_visual_metadata(
 
 
 /**
+ * Return whether every render visual carries typed metadata.
+ *
+ * @param plan the FramePlan
+ * @return true when all render visuals have typed metadata
+ */
+bool dvz_frame_plan_render_metadata_complete(const DvzFramePlan* plan)
+{
+    if (plan == NULL)
+        return true;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        const DvzFramePlanNode* node = &plan->nodes[i];
+        if (node->type != DVZ_FRAME_PLAN_NODE_RENDER)
+            continue;
+        for (uint32_t j = 0; j < node->u.render.visual_count; j++)
+        {
+            if (!node->u.render.visual_metadata[j].has_metadata)
+                return false;
+        }
+    }
+    return true;
+}
+
+
+
+/**
  * Mark the most recent render node as an explicit untyped-visual compatibility path.
  *
  * @param plan the FramePlan

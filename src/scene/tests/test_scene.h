@@ -215,6 +215,7 @@ int test_frame_plan_json_escapes_labels(TstContext* suite, const TstCase* item);
 int test_scene_resource_keys(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_render_visual_metadata(TstContext* suite, const TstCase* item);
+int test_frame_plan_render_metadata_complete(TstContext* suite, const TstCase* item);
 int test_frame_plan_render_visual_metadata_diagnostic(TstContext* suite, const TstCase* item);
 int test_frame_plan_draw_resource_validation_rejects_short_position(
     TstContext* suite, const TstCase* item);
@@ -660,6 +661,9 @@ int test_scene_role_work_label_mapping_complete(TstContext* suite, const TstCase
 int test_scene_render_contract_validation_errors(TstContext* suite, const TstCase* item);
 
 int test_scene_frame_plan_missing_graph_pass_fails_contract(TstContext* suite, const TstCase* item);
+
+int test_scene_render_contract_rejects_untyped_visual_metadata(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_panel_graph_failure_reports_specific_diagnostic(TstContext* suite, const TstCase* item);
 

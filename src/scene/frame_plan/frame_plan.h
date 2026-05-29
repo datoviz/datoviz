@@ -519,6 +519,8 @@ DvzFramePlanNode* dvz_frame_plan_last_render_node(DvzFramePlan* plan);
 bool dvz_frame_plan_render_visual_metadata(
     DvzFramePlan* plan, const DvzFramePlanVisualMeta* metadata);
 
+bool dvz_frame_plan_render_metadata_complete(const DvzFramePlan* plan);
+
 bool dvz_frame_plan_render_allow_untyped_visuals(DvzFramePlan* plan);
 
 bool dvz_frame_plan_upload_metadata(DvzFramePlan* plan, const DvzFramePlanUploadMeta* metadata);

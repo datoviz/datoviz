@@ -285,7 +285,7 @@ bool _dvz_scene_query_execute_family(
         _scene_query_scratch_destroy(&plan.scratch);
         return false;
     }
-    if (!_dvz_scene_query_plan_render_metadata_complete(plan.scratch.plan))
+    if (!dvz_frame_plan_render_metadata_complete(plan.scratch.plan))
     {
         log_error("query render plan missing typed visual metadata");
         out_result->status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
