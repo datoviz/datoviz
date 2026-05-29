@@ -26,6 +26,7 @@
 #include "datoviz/scene.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "helpers.h"
+#include "annotation/prepare_internal.h"
 #include "text/internal.h"
 #include "text/text_internal.h"
 #include "test_scene.h"

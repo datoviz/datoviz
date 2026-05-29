@@ -26,6 +26,7 @@
 #include "_scale_ticks.h"
 #include "_scene.h"
 #include "datoviz/scene.h"
+#include "prepare_internal.h"
 #include "text_internal.h"
 
 
@@ -136,6 +137,5 @@ void _scene_prepare_text_visuals(DvzFigure* figure)
             break;
     }
 }
-
 
 

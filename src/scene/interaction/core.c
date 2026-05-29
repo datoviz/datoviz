@@ -25,6 +25,7 @@
 #include "_log.h"
 #include "_scene.h"
 #include "_visual_internal.h"
+#include "annotation/prepare_internal.h"
 #include "datoviz/scene/overlay.h"
 #include "text/internal.h"
 #include "text/text_internal.h"

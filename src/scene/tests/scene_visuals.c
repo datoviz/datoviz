@@ -22,6 +22,7 @@
 #include "datoviz/geom.h"
 #include "registry/registry.h"
 #include "scene_emit/internal.h"
+#include "visuals/bounds_internal.h"
 
 
 

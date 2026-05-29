@@ -17,9 +17,11 @@
 
 #include "_assertions.h"
 #include "_scene.h"
+#include "annotation/prepare_internal.h"
+#include "registry/registry.h"
 #include "scene_emit/scene_emit.h"
 #include "scene_emit/internal.h"
-#include "registry/registry.h"
+#include "visuals/bounds_internal.h"
 
 
 /*************************************************************************************************/

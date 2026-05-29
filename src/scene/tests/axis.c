@@ -22,6 +22,7 @@
 #include "_assertions.h"
 #include "../../drp2/_stream.h"
 #include "_scene.h"
+#include "annotation/prepare_internal.h"
 #include "scene_emit/scene_emit.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/math/_cglm.h"

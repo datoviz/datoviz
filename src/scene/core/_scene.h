@@ -1771,19 +1771,3 @@ float _scene_screen_scale(const DvzFigure* figure);
 bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action);
 
 void _scene_format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* src);
-
-void _scene_prepare_axis_visuals(DvzFigure* figure);
-
-void _scene_prepare_colorbar_visuals(DvzFigure* figure, DvzDiagnosticReport* report);
-
-void _scene_prepare_legend_visuals(DvzFigure* figure, DvzDiagnosticReport* report);
-
-void _scene_prepare_bounds_visuals(DvzFigure* figure);
-
-void _scene_prepare_text_visuals(DvzFigure* figure);
-
-void _scene_prepare_pinned_readout_cards(DvzFigure* figure);
-
-void _scene_prepare_selection_cards(DvzFigure* figure);
-
-void _scene_prepare_overlay_cards(DvzFigure* figure);
