@@ -24,6 +24,7 @@
 #include "frame_plan/frame_plan.h"
 #include "_log.h"
 #include "_scene.h"
+#include "core/frame_trace_internal.h"
 
 
 /*************************************************************************************************/

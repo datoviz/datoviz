@@ -23,6 +23,7 @@
 #include "frame_plan/emit.h"
 #include "_scene_resource_key.h"
 #include "_scene.h"
+#include "core/frame_trace_internal.h"
 #include "_technique.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"

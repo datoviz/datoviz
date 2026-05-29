@@ -653,14 +653,6 @@ typedef enum
 
 typedef struct DvzSceneClock DvzSceneClock;
 
-typedef enum
-{
-    DVZ_FRAME_PLAN_TRACE_NONE = 0,
-    DVZ_FRAME_PLAN_TRACE_NORMAL,
-    DVZ_FRAME_PLAN_TRACE_FULL,
-} DvzFramePlanTraceMode;
-
-
 struct DvzSceneClock
 {
     DvzSceneClockMode mode;
@@ -1735,13 +1727,6 @@ void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor);
 bool _scene_request_executor_prepare(
     DvzSceneRequestExecutor* executor, DvzDrp2Runtime* source_runtime);
 bool _scene_figure_has_pending_render_work(const DvzFigure* figure);
-void _scene_figure_id(const DvzFigure* figure, char* out, uint32_t size);
-void _scene_figure_frame_plan_trace_reset(DvzFigure* figure);
-DvzFramePlanTraceMode _scene_frame_plan_trace_mode_from_env(const char* value);
-uint32_t _scene_frame_plan_trace_flags_from_env(const char* value);
-bool _scene_frame_plan_trace_should_print(
-    DvzFramePlanTraceMode mode, const DvzFigure* figure, const char* graph);
-void _scene_frame_plan_trace(DvzFigure* figure, const DvzFramePlan* plan);
 bool _scene_add_request_frame_callback(
     DvzScene* scene, DvzSceneRequestFrameCallback callback, void* user_data);
 void _scene_remove_request_frame_callback(
