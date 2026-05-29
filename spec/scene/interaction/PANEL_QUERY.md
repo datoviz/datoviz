@@ -1,8 +1,8 @@
 # Panel Query
 
 > **Execution Status**
-> - **Status:** `ACTIVE DESIGN`
-> - **Updated on:** `2026-05-19`
+> - **Status:** `ACTIVE IMPLEMENTATION`
+> - **Updated on:** `2026-05-30`
 > - **Purpose:** replace separate public picking and probing concepts with one authoritative
 >   "what is under this panel pixel?" query model.
 
@@ -10,9 +10,8 @@ For the long-term GPU-only architecture and implementation invariants, read
 [`GPU_QUERY_SYSTEM.md`](GPU_QUERY_SYSTEM.md). This file records the high-level public interaction
 direction; `GPU_QUERY_SYSTEM.md` is the more detailed source of truth for the overhaul.
 
-This document records the aggressive v0.4 direction for scene interaction queries. The branch does
-not need to preserve the older public pick/probe split if removing it gives a simpler and more
-correct architecture.
+This document records the aggressive v0.4 direction for scene interaction queries. The branch has
+removed the older public pick/probe split in favor of one panel query model.
 
 
 ## Problem
@@ -44,9 +43,8 @@ dvz_panel_query(panel, x, y, flags, &request);
 The exact C shape is still open, but the semantic contract should be stable: query a panel-local
 pixel and return the frontmost rendered scene contribution, plus optional semantic readout.
 
-This should replace separate public pick and probe APIs rather than wrapping them indefinitely.
-The older pick/probe machinery may exist temporarily as implementation scaffolding during the
-transition, but it should not remain as a competing public model.
+This replaces separate public pick and probe APIs rather than wrapping them indefinitely. Pick and
+probe remain useful semantic words, but the public request/result mechanism is query.
 
 
 ## Result Model
@@ -142,9 +140,9 @@ be the frontmost semantic result.
 
 Because v0.4 does not need to preserve the v0.3 API, the implementation plan should be willing to:
 
-1. remove public pick/probe entry points once panel query can replace them,
+1. keep public pick/probe entry points removed now that panel query replaces them,
 2. rename request/result types around `query` rather than `pick` or `probe`,
-3. remove per-example composition of pick/probe requests,
+3. keep examples on one panel query instead of per-example composition of pick/probe requests,
 4. centralize coordinate conversion in the scene/query layer,
 5. make query capability explicit in visual-family metadata,
 6. treat image probing and point picking as query payload specializations.
@@ -161,8 +159,8 @@ The transition should be short and explicit:
 2. add a frame-plan/readback representation for query passes,
 3. implement the authoritative path for the point-over-image case first,
 4. convert `scheduler_lab` to issue one panel query instead of manual pick plus probe composition,
-5. convert current tests from pick/probe assertions to query result assertions,
-6. delete or privatize obsolete public pick/probe APIs,
+5. keep current tests on query result assertions,
+6. keep obsolete public pick/probe APIs deleted,
 7. extend visual-family encoders one family at a time.
 
 During this migration, any temporary bridge should be internal and marked as such. It should not

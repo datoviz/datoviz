@@ -2,7 +2,7 @@
 
 This directory contains interaction, picking, selection, callbacks, and animation behavior.
 
-Use these files when changing panel controllers, pointer/event routing, picking readback, retained
+Use these files when changing panel controllers, pointer/event routing, panel query readback, retained
 selection state, or animation timing.
 
 

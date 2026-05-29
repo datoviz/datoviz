@@ -151,7 +151,7 @@ Committed implementation slices:
     - renamed the remaining panel-coordinate helper to query terminology.
 37. `scene: rename native query tests`
     - renamed the old `pick_probe.c` scene test wrapper and app steady-state tests to query names,
-    - kept the `pick-probe` validation group as an alias for the required focused test command.
+    - kept a temporary historical validation alias until the query naming cleanup.
 38. `scene: render labels queries on GPU`
     - added signed/unsigned labels query shaders that write encoded `r32uint` label ids,
     - labels query now builds a rendered one-pixel FramePlan readback instead of a direct retained
@@ -193,6 +193,16 @@ Committed implementation slices:
     - stopped default profile selection from choosing `DVZ_QUERY_PROFILE_U64_2XR32` until true
       two-attachment query execution/readback exists,
     - added CPU query coverage for the "only 2xr32 is advertised" case.
+50. `669eec431 scene: rename query hit policy API`
+    - renamed the public hit-policy type, constants, setter, and interaction field to query
+      terminology.
+51. `4d95a4e4e scene: rename query readback fixture ids`
+    - renamed old test-only `request.pick.*`, `buf.pick.*`, and `target.*.picking` resource ids to
+      query ids while leaving the low-level picking render-pass/shader mode untouched.
+52. `91a9fb9d2 scene: make query tests canonical`
+    - removed the old `pick-probe` test-group alias,
+    - made `scene/query` the canonical focused group,
+    - tightened query-core guardrails against reintroducing pick/probe names.
 50. `scene: add sparse lookup for label volumes`
     - signed/unsigned label-volume slice and composite rendering now use a sparse GPU categorical
       lookup buffer for large or signed semantic ids,
@@ -484,14 +494,14 @@ Primary ownership:
 2. `include/datoviz/scene/types.h`
 3. `src/scene/interaction.c`
 4. examples using query
-5. `src/scene/tests/query_filter.c` and successor tests
+5. `src/scene/tests/query.c`
 
 Tasks:
 
 1. Keep refining the public query API only as needed by native execution.
 2. Keep examples on query. Current `examples/c` no longer calls public pick/probe APIs.
 3. Expand selection and pinned readout tests around native query results.
-4. Rename tests from pick/probe when their behavior is now query-specific.
+4. Keep tests query-named when their behavior is query-specific.
 5. Keep migration notes in specs, not legacy `docs/`.
 
 Validation:

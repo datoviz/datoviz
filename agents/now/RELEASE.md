@@ -117,8 +117,7 @@ Checklist:
    and the public feature table so completed first slices are not still presented as active
    feature-freeze blockers.
 9. Decide or explicitly defer unresolved API-shape questions that affect RC1 feedback, especially
-   unified panel query versus pick/probe polling and callback wording versus the retained polling
-   model.
+   callback wording versus the retained panel-query polling model.
 
 Suggested validation:
 
@@ -285,7 +284,7 @@ Required artifacts:
 9. explicit deferred-feature list aligned with
    [../../spec/scene/validation/DEFERRED_TRACKER.md](../../spec/scene/validation/DEFERRED_TRACKER.md),
 10. release-staging reconciliation for examples that prove text, axes, colorbars, annotations,
-    scale bars, pick/probe, sampled fields, retained textured mesh, sphere, volume, and dense point
+    scale bars, query/selection, sampled fields, retained textured mesh, sphere, volume, and dense point
     coverage,
 11. temporary RC1 user guide at the repository root, for example `V0_4_RC1.md`, explaining that
     legacy `docs/` and the public website may still describe v0.3, and giving source-build,
@@ -446,7 +445,7 @@ post-release refactor batch should focus on:
 1. lower-risk `src/scene/scene.c` structural cleanup that was not needed for v0.4;
 2. shared DRP2 diagnostics for app trace normalization and future render-conformance snapshots;
 3. out-of-tree package-consumer smoke tests before tightening component-owned header installs;
-4. conservative shared-fixture test migrations while keeping failure-path, resize, pick/probe,
+4. conservative shared-fixture test migrations while keeping failure-path, resize, query/readback,
    GLFW, video, and device-lost tests isolated until audited.
 
 Do not let these post-release refactors delay `v0.4.0` unless one becomes necessary to fix a

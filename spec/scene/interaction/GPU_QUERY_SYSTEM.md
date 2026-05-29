@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE IMPLEMENTATION - PUBLIC PICK/PROBE REMOVED`
-> - **Updated on:** `2026-05-27`
+> - **Updated on:** `2026-05-30`
 > - **Purpose:** define the long-term v0.4 scene query architecture: one GPU-only panel query
 >   system replacing the separate public pick/probe request model.
 
@@ -16,8 +16,8 @@ surface if it keeps the architecture ambiguous.
 
 ## Implementation Status
 
-Updated on 2026-05-27 after the native query executor replacement, public pick/probe removal,
-rendered labels-query, and first volume slice sample-query slices landed.
+Updated on 2026-05-30 after the native query executor replacement, public pick/probe removal,
+rendered labels-query, first volume slice sample-query slices, and query naming cleanup landed.
 
 Foundation now present in the tree:
 
@@ -34,7 +34,7 @@ Foundation now present in the tree:
    marker, sphere, segment, path, primitive, mesh, image, labels, volume, text, and glyph families.
 7. Selection and pinned readout helpers consume `DvzQueryResult` directly.
 8. `testing/test_scene_query_source_guard.py` checks that generic query files do not pull in
-   visual-family internals.
+   visual-family internals or reintroduce pick/probe terminology.
 9. Native query processing executes current GPU-backed point-like, pixel, image, and labels query
    paths through visual-family operation tables, with generic orchestration in `src/scene/query/`.
 10. DRP2 texture layout validation now accepts `rg32uint` byte sizing.
@@ -62,7 +62,11 @@ Current implementation state:
    and `DVZ_QUERY_CAPABILITY_*`).
 10. The unused CPU point-pick fallback and `DVZ_PICK_TRACE` hook have been removed from scene
     internals.
-11. DRP2 and WebGPU parity are not finished: C runtime copy helpers still need full origin/depth and
+11. Query hit-policy API now uses query terminology (`DvzQueryHitPolicy`,
+   `DVZ_QUERY_HIT_*`, and `dvz_interaction_set_query_hit_policy()`).
+12. `scene/query` is the canonical focused test group; the old `pick-probe` test alias has been
+   removed.
+13. DRP2 and WebGPU parity are not finished: C runtime copy helpers still need full origin/depth and
    multi-output query support. `rg32uint` now has DRP2 fixture and vklite runtime readback coverage;
    two-attachment `2xr32` query execution remains deferred and is not auto-selected.
 
@@ -75,8 +79,8 @@ The scene should expose one authoritative question:
 
 The answer is a query result. It may contain identity, visual-family payload, sampled value,
 formatted readout, and selection/link metadata, but the hit itself must be determined by the GPU path
-that matches rendering. Public `pick` and `probe` should become transitional implementation details
-or be removed.
+that matches rendering. Public `pick` and `probe` entry points have been removed; those words remain
+useful only for user-visible semantics such as identity picking or sampled-value probing.
 
 The query system must:
 

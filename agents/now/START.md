@@ -41,14 +41,14 @@ The low-level graphics modules (`vk`, `vklite`, `canvas`, `stream`, `video`, and
 runtime foundation; do not create parallel presentation, frame-stream, or Vulkan wrapper paths.
 
 Native first slices are active for retained visual families, sampled fields, material/controller
-state, broad item pick/probe request execution, selection bookkeeping, rendered text/glyphs, label
+state, broad item and sampled-value query execution, selection bookkeeping, rendered text/glyphs, label
 annotations, continuous colorbars, categorical legends, first-class integer labels, scale bars,
 graph-backed techniques, app/offscreen/GLFW rendering, and capture. Treat these as active code, not
 future scaffolding.
 
 Current shiny-demo recommendations are recorded in
 [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md):
-vector/arrow visuals are the best new demo unlock, labels probe hardening is now transform,
+vector/arrow visuals are the best new demo unlock, labels query hardening is now transform,
 large-field, and request-path pressure work, explanatory layout proof is mostly validation/polish,
 and splats are an optional v0.4 experimental showcase if the new visual lands cleanly.
 
@@ -96,10 +96,10 @@ subsystems, or the registration table.
    scheduling, process sharding, CI orchestration, or skip/reporting behavior.
 4. [`../soon/scene/SCENE_GPU_QUERY_OVERHAUL.md`](../soon/scene/SCENE_GPU_QUERY_OVERHAUL.md) and
    [`../../spec/scene/interaction/GPU_QUERY_SYSTEM.md`](../../spec/scene/interaction/GPU_QUERY_SYSTEM.md)
-   before changing pick/probe/query execution, GPU request readback, visual-family query policy, or
+   before changing query execution, GPU request readback, visual-family query policy, or
    CPU fallback behavior.
 5. [`../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md`](../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
-   before changing image/labels probe coordinates, panzoom probe mapping, or CPU fallback behavior.
+   before changing image/labels query coordinates, panzoom query mapping, or CPU fallback behavior.
 6. [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md)
    before changing pinned readout cards, selected-item metadata cards, public overlay cards, or
    private rich text-block lowering.

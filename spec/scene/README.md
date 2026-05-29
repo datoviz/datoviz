@@ -21,8 +21,8 @@ Current source implementation is intentionally smaller than this spec. It includ
 objects; `pixel`, `point`, `marker`, `primitive`, `mesh`, `sphere`, path/segment, `image`, `volume`,
 and text/glyph visuals; capability snapshots; diagnostic reports; frame plans; DRP2 emission; panel
 controllers; retained sampled fields; scene buffers; scale/colormap state for image and volume
-paths; rendered continuous colorbars; rendered label annotations; rendered scale bars; queued
-point-pick and image-probe requests with narrow GPU readback execution; selection/link
+paths; rendered continuous colorbars; rendered label annotations; rendered scale bars; queued panel
+queries with GPU item and sampled-value readback execution; selection/link
 bookkeeping; graph-backed techniques; and app/offscreen/GLFW paths. Public headers also declare
 broader interaction, annotation/readout, selection, material, technique, and visual-family behavior
 that is not fully rendered or semantically complete yet. Treat broader sections of this spec as
@@ -79,9 +79,9 @@ The current scene spec should be read with the following invariants in mind:
    build, even when it contains panel-local subplans or per-panel nodes,
 3. uploads and lazy materialization work should appear in `FramePlan`, not in a separate execution
    side path,
-4. picking must return scene identity rather than backend identity,
-5. hover picking follows latest-request-wins semantics and stale results must be discardable,
-6. request processing may coalesce unresolved panel-local pick/probe requests, but accepted results
+4. identity queries must return scene identity rather than backend identity,
+5. hover queries follow latest-request-wins semantics and stale results must be discardable,
+6. request processing may coalesce unresolved panel-local query requests, but accepted results
    must still obey the public freshness rules,
 7. data normalization and panel-local navigation are separate stages,
 8. panel navigation should usually not force normalization rebuild or bulk data reupload,

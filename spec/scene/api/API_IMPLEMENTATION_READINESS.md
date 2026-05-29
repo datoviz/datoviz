@@ -56,9 +56,9 @@ active implementation status is:
 | Area | Public API | Retained state | Native rendering / execution | GPU request/readback | Remaining gaps |
 |---|---|---|---|---|---|
 | Core scene/app | scene, figure, panel, view, emit, capture, DVZR recording/replay | active | active scene -> FramePlan -> DRP2 -> vklite/canvas/app path | frame capture and runtime readbacks are used by tests | installed CLI boundary for DVZR replay remains a product decision |
-| Visual families | pixel, point, marker, primitive, segment/path, image, labels, mesh, sphere, volume, glyph constructors; semantic polygon composites | active for those families | active for retained first slices, including WBOIT/depth-peel, EDL, SSAO/G-buffer where eligible; glyph path renders atlas-backed text; labels render integer fields | item picking exists for point-like, stroke, primitive, image, mesh, sphere, and volume proxy targets; image pixel probes and labels segment probes exist | errorbar, boxplot, vector/arrow, splat, exact marker/path semantics, labels probe pressure tests, and richer path/image/volume features |
-| Sampled fields/scales | `DvzSampledField`, scale, colormap, colorbar, legend, and labels APIs | fields/scales/colorbars/legends/labels retain state | image, labels, and volume consume fields; image/volume colormap bindings, continuous colorbars, categorical legends, and integer label rendering are active | image probe returns RGBA/scalar/category-like payloads; volume slice probe has a CPU first slice | richer probe payloads, shared colorbar/legend layout, 3D label slices, and labels GPU probing |
-| Interaction/selection | policies, pick/probe queues, selection/link APIs | active bookkeeping and tests | request processing executes through app/runtime for point-like, stroke, primitive, image, mesh, sphere, and volume proxy targets | broad item-pick readback plus image/probe readback first slices | richer mesh face/region, path, label, text, and volume ray-hit identities plus broader rendered selection highlights |
+| Visual families | pixel, point, marker, primitive, segment/path, image, labels, mesh, sphere, volume, glyph constructors; semantic polygon composites | active for those families | active for retained first slices, including WBOIT/depth-peel, EDL, SSAO/G-buffer where eligible; glyph path renders atlas-backed text; labels render integer fields | item queries exist for point-like, stroke, primitive, image, mesh, sphere, and volume proxy targets; image, labels, and volume sample queries have GPU paths | errorbar, boxplot, vector/arrow, splat, exact marker/path semantics, labels query pressure tests, and richer path/image/volume features |
+| Sampled fields/scales | `DvzSampledField`, scale, colormap, colorbar, legend, and labels APIs | fields/scales/colorbars/legends/labels retain state | image, labels, and volume consume fields; image/volume colormap bindings, continuous colorbars, categorical legends, and integer label rendering are active | image queries return RGBA/scalar/category-like payloads; volume slice queries now use GPU-rendered scalar and label payloads | richer query payloads, shared colorbar/legend layout, 3D label slices, and broader labels query pressure tests |
+| Interaction/selection | policies, panel query queues, selection/link APIs | active bookkeeping and tests | query processing executes through app/runtime for point-like, stroke, primitive, image, mesh, sphere, and volume proxy targets | broad item-query readback plus image/labels/volume sample query first slices | richer mesh face/region, path, label, text, and volume ray-hit identities plus broader rendered selection highlights |
 | Text/annotations | font, text, annotation APIs | active semantic `DvzText` state, bookkeeping, and lifecycle tests | first rendered glyph/text path active; label annotations use text lowering | no | data/world placement, readout integration, shaping, diagnostics, glyph/text picking |
 
 The implementation-ready packets for the retained and explanatory-object rows are:
@@ -70,24 +70,24 @@ The implementation-ready packets for the retained and explanatory-object rows ar
 
 Remaining implementation work should focus on:
 
-1. broadening pick/probe payload quality beyond the first broad item-pick and image-probe readback
-   paths,
+1. broadening query payload quality beyond the first broad item and sampled-value readback paths,
 2. hardening semantic `DvzText` placement before adding broader text-dependent behavior,
 3. deciding whether mesh needs a separate public geometry resource beyond current scene buffers,
-4. extending volume/sampled-field probe results beyond the current image-oriented payload,
+4. extending volume/sampled-field query results beyond the current image-oriented payload,
 5. implementing rendered selection highlights once selection/link bookkeeping has a stable visual
    target.
 
 
-## Implementation Note: Picking And Probing Status
+## Implementation Note: Query Status
 
-As of 2026-05-26, the native scene request executor implements GPU-backed item picking for point,
-pixel, marker, sphere, segment/stroke, path, primitive, mesh, image, and volume proxy visuals. The
-implemented executor is narrower than the public capability and target model: native pick execution
-currently supports none/item targets, while the API names object, vertex, face, pixel, sample, group,
-strip, segment, triangle, text, and annotation-style targets for future expansion.
+As of 2026-05-30, the native scene query executor implements GPU-backed item queries for point,
+pixel, marker, sphere, segment/stroke, path, primitive, mesh, image, and volume proxy visuals. It
+also implements GPU-backed image, labels, and volume slice sample queries. The implemented executor
+is narrower than the public capability and target model: native execution currently covers the
+first item/pixel/sample targets, while the API names object, vertex, face, group, text, and
+annotation-style targets for future expansion.
 
-Glyph, text, and labels picking are still unimplemented. `DvzPickHitPolicy` is queued but not yet
+Glyph/text identity queries are still unimplemented. `DvzQueryHitPolicy` is queued but not yet
 materially applied by native execution, and richer payload fields such as `instance_id`,
 `data_position`, mesh face/region identity, image texel identity, and volume ray/sample identity still
 need backing implementation before the API should document them as available.
