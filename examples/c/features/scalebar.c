@@ -45,6 +45,7 @@
 #define DETAIL_POINTS    120u
 #define ZOOM_BOX_SEG     4u
 #define CLOUD_COUNT      125u
+#define ROTATION_SPEED_RAD_PER_SEC 0.35f
 
 static const float TAU = 6.28318530718f;
 
@@ -152,69 +153,18 @@ static void _copy_color(uint8_t out[4], DvzColor color, uint8_t alpha)
 
 
 /**
- * Configure a panel with the shared feature-example background and layout reserve.
+ * Configure a panel with the shared feature-example background and a light layout reserve.
  *
  * @param panel target panel
- * @param left left layout reserve
- * @param bottom bottom layout reserve
  * @return true when panel layout was configured
  */
-static bool _configure_panel(DvzPanel* panel, float left, float bottom)
+static bool _configure_panel(DvzPanel* panel)
 {
     ANN(panel);
     example_graphite_cyan_set_panel_background(panel);
     return dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = left, .right = 0.06f, .bottom = bottom,
-                                        .top = 0.07f});
-}
-
-
-
-/**
- * Configure retained X/Y axes on a physical-domain panel.
- *
- * @param panel target panel
- * @param x_label X axis label
- * @param y_label Y axis label
- * @return true when all axis calls succeed
- */
-static bool _add_axes(DvzPanel* panel, const char* x_label, const char* y_label)
-{
-    ANN(panel);
-    ANN(x_label);
-    ANN(y_label);
-
-    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
-    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
-    if (x_axis == NULL || y_axis == NULL)
-        return false;
-
-    DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
-    ticks.target_count = 5;
-    ticks.min_pixel_spacing = 90.0f;
-    ticks.minor_per_interval = 3;
-    if (!dvz_axis_set_tick_policy(x_axis, &ticks))
-        return false;
-    if (!dvz_axis_set_tick_policy(y_axis, &ticks))
-        return false;
-
-    ExampleAxisStyleOptions style = example_graphite_cyan_axis_options();
-    style.tick_size_px = 11.0f;
-    style.label_size_px = 14.0f;
-    style.tick_gap_px = 7.0f;
-    style.x_label_gap_px = 32.0f;
-    style.y_label_gap_px = 43.0f;
-    style.minor_tick_alpha = 210u;
-    style.grid_alpha = 145u;
-    if (!example_graphite_cyan_apply_axis_style(x_axis, false, &style))
-        return false;
-    if (!example_graphite_cyan_apply_axis_style(y_axis, true, &style))
-        return false;
-    if (!dvz_axis_set_grid(x_axis, true) || !dvz_axis_set_grid(y_axis, true))
-        return false;
-    if (!dvz_axis_set_label(x_axis, x_label))
-        return false;
-    return dvz_axis_set_label(y_axis, y_label);
+        panel, &(DvzPanelLayoutReserve){.left = 0.04f, .right = 0.04f, .bottom = 0.04f,
+                                        .top = 0.04f});
 }
 
 
@@ -609,9 +559,9 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(
         overview != NULL && detail != NULL && specimen != NULL, "dvz_grid_panel() failed");
 
-    ok = _configure_panel(overview, 0.15f, 0.14f);
+    ok = _configure_panel(overview);
     EXAMPLE_CHECK(ok, "_configure_panel(overview) failed");
-    ok = _configure_panel(detail, 0.18f, 0.17f);
+    ok = _configure_panel(detail);
     EXAMPLE_CHECK(ok, "_configure_panel(detail) failed");
     example_graphite_cyan_set_panel_background(specimen);
 
@@ -632,11 +582,6 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(ok, "_add_detail_points() failed");
     ok = _add_3d_cloud(scene, specimen);
     EXAMPLE_CHECK(ok, "_add_3d_cloud() failed");
-
-    ok = _add_axes(overview, "x (mm)", "y (mm)");
-    EXAMPLE_CHECK(ok, "_add_axes(overview) failed");
-    ok = _add_axes(detail, "x (mm)", "y (mm)");
-    EXAMPLE_CHECK(ok, "_add_axes(detail) failed");
 
     DvzColor primary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
     DvzColor secondary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
@@ -664,7 +609,14 @@ int main(int argc, char** argv)
     DvzArcball* arcball = dvz_view_arcball(win, specimen, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.56f, -0.18f, +0.30f});
-    dvz_view_request_frame(win);
+
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_fps(scene, 60.0);
+    DvzAnimation* spin = dvz_anim_arcball_spin(
+        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
+    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
+    dvz_anim_start(spin, 0.0);
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;
