@@ -371,8 +371,8 @@ static bool _add_detail_points(DvzScene* scene, DvzPanel* panel)
  *
  * @param panel panel receiving the annotation
  * @param anchor scale-bar anchor
- * @param unit unit label
- * @param data_to_unit factor from panel data units to unit
+ * @param unit base unit label used by the SI-prefix formatter
+ * @param data_to_unit factor from panel data units to base units
  * @param color line and label color
  * @param label_position label position
  * @return true when the scale bar was added
@@ -433,8 +433,8 @@ static bool _add_world_scalebar(DvzPanel* panel)
         .offset_px = {24.0f, 24.0f},
         .tick_length_px = 8.0f,
         .line_width_px = 2.0f,
-        .unit = "mm",
-        .data_to_unit = 1.0,
+        .unit = "m",
+        .data_to_unit = 0.001,
         .label_style = {
             .size_px = 16.0f,
             .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
@@ -586,10 +586,11 @@ int main(int argc, char** argv)
     DvzColor primary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
     DvzColor secondary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
     ok = _add_panel_scalebar(
-        overview, DVZ_SCENE_ANCHOR_BOTTOM_LEFT, "mm", 1.0, primary, DVZ_SCALEBAR_LABEL_ABOVE);
+        overview, DVZ_SCENE_ANCHOR_BOTTOM_LEFT, "m", 0.001, primary,
+        DVZ_SCALEBAR_LABEL_ABOVE);
     EXAMPLE_CHECK(ok, "_add_panel_scalebar(overview) failed");
     ok = _add_panel_scalebar(
-        detail, DVZ_SCENE_ANCHOR_BOTTOM_RIGHT, "um", 1000.0, secondary,
+        detail, DVZ_SCENE_ANCHOR_BOTTOM_RIGHT, "m", 0.001, secondary,
         DVZ_SCALEBAR_LABEL_ABOVE);
     EXAMPLE_CHECK(ok, "_add_panel_scalebar(detail) failed");
     ok = _add_world_scalebar(specimen);
