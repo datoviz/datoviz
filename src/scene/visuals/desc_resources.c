@@ -348,6 +348,13 @@ bool _scene_render_visual_has_position_resource(
     const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[visual_index];
     if (meta->has_metadata)
     {
+        if (
+            _scene_visual_meta_desc_kind(&emitter->resources, meta) ==
+                DVZ_SCENE_VISUAL_DESC_NONE &&
+            _scene_visual_meta_renderable_kind(&emitter->resources, meta) == DVZ_RENDERABLE_NONE)
+        {
+            return false;
+        }
         bool stroked_path = _scene_visual_meta_is_stroked_path(&emitter->resources, meta);
         bool segment_like = _scene_visual_meta_renderable_kind(&emitter->resources, meta) ==
                             DVZ_RENDERABLE_STROKE_QUAD;
@@ -363,4 +370,3 @@ bool _scene_render_visual_has_position_resource(
                emitter, render->u.render.visuals[visual_index],
                DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION) != 0;
 }
-

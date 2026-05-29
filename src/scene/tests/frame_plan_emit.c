@@ -58,6 +58,31 @@ typedef enum
 
 
 
+/**
+ * Attach explicit typed metadata for a generic fixture-render visual.
+ *
+ * @param plan the FramePlan
+ * @param visual_id render visual id
+ * @param position_id position buffer resource id
+ * @return whether the visual and metadata were attached
+ */
+static bool _frame_plan_render_fixture_visual(
+    DvzFramePlan* plan, const char* visual_id, const char* position_id)
+{
+    ANN(plan);
+    ANN(visual_id);
+    ANN(position_id);
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.buffer_index = UINT32_MAX;
+    metadata.topology = UINT32_MAX;
+    dvz_strlcpy(metadata.position_id, position_id, sizeof(metadata.position_id));
+    return dvz_frame_plan_render_visual(plan, visual_id) &&
+           dvz_frame_plan_render_visual_metadata(plan, &metadata);
+}
+
+
+
 #define TST_SCENE_GPU_CASE(test)                                                                  \
     do                                                                                            \
     {                                                                                             \
@@ -1298,8 +1323,7 @@ int test_frame_plan_emit_drp2_static_render(TstContext* suite, const TstCase* it
 
     AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
     AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
-    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(plan));
+    AT(_frame_plan_render_fixture_visual(plan, "visual.point.0", "buf.point.position"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -1347,8 +1371,7 @@ int test_frame_plan_emit_drp2_static_render_glsl(TstContext* suite, const TstCas
 
     AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
     AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
-    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(plan));
+    AT(_frame_plan_render_fixture_visual(plan, "visual.point.0", "buf.point.position"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -1422,8 +1445,7 @@ int test_frame_plan_emit_drp2_rejects_unsupported_shader_format(TstContext* suit
 
     AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
     AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
-    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(plan));
+    AT(_frame_plan_render_fixture_visual(plan, "visual.point.0", "buf.point.position"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -1453,8 +1475,7 @@ int test_frame_plan_emit_drp2_rejects_small_caps(TstContext* suite, const TstCas
 
     AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
     AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
-    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(plan));
+    AT(_frame_plan_render_fixture_visual(plan, "visual.point.0", "buf.point.position"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -1525,8 +1546,7 @@ int test_frame_plan_emit_drp2_static_render_glsl_executes(TstContext* suite, con
     ANN(plan);
     AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
     AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
-    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(plan));
+    AT(_frame_plan_render_fixture_visual(plan, "visual.point.0", "buf.point.position"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -1564,8 +1584,7 @@ int test_frame_plan_emit_drp2_readback_glsl_executes(TstContext* suite, const Ts
     ANN(plan);
     AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
     AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.picking", true));
-    AT(dvz_frame_plan_render_visual(plan, "visual.pickable.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(plan));
+    AT(_frame_plan_render_fixture_visual(plan, "visual.pickable.0", "buf.point.position"));
     AT(dvz_frame_plan_copy(plan, "target.panel.0.picking", "buf.pick.readback", 4));
     AT(dvz_frame_plan_readback(plan, "buf.pick.readback", "request.pick.0"));
 
@@ -1613,15 +1632,13 @@ int test_frame_plan_emitter_runtime_two_frames_glsl_executes(TstContext* suite, 
     ANN(frame1);
     AT(dvz_frame_plan_upload(frame0, "buf.point.position", 0, 16, "point.position.0"));
     AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
-    AT(dvz_frame_plan_render_visual(frame0, "visual.pickable.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(frame0));
+    AT(_frame_plan_render_fixture_visual(frame0, "visual.pickable.0", "buf.point.position"));
     AT(dvz_frame_plan_copy(frame0, "target.panel.0.picking", "buf.pick.readback", 4));
     AT(dvz_frame_plan_readback(frame0, "buf.pick.readback", "request.pick.0"));
 
     AT(dvz_frame_plan_upload(frame1, "buf.point.position", 0, 16, "point.position.1"));
     AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
-    AT(dvz_frame_plan_render_visual(frame1, "visual.pickable.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(frame1));
+    AT(_frame_plan_render_fixture_visual(frame1, "visual.pickable.0", "buf.point.position"));
     AT(dvz_frame_plan_copy(frame1, "target.panel.0.picking", "buf.pick.readback", 4));
     AT(dvz_frame_plan_readback(frame1, "buf.pick.readback", "request.pick.1"));
 
