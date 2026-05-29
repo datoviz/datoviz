@@ -21,6 +21,10 @@ Python hosting helpers should live under a clearly separate namespace, currently
 `datoviz.host`. The helper layer adapts existing raw handles to Python callback and event-loop
 semantics. It must not create scene objects, hide ownership, or grow into a high-level plotting API.
 
+For coding agents, this boundary should be explicit: host helpers are allowed to make event loops,
+callbacks, and frame waking easier, but they are not an invitation to invent Python scene, visual,
+or plotting objects in Datoviz.
+
 
 ## Namespace Shape
 
@@ -253,3 +257,7 @@ The host layer must not provide:
 5. compatibility with the v0.3 Python object model.
 
 Those belong above Datoviz, currently in GSP/VisPy2 or application-specific code.
+
+Documentation and examples should mark this clearly so generated Python code does not assume
+`datoviz.figure()`, `datoviz.scatter()`, or similar convenience APIs exist unless a future supported
+helper layer explicitly adds them.

@@ -2,6 +2,9 @@
 
 Datoviz v0.4 deliberately separates engine, command-stream, binding, and plotting responsibilities.
 
+When using a coding agent, make the layer explicit. For normal Datoviz C visualization, ask for the
+`scene` and `app` APIs and start from a current minimal example.
+
 | Need | Use | Status |
 | --- | --- | --- |
 | Native rendering engine, windows, offscreen views, capture | Datoviz C `scene` and `app` APIs | supported/experimental by feature |
@@ -16,11 +19,17 @@ Datoviz v0.4 deliberately separates engine, command-stream, binding, and plottin
 Choose the C API when your program owns rendering decisions and needs explicit control over scenes,
 visual data, runtime resources, windows, offscreen targets, or capture.
 
+This is the default Datoviz layer for generated examples that create figures, panels, visuals,
+controllers, captures, or pick/probe requests.
+
 
 ## Raw `ctypes`
 
 Choose raw `ctypes` only when you need direct access to generated C bindings from Python. Treat it
 as a low-level integration and smoke-testing path, not as a high-level plotting API.
+
+Ask agents to preserve raw C names such as `dvz_scene()` and to follow C ownership rules. Do not ask
+for Pythonic helpers unless they are documented as part of the current package.
 
 
 ## DRP2/DVZR

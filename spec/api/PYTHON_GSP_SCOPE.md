@@ -108,6 +108,24 @@ The raw `ctypes` documentation should set expectations explicitly:
 4. it is not the recommended Pythonic plotting interface.
 
 
+## Agent-Facing Python Rules
+
+When users ask a coding agent for Python code, Datoviz documentation should make the intended layer
+unambiguous:
+
+1. use `datoviz.raw` only when the user wants direct low-level access to the C engine;
+2. preserve exact `dvz_*`, `Dvz*`, and `DVZ_*` names in raw examples;
+3. keep raw examples close to the C ownership model and destroy rules;
+4. use narrow host helpers only for callback and event-loop ergonomics;
+5. route high-level plotting, notebook workflows, and Pythonic scene objects to VisPy2/GSP;
+6. do not invent `datoviz.scatter()`, `datoviz.imshow()`, or v0.3-style object APIs inside
+   Datoviz v0.4 examples.
+
+If a future thin Python scene helper is introduced, it must be documented as a specific supported
+surface with examples and validation. Until then, generated Python should not assume such helpers
+exist.
+
+
 ## Examples Consequences
 
 Datoviz should keep C examples as first-class release proof. They validate the actual v0.4 Datoviz

@@ -226,6 +226,43 @@ A report should contain:
 3. a summary result such as success, degraded success, recoverable failure, or fatal failure.
 
 
+## Agent-Repairable Diagnostics
+
+Diagnostics should be specific enough for a coding agent to repair generated user code without
+guessing which API contract was violated.
+
+An agent-repairable diagnostic should include:
+
+1. a stable diagnostic code;
+2. a scene-level subject kind and identity;
+3. severity and phase;
+4. expected versus actual values when applicable;
+5. a concise message;
+6. an actionable hint when there is a preferred fix;
+7. backend detail only as optional context.
+
+Preferred shape:
+
+```text
+code=SCENE_VISUAL_MISSING_POSITION
+severity=Fatal
+phase=Validation
+subject_kind=Visual
+subject_id=visual:point:17
+message=Point visual requires position data before rendering.
+hint=Bind the position attribute before submitting the frame.
+context.expected=position attribute with item_count > 0
+context.actual=missing
+```
+
+Do not make agents infer a scene error from only an assertion file/line, Vulkan handle, shader
+binding number, or DRP2 runtime code when a scene-level explanation is available.
+
+Diagnostic wording should prefer current public API concepts. If a message tells the user to call a
+function or set a property, that name should match installed headers or clearly marked future API
+specs.
+
+
 ## Interaction With Existing Scene Docs
 
 This schema should be used by:

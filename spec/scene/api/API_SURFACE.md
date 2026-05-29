@@ -22,6 +22,32 @@ scene-specific rules, but it should not redefine general C API, binding, or stru
 policy.
 
 
+## Agent-Default Scene Path
+
+For generated user code and ordinary documentation examples, the preferred scene path is:
+
+```text
+figure -> panel -> visual or retained object -> data/resources -> render/show/capture -> pick/probe
+```
+
+This path is the public surface that coding agents should infer for common requests such as
+"render a point cloud", "show an image with a colorbar", "make an offscreen capture", or "probe an
+image pixel".
+
+The API should therefore keep these concepts easy to identify:
+
+1. scene, figure, and panel lifecycle;
+2. typed visual or retained-object constructors;
+3. explicit data/resource binding;
+4. controller and interaction attachment;
+5. render, show, capture, and readback entry points;
+6. validation and diagnostics before backend execution.
+
+DRP2, vklite, Vulkan, and backend-specific resource paths remain documented for advanced work, but
+they should not be required to answer normal scene/app usage. Public examples should only route to
+those layers when the example explicitly targets protocol, backend, or runtime internals.
+
+
 ## Header Ownership
 
 The public scene API should use this split:

@@ -8,6 +8,10 @@ High-level Python plotting, object-oriented convenience APIs, and scientific wor
 above Datoviz, currently in the GSP/VisPy2 layer. Datoviz v0.4 owns the C engine and a generated raw
 binding that honestly exposes that C engine to Python.
 
+This boundary is also an AI-facing contract: coding agents should not infer a Python plotting API
+from the existence of raw bindings. Generated Python examples must use `datoviz.raw` for low-level
+FFI or route high-level plotting requests to GSP/VisPy2.
+
 
 ## Goals
 
