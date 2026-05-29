@@ -30,6 +30,7 @@
 #include "_visual_family.h"
 #include "_visual_internal.h"
 #include "datoviz/scene.h"
+#include "registry/registry.h"
 #include "sample_profile.h"
 
 
@@ -46,15 +47,13 @@
  * @param item_count number of items
  * @return whether the values are accepted
  */
-static bool _visual_attr_values_valid(
+bool _scene_splat_visual_validate_attr(
     const DvzVisual* visual, const char* attr_name, const void* data, uint32_t item_count)
 {
     ANN(visual);
     ANN(attr_name);
     ANN(data);
-
-    if (visual->type != DVZ_VISUAL_TYPE_SPLAT)
-        return true;
+    (void)visual;
 
     if (strcmp(attr_name, "sigma") == 0)
     {
@@ -91,6 +90,62 @@ static bool _visual_attr_values_valid(
 
 
 /**
+ * Apply mesh-specific dense attribute side effects.
+ *
+ * @param visual the visual
+ * @param attr_name storage attribute name
+ * @param item_count number of items in the written attribute
+ * @return whether side effects succeeded
+ */
+bool _scene_mesh_visual_after_attr_set(DvzVisual* visual, const char* attr_name, uint32_t item_count)
+{
+    ANN(visual);
+    ANN(attr_name);
+    if (strcmp(attr_name, "position") == 0)
+    {
+        DvzVisualAttr* color = _attr_get_or_create(visual, "color", 4 * sizeof(uint8_t));
+        if (color == NULL)
+            return false;
+        if (color->data == NULL || _visual_family_state(visual)->mesh_default_color)
+        {
+            if (!_mesh_ensure_default_color(visual, item_count))
+            {
+                log_error("mesh default color allocation failed");
+                return false;
+            }
+        }
+    }
+    else if (strcmp(attr_name, "color") == 0)
+    {
+        _visual_family_state(visual)->mesh_default_color = false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Apply stroke-family dense attribute side effects.
+ *
+ * @param visual the visual
+ * @param attr_name storage attribute name
+ * @param item_count number of items in the written attribute
+ * @return whether side effects succeeded
+ */
+bool _scene_stroke_visual_after_attr_set(
+    DvzVisual* visual, const char* attr_name, uint32_t item_count)
+{
+    ANN(visual);
+    ANN(attr_name);
+    (void)item_count;
+    if (strcmp(attr_name, "line_width") == 0)
+        _visual_family_state(visual)->material_params_dirty = true;
+    return true;
+}
+
+
+
+/**
  * Advance a retained visual payload version.
  *
  * @param version the version counter
@@ -113,7 +168,7 @@ void _visual_bump_version(uint64_t* version)
 bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count)
 {
     ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_MESH || item_count == 0)
+    if (item_count == 0)
         return true;
 
     DvzVisualAttr* color = _attr_get_or_create(visual, "color", 4 * sizeof(uint8_t));
@@ -173,7 +228,9 @@ int dvz_visual_set_data(
         return -1;
     if (!_visual_attr_count_consistent(visual, attr_name, item_count))
         return -1;
-    if (!_visual_attr_values_valid(visual, attr_name, data, item_count))
+    if (
+        visual->ops != NULL && visual->ops->validate_attr != NULL &&
+        !visual->ops->validate_attr(visual, attr_name, data, item_count))
         return -1;
 
     DvzVisualAttr* attr = _attr_get_or_create(visual, attr_name, item_size);
@@ -230,27 +287,10 @@ int dvz_visual_set_data(
     attr->dirty_first_item = 0;
     attr->dirty_item_count = item_count; /* whole buffer dirty */
     _visual_bump_version(&attr->version);
-    if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(attr_name, "position") == 0)
-    {
-        DvzVisualAttr* color = _attr_get_or_create(visual, "color", 4 * sizeof(uint8_t));
-        if (color == NULL)
-            return -1;
-        if (color->data == NULL || _visual_family_state(visual)->mesh_default_color)
-        {
-            if (!_mesh_ensure_default_color(visual, item_count))
-            {
-                log_error("mesh default color allocation failed");
-                return -1;
-            }
-        }
-    }
-    else if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(attr_name, "color") == 0)
-    {
-        _visual_family_state(visual)->mesh_default_color = false;
-    }
-    if ((visual->type == DVZ_VISUAL_TYPE_PATH || visual->type == DVZ_VISUAL_TYPE_VECTOR) &&
-        strcmp(attr_name, "line_width") == 0)
-        _visual_family_state(visual)->material_params_dirty = true;
+    if (
+        visual->ops != NULL && visual->ops->after_attr_set != NULL &&
+        !visual->ops->after_attr_set(visual, attr_name, item_count))
+        return -1;
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -307,7 +347,9 @@ int dvz_visual_set_strings(
     ANN(visual);
     ANN(attr_name);
     ANN(strings);
-    if (visual->type != DVZ_VISUAL_TYPE_TEXT || strcmp(attr_name, "text") != 0)
+    if (
+        visual->ops == NULL || strcmp(visual->ops->name, "text") != 0 ||
+        strcmp(attr_name, "text") != 0)
     {
         log_error("visual string attribute '%s' is only supported on text visuals", attr_name);
         return -1;
@@ -475,7 +517,9 @@ int dvz_visual_set_data_many(
             dvz_free(prepared);
             return -1;
         }
-        if (!_visual_attr_values_valid(visual, attr_name, update->data, update->item_count))
+        if (
+            visual->ops != NULL && visual->ops->validate_attr != NULL &&
+            !visual->ops->validate_attr(visual, attr_name, update->data, update->item_count))
         {
             dvz_free(prepared);
             return -1;
@@ -504,8 +548,8 @@ int dvz_visual_set_data_many(
             continue;
         if (_visual_data_update_contains_attr(visual->type, updates, update_count, attr->name))
             continue;
-        if (visual->type == DVZ_VISUAL_TYPE_MESH && _visual_family_state(visual)->mesh_default_color &&
-            strcmp(attr->name, "color") == 0 &&
+        if (
+            _visual_family_state(visual)->mesh_default_color && strcmp(attr->name, "color") == 0 &&
             _visual_data_update_contains_attr(visual->type, updates, update_count, "position"))
         {
             continue;
@@ -538,9 +582,6 @@ int dvz_visual_set_data_many(
             prepared[i].data, prepared[i].byte_size, updates[i].data, prepared[i].byte_size);
     }
 
-    bool mesh_position_updated = false;
-    bool mesh_color_updated = false;
-    bool path_line_width_updated = false;
     for (uint32_t i = 0; i < update_count; i++)
     {
         DvzVisualAttr* attr =
@@ -563,32 +604,10 @@ int dvz_visual_set_data_many(
         attr->dirty_item_count = updates[i].item_count;
         _visual_bump_version(&attr->version);
 
-        if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(prepared[i].attr_name, "position") == 0)
-            mesh_position_updated = true;
-        if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(prepared[i].attr_name, "color") == 0)
-            mesh_color_updated = true;
-        if ((visual->type == DVZ_VISUAL_TYPE_PATH || visual->type == DVZ_VISUAL_TYPE_VECTOR) &&
-            strcmp(prepared[i].attr_name, "line_width") == 0)
-            path_line_width_updated = true;
-    }
-
-    if (mesh_color_updated)
-        _visual_family_state(visual)->mesh_default_color = false;
-    if (path_line_width_updated)
-        _visual_family_state(visual)->material_params_dirty = true;
-    if (mesh_position_updated)
-    {
-        DvzVisualAttr* color = _attr_get_or_create(visual, "color", 4 * sizeof(uint8_t));
-        if (color == NULL)
+        if (visual->ops != NULL && visual->ops->after_attr_set != NULL)
         {
-            dvz_free(prepared);
-            return -1;
-        }
-        if (color->data == NULL || _visual_family_state(visual)->mesh_default_color)
-        {
-            if (!_mesh_ensure_default_color(visual, batch_item_count))
+            if (!visual->ops->after_attr_set(visual, prepared[i].attr_name, updates[i].item_count))
             {
-                log_error("mesh default color allocation failed");
                 dvz_free(prepared);
                 return -1;
             }
@@ -712,10 +731,11 @@ int dvz_visual_set_data_range(
         attr->dirty_first_item = merged_first;
         attr->dirty_item_count = merged_end - merged_first;
     }
-    if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(attr_name, "color") == 0)
-        _visual_family_state(visual)->mesh_default_color = false;
-    if (visual->type == DVZ_VISUAL_TYPE_PATH && strcmp(attr_name, "line_width") == 0)
-        _visual_family_state(visual)->material_params_dirty = true;
+    if (visual->ops != NULL && visual->ops->after_attr_set != NULL)
+    {
+        if (!visual->ops->after_attr_set(visual, attr_name, item_count))
+            return -1;
+    }
     _visual_bump_version(&attr->version);
     _scene_notify_visual_changed(visual);
     return 0;

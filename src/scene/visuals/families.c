@@ -69,34 +69,8 @@ DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t fla
     _material_state_default(&visual->material, type);
     _material_params_default(&state->material_params);
     _material_params_sync_state(&state->material_params, &visual->material);
-    if (type == DVZ_VISUAL_TYPE_POINT || type == DVZ_VISUAL_TYPE_MARKER)
-        _point_style_sync_params(&state->material_params, &visual->material.point_style);
-    if (type == DVZ_VISUAL_TYPE_SEGMENT)
-    {
-        state->segment.start_cap = DVZ_SEGMENT_CAP_BUTT;
-        state->segment.end_cap = DVZ_SEGMENT_CAP_BUTT;
-        _segment_sync_params(visual);
-    }
-    if (type == DVZ_VISUAL_TYPE_VECTOR)
-    {
-        state->vector.scale = 1.0f;
-        state->vector.anchor = DVZ_VECTOR_ANCHOR_TAIL;
-        state->vector.start_cap = DVZ_SEGMENT_CAP_NONE;
-        state->vector.end_cap = DVZ_SEGMENT_CAP_TRIANGLE_OUT;
-        state->vector.join = DVZ_PATH_JOIN_ROUND;
-        state->vector.miter_limit = 4.0f;
-        _vector_sync_params(visual);
-    }
-    if (type == DVZ_VISUAL_TYPE_PATH)
-    {
-        state->path.cap_start = DVZ_SEGMENT_CAP_ROUND;
-        state->path.cap_end = DVZ_SEGMENT_CAP_ROUND;
-        state->path.join = DVZ_PATH_JOIN_ROUND;
-        state->path.miter_limit = 4.0f;
-        _path_sync_params(visual);
-    }
-    _labels_state_default(&state->labels);
-    _volume_state_default(&state->volume);
+    if (visual->ops != NULL && visual->ops->init_state != NULL)
+        visual->ops->init_state(visual);
     return visual;
 }
 
@@ -113,8 +87,8 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
     if (visual == NULL)
         return;
     DvzVisualFamilyState* state = _visual_family_state(visual);
-    if (state != NULL && visual->type == DVZ_VISUAL_TYPE_TEXT && state->text.glyph_visual != NULL)
-        dvz_visual_set_visible(state->text.glyph_visual, false);
+    if (visual->ops != NULL && visual->ops->reset_state != NULL)
+        visual->ops->reset_state(visual);
     if (state != NULL)
     {
         _stroke_quad_gpu_cache_free(&state->segment.gpu);
@@ -188,6 +162,116 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
         visual->family_state = NULL;
     }
     dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
+}
+
+
+
+/*************************************************************************************************/
+/*  Family lifecycle helpers                                                                     */
+/*************************************************************************************************/
+
+/**
+ * Initialize point-style material parameters for point-like visuals.
+ *
+ * @param visual the visual
+ */
+void _scene_visual_init_point_style(DvzVisual* visual)
+{
+    ANN(visual);
+    _point_style_sync_params(
+        &_visual_family_state(visual)->material_params, &visual->material.point_style);
+}
+
+
+
+/**
+ * Initialize segment retained state.
+ *
+ * @param visual the visual
+ */
+void _scene_segment_visual_init_state(DvzVisual* visual)
+{
+    ANN(visual);
+    _visual_family_state(visual)->segment.start_cap = DVZ_SEGMENT_CAP_BUTT;
+    _visual_family_state(visual)->segment.end_cap = DVZ_SEGMENT_CAP_BUTT;
+    _segment_sync_params(visual);
+}
+
+
+
+/**
+ * Initialize path retained state.
+ *
+ * @param visual the visual
+ */
+void _scene_path_visual_init_state(DvzVisual* visual)
+{
+    ANN(visual);
+    _visual_family_state(visual)->path.cap_start = DVZ_SEGMENT_CAP_ROUND;
+    _visual_family_state(visual)->path.cap_end = DVZ_SEGMENT_CAP_ROUND;
+    _visual_family_state(visual)->path.join = DVZ_PATH_JOIN_ROUND;
+    _visual_family_state(visual)->path.miter_limit = 4.0f;
+    _path_sync_params(visual);
+}
+
+
+
+/**
+ * Initialize vector retained state.
+ *
+ * @param visual the visual
+ */
+void _scene_vector_visual_init_state(DvzVisual* visual)
+{
+    ANN(visual);
+    _visual_family_state(visual)->vector.scale = 1.0f;
+    _visual_family_state(visual)->vector.anchor = DVZ_VECTOR_ANCHOR_TAIL;
+    _visual_family_state(visual)->vector.start_cap = DVZ_SEGMENT_CAP_NONE;
+    _visual_family_state(visual)->vector.end_cap = DVZ_SEGMENT_CAP_TRIANGLE_OUT;
+    _visual_family_state(visual)->vector.join = DVZ_PATH_JOIN_ROUND;
+    _visual_family_state(visual)->vector.miter_limit = 4.0f;
+    _vector_sync_params(visual);
+}
+
+
+
+/**
+ * Initialize labels retained state.
+ *
+ * @param visual the visual
+ */
+void _scene_labels_visual_init_state(DvzVisual* visual)
+{
+    ANN(visual);
+    _labels_state_default(&_visual_family_state(visual)->labels);
+}
+
+
+
+/**
+ * Initialize volume retained state.
+ *
+ * @param visual the visual
+ */
+void _scene_volume_visual_init_state(DvzVisual* visual)
+{
+    ANN(visual);
+    _volume_state_default(&_visual_family_state(visual)->volume);
+}
+
+
+
+/**
+ * Reset text family state before generic visual cleanup runs.
+ *
+ * @param visual the visual
+ */
+void _scene_text_visual_reset_state(DvzVisual* visual)
+{
+    ANN(visual);
+    DvzVisualFamilyState* state = _visual_family_state(visual);
+    if (state != NULL && state->text.glyph_visual != NULL)
+        dvz_visual_set_visible(state->text.glyph_visual, false);
 }
 
 

@@ -62,6 +62,12 @@ typedef bool (*DvzVisualFamilyDrawDescFn)(
 typedef bool (*DvzVisualFamilyMetadataFn)(
     const DvzVisual* visual, const DvzVisualLowering* lowering,
     DvzFramePlanVisualMeta* metadata);
+typedef void (*DvzVisualFamilyInitFn)(DvzVisual* visual);
+typedef void (*DvzVisualFamilyResetFn)(DvzVisual* visual);
+typedef bool (*DvzVisualFamilyValidateAttrFn)(
+    const DvzVisual* visual, const char* attr_name, const void* data, uint32_t item_count);
+typedef bool (*DvzVisualFamilyAfterAttrFn)(
+    DvzVisual* visual, const char* attr_name, uint32_t item_count);
 
 struct DvzVisualFamilyOps
 {
@@ -75,6 +81,10 @@ struct DvzVisualFamilyOps
     DvzVisualFamilyShaderDescFn resolve_shader_desc;
     DvzVisualFamilyDrawDescFn resolve_draw_desc;
     DvzVisualFamilyMetadataFn fill_metadata;
+    DvzVisualFamilyInitFn init_state;
+    DvzVisualFamilyResetFn reset_state;
+    DvzVisualFamilyValidateAttrFn validate_attr;
+    DvzVisualFamilyAfterAttrFn after_attr_set;
     bool upload_position_topology;
     bool upload_material_params;
 };
@@ -109,3 +119,16 @@ void _scene_shader_desc_set_identity(
 
 bool _scene_visual_default_draw_desc(
     const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out);
+
+void _scene_visual_init_point_style(DvzVisual* visual);
+void _scene_segment_visual_init_state(DvzVisual* visual);
+void _scene_path_visual_init_state(DvzVisual* visual);
+void _scene_vector_visual_init_state(DvzVisual* visual);
+void _scene_labels_visual_init_state(DvzVisual* visual);
+void _scene_volume_visual_init_state(DvzVisual* visual);
+void _scene_text_visual_reset_state(DvzVisual* visual);
+bool _scene_splat_visual_validate_attr(
+    const DvzVisual* visual, const char* attr_name, const void* data, uint32_t item_count);
+bool _scene_mesh_visual_after_attr_set(DvzVisual* visual, const char* attr_name, uint32_t item_count);
+bool _scene_stroke_visual_after_attr_set(
+    DvzVisual* visual, const char* attr_name, uint32_t item_count);
