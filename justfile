@@ -1131,6 +1131,7 @@ spec-check: shader-abi-check
     run_check "scheduler tests" .venv/bin/pytest -q testing/test_dvztest_scheduler.py
     run_check "scene query source guard" .venv/bin/pytest -q testing/test_scene_query_source_guard.py
     run_check "scene architecture source guard" .venv/bin/pytest -q testing/test_scene_architecture_source_guard.py
+    run_check "scene visual boundary guard" .venv/bin/python tools/check_scene_visual_boundaries.py
 
     status=0
     for i in "${!pids[@]}"; do
