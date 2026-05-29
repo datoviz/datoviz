@@ -72,6 +72,29 @@ static bool _colorbar_stream_has_pipeline_label(
 
 
 /**
+ * Append a minimal typed fixture render so runtime texture-upload tests exercise the emitter.
+ *
+ * @param plan the FramePlan
+ * @param position_id the fixture position buffer id
+ * @return whether the fixture render was appended
+ */
+static bool _field_runtime_render_fixture(DvzFramePlan* plan, const char* position_id)
+{
+    ANN(plan);
+    ANN(position_id);
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.buffer_index = UINT32_MAX;
+    dvz_strlcpy(metadata.position_id, position_id, sizeof(metadata.position_id));
+    return dvz_frame_plan_upload(plan, position_id, 0, 16, "point.position") &&
+           dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false) &&
+           dvz_frame_plan_render_visual(plan, "visual.fixture.field") &&
+           dvz_frame_plan_render_visual_metadata(plan, &metadata);
+}
+
+
+
+/**
  * Return whether a stream contains a sparse volume-label lookup buffer.
  *
  * @param stream the emitted command stream
@@ -3464,9 +3487,7 @@ int test_scene_sampled_field_3d_emits_runtime_texture_upload(
     DvzFramePlan* frame0 = dvz_frame_plan("figure.field3d.runtime", 0);
     ANN(frame0);
     AT(_scene_emit_sampled_field_texture_upload(frame0, "tex.field.volume", field));
-    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.color", false));
-    AT(dvz_frame_plan_render_visual(frame0, "visual.texture.volume"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(frame0));
+    AT(_field_runtime_render_fixture(frame0, "buf.fixture.position"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -3529,9 +3550,7 @@ int test_scene_sampled_field_3d_emits_runtime_texture_upload(
     DvzFramePlan* frame1 = dvz_frame_plan("figure.field3d.runtime", 1);
     ANN(frame1);
     AT(_scene_emit_sampled_field_texture_upload(frame1, "tex.field.volume", field));
-    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.color", false));
-    AT(dvz_frame_plan_render_visual(frame1, "visual.texture.volume"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(frame1));
+    AT(_field_runtime_render_fixture(frame1, "buf.fixture.position"));
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream1 =
         dvz_frame_plan_emitter_emit_drp2(emitter, frame1, &caps, &report, &emit_cfg);
