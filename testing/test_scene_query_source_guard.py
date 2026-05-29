@@ -4,6 +4,12 @@ from pathlib import Path
 QUERY_DIR = Path("src/scene/query")
 
 FORBIDDEN_PATTERNS = (
+    "pick",
+    "probe",
+    "Pick",
+    "Probe",
+    "PICK",
+    "PROBE",
     "DVZ_VISUAL_TYPE_",
     "DVZ_SCENE_VISUAL_FAMILY_IMAGE",
     "DVZ_SCENE_VISUAL_FAMILY_LABELS",

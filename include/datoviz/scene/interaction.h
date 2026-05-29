@@ -85,7 +85,7 @@ DVZ_EXPORT void dvz_interaction_set_query_hit_policy(
 
 
 /**
- * Enable or disable automatic probe pinning from interaction-driven probe results.
+ * Enable or disable automatic readout pinning from interaction-driven query results.
  *
  * @param interaction the interaction policy
  * @param enabled true to enable automatic pinning

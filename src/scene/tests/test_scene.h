@@ -136,8 +136,6 @@ int test_scene_interaction(TstSuite* suite);
 
 int test_scene_graph(TstSuite* suite);
 
-int test_scene_query_filter_alias(TstSuite* suite);
-
 int test_scene_query(TstSuite* suite);
 
 int test_scene_text_atlas(TstSuite* suite);
@@ -371,46 +369,6 @@ int test_scene_labels_emit_wgsl(TstContext* suite, const TstCase* item);
 int test_scene_image_emit_uses_common_and_texture_sets(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCase* item);
-
-int test_scene_point_pick_quadrants(TstContext* suite, const TstCase* item);
-
-int test_scene_point_pick_rejects_disc_corner(TstContext* suite, const TstCase* item);
-
-int test_scene_pixel_pick_accepts_square_corner(TstContext* suite, const TstCase* item);
-
-int test_scene_marker_pick_accepts_bbox_corner(TstContext* suite, const TstCase* item);
-
-int test_scene_sphere_pick_resolves_item(TstContext* suite, const TstCase* item);
-
-int test_scene_stroke_pick_resolves_item(TstContext* suite, const TstCase* item);
-
-int test_scene_primitive_pick_resolves_item(TstContext* suite, const TstCase* item);
-
-int test_scene_image_pick_resolves_item(TstContext* suite, const TstCase* item);
-
-int test_scene_pick_respects_visual_order_across_families(
-    TstContext* suite, const TstCase* item);
-
-int test_scene_volume_pick_resolves_item(TstContext* suite, const TstCase* item);
-
-int test_scene_image_probe_reuses_retained_request_executor(TstContext* suite, const TstCase* item);
-
-int test_scene_image_probe_respects_panel_request_position(TstContext* suite, const TstCase* item);
-
-int test_scene_image_probe_generated_rect_respects_panel_position(
-    TstContext* suite, const TstCase* item);
-
-int test_scene_image_probe_generated_rect_edge_bins(TstContext* suite, const TstCase* item);
-
-int test_scene_image_probe_skips_fixed_image_overlays(TstContext* suite, const TstCase* item);
-
-int test_scene_labels_probe_raw_integer_field(TstContext* suite, const TstCase* item);
-
-int test_scene_labels_probe_high_unsigned_id(TstContext* suite, const TstCase* item);
-
-int test_scene_image_probe_transparent_pixel_misses(TstContext* suite, const TstCase* item);
-
-int test_scene_image_probe_gpu_readback_failure_misses(TstContext* suite, const TstCase* item);
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen(TstContext* suite, const TstCase* item);
@@ -791,16 +749,10 @@ int test_scene_rejects_range_update_without_full_allocation(TstContext* suite, c
 
 int test_scene_rejects_mutation_while_emitted_stream_is_live(TstContext* suite, const TstCase* item);
 
-int test_scene_pick_request_distinct_ids_keep_independent_pending_and_results(
-    TstContext* suite, const TstCase* item);
-
-int test_scene_pick_request_same_id_rejects_late_result_after_newer_poll(
-    TstContext* suite, const TstCase* item);
-
-int test_scene_probe_request_zero_id_rejects_late_result_after_newer_poll(
-    TstContext* suite, const TstCase* item);
-
 int test_scene_query_registry_covers_active_visual_families(
+    TstContext* suite, const TstCase* item);
+
+int test_scene_image_query_reuses_retained_request_executor(
     TstContext* suite, const TstCase* item);
 
 int test_scene_query_rejects_untyped_render_plan(TstContext* suite, const TstCase* item);
@@ -948,12 +900,6 @@ int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const T
 int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item);
 
 int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCase* item);
-
-int test_scene_pick_request_same_id_supersedes_older_unresolved(
-    TstContext* suite, const TstCase* item);
-
-int test_scene_probe_request_zero_id_keeps_newest_unresolved(
-    TstContext* suite, const TstCase* item);
 
 int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* item);
 

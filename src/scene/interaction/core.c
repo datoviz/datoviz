@@ -544,15 +544,15 @@ static void _readout_refresh_text(DvzPinnedReadout* readout)
     const DvzQueryResult* query = &readout->query;
     const char* label = query->label[0] != '\0' ? query->label : "value";
 
-    DvzSceneFormatState probe_format = {
+    DvzSceneFormatState query_format = {
         .precision = 3,
         .trim_trailing_zeros = true,
     };
-    const DvzSceneFormatState* format = readout->has_format ? &readout->format : &probe_format;
+    const DvzSceneFormatState* format = readout->has_format ? &readout->format : &query_format;
     if (!readout->has_format && query->unit[0] != '\0')
     {
-        probe_format.show_unit = true;
-        dvz_strlcpy(probe_format.unit, query->unit, sizeof(probe_format.unit));
+        query_format.show_unit = true;
+        dvz_strlcpy(query_format.unit, query->unit, sizeof(query_format.unit));
     }
 
     char value[4][64] = {{0}};
@@ -1217,7 +1217,7 @@ void dvz_interaction_set_query_hit_policy(
 
 
 /**
- * Enable or disable automatic probe pinning.
+ * Enable or disable automatic query readout pinning.
  *
  * @param interaction the interaction policy
  * @param enabled whether auto pinning is enabled

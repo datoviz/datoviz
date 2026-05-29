@@ -733,13 +733,13 @@ int test_scene_image_query_panzoom_samples_transformed_position(
 
 
 /**
- * Ensure repeated image probes reuse the retained scene request executor.
+ * Ensure repeated image queries reuse the retained scene request executor.
  *
  * @param suite the active test suite
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_image_probe_reuses_retained_request_executor(
+int test_scene_image_query_reuses_retained_request_executor(
     TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -932,7 +932,7 @@ int test_scene_image_sample_query_readback_failure(TstContext* suite, const TstC
 
 
 /**
- * Ensure native item queries miss without falling back to the old pick adapter.
+ * Ensure native item queries miss without falling back to a legacy identity adapter.
  *
  * @param suite the active test suite
  * @param item the active test item
@@ -3188,7 +3188,7 @@ int test_scene_query(TstSuite* suite)
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_resolves_sample);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_generated_rect_samples_position);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_panzoom_samples_transformed_position);
-    TST_SCENE_QUERY_GPU_CASE(test_scene_image_probe_reuses_retained_request_executor);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_reuses_retained_request_executor);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_sample_query_readback_failure);
     TST_SCENE_QUERY_GPU_CASE(test_scene_point_query_misses_empty_pixel);
     TST_SCENE_QUERY_GPU_CASE(test_scene_pixel_query_accepts_square_corner);

@@ -385,18 +385,16 @@ static void _tst_drop_display_phrase_prefixes(const TstCase* test, std::string* 
     {
         _tst_drop_display_prefix(label, "visual_");
     }
-    if (module == "scene" && group == "pick-probe")
+    if (module == "scene" && group == "query")
     {
         _tst_drop_display_prefix(label, "process_requests_");
-        _tst_drop_display_prefix(label, "process_pick_probe_");
-        _tst_drop_display_prefix(label, "poll_pick_probe_");
-        _tst_drop_display_prefix(label, "pick_request_");
-        _tst_drop_display_prefix(label, "probe_request_");
         _tst_drop_display_prefix(label, "request_");
-        _tst_drop_display_prefix(label, "image_probe_");
-        _tst_drop_display_prefix(label, "point_pick_");
-        _tst_drop_display_prefix(label, "pixel_pick_");
-        _tst_drop_display_prefix(label, "marker_pick_");
+        _tst_drop_display_prefix(label, "image_query_");
+        _tst_drop_display_prefix(label, "point_query_");
+        _tst_drop_display_prefix(label, "pixel_query_");
+        _tst_drop_display_prefix(label, "marker_query_");
+        _tst_drop_display_prefix(label, "labels_query_");
+        _tst_drop_display_prefix(label, "volume_query_");
     }
     if (module == "scene" && group == "fields")
     {
