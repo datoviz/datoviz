@@ -1129,6 +1129,8 @@ spec-check: shader-abi-check
     run_check "drp2 fixture tests" .venv/bin/pytest -q testing/test_drp2_fixture_runner.py
     run_check "webgpu preflight tests" .venv/bin/pytest -q testing/test_webgpu_fixture_preflight.py
     run_check "scheduler tests" .venv/bin/pytest -q testing/test_dvztest_scheduler.py
+    run_check "scene query source guard" .venv/bin/pytest -q testing/test_scene_query_source_guard.py
+    run_check "scene architecture source guard" .venv/bin/pytest -q testing/test_scene_architecture_source_guard.py
 
     status=0
     for i in "${!pids[@]}"; do
