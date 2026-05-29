@@ -284,20 +284,3 @@ bool dvz_frame_plan_render_metadata_complete(const DvzFramePlan* plan)
     }
     return true;
 }
-
-
-
-/**
- * Mark the most recent render node as an explicit untyped-visual compatibility path.
- *
- * @param plan the FramePlan
- * @return whether the most recent render node was marked
- */
-bool dvz_frame_plan_render_allow_untyped_visual_compat(DvzFramePlan* plan)
-{
-    DvzFramePlanNode* node = _frame_plan_last_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
-    if (node == NULL)
-        return false;
-    node->u.render.allow_untyped_visual_compat = true;
-    return true;
-}

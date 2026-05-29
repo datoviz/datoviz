@@ -117,16 +117,9 @@ bool _emitter_prepare_render_multi(
         const char* visual_error = NULL;
         if (!_scene_visual_desc_from_render(emitter, render, i, &desc, &visual_error))
         {
-            if (
-                render->u.render.visual_metadata[i].has_metadata ||
-                !render->u.render.allow_untyped_visual_compat)
-            {
-                _diagnostic(
-                    report, visual_error != NULL ? visual_error : "invalid typed visual metadata");
-                ok = false;
-                break;
-            }
-            continue;
+            _diagnostic(report, visual_error != NULL ? visual_error : "invalid visual metadata");
+            ok = false;
+            break;
         }
 
         DvzSceneVisualShaderDesc shader = {0};

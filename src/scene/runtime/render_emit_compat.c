@@ -176,7 +176,7 @@ bool _emitter_emit_render_compat(
         visual_meta = &render->u.render.visual_metadata[0];
         desc_kind = _scene_visual_meta_desc_kind(&emitter->resources, visual_meta);
     }
-    if (render->u.render.visual_count > 0 && !render->u.render.allow_untyped_visual_compat)
+    if (render->u.render.visual_count > 0)
     {
         for (uint32_t i = 0; i < render->u.render.visual_count; i++)
         {
@@ -187,7 +187,7 @@ bool _emitter_emit_render_compat(
         }
     }
 
-    bool typed_retained_visual = visual_meta != NULL && !render->u.render.allow_untyped_visual_compat;
+    bool typed_retained_visual = visual_meta != NULL;
     bool is_point = false;
     bool is_splat = false;
     bool is_textured_mesh = false;
@@ -294,28 +294,6 @@ bool _emitter_emit_render_compat(
                 return false;
             is_image = true;
         }
-    }
-    else
-    {
-        /* Detect point-like visual data (position + color + size attributes). */
-        is_point = _scene_untyped_compat_is_point_visual(
-            &emitter->resources, vertex_buffer_ids, vertex_buffer_count);
-        is_splat = !is_point && desc_kind == DVZ_SCENE_VISUAL_DESC_SPLAT &&
-                   _scene_untyped_compat_is_splat_visual(
-                       &emitter->resources, vertex_buffer_ids, vertex_buffer_count);
-        is_textured_mesh =
-            !is_point && !is_splat &&
-            _scene_untyped_compat_is_textured_mesh_visual(
-                &emitter->resources, vertex_buffer_ids, vertex_buffer_count, &mesh_pos,
-                &mesh_color, &mesh_normal, &mesh_uv, &mesh_tex);
-        is_primitive =
-            !is_point && !is_splat && !is_textured_mesh &&
-            _scene_untyped_compat_is_primitive_visual(
-                &emitter->resources, vertex_buffer_ids, vertex_buffer_count);
-        is_image = !is_point && !is_splat && !is_textured_mesh && !is_primitive &&
-                   _scene_untyped_compat_is_image_visual(
-                       &emitter->resources, vertex_buffer_ids, vertex_buffer_count, &image_pos,
-                       &image_uv, &image_tex);
     }
     bool is_pixel = is_point && desc_kind == DVZ_SCENE_VISUAL_DESC_PIXEL;
     bool is_marker = is_point && desc_kind == DVZ_SCENE_VISUAL_DESC_MARKER;

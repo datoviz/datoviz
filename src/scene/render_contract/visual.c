@@ -217,11 +217,7 @@ bool _scene_pass_contract_from_render_ex(
 
         const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
         if (!meta->has_metadata)
-        {
-            if (!render->u.render.allow_untyped_visual_compat)
-                return false;
-            continue;
-        }
+            return false;
         const DvzPanelAttach* attach = _panel_attach_from_visual_index(panel, meta->visual_index);
         if (attach == NULL || attach->visual == NULL)
             return false;

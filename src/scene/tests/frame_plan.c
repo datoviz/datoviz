@@ -934,7 +934,6 @@ int test_frame_plan_render_metadata_complete(TstContext* suite, const TstCase* i
 
     AT(dvz_frame_plan_render(plan, "panel.1", "target.panel.1.color", false));
     AT(dvz_frame_plan_render_visual(plan, "visual.compat.0"));
-    AT(dvz_frame_plan_render_allow_untyped_visual_compat(plan));
     AT(!dvz_frame_plan_render_metadata_complete(plan));
 
     dvz_frame_plan_destroy(plan);

@@ -441,7 +441,6 @@ struct DvzFramePlanNode
             DvzFramePlanRenderPassRole pass_role;
             bool has_pass_contract;
             char pass_contract_id[DVZ_SCENE_LABEL_SIZE];
-            bool allow_untyped_visual_compat;
             DvzPanelDesc desc;
             bool has_plot_desc;
             DvzPanelDesc plot_desc;
@@ -520,8 +519,6 @@ bool dvz_frame_plan_render_visual_metadata(
     DvzFramePlan* plan, const DvzFramePlanVisualMeta* metadata);
 
 bool dvz_frame_plan_render_metadata_complete(const DvzFramePlan* plan);
-
-bool dvz_frame_plan_render_allow_untyped_visual_compat(DvzFramePlan* plan);
 
 bool dvz_frame_plan_upload_metadata(DvzFramePlan* plan, const DvzFramePlanUploadMeta* metadata);
 
