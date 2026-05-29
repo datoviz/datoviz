@@ -62,26 +62,6 @@ uint32_t _scene_field_index(const DvzScene* scene, const DvzSampledField* field)
 
 
 /**
- * Return the stable scene index of a scale.
- *
- * @param scene the owning scene
- * @param scale the scale
- * @return the scale index, or UINT32_MAX when absent
- */
-uint32_t _scene_scale_index(const DvzScene* scene, const DvzScale* scale)
-{
-    if (scene == NULL || scale == NULL)
-        return UINT32_MAX;
-    for (uint32_t i = 0; i < scene->scale_count; i++)
-    {
-        if (&scene->scales[i] == scale && scale->scene == scene)
-            return i;
-    }
-    return UINT32_MAX;
-}
-
-
-/**
  * Reset one sampled-field slot to its empty state.
  *
  * @param field the field slot
