@@ -811,31 +811,7 @@ static bool _volume_query_decode(
         return true;
     }
 
-    if (ctx->byte_size < sizeof(uint32_t))
-    {
-        out_result->status = DVZ_QUERY_STATUS_DECODE_FAILED;
-        return true;
-    }
-
-    uint32_t encoded = 0;
-    dvz_memcpy(&encoded, sizeof(encoded), ctx->bytes, sizeof(encoded));
-    if (encoded == 0)
-        return false;
-
-    uint64_t item_id = (uint64_t)encoded - 1u;
-    out_result->status = DVZ_QUERY_STATUS_HIT;
-    out_result->hit = true;
-    out_result->visual_id = _scene_visual_public_id(ctx->build->figure->scene, ctx->build->visual);
-    out_result->visual_family = DVZ_SCENE_VISUAL_FAMILY_VOLUME;
-    out_result->payload_version = 1;
-    out_result->raw_target = DVZ_SCENE_TARGET_ITEM;
-    out_result->raw_id = item_id;
-    out_result->resolved_target = DVZ_SCENE_TARGET_ITEM;
-    out_result->resolved_id = item_id;
-    out_result->item_id = item_id;
-    if (ctx->build->visual->link_keys != NULL && item_id < ctx->build->visual->link_key_count)
-        out_result->link_key = ctx->build->visual->link_keys[item_id];
-    return true;
+    return _dvz_scene_query_decode_item_id(ctx, DVZ_SCENE_VISUAL_FAMILY_VOLUME, out_result);
 }
 
 

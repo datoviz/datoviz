@@ -233,6 +233,10 @@ bool _dvz_scene_query_push_result(
     DvzScene* scene, DvzPanel* panel, uint64_t freshness_serial,
     const DvzQueryResult* result);
 
+bool _dvz_scene_query_decode_item_id(
+    const DvzSceneQueryDecodeContext* ctx, DvzSceneVisualFamily family,
+    DvzQueryResult* out_result);
+
 void _scene_query_scratch_destroy(DvzSceneQueryScratch* plan);
 
 bool _dvz_scene_query_alloc(
