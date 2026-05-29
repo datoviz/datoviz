@@ -5,6 +5,12 @@ QUERY_DIR = Path("src/scene/query")
 
 FORBIDDEN_PATTERNS = (
     "DVZ_VISUAL_TYPE_",
+    "DVZ_SCENE_VISUAL_FAMILY_IMAGE",
+    "DVZ_SCENE_VISUAL_FAMILY_LABELS",
+    "DVZ_SCENE_VISUAL_FAMILY_VOLUME",
+    "image_query",
+    "labels_query",
+    "volume_query",
     "_attr_index(",
     "visual->attrs",
     "visual->field",
