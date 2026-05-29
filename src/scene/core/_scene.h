@@ -1721,21 +1721,6 @@ struct DvzScene
 
 
 
-typedef struct DvzSampledFieldTextureUploadPayload
-{
-    DvzFieldRegion region;
-    const void* data;
-    uint64_t byte_size;
-    uint32_t texture_format;
-    uint32_t bytes_per_texel;
-    uint32_t allocation_width;
-    uint32_t allocation_height;
-    uint32_t allocation_depth;
-    bool texture_3d;
-} DvzSampledFieldTextureUploadPayload;
-
-
-
 /*************************************************************************************************/
 /*  Internal interaction helpers                                                                */
 /*************************************************************************************************/
@@ -1807,12 +1792,6 @@ bool _field_format_texture_format(DvzFieldFormat format, uint32_t* out_format);
 
 bool _field_region_byte_size(
     DvzFieldFormat format, const DvzFieldRegion* region, uint64_t* out_size);
-
-bool _scene_prepare_field_texture(
-    DvzSampledField* field, DvzFieldRegion* out_region, const void** out_data);
-
-bool _scene_sampled_field_texture_upload_payload(
-    DvzSampledField* field, DvzSampledFieldTextureUploadPayload* out);
 
 bool _scene_prepare_volume_texture(
     DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data,

@@ -22,6 +22,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_scene.h"
+#include "domain/field_internal.h"
 #include "scene_emit/internal.h"
 #include "_scene_resource_key.h"
 #include "colorizer.h"

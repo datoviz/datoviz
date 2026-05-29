@@ -15,6 +15,20 @@
 
 #include "_scene.h"
 
+typedef struct DvzSampledFieldTextureUploadPayload
+{
+    DvzFieldRegion region;
+    const void* data;
+    uint64_t byte_size;
+    uint32_t texture_format;
+    uint32_t bytes_per_texel;
+    uint32_t allocation_width;
+    uint32_t allocation_height;
+    uint32_t allocation_depth;
+    bool texture_3d;
+} DvzSampledFieldTextureUploadPayload;
+
+
 bool _field_format_supported(DvzFieldFormat format);
 
 bool _field_format_is_rgba8(DvzFieldFormat format);
@@ -40,6 +54,12 @@ void _field_copy_full_data(
 bool _field_read_scalar(const DvzSampledField* field, uint64_t sample_index, double* out_value);
 
 bool _field_ensure_upload(DvzSampledField* field, uint64_t byte_size);
+
+bool _scene_prepare_field_texture(
+    DvzSampledField* field, DvzFieldRegion* out_region, const void** out_data);
+
+bool _scene_sampled_field_texture_upload_payload(
+    DvzSampledField* field, DvzSampledFieldTextureUploadPayload* out);
 
 void _scene_visual_texture_mark_full_dirty(
     DvzVisual* visual, const DvzSampledFieldDesc* desc);
