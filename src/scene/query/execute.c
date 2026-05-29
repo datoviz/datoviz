@@ -246,10 +246,22 @@ bool _dvz_scene_query_execute_family(
     out_result->visual_family = ops->family;
     if (ops->build == NULL || ops->decode == NULL)
         return false;
-    bool volume_rg32_sample =
-        profile == DVZ_QUERY_PROFILE_U64_RG32 && ops->family == DVZ_SCENE_VISUAL_FAMILY_VOLUME &&
-        pending->request.target == DVZ_SCENE_TARGET_SAMPLE;
-    if (profile != DVZ_QUERY_PROFILE_U32_R32 && !volume_rg32_sample)
+
+    DvzSceneQueryBuildContext build = {
+        .figure = figure,
+        .panel = pending->panel,
+        .visual = visual,
+        .executor = executor,
+        .pending = pending,
+        .caps = caps,
+        .profile = profile,
+    };
+    build.request_ndc[0] = request_ndc[0];
+    build.request_ndc[1] = request_ndc[1];
+    bool supports_profile = ops->supports_profile != NULL
+                                ? ops->supports_profile(&build, profile)
+                                : profile == DVZ_QUERY_PROFILE_U32_R32;
+    if (!supports_profile)
     {
         out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_QUERY_PROFILE;
         return true;
@@ -267,18 +279,6 @@ bool _dvz_scene_query_execute_family(
     }
     executor->active_query_family = ops->family;
     executor->active_query_target = pending->request.target;
-
-    DvzSceneQueryBuildContext build = {
-        .figure = figure,
-        .panel = pending->panel,
-        .visual = visual,
-        .executor = executor,
-        .pending = pending,
-        .caps = caps,
-        .profile = profile,
-    };
-    build.request_ndc[0] = request_ndc[0];
-    build.request_ndc[1] = request_ndc[1];
 
     DvzSceneQueryPlan plan = {0};
     if (!ops->build(&build, &plan))

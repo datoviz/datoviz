@@ -906,6 +906,25 @@ static bool _volume_query_readout(
 /*************************************************************************************************/
 
 /**
+ * Return whether the volume family supports a selected query profile.
+ *
+ * @param ctx query build context
+ * @param profile selected query profile
+ * @return whether the profile is supported
+ */
+static bool _volume_query_supports_profile(
+    const DvzSceneQueryBuildContext* ctx, DvzQueryProfile profile)
+{
+    ANN(ctx);
+    if (profile == DVZ_QUERY_PROFILE_U32_R32)
+        return true;
+    return profile == DVZ_QUERY_PROFILE_U64_RG32 &&
+           ctx->pending->request.target == DVZ_SCENE_TARGET_SAMPLE;
+}
+
+
+
+/**
  * Return volume visual query operations.
  *
  * @return query operation table
@@ -916,6 +935,7 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_volume_ops(void)
         .name = "volume",
         .family = DVZ_SCENE_VISUAL_FAMILY_VOLUME,
         .eligible = _volume_query_eligible,
+        .supports_profile = _volume_query_supports_profile,
         .build = _volume_query_build,
         .decode = _volume_query_decode,
         .readout = _volume_query_readout,

@@ -45,6 +45,8 @@ typedef struct DvzSceneQuerySchema DvzSceneQuerySchema;
 
 typedef bool (*DvzSceneQueryEligible)(
     const DvzPanel* panel, const DvzVisual* visual, const DvzQueryRequest* request);
+typedef bool (*DvzSceneQuerySupportsProfile)(
+    const DvzSceneQueryBuildContext* ctx, DvzQueryProfile profile);
 typedef bool (*DvzSceneQueryBuild)(
     const DvzSceneQueryBuildContext* ctx, DvzSceneQueryPlan* out_plan);
 typedef bool (*DvzSceneQueryExecute)(
@@ -141,6 +143,7 @@ struct DvzSceneQueryFamilyOps
     const char* name;
     DvzSceneVisualFamily family;
     DvzSceneQueryEligible eligible;
+    DvzSceneQuerySupportsProfile supports_profile;
     DvzSceneQueryBuild build;
     DvzSceneQueryExecute execute;
     DvzSceneQueryDecode decode;
