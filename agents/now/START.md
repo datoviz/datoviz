@@ -59,8 +59,9 @@ upload, polygon scene helpers, semantic polygon/polygon-set composites, and focu
 Remaining `geom` work is optional unless a release example needs it.
 
 For the large scene source/architecture refactor, the latest pickup is after the upload-support,
-panel-helper, helper-declaration boundary, shared query-helper, query render-metadata guard, and
-standard item-id decode split commits through `9a712a432`. `_scene.h` no longer exposes narrow
+panel-helper, helper-declaration boundary, shared query-helper, query render-metadata guard,
+standard item-id decode, and standard item-target eligibility split commits through `1d2fb3669`.
+`_scene.h` no longer exposes narrow
 helper declarations; its remaining broadness is shared retained scene object and type definitions.
 Start with remaining query-family ownership, typed metadata enforcement outside query,
 annotation/domain cleanup, and standalone candidate assessment in
@@ -68,8 +69,9 @@ annotation/domain cleanup, and standalone candidate assessment in
 do not reopen dense/index/material upload emission, panel drawable/viewport helper extraction, or
 the helper declarations already moved into owner-private headers unless a new regression points
 there. Do not re-split generic query allocation, dense-attribute, target-extent, render-state,
-standard item-id decode, or render-metadata completeness helpers from `src/scene/query/`. The
-closest standalone scene layers are currently `frame_plan/`, `render_contract/`, `query/`, `text/`,
+standard item-id decode, standard item-target eligibility, or render-metadata completeness helpers
+from `src/scene/query/`. The closest standalone scene layers are currently `frame_plan/`,
+`render_contract/`, `query/`, `text/`,
 `domain/`, and
 `visuals/registry/`; `scene_emit/`, `runtime/`, `techniques/`, and `app/` remain
 orchestration/runtime layers.

@@ -48,7 +48,7 @@ Important current state:
    `scene_emit/uploads.c` as the panel-visible visual upload orchestrator. The final architecture
    still needs the remaining pure upload/cache builders, non-item query result ownership, and any
    residual family-specific bounds logic to migrate into family-owned files. Generic query scratch
-   helpers and standard item-id decoding now live in `query/`.
+   helpers, standard item-id decoding, and standard item-target eligibility now live in `query/`.
 9. `annotation/text.c`, `annotation/axis.c`, `domain/field.c`, and the remaining family-specific
    payload construction reachable from scene emission remain the highest-value mixed-ownership
    areas.
@@ -60,9 +60,10 @@ Latest pickup snapshot:
 
 1. The retained textured-mesh first slice exists and should be treated as active code, not future
    scaffolding.
-2. The most recent scene-source split commits through `9a712a432` completed the upload-support,
+2. The most recent scene-source split commits through `1d2fb3669` completed the upload-support,
    panel-helper, helper-declaration boundary, shared query scratch-helper, query render-metadata
-   guard, and standard item-id decode cleanup passes. Do not restart by re-extracting
+   guard, standard item-id decode, and standard item-target eligibility cleanup passes. Do not
+   restart by re-extracting
    dense/index/material upload emission, panel drawable/viewport helpers, the helper declarations
    already moved into owner-private headers, or the generic query helpers now centralized in
    `query/`.
@@ -151,10 +152,11 @@ this section when a slice is completed.
      family reducers exist for segment, vector, image, sphere, glyph, and stroke. Remove remaining
      generic visual branches that compute family semantics outside family folders or explicit
      shared visual subsystems such as `visuals/stroke/`.
-   - Query has family files, a registry, shared scratch helpers, standard item-id decoding, and a
-     render-metadata completeness guard already. Finish moving remaining family scratch geometry,
-     non-item native result decoding, and unsupported-policy decisions into family `query.c` files
-     or narrow shared visual subsystems.
+   - Query has family files, a registry, shared scratch helpers, standard item-id decoding, shared
+     item-target eligibility for the simple item families, and a render-metadata completeness guard
+     already. Finish moving remaining family scratch geometry, non-item native result decoding,
+     and unsupported-policy decisions into family `query.c` files or narrow shared visual
+     subsystems.
    - Keep the query executor, request queue, readback scheduling, and retained request processing
      generic.
 
