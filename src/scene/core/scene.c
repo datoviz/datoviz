@@ -40,6 +40,7 @@
 #include "domain/buffer_internal.h"
 #include "domain/field_internal.h"
 #include "domain/polygon_internal.h"
+#include "query/internal.h"
 #include "text/text_internal.h"
 #include "datoviz/scene.h"
 

@@ -36,6 +36,7 @@
 #include "../drp2/_stream.h"
 #include "_scene.h"
 #include "interaction/animation_internal.h"
+#include "query/internal.h"
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
 #include "../gui/_gui.h"
 #endif

@@ -27,6 +27,7 @@
 #include "_scene.h"
 #include "_visual_internal.h"
 #include "annotation/prepare_internal.h"
+#include "query/internal.h"
 #include "scene_emit/internal.h"
 #include "scene_emit/scene_emit.h"
 #include "datoviz/scene.h"

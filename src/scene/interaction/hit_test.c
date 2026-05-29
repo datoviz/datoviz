@@ -20,6 +20,7 @@
 #include "datoviz/math/_cglm.h"
 #include "_assertions.h"
 #include "_scene.h"
+#include "query/internal.h"
 
 
 

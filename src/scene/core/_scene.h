@@ -1717,15 +1717,6 @@ struct DvzScene
 /*  Internal interaction helpers                                                                */
 /*************************************************************************************************/
 
-uint64_t _scene_next_request_serial(DvzScene* scene);
-bool _scene_query_request_ndc(
-    const DvzFigure* figure, const DvzPanel* panel, double x, double y, vec2 out_ndc);
-uint64_t _scene_panel_public_id(const DvzFigure* figure, const DvzPanel* panel);
-void _scene_request_apply_mvp(const DvzPanel* panel, const vec2 request_ndc, DvzMVP* out);
-void _scene_request_executor_init(DvzSceneRequestExecutor* executor);
-void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor);
-bool _scene_request_executor_prepare(
-    DvzSceneRequestExecutor* executor, DvzDrp2Runtime* source_runtime);
 bool _scene_figure_has_pending_render_work(const DvzFigure* figure);
 bool _scene_add_request_frame_callback(
     DvzScene* scene, DvzSceneRequestFrameCallback callback, void* user_data);
