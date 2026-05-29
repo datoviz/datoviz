@@ -27,6 +27,7 @@
 #include "_scene.h"
 #include "datoviz/scene.h"
 #include "scale_internal.h"
+#include "text/internal.h"
 
 
 

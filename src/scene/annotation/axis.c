@@ -25,6 +25,7 @@
 #include "_scene.h"
 #include "scene_emit/scene_emit.h"
 #include "datoviz/scene.h"
+#include "text/internal.h"
 
 
 

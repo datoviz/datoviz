@@ -27,6 +27,7 @@
 #include "colormap_internal.h"
 #include "datoviz/scene.h"
 #include "scale_internal.h"
+#include "text/internal.h"
 
 
 

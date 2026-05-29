@@ -34,6 +34,7 @@
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
 #include "datoviz/scene.h"
+#include "text/internal.h"
 #include "text/text_internal.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/window.h"

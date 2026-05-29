@@ -20,6 +20,7 @@
 #include "_scene.h"
 #include "_visual_internal.h"
 #include "datoviz/scene.h"
+#include "text/internal.h"
 
 
 /*************************************************************************************************/

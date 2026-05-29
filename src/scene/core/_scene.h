@@ -1787,13 +1787,3 @@ void _scene_prepare_pinned_readout_cards(DvzFigure* figure);
 void _scene_prepare_selection_cards(DvzFigure* figure);
 
 void _scene_prepare_overlay_cards(DvzFigure* figure);
-
-DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags);
-
-int _scene_text_visual_set_renderer(DvzVisual* visual, DvzTextRenderer renderer);
-
-DvzTextRenderer _scene_adornment_text_renderer(DvzTextRenderer renderer);
-
-DvzVisual* _scene_adornment_text_visual(DvzScene* scene, DvzTextRenderer renderer);
-
-int _scene_adornment_text_visual_set_renderer(DvzVisual* visual, DvzTextRenderer renderer);

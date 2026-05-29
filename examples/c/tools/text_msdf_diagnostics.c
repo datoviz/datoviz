@@ -29,6 +29,7 @@
 #include "datoviz/app.h"
 #include "datoviz/fileio.h"
 #include "datoviz/scene.h"
+#include "text/internal.h"
 #include "text/text_internal.h"
 
 
