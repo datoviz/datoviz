@@ -28,6 +28,7 @@
 #include "_scene.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/scene.h"
+#include "text/text_internal.h"
 
 #if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
 #include <ft2build.h>

@@ -26,6 +26,7 @@
 #include "_scene.h"
 #include "_visual_internal.h"
 #include "datoviz/scene/overlay.h"
+#include "text/text_internal.h"
 
 
 

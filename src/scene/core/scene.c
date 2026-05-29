@@ -38,6 +38,7 @@
 #include "_visual_internal.h"
 #include "domain/buffer_internal.h"
 #include "domain/field_internal.h"
+#include "text/text_internal.h"
 #include "datoviz/scene.h"
 
 

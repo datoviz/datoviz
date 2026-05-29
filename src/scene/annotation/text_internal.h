@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include "_scene.h"
+#include "text/text_internal.h"
 
 #define DVZ_TEXT_BITMAP_GLYPH_WIDTH  6u
 #define DVZ_TEXT_BITMAP_GLYPH_HEIGHT 8u

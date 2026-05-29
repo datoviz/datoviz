@@ -27,6 +27,7 @@
 #include "_overflow.h"
 #include "_scene.h"
 #include "datoviz/scene/text.h"
+#include "text/text_internal.h"
 
 #if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
 #include <ft2build.h>

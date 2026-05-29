@@ -1772,21 +1772,6 @@ bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action);
 
 void _scene_format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* src);
 
-void _scene_text_block_init(DvzTextBlock* block, const char* source);
-
-void _scene_text_block_set_source(DvzTextBlock* block, const char* source);
-
-void _scene_text_block_destroy(DvzTextBlock* block);
-
-int _scene_text_block_parse(DvzTextBlock* block);
-
-int _scene_text_block_measure(DvzTextBlock* block, const DvzTextBlockLayout* layout);
-
-int _scene_text_block_rasterize(DvzTextBlock* block, const DvzTextBlockRasterDesc* desc);
-
-int _scene_text_block_realize_image(
-    DvzTextBlock* block, DvzPanel* panel, const DvzTextBlockImageDesc* desc);
-
 void _scene_prepare_axis_visuals(DvzFigure* figure);
 
 void _scene_prepare_colorbar_visuals(DvzFigure* figure, DvzDiagnosticReport* report);
@@ -1812,27 +1797,3 @@ DvzTextRenderer _scene_adornment_text_renderer(DvzTextRenderer renderer);
 DvzVisual* _scene_adornment_text_visual(DvzScene* scene, DvzTextRenderer renderer);
 
 int _scene_adornment_text_visual_set_renderer(DvzVisual* visual, DvzTextRenderer renderer);
-
-EXTERN_C_ON
-
-DvzTextAtlasSpec _scene_text_atlas_spec(DvzTextAtlasBackend backend, float size_px);
-
-DvzTextAtlas* _scene_text_atlas_get(DvzFont* font, const DvzTextAtlasSpec* spec);
-
-bool _scene_text_atlas_ensure(DvzFont* font, const DvzTextAtlasSpec* spec);
-
-bool _scene_text_atlas_ensure_string(
-    DvzFont* font, const DvzTextAtlasSpec* spec, const char* string);
-
-bool _scene_text_atlas_ensure_strings(
-    DvzFont* font, const DvzTextAtlasSpec* spec, const char* const* strings, uint32_t count);
-
-DvzTextAtlasGlyph* _scene_text_atlas_glyph(DvzTextAtlas* atlas, uint32_t codepoint);
-
-void _scene_text_atlas_destroy(DvzTextAtlas* atlas);
-
-bool _scene_font_ensure_bytes(DvzFont* font);
-
-void _scene_font_release(DvzFont* font);
-
-EXTERN_C_OFF
