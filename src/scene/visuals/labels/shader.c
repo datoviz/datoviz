@@ -42,7 +42,8 @@ bool _scene_labels_visual_shader_desc(
     ANN(visual);
     ANN(format_tag);
     ANN(out);
-    if (picking || wboit_accumulation)
+    (void)picking;
+    if (wboit_accumulation)
         return false;
 
     if (visual->kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT)

@@ -74,6 +74,8 @@ bool _dvz_scene_query_execute_readback(
     if (stream == NULL)
     {
         log_error("scene query readback DRP2 emission failed");
+        for (uint32_t i = 0; i < report.count; i++)
+            log_error("scene query readback diagnostic: %s", report.messages[i]);
         return false;
     }
     uint64_t rb_id = dvz_frame_plan_emitter_object_id(executor->emitter, "_rb");

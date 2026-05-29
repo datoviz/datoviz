@@ -42,7 +42,8 @@ bool _scene_volume_visual_shader_desc(
     ANN(visual);
     ANN(format_tag);
     ANN(out);
-    if (picking || wboit_accumulation)
+    (void)picking;
+    if (wboit_accumulation)
         return false;
 
     bool composite = visual->volume_state.render_mode == DVZ_VOLUME_RENDER_COMPOSITE;
