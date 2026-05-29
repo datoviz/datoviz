@@ -21,6 +21,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_scene.h"
+#include "colormap_internal.h"
 #include "scale_internal.h"
 #include "datoviz/scene.h"
 

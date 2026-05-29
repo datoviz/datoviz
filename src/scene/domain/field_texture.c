@@ -22,6 +22,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "annotation/colormap_internal.h"
 #include "field_internal.h"
 
 

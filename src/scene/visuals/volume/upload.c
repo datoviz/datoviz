@@ -24,6 +24,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "colorizer.h"
+#include "annotation/colormap_internal.h"
 #include "domain/field_internal.h"
 #include "sample_profile.h"
 

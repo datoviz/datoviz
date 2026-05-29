@@ -22,6 +22,7 @@
 #include "_assertions.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "annotation/colormap_internal.h"
 #include "scene_emit/internal.h"
 #include "scene_emit/scene_emit.h"
 #include "colorizer.h"
