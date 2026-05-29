@@ -27,22 +27,7 @@
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
 #include "datoviz/drp2/enums.h"
-#include "glyph/internal.h"
-#include "image/internal.h"
-#include "labels/internal.h"
-#include "marker/internal.h"
-#include "path/internal.h"
-#include "pixel/internal.h"
-#include "point/internal.h"
-#include "primitive/internal.h"
 #include "registry/registry.h"
-#include "segment/internal.h"
-#include "sphere/internal.h"
-#include "splat/internal.h"
-#include "text/internal.h"
-#include "vector/internal.h"
-#include "volume/internal.h"
-#include "mesh/internal.h"
 
 
 /*************************************************************************************************/
@@ -124,67 +109,11 @@ bool _scene_visual_shader_desc_resolve(
     ANN(out);
     dvz_memset(out, sizeof(DvzSceneVisualShaderDesc), 0, sizeof(DvzSceneVisualShaderDesc));
 
-    switch (visual->kind)
-    {
-    case DVZ_SCENE_VISUAL_DESC_PIXEL:
-        return _scene_pixel_visual_shader_desc(
-            visual, picking, wboit_accumulation, format_tag, out);
-
-    case DVZ_SCENE_VISUAL_DESC_SPLAT:
-        return _scene_splat_visual_shader_desc(
-            visual, picking, wboit_accumulation, format_tag, out);
-
-    case DVZ_SCENE_VISUAL_DESC_POINT:
-        return _scene_point_visual_shader_desc(
-            visual, picking, wboit_accumulation, format_tag, out);
-
-    case DVZ_SCENE_VISUAL_DESC_MARKER:
-        return _scene_marker_visual_shader_desc(
-            visual, picking, wboit_accumulation, format_tag, out);
-
-    case DVZ_SCENE_VISUAL_DESC_SPHERE:
-        return _scene_sphere_visual_shader_desc(
-            visual, picking, wboit_accumulation, format_tag, out);
-
-    case DVZ_SCENE_VISUAL_DESC_SEGMENT:
-        return _scene_segment_visual_shader_desc(
-            visual, picking, wboit_accumulation, format_tag, out);
-
-    case DVZ_SCENE_VISUAL_DESC_PATH:
-        return _scene_path_visual_shader_desc(
-            visual, picking, wboit_accumulation, format_tag, out);
-
-    case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
-        return _scene_primitive_visual_shader_desc(
-            visual, picking, wboit_accumulation, format_tag, out);
-
-    case DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH:
-        return _scene_mesh_visual_shader_desc(
-            visual, picking, wboit_accumulation, format_tag, out);
-
-    case DVZ_SCENE_VISUAL_DESC_IMAGE:
-        return _scene_image_visual_shader_desc(
-            visual, picking, wboit_accumulation, format_tag, out);
-
-    case DVZ_SCENE_VISUAL_DESC_LABELS_SINT:
-    case DVZ_SCENE_VISUAL_DESC_LABELS_UINT:
-        return _scene_labels_visual_shader_desc(
-            visual, picking, wboit_accumulation, format_tag, out);
-
-    case DVZ_SCENE_VISUAL_DESC_GLYPH:
-        return _scene_glyph_visual_shader_desc(
-            visual, picking, wboit_accumulation, format_tag, out);
-
-    case DVZ_SCENE_VISUAL_DESC_VOLUME:
-    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT:
-    case DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT:
-        return _scene_volume_visual_shader_desc(
-            visual, picking, wboit_accumulation, format_tag, out);
-
-    case DVZ_SCENE_VISUAL_DESC_NONE:
-    default:
+    DvzVisualType type = _scene_visual_family_desc_default_type(visual->kind);
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(type);
+    if (ops == NULL || ops->resolve_shader_desc == NULL)
         return false;
-    }
+    return ops->resolve_shader_desc(visual, picking, wboit_accumulation, format_tag, out);
 }
 
 

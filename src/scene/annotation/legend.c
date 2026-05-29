@@ -29,7 +29,7 @@
 #include "datoviz/scene.h"
 #include "prepare_internal.h"
 #include "scale_internal.h"
-#include "text/internal.h"
+#include "annotation/text_visual_bridge.h"
 
 
 

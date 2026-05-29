@@ -40,8 +40,7 @@
 /*************************************************************************************************/
 
 #define VISUAL_OPS(_type, _name, _lowering, _bounds, _bind, _pipeline, _shader, _draw)           \
-    .type = (_type), .name = (_name), .default_material_kind = DVZ_MATERIAL_KIND_UNLIT,          \
-     .default_material_model = DVZ_MATERIAL_MODEL_UNLIT, .resolve_lowering = (_lowering),        \
+    .type = (_type), .name = (_name), .resolve_lowering = (_lowering),                          \
      .resolve_bounds = (_bounds), .resolve_pass_caps = _scene_visual_default_pass_caps,          \
      .resolve_bind_desc = (_bind), .resolve_pipeline_desc = (_pipeline),                         \
      .resolve_shader_desc = (_shader), .resolve_draw_desc = (_draw)
@@ -72,6 +71,133 @@ static const DvzVisualDescDefaultType VISUAL_DESC_DEFAULT_TYPES[] = {
     {DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT, DVZ_VISUAL_TYPE_VOLUME},
 };
 
+
+#define SRC_PER_ITEM (1u << DVZ_VISUAL_ATTR_SOURCE_PER_ITEM)
+#define SRC_CONSTANT (1u << DVZ_VISUAL_ATTR_SOURCE_CONSTANT)
+#define SRC_PER_SPAN (1u << DVZ_VISUAL_ATTR_SOURCE_PER_SPAN)
+#define SRC_PER_GROUP (1u << DVZ_VISUAL_ATTR_SOURCE_PER_GROUP)
+
+#define SRC_ITEM_ONLY SRC_PER_ITEM
+#define SRC_COLOR_GROUPED (SRC_PER_ITEM | SRC_CONSTANT | SRC_PER_GROUP)
+#define SRC_COLOR_SEGMENT (SRC_PER_ITEM | SRC_CONSTANT)
+#define SRC_COLOR_PATH (SRC_PER_ITEM | SRC_CONSTANT | SRC_PER_SPAN | SRC_PER_GROUP)
+#define SRC_SIZE_GROUPED (SRC_PER_ITEM | SRC_CONSTANT | SRC_PER_GROUP)
+#define SRC_LINE_WIDTH (SRC_PER_ITEM | SRC_CONSTANT)
+
+
+static const DvzVisualFamilyAttrDesc SPLAT_ATTRS[] = {
+    {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
+    {"sigma", 2 * sizeof(float), SRC_SIZE_GROUPED, false},
+    {"angle", sizeof(float), SRC_ITEM_ONLY, false},
+};
+
+
+static const DvzVisualFamilyAttrDesc POINT_ATTRS[] = {
+    {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
+    {"size", sizeof(float), SRC_SIZE_GROUPED, false},
+    {"selection", sizeof(uint8_t), SRC_ITEM_ONLY, false},
+};
+
+
+static const DvzVisualFamilyAttrDesc PIXEL_ATTRS[] = {
+    {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
+    {"size", sizeof(float), SRC_SIZE_GROUPED, false},
+};
+
+
+static const DvzVisualFamilyAttrDesc MARKER_ATTRS[] = {
+    {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
+    {"size", sizeof(float), SRC_SIZE_GROUPED, false},
+    {"selection", sizeof(uint8_t), SRC_ITEM_ONLY, false},
+    {"angle", sizeof(float), SRC_ITEM_ONLY, false},
+    {"shape", sizeof(uint32_t), SRC_ITEM_ONLY, false},
+};
+
+
+static const DvzVisualFamilyAttrDesc SPHERE_ATTRS[] = {
+    {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
+    {"size", sizeof(float), SRC_SIZE_GROUPED, false},
+};
+
+
+static const DvzVisualFamilyAttrDesc PRIMITIVE_ATTRS[] = {
+    {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
+    {"normal", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+};
+
+
+static const DvzVisualFamilyAttrDesc MESH_ATTRS[] = {
+    {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
+    {"normal", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"texcoords", 2 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"instance_transform", 16 * sizeof(float), SRC_ITEM_ONLY, true},
+};
+
+
+static const DvzVisualFamilyAttrDesc PATH_ATTRS[] = {
+    {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"color", 4 * sizeof(uint8_t), SRC_COLOR_PATH, false},
+    {"line_width", sizeof(float), SRC_LINE_WIDTH, false},
+};
+
+
+static const DvzVisualFamilyAttrDesc SEGMENT_ATTRS[] = {
+    {"position_start", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"position_end", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"color", 4 * sizeof(uint8_t), SRC_COLOR_SEGMENT, false},
+    {"line_width", sizeof(float), SRC_LINE_WIDTH, false},
+};
+
+
+static const DvzVisualFamilyAttrDesc VECTOR_ATTRS[] = {
+    {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"vector", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"color", 4 * sizeof(uint8_t), SRC_COLOR_SEGMENT, false},
+    {"line_width", sizeof(float), SRC_LINE_WIDTH, false},
+};
+
+
+static const DvzVisualFamilyAttrDesc IMAGE_ATTRS[] = {
+    {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"extent", 2 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"position_px", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"extent_px", 2 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"anchor", 2 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"tex_rect", 4 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"texcoords", 2 * sizeof(float), SRC_ITEM_ONLY, false},
+};
+
+
+static const DvzVisualFamilyAttrDesc TEXT_ATTRS[] = {
+    {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"anchor", 2 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"size", sizeof(float), SRC_SIZE_GROUPED, false},
+    {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
+    {"angle", sizeof(float), SRC_ITEM_ONLY, false},
+};
+
+
+static const DvzVisualFamilyAttrDesc GLYPH_ATTRS[] = {
+    {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"bounds", 4 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"texcoords", 4 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
+    {"angle", sizeof(float), SRC_ITEM_ONLY, false},
+};
+
+
+static const DvzVisualFamilyAttrDesc VOLUME_ATTRS[] = {
+    {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"texcoords", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+};
+
 static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_POINT, "point", _scene_point_visual_lowering,
@@ -79,6 +205,9 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_point_visual_pipeline_desc, _scene_point_visual_shader_desc,
          _scene_point_visual_draw_desc),
      .renderable_kind = DVZ_RENDERABLE_POINT_LIKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_POINT,
+     .attrs = POINT_ATTRS, .attr_count = DVZ_ARRAY_COUNT(POINT_ATTRS),
+     .expected_attrs = "position, color, diameter, selection",
+     .attr_alias_public = "diameter", .attr_alias_storage = "size",
      .init_state = _scene_visual_init_point_style, .upload_material_params = true,
      .supports_depth_cue = true, .sync_point_style_material = true},
     {VISUAL_OPS(
@@ -87,6 +216,9 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_pixel_visual_pipeline_desc, _scene_pixel_visual_shader_desc,
          _scene_pixel_visual_draw_desc),
      .renderable_kind = DVZ_RENDERABLE_POINT_LIKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_PIXEL,
+     .attrs = PIXEL_ATTRS, .attr_count = DVZ_ARRAY_COUNT(PIXEL_ATTRS),
+     .expected_attrs = "position, color, pixel_size",
+     .attr_alias_public = "pixel_size", .attr_alias_storage = "size",
      .upload_material_params = true, .supports_depth_cue = true},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_MARKER, "marker", _scene_marker_visual_lowering,
@@ -94,6 +226,9 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_marker_visual_pipeline_desc, _scene_marker_visual_shader_desc,
          _scene_marker_visual_draw_desc),
      .renderable_kind = DVZ_RENDERABLE_POINT_LIKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_MARKER,
+     .attrs = MARKER_ATTRS, .attr_count = DVZ_ARRAY_COUNT(MARKER_ATTRS),
+     .expected_attrs = "position, color, diameter, selection, angle, shape",
+     .attr_alias_public = "diameter", .attr_alias_storage = "size",
      .init_state = _scene_visual_init_point_style, .upload_material_params = true,
      .sync_point_style_material = true},
     {VISUAL_OPS(
@@ -102,6 +237,9 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_segment_visual_pipeline_desc, _scene_segment_visual_shader_desc,
          _scene_segment_visual_draw_desc),
      .renderable_kind = DVZ_RENDERABLE_STROKE_QUAD, .desc_kind = DVZ_SCENE_VISUAL_DESC_SEGMENT,
+     .attrs = SEGMENT_ATTRS, .attr_count = DVZ_ARRAY_COUNT(SEGMENT_ATTRS),
+     .expected_attrs = "position_start, position_end, color, stroke_width",
+     .attr_alias_public = "stroke_width", .attr_alias_storage = "line_width",
      .init_state = _scene_segment_visual_init_state,
      .after_attr_set = _scene_stroke_visual_after_attr_set},
     {VISUAL_OPS(
@@ -112,6 +250,9 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .renderable_kind = DVZ_RENDERABLE_PATH_STROKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_PATH,
      .default_material_kind = DVZ_MATERIAL_KIND_LIT,
      .default_material_model = DVZ_MATERIAL_MODEL_PHONG,
+     .attrs = PATH_ATTRS, .attr_count = DVZ_ARRAY_COUNT(PATH_ATTRS),
+     .expected_attrs = "position, color, stroke_width",
+     .attr_alias_public = "stroke_width", .attr_alias_storage = "line_width",
      .init_state = _scene_path_visual_init_state,
      .after_attr_set = _scene_stroke_visual_after_attr_set,
      .upload_position_topology = true},
@@ -121,6 +262,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_image_visual_pipeline_desc, _scene_image_visual_shader_desc,
          _scene_image_visual_draw_desc),
      .renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD, .desc_kind = DVZ_SCENE_VISUAL_DESC_IMAGE,
+     .attrs = IMAGE_ATTRS, .attr_count = DVZ_ARRAY_COUNT(IMAGE_ATTRS),
+     .expected_attrs = "position, extent, position_px, extent_px, anchor, tex_rect, texcoords",
      .fill_metadata = _scene_image_visual_fill_metadata, .supports_scale = true},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_MESH, "mesh", _scene_mesh_visual_lowering, _scene_mesh_visual_bounds,
@@ -130,6 +273,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .default_material_kind = DVZ_MATERIAL_KIND_LIT,
      .default_material_model = DVZ_MATERIAL_MODEL_PHONG, .supports_material = true,
      .supports_depth_cue = true,
+     .attrs = MESH_ATTRS, .attr_count = DVZ_ARRAY_COUNT(MESH_ATTRS),
+     .expected_attrs = "position, color, normal, texcoords, instance_transform",
      .after_attr_set = _scene_mesh_visual_after_attr_set, .upload_position_topology = true,
      .upload_material_params = true, .sampled_field_texture_upload = true},
     {VISUAL_OPS(
@@ -139,6 +284,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_volume_visual_draw_desc),
      .renderable_kind = DVZ_RENDERABLE_VOLUME_PROXY, .desc_kind = DVZ_SCENE_VISUAL_DESC_VOLUME,
      .default_material_kind = DVZ_MATERIAL_KIND_VOLUME,
+     .attrs = VOLUME_ATTRS, .attr_count = DVZ_ARRAY_COUNT(VOLUME_ATTRS),
+     .expected_attrs = "position, texcoords, plus a bound 3D field",
      .init_state = _scene_volume_visual_init_state,
      .fill_metadata = _scene_volume_visual_fill_metadata, .supports_scale = true},
     {VISUAL_OPS(
@@ -149,7 +296,9 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .renderable_kind = DVZ_RENDERABLE_INDEXED_MESH, .desc_kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
      .default_material_kind = DVZ_MATERIAL_KIND_LIT,
      .default_material_model = DVZ_MATERIAL_MODEL_PHONG, .supports_material = true,
-     .supports_depth_cue = true, .upload_position_topology = true,
+     .supports_depth_cue = true, .attrs = PRIMITIVE_ATTRS,
+     .attr_count = DVZ_ARRAY_COUNT(PRIMITIVE_ATTRS), .expected_attrs = "position, color, normal",
+     .upload_position_topology = true,
      .upload_material_params = true},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_SPHERE, "sphere", _scene_sphere_visual_lowering,
@@ -159,7 +308,9 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .renderable_kind = DVZ_RENDERABLE_POINT_LIKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_SPHERE,
      .default_material_kind = DVZ_MATERIAL_KIND_LIT,
      .default_material_model = DVZ_MATERIAL_MODEL_PHONG, .supports_material = true,
-     .supports_depth_cue = true, .upload_position_topology = true,
+     .supports_depth_cue = true, .attrs = SPHERE_ATTRS,
+     .attr_count = DVZ_ARRAY_COUNT(SPHERE_ATTRS), .expected_attrs = "position, color, radius",
+     .attr_alias_public = "radius", .attr_alias_storage = "size", .upload_position_topology = true,
      .upload_material_params = true},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_GLYPH, "glyph", _scene_glyph_visual_lowering,
@@ -167,12 +318,16 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_glyph_visual_pipeline_desc, _scene_glyph_visual_shader_desc,
          _scene_glyph_visual_draw_desc),
      .renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD, .desc_kind = DVZ_SCENE_VISUAL_DESC_GLYPH,
+     .attrs = GLYPH_ATTRS, .attr_count = DVZ_ARRAY_COUNT(GLYPH_ATTRS),
+     .expected_attrs = "position, bounds, texcoords, color, angle, plus a bound 2D field",
      .upload_position_topology = true, .panel_clip_rect = true},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_TEXT, "text", _scene_text_visual_lowering,
          _scene_visual_default_bounds, _scene_text_visual_bind_desc,
          _scene_text_visual_pipeline_desc, _scene_text_visual_shader_desc,
          _scene_text_visual_draw_desc),
+     .attrs = TEXT_ATTRS, .attr_count = DVZ_ARRAY_COUNT(TEXT_ATTRS),
+     .expected_attrs = "text strings plus position, anchor, size, color, angle",
      .reset_state = _scene_text_visual_reset_state, .skip_visual_uploads = true},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_LABELS, "labels", _scene_labels_visual_lowering,
@@ -180,6 +335,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_labels_visual_pipeline_desc, _scene_labels_visual_shader_desc,
          _scene_labels_visual_draw_desc),
      .renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD,
+     .attrs = IMAGE_ATTRS, .attr_count = DVZ_ARRAY_COUNT(IMAGE_ATTRS),
+     .expected_attrs = "position, extent, position_px, extent_px, anchor, tex_rect, texcoords",
      .init_state = _scene_labels_visual_init_state,
      .fill_metadata = _scene_labels_visual_fill_metadata, .sampled_field_texture_upload = true,
      .supports_scale = true, .categorical_scale = true},
@@ -189,12 +346,17 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_splat_visual_pipeline_desc, _scene_splat_visual_shader_desc,
          _scene_splat_visual_draw_desc),
      .renderable_kind = DVZ_RENDERABLE_POINT_LIKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_SPLAT,
+     .attrs = SPLAT_ATTRS, .attr_count = DVZ_ARRAY_COUNT(SPLAT_ATTRS),
+     .expected_attrs = "position, color, sigma, angle",
      .validate_attr = _scene_splat_visual_validate_attr},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_VECTOR, "vector", _scene_vector_visual_lowering,
          _scene_vector_visual_bounds, _scene_vector_visual_bind_desc,
          _scene_vector_visual_pipeline_desc, _scene_vector_visual_shader_desc,
          _scene_vector_visual_draw_desc),
+     .attrs = VECTOR_ATTRS, .attr_count = DVZ_ARRAY_COUNT(VECTOR_ATTRS),
+     .expected_attrs = "position, optional vector, color, stroke_width",
+     .attr_alias_public = "stroke_width", .attr_alias_storage = "line_width",
      .init_state = _scene_vector_visual_init_state,
      .after_attr_set = _scene_stroke_visual_after_attr_set},
 };

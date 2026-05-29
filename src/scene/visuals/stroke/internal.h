@@ -21,6 +21,9 @@
 
 #include "_scene.h"
 #include "_visual_pipeline.h"
+#include "stroke/cache.h"
+#include "stroke/derived_upload.h"
+#include "stroke/state.h"
 #include "upload.h"
 
 
@@ -51,12 +54,6 @@ typedef struct
 bool _stroke_cap_valid(DvzSegmentCap cap);
 bool _stroke_join_valid(DvzPathJoin join);
 
-void _segment_sync_params(DvzVisual* visual);
-void _path_sync_params(DvzVisual* visual);
-void _vector_sync_params(DvzVisual* visual);
-
-void _stroke_quad_gpu_cache_free(DvzSegmentGpuCache* cache);
-void _path_stroke_gpu_cache_free(DvzPathGpuCache* cache);
 bool _stroke_quad_segment_cache_rebuild(DvzVisual* visual);
 bool _stroke_quad_vector_cache_rebuild(DvzVisual* visual);
 bool _path_stroke_cache_rebuild(DvzVisual* visual);

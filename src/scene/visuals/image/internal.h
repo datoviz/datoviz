@@ -20,23 +20,10 @@
 #include <stdint.h>
 
 #include "_scene.h"
+#include "image/cache.h"
+#include "image/upload_payload.h"
 #include "scene_emit/visual_lowering.h"
 #include "upload.h"
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-typedef struct DvzImageTextureUploadPayload
-{
-    DvzFieldRegion region;
-    const void* data;
-    uint64_t byte_size;
-    uint32_t allocation_width;
-    uint32_t allocation_height;
-} DvzImageTextureUploadPayload;
 
 
 
@@ -69,8 +56,6 @@ bool _image_generated_quad_derived_upload_payloads(
 bool _image_texture_upload_payload(DvzVisual* visual, DvzImageTextureUploadPayload* out);
 bool _image_texture_upload_payload_if_dirty(
     DvzVisual* visual, DvzImageTextureUploadPayload* out, bool* out_handled);
-
-void _image_gpu_cache_free(DvzImageGpuCache* cache);
 
 bool _scene_image_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
 

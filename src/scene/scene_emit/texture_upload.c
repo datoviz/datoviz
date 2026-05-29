@@ -26,9 +26,9 @@
 #include "scene_emit/internal.h"
 #include "_scene_resource_key.h"
 #include "colorizer.h"
-#include "image/internal.h"
+#include "image/upload_payload.h"
 #include "registry/registry.h"
-#include "volume/internal.h"
+#include "volume/upload_payload.h"
 #include "datoviz/drp2/runtime.h"
 
 

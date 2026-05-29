@@ -34,9 +34,10 @@
 #include "datoviz/scene.h"
 #include "domain/buffer_internal.h"
 #include "domain/field_internal.h"
-#include "image/internal.h"
+#include "image/cache.h"
 #include "registry/registry.h"
-#include "stroke/internal.h"
+#include "stroke/cache.h"
+#include "stroke/state.h"
 
 
 /*************************************************************************************************/

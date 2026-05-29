@@ -22,6 +22,7 @@
 
 #include "_scene.h"
 #include "_shader_registry.h"
+#include "_visual_family.h"
 #include "_visual_pipeline.h"
 
 
@@ -77,6 +78,11 @@ struct DvzVisualFamilyOps
     DvzSceneVisualDescKind desc_kind;
     DvzMaterialKind default_material_kind;
     DvzMaterialModel default_material_model;
+    const DvzVisualFamilyAttrDesc* attrs;
+    uint32_t attr_count;
+    const char* expected_attrs;
+    const char* attr_alias_public;
+    const char* attr_alias_storage;
     DvzVisualFamilyLoweringFn resolve_lowering;
     DvzVisualFamilyBoundsFn resolve_bounds;
     DvzVisualFamilyPassCapsFn resolve_pass_caps;

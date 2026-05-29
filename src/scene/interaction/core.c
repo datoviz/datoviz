@@ -30,7 +30,7 @@
 #include "core/format_state_internal.h"
 #include "datoviz/scene/overlay.h"
 #include "query/internal.h"
-#include "text/internal.h"
+#include "annotation/text_visual_bridge.h"
 #include "text/text_internal.h"
 
 

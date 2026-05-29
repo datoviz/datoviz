@@ -21,8 +21,8 @@
 #include "_scene.h"
 #include "scene_emit/internal.h"
 #include "scene_emit/visual_lowering.h"
-#include "image/internal.h"
-#include "stroke/internal.h"
+#include "image/upload_payload.h"
+#include "stroke/derived_upload.h"
 
 
 

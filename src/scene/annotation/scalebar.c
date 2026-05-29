@@ -28,7 +28,7 @@
 #include "core/panel_layout_internal.h"
 #include "datoviz/scene.h"
 #include "text_internal.h"
-#include "text/internal.h"
+#include "annotation/text_visual_bridge.h"
 
 
 

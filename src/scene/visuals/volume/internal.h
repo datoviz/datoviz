@@ -21,33 +21,7 @@
 
 #include "_scene.h"
 #include "scene_emit/visual_lowering.h"
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-typedef struct DvzVolumeTextureUploadPayload
-{
-    DvzFieldRegion region;
-    const void* data;
-    uint64_t byte_size;
-    uint32_t texture_format;
-    uint32_t bytes_per_texel;
-    uint32_t allocation_width;
-    uint32_t allocation_height;
-    uint32_t allocation_depth;
-} DvzVolumeTextureUploadPayload;
-
-
-
-typedef struct DvzVolumeTransferTexturePayload
-{
-    const void* data;
-    uint64_t byte_size;
-    uint32_t width;
-} DvzVolumeTransferTexturePayload;
+#include "volume/upload_payload.h"
 
 
 

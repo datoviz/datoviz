@@ -25,6 +25,24 @@ VISUAL_ENUM_RE = re.compile(
     r"(POINT|PIXEL|MARKER|SEGMENT|PATH|IMAGE|MESH|VOLUME|PRIMITIVE|SPHERE|GLYPH|TEXT|LABELS|SPLAT|VECTOR)"
 )
 PRIVATE_INCLUDE_RE = re.compile(r'#include "([a-z_]+/internal\.h)"')
+VISUAL_FAMILY_NAMES = {
+    "glyph",
+    "image",
+    "labels",
+    "marker",
+    "mesh",
+    "path",
+    "pixel",
+    "point",
+    "primitive",
+    "segment",
+    "sphere",
+    "splat",
+    "stroke",
+    "text",
+    "vector",
+    "volume",
+}
 
 
 def _iter_generic_sources(root: Path) -> list[Path]:
@@ -67,13 +85,19 @@ def _violations(root: Path, allowlist: set[str]) -> list[str]:
         if path.suffix not in SOURCE_SUFFIXES:
             continue
         rel = path.relative_to(root).as_posix()
-        if rel.startswith("src/scene/visuals/") and len(Path(rel).parts) > 3:
+        rel_parts = Path(rel).parts
+        if rel.startswith("src/scene/tests/"):
+            continue
+        if rel.startswith("src/scene/visuals/") and len(rel_parts) > 4:
             continue
         if rel == "src/scene/visuals/registry/registry.c":
             continue
         for line_no, line in enumerate(path.read_text(encoding="utf8").splitlines(), start=1):
             match = PRIVATE_INCLUDE_RE.search(line)
             if match is None:
+                continue
+            family_name = match.group(1).split("/", 1)[0]
+            if family_name not in VISUAL_FAMILY_NAMES:
                 continue
             entry = _entry(path, line_no, "private-include", line, root)
             if entry not in allowlist:

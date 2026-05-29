@@ -25,7 +25,7 @@
 #include "_scene.h"
 #include "axis_internal.h"
 #include "datoviz/scene.h"
-#include "text/internal.h"
+#include "annotation/text_visual_bridge.h"
 
 
 
