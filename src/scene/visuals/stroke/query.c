@@ -24,6 +24,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_visual_internal.h"
+#include "../../query/internal.h"
 #include "stroke/internal.h"
 
 
