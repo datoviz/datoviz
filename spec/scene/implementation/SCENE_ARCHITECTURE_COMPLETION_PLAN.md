@@ -55,8 +55,9 @@ Important current state:
    vector/segment/path family decode ownership are now in their owner files.
 9. `annotation/text.c`, `annotation/axis.c`, `domain/field.c`, and the remaining family-specific
    payload construction reachable from scene emission remain mixed-ownership areas. Field dirty
-   propagation and bound-visual texture dirtiness now live in `domain/field_dirty.c`, while scalar
-   sampled-field value interpretation lives in `domain/field_sample.c`.
+   propagation and bound-visual texture dirtiness now live in `domain/field_dirty.c`, scalar
+   sampled-field value interpretation lives in `domain/field_sample.c`, and sampled-field data
+   setters now live beside validation/copy helpers in `domain/field_data.c`.
 10. `core/_scene.h` no longer exports narrow helper declarations. It remains broad because shared
     retained scene object and type definitions still live there; the next header shrink target is
     type ownership and include direction rather than more prototype movement.
@@ -71,20 +72,22 @@ Latest pickup snapshot:
    sample-target native policy, FramePlan/render-contract metadata enforcement, typed point-like
    fallback label resolution, vector/stroke query-family decode ownership, field dirty propagation,
    and scalar field sampling cleanup passes. Commits `2910398f1` and `14b1ab6f7` then extended typed
-   fallback label resolution through splat, primitive, image/labels, and textured mesh. Do not
+   fallback label resolution through splat, primitive, image/labels, and textured mesh. Commits
+   `9191b22a1` and `472818e58` then made the untyped FramePlan render path explicitly
+   compatibility-named and moved sampled-field data setters into `domain/field_data.c`. Do not
    restart by re-extracting
    dense/index/material upload emission, panel drawable/viewport helpers, the helper declarations
    already moved into owner-private headers, or the generic query helpers now centralized in
    `query/`.
-3. The best next implementation slices are now annotation/domain ownership, residual query-family
-   scratch/unsupported-policy ownership, and explicit compatibility-path quarantine after auditing
-   any fixture/import callers of untyped descriptor inference. Remaining upload work should be
-   limited to pure family payload builders when a concrete builder is still mixed into scene
-   emission.
+3. The best next implementation slices are now remaining annotation/domain ownership, residual
+   query-family scratch/unsupported-policy ownership, and explicit compatibility-path quarantine
+   after auditing any fixture/import callers of untyped descriptor inference. Remaining upload work
+   should be limited to pure family payload builders when a concrete builder is still mixed into
+   scene emission.
 4. Last focused validation recorded for this split was `git diff --check`, `just build`,
    `direnv exec . just test scene/query` (`40/40`), `direnv exec . just test fields` (`47/47`),
-   focused WGSL typed-fallback and FramePlan static-render filters, earlier
-   `direnv exec . just test scene/frame-plan` (`55/55`), earlier
+   `direnv exec . just test scene/frame-plan` (`60/60`), focused WGSL typed-fallback and
+   FramePlan static-render filters, earlier
    `direnv exec . just test scene-graph` (`158/158`), focused sampled-field update filters, and
    `direnv exec . just test app-offscreen` (`76/76`). The earlier broad query GPU readback failures
    are no longer current blockers.
@@ -179,9 +182,12 @@ this section when a slice is completed.
      metadata.
    - Status on 2026-05-29: FramePlan has a render-metadata completeness helper, query execution
      consumes it, the runtime emitter rejects untyped visuals unless the explicit compatibility
-     flag is set, render-contract resolution now rejects missing typed metadata unless the
+     compatibility flag is set, render-contract resolution now rejects missing typed metadata unless the
      compatibility flag is set, and WGSL fallback resolves typed metadata labels explicitly for
      point, pixel, marker, splat, primitive, image/labels, and textured mesh.
+   - Status on 2026-05-29: the FramePlan render flag and helper are now named
+     `allow_untyped_visual_compat` / `dvz_frame_plan_render_allow_untyped_visual_compat()` so new
+     callers must opt into the explicit compatibility path.
    - Next slice: audit the remaining callers of untyped descriptor compatibility and either delete
      `visuals/desc_untyped_compat.c` or keep it behind an explicit fixture/import compatibility
      path with tests proving normal retained rendering no longer depends on it.
@@ -194,6 +200,8 @@ this section when a slice is completed.
    - Status on 2026-05-29: sampled-field dirty propagation moved from `domain/field.c` to
      `domain/field_dirty.c`, beside bound-visual texture dirty state and refresh helpers. Scalar
      sampled-field interpretation moved from `domain/field_data.c` to `domain/field_sample.c`.
+     Public sampled-field payload setters moved from `domain/field.c` to `domain/field_data.c`;
+     `field.c` now keeps lifecycle, geometry, descriptor, and slot ownership.
    - Split `annotation/text.c` into retained text state, layout, glyph/quad synchronization, and
      renderer payloads.
    - Split `annotation/axis.c` into retained axis state, tick generation, layout reserve, and
