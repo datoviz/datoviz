@@ -23,13 +23,10 @@ release criteria, or long implementation history.
    [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
 5. For scene semantics, public scene API shape, frame planning, visual families, interaction,
    annotations, scales, or runtime boundaries, read [`../../spec/scene/README.md`](../../spec/scene/README.md).
-6. For broad `src/scene` source splits across visual helpers, frame-plan files, runtime emission,
-   core scene ownership, query execution, annotations, or domain helpers, read
-   [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md)
-   and
-   [`../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md).
-   The immediate scene-refactor execution queue is in
-   `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` under **Immediate Next Execution Queue**.
+6. For the remaining scene visual-boundary architecture work, read
+   [`../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
+   The older broad source-split roadmap and architecture completion plan are retired pointers, not
+   active queues.
 7. For DRP2 commands, fixtures, schemas, or scene code that emits DRP2, read
    [`../../spec/drp2/README.md`](../../spec/drp2/README.md) and
    [`../../spec/drp2/AGENT_SPEC_PHASE.md`](../../spec/drp2/AGENT_SPEC_PHASE.md).
@@ -58,33 +55,14 @@ grid generators, bounds, normals, transforms, merges, edges, contours, polygon t
 upload, polygon scene helpers, semantic polygon/polygon-set composites, and focused tests/examples.
 Remaining `geom` work is optional unless a release example needs it.
 
-For the large scene source/architecture refactor, the latest pickup is after the upload-support,
-panel-helper, helper-declaration boundary, shared query-helper, query render-metadata guard,
-standard item-id decode, standard item-target eligibility, query native-target policy,
-sample-target native policy, FramePlan/render-contract metadata enforcement, typed point-like
-fallback label resolution, vector/stroke query-family decode ownership, field dirty propagation,
-scalar field sampling split, and typed splat/primitive/image/labels/textured-mesh fallback label
-resolution, sampled-field data setter split, typed fixture render cleanup, untyped visual
-compatibility removal, axis text/tick helper splits, sampled-field binding-release ownership, and
-image/labels/volume query unsupported-policy hooks, shared primitive/mesh indexed query geometry,
-shared point-like/stroke query planning, and axis generated-visual/layout-reserve splits through
-`bc0750097`. `_scene.h` no longer exposes narrow helper declarations; its remaining broadness is
-shared retained scene object and type definitions. Start with remaining query-family native-result
-and bounds ownership, domain/text ownership cleanup, and standalone candidate assessment in
-[`../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md);
-do not reopen dense/index/material upload emission, panel drawable/viewport helper extraction, or
-the helper declarations already moved into owner-private headers unless a new regression points
-there. Do not re-split generic query allocation, dense-attribute, target-extent, render-state,
-standard item-id decode, standard item-target eligibility, native/sample target fallback policy,
-vector/segment/path family decode ownership, or render-metadata completeness helpers from
-`src/scene/query/`; render metadata completeness now lives in `frame_plan/`, and normal typed WGSL
-fallback label lookup now covers point, pixel, marker, splat, primitive, image/labels, and textured
-mesh. Axis text realization, tick planning, generated primitive visuals, and layout reserve now
-live in annotation-owned files. The closest standalone scene layers are currently `frame_plan/`,
-`render_contract/`, `query/`, `text/`,
-`domain/`, and
-`visuals/registry/`; `scene_emit/`, `runtime/`, `techniques/`, and `app/` remain
-orchestration/runtime layers.
+The broad scene source/architecture split is now historical. Completed context is archived in
+[`../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`](../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md).
+Do not reopen dense/index/material upload emission, panel drawable/viewport helper extraction,
+typed metadata enforcement, untyped visual compatibility removal, generic query scratch/decode
+helpers, or the helper declarations already moved into owner-private headers unless a new
+regression points there. The next architecture phase is the visual-boundary guardrail pass:
+generic code should call visual-family operations, while concrete visual behavior should live in
+`src/scene/visuals/<family>/`, explicit shared visual subsystems, or the registration table.
 
 
 ## Guardrails
@@ -120,10 +98,10 @@ orchestration/runtime layers.
 6. [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md)
    before changing pinned readout cards, selected-item metadata cards, public overlay cards, or
    private rich text-block lowering.
-7. [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md)
-   before broad source-file splits in `src/scene/frame_plan`, `src/scene/scene_emit`,
-   `src/scene/render_contract`, `src/scene/runtime`, `src/scene/core`, `src/scene/annotation`,
-   `src/scene/domain`, `src/scene/query`, or visual helper folders.
+7. [`../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md)
+   before changing visual-family boundaries, adding root-level visual switches, including
+   family-private visual headers from generic code, or adding family-specific fields to generic
+   retained visual state.
 
 
 ## Validation Defaults

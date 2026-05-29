@@ -16,16 +16,13 @@ belongs in [../../later/](../../later/).
    and marker follow-up.
 4. [SCENE_VECTOR_VISUALS_PLAN.md](SCENE_VECTOR_VISUALS_PLAN.md): remaining segment, path, and
    vector-family follow-up.
-5. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): staged source cleanup across visual
-   helpers, frame-plan internals, runtime emission, core scene ownership, annotations, domains,
-   query execution, and tests.
-6. [SCENE_BEZIER_CURVE_EXAMPLE_PLAN.md](SCENE_BEZIER_CURVE_EXAMPLE_PLAN.md): first Bezier
+5. [SCENE_BEZIER_CURVE_EXAMPLE_PLAN.md](SCENE_BEZIER_CURVE_EXAMPLE_PLAN.md): first Bezier
    curve-tessellation example over `dvz_path()`.
-7. [SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md): remaining
+6. [SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md): remaining
    visual shader ABI cleanup.
-8. [SCENE_VOLUME_RENDERING_FOLLOWUP.md](SCENE_VOLUME_RENDERING_FOLLOWUP.md): remaining volume and napari
+7. [SCENE_VOLUME_RENDERING_FOLLOWUP.md](SCENE_VOLUME_RENDERING_FOLLOWUP.md): remaining volume and napari
    clipping follow-up.
-9. [SCENE_WGSL_SHADER_VARIANTS_PLAN.md](SCENE_WGSL_SHADER_VARIANTS_PLAN.md): remaining WGSL
+8. [SCENE_WGSL_SHADER_VARIANTS_PLAN.md](SCENE_WGSL_SHADER_VARIANTS_PLAN.md): remaining WGSL
    shader-variant parity work.
 
 Completed retained textured-mesh implementation record:

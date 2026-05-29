@@ -63,7 +63,7 @@ Primary references:
 | WebGPU/WASM | `Pure WebGPU subset closed / WASM emission pending` | `examples/webgpu/`, `examples/webgpu/COMPAT.md`, `tools/webgpu_fixture_preflight.py`, `tools/webgpu_runner_smoke.mjs`, DRP2 WGSL point/primitive/image fixtures; `just webgpu-fixture-preflight` passes `39/39`, `just webgpu-runner-smoke` passes `37 + 2 + 81` plus repeated runtime, demo-session stress, and capability-preflight diagnostics; browser dashboard passed fixture compatibility `120/120` and retained runtime stress `7/7` on 2026-05-29 after `c03e89227` | Start WASM scene emission and keep the pure WebGPU subset in RC validation. |
 | Raw `ctypes` | `Done for RC1` | `tools/bindings/extract_api.py`, `tools/bindings/generate_ctypes.py`, `tools/bindings/generate_ctypes_abi.py`, `tools/bindings/ctypes_package_smoke.py`, `testing/test_ctypes_raw_smoke.py`, `examples/python/raw/`, `just bindings` | Broaden ABI/pointer policy only when richer raw examples require it. |
 | Runtime hardening | `Ongoing` | DRP2/vklite/app tests and completed lifetime records | Fix concrete lifetime, resize, descriptor, repeated-frame, or churn bugs as examples expose them. |
-| Scene source split | `Ongoing / structural` | [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md), [`../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md`](../../spec/scene/implementation/SCENE_ARCHITECTURE_COMPLETION_PLAN.md) | The old scene `plan/` bucket is gone; FramePlan, scene emission, render contracts, runtime render emission, core scene, visual descriptor-kind, colormap, domain-buffer, query-policy, upload-support, panel-helper, helper-declaration boundary, shared query-helper, query render-metadata guard, standard query item-decode, standard item-target eligibility, query native/sample target policy, FramePlan/render-contract metadata enforcement, typed fallback labels for point/pixel/marker/splat/primitive/image/labels/textured mesh, vector/stroke query-family decode ownership, field dirty propagation, scalar field sampling, sampled-field data setter, typed fixture render cleanup, untyped visual compatibility removal, axis text/tick helper splits, sampled-field binding-release ownership, and image/labels/volume query unsupported-policy hooks are split. Latest focused validation includes `scene/query` (`40/40`), `axis` (`23/23`), `fields` (`47/47`), `scene/frame-plan` (`60/60`), `scene/scene-graph/render_contract_rejects_untyped_visual_metadata` (`1/1`), source guard (`1/1`), focused WGSL typed-fallback and FramePlan static-render filters, earlier `scene-graph` (`158/158`), focused field-update filters, and `app-offscreen` (`76/76`). Next pickup is residual query-family scratch ownership, remaining annotation layout/generated-visual cleanup, then coarse standalone scene layer feasibility; only move remaining upload payload builders after confirming they are still mixed into scene emission. |
+| Scene visual boundaries | `Active architecture guardrail phase` | [`../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md), [`../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`](../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md) | The broad scene source split is historical. Do not reopen completed typed-metadata, untyped-compat removal, generic query helper, upload-support, panel-helper, or helper-declaration moves without a regression. Remaining architecture work is to confine visual-specific behavior to family folders or explicit shared visual subsystems, keep generic code registry-driven, and add checks against concrete visual-family switches and family-private includes in generic code. |
 | API inventory and docs | `Blocker for RC1` | [`DOCUMENTATION.md`](DOCUMENTATION.md), public headers under `include/datoviz/` | Produce public surface/status table and known-gap notes. |
 
 
@@ -98,20 +98,11 @@ Good parallel work now:
    proof, WGSL emission, and diagnostics.
 5. **API/docs inventory:** work from [`DOCUMENTATION.md`](DOCUMENTATION.md) that classifies actual
    v0.4 behavior.
-6. **Scene source split:** staged cleanup from
-   [`../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md`](../../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md),
-   continuing with residual query-family scratch ownership, annotation layout/generated-visual
-   cleanup, normal typed-metadata enforcement outside query, standalone scene layer feasibility,
-   and focused tests.
-   FramePlan internals, scene emission, render contracts, runtime render emission, core scene
-   ownership, first colormap/domain-buffer slices, query policy, upload-support helpers, panel
-   helpers, helper-declaration boundary pass, shared query helpers, query render-metadata guard,
-   standard query item decoding, standard item-target eligibility, query native/sample target
-   policy, FramePlan/render-contract metadata enforcement, typed fallback labels for
-   point/pixel/marker/splat/primitive/image/labels/textured mesh, vector/stroke query-family
-   decode ownership, field dirty propagation, scalar field sampling, axis text/tick helper splits,
-   sampled-field binding-release ownership, and query unsupported-policy hooks are complete through
-   2026-05-29.
+6. **Scene visual boundaries:** use
+   [`../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md)
+   for remaining visual-family architecture work. The broad source split is archived in
+   [`../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`](../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md);
+   do not treat the retired roadmaps as active queues.
 7. **RC2 polish:** text placement/DPI, axes formatter/clipping, shared layout, richer legends,
    richer readouts, and broader pick/probe payloads.
 8. **Pinned readout/card lane:** completed private C card shell, rendered pinned image readouts,

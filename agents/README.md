@@ -67,10 +67,10 @@ If resuming work on the branch:
 13. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
    public scene API shape, frame planning, visual families, interaction, annotations, scales, or
    runtime boundaries.
-14. Read [../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md](../spec/scene/implementation/SCENE_CODE_SPLIT_ROADMAP.md)
-   and [soon/scene/SCENE_CODE_SPLIT_ROADMAP.md](soon/scene/SCENE_CODE_SPLIT_ROADMAP.md) before
-   broad `src/scene` source splits across frame-plan, runtime, core, annotation, domain, query, or
-   visual helper code.
+14. Read [../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md)
+   before changing visual-family boundaries, adding root-level visual switches, including
+   family-private visual headers from generic code, or adding family-specific fields to generic
+   retained visual state.
 15. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
    scene API shape or adding new scene object families.
 16. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
@@ -122,15 +122,14 @@ Scene feature lanes:
 2. [soon/scene/SCENE_POINT_PIXEL_MARKER_FOLLOWUP.md](soon/scene/SCENE_POINT_PIXEL_MARKER_FOLLOWUP.md)
 3. [soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md](soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md)
 4. [soon/scene/SCENE_VECTOR_VISUALS_PLAN.md](soon/scene/SCENE_VECTOR_VISUALS_PLAN.md)
-5. [soon/scene/SCENE_CODE_SPLIT_ROADMAP.md](soon/scene/SCENE_CODE_SPLIT_ROADMAP.md)
-6. [soon/scene/SCENE_BEZIER_CURVE_EXAMPLE_PLAN.md](soon/scene/SCENE_BEZIER_CURVE_EXAMPLE_PLAN.md)
-7. [soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md](soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md)
-8. [soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md](soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md)
-9. [soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md](soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md)
-10. [soon/effects/SCENE_MSAA_PLAN.md](soon/effects/SCENE_MSAA_PLAN.md)
-11. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
-12. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
-13. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
+5. [soon/scene/SCENE_BEZIER_CURVE_EXAMPLE_PLAN.md](soon/scene/SCENE_BEZIER_CURVE_EXAMPLE_PLAN.md)
+6. [soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md](soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md)
+7. [soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md](soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md)
+8. [soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md](soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md)
+9. [soon/effects/SCENE_MSAA_PLAN.md](soon/effects/SCENE_MSAA_PLAN.md)
+10. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
+11. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
+12. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
 
 For visual-family lanes, durable contracts live under [../spec/scene/visuals](../spec/scene/visuals);
 the `soon/` files above are execution follow-up notes.
@@ -178,6 +177,7 @@ Recently retired or historical notes:
 20. [done/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md](done/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md)
 21. [done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md](done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md)
 22. [done/SCENE_SPARSE_LABEL_VOLUME_LOOKUP.md](done/SCENE_SPARSE_LABEL_VOLUME_LOOKUP.md)
+23. [done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md](done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md)
 
 ### `later/`
 

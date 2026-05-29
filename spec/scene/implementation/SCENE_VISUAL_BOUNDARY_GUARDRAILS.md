@@ -8,6 +8,38 @@ Normative status: implementation architecture plan. Public visual semantics rema
 `../semantics/` and `../visuals/`; this file defines internal ownership boundaries, guardrails,
 migration order, and done criteria.
 
+This is the single active implementation document for the remaining visual-boundary architecture
+work. Earlier broad source-split plans have been retired to short pointers and a historical record
+under `agents/done/`.
+
+
+## Current State
+
+The first broad scene architecture split is complete enough that future work should not restart it.
+In particular:
+
+1. the old flat scene planning bucket has been split across `frame_plan/`, `scene_emit/`, and
+   `render_contract/`;
+2. normal scene output carries typed visual metadata, and the untyped descriptor compatibility path
+   has been removed;
+3. `visuals/registry/` owns the private `DvzVisualFamilyOps` table, with active-family coverage
+   tests;
+4. active family folders own retained lowering, bind descriptors, normal pipeline descriptors,
+   shader descriptor bodies, and draw descriptor hooks;
+5. image, labels, and volume metadata fill routes through family hooks;
+6. normal runtime render preparation is mostly descriptor-driven instead of family-switch-driven;
+7. generic dense-attribute, retained-index-buffer, and material-trigger upload emission has moved
+   into scene-emission support helpers;
+8. many query helpers are now generic where they should be generic: scratch allocation, standard
+   item-id decode, standard item-target eligibility, native/sample target fallback policy, and
+   render-metadata completeness.
+
+Do not reopen these completed splits unless a regression shows that their current owner boundary is
+wrong.
+
+Remaining valuable work is narrower: stop generic scene/visual code from knowing concrete visual
+families, and add checks so the coupling does not grow back.
+
 
 ## Problem
 
@@ -72,6 +104,11 @@ Keep orchestration outside family ops. `scene_emit/` still owns resource-key all
 ordering, pass scheduling, and dependency graph construction. `runtime/` still owns DRP2 emission,
 render target realization, viewport/scissor setup, descriptor refresh, and graph-resource
 execution.
+
+Non-visual cleanup such as coarse scene CMake targets, broad private-header shrinking, and remaining
+domain/annotation ownership polish should use this same rule: move only when a stable owner is clear,
+and do not duplicate completed source-split work. Those items are secondary to the visual-boundary
+guardrails in this phase.
 
 
 ## Boundary Rules

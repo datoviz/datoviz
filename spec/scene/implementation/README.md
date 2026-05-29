@@ -21,14 +21,14 @@ behavior instead of restating it here.
    volume occlusion, shader feature, and validation contract.
 6. [TRANSPARENCY_MSAA.md](TRANSPARENCY_MSAA.md): implementation-facing WBOIT, depth peeling,
    MSAA, alpha-to-coverage, and validation contract.
-7. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): implementation-facing roadmap for
-   splitting scene frame-plan, runtime, core, annotation, domain, query, and visual helper code.
-8. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): remaining
-   end-to-end plan for the final scene architecture, visual-family registry, untyped descriptor
-   removal, coarse reusable CMake layers, and architecture done criteria.
-9. [SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](SCENE_VISUAL_BOUNDARY_GUARDRAILS.md): next major
+7. [SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](SCENE_VISUAL_BOUNDARY_GUARDRAILS.md): active
    visual-architecture phase for keeping generic scene code registry-driven and confining
    visual-specific behavior to family folders or explicit shared visual subsystems.
+8. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): retired pointer for the completed
+   broad scene source split; active work moved to `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`.
+9. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): retired pointer
+   for the completed architecture queue; historical context lives in
+   `agents/done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`.
 
 ## Current priorities
 
@@ -43,10 +43,8 @@ behavior instead of restating it here.
    durable occlusion implementation rules live in `OCCLUSION_EFFECTS.md`.
 7. Keep transparency, depth-peeling, and MSAA execution plans in `agents/soon/` focused on
    remaining slices while durable implementation rules live in `TRANSPARENCY_MSAA.md`.
-8. Keep broad scene source splits staged through `SCENE_CODE_SPLIT_ROADMAP.md`, and use
-   `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` for the final architecture target: explicit visual
-   metadata, registry-driven visual-family operations, descriptor-driven runtime emission, and
-   coarse reusable CMake targets.
-9. Use `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md` before adding new root-level visual switches,
+8. Use `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md` before adding new root-level visual switches,
    family-private includes from generic code, or family-specific fields to generic retained visual
    state.
+9. Treat `SCENE_CODE_SPLIT_ROADMAP.md` and `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` as retired
+   compatibility links, not active queues.
