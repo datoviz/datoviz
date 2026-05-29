@@ -210,6 +210,9 @@ DvzVisual* _dvz_scene_query_candidate_visual(const DvzPanel* panel, uint32_t cap
 const DvzSceneQueryFamilyOps* _dvz_scene_query_family_ops_for_visual(
     const DvzPanel* panel, const DvzVisual* visual, const DvzQueryRequest* request);
 
+bool _dvz_scene_query_item_target_eligible(
+    const DvzVisual* visual, const DvzQueryRequest* request, DvzVisualType type);
+
 bool _dvz_scene_query_execute_family(
     DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
     const DvzCapabilitySnapshot* caps, const DvzPendingQueryRequest* pending,

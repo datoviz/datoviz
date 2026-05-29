@@ -182,6 +182,31 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_family_ops_for_visual(
 
 
 /**
+ * Return whether a visual accepts the standard item/object query target policy.
+ *
+ * @param visual the visual
+ * @param request query request
+ * @param type expected visual type
+ * @return true when the family should try a standard item query
+ */
+bool _dvz_scene_query_item_target_eligible(
+    const DvzVisual* visual, const DvzQueryRequest* request, DvzVisualType type)
+{
+    ANN(visual);
+    ANN(request);
+    if (visual->type != type)
+        return false;
+    if (request->target != DVZ_SCENE_TARGET_NONE && request->target != DVZ_SCENE_TARGET_ITEM &&
+        request->target != DVZ_SCENE_TARGET_OBJECT)
+    {
+        return false;
+    }
+    return (visual->query_capabilities & DVZ_QUERY_CAPABILITY_ITEM) != 0;
+}
+
+
+
+/**
  * Resolve one panel-local query coordinate to a figure framebuffer coordinate.
  *
  * @param figure the figure

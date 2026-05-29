@@ -330,16 +330,7 @@ static bool _primitive_query_eligible(
     const DvzPanel* panel, const DvzVisual* visual, const DvzQueryRequest* request)
 {
     ANN(panel);
-    ANN(visual);
-    ANN(request);
-    if (visual->type != DVZ_VISUAL_TYPE_PRIMITIVE)
-        return false;
-    if (request->target != DVZ_SCENE_TARGET_NONE && request->target != DVZ_SCENE_TARGET_ITEM &&
-        request->target != DVZ_SCENE_TARGET_OBJECT)
-    {
-        return false;
-    }
-    return (visual->query_capabilities & DVZ_QUERY_CAPABILITY_ITEM) != 0;
+    return _dvz_scene_query_item_target_eligible(visual, request, DVZ_VISUAL_TYPE_PRIMITIVE);
 }
 
 
