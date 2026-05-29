@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE STATUS GATEBOARD`
-> - **Updated on:** `2026-05-29`
+> - **Updated on:** `2026-05-30`
 > - **Purpose:** keep the current v0.4 implementation status concise, identify RC1 blockers,
 >   and point to the durable spec or completed record for each lane.
 
@@ -30,7 +30,7 @@ Feature-freeze blockers:
 | Lane | Status | Next proof |
 | --- | --- | --- |
 | Retained textured mesh | `Done first slice / RC proof` | Keep `examples/c/visuals/textured_mesh.c`, `test_scene_mesh_visual_binds_texture_field`, and `test_scene_textured_mesh_emits_texture_pipeline` in validation; add/promote `fixture_mesh_textured.c` or terrain/planet capture for release proof. |
-| WebGPU/WASM experimental path | `Pure WebGPU subset closed / WASM blocker` | Keep browser subset validation; start WASM scene-emission proof. |
+| WebGPU/WASM experimental path | `Pure WebGPU subset closed / WASM export blocker` | Keep browser subset validation; add the minimal portable scene/DRP2/WGSL target, Emscripten profile, and point-scene WASM emit smoke. |
 | Raw `ctypes` API | `Done for RC1` | Keep `just bindings` in RC validation; it covers generation, ABI layout checks, raw examples, render smoke, and editable/wheel install smokes. |
 | v0.3 visible parity audit | `Missing / blocker` | Visible capability table with fix/defer/GSP disposition. |
 | Public API/status cleanup | `Missing / blocker` | Supported, experimental, advanced/unstable, deferred, and external/GSP labels. |
@@ -60,7 +60,7 @@ Primary references:
 | Grid layout and linked panels | `Partial / RC proof` | grid/panel tests, `examples/c/techniques/linked_panels.c` | Prove release examples resize and link predictably; defer richer dashboard layout. |
 | Visual families | `Mostly first-slice active` | point, pixel, marker, primitive, mesh including retained textured mesh, path/segment, image, labels, volume, sphere, polygon/composite examples/tests | Fill release-example gaps and mark unsupported variants explicitly. |
 | Query and selection | `Broader first slices landed` | point/pixel/marker/sphere/stroke/primitive/image/mesh/volume item-query tests, image/labels/volume sample-query tests, selection-mask tests, `examples/c/techniques/pick_hover.c` | Richer payloads, linked-panel query state, exact marker/path semantics, mesh face/region identity, volume ray hits, and text identity queries remain follow-up. |
-| WebGPU/WASM | `Pure WebGPU subset closed / WASM emission pending` | `examples/webgpu/`, `examples/webgpu/COMPAT.md`, `tools/webgpu_fixture_preflight.py`, `tools/webgpu_runner_smoke.mjs`, DRP2 WGSL point/primitive/image fixtures; `just webgpu-fixture-preflight` passes `39/39`, `just webgpu-runner-smoke` passes `37 + 2 + 81` plus repeated runtime, demo-session stress, and capability-preflight diagnostics; browser dashboard passed fixture compatibility `120/120` and retained runtime stress `7/7` on 2026-05-29 after `c03e89227` | Start WASM scene emission and keep the pure WebGPU subset in RC validation. |
+| WebGPU/WASM | `Pure WebGPU subset closed / WASM export pending` | `examples/webgpu/`, `examples/webgpu/COMPAT.md`, `tools/webgpu_fixture_preflight.py`, `tools/webgpu_runner_smoke.mjs`, DRP2 WGSL point/primitive/image fixtures; `just webgpu-fixture-preflight` passes `39/39`; `just webgpu-runner-smoke` passes `37 + 2 + 81`; native scene+DRP2 can build with `DVZ_BUILD_VK=OFF`, `DVZ_BUILD_CANVAS=OFF`, `DVZ_BUILD_APP=OFF`, and `DVZ_BUILD_GUI=OFF`, but `src/wasm` has no export API and the scene/DRP2 portable target still needs to be carved out; see [`../soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md`](../soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md) | Add the minimal portable scene/DRP2/WGSL target, Emscripten profile, point-scene WASM create/emit/destroy API, and runner smoke. |
 | Raw `ctypes` | `Done for RC1` | `tools/bindings/extract_api.py`, `tools/bindings/generate_ctypes.py`, `tools/bindings/generate_ctypes_abi.py`, `tools/bindings/ctypes_package_smoke.py`, `testing/test_ctypes_raw_smoke.py`, `examples/python/raw/`, `just bindings` | Broaden ABI/pointer policy only when richer raw examples require it. |
 | Runtime hardening | `Ongoing` | DRP2/vklite/app tests and completed lifetime records | Fix concrete lifetime, resize, descriptor, repeated-frame, or churn bugs as examples expose them. |
 | Scene visual boundaries | `Completed guardrail baseline` | [`../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md), [`../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md), [`../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`](../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md) | Generic visual behavior is registry-driven, family-private includes are guarded, the visual-boundary allowlist is empty, and `just spec-check` enforces the checks. Future visual work should keep behavior in family folders, explicit shared visual subsystems, or registry callbacks. |
