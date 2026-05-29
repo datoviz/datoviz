@@ -100,7 +100,7 @@ static bool _vector_query_build(
 
 
 /**
- * Decode a vector item query payload through the active vector lowering mode.
+ * Decode a vector item query payload.
  *
  * @param ctx decode context
  * @param out_result output query result
@@ -113,8 +113,7 @@ static bool _vector_query_decode(
     ANN(ctx->build);
     ANN(ctx->build->visual);
     ANN(out_result);
-    const DvzSceneQueryFamilyOps* delegate = _vector_query_delegate(ctx->build->visual);
-    return delegate != NULL && delegate->decode != NULL && delegate->decode(ctx, out_result);
+    return _dvz_scene_query_decode_item_id(ctx, DVZ_SCENE_VISUAL_FAMILY_VECTOR, out_result);
 }
 
 

@@ -236,10 +236,7 @@ static bool _path_query_decode(const DvzSceneQueryDecodeContext* ctx, DvzQueryRe
     ANN(ctx);
     ANN(ctx->build);
     ANN(ctx->build->visual);
-    DvzSceneVisualFamily family = ctx->build->visual->type == DVZ_VISUAL_TYPE_VECTOR
-                                      ? DVZ_SCENE_VISUAL_FAMILY_VECTOR
-                                      : DVZ_SCENE_VISUAL_FAMILY_PATH;
-    return _dvz_scene_query_decode_item_id(ctx, family, out_result);
+    return _dvz_scene_query_decode_item_id(ctx, DVZ_SCENE_VISUAL_FAMILY_PATH, out_result);
 }
 
 
