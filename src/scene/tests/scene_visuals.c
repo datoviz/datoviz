@@ -20,6 +20,7 @@
 #include "scene_graph_utils.h"
 #include "_frame_plan_runtime_internal.h"
 #include "datoviz/geom.h"
+#include "domain/polygon_internal.h"
 #include "registry/registry.h"
 #include "scene_emit/internal.h"
 #include "visuals/bounds_internal.h"

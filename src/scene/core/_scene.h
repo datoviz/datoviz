@@ -1749,13 +1749,6 @@ void _scene_remove_request_frame_callback(
 void _scene_notify_request_frame(DvzFigure* figure);
 void _scene_notify_visual_changed(DvzVisual* visual);
 void _scene_notify_buffer_changed(DvzSceneBuffer* buffer);
-void _scene_prepare_composite_visuals(DvzFigure* figure);
-void _scene_polygon_reset(DvzPolygon* polygon);
-void _scene_polygon_set_reset(DvzPolygonSet* set);
-void _scene_composite_reset(DvzComposite* composite);
-
-
-
 /*************************************************************************************************/
 /*  Internal shared scene helpers                                                               */
 /*************************************************************************************************/

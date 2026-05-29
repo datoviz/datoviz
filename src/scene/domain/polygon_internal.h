@@ -47,8 +47,16 @@ void _polygon_set_mark_composites_dirty(
 
 DvzPolygon* _scene_alloc_polygon(DvzScene* scene);
 
+void _scene_polygon_reset(DvzPolygon* polygon);
+
 DvzPolygonSet* _scene_alloc_polygon_set(DvzScene* scene);
+
+void _scene_polygon_set_reset(DvzPolygonSet* set);
 
 bool _polygon_set_reserve(DvzPolygonSet* set, uint32_t capacity);
 
 int _polygon_set_item_set_geometry(DvzPolygonSetItem* item, const DvzPolygonDesc* desc);
+
+void _scene_composite_reset(DvzComposite* composite);
+
+void _scene_prepare_composite_visuals(DvzFigure* figure);
