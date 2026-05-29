@@ -20,6 +20,7 @@
 #include "_controllers.h"
 #include "_scene.h"
 #include "datoviz/scene.h"
+#include "interaction/animation_internal.h"
 #include "test_scene.h"
 #include "testing.h"
 

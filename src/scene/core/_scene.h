@@ -1836,5 +1836,3 @@ bool _scene_font_ensure_bytes(DvzFont* font);
 void _scene_font_release(DvzFont* font);
 
 EXTERN_C_OFF
-
-void _dvz_scene_animations_step(DvzScene* scene, uint64_t wall_time_ns);
