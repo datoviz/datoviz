@@ -965,6 +965,9 @@ int main(int argc, char** argv)
     DvzScale* scale = _add_probe_scale(scene);
     EXAMPLE_CHECK(scale != NULL, "adding probe scale failed");
 
+    DvzColorbar* colorbar = _add_probe_colorbar(panel, scale);
+    EXAMPLE_CHECK(colorbar != NULL, "adding probe colorbar failed");
+
     float values[FIELD_WIDTH * FIELD_HEIGHT] = {0};
     _fill_probe_field(values);
 
@@ -975,9 +978,6 @@ int main(int argc, char** argv)
     DvzVisual* probe_dot = NULL;
     ok = _add_probe_marker(scene, panel, &probe_segments, &probe_dot);
     EXAMPLE_CHECK(ok, "adding probe marker failed");
-
-    DvzColorbar* colorbar = _add_probe_colorbar(panel, scale);
-    EXAMPLE_CHECK(colorbar != NULL, "adding probe colorbar failed");
 
     DvzOverlayCard* probe_card = _add_probe_card(panel);
     EXAMPLE_CHECK(probe_card != NULL, "adding probe readout card failed");
