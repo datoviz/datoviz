@@ -268,6 +268,7 @@ Current evidence as of 2026-05-30:
    `build-wasm-scene/wasm/wasm_scene_point_primitive_image_mesh_panzoom.json`, and passes WebGPU
    fixture preflight.
 2. The browser demo entry point is `examples/webgpu/wasm_scene.html`.
+   A separate 3D proof entry point is `examples/webgpu/wasm_scene_3d.html`.
 3. Manual local browser proof confirms the point scene renders and panzoom interaction works through
    the WASM scene bridge.
 4. Manual local browser proof at `http://localhost:8765/examples/webgpu/wasm_scene.html` confirms
@@ -279,9 +280,9 @@ Current evidence as of 2026-05-30:
    basic mesh rendering, pan/zoom, and resize with no visible browser/WebGPU runtime errors.
 
 The supported browser-scene subset now covers point, primitive triangle-list, RGBA8 image, basic
-mesh, and panzoom. The next release-proofing gaps are captured mesh browser evidence artifacts,
-further diagnostic ABI behavior, incremental uniform updates, direct payload transport, browser app
-examples, and then broader visual/technique parity.
+mesh, panzoom, and a first static 3D mesh + arcball scene. The next release-proofing gaps are
+captured 3D browser evidence artifacts, further diagnostic ABI behavior, incremental uniform
+updates, direct payload transport, browser app examples, and then broader visual/technique parity.
 
 ### Experimental WASM Bridge ABI
 

@@ -7,6 +7,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs");
 const outputPath = resolve(root, "build-wasm-scene/wasm/wasm_scene_point_primitive_image_mesh_panzoom.json");
+const output3dPath = resolve(root, "build-wasm-scene/wasm/wasm_scene_mesh3d_arcball.json");
 
 const DVZ_POINTER_EVENT_PRESS = 1;
 const DVZ_POINTER_EVENT_RELEASE = 0;
@@ -74,6 +75,33 @@ function allocArray(Module, typedArray) {
   requireOk(ptr !== 0, "malloc failed");
   Module.HEAPU8.set(new Uint8Array(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength), ptr);
   return ptr;
+}
+
+function makeCubeMesh(size) {
+  const s = size / 2;
+  const faces = [
+    { n: [0, 0, 1], c: [90, 170, 255, 255], v: [[-s, -s, s], [s, -s, s], [-s, s, s], [s, -s, s], [s, s, s], [-s, s, s]] },
+    { n: [0, 0, -1], c: [255, 135, 210, 255], v: [[s, -s, -s], [-s, -s, -s], [s, s, -s], [-s, -s, -s], [-s, s, -s], [s, s, -s]] },
+    { n: [1, 0, 0], c: [85, 230, 190, 255], v: [[s, -s, s], [s, -s, -s], [s, s, s], [s, -s, -s], [s, s, -s], [s, s, s]] },
+    { n: [-1, 0, 0], c: [255, 190, 90, 255], v: [[-s, -s, -s], [-s, -s, s], [-s, s, -s], [-s, -s, s], [-s, s, s], [-s, s, -s]] },
+    { n: [0, 1, 0], c: [170, 125, 255, 255], v: [[-s, s, s], [s, s, s], [-s, s, -s], [s, s, s], [s, s, -s], [-s, s, -s]] },
+    { n: [0, -1, 0], c: [245, 115, 95, 255], v: [[-s, -s, -s], [s, -s, -s], [-s, -s, s], [s, -s, -s], [s, -s, s], [-s, -s, s]] },
+  ];
+  const positions = [];
+  const colors = [];
+  const normals = [];
+  for (const face of faces) {
+    for (const vertex of face.v) {
+      positions.push(...vertex);
+      colors.push(...face.c);
+      normals.push(...face.n);
+    }
+  }
+  return {
+    positions: new Float32Array(positions),
+    colors: new Uint8Array(colors),
+    normals: new Float32Array(normals),
+  };
 }
 
 const { default: createModule } = await import(pathToFileURL(modulePath).href);
@@ -286,4 +314,67 @@ try {
   Module._free(meshColorsPtr);
   Module._free(meshNormalsPtr);
   Module._dvz_wasm_scene_destroy(handle);
+}
+
+const cube = makeCubeMesh(1.25);
+const handle3d = Module._dvz_wasm_scene_create_3d(smokeSize, smokeSize);
+requireOk(handle3d !== 0, "dvz_wasm_scene_create_3d failed");
+requireOk(
+  Module._dvz_wasm_scene_set_canvas_format(handle3d, DVZ_FORMAT_R8G8B8A8_UNORM) === 0,
+  "dvz_wasm_scene_set_canvas_format failed for 3D scene",
+);
+const cubePositionsPtr = allocArray(Module, cube.positions);
+const cubeColorsPtr = allocArray(Module, cube.colors);
+const cubeNormalsPtr = allocArray(Module, cube.normals);
+try {
+  let status = Module._dvz_wasm_scene_set_mesh(
+    handle3d,
+    cubePositionsPtr,
+    cubeColorsPtr,
+    cubeNormalsPtr,
+    cube.positions.length / 3,
+  );
+  requireOk(status === 0, `3D dvz_wasm_scene_set_mesh failed with ${status}`);
+
+  const stream3d = emitStream(Module, handle3d, "3D initial");
+  Module._dvz_wasm_scene_pointer(
+    handle3d,
+    DVZ_POINTER_EVENT_PRESS,
+    smokeSize / 2,
+    smokeSize / 2,
+    DVZ_POINTER_BUTTON_LEFT,
+    0,
+    1,
+    100.0,
+  );
+  Module._dvz_wasm_scene_pointer(
+    handle3d,
+    DVZ_POINTER_EVENT_MOVE,
+    smokeSize / 2 + 8,
+    smokeSize / 2 + 6,
+    DVZ_POINTER_BUTTON_LEFT,
+    0,
+    1,
+    116.0,
+  );
+  Module._dvz_wasm_scene_pointer(
+    handle3d,
+    DVZ_POINTER_EVENT_RELEASE,
+    smokeSize / 2 + 8,
+    smokeSize / 2 + 6,
+    DVZ_POINTER_BUTTON_LEFT,
+    0,
+    1,
+    132.0,
+  );
+  const interactive3d = emitStream(Module, handle3d, "3D interactive");
+
+  await writeFile(output3dPath, `${JSON.stringify(stream3d, null, 2)}\n`, "utf8");
+  console.log(`Wrote ${output3dPath}`);
+  console.log(`commands3d=initial:${stream3d.commands.length} interactive:${interactive3d.commands.length}`);
+} finally {
+  Module._free(cubePositionsPtr);
+  Module._free(cubeColorsPtr);
+  Module._free(cubeNormalsPtr);
+  Module._dvz_wasm_scene_destroy(handle3d);
 }

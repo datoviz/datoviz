@@ -57,6 +57,7 @@ struct DvzWasmScene
     uint32_t width;
     uint32_t height;
     uint32_t color_format;
+    const char* stream_name;
 };
 
 
@@ -154,6 +155,7 @@ uint32_t dvz_wasm_scene_create(uint32_t width, uint32_t height)
     ctx->width = width;
     ctx->height = height;
     ctx->color_format = DVZ_FORMAT_R8G8B8A8_UNORM;
+    ctx->stream_name = "wasm_scene_point_primitive_image_mesh_panzoom";
 
     ctx->scene = dvz_scene();
     if (ctx->scene == NULL)
@@ -181,6 +183,72 @@ uint32_t dvz_wasm_scene_create(uint32_t width, uint32_t height)
 
     if (dvz_panel_add_visual(ctx->panel, ctx->visual, NULL) != 0)
         goto fail;
+    _emit_resize(ctx, width, height, 1.0f);
+    return _handle(ctx);
+
+fail:
+    _destroy_ctx(ctx);
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_scene_create_3d(uint32_t width, uint32_t height)
+{
+    if (width == 0)
+        width = 640;
+    if (height == 0)
+        height = 640;
+
+    DvzWasmScene* ctx = (DvzWasmScene*)calloc(1, sizeof(DvzWasmScene));
+    if (ctx == NULL)
+        return 0;
+    dvz_diagnostic_report_init(&ctx->report);
+    ctx->width = width;
+    ctx->height = height;
+    ctx->color_format = DVZ_FORMAT_R8G8B8A8_UNORM;
+    ctx->stream_name = "wasm_scene_mesh3d_arcball";
+
+    ctx->scene = dvz_scene();
+    if (ctx->scene == NULL)
+        goto fail;
+
+    ctx->figure = dvz_figure(ctx->scene, width, height, 0);
+    ctx->panel = dvz_panel_full(ctx->figure);
+    ctx->controller = dvz_arcball(ctx->scene, NULL);
+    ctx->router = dvz_input_router();
+    if (
+        ctx->figure == NULL || ctx->panel == NULL || ctx->controller == NULL ||
+        ctx->router == NULL)
+    {
+        goto fail;
+    }
+
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[2] = 3.0f;
+    camera_desc.target[0] = 0.0f;
+    camera_desc.target[1] = 0.0f;
+    camera_desc.target[2] = 0.0f;
+    camera_desc.fov_y = 0.78539816339f;
+    camera_desc.near = 0.1f;
+    camera_desc.far = 100.0f;
+    if (dvz_panel_set_camera(ctx->panel, &camera_desc) == NULL)
+        goto fail;
+
+    if (dvz_panel_bind_controller(ctx->panel, ctx->controller, DVZ_DIM_MASK_XYZ) != 0)
+        goto fail;
+    DvzArcball* arcball = dvz_controller_arcball(ctx->controller);
+    if (arcball == NULL)
+        goto fail;
+    dvz_arcball_initial(arcball, (vec3){0.45f, -0.65f, 0.20f});
+
+    if (dvz_panel_connect_input(ctx->panel, ctx->router) != 0)
+        goto fail;
+    ctx->gestures = dvz_pointer_gesture_handler(ctx->router);
+    if (ctx->gestures == NULL)
+        goto fail;
+
     _emit_resize(ctx, width, height, 1.0f);
     return _handle(ctx);
 
@@ -372,7 +440,7 @@ int dvz_wasm_scene_emit(uint32_t handle)
     ctx->stream = dvz_figure_emit_ex(ctx->figure, &caps, &ctx->report, &emit_cfg);
     if (ctx->stream == NULL || dvz_diagnostic_report_count(&ctx->report) > 0)
         return -1;
-    ctx->json = dvz_drp2_stream_json(ctx->stream, "wasm_scene_point_primitive_image_mesh_panzoom");
+    ctx->json = dvz_drp2_stream_json(ctx->stream, ctx->stream_name);
     return ctx->json != NULL ? 0 : -1;
 }
 
