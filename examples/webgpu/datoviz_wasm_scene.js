@@ -8,7 +8,9 @@ import {
 const DVZ_FORMAT_R8G8B8A8_UNORM = 37;
 const DVZ_FORMAT_B8G8R8A8_UNORM = 44;
 const DVZ_DIM_MASK_XY = 3;
+const DVZ_DIM_MASK_XYZ = 7;
 const DVZ_CONTROLLER_TYPE_PANZOOM = 1;
+const DVZ_CONTROLLER_TYPE_ARCBALL = 2;
 const DVZ_POINTER_EVENT_RELEASE = 0;
 const DVZ_POINTER_EVENT_PRESS = 1;
 const DVZ_POINTER_EVENT_MOVE = 2;
@@ -134,9 +136,44 @@ export class DatovizWasmScene {
     requireOk(controller !== 0, "dvz_wasm_api_controller(panzoom) failed");
     requireOk(
       this.Module._dvz_wasm_api_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) === 0,
-      "dvz_wasm_api_panel_bind_controller failed",
+      "dvz_wasm_api_panel_bind_controller(panzoom) failed",
     );
     return controller;
+  }
+
+  attachArcball(panel, options = {}) {
+    const controller = this.Module._dvz_wasm_api_controller(this.scene, DVZ_CONTROLLER_TYPE_ARCBALL);
+    requireOk(controller !== 0, "dvz_wasm_api_controller(arcball) failed");
+    requireOk(
+      this.Module._dvz_wasm_api_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) === 0,
+      "dvz_wasm_api_panel_bind_controller(arcball) failed",
+    );
+    const initial = options.initial ?? [0.45, -0.65, 0.2];
+    requireOk(
+      this.Module._dvz_wasm_api_arcball_initial(controller, initial[0], initial[1], initial[2]) === 0,
+      "dvz_wasm_api_arcball_initial failed",
+    );
+    return controller;
+  }
+
+  setCamera(panel, options = {}) {
+    const eye = options.eye ?? [0, 0, 3];
+    const target = options.target ?? [0, 0, 0];
+    requireOk(
+      this.Module._dvz_wasm_api_panel_set_camera(
+        panel,
+        eye[0],
+        eye[1],
+        eye[2],
+        target[0],
+        target[1],
+        target[2],
+        options.fovY ?? Math.PI / 4,
+        options.near ?? 0.1,
+        options.far ?? 100,
+      ) === 0,
+      "dvz_wasm_api_panel_set_camera failed",
+    );
   }
 
   resize() {
@@ -182,7 +219,7 @@ export class DatovizWasmScene {
     );
   }
 
-  attachPanzoomInput(onChange) {
+  attachControllerInput(onChange) {
     const route = (event, type) => {
       event.preventDefault();
       this.pointer(type, event);
@@ -206,6 +243,10 @@ export class DatovizWasmScene {
       onChange();
     }, { passive: false });
     this.canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+  }
+
+  attachPanzoomInput(onChange) {
+    this.attachControllerInput(onChange);
   }
 
   _canvasPoint(event) {
