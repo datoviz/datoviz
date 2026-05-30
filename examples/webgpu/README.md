@@ -33,6 +33,12 @@ just wasm-scene-smoke
 http://localhost:8765/examples/webgpu/wasm_scene.html
 ```
 
+The 3D WASM proof uses the same bridge with a scene-owned camera and arcball controller:
+
+```text
+http://localhost:8765/examples/webgpu/wasm_scene_3d.html
+```
+
 Refresh the committed fixture manifest after adding or removing positive or negative fixtures:
 
 ```bash

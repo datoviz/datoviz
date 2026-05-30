@@ -278,11 +278,14 @@ Current evidence as of 2026-05-30:
    errors.
 6. Reloading the same live demo after the mesh slice confirms point + primitive + RGBA8 image +
    basic mesh rendering, pan/zoom, and resize with no visible browser/WebGPU runtime errors.
+7. Loading `http://localhost:8765/examples/webgpu/wasm_scene_3d.html` confirms the 3D cube renders,
+   arcball drag rotates it, wheel zoom works, resize works, and no visible browser/WebGPU runtime
+   errors occur.
 
 The supported browser-scene subset now covers point, primitive triangle-list, RGBA8 image, basic
-mesh, panzoom, and a first static 3D mesh + arcball scene. The next release-proofing gaps are
-captured 3D browser evidence artifacts, further diagnostic ABI behavior, incremental uniform
-updates, direct payload transport, browser app examples, and then broader visual/technique parity.
+mesh, panzoom, and a first 3D mesh + arcball scene. The next release-proofing gaps are further
+diagnostic ABI behavior, incremental uniform updates, direct payload transport, browser app examples,
+and then broader visual/technique parity.
 
 ### Experimental WASM Bridge ABI
 

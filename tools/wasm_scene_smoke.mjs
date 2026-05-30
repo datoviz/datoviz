@@ -36,6 +36,10 @@ function requirePayloadCleared(Module, handle, label) {
   requireOk(size === 0, `${label} did not clear borrowed payload size`);
 }
 
+function expectStatus(status, expected, label) {
+  requireOk(status === expected, `${label} returned ${status}, expected ${expected}`);
+}
+
 function diagnostics(Module, handle) {
   const count = Module._dvz_wasm_scene_diagnostic_count(handle);
   const messages = [];
@@ -193,6 +197,7 @@ const meshColorsPtr = allocArray(Module, meshColors);
 const meshNormalsPtr = allocArray(Module, meshNormals);
 
 try {
+  expectStatus(Module._dvz_wasm_scene_set_canvas_format(0, DVZ_FORMAT_R8G8B8A8_UNORM), -1, "bad handle canvas format");
   let status = Module._dvz_wasm_scene_set_points(
     handle,
     positionsPtr,
@@ -200,16 +205,36 @@ try {
     sizesPtr,
     sizes.length,
   );
-  requireOk(status === 0, `dvz_wasm_scene_set_points failed with ${status}`);
+  expectStatus(status, 0, "dvz_wasm_scene_set_points");
+  expectStatus(
+    Module._dvz_wasm_scene_set_primitive(handle, primitivePositionsPtr, primitiveColorsPtr, 2),
+    -1,
+    "invalid primitive count",
+  );
+  requirePayloadCleared(Module, handle, "invalid primitive count");
   status = Module._dvz_wasm_scene_set_primitive(
     handle,
     primitivePositionsPtr,
     primitiveColorsPtr,
     primitivePositions.length / 3,
   );
-  requireOk(status === 0, `dvz_wasm_scene_set_primitive failed with ${status}`);
+  expectStatus(status, 0, "dvz_wasm_scene_set_primitive");
+  expectStatus(Module._dvz_wasm_scene_set_image(handle, imagePixelsPtr, 0, imageHeight), -1, "zero-width image");
+  requirePayloadCleared(Module, handle, "zero-width image");
   status = Module._dvz_wasm_scene_set_image(handle, imagePixelsPtr, imageWidth, imageHeight);
-  requireOk(status === 0, `dvz_wasm_scene_set_image failed with ${status}`);
+  expectStatus(status, 0, "dvz_wasm_scene_set_image");
+  expectStatus(
+    Module._dvz_wasm_scene_set_mesh(handle, meshPositionsPtr, meshColorsPtr, 0, meshPositions.length / 3),
+    -1,
+    "mesh missing normals",
+  );
+  requirePayloadCleared(Module, handle, "mesh missing normals");
+  expectStatus(
+    Module._dvz_wasm_scene_set_mesh(handle, meshPositionsPtr, meshColorsPtr, meshNormalsPtr, 2),
+    -1,
+    "invalid mesh count",
+  );
+  requirePayloadCleared(Module, handle, "invalid mesh count");
   status = Module._dvz_wasm_scene_set_mesh(
     handle,
     meshPositionsPtr,
@@ -217,7 +242,7 @@ try {
     meshNormalsPtr,
     meshPositions.length / 3,
   );
-  requireOk(status === 0, `dvz_wasm_scene_set_mesh failed with ${status}`);
+  expectStatus(status, 0, "dvz_wasm_scene_set_mesh");
 
   const initialStream = emitStream(Module, handle, "initial");
 
