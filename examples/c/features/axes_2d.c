@@ -12,6 +12,7 @@
  * Build:  just example-c features/axes_2d
  * Run:    ./build/examples/c/features/axes_2d
  * Smoke:  ./build/examples/c/features/axes_2d 1
+ * Options: --debug, [frame-count]
  */
 
 
@@ -30,6 +31,7 @@
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "example_debug.h"
 #include "example_style.h"
 
 
@@ -135,6 +137,7 @@ int main(int argc, char** argv)
     int ret = 1;
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
+    ExampleDebug debug = {0};
     vec3 data_positions[PATH_COUNT] = {{0}};
     vec3 visual_positions[PATH_COUNT] = {{0}};
     DvzColor colors[PATH_COUNT] = {{0}};
@@ -209,10 +212,18 @@ int main(int argc, char** argv)
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
-    dvz_app_run(app, example_frame_count(argc, argv));
+    debug = example_debug(win, argc > 0 ? argv[0] : NULL, "axes_2d");
+    example_debug_panzoom(&debug, "axes_2d", panzoom);
+    if (example_debug_requested(argc, argv))
+    {
+        EXAMPLE_CHECK(example_debug_install(&debug, argc, argv), "example_debug_install() failed");
+    }
+
+    dvz_app_run(app, example_frame_count_any(argc, argv));
     ret = 0;
 
 cleanup:
+    example_debug_uninstall(&debug);
     if (app != NULL)
         dvz_app_destroy(app);
     if (scene != NULL)
