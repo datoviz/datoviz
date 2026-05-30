@@ -271,6 +271,9 @@ Current evidence as of 2026-05-30:
    the WASM scene bridge.
 4. Manual local browser proof at `http://localhost:8765/examples/webgpu/wasm_scene.html` confirms
    point + primitive rendering, pan/zoom, and resize with no visible browser/WebGPU runtime errors.
+5. Reloading the same live demo after the image slice confirms point + primitive + RGBA8 image
+   rendering, pan/zoom, resize, and cache-busted WASM load with no visible browser/WebGPU runtime
+   errors.
 
 The supported browser-scene subset now covers point, primitive triangle-list, RGBA8 image, and
 panzoom. The next release-proofing gaps are captured image browser evidence artifacts, further
