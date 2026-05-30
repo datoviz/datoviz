@@ -1,5 +1,4 @@
 #include "common.wgsl"
-#include "scene_material.wgsl"
 
 const DVZ_ITEM_STATE_HOVERED: u32 = 1u;
 const DVZ_ITEM_STATE_SELECTED: u32 = 2u;
@@ -16,33 +15,44 @@ struct ItemStateStyle {
     tint: vec3f,
 }
 
+struct ItemStateStyleParams {
+    selected: vec4f,
+    selected_tint: vec4f,
+    unselected: vec4f,
+    unselected_tint: vec4f,
+    hovered: vec4f,
+    hovered_tint: vec4f,
+}
+
+@group(1) @binding(1) var<uniform> item_state_style: ItemStateStyleParams;
+
 fn selected_item_style() -> ItemStateStyle {
     return ItemStateStyle(
-        u32(material.standard_params.x + 0.5),
-        material.standard_params.y,
-        material.standard_params.z,
-        material.standard_params.w,
-        material.emissive_rim.rgb,
+        u32(item_state_style.selected.x + 0.5),
+        item_state_style.selected.y,
+        item_state_style.selected.z,
+        item_state_style.selected.w,
+        item_state_style.selected_tint.rgb,
     );
 }
 
 fn unselected_item_style() -> ItemStateStyle {
     return ItemStateStyle(
-        u32(material.depth_cue.x + 0.5),
-        material.depth_cue.y,
-        material.depth_cue.z,
-        material.depth_cue.w,
-        material.depth_cue_color.rgb,
+        u32(item_state_style.unselected.x + 0.5),
+        item_state_style.unselected.y,
+        item_state_style.unselected.z,
+        item_state_style.unselected.w,
+        item_state_style.unselected_tint.rgb,
     );
 }
 
 fn hovered_item_style() -> ItemStateStyle {
     return ItemStateStyle(
-        u32(material.depth_cue_extra.x + 0.5),
-        material.depth_cue_extra.y,
-        material.depth_cue_extra.z,
-        material.depth_cue_extra.w,
-        material.model.rgb,
+        u32(item_state_style.hovered.x + 0.5),
+        item_state_style.hovered.y,
+        item_state_style.hovered.z,
+        item_state_style.hovered.w,
+        item_state_style.hovered_tint.rgb,
     );
 }
 
@@ -108,6 +118,8 @@ struct VertexOut {
     @builtin(position) position: vec4f,
     @location(0) color: vec4f,
     @location(1) corner: vec2f,
+    @location(2) cue: vec3f,
+    @location(3) size: f32,
 }
 
 fn quad_corner(vertex_id: u32) -> vec2f {
@@ -125,7 +137,9 @@ fn quad_corner(vertex_id: u32) -> vec2f {
 @vertex
 fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {
     let corner = quad_corner(vertex_id);
-    let center = mvp.proj * mvp.view * mvp.model * vec4f(input.position, 1.0);
+    let world = mvp.model * vec4f(input.position, 1.0);
+    let view = mvp.view * world;
+    let center = mvp.proj * view;
     let size = apply_item_state_scale(input.size, input.item_state);
     let radius = vec2f(size / viewport.rect.z, size / viewport.rect.w);
 
@@ -133,5 +147,7 @@ fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {
     output.position = vec4f(center.xy + corner * radius * center.w, center.zw);
     output.color = apply_item_state_color(input.color, input.item_state);
     output.corner = corner;
+    output.cue = vec3f(center.z / max(abs(center.w), 1e-6), length(view.xyz), length(world.xyz));
+    output.size = size;
     return output;
 }

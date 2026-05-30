@@ -434,66 +434,6 @@ static void _item_state_store_style_params(
 
 
 /**
- * Store one item-state style in a legacy shared material payload slot.
- *
- * @param params material payload
- * @param style item-state style
- * @param slot item-style slot: 0 selected, 1 unselected, 2 hovered
- */
-static void _item_state_store_style(
-    DvzSceneMaterialParams* params, const DvzItemStateVisualStyle* style, uint32_t slot)
-{
-    ANN(params);
-    ANN(style);
-    float flags = (float)style->flags;
-    float alpha = isfinite(style->alpha) ? style->alpha : 1.0f;
-    float tint_mix = isfinite(style->tint_mix) ? style->tint_mix : 0.0f;
-    float scale = isfinite(style->scale) && style->scale > 0.0f ? style->scale : 1.0f;
-    float tint[4] = {
-        (float)style->tint.r / 255.0f,
-        (float)style->tint.g / 255.0f,
-        (float)style->tint.b / 255.0f,
-        (float)style->tint.a / 255.0f,
-    };
-
-    if (slot == 0)
-    {
-        params->standard_params[0] = flags;
-        params->standard_params[1] = alpha;
-        params->standard_params[2] = tint_mix;
-        params->standard_params[3] = scale;
-        params->emissive_rim[0] = tint[0];
-        params->emissive_rim[1] = tint[1];
-        params->emissive_rim[2] = tint[2];
-        params->emissive_rim[3] = tint[3];
-    }
-    else if (slot == 1)
-    {
-        params->depth_cue[0] = flags;
-        params->depth_cue[1] = alpha;
-        params->depth_cue[2] = tint_mix;
-        params->depth_cue[3] = scale;
-        params->depth_cue_color[0] = tint[0];
-        params->depth_cue_color[1] = tint[1];
-        params->depth_cue_color[2] = tint[2];
-        params->depth_cue_color[3] = tint[3];
-    }
-    else
-    {
-        params->depth_cue_extra[0] = flags;
-        params->depth_cue_extra[1] = alpha;
-        params->depth_cue_extra[2] = tint_mix;
-        params->depth_cue_extra[3] = scale;
-        params->model[0] = tint[0];
-        params->model[1] = tint[1];
-        params->model[2] = tint[2];
-        params->model[3] = tint[3];
-    }
-}
-
-
-
-/**
  * Return the first active selection style in the scene.
  *
  * @param scene the scene
@@ -567,10 +507,6 @@ static void _item_state_sync_visual_style(DvzScene* scene, DvzVisual* visual)
     _item_state_store_style_params(item_params->hovered, item_params->hovered_tint, &hover_style);
     _visual_family_state(visual)->item_state_style_params_dirty = true;
 
-    DvzSceneMaterialParams* params = &_visual_family_state(visual)->material_params;
-    _item_state_store_style(params, &selection_style.selected, 0);
-    _item_state_store_style(params, &selection_style.unselected, 1);
-    _item_state_store_style(params, &hover_style, 2);
     _visual_family_state(visual)->material_params_dirty = true;
 }
 

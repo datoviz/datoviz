@@ -63,9 +63,9 @@
  */
 void _pipeline_bind_group_layouts(
     const DvzSceneVisualPipelineDesc* pipeline, uint64_t common_bgl_id, uint64_t image_bgl_id,
-    uint64_t labels_bgl_id, uint64_t glyph_bgl_id, uint64_t volume_bgl_id, uint64_t material_bgl_id,
-    uint64_t scene_occlusion_bgl_id, bool scene_occlusion_uses_set2, uint64_t* out_layouts,
-    uint32_t* out_count)
+    uint64_t labels_bgl_id, uint64_t glyph_bgl_id, uint64_t volume_bgl_id,
+    uint64_t material_bgl_id, uint64_t item_state_style_bgl_id, uint64_t scene_occlusion_bgl_id,
+    bool scene_occlusion_uses_set2, uint64_t* out_layouts, uint32_t* out_count)
 {
     ANN(pipeline);
     ANN(out_layouts);
@@ -85,6 +85,8 @@ void _pipeline_bind_group_layouts(
         set1_layout = volume_bgl_id;
     if (pipeline->needs_material_layout && material_bgl_id != 0)
         set1_layout = material_bgl_id;
+    if (pipeline->needs_item_state_style_layout && item_state_style_bgl_id != 0)
+        set1_layout = item_state_style_bgl_id;
 
     bool scene_occlusion_layout_set2 = pipeline->needs_scene_occlusion_layout &&
                                        scene_occlusion_bgl_id != 0 && scene_occlusion_uses_set2;
@@ -130,6 +132,50 @@ bool _resolve_material_bind_group_layout(
         return false;
     if (is_new && !dvz_drp2_stream_create_uniform_bind_group_layout(stream, id))
         return false;
+    *out_id = id;
+    return true;
+}
+
+
+
+/**
+ * Resolve the item-state style bind group layout.
+ *
+ * @param emitter frame-plan emitter carrying persistent object ids
+ * @param stream destination DRP2 command stream
+ * @param out_id resolved bind group layout id
+ * @return whether the layout exists or was appended
+ */
+bool _resolve_item_state_style_bind_group_layout(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t* out_id)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(out_id);
+
+    bool is_new = false;
+    uint64_t id = _obj_id(emitter, "_bgl_item_state_style", &is_new);
+    if (id == 0)
+        return false;
+    if (is_new)
+    {
+        DvzDrp2BindGroupLayoutEntry entries[2] = {
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_MATERIAL_PARAMS,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .visibility = DVZ_DRP2_SHADER_STAGE_VERTEX | DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+                .access = DVZ_DRP2_BINDING_ACCESS_READ,
+            },
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_ITEM_STATE_STYLE,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .visibility = DVZ_DRP2_SHADER_STAGE_VERTEX | DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+                .access = DVZ_DRP2_BINDING_ACCESS_READ,
+            },
+        };
+        if (!dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 2, entries))
+            return false;
+    }
     *out_id = id;
     return true;
 }

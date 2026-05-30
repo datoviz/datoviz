@@ -99,6 +99,8 @@ void _scene_visual_bind_desc_apply_pass_policy(
         bind->glyph_texture_id = 0;
         bind->uses_material_set1 = false;
         bind->material_buffer_id = 0;
+        bind->uses_item_state_style_set1 = false;
+        bind->item_state_style_buffer_id = 0;
         bind->uses_scene_occlusion_set2 = false;
         bind->scene_occlusion_depth_texture_id = 0;
     }

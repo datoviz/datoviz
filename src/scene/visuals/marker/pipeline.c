@@ -87,6 +87,7 @@ bool _scene_marker_visual_pipeline_desc(
 
     out->needs_common_layout = caps.uses_common_set;
     out->needs_material_layout = caps.needs_material_layout && !picking;
+    out->needs_item_state_style_layout = visual->has_item_state && !picking;
     _scene_visual_pipeline_apply_standard_depth_state(
         &caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op, out);
     return true;

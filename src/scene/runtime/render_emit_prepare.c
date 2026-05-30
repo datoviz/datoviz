@@ -110,6 +110,7 @@ bool _emitter_prepare_render_multi(
     uint64_t glyph_bgl_id = 0, glyph_sampler_id = 0;
     uint64_t volume_bgl_id = 0, volume_sampler_linear_id = 0, volume_sampler_nearest_id = 0;
     uint64_t scene_occlusion_bgl_id = 0, scene_occlusion_sampler_id = 0;
+    uint64_t item_state_style_bgl_id = 0;
 
     uint32_t draw_count = 0;
 
@@ -260,13 +261,25 @@ bool _emitter_prepare_render_multi(
         if (ok && is_new)
         {
             uint64_t material_bgl_id = 0;
-            if (pipeline.needs_material_layout)
+            uint64_t visual_material_bgl_id = 0;
+            if (pipeline.needs_item_state_style_layout)
+            {
+                if (!_resolve_item_state_style_bind_group_layout(
+                        emitter, stream, &item_state_style_bgl_id))
+                {
+                    ok = false;
+                    break;
+                }
+                visual_material_bgl_id = item_state_style_bgl_id;
+            }
+            else if (pipeline.needs_material_layout)
             {
                 if (!_resolve_material_bind_group_layout(emitter, stream, &material_bgl_id))
                 {
                     ok = false;
                     break;
                 }
+                visual_material_bgl_id = material_bgl_id;
             }
             if (pipeline.needs_image_layout && pipeline.uses_textured_mesh_layout)
             {
@@ -365,8 +378,10 @@ bool _emitter_prepare_render_multi(
 
                     layouts[0] = pipeline.needs_common_layout && common_bgl_id != 0 ? common_bgl_id
                                                                                     : dummy_bgl_id;
-                    if (pipeline.needs_material_layout && material_bgl_id != 0)
-                        layouts[1] = material_bgl_id;
+                    if (pipeline.needs_item_state_style_layout && item_state_style_bgl_id != 0)
+                        layouts[1] = item_state_style_bgl_id;
+                    else if (pipeline.needs_material_layout && visual_material_bgl_id != 0)
+                        layouts[1] = visual_material_bgl_id;
                     else if (pipeline.needs_image_layout && img_bgl_id != 0)
                         layouts[1] = img_bgl_id;
                     else if (pipeline.needs_labels_layout && labels_bgl_id != 0)
@@ -394,8 +409,8 @@ bool _emitter_prepare_render_multi(
                     _pipeline_bind_group_layouts(
                         &pipeline, common_bgl_id,
                         pipeline.uses_textured_mesh_layout ? textured_mesh_bgl_id : img_bgl_id,
-                        labels_bgl_id, glyph_bgl_id, volume_bgl_id, material_bgl_id,
-                        scene_occlusion_bgl_id,
+                        labels_bgl_id, glyph_bgl_id, volume_bgl_id, visual_material_bgl_id,
+                        item_state_style_bgl_id, scene_occlusion_bgl_id,
                         scene_occlusion_uses_set2, layouts, &layout_count);
                 }
                 if (layout_count > 0)
@@ -503,7 +518,27 @@ bool _emitter_prepare_render_multi(
             else
                 vis_bg_set0 = apply_bg_id;
         }
-        if (bind.uses_material_set1)
+        if (bind.uses_item_state_style_set1)
+        {
+            if (bind.material_buffer_id == 0 || bind.item_state_style_buffer_id == 0)
+            {
+                _diagnostic(report, "item-state render missing style or material params buffer");
+                ok = false;
+                break;
+            }
+            if (!_resolve_item_state_style_bind_group_layout(
+                    emitter, stream, &item_state_style_bgl_id))
+            {
+                ok = false;
+                break;
+            }
+            uint64_t item_state_style_bg_id = 0;
+            ok = ok && _resolve_item_state_style_bind_group(
+                           emitter, stream, item_state_style_bgl_id, bind.material_buffer_id,
+                           bind.item_state_style_buffer_id, &item_state_style_bg_id);
+            vis_bg_set1 = item_state_style_bg_id;
+        }
+        else if (bind.uses_material_set1)
         {
             uint64_t material_bgl_id = 0;
             if (!_resolve_material_bind_group_layout(emitter, stream, &material_bgl_id))

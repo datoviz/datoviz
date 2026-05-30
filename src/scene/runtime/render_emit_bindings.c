@@ -141,3 +141,64 @@ bool _resolve_textured_mesh_bind_group(
     *out_id = id;
     return true;
 }
+
+
+
+/**
+ * Resolve an item-state style bind group containing material params and item-state style params.
+ *
+ * @param emitter frame-plan emitter carrying persistent object ids
+ * @param stream destination DRP2 command stream
+ * @param bind_group_layout_id bind group layout id
+ * @param material_buffer_id material uniform buffer id
+ * @param item_state_style_buffer_id item-state style uniform buffer id
+ * @param out_id resolved bind group id
+ * @return whether the bind group exists or was appended
+ */
+bool _resolve_item_state_style_bind_group(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id,
+    uint64_t material_buffer_id, uint64_t item_state_style_buffer_id, uint64_t* out_id)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(out_id);
+    if (bind_group_layout_id == 0 || material_buffer_id == 0 || item_state_style_buffer_id == 0)
+        return false;
+
+    char bg_key[96];
+    dvz_snprintf(
+        bg_key, sizeof(bg_key), "_bg_item_state_style_%" PRIu64 "_%" PRIu64,
+        material_buffer_id, item_state_style_buffer_id);
+    bool is_new = false;
+    uint64_t id = _obj_id(emitter, bg_key, &is_new);
+    if (id == 0)
+        return false;
+    if (is_new)
+    {
+        DvzDrp2BindGroupEntry entries[2] = {
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_MATERIAL_PARAMS,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+                .resource_id = material_buffer_id,
+                .offset = 0,
+                .size = sizeof(DvzSceneMaterialParams),
+            },
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_ITEM_STATE_STYLE,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+                .resource_id = item_state_style_buffer_id,
+                .offset = 0,
+                .size = sizeof(DvzSceneItemStateStyleParams),
+            },
+        };
+        if (!dvz_drp2_stream_create_bind_group_entries(
+                stream, id, bind_group_layout_id, 2, entries))
+        {
+            return false;
+        }
+    }
+    *out_id = id;
+    return true;
+}

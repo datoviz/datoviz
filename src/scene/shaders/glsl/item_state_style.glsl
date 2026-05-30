@@ -1,8 +1,6 @@
 #ifndef DVZ_SELECTION_STYLE_GLSL
 #define DVZ_SELECTION_STYLE_GLSL
 
-#include "scene_material.glsl"
-
 const uint DVZ_ITEM_STATE_HOVERED = 1u;
 const uint DVZ_ITEM_STATE_SELECTED = 2u;
 
@@ -18,25 +16,35 @@ struct ItemStateStyle {
     vec3 tint;
 };
 
+layout(set = 1, binding = 1) uniform ItemStateStyleParams {
+    vec4 selected;
+    vec4 selectedTint;
+    vec4 unselected;
+    vec4 unselectedTint;
+    vec4 hovered;
+    vec4 hoveredTint;
+} itemStateStyle;
+
 ItemStateStyle selectedItemStyle()
 {
     return ItemStateStyle(
-        uint(material.standardParams.x + 0.5), material.standardParams.y,
-        material.standardParams.z, material.standardParams.w, material.emissiveRim.rgb);
+        uint(itemStateStyle.selected.x + 0.5), itemStateStyle.selected.y,
+        itemStateStyle.selected.z, itemStateStyle.selected.w, itemStateStyle.selectedTint.rgb);
 }
 
 ItemStateStyle unselectedItemStyle()
 {
     return ItemStateStyle(
-        uint(material.depthCue.x + 0.5), material.depthCue.y, material.depthCue.z,
-        material.depthCue.w, material.depthCueColor.rgb);
+        uint(itemStateStyle.unselected.x + 0.5), itemStateStyle.unselected.y,
+        itemStateStyle.unselected.z, itemStateStyle.unselected.w,
+        itemStateStyle.unselectedTint.rgb);
 }
 
 ItemStateStyle hoveredItemStyle()
 {
     return ItemStateStyle(
-        uint(material.depthCueExtra.x + 0.5), material.depthCueExtra.y,
-        material.depthCueExtra.z, material.depthCueExtra.w, material.model.rgb);
+        uint(itemStateStyle.hovered.x + 0.5), itemStateStyle.hovered.y,
+        itemStateStyle.hovered.z, itemStateStyle.hovered.w, itemStateStyle.hoveredTint.rgb);
 }
 
 vec4 applyOneItemStateColor(vec4 color, ItemStateStyle style)

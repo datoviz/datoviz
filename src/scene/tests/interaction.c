@@ -121,6 +121,38 @@ static bool _interaction_stream_has_pipeline_attr(
 
 
 /**
+ * Count item-state style bind groups with material and style uniform entries.
+ *
+ * @param stream the command stream
+ * @return number of matching bind groups
+ */
+static uint32_t
+_interaction_stream_item_state_style_bind_group_count(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+            continue;
+        if (cmd->u.create_bind_group.entry_count != 2)
+            continue;
+        const DvzDrp2BindGroupEntry* material = &cmd->u.create_bind_group.entries[0];
+        const DvzDrp2BindGroupEntry* style = &cmd->u.create_bind_group.entries[1];
+        if (
+            material->binding == 0 && material->size == sizeof(DvzSceneMaterialParams) &&
+            style->binding == 1 && style->size == sizeof(DvzSceneItemStateStyleParams))
+        {
+            count++;
+        }
+    }
+    return count;
+}
+
+
+
+/**
  * Create a pointer event template.
  *
  * @param type event type
@@ -422,6 +454,22 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     AT(dvz_visual_set_data(point, "color", point_color, 3) == 0);
     AT(dvz_visual_set_data(point, "size", point_size, 3) == 0);
     AT(dvz_visual_set_link_keys(point, channel, point_keys, 3) == 0);
+    DvzPointStyleDesc point_style = dvz_point_style_desc();
+    point_style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
+    point_style.stroke_width = 2.0f;
+    point_style.edge_color = (DvzColor){0, 0, 0, 255};
+    AT(dvz_point_set_style(point, &point_style) == 0);
+    AT(dvz_visual_set_depth_cue(
+           point,
+           &(DvzDepthCueDesc){
+               .mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
+               .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
+               .falloff = DVZ_DEPTH_CUE_FALLOFF_LINEAR,
+               .near_depth = 0.0f,
+               .far_depth = 10.0f,
+               .strength = 0.5f,
+               .background_color = {1.0f, 1.0f, 1.0f, 1.0f},
+           }) == 0);
     AT(dvz_panel_add_visual(panel, point, NULL) == 0);
 
     vec3 marker_pos[3] = {{0.0f, 0.25f, 0.0f}, {0.25f, 0.25f, 0.0f}, {0.5f, 0.25f, 0.0f}};
@@ -494,6 +542,7 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     AT(_interaction_stream_has_pipeline_attr(
         stream, "_pipe_marker_item_stateg_depth", VK_FORMAT_R32_UINT, 5));
     AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneItemStateStyleParams)) == 2);
+    AT(_interaction_stream_item_state_style_bind_group_count(stream) == 2);
     dvz_drp2_stream_destroy(stream);
 
     AT(point->attrs[point_state_idx].dirty_item_count == 0);

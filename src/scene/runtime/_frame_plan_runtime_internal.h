@@ -203,13 +203,18 @@ DvzSceneBuiltinShader _depth_peel_fragment_shader(bool lit, bool back_pass);
 const char* _depth_peel_fragment_spirv_key(DvzSceneBuiltinShader shader);
 void _pipeline_bind_group_layouts(
     const DvzSceneVisualPipelineDesc* pipeline, uint64_t common_bgl_id, uint64_t image_bgl_id,
-    uint64_t labels_bgl_id, uint64_t glyph_bgl_id, uint64_t volume_bgl_id, uint64_t material_bgl_id,
-    uint64_t scene_occlusion_bgl_id, bool scene_occlusion_uses_set2, uint64_t* out_layouts,
-    uint32_t* out_count);
+    uint64_t labels_bgl_id, uint64_t glyph_bgl_id, uint64_t volume_bgl_id,
+    uint64_t material_bgl_id, uint64_t item_state_style_bgl_id, uint64_t scene_occlusion_bgl_id,
+    bool scene_occlusion_uses_set2, uint64_t* out_layouts, uint32_t* out_count);
 bool _resolve_material_bind_group_layout(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t* out_id);
+bool _resolve_item_state_style_bind_group_layout(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t* out_id);
 bool _resolve_textured_mesh_bind_group_layout(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t* out_id);
+bool _resolve_item_state_style_bind_group(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id,
+    uint64_t material_buffer_id, uint64_t item_state_style_buffer_id, uint64_t* out_id);
 bool _resolve_textured_mesh_bind_group(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id,
     uint64_t material_buffer_id, uint64_t texture_id, uint64_t sampler_id, uint64_t* out_id);

@@ -80,6 +80,7 @@ typedef struct DvzSceneVisualDesc
     uint32_t vbuf_count;
     uint64_t index_buffer_id;
     uint64_t material_buffer_id;
+    uint64_t item_state_style_buffer_id;
     uint64_t image_texture_id;
     bool image_pixel_space;
     bool image_nearest_sampler;
@@ -180,6 +181,7 @@ typedef struct DvzSceneVisualPipelineDesc
     bool needs_glyph_layout;
     bool needs_volume_layout;
     bool needs_material_layout;
+    bool needs_item_state_style_layout;
     bool needs_scene_occlusion_layout;
     bool has_depth_state;
     bool depth_write_enabled;
@@ -223,6 +225,8 @@ typedef struct DvzSceneVisualBindDesc
     DvzVolumeState volume_state;
     bool uses_material_set1;
     uint64_t material_buffer_id;
+    bool uses_item_state_style_set1;
+    uint64_t item_state_style_buffer_id;
     bool uses_scene_occlusion_set2;
     uint64_t scene_occlusion_depth_texture_id;
     DvzSceneOcclusionDesc scene_occlusion;

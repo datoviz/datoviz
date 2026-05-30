@@ -59,6 +59,8 @@ bool _scene_point_like_visual_desc_from_metadata(
     uint64_t angle_id = _scene_visual_desc_resource(emitter, meta->angle_id);
     uint64_t shape_id = _scene_visual_desc_resource(emitter, meta->shape_id);
     uint64_t selection_id = _scene_visual_desc_resource(emitter, meta->selection_id);
+    uint64_t item_state_style_id =
+        _scene_visual_desc_resource(emitter, meta->item_state_style_id);
     if (color_id == 0 || size_id == 0)
     {
         if (error != NULL)
@@ -85,8 +87,15 @@ bool _scene_point_like_visual_desc_from_metadata(
     }
     if (selection_id != 0)
     {
+        if (item_state_style_id == 0)
+        {
+            if (error != NULL)
+                *error = "typed point-like metadata missing item-state style resource";
+            return false;
+        }
         out->vbuf_ids[out->vbuf_count++] = selection_id;
         out->has_item_state = true;
+        out->item_state_style_buffer_id = item_state_style_id;
     }
     out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
     out->material_buffer_id = _scene_visual_desc_resource(emitter, meta->material_id);
