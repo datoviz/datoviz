@@ -214,3 +214,15 @@ This slice is complete enough for v0.4 explanatory-object integration when:
 4. focused tests cover emission, update, destroy, and validation paths,
 5. API readiness notes record text as a rendered first slice whose v0.4 target surface is
    `DvzText*`.
+
+
+## Remaining Release-Facing Work
+
+1. Keep `DvzText*` as the public semantic text surface and `dvz_glyph()` low-level or derived.
+2. Wire axes, colorbars, legends, and readouts through semantic text rather than visual-attribute
+   glyph calls.
+3. Finish data/world placement and depth policy.
+4. Harden DPI scaling and panel scissor clipping.
+5. Keep the simple renderer available for diagnostics; keep FreeType optional until fallback
+   diagnostics are solid.
+6. Keep vector text and equation rendering as later optional lanes.

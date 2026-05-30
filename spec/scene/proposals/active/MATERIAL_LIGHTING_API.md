@@ -235,6 +235,17 @@ Recommended split:
 Do not make “opacity < 1” the whole transparency API.
 
 
+## Relationship To Screen-Space Techniques
+
+Material fields may feed optional techniques, but the techniques own their pass structure:
+
+1. bloom should use explicit emissive or high-intensity color policy, not infer glow from every
+   bright albedo by accident;
+2. outlines and selection highlights should override presentation without mutating base material;
+3. depth-of-field, SSAO, EDL, WBOIT, and depth peeling consume graph resources emitted by the
+   material pass instead of adding material-specific render paths.
+
+
 ## Relationship To Textures
 
 Texture bindings should be separate resources referenced by the visual/material path.

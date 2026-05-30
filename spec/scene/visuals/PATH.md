@@ -301,3 +301,12 @@ dedicated streaming API is needed.
 v0.4 adds: `PER_SPAN` color sources, target `PER_SPAN` stroke widths, scalar color mode,
 `stroke_width_space`, and closed subpath support.
 v0.3 `join` had only `square`/`round`; v0.4 renames `square` to `bevel` and adds `miter`.
+
+
+## Follow-Up Pressure
+
+1. Dashed strokes require cumulative path-distance metadata and dash-phase updates that can be
+   tested without rebuilding source geometry.
+2. SVG parsing remains an authoring/import layer over Datoviz visuals, not a separate renderer.
+3. Curve examples should tessellate CPU-side Bezier or spline controls to ordinary `dvz_path()`
+   data rather than adding a separate curve visual.

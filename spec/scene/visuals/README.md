@@ -116,7 +116,7 @@ broader than the current implementation.
 | `labels` | [LABELS.md](LABELS.md) | `dvz_labels()`, field + categorical scale binding | integer 2D `SampledField`, categorical scale, opacity/background/selected/hidden/boundary/fallback style | integer texture fetch with GLSL and WGSL variants | raw 2D label-id probe readback | 3D label slices, optimized sparse/high-id probe pressure tests |
 | `mesh` | [MESH.md](MESH.md) | `dvz_mesh()` | vertex attributes, optional indices/normals, instance attributes, material/depth/alpha | indexed triangle mesh, optional instancing, depth, Phong/material, WBOIT/depth-peel, EDL/SSAO/G-buffer eligibility | item-level mesh picking | face/region picking, geometry-resource API, full PBR |
 | `sphere` | [SPHERE.md](SPHERE.md) | `dvz_sphere()` | position/color/radius, impostor mode, material/depth | analytic impostor sphere, including raycast and SSAO/G-buffer coverage | sphere item picking | texture variants and per-item material/PBR |
-| `splat` | [SPLAT.md](SPLAT.md) | none installed | none | no | no | proposed v0.4 experimental screen-space Gaussian contract |
+| `splat` | [SPLAT.md](SPLAT.md) | `dvz_splat()` | position/color/sigma/angle | screen-space Gaussian billboards | no | opacity attribute, request/readback, scalable splat tiers |
 | `volume` | [VOLUME.md](VOLUME.md) | `dvz_volume()`, volume setters, field binding | 3D `SampledField`, mode/slice/bounds/clipping/sampling/opacity/scale | box-proxy slice, MIP, and composite rendering | volume proxy item picking and slice probe/readout | isosurfaces, MPR, DVR/MIP ray-hit picking, categorical label volumes, and WebGPU parity |
 | `errorbar` | [ERRORBAR.md](ERRORBAR.md) | none installed | none | no | no | spec only |
 | `boxplot` | [BOXPLOT.md](BOXPLOT.md) | none installed | none | no | no | spec only |
@@ -138,8 +138,7 @@ tubes, and ribbons. It is intentionally separate from `path`: `path` owns screen
 polylines, while `tube` owns surface-like curve rendering with radius, depth, normals, and
 mode-specific implementations such as impostor tubes, mesh tubes, and ribbons.
 
-No `dvz_splat()`, `dvz_vector()`, or `dvz_tube()` constructor or runtime lowering is installed in
-the active v0.4 slice.
+`splat` and `vector` are active v0.4 families. `tube` remains future/spec-only.
 
 
 ## Reading Order

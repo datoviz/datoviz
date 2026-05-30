@@ -79,6 +79,19 @@ When adding a WGSL lane, do not silently fall back to GLSL or browser-side shade
 committed WGSL source, registry coverage, DRP2 emission tests, and a runtime or fixture smoke when
 the backend can execute it.
 
+Ownership boundary:
+
+1. scene owns built-in shader semantics and committed GLSL/WGSL source variants;
+2. scene-to-DRP2 emission selects one backend-ready shader format for the target stream;
+3. DRP2 transports selected shader modules;
+4. WebGPU accepts WGSL and rejects unsupported shader formats;
+5. browsers must not translate GLSL to WGSL or replace scene shaders by hash.
+
+Remaining cleanup should extract material, image, volume, and sampled-pass bind helpers from runtime
+emission only when persistent object keys remain stable. Repeated table-shaped switch logic should
+move to small internal descriptors instead of growing open-coded family switches. Unsupported WGSL
+combinations should fail with diagnostics before a missing shader source pointer fails late.
+
 ## Add a visual family
 
 1. Add/extend the retained visual state and public API only if the family is in the active v0.4 slice.

@@ -144,6 +144,25 @@ The main remaining polish or feature gaps are:
 7. Textured sphere/cubemap asset lane.
 
 
+## Near-Term Gallery And Example Pressure
+
+Recommended release-proof order:
+
+1. gallery proof pass for protein, LiDAR, brain, labels, textured mesh or terrain/planet, colorbar
+   and legend paths, and capture validation;
+2. vector visual polish with a wind-field showcase;
+3. label probe hardening under transforms, larger fields, latest-request-wins hover, signed ids,
+   high unsigned ids, and background misses;
+4. explanatory layout proof combining axes, continuous colorbar, categorical legend, scale bar, and
+   panel reserves;
+5. splat showcase only if release-proof lanes stay stable.
+
+Add a `bezier_curve_path` example when geometry helpers are ready: quadratic and cubic Bezier
+controls tessellated on CPU to ordinary `dvz_path()` data, control polygons through `dvz_segment()`,
+control points through `dvz_marker()` or `dvz_point()`, multiple curves through subpaths, and
+optional controls for tessellation quality, stroke width, join mode, and overlay visibility.
+
+
 ## Pickup Order
 
 1. `point_2d`

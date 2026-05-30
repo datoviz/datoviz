@@ -214,3 +214,17 @@ Focused coverage should include:
 6. multisampled graph texture creation and resolve lowering;
 7. alpha-to-coverage pipeline state for opaque sphere impostors;
 8. resize smoke tests for sampled intermediate descriptors.
+
+## Remaining MSAA Pressure
+
+The next MSAA slice should keep the work broad enough to avoid a sphere-only path:
+
+1. serialize sample count and resolve attachment ids before example replay depends on them;
+2. validate sample-count compatibility at the FramePlan, DRP2, and pipeline layers;
+3. cover vklite multisampled graph textures and color resolves in focused tests;
+4. gate alpha-to-coverage on runtime capability and visual/material descriptor state;
+5. keep opaque sphere impostors on depth-writing alpha-to-coverage instead of source-over edges;
+6. expose public panel-level state through `DvzMsaaDesc` and `dvz_panel_set_msaa()` only after the
+   graph/runtime contract is proven;
+7. add a GLFW sphere comparison with sample-count controls once diagnostics can show the active
+   sample count and resolve route.

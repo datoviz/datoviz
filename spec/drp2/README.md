@@ -39,6 +39,7 @@ Read the DRP2 spec in this order during review.
 6. [ERRORS.md](ERRORS.md) — validation and error model
 7. [CAPABILITIES.md](CAPABILITIES.md) — feature and format capability reporting
 8. [CONFORMANCE.md](CONFORMANCE.md) — conformance levels and requirements for `2.0`
+9. [WEBGPU_ROADMAP.md](WEBGPU_ROADMAP.md) — strategic native/browser parity roadmap
 
 ### 3. Machine-readable review material
 
@@ -70,6 +71,7 @@ Read the DRP2 spec in this order during review.
 - [GLOSSARY.md](GLOSSARY.md): fixed terminology
 - [schema/README.md](schema/README.md): machine-readable schema material
 - [fixtures/README.md](fixtures/README.md): canonical conformance traces
+- [WEBGPU_ROADMAP.md](WEBGPU_ROADMAP.md): long-horizon WebGPU and native/browser parity roadmap
 
 
 ## Validation

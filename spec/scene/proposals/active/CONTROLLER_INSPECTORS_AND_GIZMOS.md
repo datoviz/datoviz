@@ -142,6 +142,19 @@ Recommended first implementation slice:
 8. expose visibility, anchor, size, and source-controller/camera binding controls before adding
    styling knobs.
 
+Candidate C entry points should keep orientation and editing semantics distinct:
+
+```c
+DvzOrientationGizmo* dvz_panel_orientation_gizmo(DvzPanel* panel);
+void dvz_orientation_gizmo_visible(DvzOrientationGizmo* gizmo, bool visible);
+```
+
+Reserve `DvzTransformGizmo` for future pickable editing handles.
+
+Focused first-slice tests should cover lifetime with the owning panel, source controller binding,
+visibility toggles, deterministic inset sizing, and rotation-only transform derivation from
+arcball and turntable sources.
+
 The first slice should support arcball and turntable orientation sources. Camera/fly support may
 follow once camera state snapshots are explicit enough to read orientation without duplicating
 controller math.

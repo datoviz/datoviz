@@ -106,3 +106,20 @@ immediate commands.
    intermediate.
 6. Whether visuals can declare emissive channels before the broader material API exists.
 7. Whether bloom participates in screenshot export by default or requires an export flag.
+
+## First Implementation Constraints
+
+Keep these effects as retained panel techniques, disabled by default. They should allocate internal
+state only when enabled and should be scoped by panel scissor for multi-panel figures.
+
+Recommended pickup order:
+
+1. outline first, using a source object-id texture or explicit selection mask rather than
+   visual-family switches;
+2. run outline after base scene passes and before external UI overlays;
+3. reuse depth, normal, and object-id G-buffer resources for edge enhancement instead of adding a
+   second geometry pass;
+4. include bloom in export by default when it affects the presented image, unless an export policy
+   flag is added;
+5. document hover-versus-selection precedence, transparent-object outline policy, edge thresholds,
+   and LDR/HDR threshold behavior before exposing stable public setters.

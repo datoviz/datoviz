@@ -160,6 +160,11 @@ The scene layer must remain backend-neutral:
 
 Native-only helpers may exist, but their types must not leak into scene public headers.
 
+Portable DRP2 stream, serialization, semantic-validation, and scene-emission APIs must also avoid
+native runtime types. Do not expose `DvzDevice`, `DvzVma`, native `DvzBuffer` handles,
+`DvzStreamFrame`, Vulkan handles, canvas handles, window handles, borrowed native frame targets, or
+backend allocator structs through portable public headers.
+
 
 ## Internal Implementation Guidance
 

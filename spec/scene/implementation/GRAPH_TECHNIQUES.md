@@ -199,3 +199,18 @@ Graph-backed techniques still depend on continued hardening of:
 6. validation of pipeline target formats against render-pass attachment formats;
 7. capability facts for sampled depth, storage images, required formats, max attachments, blend
    ops, and independent blend.
+
+
+## Technique Backlog
+
+1. Keep technique-builder cleanup behavior-preserving: do not change graph names, pass order, or
+   stream output while only reducing local clutter.
+2. Extend visual pass-capability tests as each family joins G-buffer, EDL, SSAO, outline, or other
+   screen-space effect paths.
+3. Decide whether EDL becomes a generic postprocess that can compose after selected transparent,
+   volume, or SSAO branches.
+4. Add object-id or mask resources only when outline or selection semantics require them.
+5. Keep scalar material modulation for curvature, cavity, accessibility, uncertainty, and similar
+   channels deferred until retained scalar slots are represented in material or visual state.
+6. Keep full PBR, light objects, shadows, and ray-tracing-forward policies outside this generic
+   technique layer until the shared material contract is stable.

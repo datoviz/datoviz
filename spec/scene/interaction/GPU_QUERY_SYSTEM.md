@@ -507,6 +507,19 @@ Current code implications recorded on 2026-05-27:
    result. Default profile selection therefore stops after `r32uint` and `rg32uint`.
 
 
+## Remaining Open Work
+
+1. Honor full copy origin, depth, attachment index, row pitch, destination offset, and
+   request/readback id in runtime query copies.
+2. Support multiple query output attachments/readbacks in one query pass.
+3. Implement true `DVZ_QUERY_PROFILE_U64_2XR32` end to end before enabling automatic selection.
+4. Add displayed RGBA for volume slice queries only after choosing a wider payload, multi-output
+   query, or separate readout pass.
+5. Keep MIP and DVR/composite volume sample queries explicitly unsupported until exact GPU
+   semantics are specified.
+6. Keep fixed-controller eligibility explicit as query policy, not incidental traversal behavior.
+
+
 ## Relationship To Other Specs
 
 1. [`PANEL_QUERY.md`](PANEL_QUERY.md) records the high-level public interaction direction.

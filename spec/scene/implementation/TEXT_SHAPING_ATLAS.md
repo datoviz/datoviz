@@ -239,3 +239,27 @@ Focused coverage should include:
 
 Diagnostics should expose requested glyphs, missing glyphs, growth events, fallback decisions,
 cache hits, cache misses, and atlas capacity failures.
+
+
+## Implementation Backlog
+
+HarfBuzz:
+
+1. add an optional private wrapper guarded by `DVZ_HAS_HARFBUZZ`;
+2. define shaped-run keys and structs carrying selected font face, glyph ids, clusters, advances,
+   offsets, direction, script, language, and features;
+3. start with single-font left-to-right UTF-8 while preserving original UTF-8 bytes;
+4. connect shaped glyph ids to atlas ensure/growth after atlas requests support `(font face,
+   glyph id)`;
+5. add user fallback chains before platform font fallback;
+6. defer BiDi, ICU, and broad complex-script support until a concrete requirement activates them.
+
+Atlas/cache:
+
+1. add UV-stability regression coverage after atlas growth, allowing expected global rescale when
+   texture dimensions change;
+2. test FreeType bitmap and MSDF append/growth separately with representative glyphs such as `b`,
+   `e`, `g`, `@`, punctuation, and dense lowercase strings;
+3. formalize atlas/page/entry structs before migrating fully to `(font face, glyph id)` requests;
+4. add atlas stats before any public cache API;
+5. keep persistent disk cache explicit opt-in only.

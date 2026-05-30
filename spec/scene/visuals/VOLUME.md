@@ -171,3 +171,16 @@ at the pick coordinate and reconstructs the 3D hit position. The item identity i
 | hardcoded `STEP_SIZE` | `quality` |
 | volume_slice `x_cmap/y_cmap` | `color_transfer` |
 | - | `gradient_shading`, `clip_plane`, `value_range` |
+
+
+## Follow-Up Pressure
+
+1. The napari-style clipping proof should use a small real microscopy or medical-style volume,
+   live 3D navigation, composite or MIP rendering, arbitrary clipping or slice plane, and optional
+   bounds, points, image, or label overlays.
+2. Example controls should cover opacity, transfer range, sample count, sampler mode, render mode,
+   clipping box, and clipping plane.
+3. DVR/MIP picking should wait until GPU payloads can report UVW, object coordinate, sampled value,
+   visual id, and ray-hit depth consistently.
+4. MPR, isosurfaces, gradient-lighted surfaces, bricking, out-of-core streaming, and WebGPU parity
+   stay separate lanes until explicitly activated.

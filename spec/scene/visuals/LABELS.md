@@ -235,3 +235,12 @@ identity path when enabled.
 5. label painting and partial edit tools;
 6. exact boundary extraction as independent vector geometry;
 7. labels-specific lasso/region selection.
+
+
+## Follow-Up Pressure
+
+1. Labels must use nearest sampling or texel fetch; label `0` is transparent by default.
+2. Palette/hash color, selected-label-only, contour, opacity, hidden-id, and background-id updates
+   should be small parameter or palette changes, not full texture rewrites.
+3. Label probes must cover signed ids such as `-7`, high unsigned ids such as `4000000000`,
+   keep-aspect/panzoom transforms, larger fields, and default background misses.

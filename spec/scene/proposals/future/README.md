@@ -19,6 +19,7 @@ making v0.4 implementation depend on speculative public APIs.
    and graph-specific picking.
 2. [UNSTRUCTURED_GRID_DESIGN.md](UNSTRUCTURED_GRID_DESIGN.md): volumetric cell topology, attached
    fields, cut surfaces, and derived mesh views.
+3. [ATTRIBUTE_SET_API.md](ATTRIBUTE_SET_API.md): future shared visual-attribute bundle API.
 
 
 ## Field And Domain Roadmaps
@@ -35,3 +36,4 @@ making v0.4 implementation depend on speculative public APIs.
    progressive upload behavior.
 2. [SPLATTING_FRAME_PLAN_REQUIREMENTS.md](SPLATTING_FRAME_PLAN_REQUIREMENTS.md): non-normative
    frame-plan pressure from scalable Gaussian splatting.
+3. [UNIFIED_RAY_RENDERING.md](UNIFIED_RAY_RENDERING.md): future panel-level ray integration path.

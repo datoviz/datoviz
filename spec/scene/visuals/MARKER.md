@@ -366,3 +366,13 @@ and emits a diagnostic. `color_mode = scalar` and `size_mode = scalar` follow st
 
 v0.4 adds: `size_space`, `shift`, `color_mode = scalar`, `size_mode = scalar`.
 `mtsdf` merged into `msdf` unless implementation evidence separates them.
+
+
+## Follow-Up Pressure
+
+1. Exact marker picking should test the active SDF mask, not the sprite rectangle. Transparent
+   corners and holes in ring/cross shapes must miss.
+2. Bitmap marker mode waits for one-texture-per-visual resources, alpha discard, tinting,
+   descriptor refresh, and bitmap-aware picking.
+3. Shared SDF/MSDF decode helpers with text should wait until atlas entries carry distance-field
+   metadata needed for scale-correct antialiasing.

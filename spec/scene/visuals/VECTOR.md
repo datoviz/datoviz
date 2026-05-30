@@ -515,3 +515,11 @@ Before implementation, settle the source schema, head sizing model, and pick ide
 If the open questions lead back to a semantic composite rather than a visual family, move this
 contract under `spec/scene/semantics/` and leave `VECTOR.md` as a redirecting note. Until then,
 `vector` is the proposed visual-family target.
+
+
+## Follow-Up Pressure
+
+1. Shaft and head picking must map derived draw roles back to the same source vector item.
+2. Independent head styling should wait until metadata preserves that source identity.
+3. WGSL parity should preserve the public `position + vector` semantics rather than exposing a
+   backend-specific arrow representation.

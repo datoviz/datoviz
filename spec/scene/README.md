@@ -49,6 +49,7 @@ The scene spec is split by kind of authority:
 13. [proposals](proposals/README.md): active, promoted, future, and historical proposal notes.
 14. [decisions](decisions/README.md): historical ADR-style decision records.
 15. [examples](examples/README.md): worked examples and API-shape pressure tests.
+16. [ROADMAP.md](ROADMAP.md): compact backlog distilled from former agent queues.
 
 
 ## Relationship To The DRP2 Spec
@@ -163,6 +164,7 @@ Read the scene spec in this order during review.
 7. [slices/README.md](slices/README.md) — implementation-ready work packets and readiness matrix
 8. [proposals/README.md](proposals/README.md) — proposal taxonomy, promotion status, and indexes
 9. [api/IMPLEMENTATION_NOTES.md](api/IMPLEMENTATION_NOTES.md) — C-facing mapping, Python binding architecture
+10. [ROADMAP.md](ROADMAP.md) — compact backlog and post-v0.4 direction
 
 ### 3. Visual semantics
 
@@ -237,6 +239,8 @@ Current implementation orientation:
   checklist and remaining public API implementation gaps.
 - [api/IMPLEMENTATION_NOTES.md](api/IMPLEMENTATION_NOTES.md): C object mapping, app/runtime
   wiring, Python binding architecture, and GPU preparation notes.
+- [ROADMAP.md](ROADMAP.md): compact backlog, release-proof order, and post-v0.4 direction
+  distilled from former agent queues.
 - [implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md):
   active visual-architecture phase for registry-driven generic scene code and family-owned visual
   behavior, plus pointers to retired source-split records.

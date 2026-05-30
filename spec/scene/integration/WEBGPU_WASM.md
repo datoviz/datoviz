@@ -81,6 +81,14 @@ Required modules:
 Initially excluded modules include native file I/O where avoidable, thread, Vulkan, vklite, canvas,
 window, stream, video, native app, GUI, CUDA, native DVZR tools, and shaderc/dlopen paths.
 
+Current portability blockers to remove before the first WASM slice:
+
+1. `src/wasm` is still a scaffold without an exported create/emit/destroy API.
+2. The scene target remains too monolithic for a minimal portable subset.
+3. DRP2 native runtime headers still expose native types in places that should be portable.
+4. Public portable DRP2 and scene headers must not require Vulkan, vklite, canvas, stream-frame,
+   window, or native runtime types.
+
 The exported C/WASM API should cover:
 
 1. create and destroy a scene;
@@ -122,6 +130,13 @@ Runtime behavior must align with DRP2 semantic validation:
 Strict fixture paths should not depend on proof-of-concept shortcuts such as implicit canvas texture
 ids, missing pipeline metadata fallbacks, hard-coded scene uniform ids, or browser-side shader
 substitution.
+
+Remaining demo shortcuts should be removed before they become architecture:
+
+1. implicit canvas aliases;
+2. unaligned-offset fallback behavior that hides transport mistakes;
+3. demo-local assumptions about scene uniform buffer ids;
+4. browser-side direct mutation of scene-owned uniforms for pan/zoom or resize.
 
 Browser-side direct mutation of scene-owned GPU resources is also a proof-of-concept shortcut. It is
 acceptable only for temporary static-JSON demos before the WASM scene layer exists, and should not
@@ -247,3 +262,7 @@ Use progressively broader validation:
 8. scene point/primitive/image canvas smoke;
 9. resize and repeated-frame resource-count checks;
 10. native/browser scene-emitted stream comparisons where deterministic.
+
+Retained-runtime browser stress should load a stream once, render repeated frames, require stable
+resource counts, and require `refs.open == 0` and `refs.recorded == 0` after each render. Fixture
+compatibility and runtime stress counts should remain reported separately.

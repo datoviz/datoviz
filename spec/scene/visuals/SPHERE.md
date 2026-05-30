@@ -201,3 +201,14 @@ The visual parameter block reserves `metallic` and `roughness` fields (zero-init
 for future PBR support, following the same pattern as `mesh`.
 A future `normal_map` texture slot is also reserved.
 See `semantics/LIGHTING.md` for the full upgrade path.
+
+## Deferred Backlog
+
+1. Implement screen-radius spheres through the shared `radius_space = screen` contract, not a
+   sphere-only pixel-size flag.
+2. Keep textured and equirectangular sphere variants as a separate slice with explicit sampler and
+   projection state.
+3. Extend picking/probing only when query payloads can represent impostor hit depth, sphere index,
+   and future surface coordinates without CPU fallback.
+4. Route per-item material and PBR behavior through the shared material layer.
+5. Use v0.3 behavior only as reference material; do not preserve its API surface as a constraint.

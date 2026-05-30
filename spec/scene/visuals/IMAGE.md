@@ -387,3 +387,13 @@ v0.4 adds per-item `anchor`, `color_tint`, and per-item `radius`.
 
 Per-item `texture` (each item from a different texture resource) is not supported — use
 multiple visual instances instead.
+
+
+## Follow-Up Pressure
+
+1. Native shader-side scalar lookup should use raw scalar textures, contrast/gamma/opacity
+   parameters, a colormap palette or transfer texture, and raw-value query semantics.
+2. Image probes should return semantic raw values, data coordinates, visual identity, and
+   latest-request-wins hover behavior.
+3. Napari-style N-D slicing and thick-slice projection remain adapter-owned first; Datoviz should
+   receive display-ready 2D fields and apply validated full or region updates.

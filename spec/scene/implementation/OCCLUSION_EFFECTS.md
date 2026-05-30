@@ -312,3 +312,21 @@ Focused tests should cover:
 6. disabled-versus-enabled image differences;
 7. multi-panel viewport/scissor correctness;
 8. shader/pipeline keys differing for occluded versus non-occluded variants.
+
+
+## Quality And Consumer Backlog
+
+SSAO quality work should stay on the same graph path:
+
+1. add inverse projection or reconstruction parameters to SSAO uniforms;
+2. reconstruct view-space position from depth;
+3. replace fixed 2D kernels with normal-oriented hemisphere kernels;
+4. add deterministic per-pixel kernel rotation;
+5. harden bilateral blur as an explicit optional graph pass;
+6. expose radius, bias, strength, sample count, blur, and quality preset controls in the tuning
+   example.
+
+Non-volume occlusion consumers should start with primitive or unlit mesh. Contract tests should
+verify the volume-occlusion pass, depth resource, graph read, selected shader/pipeline variant, and
+that the embedded draw is absent from the occlusion prepass unless it is the volume occluder. Pixel
+tests should compare disabled and enabled captures.

@@ -14,6 +14,15 @@ application UX belongs above Datoviz.
 Needs integer label textures, direct GPU categorical sampling, sparse/high-id label handling,
 selection styling, categorical legends, and hover/click payloads.
 
+Acceptance pressure:
+
+1. larger label fields;
+2. panzoom and keep-aspect transforms;
+3. latest-request-wins hover;
+4. signed ids such as `-7`;
+5. high unsigned ids such as `4000000000`;
+6. default background miss behavior.
+
 
 ## `multiview_linked_orthoslices`
 
@@ -25,6 +34,11 @@ multi-panel layout polish.
 
 Needs richer volume clipping/probing, transfer controls, UI integration, and screenshot/video
 capture that shows the clipped interior clearly.
+
+The first renderer-level proof should use a small real microscopy or medical-style volume, live 3D
+navigation, composite or MIP rendering, an arbitrary clipping or slice plane, optional overlays, and
+a screenshot smoke. Controls should cover opacity, transfer range, sample count, sampler mode,
+render mode, clipping box, and clipping plane.
 
 
 ## `gpu_ai_segmentation_interop`

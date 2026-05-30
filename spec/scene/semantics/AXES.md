@@ -134,3 +134,15 @@ synchronized axes for the linked dimension. Partial linking uses shared controll
 `FramePlan` consumes derived axis resources; it should not generate ticks from scratch. Axis
 diagnostics should report bound domain, visible/covered domain, tick policy, scale, formatter,
 whether the layout cache was reused, and why regeneration occurred.
+
+## Remaining Polish Queue
+
+Keep near-term axes work focused on the 2D linear path before adding new scale families:
+
+1. preserve the deterministic 1/2/5 tick ladder and formatter policy in tests;
+2. add label collision handling, edge clipping, and panel-edge reserve before richer styling;
+3. decide inverted-domain semantics before log or nonlinear axes become public;
+4. let linked panels share domains and controllers while keeping per-panel axis layout caches;
+5. add richer text style only through the shared text/label stack;
+6. defer categorical, datetime, polar, geographic, and full 3D axes until the linear cache and
+   invalidation model is stable.

@@ -196,6 +196,10 @@ mechanism rather than falling back to CPU testing or silently returning a miss.
 Deferred request semantics include highest-contribution picking, top-k contributing splats,
 integrated-kernel queries, transparent hit reconstruction, and 3D covariance-aware picking.
 
+Sorting, binning, prefix-scan, compaction, and indirect-draw utilities should become reusable graph
+or DRP2 capabilities, not splat-private runtime machinery. The v0.5 splatting pressure is useful
+mainly because it forces those frame-plan primitives to become explicit.
+
 
 ## Rendering Model
 
