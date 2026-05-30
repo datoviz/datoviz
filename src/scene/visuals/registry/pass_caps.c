@@ -99,6 +99,10 @@ void _scene_visual_pass_caps_resolve(
         (primitive && has_normals) || stroke || sphere || (point_like && has_material_resource);
     out->uses_material_set = out->needs_material_layout && has_material_resource;
     out->uses_image_set = image || textured_mesh;
+    out->uses_labels_set =
+        kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
+        kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT;
+    out->uses_glyph_set = kind == DVZ_SCENE_VISUAL_DESC_GLYPH;
     out->uses_volume_set = volume;
     out->supports_depth_cue = (primitive && has_normals) || point_like || sphere;
     out->depth_cue_enabled = out->supports_depth_cue && depth_cue_enabled;

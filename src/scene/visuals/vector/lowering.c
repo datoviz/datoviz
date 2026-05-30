@@ -18,6 +18,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_visual_pipeline_internal.h"
+#include "registry/registry.h"
 
 
 
@@ -64,8 +65,8 @@ bool _scene_vector_visual_lowering(const DvzVisual* visual, DvzVisualLowering* o
     out->renderable_kind = _vector_uses_path_stroke(visual) ? DVZ_RENDERABLE_PATH_STROKE
                                                             : DVZ_RENDERABLE_STROKE_QUAD;
     out->desc_kind = out->renderable_kind == DVZ_RENDERABLE_PATH_STROKE
-                         ? DVZ_SCENE_VISUAL_DESC_PATH
-                         : DVZ_SCENE_VISUAL_DESC_SEGMENT;
+                         ? _scene_visual_family_desc_kind(DVZ_VISUAL_TYPE_PATH)
+                         : _scene_visual_family_desc_kind(DVZ_VISUAL_TYPE_SEGMENT);
     out->needs_material_params = true;
     out->needs_vector_params_sync = true;
     out->stroke_quad_cache = &_visual_family_state(visual)->vector.stroke_gpu;

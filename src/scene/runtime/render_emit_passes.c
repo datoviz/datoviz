@@ -1440,8 +1440,7 @@ bool _emitter_emit_plain_renders(
         if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
             continue;
         render_node_count++;
-        if (render->u.render.visual_count > 0 && cfg != NULL &&
-            cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        if (render->u.render.visual_count > 0)
         {
             if (_scene_render_visual_has_position_resource(emitter, render, 0))
             {

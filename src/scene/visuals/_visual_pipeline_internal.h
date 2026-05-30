@@ -66,6 +66,8 @@ bool _scene_visual_desc_is_volume(DvzSceneVisualDescKind kind);
 
 bool _scene_visual_desc_is_sphere(DvzSceneVisualDescKind kind);
 
+bool _scene_visual_desc_is_glyph(DvzSceneVisualDescKind kind);
+
 bool _scene_visual_desc_is_segment(DvzSceneVisualDescKind kind);
 
 bool _scene_visual_desc_is_path(DvzSceneVisualDescKind kind);

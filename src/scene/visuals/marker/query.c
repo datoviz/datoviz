@@ -20,6 +20,7 @@
 #include "../../query/internal.h"
 #include "_assertions.h"
 #include "query_point_like.h"
+#include "registry/registry.h"
 
 
 
@@ -54,13 +55,13 @@ static bool _marker_query_eligible(
 static bool _marker_query_build(
     const DvzSceneQueryBuildContext* ctx, DvzSceneQueryPlan* out_plan)
 {
-    static const DvzScenePointLikeQueryDesc desc = {
+    DvzScenePointLikeQueryDesc desc = {
         .label = "marker",
         .plan_id = "figure.query.marker",
         .metadata_visual_type = DVZ_VISUAL_TYPE_PIXEL,
-        .desc_kind = DVZ_SCENE_VISUAL_DESC_PIXEL,
         .point_like_kind = DVZ_SCENE_POINT_LIKE_PIXEL,
     };
+    desc.desc_kind = _scene_visual_family_desc_kind(DVZ_VISUAL_TYPE_PIXEL);
     return _scene_query_point_like_build(ctx, &desc, out_plan);
 }
 

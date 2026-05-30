@@ -155,6 +155,8 @@ typedef struct DvzSceneDrawFacts
     bool uses_common_set;
     bool uses_material_set;
     bool uses_image_set;
+    bool uses_labels_set;
+    bool uses_glyph_set;
     bool uses_volume_set;
 } DvzSceneDrawFacts;
 

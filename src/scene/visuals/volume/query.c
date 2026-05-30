@@ -26,6 +26,7 @@
 #include "scene_emit/visual_lowering.h"
 #include "../../query/internal.h"
 #include "sample_profile.h"
+#include "registry/registry.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -658,7 +659,7 @@ static bool _volume_query_build(
     metadata.has_metadata = true;
     metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_PRIMITIVE;
     metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_INDEXED_MESH;
-    metadata.desc_kind = (uint32_t)DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+    metadata.desc_kind = (uint32_t)_scene_visual_family_desc_kind(DVZ_VISUAL_TYPE_PRIMITIVE);
     metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;

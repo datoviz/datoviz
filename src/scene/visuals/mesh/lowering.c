@@ -18,6 +18,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_visual_pipeline_internal.h"
+#include "registry/registry.h"
 
 
 
@@ -40,8 +41,9 @@ bool _scene_mesh_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out
     dvz_memset(out, sizeof(DvzVisualLowering), 0, sizeof(DvzVisualLowering));
     out->draw_position_attr = "position";
     out->renderable_kind = DVZ_RENDERABLE_INDEXED_MESH;
-    out->desc_kind = _visual_family_state(visual)->field != NULL ? DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH
-                                           : DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+    out->desc_kind = _visual_family_state(visual)->field != NULL
+                         ? _scene_visual_family_desc_kind(DVZ_VISUAL_TYPE_MESH)
+                         : _scene_visual_family_desc_kind(DVZ_VISUAL_TYPE_PRIMITIVE);
     out->needs_material_params = _scene_visual_has_dense_attr(visual, "normal");
     return true;
 }
@@ -75,7 +77,7 @@ bool _scene_mesh_visual_bind_desc(
     out->uses_material_set1 = caps.uses_material_set;
     out->material_buffer_id = visual->material_buffer_id;
 
-    if (visual->kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
+    if (_scene_visual_desc_is_textured_mesh(visual->kind))
     {
         out->uses_image_set1 = caps.uses_image_set;
         out->uses_textured_mesh_set1 = caps.uses_image_set;

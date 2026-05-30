@@ -312,23 +312,10 @@ bool _scene_draw_contract_resolve(
         pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION && facts->scene_occluder;
     out->needs_common_set = facts->uses_common_set;
     out->needs_material_set = facts->uses_material_set;
-    out->needs_image_set = facts->uses_image_set;
-    out->needs_labels_set = false;
-    out->needs_glyph_set = false;
-    if (
-        ((DvzSceneVisualDescKind)facts->desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
-         (DvzSceneVisualDescKind)facts->desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT) &&
-        out->needs_image_set)
-    {
-        out->needs_image_set = false;
-        out->needs_labels_set = true;
-    }
-    if ((DvzSceneVisualDescKind)facts->desc_kind == DVZ_SCENE_VISUAL_DESC_GLYPH &&
-        out->needs_image_set)
-    {
-        out->needs_image_set = false;
-        out->needs_glyph_set = true;
-    }
+    out->needs_labels_set = facts->uses_labels_set && facts->uses_image_set;
+    out->needs_glyph_set = facts->uses_glyph_set && facts->uses_image_set;
+    out->needs_image_set =
+        facts->uses_image_set && !out->needs_labels_set && !out->needs_glyph_set;
     out->needs_volume_set = facts->uses_volume_set;
     if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER &&
         !_scene_visual_desc_is_sphere((DvzSceneVisualDescKind)facts->desc_kind))
@@ -414,6 +401,8 @@ bool _scene_draw_contract_from_visual(
         .uses_common_set = caps.uses_common_set,
         .uses_material_set = caps.uses_material_set,
         .uses_image_set = caps.uses_image_set,
+        .uses_labels_set = caps.uses_labels_set,
+        .uses_glyph_set = caps.uses_glyph_set,
         .uses_volume_set = caps.uses_volume_set,
     };
     return _scene_draw_contract_resolve(&facts, pass_role, out);

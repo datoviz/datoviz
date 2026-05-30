@@ -267,6 +267,18 @@ bool _scene_visual_desc_is_sphere(DvzSceneVisualDescKind kind)
 
 
 /**
+ * Return whether a visual descriptor uses the glyph atlas pipeline family.
+ *
+ * @param kind the visual descriptor kind
+ * @return whether the descriptor is glyph-like
+ */
+bool _scene_visual_desc_is_glyph(DvzSceneVisualDescKind kind)
+{
+    return kind == DVZ_SCENE_VISUAL_DESC_GLYPH;
+}
+
+
+/**
  * Return whether a visual descriptor uses the segment analytic stroke pipeline family.
  *
  * @param kind the visual descriptor kind

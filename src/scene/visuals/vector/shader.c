@@ -16,6 +16,7 @@
 #include "vector/internal.h"
 
 #include "_assertions.h"
+#include "_visual_pipeline_internal.h"
 #include "path/internal.h"
 #include "segment/internal.h"
 
@@ -40,12 +41,12 @@ bool _scene_vector_visual_shader_desc(
     const char* format_tag, DvzSceneVisualShaderDesc* out)
 {
     ANN(visual);
-    if (visual->kind == DVZ_SCENE_VISUAL_DESC_SEGMENT)
+    if (_scene_visual_desc_is_segment(visual->kind))
     {
         return _scene_segment_visual_shader_desc(
             visual, picking, wboit_accumulation, format_tag, out);
     }
-    if (visual->kind == DVZ_SCENE_VISUAL_DESC_PATH)
+    if (_scene_visual_desc_is_path(visual->kind))
     {
         return _scene_path_visual_shader_desc(
             visual, picking, wboit_accumulation, format_tag, out);

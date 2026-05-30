@@ -135,13 +135,13 @@ bool _scene_vector_visual_pipeline_desc(
         out->depth_compare_op = VK_COMPARE_OP_ALWAYS;
     }
 
-    if (visual->kind == DVZ_SCENE_VISUAL_DESC_SEGMENT)
+    if (_scene_visual_desc_is_segment(visual->kind))
     {
         _vector_segment_pipeline_desc(
             visual, &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
         return true;
     }
-    if (visual->kind == DVZ_SCENE_VISUAL_DESC_PATH)
+    if (_scene_visual_desc_is_path(visual->kind))
     {
         _vector_path_pipeline_desc(
             visual, &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);

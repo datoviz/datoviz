@@ -141,13 +141,13 @@ bool _scene_mesh_visual_pipeline_desc(
         out->depth_compare_op = VK_COMPARE_OP_ALWAYS;
     }
 
-    if (visual->kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH)
+    if (_scene_visual_desc_is_textured_mesh(visual->kind))
     {
         _mesh_textured_pipeline_desc(
             &caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual, out);
         return true;
     }
-    if (visual->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE)
+    if (_scene_visual_desc_is_primitive(visual->kind))
     {
         _mesh_primitive_pipeline_desc(
             &caps, picking, pass_needs_depth, wboit_accumulation, alpha_mode, visual, out);

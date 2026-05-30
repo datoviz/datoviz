@@ -6449,11 +6449,13 @@ int test_scene_pending_render_work_tracks_volume_state(TstContext* suite, const 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
     caps.shader_format_glsl = true;
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     DvzDiagnosticReport report;
 
     AT(_scene_figure_has_pending_render_work(figure));
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream1 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream1 != NULL);
     dvz_drp2_stream_destroy(stream1);
@@ -6462,7 +6464,7 @@ int test_scene_pending_render_work_tracks_volume_state(TstContext* suite, const 
     AT(dvz_volume_set_opacity(volume, 0.35f) == 0);
     AT(_scene_figure_has_pending_render_work(figure));
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream2 = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream2 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream2 != NULL);
     dvz_drp2_stream_destroy(stream2);
@@ -7174,30 +7176,42 @@ int test_scene_multiple_panels_multiple_point_visuals_emit(TstContext* suite, co
     AT(_stream_set_vertex_buffer_count(stream1) == 6);
     AT(_stream_draw_count(stream1) == 2);
     uint32_t begin_render_pass_count = 0;
+    uint32_t viewport_count = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream1); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream1, i);
-        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        if (cmd == NULL)
             continue;
-        if (begin_render_pass_count == 0)
+        if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
             AC(cmd->u.begin_render_pass.viewport[0], 0.0f, 1e-6f);
             AC(cmd->u.begin_render_pass.viewport[1], 0.0f, 1e-6f);
-            AC(cmd->u.begin_render_pass.viewport[2], 0.5f, 1e-6f);
+            AC(cmd->u.begin_render_pass.viewport[2], 1.0f, 1e-6f);
             AC(cmd->u.begin_render_pass.viewport[3], 1.0f, 1e-6f);
             AT(cmd->u.begin_render_pass.clear);
+            begin_render_pass_count++;
         }
-        else if (begin_render_pass_count == 1)
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_VIEWPORT)
         {
-            AC(cmd->u.begin_render_pass.viewport[0], 0.5f, 1e-6f);
-            AC(cmd->u.begin_render_pass.viewport[1], 0.0f, 1e-6f);
-            AC(cmd->u.begin_render_pass.viewport[2], 0.5f, 1e-6f);
-            AC(cmd->u.begin_render_pass.viewport[3], 1.0f, 1e-6f);
-            AT(!cmd->u.begin_render_pass.clear);
+            if (viewport_count == 0)
+            {
+                AC(cmd->u.set_viewport.viewport[0], 0.0f, 1e-6f);
+                AC(cmd->u.set_viewport.viewport[1], 0.0f, 1e-6f);
+                AC(cmd->u.set_viewport.viewport[2], 2.0f, 1e-6f);
+                AC(cmd->u.set_viewport.viewport[3], 4.0f, 1e-6f);
+            }
+            else if (viewport_count == 1)
+            {
+                AC(cmd->u.set_viewport.viewport[0], 2.0f, 1e-6f);
+                AC(cmd->u.set_viewport.viewport[1], 0.0f, 1e-6f);
+                AC(cmd->u.set_viewport.viewport[2], 2.0f, 1e-6f);
+                AC(cmd->u.set_viewport.viewport[3], 4.0f, 1e-6f);
+            }
+            viewport_count++;
         }
-        begin_render_pass_count++;
     }
-    AT(begin_render_pass_count == 2);
+    AT(begin_render_pass_count == 1);
+    AT(viewport_count == 2);
     dvz_drp2_stream_destroy(stream1);
 
     float size_update[2] = {10.0f, 11.0f};

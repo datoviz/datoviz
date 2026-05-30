@@ -50,7 +50,7 @@ bool _scene_text_visual_pipeline_desc(
     (void)picking;
     (void)wboit_accumulation;
 
-    if (visual->kind != DVZ_SCENE_VISUAL_DESC_GLYPH)
+    if (!_scene_visual_desc_is_glyph(visual->kind))
         return false;
 
     DvzSceneVisualPassCaps caps = {0};

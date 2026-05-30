@@ -134,6 +134,8 @@ typedef struct DvzSceneVisualPassCaps
     bool needs_material_layout;
     bool uses_material_set;
     bool uses_image_set;
+    bool uses_labels_set;
+    bool uses_glyph_set;
     bool uses_volume_set;
     bool supports_depth_cue;
     bool depth_cue_enabled;

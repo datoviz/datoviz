@@ -46,19 +46,16 @@ bool _scene_point_like_visual_shader_desc(
     ANN(out);
     (void)wboit_accumulation;
 
-    bool point_like = visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
-                      visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
-                      visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER;
+    bool point = visual->point_like_kind == DVZ_SCENE_POINT_LIKE_POINT;
+    bool pixel = visual->point_like_kind == DVZ_SCENE_POINT_LIKE_PIXEL;
+    bool marker = visual->point_like_kind == DVZ_SCENE_POINT_LIKE_MARKER;
+    bool point_like = point || pixel || marker;
     if (!point_like)
         return false;
 
-    bool depth_cue = visual->depth_cue_enabled &&
-                     (visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
-                      visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL);
-    bool point_style = visual->point_style_enabled && visual->kind == DVZ_SCENE_VISUAL_DESC_POINT;
-    bool selection = visual->has_selection_mask && !picking &&
-                     (visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
-                      visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER) &&
+    bool depth_cue = visual->depth_cue_enabled && (point || pixel);
+    bool point_style = visual->point_style_enabled && point;
+    bool selection = visual->has_selection_mask && !picking && (point || marker) &&
                      !depth_cue && !point_style;
 
     const char* suffix = picking                    ? "_pick"
@@ -77,11 +74,11 @@ bool _scene_point_like_visual_shader_desc(
         format_tag);
 
     DvzSceneBuiltinShader shader = DVZ_SCENE_BUILTIN_SHADER_POINT;
-    if (visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
+    if (marker)
         shader = picking     ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK
                  : selection ? DVZ_SCENE_BUILTIN_SHADER_MARKER_SELECTION
                              : DVZ_SCENE_BUILTIN_SHADER_MARKER;
-    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
+    else if (pixel)
         shader = picking     ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK
                  : depth_cue ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE
                              : DVZ_SCENE_BUILTIN_SHADER_PIXEL;
@@ -98,10 +95,7 @@ bool _scene_point_like_visual_shader_desc(
 
     _scene_shader_desc_set_builtin(out, shader);
     _scene_shader_desc_set_identity(
-        out,
-        visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL    ? "scene.pixel"
-        : visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER ? "scene.marker"
-                                                       : "scene.point",
+        out, pixel ? "scene.pixel" : marker ? "scene.marker" : "scene.point",
         picking                    ? "pick"
         : selection                ? "selection"
         : point_style && depth_cue ? "style_depth_cue"
@@ -110,12 +104,12 @@ bool _scene_point_like_visual_shader_desc(
                                    : "default");
     if (!picking)
     {
-        if (visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
+        if (marker)
         {
             out->vertex_spirv_key = selection ? "marker_select_vert" : "marker_vert";
             out->fragment_spirv_key = selection ? "marker_select_frag" : "marker_frag";
         }
-        else if (visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
+        else if (pixel)
         {
             out->vertex_spirv_key = depth_cue ? "pixel_cue_vert" : "pixel_vert";
             out->fragment_spirv_key = depth_cue ? "pixel_cue_frag" : "pixel_frag";
@@ -137,14 +131,8 @@ bool _scene_point_like_visual_shader_desc(
     }
     else
     {
-        out->vertex_spirv_key = visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
-                                        visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER
-                                    ? "pixel_pick_vert"
-                                    : "point_pick_vert";
-        out->fragment_spirv_key = visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
-                                          visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER
-                                      ? "pixel_pick_frag"
-                                      : "point_pick_frag";
+        out->vertex_spirv_key = pixel || marker ? "pixel_pick_vert" : "point_pick_vert";
+        out->fragment_spirv_key = pixel || marker ? "pixel_pick_frag" : "point_pick_frag";
     }
     return true;
 }

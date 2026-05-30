@@ -17,6 +17,7 @@
 
 #include "_assertions.h"
 #include "_compat.h"
+#include "_visual_pipeline_internal.h"
 #include "primitive/internal.h"
 #include "registry/registry.h"
 
@@ -44,13 +45,13 @@ bool _scene_mesh_visual_shader_desc(
     ANN(format_tag);
     ANN(out);
 
-    if (visual->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE)
+    if (_scene_visual_desc_is_primitive(visual->kind))
     {
         return _scene_primitive_visual_shader_desc(
             visual, picking, wboit_accumulation, format_tag, out);
     }
 
-    if (visual->kind != DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH || picking || wboit_accumulation)
+    if (!_scene_visual_desc_is_textured_mesh(visual->kind) || picking || wboit_accumulation)
         return false;
 
     dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_mesh_textured%s", format_tag);

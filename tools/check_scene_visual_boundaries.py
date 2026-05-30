@@ -46,9 +46,8 @@ VISUAL_FAMILY_NAMES = {
 }
 VISUAL_DESC_CENTRAL_PATHS = {
     "src/scene/visuals/_visual_pipeline.h",
-    "src/scene/visuals/registry/registry.c",
-    "src/scene/visuals/registry/registry.h",
 }
+VISUAL_DESC_CENTRAL_PREFIXES = ("src/scene/visuals/registry/",)
 VISUAL_DESC_OWNER_PREFIXES = {
     "DVZ_SCENE_VISUAL_DESC_POINT": ("src/scene/visuals/point/",),
     "DVZ_SCENE_VISUAL_DESC_PIXEL": ("src/scene/visuals/pixel/",),
@@ -115,6 +114,8 @@ def _visual_desc_location_allowed(rel: str, token: str) -> bool:
     if token == "DVZ_SCENE_VISUAL_DESC_NONE":
         return True
     if rel in VISUAL_DESC_CENTRAL_PATHS:
+        return True
+    if any(rel.startswith(prefix) for prefix in VISUAL_DESC_CENTRAL_PREFIXES):
         return True
     if rel.startswith("src/scene/tests/"):
         return True
