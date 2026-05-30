@@ -157,6 +157,7 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(regression scalebar_minimal regression/scalebar_minimal.c)
 
     dvz_add_example(lab scalebar_2d_3d lab/scalebar_2d_3d.c)
+    dvz_add_example(lab protein_viewer lab/protein_viewer.c)
 
     dvz_add_example(showcase lidar showcase/lidar.c)
     dvz_add_example(showcase protein showcase/protein.c)
