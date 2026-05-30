@@ -9,6 +9,10 @@
 
 ## Summary
 
+Current grid and panel layout rules are canonical in
+[`../core/PANEL_LAYOUT.md`](../core/PANEL_LAYOUT.md). This note preserves landed context and
+dashboard follow-up boundaries; do not use it as a second grid-layout source of truth.
+
 Datoviz currently supports explicit scene panel rectangles through `DvzPanelDesc`:
 
 ```c

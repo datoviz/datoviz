@@ -15,6 +15,11 @@ The first implementation should stay C-first because the engine questions are re
 partial uploads, frame pacing, DRP2 technique selection, and instrumentation. Python convenience can
 follow once the C semantics are stable.
 
+Scenario proving grounds live in
+[`../examples/scenarios/v05/DASHBOARD_AND_STREAMING.md`](../examples/scenarios/v05/DASHBOARD_AND_STREAMING.md).
+Reusable resource, update, and telemetry requirements should be promoted into pipeline,
+interaction, validation, or API specs before becoming public semantics.
+
 
 ## Canonical Dependencies
 

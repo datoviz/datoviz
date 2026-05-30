@@ -8,6 +8,10 @@ This matrix is an implementation guide for building a compact example suite. It 
 runtime semantics. It records what each fixture should demonstrate, what layer it should use, and
 which optional capabilities it requires.
 
+Scene/app rows are owned here. Low-level `vk`, `vklite`, `canvas`, `stream`, `video`, DRP2,
+WebGPU, CUDA, and interop rows are included only as a cross-stack coverage index. Their behavior
+belongs in the owning subsystem specs.
+
 Release staging is not decided in this file. Use
 [PLANNING.md](PLANNING.md) to decide whether a fixture or worked
 example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `later`, or

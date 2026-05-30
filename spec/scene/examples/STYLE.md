@@ -28,61 +28,9 @@ Map style effort to existing gallery categories:
 - **Visuals**: controlled baseline style for direct visual-family comparison.
 - **Features**: emphasize interaction affordances and state transitions.
 
-For v0.4, keep the public website and documentation in one MkDocs Material site. The goal is not a
-separate marketing stack; it is a more visual documentation front door backed by reproducible
-gallery assets. A custom web application becomes useful later only if Datoviz needs live WebGPU
-embeds, benchmark dashboards, richer release/news pages, or product-level storytelling that MkDocs
-cannot carry cleanly.
-
-The homepage should therefore act as a visual index into the documentation:
-
-1. one compact positioning statement,
-2. direct entry points for install, first C program, examples, and reference,
-3. a first-viewport gallery strip with the v0.4 front-page card set,
-4. concise status labels for supported, experimental, fixture-only, and deferred examples.
-
-When the homepage can show only six cards or videos, prefer the current v0.4 set: dense LiDAR,
-molecular arcball, brain volume plus transparent mesh, weather field, linked probe plus colorbar
-panels, and either WebGPU browser preview or high-density 2D signals.
-
-
-## 3.1) MkDocs Material implementation direction
-
-MkDocs Material is sufficient for the v0.4 gallery if it is used as a static visual publishing
-system rather than as plain prose pages.
-
-Use this order of complexity:
-
-1. **Markdown plus Material cards** for most index pages. The existing `attr_list` and
-   `md_in_html` extensions allow `<div class="grid cards" markdown>` sections with images, videos,
-   links, badges, and compact descriptions.
-2. **Custom CSS in `docs/stylesheets/extra.css`** for Datoviz-specific card grids, image overlays,
-   dark gallery bands, responsive media sizing, badges, and large lead cards.
-3. **Generated Markdown** for gallery pages. Example metadata should emit showcase, visual-family,
-   feature, technique, runtime, and validation pages instead of hand-maintaining large card lists.
-4. **A page-local template override** only for the homepage or the top gallery index if Markdown
-   becomes too constrained. Use Material's theme extension support through `theme.custom_dir` and a
-   page front-matter `template` value; keep normal documentation pages on the stock template.
-5. **Additional JavaScript** only for progressive enhancement such as lightweight filters, media
-   lazy-loading, or WebGPU demo mounting. The static image/video page should remain useful without
-   JavaScript.
-
-Do not fork the Material theme for normal gallery work. Prefer small CSS and template overrides that
-can survive theme upgrades.
-
-Recommended page shapes:
-
-| Page | Shape |
-| --- | --- |
-| Home | compact hero, six-card showcase strip, start links, current status |
-| Gallery index | lane overview with large cards for showcases and smaller cards for visual/features |
-| Showcase page | one large screenshot or looped video, short thesis, source link, run/capture command, feature tags |
-| Visual-family page | controlled baseline image, supported attributes, minimal C example, deferred variants |
-| Technique page | before/after or side-by-side image pair, limits, backend requirements |
-| Runtime/WebGPU page | explicit experimental labels, supported subset, unsupported-feature diagnostics |
-
-Example cards should use real `<img>` or `<video>` elements, not CSS background images, so alt text,
-loading behavior, social previews, and future asset checks stay straightforward.
+Public website and MkDocs gallery implementation notes live in
+[`../../docs/GALLERY_SITE.md`](../../docs/GALLERY_SITE.md). This file owns visual style and capture
+defaults for examples and gallery media.
 
 ## 4) Recommended visual direction
 
