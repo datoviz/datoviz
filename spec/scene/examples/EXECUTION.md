@@ -14,11 +14,11 @@ shared data/cache rules live in [POLICIES.md](POLICIES.md), and visual capture d
 1. Work one example at a time, in the pickup order from [PLANNING.md](PLANNING.md).
 2. Do a small structure and metadata pass before broad rewrites, but do not polish many examples in
    parallel.
-3. Follow the lane model from [ORGANIZATION.md](ORGANIZATION.md): `fundamentals`, `visuals`,
-   `features`, `techniques`, `showcases`, `runtime`, and low-level or advanced lanes.
+3. Follow the current C tree reset from [ORGANIZATION.md](ORGANIZATION.md): public `features`,
+   `visuals`, and `showcases`, plus flat non-public `lab` and temporary `legacy`.
 4. Treat old v0.4-dev examples as source material, not the final catalog.
 5. Promote only examples that map to a scenario ID, visual-family requirement, feature requirement,
-   runtime proof, technique, regression, or stress target.
+   or gallery/showcase target. Keep diagnostics, stress, and low-level work in `lab` unless promoted.
 6. Do not delete temporary examples during the first migration pass unless they are duplicated by a
    validated replacement. Prefer quarantining or de-indexing first.
 
@@ -32,10 +32,10 @@ Classify each existing file before moving or rewriting it.
 | Promoted release proof | Move or rewrite into the final lane and attach the canonical scenario ID. |
 | Visual-family baseline | Keep under `examples/c/visuals/` only if it demonstrates one active visual family with minimal unrelated features. |
 | Feature proof | Move to `examples/c/features/` when the example is about axes, colorbars, scale bars, annotations, overlays, picking, probing, selection, panels, updates, or controllers. |
-| Rendering technique | Keep under `examples/c/techniques/` only when the main subject is pass-level behavior such as EDL, SSAO, MSAA, WBOIT, depth peeling, depth cueing, or materials. |
+| Rendering technique | Move to `examples/c/lab/` or `examples/c/legacy/` unless it is rewritten as a polished public teaching example. |
 | Showcase | Keep under `examples/c/showcases/` only when it is composed, polished, and gallery-facing. |
-| Runtime or low-level tool | Move to `examples/c/runtime/`, `examples/c/advanced/`, `examples/c/drp2/`, or a clearly non-gallery tool lane. |
-| Temporary lab or diagnostic | Keep buildable but de-index from public gallery metadata; move to regression/diagnostic/lab only if useful. |
+| Runtime or low-level tool | Move to flat `examples/c/lab/` when still useful, otherwise to `examples/c/legacy/`. |
+| Temporary lab, stress, or diagnostic | Keep buildable in flat `examples/c/lab/` when useful; otherwise archive under `examples/c/legacy/`. |
 | Superseded duplicate | Remove only after the replacement builds, runs, and has equivalent or better validation. |
 
 Useful historical promotion candidates include `protein.c`, `lidar.c`, `brain.c`, `ibl_brain.c`,

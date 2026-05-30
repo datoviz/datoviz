@@ -12,8 +12,8 @@
  * optional per-frame full reuploads.
  *
  * Build:  just example-c stress/point_stress
- * Run:    ./build/examples/c/stress/point_stress
- * Smoke:  ./build/examples/c/stress/point_stress 300
+ * Run:    ./build/examples/c/lab/point_stress
+ * Smoke:  ./build/examples/c/lab/point_stress 300
  */
 
 

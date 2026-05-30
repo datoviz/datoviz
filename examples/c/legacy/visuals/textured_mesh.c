@@ -36,7 +36,7 @@
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
-#include "tools/example_gui_controls.h"
+#include "example_gui_controls.h"
 
 
 

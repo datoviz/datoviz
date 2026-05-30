@@ -7,7 +7,7 @@
 /* text_msdf_lab - interactive text renderer comparison and pixel inspector.
  *
  * Build:  cmake --build build --target example_c_tools_text_msdf_lab
- * Run:    ./build/examples/c/tools/text_msdf_lab
+ * Run:    ./build/examples/c/lab/text_msdf_lab
  */
 
 /*************************************************************************************************/

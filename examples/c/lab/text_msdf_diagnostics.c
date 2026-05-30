@@ -7,7 +7,7 @@
 /* text_msdf_diagnostics - write offscreen text-rendering PNG baselines.
  *
  * Build:  cmake --build build --target example_c_tools_text_msdf_diagnostics
- * Run:    ./build/examples/c/tools/text_msdf_diagnostics
+ * Run:    ./build/examples/c/lab/text_msdf_diagnostics
  * Output: build/text_diagnostics/baseline/
  */
 

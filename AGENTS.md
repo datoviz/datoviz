@@ -10,10 +10,10 @@ Datoviz v0.4-dev is a deep rewrite of v0.3. The branch is preparing release cand
 
 1. Do not preserve v0.3 compatibility at the expense of v0.4 architecture, correctness, or
    maintainability.
-2. Do not commit changes inside the `data` submodule unless the user explicitly approves that
-   submodule commit or pointer update in the current turn.
-3. Treat `M data`, `? data`, and any staged `data` gitlink update as stop signs until explicitly
-   approved.
+2. Do not stage, commit, or push changes inside the `data` submodule unless the user explicitly
+   approves that submodule commit or pointer update in the current turn.
+3. Treat staged `data` gitlink updates as stop signs until explicitly approved. Unstaged or
+   untracked `data` working-tree state may be ignored only if it remains unstaged and uncommitted.
 4. Do not stage or commit generated/runtime binary payloads such as `libs/vulkan/`, `*.dylib`,
    `*.so`, `*.dll`, `*.npy`, `*.npz`, or `.DS_Store` unless the user explicitly approves those
    exact files in the current turn.

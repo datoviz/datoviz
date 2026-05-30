@@ -7,9 +7,9 @@
 /* replay_dvzr — replay a DVZR recording into a live GLFW window.
  *
  * Build:  just build
- * Run:    ./build/examples/c/tools/replay_dvzr path/to/recording.dvzr
- * Loop:   ./build/examples/c/tools/replay_dvzr --loop path/to/recording.dvzr
- * Fast:   ./build/examples/c/tools/replay_dvzr --fast path/to/recording.dvzr
+ * Run:    ./build/examples/c/lab/replay_dvzr path/to/recording.dvzr
+ * Loop:   ./build/examples/c/lab/replay_dvzr --loop path/to/recording.dvzr
+ * Fast:   ./build/examples/c/lab/replay_dvzr --fast path/to/recording.dvzr
  */
 
 

@@ -10,8 +10,8 @@
  * Style: tools, graphite_cyan, 1280x960 capture target
  *
  * Build:  just example-c tools/axis_lattice_smoke
- * Run:    ./build/examples/c/tools/axis_lattice_smoke
- * Smoke:  ./build/examples/c/tools/axis_lattice_smoke probe_resize
+ * Run:    ./build/examples/c/lab/axis_lattice_smoke
+ * Smoke:  ./build/examples/c/lab/axis_lattice_smoke probe_resize
  */
 
 

@@ -15,16 +15,15 @@ remove only comments that are wrong, redundant, or tied to deleted code.
 
 ## Commit Safety
 
-Do not commit `data` submodule changes or generated/runtime binary payloads without explicit user
-approval for those exact paths in the current turn.
+Do not stage, commit, or push `data` submodule changes or generated/runtime binary payloads
+without explicit user approval for those exact paths in the current turn. Unstaged or untracked
+`data` working-tree state may be ignored only if it remains unstaged and uncommitted.
 
 Stop-sign paths:
 
-1. `M data`
-2. `? data`
-3. staged `data` gitlink updates
-4. `libs/vulkan/`
-5. `*.dylib`, `*.so`, `*.dll`, `*.npy`, `*.npz`, `.DS_Store`
+1. staged `data` gitlink updates
+2. `libs/vulkan/`
+3. `*.dylib`, `*.so`, `*.dll`, `*.npy`, `*.npz`, `.DS_Store`
 
 Before every commit:
 

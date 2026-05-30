@@ -1,9 +1,18 @@
-version: 1
-status: initial_overhaul_manifest
+version: 2
+status: v04_example_tree_reset
 source_of_truth:
   planning: ../../spec/scene/examples/PLANNING.md
   execution: ../../spec/scene/examples/EXECUTION.md
   style: ../../spec/scene/examples/STYLE.md
+
+folders:
+  public:
+    - examples/c/features
+    - examples/c/visuals
+    - examples/c/showcases
+  non_public:
+    - examples/c/lab
+    - examples/c/legacy
 
 defaults:
   palette: graphite_cyan
@@ -12,156 +21,113 @@ defaults:
   seed: 12345
 
 examples:
-  - id: point_2d
-    title: 2D Points
-    stage: v0.4_required
-    lane: visuals
-    style_preset: visuals
-    capture: 1280x960
-    interaction_state: default
-    current_source: examples/c/visuals/point.c
-    target_source: examples/c/visuals/point.c
-    validation: smoke+screenshot
-
   - id: path_axes_2d
     title: Path With 2D Axes
     stage: v0.4_required
     lane: features
-    style_preset: features
-    capture: 1280x960
-    interaction_state: default
-    current_source: examples/c/features/axes_2d.c
-    target_source: examples/c/features/axes_2d.c
+    source: examples/c/features/axes_2d.c
     validation: smoke+screenshot
 
   - id: linked_panels_axes_panzoom
     title: Linked Panels With Axes
     stage: v0.4_required
     lane: features
-    style_preset: features
-    capture: 1280x960
-    interaction_state: default
-    current_source: examples/c/features/panel_linked_axes.c
-    target_source: examples/c/features/panel_linked_axes.c
+    source: examples/c/features/panel_linked_axes.c
     validation: smoke+interaction
 
   - id: scale_bar
     title: Scale Bars
     stage: v0.4_required
     lane: features
-    style_preset: features
-    capture: 1280x960
-    interaction_state: default
-    current_source: examples/c/features/scalebar.c
-    target_source: examples/c/features/scalebar.c
+    source: examples/c/features/scalebar.c
     validation: smoke+screenshot
 
   - id: image_probe
     title: Image Probe
     stage: v0.4_required
     lane: features
-    style_preset: features
-    capture: 1280x960
-    interaction_state: probe
-    current_source: examples/c/features/image_probe.c
-    target_source: examples/c/features/image_probe.c
-    validation: smoke+readback+screenshot
-
-  - id: linked_panels_probe_colorbar
-    title: Linked Probe And Colorbar
-    stage: v0.4_required
-    lane: features
-    style_preset: features
-    capture: 1280x960
-    interaction_state: probe
-    current_source: examples/c/techniques/image_probe.c
-    target_source: examples/c/features/panel_probe_colorbar.c
+    source: examples/c/features/image_probe.c
     validation: smoke+readback+screenshot
 
   - id: marker_picking
     title: Marker Picking
     stage: v0.4_required
     lane: features
-    style_preset: features
-    capture: 1280x960
-    interaction_state: selected
-    current_source: examples/c/features/pick_marker.c
-    target_source: examples/c/features/pick_marker.c
+    source: examples/c/features/pick_marker.c
     validation: smoke+interaction
 
-  - id: volume
-    title: Volume
-    stage: v0.4_required
-    lane: visuals
-    style_preset: visuals
-    capture: 1280x960
-    interaction_state: default
-    current_source: examples/c/visuals/volume.c
-    target_source: examples/c/visuals/volume.c
-    validation: smoke+screenshot
-
   - id: protein_arcball_viewer
-    title: Protein Arcball Viewer
+    title: Protein
     stage: v0.4_required
     lane: showcases
-    style_preset: showcase
-    capture: 1600x1000
-    interaction_state: default
-    current_source: examples/c/showcase/protein.c
-    target_source: examples/c/showcases/protein_arcball_viewer.c
+    source: examples/c/showcases/protein.c
     validation: smoke+screenshot+manual
+    gallery:
+      card: section
+      status_label: supported
 
   - id: showcase_wind_field
     title: Wind Field
     stage: v0.4_required
     lane: showcases
-    style_preset: showcase
-    capture: 1600x1000
-    interaction_state: default
-    current_source: null
-    target_source: examples/c/showcases/wind_field.c
+    source: examples/c/showcases/wind_field.c
     validation: smoke+screenshot
+    gallery:
+      card: section
+      status_label: supported
 
-  - id: textured_terrain_or_planet
-    title: Textured Terrain Or Planet
-    stage: v0.4_required
-    lane: showcases
-    style_preset: showcase
-    capture: 1600x1000
-    interaction_state: default
-    current_source: examples/c/visuals/textured_mesh.c
-    target_source: examples/c/showcases/textured_terrain_or_planet.c
-    validation: smoke+screenshot
+  - id: lab_axis_lattice_smoke
+    title: Axis Lattice Smoke
+    stage: lab
+    lane: lab
+    source: examples/c/lab/axis_lattice_smoke.c
+    validation: smoke
 
-  - id: brain_volume_mesh
-    title: Brain Volume And Mesh
-    stage: v0.4_required
-    lane: showcases
-    style_preset: showcase
-    capture: 1600x1000
-    interaction_state: default
-    current_source: examples/c/showcase/brain.c
-    target_source: examples/c/showcases/brain_volume_mesh.c
-    validation: smoke+screenshot+manual
+  - id: lab_point_stress
+    title: Point Stress
+    stage: lab
+    lane: lab
+    source: examples/c/lab/point_stress.c
+    validation: manual+performance
 
-  - id: dense_point_cloud_edl
-    title: Dense Point Cloud With EDL
-    stage: v0.4_required
-    lane: showcases
-    style_preset: showcase
-    capture: 1600x1000
-    interaction_state: default
-    current_source: examples/c/showcase/lidar.c
-    target_source: examples/c/showcases/dense_point_cloud_edl.c
-    validation: smoke+screenshot+performance
+  - id: lab_protein_viewer
+    title: Protein Viewer Workbench
+    stage: lab
+    lane: lab
+    source: examples/c/lab/protein_viewer.c
+    validation: manual
 
-  - id: webgpu_browser_subset
-    title: WebGPU Browser Subset
-    stage: v0.4_experimental
-    lane: advanced
-    style_preset: features
-    capture: 1280x960
-    interaction_state: default
-    current_source: examples/webgpu/index.html
-    target_source: examples/webgpu/index.html
-    validation: fixture+browser-smoke
+  - id: lab_record_dvzr
+    title: DVZR Recorder
+    stage: lab
+    lane: lab
+    source: examples/c/lab/record_dvzr.c
+    validation: manual
+
+  - id: lab_replay_dvzr
+    title: DVZR Replay
+    stage: lab
+    lane: lab
+    source: examples/c/lab/replay_dvzr.c
+    validation: manual
+
+  - id: lab_scalebar_2d_3d
+    title: Scale Bar 2D/3D Lab
+    stage: lab
+    lane: lab
+    source: examples/c/lab/scalebar_2d_3d.c
+    validation: manual
+
+  - id: lab_text_msdf_diagnostics
+    title: Text MSDF Diagnostics
+    stage: lab
+    lane: lab
+    source: examples/c/lab/text_msdf_diagnostics.c
+    validation: manual
+
+  - id: lab_text_msdf_lab
+    title: Text MSDF Lab
+    stage: lab
+    lane: lab
+    source: examples/c/lab/text_msdf_lab.c
+    validation: manual

@@ -7,7 +7,7 @@
 /* record_dvzr — capture an offscreen app scene and replay its DVZR recording.
  *
  * Build:  just build
- * Run:    ./build/examples/c/tools/record_dvzr
+ * Run:    ./build/examples/c/lab/record_dvzr
  *
  * Outputs next to the executable:
  *   record_dvzr.dvzr/

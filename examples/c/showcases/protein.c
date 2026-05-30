@@ -8,8 +8,8 @@
  *
  * Prepare: python tools/preprocess_protein.py 6M0J
  * Build:   cmake --build build --target protein
- * Run:     ./build/examples/c/showcase/protein
- * Smoke:   ./build/examples/c/showcase/protein 60
+ * Run:     ./build/examples/c/showcases/protein
+ * Smoke:   ./build/examples/c/showcases/protein 60
  * Options: --spin, --debug, [bundle-path], [frame-count]
  *
  * The full interactive GUI workbench lives in examples/c/lab/protein_viewer.c.

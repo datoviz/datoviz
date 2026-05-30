@@ -1,37 +1,24 @@
 # Datoviz C Examples
 
-This directory contains the canonical native C examples for the Datoviz v0.4 scene, app, runtime,
-and low-level rendering stack. The active overhaul process is documented in
-`../../spec/scene/examples/EXECUTION.md`.
+This directory is being reset for the v0.4 public example suite. Public examples should be small,
+polished, and scenario-indexed; older smoke-test-style examples are parked in `legacy/` as source
+material.
 
+## Active folders
 
-## Public Lanes
-
-| Lane | Purpose |
+| Folder | Purpose |
 | --- | --- |
-| `fundamentals/` | Small create, render, update, window, offscreen, resize, and frame-loop examples. |
-| `visuals/` | One active visual family per file, with minimal unrelated features. |
-| `features/` | Scene/app capabilities such as axes, colorbars, panels, controllers, picking, probing, and selection. |
-| `techniques/` | Pass-level rendering behavior such as EDL, SSAO, MSAA, WBOIT, depth cueing, and materials. |
-| `showcases/` | Polished, composed, gallery-facing scientific examples. |
-| `runtime/` | Hosting, capture, frame callbacks, live windows, video, and app execution examples. |
-| `advanced/` | Low-level DRP2, vklite, canvas, stream, interop, and diagnostic examples. |
-| `regression/` | Deterministic examples kept primarily for screenshot, readback, or fixture validation. |
-| `stress/` | Capacity, performance, long-loop, and repeated-update examples. |
-| `lab/` | Historical demos and diagnostics kept buildable as source material, not public gallery items. |
+| `features/` | Public feature examples: axes, panels, scale bars, probing, picking, annotations, and composed reusable scene capabilities. |
+| `visuals/` | Future public one-visual examples. Old visual smoke tests currently live in `legacy/visuals/`. |
+| `showcases/` | Public gallery-facing scientific examples. |
+| `lab/` | Non-public experiments, diagnostics, stress/perf demos, and development workbenches. Flat folder only. |
+| `legacy/` | Temporary archive of older examples that are not built by default. Promote or delete from here deliberately. |
 
-
-## Transitional Folders
-
-Some existing folders predate the final lane split:
-
-| Folder | Transitional handling |
-| --- | --- |
-| `showcase/` | Historical singular showcase folder. Promote selected files to `showcases/` when they are polished and indexed. |
-| `tools/` | Keep developer tools and low-level generators here until they move to `runtime/`, `advanced/`, or remain intentionally non-gallery tools. |
-
+Shared helpers live directly in this directory (`example_common.*`, `example_style.*`,
+`example_gui_controls.*`). There is intentionally no `tools/`, `regression/`, or `stress/` example
+lane in the active C tree: tests own regressions, and lab owns temporary diagnostics/stress work.
 
 ## Metadata
 
-`MANIFEST.yaml` is the initial source for scenario IDs, final lanes, style presets, and validation
-expectations. `MIGRATION.md` maps existing files to their intended final role.
+`MANIFEST.yaml` indexes the current public/lab examples. `MIGRATION.md` records the reset and where
+legacy material went.

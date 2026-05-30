@@ -2,7 +2,7 @@
 
 > **Status:** planning
 > **Scope:** Datoviz v0.4 C examples, raw Python examples, vispy2 GSP/plot examples, fixtures,
-> showcases, regressions, and stress examples
+> showcases, lab material, and temporary legacy examples
 > **Goal:** keep examples discoverable by purpose and API layer while sharing scenario IDs
 
 This document defines repository ownership and layout. Release staging lives in
@@ -17,16 +17,16 @@ This document defines repository ownership and layout. Release staging lives in
 - Keep C examples as canonical native engine/API examples.
 - Keep raw Python examples in this repository as thin Datoviz binding examples.
 - Keep GSP and plot examples in vispy2, where Python-native workflows belong.
-- Separate fixtures, documentation examples, showcases, regressions, and stress tests.
+- Separate public examples from fixtures, tests, lab workbenches, and temporary legacy material.
 - Share stable scenario IDs across repositories.
 
 
 ## Repository Ownership
 
-- Datoviz owns C public API examples, raw Python binding examples, engine fixtures,
-  deterministic regression examples, native stress tests, native showcases, and generated
-  DRP2/DVZR/WebGPU fixtures. It should not become the main high-level Python gallery once GSP/plot
-  are active.
+- Datoviz owns C public API examples, raw Python binding examples, engine fixtures, native
+  showcases, and generated DRP2/DVZR/WebGPU fixtures. Regression coverage belongs in tests;
+  stress, diagnostics, and prototypes belong in `examples/c/lab/` until promoted. It should not
+  become the main high-level Python gallery once GSP/plot are active.
 - vispy2 owns GSP object-oriented scene examples, plot-interface examples, Python showcases,
   notebooks, napari/Qt/dashboard integrations, and NumPy/pandas/xarray/SciPy workflows. It should
   not own native engine conformance examples or low-level runtime fixtures.
@@ -37,8 +37,8 @@ ownership, plotting conveniences, notebooks, or ecosystem data loading, it belon
 
 ## API Layers
 
-- C, in `examples/c/`: canonical engine, scene, app, DRP2, vklite/canvas, interop, offscreen,
-  regression, and stress examples.
+- C, in `examples/c/`: canonical public engine/scene/app examples, gallery showcases, flat lab
+  material, and a temporary legacy archive.
 - Raw Python, in `examples/python/`: thin binding smoke/parity examples that load the library,
   create scenes, upload data, render offscreen/windowed, pick/probe/update/capture.
 - GSP, in vispy2: object-oriented scene programming, retained visuals, callbacks, selections,
@@ -57,16 +57,12 @@ ownership, plotting conveniences, notebooks, or ecosystem data loading, it belon
 - Features: reusable scene/app capabilities, such as partial update, mutability hints, visibility,
   depth, controllers, sampled fields, colormaps, colorbar, picking, probing, selection, links,
   pinned readout, video export, and DVZR.
-- Techniques: pass-level behavior, such as alpha blending, WBOIT, EDL, SSAO, MSAA, materials,
-  transparency, postprocess, and depth/ordering variants.
-- Advanced/low-level: DRP2 streams, vklite/canvas/stream/video, interop, offscreen, and
-  command/resource lifecycle.
+- Techniques and low-level runtime proofs: keep as tests, WebGPU fixtures, or `lab/` material until
+  they become polished public teaching examples.
 - Showcases: polished scientific/domain demos for geo, physics, engineering, dashboards,
   neuroscience, astronomy, medical, volume, and embeddings.
-- Regression/golden: deterministic screenshots, readbacks, fixture streams, and schema/generated
-  output parity.
-- Stress/benchmark: capacity and performance examples for large scatter, image grids, streaming,
-  repeated updates, descriptor/resource churn, and live-loop frame pacing.
+- Regression/golden: owned by tests and fixture infrastructure, not by a public examples lane.
+- Stress/benchmark: keep in flat `examples/c/lab/` unless a dedicated benchmark suite is created.
 
 Existing examples may be reorganized aggressively to match these lanes. Prefer fewer, stronger
 public examples over many scripts with unclear public roles:
@@ -95,14 +91,11 @@ Datoviz:
 ```text
 examples/
   c/
-    fundamentals/
-    visuals/
     features/
-    techniques/
-    advanced/
+    visuals/
     showcases/
-    regression/
-    stress/
+    lab/
+    legacy/
   python/
     fundamentals/
     visuals/
@@ -159,7 +152,7 @@ Each runnable or generated example should eventually have compact metadata:
 id: showcase_earth_cubemap
 title: Earth Cubemap
 layer: c | raw_python | gsp | plot | fixture
-lane: fundamentals | visuals | features | techniques | advanced | showcase | regression | stress
+lane: fundamentals | visuals | features | showcase | lab | fixture
 status: required | experimental | fixture-only | future | external
 data: inline | synthetic | bundled | public-download
 validation: smoke | screenshot | readback | fixture | manual
@@ -201,8 +194,8 @@ nonblank image, alt text, and a reachable source example.
 
 - Follow [POLICIES.md](POLICIES.md) for cache/download rules and avoid repeating them
   in every worked example.
-- C examples should be smoke-testable; regression examples need deterministic outputs; stress
-  examples need measurable bounds.
+- C public examples should be smoke-testable; regression checks belong in tests; lab stress
+  examples need measurable bounds when retained.
 - GSP/plot examples may prioritize user-facing clarity but should still expose smoke paths where
   practical.
 - Do not duplicate a scenario just to show syntax. Duplicate only when a layer teaches a genuinely
