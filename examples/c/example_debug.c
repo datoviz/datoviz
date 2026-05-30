@@ -371,7 +371,8 @@ bool example_debug_gui_requested(void)
 {
     const char* env = getenv("DVZ_EXAMPLE_DEBUG");
     return _debug_env_has_token(env, "gui") || _debug_env_has_token(env, "perf") ||
-           _debug_env_has_token(env, "all");
+           _debug_env_has_token(env, "all") || _debug_env_has_token(env, "1") ||
+           _debug_env_has_token(env, "true") || _debug_env_has_token(env, "on");
 }
 
 
