@@ -183,9 +183,9 @@ forms. The fixture dashboard requires explicit bind-group layout and render-pipe
 - `texture_id: 0` means the current browser canvas texture.
 - Pipeline color target format `"canvas"` means `navigator.gpu.getPreferredCanvasFormat()`.
 - Texture dimensions `"canvas"` for width/height mean the current canvas pixel extent.
-- Missing `CreateRenderPipeline.color_targets` follows the DRP2 default for standalone demo streams:
-  the configured canvas format for canvas targets, otherwise `rgba8unorm` when no attachment format
-  is available.
+- Missing `CreateRenderPipeline.color_targets` follows the DRP2 default for ad hoc developer
+  streams: the configured canvas format for canvas targets, otherwise `rgba8unorm` when no
+  attachment format is available. Committed browser streams now carry explicit color targets.
 - Missing `vertex_buffers` means vertex pulling or builtins in DRP2. The historical one-slot
   compatibility fallback for shaders declaring `@location(0)` is now opt-in through the main demo
   session only; normal runner and fixture paths reject that missing metadata.
@@ -197,9 +197,9 @@ forms. The fixture dashboard requires explicit bind-group layout and render-pipe
   viewport uniform buffers from `metadata.datoviz.interactive_uniforms.panzoom`. This metadata is
   browser-demo metadata; it is not an executable DRP2 command.
 - Bind-group layout `visibility`, storage `access`, render-pipeline `vertex_buffers`, and
-  render-pipeline `color_targets` are required by the fixture dashboard. Standalone demo streams
-  still use DRP2 defaults for color targets where the protocol allows backend defaults, but shader
-  input vertex-buffer inference is limited to the explicit demo-compatibility option.
+  render-pipeline `color_targets` are required by the fixture dashboard and present in committed
+  browser streams. Shader input vertex-buffer inference is limited to the explicit
+  demo-compatibility option.
 - The fixture dashboard retained runtime stress section loads `scene_point_wgsl`,
   `scene_primitive_wgsl`, `texture_sampling_wgsl`, and `attachment_depth_wgsl` once each, renders
   `10` repeated frames through `Drp2WebGpuRuntime`, and checks stable resource counts with no open
