@@ -171,6 +171,8 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(showcase spatial_omics showcase/spatial_omics.c)
     dvz_add_example(showcase labels showcase/labels.c)
 
+    dvz_add_example(showcases wind_field showcases/wind_field.c)
+
     dvz_add_example(tools hosted_glfw_smoke tools/hosted_glfw_smoke.c)
     dvz_add_example(tools axis_lattice_smoke tools/axis_lattice_smoke.c)
     dvz_add_example(tools replay_dvzr tools/replay_dvzr.c)

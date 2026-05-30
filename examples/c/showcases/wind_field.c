@@ -1,0 +1,1126 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
+/* wind_field - synthetic weather-like scalar and vector field showcase.
+ *
+ * Scenario: showcase_wind_field
+ * Style: showcase, graphite_cyan, 1600x1000 capture target
+ *
+ * Build:  just example-c showcases/wind_field
+ * Run:    ./build/examples/c/showcases/wind_field
+ * Smoke:  ./build/examples/c/showcases/wind_field 120
+ */
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include <math.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+
+#include "_alloc.h"
+#include "_assertions.h"
+#include "datoviz/app.h"
+#include "datoviz/scene.h"
+#include "example_common.h"
+#include "example_style.h"
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define WIDTH  1600u
+#define HEIGHT 1000u
+
+#define FIELD_WIDTH  384u
+#define FIELD_HEIGHT 240u
+
+#define VECTOR_COLS  43u
+#define VECTOR_ROWS  27u
+#define VECTOR_COUNT (VECTOR_COLS * VECTOR_ROWS)
+
+#define STREAMLINE_COUNT       58u
+#define STREAMLINE_POINT_COUNT 96u
+#define STREAMLINE_TOTAL_COUNT (STREAMLINE_COUNT * STREAMLINE_POINT_COUNT)
+
+#define PROBE_SEGMENTS      36u
+#define COLORMAP_LUT_SIZE   256u
+#define ANIMATION_STRIDE    2u
+#define ANIMATION_FPS       60.0f
+#define WIND_SPEED_MAX_MPS  80.0f
+#define DOMAIN_X_MIN_KM     -620.0f
+#define DOMAIN_X_MAX_KM     +620.0f
+#define DOMAIN_Y_MIN_KM     -390.0f
+#define DOMAIN_Y_MAX_KM     +390.0f
+#define STORM_CENTER_X_KM   +245.0f
+#define STORM_CENTER_Y_KM   -72.0f
+#define PROBE_X_KM          +345.0f
+#define PROBE_Y_KM          -50.0f
+
+static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct WindSample
+{
+    float u;
+    float v;
+    float speed;
+    float direction_deg;
+} WindSample;
+
+
+typedef struct WindShowcaseState
+{
+    DvzPanel* panel;
+    DvzSampledField* field;
+    DvzVisual* vectors;
+    DvzVisual* streamlines;
+    float* values;
+    uint32_t frame_index;
+} WindShowcaseState;
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Clamp a float to the unit interval.
+ *
+ * @param value input value
+ * @return clamped value
+ */
+static float _clamp01(float value)
+{
+    if (value < 0.0f)
+        return 0.0f;
+    if (value > 1.0f)
+        return 1.0f;
+    return value;
+}
+
+
+
+/**
+ * Convert a normalized float channel to an 8-bit channel.
+ *
+ * @param value normalized channel value
+ * @return clamped 8-bit channel
+ */
+static uint8_t _u8(float value)
+{
+    return (uint8_t)(255.0f * _clamp01(value) + 0.5f);
+}
+
+
+
+/**
+ * Linearly interpolate two floats.
+ *
+ * @param a first value
+ * @param b second value
+ * @param t interpolation parameter
+ * @return interpolated value
+ */
+static float _mix(float a, float b, float t)
+{
+    return a + (b - a) * t;
+}
+
+
+
+/**
+ * Return a smooth pseudo terrain mask in the weather domain.
+ *
+ * The mask is not cartographic data; it gives the synthetic wind field a darker land/sea-like
+ * structure and a weak friction term so arrows do not look like pure mathematical noise.
+ *
+ * @param x domain X coordinate in km
+ * @param y domain Y coordinate in km
+ * @return terrain mask in [0, 1]
+ */
+static float _terrain_mask(float x, float y)
+{
+    const float n0 = sinf(0.0062f * x + 0.0028f * y);
+    const float n1 = sinf(0.0110f * x - 0.0075f * y + 1.8f);
+    const float ridge = 0.45f * n0 + 0.30f * n1 + 0.20f * sinf(0.0048f * (x + 1.7f * y));
+    return _clamp01(0.48f + 0.55f * ridge);
+}
+
+
+
+/**
+ * Sample the synthetic weather wind field.
+ *
+ * @param x domain X coordinate in km
+ * @param y domain Y coordinate in km
+ * @param time_s deterministic animation time in seconds
+ * @return wind sample with vector, speed, and direction
+ */
+static WindSample _wind_sample(float x, float y, float time_s)
+{
+    const float center_x = STORM_CENTER_X_KM + 26.0f * sinf(0.105f * time_s);
+    const float center_y = STORM_CENTER_Y_KM + 16.0f * cosf(0.083f * time_s + 0.7f);
+    const float dx = x - center_x;
+    const float dy = y - center_y;
+    const float r = sqrtf(dx * dx + dy * dy) + 1e-3f;
+
+    const float eye_radius = 112.0f;
+    const float rr = r / eye_radius;
+    const float breathing = 1.0f + 0.045f * sinf(0.17f * time_s);
+    const float vortex = 70.0f * breathing * rr * expf(0.5f * (1.0f - rr * rr));
+    const float spiral = expf(-(r * r) / (2.0f * 330.0f * 330.0f));
+    const float inflow = -9.5f * spiral;
+    const float terrain = _terrain_mask(x, y);
+
+    float u = 17.0f + 0.010f * y + 1.9f * sinf(0.090f * time_s + 0.4f);
+    float v = -3.5f + 3.5f * sinf(0.008f * x + 0.7f + 0.12f * time_s);
+
+    u += -vortex * dy / r + inflow * dx / r;
+    v += +vortex * dx / r + inflow * dy / r;
+
+    const float shear = 6.5f * sinf(0.0055f * (x - 0.8f * y) + 0.20f * time_s);
+    u += shear * expf(-(y + 125.0f) * (y + 125.0f) / (2.0f * 310.0f * 310.0f));
+    v += 4.0f * sinf(0.007f * y - 0.3f + 0.16f * time_s) *
+         expf(-(x + 220.0f) * (x + 220.0f) / (2.0f * 520.0f * 520.0f));
+
+    const float friction = 1.0f - 0.17f * terrain;
+    u *= friction;
+    v *= friction;
+
+    const float speed = sqrtf(u * u + v * v);
+    float dir = atan2f(u, v) * 180.0f / 3.14159265359f;
+    if (dir < 0.0f)
+        dir += 360.0f;
+
+    return (WindSample){.u = u, .v = v, .speed = speed, .direction_deg = dir};
+}
+
+
+
+/**
+ * Map one wind speed to the showcase colormap.
+ *
+ * @param speed_mps wind speed in m/s
+ * @return output RGBA8 color
+ */
+static DvzColor _wind_colormap(float speed_mps)
+{
+    const float t = _clamp01(speed_mps / WIND_SPEED_MAX_MPS);
+    DvzColor c0 = dvz_color_rgb(14, 17, 23);
+    DvzColor c1 = dvz_color_rgb(23, 65, 92);
+    DvzColor c2 = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
+    DvzColor c3 = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
+    DvzColor c4 = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
+    DvzColor c5 = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ERROR);
+
+    DvzColor a = c0;
+    DvzColor b = c1;
+    float local = t / 0.24f;
+    if (t >= 0.24f && t < 0.52f)
+    {
+        a = c1;
+        b = c2;
+        local = (t - 0.24f) / 0.28f;
+    }
+    else if (t >= 0.52f && t < 0.72f)
+    {
+        a = c2;
+        b = c3;
+        local = (t - 0.52f) / 0.20f;
+    }
+    else if (t >= 0.72f && t < 0.90f)
+    {
+        a = c3;
+        b = c4;
+        local = (t - 0.72f) / 0.18f;
+    }
+    else if (t >= 0.90f)
+    {
+        a = c4;
+        b = c5;
+        local = (t - 0.90f) / 0.10f;
+    }
+
+    local = _clamp01(local);
+    return dvz_color_rgba(
+        _u8(_mix((float)a.r / 255.0f, (float)b.r / 255.0f, local)),
+        _u8(_mix((float)a.g / 255.0f, (float)b.g / 255.0f, local)),
+        _u8(_mix((float)a.b / 255.0f, (float)b.b / 255.0f, local)), 255u);
+}
+
+
+
+/**
+ * Map one wind speed to an overlay stroke color.
+ *
+ * @param speed_mps wind speed in m/s
+ * @param alpha output alpha
+ * @return output RGBA8 color
+ */
+static DvzColor _wind_overlay_color(float speed_mps, uint8_t alpha)
+{
+    const float t = _clamp01(speed_mps / WIND_SPEED_MAX_MPS);
+    DvzColor a = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
+    DvzColor b = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
+    float local = t / 0.70f;
+    if (t >= 0.70f)
+    {
+        a = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
+        b = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
+        local = (t - 0.70f) / 0.30f;
+    }
+
+    local = _clamp01(local);
+    return dvz_color_rgba(
+        _u8(_mix((float)a.r / 255.0f, (float)b.r / 255.0f, local)),
+        _u8(_mix((float)a.g / 255.0f, (float)b.g / 255.0f, local)),
+        _u8(_mix((float)a.b / 255.0f, (float)b.b / 255.0f, local)), alpha);
+}
+
+
+
+/**
+ * Fill the custom wind-speed colormap LUT.
+ *
+ * @param colors output RGBA8 LUT
+ */
+static void _fill_wind_colormap(DvzColor colors[COLORMAP_LUT_SIZE])
+{
+    ANN(colors);
+
+    for (uint32_t i = 0; i < COLORMAP_LUT_SIZE; i++)
+    {
+        const float t =
+            COLORMAP_LUT_SIZE > 1u ? (float)i / (float)(COLORMAP_LUT_SIZE - 1u) : 0.0f;
+        colors[i] = _wind_colormap(t * WIND_SPEED_MAX_MPS);
+    }
+}
+
+
+
+/**
+ * Fill the scalar wind-speed field.
+ *
+ * @param values output scalar field values in m/s
+ * @param time_s deterministic animation time in seconds
+ */
+static void _fill_scalar_field(float* values, float time_s)
+{
+    ANN(values);
+
+    for (uint32_t y = 0; y < FIELD_HEIGHT; y++)
+    {
+        const float fy = FIELD_HEIGHT > 1u ? (float)y / (float)(FIELD_HEIGHT - 1u) : 0.0f;
+        const float data_y = _mix(DOMAIN_Y_MIN_KM, DOMAIN_Y_MAX_KM, fy);
+        for (uint32_t x = 0; x < FIELD_WIDTH; x++)
+        {
+            const float fx = FIELD_WIDTH > 1u ? (float)x / (float)(FIELD_WIDTH - 1u) : 0.0f;
+            const float data_x = _mix(DOMAIN_X_MIN_KM, DOMAIN_X_MAX_KM, fx);
+            WindSample sample = _wind_sample(data_x, data_y, time_s);
+            const float terrain = _terrain_mask(data_x, data_y);
+            values[y * FIELD_WIDTH + x] =
+                _clamp01((sample.speed + 6.0f * terrain) / WIND_SPEED_MAX_MPS) *
+                WIND_SPEED_MAX_MPS;
+        }
+    }
+}
+
+
+
+/**
+ * Convert data-space positions to visual-space positions in one panel.
+ *
+ * @param panel target panel
+ * @param data input data positions
+ * @param visual output visual positions
+ * @param count number of positions
+ * @param z visual Z coordinate to assign after transform
+ * @return true on success
+ */
+static bool _data_to_visual(
+    DvzPanel* panel, const vec3* data, vec3* visual, uint32_t count, float z)
+{
+    ANN(panel);
+    ANN(data);
+    ANN(visual);
+
+    if (dvz_panel_data_to_visual_positions(panel, (const float*)data, (float*)visual, count) != 0)
+        return false;
+    for (uint32_t i = 0; i < count; i++)
+        visual[i][2] = z;
+    return true;
+}
+
+
+
+/**
+ * Add the scalar wind-speed image visual.
+ *
+ * @param scene scene owning the visual
+ * @param panel panel receiving the visual
+ * @param scale scale bound to the scalar image
+ * @param values scalar field values
+ * @param out_field output sampled field
+ * @return true when the image was added
+ */
+static bool _add_wind_image(
+    DvzScene* scene, DvzPanel* panel, DvzScale* scale, float* values,
+    DvzSampledField** out_field)
+{
+    ANN(scene);
+    ANN(panel);
+    ANN(scale);
+    ANN(values);
+    ANN(out_field);
+
+    vec3 data_positions[4] = {
+        {DOMAIN_X_MIN_KM, DOMAIN_Y_MIN_KM, 0.0f},
+        {DOMAIN_X_MIN_KM, DOMAIN_Y_MAX_KM, 0.0f},
+        {DOMAIN_X_MAX_KM, DOMAIN_Y_MIN_KM, 0.0f},
+        {DOMAIN_X_MAX_KM, DOMAIN_Y_MAX_KM, 0.0f},
+    };
+    vec3 visual_positions[4] = {{0}};
+    if (!_data_to_visual(panel, data_positions, visual_positions, 4, 0.0f))
+        return false;
+
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+
+    DvzVisual* image = dvz_image(scene, 0);
+    if (image == NULL)
+        return false;
+    if (dvz_visual_set_data(image, "position", visual_positions, 4) != 0)
+        return false;
+    if (dvz_visual_set_data(image, "texcoords", texcoords, 4) != 0)
+        return false;
+    if (dvz_visual_set_scale(image, "colormap", scale) != 0)
+        return false;
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = FIELD_WIDTH,
+                   .height = FIELD_HEIGHT,
+                   .depth = 1,
+               });
+    if (field == NULL)
+        return false;
+    if (!dvz_sampled_field_set_data(
+            field, &(DvzFieldDataView){
+                       .data = values,
+                       .bytes_per_row = FIELD_WIDTH * sizeof(float),
+                       .rows_per_image = FIELD_HEIGHT,
+                   }))
+    {
+        return false;
+    }
+    if (!dvz_visual_set_field(image, "field", field))
+        return false;
+    if (dvz_visual_set_depth_test(image, false) != 0)
+        return false;
+    if (dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){.z_layer = 0}) != 0)
+        return false;
+    *out_field = field;
+    return true;
+}
+
+
+
+/**
+ * Fill straight wind-vector visual data.
+ *
+ * @param panel target panel
+ * @param positions output vector positions in visual coordinates
+ * @param vectors output vector displacements in visual coordinates
+ * @param colors output vector colors
+ * @param widths output vector stroke widths
+ * @param time_s deterministic animation time in seconds
+ * @return true on success
+ */
+static bool _fill_vectors(
+    DvzPanel* panel, vec3* positions, vec3* vectors, DvzColor* colors, float* widths,
+    float time_s)
+{
+    ANN(panel);
+    ANN(positions);
+    ANN(vectors);
+    ANN(colors);
+    ANN(widths);
+
+    uint32_t idx = 0;
+    const float step_x = (DOMAIN_X_MAX_KM - DOMAIN_X_MIN_KM) / (float)(VECTOR_COLS - 1u);
+    const float step_y = (DOMAIN_Y_MAX_KM - DOMAIN_Y_MIN_KM) / (float)(VECTOR_ROWS - 1u);
+    for (uint32_t row = 0; row < VECTOR_ROWS; row++)
+    {
+        for (uint32_t col = 0; col < VECTOR_COLS; col++)
+        {
+            const float x = DOMAIN_X_MIN_KM + (float)col * step_x;
+            const float y = DOMAIN_Y_MIN_KM + (float)row * step_y;
+            WindSample sample = _wind_sample(x, y, time_s);
+            const float scale = 1.02f;
+
+            vec3 data_start[1] = {{x, y, 0.0f}};
+            vec3 data_end[1] = {{x + scale * sample.u, y + scale * sample.v, 0.0f}};
+            vec3 visual_start[1] = {{0}};
+            vec3 visual_end[1] = {{0}};
+            if (!_data_to_visual(panel, data_start, visual_start, 1, 0.03f))
+                return false;
+            if (!_data_to_visual(panel, data_end, visual_end, 1, 0.03f))
+                return false;
+
+            positions[idx][0] = visual_start[0][0];
+            positions[idx][1] = visual_start[0][1];
+            positions[idx][2] = visual_start[0][2];
+            vectors[idx][0] = visual_end[0][0] - visual_start[0][0];
+            vectors[idx][1] = visual_end[0][1] - visual_start[0][1];
+            vectors[idx][2] = 0.0f;
+
+            colors[idx] = _wind_overlay_color(
+                sample.speed, (uint8_t)(150u + (uint32_t)(78.0f * _clamp01(sample.speed / 70.0f))));
+            widths[idx] = 2.2f + 1.6f * _clamp01(sample.speed / WIND_SPEED_MAX_MPS);
+            idx++;
+        }
+    }
+    return true;
+}
+
+
+
+/**
+ * Add the retained vector field.
+ *
+ * @param scene scene owning the visual
+ * @param panel panel receiving the visual
+ * @param out_visual output vector visual
+ * @param time_s deterministic animation time in seconds
+ * @return true on success
+ */
+static bool _add_vectors(DvzScene* scene, DvzPanel* panel, DvzVisual** out_visual, float time_s)
+{
+    ANN(scene);
+    ANN(panel);
+    ANN(out_visual);
+
+    vec3* positions = (vec3*)dvz_calloc(VECTOR_COUNT, sizeof(*positions));
+    vec3* vectors = (vec3*)dvz_calloc(VECTOR_COUNT, sizeof(*vectors));
+    DvzColor* colors = (DvzColor*)dvz_calloc(VECTOR_COUNT, sizeof(*colors));
+    float* widths = (float*)dvz_calloc(VECTOR_COUNT, sizeof(*widths));
+    if (positions == NULL || vectors == NULL || colors == NULL || widths == NULL)
+        goto error;
+    if (!_fill_vectors(panel, positions, vectors, colors, widths, time_s))
+        goto error;
+
+    DvzVisual* visual = dvz_vector(scene, 0);
+    if (visual == NULL)
+        goto error;
+    DvzVectorStyle style = dvz_vector_style();
+    style.end_cap = DVZ_SEGMENT_CAP_TRIANGLE_OUT;
+    if (dvz_vector_set_style(visual, &style) != 0)
+        goto error;
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = VECTOR_COUNT},
+        {.attr_name = "vector", .data = vectors, .item_count = VECTOR_COUNT},
+        {.attr_name = "color", .data = colors, .item_count = VECTOR_COUNT},
+        {.attr_name = "stroke_width", .data = widths, .item_count = VECTOR_COUNT},
+    };
+    if (dvz_visual_set_data_many(visual, updates, 4) != 0)
+        goto error;
+    if (dvz_visual_set_depth_test(visual, false) != 0)
+        goto error;
+    if (dvz_panel_add_visual(panel, visual, &(DvzVisualAttachDesc){.z_layer = 2}) != 0)
+        goto error;
+
+    *out_visual = visual;
+    dvz_free(widths);
+    dvz_free(colors);
+    dvz_free(vectors);
+    dvz_free(positions);
+    return true;
+
+error:
+    dvz_free(widths);
+    dvz_free(colors);
+    dvz_free(vectors);
+    dvz_free(positions);
+    return false;
+}
+
+
+
+/**
+ * Fill streamline path data by integrating through the same wind field.
+ *
+ * @param panel target panel
+ * @param positions output path positions in visual coordinates
+ * @param colors output path colors
+ * @param widths output stroke widths
+ * @param subpaths output subpath lengths
+ * @param time_s deterministic animation time in seconds
+ * @return true on success
+ */
+static bool _fill_streamlines(
+    DvzPanel* panel, vec3* positions, DvzColor* colors, float* widths, uint32_t* subpaths,
+    float time_s)
+{
+    ANN(panel);
+    ANN(positions);
+    ANN(colors);
+    ANN(widths);
+    ANN(subpaths);
+
+    for (uint32_t line = 0; line < STREAMLINE_COUNT; line++)
+    {
+        subpaths[line] = STREAMLINE_POINT_COUNT;
+        const float band = (float)line / (float)(STREAMLINE_COUNT - 1u);
+        float x = DOMAIN_X_MIN_KM + 78.0f + 54.0f * (float)(line % 8u) +
+                  22.0f * sinf(0.24f * time_s + 3.1f * band);
+        float y = _mix(DOMAIN_Y_MIN_KM + 32.0f, DOMAIN_Y_MAX_KM - 38.0f, band);
+        if (line >= STREAMLINE_COUNT / 2u)
+        {
+            const uint32_t inner = line - STREAMLINE_COUNT / 2u;
+            const float a =
+                TAU * (float)inner / (float)(STREAMLINE_COUNT / 2u) + 0.10f * time_s;
+            const float radius = 118.0f + 4.6f * (float)(inner % 7u);
+            x = STORM_CENTER_X_KM + radius * cosf(a);
+            y = STORM_CENTER_Y_KM + (0.78f * radius) * sinf(a);
+        }
+
+        for (uint32_t point = 0; point < STREAMLINE_POINT_COUNT; point++)
+        {
+            const uint32_t idx = line * STREAMLINE_POINT_COUNT + point;
+            vec3 data[1] = {{x, y, 0.0f}};
+            vec3 visual[1] = {{0}};
+            if (!_data_to_visual(panel, data, visual, 1, 0.02f))
+                return false;
+            positions[idx][0] = visual[0][0];
+            positions[idx][1] = visual[0][1];
+            positions[idx][2] = visual[0][2];
+
+            WindSample sample = _wind_sample(x, y, time_s);
+            colors[idx] = _wind_overlay_color(
+                sample.speed, line < STREAMLINE_COUNT / 2u ? 74u : 112u);
+            widths[idx] = line < STREAMLINE_COUNT / 2u ? 1.0f : 1.35f;
+
+            const float norm = fmaxf(sample.speed, 7.5f);
+            const float step = line < STREAMLINE_COUNT / 2u ? 7.5f : 5.6f;
+            x += step * sample.u / norm;
+            y += step * sample.v / norm;
+            if (x < DOMAIN_X_MIN_KM || x > DOMAIN_X_MAX_KM || y < DOMAIN_Y_MIN_KM ||
+                y > DOMAIN_Y_MAX_KM)
+            {
+                x = DOMAIN_X_MIN_KM + 80.0f;
+                y = _mix(DOMAIN_Y_MIN_KM + 50.0f, DOMAIN_Y_MAX_KM - 50.0f, band);
+            }
+        }
+    }
+    return true;
+}
+
+
+
+/**
+ * Add streamlines as a subdued path overlay.
+ *
+ * @param scene scene owning the visual
+ * @param panel panel receiving the visual
+ * @param out_visual output path visual
+ * @param time_s deterministic animation time in seconds
+ * @return true on success
+ */
+static bool
+_add_streamlines(DvzScene* scene, DvzPanel* panel, DvzVisual** out_visual, float time_s)
+{
+    ANN(scene);
+    ANN(panel);
+    ANN(out_visual);
+
+    vec3* positions = (vec3*)dvz_calloc(STREAMLINE_TOTAL_COUNT, sizeof(*positions));
+    DvzColor* colors = (DvzColor*)dvz_calloc(STREAMLINE_TOTAL_COUNT, sizeof(*colors));
+    float* widths = (float*)dvz_calloc(STREAMLINE_TOTAL_COUNT, sizeof(*widths));
+    uint32_t* subpaths = (uint32_t*)dvz_calloc(STREAMLINE_COUNT, sizeof(*subpaths));
+    if (positions == NULL || colors == NULL || widths == NULL || subpaths == NULL)
+        goto error;
+    if (!_fill_streamlines(panel, positions, colors, widths, subpaths, time_s))
+        goto error;
+
+    DvzVisual* path = dvz_path(scene, 0);
+    if (path == NULL)
+        goto error;
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = STREAMLINE_TOTAL_COUNT},
+        {.attr_name = "color", .data = colors, .item_count = STREAMLINE_TOTAL_COUNT},
+        {.attr_name = "stroke_width", .data = widths, .item_count = STREAMLINE_TOTAL_COUNT},
+    };
+    if (dvz_visual_set_data_many(path, updates, 3) != 0)
+        goto error;
+    if (dvz_path_set_subpaths(path, STREAMLINE_COUNT, subpaths) != 0)
+        goto error;
+    if (dvz_path_set_caps(path, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) != 0)
+        goto error;
+    if (dvz_path_set_join(path, DVZ_PATH_JOIN_ROUND, 4.0f) != 0)
+        goto error;
+    if (dvz_visual_set_depth_test(path, false) != 0)
+        goto error;
+    if (dvz_panel_add_visual(panel, path, &(DvzVisualAttachDesc){.z_layer = 1}) != 0)
+        goto error;
+
+    *out_visual = path;
+    dvz_free(subpaths);
+    dvz_free(widths);
+    dvz_free(colors);
+    dvz_free(positions);
+    return true;
+
+error:
+    dvz_free(subpaths);
+    dvz_free(widths);
+    dvz_free(colors);
+    dvz_free(positions);
+    return false;
+}
+
+
+
+/**
+ * Add a fixed probe crosshair and readout card.
+ *
+ * @param scene scene owning marker visuals
+ * @param panel panel receiving overlays
+ * @return true on success
+ */
+static bool _add_probe(DvzScene* scene, DvzPanel* panel)
+{
+    ANN(scene);
+    ANN(panel);
+
+    vec3 data_starts[PROBE_SEGMENTS] = {{0}};
+    vec3 data_ends[PROBE_SEGMENTS] = {{0}};
+    vec3 starts[PROBE_SEGMENTS] = {{0}};
+    vec3 ends[PROBE_SEGMENTS] = {{0}};
+    DvzColor colors[PROBE_SEGMENTS] = {{0}};
+    float widths[PROBE_SEGMENTS] = {0};
+    const float radius_x = 18.0f;
+    const float radius_y = 14.0f;
+    const DvzColor cyan = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
+
+    for (uint32_t i = 0; i < PROBE_SEGMENTS; i++)
+    {
+        const float a0 = TAU * (float)i / (float)PROBE_SEGMENTS;
+        const float a1 = TAU * (float)(i + 1u) / (float)PROBE_SEGMENTS;
+        data_starts[i][0] = PROBE_X_KM + radius_x * cosf(a0);
+        data_starts[i][1] = PROBE_Y_KM + radius_y * sinf(a0);
+        data_ends[i][0] = PROBE_X_KM + radius_x * cosf(a1);
+        data_ends[i][1] = PROBE_Y_KM + radius_y * sinf(a1);
+        colors[i] = cyan;
+        colors[i].a = 235u;
+        widths[i] = 2.0f;
+    }
+
+    if (!_data_to_visual(panel, data_starts, starts, PROBE_SEGMENTS, 0.05f))
+        return false;
+    if (!_data_to_visual(panel, data_ends, ends, PROBE_SEGMENTS, 0.05f))
+        return false;
+
+    DvzVisual* ring = dvz_segment(scene, 0);
+    if (ring == NULL)
+        return false;
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position_start", .data = starts, .item_count = PROBE_SEGMENTS},
+        {.attr_name = "position_end", .data = ends, .item_count = PROBE_SEGMENTS},
+        {.attr_name = "color", .data = colors, .item_count = PROBE_SEGMENTS},
+        {.attr_name = "stroke_width", .data = widths, .item_count = PROBE_SEGMENTS},
+    };
+    if (dvz_visual_set_data_many(ring, updates, 4) != 0)
+        return false;
+    if (dvz_segment_set_caps(ring, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) != 0)
+        return false;
+    if (dvz_visual_set_depth_test(ring, false) != 0)
+        return false;
+    if (dvz_panel_add_visual(panel, ring, &(DvzVisualAttachDesc){.z_layer = 3}) != 0)
+        return false;
+
+    vec3 data_dot[1] = {{PROBE_X_KM, PROBE_Y_KM, 0.0f}};
+    vec3 dot_position[1] = {{0}};
+    if (!_data_to_visual(panel, data_dot, dot_position, 1, 0.06f))
+        return false;
+    DvzVisual* dot = dvz_point(scene, 0);
+    if (dot == NULL)
+        return false;
+    DvzColor dot_color[1] = {cyan};
+    dot_color[0].a = 245u;
+    float diameter[1] = {7.0f};
+    DvzVisualDataUpdate dot_updates[] = {
+        {.attr_name = "position", .data = dot_position, .item_count = 1},
+        {.attr_name = "color", .data = dot_color, .item_count = 1},
+        {.attr_name = "diameter", .data = diameter, .item_count = 1},
+    };
+    if (dvz_visual_set_data_many(dot, dot_updates, 3) != 0)
+        return false;
+    if (dvz_visual_set_depth_test(dot, false) != 0)
+        return false;
+    if (dvz_panel_add_visual(panel, dot, &(DvzVisualAttachDesc){.z_layer = 4}) != 0)
+        return false;
+
+    WindSample sample = _wind_sample(PROBE_X_KM, PROBE_Y_KM, 0.0f);
+    char readout[96] = {0};
+    snprintf(
+        readout, sizeof(readout), "Wind Speed  %.1f m/s    Dir  %.0f deg", sample.speed,
+        sample.direction_deg);
+
+    DvzOverlay* overlay = dvz_overlay(panel, 0);
+    if (overlay == NULL)
+        return false;
+    DvzOverlayCardStyle card_style = dvz_overlay_card_style();
+    DvzColor panel_bg = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_PANEL_BG);
+    DvzColor text = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
+    card_style.background_color = dvz_color_rgba(panel_bg.r, panel_bg.g, panel_bg.b, 226u);
+    card_style.text_color = text;
+    card_style.padding_px[0] = 12.0f;
+    card_style.padding_px[1] = 7.0f;
+    card_style.min_width_px = 322.0f;
+    card_style.height_px = 32.0f;
+    card_style.glyph_advance_px = 7.5f;
+    card_style.text_size_px = 14.0f;
+    card_style.text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    card_style.max_text_chars = 96u;
+
+    DvzOverlayCard* card = dvz_overlay_card(
+        overlay,
+        &(DvzOverlayCardDesc){
+            .text = readout,
+            .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_RIGHT,
+            .offset_px = {-112.0f, -46.0f},
+            .style = &card_style,
+        });
+    return card != NULL;
+}
+
+
+
+/**
+ * Create the shared wind-speed color scale.
+ *
+ * @param scene scene owning scale resources
+ * @return created scale, or NULL on failure
+ */
+static DvzScale* _add_wind_scale(DvzScene* scene)
+{
+    ANN(scene);
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){
+                   .kind = DVZ_SCALE_CONTINUOUS,
+                   .label = "wind speed",
+                   .unit = "m/s",
+                   .format = {.precision = 0, .trim_trailing_zeros = true},
+               });
+    if (scale == NULL)
+        return NULL;
+    dvz_scale_set_domain(scale, 0.0, WIND_SPEED_MAX_MPS);
+    dvz_scale_set_view_range(scale, 0.0, WIND_SPEED_MAX_MPS);
+
+    DvzColor colors[COLORMAP_LUT_SIZE] = {0};
+    _fill_wind_colormap(colors);
+    DvzColormap* colormap =
+        dvz_colormap_custom(scene, "showcase_wind_speed", colors, COLORMAP_LUT_SIZE);
+    if (colormap == NULL)
+        return NULL;
+    dvz_scale_set_colormap(scale, colormap);
+    return scale;
+}
+
+
+
+/**
+ * Add the wind-speed colorbar.
+ *
+ * @param panel panel receiving the colorbar
+ * @param scale scale bound to the colorbar
+ * @return created colorbar, or NULL on failure
+ */
+static DvzColorbar* _add_wind_colorbar(DvzPanel* panel, DvzScale* scale)
+{
+    ANN(panel);
+    ANN(scale);
+
+    DvzColorbar* colorbar = dvz_colorbar(
+        panel, scale,
+        &(DvzColorbarDesc){
+            .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_LEFT,
+            .title = "m/s",
+            .reserve_px = 92.0f,
+            .ramp_width_px = 24.0f,
+            .plot_gap_px = 16.0f,
+            .tick_length_px = 6.0f,
+            .label_gap_px = 7.0f,
+            .text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+        });
+    if (colorbar != NULL)
+    {
+        dvz_colorbar_set_format(
+            colorbar, &(DvzFormatDesc){.precision = 0, .trim_trailing_zeros = true});
+    }
+    return colorbar;
+}
+
+
+
+/**
+ * Update the scalar sampled field with the animated wind speed.
+ *
+ * @param state showcase animation state
+ * @param time_s deterministic animation time in seconds
+ * @return true on success
+ */
+static bool _update_wind_image(WindShowcaseState* state, float time_s)
+{
+    if (state == NULL || state->field == NULL || state->values == NULL)
+        return false;
+
+    _fill_scalar_field(state->values, time_s);
+    return dvz_sampled_field_update_region(
+        state->field,
+        (DvzFieldRegion){
+            .x = 0,
+            .y = 0,
+            .z = 0,
+            .width = FIELD_WIDTH,
+            .height = FIELD_HEIGHT,
+            .depth = 1,
+        },
+        &(DvzFieldDataView){
+            .data = state->values,
+            .bytes_per_row = FIELD_WIDTH * sizeof(float),
+            .rows_per_image = FIELD_HEIGHT,
+        });
+}
+
+
+
+/**
+ * Update the vector overlay from the animated wind field.
+ *
+ * @param state showcase animation state
+ * @param time_s deterministic animation time in seconds
+ * @return true on success
+ */
+static bool _update_vectors(WindShowcaseState* state, float time_s)
+{
+    if (state == NULL || state->panel == NULL || state->vectors == NULL)
+        return false;
+
+    vec3* positions = (vec3*)dvz_calloc(VECTOR_COUNT, sizeof(*positions));
+    vec3* vectors = (vec3*)dvz_calloc(VECTOR_COUNT, sizeof(*vectors));
+    DvzColor* colors = (DvzColor*)dvz_calloc(VECTOR_COUNT, sizeof(*colors));
+    float* widths = (float*)dvz_calloc(VECTOR_COUNT, sizeof(*widths));
+    bool ok = false;
+    if (positions == NULL || vectors == NULL || colors == NULL || widths == NULL)
+        goto cleanup;
+    if (!_fill_vectors(state->panel, positions, vectors, colors, widths, time_s))
+        goto cleanup;
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = VECTOR_COUNT},
+        {.attr_name = "vector", .data = vectors, .item_count = VECTOR_COUNT},
+        {.attr_name = "color", .data = colors, .item_count = VECTOR_COUNT},
+        {.attr_name = "stroke_width", .data = widths, .item_count = VECTOR_COUNT},
+    };
+    ok = dvz_visual_set_data_many(state->vectors, updates, 4) == 0;
+
+cleanup:
+    dvz_free(widths);
+    dvz_free(colors);
+    dvz_free(vectors);
+    dvz_free(positions);
+    return ok;
+}
+
+
+
+/**
+ * Update the streamline overlay from the animated wind field.
+ *
+ * @param state showcase animation state
+ * @param time_s deterministic animation time in seconds
+ * @return true on success
+ */
+static bool _update_streamlines(WindShowcaseState* state, float time_s)
+{
+    if (state == NULL || state->panel == NULL || state->streamlines == NULL)
+        return false;
+
+    vec3* positions = (vec3*)dvz_calloc(STREAMLINE_TOTAL_COUNT, sizeof(*positions));
+    DvzColor* colors = (DvzColor*)dvz_calloc(STREAMLINE_TOTAL_COUNT, sizeof(*colors));
+    float* widths = (float*)dvz_calloc(STREAMLINE_TOTAL_COUNT, sizeof(*widths));
+    uint32_t* subpaths = (uint32_t*)dvz_calloc(STREAMLINE_COUNT, sizeof(*subpaths));
+    bool ok = false;
+    if (positions == NULL || colors == NULL || widths == NULL || subpaths == NULL)
+        goto cleanup;
+    if (!_fill_streamlines(state->panel, positions, colors, widths, subpaths, time_s))
+        goto cleanup;
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = STREAMLINE_TOTAL_COUNT},
+        {.attr_name = "color", .data = colors, .item_count = STREAMLINE_TOTAL_COUNT},
+        {.attr_name = "stroke_width", .data = widths, .item_count = STREAMLINE_TOTAL_COUNT},
+    };
+    ok = dvz_visual_set_data_many(state->streamlines, updates, 3) == 0;
+
+cleanup:
+    dvz_free(subpaths);
+    dvz_free(widths);
+    dvz_free(colors);
+    dvz_free(positions);
+    return ok;
+}
+
+
+
+/**
+ * Advance the deterministic weather animation.
+ *
+ * @param win view receiving frames
+ * @param user_data showcase animation state
+ */
+static void _wind_frame(DvzView* win, void* user_data)
+{
+    WindShowcaseState* state = (WindShowcaseState*)user_data;
+    if (state == NULL)
+        return;
+
+    state->frame_index++;
+    if (state->frame_index % ANIMATION_STRIDE != 0)
+        return;
+
+    const float time_s = (float)state->frame_index / ANIMATION_FPS;
+    if (!_update_wind_image(state, time_s))
+        return;
+    if (!_update_streamlines(state, time_s))
+        return;
+    if (!_update_vectors(state, time_s))
+        return;
+    dvz_view_request_frame(win);
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the synthetic weather field showcase.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    uint32_t frames = example_frame_count(argc, argv);
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+    DvzView* win = NULL;
+    float* values = NULL;
+    bool capture_started = false;
+    WindShowcaseState state = {0};
+
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
+    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
+
+    DvzPanel* panel = dvz_panel_full(figure);
+    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    example_graphite_cyan_set_panel_background(panel);
+
+    bool ok = dvz_panel_set_layout_reserve(
+        panel, &(DvzPanelLayoutReserve){.left = 0.095f, .right = 0.030f, .bottom = 0.050f,
+                                        .top = 0.035f});
+    EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve() failed");
+
+    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, DOMAIN_X_MIN_KM, DOMAIN_X_MAX_KM);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(x) failed");
+    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, DOMAIN_Y_MIN_KM, DOMAIN_Y_MAX_KM);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(y) failed");
+
+    DvzScale* scale = _add_wind_scale(scene);
+    EXAMPLE_CHECK(scale != NULL, "_add_wind_scale() failed");
+    DvzColorbar* colorbar = _add_wind_colorbar(panel, scale);
+    EXAMPLE_CHECK(colorbar != NULL, "_add_wind_colorbar() failed");
+
+    values = (float*)dvz_calloc((DvzSize)FIELD_WIDTH * FIELD_HEIGHT, sizeof(float));
+    EXAMPLE_CHECK(values != NULL, "wind scalar field allocation failed");
+    _fill_scalar_field(values, 0.0f);
+    state.panel = panel;
+    state.values = values;
+
+    ok = _add_wind_image(scene, panel, scale, values, &state.field);
+    EXAMPLE_CHECK(ok, "_add_wind_image() failed");
+    ok = _add_streamlines(scene, panel, &state.streamlines, 0.0f);
+    EXAMPLE_CHECK(ok, "_add_streamlines() failed");
+    ok = _add_vectors(scene, panel, &state.vectors, 0.0f);
+    EXAMPLE_CHECK(ok, "_add_vectors() failed");
+    ok = _add_probe(scene, panel);
+    EXAMPLE_CHECK(ok, "_add_probe() failed");
+
+    DvzAppConfig app_config = dvz_app_config();
+    app_config.schedule_mode = DVZ_APP_SCHEDULE_CONTINUOUS;
+    app = dvz_app_with_config(scene, &app_config);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
+
+    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "showcase_wind_field");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    dvz_view_set_frame_callback(win, _wind_frame, &state);
+
+    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
+    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
+    dvz_view_request_frame(win);
+
+    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("showcase_wind_field");
+    rc = dvz_view_capture_start(win, &capture);
+    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_start() failed");
+    capture_started = true;
+
+    dvz_app_run(app, frames);
+    rc = dvz_view_capture_stop(win);
+    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_stop() failed");
+    capture_started = false;
+    ret = 0;
+
+cleanup:
+    if (capture_started && win != NULL)
+        (void)dvz_view_capture_stop(win);
+    dvz_free(values);
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
+}
