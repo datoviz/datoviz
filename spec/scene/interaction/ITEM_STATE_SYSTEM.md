@@ -1,6 +1,6 @@
 # Item State System
 
-Status: planned architecture, first v0.4 implementation slice active.
+Status: implemented v0.4 point-like slice, with additional item families planned.
 
 ## Goal
 
@@ -38,9 +38,9 @@ Initial visual effects:
 
 | Flag | Meaning | First visual support |
 | --- | --- | --- |
-| `DVZ_ITEM_STATE_VISUAL_ALPHA` | multiply item alpha by `alpha` | point, marker |
-| `DVZ_ITEM_STATE_VISUAL_TINT` | mix item color toward `tint` by `tint_mix` | point, marker |
-| `DVZ_ITEM_STATE_VISUAL_SCALE` | multiply point-like item size by `scale` | point, marker |
+| `DVZ_ITEM_STATE_VISUAL_ALPHA` | multiply item alpha by `alpha` | point, pixel, marker |
+| `DVZ_ITEM_STATE_VISUAL_TINT` | mix item color toward `tint` by `tint_mix` | point, pixel, marker |
+| `DVZ_ITEM_STATE_VISUAL_SCALE` | multiply point-like item size by `scale` | point, pixel, marker |
 
 Future effects may include outline, hide, desaturate, z-bias/raise, halo, pulse, and per-selection
 palette/group color. Add public flags only when at least one visual family implements them.
@@ -83,14 +83,33 @@ Hover is applied after selection so hover feedback remains visible on selected i
 
 ## v0.4 Slice
 
-Implement only retained point-like item state for:
+Implemented retained point-like item state for:
 
 1. `dvz_point()`
-2. `dvz_marker()`
+2. `dvz_pixel()`
+3. `dvz_marker()`
 
-The retained visual attribute is `item_state` (`uint32_t` per item). Point/marker selection shader
-variants consume this bitfield and shared style uniforms. Other visual families keep their current
-behavior until their item semantics are explicit.
+The retained visual attribute is `item_state` (`uint32_t` per item). Point/pixel/marker item-state
+shader variants consume this bitfield and shared style uniforms. Other visual families keep their
+current behavior until their item semantics are explicit.
+
+## Runtime Resource Architecture
+
+Item state uses two separate resources:
+
+1. `item_state`: a vertex-buffer attribute with one `uint32_t` bitfield per item.
+2. `item_state_style`: a uniform buffer with the selected, unselected, and hovered visual styles.
+
+The item-state style uniform is intentionally separate from `material_params`. Point-like
+item-state pipelines bind both resources in set 1:
+
+| Set | Binding | Resource |
+| --- | --- | --- |
+| 1 | 0 | `material_params` |
+| 1 | 1 | `item_state_style` |
+
+Keeping item-state style out of material slots lets point/pixel/marker item-state variants compose
+with ordinary material-backed features such as depth cueing and point/marker stroke style.
 
 ## Non-Goals For First Slice
 
