@@ -56,7 +56,10 @@ struct MarkerPickState
     DvzPanel* panel;
     DvzVisual* visual;
     DvzSelection* selection;
+    DvzColor base_colors[MARKER_COUNT];
+    DvzColor colors[MARKER_COUNT];
     float diameters[MARKER_COUNT];
+    bool selected[MARKER_COUNT];
     uint32_t hovered_index;
     bool cursor_valid;
     bool click_pending;
@@ -114,6 +117,45 @@ static void _set_marker_diameter(MarkerPickState* state, uint32_t index, float d
     state->diameters[index] = diameter;
     if (dvz_visual_set_data_range(state->visual, "diameter", &state->diameters[index], index, 1) != 0)
         fprintf(stderr, "dvz_visual_set_data_range(diameter, %u) failed\n", index);
+}
+
+
+
+/**
+ * Apply the visible selected/unselected marker color for one item.
+ *
+ * @param state marker-pick example state
+ * @param index marker index to update
+ */
+static void _set_marker_selection_color(MarkerPickState* state, uint32_t index)
+{
+    if (state == NULL || index >= MARKER_COUNT)
+        return;
+
+    state->colors[index] = state->selected[index] ? dvz_color_rgb(255, 235, 90)
+                                                  : state->base_colors[index];
+    if (dvz_visual_set_data_range(state->visual, "color", &state->colors[index], index, 1) != 0)
+        fprintf(stderr, "dvz_visual_set_data_range(color, %u) failed\n", index);
+}
+
+
+
+/**
+ * Clear the example-side visible selection colors.
+ *
+ * @param state marker-pick example state
+ */
+static void _clear_marker_selection_colors(MarkerPickState* state)
+{
+    if (state == NULL)
+        return;
+    for (uint32_t i = 0; i < MARKER_COUNT; i++)
+    {
+        if (!state->selected[i])
+            continue;
+        state->selected[i] = false;
+        _set_marker_selection_color(state, i);
+    }
 }
 
 
@@ -197,12 +239,22 @@ static void _marker_pick_frame(DvzView* win, void* user_data)
             latest_query.visual_family == DVZ_SCENE_VISUAL_FAMILY_MARKER &&
             latest_query.resolved_target == DVZ_SCENE_TARGET_ITEM)
         {
+            uint32_t index = (uint32_t)latest_query.resolved_id;
             if (dvz_selection_apply_query(state->selection, &latest_query) != 0)
                 fprintf(stderr, "dvz_selection_apply_query() failed\n");
+            if (index < MARKER_COUNT)
+            {
+                state->selected[index] = !state->selected[index];
+                _set_marker_selection_color(state, index);
+                fprintf(
+                    stdout, "%s marker id=%u\n",
+                    state->selected[index] ? "select" : "deselect", index);
+            }
         }
         else
         {
             dvz_selection_clear(state->selection);
+            _clear_marker_selection_colors(state);
         }
         state->click_pending = false;
     }
@@ -267,7 +319,6 @@ int main(int argc, char** argv)
     };
 
     vec3 positions[MARKER_COUNT] = {0};
-    DvzColor colors[MARKER_COUNT] = {0};
     float angles[MARKER_COUNT] = {0};
     uint32_t shapes[MARKER_COUNT] = {0};
 
@@ -279,7 +330,7 @@ int main(int argc, char** argv)
             positions[index][0] = -0.88f + 1.76f * ((float)col / (float)(GRID_COLS - 1));
             positions[index][1] = -0.72f + 1.44f * ((float)row / (float)(GRID_ROWS - 1));
             positions[index][2] = 0.0f;
-            colors[index] = dvz_color_rgb(
+            state.base_colors[index] = dvz_color_rgb(
                 (uint8_t)(60 + (170 * col) / (GRID_COLS - 1)),
                 (uint8_t)(110 + (100 * row) / (GRID_ROWS - 1)),
                 (uint8_t)(230 - (100 * col) / (GRID_COLS - 1)));
@@ -295,15 +346,19 @@ int main(int argc, char** argv)
         positions[index][0] = -0.05f + 0.025f * (float)i;
         positions[index][1] = -0.02f + 0.020f * (float)(i % 3u);
         positions[index][2] = 0.0f;
-        colors[index] = dvz_color_rgb(255, (uint8_t)(205 - 22u * i), (uint8_t)(90 + 24u * i));
-        state.diameters[index] = BASE_SIZE + 4.0f * (float)i;
+        state.base_colors[index] =
+            dvz_color_rgb(255, (uint8_t)(205 - 22u * i), (uint8_t)(90 + 24u * i));
+        state.diameters[index] = BASE_SIZE;
         angles[index] = 0.25f * PI_F * (float)i;
         shapes[index] = _marker_shape(index + 2u);
     }
 
+    for (uint32_t i = 0; i < MARKER_COUNT; i++)
+        state.colors[i] = state.base_colors[i];
+
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = MARKER_COUNT},
-        {.attr_name = "color", .data = colors, .item_count = MARKER_COUNT},
+        {.attr_name = "color", .data = state.colors, .item_count = MARKER_COUNT},
         {.attr_name = "diameter", .data = state.diameters, .item_count = MARKER_COUNT},
         {.attr_name = "angle", .data = angles, .item_count = MARKER_COUNT},
         {.attr_name = "shape", .data = shapes, .item_count = MARKER_COUNT},
