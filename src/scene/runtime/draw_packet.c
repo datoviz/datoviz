@@ -80,7 +80,7 @@ static const char* _draw_packet_role_name(const ConverterState* state, uint64_t 
         return "primitive_shading";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS:
         return "material_params";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION:
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_ITEM_STATE:
         return "item_state";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_FLAGS:
         return "path_flags";

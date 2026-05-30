@@ -1,7 +1,7 @@
 #version 450
 
 #include "common.glsl"
-#include "selection_style.glsl"
+#include "item_state_style.glsl"
 
 layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec4 inColor;

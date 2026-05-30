@@ -322,9 +322,9 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
     AT(_interaction_stream_has_pipeline_attr(
-        stream, "_pipe_point_selectg_depth", VK_FORMAT_R32_UINT, 5));
+        stream, "_pipe_point_item_stateg_depth", VK_FORMAT_R32_UINT, 5));
     AT(_interaction_stream_has_pipeline_attr(
-        stream, "_pipe_marker_selectg_depth", VK_FORMAT_R32_UINT, 5));
+        stream, "_pipe_marker_item_stateg_depth", VK_FORMAT_R32_UINT, 5));
     dvz_drp2_stream_destroy(stream);
 
     AT(point->attrs[point_state_idx].dirty_item_count == 0);

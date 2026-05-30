@@ -114,8 +114,8 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "point_style_frag" : "point_style_vert";
     case DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE_DEPTH_CUE:
         return fragment ? "point_cue_style_frag" : "point_cue_style_vert";
-    case DVZ_SCENE_BUILTIN_SHADER_POINT_SELECTION:
-        return fragment ? "point_select_frag" : "point_select_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_POINT_ITEM_STATE:
+        return fragment ? "point_item_state_frag" : "point_item_state_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PIXEL:
         return fragment ? "pixel_frag" : "pixel_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE:
@@ -134,8 +134,8 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "pixel_query_u32_frag" : "pixel_pick_vert";
     case DVZ_SCENE_BUILTIN_SHADER_MARKER:
         return fragment ? "marker_frag" : "marker_vert";
-    case DVZ_SCENE_BUILTIN_SHADER_MARKER_SELECTION:
-        return fragment ? "marker_select_frag" : "marker_select_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_MARKER_ITEM_STATE:
+        return fragment ? "marker_item_state_frag" : "marker_item_state_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SEGMENT:
         return fragment ? "segment_frag" : "segment_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SEGMENT_PICK:
