@@ -48,8 +48,8 @@
 #define VECTOR_ROWS  27u
 #define VECTOR_COUNT (VECTOR_COLS * VECTOR_ROWS)
 
-#define STREAMLINE_COUNT       58u
-#define STREAMLINE_POINT_COUNT 96u
+#define STREAMLINE_COUNT       76u
+#define STREAMLINE_POINT_COUNT 128u
 #define STREAMLINE_TOTAL_COUNT (STREAMLINE_COUNT * STREAMLINE_POINT_COUNT)
 
 #define PROBE_SEGMENTS      36u
@@ -62,9 +62,9 @@
 #define DOMAIN_Y_MIN_KM     -390.0f
 #define DOMAIN_Y_MAX_KM     +390.0f
 #define STORM_CENTER_X_KM   +245.0f
-#define STORM_CENTER_Y_KM   -72.0f
+#define STORM_CENTER_Y_KM   -8.0f
 #define PROBE_X_KM          +345.0f
-#define PROBE_Y_KM          -50.0f
+#define PROBE_Y_KM          +14.0f
 
 static const float TAU = 6.28318530718f;
 
@@ -267,23 +267,27 @@ static DvzColor _wind_colormap(float speed_mps)
 
 
 /**
- * Map one wind speed to an overlay stroke color.
+ * Map one wind speed to a constrained cyan/mint/amber overlay color.
  *
  * @param speed_mps wind speed in m/s
  * @param alpha output alpha
+ * @param midpoint normalized speed where mint is reached
+ * @param gamma nonlinear contrast factor applied to normalized speed
  * @return output RGBA8 color
  */
-static DvzColor _wind_overlay_color(float speed_mps, uint8_t alpha)
+static DvzColor
+_wind_flow_color(float speed_mps, uint8_t alpha, float midpoint, float gamma)
 {
-    const float t = _clamp01(speed_mps / WIND_SPEED_MAX_MPS);
+    const float normalized = _clamp01(speed_mps / WIND_SPEED_MAX_MPS);
+    const float t = powf(normalized, gamma);
     DvzColor a = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
     DvzColor b = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
-    float local = t / 0.70f;
-    if (t >= 0.70f)
+    float local = t / midpoint;
+    if (t >= midpoint)
     {
         a = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
         b = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
-        local = (t - 0.70f) / 0.30f;
+        local = (t - midpoint) / (1.0f - midpoint);
     }
 
     local = _clamp01(local);
@@ -291,6 +295,34 @@ static DvzColor _wind_overlay_color(float speed_mps, uint8_t alpha)
         _u8(_mix((float)a.r / 255.0f, (float)b.r / 255.0f, local)),
         _u8(_mix((float)a.g / 255.0f, (float)b.g / 255.0f, local)),
         _u8(_mix((float)a.b / 255.0f, (float)b.b / 255.0f, local)), alpha);
+}
+
+
+
+/**
+ * Map one wind speed to an arrow color.
+ *
+ * @param speed_mps wind speed in m/s
+ * @param alpha output alpha
+ * @return output RGBA8 color
+ */
+static DvzColor _wind_arrow_color(float speed_mps, uint8_t alpha)
+{
+    return _wind_flow_color(speed_mps, alpha, 0.44f, 0.78f);
+}
+
+
+
+/**
+ * Map one wind speed to a streamline color.
+ *
+ * @param speed_mps wind speed in m/s
+ * @param alpha output alpha
+ * @return output RGBA8 color
+ */
+static DvzColor _wind_streamline_color(float speed_mps, uint8_t alpha)
+{
+    return _wind_flow_color(speed_mps, alpha, 0.36f, 0.64f);
 }
 
 
@@ -497,7 +529,7 @@ static bool _fill_vectors(
             vectors[idx][1] = visual_end[0][1] - visual_start[0][1];
             vectors[idx][2] = 0.0f;
 
-            colors[idx] = _wind_overlay_color(
+            colors[idx] = _wind_arrow_color(
                 sample.speed, (uint8_t)(150u + (uint32_t)(78.0f * _clamp01(sample.speed / 70.0f))));
             widths[idx] = 2.2f + 1.6f * _clamp01(sample.speed / WIND_SPEED_MAX_MPS);
             idx++;
@@ -595,22 +627,38 @@ static bool _fill_streamlines(
     {
         subpaths[line] = STREAMLINE_POINT_COUNT;
         const float band = (float)line / (float)(STREAMLINE_COUNT - 1u);
+        const float upper_band = powf(band, 0.68f);
         float x = DOMAIN_X_MIN_KM + 78.0f + 54.0f * (float)(line % 8u) +
                   22.0f * sinf(0.24f * time_s + 3.1f * band);
-        float y = _mix(DOMAIN_Y_MIN_KM + 32.0f, DOMAIN_Y_MAX_KM - 38.0f, band);
+        float y = _mix(DOMAIN_Y_MIN_KM + 132.0f, DOMAIN_Y_MAX_KM - 42.0f, upper_band);
         if (line >= STREAMLINE_COUNT / 2u)
         {
             const uint32_t inner = line - STREAMLINE_COUNT / 2u;
             const float a =
                 TAU * (float)inner / (float)(STREAMLINE_COUNT / 2u) + 0.10f * time_s;
-            const float radius = 118.0f + 4.6f * (float)(inner % 7u);
+            const float radius = 106.0f + 4.1f * (float)(inner % 7u);
             x = STORM_CENTER_X_KM + radius * cosf(a);
             y = STORM_CENTER_Y_KM + (0.78f * radius) * sinf(a);
         }
 
+        bool active = true;
+        vec3 held_visual = {0};
+        DvzColor held_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
+        held_color.a = 0u;
         for (uint32_t point = 0; point < STREAMLINE_POINT_COUNT; point++)
         {
             const uint32_t idx = line * STREAMLINE_POINT_COUNT + point;
+
+            if (!active)
+            {
+                positions[idx][0] = held_visual[0];
+                positions[idx][1] = held_visual[1];
+                positions[idx][2] = held_visual[2];
+                colors[idx] = held_color;
+                widths[idx] = 0.0f;
+                continue;
+            }
+
             vec3 data[1] = {{x, y, 0.0f}};
             vec3 visual[1] = {{0}};
             if (!_data_to_visual(panel, data, visual, 1, 0.02f))
@@ -618,21 +666,25 @@ static bool _fill_streamlines(
             positions[idx][0] = visual[0][0];
             positions[idx][1] = visual[0][1];
             positions[idx][2] = visual[0][2];
+            held_visual[0] = visual[0][0];
+            held_visual[1] = visual[0][1];
+            held_visual[2] = visual[0][2];
 
             WindSample sample = _wind_sample(x, y, time_s);
-            colors[idx] = _wind_overlay_color(
-                sample.speed, line < STREAMLINE_COUNT / 2u ? 74u : 112u);
-            widths[idx] = line < STREAMLINE_COUNT / 2u ? 1.0f : 1.35f;
+            colors[idx] = _wind_streamline_color(
+                sample.speed, line < STREAMLINE_COUNT / 2u ? 118u : 166u);
+            held_color = colors[idx];
+            held_color.a = 0u;
+            widths[idx] = line < STREAMLINE_COUNT / 2u ? 1.35f : 1.85f;
 
             const float norm = fmaxf(sample.speed, 7.5f);
-            const float step = line < STREAMLINE_COUNT / 2u ? 7.5f : 5.6f;
+            const float step = line < STREAMLINE_COUNT / 2u ? 6.2f : 4.7f;
             x += step * sample.u / norm;
             y += step * sample.v / norm;
             if (x < DOMAIN_X_MIN_KM || x > DOMAIN_X_MAX_KM || y < DOMAIN_Y_MIN_KM ||
                 y > DOMAIN_Y_MAX_KM)
             {
-                x = DOMAIN_X_MIN_KM + 80.0f;
-                y = _mix(DOMAIN_Y_MIN_KM + 50.0f, DOMAIN_Y_MAX_KM - 50.0f, band);
+                active = false;
             }
         }
     }
@@ -871,12 +923,12 @@ static DvzColorbar* _add_wind_colorbar(DvzPanel* panel, DvzScale* scale)
         &(DvzColorbarDesc){
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_LEFT,
-            .title = "m/s",
-            .reserve_px = 92.0f,
+            .title = NULL,
+            .reserve_px = 66.0f,
             .ramp_width_px = 24.0f,
-            .plot_gap_px = 16.0f,
-            .tick_length_px = 6.0f,
-            .label_gap_px = 7.0f,
+            .plot_gap_px = 10.0f,
+            .tick_length_px = 5.0f,
+            .label_gap_px = 4.0f,
             .text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
         });
     if (colorbar != NULL)
@@ -885,6 +937,47 @@ static DvzColorbar* _add_wind_colorbar(DvzPanel* panel, DvzScale* scale)
             colorbar, &(DvzFormatDesc){.precision = 0, .trim_trailing_zeros = true});
     }
     return colorbar;
+}
+
+
+
+/**
+ * Add a vertical unit label beside the colorbar.
+ *
+ * @param panel panel receiving the text
+ * @return true on success
+ */
+static bool _add_colorbar_unit_label(DvzPanel* panel)
+{
+    ANN(panel);
+
+    DvzText* label = dvz_text(panel, 0);
+    if (label == NULL)
+        return false;
+
+    DvzColor text = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
+    if (dvz_text_set_style(
+            label,
+            &(DvzTextStyle){
+                .size_px = 25.0f,
+                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+                .color = {text.r, text.g, text.b, 235u},
+            }) != 0)
+    {
+        return false;
+    }
+    dvz_text_set_placement(
+        label,
+        &(DvzTextPlacement){
+            .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
+            .position = {32.0, 0.5 * HEIGHT - 35.0, 0.0},
+            .text_anchor = {0.5f, 0.5f},
+            .has_text_anchor = true,
+            .angle = -0.25f * TAU,
+        });
+    dvz_text_set_string(label, "m/s");
+    return true;
 }
 
 
@@ -1061,7 +1154,7 @@ int main(int argc, char** argv)
     example_graphite_cyan_set_panel_background(panel);
 
     bool ok = dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.095f, .right = 0.030f, .bottom = 0.050f,
+        panel, &(DvzPanelLayoutReserve){.left = 0.055f, .right = 0.030f, .bottom = 0.050f,
                                         .top = 0.035f});
     EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve() failed");
 
@@ -1074,6 +1167,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(scale != NULL, "_add_wind_scale() failed");
     DvzColorbar* colorbar = _add_wind_colorbar(panel, scale);
     EXAMPLE_CHECK(colorbar != NULL, "_add_wind_colorbar() failed");
+    ok = _add_colorbar_unit_label(panel);
+    EXAMPLE_CHECK(ok, "_add_colorbar_unit_label() failed");
 
     values = (float*)dvz_calloc((DvzSize)FIELD_WIDTH * FIELD_HEIGHT, sizeof(float));
     EXAMPLE_CHECK(values != NULL, "wind scalar field allocation failed");
