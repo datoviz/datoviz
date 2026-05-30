@@ -1424,8 +1424,8 @@ DVZ_EXPORT int dvz_marker_set_style(DvzVisual* visual, const DvzMarkerStyle* sty
  * Create a point visual.
  *
  * Renders screen-space antialiased circular sprites with `position` (vec3), `color` (RGBA8),
- * and `diameter` (float, in pixels). An optional `selection` (uint8) mask dims unselected
- * items. `dvz_point_set_style()` controls optional edge styling with `edge_color`,
+ * `diameter` (float, in pixels), and optional `item_state` (uint32_t DvzItemStateKind bitfield).
+ * `dvz_point_set_style()` controls optional edge styling with `edge_color`,
  * `stroke_width`, and a filled/stroke/outline aspect.
  *
  * @param scene the scene
@@ -1468,7 +1468,8 @@ DVZ_EXPORT DvzVisual* dvz_pixel(DvzScene* scene, uint32_t flags);
  *
  * Renders screen-space code-SDF marker sprites with dense `position` (vec3), `color` (RGBA8),
  * `diameter` (float in pixels), `angle` (float radians), and `shape` (uint32_t
- * DvzMarkerShape) attributes. An optional `selection` (uint8) mask dims unselected items.
+ * DvzMarkerShape) attributes. Optional `item_state` (uint32_t DvzItemStateKind bitfield)
+ * supports retained hover and selection styling.
  * First-slice shapes are disc, square, triangle, diamond, cross, and ring.
  *
  * @param scene the scene
