@@ -25,6 +25,7 @@
 #include "_scene.h"
 #include "core/scene_notify_internal.h"
 #include "datoviz/scene.h"
+#include "interaction/internal.h"
 
 
 
@@ -788,6 +789,23 @@ static bool _scene_panel_dispatch_pointer(DvzPanel* panel, const DvzPointerEvent
         seen[seen_count++] = controller;
         consumed =
             _scene_panel_dispatch_pointer_controller(panel, controller, ev) || consumed;
+    }
+    if (panel->item_interaction != NULL)
+    {
+        bool inside = _scene_panel_pointer_targets(panel, ev, false);
+        if (inside)
+        {
+            float x = 0.0f;
+            float y = 0.0f;
+            float w = 0.0f;
+            float h = 0.0f;
+            _scene_panel_pixel_rect(panel, &x, &y, &w, &h);
+            DvzPointerEvent local = {0};
+            _scene_panel_local_pointer(ev, x, y, &local);
+            (void)_scene_item_interaction_pointer(panel->item_interaction, &local);
+        }
+        else
+            _scene_item_interaction_pointer_leave(panel->item_interaction);
     }
     return consumed;
 }

@@ -24,6 +24,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "datoviz/scene.h"
+#include "interaction/internal.h"
 #include "internal.h"
 
 
@@ -308,8 +309,12 @@ uint32_t dvz_figure_process_queries(
 
         DvzQueryResult result = {0};
         if (_dvz_scene_query_process_pending(figure, runtime, executor, caps, &pending, &result))
+        {
+            _scene_item_interaction_apply_query_result(
+                pending.item_interaction, pending.item_interaction_kind, &result);
             (void)_dvz_scene_query_push_result(
                 scene, pending.panel, pending.freshness_serial, &result);
+        }
 
         _query_remove_pending_at(scene, i);
         processed++;

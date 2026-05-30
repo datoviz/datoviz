@@ -292,6 +292,56 @@ DVZ_EXPORT int dvz_hover_apply_query(DvzHover* hover, const DvzQueryResult* quer
 
 
 /*************************************************************************************************/
+/*  Item interaction                                                                             */
+/*************************************************************************************************/
+
+/**
+ * Return the default item interaction descriptor.
+ *
+ * @return the default item interaction descriptor
+ */
+DVZ_EXPORT DvzItemInteractionDesc dvz_item_interaction_desc(void);
+
+
+/**
+ * Create a panel-bound item interaction controller.
+ *
+ * @param panel the panel
+ * @param desc interaction descriptor, or NULL for defaults
+ * @return the item interaction controller
+ */
+DVZ_EXPORT DvzItemInteraction* dvz_item_interaction(
+    DvzPanel* panel, const DvzItemInteractionDesc* desc);
+
+
+/**
+ * Destroy a panel-bound item interaction controller.
+ *
+ * @param interaction the item interaction controller
+ */
+DVZ_EXPORT void dvz_item_interaction_destroy(DvzItemInteraction* interaction);
+
+
+/**
+ * Return the hover object used by an item interaction controller.
+ *
+ * @param interaction the item interaction controller
+ * @return the hover object, or NULL when hover is disabled
+ */
+DVZ_EXPORT DvzHover* dvz_item_interaction_hover(DvzItemInteraction* interaction);
+
+
+/**
+ * Return the selection object used by an item interaction controller.
+ *
+ * @param interaction the item interaction controller
+ * @return the selection object, or NULL when selection is disabled
+ */
+DVZ_EXPORT DvzSelection* dvz_item_interaction_selection(DvzItemInteraction* interaction);
+
+
+
+/*************************************************************************************************/
 /*  Query requests                                                                               */
 /*************************************************************************************************/
 

@@ -27,6 +27,8 @@
 #include "_scene.h"
 #include "_visual_internal.h"
 #include "annotation/prepare_internal.h"
+#include "datoviz/input.h"
+#include "interaction/internal.h"
 #include "query/internal.h"
 #include "scene_emit/internal.h"
 #include "scene_emit/scene_emit.h"
@@ -117,6 +119,28 @@ static bool _interaction_stream_has_pipeline_attr(
 
 
 
+/**
+ * Create a pointer event template.
+ *
+ * @param type event type
+ * @param x x coordinate
+ * @param y y coordinate
+ * @param button pointer button
+ * @return pointer event
+ */
+static DvzPointerEvent
+_interaction_pointer_event(DvzPointerEventType type, float x, float y, DvzPointerButton button)
+{
+    DvzPointerEvent event = {0};
+    event.type = type;
+    event.pos[0] = x;
+    event.pos[1] = y;
+    event.button = button;
+    return event;
+}
+
+
+
 /*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
@@ -150,6 +174,149 @@ int test_scene_interaction_core(TstContext* suite, const TstCase* item)
     AT(interaction->link_channel == channel);
     AT(interaction->query_hit_policy == DVZ_QUERY_HIT_OPAQUE_PREFERRED);
     AT(interaction->auto_pin_readout);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_item_interaction_defaults_and_lifetime(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(figure);
+    ANN(panel);
+
+    DvzItemInteractionDesc desc = dvz_item_interaction_desc();
+    AT(desc.hover_enabled);
+    AT(desc.selection_enabled);
+    AT(desc.select_mode == DVZ_SELECT_TOGGLE);
+    AT(desc.target == DVZ_SCENE_TARGET_ITEM);
+    AT(desc.hit_policy == DVZ_QUERY_HIT_FRONTMOST);
+    AT(desc.clear_hover_on_miss);
+    AT(desc.clear_selection_on_miss);
+
+    DvzItemInteraction* pick = dvz_item_interaction(panel, NULL);
+    ANN(pick);
+    AT(pick->active);
+    AT(pick->scene == scene);
+    AT(pick->panel == panel);
+    AT(panel->item_interaction == pick);
+    AT(pick->owns_hover);
+    AT(pick->owns_selection);
+    AT(dvz_item_interaction_hover(pick) != NULL);
+    AT(dvz_item_interaction_selection(pick) != NULL);
+    AT(dvz_item_interaction_selection(pick)->desc.mode == DVZ_SELECT_TOGGLE);
+    AT(dvz_item_interaction_selection(pick)->desc.target == DVZ_SCENE_TARGET_ITEM);
+
+    dvz_item_interaction_destroy(pick);
+    AT(!pick->active);
+    AT(panel->item_interaction == NULL);
+    AT(dvz_item_interaction_hover(pick) == NULL);
+    AT(dvz_item_interaction_selection(pick) == NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_item_interaction_input_queries(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzInputRouter* router = dvz_input_router();
+    ANN(figure);
+    ANN(panel);
+    ANN(router);
+
+    DvzItemInteraction* pick = dvz_item_interaction(panel, NULL);
+    ANN(pick);
+    AT(dvz_panel_connect_input(panel, router) == 0);
+
+    DvzPointerEvent move =
+        _interaction_pointer_event(DVZ_POINTER_EVENT_MOVE, 12.0f, 15.0f, DVZ_POINTER_BUTTON_NONE);
+    dvz_input_emit_pointer(router, &move);
+    AT(scene->pending_query_count == 1);
+    AT(scene->pending_queries[0].panel == panel);
+    AT(scene->pending_queries[0].item_interaction == pick);
+    AT(scene->pending_queries[0].item_interaction_kind == DVZ_ITEM_INTERACTION_QUERY_HOVER);
+    AT(scene->pending_queries[0].request.target == DVZ_SCENE_TARGET_ITEM);
+    AT(scene->pending_queries[0].request.hit_policy == DVZ_QUERY_HIT_FRONTMOST);
+    AC(scene->pending_queries[0].x, 12.0, 1e-6);
+    AC(scene->pending_queries[0].y, 15.0, 1e-6);
+
+    DvzPointerEvent click =
+        _interaction_pointer_event(DVZ_POINTER_EVENT_CLICK, 20.0f, 25.0f, DVZ_POINTER_BUTTON_LEFT);
+    dvz_input_emit_pointer(router, &click);
+    AT(scene->pending_query_count == 2);
+    AT(scene->pending_queries[1].item_interaction == pick);
+    AT(scene->pending_queries[1].item_interaction_kind == DVZ_ITEM_INTERACTION_QUERY_SELECTION);
+    AC(scene->pending_queries[1].x, 20.0, 1e-6);
+    AC(scene->pending_queries[1].y, 25.0, 1e-6);
+
+    DvzPointerEvent outside =
+        _interaction_pointer_event(DVZ_POINTER_EVENT_MOVE, 400.0f, 400.0f, DVZ_POINTER_BUTTON_NONE);
+    dvz_input_emit_pointer(router, &outside);
+    AT(scene->pending_query_count == 2);
+
+    dvz_panel_connect_input(panel, NULL);
+    dvz_input_router_destroy(router);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_item_interaction_applies_results(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(figure);
+    ANN(panel);
+
+    DvzItemInteraction* pick = dvz_item_interaction(panel, NULL);
+    DvzHover* hover = dvz_item_interaction_hover(pick);
+    DvzSelection* selection = dvz_item_interaction_selection(pick);
+    ANN(pick);
+    ANN(hover);
+    ANN(selection);
+
+    DvzQueryResult hit = {
+        .request_id = 1,
+        .status = DVZ_QUERY_STATUS_HIT,
+        .hit = true,
+        .visual_id = 7,
+        .resolved_target = DVZ_SCENE_TARGET_ITEM,
+        .resolved_id = 3,
+        .link_key = 11,
+    };
+    _scene_item_interaction_apply_query_result(pick, DVZ_ITEM_INTERACTION_QUERY_HOVER, &hit);
+    AT(hover->has_item);
+    AT(hover->item.visual_id == 7);
+    AT(hover->item.target_id == 3);
+
+    _scene_item_interaction_apply_query_result(pick, DVZ_ITEM_INTERACTION_QUERY_SELECTION, &hit);
+    AT(dvz_selection_count(selection) == 1);
+
+    DvzQueryResult miss = {.request_id = 2, .status = DVZ_QUERY_STATUS_MISS, .hit = false};
+    _scene_item_interaction_apply_query_result(pick, DVZ_ITEM_INTERACTION_QUERY_HOVER, &miss);
+    AT(!hover->has_item);
+    _scene_item_interaction_apply_query_result(pick, DVZ_ITEM_INTERACTION_QUERY_SELECTION, &miss);
+    AT(dvz_selection_count(selection) == 0);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2885,6 +3052,9 @@ int test_scene_interaction(TstSuite* suite)
     TST_GROUP("interaction");
 
     TST_CASE(test_scene_interaction_core);
+    TST_CASE(test_scene_item_interaction_defaults_and_lifetime);
+    TST_CASE(test_scene_item_interaction_input_queries);
+    TST_CASE(test_scene_item_interaction_applies_results);
     TST_CASE(test_scene_selection_apply_query_and_link_keys);
     TST_CASE(test_scene_selection_apply_query_updates_item_state);
     TST_CASE(test_scene_selection_card_realizes_query_metadata);

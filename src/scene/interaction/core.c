@@ -30,7 +30,9 @@
 #include "annotation/prepare_internal.h"
 #include "core/format_state_internal.h"
 #include "datoviz/font.h"
+#include "datoviz/scene/interaction.h"
 #include "datoviz/scene/overlay.h"
+#include "interaction/internal.h"
 #include "query/internal.h"
 #include "annotation/text_visual_bridge.h"
 #include "text/text_internal.h"
@@ -38,8 +40,25 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_ITEM_INTERACTION_HOVER_REQUEST_ID UINT64_C(0xD171000000000001)
+#define DVZ_ITEM_INTERACTION_SELECTION_REQUEST_ID UINT64_C(0xD171000000000002)
+
+
+
+/*************************************************************************************************/
 /*  Function prototypes                                                                          */
 /*************************************************************************************************/
+
+static bool _item_interaction_desc_is_zero(const DvzItemInteractionDesc* desc);
+
+static DvzItemInteractionDesc _item_interaction_resolve_desc(
+    const DvzItemInteractionDesc* desc);
+
+static int _item_interaction_queue_query(
+    DvzItemInteraction* interaction, double x, double y, uint32_t query_kind);
 
 static bool _selection_matches_query(
     const DvzSelection* selection, const DvzQueryResult* query, DvzSelectionItem* out_item);
@@ -116,6 +135,71 @@ static bool _overlay_card_realize_rich(DvzFigure* figure, DvzOverlayCard* card);
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+static bool _item_interaction_desc_is_zero(const DvzItemInteractionDesc* desc)
+{
+    ANN(desc);
+    DvzItemInteractionDesc zero = {0};
+    return memcmp(desc, &zero, sizeof(DvzItemInteractionDesc)) == 0;
+}
+
+
+
+static DvzItemInteractionDesc _item_interaction_resolve_desc(
+    const DvzItemInteractionDesc* desc)
+{
+    DvzItemInteractionDesc defaults = dvz_item_interaction_desc();
+    if (desc == NULL || _item_interaction_desc_is_zero(desc))
+        return defaults;
+
+    DvzItemInteractionDesc resolved = *desc;
+    if (!resolved.hover_enabled && !resolved.selection_enabled)
+    {
+        resolved.hover_enabled = true;
+        resolved.selection_enabled = true;
+    }
+    if (resolved.target == DVZ_SCENE_TARGET_NONE)
+        resolved.target = DVZ_SCENE_TARGET_ITEM;
+    if (resolved.hit_policy == 0)
+        resolved.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
+    if (!resolved.clear_hover_on_miss && !resolved.clear_selection_on_miss)
+    {
+        resolved.clear_hover_on_miss = defaults.clear_hover_on_miss;
+        resolved.clear_selection_on_miss = defaults.clear_selection_on_miss;
+    }
+    return resolved;
+}
+
+
+
+static int _item_interaction_queue_query(
+    DvzItemInteraction* interaction, double x, double y, uint32_t query_kind)
+{
+    ANN(interaction);
+    if (!interaction->active || interaction->panel == NULL || interaction->scene == NULL)
+        return -1;
+
+    uint64_t request_id = query_kind == DVZ_ITEM_INTERACTION_QUERY_SELECTION
+                              ? DVZ_ITEM_INTERACTION_SELECTION_REQUEST_ID
+                              : DVZ_ITEM_INTERACTION_HOVER_REQUEST_ID;
+    DvzQueryRequest request = {
+        .request_id = request_id,
+        .target = interaction->desc.target,
+        .hit_policy = interaction->desc.hit_policy,
+    };
+    if (dvz_panel_query(interaction->panel, x, y, &request) != 0)
+        return -1;
+
+    if (interaction->scene->pending_query_count == 0)
+        return -1;
+    DvzPendingQueryRequest* pending =
+        &interaction->scene->pending_queries[interaction->scene->pending_query_count - 1];
+    pending->item_interaction = interaction;
+    pending->item_interaction_kind = query_kind;
+    return 0;
+}
+
+
 
 static bool _selection_matches_query(
     const DvzSelection* selection, const DvzQueryResult* query, DvzSelectionItem* out_item)
@@ -1569,14 +1653,24 @@ void dvz_selection_destroy(DvzSelection* selection)
 {
     if (selection == NULL)
         return;
-    _selection_card_hide(selection);
-    if (selection->scene != NULL)
+    DvzScene* scene = selection->scene;
+    if (scene != NULL && selection->item_count > 0)
     {
-        DvzScene* scene = selection->scene;
+        _selection_clear_items(selection);
+        (void)_item_state_sync_scene(scene, "destroy selection item_state");
+    }
+    _selection_card_hide(selection);
+    if (scene != NULL)
+    {
         for (uint32_t i = 0; i < scene->interaction_count; i++)
         {
             if (scene->interactions[i].selection == selection)
                 scene->interactions[i].selection = NULL;
+        }
+        for (uint32_t i = 0; i < scene->item_interaction_count; i++)
+        {
+            if (scene->item_interactions[i].selection == selection)
+                scene->item_interactions[i].selection = NULL;
         }
     }
     selection->scene = NULL;
@@ -1823,6 +1917,14 @@ void dvz_hover_destroy(DvzHover* hover)
     if (hover == NULL)
         return;
     DvzScene* scene = hover->scene;
+    if (scene != NULL)
+    {
+        for (uint32_t i = 0; i < scene->item_interaction_count; i++)
+        {
+            if (scene->item_interactions[i].hover == hover)
+                scene->item_interactions[i].hover = NULL;
+        }
+    }
     hover->scene = NULL;
     hover->has_item = false;
     hover->item = (DvzSelectionItem){0};
@@ -1910,6 +2012,258 @@ int dvz_hover_apply_query(DvzHover* hover, const DvzQueryResult* query)
     };
     hover->has_item = true;
     return _item_state_sync_scene(hover->scene, "update hover item_state");
+}
+
+
+
+/*************************************************************************************************/
+/*  Item interaction                                                                             */
+/*************************************************************************************************/
+
+/**
+ * Return the default item interaction descriptor.
+ *
+ * @return the default descriptor
+ */
+DvzItemInteractionDesc dvz_item_interaction_desc(void)
+{
+    return (DvzItemInteractionDesc){
+        .hover_enabled = true,
+        .selection_enabled = true,
+        .select_mode = DVZ_SELECT_TOGGLE,
+        .target = DVZ_SCENE_TARGET_ITEM,
+        .hit_policy = DVZ_QUERY_HIT_FRONTMOST,
+        .clear_hover_on_miss = true,
+        .clear_selection_on_miss = true,
+    };
+}
+
+
+
+/**
+ * Create a panel-bound item interaction controller.
+ *
+ * @param panel the panel
+ * @param desc descriptor, or NULL for defaults
+ * @return the item interaction, or NULL on error
+ */
+DvzItemInteraction* dvz_item_interaction(DvzPanel* panel, const DvzItemInteractionDesc* desc)
+{
+    ANN(panel);
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+        return NULL;
+    if (panel->item_interaction != NULL && panel->item_interaction->active)
+    {
+        log_error("panel already has an item interaction controller");
+        return NULL;
+    }
+
+    DvzScene* scene = panel->figure->scene;
+    if (scene->item_interaction_count >= DVZ_SCENE_MAX_ITEM_INTERACTIONS)
+    {
+        log_error("maximum item interaction count reached");
+        return NULL;
+    }
+
+    DvzItemInteractionDesc resolved = _item_interaction_resolve_desc(desc);
+    DvzItemInteraction* interaction = &scene->item_interactions[scene->item_interaction_count++];
+    dvz_memset(interaction, sizeof(DvzItemInteraction), 0, sizeof(DvzItemInteraction));
+    interaction->scene = scene;
+    interaction->panel = panel;
+    interaction->desc = resolved;
+    interaction->active = true;
+
+    if (resolved.hover_enabled)
+    {
+        if (resolved.hover != NULL)
+        {
+            if (resolved.hover->scene != scene)
+            {
+                log_error("cannot bind a hover object from a different scene");
+                interaction->active = false;
+                return NULL;
+            }
+            interaction->hover = resolved.hover;
+        }
+        else
+        {
+            interaction->hover = dvz_hover(
+                scene,
+                &(DvzHoverDesc){.target = resolved.target, .hit_policy = resolved.hit_policy});
+            interaction->owns_hover = interaction->hover != NULL;
+        }
+        if (interaction->hover == NULL)
+        {
+            interaction->active = false;
+            return NULL;
+        }
+    }
+
+    if (resolved.selection_enabled)
+    {
+        if (resolved.selection != NULL)
+        {
+            if (resolved.selection->scene != scene)
+            {
+                log_error("cannot bind a selection object from a different scene");
+                if (interaction->owns_hover)
+                    dvz_hover_destroy(interaction->hover);
+                interaction->active = false;
+                return NULL;
+            }
+            interaction->selection = resolved.selection;
+        }
+        else
+        {
+            interaction->selection = dvz_selection(
+                scene,
+                &(DvzSelectionDesc){.mode = resolved.select_mode, .target = resolved.target});
+            interaction->owns_selection = interaction->selection != NULL;
+        }
+        if (interaction->selection == NULL)
+        {
+            if (interaction->owns_hover)
+                dvz_hover_destroy(interaction->hover);
+            interaction->active = false;
+            return NULL;
+        }
+    }
+
+    panel->item_interaction = interaction;
+    return interaction;
+}
+
+
+
+/**
+ * Destroy a panel-bound item interaction controller.
+ *
+ * @param interaction the item interaction
+ */
+void dvz_item_interaction_destroy(DvzItemInteraction* interaction)
+{
+    if (interaction == NULL || !interaction->active)
+        return;
+    if (interaction->panel != NULL && interaction->panel->item_interaction == interaction)
+        interaction->panel->item_interaction = NULL;
+    if (interaction->owns_hover)
+        dvz_hover_destroy(interaction->hover);
+    if (interaction->owns_selection)
+        dvz_selection_destroy(interaction->selection);
+    interaction->scene = NULL;
+    interaction->panel = NULL;
+    interaction->desc = (DvzItemInteractionDesc){0};
+    interaction->hover = NULL;
+    interaction->selection = NULL;
+    interaction->owns_hover = false;
+    interaction->owns_selection = false;
+    interaction->active = false;
+}
+
+
+
+/**
+ * Return the hover object used by an item interaction controller.
+ *
+ * @param interaction the item interaction
+ * @return the hover, or NULL
+ */
+DvzHover* dvz_item_interaction_hover(DvzItemInteraction* interaction)
+{
+    return interaction != NULL && interaction->active ? interaction->hover : NULL;
+}
+
+
+
+/**
+ * Return the selection object used by an item interaction controller.
+ *
+ * @param interaction the item interaction
+ * @return the selection, or NULL
+ */
+DvzSelection* dvz_item_interaction_selection(DvzItemInteraction* interaction)
+{
+    return interaction != NULL && interaction->active ? interaction->selection : NULL;
+}
+
+
+
+/**
+ * Apply a panel-local pointer event to an item interaction controller.
+ *
+ * @param interaction the item interaction
+ * @param ev panel-local pointer event
+ * @return true when a query was queued
+ */
+bool _scene_item_interaction_pointer(DvzItemInteraction* interaction, const DvzPointerEvent* ev)
+{
+    if (interaction == NULL || ev == NULL || !interaction->active)
+        return false;
+    if (ev->type == DVZ_POINTER_EVENT_MOVE && interaction->desc.hover_enabled &&
+        interaction->hover != NULL)
+    {
+        return _item_interaction_queue_query(
+                   interaction, ev->pos[0], ev->pos[1], DVZ_ITEM_INTERACTION_QUERY_HOVER) == 0;
+    }
+    if (ev->type == DVZ_POINTER_EVENT_CLICK && ev->button == DVZ_POINTER_BUTTON_LEFT &&
+        interaction->desc.selection_enabled && interaction->selection != NULL)
+    {
+        return _item_interaction_queue_query(
+                   interaction, ev->pos[0], ev->pos[1],
+                   DVZ_ITEM_INTERACTION_QUERY_SELECTION) == 0;
+    }
+    return false;
+}
+
+
+
+/**
+ * Clear transient hover state when the pointer leaves the panel.
+ *
+ * @param interaction the item interaction
+ */
+void _scene_item_interaction_pointer_leave(DvzItemInteraction* interaction)
+{
+    if (interaction == NULL || !interaction->active || !interaction->desc.clear_hover_on_miss ||
+        interaction->hover == NULL)
+    {
+        return;
+    }
+    dvz_hover_clear(interaction->hover);
+}
+
+
+
+/**
+ * Apply one resolved interaction-owned query result.
+ *
+ * @param interaction the item interaction
+ * @param query_kind internal query kind
+ * @param query the query result
+ */
+void _scene_item_interaction_apply_query_result(
+    DvzItemInteraction* interaction, uint32_t query_kind, const DvzQueryResult* query)
+{
+    if (interaction == NULL || !interaction->active || query == NULL)
+        return;
+
+    bool hit = query->hit && query->resolved_target != DVZ_SCENE_TARGET_NONE;
+    if (query_kind == DVZ_ITEM_INTERACTION_QUERY_HOVER)
+    {
+        if (interaction->hover == NULL || !interaction->desc.hover_enabled)
+            return;
+        if (hit || interaction->desc.clear_hover_on_miss)
+            (void)dvz_hover_apply_query(interaction->hover, query);
+    }
+    else if (query_kind == DVZ_ITEM_INTERACTION_QUERY_SELECTION)
+    {
+        if (interaction->selection == NULL || !interaction->desc.selection_enabled)
+            return;
+        if (hit)
+            (void)dvz_selection_apply_query(interaction->selection, query);
+        else if (interaction->desc.clear_selection_on_miss)
+            dvz_selection_clear(interaction->selection);
+    }
 }
 
 

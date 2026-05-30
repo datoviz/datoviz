@@ -56,6 +56,7 @@
 #define DVZ_SCENE_MAX_INTERACTIONS 64
 #define DVZ_SCENE_MAX_SELECTIONS 64
 #define DVZ_SCENE_MAX_HOVERS 64
+#define DVZ_SCENE_MAX_ITEM_INTERACTIONS 64
 #define DVZ_SCENE_MAX_LINK_CHANNELS 64
 #define DVZ_SCENE_MAX_PINNED_READOUTS 128
 #define DVZ_SCENE_MAX_OVERLAYS 64
@@ -869,6 +870,19 @@ struct DvzHover
 };
 
 
+struct DvzItemInteraction
+{
+    DvzScene* scene;
+    DvzPanel* panel;
+    DvzItemInteractionDesc desc;
+    DvzHover* hover;
+    DvzSelection* selection;
+    bool owns_hover;
+    bool owns_selection;
+    bool active;
+};
+
+
 struct DvzInteractionPolicy
 {
     DvzScene* scene;
@@ -1015,6 +1029,8 @@ struct DvzPendingQueryRequest
     double y;
     uint64_t freshness_serial;
     DvzQueryRequest request;
+    DvzItemInteraction* item_interaction;
+    uint32_t item_interaction_kind;
 };
 
 
@@ -1547,6 +1563,7 @@ struct DvzPanel
     DvzTurntable* turntable; /* optional turntable camera controller (owned) */
     DvzAxis axes[2];
     DvzInteractionPolicy* interaction;
+    DvzItemInteraction* item_interaction;
     DvzHoverState hover;
     DvzVisual* volume_occluder_visual;
     DvzVolumeOcclusionDesc volume_occlusion;
@@ -1698,6 +1715,9 @@ struct DvzScene
 
     uint32_t hover_count;
     DvzHover hovers[DVZ_SCENE_MAX_HOVERS];
+
+    uint32_t item_interaction_count;
+    DvzItemInteraction item_interactions[DVZ_SCENE_MAX_ITEM_INTERACTIONS];
 
     uint32_t link_channel_count;
     DvzLinkChannel link_channels[DVZ_SCENE_MAX_LINK_CHANNELS];

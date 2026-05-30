@@ -65,6 +65,7 @@ typedef struct DvzSceneBuffer       DvzSceneBuffer;
 typedef struct DvzInteractionPolicy DvzInteractionPolicy;
 typedef struct DvzSelection         DvzSelection;
 typedef struct DvzHover             DvzHover;
+typedef struct DvzItemInteraction   DvzItemInteraction;
 typedef struct DvzLinkChannel       DvzLinkChannel;
 typedef struct DvzPinnedReadout     DvzPinnedReadout;
 typedef struct DvzOverlay           DvzOverlay;
@@ -622,6 +623,21 @@ struct DvzHoverDesc
     uint32_t flags;
 };
 typedef struct DvzHoverDesc DvzHoverDesc;
+
+
+struct DvzItemInteractionDesc
+{
+    DvzHover* hover;
+    DvzSelection* selection;
+    bool hover_enabled;
+    bool selection_enabled;
+    DvzSelectMode select_mode;
+    DvzSceneTargetKind target;
+    DvzQueryHitPolicy hit_policy;
+    bool clear_hover_on_miss;
+    bool clear_selection_on_miss;
+};
+typedef struct DvzItemInteractionDesc DvzItemInteractionDesc;
 
 
 struct DvzSelectionItem

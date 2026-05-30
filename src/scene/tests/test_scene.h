@@ -891,6 +891,12 @@ int test_scene_render_pass_scope_excludes_resource_commands(TstContext* suite, c
 
 int test_scene_interaction_core(TstContext* suite, const TstCase* item);
 
+int test_scene_item_interaction_defaults_and_lifetime(TstContext* suite, const TstCase* item);
+
+int test_scene_item_interaction_input_queries(TstContext* suite, const TstCase* item);
+
+int test_scene_item_interaction_applies_results(TstContext* suite, const TstCase* item);
+
 int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstCase* item);
 
 int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const TstCase* item);

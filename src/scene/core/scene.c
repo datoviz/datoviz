@@ -158,8 +158,12 @@ void dvz_scene_destroy(DvzScene* scene)
         _scene_buffer_reset(&scene->buffers[i]);
     for (uint32_t i = 0; i < scene->selection_count; i++)
         scene->selections[i].scene = NULL;
+    for (uint32_t i = 0; i < scene->hover_count; i++)
+        scene->hovers[i].scene = NULL;
     for (uint32_t i = 0; i < scene->interaction_count; i++)
         scene->interactions[i].scene = NULL;
+    for (uint32_t i = 0; i < scene->item_interaction_count; i++)
+        scene->item_interactions[i].scene = NULL;
     for (uint32_t i = 0; i < scene->link_channel_count; i++)
         scene->link_channels[i].scene = NULL;
     for (uint32_t i = 0; i < scene->pinned_readout_count; i++)
@@ -528,6 +532,7 @@ void dvz_panel_destroy(DvzPanel* panel)
     panel->colorbar_count = 0;
     panel->legend_count = 0;
     panel->interaction = NULL;
+    panel->item_interaction = NULL;
     panel->pinned_readout_count = 0;
     dvz_memset(&panel->hover, sizeof(DvzHoverState), 0, sizeof(DvzHoverState));
 }
