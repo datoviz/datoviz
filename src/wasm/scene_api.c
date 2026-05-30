@@ -142,6 +142,27 @@ static void _clear_payload(DvzWasmApiScene* scene)
 
 
 
+static int _fail(DvzWasmApiScene* scene, const char* diagnostic)
+{
+    if (scene != NULL)
+    {
+        _clear_payload(scene);
+        if (diagnostic != NULL)
+            (void)dvz_diagnostic_report_add(&scene->report, diagnostic);
+    }
+    return -1;
+}
+
+
+
+static uint32_t _fail_handle(DvzWasmApiScene* scene, const char* diagnostic)
+{
+    (void)_fail(scene, diagnostic);
+    return 0;
+}
+
+
+
 static bool _remember(DvzWasmApiScene* scene, void* wrapper)
 {
     if (scene == NULL || wrapper == NULL || scene->wrapper_count >= DVZ_WASM_API_MAX_WRAPPERS)
@@ -258,7 +279,7 @@ uint32_t dvz_wasm_api_figure(uint32_t scene_handle, uint32_t width, uint32_t hei
     if (figure->figure == NULL || !_remember(scene, figure))
     {
         free(figure);
-        return 0;
+        return _fail_handle(scene, "WASM figure creation failed");
     }
     scene->width = width;
     scene->height = height;
@@ -282,7 +303,7 @@ uint32_t dvz_wasm_api_panel_full(uint32_t figure_handle)
     if (panel->panel == NULL || !_remember(figure->owner, panel))
     {
         free(panel);
-        return 0;
+        return _fail_handle(figure->owner, "WASM panel creation failed");
     }
     return _handle(panel);
 }
@@ -315,12 +336,14 @@ uint32_t dvz_wasm_api_visual(uint32_t scene_handle, uint32_t visual_type, uint32
         visual->visual = dvz_mesh(scene->scene, flags);
         break;
     default:
+        free(visual);
+        return _fail_handle(scene, "unsupported WASM visual type");
         break;
     }
     if (visual->visual == NULL || !_remember(scene, visual))
     {
         free(visual);
-        return 0;
+        return _fail_handle(scene, "WASM visual creation failed");
     }
     return _handle(visual);
 }
@@ -348,12 +371,14 @@ uint32_t dvz_wasm_api_controller(uint32_t scene_handle, uint32_t controller_type
         controller->controller = dvz_arcball(scene->scene, NULL);
         break;
     default:
+        free(controller);
+        return _fail_handle(scene, "unsupported WASM controller type");
         break;
     }
     if (controller->controller == NULL || !_remember(scene, controller))
     {
         free(controller);
-        return 0;
+        return _fail_handle(scene, "WASM controller creation failed");
     }
     return _handle(controller);
 }
@@ -373,10 +398,13 @@ int dvz_wasm_api_panel_add_visual(uint32_t panel_handle, uint32_t visual_handle)
         panel == NULL || visual == NULL || panel->owner == NULL || visual->owner != panel->owner ||
         panel->panel == NULL || visual->visual == NULL)
     {
-        return -1;
+        DvzWasmApiScene* owner = panel != NULL ? panel->owner : visual != NULL ? visual->owner : NULL;
+        return _fail(owner, "invalid WASM panel/visual handle");
     }
     _clear_payload(panel->owner);
-    return dvz_panel_add_visual(panel->panel, visual->visual, NULL);
+    if (dvz_panel_add_visual(panel->panel, visual->visual, NULL) != 0)
+        return _fail(panel->owner, "WASM panel add visual failed");
+    return 0;
 }
 
 
@@ -391,18 +419,20 @@ int dvz_wasm_api_panel_bind_controller(
         panel == NULL || controller == NULL || panel->owner == NULL ||
         controller->owner != panel->owner || panel->panel == NULL || controller->controller == NULL)
     {
-        return -1;
+        DvzWasmApiScene* owner =
+            panel != NULL ? panel->owner : controller != NULL ? controller->owner : NULL;
+        return _fail(owner, "invalid WASM panel/controller handle");
     }
     _clear_payload(panel->owner);
     if (dvz_panel_bind_controller(panel->panel, controller->controller, (DvzDimMask)dims) != 0)
-        return -1;
+        return _fail(panel->owner, "WASM panel bind controller failed");
     if (dvz_panel_connect_input(panel->panel, panel->owner->router) != 0)
-        return -1;
+        return _fail(panel->owner, "WASM panel input connection failed");
     if (panel->owner->gestures == NULL)
     {
         panel->owner->gestures = dvz_pointer_gesture_handler(panel->owner->router);
         if (panel->owner->gestures == NULL)
-            return -1;
+            return _fail(panel->owner, "WASM pointer gesture setup failed");
     }
     return 0;
 }
@@ -428,7 +458,9 @@ int dvz_wasm_api_panel_set_camera(
     desc.fov_y = fov_y;
     desc.near = near;
     desc.far = far;
-    return dvz_panel_set_camera(panel->panel, &desc) != NULL ? 0 : -1;
+    if (dvz_panel_set_camera(panel->panel, &desc) == NULL)
+        return _fail(panel->owner, "WASM panel camera setup failed");
+    return 0;
 }
 
 
@@ -442,7 +474,7 @@ int dvz_wasm_api_arcball_initial(
         return -1;
     DvzArcball* arcball = dvz_controller_arcball(controller->controller);
     if (arcball == NULL)
-        return -1;
+        return _fail(controller->owner, "WASM controller is not an arcball");
     _clear_payload(controller->owner);
     dvz_arcball_initial(arcball, (vec3){angle_x, angle_y, angle_z});
     return 0;
@@ -459,10 +491,12 @@ int dvz_wasm_api_visual_set_f32(
         visual == NULL || visual->owner == NULL || visual->visual == NULL || attr == NULL ||
         data == NULL || item_count == 0)
     {
-        return -1;
+        return _fail(visual != NULL ? visual->owner : NULL, "invalid WASM f32 visual upload");
     }
     _clear_payload(visual->owner);
-    return dvz_visual_set_data(visual->visual, attr, data, item_count);
+    if (dvz_visual_set_data(visual->visual, attr, data, item_count) != 0)
+        return _fail(visual->owner, "WASM f32 visual upload failed");
+    return 0;
 }
 
 
@@ -476,10 +510,12 @@ int dvz_wasm_api_visual_set_rgba8(
         visual == NULL || visual->owner == NULL || visual->visual == NULL || attr == NULL ||
         data == NULL || item_count == 0)
     {
-        return -1;
+        return _fail(visual != NULL ? visual->owner : NULL, "invalid WASM rgba8 visual upload");
     }
     _clear_payload(visual->owner);
-    return dvz_visual_set_data(visual->visual, attr, data, item_count);
+    if (dvz_visual_set_data(visual->visual, attr, data, item_count) != 0)
+        return _fail(visual->owner, "WASM rgba8 visual upload failed");
+    return 0;
 }
 
 
@@ -493,10 +529,12 @@ int dvz_wasm_api_visual_set_texture_rgba8(
         visual == NULL || visual->owner == NULL || visual->visual == NULL || rgba == NULL ||
         width == 0 || height == 0)
     {
-        return -1;
+        return _fail(visual != NULL ? visual->owner : NULL, "invalid WASM RGBA8 texture upload");
     }
     _clear_payload(visual->owner);
-    return dvz_visual_set_texture(visual->visual, rgba, width, height);
+    if (dvz_visual_set_texture(visual->visual, rgba, width, height) != 0)
+        return _fail(visual->owner, "WASM RGBA8 texture upload failed");
+    return 0;
 }
 
 
@@ -516,7 +554,7 @@ int dvz_wasm_api_resize(
         scene == NULL || figure == NULL || figure->owner != scene || figure->figure == NULL ||
         width == 0 || height == 0)
     {
-        return -1;
+        return _fail(scene, "invalid WASM resize request");
     }
     _clear_payload(scene);
     scene->width = width;
@@ -574,7 +612,7 @@ int dvz_wasm_api_set_canvas_format(uint32_t scene_handle, uint32_t color_format)
     if (scene == NULL)
         return -1;
     if (color_format != DVZ_FORMAT_R8G8B8A8_UNORM && color_format != DVZ_FORMAT_B8G8R8A8_UNORM)
-        return -1;
+        return _fail(scene, "unsupported WASM canvas format");
     _clear_payload(scene);
     scene->color_format = color_format;
     return 0;
@@ -588,7 +626,7 @@ int dvz_wasm_api_emit(uint32_t scene_handle, uint32_t figure_handle)
     DvzWasmApiScene* scene = _scene(scene_handle);
     DvzWasmApiFigure* figure = _figure(figure_handle);
     if (scene == NULL || figure == NULL || figure->owner != scene || figure->figure == NULL)
-        return -1;
+        return _fail(scene, "invalid WASM emit request");
     _clear_payload(scene);
 
     DvzCapabilitySnapshot caps;
@@ -611,7 +649,9 @@ int dvz_wasm_api_emit(uint32_t scene_handle, uint32_t figure_handle)
     if (scene->stream == NULL || dvz_diagnostic_report_count(&scene->report) > 0)
         return -1;
     scene->json = dvz_drp2_stream_json(scene->stream, "wasm_api_scene");
-    return scene->json != NULL ? 0 : -1;
+    if (scene->json == NULL)
+        return _fail(scene, "WASM DRP2 JSON serialization failed");
+    return 0;
 }
 
 

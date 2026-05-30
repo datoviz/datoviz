@@ -56,6 +56,20 @@ function diagnostics(Module, scene) {
   return messages;
 }
 
+function expectDiagnostics(Module, scene, needle, label) {
+  const messages = diagnostics(Module, scene);
+  requireOk(messages.length > 0, `${label}: expected a diagnostic`);
+  requireOk(
+    messages.some((message) => message.includes(needle)),
+    `${label}: expected diagnostic containing ${needle}, got ${messages.join("; ")}`,
+  );
+}
+
+function expectNoDiagnostics(Module, scene, label) {
+  const messages = diagnostics(Module, scene);
+  requireOk(messages.length === 0, `${label}: unexpected diagnostics: ${messages.join("; ")}`);
+}
+
 function emitStream(Module, scene, figure, label) {
   const status = Module._dvz_wasm_api_emit(scene, figure);
   const messages = diagnostics(Module, scene);
@@ -115,6 +129,50 @@ const normalNamePtr = allocCString(Module, "normal");
 const texcoordsNamePtr = allocCString(Module, "texcoords");
 
 try {
+  const diagnosticScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
+  requireOk(diagnosticScene !== 0, "diagnostic scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(diagnosticScene, 9999),
+      -1,
+      "unsupported canvas format",
+    );
+    expectDiagnostics(Module, diagnosticScene, "unsupported WASM canvas format", "unsupported format");
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(diagnosticScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "reset canvas format",
+    );
+    expectNoDiagnostics(Module, diagnosticScene, "successful format reset");
+
+    expectStatus(Module._dvz_wasm_api_emit(diagnosticScene, 0), -1, "invalid emit");
+    expectDiagnostics(Module, diagnosticScene, "invalid WASM emit request", "invalid emit");
+
+    const badVisual = Module._dvz_wasm_api_visual(diagnosticScene, 9999, 0);
+    requireOk(badVisual === 0, "unsupported visual type unexpectedly succeeded");
+    expectDiagnostics(Module, diagnosticScene, "unsupported WASM visual type", "unsupported visual");
+
+    const pointForDiagnostics = Module._dvz_wasm_api_visual(diagnosticScene, DVZ_WASM_VISUAL_POINT, 0);
+    requireOk(pointForDiagnostics !== 0, "diagnostic point creation failed");
+    expectNoDiagnostics(Module, diagnosticScene, "successful visual creation clears diagnostics");
+
+    const badAttrNamePtr = allocCString(Module, "not_an_attr");
+    const onePositionPtr = allocArray(Module, new Float32Array([0, 0, 0]));
+    try {
+      expectStatus(
+        Module._dvz_wasm_api_visual_set_f32(pointForDiagnostics, badAttrNamePtr, onePositionPtr, 1),
+        -1,
+        "invalid visual attribute",
+      );
+      expectDiagnostics(Module, diagnosticScene, "WASM f32 visual upload failed", "invalid attr");
+    } finally {
+      Module._free(badAttrNamePtr);
+      Module._free(onePositionPtr);
+    }
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(diagnosticScene);
+  }
+
   const positions = new Float32Array([-0.75, -0.45, 0, -0.35, 0.35, 0, 0.05, -0.1, 0, 0.42, 0.5, 0, 0.72, -0.35, 0]);
   const colors = new Uint8Array([231, 77, 60, 255, 46, 204, 113, 255, 52, 152, 219, 255, 241, 196, 15, 255, 155, 89, 182, 255]);
   const sizes = new Float32Array([32, 44, 36, 48, 40]);
