@@ -44,6 +44,8 @@ INDEX_FORMAT_BYTES = {
 CANVAS_TEXTURE_FORMAT = 'rgba8unorm'
 CANVAS_TEXTURE_WIDTH = 64
 CANVAS_TEXTURE_HEIGHT = 64
+CANVAS_TEXTURE_EXTENT_ALIAS = 'canvas'
+BROWSER_CANVAS_TEXTURE_ID = 0
 
 SUPPORTED_TEXTURE_FORMATS = {
     'bgra8unorm',
@@ -168,6 +170,7 @@ class WebGPUFixturePreflight:
             if cmd == 'CreateBuffer':
                 buffers[command['id']] = command
             elif cmd == 'CreateTexture':
+                self._check_canvas_extent_alias(index, command)
                 self._check_texture_format(index, command.get('format'))
                 textures[command['id']] = command
             elif cmd == 'CreateBindGroupLayout':
@@ -638,7 +641,7 @@ class WebGPUFixturePreflight:
         fallback_height: Optional[int] = None,
     ) -> Dict[str, Any]:
         texture_id = attachment.get('texture_id')
-        if texture_id == 0:
+        if texture_id == BROWSER_CANVAS_TEXTURE_ID:
             return {
                 'format': 'depth32float' if depth_stencil else CANVAS_TEXTURE_FORMAT,
                 'width': fallback_width if fallback_width is not None else CANVAS_TEXTURE_WIDTH,
@@ -657,9 +660,18 @@ class WebGPUFixturePreflight:
         }
 
     def _texture_extent_value(self, value: Any, canvas_value: int) -> int:
-        if value == 'canvas':
+        if value == CANVAS_TEXTURE_EXTENT_ALIAS:
             return canvas_value
         return int(value)
+
+    def _check_canvas_extent_alias(self, index: int, command: Dict[str, Any]) -> None:
+        width_is_canvas = command.get('width') == CANVAS_TEXTURE_EXTENT_ALIAS
+        height_is_canvas = command.get('height') == CANVAS_TEXTURE_EXTENT_ALIAS
+        if width_is_canvas != height_is_canvas:
+            raise WebGPUPreflightFailure(
+                index,
+                'CreateTexture canvas extent alias requires both width and height to be canvas',
+            )
 
     def _merge_attachment_extent(
         self,

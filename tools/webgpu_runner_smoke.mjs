@@ -535,6 +535,31 @@ async function main() {
     {
       commands: [
         ...header,
+        {
+          cmd: 'CreateTexture',
+          id: 1,
+          dimension: '2d',
+          width: 'canvas',
+          height: 4,
+          depth: 1,
+          format: 'rgba8unorm',
+          usage: ['RENDER_ATTACHMENT'],
+        },
+      ],
+    },
+    'canvas extent alias requires both width and height',
+    {
+      commandIndex: 2,
+      cmd: 'CreateTexture',
+      code: 'DRP2_ERR_INVALID_ARGUMENT',
+    },
+  );
+
+  await expectFailure(
+    executeDrp2Stream,
+    {
+      commands: [
+        ...header,
         { cmd: 'CreateBuffer', id: 1, size: 4, usage: ['COPY_DST'] },
         { cmd: 'DestroyBuffer', buffer_id: 1 },
         { cmd: 'WriteBuffer', buffer_id: 1, offset: 0, data: '', size: 0 },

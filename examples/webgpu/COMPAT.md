@@ -172,6 +172,17 @@ unsupported shader, texture, render-target, or depth/stencil capability choices 
 diagnostics before creating browser GPU resources.
 
 
+## Browser Canvas Target Conventions
+
+The browser runner has an explicit external-target convention for WebGPU presentation streams:
+
+- `texture_id: 0` in a render-pass color attachment means the current browser canvas texture.
+- `texture_id: 0` in a render-pass depth/stencil attachment means a transient browser-owned
+  `depth32float` attachment matching the pass extent.
+- Pipeline color target format `"canvas"` means `navigator.gpu.getPreferredCanvasFormat()`.
+- Texture dimensions `"canvas"` for width/height mean the current canvas pixel extent. The runner
+  and fixture preflight require both width and height to use the alias together.
+
 ## PoC-Local Adaptations
 
 These are compatibility choices in the browser runner for ad hoc demo streams and older command
@@ -180,9 +191,6 @@ forms. The fixture dashboard requires explicit bind-group layout and render-pipe
 - The main demo page can keep persistent WebGPU resources for a loaded stream and replay only the
   frame command slice after the first command encoder. The strict fixture dashboard still executes
   each stream as a one-shot command list.
-- `texture_id: 0` means the current browser canvas texture.
-- Pipeline color target format `"canvas"` means `navigator.gpu.getPreferredCanvasFormat()`.
-- Texture dimensions `"canvas"` for width/height mean the current canvas pixel extent.
 - Missing `CreateRenderPipeline.color_targets` follows the DRP2 default for ad hoc developer
   streams: the configured canvas format for canvas targets, otherwise `rgba8unorm` when no
   attachment format is available. Committed browser streams now carry explicit color targets.

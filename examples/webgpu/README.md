@@ -89,8 +89,9 @@ http://localhost:8765/examples/webgpu/?stream=attachment_multi_color_wgsl
 http://localhost:8765/examples/webgpu/?stream=attachment_depth_wgsl
 ```
 
-Standalone demo streams may use `texture_id: 0` as a PoC-local alias for the current browser canvas
-texture. Strict dashboard fixtures use explicit resources except for browser-canvas streams.
+Browser presentation streams use `texture_id: 0` in render-pass color attachments as the current
+browser canvas texture, and may use `"canvas"` width/height together for browser-sized textures.
+Strict dashboard fixtures use explicit resources except for browser-canvas streams.
 
 Supported commands in this first slice:
 

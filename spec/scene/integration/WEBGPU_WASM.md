@@ -138,13 +138,14 @@ Runtime behavior must align with DRP2 semantic validation:
 5. command-index context for errors;
 6. deterministic object destruction and use-after-destroy validation.
 
-Strict fixture paths should not depend on proof-of-concept shortcuts such as implicit canvas texture
-ids, missing pipeline metadata fallbacks, hard-coded scene uniform ids, or browser-side shader
-substitution.
+Strict fixture paths should not depend on proof-of-concept shortcuts such as missing pipeline
+metadata fallbacks, hard-coded scene uniform ids, or browser-side shader substitution. Browser
+presentation streams may use the documented browser-canvas external-target convention.
 
 Remaining demo shortcuts should be removed before they become architecture:
 
-1. implicit canvas aliases;
+1. a future non-demo external-target ABI if browser-canvas conventions need to cross runtime
+   boundaries;
 2. done for the current browser runner: unaligned buffer-binding offsets now fail explicitly instead
    of silently binding a different range;
 3. demo-local assumptions about scene uniform buffer ids;

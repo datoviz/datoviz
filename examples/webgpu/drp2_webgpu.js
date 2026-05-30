@@ -6,6 +6,10 @@ const interactionHelpEl = document.querySelector("#interaction-help");
 const playToggleEl = document.querySelector("#play-toggle");
 const frameInfoEl = document.querySelector("#frame-info");
 
+const BROWSER_CANVAS_TEXTURE_ID = 0;
+const BROWSER_CANVAS_FORMAT_ALIAS = "canvas";
+const BROWSER_CANVAS_EXTENT_ALIAS = "canvas";
+
 export const STREAMS = [
   {
     name: "scene_point_panzoom_wgsl",
@@ -66,6 +70,24 @@ function required(value, message) {
     throw new Error(message);
   }
   return value;
+}
+
+
+
+function isBrowserCanvasTextureId(textureId) {
+  return textureId === BROWSER_CANVAS_TEXTURE_ID;
+}
+
+
+
+function isBrowserCanvasFormatAlias(format) {
+  return format === BROWSER_CANVAS_FORMAT_ALIAS;
+}
+
+
+
+function isBrowserCanvasExtentAlias(value) {
+  return value === BROWSER_CANVAS_EXTENT_ALIAS;
 }
 
 
@@ -545,7 +567,7 @@ function makeColorTarget(canvasFormat, target) {
 
 function colorTargetFormat(canvasFormat, target) {
   const streamFormat = required(target.format, "color target needs format");
-  return streamFormat === "canvas" ? canvasFormat : mapTextureFormat(streamFormat);
+  return isBrowserCanvasFormatAlias(streamFormat) ? canvasFormat : mapTextureFormat(streamFormat);
 }
 
 
@@ -1147,6 +1169,7 @@ function requireCapabilityValue(commandIndex, command, capabilities, field, valu
 
 function validateTextureCapabilityPreflight(commandIndex, command, capabilities) {
   const format = required(command.format, "CreateTexture needs format");
+  validateBrowserCanvasTextureExtentAlias(command);
   requireCapabilityValue(
     commandIndex,
     command,
@@ -1315,10 +1338,22 @@ function canvasExtent() {
 
 
 function resolveTextureExtentValue(value, axis) {
-  if (value === "canvas") {
+  if (isBrowserCanvasExtentAlias(value)) {
     return canvasExtent()[axis];
   }
   return required(value, `CreateTexture needs ${axis}`);
+}
+
+
+
+function validateBrowserCanvasTextureExtentAlias(command) {
+  const widthIsCanvas = isBrowserCanvasExtentAlias(command.width);
+  const heightIsCanvas = isBrowserCanvasExtentAlias(command.height);
+  if (widthIsCanvas !== heightIsCanvas) {
+    throw new Error(
+      "CreateTexture canvas extent alias requires both width and height to be canvas",
+    );
+  }
 }
 
 
@@ -1700,7 +1735,7 @@ function makeComputePipeline(device, shaders, bindGroupLayouts, command, options
 
 
 function attachmentExtent(state, attachment) {
-  if (attachment.texture_id === 0) {
+  if (isBrowserCanvasTextureId(attachment.texture_id)) {
     return canvasExtent();
   }
   const record = requireLiveRecord(state, attachment.texture_id, "texture");
@@ -1721,7 +1756,7 @@ function makeDepthStencilAttachment(device, state, textures, command) {
   if (attachment === undefined) {
     return undefined;
   }
-  const texture = attachment.texture_id === 0
+  const texture = isBrowserCanvasTextureId(attachment.texture_id)
     ? device.createTexture({
         label: command.label === undefined ? "transient-depth" : `${command.label}:depth`,
         size: renderPassExtent(state, command),
@@ -1740,7 +1775,7 @@ function makeDepthStencilAttachment(device, state, textures, command) {
 
 
 function makeColorAttachment(context, textures, attachment) {
-  const textureView = attachment.texture_id === 0
+  const textureView = isBrowserCanvasTextureId(attachment.texture_id)
     ? context.getCurrentTexture().createView()
     : required(textures.get(attachment.texture_id), `unknown texture ${attachment.texture_id}`)
         .createView();
@@ -1773,7 +1808,7 @@ function beginRenderPass(device, context, state, textures, encoders, command) {
 
 
 function attachmentTextureFormat(state, canvasFormat, attachment) {
-  if (attachment.texture_id === 0) {
+  if (isBrowserCanvasTextureId(attachment.texture_id)) {
     return canvasFormat;
   }
   return requireLiveRecord(state, attachment.texture_id, "texture").format;
@@ -1782,7 +1817,7 @@ function attachmentTextureFormat(state, canvasFormat, attachment) {
 
 
 function depthAttachmentTextureFormat(state, attachment) {
-  if (attachment.texture_id === 0) {
+  if (isBrowserCanvasTextureId(attachment.texture_id)) {
     return "depth32float";
   }
   return requireLiveRecord(state, attachment.texture_id, "texture").format;
@@ -2391,6 +2426,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
 
       case "CreateTexture": {
         const textureFormat = mapTextureFormat(required(command.format, "CreateTexture needs format"));
+        validateBrowserCanvasTextureExtentAlias(command);
         const extent = commandExtent(command);
         validateTextureCapabilities(capabilities, command, textureFormat, extent);
         registerObject(
