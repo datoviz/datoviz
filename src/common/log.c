@@ -117,6 +117,8 @@ static uint64_t get_thread_idx(void)
     // Windows
     // Use native WinAPI to obtain a stable thread ID.
     tid = (uint64_t)(GetCurrentThreadId());
+#elif defined(__EMSCRIPTEN__)
+    tid = 1;
 #else
     // Linux
     tid = (uint64_t)(syscall(__NR_gettid));
