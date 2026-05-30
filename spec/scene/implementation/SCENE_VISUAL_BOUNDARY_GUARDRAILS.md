@@ -40,6 +40,13 @@ wrong.
 Remaining valuable work is narrower: stop generic scene/visual code from knowing concrete visual
 families, and add checks so the coupling does not grow back.
 
+2026-05-30 status correction: the first guardrail pass did not enforce descriptor-kind
+independence. In particular, root-level visual helpers still contain concrete
+`DVZ_SCENE_VISUAL_DESC_*` matrices. The boundary check now tracks those leaks with a temporary
+counted allowlist. Treat that allowlist as the active refactor queue, not as accepted architecture.
+Because v0.4-dev does not preserve v0.3 compatibility, legacy untyped/compatibility render paths may
+be removed outright when they block the clean split.
+
 
 ## Problem
 
@@ -172,6 +179,17 @@ Start with an explicit allowlist for current transitional files. The allowlist m
 migration slice lands. Do not add new allowlist entries without recording why the generic layer
 cannot express the behavior through a contract yet.
 
+The guard must also enforce descriptor-kind ownership:
+
+1. concrete `DVZ_SCENE_VISUAL_DESC_*` identifiers may appear in the enum declaration, the
+   registration table, tests/examples/specs, and the owning family folder;
+2. for example, `DVZ_SCENE_VISUAL_DESC_SEGMENT` belongs in `src/scene/visuals/segment/` and the
+   registry, not in root visual helpers or generic runtime code;
+3. explicit shared subsystems should consume neutral facts such as renderable kind, point-like kind,
+   draw-contract bits, or callback outputs rather than naming concrete descriptor kinds;
+4. temporary exceptions live in `tools/scene_visual_boundary_allowlist.txt` as counted entries, so
+   new leaks fail and removed leaks require the allowlist to shrink.
+
 Recommended architecture tests:
 
 1. every active visual type has a registry entry and required callbacks;
@@ -198,6 +216,9 @@ Work in small behavior-preserving slices.
 3. Move descriptor construction ownership.
    - Shrink `visuals/desc.c` toward typed metadata validation and registry dispatch.
    - Family code should translate family metadata into bind/pipeline/shader/draw-ready contracts.
+   - Remove descriptor-kind matrices from root `desc.c`, `desc_kind.c`, `shader_desc.c`,
+     `pipeline_desc.c`, and `pass_caps.c`; keep only neutral helpers that do not know concrete
+     built-in families.
 4. Move lifecycle and family state ownership.
    - Stop growing `DvzVisual` with family-specific fields.
    - Introduce opaque family state for new or migrated families, then move existing family state

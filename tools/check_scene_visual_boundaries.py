@@ -24,6 +24,7 @@ VISUAL_ENUM_RE = re.compile(
     r"DVZ_VISUAL_TYPE_"
     r"(POINT|PIXEL|MARKER|SEGMENT|PATH|IMAGE|MESH|VOLUME|PRIMITIVE|SPHERE|GLYPH|TEXT|LABELS|SPLAT|VECTOR)"
 )
+VISUAL_DESC_RE = re.compile(r"DVZ_SCENE_VISUAL_DESC_[A-Z0-9_]+")
 PRIVATE_INCLUDE_RE = re.compile(r'#include "([a-z_]+/internal\.h)"')
 VISUAL_FAMILY_NAMES = {
     "glyph",
@@ -43,6 +44,37 @@ VISUAL_FAMILY_NAMES = {
     "vector",
     "volume",
 }
+VISUAL_DESC_CENTRAL_PATHS = {
+    "src/scene/visuals/_visual_pipeline.h",
+    "src/scene/visuals/registry/registry.c",
+    "src/scene/visuals/registry/registry.h",
+}
+VISUAL_DESC_OWNER_PREFIXES = {
+    "DVZ_SCENE_VISUAL_DESC_POINT": ("src/scene/visuals/point/",),
+    "DVZ_SCENE_VISUAL_DESC_PIXEL": ("src/scene/visuals/pixel/",),
+    "DVZ_SCENE_VISUAL_DESC_MARKER": ("src/scene/visuals/marker/",),
+    "DVZ_SCENE_VISUAL_DESC_SEGMENT": ("src/scene/visuals/segment/",),
+    "DVZ_SCENE_VISUAL_DESC_PATH": ("src/scene/visuals/path/",),
+    "DVZ_SCENE_VISUAL_DESC_PRIMITIVE": ("src/scene/visuals/primitive/",),
+    "DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH": ("src/scene/visuals/mesh/",),
+    "DVZ_SCENE_VISUAL_DESC_IMAGE": ("src/scene/visuals/image/",),
+    "DVZ_SCENE_VISUAL_DESC_LABELS_SINT": ("src/scene/visuals/labels/",),
+    "DVZ_SCENE_VISUAL_DESC_LABELS_UINT": ("src/scene/visuals/labels/",),
+    "DVZ_SCENE_VISUAL_DESC_GLYPH": ("src/scene/visuals/glyph/",),
+    "DVZ_SCENE_VISUAL_DESC_VOLUME": ("src/scene/visuals/volume/",),
+    "DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT": ("src/scene/visuals/volume/",),
+    "DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT": ("src/scene/visuals/volume/",),
+    "DVZ_SCENE_VISUAL_DESC_SPHERE": ("src/scene/visuals/sphere/",),
+    "DVZ_SCENE_VISUAL_DESC_SPLAT": ("src/scene/visuals/splat/",),
+}
+
+
+class Allowlist:
+    """Parsed scene visual-boundary allowlist."""
+
+    def __init__(self) -> None:
+        self.exact: set[str] = set()
+        self.counts: dict[tuple[str, str, str], int] = {}
 
 
 def _iter_generic_sources(root: Path) -> list[Path]:
@@ -55,15 +87,23 @@ def _iter_generic_sources(root: Path) -> list[Path]:
     return sorted(set(paths))
 
 
-def _allowlist_entries(path: Path | None) -> set[str]:
+def _allowlist_entries(path: Path | None) -> Allowlist:
+    allowlist = Allowlist()
     if path is None or not path.exists():
-        return set()
-    entries = set()
+        return allowlist
     for raw in path.read_text(encoding="utf8").splitlines():
         line = raw.strip()
-        if line and not line.startswith("#"):
-            entries.add(line)
-    return entries
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split(":", 3)
+        if len(parts) == 4 and parts[1] == "visual-desc-kind":
+            try:
+                allowlist.counts[(parts[0], parts[1], parts[2])] = int(parts[3])
+            except ValueError:
+                allowlist.exact.add(line)
+            continue
+        allowlist.exact.add(line)
+    return allowlist
 
 
 def _entry(path: Path, line_no: int, kind: str, text: str, root: Path) -> str:
@@ -71,13 +111,45 @@ def _entry(path: Path, line_no: int, kind: str, text: str, root: Path) -> str:
     return f"{rel}:{line_no}:{kind}:{text.strip()}"
 
 
-def _violations(root: Path, allowlist: set[str]) -> list[str]:
+def _visual_desc_location_allowed(rel: str, token: str) -> bool:
+    if token == "DVZ_SCENE_VISUAL_DESC_NONE":
+        return True
+    if rel in VISUAL_DESC_CENTRAL_PATHS:
+        return True
+    if rel.startswith("src/scene/tests/"):
+        return True
+    return any(rel.startswith(prefix) for prefix in VISUAL_DESC_OWNER_PREFIXES.get(token, ()))
+
+
+def _visual_desc_counts(root: Path) -> dict[tuple[str, str, str], int]:
+    counts: dict[tuple[str, str, str], int] = {}
+    scene_root = root / "src/scene"
+    for path in sorted(scene_root.rglob("*")):
+        if path.suffix not in SOURCE_SUFFIXES:
+            continue
+        rel = path.relative_to(root).as_posix()
+        for line in path.read_text(encoding="utf8").splitlines():
+            for match in VISUAL_DESC_RE.finditer(line):
+                token = match.group(0)
+                if _visual_desc_location_allowed(rel, token):
+                    continue
+                key = (rel, "visual-desc-kind", token)
+                counts[key] = counts.get(key, 0) + 1
+    return counts
+
+
+def _visual_desc_count_entry(key: tuple[str, str, str], count: int) -> str:
+    rel, kind, token = key
+    return f"{rel}:{kind}:{token}:{count}"
+
+
+def _violations(root: Path, allowlist: Allowlist) -> list[str]:
     failures: list[str] = []
     for path in _iter_generic_sources(root):
         for line_no, line in enumerate(path.read_text(encoding="utf8").splitlines(), start=1):
             if VISUAL_ENUM_RE.search(line):
                 entry = _entry(path, line_no, "visual-enum", line, root)
-                if entry not in allowlist:
+                if entry not in allowlist.exact:
                     failures.append(entry)
 
     scene_root = root / "src/scene"
@@ -100,8 +172,20 @@ def _violations(root: Path, allowlist: set[str]) -> list[str]:
             if family_name not in VISUAL_FAMILY_NAMES:
                 continue
             entry = _entry(path, line_no, "private-include", line, root)
-            if entry not in allowlist:
+            if entry not in allowlist.exact:
                 failures.append(entry)
+
+    desc_counts = _visual_desc_counts(root)
+    for key, count in sorted(desc_counts.items()):
+        allowed = allowlist.counts.get(key, 0)
+        if count > allowed:
+            rel, kind, token = key
+            failures.append(f"{rel}:{kind}:{token}:count={count} allowed={allowed}")
+    for key, allowed in sorted(allowlist.counts.items()):
+        current = desc_counts.get(key, 0)
+        if current < allowed:
+            rel, kind, token = key
+            failures.append(f"{rel}:{kind}:{token}:stale-allowlist current={current} allowed={allowed}")
     return failures
 
 
@@ -120,10 +204,18 @@ def main() -> int:
     allowlist_path = args.allowlist.resolve()
 
     if args.update_allowlist:
-        entries = _violations(root, set())
+        entries = [
+            entry for entry in _violations(root, Allowlist()) if ":visual-desc-kind:" not in entry
+        ]
+        entries.extend(
+            _visual_desc_count_entry(key, count)
+            for key, count in sorted(_visual_desc_counts(root).items())
+        )
+        entries = sorted(set(entries))
         allowlist_path.write_text(
             "# Current transitional scene visual-boundary violations.\n"
             "# Each line is path:line:kind:source and must be removed as migration slices land.\n"
+            "# Descriptor-kind entries use path:visual-desc-kind:TOKEN:count.\n"
             + "\n".join(entries)
             + ("\n" if entries else ""),
             encoding="utf8",

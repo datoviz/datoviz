@@ -27,8 +27,8 @@ release criteria, or long implementation history.
    [`../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
    The completed implementation baseline is recorded in
    [`../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
-   The older broad source-split roadmap and architecture completion plan are retired pointers, not
-   active queues.
+   The older broad source-split roadmap and architecture completion plan are retired pointers, but
+   descriptor-kind visual independence is active again as of 2026-05-30.
 7. For DRP2 commands, fixtures, schemas, or scene code that emits DRP2, read
    [`../../spec/drp2/README.md`](../../spec/drp2/README.md) and
    [`../../spec/drp2/AGENT_SPEC_PHASE.md`](../../spec/drp2/AGENT_SPEC_PHASE.md).
@@ -57,17 +57,19 @@ grid generators, bounds, normals, transforms, merges, edges, contours, polygon t
 upload, polygon scene helpers, semantic polygon/polygon-set composites, and focused tests/examples.
 Remaining `geom` work is optional unless a release example needs it.
 
-The broad scene source/architecture split and visual-boundary guardrail baseline are now historical.
+The broad scene source/architecture split and the first visual-boundary guardrail baseline are now
+historical.
 Completed context is archived in
 [`../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`](../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md)
 and
 [`../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
 Do not reopen dense/index/material upload emission, panel drawable/viewport helper extraction,
-typed metadata enforcement, untyped visual compatibility removal, generic query scratch/decode
-helpers, or the helper declarations already moved into owner-private headers unless a new
-regression points there. Generic scene code should keep calling visual-family operations, while
-concrete visual behavior should live in `src/scene/visuals/<family>/`, explicit shared visual
-subsystems, or the registration table.
+typed metadata enforcement, generic query scratch/decode helpers, or the helper declarations already
+moved into owner-private headers unless a new regression points there. The descriptor-kind
+independence audit did expose a new visual-boundary regression: root visual helpers and a legacy
+runtime compatibility path still know concrete `DVZ_SCENE_VISUAL_DESC_*` families. Generic scene
+code should keep calling visual-family operations, while concrete visual behavior should live in
+`src/scene/visuals/<family>/`, explicit shared visual subsystems, or the registration table.
 
 
 ## Guardrails

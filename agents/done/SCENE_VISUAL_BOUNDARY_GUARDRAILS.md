@@ -1,6 +1,15 @@
 # Scene Visual Boundary Guardrails
 
-Status: completed baseline on 2026-05-29.
+Status: completed baseline on 2026-05-29; superseded on 2026-05-30 by stricter descriptor-kind
+independence work.
+
+2026-05-30 correction: this baseline blocked several visual-type and private-header leaks, but it
+did not block concrete `DVZ_SCENE_VISUAL_DESC_*` references in root visual helpers and generic
+runtime code. That remaining debt is tracked by
+[`../../tools/scene_visual_boundary_allowlist.txt`](../../tools/scene_visual_boundary_allowlist.txt)
+and the active rules in
+[`../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
+Do not treat the 2026-05-29 baseline as final completion of visual independence.
 
 The scene visual-boundary phase moved generic visual behavior onto registry-owned family
 operations and added a default validation guard so concrete visual-family coupling does not grow
