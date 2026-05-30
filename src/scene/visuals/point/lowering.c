@@ -17,6 +17,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_visual_pipeline_internal.h"
 
 
 
@@ -45,7 +46,8 @@ bool _scene_point_visual_lowering(const DvzVisual* visual, DvzVisualLowering* ou
     out->point_style_enabled = visual->material.point_style_enabled;
     out->material_params_screen_scaled = visual->material.point_style_enabled;
     out->needs_material_params =
-        visual->material.depth_cue_enabled || visual->material.point_style_enabled;
+        visual->material.depth_cue_enabled || visual->material.point_style_enabled ||
+        _scene_visual_has_dense_attr(visual, "selection");
     return true;
 }
 

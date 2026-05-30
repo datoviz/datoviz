@@ -176,6 +176,30 @@ DVZ_EXPORT void dvz_selection_clear(DvzSelection* selection);
 
 
 /**
+ * Return the default selection visual style.
+ *
+ * The default preserves the first retained-selection behavior: selected items render normally and
+ * unselected point-like items are dimmed while a selection is active.
+ *
+ * @return the default visual style descriptor
+ */
+DVZ_EXPORT DvzSelectionVisualStyle dvz_selection_visual_style(void);
+
+
+/**
+ * Configure selected/unselected visual styling for point-like retained selection masks.
+ *
+ * The initial implementation affects point and marker visuals. Pass NULL to restore defaults.
+ *
+ * @param selection the selection
+ * @param style the visual style descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_selection_set_visual_style(
+    DvzSelection* selection, const DvzSelectionVisualStyle* style);
+
+
+/**
  * Apply one query result to a selection object.
  *
  * @param selection the selection

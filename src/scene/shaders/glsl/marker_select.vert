@@ -1,6 +1,7 @@
 #version 450
 
 #include "common.glsl"
+#include "selection_style.glsl"
 
 layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec4 inColor;
@@ -18,11 +19,9 @@ layout(location = 4) out float fragSpriteScale;
 void main()
 {
     float spriteScale = max(abs(cos(inAngle)) + abs(sin(inAngle)), 1.0);
-    float selected = inSelection != 0u ? 1.0 : 0.0;
-    float dim = mix(0.25, 1.0, selected);
     gl_Position = transform(inPos);
     gl_PointSize = max(inSize * spriteScale, 0.0);
-    fragColor = vec4(inColor.rgb * dim, mix(inColor.a * 0.25, 1.0, selected));
+    fragColor = applySelectionVisualStyle(inColor, inSelection);
     fragSize = max(inSize, 1.0);
     fragAngle = inAngle;
     fragShape = inShape;

@@ -177,6 +177,17 @@ int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstC
     AT(visual->link_channel == channel);
     AT(visual->link_key_count == 3);
     AT(visual->link_keys[1] == 11);
+    DvzSelectionVisualStyle style = dvz_selection_visual_style();
+    AT(style.selected.flags == DVZ_ITEM_STATE_VISUAL_NONE);
+    AT(style.unselected.flags == DVZ_ITEM_STATE_VISUAL_ALPHA);
+    AC(style.unselected.alpha, 0.25f, 1e-6f);
+    style.selected.flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    style.selected.tint = (DvzColor){255, 183, 3, 255};
+    style.selected.tint_mix = 1.0f;
+    style.unselected.flags = DVZ_ITEM_STATE_VISUAL_NONE;
+    AT(dvz_selection_set_visual_style(selection, &style) == 0);
+    AT(selection->visual_style.selected.flags == DVZ_ITEM_STATE_VISUAL_TINT);
+    AT(selection->visual_style.unselected.flags == DVZ_ITEM_STATE_VISUAL_NONE);
 
     DvzQueryResult query = {
         .request_id = 1,
@@ -292,6 +303,12 @@ int test_scene_selection_apply_query_updates_visual_masks(TstContext* suite, con
     AT(marker_mask[2] == 0);
     AT(point->attrs[point_selection_idx].dirty_item_count == 3);
     AT(marker->attrs[marker_selection_idx].dirty_item_count == 3);
+    AT(_visual_family_state(point)->material_params.standard_params[3] ==
+       (float)DVZ_ITEM_STATE_VISUAL_ALPHA);
+    AC(_visual_family_state(point)->material_params.depth_cue[0], 0.25f, 1e-6f);
+    AT(_visual_family_state(marker)->material_params.standard_params[3] ==
+       (float)DVZ_ITEM_STATE_VISUAL_ALPHA);
+    AC(_visual_family_state(marker)->material_params.depth_cue[0], 0.25f, 1e-6f);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -322,6 +339,8 @@ int test_scene_selection_apply_query_updates_visual_masks(TstContext* suite, con
     AT(marker_mask[2] == 0);
     AT(point->attrs[point_selection_idx].dirty_item_count == 3);
     AT(marker->attrs[marker_selection_idx].dirty_item_count == 3);
+    AT(_visual_family_state(point)->material_params.standard_params[3] == 0.0f);
+    AT(_visual_family_state(marker)->material_params.standard_params[3] == 0.0f);
 
     dvz_scene_destroy(scene);
     return 0;

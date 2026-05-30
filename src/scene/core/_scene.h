@@ -848,6 +848,7 @@ struct DvzSelection
 {
     DvzScene* scene;
     DvzSelectionDesc desc;
+    DvzSelectionVisualStyle visual_style;
     DvzPanel* card_panel;
     bool card_enabled;
     DvzQueryResult card_query;

@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <inttypes.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -58,6 +59,8 @@ static uint32_t _selection_visual_item_count(const DvzVisual* visual);
 static bool _selection_matches_visual_item(
     const DvzSelection* selection, const DvzVisual* visual, uint64_t visual_id,
     uint32_t item_index);
+
+static void _selection_sync_visual_style(DvzSelection* selection, DvzVisual* visual);
 
 static int _selection_sync_visual_mask(DvzSelection* selection, DvzVisual* visual);
 
@@ -264,6 +267,76 @@ static bool _selection_matches_visual_item(
 
 
 /**
+ * Store one item-state style in the shared material payload slots used by point-like selection
+ * shaders.
+ *
+ * @param params material payload
+ * @param style item-state style
+ * @param selected whether this is the selected or unselected item state
+ */
+static void _selection_store_item_style(
+    DvzSceneMaterialParams* params, const DvzItemStateVisualStyle* style, bool selected)
+{
+    ANN(params);
+    ANN(style);
+    float flags = (float)style->flags;
+    float alpha = isfinite(style->alpha) ? style->alpha : 1.0f;
+    float tint_mix = isfinite(style->tint_mix) ? style->tint_mix : 0.0f;
+    float tint[4] = {
+        (float)style->tint.r / 255.0f,
+        (float)style->tint.g / 255.0f,
+        (float)style->tint.b / 255.0f,
+        (float)style->tint.a / 255.0f,
+    };
+
+    if (selected)
+    {
+        params->standard_params[0] = flags;
+        params->standard_params[1] = alpha;
+        params->standard_params[2] = tint_mix;
+        params->emissive_rim[0] = tint[0];
+        params->emissive_rim[1] = tint[1];
+        params->emissive_rim[2] = tint[2];
+        params->emissive_rim[3] = tint[3];
+    }
+    else
+    {
+        params->standard_params[3] = flags;
+        params->depth_cue[0] = alpha;
+        params->depth_cue[1] = tint_mix;
+        params->depth_cue_color[0] = tint[0];
+        params->depth_cue_color[1] = tint[1];
+        params->depth_cue_color[2] = tint[2];
+        params->depth_cue_color[3] = tint[3];
+    }
+}
+
+
+
+/**
+ * Synchronize point-like selection visual style material parameters.
+ *
+ * @param selection the selection
+ * @param visual the visual
+ */
+static void _selection_sync_visual_style(DvzSelection* selection, DvzVisual* visual)
+{
+    ANN(selection);
+    ANN(visual);
+    DvzSelectionVisualStyle empty_style = {
+        .selected = {.alpha = 1.0f, .tint = {255, 255, 255, 255}, .tint_mix = 0.0f},
+        .unselected = {.alpha = 1.0f, .tint = {255, 255, 255, 255}, .tint_mix = 0.0f},
+    };
+    DvzSelectionVisualStyle style = selection->item_count > 0 ? selection->visual_style : empty_style;
+    DvzSceneMaterialParams* params = &_visual_family_state(visual)->material_params;
+    _selection_store_item_style(params, &style.selected, true);
+    _selection_store_item_style(params, &style.unselected, false);
+    _visual_family_state(visual)->material_params_dirty = true;
+}
+
+
+
+/**
  * Rebuild the selection mask attribute for one visual.
  *
  * @param selection the selection
@@ -308,6 +381,7 @@ static int _selection_sync_visual_mask(DvzSelection* selection, DvzVisual* visua
         return 0;
     }
 
+    _selection_sync_visual_style(selection, visual);
     int res = dvz_visual_set_data(visual, "selection", mask, item_count);
     dvz_free(mask);
     return res;
@@ -1332,6 +1406,7 @@ DvzSelection* dvz_selection(DvzScene* scene, const DvzSelectionDesc* desc)
         selection->desc = *desc;
     else
         selection->desc.mode = DVZ_SELECT_REPLACE;
+    selection->visual_style = dvz_selection_visual_style();
     selection->card_enabled = true;
     return selection;
 }
@@ -1375,6 +1450,65 @@ void dvz_selection_clear(DvzSelection* selection)
     _selection_clear_items(selection);
     (void)_selection_sync_masks(selection);
     _selection_card_hide(selection);
+}
+
+
+
+/**
+ * Return the default selection visual style.
+ *
+ * @return the default style descriptor
+ */
+DvzSelectionVisualStyle dvz_selection_visual_style(void)
+{
+    return (DvzSelectionVisualStyle){
+        .selected =
+            {
+                .flags = DVZ_ITEM_STATE_VISUAL_NONE,
+                .alpha = 1.0f,
+                .tint = {255, 255, 255, 255},
+                .tint_mix = 0.0f,
+            },
+        .unselected =
+            {
+                .flags = DVZ_ITEM_STATE_VISUAL_ALPHA,
+                .alpha = 0.25f,
+                .tint = {255, 255, 255, 255},
+                .tint_mix = 0.0f,
+            },
+    };
+}
+
+
+
+/**
+ * Configure selected/unselected visual styling for a retained selection.
+ *
+ * @param selection the selection
+ * @param style style descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
+ */
+int dvz_selection_set_visual_style(DvzSelection* selection, const DvzSelectionVisualStyle* style)
+{
+    ANN(selection);
+    DvzSelectionVisualStyle resolved = style != NULL ? *style : dvz_selection_visual_style();
+    const uint32_t supported_flags = DVZ_ITEM_STATE_VISUAL_ALPHA | DVZ_ITEM_STATE_VISUAL_TINT;
+    if ((resolved.selected.flags & ~supported_flags) != 0 ||
+        (resolved.unselected.flags & ~supported_flags) != 0)
+    {
+        log_error("unsupported selection visual style flags");
+        return -1;
+    }
+    if (
+        !isfinite(resolved.selected.alpha) || !isfinite(resolved.selected.tint_mix) ||
+        !isfinite(resolved.unselected.alpha) || !isfinite(resolved.unselected.tint_mix))
+    {
+        log_error("selection visual alpha and tint_mix values must be finite");
+        return -1;
+    }
+
+    selection->visual_style = resolved;
+    return _selection_sync_masks(selection);
 }
 
 

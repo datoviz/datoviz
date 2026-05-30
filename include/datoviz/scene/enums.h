@@ -362,6 +362,14 @@ typedef enum
 } DvzSelectMode;
 
 
+typedef enum
+{
+    DVZ_ITEM_STATE_VISUAL_NONE = 0,
+    DVZ_ITEM_STATE_VISUAL_ALPHA = 1u << 0,
+    DVZ_ITEM_STATE_VISUAL_TINT = 1u << 1,
+} DvzItemStateVisualFlag;
+
+
 
 typedef enum
 {

@@ -595,6 +595,24 @@ struct DvzSelectionDesc
 typedef struct DvzSelectionDesc DvzSelectionDesc;
 
 
+struct DvzItemStateVisualStyle
+{
+    uint32_t flags;
+    float alpha;
+    DvzColor tint;
+    float tint_mix;
+};
+typedef struct DvzItemStateVisualStyle DvzItemStateVisualStyle;
+
+
+struct DvzSelectionVisualStyle
+{
+    DvzItemStateVisualStyle selected;
+    DvzItemStateVisualStyle unselected;
+};
+typedef struct DvzSelectionVisualStyle DvzSelectionVisualStyle;
+
+
 struct DvzSelectionItem
 {
     uint64_t visual_id;
