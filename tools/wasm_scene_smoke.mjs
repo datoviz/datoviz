@@ -6,7 +6,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs");
-const outputPath = resolve(root, "build-wasm-scene/wasm/wasm_scene_point_panzoom.json");
+const outputPath = resolve(root, "build-wasm-scene/wasm/wasm_scene_point_primitive_panzoom.json");
 
 const DVZ_POINTER_EVENT_PRESS = 1;
 const DVZ_POINTER_EVENT_RELEASE = 0;
@@ -110,6 +110,18 @@ const sizes = new Float32Array([32, 44, 36, 48, 40]);
 const positionsPtr = allocArray(Module, positions);
 const colorsPtr = allocArray(Module, colors);
 const sizesPtr = allocArray(Module, sizes);
+const primitivePositions = new Float32Array([
+  -0.85, -0.7, 0.15,
+  -0.15, -0.7, 0.15,
+  -0.5, 0.1, 0.15,
+]);
+const primitiveColors = new Uint8Array([
+  255, 120, 90, 220,
+  255, 180, 90, 220,
+  255, 90, 150, 220,
+]);
+const primitivePositionsPtr = allocArray(Module, primitivePositions);
+const primitiveColorsPtr = allocArray(Module, primitiveColors);
 
 try {
   let status = Module._dvz_wasm_scene_set_points(
@@ -120,6 +132,13 @@ try {
     sizes.length,
   );
   requireOk(status === 0, `dvz_wasm_scene_set_points failed with ${status}`);
+  status = Module._dvz_wasm_scene_set_primitive(
+    handle,
+    primitivePositionsPtr,
+    primitiveColorsPtr,
+    primitivePositions.length / 3,
+  );
+  requireOk(status === 0, `dvz_wasm_scene_set_primitive failed with ${status}`);
 
   const initialStream = emitStream(Module, handle, "initial");
 
@@ -209,5 +228,7 @@ try {
   Module._free(positionsPtr);
   Module._free(colorsPtr);
   Module._free(sizesPtr);
+  Module._free(primitivePositionsPtr);
+  Module._free(primitiveColorsPtr);
   Module._dvz_wasm_scene_destroy(handle);
 }

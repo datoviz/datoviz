@@ -253,7 +253,8 @@ The first milestone is deliberately small and is now represented by the committe
 bridge:
 
 1. build a WASM module containing portable scene and DRP2 stream emission;
-2. from browser JavaScript, create one scene, one figure, one panel, and one point visual;
+2. from browser JavaScript, create one scene, one figure, one panel, one point visual, and one
+   primitive triangle-list visual;
 3. request WGSL scene emission with an external browser canvas color target;
 4. submit the emitted DRP2 stream to the WebGPU runtime;
 5. render points using the portable WebGPU lowering selected by scene emission.
@@ -264,15 +265,16 @@ visual, a scene-owned panzoom controller, resize/pointer/wheel routing, and emit
 Current evidence as of 2026-05-30:
 
 1. `just wasm-scene-smoke` builds the Emscripten scene bridge, emits
-   `build-wasm-scene/wasm/wasm_scene_point_panzoom.json`, and passes WebGPU fixture preflight.
+   `build-wasm-scene/wasm/wasm_scene_point_primitive_panzoom.json`, and passes WebGPU fixture preflight.
 2. The browser demo entry point is `examples/webgpu/wasm_scene.html`.
 3. Manual local browser proof confirms the point scene renders and panzoom interaction works through
    the WASM scene bridge.
 
-The supported browser-scene subset remains point + panzoom only. The next release-proofing gaps are
+The supported browser-scene subset remains point, primitive triangle-list, and panzoom. The next
+release-proofing gaps are
 captured browser evidence artifacts, documented pointer/payload/diagnostic ABI behavior, and
-expansion to primitive, image, and basic mesh. After that, continue with incremental uniform
-updates, direct payload transport, browser app examples, and then broader visual/technique parity.
+expansion to image and basic mesh. After that, continue with incremental uniform updates, direct
+payload transport, browser app examples, and then broader visual/technique parity.
 
 ### Experimental WASM Bridge ABI
 

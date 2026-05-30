@@ -45,6 +45,7 @@ struct DvzWasmScene
     DvzFigure* figure;
     DvzPanel* panel;
     DvzVisual* visual;
+    DvzVisual* primitive;
     DvzController* controller;
     DvzInputRouter* router;
     DvzPointerGestureHandler* gestures;
@@ -250,6 +251,32 @@ int dvz_wasm_scene_set_points(
 
 
 EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_scene_set_primitive(
+    uint32_t handle, const float* positions, const uint8_t* colors, uint32_t count)
+{
+    DvzWasmScene* ctx = _ctx(handle);
+    if (ctx == NULL || ctx->scene == NULL || ctx->panel == NULL || positions == NULL ||
+        colors == NULL || count == 0 || count % 3 != 0)
+    {
+        return -1;
+    }
+    _clear_payload(ctx);
+    if (ctx->primitive == NULL)
+    {
+        ctx->primitive = dvz_primitive(ctx->scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+        if (ctx->primitive == NULL || dvz_panel_add_visual(ctx->panel, ctx->primitive, NULL) != 0)
+            return -1;
+    }
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = count},
+        {.attr_name = "color", .data = colors, .item_count = count},
+    };
+    return dvz_visual_set_data_many(ctx->primitive, updates, 2);
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
 int dvz_wasm_scene_emit(uint32_t handle)
 {
     DvzWasmScene* ctx = _ctx(handle);
@@ -276,7 +303,7 @@ int dvz_wasm_scene_emit(uint32_t handle)
     ctx->stream = dvz_figure_emit_ex(ctx->figure, &caps, &ctx->report, &emit_cfg);
     if (ctx->stream == NULL || dvz_diagnostic_report_count(&ctx->report) > 0)
         return -1;
-    ctx->json = dvz_drp2_stream_json(ctx->stream, "wasm_scene_point_panzoom");
+    ctx->json = dvz_drp2_stream_json(ctx->stream, "wasm_scene_point_primitive_panzoom");
     return ctx->json != NULL ? 0 : -1;
 }
 
