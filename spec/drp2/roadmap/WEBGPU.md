@@ -27,8 +27,9 @@ The native path already exercises:
 scene frame plan -> DRP2 stream -> vklite runtime -> canvas/stream/app
 ```
 
-The experimental browser path has a pure WebGPU runner for the current subset. The release target is
-a documented subset with explicit unsupported-feature diagnostics, not native parity.
+The experimental browser path has a pure WebGPU runner for the current subset and a narrow
+scene/WASM point/panzoom bridge that emits WGSL DRP2 JSON into that runtime. The release target is a
+documented subset with explicit unsupported-feature diagnostics, not native parity.
 
 
 ## Phase Order
@@ -41,8 +42,8 @@ a documented subset with explicit unsupported-feature diagnostics, not native pa
    offscreen readback and validation-layer coverage.
 4. **Browser WebGPU runtime:** replay the same fixtures in browser, with matching capabilities,
    diagnostics, lifecycle errors, and resource retention behavior.
-5. **WASM transport:** compile the portable scene/DRP2 subset to WASM and submit scene-emitted WGSL
-   streams to the WebGPU runtime.
+5. **WASM transport:** harden the portable scene/DRP2 WASM bridge, keep pointer ownership and
+   diagnostics explicit, and broaden scene-emitted WGSL streams beyond the point slice.
 6. **Renderer v1 parity:** add dynamic viewport/scissor, multiple bind groups, texture sampling,
    compute, explicit synchronization, and thread-safe submission semantics.
 7. **Performance and reliability:** add decode/record/submit/update benchmarks, long-run churn
@@ -86,6 +87,6 @@ execution, fixtures, lifecycle rules, and capability reporting together.
 2. semantic validation passes with a mock backend;
 3. native rendering fixtures pass through Vulkan runtime;
 4. browser WebGPU fixtures pass with parity diagnostics;
-5. WASM scene emission can feed the browser runtime;
+5. WASM scene emission can feed the browser runtime for the agreed experimental subset;
 6. native/browser contract parity covers the agreed renderer v1 slice;
 7. performance and reliability evidence is tracked before broad feature expansion.

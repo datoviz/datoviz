@@ -16,7 +16,8 @@ scene -> drp2 -> vklite/canvas/stream -> app
 
 Native scene, app/offscreen rendering, DRP2 command emission, raw `ctypes`, retained textured mesh,
 text, axes, colorbars, labels, scale bars, picking/query first slices, and the WebGPU fixture runner
-are active v0.4 surfaces. Treat them as real implementation, not scaffolding.
+are active v0.4 surfaces. The WASM point/panzoom scene bridge is also active as the first
+experimental browser scene slice. Treat them as real implementation, not scaffolding.
 
 
 ## Start Work

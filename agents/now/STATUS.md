@@ -14,14 +14,14 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| WebGPU/WASM experimental path | WebGPU fixture runner works; WASM scene export is still missing. | Define the portable scene/DRP2/WGSL subset, Emscripten profile, point-scene emit API, and runner smoke. |
+| WebGPU/WASM experimental path | WebGPU fixture runner works; narrow WASM point/panzoom scene bridge emits WGSL DRP2 JSON and feeds the browser runtime. | Document the experimental subset, record browser evidence, remove remaining demo shortcuts, and expand next to primitive/image/basic mesh. |
 | v0.3 visible parity audit | Missing. | Table each visible capability as fixed, deferred, or external/GSP. |
 | Public API/status cleanup | Missing. | Mark public surfaces as supported, experimental, advanced/unstable, deferred, or external/GSP. |
 | Release example proof | Partial. | Compact native + WebGPU proof set with validation notes and captured artifacts where needed. |
 
 Closed first slices that should stay in validation: raw `ctypes`, retained textured mesh, text, 2D
 axes/ticks, colorbars, labels/readouts, scale bars, app/offscreen rendering, broad item/sample query
-paths, and scene visual-boundary checks.
+paths, scene visual-boundary checks, WebGPU fixture runner, and WASM point/panzoom scene smoke.
 
 
 ## Active Lanes
@@ -29,7 +29,8 @@ paths, and scene visual-boundary checks.
 1. **Release closure:** feature/status table, visible parity audit, API disposition, known gaps.
 2. **Example proof:** C examples and fixture smokes for the declared release surface, especially
    retained textured mesh and composed annotation/layout examples.
-3. **WebGPU/WASM:** supported subset, diagnostics, portable target, browser/runner smoke.
+3. **WebGPU/WASM:** supported subset docs, diagnostics, portable target hardening,
+   browser/runner smoke, and next visual-family expansion.
 4. **Runtime hardening:** concrete scene -> DRP2 -> vklite/canvas/app lifetime, resize, descriptor,
    repeated-frame, or churn bugs.
 5. **Docs inventory:** public header inventory, ownership notes, raw `ctypes` scope, WebGPU/WASM

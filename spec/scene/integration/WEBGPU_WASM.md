@@ -81,13 +81,25 @@ Required modules:
 Initially excluded modules include native file I/O where avoidable, thread, Vulkan, vklite, canvas,
 window, stream, video, native app, GUI, CUDA, native DVZR tools, and shaderc/dlopen paths.
 
-Current portability blockers to remove before the first WASM slice:
+Closed first-slice milestone:
 
-1. `src/wasm` is still a scaffold without an exported create/emit/destroy API.
-2. The scene target remains too monolithic for a minimal portable subset.
-3. DRP2 native runtime headers still expose native types in places that should be portable.
-4. Public portable DRP2 and scene headers must not require Vulkan, vklite, canvas, stream-frame,
+1. `src/wasm/scene_bridge.c` exports a narrow create/destroy, point-data, resize, pointer/wheel,
+   emit, payload, and diagnostic API.
+2. The first browser scene slice creates one figure, one full panel, one point visual, and a
+   scene-owned panzoom controller.
+3. Scene emission can request WGSL, target the external browser canvas format, return DRP2 JSON,
+   and feed the browser WebGPU runtime.
+4. `just wasm-scene-smoke` builds the Emscripten target, emits a point/panzoom stream, and runs the
+   WebGPU fixture preflight on the emitted JSON.
+
+Remaining hardening before treating the slice as release-proof:
+
+1. The scene target remains too monolithic for a minimal portable subset.
+2. DRP2 native runtime headers still expose native types in places that should be portable.
+3. Public portable DRP2 and scene headers must not require Vulkan, vklite, canvas, stream-frame,
    window, or native runtime types.
+4. WASM bridge pointer ownership, payload lifetime, diagnostics, and browser capability negotiation
+   need to be documented as the experimental ABI contract.
 
 The exported C/WASM API should cover:
 
@@ -215,9 +227,9 @@ Responsibilities:
 JavaScript should translate browser events into scene/controller calls. It should not duplicate
 controller math unless that helper is explicitly browser-only.
 
-After WASM scene emission is available, browser interaction should flow through scene/controller
-calls that emit DRP2 update streams. The WebGPU runtime should not expose a separate interaction API
-for updating retained scene buffers.
+Now that point-slice WASM scene emission exists, browser interaction should continue to flow through
+scene/controller calls that emit DRP2 update streams. The WebGPU runtime should not expose a
+separate interaction API for updating retained scene buffers.
 
 ## Capability And Diagnostics
 
@@ -237,7 +249,8 @@ diagnostics rather than silent fallbacks.
 
 ## First Milestone
 
-The first milestone is deliberately small:
+The first milestone is deliberately small and is now represented by the committed point/panzoom
+bridge:
 
 1. build a WASM module containing portable scene and DRP2 stream emission;
 2. from browser JavaScript, create one scene, one figure, one panel, and one point visual;
@@ -248,8 +261,10 @@ The first milestone is deliberately small:
 The current first slice keeps the public bridge narrow in `src/wasm/scene_bridge.c`: one point
 visual, a scene-owned panzoom controller, resize/pointer/wheel routing, and emitted DRP2 JSON.
 
-After that, expand to primitive, image, basic mesh, incremental uniform updates, direct payload
-transport, browser app examples, and then broader visual/technique parity.
+Next, make that slice release-proof with portable metadata for interactive update targets, browser
+dashboard evidence, and documented diagnostics. After that, expand to primitive, image, basic mesh,
+incremental uniform updates, direct payload transport, browser app examples, and then broader
+visual/technique parity.
 
 ## Validation Matrix
 
