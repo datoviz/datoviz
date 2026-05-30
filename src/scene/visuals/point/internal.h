@@ -27,6 +27,15 @@
 
 bool _scene_point_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
 
+bool _scene_point_like_visual_desc_from_metadata(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta,
+    DvzSceneVisualDescKind desc_kind, DvzScenePointLikeKind point_like_kind,
+    bool require_marker_resources, DvzSceneVisualDesc* out, const char** error);
+
+bool _scene_point_visual_desc_from_metadata(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out,
+    const char** error);
+
 bool _scene_point_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out);

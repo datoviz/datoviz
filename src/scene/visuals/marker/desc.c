@@ -6,18 +6,16 @@
 
 
 /*************************************************************************************************/
-/*  Pixel visual internals                                                                       */
+/*  Marker visual descriptor lowering                                                            */
 /*************************************************************************************************/
-
-#pragma once
-
-
 
 /*************************************************************************************************/
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene_emit/visual_lowering.h"
+#include "marker/internal.h"
+
+#include "point/internal.h"
 
 
 
@@ -25,25 +23,20 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-bool _scene_pixel_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
-
-bool _scene_pixel_visual_desc_from_metadata(
+/**
+ * Resolve marker descriptor metadata.
+ *
+ * @param emitter the persistent emitter
+ * @param meta the typed visual metadata
+ * @param out the output visual descriptor
+ * @param error optional diagnostic output
+ * @return whether descriptor metadata was resolved
+ */
+bool _scene_marker_visual_desc_from_metadata(
     DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out,
-    const char** error);
-
-bool _scene_pixel_visual_bind_desc(
-    const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
-    DvzSceneVisualBindDesc* out);
-
-bool _scene_pixel_visual_pipeline_desc(
-    const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
-    bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
-    DvzSceneShaderFormat shader_format, DvzSceneVisualPipelineDesc* out);
-
-bool _scene_pixel_visual_shader_desc(
-    const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
-    const char* format_tag, DvzSceneVisualShaderDesc* out);
-
-bool _scene_pixel_visual_draw_desc(
-    const DvzSceneVisualDesc* visual, DvzSceneShaderFormat shader_format,
-    DvzSceneVisualDrawDesc* out);
+    const char** error)
+{
+    return _scene_point_like_visual_desc_from_metadata(
+        emitter, meta, DVZ_SCENE_VISUAL_DESC_MARKER, DVZ_SCENE_POINT_LIKE_MARKER, true, out,
+        error);
+}

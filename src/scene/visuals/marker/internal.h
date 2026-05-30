@@ -27,6 +27,10 @@
 
 bool _scene_marker_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
 
+bool _scene_marker_visual_desc_from_metadata(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out,
+    const char** error);
+
 bool _scene_marker_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out);

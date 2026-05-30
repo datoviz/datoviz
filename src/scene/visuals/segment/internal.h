@@ -27,6 +27,14 @@
 
 bool _scene_segment_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
 
+bool _scene_stroke_quad_visual_desc_from_metadata(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out,
+    const char** error);
+
+bool _scene_segment_visual_desc_from_metadata(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out,
+    const char** error);
+
 bool _scene_segment_visual_bounds(
     const DvzVisual* visual, DvzBounds* out, bool* out_force_3d);
 

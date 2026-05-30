@@ -27,6 +27,14 @@
 
 bool _scene_path_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
 
+bool _scene_path_stroke_visual_desc_from_metadata(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out,
+    const char** error);
+
+bool _scene_path_visual_desc_from_metadata(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out,
+    const char** error);
+
 bool _scene_path_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out);

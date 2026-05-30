@@ -61,6 +61,10 @@ typedef bool (*DvzVisualFamilyDrawDescFn)(
     const DvzSceneVisualDesc* visual, DvzSceneShaderFormat shader_format,
     DvzSceneVisualDrawDesc* out);
 
+typedef bool (*DvzVisualFamilyDescFn)(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out,
+    const char** error);
+
 typedef bool (*DvzVisualFamilyMetadataFn)(
     const DvzVisual* visual, const DvzVisualLowering* lowering,
     DvzFramePlanVisualMeta* metadata);
@@ -91,6 +95,7 @@ struct DvzVisualFamilyOps
     DvzVisualFamilyPipelineDescFn resolve_pipeline_desc;
     DvzVisualFamilyShaderDescFn resolve_shader_desc;
     DvzVisualFamilyDrawDescFn resolve_draw_desc;
+    DvzVisualFamilyDescFn resolve_desc;
     DvzVisualFamilyMetadataFn fill_metadata;
     DvzVisualFamilyInitFn init_state;
     DvzVisualFamilyResetFn reset_state;

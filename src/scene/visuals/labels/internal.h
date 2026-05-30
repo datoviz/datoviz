@@ -31,6 +31,10 @@ bool _scene_labels_visual_fill_metadata(
     const DvzVisual* visual, const DvzVisualLowering* lowering,
     DvzFramePlanVisualMeta* metadata);
 
+bool _scene_labels_visual_desc_from_metadata(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out,
+    const char** error);
+
 bool _scene_labels_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out);

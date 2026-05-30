@@ -36,6 +36,24 @@ DvzSceneVisualDescKind _scene_visual_meta_desc_kind(
 bool _scene_visual_meta_is_stroked_path(
     const ConverterState* state, const DvzFramePlanVisualMeta* meta);
 
+uint64_t _scene_visual_desc_resource(DvzFramePlanEmitter* emitter, const char* key);
+
+bool _scene_visual_desc_append_resource(
+    DvzFramePlanEmitter* emitter, DvzSceneVisualDesc* out, const char* key,
+    const char* missing_error, const char** error);
+
+bool _scene_visual_desc_set_primary_position(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, const char* key,
+    const char* missing_error, DvzSceneVisualDesc* out, const char** error);
+
+uint32_t _scene_visual_desc_resource_topology(DvzFramePlanEmitter* emitter, uint64_t resource_id);
+
+uint64_t _scene_visual_desc_resource_size(DvzFramePlanEmitter* emitter, uint64_t resource_id);
+
+bool _scene_visual_desc_finish_index(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out,
+    const char* overflow_error, const char** error);
+
 bool _scene_visual_has_dense_attr(const DvzVisual* visual, const char* name);
 
 bool _scene_visual_desc_is_primitive(DvzSceneVisualDescKind kind);
@@ -57,10 +75,6 @@ bool _scene_visual_desc_is_stroke(DvzSceneVisualDescKind kind);
 const char* _scene_visual_desc_kind_name(DvzSceneVisualDescKind kind);
 
 DvzVisualType _scene_visual_desc_default_type(DvzSceneVisualDescKind kind);
-
-bool _scene_visual_fallback_pipeline_desc(
-    DvzSceneVisualDescKind kind, uint32_t vertex_buffer_count, bool instanced_point_like,
-    DvzSceneVisualPipelineDesc* out);
 
 void _scene_visual_pipeline_attr(
     DvzSceneVisualPipelineDesc* out, uint32_t index, uint32_t binding, uint32_t location,
