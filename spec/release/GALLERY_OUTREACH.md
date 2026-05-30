@@ -8,6 +8,29 @@ validation pressure, benchmark pressure, social assets, and a concrete feedback 
 dataset authors.
 
 
+## Evidence Model
+
+Every gallery example must have a deterministic static screenshot. Screenshots are the canonical
+gallery artifact because they are fast to load, easy to review, and suitable for release evidence.
+
+Examples that depend on time, interaction, camera motion, streaming, animation, or
+compute-to-render behavior should also provide a short video clip. Videos complement screenshots;
+they do not replace them.
+
+Live browser or WebGPU demos may be provided for the supported experimental subset, but they are not
+required for every gallery item and must not be the only artifact proving an example. Each live demo
+still needs a static screenshot and, when relevant, a recorded clip.
+
+Gallery artifact classes:
+
+1. `screenshot`: required for every example.
+2. `video`: recommended for interaction, animation, streaming, compute, and 3D camera examples.
+3. `live`: optional, experimental, and limited to supported browser/runtime subsets.
+
+The gallery index should remain useful without JavaScript, GPU access, or video playback. Static
+screenshots are therefore the baseline representation for all examples.
+
+
 ## Selection Rules
 
 1. Prioritize recently published open datasets, preprints, challenge data, or public repositories
@@ -17,7 +40,7 @@ dataset authors.
 3. Prefer manageable data sizes and strong structure: images, volumes, point clouds, meshes,
    trajectories, vector fields, time series, graphs, simulations, or geospatial rasters.
 4. Make the example useful to the scientist or domain expert, not only decorative.
-5. Generate at least one high-quality still image and, when it helps, a short video or animated GIF.
+5. Generate at least one high-quality still image and, when it helps, a short video.
 6. Publish a concise gallery page with scientific context, source code, data source, dependencies,
    license, citation, and preprocessing notes.
 
