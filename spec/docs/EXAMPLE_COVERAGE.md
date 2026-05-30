@@ -4,6 +4,10 @@ Datoviz v0.4 documentation uses examples as executable release proof. Every publ
 public feature should have a focused C example that demonstrates only that visual or feature and the
 minimum surrounding setup needed to run it.
 
+The mapping is not `one feature = one how-to page`. The required unit is the executable example.
+How-to pages group common user tasks across examples, and tutorials compose multiple examples into
+narrative workflows.
+
 The aspirational gallery direction is recorded in
 [`../scene/examples/PLANNING.md`](../scene/examples/PLANNING.md). Use that
 document to choose screenshot, video, and showcase targets before reducing them to concrete release
@@ -23,6 +27,27 @@ fixtures and current implementation work.
    validation command.
 8. If an example is only an API sketch, pressure test, or showcase, mark it so agents do not copy it
    as a minimal starting point.
+9. How-to pages should not be created one-to-one for every feature. Add a how-to page when a user
+   task needs workflow guidance, tradeoffs, ownership notes, or adaptation advice.
+10. Visual documentation should include authored judgment such as "use when", "avoid when", and
+    "choose this over that"; keep generated or mechanical facts in reference tables.
+
+
+## Documentation Pairing
+
+Every public visual or feature needs at least one minimal executable example. The prose around that
+example depends on what readers need:
+
+| Page type | Role | Relationship to examples |
+| --- | --- | --- |
+| Example | Smallest runnable proof | One public visual or feature should have at least one |
+| Reference | Exact facts, status, attributes, limits | Links to minimal examples and may be generated in part |
+| How-to | Task workflow and adaptation guidance | Groups several related examples when useful |
+| Tutorial | Narrative learning path | Composes a stable set of examples and concepts |
+
+Avoid writing polished tutorial prose before the underlying example is stable. It is acceptable to
+write scope, status, ownership, and "choose the right visual" prose earlier because that guidance
+prevents users and agents from overpromising unstable behavior.
 
 
 ## Suggested Source Layout

@@ -46,6 +46,20 @@ This is Diataxis plus two Datoviz-specific additions:
 2. `examples/` is a first-class pillar because examples are executable release proof and the best
    input for coding agents.
 
+Page roles should stay distinct:
+
+| Page type | Purpose |
+| --- | --- |
+| Examples | executable truth and release proof |
+| Reference | exact facts, status, signatures, attributes, and limits |
+| How-to | practical task workflows that adapt examples to real code |
+| Tutorials | narrative learning paths through stable composed workflows |
+| Explanation | concepts, architecture, and tradeoffs |
+
+Do not force a one-to-one relationship between features and how-to pages. The required coverage unit
+for each public visual or feature is a minimal example. How-to pages should group related tasks, and
+tutorials should wait until the examples they teach are stable.
+
 
 ## Legacy And Unlisted Docs
 
@@ -246,7 +260,8 @@ reference/
 ```
 
 Reference pages should prefer tables, status labels, signatures, constraints, and links to examples.
-They should avoid tutorial prose.
+They should avoid tutorial prose, but visual reference pages should still contain short authored
+judgment where it helps users choose correctly.
 
 Visual reference pages should follow one template:
 
@@ -254,14 +269,21 @@ Visual reference pages should follow one template:
 Visual: <name>
 Status:
 Backends:
+Use when:
+Avoid when:
 Data model:
-Attributes:
+Required attributes:
+Optional attributes:
 Controllers:
 Picking/probing:
-Limitations:
+Backend notes:
 Minimal example:
-Related API:
+Related how-to:
 ```
+
+The exact API facts in visual reference pages may be generated or table-driven. The choice guidance
+such as "use when", "avoid when", and comparisons with neighboring visual families should be
+authored prose.
 
 
 ## Explanation
