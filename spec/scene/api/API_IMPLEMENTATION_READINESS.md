@@ -51,7 +51,8 @@ These boundaries are now explicit enough to start public API drafting:
 
 The installed headers now spell the first versions of scene, figure, view, interaction,
 scale/colorbar, text/annotation, sampled-field, material, technique, and visual-family APIs. The
-active implementation status is:
+area-level implementation status is below. Per-family visual status lives in
+[`../visuals/STATUS.md`](../visuals/STATUS.md).
 
 | Area | Public API | Retained state | Native rendering / execution | GPU request/readback | Remaining gaps |
 |---|---|---|---|---|---|

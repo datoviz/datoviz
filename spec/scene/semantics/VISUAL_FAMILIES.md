@@ -80,33 +80,11 @@ The following family is a future/spec-only candidate with a distinct contract fr
 1. `tube` — radius-bearing 3D curve surfaces, including impostor tubes, mesh tubes, and ribbons.
 
 
-## Active Implementation Status
+## Implementation Status
 
-This table is an implementation snapshot, not the complete family contract. "Native rendering"
-means the family lowers through the active scene -> FramePlan -> DRP2 -> vklite/canvas path.
-
-| Family | Public constructor/API | Retained state | Native rendering | GPU request/readback | Remaining gaps |
-|---|---|---|---|---|---|
-| `pixel` | `dvz_pixel()` | position/color/pixel_size, depth-cue state | square pixel marks, GLSL native points, WGSL instanced quads | square GPU picking | constant/scalar/grouped sources, shift, and data-space pixel size are deferred |
-| `primitive` | `dvz_primitive()` | topology, position/color, optional normals/index buffers, material/depth/alpha state | point/line/triangle primitives, indexed draws, depth, WBOIT/depth-peel participation | item-level primitive picking | remains a low-level escape hatch, not a replacement for richer families |
-| `point` | `dvz_point()` | position/color/diameter, external position buffers, style/depth-cue/alpha state | antialiased circular points, GLSL native points, WGSL instanced quads | circular GPU picking | scalar/grouped sources, shift, data-space diameter, and richer selection are deferred |
-| `marker` | `dvz_marker()` | position/color/diameter/angle/shape, style | code-SDF marker sprites in GLSL | bounding-box GPU picking | exact SDF picking, bitmap/SDF atlas modes, and WGSL parity are deferred |
-| `segment` | `dvz_segment()` | endpoint positions/color/stroke_width/caps | analytic screen-space stroke quads in GLSL | stroke GPU picking | dashes, arrows, gradients, richer path identity, and WGSL parity are deferred |
-| `path` | `dvz_path()` | line-strip plus optional subpaths/stroke_width/caps/joins | primitive line-strip or path-native stroked lowering | stroke GPU picking over lowered edges | first-class closed-path API, dashes, path/subpath identity picking, and WGSL parity are deferred |
-| `image` | `dvz_image()`, `dvz_visual_set_field()`, texture convenience wrappers | 2D `SampledField`, colormap scale binding, partial updates, per-item rectangles/anchors/tint | textured quad path with scalar colormap lowering and retained texture updates | active image item picking and pixel probe readback | richer probe payloads and tiled/LOD policy remain deferred |
-| `labels` | `dvz_labels()`, `dvz_visual_set_field()`, `dvz_visual_set_scale()` | integer 2D `SampledField`, categorical scale, opacity/background/selected/hidden/boundary/fallback style | integer label texture path with GLSL and WGSL variants | raw 2D label-id segment probe readback | richer selection, metadata payloads, and large texture policies remain deferred |
-| `mesh` | `dvz_mesh()` | position, optional color/normal/index buffers, material/depth/alpha state | indexed triangle mesh path with depth, Phong/material, WBOIT/depth-peel, EDL/SSAO/G-buffer participation where eligible | item-level mesh picking | mesh face/region picking, geometry-resource public shape, and full PBR remain deferred |
-| `sphere` | `dvz_sphere()`, `dvz_sphere_mode()` | impostor mode, position/color/radius, material/depth state | analytic sphere impostor path, including raycast mode and SSAO/G-buffer coverage | sphere item picking | texture variants and per-item material/PBR remain deferred |
-| `volume` | `dvz_volume()`, volume setters, `dvz_visual_set_field()` | 3D `SampledField`, render mode, slice, bounds, clipping, sampling, opacity, scale binding | box-proxy volume renderer with slice, MIP, composite, and signed/unsigned categorical label slice/composite paths | active volume proxy item picking and slice sample readout, including raw signed/unsigned label ids | isosurfaces, MPR, DVR/MIP ray-hit picking, displayed-RGBA query payloads, and WebGPU parity remain deferred |
-| `glyph` | `dvz_glyph()` low-level plus semantic `dvz_text()` lowering | text/font/annotation state lowers to glyph visuals | atlas-backed bitmap/SDF/MSDF-capable glyph path through scene/DRP2 | no | data/world placement, HarfBuzz shaping, diagnostics, and glyph/text picking remain deferred |
-| `errorbar` | none installed | none | no | no | spec only |
-| `boxplot` | none installed | none | no | no | spec only |
-
-Future/spec-only:
-
-| Family | Public constructor/API | Retained state | Native rendering | GPU request/readback | Remaining gaps |
-|---|---|---|---|---|---|
-| `tube` | none installed | none | no | no | full visual contract, API, lowering, picking, and backend support |
+This file owns taxonomy and rationale. The canonical per-family implementation snapshot lives in
+[`../visuals/STATUS.md`](../visuals/STATUS.md). Area-level API readiness lives in
+[`../api/API_IMPLEMENTATION_READINESS.md`](../api/API_IMPLEMENTATION_READINESS.md).
 
 
 ## Rationale For Kept Families
