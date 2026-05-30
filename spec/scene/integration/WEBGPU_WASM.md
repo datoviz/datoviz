@@ -274,6 +274,28 @@ captured browser evidence artifacts, documented pointer/payload/diagnostic ABI b
 expansion to primitive, image, and basic mesh. After that, continue with incremental uniform
 updates, direct payload transport, browser app examples, and then broader visual/technique parity.
 
+### Experimental WASM Bridge ABI
+
+The `src/wasm/scene_bridge.c` API is an unstable experimental ABI for the browser demo:
+
+1. scene handles are opaque `uint32_t` values; JavaScript must pass them back unchanged and must not
+   derive addresses or object state from them;
+2. `dvz_wasm_scene_payload_ptr()` and `dvz_wasm_scene_payload_size()` expose a borrowed UTF-8 JSON
+   payload valid only until the next bridge call on the same handle or `dvz_wasm_scene_destroy()`;
+3. JavaScript must copy or decode the payload before calling resize, pointer, wheel, data-upload,
+   emit, canvas-format, or destroy functions again;
+4. diagnostics returned by `dvz_wasm_scene_diagnostic()` are borrowed strings with the same lifetime
+   as the current diagnostic report, valid only until the next bridge call on the same handle or
+   destroy;
+5. successful emits should leave the diagnostic report empty; failed emits must be surfaced with
+   non-empty diagnostics where the scene/DRP2 layer can explain the failure;
+6. the supported browser canvas formats are `rgba8unorm` and `bgra8unorm`, mapped to
+   `DVZ_FORMAT_R8G8B8A8_UNORM` and `DVZ_FORMAT_B8G8R8A8_UNORM`;
+7. resize arguments are framebuffer pixel width/height plus device scale; the bridge derives logical
+   window size for the scene input router;
+8. pointer and wheel positions are CSS-pixel canvas coordinates plus content scale, so high-DPI
+   browsers keep controller math in the scene layer while still using framebuffer-sized targets.
+
 ## Validation Matrix
 
 Use progressively broader validation:

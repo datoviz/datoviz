@@ -28,6 +28,13 @@ function readPayload(Module, handle) {
   return new TextDecoder().decode(Module.HEAPU8.subarray(ptr, ptr + size));
 }
 
+function requirePayloadCleared(Module, handle, label) {
+  const ptr = Module._dvz_wasm_scene_payload_ptr(handle);
+  const size = Module._dvz_wasm_scene_payload_size(handle);
+  requireOk(ptr === 0, `${label} did not clear borrowed payload pointer`);
+  requireOk(size === 0, `${label} did not clear borrowed payload size`);
+}
+
 function diagnostics(Module, handle) {
   const count = Module._dvz_wasm_scene_diagnostic_count(handle);
   const messages = [];
@@ -127,6 +134,7 @@ try {
     1,
     t0,
   );
+  requirePayloadCleared(Module, handle, "pointer event");
   Module._dvz_wasm_scene_pointer(
     handle,
     DVZ_POINTER_EVENT_MOVE,
@@ -153,6 +161,7 @@ try {
 
   status = Module._dvz_wasm_scene_resize(handle, smokeSize * 2, smokeSize + 16, 2.0);
   requireOk(status === 0, `resize failed with ${status}`);
+  requirePayloadCleared(Module, handle, "resize");
   const resizeStream = emitStream(Module, handle, "resize");
 
   Module._dvz_wasm_scene_pointer(
