@@ -39,24 +39,25 @@ Read the DRP2 spec in this order during review.
 6. [ERRORS.md](ERRORS.md) — validation and error model
 7. [CAPABILITIES.md](CAPABILITIES.md) — feature and format capability reporting
 8. [CONFORMANCE.md](CONFORMANCE.md) — conformance levels and requirements for `2.0`
-9. [WEBGPU_ROADMAP.md](WEBGPU_ROADMAP.md) — strategic native/browser parity roadmap
+9. [DVZR_PLAYER.md](DVZR_PLAYER.md) — DRP2 recording and replay design
+10. [WEBGPU_ROADMAP.md](WEBGPU_ROADMAP.md) — strategic native/browser parity roadmap
 
 ### 3. Machine-readable review material
 
-9. [schema/README.md](schema/README.md) — schema authority, active files, and maintenance rules
-10. [schema/drp_command.json](schema/drp_command.json) — root union for active commands
-11. [schema/commands/](schema/commands/) — per-command schema files
-12. [schema/common/](schema/common/) — shared enums and common value types
-13. [schema/DEFERRED.md](schema/DEFERRED.md) — explicitly deferred schema inventory
+11. [schema/README.md](schema/README.md) — schema authority, active files, and maintenance rules
+12. [schema/drp_command.json](schema/drp_command.json) — root union for active commands
+13. [schema/commands/](schema/commands/) — per-command schema files
+14. [schema/common/](schema/common/) — shared enums and common value types
+15. [schema/DEFERRED.md](schema/DEFERRED.md) — explicitly deferred schema inventory
 
 ### 4. Executable conformance material
 
-14. [fixtures/README.md](fixtures/README.md) — fixture corpus overview
-15. [fixtures/FORMAT.md](fixtures/FORMAT.md) — fixture file format
-16. [fixtures/RUNNER.md](fixtures/RUNNER.md) — fixture runner behavior and usage
-17. [fixtures/positive/](fixtures/positive/) — canonical valid traces
-18. [fixtures/negative/](fixtures/negative/) — canonical invalid semantic traces
-19. [fixtures/negative_schema/](fixtures/negative_schema/) — canonical invalid schema traces
+16. [fixtures/README.md](fixtures/README.md) — fixture corpus overview
+17. [fixtures/FORMAT.md](fixtures/FORMAT.md) — fixture file format
+18. [fixtures/RUNNER.md](fixtures/RUNNER.md) — fixture runner behavior and usage
+19. [fixtures/positive/](fixtures/positive/) — canonical valid traces
+20. [fixtures/negative/](fixtures/negative/) — canonical invalid semantic traces
+21. [fixtures/negative_schema/](fixtures/negative_schema/) — canonical invalid schema traces
 
 
 ## Document Index
@@ -69,6 +70,7 @@ Read the DRP2 spec in this order during review.
 - [CONFORMANCE.md](CONFORMANCE.md): conformance levels and requirements
 - [VERSIONING.md](VERSIONING.md): compatibility and contract-evolution rules
 - [GLOSSARY.md](GLOSSARY.md): fixed terminology
+- [DVZR_PLAYER.md](DVZR_PLAYER.md): recording and replay design for DRP2 command streams
 - [schema/README.md](schema/README.md): machine-readable schema material
 - [fixtures/README.md](fixtures/README.md): canonical conformance traces
 - [WEBGPU_ROADMAP.md](WEBGPU_ROADMAP.md): long-horizon WebGPU and native/browser parity roadmap

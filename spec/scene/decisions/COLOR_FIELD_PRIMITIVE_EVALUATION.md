@@ -3,7 +3,7 @@
 > **Status:** Historical Decision
 > **Decided on:** 2026-05-28
 > **Scope:** Stage 3 and Stage 4 evaluation records from
-> [`../../SCENE_SPLIT_REFACTOR_PLAN.md`](../../SCENE_SPLIT_REFACTOR_PLAN.md).
+> [`../../architecture/SCENE_SPLIT_REFACTOR_PLAN.md`](../../architecture/SCENE_SPLIT_REFACTOR_PLAN.md).
 
 
 ## Context

@@ -563,7 +563,7 @@ scene visual constructors to `geom`.
 ## References
 
 1. [MODULE_LAYERS.md](MODULE_LAYERS.md)
-2. [api/PYTHON_GSP_SCOPE.md](api/PYTHON_GSP_SCOPE.md)
-3. [scene/interaction/CONTROLLERS.md](scene/interaction/CONTROLLERS.md)
-4. [scene/interaction/CAMERA_CONTROLLERS.md](scene/interaction/CAMERA_CONTROLLERS.md)
-5. [scene/decisions/CONTROLLER_BINDING_MODEL.md](scene/decisions/CONTROLLER_BINDING_MODEL.md)
+2. [../api/PYTHON_GSP_SCOPE.md](../api/PYTHON_GSP_SCOPE.md)
+3. [../scene/interaction/CONTROLLERS.md](../scene/interaction/CONTROLLERS.md)
+4. [../scene/interaction/CAMERA_CONTROLLERS.md](../scene/interaction/CAMERA_CONTROLLERS.md)
+5. [../scene/decisions/CONTROLLER_BINDING_MODEL.md](../scene/decisions/CONTROLLER_BINDING_MODEL.md)
