@@ -30,6 +30,10 @@ lives in [`../scene/examples/`](../scene/examples/), diagnostic shape lives in
 in [`../api/PYTHON_GSP_SCOPE.md`](../api/PYTHON_GSP_SCOPE.md) plus
 [`../bindings/`](../bindings/).
 
+Release readiness, RC process, launch communication, and scientific-dataset outreach policy live in
+[`../release/`](../release/). This docs spec owns public documentation structure and example
+coverage, not release sequencing or announcement policy.
+
 
 ## Site Generator Decision
 

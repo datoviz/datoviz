@@ -16,6 +16,8 @@ Do not use it for execution planning or broad architecture essays.
   validation rules
 - `docs/`: v0.4 documentation architecture, example-coverage policy, and AI-friendly authoring
   rules
+- `release/`: release readiness, RC process, communication/blog assets, and gallery outreach
+  policy
 - `scene/`: scene-layer requirements, consumer-side object model, retained object semantics, and
   implementation boundary notes
 - `SCENE_SPLIT_REFACTOR_PLAN.md`: durable scene split/refactor architecture plan for promoting

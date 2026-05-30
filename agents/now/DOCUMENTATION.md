@@ -15,6 +15,8 @@ on release documentation gates.
 5. Scene API and semantics: [../../spec/scene/](../../spec/scene/).
 6. DRP2 commands, schemas, fixtures, and runtime contracts: [../../spec/drp2/](../../spec/drp2/).
 7. Documentation IA, example coverage, and AI-friendly docs rules: [../../spec/docs/](../../spec/docs/).
+8. Release readiness, RC process, communication, and gallery outreach:
+   [../../spec/release/](../../spec/release/).
 
 The public `docs/` tree may be rebuilt in place for v0.4. Do not recreate the v0.3 Python-first
 guide as current Datoviz documentation.

@@ -5,6 +5,12 @@ Status: active release roadmap. Updated: 2026-05-30.
 This is the short route from the current branch to `v0.4.0`. Use [STATUS.md](STATUS.md) for current
 blockers and [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation gates.
 
+Durable release policy lives in [../../spec/release/](../../spec/release/):
+[READINESS.md](../../spec/release/READINESS.md),
+[RC_PROCESS.md](../../spec/release/RC_PROCESS.md),
+[COMMUNICATION.md](../../spec/release/COMMUNICATION.md), and
+[GALLERY_OUTREACH.md](../../spec/release/GALLERY_OUTREACH.md).
+
 
 ## Scope
 
@@ -16,13 +22,6 @@ Required before feature freeze:
 4. Raw `ctypes` generation and smoke tests work for the intended public C surface.
 5. v0.3 visible capability gaps are fixed, explicitly deferred, or external/GSP-owned.
 6. Core examples compile and exercise the release feature set.
-
-Required before API freeze:
-
-1. Public headers, ownership rules, destroy order, callback lifetimes, and error/status behavior are
-   reviewed as a coherent v0.4 surface.
-2. Lower-level APIs are explicitly marked supported, experimental, or advanced/unstable.
-3. Patch releases may still fix defects, but avoid unnecessary source breakage after v0.4.0.
 
 Not required for v0.4:
 
@@ -102,8 +101,8 @@ Exit criteria:
 3. Feature table, visible parity table, known gaps, raw `ctypes` scope, and WebGPU/WASM scope are
    published or linked.
 4. Release examples are documented enough for early testers.
-5. Each RC note records exact commit, validation matrix, generated artifacts, known issues, and
-   feedback request.
+5. Required RC note fields from
+   [../../spec/release/RC_PROCESS.md](../../spec/release/RC_PROCESS.md) are present.
 
 ### 6. RC2
 
@@ -113,10 +112,8 @@ Exit criteria:
 2. Generated C reference or complete outline exists.
 3. Captured artifacts prove the declared feature set.
 4. RC1 feedback is triaged.
-5. Gallery examples include data attribution, source links, licenses, and reproducible capture
-   commands where relevant.
-6. Candidate real-dataset outreach examples and gallery media are reviewed for scientific
-   usefulness, not only visual polish.
+5. Gallery/data attribution and outreach candidates satisfy
+   [../../spec/release/GALLERY_OUTREACH.md](../../spec/release/GALLERY_OUTREACH.md).
 
 ### 7. RC3
 
@@ -124,11 +121,9 @@ Exit criteria:
 
 1. Only blocker fixes remain.
 2. Packaging, licenses, generated artifacts, release notes, and docs are final candidates.
-3. Source archives and wheels build, install, and pass installed smoke tests on supported
-   platforms.
-4. Static-analysis, memory/UB, Vulkan validation, long-running loop, docs link, gallery smoke, and
-   example smoke results are either clean or recorded as known issues.
-5. Checksums/signing policy and required third-party notices are decided.
+3. Packaging and quality checks from
+   [../../spec/release/READINESS.md](../../spec/release/READINESS.md) are clean or recorded as
+   known issues.
 
 ### 8. Final `v0.4.0`
 
@@ -141,44 +136,6 @@ Exit criteria:
 4. Direct feedback channels are open for early users, especially scientists whose public datasets
    are used in showcase examples.
 5. The active queue resets for v0.4 patch work and v0.5 planning.
-
-
-## Release Readiness Audits
-
-Run these as bounded release tasks, not as broad refactor branches:
-
-1. public API inventory, docstrings, include structure, object ownership, callbacks, and
-   recoverable error/status policy;
-2. implementation safety audit for allocation, partial cleanup, Vulkan ownership, command-buffer
-   lifetimes, sizes/counts/strides/downcasts, and long live-loop resource churn;
-3. test-suite inventory separating release regressions, GPU/Vulkan validation, examples, docs,
-   package install, and optional long-running checks;
-4. public Markdown audit for obsolete v0.3 claims, broken links, mixed page types, and missing
-   status labels;
-5. package, license, asset, data, generated-media, and third-party-notice review before final
-   artifacts.
-
-Record actionable findings in the owning spec, docs gate, or issue. Do not let broad cleanup delay
-`v0.4.0` unless it blocks the declared release surface.
-
-
-## Gallery And Outreach
-
-The gallery is release proof and an adoption channel:
-
-1. keep one minimal runnable example for each public visual and feature;
-2. add polished scientific showcases using real public datasets when licenses, size, and
-   provenance are clear;
-3. generate reusable stills and short clips from current code for the website, README, release
-   notes, and announcement posts;
-4. for selected recent open datasets, contact the scientist or group individually with the gallery
-   result and request corrections or feedback;
-5. never imply endorsement, quote a scientist, or feature names prominently without permission.
-
-Durable gallery coverage rules live in
-[../../spec/docs/EXAMPLE_COVERAGE.md](../../spec/docs/EXAMPLE_COVERAGE.md).
-Dataset provenance and promotion rules live in
-[../../spec/data/V0_4_DATA_REPOSITORY.md](../../spec/data/V0_4_DATA_REPOSITORY.md).
 
 
 ## Post-Release Refactor Queue
