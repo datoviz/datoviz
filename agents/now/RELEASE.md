@@ -22,6 +22,8 @@ Required before feature freeze:
 4. Raw `ctypes` generation and smoke tests work for the intended public C surface.
 5. v0.3 visible capability gaps are fixed, explicitly deferred, or external/GSP-owned.
 6. Core examples compile and exercise the release feature set.
+7. Minimal compute+graphics interop has an experimental C-first proof, including explicit DRP2
+   synchronization and a gallery-oriented particle-advection plan or example.
 
 Not required for v0.4:
 
@@ -29,15 +31,17 @@ Not required for v0.4:
 2. High-level object-oriented Python plotting wrappers.
 3. Publication-quality PDF/SVG/vector export.
 4. Full WebGPU parity with native Vulkan.
-5. Complex text shaping, TeX/math layout, collision solving, dashboards, compute, custom shader
-   APIs, CUDA interop, LOD/out-of-core policies, or full application APIs.
+5. Complex text shaping, TeX/math layout, collision solving, dashboards, general custom shader
+   APIs, CUDA interop beyond an optional native advanced example, CuPy/Python interop,
+   LOD/out-of-core policies, or full application APIs.
 
 External ownership:
 
 1. GSP/VisPy2 owns high-level OO Python and plotting APIs.
 2. GSP/Matplotlib owns publication-oriented vector export.
 3. Datoviz v0.4 owns the C engine, native scene/app path, raw/generated low-level Python binding
-   surface, raster capture, and experimental WebGPU/WASM path.
+   surface, raster capture, experimental WebGPU/WASM path, and experimental compute+graphics
+   proof.
 
 
 ## Release Sequence
@@ -83,7 +87,24 @@ Exit criteria:
 4. A browser-visible demo, fixture dashboard, or runnable page exists.
 5. Scene semantics are shared; there is no WebGPU-only scene contract.
 
-### 4. Raw `ctypes` API Candidate
+### 4. Compute+Graphics Experimental Slice
+
+Ship one real GPU compute-to-render path without widening v0.4 into a general compute framework.
+
+Exit criteria:
+
+1. Minimal DRP2 synchronization semantics are active, schema-backed, fixture-covered, and mapped by
+   native vklite execution.
+2. A portable compute-to-render command stream covers storage-buffer write followed by render-time
+   vertex or instance consumption.
+3. Native validation proves compute, synchronization, graphics consumption, and readback or captured
+   visual evidence.
+4. WebGPU accepts the portable subset or emits explicit unsupported-feature diagnostics.
+5. A C gallery example, preferably GPU particle advection, is planned or landed with a release
+   artifact target.
+6. Optional CUDA SDK interop remains native-only, capability-gated, and advanced/unstable.
+
+### 5. Raw `ctypes` API Candidate
 
 Exit criteria:
 
@@ -92,7 +113,7 @@ Exit criteria:
 3. Raw examples cover the supported low-level Python path.
 4. The docs state that high-level Python plotting is GSP/VisPy2 scope.
 
-### 5. RC1
+### 6. RC1
 
 Exit criteria:
 
@@ -104,7 +125,7 @@ Exit criteria:
 5. Required RC note fields from
    [../../spec/release/RC_PROCESS.md](../../spec/release/RC_PROCESS.md) are present.
 
-### 6. RC2
+### 7. RC2
 
 Exit criteria:
 
@@ -115,7 +136,7 @@ Exit criteria:
 5. Gallery/data attribution and outreach candidates satisfy
    [../../spec/release/GALLERY_OUTREACH.md](../../spec/release/GALLERY_OUTREACH.md).
 
-### 7. RC3
+### 8. RC3
 
 Exit criteria:
 
@@ -125,7 +146,7 @@ Exit criteria:
    [../../spec/release/READINESS.md](../../spec/release/READINESS.md) are clean or recorded as
    known issues.
 
-### 8. Final `v0.4.0`
+### 9. Final `v0.4.0`
 
 Exit criteria:
 

@@ -16,7 +16,9 @@ RC1 work should stay focused on:
 3. public API/status labels;
 4. compact example proof with validation notes;
 5. retained textured mesh, raw `ctypes`, text, axes, labels, colorbars, scale bars, queries, and
-   app/offscreen paths kept in validation.
+   app/offscreen paths kept in validation;
+6. experimental compute+graphics proof with explicit DRP2 synchronization and a C-first gallery
+   target.
 
 High-payoff showcase order:
 
@@ -26,7 +28,8 @@ High-payoff showcase order:
 3. raw label-id query hardening under transforms, larger fields, and request churn;
 4. one explanatory layout proof combining axes, colorbar, categorical legend, scale bar, and panel
    reserves;
-5. experimental splat showcase only after release-proof lanes are stable.
+5. GPU particle-advection proof for compute-to-render interop;
+6. experimental splat showcase only after release-proof lanes are stable.
 
 
 ## Visual And Example Backlog
@@ -90,7 +93,8 @@ Preserved direction:
 ## Runtime, WebGPU, WASM, And Packaging
 
 Durable browser/runtime direction lives in [integration/WEBGPU_WASM.md](integration/WEBGPU_WASM.md)
-and [../drp2/roadmap/WEBGPU.md](../drp2/roadmap/WEBGPU.md).
+and [../drp2/roadmap/WEBGPU.md](../drp2/roadmap/WEBGPU.md). The active compute-to-render slice is
+tracked in [proposals/active/COMPUTE_GRAPHICS_INTEROP.md](proposals/active/COMPUTE_GRAPHICS_INTEROP.md).
 
 Preserved direction:
 
@@ -99,7 +103,9 @@ Preserved direction:
 3. browser input must become scene/controller calls that emit DRP2 updates;
 4. JSON is a debug transport, not the final hot path;
 5. component packaging work should add CI profiles, out-of-tree consumer smokes, and component-owned
-   header install sets before tightening package boundaries.
+   header install sets before tightening package boundaries;
+6. minimal DRP2 synchronization should cover compute-written resources consumed by render passes
+   before the particle-advection gallery proof is treated as release evidence.
 
 
 ## Text And Layout Backlog

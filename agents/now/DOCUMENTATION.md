@@ -35,9 +35,11 @@ guide as current Datoviz documentation.
 8. Generated C reference or complete API reference outline.
 9. Raw `ctypes` binding documentation.
 10. WebGPU/WASM experimental-scope documentation.
-11. Gallery/data attribution policy for public datasets, generated media, and reuse in release
+11. Compute+graphics experimental-scope documentation, including the portable DRP2 subset, native
+    synchronization boundary, and optional CUDA SDK example status.
+12. Gallery/data attribution policy for public datasets, generated media, and reuse in release
     communication.
-12. Short contributor guidance for AI-assisted docs/example work: page type, source of truth,
+13. Short contributor guidance for AI-assisted docs/example work: page type, source of truth,
     validation command, and unsupported-feature status.
 
 
@@ -51,7 +53,8 @@ Required:
 4. callback, polling, and readback lifetime notes;
 5. raw `ctypes` scope;
 6. WebGPU/WASM experimental scope and known gaps;
-7. clear statement that old high-level Pythonic Datoviz API migration is outside v0.4 Datoviz
+7. compute+graphics experimental scope and CUDA/CuPy boundary;
+8. clear statement that old high-level Pythonic Datoviz API migration is outside v0.4 Datoviz
    scope.
 
 The raw `ctypes` scope page may land before the generated API reference is complete. For RC1, it

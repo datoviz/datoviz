@@ -25,14 +25,16 @@ non-v0.4-blocking roadmaps live in [`../future/`](../future/).
 
 1. [ASSET_BOUNDARY_DESIGN.md](ASSET_BOUNDARY_DESIGN.md): asset/source/cache boundary still
    influencing resource and data policy.
-2. [CAPABILITY_FALLBACK_DESIGN.md](CAPABILITY_FALLBACK_DESIGN.md): fallback knobs and diagnostics
+2. [COMPUTE_GRAPHICS_INTEROP.md](COMPUTE_GRAPHICS_INTEROP.md): v0.4 experimental
+   compute-to-render and optional native CUDA interop slice.
+3. [CAPABILITY_FALLBACK_DESIGN.md](CAPABILITY_FALLBACK_DESIGN.md): fallback knobs and diagnostics
    still need final promotion into validation/adaptation specs.
-3. [SCIENTIFIC_COORDINATE_NORMALIZATION.md](SCIENTIFIC_COORDINATE_NORMALIZATION.md): shared
+4. [SCIENTIFIC_COORDINATE_NORMALIZATION.md](SCIENTIFIC_COORDINATE_NORMALIZATION.md): shared
    normalization-frame and coordinate readback gaps still need final promotion.
-4. [POLYGON_PSLG_API_DESIGN.md](POLYGON_PSLG_API_DESIGN.md): polygon/PSLG API remains unsettled.
-5. [RENDER_CONTRACT_RESOLVER.md](RENDER_CONTRACT_RESOLVER.md): render-contract resolution remains
+5. [POLYGON_PSLG_API_DESIGN.md](POLYGON_PSLG_API_DESIGN.md): polygon/PSLG API remains unsettled.
+6. [RENDER_CONTRACT_RESOLVER.md](RENDER_CONTRACT_RESOLVER.md): render-contract resolution remains
    an active API and planning question.
-6. [VISUAL_COMMAND_STREAM.md](VISUAL_COMMAND_STREAM.md): visual command stream remains active
+7. [VISUAL_COMMAND_STREAM.md](VISUAL_COMMAND_STREAM.md): visual command stream remains active
    design pressure.
 
 

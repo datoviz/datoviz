@@ -15,6 +15,7 @@ Blockers:
 | Lane | Status | Next proof |
 | --- | --- | --- |
 | WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits WGSL DRP2 JSON for point, primitive, RGBA8 image, basic mesh, panzoom, and a 3D mesh/arcball proof. | Publish the experimental subset, record fresh browser evidence, harden diagnostic ABI behavior, and remove remaining demo shortcuts. |
+| Compute+graphics experimental path | DRP2, FramePlan, vklite, and WebGPU already have partial compute support and compute-to-render fixtures. | Promote minimal DRP2 synchronization, prove native execution, mirror portable WebGPU behavior, and prepare a C particle-advection gallery example. |
 | v0.3 visible parity audit | Missing. | Table each visible capability as fixed, deferred, or external/GSP. |
 | Public API/status cleanup | Missing. | Mark public surfaces as supported, experimental, advanced/unstable, deferred, or external/GSP. |
 | Release example proof | Partial. | Compact native + WebGPU proof set with validation notes and captured artifacts where needed. |
@@ -31,9 +32,11 @@ paths, scene visual-boundary checks, WebGPU fixture runner, and WASM point/panzo
    retained textured mesh and composed annotation/layout examples.
 3. **WebGPU/WASM:** supported subset docs, diagnostics, portable target hardening,
    browser/runner smoke, and next visual-family expansion.
-4. **Runtime hardening:** concrete scene -> DRP2 -> vklite/canvas/app lifetime, resize, descriptor,
+4. **Compute+graphics:** minimal DRP2 sync objects/barriers, native compute-to-render proof,
+   WebGPU parity diagnostics, and a C-first particle-advection gallery target.
+5. **Runtime hardening:** concrete scene -> DRP2 -> vklite/canvas/app lifetime, resize, descriptor,
    repeated-frame, or churn bugs.
-5. **Docs inventory:** public header inventory, ownership notes, raw `ctypes` scope, WebGPU/WASM
+6. **Docs inventory:** public header inventory, ownership notes, raw `ctypes` scope, WebGPU/WASM
    scope, known issues, and GSP/VisPy2 boundary.
 
 When adding visible capability work, prefer gallery-proof improvements first, then vector visual

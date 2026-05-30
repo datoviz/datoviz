@@ -45,7 +45,7 @@ documented subset with explicit unsupported-feature diagnostics, not native pari
 5. **WASM transport:** harden the portable scene/DRP2 WASM bridge, keep pointer ownership and
    diagnostics explicit, and broaden scene-emitted WGSL streams beyond the point slice.
 6. **Renderer v1 parity:** add dynamic viewport/scissor, multiple bind groups, texture sampling,
-   compute, explicit synchronization, and thread-safe submission semantics.
+   compute, minimal compute-to-render synchronization, and thread-safe submission semantics.
 7. **Performance and reliability:** add decode/record/submit/update benchmarks, long-run churn
    tests, invalid-stream tests, OOM tests, and leak checks.
 8. **Post-v1 memory:** add zero-copy streaming, persistent mapped buffers, sparse/virtual resources,
@@ -73,12 +73,14 @@ execution, fixtures, lifecycle rules, and capability reporting together.
 2. generation-safe object registry and use-after-destroy validation;
 3. mock backend tests for semantic validation;
 4. native and browser fixture parity;
-5. compute pass and deterministic compute/reduction fixtures;
-6. public timing/counter API and benchmark baselines;
-7. memory budget, OOM, eviction, and leak diagnostics;
-8. native interop buffer/image export/import with explicit synchronization;
-9. browser conformance replay suite;
-10. versioned WASM -> JS command transport.
+5. promote the minimal `ResourceBarrier` or equivalent sync marker needed for storage-buffer writes
+   consumed by render passes;
+6. compute pass and deterministic compute/reduction fixtures;
+7. public timing/counter API and benchmark baselines;
+8. memory budget, OOM, eviction, and leak diagnostics;
+9. native interop buffer/image export/import with explicit synchronization;
+10. browser conformance replay suite;
+11. versioned WASM -> JS command transport.
 
 
 ## Acceptance Gates
