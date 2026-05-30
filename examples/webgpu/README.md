@@ -21,7 +21,7 @@ streams, and semantic negative fixture parity checks against the browser WebGPU 
 http://localhost:8765/examples/webgpu/fixtures.html
 ```
 
-The WASM scene demo builds the scene/controller code with Emscripten, routes pointer input through
+The WASM scene demo builds the generic scene ABI with Emscripten, routes pointer input through
 the compiled panzoom controller, and executes the emitted DRP2 commands with the browser WebGPU
 runtime:
 
@@ -39,8 +39,8 @@ The 3D WASM proof uses the same bridge with a scene-owned camera and arcball con
 http://localhost:8765/examples/webgpu/wasm_scene_3d.html
 ```
 
-The generic WASM scene ABI proof uses `examples/webgpu/datoviz_wasm_scene.js` as a small wrapper
-over `src/wasm/scene_api.c`:
+`examples/webgpu/wasm_scene.html` is the generic wrapper entry point. The alias below serves
+the same `examples/webgpu/datoviz_wasm_scene.js` wrapper over `src/wasm/scene_api.c`:
 
 ```text
 http://localhost:8765/examples/webgpu/wasm_api_scene.html
