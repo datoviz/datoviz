@@ -499,6 +499,42 @@ async function main() {
     {
       commands: [
         ...header,
+        {
+          cmd: 'CreateShaderModule',
+          id: 9000,
+          stage: 'VERTEX',
+          format: 'wgsl',
+          entry_point: 'main',
+          code:
+            'struct In { @location(0) pos: vec3f }; ' +
+            '@vertex fn main(input: In) -> @builtin(position) vec4f { ' +
+            'return vec4f(input.pos, 1.0); }',
+        },
+        triangleShaders[1],
+        {
+          cmd: 'CreateRenderPipeline',
+          id: 10,
+          vertex_buffer_slots: 1,
+          vertex_shader_module_id: 9000,
+          fragment_shader_module_id: 9001,
+          topology: 'triangle-list',
+          color_targets: [{ format: 'rgba8unorm' }],
+        },
+      ],
+    },
+    'needs explicit vertex_buffers',
+    {
+      commandIndex: 4,
+      cmd: 'CreateRenderPipeline',
+      code: 'DRP2_ERR_INVALID_ARGUMENT',
+    },
+  );
+
+  await expectFailure(
+    executeDrp2Stream,
+    {
+      commands: [
+        ...header,
         { cmd: 'CreateBuffer', id: 1, size: 4, usage: ['COPY_DST'] },
         { cmd: 'DestroyBuffer', buffer_id: 1 },
         { cmd: 'WriteBuffer', buffer_id: 1, offset: 0, data: '', size: 0 },

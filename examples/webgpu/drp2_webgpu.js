@@ -680,10 +680,15 @@ function alignedBytesPerRow(bytesPerRow) {
 
 
 
-function makeVertexBuffers(command, vertexShader) {
+function makeVertexBuffers(command, vertexShader, options = {}) {
   const vertexBuffers = command.vertex_buffers ?? [];
   if (vertexBuffers.length === 0) {
     if ((command.vertex_buffer_slots ?? 0) > 0 && vertexShader.code.includes("@location(0)")) {
+      if (options.allowDemoCompatibility !== true) {
+        throw new Error(
+          `render pipeline ${command.id} needs explicit vertex_buffers for shader inputs`,
+        );
+      }
       return [
         {
           arrayStride: 12,
@@ -1637,7 +1642,7 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, 
       vertex: {
         module: vertexShader.module,
         entryPoint: vertexShader.entryPoint,
-        buffers: makeVertexBuffers(command, vertexShader),
+        buffers: makeVertexBuffers(command, vertexShader, options),
       },
       fragment: {
         module: fragmentShader.module,
@@ -2224,7 +2229,10 @@ export class WebGpuDemoSession {
       this.device,
       this.context,
       this.canvasFormat,
-      { capabilities: this.capabilities },
+      {
+        allowDemoCompatibility: true,
+        capabilities: this.capabilities,
+      },
     );
     applyStreamCanvasAspect(stream);
     await this.runtime.load(stream);

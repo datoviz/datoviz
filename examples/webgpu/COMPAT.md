@@ -186,8 +186,9 @@ forms. The fixture dashboard requires explicit bind-group layout and render-pipe
 - Missing `CreateRenderPipeline.color_targets` follows the DRP2 default for standalone demo streams:
   the configured canvas format for canvas targets, otherwise `rgba8unorm` when no attachment format
   is available.
-- Missing `vertex_buffers` means vertex pulling or builtins in DRP2. Standalone demo streams still
-  get a one-slot compatibility fallback when their vertex shader declares `@location(0)`.
+- Missing `vertex_buffers` means vertex pulling or builtins in DRP2. The historical one-slot
+  compatibility fallback for shaders declaring `@location(0)` is now opt-in through the main demo
+  session only; normal runner and fixture paths reject that missing metadata.
 - Tight `CopyTextureToBuffer.bytes_per_row` values are adapted through an aligned temporary buffer
   because WebGPU requires copy row pitch to be a multiple of 256 bytes.
 - Buffer binding offsets that are valid in DRP2 but not aligned for WebGPU are bound from offset 0
@@ -197,7 +198,8 @@ forms. The fixture dashboard requires explicit bind-group layout and render-pipe
   browser-demo metadata; it is not an executable DRP2 command.
 - Bind-group layout `visibility`, storage `access`, render-pipeline `vertex_buffers`, and
   render-pipeline `color_targets` are required by the fixture dashboard. Standalone demo streams
-  still use DRP2 defaults and shader-source inference as compatibility fallbacks.
+  still use DRP2 defaults for color targets where the protocol allows backend defaults, but shader
+  input vertex-buffer inference is limited to the explicit demo-compatibility option.
 - The fixture dashboard retained runtime stress section loads `scene_point_wgsl`,
   `scene_primitive_wgsl`, `texture_sampling_wgsl`, and `attachment_depth_wgsl` once each, renders
   `10` repeated frames through `Drp2WebGpuRuntime`, and checks stable resource counts with no open
