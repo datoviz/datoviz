@@ -24,6 +24,21 @@
       "type": "string",
       "description": "WGSL/GLSL source text or base64-encoded SPIR-V bytes, depending on format."
     },
+    "builtin_family": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional portable identity for a built-in shader family emitted by Datoviz."
+    },
+    "builtin_variant": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional portable identity for a built-in shader variant emitted by Datoviz."
+    },
+    "builtin_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Optional version for the built-in shader identity."
+    },
     "required_features": {
       "type": "array",
       "items": {
@@ -63,5 +78,19 @@
         }
       }
     }
-  ]
+  ],
+  "dependentRequired": {
+    "builtin_family": [
+      "builtin_variant",
+      "builtin_version"
+    ],
+    "builtin_variant": [
+      "builtin_family",
+      "builtin_version"
+    ],
+    "builtin_version": [
+      "builtin_family",
+      "builtin_variant"
+    ]
+  }
 }

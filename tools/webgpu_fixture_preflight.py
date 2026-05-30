@@ -607,7 +607,14 @@ class WebGPUFixturePreflight:
         depth_stencil_attachment = command.get('depth_stencil_attachment')
         if depth_stencil_attachment is not None:
             self._check_load_store_ops(index, depth_stencil_attachment, depth_stencil=True)
-            info = self._attachment_info(index, depth_stencil_attachment, textures)
+            info = self._attachment_info(
+                index,
+                depth_stencil_attachment,
+                textures,
+                depth_stencil=True,
+                fallback_width=render_width,
+                fallback_height=render_height,
+            )
             depth_stencil_format = info['format']
             render_width, render_height = self._merge_attachment_extent(
                 index, render_width, render_height, info
@@ -621,14 +628,21 @@ class WebGPUFixturePreflight:
         }
 
     def _attachment_info(
-        self, index: int, attachment: Dict[str, Any], textures: Dict[int, Dict[str, Any]]
+        self,
+        index: int,
+        attachment: Dict[str, Any],
+        textures: Dict[int, Dict[str, Any]],
+        *,
+        depth_stencil: bool = False,
+        fallback_width: Optional[int] = None,
+        fallback_height: Optional[int] = None,
     ) -> Dict[str, Any]:
         texture_id = attachment.get('texture_id')
         if texture_id == 0:
             return {
-                'format': CANVAS_TEXTURE_FORMAT,
-                'width': CANVAS_TEXTURE_WIDTH,
-                'height': CANVAS_TEXTURE_HEIGHT,
+                'format': 'depth32float' if depth_stencil else CANVAS_TEXTURE_FORMAT,
+                'width': fallback_width if fallback_width is not None else CANVAS_TEXTURE_WIDTH,
+                'height': fallback_height if fallback_height is not None else CANVAS_TEXTURE_HEIGHT,
             }
         texture = textures.get(texture_id)
         if texture is None:

@@ -1657,14 +1657,36 @@ function makeComputePipeline(device, shaders, bindGroupLayouts, command, options
 
 
 
-function makeDepthStencilAttachment(textures, attachment) {
+function attachmentExtent(state, attachment) {
+  if (attachment.texture_id === 0) {
+    return canvasExtent();
+  }
+  const record = requireLiveRecord(state, attachment.texture_id, "texture");
+  return { width: record.width, height: record.height };
+}
+
+
+
+function renderPassExtent(state, command) {
+  const attachments = required(command.color_attachments, "BeginRenderPass needs color_attachments");
+  return attachmentExtent(state, attachments[0]);
+}
+
+
+
+function makeDepthStencilAttachment(device, state, textures, command) {
+  const attachment = command.depth_stencil_attachment;
   if (attachment === undefined) {
     return undefined;
   }
-  const texture = required(
-    textures.get(attachment.texture_id),
-    `unknown depth texture ${attachment.texture_id}`,
-  );
+  const texture = attachment.texture_id === 0
+    ? device.createTexture({
+        label: command.label === undefined ? "transient-depth" : `${command.label}:depth`,
+        size: renderPassExtent(state, command),
+        format: "depth32float",
+        usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      })
+    : required(textures.get(attachment.texture_id), `unknown depth texture ${attachment.texture_id}`);
   return {
     view: texture.createView(),
     depthLoadOp: mapLoadOp(attachment.depth_load_op),
@@ -1690,7 +1712,7 @@ function makeColorAttachment(context, textures, attachment) {
 
 
 
-function beginRenderPass(context, textures, encoders, command) {
+function beginRenderPass(device, context, state, textures, encoders, command) {
   const encoder = required(
     encoders.get(command.encoder_id),
     `unknown command encoder ${command.encoder_id}`,
@@ -1702,10 +1724,7 @@ function beginRenderPass(context, textures, encoders, command) {
     colorAttachments: attachments.map((attachment) =>
       makeColorAttachment(context, textures, attachment),
     ),
-    depthStencilAttachment: makeDepthStencilAttachment(
-      textures,
-      command.depth_stencil_attachment,
-    ),
+    depthStencilAttachment: makeDepthStencilAttachment(device, state, textures, command),
   });
 }
 
@@ -1720,6 +1739,15 @@ function attachmentTextureFormat(state, canvasFormat, attachment) {
 
 
 
+function depthAttachmentTextureFormat(state, attachment) {
+  if (attachment.texture_id === 0) {
+    return "depth32float";
+  }
+  return requireLiveRecord(state, attachment.texture_id, "texture").format;
+}
+
+
+
 function renderPassAttachmentFormats(state, canvasFormat, command) {
   const attachments = required(command.color_attachments, "BeginRenderPass needs color_attachments");
   const colorAttachmentFormats = attachments.map((attachment) =>
@@ -1727,7 +1755,7 @@ function renderPassAttachmentFormats(state, canvasFormat, command) {
   );
   const depthStencilFormat = command.depth_stencil_attachment === undefined
     ? null
-    : attachmentTextureFormat(state, canvasFormat, command.depth_stencil_attachment);
+    : depthAttachmentTextureFormat(state, command.depth_stencil_attachment);
   return { colorAttachmentFormats, depthStencilFormat };
 }
 
@@ -2604,13 +2632,15 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           }
         }
         if (command.depth_stencil_attachment !== undefined) {
-          addEncoderRef(
-            state,
-            encoderRefs,
-            command.encoder_id,
-            command.depth_stencil_attachment.texture_id,
-            "texture",
-          );
+          if (command.depth_stencil_attachment.texture_id !== 0) {
+            addEncoderRef(
+              state,
+              encoderRefs,
+              command.encoder_id,
+              command.depth_stencil_attachment.texture_id,
+              "texture",
+            );
+          }
         }
         passes.set(command.id, {
           id: command.id,
@@ -2620,7 +2650,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           depthStencilFormat: attachmentFormats.depthStencilFormat,
           vertexBuffers: new Set(),
           hasIndexBuffer: false,
-          pass: beginRenderPass(context, textures, encoders, command),
+          pass: beginRenderPass(device, context, state, textures, encoders, command),
         });
         break;
       }

@@ -26,6 +26,16 @@
         "$ref": "../common/Id.json"
       }
     },
+    "builtin_pipeline": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional portable identity for a built-in pipeline emitted by Datoviz."
+    },
+    "builtin_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Optional version for the built-in pipeline identity."
+    },
     "vertex_buffers": {
       "type": "array",
       "items": {
@@ -183,5 +193,13 @@
     "vertex_shader_module_id",
     "fragment_shader_module_id",
     "vertex_buffer_slots"
-  ]
+  ],
+  "dependentRequired": {
+    "builtin_pipeline": [
+      "builtin_version"
+    ],
+    "builtin_version": [
+      "builtin_pipeline"
+    ]
+  }
 }

@@ -891,8 +891,9 @@ class DRP2SemanticValidator:
         depth_attachment = command.get('depth_stencil_attachment')
         if depth_attachment is not None:
             texture_id = depth_attachment['texture_id']
-            self._texture_usage(index, texture_id, 'RENDER_ATTACHMENT')
-            encoder['resources'].add(('texture', texture_id))
+            if texture_id != 0:
+                self._texture_usage(index, texture_id, 'RENDER_ATTACHMENT')
+                encoder['resources'].add(('texture', texture_id))
         pass_id = command['id']
         self._reserve_id(index, pass_id, 'pass', {})
         encoder['open_pass'] = pass_id

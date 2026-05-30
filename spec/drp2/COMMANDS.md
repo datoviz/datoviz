@@ -582,6 +582,9 @@ Required fields:
 Optional fields:
 
 - `required_features`: explicit feature requirements such as `fp64`.
+- `builtin_family`: portable identity for a built-in shader family emitted by Datoviz.
+- `builtin_variant`: portable identity for a built-in shader variant emitted by Datoviz.
+- `builtin_version`: version for the built-in shader identity.
 - `label`: debug label.
 
 Semantics:
@@ -626,6 +629,8 @@ Required fields:
 Optional fields:
 
 - `bind_group_layout_ids`: ordered list of bind-group layouts expected by slot.
+- `builtin_pipeline`: portable identity for a built-in pipeline emitted by Datoviz.
+- `builtin_version`: version for the built-in pipeline identity.
 - `vertex_buffers`: ordered list of vertex buffer layout descriptors, one per slot in
   `[0, vertex_buffer_slots)`. If present, its length must equal `vertex_buffer_slots`. If absent,
   vertex input layout is unspecified and the pipeline is expected to use vertex pulling via storage
@@ -794,10 +799,14 @@ Optional fields:
 Attachment descriptor semantics:
 
 - `texture_id`: live texture used as the attachment target in active DRP2 `2.0`.
+  Depth/stencil attachments may use `0` for an implementation-owned transient depth attachment.
 - `resolve_target_texture_id`: optional live texture used as the resolve target in active DRP2 `2.0`.
 - `load_op`: whether the attachment content is loaded or cleared at pass start.
 - `store_op`: whether the final attachment content is stored after the pass.
-- `clear_value`: clear color or clear depth/stencil value used when `load_op` is clear.
+- `clear_value`: clear color used when a color attachment `load_op` is clear.
+- `depth_load_op`: whether depth content is loaded or cleared at pass start.
+- `depth_store_op`: whether final depth content is stored after the pass.
+- `depth_clear_value`: clear depth value used when `depth_load_op` is clear.
 
 Active `2.0` note:
 

@@ -526,7 +526,7 @@ static const char* _depth_compare_name(uint32_t compare_op)
     case VK_COMPARE_OP_EQUAL:
         return "equal";
     case VK_COMPARE_OP_LESS_OR_EQUAL:
-        return "less-or-equal";
+        return "less-equal";
     case VK_COMPARE_OP_GREATER:
         return "greater";
     case VK_COMPARE_OP_NOT_EQUAL:
@@ -978,8 +978,8 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         {
             _json_append(
                 builder,
-                ", \"depth_stencil_attachment\": { \"format\": \"depth32float\", "
-                "\"texture_id\": %" PRIu64 ", \"load_op\": \"%s\", \"store_op\": \"%s\"",
+                ", \"depth_stencil_attachment\": { \"texture_id\": %" PRIu64
+                ", \"depth_load_op\": \"%s\", \"depth_store_op\": \"%s\"",
                 command->u.begin_render_pass.depth_texture_id,
                 _attachment_load_name(command->u.begin_render_pass.depth_load_op),
                 _attachment_store_name(command->u.begin_render_pass.depth_store_op));
@@ -991,7 +991,7 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
                     _attachment_access_name(command->u.begin_render_pass.depth_access));
             }
             _json_append(
-                builder, ", \"clear_value\": { \"depth\": %g } }",
+                builder, ", \"depth_clear_value\": %g }",
                 (double)command->u.begin_render_pass.clear_depth);
         }
         _json_append(builder, " }");
@@ -1005,8 +1005,9 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
     case DVZ_DRP2_COMMAND_SET_VIEWPORT:
         _json_append(
             builder,
-            "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"viewport\": { \"x\": %g, \"y\": %g, "
-            "\"width\": %g, \"height\": %g } }",
+            "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64
+            ", \"x\": %g, \"y\": %g, \"width\": %g, \"height\": %g, "
+            "\"min_depth\": 0, \"max_depth\": 1 }",
             _command_name(command->type), command->u.set_viewport.pass_id,
             (double)command->u.set_viewport.viewport[0],
             (double)command->u.set_viewport.viewport[1],
@@ -1016,8 +1017,8 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
     case DVZ_DRP2_COMMAND_SET_SCISSOR:
         _json_append(
             builder,
-            "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"scissor\": { \"x\": %g, \"y\": %g, "
-            "\"width\": %g, \"height\": %g } }",
+            "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64
+            ", \"x\": %g, \"y\": %g, \"width\": %g, \"height\": %g }",
             _command_name(command->type), command->u.set_scissor.pass_id,
             (double)command->u.set_scissor.scissor[0],
             (double)command->u.set_scissor.scissor[1],
