@@ -6,7 +6,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs");
-const outputPath = resolve(root, "build-wasm-scene/wasm/wasm_scene_point_primitive_image_panzoom.json");
+const outputPath = resolve(root, "build-wasm-scene/wasm/wasm_scene_point_primitive_image_mesh_panzoom.json");
 
 const DVZ_POINTER_EVENT_PRESS = 1;
 const DVZ_POINTER_EVENT_RELEASE = 0;
@@ -136,6 +136,33 @@ for (let y = 0; y < imageHeight; y++) {
   }
 }
 const imagePixelsPtr = allocArray(Module, imagePixels);
+const meshPositions = new Float32Array([
+  0.18, 0.18, 0.22,
+  0.86, 0.18, 0.22,
+  0.18, 0.78, 0.22,
+  0.86, 0.18, 0.22,
+  0.86, 0.78, 0.22,
+  0.18, 0.78, 0.22,
+]);
+const meshColors = new Uint8Array([
+  90, 170, 255, 240,
+  85, 230, 190, 240,
+  160, 120, 255, 240,
+  85, 230, 190, 240,
+  255, 135, 210, 240,
+  160, 120, 255, 240,
+]);
+const meshNormals = new Float32Array([
+  0, 0, 1,
+  0, 0, 1,
+  0, 0, 1,
+  0, 0, 1,
+  0, 0, 1,
+  0, 0, 1,
+]);
+const meshPositionsPtr = allocArray(Module, meshPositions);
+const meshColorsPtr = allocArray(Module, meshColors);
+const meshNormalsPtr = allocArray(Module, meshNormals);
 
 try {
   let status = Module._dvz_wasm_scene_set_points(
@@ -155,6 +182,14 @@ try {
   requireOk(status === 0, `dvz_wasm_scene_set_primitive failed with ${status}`);
   status = Module._dvz_wasm_scene_set_image(handle, imagePixelsPtr, imageWidth, imageHeight);
   requireOk(status === 0, `dvz_wasm_scene_set_image failed with ${status}`);
+  status = Module._dvz_wasm_scene_set_mesh(
+    handle,
+    meshPositionsPtr,
+    meshColorsPtr,
+    meshNormalsPtr,
+    meshPositions.length / 3,
+  );
+  requireOk(status === 0, `dvz_wasm_scene_set_mesh failed with ${status}`);
 
   const initialStream = emitStream(Module, handle, "initial");
 
@@ -247,5 +282,8 @@ try {
   Module._free(primitivePositionsPtr);
   Module._free(primitiveColorsPtr);
   Module._free(imagePixelsPtr);
+  Module._free(meshPositionsPtr);
+  Module._free(meshColorsPtr);
+  Module._free(meshNormalsPtr);
   Module._dvz_wasm_scene_destroy(handle);
 }

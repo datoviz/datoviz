@@ -221,6 +221,50 @@ function setImage() {
   }
 }
 
+function setMesh() {
+  const positions = new Float32Array([
+    0.18, 0.18, 0.22,
+    0.86, 0.18, 0.22,
+    0.18, 0.78, 0.22,
+    0.86, 0.18, 0.22,
+    0.86, 0.78, 0.22,
+    0.18, 0.78, 0.22,
+  ]);
+  const colors = new Uint8Array([
+    90, 170, 255, 240,
+    85, 230, 190, 240,
+    160, 120, 255, 240,
+    85, 230, 190, 240,
+    255, 135, 210, 240,
+    160, 120, 255, 240,
+  ]);
+  const normals = new Float32Array([
+    0, 0, 1,
+    0, 0, 1,
+    0, 0, 1,
+    0, 0, 1,
+    0, 0, 1,
+    0, 0, 1,
+  ]);
+  const positionsPtr = allocArray(positions);
+  const colorsPtr = allocArray(colors);
+  const normalsPtr = allocArray(normals);
+  try {
+    const status = Module._dvz_wasm_scene_set_mesh(
+      handle,
+      positionsPtr,
+      colorsPtr,
+      normalsPtr,
+      positions.length / 3,
+    );
+    requireOk(status === 0, `setting scene mesh failed with ${status}`);
+  } finally {
+    Module._free(positionsPtr);
+    Module._free(colorsPtr);
+    Module._free(normalsPtr);
+  }
+}
+
 function resizeScene() {
   const changed = resizeWebGpuCanvas(gpu.device, gpu.context, gpu.format);
   const scale = Math.max(1, window.devicePixelRatio || 1);
@@ -331,6 +375,7 @@ async function main() {
   setPoints();
   setPrimitive();
   setImage();
+  setMesh();
 
   const initialStream = emitScene();
   runtime = new Drp2WebGpuRuntime(gpu.device, gpu.context, gpu.format, {
