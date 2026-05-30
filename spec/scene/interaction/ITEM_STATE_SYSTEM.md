@@ -100,3 +100,91 @@ behavior until their item semantics are explicit.
 4. Per-visual style overrides.
 5. Multiple simultaneous selections/hovers with independent styles. The first active writer style
    wins until a composition policy is required.
+
+## Convenience Panel Controller
+
+`DvzHover` and `DvzSelection` remain the semantic state objects. They are intentionally separate even
+though both write the same `item_state` field: hover is transient pointer/query state, while
+selection is persistent application state with selection modes and optional metadata UI.
+
+For normal user code, add one convenience controller bound to a panel:
+
+```c
+DvzItemInteraction* dvz_item_interaction(
+    DvzPanel* panel, const DvzItemInteractionDesc* desc);
+
+DvzItemInteractionDesc dvz_item_interaction_desc(void);
+void dvz_item_interaction_destroy(DvzItemInteraction* interaction);
+DvzHover* dvz_item_interaction_hover(DvzItemInteraction* interaction);
+DvzSelection* dvz_item_interaction_selection(DvzItemInteraction* interaction);
+```
+
+The default call should be useful:
+
+```c
+DvzItemInteraction* pick = dvz_item_interaction(panel, NULL);
+```
+
+Default behavior:
+
+1. query `DVZ_SCENE_TARGET_ITEM` with `DVZ_QUERY_HIT_FRONTMOST`;
+2. update hover on pointer move and clear it on miss/leave;
+3. toggle selection on left-button click;
+4. clear selection on background click;
+5. create default `DvzHover` and `DvzSelection` objects when the descriptor does not provide them.
+
+Descriptor fields should stay small and semantic:
+
+```c
+struct DvzItemInteractionDesc
+{
+    DvzHover* hover;           // optional externally-owned/shared hover object
+    DvzSelection* selection;   // optional externally-owned/shared selection object
+    bool hover_enabled;
+    bool selection_enabled;
+    DvzSelectMode select_mode;
+    DvzSceneTargetKind target;
+    DvzQueryHitPolicy hit_policy;
+    bool clear_hover_on_miss;
+    bool clear_selection_on_miss;
+};
+```
+
+Examples:
+
+```c
+// Defaults: hover + toggle selection.
+DvzItemInteraction* pick = dvz_item_interaction(panel, NULL);
+```
+
+```c
+// Additive selection, still with hover.
+DvzItemInteraction* pick = dvz_item_interaction(panel, &(DvzItemInteractionDesc){
+    .select_mode = DVZ_SELECT_ADDITIVE,
+});
+```
+
+```c
+// Hover only.
+DvzItemInteraction* pick = dvz_item_interaction(panel, &(DvzItemInteractionDesc){
+    .selection_enabled = false,
+});
+```
+
+```c
+// Selection only.
+DvzItemInteraction* pick = dvz_item_interaction(panel, &(DvzItemInteractionDesc){
+    .hover_enabled = false,
+});
+```
+
+```c
+// Customize generated state objects.
+DvzItemInteraction* pick = dvz_item_interaction(panel, NULL);
+DvzHover* hover = dvz_item_interaction_hover(pick);
+DvzSelection* selection = dvz_item_interaction_selection(pick);
+```
+
+Do not add `dvz_item_hover()` or `dvz_item_selection()` convenience constructors. They blur the
+semantic boundary without removing meaningful boilerplate. Users who need explicit state objects can
+call `dvz_hover()` and `dvz_selection()` directly, then pass them to `dvz_item_interaction()`.
