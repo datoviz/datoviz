@@ -33,6 +33,10 @@ guide as current Datoviz documentation.
 8. Generated C reference or complete API reference outline.
 9. Raw `ctypes` binding documentation.
 10. WebGPU/WASM experimental-scope documentation.
+11. Gallery/data attribution policy for public datasets, generated media, and reuse in release
+    communication.
+12. Short contributor guidance for AI-assisted docs/example work: page type, source of truth,
+    validation command, and unsupported-feature status.
 
 
 ## RC1 Gate
@@ -59,6 +63,9 @@ Required:
 4. release examples with captured artifacts;
 5. render-conformance or fixture result linked;
 6. known issues updated from RC1 feedback.
+7. real-dataset showcase candidates reviewed for license, attribution, scientific context, and
+   whether the visualization would be useful to the dataset authors.
+8. gallery media generation path documented for screenshots, animated GIFs, or short videos.
 
 
 ## Final Gate
@@ -70,6 +77,9 @@ Required:
 3. install/build and positioning notes published;
 4. raw `ctypes` and WebGPU/WASM scopes published;
 5. website, gallery, and release announcement assets published.
+6. public dataset examples include source links, license/citation notes, prepared-data provenance,
+   and any required permissions.
+7. direct outreach drafts for selected dataset authors are reviewed before sending.
 
 
 ## Validation

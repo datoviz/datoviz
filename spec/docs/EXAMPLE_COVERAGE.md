@@ -196,6 +196,59 @@ Candidate showcases:
 | Annotation/readout demo | picking, overlay cards, label annotations |
 
 
+## Scientific Dataset Showcases And Outreach
+
+Scientific showcases should prefer real public datasets when the data makes a better example than
+synthetic content. The goal is a useful domain visualization that also provides documentation,
+gallery media, validation pressure, and a concrete feedback request for the dataset authors.
+
+Selection rules:
+
+1. prioritize recently published open datasets, preprints, challenge data, or public repositories
+   with stable links and clear visualization potential;
+2. require license, citation, redistribution, and derived-media terms before committing prepared
+   data or publishing generated gallery media;
+3. prefer manageable data sizes and strong structure: images, volumes, point clouds, meshes,
+   trajectories, vector fields, time series, graphs, simulations, or geospatial rasters;
+4. make the example useful to the scientist or domain expert, not only decorative;
+5. generate at least one high-quality still image and, when it helps, a short video or animated GIF;
+6. publish a concise gallery page with scientific context, source code, data source, dependencies,
+   license, citation, and any preprocessing notes.
+
+Suggested discipline balance:
+
+1. neuroscience, microscopy, and medical imaging;
+2. astronomy and cosmology;
+3. climate, oceanography, geoscience, and terrain;
+4. biology, structural biology, genomics, and biophysics;
+5. fluid dynamics, computational physics, and materials science;
+6. robotics, motion capture, spatial trajectories, finance, and network science.
+
+Outreach policy:
+
+1. maintain a reviewed candidate table before final release;
+2. contact scientists or groups individually with what was visualized, why it may be useful, a
+   gallery/media link, and a request for feedback or correction;
+3. ask permission before implying endorsement, quoting responses, or featuring names prominently in
+   launch material;
+4. track corrections, attribution requirements, permission status, and follow-up ideas.
+
+Candidate table fields:
+
+| Field | Purpose |
+| --- | --- |
+| Scientist / group | Individual or lab to contact. |
+| Discipline | Keeps the gallery balanced. |
+| Dataset / paper | Data source and scientific context. |
+| Release date | Confirms timely outreach. |
+| License / terms | Confirms whether data and derived media can be used. |
+| Data type / size | Determines feasibility. |
+| Datoviz feature fit | Maps data to visuals, interaction, video, GUI, or WebGPU. |
+| Planned output | Screenshot, video, notebook, C example, Python example, or web demo. |
+| Contact route | Email, lab form, GitHub issue/discussion, or social media. |
+| Status | Candidate, approved, implemented, contacted, replied, declined, or published. |
+
+
 ## Example Metadata
 
 Every documented example should eventually have machine-readable metadata. The format may live in a

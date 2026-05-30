@@ -25,6 +25,10 @@ those names as pressure tests unless the installed headers already define them.
 - Runtime examples should not require network access after the cache is populated.
 - Expensive preprocessing belongs in a script or documented bundle build step, not in the runtime
   example.
+- Real-dataset showcases should include scientific context, attribution, prepared-data provenance,
+  generated-media traceability, and the intended contact route when author feedback is requested.
+- Do not publish generated media from a dataset until redistribution and derived-media terms are
+  clear.
 
 
 ## FramePlan And DRP2 Notes

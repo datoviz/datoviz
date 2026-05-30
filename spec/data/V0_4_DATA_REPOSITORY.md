@@ -110,6 +110,27 @@ Manifest artifact entries should record at least:
   optional unless the example specifically exists to stress large rendering paths.
 - If redistribution rights are unclear, commit a blocker/provenance record, not guessed data.
 
+## Public Dataset Showcase Policy
+
+Real scientific datasets are preferred for flagship gallery examples when they can be handled
+legally and reproducibly. A dataset may become a v0.4 showcase only after these checks are recorded:
+
+- stable source URL, dataset or paper citation, and release date;
+- license, redistribution rights, citation requirements, and derived-media permissions;
+- scientist, group, or project contact route when individual feedback will be requested;
+- raw data size, prepared data size, expected cache size, and optional full-scale benchmark size;
+- preprocessing script or manual preparation notes sufficient to rebuild the render-ready bundle;
+- clear statement of whether prepared files may be committed to `data`, must remain local cache, or
+  require a `BLOCKERS.md` note.
+
+When the example is prepared for outreach, keep the data record tied to the gallery record:
+
+1. the gallery page links to `PROVENANCE.md`, source data, license, citation, and code;
+2. generated screenshots, videos, or GIFs are traceable to the example id and data manifest;
+3. scientist feedback that changes attribution, interpretation, or allowed use is reflected before
+   public launch;
+4. no endorsement, quote, or prominent naming is used without explicit permission.
+
 ## Regeneration Workflow
 
 Data preparation should be script-first and reproducible:
