@@ -43,6 +43,7 @@
 /*************************************************************************************************/
 
 int test_scene_mesh_visual_binds_texture_field(TstContext* suite, const TstCase* item);
+int test_scene_colorbar_left_title_uses_content_lane(TstContext* suite, const TstCase* item);
 
 
 /**
@@ -842,7 +843,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
                   }));
     AT(strcmp(colorbar->title, "Live layout") == 0);
     AT(dvz_panel_get_reserve(panel, &reserve));
-    AT(fabsf(reserve.right_px - 80.0f) < 1e-6f);
+    AT(reserve.right_px > 80.0f);
     AT(fabsf(reserve.bottom_px - 35.0f) < 1e-6f);
 
     dvz_scene_destroy(scene);
@@ -964,6 +965,67 @@ int test_scene_colorbar_auto_reserve_tracks_resize(TstContext* suite, const TstC
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(dvz_panel_get_reserve(panel, &reserve));
     AT(fabsf(reserve.right_px - 140.0f) < 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify attached left colorbars reserve separate lanes for tick labels and titles.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_colorbar_left_title_uses_content_lane(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){
+                   .kind = DVZ_SCALE_CONTINUOUS,
+                   .format = {.precision = 0, .trim_trailing_zeros = true},
+               });
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 80.0);
+    DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
+    ANN(colormap);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzColorbar* colorbar = dvz_colorbar(
+        panel, scale,
+        &(DvzColorbarDesc){
+            .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_LEFT,
+            .title = "m/s",
+            .reserve_px = 66.0f,
+            .ramp_width_px = 24.0f,
+            .plot_gap_px = 10.0f,
+            .tick_length_px = 5.0f,
+            .label_gap_px = 4.0f,
+        });
+    ANN(colorbar);
+
+    DvzPanelReserve reserve = {0};
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(reserve.left_px > 66.0f);
+
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    AT(colorbar->tick_count >= 2);
+    AT(colorbar->text_count == colorbar->tick_count + 1);
+
+    const float title_x = colorbar->text_positions[colorbar->text_count - 1][0];
+    for (uint32_t i = 0; i < colorbar->tick_count; i++)
+        AT(title_x + 8.0f < colorbar->text_positions[i][0]);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -4119,6 +4181,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_colorbar_auto_reserve_and_visuals);
     TST_CASE(test_scene_colorbar_prepare_is_idempotent);
     TST_CASE(test_scene_colorbar_auto_reserve_tracks_resize);
+    TST_CASE(test_scene_colorbar_left_title_uses_content_lane);
     TST_CASE(test_scene_colorbar_attached_respects_panel_padding);
     TST_CASE(test_scene_colorbar_detached_placement);
     TST_CASE(test_scene_colorbar_updates_retained_visuals);

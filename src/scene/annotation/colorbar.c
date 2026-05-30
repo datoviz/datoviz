@@ -49,7 +49,7 @@
 #define COLORBAR_TITLE_GAP_PX 8.0f
 #define COLORBAR_TICK_WIDTH_PX 1.0f
 #define COLORBAR_TICK_TEXT_SIZE_PX 12.0f
-#define COLORBAR_TITLE_TEXT_SIZE_PX 13.0f
+#define COLORBAR_TITLE_TEXT_SIZE_PX 16.0f
 #define COLORBAR_EPS 1e-12
 #define COLORBAR_LAYOUT_EPS 1e-3f
 
@@ -60,6 +60,8 @@
 /*************************************************************************************************/
 
 static void _colorbar_hide(DvzColorbar* colorbar);
+static void _colorbar_apply_auto_reserve(DvzColorbar* colorbar);
+static float _colorbar_effective_reserve_px(DvzColorbar* colorbar);
 
 
 
@@ -78,6 +80,7 @@ void _scene_mark_colorbar_dirty(DvzColorbar* colorbar)
         return;
     colorbar->dirty = true;
     colorbar->version = colorbar->version == UINT64_MAX ? 1 : colorbar->version + 1;
+    _colorbar_apply_auto_reserve(colorbar);
     _scene_notify_request_frame(colorbar->panel != NULL ? colorbar->panel->figure : NULL);
 }
 
@@ -225,8 +228,7 @@ void _scene_panel_refresh_colorbar_reserve(DvzPanel* panel)
         if (colorbar->placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED &&
             _colorbar_anchor_supported(colorbar->anchor))
         {
-            float reserve_px = _colorbar_positive_or_default(
-                colorbar->reserve_px, _colorbar_default_reserve_px(colorbar->orientation));
+            float reserve_px = _colorbar_effective_reserve_px(colorbar);
             switch (colorbar->anchor)
             {
             case DVZ_SCENE_ANCHOR_PANEL_LEFT:
@@ -412,6 +414,83 @@ static void _colorbar_format_tick(
             out, out_size, "%s%s %s%s", format->prefix, value_str, unit, format->suffix);
     else
         dvz_snprintf(out, out_size, "%s%s%s", format->prefix, value_str, format->suffix);
+}
+
+
+
+/**
+ * Estimate one adornment text run width in pixels.
+ *
+ * @param text text string
+ * @param size text size in pixels
+ * @return conservative width estimate in pixels
+ */
+static float _colorbar_text_width_px(const char* text, float size)
+{
+    if (text == NULL || text[0] == '\0')
+        return 0.0f;
+    return 0.60f * size * (float)strlen(text);
+}
+
+
+
+/**
+ * Estimate the maximum formatted tick-label width in pixels.
+ *
+ * @param colorbar colorbar
+ * @param min scale minimum
+ * @param max scale maximum
+ * @return maximum label width estimate
+ */
+static float _colorbar_tick_label_width_px(DvzColorbar* colorbar, double min, double max)
+{
+    ANN(colorbar);
+    if (!isfinite(min) || !isfinite(max) || !(max > min))
+        return 0.0f;
+    _colorbar_compute_ticks(colorbar, min, max);
+    float width = 0.0f;
+    for (uint32_t i = 0; i < colorbar->tick_count && i < DVZ_SCENE_MAX_COLORBAR_TICKS; i++)
+    {
+        char label[DVZ_SCENE_LABEL_SIZE] = {0};
+        _colorbar_format_tick(colorbar, colorbar->ticks[i], label, sizeof(label));
+        width = fmaxf(width, _colorbar_text_width_px(label, COLORBAR_TICK_TEXT_SIZE_PX));
+    }
+    return width;
+}
+
+
+
+/**
+ * Return the content-aware attached reserve for one colorbar.
+ *
+ * @param colorbar colorbar
+ * @return effective reserve in pixels
+ */
+static float _colorbar_effective_reserve_px(DvzColorbar* colorbar)
+{
+    ANN(colorbar);
+    float reserve_px = _colorbar_positive_or_default(
+        colorbar->reserve_px, _colorbar_default_reserve_px(colorbar->orientation));
+    if (colorbar->placement_mode != DVZ_COLORBAR_PLACEMENT_ATTACHED || colorbar->scale == NULL)
+        return reserve_px;
+
+    double min = colorbar->scale->has_view_range ? colorbar->scale->view_min :
+                                                    colorbar->scale->domain_min;
+    double max = colorbar->scale->has_view_range ? colorbar->scale->view_max :
+                                                    colorbar->scale->domain_max;
+    float label_lane = colorbar->scale->has_domain ?
+                           _colorbar_tick_label_width_px(colorbar, min, max) :
+                           0.0f;
+    float title_lane = colorbar->title[0] != '\0' ? COLORBAR_TITLE_TEXT_SIZE_PX : 0.0f;
+    float title_gap = colorbar->title[0] != '\0' ? COLORBAR_TITLE_GAP_PX : 0.0f;
+    float required = colorbar->edge_offset_px + colorbar->plot_gap_px + colorbar->ramp_width_px +
+                     colorbar->tick_length_px + colorbar->label_gap_px + label_lane + title_gap +
+                     title_lane;
+    if (!_colorbar_vertical(colorbar))
+        required = colorbar->edge_offset_px + colorbar->plot_gap_px + colorbar->ramp_width_px +
+                   colorbar->tick_length_px + colorbar->label_gap_px +
+                   COLORBAR_TICK_TEXT_SIZE_PX + title_gap + title_lane;
+    return fmaxf(reserve_px, required);
 }
 
 
@@ -817,11 +896,28 @@ static void _colorbar_update_title(
     bool vertical = _colorbar_vertical(colorbar);
     if (vertical)
     {
-        float x = colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT ?
-                      fmaxf(colorbar->edge_offset_px, ramp_x0 - COLORBAR_TITLE_GAP_PX - 4.0f) :
-                      fminf(
-                          width - colorbar->edge_offset_px,
-                          ramp_x1 + colorbar->tick_length_px + colorbar->label_gap_px + 46.0f);
+        float label_width = 0.0f;
+        for (uint32_t i = 0; i < colorbar->tick_count && i < DVZ_SCENE_MAX_COLORBAR_TICKS; i++)
+        {
+            char label[DVZ_SCENE_LABEL_SIZE] = {0};
+            _colorbar_format_tick(colorbar, colorbar->ticks[i], label, sizeof(label));
+            label_width = fmaxf(label_width, _colorbar_text_width_px(
+                                                 label, COLORBAR_TICK_TEXT_SIZE_PX));
+        }
+        float x = 0.0f;
+        if (colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT)
+        {
+            x = ramp_x0 - colorbar->tick_length_px - colorbar->label_gap_px - label_width -
+                COLORBAR_TITLE_GAP_PX - 0.5f * COLORBAR_TITLE_TEXT_SIZE_PX;
+            x = fmaxf(x, colorbar->edge_offset_px + 0.5f * COLORBAR_TITLE_TEXT_SIZE_PX);
+        }
+        else
+        {
+            x = ramp_x1 + colorbar->tick_length_px + colorbar->label_gap_px + label_width +
+                COLORBAR_TITLE_GAP_PX + 0.5f * COLORBAR_TITLE_TEXT_SIZE_PX;
+            x = fminf(x, width - colorbar->edge_offset_px -
+                             0.5f * COLORBAR_TITLE_TEXT_SIZE_PX);
+        }
         float y = 0.5f * (ramp_y0 + ramp_y1);
         float angle = colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT ? -1.57079632679f :
                                                                       +1.57079632679f;
@@ -831,10 +927,23 @@ static void _colorbar_update_title(
     else
     {
         float x = 0.5f * (ramp_x0 + ramp_x1);
-        float y = colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_TOP ?
-                      colorbar->edge_offset_px :
-                      height - colorbar->edge_offset_px;
-        float anchor_y = colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_TOP ? 0.0f : 1.0f;
+        float y = 0.0f;
+        float anchor_y = 0.5f;
+        if (colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_TOP)
+        {
+            y = ramp_y0 - colorbar->tick_length_px - colorbar->label_gap_px -
+                COLORBAR_TICK_TEXT_SIZE_PX - COLORBAR_TITLE_GAP_PX -
+                0.5f * COLORBAR_TITLE_TEXT_SIZE_PX;
+            y = fmaxf(y, colorbar->edge_offset_px + 0.5f * COLORBAR_TITLE_TEXT_SIZE_PX);
+        }
+        else
+        {
+            y = ramp_y1 + colorbar->tick_length_px + colorbar->label_gap_px +
+                COLORBAR_TICK_TEXT_SIZE_PX + COLORBAR_TITLE_GAP_PX +
+                0.5f * COLORBAR_TITLE_TEXT_SIZE_PX;
+            y = fminf(y, height - colorbar->edge_offset_px -
+                             0.5f * COLORBAR_TITLE_TEXT_SIZE_PX);
+        }
         _colorbar_append_text(
             colorbar, colorbar->title, x, y, 0.5f, anchor_y, COLORBAR_TITLE_TEXT_SIZE_PX, 0.0f);
     }
