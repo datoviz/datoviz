@@ -21,6 +21,8 @@ Do not use it for execution planning or broad architecture essays.
   authoring rules.
 - `drp2/`: backend-agnostic rendering protocol contract, schemas, fixtures, DVZR replay, and
   native-runtime pressure rules.
+- `examples/`: executable example taxonomy, generated example-page contract, gallery selection,
+  and scientific showcase policy.
 - `release/`: release readiness, RC process, communication/blog assets, and gallery outreach
   policy.
 - `scene/`: scene-layer requirements, consumer-side object model, retained object semantics, and
