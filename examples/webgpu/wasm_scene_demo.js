@@ -92,8 +92,8 @@ function canvasPoint(event) {
   const rect = canvas.getBoundingClientRect();
   const scale = Math.max(1, window.devicePixelRatio || 1);
   return {
-    x: (event.clientX - rect.left) * scale,
-    y: (event.clientY - rect.top) * scale,
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
     scale,
   };
 }
