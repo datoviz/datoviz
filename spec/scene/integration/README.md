@@ -19,12 +19,10 @@ threads, high-DPI windows, or custom user-provided visual families.
    and other host-owned event-loop integrations.
 7. [CUPY_CUDA_INTEROP.md](CUPY_CUDA_INTEROP.md): zero-copy CUDA/CuPy memory sharing design for
    real-time Datoviz visualization.
-8. [ANDROID_SUPPORT.md](ANDROID_SUPPORT.md): Android Vulkan hosted-surface build and runtime plan.
-9. [IOS_SUPPORT.md](IOS_SUPPORT.md): iOS MoltenVK hosted-surface build and runtime plan.
-10. [TOUCH_SUPPORT.md](TOUCH_SUPPORT.md): touch contact, gesture, controller, and validation plan.
-11. [WEBGPU_WASM.md](WEBGPU_WASM.md): experimental browser WebGPU and WASM scene integration
+8. [WEBGPU_WASM.md](WEBGPU_WASM.md): experimental browser WebGPU and WASM scene integration
     contract.
-12. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
+9. [future](future/README.md): Android, iOS, and touch pressure notes.
+10. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
 
 
 ## Active Proposal Inputs

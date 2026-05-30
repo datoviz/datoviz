@@ -195,9 +195,10 @@ Integration and export:
    registration.
 6. [integration/CUPY_CUDA_INTEROP.md](integration/CUPY_CUDA_INTEROP.md): CUDA/CuPy external-memory
    path.
-7. [integration/ANDROID_SUPPORT.md](integration/ANDROID_SUPPORT.md),
-   [integration/IOS_SUPPORT.md](integration/IOS_SUPPORT.md), and
-   [integration/TOUCH_SUPPORT.md](integration/TOUCH_SUPPORT.md): platform and touch planning.
+7. [integration/future/ANDROID_SUPPORT.md](integration/future/ANDROID_SUPPORT.md),
+   [integration/future/IOS_SUPPORT.md](integration/future/IOS_SUPPORT.md), and
+   [integration/future/TOUCH_SUPPORT.md](integration/future/TOUCH_SUPPORT.md): platform and touch
+   planning.
 8. [integration/napari/README.md](integration/napari/README.md): informative napari adapter notes.
 9. [export/IMAGE_EXPORT.md](export/IMAGE_EXPORT.md): app capture, DVZR recording/replay, and future
    render-scale/panel-as-texture directions.

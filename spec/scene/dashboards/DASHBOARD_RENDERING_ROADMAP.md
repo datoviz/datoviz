@@ -30,7 +30,7 @@ interaction, validation, or API specs before becoming public semantics.
 | Invalidation and partial rebuilds | [`../pipeline/INVALIDATION_AND_CACHING.md`](../pipeline/INVALIDATION_AND_CACHING.md) |
 | Controller binding and linked panels | [`../decisions/CONTROLLER_BINDING_MODEL.md`](../decisions/CONTROLLER_BINDING_MODEL.md) |
 | Camera/controller behavior | [`../interaction/CAMERA_CONTROLLERS.md`](../interaction/CAMERA_CONTROLLERS.md) |
-| Touch and gesture input | [`../integration/TOUCH_SUPPORT.md`](../integration/TOUCH_SUPPORT.md) |
+| Touch and gesture input | [`../integration/future/TOUCH_SUPPORT.md`](../integration/future/TOUCH_SUPPORT.md) |
 | Diagnostics and telemetry shape | [`../validation/DIAGNOSTICS.md`](../validation/DIAGNOSTICS.md) |
 | Transparency and overlays | [`../semantics/TRANSPARENCY.md`](../semantics/TRANSPARENCY.md) |
 

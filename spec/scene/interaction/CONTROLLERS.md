@@ -63,7 +63,7 @@ Event routing is explicit and panel-aware.
 | Order | Dispatch order must be deterministic for a fixed scene state, event sequence, controller state, and capability record. |
 
 Touch is translated before this routing stage. Controllers consume gestures, not platform touch
-callbacks; see [`../integration/TOUCH_SUPPORT.md`](../integration/TOUCH_SUPPORT.md).
+callbacks; see [`../integration/future/TOUCH_SUPPORT.md`](../integration/future/TOUCH_SUPPORT.md).
 
 
 ## Controller Families
