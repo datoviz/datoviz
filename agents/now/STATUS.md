@@ -14,7 +14,7 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| WebGPU/WASM experimental path | WebGPU fixture runner works; narrow WASM point/panzoom scene bridge emits WGSL DRP2 JSON and feeds the browser runtime. | Document the experimental subset, record browser evidence, remove remaining demo shortcuts, and expand next to primitive/image/basic mesh. |
+| WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits WGSL DRP2 JSON for point, primitive, RGBA8 image, basic mesh, panzoom, and a 3D mesh/arcball proof. | Publish the experimental subset, record fresh browser evidence, harden diagnostic ABI behavior, and remove remaining demo shortcuts. |
 | v0.3 visible parity audit | Missing. | Table each visible capability as fixed, deferred, or external/GSP. |
 | Public API/status cleanup | Missing. | Mark public surfaces as supported, experimental, advanced/unstable, deferred, or external/GSP. |
 | Release example proof | Partial. | Compact native + WebGPU proof set with validation notes and captured artifacts where needed. |
