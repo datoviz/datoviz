@@ -54,6 +54,11 @@ Required:
 7. clear statement that old high-level Pythonic Datoviz API migration is outside v0.4 Datoviz
    scope.
 
+The raw `ctypes` scope page may land before the generated API reference is complete. For RC1, it
+only needs to define import style, generated-binding status, ownership and callback lifetime rules,
+validation commands, and the boundary with GSP/VisPy2. Do not hand-maintain exhaustive C or raw
+binding symbol catalogs in prose.
+
 
 ## RC2 Gate
 
@@ -68,6 +73,9 @@ Required:
 7. real-dataset showcase candidates reviewed for license, attribution, scientific context, and
    whether the visualization would be useful to the dataset authors.
 8. gallery media generation path documented for screenshots, animated GIFs, or short videos.
+
+The generated C/raw API outline should come from parsed public headers. The first candidate source
+is `build/bindings/datoviz_api.json`, produced by the raw-binding API extraction pipeline.
 
 
 ## Final Gate
