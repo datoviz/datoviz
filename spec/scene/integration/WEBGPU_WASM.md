@@ -145,7 +145,8 @@ substitution.
 Remaining demo shortcuts should be removed before they become architecture:
 
 1. implicit canvas aliases;
-2. unaligned-offset fallback behavior that hides transport mistakes;
+2. done for the current browser runner: unaligned buffer-binding offsets now fail explicitly instead
+   of silently binding a different range;
 3. demo-local assumptions about scene uniform buffer ids;
 4. browser-side direct mutation of scene-owned uniforms for pan/zoom or resize.
 

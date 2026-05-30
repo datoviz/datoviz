@@ -191,8 +191,8 @@ forms. The fixture dashboard requires explicit bind-group layout and render-pipe
   session only; normal runner and fixture paths reject that missing metadata.
 - Tight `CopyTextureToBuffer.bytes_per_row` values are adapted through an aligned temporary buffer
   because WebGPU requires copy row pitch to be a multiple of 256 bytes.
-- Buffer binding offsets that are valid in DRP2 but not aligned for WebGPU are bound from offset 0
-  in the PoC so fixture command paths can still execute.
+- Buffer binding offsets must be WebGPU-aligned in the browser runner. DRP2 streams that use
+  non-aligned offsets are rejected explicitly instead of silently binding a different range.
 - The live pan/zoom dropdown entry reuses the scene-generated point stream and discovers its MVP and
   viewport uniform buffers from `metadata.datoviz.interactive_uniforms.panzoom`. This metadata is
   browser-demo metadata; it is not an executable DRP2 command.
@@ -223,8 +223,8 @@ The first WebGPU pass resolved these DRP2 portability questions in the protocol 
 - storage layout entries may now carry `access` (`read` or `read_write`).
 - tight `CopyTextureToBuffer.bytes_per_row` remains valid DRP2, with backend adaptation allowed when
   a backend requires stricter row-pitch alignment.
-- dynamic buffer offsets remain DRP2 offsets; backends must validate alignment or adapt by
-  materializing an equivalent aligned binding.
+- dynamic buffer offsets remain DRP2 offsets; the browser runner currently validates WebGPU
+  alignment and rejects unsupported offsets rather than silently rebasing them.
 - interactive demo uniform targets are now stream metadata, so demo code no longer carries
   scene-emitted buffer ids in the dropdown configuration.
 

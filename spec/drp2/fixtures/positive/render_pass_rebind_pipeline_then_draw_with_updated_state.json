@@ -151,7 +151,7 @@
     {
       "cmd": "CreateBuffer",
       "id": 12,
-      "size": 64,
+      "size": 512,
       "usage": [
         "UNIFORM"
       ]
@@ -244,7 +244,7 @@
       "slot": 0,
       "bind_group_id": 13,
       "dynamic_offsets": [
-        16
+        256
       ]
     },
     {

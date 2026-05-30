@@ -836,13 +836,14 @@ function makeBindGroupEntry(entry, buffers, textures, textureViews, samplers, dy
     case "buffer": {
       const offset = (entry.offset ?? 0) + dynamicOffset;
       const size = entry.size;
+      if (offset % 256 !== 0) {
+        throw new Error(`buffer binding ${binding} offset ${offset} is not WebGPU-aligned`);
+      }
       return {
         binding,
         resource: {
           buffer: required(buffers.get(entry.resource_id), `unknown buffer ${entry.resource_id}`),
-          // WebGPU buffer-binding offsets are stricter than DRP2 offsets. The PoC binds at zero
-          // for unaligned fixture offsets so compatibility tests can still exercise the command path.
-          offset: offset % 256 === 0 ? offset : 0,
+          offset,
           size,
         },
       };

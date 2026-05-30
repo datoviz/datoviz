@@ -97,7 +97,7 @@
     {
       "cmd": "CreateBuffer",
       "id": 12,
-      "size": 64,
+      "size": 512,
       "usage": [
         "UNIFORM"
       ]
@@ -105,7 +105,7 @@
     {
       "cmd": "CreateBuffer",
       "id": 15,
-      "size": 96,
+      "size": 768,
       "usage": [
         "STORAGE"
       ]
@@ -128,7 +128,7 @@
           "binding_type": "storage_buffer",
           "resource_kind": "buffer",
           "resource_id": 15,
-          "offset": 16,
+          "offset": 0,
           "size": 32
         }
       ]
@@ -187,8 +187,8 @@
       "slot": 0,
       "bind_group_id": 13,
       "dynamic_offsets": [
-        16,
-        32
+        256,
+        512
       ]
     },
     {
