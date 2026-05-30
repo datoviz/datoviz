@@ -1162,7 +1162,7 @@ wasm-scene-build:
 
 wasm-scene-smoke: wasm-scene-build
     @node tools/wasm_scene_smoke.mjs
-    @python3 tools/webgpu_fixture_preflight.py build-wasm-scene/wasm/wasm_scene_point_primitive_panzoom.json
+    @python3 tools/webgpu_fixture_preflight.py build-wasm-scene/wasm/wasm_scene_point_primitive_image_panzoom.json
 #
 
 shader-abi-check:

@@ -46,6 +46,7 @@ struct DvzWasmScene
     DvzPanel* panel;
     DvzVisual* visual;
     DvzVisual* primitive;
+    DvzVisual* image;
     DvzController* controller;
     DvzInputRouter* router;
     DvzPointerGestureHandler* gestures;
@@ -277,6 +278,45 @@ int dvz_wasm_scene_set_primitive(
 
 
 EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_scene_set_image(
+    uint32_t handle, const uint8_t* rgba, uint32_t width, uint32_t height)
+{
+    DvzWasmScene* ctx = _ctx(handle);
+    if (ctx == NULL || ctx->scene == NULL || ctx->panel == NULL || rgba == NULL || width == 0 ||
+        height == 0)
+    {
+        return -1;
+    }
+    _clear_payload(ctx);
+    if (ctx->image == NULL)
+    {
+        ctx->image = dvz_image(ctx->scene, 0);
+        if (ctx->image == NULL || dvz_panel_add_visual(ctx->panel, ctx->image, NULL) != 0)
+            return -1;
+    }
+
+    vec3 positions[4] = {
+        {0.18f, -0.78f, 0.05f},
+        {0.18f, -0.12f, 0.05f},
+        {0.86f, -0.78f, 0.05f},
+        {0.86f, -0.12f, 0.05f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    if (dvz_visual_set_data(ctx->image, "position", positions, 4) != 0)
+        return -1;
+    if (dvz_visual_set_data(ctx->image, "texcoords", texcoords, 4) != 0)
+        return -1;
+    return dvz_visual_set_texture(ctx->image, rgba, width, height);
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
 int dvz_wasm_scene_emit(uint32_t handle)
 {
     DvzWasmScene* ctx = _ctx(handle);
@@ -303,7 +343,7 @@ int dvz_wasm_scene_emit(uint32_t handle)
     ctx->stream = dvz_figure_emit_ex(ctx->figure, &caps, &ctx->report, &emit_cfg);
     if (ctx->stream == NULL || dvz_diagnostic_report_count(&ctx->report) > 0)
         return -1;
-    ctx->json = dvz_drp2_stream_json(ctx->stream, "wasm_scene_point_primitive_panzoom");
+    ctx->json = dvz_drp2_stream_json(ctx->stream, "wasm_scene_point_primitive_image_panzoom");
     return ctx->json != NULL ? 0 : -1;
 }
 

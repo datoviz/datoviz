@@ -196,6 +196,29 @@ function setPrimitive() {
   }
 }
 
+function setImage() {
+  const width = 32;
+  const height = 32;
+  const pixels = new Uint8Array(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      const checker = ((x >> 3) + (y >> 3)) & 1;
+      pixels[i + 0] = checker ? 45 : 235;
+      pixels[i + 1] = checker ? 120 : 245;
+      pixels[i + 2] = checker ? 215 : 120;
+      pixels[i + 3] = 255;
+    }
+  }
+  const pixelsPtr = allocArray(pixels);
+  try {
+    const status = Module._dvz_wasm_scene_set_image(handle, pixelsPtr, width, height);
+    requireOk(status === 0, `setting scene image failed with ${status}`);
+  } finally {
+    Module._free(pixelsPtr);
+  }
+}
+
 function resizeScene() {
   const changed = resizeWebGpuCanvas(gpu.device, gpu.context, gpu.format);
   const scale = Math.max(1, window.devicePixelRatio || 1);
@@ -299,6 +322,7 @@ async function main() {
   resizeScene();
   setPoints();
   setPrimitive();
+  setImage();
 
   const initialStream = emitScene();
   runtime = new Drp2WebGpuRuntime(gpu.device, gpu.context, gpu.format, {

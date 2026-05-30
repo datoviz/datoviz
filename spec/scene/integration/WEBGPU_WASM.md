@@ -265,18 +265,17 @@ visual, a scene-owned panzoom controller, resize/pointer/wheel routing, and emit
 Current evidence as of 2026-05-30:
 
 1. `just wasm-scene-smoke` builds the Emscripten scene bridge, emits
-   `build-wasm-scene/wasm/wasm_scene_point_primitive_panzoom.json`, and passes WebGPU fixture preflight.
+   `build-wasm-scene/wasm/wasm_scene_point_primitive_image_panzoom.json`, and passes WebGPU fixture preflight.
 2. The browser demo entry point is `examples/webgpu/wasm_scene.html`.
 3. Manual local browser proof confirms the point scene renders and panzoom interaction works through
    the WASM scene bridge.
 4. Manual local browser proof at `http://localhost:8765/examples/webgpu/wasm_scene.html` confirms
    point + primitive rendering, pan/zoom, and resize with no visible browser/WebGPU runtime errors.
 
-The supported browser-scene subset remains point, primitive triangle-list, and panzoom. The next
-release-proofing gaps are
-captured browser evidence artifacts, documented pointer/payload/diagnostic ABI behavior, and
-expansion to image and basic mesh. After that, continue with incremental uniform updates, direct
-payload transport, browser app examples, and then broader visual/technique parity.
+The supported browser-scene subset now covers point, primitive triangle-list, RGBA8 image, and
+panzoom. The next release-proofing gaps are captured image browser evidence artifacts, further
+diagnostic ABI behavior, and expansion to basic mesh. After that, continue with incremental uniform
+updates, direct payload transport, browser app examples, and then broader visual/technique parity.
 
 ### Experimental WASM Bridge ABI
 
