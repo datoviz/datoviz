@@ -327,54 +327,6 @@ bool _scene_draw_packet_init(
 
 
 /**
- * Initialize and validate one fallback scene draw packet.
- *
- * @param state resource id state
- * @param kind visual descriptor kind
- * @param pipeline_id emitted DRP2 pipeline id
- * @param bg_set0 bind group for set 0, or zero
- * @param bg_set1 bind group for set 1, or zero
- * @param vertex_buffer_ids ordered vertex-buffer ids
- * @param vertex_buffer_count number of vertex-buffer ids
- * @param vertex_count draw vertex count
- * @param instance_count draw instance count
- * @param instanced_point_like whether point-like bindings are stepped per instance
- * @param report optional diagnostic report
- * @param out output draw packet
- * @return whether the packet is valid for DRP2 lowering
- */
-bool _scene_draw_packet_init_fallback(
-    const ConverterState* state, DvzSceneVisualDescKind kind, uint64_t pipeline_id,
-    uint64_t bg_set0, uint64_t bg_set1, const uint64_t* vertex_buffer_ids,
-    uint32_t vertex_buffer_count, uint32_t vertex_count, uint32_t instance_count,
-    bool instanced_point_like, DvzDiagnosticReport* report, SceneDrawPacket* out)
-{
-    ANN(state);
-    ANN(vertex_buffer_ids);
-    ANN(out);
-
-    DvzSceneVisualDesc visual = {0};
-    DvzSceneVisualPipelineDesc pipeline = {0};
-    visual.kind = kind;
-    visual.visual_type = _scene_visual_desc_default_type(kind);
-    visual.vertex_count = vertex_count;
-    visual.instance_count = instance_count;
-    visual.vbuf_count = vertex_buffer_count;
-
-    for (uint32_t i = 0; i < vertex_buffer_count; i++)
-        visual.vbuf_ids[i] = vertex_buffer_ids[i];
-    if (!_scene_visual_fallback_pipeline_desc(
-            kind, vertex_buffer_count, instanced_point_like, &pipeline))
-        return false;
-
-    return _scene_draw_packet_init(
-        state, &visual, &pipeline, pipeline_id, bg_set0, bg_set1, 0, 0,
-        DVZ_FRAME_PLAN_CLIP_RECT_PANEL, DVZ_SCENE_SHADER_FORMAT_GLSL, report, out);
-}
-
-
-
-/**
  * Lower one validated scene draw packet to DRP2 render-pass commands.
  *
  * @param stream destination DRP2 command stream

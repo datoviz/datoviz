@@ -30,10 +30,6 @@
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
 
-#include "_scene.h"
-#include "datoviz/drp2/stream.h"
-#include "datoviz/scene.h"
-
 
 
 /*************************************************************************************************/
@@ -257,11 +253,6 @@ bool _scene_draw_packet_init(
     const DvzSceneVisualPipelineDesc* pipeline, uint64_t pipeline_id, uint64_t bg_set0,
     uint64_t bg_set1, uint64_t bg_set2, uint64_t bg_set3, DvzFramePlanClipRect clip_rect,
     DvzSceneShaderFormat shader_format, DvzDiagnosticReport* report, SceneDrawPacket* out);
-bool _scene_draw_packet_init_fallback(
-    const ConverterState* state, DvzSceneVisualDescKind kind, uint64_t pipeline_id,
-    uint64_t bg_set0, uint64_t bg_set1, const uint64_t* vertex_buffer_ids,
-    uint32_t vertex_buffer_count, uint32_t vertex_count, uint32_t instance_count,
-    bool instanced_point_like, DvzDiagnosticReport* report, SceneDrawPacket* out);
 bool _scene_draw_packet_emit(
     DvzDrp2CommandStream* stream, uint64_t render_pass_id, const SceneDrawPacket* packet);
 bool _emitter_prepare_render_multi(
