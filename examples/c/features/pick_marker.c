@@ -56,7 +56,6 @@ struct MarkerPickState
     DvzScene* scene;
     DvzPanel* panel;
     DvzVisual* visual;
-    DvzSelection* selection;
     DvzColor base_colors[MARKER_COUNT];
     DvzColor colors[MARKER_COUNT];
     float diameters[MARKER_COUNT];
@@ -217,8 +216,6 @@ static void _toggle_marker_selection(MarkerPickState* state, const DvzQueryResul
         return;
 
     uint32_t index = (uint32_t)query->resolved_id;
-    if (dvz_selection_apply_query(state->selection, query) != 0)
-        fprintf(stderr, "dvz_selection_apply_query() failed\n");
     state->selected[index] = !state->selected[index];
     _set_marker_selection_color(state, index);
     fprintf(
@@ -257,10 +254,7 @@ _marker_pick_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void*
         if (state->has_hover_query)
             _toggle_marker_selection(state, &state->latest_hover_query);
         else
-        {
-            dvz_selection_clear(state->selection);
             _clear_marker_selection_colors(state);
-        }
     }
 }
 
@@ -358,15 +352,10 @@ int main(int argc, char** argv)
     style.stroke_width = 2.0f;
     EXAMPLE_CHECK(dvz_marker_set_style(visual, &style) == 0, "dvz_marker_set_style() failed");
 
-    DvzSelection* selection = dvz_selection(
-        scene, &(DvzSelectionDesc){.mode = DVZ_SELECT_TOGGLE, .target = DVZ_SCENE_TARGET_ITEM});
-    EXAMPLE_CHECK(selection != NULL, "dvz_selection() failed");
-
     MarkerPickState state = {
         .scene = scene,
         .panel = panel,
         .visual = visual,
-        .selection = selection,
         .hovered_index = UINT32_MAX,
     };
 

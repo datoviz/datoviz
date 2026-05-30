@@ -28,6 +28,7 @@
 #include "_visual_internal.h"
 #include "annotation/prepare_internal.h"
 #include "core/format_state_internal.h"
+#include "datoviz/font.h"
 #include "datoviz/scene/overlay.h"
 #include "query/internal.h"
 #include "annotation/text_visual_bridge.h"
@@ -620,9 +621,9 @@ static void _scene_card_init(DvzSceneCard* card, DvzPanel* panel)
     card->min_width_px = 32.0f;
     card->height_px = 24.0f;
     card->content = DVZ_SCENE_CARD_CONTENT_TEXT;
-    card->glyph_advance_px = 7.0f;
-    card->text_size_px = 12.0f;
-    card->text_renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
+    card->glyph_advance_px = 7.5f;
+    card->text_size_px = dvz_font_defaults().text_size_px;
+    card->text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     card->max_text_chars = 96;
     card->background_color = dvz_color_rgba(16, 22, 32, 225);
     card->text_color = dvz_color_rgb(245, 248, 255);
