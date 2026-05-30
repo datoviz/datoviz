@@ -11,6 +11,7 @@
  * Run:     ./build/examples/c/showcases/protein
  * Smoke:   ./build/examples/c/showcases/protein 60
  * Options: --spin, --debug, [bundle-path], [frame-count]
+ * Debug:   DVZ_EXAMPLE_DEBUG=gui enables post-processing diagnostics
  *
  * The full interactive GUI workbench lives in examples/c/lab/protein_viewer.c.
  */
@@ -38,6 +39,7 @@
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_debug.h"
+#include "example_gui_controls.h"
 #include "example_style.h"
 
 
@@ -76,6 +78,15 @@ typedef struct ProteinArgs
     const char* frame_arg;
     bool spin;
 } ProteinArgs;
+
+
+typedef struct ProteinDiagnostics
+{
+    DvzPanel* panel;
+    DvzExampleGuiEdlControls edl;
+    DvzExampleGuiMsaaControls msaa;
+    DvzExampleGuiSsaoControls ssao;
+} ProteinDiagnostics;
 
 
 
@@ -495,6 +506,199 @@ static bool _upload_selection(
 
 
 /**
+ * Snap an MSAA sample-count slider value to a supported sample count.
+ *
+ * @param value slider value
+ * @return supported MSAA sample count
+ */
+static uint32_t _snap_msaa_samples(float value)
+{
+    if (value <= 2.0f)
+        return 2;
+    if (value <= 4.0f)
+        return 4;
+    if (value <= 8.0f)
+        return 8;
+    return 16;
+}
+
+
+
+/**
+ * Apply the diagnostics EDL state to the protein panel.
+ *
+ * @param diagnostics diagnostics state
+ */
+static void _protein_apply_edl(ProteinDiagnostics* diagnostics)
+{
+    ANN(diagnostics);
+    ANN(diagnostics->panel);
+    if (!diagnostics->edl.enabled)
+    {
+        (void)dvz_panel_set_edl(diagnostics->panel, NULL);
+        return;
+    }
+
+    DvzEdlDesc desc = {
+        .radius = diagnostics->edl.radius,
+        .strength = diagnostics->edl.strength,
+        .depth_scale = diagnostics->edl.depth_scale,
+    };
+    if (!dvz_panel_set_edl(diagnostics->panel, &desc))
+        dvz_fprintf(stderr, "dvz_panel_set_edl() failed\n");
+}
+
+
+
+/**
+ * Apply the diagnostics MSAA state to the protein panel.
+ *
+ * @param diagnostics diagnostics state
+ */
+static void _protein_apply_msaa(ProteinDiagnostics* diagnostics)
+{
+    ANN(diagnostics);
+    ANN(diagnostics->panel);
+    if (!diagnostics->msaa.enabled)
+    {
+        (void)dvz_panel_set_msaa(diagnostics->panel, NULL);
+        return;
+    }
+
+    uint32_t sample_count = _snap_msaa_samples(diagnostics->msaa.samples);
+    diagnostics->msaa.samples = (float)sample_count;
+    DvzMsaaDesc desc = dvz_msaa_desc();
+    desc.sample_count = sample_count;
+    desc.alpha_to_coverage = diagnostics->msaa.alpha_to_coverage;
+    if (!dvz_panel_set_msaa(diagnostics->panel, &desc))
+        dvz_fprintf(stderr, "dvz_panel_set_msaa() failed\n");
+}
+
+
+
+/**
+ * Apply the diagnostics SSAO state to the protein panel.
+ *
+ * @param diagnostics diagnostics state
+ */
+static void _protein_apply_ssao(ProteinDiagnostics* diagnostics)
+{
+    ANN(diagnostics);
+    ANN(diagnostics->panel);
+    if (!diagnostics->ssao.enabled)
+    {
+        (void)dvz_panel_set_ssao(diagnostics->panel, NULL);
+        return;
+    }
+
+    DvzSsaoDesc desc = {
+        .radius = diagnostics->ssao.radius,
+        .strength = diagnostics->ssao.strength,
+        .bias = diagnostics->ssao.bias,
+        .power = diagnostics->ssao.power,
+        .min_visibility = diagnostics->ssao.min_visibility,
+        .blur_radius = diagnostics->ssao.blur_radius,
+        .blur_depth_sigma = diagnostics->ssao.blur_depth_sigma,
+        .blur_normal_sigma = diagnostics->ssao.blur_normal_sigma,
+        .sample_count = (uint32_t)(diagnostics->ssao.samples + 0.5f),
+        .blur_enabled = diagnostics->ssao.blur,
+        .debug_view = diagnostics->ssao.debug_view,
+    };
+    if (!dvz_panel_set_ssao(diagnostics->panel, &desc))
+        dvz_fprintf(stderr, "dvz_panel_set_ssao() failed\n");
+}
+
+
+
+/**
+ * Return initial diagnostics controls matching the showcase defaults.
+ *
+ * @param panel protein panel
+ * @param msaa initial MSAA descriptor
+ * @param ssao initial SSAO descriptor
+ * @return initialized diagnostics state
+ */
+static ProteinDiagnostics
+_protein_diagnostics(DvzPanel* panel, const DvzMsaaDesc* msaa, const DvzSsaoDesc* ssao)
+{
+    ANN(panel);
+    ANN(msaa);
+    ANN(ssao);
+    return (ProteinDiagnostics){
+        .panel = panel,
+        .edl =
+            {
+                .enabled = false,
+                .radius = 2.0f,
+                .strength = 55.0f,
+                .depth_scale = 1.0f,
+            },
+        .msaa =
+            {
+                .enabled = msaa->enabled,
+                .alpha_to_coverage = msaa->alpha_to_coverage,
+                .samples = (float)msaa->sample_count,
+                .min_samples = 2.0f,
+                .max_samples = 16.0f,
+            },
+        .ssao =
+            {
+                .enabled = true,
+                .blur = ssao->blur_enabled,
+                .debug_view = ssao->debug_view,
+                .show_blur_sigmas = true,
+                .show_debug_view = true,
+                .radius = ssao->radius,
+                .strength = ssao->strength,
+                .bias = ssao->bias,
+                .power = ssao->power,
+                .min_visibility = ssao->min_visibility,
+                .samples = (float)ssao->sample_count,
+                .min_samples = 4.0f,
+                .max_samples = 32.0f,
+                .blur_radius = ssao->blur_radius,
+                .blur_radius_max = 16.0f,
+                .blur_depth_sigma = ssao->blur_depth_sigma,
+                .blur_normal_sigma = ssao->blur_normal_sigma,
+            },
+    };
+}
+
+
+
+/**
+ * Draw the optional protein diagnostics GUI.
+ *
+ * @param gui GUI overlay
+ * @param win view
+ * @param user_data ProteinDiagnostics pointer
+ */
+static void _protein_diagnostics_gui(DvzGui* gui, DvzView* win, void* user_data)
+{
+    ANN(gui);
+    (void)win;
+    ProteinDiagnostics* diagnostics = (ProteinDiagnostics*)user_data;
+    if (diagnostics == NULL)
+        return;
+
+    if (dvz_gui_begin(gui, "Protein diagnostics", NULL, 0))
+    {
+        dvz_gui_separator_text(gui, "Post-processing");
+        if (dvz_example_gui_edl(gui, &diagnostics->edl))
+            _protein_apply_edl(diagnostics);
+        dvz_gui_separator_text(gui, "Antialiasing");
+        if (dvz_example_gui_msaa(gui, &diagnostics->msaa))
+            _protein_apply_msaa(diagnostics);
+        dvz_gui_separator_text(gui, "SSAO");
+        if (dvz_example_gui_ssao(gui, &diagnostics->ssao))
+            _protein_apply_ssao(diagnostics);
+    }
+    dvz_gui_end(gui);
+}
+
+
+
+/**
  * Print a short message explaining how to create the default bundle.
  *
  * @param path expected bundle path
@@ -526,6 +730,7 @@ int main(int argc, char** argv)
     DvzApp* app = NULL;
     float* scaled_radii = NULL;
     ExampleDebug debug = {0};
+    ProteinDiagnostics diagnostics = {0};
     ProteinAtoms atoms = {0};
     char default_path[1024] = {0};
     ProteinArgs args = _parse_args(argc, argv);
@@ -613,20 +818,24 @@ int main(int argc, char** argv)
             selection, crosshair, &atoms, _selected_atom(&atoms), DEFAULT_ATOM_SCALE),
         "selection upload failed");
 
-    (void)dvz_panel_set_msaa(panel, &(DvzMsaaDesc){.sample_count = 16, .alpha_to_coverage = true});
-    (void)dvz_panel_set_ssao(
-        panel, &(DvzSsaoDesc){
-                   .radius = 0.72f,
-                   .strength = 1.82f,
-                   .bias = 0.007f,
-                   .power = 2.45f,
-                   .min_visibility = 0.42f,
-                   .blur_radius = 10.0f,
-                   .blur_depth_sigma = 0.65f,
-                   .blur_normal_sigma = 0.35f,
-                   .sample_count = 32,
-                   .blur_enabled = true,
-               });
+    DvzMsaaDesc msaa_desc = dvz_msaa_desc();
+    msaa_desc.sample_count = 16;
+    msaa_desc.alpha_to_coverage = true;
+    (void)dvz_panel_set_msaa(panel, &msaa_desc);
+
+    DvzSsaoDesc ssao_desc = {
+        .radius = 0.72f,
+        .strength = 1.82f,
+        .bias = 0.007f,
+        .power = 2.45f,
+        .min_visibility = 0.42f,
+        .blur_radius = 10.0f,
+        .blur_depth_sigma = 0.65f,
+        .blur_normal_sigma = 0.35f,
+        .sample_count = 32,
+        .blur_enabled = true,
+    };
+    (void)dvz_panel_set_ssao(panel, &ssao_desc);
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
@@ -644,6 +853,14 @@ int main(int argc, char** argv)
     if (example_debug_requested(argc, argv))
     {
         EXAMPLE_CHECK(example_debug_install(&debug, argc, argv), "example_debug_install() failed");
+    }
+    if (example_debug_gui_requested())
+    {
+        diagnostics = _protein_diagnostics(panel, &msaa_desc, &ssao_desc);
+        DvzGui* gui = dvz_view_gui(win, NULL);
+        EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
+        dvz_view_set_gui_callback(win, _protein_diagnostics_gui, &diagnostics);
+        dvz_fprintf(stderr, "example debug: protein diagnostics GUI enabled\n");
     }
 
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);

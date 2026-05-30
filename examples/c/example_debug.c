@@ -45,6 +45,63 @@ static const char* _debug_name(const char* name, const char* fallback)
 }
 
 
+/**
+ * Return whether a character separates DVZ_EXAMPLE_DEBUG mode tokens.
+ *
+ * @param c character
+ * @return whether it is a separator
+ */
+static bool _debug_env_sep(char c)
+{
+    return c == ',' || c == ';' || c == ':' || c == '|' || c == '+' || c == ' ' || c == '\t';
+}
+
+
+
+/**
+ * Return whether DVZ_EXAMPLE_DEBUG is unset or explicitly false.
+ *
+ * @param env environment value
+ * @return whether the value disables example debug modes
+ */
+static bool _debug_env_false(const char* env)
+{
+    return env == NULL || env[0] == '\0' || strcmp(env, "0") == 0 || strcmp(env, "false") == 0 ||
+           strcmp(env, "off") == 0;
+}
+
+
+
+/**
+ * Return whether DVZ_EXAMPLE_DEBUG contains one mode token.
+ *
+ * @param env environment value
+ * @param token token to find
+ * @return whether the token is present
+ */
+static bool _debug_env_has_token(const char* env, const char* token)
+{
+    ANN(token);
+    if (_debug_env_false(env))
+        return false;
+
+    size_t token_len = strlen(token);
+    const char* p = env;
+    while (*p != '\0')
+    {
+        while (_debug_env_sep(*p))
+            p++;
+        const char* start = p;
+        while (*p != '\0' && !_debug_env_sep(*p))
+            p++;
+        size_t len = (size_t)(p - start);
+        if (len == token_len && strncmp(start, token, token_len) == 0)
+            return true;
+    }
+    return false;
+}
+
+
 
 /**
  * Dump one arcball as pasteable C snippets.
@@ -292,8 +349,29 @@ bool example_debug_requested(int argc, char** argv)
     }
 
     const char* env = getenv("DVZ_EXAMPLE_DEBUG");
-    return env != NULL && env[0] != '\0' && strcmp(env, "0") != 0 && strcmp(env, "false") != 0 &&
-           strcmp(env, "off") != 0;
+    if (_debug_env_false(env))
+        return false;
+    if (_debug_env_has_token(env, "gui") || _debug_env_has_token(env, "perf"))
+    {
+        return _debug_env_has_token(env, "keys") || _debug_env_has_token(env, "all") ||
+               _debug_env_has_token(env, "1") || _debug_env_has_token(env, "true") ||
+               _debug_env_has_token(env, "on");
+    }
+    return true;
+}
+
+
+
+/**
+ * Return whether the example diagnostics GUI was requested.
+ *
+ * @return whether diagnostics GUI should be installed
+ */
+bool example_debug_gui_requested(void)
+{
+    const char* env = getenv("DVZ_EXAMPLE_DEBUG");
+    return _debug_env_has_token(env, "gui") || _debug_env_has_token(env, "perf") ||
+           _debug_env_has_token(env, "all");
 }
 
 

@@ -50,6 +50,15 @@ typedef struct DvzExampleGuiMsaaControls
 } DvzExampleGuiMsaaControls;
 
 
+typedef struct DvzExampleGuiEdlControls
+{
+    bool enabled;
+    float radius;
+    float strength;
+    float depth_scale;
+} DvzExampleGuiEdlControls;
+
+
 
 typedef struct DvzExampleGuiSsaoControls
 {
@@ -83,6 +92,8 @@ EXTERN_C_ON
 bool dvz_example_gui_material(DvzGui* gui, DvzExampleGuiMaterialControls* controls);
 
 bool dvz_example_gui_msaa(DvzGui* gui, DvzExampleGuiMsaaControls* controls);
+
+bool dvz_example_gui_edl(DvzGui* gui, DvzExampleGuiEdlControls* controls);
 
 bool dvz_example_gui_ssao(DvzGui* gui, DvzExampleGuiSsaoControls* controls);
 

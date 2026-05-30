@@ -103,6 +103,28 @@ bool dvz_example_gui_msaa(DvzGui* gui, DvzExampleGuiMsaaControls* controls)
 
 
 /**
+ * Show reusable EDL controls used by depth-rich examples.
+ *
+ * @param gui GUI overlay
+ * @param controls EDL controls edited in place
+ * @return whether an EDL field changed
+ */
+bool dvz_example_gui_edl(DvzGui* gui, DvzExampleGuiEdlControls* controls)
+{
+    ANN(gui);
+    ANN(controls);
+    bool changed = false;
+
+    changed |= dvz_gui_checkbox(gui, "Enable EDL", &controls->enabled);
+    changed |= dvz_gui_slider_float(gui, "Radius", &controls->radius, 1.0f, 8.0f);
+    changed |= dvz_gui_slider_float(gui, "Strength", &controls->strength, 0.0f, 160.0f);
+    changed |= dvz_gui_slider_float(gui, "Depth scale", &controls->depth_scale, 0.1f, 8.0f);
+    return changed;
+}
+
+
+
+/**
  * Show reusable SSAO controls used by depth-rich examples.
  *
  * @param gui GUI overlay

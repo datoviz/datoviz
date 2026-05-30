@@ -91,6 +91,8 @@ bool example_debug_arg(const char* arg);
 
 bool example_debug_requested(int argc, char** argv);
 
+bool example_debug_gui_requested(void);
+
 ExampleDebug example_debug(DvzView* view, const char* exe, const char* basename);
 
 void example_debug_arcball(ExampleDebug* debug, const char* name, DvzArcball* arcball);
