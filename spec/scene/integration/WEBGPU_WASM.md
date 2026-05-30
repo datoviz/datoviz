@@ -261,10 +261,18 @@ bridge:
 The current first slice keeps the public bridge narrow in `src/wasm/scene_bridge.c`: one point
 visual, a scene-owned panzoom controller, resize/pointer/wheel routing, and emitted DRP2 JSON.
 
-Next, make that slice release-proof with portable metadata for interactive update targets, browser
-dashboard evidence, and documented diagnostics. After that, expand to primitive, image, basic mesh,
-incremental uniform updates, direct payload transport, browser app examples, and then broader
-visual/technique parity.
+Current evidence as of 2026-05-30:
+
+1. `just wasm-scene-smoke` builds the Emscripten scene bridge, emits
+   `build-wasm-scene/wasm/wasm_scene_point_panzoom.json`, and passes WebGPU fixture preflight.
+2. The browser demo entry point is `examples/webgpu/wasm_scene.html`.
+3. Manual local browser proof confirms the point scene renders and panzoom interaction works through
+   the WASM scene bridge.
+
+The supported browser-scene subset remains point + panzoom only. The next release-proofing gaps are
+captured browser evidence artifacts, documented pointer/payload/diagnostic ABI behavior, and
+expansion to primitive, image, and basic mesh. After that, continue with incremental uniform
+updates, direct payload transport, browser app examples, and then broader visual/technique parity.
 
 ## Validation Matrix
 

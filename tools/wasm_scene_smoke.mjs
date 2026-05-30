@@ -28,14 +28,38 @@ function readPayload(Module, handle) {
   return new TextDecoder().decode(Module.HEAPU8.subarray(ptr, ptr + size));
 }
 
-function throwDiagnostics(Module, handle, prefix) {
+function diagnostics(Module, handle) {
   const count = Module._dvz_wasm_scene_diagnostic_count(handle);
   const messages = [];
   for (let i = 0; i < count; i++) {
     const ptr = Module._dvz_wasm_scene_diagnostic(handle, i);
     messages.push(ptr !== 0 ? Module.UTF8ToString(ptr) : "<null diagnostic>");
   }
-  throw new Error(`${prefix}${messages.length > 0 ? `: ${messages.join("; ")}` : ""}`);
+  return messages;
+}
+
+function requireNoDiagnostics(Module, handle, prefix) {
+  const messages = diagnostics(Module, handle);
+  requireOk(messages.length === 0, `${prefix}: ${messages.join("; ")}`);
+}
+
+function throwDiagnostics(Module, handle, prefix) {
+  const messages = diagnostics(Module, handle);
+  requireOk(messages.length > 0, `${prefix}: no diagnostic was reported`);
+  throw new Error(`${prefix}: ${messages.join("; ")}`);
+}
+
+function emitStream(Module, handle, label) {
+  const status = Module._dvz_wasm_scene_emit(handle);
+  if (status !== 0) {
+    throwDiagnostics(Module, handle, `${label} emit failed with ${status}`);
+  }
+  requireNoDiagnostics(Module, handle, `${label} emit unexpectedly reported diagnostics`);
+  const streamText = readPayload(Module, handle);
+  const stream = JSON.parse(streamText);
+  requireOk(Array.isArray(stream.commands), `${label} stream has no commands array`);
+  requireOk(stream.commands.length > 0, `${label} stream has no commands`);
+  return stream;
 }
 
 function allocArray(Module, typedArray) {
@@ -90,14 +114,7 @@ try {
   );
   requireOk(status === 0, `dvz_wasm_scene_set_points failed with ${status}`);
 
-  status = Module._dvz_wasm_scene_emit(handle);
-  if (status !== 0) {
-    throwDiagnostics(Module, handle, `initial emit failed with ${status}`);
-  }
-  const initialStreamText = readPayload(Module, handle);
-  const initialStream = JSON.parse(initialStreamText);
-  requireOk(Array.isArray(initialStream.commands), "initial stream has no commands array");
-  requireOk(initialStream.commands.length > 0, "initial stream has no commands");
+  const initialStream = emitStream(Module, handle, "initial");
 
   const t0 = 10.0;
   Module._dvz_wasm_scene_pointer(
@@ -132,19 +149,53 @@ try {
   );
   Module._dvz_wasm_scene_wheel(handle, smokeSize / 2, smokeSize / 2, 0, 1, 0, 1, t0 + 48.0);
 
-  status = Module._dvz_wasm_scene_emit(handle);
-  if (status !== 0) {
-    throwDiagnostics(Module, handle, `interactive emit failed with ${status}`);
-  }
-  const streamText = readPayload(Module, handle);
-  const stream = JSON.parse(streamText);
-  requireOk(Array.isArray(stream.commands), "interactive stream has no commands array");
-  requireOk(stream.commands.length > 0, "interactive stream has no commands");
+  const interactiveStream = emitStream(Module, handle, "interactive");
+
+  status = Module._dvz_wasm_scene_resize(handle, smokeSize * 2, smokeSize + 16, 2.0);
+  requireOk(status === 0, `resize failed with ${status}`);
+  const resizeStream = emitStream(Module, handle, "resize");
+
+  Module._dvz_wasm_scene_pointer(
+    handle,
+    DVZ_POINTER_EVENT_PRESS,
+    smokeSize / 2 + 10,
+    smokeSize / 2 + 4,
+    DVZ_POINTER_BUTTON_LEFT,
+    0,
+    2,
+    t0 + 64.0,
+  );
+  Module._dvz_wasm_scene_pointer(
+    handle,
+    DVZ_POINTER_EVENT_MOVE,
+    smokeSize / 2 + 2,
+    smokeSize / 2 + 12,
+    DVZ_POINTER_BUTTON_LEFT,
+    0,
+    2,
+    t0 + 80.0,
+  );
+  Module._dvz_wasm_scene_pointer(
+    handle,
+    DVZ_POINTER_EVENT_RELEASE,
+    smokeSize / 2 + 2,
+    smokeSize / 2 + 12,
+    DVZ_POINTER_BUTTON_LEFT,
+    0,
+    2,
+    t0 + 96.0,
+  );
+  const secondInteractiveStream = emitStream(Module, handle, "second interactive");
 
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(initialStream, null, 2)}\n`, "utf8");
   console.log(`Wrote ${outputPath}`);
-  console.log(`commands=${initialStream.commands.length}`);
+  console.log(
+    `commands=initial:${initialStream.commands.length} ` +
+      `interactive:${interactiveStream.commands.length} ` +
+      `resize:${resizeStream.commands.length} ` +
+      `second_interactive:${secondInteractiveStream.commands.length}`,
+  );
 } finally {
   Module._free(positionsPtr);
   Module._free(colorsPtr);
