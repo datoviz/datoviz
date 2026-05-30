@@ -26,6 +26,7 @@
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "example_style.h"
 
 
 
@@ -60,9 +61,10 @@ struct MarkerPickState
     DvzColor colors[MARKER_COUNT];
     float diameters[MARKER_COUNT];
     bool selected[MARKER_COUNT];
+    DvzQueryResult latest_hover_query;
+    bool has_hover_query;
     uint32_t hovered_index;
     bool cursor_valid;
-    bool click_pending;
     double cursor_x;
     double cursor_y;
 };
@@ -101,6 +103,43 @@ static uint32_t _marker_shape(uint32_t index)
 
 
 /**
+ * Linearly blend two 8-bit channels.
+ *
+ * @param a first channel
+ * @param b second channel
+ * @param t blend factor in [0, 1]
+ * @return blended channel
+ */
+static uint8_t _mix_channel(uint8_t a, uint8_t b, float t)
+{
+    return (uint8_t)((1.0f - t) * (float)a + t * (float)b + 0.5f);
+}
+
+
+
+/**
+ * Return one deterministic marker color from the shared graphite-cyan palette.
+ *
+ * @param index marker index
+ * @param count total marker count
+ * @return marker color
+ */
+static DvzColor _marker_palette_color(uint32_t index, uint32_t count)
+{
+    DvzColor primary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
+    DvzColor secondary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
+    DvzColor text = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
+    float t = count > 1 ? (float)(index % count) / (float)(count - 1) : 0.0f;
+    DvzColor a = index % 3u == 0 ? text : primary;
+    DvzColor b = index % 3u == 1 ? secondary : primary;
+    return dvz_color_rgba(
+        _mix_channel(a.r, b.r, t), _mix_channel(a.g, b.g, t),
+        _mix_channel(a.b, b.b, t), 245);
+}
+
+
+
+/**
  * Update one retained marker diameter through a partial visual upload.
  *
  * @param state marker-pick example state
@@ -132,8 +171,9 @@ static void _set_marker_selection_color(MarkerPickState* state, uint32_t index)
     if (state == NULL || index >= MARKER_COUNT)
         return;
 
-    state->colors[index] = state->selected[index] ? dvz_color_rgb(255, 235, 90)
-                                                  : state->base_colors[index];
+    state->colors[index] = state->selected[index]
+                                ? example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING)
+                                : state->base_colors[index];
     if (dvz_visual_set_data_range(state->visual, "color", &state->colors[index], index, 1) != 0)
         fprintf(stderr, "dvz_visual_set_data_range(color, %u) failed\n", index);
 }
@@ -160,6 +200,33 @@ static void _clear_marker_selection_colors(MarkerPickState* state)
 
 
 
+/**
+ * Toggle the visible selected color for one queried marker.
+ *
+ * @param state marker-pick example state
+ * @param query marker item query result
+ */
+static void _toggle_marker_selection(MarkerPickState* state, const DvzQueryResult* query)
+{
+    if (state == NULL || query == NULL)
+        return;
+    if (
+        query->status != DVZ_QUERY_STATUS_HIT || !query->hit ||
+        query->visual_family != DVZ_SCENE_VISUAL_FAMILY_MARKER ||
+        query->resolved_target != DVZ_SCENE_TARGET_ITEM || query->resolved_id >= MARKER_COUNT)
+        return;
+
+    uint32_t index = (uint32_t)query->resolved_id;
+    if (dvz_selection_apply_query(state->selection, query) != 0)
+        fprintf(stderr, "dvz_selection_apply_query() failed\n");
+    state->selected[index] = !state->selected[index];
+    _set_marker_selection_color(state, index);
+    fprintf(
+        stdout, "%s marker id=%u\n", state->selected[index] ? "select" : "deselect", index);
+}
+
+
+
 /*************************************************************************************************/
 /*  Callbacks                                                                                    */
 /*************************************************************************************************/
@@ -178,14 +245,23 @@ _marker_pick_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void*
     MarkerPickState* state = (MarkerPickState*)user_data;
     if (state == NULL || event == NULL)
         return;
-    if (event->type != DVZ_POINTER_EVENT_MOVE && event->type != DVZ_POINTER_EVENT_CLICK)
+    if (
+        event->type != DVZ_POINTER_EVENT_MOVE && event->type != DVZ_POINTER_EVENT_PRESS)
         return;
 
     state->cursor_valid = true;
     state->cursor_x = event->pos[0];
     state->cursor_y = event->pos[1];
-    if (event->type == DVZ_POINTER_EVENT_CLICK && event->button == DVZ_POINTER_BUTTON_LEFT)
-        state->click_pending = true;
+    if (event->type == DVZ_POINTER_EVENT_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
+    {
+        if (state->has_hover_query)
+            _toggle_marker_selection(state, &state->latest_hover_query);
+        else
+        {
+            dvz_selection_clear(state->selection);
+            _clear_marker_selection_colors(state);
+        }
+    }
 }
 
 
@@ -204,19 +280,19 @@ static void _marker_pick_frame(DvzView* win, void* user_data)
         return;
 
     DvzQueryResult query = {0};
-    DvzQueryResult latest_query = {0};
     bool saw_query = false;
     uint32_t next_hovered = UINT32_MAX;
     while (dvz_scene_poll_query(state->scene, &query))
     {
         saw_query = true;
-        latest_query = query;
         if (
             query.status == DVZ_QUERY_STATUS_HIT && query.hit &&
             query.visual_family == DVZ_SCENE_VISUAL_FAMILY_MARKER &&
             query.resolved_target == DVZ_SCENE_TARGET_ITEM && query.resolved_id < MARKER_COUNT)
         {
             next_hovered = (uint32_t)query.resolved_id;
+            state->latest_hover_query = query;
+            state->has_hover_query = true;
         }
     }
 
@@ -230,33 +306,8 @@ static void _marker_pick_frame(DvzView* win, void* user_data)
             fprintf(stdout, "hover marker id=%u\n", next_hovered);
         }
         state->hovered_index = next_hovered;
-    }
-
-    if (state->click_pending && saw_query)
-    {
-        if (
-            latest_query.status == DVZ_QUERY_STATUS_HIT && latest_query.hit &&
-            latest_query.visual_family == DVZ_SCENE_VISUAL_FAMILY_MARKER &&
-            latest_query.resolved_target == DVZ_SCENE_TARGET_ITEM)
-        {
-            uint32_t index = (uint32_t)latest_query.resolved_id;
-            if (dvz_selection_apply_query(state->selection, &latest_query) != 0)
-                fprintf(stderr, "dvz_selection_apply_query() failed\n");
-            if (index < MARKER_COUNT)
-            {
-                state->selected[index] = !state->selected[index];
-                _set_marker_selection_color(state, index);
-                fprintf(
-                    stdout, "%s marker id=%u\n",
-                    state->selected[index] ? "select" : "deselect", index);
-            }
-        }
-        else
-        {
-            dvz_selection_clear(state->selection);
-            _clear_marker_selection_colors(state);
-        }
-        state->click_pending = false;
+        if (next_hovered >= MARKER_COUNT)
+            state->has_hover_query = false;
     }
 
     if (state->cursor_valid)
@@ -294,7 +345,7 @@ int main(int argc, char** argv)
 
     DvzPanel* panel = dvz_panel_full(figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    dvz_panel_set_background_color(panel, 0.045f, 0.055f, 0.075f, 1.0f);
+    example_graphite_cyan_set_panel_background(panel);
 
     DvzVisual* visual = dvz_marker(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_marker() failed");
@@ -302,7 +353,8 @@ int main(int argc, char** argv)
 
     DvzMarkerStyle style = dvz_marker_style();
     style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
-    style.edge_color = dvz_color_rgb(5, 8, 13);
+    DvzColor grid = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
+    style.edge_color = dvz_color_rgba(grid.r, grid.g, grid.b, 210);
     style.stroke_width = 2.0f;
     EXAMPLE_CHECK(dvz_marker_set_style(visual, &style) == 0, "dvz_marker_set_style() failed");
 
@@ -330,10 +382,7 @@ int main(int argc, char** argv)
             positions[index][0] = -0.88f + 1.76f * ((float)col / (float)(GRID_COLS - 1));
             positions[index][1] = -0.72f + 1.44f * ((float)row / (float)(GRID_ROWS - 1));
             positions[index][2] = 0.0f;
-            state.base_colors[index] = dvz_color_rgb(
-                (uint8_t)(60 + (170 * col) / (GRID_COLS - 1)),
-                (uint8_t)(110 + (100 * row) / (GRID_ROWS - 1)),
-                (uint8_t)(230 - (100 * col) / (GRID_COLS - 1)));
+            state.base_colors[index] = _marker_palette_color(index, GRID_COLS * GRID_ROWS);
             state.diameters[index] = BASE_SIZE;
             angles[index] = ((float)(index % 12u) / 12.0f) * 2.0f * PI_F;
             shapes[index] = _marker_shape(index);
@@ -346,8 +395,7 @@ int main(int argc, char** argv)
         positions[index][0] = -0.05f + 0.025f * (float)i;
         positions[index][1] = -0.02f + 0.020f * (float)(i % 3u);
         positions[index][2] = 0.0f;
-        state.base_colors[index] =
-            dvz_color_rgb(255, (uint8_t)(205 - 22u * i), (uint8_t)(90 + 24u * i));
+        state.base_colors[index] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
         state.diameters[index] = BASE_SIZE;
         angles[index] = 0.25f * PI_F * (float)i;
         shapes[index] = _marker_shape(index + 2u);

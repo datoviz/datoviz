@@ -24,12 +24,12 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define GRAPHITE_CYAN_FRAME_BG_R 13u
-#define GRAPHITE_CYAN_FRAME_BG_G 13u
-#define GRAPHITE_CYAN_FRAME_BG_B 20u
-#define GRAPHITE_CYAN_PANEL_BG_R 18u
-#define GRAPHITE_CYAN_PANEL_BG_G 22u
-#define GRAPHITE_CYAN_PANEL_BG_B 30u
+#define GRAPHITE_CYAN_FRAME_BG_R 14u
+#define GRAPHITE_CYAN_FRAME_BG_G 17u
+#define GRAPHITE_CYAN_FRAME_BG_B 23u
+#define GRAPHITE_CYAN_PANEL_BG_R 22u
+#define GRAPHITE_CYAN_PANEL_BG_G 27u
+#define GRAPHITE_CYAN_PANEL_BG_B 34u
 
 
 

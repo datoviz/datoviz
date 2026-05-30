@@ -699,8 +699,10 @@ static DvzOverlayCard* _add_probe_card(DvzPanel* panel)
         return NULL;
 
     DvzOverlayCardStyle style = dvz_overlay_card_style();
-    style.background_color = dvz_color_rgba(8, 14, 22, 232);
-    style.text_color = dvz_color_rgb(231, 240, 250);
+    DvzColor panel_bg = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_PANEL_BG);
+    DvzColor text = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
+    style.background_color = dvz_color_rgba(panel_bg.r, panel_bg.g, panel_bg.b, 232);
+    style.text_color = text;
     style.padding_px[0] = 10.0f;
     style.padding_px[1] = 6.0f;
     style.min_width_px = 104.0f;
