@@ -55,7 +55,7 @@ bool _scene_point_like_visual_shader_desc(
 
     bool depth_cue = visual->depth_cue_enabled && (point || pixel);
     bool point_style = visual->point_style_enabled && point;
-    bool item_state = visual->has_item_state && !picking && (point || marker);
+    bool item_state = visual->has_item_state && !picking && point_like;
 
     const char* suffix = picking                    ? "_pick"
                          : item_state               ? "_item_state"
@@ -79,6 +79,7 @@ bool _scene_point_like_visual_shader_desc(
                              : DVZ_SCENE_BUILTIN_SHADER_MARKER;
     else if (pixel)
         shader = picking     ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK
+                 : item_state ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_ITEM_STATE
                  : depth_cue ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE
                              : DVZ_SCENE_BUILTIN_SHADER_PIXEL;
     else if (picking)
@@ -110,8 +111,12 @@ bool _scene_point_like_visual_shader_desc(
         }
         else if (pixel)
         {
-            out->vertex_spirv_key = depth_cue ? "pixel_cue_vert" : "pixel_vert";
-            out->fragment_spirv_key = depth_cue ? "pixel_cue_frag" : "pixel_frag";
+            out->vertex_spirv_key = item_state  ? "pixel_item_state_vert"
+                                    : depth_cue ? "pixel_cue_vert"
+                                                : "pixel_vert";
+            out->fragment_spirv_key = item_state  ? "pixel_item_state_frag"
+                                      : depth_cue ? "pixel_cue_frag"
+                                                  : "pixel_frag";
         }
         else if (item_state)
         {

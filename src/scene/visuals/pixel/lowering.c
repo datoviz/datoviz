@@ -14,9 +14,11 @@
 /*************************************************************************************************/
 
 #include "pixel/internal.h"
+#include "point/internal.h"
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_visual_pipeline_internal.h"
 
 
 
@@ -42,7 +44,8 @@ bool _scene_pixel_visual_lowering(const DvzVisual* visual, DvzVisualLowering* ou
     out->desc_kind = DVZ_SCENE_VISUAL_DESC_PIXEL;
     out->point_like_kind = DVZ_SCENE_POINT_LIKE_PIXEL;
     out->has_point_like_kind = true;
-    out->needs_material_params = visual->material.depth_cue_enabled;
+    out->needs_material_params =
+        visual->material.depth_cue_enabled || _scene_visual_has_dense_attr(visual, "item_state");
     return true;
 }
 
@@ -60,19 +63,5 @@ bool _scene_pixel_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out)
 {
-    ANN(visual);
-    ANN(out);
-    dvz_memset(out, sizeof(DvzSceneVisualBindDesc), 0, sizeof(DvzSceneVisualBindDesc));
-    out->uses_scene_occlusion_set2 = visual->scene_occluded;
-    out->scene_occlusion = visual->scene_occlusion;
-    out->controller_mode = controller_mode;
-
-    DvzSceneVisualPassCaps caps = {0};
-    if (!_scene_visual_pass_caps_from_desc(visual, DVZ_ALPHA_OPAQUE, controller_mode, &caps))
-        return false;
-    out->uses_common_set0 = caps.uses_common_set;
-    out->uses_fixed_common = caps.fixed_controller;
-    out->uses_material_set1 = caps.uses_material_set;
-    out->material_buffer_id = visual->material_buffer_id;
-    return true;
+    return _scene_point_like_visual_bind_desc(visual, controller_mode, out);
 }

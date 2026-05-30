@@ -278,7 +278,8 @@ static void _selection_clear_items(DvzSelection* selection)
 static bool _item_state_visual_supports(const DvzVisual* visual)
 {
     return visual != NULL &&
-           (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_MARKER);
+           (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
+            visual->type == DVZ_VISUAL_TYPE_MARKER);
 }
 
 

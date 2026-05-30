@@ -1056,7 +1056,8 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  *        optional `"item_state"` (uint32_t DvzItemStateKind bitfield)
  * splat: `"position"` (vec3f), `"color"` (RGBA8), `"sigma"` (vec2f pixels),
  *        `"angle"` (float radians)
- * pixel: `"position"` (vec3f), `"color"` (RGBA8), `"pixel_size"` (float pixels)
+ * pixel: `"position"` (vec3f), `"color"` (RGBA8), `"pixel_size"` (float pixels),
+ *        optional `"item_state"` (uint32_t DvzItemStateKind bitfield)
  * marker: `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels),
  *         `"angle"` (float radians), `"shape"` (uint32_t DvzMarkerShape),
  *         optional `"item_state"` (uint32_t DvzItemStateKind bitfield)
@@ -1453,8 +1454,9 @@ DVZ_EXPORT DvzVisual* dvz_splat(DvzScene* scene, uint32_t flags);
 /**
  * Create a pixel visual.
  *
- * Renders screen-space square sprites with `position` (vec3), `color` (RGBA8), and
- * `pixel_size` (float, in pixels). WGSL/WebGPU emission lowers each item to an instanced quad.
+ * Renders screen-space square sprites with `position` (vec3), `color` (RGBA8),
+ * `pixel_size` (float, in pixels), and optional `item_state` (uint32_t DvzItemStateKind
+ * bitfield). WGSL/WebGPU emission lowers each item to an instanced quad.
  *
  * @param scene the scene
  * @param flags variant flags

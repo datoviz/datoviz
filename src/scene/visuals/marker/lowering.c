@@ -14,6 +14,7 @@
 /*************************************************************************************************/
 
 #include "marker/internal.h"
+#include "point/internal.h"
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -60,21 +61,5 @@ bool _scene_marker_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out)
 {
-    ANN(visual);
-    ANN(out);
-    dvz_memset(out, sizeof(DvzSceneVisualBindDesc), 0, sizeof(DvzSceneVisualBindDesc));
-    out->uses_scene_occlusion_set2 = visual->scene_occluded;
-    out->scene_occlusion = visual->scene_occlusion;
-    out->controller_mode = controller_mode;
-
-    DvzSceneVisualPassCaps caps = {0};
-    if (!_scene_visual_pass_caps_from_desc(visual, DVZ_ALPHA_OPAQUE, controller_mode, &caps))
-        return false;
-    out->uses_common_set0 = caps.uses_common_set;
-    out->uses_fixed_common = caps.fixed_controller;
-    out->uses_material_set1 = caps.uses_material_set;
-    out->material_buffer_id = visual->material_buffer_id;
-    out->uses_item_state_style_set1 = visual->has_item_state;
-    out->item_state_style_buffer_id = visual->item_state_style_buffer_id;
-    return true;
+    return _scene_point_like_visual_bind_desc(visual, controller_mode, out);
 }

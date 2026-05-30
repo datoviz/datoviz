@@ -120,6 +120,8 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "pixel_frag" : "pixel_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE:
         return fragment ? "pixel_cue_frag" : "pixel_cue_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PIXEL_ITEM_STATE:
+        return fragment ? "pixel_item_state_frag" : "pixel_item_state_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SPLAT:
         return fragment ? "splat_frag" : "splat_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SPLAT_WBOIT:

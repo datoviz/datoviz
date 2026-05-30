@@ -105,6 +105,7 @@ static const DvzVisualFamilyAttrDesc PIXEL_ATTRS[] = {
     {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
     {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
     {"size", sizeof(float), SRC_SIZE_GROUPED, false},
+    {"item_state", sizeof(uint32_t), SRC_ITEM_ONLY, false},
 };
 
 
@@ -217,7 +218,7 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_pixel_visual_draw_desc, _scene_pixel_visual_desc_from_metadata),
      .renderable_kind = DVZ_RENDERABLE_POINT_LIKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_PIXEL,
      .attrs = PIXEL_ATTRS, .attr_count = DVZ_ARRAY_COUNT(PIXEL_ATTRS),
-     .expected_attrs = "position, color, pixel_size",
+     .expected_attrs = "position, color, pixel_size, item_state",
      .attr_alias_public = "pixel_size", .attr_alias_storage = "size",
      .upload_material_params = true, .supports_depth_cue = true},
     {VISUAL_OPS(

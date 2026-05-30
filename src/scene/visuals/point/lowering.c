@@ -61,7 +61,7 @@ bool _scene_point_visual_lowering(const DvzVisual* visual, DvzVisualLowering* ou
  * @param out the output bind descriptor
  * @return whether a bind descriptor was resolved
  */
-bool _scene_point_visual_bind_desc(
+bool _scene_point_like_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out)
 {
@@ -82,4 +82,21 @@ bool _scene_point_visual_bind_desc(
     out->uses_item_state_style_set1 = visual->has_item_state;
     out->item_state_style_buffer_id = visual->item_state_style_buffer_id;
     return true;
+}
+
+
+
+/**
+ * Resolve point visual bind-group role metadata.
+ *
+ * @param visual the visual descriptor
+ * @param controller_mode the visual's panel controller attachment mode
+ * @param out the output bind descriptor
+ * @return whether a bind descriptor was resolved
+ */
+bool _scene_point_visual_bind_desc(
+    const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
+    DvzSceneVisualBindDesc* out)
+{
+    return _scene_point_like_visual_bind_desc(visual, controller_mode, out);
 }

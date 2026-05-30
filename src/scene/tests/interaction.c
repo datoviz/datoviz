@@ -435,11 +435,13 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     DvzSelection* selection = dvz_selection(
         scene, &(DvzSelectionDesc){.mode = DVZ_SELECT_TOGGLE, .target = DVZ_SCENE_TARGET_ITEM});
     DvzVisual* point = dvz_point(scene, 0);
+    DvzVisual* pixel = dvz_pixel(scene, 0);
     DvzVisual* marker = dvz_marker(scene, 0);
     ANN(panel);
     ANN(channel);
     ANN(selection);
     ANN(point);
+    ANN(pixel);
     ANN(marker);
 
     vec3 point_pos[3] = {{0.0f, 0.0f, 0.0f}, {0.25f, 0.0f, 0.0f}, {0.5f, 0.0f, 0.0f}};
@@ -471,6 +473,31 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
                .background_color = {1.0f, 1.0f, 1.0f, 1.0f},
            }) == 0);
     AT(dvz_panel_add_visual(panel, point, NULL) == 0);
+
+    vec3 pixel_pos[3] = {{0.0f, -0.25f, 0.0f}, {0.25f, -0.25f, 0.0f}, {0.5f, -0.25f, 0.0f}};
+    DvzColor pixel_color[3] = {
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+    };
+    float pixel_size[3] = {8.0f, 8.0f, 8.0f};
+    uint64_t pixel_keys[3] = {60, 20, 70};
+    AT(dvz_visual_set_data(pixel, "position", pixel_pos, 3) == 0);
+    AT(dvz_visual_set_data(pixel, "color", pixel_color, 3) == 0);
+    AT(dvz_visual_set_data(pixel, "size", pixel_size, 3) == 0);
+    AT(dvz_visual_set_link_keys(pixel, channel, pixel_keys, 3) == 0);
+    AT(dvz_visual_set_depth_cue(
+           pixel,
+           &(DvzDepthCueDesc){
+               .mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
+               .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
+               .falloff = DVZ_DEPTH_CUE_FALLOFF_LINEAR,
+               .near_depth = 0.0f,
+               .far_depth = 10.0f,
+               .strength = 0.5f,
+               .background_color = {1.0f, 1.0f, 1.0f, 1.0f},
+           }) == 0);
+    AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
 
     vec3 marker_pos[3] = {{0.0f, 0.25f, 0.0f}, {0.25f, 0.25f, 0.0f}, {0.5f, 0.25f, 0.0f}};
     DvzColor marker_color[3] = {
@@ -506,24 +533,35 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     AT(dvz_selection_apply_query(selection, &query) == 0);
 
     int point_state_idx = _attr_index(point, "item_state");
+    int pixel_state_idx = _attr_index(pixel, "item_state");
     int marker_state_idx = _attr_index(marker, "item_state");
     AT(point_state_idx >= 0);
+    AT(pixel_state_idx >= 0);
     AT(marker_state_idx >= 0);
     const uint32_t* point_state = (const uint32_t*)point->attrs[point_state_idx].data;
+    const uint32_t* pixel_state = (const uint32_t*)pixel->attrs[pixel_state_idx].data;
     const uint32_t* marker_state = (const uint32_t*)marker->attrs[marker_state_idx].data;
     ANN(point_state);
+    ANN(pixel_state);
     ANN(marker_state);
     AT(point_state[0] == DVZ_ITEM_STATE_NONE);
     AT(point_state[1] == DVZ_ITEM_STATE_SELECTED);
     AT(point_state[2] == DVZ_ITEM_STATE_NONE);
+    AT(pixel_state[0] == DVZ_ITEM_STATE_NONE);
+    AT(pixel_state[1] == DVZ_ITEM_STATE_SELECTED);
+    AT(pixel_state[2] == DVZ_ITEM_STATE_NONE);
     AT(marker_state[0] == DVZ_ITEM_STATE_NONE);
     AT(marker_state[1] == DVZ_ITEM_STATE_SELECTED);
     AT(marker_state[2] == DVZ_ITEM_STATE_NONE);
     AT(point->attrs[point_state_idx].dirty_item_count == 3);
+    AT(pixel->attrs[pixel_state_idx].dirty_item_count == 3);
     AT(marker->attrs[marker_state_idx].dirty_item_count == 3);
     AT(_visual_family_state(point)->item_state_style_params.unselected[0] ==
        (float)DVZ_ITEM_STATE_VISUAL_ALPHA);
     AC(_visual_family_state(point)->item_state_style_params.unselected[1], 0.25f, 1e-6f);
+    AT(_visual_family_state(pixel)->item_state_style_params.unselected[0] ==
+       (float)DVZ_ITEM_STATE_VISUAL_ALPHA);
+    AC(_visual_family_state(pixel)->item_state_style_params.unselected[1], 0.25f, 1e-6f);
     AT(_visual_family_state(marker)->item_state_style_params.unselected[0] ==
        (float)DVZ_ITEM_STATE_VISUAL_ALPHA);
     AC(_visual_family_state(marker)->item_state_style_params.unselected[1], 0.25f, 1e-6f);
@@ -540,28 +578,38 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     AT(_interaction_stream_has_pipeline_attr(
         stream, "_pipe_point_item_stateg_depth", VK_FORMAT_R32_UINT, 5));
     AT(_interaction_stream_has_pipeline_attr(
+        stream, "_pipe_pixel_item_stateg_depth", VK_FORMAT_R32_UINT, 5));
+    AT(_interaction_stream_has_pipeline_attr(
         stream, "_pipe_marker_item_stateg_depth", VK_FORMAT_R32_UINT, 5));
-    AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneItemStateStyleParams)) == 2);
-    AT(_interaction_stream_item_state_style_bind_group_count(stream) == 2);
+    AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneItemStateStyleParams)) == 3);
+    AT(_interaction_stream_item_state_style_bind_group_count(stream) == 3);
     dvz_drp2_stream_destroy(stream);
 
     AT(point->attrs[point_state_idx].dirty_item_count == 0);
+    AT(pixel->attrs[pixel_state_idx].dirty_item_count == 0);
     AT(marker->attrs[marker_state_idx].dirty_item_count == 0);
     AT(!_visual_family_state(point)->item_state_style_params_dirty);
+    AT(!_visual_family_state(pixel)->item_state_style_params_dirty);
     AT(!_visual_family_state(marker)->item_state_style_params_dirty);
     AT(dvz_selection_apply_query(selection, &query) == 0);
     AT(dvz_selection_count(selection) == 0);
     point_state = (const uint32_t*)point->attrs[point_state_idx].data;
+    pixel_state = (const uint32_t*)pixel->attrs[pixel_state_idx].data;
     marker_state = (const uint32_t*)marker->attrs[marker_state_idx].data;
     AT(point_state[0] == DVZ_ITEM_STATE_NONE);
     AT(point_state[1] == DVZ_ITEM_STATE_NONE);
     AT(point_state[2] == DVZ_ITEM_STATE_NONE);
+    AT(pixel_state[0] == DVZ_ITEM_STATE_NONE);
+    AT(pixel_state[1] == DVZ_ITEM_STATE_NONE);
+    AT(pixel_state[2] == DVZ_ITEM_STATE_NONE);
     AT(marker_state[0] == DVZ_ITEM_STATE_NONE);
     AT(marker_state[1] == DVZ_ITEM_STATE_NONE);
     AT(marker_state[2] == DVZ_ITEM_STATE_NONE);
     AT(point->attrs[point_state_idx].dirty_item_count == 3);
+    AT(pixel->attrs[pixel_state_idx].dirty_item_count == 3);
     AT(marker->attrs[marker_state_idx].dirty_item_count == 3);
     AT(_visual_family_state(point)->item_state_style_params.unselected[0] == 0.0f);
+    AT(_visual_family_state(pixel)->item_state_style_params.unselected[0] == 0.0f);
     AT(_visual_family_state(marker)->item_state_style_params.unselected[0] == 0.0f);
 
     DvzHover* hover = dvz_hover(
@@ -574,20 +622,26 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     AT(dvz_hover_set_visual_style(hover, &hover_style) == 0);
     AT(dvz_hover_apply_query(hover, &query) == 0);
     point_state = (const uint32_t*)point->attrs[point_state_idx].data;
+    pixel_state = (const uint32_t*)pixel->attrs[pixel_state_idx].data;
     marker_state = (const uint32_t*)marker->attrs[marker_state_idx].data;
     AT(point_state[1] == DVZ_ITEM_STATE_HOVERED);
+    AT(pixel_state[1] == DVZ_ITEM_STATE_HOVERED);
     AT(marker_state[1] == DVZ_ITEM_STATE_HOVERED);
     AC(_visual_family_state(point)->item_state_style_params.hovered[3], 1.5f, 1e-6f);
     AT(dvz_selection_apply_query(selection, &query) == 0);
     point_state = (const uint32_t*)point->attrs[point_state_idx].data;
+    pixel_state = (const uint32_t*)pixel->attrs[pixel_state_idx].data;
     marker_state = (const uint32_t*)marker->attrs[marker_state_idx].data;
     AT(point_state[1] == (DVZ_ITEM_STATE_SELECTED | DVZ_ITEM_STATE_HOVERED));
+    AT(pixel_state[1] == (DVZ_ITEM_STATE_SELECTED | DVZ_ITEM_STATE_HOVERED));
     AT(marker_state[1] == (DVZ_ITEM_STATE_SELECTED | DVZ_ITEM_STATE_HOVERED));
     DvzQueryResult miss = {.request_id = 2, .status = DVZ_QUERY_STATUS_MISS, .hit = false};
     AT(dvz_hover_apply_query(hover, &miss) == 0);
     point_state = (const uint32_t*)point->attrs[point_state_idx].data;
+    pixel_state = (const uint32_t*)pixel->attrs[pixel_state_idx].data;
     marker_state = (const uint32_t*)marker->attrs[marker_state_idx].data;
     AT(point_state[1] == DVZ_ITEM_STATE_SELECTED);
+    AT(pixel_state[1] == DVZ_ITEM_STATE_SELECTED);
     AT(marker_state[1] == DVZ_ITEM_STATE_SELECTED);
 
     dvz_scene_destroy(scene);
