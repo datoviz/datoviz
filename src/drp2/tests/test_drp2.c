@@ -5356,7 +5356,8 @@ int test_drp2_begin_render_pass_attachment_ops(TstContext* suite, const TstCase*
     AT(strstr(json, "\"store_op\": \"dont_care\"") != NULL);
     AT(strstr(json, "\"access\": \"read_write\"") != NULL);
     AT(strstr(json, "\"depth_stencil_attachment\"") != NULL);
-    AT(strstr(json, "\"load_op\": \"dont_care\"") != NULL);
+    AT(strstr(json, "\"depth_load_op\": \"dont_care\"") != NULL);
+    AT(strstr(json, "\"depth_store_op\": \"store\"") != NULL);
     AT(strstr(json, "\"access\": \"read\"") != NULL);
 
     dvz_drp2_stream_json_destroy(json);
