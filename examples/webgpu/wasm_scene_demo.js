@@ -17,6 +17,8 @@ const DVZ_POINTER_BUTTON_NONE = 0;
 const DVZ_POINTER_BUTTON_LEFT = 1;
 const DVZ_POINTER_BUTTON_MIDDLE = 2;
 const DVZ_POINTER_BUTTON_RIGHT = 3;
+const DVZ_FORMAT_R8G8B8A8_UNORM = 37;
+const DVZ_FORMAT_B8G8R8A8_UNORM = 44;
 
 let Module = null;
 let handle = 0;
@@ -73,6 +75,17 @@ function modifierMask(event) {
     mods |= 8;
   }
   return mods;
+}
+
+function canvasFormatCode(format) {
+  switch (format) {
+    case "rgba8unorm":
+      return DVZ_FORMAT_R8G8B8A8_UNORM;
+    case "bgra8unorm":
+      return DVZ_FORMAT_B8G8R8A8_UNORM;
+    default:
+      throw new Error(`unsupported browser canvas format ${format}`);
+  }
 }
 
 function canvasPoint(event) {
@@ -252,6 +265,10 @@ async function main() {
   gpu = await initWebGPU();
   handle = Module._dvz_wasm_scene_create(canvas.width, canvas.height);
   requireOk(handle !== 0, "scene creation failed");
+  requireOk(
+    Module._dvz_wasm_scene_set_canvas_format(handle, canvasFormatCode(gpu.format)) === 0,
+    `scene rejected browser canvas format ${gpu.format}`,
+  );
   resizeScene();
   setPoints();
 

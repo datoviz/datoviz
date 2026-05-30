@@ -12,6 +12,7 @@ const DVZ_POINTER_EVENT_PRESS = 1;
 const DVZ_POINTER_EVENT_RELEASE = 0;
 const DVZ_POINTER_EVENT_MOVE = 2;
 const DVZ_POINTER_BUTTON_LEFT = 1;
+const DVZ_FORMAT_R8G8B8A8_UNORM = 37;
 
 function requireOk(condition, message) {
   if (!condition) {
@@ -54,6 +55,10 @@ const Module = await createModule({
 const smokeSize = 64;
 const handle = Module._dvz_wasm_scene_create(smokeSize, smokeSize);
 requireOk(handle !== 0, "dvz_wasm_scene_create failed");
+requireOk(
+  Module._dvz_wasm_scene_set_canvas_format(handle, DVZ_FORMAT_R8G8B8A8_UNORM) === 0,
+  "dvz_wasm_scene_set_canvas_format failed",
+);
 
 const positions = new Float32Array([
   -0.75, -0.45, 0.0,

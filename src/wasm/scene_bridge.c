@@ -29,6 +29,7 @@
 #include "datoviz/input/pointer.h"
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
+#include "datoviz/vk/enums.h"
 
 
 
@@ -52,6 +53,7 @@ struct DvzWasmScene
     DvzDiagnosticReport report;
     uint32_t width;
     uint32_t height;
+    uint32_t color_format;
 };
 
 
@@ -148,6 +150,7 @@ uint32_t dvz_wasm_scene_create(uint32_t width, uint32_t height)
     dvz_diagnostic_report_init(&ctx->report);
     ctx->width = width;
     ctx->height = height;
+    ctx->color_format = DVZ_FORMAT_R8G8B8A8_UNORM;
 
     ctx->scene = dvz_scene();
     if (ctx->scene == NULL)
@@ -180,6 +183,21 @@ uint32_t dvz_wasm_scene_create(uint32_t width, uint32_t height)
 
 fail:
     _destroy_ctx(ctx);
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_scene_set_canvas_format(uint32_t handle, uint32_t color_format)
+{
+    DvzWasmScene* ctx = _ctx(handle);
+    if (ctx == NULL)
+        return -1;
+    if (color_format != DVZ_FORMAT_R8G8B8A8_UNORM && color_format != DVZ_FORMAT_B8G8R8A8_UNORM)
+        return -1;
+    _clear_payload(ctx);
+    ctx->color_format = color_format;
     return 0;
 }
 
@@ -251,6 +269,7 @@ int dvz_wasm_scene_emit(uint32_t handle)
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
     emit_cfg.external_color_target = true;
     emit_cfg.color_target_id = 0;
+    emit_cfg.color_target_format = ctx->color_format;
     emit_cfg.target_width = ctx->width;
     emit_cfg.target_height = ctx->height;
 

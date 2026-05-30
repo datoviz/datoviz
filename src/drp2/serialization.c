@@ -424,11 +424,7 @@ static void _json_append_color_targets(JsonBuilder* builder, const DvzDrp2Comman
     for (uint32_t i = 0; i < count; i++)
     {
         const DvzDrp2ColorTarget* target = &command->u.create_render_pipeline.color_targets[i];
-        const char* format = "rgba8unorm";
-        if (target->format == VK_FORMAT_R16G16B16A16_SFLOAT)
-            format = "rgba16float";
-        else if (target->format == VK_FORMAT_R16_SFLOAT)
-            format = "r16float";
+        const char* format = _texture_format_name(target->format);
         if (i > 0)
             _json_append(builder, ", ");
         _json_append(builder, "{ \"format\": \"%s\", \"write_mask\": ", format);
