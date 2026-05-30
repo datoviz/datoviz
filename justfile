@@ -1098,6 +1098,31 @@ webgpu-runner-smoke:
     @node tools/webgpu_runner_smoke.mjs
 #
 
+wasm-scene-build:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export EMSDK_QUIET=1
+    source "$HOME/SDK/emsdk/emsdk_env.sh"
+    emcmake cmake -S . -B build-wasm-scene -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_SKIP_INSTALL_RULES=ON \
+        -DDVZ_BUILD_VK=OFF \
+        -DDVZ_BUILD_CANVAS=OFF \
+        -DDVZ_BUILD_APP=OFF \
+        -DDVZ_BUILD_GUI=OFF \
+        -DDVZ_WITH_FREETYPE=OFF \
+        -DDVZ_WITH_MSDF_ATLAS=OFF \
+        -DDVZ_ENABLE_KVAZAAR=OFF \
+        -DDVZ_WITH_GLFW=OFF \
+        -DDVZ_WITH_ZLIB=OFF \
+        -DDVZ_USE_MIMALLOC_RELEASE_DEFAULT=OFF
+    cmake --build build-wasm-scene --target datoviz_wasm_scene -j 8
+#
+
+wasm-scene-smoke: wasm-scene-build
+    @node tools/wasm_scene_smoke.mjs
+    @python3 tools/webgpu_fixture_preflight.py build-wasm-scene/wasm/wasm_scene_point_panzoom.json
+#
+
 shader-abi-check:
     @python3 tools/check_scene_shader_abi.py
 #

@@ -55,7 +55,6 @@ set(DVZ_FPNG_NO_SSE 1)
 if(CC_GCC OR CC_CLANG)
     list(APPEND DVZ_COMMON_COMPILE_OPTIONS
         -g
-        -m64
         -pedantic
         -Wall
         -Wextra
@@ -80,6 +79,9 @@ if(CC_GCC OR CC_CLANG)
         $<$<CONFIG:Debug>:-O0>
         $<$<NOT:$<CONFIG:Debug>>:-O2>
     )
+    if(NOT EMSCRIPTEN)
+        list(APPEND DVZ_COMMON_COMPILE_OPTIONS -m64)
+    endif()
 endif()
 
 if(CC_GCC)
@@ -595,6 +597,10 @@ target_include_directories(datoviz
 )
 
 add_library(datoviz::datoviz ALIAS datoviz)
+
+if(EMSCRIPTEN AND DVZ_BUILD_SCENE)
+    add_subdirectory(wasm)
+endif()
 
 if(DVZ_THREADING_TARGET)
     if(TARGET datoviz_core)

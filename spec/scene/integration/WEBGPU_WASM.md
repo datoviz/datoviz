@@ -245,6 +245,9 @@ The first milestone is deliberately small:
 4. submit the emitted DRP2 stream to the WebGPU runtime;
 5. render points using the portable WebGPU lowering selected by scene emission.
 
+The current first slice keeps the public bridge narrow in `src/wasm/scene_bridge.c`: one point
+visual, a scene-owned panzoom controller, resize/pointer/wheel routing, and emitted DRP2 JSON.
+
 After that, expand to primitive, image, basic mesh, incremental uniform updates, direct payload
 transport, browser app examples, and then broader visual/technique parity.
 

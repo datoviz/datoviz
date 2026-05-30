@@ -1306,6 +1306,12 @@ function resizeCanvasToDisplaySize(device, context, format) {
 
 
 
+export function resizeWebGpuCanvas(device, context, format) {
+  return resizeCanvasToDisplaySize(device, context, format);
+}
+
+
+
 function identityMat4() {
   const mat = new Float32Array(16);
   mat[0] = 1;

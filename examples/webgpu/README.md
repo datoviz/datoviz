@@ -21,6 +21,18 @@ streams, and semantic negative fixture parity checks against the browser WebGPU 
 http://localhost:8765/examples/webgpu/fixtures.html
 ```
 
+The WASM scene demo builds the scene/controller code with Emscripten, routes pointer input through
+the compiled panzoom controller, and executes the emitted DRP2 commands with the browser WebGPU
+runtime:
+
+```bash
+just wasm-scene-smoke
+```
+
+```text
+http://localhost:8765/examples/webgpu/wasm_scene.html
+```
+
 Refresh the committed fixture manifest after adding or removing positive or negative fixtures:
 
 ```bash
@@ -109,6 +121,7 @@ Browserless validation from the repository root:
 ```bash
 just webgpu-fixture-preflight
 just webgpu-runner-smoke
+just wasm-scene-smoke
 ```
 
 Manual checks:
