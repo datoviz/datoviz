@@ -148,6 +148,8 @@ void dvz_scene_destroy(DvzScene* scene)
         _scene_visual_reset(&scene->visuals[i], true);
     for (uint32_t i = 0; i < scene->scale_count; i++)
         dvz_scale_destroy(&scene->scales[i]);
+    for (uint32_t i = 0; i < scene->colormap_count; i++)
+        dvz_colormap_destroy(&scene->colormaps[i]);
     for (uint32_t i = 0; i < scene->font_count; i++)
         _scene_font_release(&scene->fonts[i]);
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_FIELDS; i++)

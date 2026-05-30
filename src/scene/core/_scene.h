@@ -750,6 +750,8 @@ struct DvzColormap
     char label[DVZ_SCENE_LABEL_SIZE];
     uint32_t stop_count;
     DvzColormapStop stops[DVZ_SCENE_MAX_COLOR_STOPS];
+    uint32_t lut_count;
+    DvzColor* lut;
 };
 
 

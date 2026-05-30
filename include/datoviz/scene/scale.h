@@ -149,6 +149,22 @@ DVZ_EXPORT DvzColormap* dvz_colormap_builtin(
 
 
 /**
+ * Create a scene-owned custom LUT colormap.
+ *
+ * The color array is copied. Samples use linear interpolation between neighboring entries after
+ * mapping the normalized scalar coordinate to [0, count - 1].
+ *
+ * @param scene the scene
+ * @param label optional colormap label
+ * @param colors RGBA8 lookup table
+ * @param count number of colors in the lookup table
+ * @return the colormap, or NULL on error
+ */
+DVZ_EXPORT DvzColormap* dvz_colormap_custom(
+    DvzScene* scene, const char* label, const DvzColor* colors, uint32_t count);
+
+
+/**
  * Sample a scene-owned colormap at a normalized coordinate.
  *
  * @param colormap the colormap, or NULL for grayscale fallback

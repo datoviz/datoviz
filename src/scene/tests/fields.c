@@ -236,6 +236,30 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
     AT(direct_rgba.b == builtin_rgba[2]);
     AT(direct_rgba.a == builtin_rgba[3]);
 
+    DvzColor custom_lut[3] = {
+        dvz_color_rgba(0, 0, 0, 255),
+        dvz_color_rgba(100, 50, 20, 200),
+        dvz_color_rgba(200, 100, 40, 100),
+    };
+    DvzColormap* custom = dvz_colormap_custom(scene, "custom depth", custom_lut, 3);
+    ANN(custom);
+    AT(scene->colormap_count == 2);
+    AT(strcmp(custom->label, "custom depth") == 0);
+    AT(custom->lut_count == 3);
+    AT(custom->lut != custom_lut);
+    DvzColor custom_sample = {0};
+    AT(dvz_colormap_sample(custom, 0.25, &custom_sample));
+    AT(custom_sample.r == 50);
+    AT(custom_sample.g == 25);
+    AT(custom_sample.b == 10);
+    AT(custom_sample.a == 228);
+    AT(dvz_colormap_sample(custom, 1.0, &custom_sample));
+    AT(custom_sample.r == 200);
+    AT(custom_sample.g == 100);
+    AT(custom_sample.b == 40);
+    AT(custom_sample.a == 100);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_colormap_custom(scene, "bad", custom_lut, 1) == NULL);
+
     DvzColormapStop stops[2] = {
         {.position = 0.0, .rgba = {0, 0, 0, 255}},
         {.position = 1.0, .rgba = {255, 255, 255, 255}},

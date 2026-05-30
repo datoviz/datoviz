@@ -14,6 +14,7 @@
 /*************************************************************************************************/
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "_alloc.h"
@@ -69,6 +70,61 @@ static bool _colormap_sample_stops(
         out_rgba[c] = (uint8_t)(value + 0.5);
     }
     return true;
+}
+
+
+/**
+ * Sample a custom colormap lookup table.
+ *
+ * @param colors the LUT colors
+ * @param count number of LUT colors
+ * @param t normalized scalar value
+ * @param out_rgba the output RGBA color
+ * @return true when a color was written
+ */
+static bool _colormap_sample_lut(
+    const DvzColor* colors, uint32_t count, double t, uint8_t out_rgba[4])
+{
+    ANN(colors);
+    ANN(out_rgba);
+    if (count < 2)
+        return false;
+
+    const double x = t * (double)(count - 1u);
+    uint32_t i0 = (uint32_t)x;
+    if (i0 >= count - 1u)
+        i0 = count - 2u;
+    const uint32_t i1 = i0 + 1u;
+    double u = x - (double)i0;
+    if (u < 0.0)
+        u = 0.0;
+    if (u > 1.0)
+        u = 1.0;
+
+    const uint8_t lo[4] = {colors[i0].r, colors[i0].g, colors[i0].b, colors[i0].a};
+    const uint8_t hi[4] = {colors[i1].r, colors[i1].g, colors[i1].b, colors[i1].a};
+    for (uint32_t c = 0; c < 4; c++)
+    {
+        double value = (1.0 - u) * lo[c] + u * hi[c];
+        out_rgba[c] = (uint8_t)(value + 0.5);
+    }
+    return true;
+}
+
+
+/**
+ * Release custom LUT storage owned by a colormap.
+ *
+ * @param colormap the colormap
+ */
+static void _colormap_release_lut(DvzColormap* colormap)
+{
+    if (colormap == NULL)
+        return;
+    if (colormap->lut != NULL)
+        dvz_free(colormap->lut);
+    colormap->lut = NULL;
+    colormap->lut_count = 0;
 }
 
 
@@ -203,6 +259,11 @@ bool _scene_color_from_colormap(
         return _colormap_sample_stops(colormap->stops, colormap->stop_count, t, out_rgba);
     }
 
+    if (colormap != NULL && colormap->lut != NULL && colormap->lut_count >= 2)
+    {
+        return _colormap_sample_lut(colormap->lut, colormap->lut_count, t, out_rgba);
+    }
+
     if (colormap != NULL)
     {
         uint32_t builtin_count = 0;
@@ -309,6 +370,57 @@ DvzColormap* dvz_colormap_builtin(DvzScene* scene, DvzBuiltinColormap builtin)
 }
 
 
+/**
+ * Create a scene-owned custom LUT colormap.
+ *
+ * @param scene the scene
+ * @param label optional colormap label
+ * @param colors RGBA8 lookup table
+ * @param count number of colors in the lookup table
+ * @return the colormap, or NULL on error
+ */
+DvzColormap* dvz_colormap_custom(
+    DvzScene* scene, const char* label, const DvzColor* colors, uint32_t count)
+{
+    ANN(scene);
+    if (colors == NULL || count < 2)
+    {
+        log_error("custom colormap requires at least two colors");
+        return NULL;
+    }
+    if ((uint64_t)count > (uint64_t)SIZE_MAX / sizeof(DvzColor))
+    {
+        log_error("custom colormap LUT size overflow");
+        return NULL;
+    }
+
+    const uint64_t size = (uint64_t)count * sizeof(DvzColor);
+    DvzColor* lut = (DvzColor*)dvz_calloc(count, sizeof(DvzColor));
+    if (lut == NULL)
+    {
+        log_error("custom colormap LUT allocation failed");
+        return NULL;
+    }
+    dvz_memcpy(lut, (size_t)size, colors, (size_t)size);
+
+    DvzColormap* colormap = dvz_colormap(
+        scene, &(DvzColormapDesc){
+                   .kind = DVZ_COLORMAP_CONTINUOUS,
+                   .builtin = DVZ_BUILTIN_COLORMAP_NONE,
+                   .label = label,
+               });
+    if (colormap == NULL)
+    {
+        dvz_free(lut);
+        return NULL;
+    }
+
+    colormap->lut = lut;
+    colormap->lut_count = count;
+    return colormap;
+}
+
+
 
 /**
  * Destroy a colormap object.
@@ -319,6 +431,7 @@ void dvz_colormap_destroy(DvzColormap* colormap)
 {
     if (colormap == NULL)
         return;
+    _colormap_release_lut(colormap);
     colormap->scene = NULL;
     colormap->stop_count = 0;
     colormap->has_center = false;
@@ -343,6 +456,7 @@ void dvz_colormap_set_stops(DvzColormap* colormap, const DvzColormapStop* stops,
     }
     if (count > 0)
         ANN(stops);
+    _colormap_release_lut(colormap);
     colormap->stop_count = count;
     if (count > 0)
         dvz_memcpy(
