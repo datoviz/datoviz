@@ -39,6 +39,13 @@ The 3D WASM proof uses the same bridge with a scene-owned camera and arcball con
 http://localhost:8765/examples/webgpu/wasm_scene_3d.html
 ```
 
+The generic WASM scene ABI proof uses `examples/webgpu/datoviz_wasm_scene.js` as a small wrapper
+over `src/wasm/scene_api.c`:
+
+```text
+http://localhost:8765/examples/webgpu/wasm_api_scene.html
+```
+
 Refresh the committed fixture manifest after adding or removing positive or negative fixtures:
 
 ```bash
