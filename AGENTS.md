@@ -28,6 +28,7 @@ More detail: [agents/rules/REPO_HYGIENE.md](agents/rules/REPO_HYGIENE.md).
 ## Operating Style
 
 Write short, dense prose. Prefer concrete decisions over broad narration.
+When you ask the user for a decision, always include my own preference with the ask.
 
 For non-trivial implementation work, first propose a concise plan and wait for user approval. After
 approval, execute end to end: inspect, edit, test, run `git diff --check`, and report results.
