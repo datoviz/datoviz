@@ -9,6 +9,8 @@ const statusEl = document.querySelector("#status");
 const statsEl = document.querySelector("#stats");
 const canvas = document.querySelector("#viewport");
 const wasmModuleUrl = new URL("../../build-wasm-scene/wasm/datoviz_wasm_scene.mjs", import.meta.url);
+const wasmCacheToken = Date.now().toString();
+wasmModuleUrl.searchParams.set("v", wasmCacheToken);
 
 const DVZ_POINTER_EVENT_RELEASE = 0;
 const DVZ_POINTER_EVENT_PRESS = 1;
@@ -307,9 +309,15 @@ async function main() {
   const { default: createDatovizWasm } = await import(wasmModuleUrl.href);
   Module = await createDatovizWasm({
     locateFile(path) {
-      return new URL(path, wasmModuleUrl).href;
+      const url = new URL(path, wasmModuleUrl);
+      url.searchParams.set("v", wasmCacheToken);
+      return url.href;
     },
   });
+  requireOk(
+    typeof Module._malloc === "function" && typeof Module._free === "function",
+    "WASM module is stale or missing malloc/free exports; run `just wasm-scene-smoke` and hard-refresh",
+  );
 
   setStatus("Starting WebGPU");
   gpu = await initWebGPU();
