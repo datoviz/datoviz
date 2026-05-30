@@ -8,12 +8,14 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs");
 const outputPath = resolve(root, "build-wasm-scene/wasm/wasm_scene_point_primitive_image_mesh_panzoom.json");
 const output3dPath = resolve(root, "build-wasm-scene/wasm/wasm_scene_mesh3d_arcball.json");
+const outputApiPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_point.json");
 
 const DVZ_POINTER_EVENT_PRESS = 1;
 const DVZ_POINTER_EVENT_RELEASE = 0;
 const DVZ_POINTER_EVENT_MOVE = 2;
 const DVZ_POINTER_BUTTON_LEFT = 1;
 const DVZ_FORMAT_R8G8B8A8_UNORM = 37;
+const DVZ_WASM_VISUAL_POINT = 1;
 
 function requireOk(condition, message) {
   if (!condition) {
@@ -78,6 +80,14 @@ function allocArray(Module, typedArray) {
   const ptr = Module._malloc(typedArray.byteLength);
   requireOk(ptr !== 0, "malloc failed");
   Module.HEAPU8.set(new Uint8Array(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength), ptr);
+  return ptr;
+}
+
+function allocCString(Module, text) {
+  const bytes = new TextEncoder().encode(`${text}\0`);
+  const ptr = Module._malloc(bytes.byteLength);
+  requireOk(ptr !== 0, "malloc failed");
+  Module.HEAPU8.set(bytes, ptr);
   return ptr;
 }
 
@@ -402,4 +412,65 @@ try {
   Module._free(cubeColorsPtr);
   Module._free(cubeNormalsPtr);
   Module._dvz_wasm_scene_destroy(handle3d);
+}
+
+const apiScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
+requireOk(apiScene !== 0, "dvz_wasm_api_scene failed");
+const positionNamePtr = allocCString(Module, "position");
+const colorNamePtr = allocCString(Module, "color");
+const diameterNamePtr = allocCString(Module, "diameter");
+const apiPositionsPtr = allocArray(Module, positions);
+const apiColorsPtr = allocArray(Module, colors);
+const apiSizesPtr = allocArray(Module, sizes);
+try {
+  expectStatus(
+    Module._dvz_wasm_api_set_canvas_format(apiScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+    0,
+    "dvz_wasm_api_set_canvas_format",
+  );
+  const apiFigure = Module._dvz_wasm_api_figure(apiScene, smokeSize, smokeSize);
+  requireOk(apiFigure !== 0, "dvz_wasm_api_figure failed");
+  const apiPanel = Module._dvz_wasm_api_panel_full(apiFigure);
+  requireOk(apiPanel !== 0, "dvz_wasm_api_panel_full failed");
+  const apiPoint = Module._dvz_wasm_api_visual(apiScene, DVZ_WASM_VISUAL_POINT, 0);
+  requireOk(apiPoint !== 0, "dvz_wasm_api_visual(point) failed");
+  expectStatus(
+    Module._dvz_wasm_api_visual_set_f32(apiPoint, positionNamePtr, apiPositionsPtr, positions.length / 3),
+    0,
+    "dvz_wasm_api_visual_set_f32(position)",
+  );
+  expectStatus(
+    Module._dvz_wasm_api_visual_set_rgba8(apiPoint, colorNamePtr, apiColorsPtr, colors.length / 4),
+    0,
+    "dvz_wasm_api_visual_set_rgba8(color)",
+  );
+  expectStatus(
+    Module._dvz_wasm_api_visual_set_f32(apiPoint, diameterNamePtr, apiSizesPtr, sizes.length),
+    0,
+    "dvz_wasm_api_visual_set_f32(diameter)",
+  );
+  expectStatus(
+    Module._dvz_wasm_api_panel_add_visual(apiPanel, apiPoint),
+    0,
+    "dvz_wasm_api_panel_add_visual",
+  );
+  expectStatus(Module._dvz_wasm_api_emit(apiScene, apiFigure), 0, "dvz_wasm_api_emit");
+  requireOk(Module._dvz_wasm_api_diagnostic_count(apiScene) === 0, "generic API emitted diagnostics");
+  const ptr = Module._dvz_wasm_api_payload_ptr(apiScene);
+  const size = Module._dvz_wasm_api_payload_size(apiScene);
+  requireOk(ptr !== 0 && size > 0, "generic API emitted no payload");
+  const apiStream = JSON.parse(new TextDecoder().decode(Module.HEAPU8.subarray(ptr, ptr + size)));
+  requireOk(Array.isArray(apiStream.commands), "generic API stream has no commands array");
+  requireOk(apiStream.commands.length > 0, "generic API stream has no commands");
+  await writeFile(outputApiPath, `${JSON.stringify(apiStream, null, 2)}\n`, "utf8");
+  console.log(`Wrote ${outputApiPath}`);
+  console.log(`commands_api=${apiStream.commands.length}`);
+} finally {
+  Module._free(positionNamePtr);
+  Module._free(colorNamePtr);
+  Module._free(diameterNamePtr);
+  Module._free(apiPositionsPtr);
+  Module._free(apiColorsPtr);
+  Module._free(apiSizesPtr);
+  Module._dvz_wasm_api_scene_destroy(apiScene);
 }

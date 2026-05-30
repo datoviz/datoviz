@@ -6,7 +6,7 @@ if(NOT EMSCRIPTEN)
     return()
 endif()
 
-add_executable(datoviz_wasm_scene scene_bridge.c)
+add_executable(datoviz_wasm_scene scene_bridge.c scene_api.c)
 
 target_link_libraries(datoviz_wasm_scene PRIVATE datoviz)
 
@@ -27,6 +27,6 @@ target_link_options(datoviz_wasm_scene PRIVATE
     "SHELL:-sEXPORT_ES6=1"
     "SHELL:-sENVIRONMENT=web,worker,node"
     "SHELL:-sALLOW_MEMORY_GROWTH=1"
-    "SHELL:-sEXPORTED_FUNCTIONS=['_malloc','_free','_dvz_wasm_scene_create','_dvz_wasm_scene_create_3d','_dvz_wasm_scene_set_canvas_format','_dvz_wasm_scene_destroy','_dvz_wasm_scene_resize','_dvz_wasm_scene_set_points','_dvz_wasm_scene_set_primitive','_dvz_wasm_scene_set_image','_dvz_wasm_scene_set_mesh','_dvz_wasm_scene_emit','_dvz_wasm_scene_payload_ptr','_dvz_wasm_scene_payload_size','_dvz_wasm_scene_diagnostic_count','_dvz_wasm_scene_diagnostic','_dvz_wasm_scene_pointer','_dvz_wasm_scene_wheel']"
+    "SHELL:-sEXPORTED_FUNCTIONS=['_malloc','_free','_dvz_wasm_api_scene','_dvz_wasm_api_scene_destroy','_dvz_wasm_api_figure','_dvz_wasm_api_panel_full','_dvz_wasm_api_visual','_dvz_wasm_api_controller','_dvz_wasm_api_panel_add_visual','_dvz_wasm_api_panel_bind_controller','_dvz_wasm_api_visual_set_f32','_dvz_wasm_api_visual_set_rgba8','_dvz_wasm_api_visual_set_texture_rgba8','_dvz_wasm_api_set_canvas_format','_dvz_wasm_api_emit','_dvz_wasm_api_payload_ptr','_dvz_wasm_api_payload_size','_dvz_wasm_api_diagnostic_count','_dvz_wasm_api_diagnostic','_dvz_wasm_scene_create','_dvz_wasm_scene_create_3d','_dvz_wasm_scene_set_canvas_format','_dvz_wasm_scene_destroy','_dvz_wasm_scene_resize','_dvz_wasm_scene_set_points','_dvz_wasm_scene_set_primitive','_dvz_wasm_scene_set_image','_dvz_wasm_scene_set_mesh','_dvz_wasm_scene_emit','_dvz_wasm_scene_payload_ptr','_dvz_wasm_scene_payload_size','_dvz_wasm_scene_diagnostic_count','_dvz_wasm_scene_diagnostic','_dvz_wasm_scene_pointer','_dvz_wasm_scene_wheel']"
     "SHELL:-sEXPORTED_RUNTIME_METHODS=['UTF8ToString','HEAPU8','HEAPF32']"
 )
