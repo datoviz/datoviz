@@ -10,7 +10,7 @@
  * Build:   cmake --build build --target protein
  * Run:     ./build/examples/c/showcase/protein
  * Smoke:   ./build/examples/c/showcase/protein 60
- * Options: --spin, [bundle-path], [frame-count]
+ * Options: --spin, --debug, [bundle-path], [frame-count]
  *
  * The full interactive GUI workbench lives in examples/c/lab/protein_viewer.c.
  */
@@ -37,6 +37,7 @@
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "example_debug.h"
 #include "example_style.h"
 
 
@@ -48,10 +49,10 @@
 #define WIDTH  1280u
 #define HEIGHT 960u
 
-#define DEFAULT_PDB_ID "6m0j"
-#define DEFAULT_BUNDLE_PATH "data/examples/proteins/1ubq/prepared"
+#define DEFAULT_PDB_ID             "6m0j"
+#define DEFAULT_BUNDLE_PATH        "data/examples/proteins/1ubq/prepared"
 #define ROTATION_SPEED_RAD_PER_SEC 0.18f
-#define DEFAULT_ATOM_SCALE 0.78f
+#define DEFAULT_ATOM_SCALE         0.78f
 
 
 
@@ -240,6 +241,10 @@ static ProteinArgs _parse_args(int argc, char** argv)
         if (strcmp(arg, "--spin") == 0)
         {
             args.spin = true;
+        }
+        else if (example_debug_arg(arg))
+        {
+            continue;
         }
         else if (args.bundle_path == NULL && args.frame_arg == NULL && _is_uint_text(arg))
         {
@@ -461,14 +466,12 @@ static bool _upload_selection(
     const float r = radius[0] * 2.15f;
     const float gap = radius[0] * 1.18f;
     vec3 starts[6] = {
-        {p[0] - r, p[1], p[2]}, {p[0] + gap, p[1], p[2]},
-        {p[0], p[1] - r, p[2]}, {p[0], p[1] + gap, p[2]},
-        {p[0], p[1], p[2] - r}, {p[0], p[1], p[2] + gap},
+        {p[0] - r, p[1], p[2]},   {p[0] + gap, p[1], p[2]}, {p[0], p[1] - r, p[2]},
+        {p[0], p[1] + gap, p[2]}, {p[0], p[1], p[2] - r},   {p[0], p[1], p[2] + gap},
     };
     vec3 ends[6] = {
-        {p[0] - gap, p[1], p[2]}, {p[0] + r, p[1], p[2]},
-        {p[0], p[1] - gap, p[2]}, {p[0], p[1] + r, p[2]},
-        {p[0], p[1], p[2] - gap}, {p[0], p[1], p[2] + r},
+        {p[0] - gap, p[1], p[2]}, {p[0] + r, p[1], p[2]},   {p[0], p[1] - gap, p[2]},
+        {p[0], p[1] + r, p[2]},   {p[0], p[1], p[2] - gap}, {p[0], p[1], p[2] + r},
     };
     DvzColor cyan = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
     DvzColor colors[6] = {
@@ -522,6 +525,7 @@ int main(int argc, char** argv)
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
     float* scaled_radii = NULL;
+    ExampleDebug debug = {0};
     ProteinAtoms atoms = {0};
     char default_path[1024] = {0};
     ProteinArgs args = _parse_args(argc, argv);
@@ -561,7 +565,8 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.57f;
     camera_desc.near = 0.05f;
     camera_desc.far = 100.0f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
+    EXAMPLE_CHECK(
+        dvz_panel_set_camera(panel, &camera_desc) != NULL, "dvz_panel_set_camera() failed");
 
     DvzVisual* spheres = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     DvzVisual* selection = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
@@ -604,25 +609,24 @@ int main(int argc, char** argv)
     (void)dvz_visual_set_alpha_mode(crosshair, DVZ_ALPHA_BLENDED);
     EXAMPLE_CHECK(dvz_panel_add_visual(panel, crosshair, NULL) == 0, "add crosshair failed");
     EXAMPLE_CHECK(
-        _upload_selection(selection, crosshair, &atoms, _selected_atom(&atoms), DEFAULT_ATOM_SCALE),
+        _upload_selection(
+            selection, crosshair, &atoms, _selected_atom(&atoms), DEFAULT_ATOM_SCALE),
         "selection upload failed");
 
-    (void)dvz_panel_set_msaa(
-        panel, &(DvzMsaaDesc){.sample_count = 16, .alpha_to_coverage = true});
+    (void)dvz_panel_set_msaa(panel, &(DvzMsaaDesc){.sample_count = 16, .alpha_to_coverage = true});
     (void)dvz_panel_set_ssao(
-        panel,
-        &(DvzSsaoDesc){
-            .radius = 0.72f,
-            .strength = 1.82f,
-            .bias = 0.007f,
-            .power = 2.45f,
-            .min_visibility = 0.42f,
-            .blur_radius = 10.0f,
-            .blur_depth_sigma = 0.65f,
-            .blur_normal_sigma = 0.35f,
-            .sample_count = 32,
-            .blur_enabled = true,
-        });
+        panel, &(DvzSsaoDesc){
+                   .radius = 0.72f,
+                   .strength = 1.82f,
+                   .bias = 0.007f,
+                   .power = 2.45f,
+                   .min_visibility = 0.42f,
+                   .blur_radius = 10.0f,
+                   .blur_depth_sigma = 0.65f,
+                   .blur_normal_sigma = 0.35f,
+                   .sample_count = 32,
+                   .blur_enabled = true,
+               });
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
@@ -632,7 +636,16 @@ int main(int argc, char** argv)
 
     DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
-    dvz_arcball_initial(arcball, (vec3){+0.76f, -0.12f, +0.42f});
+    dvz_arcball_initial(arcball, (vec3){+0.790430f, -0.651732f, +0.810104f});
+
+    debug = example_debug(win, argc > 0 ? argv[0] : NULL, "protein");
+    example_debug_arcball(&debug, "protein", arcball);
+    example_debug_camera(&debug, "protein", &camera_desc);
+    if (example_debug_requested(argc, argv))
+    {
+        EXAMPLE_CHECK(example_debug_install(&debug, argc, argv), "example_debug_install() failed");
+    }
+
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
@@ -650,6 +663,7 @@ int main(int argc, char** argv)
     status = 0;
 
 cleanup:
+    example_debug_uninstall(&debug);
     if (app != NULL)
         dvz_app_destroy(app);
     if (scene != NULL)

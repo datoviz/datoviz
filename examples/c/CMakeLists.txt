@@ -25,6 +25,10 @@ function(dvz_add_example group name source)
         target_sources(${target} PRIVATE tools/example_gui_controls.c)
     endif()
 
+    if(TARGET datoviz_app)
+        target_sources(${target} PRIVATE example_debug.c)
+    endif()
+
     target_link_libraries(${target}
         PRIVATE
         datoviz_common
