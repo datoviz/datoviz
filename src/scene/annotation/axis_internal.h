@@ -50,8 +50,6 @@ void _axis_mark_dirty(DvzAxis* axis);
 
 DvzAxis* _panel_axis_slot(DvzPanel* panel, DvzDim dim);
 
-void _scene_panel_refresh_axis_reserve(DvzPanel* panel);
-
 void _axis_init(DvzAxis* axis, DvzPanel* panel, DvzDim dim);
 
 void _axis_plot_interval(const DvzAxis* axis, float* out_min, float* out_max);

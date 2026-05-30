@@ -386,16 +386,16 @@ static void _fill_scalar_field(float* values, float time_s)
  * @return true on success
  */
 static bool _data_to_visual(
-    DvzPanel* panel, const vec3* data, vec3* visual, uint32_t count, float z)
+    DvzPanel* panel, const float* data, float* visual, uint32_t count, float z)
 {
     ANN(panel);
     ANN(data);
     ANN(visual);
 
-    if (dvz_panel_data_to_visual_positions(panel, (const float*)data, (float*)visual, count) != 0)
+    if (dvz_panel_data_to_visual_positions(panel, data, visual, count) != 0)
         return false;
     for (uint32_t i = 0; i < count; i++)
-        visual[i][2] = z;
+        visual[3 * i + 2] = z;
     return true;
 }
 
@@ -428,7 +428,7 @@ static bool _add_wind_image(
         {DOMAIN_X_MAX_KM, DOMAIN_Y_MAX_KM, 0.0f},
     };
     vec3 visual_positions[4] = {{0}};
-    if (!_data_to_visual(panel, data_positions, visual_positions, 4, 0.0f))
+    if (!_data_to_visual(panel, (const float*)data_positions, (float*)visual_positions, 4, 0.0f))
         return false;
 
     vec2 texcoords[4] = {
@@ -517,9 +517,9 @@ static bool _fill_vectors(
             vec3 data_end[1] = {{x + scale * sample.u, y + scale * sample.v, 0.0f}};
             vec3 visual_start[1] = {{0}};
             vec3 visual_end[1] = {{0}};
-            if (!_data_to_visual(panel, data_start, visual_start, 1, 0.03f))
+            if (!_data_to_visual(panel, (const float*)data_start, (float*)visual_start, 1, 0.03f))
                 return false;
-            if (!_data_to_visual(panel, data_end, visual_end, 1, 0.03f))
+            if (!_data_to_visual(panel, (const float*)data_end, (float*)visual_end, 1, 0.03f))
                 return false;
 
             positions[idx][0] = visual_start[0][0];
@@ -661,7 +661,7 @@ static bool _fill_streamlines(
 
             vec3 data[1] = {{x, y, 0.0f}};
             vec3 visual[1] = {{0}};
-            if (!_data_to_visual(panel, data, visual, 1, 0.02f))
+            if (!_data_to_visual(panel, (const float*)data, (float*)visual, 1, 0.02f))
                 return false;
             positions[idx][0] = visual[0][0];
             positions[idx][1] = visual[0][1];
@@ -791,9 +791,9 @@ static bool _add_probe(DvzScene* scene, DvzPanel* panel)
         widths[i] = 2.0f;
     }
 
-    if (!_data_to_visual(panel, data_starts, starts, PROBE_SEGMENTS, 0.05f))
+    if (!_data_to_visual(panel, (const float*)data_starts, (float*)starts, PROBE_SEGMENTS, 0.05f))
         return false;
-    if (!_data_to_visual(panel, data_ends, ends, PROBE_SEGMENTS, 0.05f))
+    if (!_data_to_visual(panel, (const float*)data_ends, (float*)ends, PROBE_SEGMENTS, 0.05f))
         return false;
 
     DvzVisual* ring = dvz_segment(scene, 0);
@@ -816,7 +816,7 @@ static bool _add_probe(DvzScene* scene, DvzPanel* panel)
 
     vec3 data_dot[1] = {{PROBE_X_KM, PROBE_Y_KM, 0.0f}};
     vec3 dot_position[1] = {{0}};
-    if (!_data_to_visual(panel, data_dot, dot_position, 1, 0.06f))
+    if (!_data_to_visual(panel, (const float*)data_dot, (float*)dot_position, 1, 0.06f))
         return false;
     DvzVisual* dot = dvz_point(scene, 0);
     if (dot == NULL)

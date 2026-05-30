@@ -388,20 +388,21 @@ DvzColormap* dvz_colormap_custom(
         log_error("custom colormap requires at least two colors");
         return NULL;
     }
-    if ((uint64_t)count > (uint64_t)SIZE_MAX / sizeof(DvzColor))
+    const size_t count_size = (size_t)count;
+    if (count_size > SIZE_MAX / sizeof(DvzColor))
     {
         log_error("custom colormap LUT size overflow");
         return NULL;
     }
 
-    const uint64_t size = (uint64_t)count * sizeof(DvzColor);
-    DvzColor* lut = (DvzColor*)dvz_calloc(count, sizeof(DvzColor));
+    const size_t size = count_size * sizeof(DvzColor);
+    DvzColor* lut = (DvzColor*)dvz_calloc(count_size, sizeof(DvzColor));
     if (lut == NULL)
     {
         log_error("custom colormap LUT allocation failed");
         return NULL;
     }
-    dvz_memcpy(lut, (size_t)size, colors, (size_t)size);
+    dvz_memcpy(lut, size, colors, size);
 
     DvzColormap* colormap = dvz_colormap(
         scene, &(DvzColormapDesc){

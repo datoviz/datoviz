@@ -63,13 +63,6 @@ bool _stroke_quad_vector_upload_payloads(
     DvzVisual* visual, DvzVisualUploadPayload* out_payloads, uint32_t* out_count);
 bool _path_stroke_upload_payloads(
     DvzVisual* visual, DvzVisualUploadPayload* out_payloads, uint32_t* out_count);
-bool _stroke_quad_segment_derived_upload_payloads(
-    DvzVisual* visual, bool vector_params_sync, bool attrs_dirty,
-    DvzVisualUploadPayload* out_payloads, uint32_t* out_count);
-bool _path_stroke_derived_upload_payloads(
-    DvzVisual* visual, bool vector_params_sync, bool attrs_dirty,
-    DvzVisualUploadPayload* out_payloads, uint32_t* out_count);
-
 bool _stroke_query_attr(
     const DvzVisual* visual, const char* attr_name, uint32_t item_size,
     const DvzVisualAttr** out_attr);
