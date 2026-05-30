@@ -58,7 +58,7 @@ bool _scene_emit_visual_family_derived_uploads(
         return true;
 
     if (lowering.renderable_kind == DVZ_RENDERABLE_STROKE_QUAD &&
-        lowering.desc_kind == DVZ_SCENE_VISUAL_DESC_SEGMENT)
+        lowering.stroke_quad_cache != NULL)
     {
         DvzVisualUploadPayload payloads[DVZ_VISUAL_UPLOAD_PAYLOAD_MAX] = {0};
         uint32_t payload_count = 0;

@@ -34,6 +34,7 @@ typedef struct DvzVisualLowering
     bool has_point_like_kind;
     bool needs_material_params;
     bool point_style_enabled;
+    bool material_params_screen_scaled;
     bool needs_vector_params_sync;
     const char* draw_position_attr;
     const DvzStrokeQuadGpuCache* stroke_quad_cache;

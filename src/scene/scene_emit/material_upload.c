@@ -60,10 +60,7 @@ bool _scene_emit_visual_material_upload(
         return false;
     DvzVisualLowering lowering = {0};
     bool has_lowering = _scene_visual_lowering_resolve(visual, &lowering);
-    bool point_style_scaled =
-        has_lowering && lowering.point_style_enabled &&
-        (lowering.desc_kind == DVZ_SCENE_VISUAL_DESC_POINT ||
-         lowering.desc_kind == DVZ_SCENE_VISUAL_DESC_MARKER);
+    bool point_style_scaled = has_lowering && lowering.material_params_screen_scaled;
     _material_params_upload_payload(
         visual, point_style_scaled, _scene_screen_scale(figure), params);
     if (!dvz_frame_plan_upload_bytes(

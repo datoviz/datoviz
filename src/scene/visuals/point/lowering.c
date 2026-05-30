@@ -43,6 +43,7 @@ bool _scene_point_visual_lowering(const DvzVisual* visual, DvzVisualLowering* ou
     out->point_like_kind = DVZ_SCENE_POINT_LIKE_POINT;
     out->has_point_like_kind = true;
     out->point_style_enabled = visual->material.point_style_enabled;
+    out->material_params_screen_scaled = visual->material.point_style_enabled;
     out->needs_material_params =
         visual->material.depth_cue_enabled || visual->material.point_style_enabled;
     return true;
