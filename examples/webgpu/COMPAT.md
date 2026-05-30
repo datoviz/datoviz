@@ -49,6 +49,11 @@ Current status as of this note:
 - recorded browser dashboard result on 2026-05-29 after the capability-preflight diagnostics slice
   (`c03e89227`): fixture compatibility `120 pass, 0 unsupported, 0 fail`; retained runtime stress
   `7 pass, 0 fail`
+- recorded manual browser result on 2026-05-30 after the generic WASM subset documentation,
+  diagnostic ABI, and panzoom metadata slices (`9f5e93bbb`): fixture compatibility
+  `120 pass, 0 unsupported, 0 fail`; retained runtime stress `7 pass, 0 fail`; 2D WASM
+  point/primitive/image/mesh page rendered and pan/zoom worked; 3D WASM cube page rendered and
+  arcball interaction worked.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
