@@ -275,6 +275,8 @@ Current evidence as of 2026-05-30:
 5. Reloading the same live demo after the image slice confirms point + primitive + RGBA8 image
    rendering, pan/zoom, resize, and cache-busted WASM load with no visible browser/WebGPU runtime
    errors.
+6. Reloading the same live demo after the mesh slice confirms point + primitive + RGBA8 image +
+   basic mesh rendering, pan/zoom, and resize with no visible browser/WebGPU runtime errors.
 
 The supported browser-scene subset now covers point, primitive triangle-list, RGBA8 image, basic
 mesh, and panzoom. The next release-proofing gaps are captured mesh browser evidence artifacts,
