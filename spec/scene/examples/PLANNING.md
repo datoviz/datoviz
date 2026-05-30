@@ -1,7 +1,7 @@
 # Scene Example Planning
 
 > **Status:** active planning
-> **Updated on:** 2026-05-28
+> **Updated on:** 2026-05-30
 > **Scope:** worked example specs, release staging, gallery priorities, and current support gaps
 > **Purpose:** keep one source of truth for which examples matter, when they matter, and what still
 > blocks them.
@@ -81,7 +81,7 @@ The main remaining polish or feature gaps are:
 | `sphere_impostor` | `ready-now` | sphere visual, lighting/depth | Small 3D visual-polish proof. |
 | `volume` | `needs-rc1-proof` | 3D sampled field, slice/render, capture | Keeps volume rendering and export covered. |
 | `scale_bar` | `needs-rc1-proof` | retained scale bars, labels, panzoom/domain updates | Narrow RC1 fixture; richer layout can follow. |
-| `image_probe` | `needs-rc1-proof` | image probe, pixel readback, scale/colorbar/annotation | Keep as the focused public image-query proof, with broader API pressure covered by follow-up examples. |
+| `image_probe` | `ready-now` | scalar image probe, custom LUT colormap, colorbar, live readout | Focused public image-query proof lives in `examples/c/features/image_probe.c`; broader linked-panel pressure remains separate. |
 | `protein_arcball_viewer` | `partial-now` | mesh, sphere, materials, SSAO/MSAA, GUI, arcball | Flagship native C showcase; defer labels/picking/molecular surface if needed. |
 | `showcase_wind_field` | `needs-rc1-proof` | image field, vector visual, paths, panzoom, colorbar | Best near-term 2D showcase; vector visual should replace primitive arrows. |
 | `textured_terrain_or_planet` | `needs-rc1-proof` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof. Current source is `examples/c/visuals/textured_mesh.c`; promote or add a showcase/fixture capture. |

@@ -81,6 +81,18 @@ Minimal target: one 2D panel and one 3D panel with scale bars whose labels updat
 formatted value or relevant style changes.
 
 
+## `image_probe`
+
+Focused public image-query proof for scalar sampled fields. It keeps the source field scalar,
+renders through a custom LUT colormap and continuous colorbar, and shows a compact live scalar
+readout under the cursor.
+
+Current proof: `examples/c/features/image_probe.c`.
+
+Minimal target: one scalar image field, shared scale/colormap/colorbar, GPU-backed pixel hit/miss
+query, crosshair marker, and live scalar readout aligned with the rendered plot area.
+
+
 ## Blockers To Track In Planning
 
 Release stage, readiness, and global blockers belong in [../../PLANNING.md](../../PLANNING.md).
