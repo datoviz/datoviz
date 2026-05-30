@@ -703,7 +703,7 @@ static DvzOverlayCard* _add_probe_card(DvzPanel* panel)
     style.text_color = dvz_color_rgb(231, 240, 250);
     style.padding_px[0] = 10.0f;
     style.padding_px[1] = 6.0f;
-    style.min_width_px = 184.0f;
+    style.min_width_px = 104.0f;
     style.height_px = 28.0f;
     style.glyph_advance_px = 7.0f;
     style.text_size_px = 13.0f;
