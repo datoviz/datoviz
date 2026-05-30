@@ -269,6 +269,8 @@ Current evidence as of 2026-05-30:
 2. The browser demo entry point is `examples/webgpu/wasm_scene.html`.
 3. Manual local browser proof confirms the point scene renders and panzoom interaction works through
    the WASM scene bridge.
+4. Manual local browser proof at `http://localhost:8765/examples/webgpu/wasm_scene.html` confirms
+   point + primitive rendering, pan/zoom, and resize with no visible browser/WebGPU runtime errors.
 
 The supported browser-scene subset remains point, primitive triangle-list, and panzoom. The next
 release-proofing gaps are
