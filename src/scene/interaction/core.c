@@ -88,7 +88,7 @@ static int _item_state_sync_visual(DvzScene* scene, DvzVisual* visual);
 
 static int _item_state_sync_scene(DvzScene* scene, const char* reason);
 
-static int _selection_sync_masks(DvzSelection* selection);
+static int _selection_sync_item_state(DvzSelection* selection);
 
 static DvzPanel* _selection_card_panel_from_query(
     DvzSelection* selection, const DvzQueryResult* query);
@@ -256,7 +256,7 @@ static bool _scene_remove_selection_item(DvzSelection* selection, const DvzSelec
 
 
 /**
- * Clear stored selection items without synchronizing visual masks.
+ * Clear stored selection items without synchronizing visual item state.
  *
  * @param selection the selection
  */
@@ -610,7 +610,7 @@ static int _item_state_sync_scene(DvzScene* scene, const char* reason)
  * @param selection the selection
  * @return 0 on success, -1 on error
  */
-static int _selection_sync_masks(DvzSelection* selection)
+static int _selection_sync_item_state(DvzSelection* selection)
 {
     ANN(selection);
     if (selection->scene == NULL)
@@ -1660,7 +1660,7 @@ void dvz_selection_clear(DvzSelection* selection)
 {
     ANN(selection);
     _selection_clear_items(selection);
-    (void)_selection_sync_masks(selection);
+    (void)_selection_sync_item_state(selection);
     _selection_card_hide(selection);
 }
 
@@ -1729,7 +1729,7 @@ int dvz_selection_set_visual_style(DvzSelection* selection, const DvzSelectionVi
     }
 
     selection->visual_style = resolved;
-    return _selection_sync_masks(selection);
+    return _selection_sync_item_state(selection);
 }
 
 
@@ -1764,7 +1764,7 @@ int dvz_selection_apply_query(DvzSelection* selection, const DvzQueryResult* que
         _selection_clear_items(selection);
         selection->items[0] = item;
         selection->item_count = 1;
-        int replace_res = _selection_sync_masks(selection);
+        int replace_res = _selection_sync_item_state(selection);
         if (replace_res == 0)
             _selection_card_update_from_query(selection, query);
         return replace_res;
@@ -1780,7 +1780,7 @@ int dvz_selection_apply_query(DvzSelection* selection, const DvzQueryResult* que
     {
         if (present)
             _scene_remove_selection_item(selection, &item);
-        int subtract_res = _selection_sync_masks(selection);
+        int subtract_res = _selection_sync_item_state(selection);
         if (subtract_res == 0 && selection->item_count == 0)
             _selection_card_hide(selection);
         return subtract_res;
@@ -1789,7 +1789,7 @@ int dvz_selection_apply_query(DvzSelection* selection, const DvzQueryResult* que
         if (present)
         {
             _scene_remove_selection_item(selection, &item);
-            int toggle_remove_res = _selection_sync_masks(selection);
+            int toggle_remove_res = _selection_sync_item_state(selection);
             if (toggle_remove_res == 0)
                 _selection_card_hide(selection);
             return toggle_remove_res;
@@ -1804,7 +1804,7 @@ int dvz_selection_apply_query(DvzSelection* selection, const DvzQueryResult* que
         return -1;
     }
     selection->items[selection->item_count++] = item;
-    int add_res = _selection_sync_masks(selection);
+    int add_res = _selection_sync_item_state(selection);
     if (add_res == 0)
         _selection_card_update_from_query(selection, query);
     return add_res;
