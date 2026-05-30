@@ -7,6 +7,15 @@ import {
 
 const DVZ_FORMAT_R8G8B8A8_UNORM = 37;
 const DVZ_FORMAT_B8G8R8A8_UNORM = 44;
+const DVZ_DIM_MASK_XY = 3;
+const DVZ_CONTROLLER_TYPE_PANZOOM = 1;
+const DVZ_POINTER_EVENT_RELEASE = 0;
+const DVZ_POINTER_EVENT_PRESS = 1;
+const DVZ_POINTER_EVENT_MOVE = 2;
+const DVZ_POINTER_BUTTON_NONE = 0;
+const DVZ_POINTER_BUTTON_LEFT = 1;
+const DVZ_POINTER_BUTTON_MIDDLE = 2;
+const DVZ_POINTER_BUTTON_RIGHT = 3;
 
 export const DvzWasmVisual = Object.freeze({
   point: 1,
@@ -118,6 +127,116 @@ export class DatovizWasmScene {
       this.Module._dvz_wasm_api_panel_add_visual(panel, visualHandle) === 0,
       "dvz_wasm_api_panel_add_visual failed",
     );
+  }
+
+  attachPanzoom(panel) {
+    const controller = this.Module._dvz_wasm_api_controller(this.scene, DVZ_CONTROLLER_TYPE_PANZOOM);
+    requireOk(controller !== 0, "dvz_wasm_api_controller(panzoom) failed");
+    requireOk(
+      this.Module._dvz_wasm_api_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) === 0,
+      "dvz_wasm_api_panel_bind_controller failed",
+    );
+    return controller;
+  }
+
+  resize() {
+    resizeWebGpuCanvas(this.gpu.device, this.gpu.context, this.gpu.format);
+    const scale = Math.max(1, window.devicePixelRatio || 1);
+    requireOk(
+      this.Module._dvz_wasm_api_resize(this.scene, this.figure, this.canvas.width, this.canvas.height, scale) === 0,
+      "dvz_wasm_api_resize failed",
+    );
+  }
+
+  pointer(type, event) {
+    const point = this._canvasPoint(event);
+    requireOk(
+      this.Module._dvz_wasm_api_pointer(
+        this.scene,
+        type,
+        point.x,
+        point.y,
+        this._buttonFromPointerEvent(event),
+        this._modifierMask(event),
+        point.scale,
+        performance.now(),
+      ) === 0,
+      "dvz_wasm_api_pointer failed",
+    );
+  }
+
+  wheel(event) {
+    const point = this._canvasPoint(event);
+    requireOk(
+      this.Module._dvz_wasm_api_wheel(
+        this.scene,
+        point.x,
+        point.y,
+        0,
+        -event.deltaY / 100,
+        this._modifierMask(event),
+        point.scale,
+        performance.now(),
+      ) === 0,
+      "dvz_wasm_api_wheel failed",
+    );
+  }
+
+  attachPanzoomInput(onChange) {
+    const route = (event, type) => {
+      event.preventDefault();
+      this.pointer(type, event);
+      onChange();
+    };
+    this.canvas.addEventListener("pointerdown", (event) => {
+      this.canvas.setPointerCapture(event.pointerId);
+      route(event, DVZ_POINTER_EVENT_PRESS);
+    });
+    this.canvas.addEventListener("pointermove", (event) => route(event, DVZ_POINTER_EVENT_MOVE));
+    this.canvas.addEventListener("pointerup", (event) => {
+      route(event, DVZ_POINTER_EVENT_RELEASE);
+      if (this.canvas.hasPointerCapture(event.pointerId)) {
+        this.canvas.releasePointerCapture(event.pointerId);
+      }
+    });
+    this.canvas.addEventListener("pointercancel", (event) => route(event, DVZ_POINTER_EVENT_RELEASE));
+    this.canvas.addEventListener("wheel", (event) => {
+      event.preventDefault();
+      this.wheel(event);
+      onChange();
+    }, { passive: false });
+    this.canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+  }
+
+  _canvasPoint(event) {
+    const rect = this.canvas.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+      scale: Math.max(1, window.devicePixelRatio || 1),
+    };
+  }
+
+  _buttonFromPointerEvent(event) {
+    switch (event.button) {
+      case 0: return DVZ_POINTER_BUTTON_LEFT;
+      case 1: return DVZ_POINTER_BUTTON_MIDDLE;
+      case 2: return DVZ_POINTER_BUTTON_RIGHT;
+      default:
+        if ((event.buttons & 1) !== 0) return DVZ_POINTER_BUTTON_LEFT;
+        if ((event.buttons & 4) !== 0) return DVZ_POINTER_BUTTON_MIDDLE;
+        if ((event.buttons & 2) !== 0) return DVZ_POINTER_BUTTON_RIGHT;
+        return DVZ_POINTER_BUTTON_NONE;
+    }
+  }
+
+  _modifierMask(event) {
+    let mods = 0;
+    if (event.shiftKey) mods |= 1;
+    if (event.ctrlKey) mods |= 2;
+    if (event.altKey) mods |= 4;
+    if (event.metaKey) mods |= 8;
+    return mods;
   }
 
   _diagnosticMessage(prefix) {

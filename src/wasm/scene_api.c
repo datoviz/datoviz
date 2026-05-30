@@ -26,6 +26,8 @@
 #endif
 
 #include "datoviz/drp2.h"
+#include "datoviz/input/pointer.h"
+#include "datoviz/input/router.h"
 #include "datoviz/scene.h"
 #include "datoviz/vk/enums.h"
 
@@ -77,6 +79,8 @@ struct DvzWasmApiScene
 {
     DvzScene* scene;
     DvzDrp2CommandStream* stream;
+    DvzInputRouter* router;
+    DvzPointerGestureHandler* gestures;
     char* json;
     DvzDiagnosticReport report;
     void* wrappers[DVZ_WASM_API_MAX_WRAPPERS];
@@ -148,6 +152,25 @@ static bool _remember(DvzWasmApiScene* scene, void* wrapper)
 
 
 
+static void _emit_resize(
+    DvzWasmApiScene* scene, uint32_t width, uint32_t height, float device_scale)
+{
+    if (scene == NULL || scene->router == NULL)
+        return;
+
+    DvzInputResizeEvent resize = {
+        .framebuffer_width = width,
+        .framebuffer_height = height,
+        .window_width = device_scale > 0.0f ? (uint32_t)((float)width / device_scale) : width,
+        .window_height = device_scale > 0.0f ? (uint32_t)((float)height / device_scale) : height,
+        .content_scale_x = device_scale > 0.0f ? device_scale : 1.0f,
+        .content_scale_y = device_scale > 0.0f ? device_scale : 1.0f,
+    };
+    dvz_input_emit_resize(scene->router, &resize);
+}
+
+
+
 /*************************************************************************************************/
 /*  Scene lifecycle                                                                              */
 /*************************************************************************************************/
@@ -168,8 +191,13 @@ uint32_t dvz_wasm_api_scene(uint32_t width, uint32_t height)
     scene->height = height;
     scene->color_format = DVZ_FORMAT_R8G8B8A8_UNORM;
     scene->scene = dvz_scene();
-    if (scene->scene == NULL)
+    scene->router = dvz_input_router();
+    if (scene->scene == NULL || scene->router == NULL)
     {
+        if (scene->router != NULL)
+            dvz_input_router_destroy(scene->router);
+        if (scene->scene != NULL)
+            dvz_scene_destroy(scene->scene);
         free(scene);
         return 0;
     }
@@ -185,6 +213,16 @@ void dvz_wasm_api_scene_destroy(uint32_t scene_handle)
     if (scene == NULL)
         return;
     _clear_payload(scene);
+    if (scene->gestures != NULL)
+    {
+        dvz_pointer_gesture_handler_destroy(scene->gestures);
+        scene->gestures = NULL;
+    }
+    if (scene->router != NULL)
+    {
+        dvz_input_router_destroy(scene->router);
+        scene->router = NULL;
+    }
     if (scene->scene != NULL)
     {
         dvz_scene_destroy(scene->scene);
@@ -356,7 +394,17 @@ int dvz_wasm_api_panel_bind_controller(
         return -1;
     }
     _clear_payload(panel->owner);
-    return dvz_panel_bind_controller(panel->panel, controller->controller, (DvzDimMask)dims);
+    if (dvz_panel_bind_controller(panel->panel, controller->controller, (DvzDimMask)dims) != 0)
+        return -1;
+    if (dvz_panel_connect_input(panel->panel, panel->owner->router) != 0)
+        return -1;
+    if (panel->owner->gestures == NULL)
+    {
+        panel->owner->gestures = dvz_pointer_gesture_handler(panel->owner->router);
+        if (panel->owner->gestures == NULL)
+            return -1;
+    }
+    return 0;
 }
 
 
@@ -408,6 +456,68 @@ int dvz_wasm_api_visual_set_texture_rgba8(
     }
     _clear_payload(visual->owner);
     return dvz_visual_set_texture(visual->visual, rgba, width, height);
+}
+
+
+
+/*************************************************************************************************/
+/*  Input                                                                                        */
+/*************************************************************************************************/
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_resize(
+    uint32_t scene_handle, uint32_t figure_handle, uint32_t width, uint32_t height,
+    float device_scale)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    DvzWasmApiFigure* figure = _figure(figure_handle);
+    if (
+        scene == NULL || figure == NULL || figure->owner != scene || figure->figure == NULL ||
+        width == 0 || height == 0)
+    {
+        return -1;
+    }
+    _clear_payload(scene);
+    scene->width = width;
+    scene->height = height;
+    dvz_figure_resize(figure->figure, width, height);
+    _emit_resize(scene, width, height, device_scale);
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_pointer(
+    uint32_t scene_handle, int type, float x, float y, int button, int mods, float content_scale,
+    double timestamp_ms)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    if (scene == NULL || scene->router == NULL)
+        return -1;
+    _clear_payload(scene);
+    uint64_t timestamp_ns = timestamp_ms > 0.0 ? (uint64_t)(timestamp_ms * 1000000.0) : 0;
+    dvz_pointer_emit_position(
+        scene->router, (DvzPointerEventType)type, x, y, x, y, (DvzPointerButton)button, mods,
+        content_scale, timestamp_ns, NULL);
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_wheel(
+    uint32_t scene_handle, float x, float y, float dir_x, float dir_y, int mods,
+    float content_scale, double timestamp_ms)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    if (scene == NULL || scene->router == NULL)
+        return -1;
+    _clear_payload(scene);
+    uint64_t timestamp_ns = timestamp_ms > 0.0 ? (uint64_t)(timestamp_ms * 1000000.0) : 0;
+    dvz_pointer_emit_wheel(
+        scene->router, x, y, x, y, dir_x, dir_y, mods, content_scale, timestamp_ns, NULL);
+    return 0;
 }
 
 

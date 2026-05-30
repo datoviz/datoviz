@@ -15,6 +15,8 @@ const DVZ_POINTER_EVENT_RELEASE = 0;
 const DVZ_POINTER_EVENT_MOVE = 2;
 const DVZ_POINTER_BUTTON_LEFT = 1;
 const DVZ_FORMAT_R8G8B8A8_UNORM = 37;
+const DVZ_CONTROLLER_TYPE_PANZOOM = 1;
+const DVZ_DIM_MASK_XY = 3;
 const DVZ_WASM_VISUAL_POINT = 1;
 
 function requireOk(condition, message) {
@@ -454,6 +456,13 @@ try {
     0,
     "dvz_wasm_api_panel_add_visual",
   );
+  const apiController = Module._dvz_wasm_api_controller(apiScene, DVZ_CONTROLLER_TYPE_PANZOOM);
+  requireOk(apiController !== 0, "dvz_wasm_api_controller(panzoom) failed");
+  expectStatus(
+    Module._dvz_wasm_api_panel_bind_controller(apiPanel, apiController, DVZ_DIM_MASK_XY),
+    0,
+    "dvz_wasm_api_panel_bind_controller",
+  );
   expectStatus(Module._dvz_wasm_api_emit(apiScene, apiFigure), 0, "dvz_wasm_api_emit");
   requireOk(Module._dvz_wasm_api_diagnostic_count(apiScene) === 0, "generic API emitted diagnostics");
   const ptr = Module._dvz_wasm_api_payload_ptr(apiScene);
@@ -462,6 +471,27 @@ try {
   const apiStream = JSON.parse(new TextDecoder().decode(Module.HEAPU8.subarray(ptr, ptr + size)));
   requireOk(Array.isArray(apiStream.commands), "generic API stream has no commands array");
   requireOk(apiStream.commands.length > 0, "generic API stream has no commands");
+  expectStatus(
+    Module._dvz_wasm_api_pointer(
+      apiScene,
+      DVZ_POINTER_EVENT_PRESS,
+      smokeSize / 2,
+      smokeSize / 2,
+      DVZ_POINTER_BUTTON_LEFT,
+      0,
+      1,
+      200.0,
+    ),
+    0,
+    "dvz_wasm_api_pointer",
+  );
+  expectStatus(Module._dvz_wasm_api_emit(apiScene, apiFigure), 0, "dvz_wasm_api_emit after pointer");
+  expectStatus(
+    Module._dvz_wasm_api_resize(apiScene, apiFigure, smokeSize * 2, smokeSize + 8, 2.0),
+    0,
+    "dvz_wasm_api_resize",
+  );
+  expectStatus(Module._dvz_wasm_api_emit(apiScene, apiFigure), 0, "dvz_wasm_api_emit after resize");
   await writeFile(outputApiPath, `${JSON.stringify(apiStream, null, 2)}\n`, "utf8");
   console.log(`Wrote ${outputApiPath}`);
   console.log(`commands_api=${apiStream.commands.length}`);

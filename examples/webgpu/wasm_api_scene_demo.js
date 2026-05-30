@@ -129,10 +129,38 @@ async function main() {
   addPrimitive(scene, panel);
   addImage(scene, panel);
   addMesh(scene, panel);
+  scene.attachPanzoom(panel);
+
+  let rendering = false;
+  let pending = false;
+  const renderChange = async () => {
+    if (rendering) {
+      pending = true;
+      return;
+    }
+    rendering = true;
+    try {
+      do {
+        pending = false;
+        const updateStream = await scene.renderIncremental();
+        statsEl.textContent = `${updateStream.commands.length} commands`;
+        setStatus("Rendered generic interactive scene");
+      } while (pending);
+    } finally {
+      rendering = false;
+    }
+  };
 
   const stream = await scene.renderInitial();
   statsEl.textContent = `${stream.commands.length} commands`;
   setStatus("Rendered generic point/primitive/image/mesh scene");
+  scene.attachPanzoomInput(() => {
+    renderChange().catch((error) => setStatus(error.message, true));
+  });
+  new ResizeObserver(() => {
+    scene.resize();
+    renderChange().catch((error) => setStatus(error.message, true));
+  }).observe(canvas);
 }
 
 main().catch((error) => {
