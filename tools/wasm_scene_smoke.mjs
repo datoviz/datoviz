@@ -169,6 +169,30 @@ try {
       Module._free(badAttrNamePtr);
       Module._free(onePositionPtr);
     }
+
+    expectStatus(
+      Module._dvz_wasm_api_resize(diagnosticScene, 0, smokeSize, smokeSize, 1),
+      -1,
+      "invalid resize",
+    );
+    expectDiagnostics(Module, diagnosticScene, "invalid WASM resize request", "invalid resize");
+
+    const badController = Module._dvz_wasm_api_controller(diagnosticScene, 9999);
+    requireOk(badController === 0, "unsupported controller type unexpectedly succeeded");
+    expectDiagnostics(
+      Module, diagnosticScene, "unsupported WASM controller type", "unsupported controller");
+
+    const panzoomForDiagnostics =
+      Module._dvz_wasm_api_controller(diagnosticScene, DVZ_CONTROLLER_TYPE_PANZOOM);
+    requireOk(panzoomForDiagnostics !== 0, "diagnostic panzoom creation failed");
+    expectNoDiagnostics(Module, diagnosticScene, "successful controller creation clears diagnostics");
+    expectStatus(
+      Module._dvz_wasm_api_arcball_initial(panzoomForDiagnostics, 0, 0, 0),
+      -1,
+      "arcball initial on panzoom",
+    );
+    expectDiagnostics(
+      Module, diagnosticScene, "WASM controller is not an arcball", "arcball on panzoom");
   } finally {
     Module._dvz_wasm_api_scene_destroy(diagnosticScene);
   }

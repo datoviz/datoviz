@@ -64,6 +64,16 @@ function allocCString(Module, text) {
   return ptr;
 }
 
+function diagnosticMessage(Module, scene, prefix) {
+  const count = Module._dvz_wasm_api_diagnostic_count(scene);
+  const messages = [];
+  for (let i = 0; i < count; i++) {
+    const ptr = Module._dvz_wasm_api_diagnostic(scene, i);
+    messages.push(ptr !== 0 ? Module.UTF8ToString(ptr) : "<null diagnostic>");
+  }
+  return `${prefix}${messages.length > 0 ? `: ${messages.join("; ")}` : ""}`;
+}
+
 export class DatovizWasmScene {
   static async create(canvas, options = {}) {
     const moduleUrl = wasmModuleUrl();
@@ -84,12 +94,14 @@ export class DatovizWasmScene {
     resizeWebGpuCanvas(gpu.device, gpu.context, gpu.format);
     const scene = Module._dvz_wasm_api_scene(canvas.width, canvas.height);
     requireOk(scene !== 0, "dvz_wasm_api_scene failed");
-    requireOk(
-      Module._dvz_wasm_api_set_canvas_format(scene, canvasFormatCode(gpu.format)) === 0,
-      `scene rejected browser canvas format ${gpu.format}`,
-    );
+    const formatStatus = Module._dvz_wasm_api_set_canvas_format(scene, canvasFormatCode(gpu.format));
+    if (formatStatus !== 0) {
+      throw new Error(diagnosticMessage(Module, scene, `scene rejected browser canvas format ${gpu.format}`));
+    }
     const figure = Module._dvz_wasm_api_figure(scene, canvas.width, canvas.height);
-    requireOk(figure !== 0, "dvz_wasm_api_figure failed");
+    if (figure === 0) {
+      throw new Error(diagnosticMessage(Module, scene, "dvz_wasm_api_figure failed"));
+    }
     return new DatovizWasmScene(Module, gpu, canvas, scene, figure);
   }
 
@@ -111,31 +123,30 @@ export class DatovizWasmScene {
 
   panelFull() {
     const panel = this.Module._dvz_wasm_api_panel_full(this.figure);
-    requireOk(panel !== 0, "dvz_wasm_api_panel_full failed");
-    return panel;
+    return this._requireHandle(panel, "dvz_wasm_api_panel_full failed");
   }
 
   visual(type, flags = 0) {
     const visualType = typeof type === "string" ? DvzWasmVisual[type] : type;
     requireOk(visualType !== undefined, `unknown visual type ${type}`);
     const visual = this.Module._dvz_wasm_api_visual(this.scene, visualType, flags);
-    requireOk(visual !== 0, `dvz_wasm_api_visual(${type}) failed`);
-    return new DatovizWasmVisualHandle(this.Module, visual);
+    this._requireHandle(visual, `dvz_wasm_api_visual(${type}) failed`);
+    return new DatovizWasmVisualHandle(this.Module, this.scene, visual);
   }
 
   addVisual(panel, visual) {
     const visualHandle = visual instanceof DatovizWasmVisualHandle ? visual.handle : visual;
-    requireOk(
-      this.Module._dvz_wasm_api_panel_add_visual(panel, visualHandle) === 0,
+    this._requireStatus(
+      this.Module._dvz_wasm_api_panel_add_visual(panel, visualHandle),
       "dvz_wasm_api_panel_add_visual failed",
     );
   }
 
   attachPanzoom(panel) {
     const controller = this.Module._dvz_wasm_api_controller(this.scene, DVZ_CONTROLLER_TYPE_PANZOOM);
-    requireOk(controller !== 0, "dvz_wasm_api_controller(panzoom) failed");
-    requireOk(
-      this.Module._dvz_wasm_api_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) === 0,
+    this._requireHandle(controller, "dvz_wasm_api_controller(panzoom) failed");
+    this._requireStatus(
+      this.Module._dvz_wasm_api_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY),
       "dvz_wasm_api_panel_bind_controller(panzoom) failed",
     );
     return controller;
@@ -143,14 +154,14 @@ export class DatovizWasmScene {
 
   attachArcball(panel, options = {}) {
     const controller = this.Module._dvz_wasm_api_controller(this.scene, DVZ_CONTROLLER_TYPE_ARCBALL);
-    requireOk(controller !== 0, "dvz_wasm_api_controller(arcball) failed");
-    requireOk(
-      this.Module._dvz_wasm_api_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) === 0,
+    this._requireHandle(controller, "dvz_wasm_api_controller(arcball) failed");
+    this._requireStatus(
+      this.Module._dvz_wasm_api_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ),
       "dvz_wasm_api_panel_bind_controller(arcball) failed",
     );
     const initial = options.initial ?? [0.45, -0.65, 0.2];
-    requireOk(
-      this.Module._dvz_wasm_api_arcball_initial(controller, initial[0], initial[1], initial[2]) === 0,
+    this._requireStatus(
+      this.Module._dvz_wasm_api_arcball_initial(controller, initial[0], initial[1], initial[2]),
       "dvz_wasm_api_arcball_initial failed",
     );
     return controller;
@@ -159,7 +170,7 @@ export class DatovizWasmScene {
   setCamera(panel, options = {}) {
     const eye = options.eye ?? [0, 0, 3];
     const target = options.target ?? [0, 0, 0];
-    requireOk(
+    this._requireStatus(
       this.Module._dvz_wasm_api_panel_set_camera(
         panel,
         eye[0],
@@ -171,7 +182,7 @@ export class DatovizWasmScene {
         options.fovY ?? Math.PI / 4,
         options.near ?? 0.1,
         options.far ?? 100,
-      ) === 0,
+      ),
       "dvz_wasm_api_panel_set_camera failed",
     );
   }
@@ -179,15 +190,15 @@ export class DatovizWasmScene {
   resize() {
     resizeWebGpuCanvas(this.gpu.device, this.gpu.context, this.gpu.format);
     const scale = Math.max(1, window.devicePixelRatio || 1);
-    requireOk(
-      this.Module._dvz_wasm_api_resize(this.scene, this.figure, this.canvas.width, this.canvas.height, scale) === 0,
+    this._requireStatus(
+      this.Module._dvz_wasm_api_resize(this.scene, this.figure, this.canvas.width, this.canvas.height, scale),
       "dvz_wasm_api_resize failed",
     );
   }
 
   pointer(type, event) {
     const point = this._canvasPoint(event);
-    requireOk(
+    this._requireStatus(
       this.Module._dvz_wasm_api_pointer(
         this.scene,
         type,
@@ -197,14 +208,14 @@ export class DatovizWasmScene {
         this._modifierMask(event),
         point.scale,
         performance.now(),
-      ) === 0,
+      ),
       "dvz_wasm_api_pointer failed",
     );
   }
 
   wheel(event) {
     const point = this._canvasPoint(event);
-    requireOk(
+    this._requireStatus(
       this.Module._dvz_wasm_api_wheel(
         this.scene,
         point.x,
@@ -214,7 +225,7 @@ export class DatovizWasmScene {
         this._modifierMask(event),
         point.scale,
         performance.now(),
-      ) === 0,
+      ),
       "dvz_wasm_api_wheel failed",
     );
   }
@@ -281,13 +292,20 @@ export class DatovizWasmScene {
   }
 
   _diagnosticMessage(prefix) {
-    const count = this.Module._dvz_wasm_api_diagnostic_count(this.scene);
-    const messages = [];
-    for (let i = 0; i < count; i++) {
-      const ptr = this.Module._dvz_wasm_api_diagnostic(this.scene, i);
-      messages.push(ptr !== 0 ? this.Module.UTF8ToString(ptr) : "<null diagnostic>");
+    return diagnosticMessage(this.Module, this.scene, prefix);
+  }
+
+  _requireHandle(handle, label) {
+    if (handle === 0) {
+      throw new Error(this._diagnosticMessage(label));
     }
-    return `${prefix}${messages.length > 0 ? `: ${messages.join("; ")}` : ""}`;
+    return handle;
+  }
+
+  _requireStatus(status, label) {
+    if (status !== 0) {
+      throw new Error(this._diagnosticMessage(`${label} with ${status}`));
+    }
   }
 
   emit() {
@@ -324,9 +342,14 @@ export class DatovizWasmScene {
 }
 
 export class DatovizWasmVisualHandle {
-  constructor(Module, handle) {
+  constructor(Module, scene, handle) {
     this.Module = Module;
+    this.scene = scene;
     this.handle = handle;
+  }
+
+  _diagnosticMessage(prefix) {
+    return diagnosticMessage(this.Module, this.scene, prefix);
   }
 
   setF32(attr, values, itemCount) {
@@ -334,7 +357,9 @@ export class DatovizWasmVisualHandle {
     const dataPtr = allocArray(this.Module, values);
     try {
       const status = this.Module._dvz_wasm_api_visual_set_f32(this.handle, attrPtr, dataPtr, itemCount);
-      requireOk(status === 0, `dvz_wasm_api_visual_set_f32(${attr}) failed with ${status}`);
+      if (status !== 0) {
+        throw new Error(this._diagnosticMessage(`dvz_wasm_api_visual_set_f32(${attr}) failed with ${status}`));
+      }
     } finally {
       this.Module._free(attrPtr);
       this.Module._free(dataPtr);
@@ -346,7 +371,9 @@ export class DatovizWasmVisualHandle {
     const dataPtr = allocArray(this.Module, values);
     try {
       const status = this.Module._dvz_wasm_api_visual_set_rgba8(this.handle, attrPtr, dataPtr, itemCount);
-      requireOk(status === 0, `dvz_wasm_api_visual_set_rgba8(${attr}) failed with ${status}`);
+      if (status !== 0) {
+        throw new Error(this._diagnosticMessage(`dvz_wasm_api_visual_set_rgba8(${attr}) failed with ${status}`));
+      }
     } finally {
       this.Module._free(attrPtr);
       this.Module._free(dataPtr);
@@ -357,7 +384,9 @@ export class DatovizWasmVisualHandle {
     const dataPtr = allocArray(this.Module, values);
     try {
       const status = this.Module._dvz_wasm_api_visual_set_texture_rgba8(this.handle, dataPtr, width, height);
-      requireOk(status === 0, `dvz_wasm_api_visual_set_texture_rgba8 failed with ${status}`);
+      if (status !== 0) {
+        throw new Error(this._diagnosticMessage(`dvz_wasm_api_visual_set_texture_rgba8 failed with ${status}`));
+      }
     } finally {
       this.Module._free(dataPtr);
     }

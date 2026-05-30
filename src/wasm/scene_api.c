@@ -273,7 +273,7 @@ uint32_t dvz_wasm_api_figure(uint32_t scene_handle, uint32_t width, uint32_t hei
     _clear_payload(scene);
     DvzWasmApiFigure* figure = (DvzWasmApiFigure*)calloc(1, sizeof(DvzWasmApiFigure));
     if (figure == NULL)
-        return 0;
+        return _fail_handle(scene, "WASM figure wrapper allocation failed");
     figure->owner = scene;
     figure->figure = dvz_figure(scene->scene, width, height, 0);
     if (figure->figure == NULL || !_remember(scene, figure))
@@ -297,7 +297,7 @@ uint32_t dvz_wasm_api_panel_full(uint32_t figure_handle)
     _clear_payload(figure->owner);
     DvzWasmApiPanel* panel = (DvzWasmApiPanel*)calloc(1, sizeof(DvzWasmApiPanel));
     if (panel == NULL)
-        return 0;
+        return _fail_handle(figure->owner, "WASM panel wrapper allocation failed");
     panel->owner = figure->owner;
     panel->panel = dvz_panel_full(figure->figure);
     if (panel->panel == NULL || !_remember(figure->owner, panel))
@@ -319,7 +319,7 @@ uint32_t dvz_wasm_api_visual(uint32_t scene_handle, uint32_t visual_type, uint32
     _clear_payload(scene);
     DvzWasmApiVisual* visual = (DvzWasmApiVisual*)calloc(1, sizeof(DvzWasmApiVisual));
     if (visual == NULL)
-        return 0;
+        return _fail_handle(scene, "WASM visual wrapper allocation failed");
     visual->owner = scene;
     switch (visual_type)
     {
@@ -360,7 +360,7 @@ uint32_t dvz_wasm_api_controller(uint32_t scene_handle, uint32_t controller_type
     DvzWasmApiController* controller =
         (DvzWasmApiController*)calloc(1, sizeof(DvzWasmApiController));
     if (controller == NULL)
-        return 0;
+        return _fail_handle(scene, "WASM controller wrapper allocation failed");
     controller->owner = scene;
     switch ((DvzControllerType)controller_type)
     {
@@ -446,7 +446,7 @@ int dvz_wasm_api_panel_set_camera(
 {
     DvzWasmApiPanel* panel = _panel(panel_handle);
     if (panel == NULL || panel->owner == NULL || panel->panel == NULL)
-        return -1;
+        return _fail(panel != NULL ? panel->owner : NULL, "invalid WASM panel handle");
     _clear_payload(panel->owner);
     DvzCameraDesc desc = dvz_camera_desc();
     desc.eye[0] = eye_x;
@@ -471,7 +471,8 @@ int dvz_wasm_api_arcball_initial(
 {
     DvzWasmApiController* controller = _controller(controller_handle);
     if (controller == NULL || controller->owner == NULL || controller->controller == NULL)
-        return -1;
+        return _fail(
+            controller != NULL ? controller->owner : NULL, "invalid WASM controller handle");
     DvzArcball* arcball = dvz_controller_arcball(controller->controller);
     if (arcball == NULL)
         return _fail(controller->owner, "WASM controller is not an arcball");
@@ -573,7 +574,7 @@ int dvz_wasm_api_pointer(
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
     if (scene == NULL || scene->router == NULL)
-        return -1;
+        return _fail(scene, "invalid WASM pointer request");
     _clear_payload(scene);
     uint64_t timestamp_ns = timestamp_ms > 0.0 ? (uint64_t)(timestamp_ms * 1000000.0) : 0;
     dvz_pointer_emit_position(
@@ -591,7 +592,7 @@ int dvz_wasm_api_wheel(
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
     if (scene == NULL || scene->router == NULL)
-        return -1;
+        return _fail(scene, "invalid WASM wheel request");
     _clear_payload(scene);
     uint64_t timestamp_ns = timestamp_ms > 0.0 ? (uint64_t)(timestamp_ms * 1000000.0) : 0;
     dvz_pointer_emit_wheel(
@@ -646,7 +647,13 @@ int dvz_wasm_api_emit(uint32_t scene_handle, uint32_t figure_handle)
     emit_cfg.target_height = scene->height;
 
     scene->stream = dvz_figure_emit_ex(figure->figure, &caps, &scene->report, &emit_cfg);
-    if (scene->stream == NULL || dvz_diagnostic_report_count(&scene->report) > 0)
+    if (scene->stream == NULL)
+    {
+        if (dvz_diagnostic_report_count(&scene->report) == 0)
+            (void)dvz_diagnostic_report_add(&scene->report, "WASM scene emission failed");
+        return -1;
+    }
+    if (dvz_diagnostic_report_count(&scene->report) > 0)
         return -1;
     scene->json = dvz_drp2_stream_json(scene->stream, "wasm_api_scene");
     if (scene->json == NULL)

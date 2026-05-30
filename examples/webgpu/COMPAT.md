@@ -54,6 +54,10 @@ Current status as of this note:
   `120 pass, 0 unsupported, 0 fail`; retained runtime stress `7 pass, 0 fail`; 2D WASM
   point/primitive/image/mesh page rendered and pan/zoom worked; 3D WASM cube page rendered and
   arcball interaction worked.
+- recorded manual browser result on 2026-05-30 after WASM ABI diagnostic hardening: fixture
+  compatibility `120 pass, 0 unsupported, 0 fail`; retained runtime stress `7 pass, 0 fail`; 2D
+  WASM point/primitive/image/mesh page rendered and pan/zoom worked; 3D WASM cube page rendered and
+  arcball interaction worked.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
