@@ -5,7 +5,8 @@ This directory contains machine-readable schema material for DRP2.
 
 ## Authority
 
-The authoritative protocol meaning still lives first in the prose spec.
+The authoritative protocol meaning still lives first in the prose spec. The root authority map is
+[../AUTHORITY.md](../AUTHORITY.md).
 
 Active source-of-truth documents:
 
@@ -15,6 +16,9 @@ Active source-of-truth documents:
 - `../VERSIONING.md`: compatibility and contract-evolution rules.
 
 If schema and markdown diverge, the markdown contract wins until the schema is updated.
+
+[../COMMANDS.md](../COMMANDS.md) owns the human active/deferred command boundary. This directory is
+the checkable mirror and should not independently promote command families.
 
 
 ## Active Versus Deferred Schema Material

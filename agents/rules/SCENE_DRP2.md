@@ -75,7 +75,8 @@ Run `just shader-abi-check` whenever changing:
 Before touching `spec/drp2/`, `src/drp2/`, or DRP2-emitting scene code, read:
 
 1. [../../spec/drp2/README.md](../../spec/drp2/README.md)
-2. [../../spec/drp2/AGENT_SPEC_PHASE.md](../../spec/drp2/AGENT_SPEC_PHASE.md)
+2. [../../spec/drp2/AUTHORITY.md](../../spec/drp2/AUTHORITY.md)
+3. [../../spec/drp2/READING_ORDER.md](../../spec/drp2/READING_ORDER.md)
 
 
 ## Request And Query Paths

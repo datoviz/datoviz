@@ -22,47 +22,18 @@ The goal is to freeze a small, backend-agnostic renderer contract that can suppo
   the visual surface grows too large
 
 
-## Recommended Reading Order
+## Start Here
 
-Read the DRP2 spec in this order during review.
-
-### 1. Contract overview and terminology
-
-1. [LAYER1.md](LAYER1.md) — primary human-readable contract overview
-2. [GLOSSARY.md](GLOSSARY.md) — fixed protocol terminology used by the rest of the spec
-3. [VERSIONING.md](VERSIONING.md) — compatibility and evolution rules for the contract
-
-### 2. Normative protocol surface
-
-4. [COMMANDS.md](COMMANDS.md) — active `2.0` command surface and command semantics
-5. [LIFETIMES.md](LIFETIMES.md) — object lifetime and encoder/pass state rules
-6. [ERRORS.md](ERRORS.md) — validation and error model
-7. [CAPABILITIES.md](CAPABILITIES.md) — feature and format capability reporting
-8. [CONFORMANCE.md](CONFORMANCE.md) — conformance levels and requirements for `2.0`
-9. [DVZR_PLAYER.md](DVZR_PLAYER.md) — DRP2 recording and replay design
-10. [WEBGPU_ROADMAP.md](WEBGPU_ROADMAP.md) — strategic native/browser parity roadmap
-
-### 3. Machine-readable review material
-
-11. [schema/README.md](schema/README.md) — schema authority, active files, and maintenance rules
-12. [schema/drp_command.json](schema/drp_command.json) — root union for active commands
-13. [schema/commands/](schema/commands/) — per-command schema files
-14. [schema/common/](schema/common/) — shared enums and common value types
-15. [schema/DEFERRED.md](schema/DEFERRED.md) — explicitly deferred schema inventory
-
-### 4. Executable conformance material
-
-16. [fixtures/README.md](fixtures/README.md) — fixture corpus overview
-17. [fixtures/FORMAT.md](fixtures/FORMAT.md) — fixture file format
-18. [fixtures/RUNNER.md](fixtures/RUNNER.md) — fixture runner behavior and usage
-19. [fixtures/positive/](fixtures/positive/) — canonical valid traces
-20. [fixtures/negative/](fixtures/negative/) — canonical invalid semantic traces
-21. [fixtures/negative_schema/](fixtures/negative_schema/) — canonical invalid schema traces
+1. [AUTHORITY.md](AUTHORITY.md): conflict resolution and source-of-truth order.
+2. [READING_ORDER.md](READING_ORDER.md): recommended review order.
+3. [LAYER1.md](LAYER1.md): primary human-readable contract overview.
 
 
 ## Document Index
 
 - [LAYER1.md](LAYER1.md): primary human-readable contract
+- [AUTHORITY.md](AUTHORITY.md): source-of-truth and conflict-resolution rules
+- [READING_ORDER.md](READING_ORDER.md): review order for DRP2 contributors
 - [COMMANDS.md](COMMANDS.md): active `2.0` command surface
 - [LIFETIMES.md](LIFETIMES.md): object lifetime and encoder/pass state rules
 - [ERRORS.md](ERRORS.md): validation and error model
@@ -70,10 +41,10 @@ Read the DRP2 spec in this order during review.
 - [CONFORMANCE.md](CONFORMANCE.md): conformance levels and requirements
 - [VERSIONING.md](VERSIONING.md): compatibility and contract-evolution rules
 - [GLOSSARY.md](GLOSSARY.md): fixed terminology
-- [DVZR_PLAYER.md](DVZR_PLAYER.md): recording and replay design for DRP2 command streams
 - [schema/README.md](schema/README.md): machine-readable schema material
 - [fixtures/README.md](fixtures/README.md): canonical conformance traces
-- [WEBGPU_ROADMAP.md](WEBGPU_ROADMAP.md): long-horizon WebGPU and native/browser parity roadmap
+- [recording/README.md](recording/README.md): DRP2/DVZR recording and replay design notes
+- [roadmap/README.md](roadmap/README.md): long-horizon WebGPU and native/browser parity roadmap
 
 
 ## Validation

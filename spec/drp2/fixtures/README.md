@@ -10,20 +10,21 @@ Fixtures are both:
 
 ## Layout
 
-The first corpus is split into:
+The active corpus is split into:
 
 1. `negative/`
 2. `positive/`
 3. `negative_schema/`
 
-The immediate priority is `negative/`.
-Those fixtures lock the failure boundary for the active DRP2 `2.0` command set, schemas, error
-codes, and lifetime/state rules.
+The negative fixtures lock the failure boundary for the active DRP2 `2.0` command set, schemas,
+error codes, and lifetime/state rules. The positive fixtures lock clean command shapes and portable
+runtime pressure cases. The schema-negative fixtures keep command-schema validation explicit without
+making malformed command payloads look like semantic failures.
 
 
-## First Corpus
+## Active Corpus
 
-The first negative corpus should stay intentionally small and cover the core validation surface:
+The negative corpus should stay focused and cover the core validation surface:
 
 1. duplicate id rejection,
 2. unsupported major protocol version during handshake,
@@ -81,9 +82,7 @@ The first negative corpus should stay intentionally small and cover the core val
 51. texture view created with an unknown parent texture id,
 52. texture view destroyed while still referenced by recorded work.
 
-Positive fixtures can follow once the negative corpus and fixture envelope are frozen.
-
-The first positive corpus should stay minimal and focus on clean command shapes:
+The positive corpus should stay minimal and focus on clean command shapes:
 
 1. buffer upload only,
 2. successful `HelloRenderer` plus `RendererHelloReply` negotiation,

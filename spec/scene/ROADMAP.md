@@ -90,7 +90,7 @@ Preserved direction:
 ## Runtime, WebGPU, WASM, And Packaging
 
 Durable browser/runtime direction lives in [integration/WEBGPU_WASM.md](integration/WEBGPU_WASM.md)
-and [../drp2/WEBGPU_ROADMAP.md](../drp2/WEBGPU_ROADMAP.md).
+and [../drp2/roadmap/WEBGPU.md](../drp2/roadmap/WEBGPU.md).
 
 Preserved direction:
 

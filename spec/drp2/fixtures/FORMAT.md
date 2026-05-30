@@ -194,7 +194,7 @@ Optional extra context for authors and reviewers.
 
 Use JSON filenames.
 
-Recommended initial naming:
+Recommended naming:
 
 1. positive fixtures: `render_<story>.json`, `compute_<story>.json`
 2. negative fixtures: `invalid_<category>_<case>.json`
@@ -209,14 +209,14 @@ Examples:
 
 ## Directory Layout
 
-The first corpus should be split into:
+The active corpus is split into:
 
 1. `positive/`
 2. `negative/`
 3. `negative_schema/`
 
-The immediate priority for DRP2 `2.0` is the negative corpus because it locks the validation
-boundary for the active command surface.
+Negative fixtures lock the validation boundary for the active command surface. Positive fixtures
+lock canonical valid traces and pressure cases.
 
 
 ## Authoring Rules
