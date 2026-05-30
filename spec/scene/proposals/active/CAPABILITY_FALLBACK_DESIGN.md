@@ -33,10 +33,8 @@ Useful existing context:
    [PICKING_DESIGN.md](../promoted/PICKING_DESIGN.md)
 4. active ray-tracing note:
    [RAY_TRACING_FORWARD_COMPAT.md](RAY_TRACING_FORWARD_COMPAT.md)
-5. completed presentation/offscreen notes:
-   [agents/done/PRESENTATION.md](../../../../agents/done/PRESENTATION.md)
-   and
-   [agents/done/OFFSCREEN.md](../../../../agents/done/OFFSCREEN.md)
+5. current release status and validation notes:
+   [agents/now/STATUS.md](../../../../agents/now/STATUS.md)
 
 This note records what the active scene and visual API should assume.
 

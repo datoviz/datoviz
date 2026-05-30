@@ -18,11 +18,8 @@ This document is an implementation note for the current v0.4 text path. It is au
 scene-internal text processing boundaries unless it conflicts with the semantic text spec, public
 headers, or DRP2 protocol specs.
 
-Execution order, open task lists, and staged implementation checklists remain in:
-
-1. [SCENE_TEXT_GLYPH_PLAN.md](../../../agents/soon/text-layout/SCENE_TEXT_GLYPH_PLAN.md)
-2. [SCENE_TEXT_ATLAS_CACHE_PLAN.md](../../../agents/soon/text-layout/SCENE_TEXT_ATLAS_CACHE_PLAN.md)
-3. [SCENE_HARFBUZZ_SHAPING_PLAN.md](../../../agents/soon/text-layout/SCENE_HARFBUZZ_SHAPING_PLAN.md)
+Current execution order belongs in `agents/now/STATUS.md`; durable text contracts stay here or in
+the semantic text spec.
 
 
 ## Core Contract

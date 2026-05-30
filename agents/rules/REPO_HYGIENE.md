@@ -1,73 +1,70 @@
 # Repository Hygiene Rules
 
-These rules cover branch policy, commit safety, documentation placement, and agent plan routing.
+Repo hygiene covers branch policy, commits, generated files, documentation placement, and agent
+handoffs.
 
 
 ## Branch Policy
 
 Datoviz v0.4-dev is not constrained by v0.3 API or ABI compatibility. Prefer architecture,
-correctness, maintainability, and testability even when that means breaking old APIs.
+correctness, maintainability, and testability even when that breaks old APIs.
 
-When refactoring, do not delete existing comments. Keep them and update them when needed.
+Keep prose short and decision-oriented. When refactoring, update useful comments that become stale;
+remove only comments that are wrong, redundant, or tied to deleted code.
 
 
 ## Commit Safety
 
-Do not commit changes inside the `data` submodule, or commit large binary files anywhere in the
-repository, without explicit user approval for that specific commit.
+Do not commit `data` submodule changes or generated/runtime binary payloads without explicit user
+approval for those exact paths in the current turn.
 
-Treat these as stop signs unless the user has explicitly approved them in the current turn:
+Stop-sign paths:
 
 1. `M data`
 2. `? data`
-3. Any staged `data` gitlink update
-4. Generated/runtime binary payloads such as `libs/vulkan/`, `*.dylib`, `*.so`, `*.dll`, `*.npy`,
-   `*.npz`, or `.DS_Store`
+3. staged `data` gitlink updates
+4. `libs/vulkan/`
+5. `*.dylib`, `*.so`, `*.dll`, `*.npy`, `*.npz`, `.DS_Store`
 
-Before committing, run:
+Before every commit:
 
 ```sh
+git diff --check
 git status --short
 git diff --cached --stat
 ```
 
-Verify the staged set excludes unapproved data, vendored runtime libraries, generated outputs, and
-large binary assets.
+Verify the staged set excludes stop-sign paths, unrelated user changes, generated payloads, vendored
+runtime libraries, and large binary assets.
+
+For long multi-stage tasks, make logical checkpoint commits after relevant validation. Do not leave a
+large approved plan as tens of unstaged modified files unless a blocker prevents safe commits.
 
 
 ## Documentation Placement
 
-The current `docs/` tree is legacy v0.3 public documentation. Do not put new v0.4 design notes,
-specifications, implementation plans, or architecture records there.
-
 Use this routing:
 
-1. Durable v0.4 source-of-truth material: `spec/` or the closest existing `spec/` subtree.
-2. Scene semantics and architecture: `spec/scene/`.
-3. Execution status, handoff notes, and automation plans: `agents/`.
-4. Completed implementation records and historical plans: `agents/done/`.
-5. Long-horizon backlog: `agents/later/`.
+1. Durable v0.4 design, semantics, architecture, and API contracts: `spec/`.
+2. Public v0.4 user documentation: `docs/`.
+3. Current release status and agent dispatch: `agents/now/`.
+4. Repo-wide agent rules: `agents/rules/`.
 
-Completed agent plans should not remain in active queues. When work tracked under `agents/now/` or
-`agents/soon/` is done, remove the active plan, move or rewrite the final implementation record
-under `agents/done/`, and update README/index links.
+The `docs/` tree may be aggressively rebuilt in place for v0.4 public documentation. Do not put
+private implementation plans, scratch notes, or agent diaries there.
+
+Keep `agents/` small. Prefer updating the current status or durable spec over adding another plan.
+Delete obsolete agent notes once their useful facts are captured in code, tests, `spec/`, or git
+history.
 
 
 ## Vendored Code
 
-Treat vendored code as read-only by default. Do not modify files under `external/` unless the task
-explicitly asks for changes there.
-
-Prefer fixing Datoviz-owned code in `src/`, `include/`, `testing/`, or build wiring before patching
-vendored dependencies.
+Treat vendored code as read-only by default. Do not modify `external/` unless the task explicitly
+requires it. Prefer fixing Datoviz-owned code in `src/`, `include/`, `testing/`, or build wiring.
 
 
-## Current Orientation
+## Orientation
 
-Start with:
-
-1. [../now/START.md](../now/START.md)
-2. [../now/RELEASE.md](../now/RELEASE.md)
-3. [../README.md](../README.md)
-
-Use `agents/README.md` as the index for active, imminent, historical, and backlog work.
+Start from [../../AGENTS.md](../../AGENTS.md), then use [../now/START.md](../now/START.md) and the
+nearest rule/spec file for the touched area.

@@ -150,9 +150,8 @@ focused on contract quality and executable conformance material.
 
 ## Implementation Plan
 
-The first implementation sequencing plan is complete and recorded in
-`agents/done/SCENE_DRP2_IMPLEMENTATION.md`. Current implementation sequencing is tracked in
-`agents/now/STATUS.md`.
+Current implementation sequencing is tracked in `agents/now/STATUS.md`. Completed implementation
+sequencing is kept in git history.
 
 Keep this file focused on the active DRP2 contract and fixture lane. Do not duplicate module
 bring-up order here.

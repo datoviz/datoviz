@@ -24,8 +24,7 @@ This proposal complements:
    pressure test;
 2. [../integration/CUPY_CUDA_INTEROP.md](../../integration/CUPY_CUDA_INTEROP.md), which defines the
    preferred Vulkan-owned external-memory route for CuPy;
-3. [../../../../agents/soon/scene/SCENE_VECTOR_VISUALS_PLAN.md](../../../../agents/soon/scene/SCENE_VECTOR_VISUALS_PLAN.md),
-   which tracks remaining vector and curve execution work;
+3. [../../visuals/VECTOR.md](../../visuals/VECTOR.md), which owns vector visual semantics;
 4. [../visuals/PATH.md](../../visuals/PATH.md) and [../visuals/TUBE.md](../../visuals/TUBE.md),
    which own the active path and future tube visual contracts.
 

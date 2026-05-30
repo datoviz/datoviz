@@ -6,9 +6,8 @@
 > - **Purpose:** define the long-term v0.4 scene query architecture: one GPU-only panel query
 >   system replacing the separate public pick/probe request model.
 
-This document is the durable design record for the pick/probe overhaul. Implementation pickup order
-lives in
-[`../../../agents/soon/scene/SCENE_GPU_QUERY_OVERHAUL.md`](../../../agents/soon/scene/SCENE_GPU_QUERY_OVERHAUL.md).
+This document is the durable design record for the pick/probe overhaul. Current pickup order belongs
+in [`../../../agents/now/STATUS.md`](../../../agents/now/STATUS.md).
 
 The v0.4 branch may break API and ABI to get this right. Do not preserve the current pick/probe
 surface if it keeps the architecture ambiguous.

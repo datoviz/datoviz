@@ -9,8 +9,7 @@ Normative status: implementation architecture plan. Public visual semantics rema
 migration order, and done criteria.
 
 This is the single active implementation document for the remaining visual-boundary architecture
-work. Earlier broad source-split plans have been retired to short pointers and a historical record
-under `agents/done/`.
+work. Earlier broad source-split plans have been retired; completed history stays in git.
 
 
 ## Current State

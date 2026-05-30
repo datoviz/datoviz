@@ -17,8 +17,8 @@ The refactor goal is to make those reusable pieces scene-independent while keepi
 `datoviz` shared library. The source tree should express reusable lower layers through module
 targets, public headers, and focused tests rather than by putting every helper under `scene`.
 
-This document is the source-of-truth split plan. Slice-specific execution notes belong under
-`agents/soon/` and completed implementation records belong under `agents/done/`.
+This document is the source-of-truth split plan. Slice-specific execution notes should stay in the
+active status docs or the nearest durable spec; completed implementation history belongs in git.
 
 
 ## Non-Goals
@@ -566,4 +566,4 @@ scene visual constructors to `geom`.
 2. [api/PYTHON_GSP_SCOPE.md](api/PYTHON_GSP_SCOPE.md)
 3. [scene/interaction/CONTROLLERS.md](scene/interaction/CONTROLLERS.md)
 4. [scene/interaction/CAMERA_CONTROLLERS.md](scene/interaction/CAMERA_CONTROLLERS.md)
-5. [../agents/done/SCENE_CONTROLLER_PRIMITIVE_EXTRACTION.md](../agents/done/SCENE_CONTROLLER_PRIMITIVE_EXTRACTION.md)
+5. [scene/decisions/CONTROLLER_BINDING_MODEL.md](scene/decisions/CONTROLLER_BINDING_MODEL.md)

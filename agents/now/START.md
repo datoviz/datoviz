@@ -1,123 +1,38 @@
-# Datoviz v0.4 Start
+# Datoviz v0.4 Dispatch
 
-> **Execution Status**
-> - **Status:** `ACTIVE DEVELOPMENT DISPATCH`
-> - **Updated on:** `2026-05-29`
-> - **Purpose:** tell agents where to start without duplicating the release roadmap or feature
->   gateboard.
+Status: active v0.4 release-candidate preparation.
 
-Use this file as the short branch dispatch note. It intentionally does not carry feature tables,
-release criteria, or long implementation history.
-
-
-## Start Here
-
-1. For release sequencing, feature freeze, RCs, final release, release validation, or release
-   documentation, read
-   [`RELEASE.md`](RELEASE.md).
-2. For v0.4 public documentation deliverables, API/docs inventory, RC documentation gates, gallery
-   documentation, or migration/known-issues work, read [`DOCUMENTATION.md`](DOCUMENTATION.md).
-3. For current implementation lane status, RC1 blockers, and parallel-work guidance, read
-   [`STATUS.md`](STATUS.md).
-4. For high-payoff shiny demo follow-up beyond WebGPU/WASM and raw `ctypes`, read
-   [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
-5. For scene semantics, public scene API shape, frame planning, visual families, interaction,
-   annotations, scales, or runtime boundaries, read [`../../spec/scene/README.md`](../../spec/scene/README.md).
-6. For scene visual-boundary rules before changing retained visual families, read
-   [`../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
-   The completed implementation baseline is recorded in
-   [`../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
-   The older broad source-split roadmap and architecture completion plan are retired pointers, but
-   descriptor-kind visual independence is active again as of 2026-05-30.
-7. For DRP2 commands, fixtures, schemas, or scene code that emits DRP2, read
-   [`../../spec/drp2/README.md`](../../spec/drp2/README.md) and
-   [`../../spec/drp2/AGENT_SPEC_PHASE.md`](../../spec/drp2/AGENT_SPEC_PHASE.md).
+Use [../../AGENTS.md](../../AGENTS.md) as the mandatory entry point. This file only records the
+current branch dispatch.
 
 
 ## Current Position
 
-The active stack is `scene` -> `drp2` -> `vklite`/`canvas`, with `app` as the presentation layer.
-The low-level graphics modules (`vk`, `vklite`, `canvas`, `stream`, `video`, and `window`) are the
-runtime foundation; do not create parallel presentation, frame-stream, or Vulkan wrapper paths.
+The active stack is:
 
-Native first slices are active for retained visual families, sampled fields, material/controller
-state, broad item and sampled-value query execution, selection bookkeeping, rendered text/glyphs, label
-annotations, continuous colorbars, categorical legends, first-class integer labels, scale bars,
-graph-backed techniques, app/offscreen/GLFW rendering, and capture. Treat these as active code, not
-future scaffolding.
+```text
+scene -> drp2 -> vklite/canvas/stream -> app
+```
 
-Current shiny-demo recommendations are recorded in
-[`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md):
-vector visuals are the best new demo unlock, labels query hardening is now transform,
-large-field, and request-path pressure work, explanatory layout proof is mostly validation/polish,
-and splats are an optional v0.4 experimental showcase if the new visual lands cleanly.
+Native scene, app/offscreen rendering, DRP2 command emission, raw `ctypes`, retained textured mesh,
+text, axes, colorbars, labels, scale bars, picking/query first slices, and the WebGPU fixture runner
+are active v0.4 surfaces. Treat them as real implementation, not scaffolding.
 
-The CPU-side `geom` subset is also active: owned `DvzGeometry` buffers, cube/plane/sphere/surface
-grid generators, bounds, normals, transforms, merges, edges, contours, polygon triangulation, mesh
-upload, polygon scene helpers, semantic polygon/polygon-set composites, and focused tests/examples.
-Remaining `geom` work is optional unless a release example needs it.
 
-The broad scene source/architecture split and the first visual-boundary guardrail baseline are now
-historical.
-Completed context is archived in
-[`../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`](../done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md)
-and
-[`../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
-Do not reopen dense/index/material upload emission, panel drawable/viewport helper extraction,
-typed metadata enforcement, generic query scratch/decode helpers, or the helper declarations already
-moved into owner-private headers unless a new regression points there. The descriptor-kind
-independence audit did expose a new visual-boundary regression: root visual helpers and a legacy
-runtime compatibility path still know concrete `DVZ_SCENE_VISUAL_DESC_*` families. Generic scene
-code should keep calling visual-family operations, while concrete visual behavior should live in
-`src/scene/visuals/<family>/`, explicit shared visual subsystems, or the registration table.
+## Start Work
+
+1. Use [STATUS.md](STATUS.md) for current blockers and active lanes.
+2. Use [RELEASE.md](RELEASE.md) for release sequencing.
+3. Use [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation gates.
+4. Use [../../spec/scene/README.md](../../spec/scene/README.md) before changing scene semantics.
+5. Use [../../spec/drp2/README.md](../../spec/drp2/README.md) before changing DRP2 commands,
+   schemas, fixtures, or scene DRP2 emission.
 
 
 ## Guardrails
 
-1. Stabilize active modules first; keep inactive scaffolding such as broad `wasm` and renderer/client
-   layers untouched unless explicitly requested.
-2. Do not invent a second mesh renderer, presentation layer, frame stream, or Vulkan wrapper path.
-3. Prefer scene-owned reusable resources over visual-private upload helpers.
-4. Keep examples and focused tests in lockstep with each retained slice.
-5. Treat declared-but-unimplemented public functions as a priority: implement them narrowly or
-   document the gap before depending on them.
-6. Preserve immediate presentation paths for run-as-fast-as-possible benchmarks through explicit
-   continuous scheduling.
-
-
-## Important Records
-
-1. [`../done/APP_FRAME_SCHEDULING_REFACTOR.md`](../done/APP_FRAME_SCHEDULING_REFACTOR.md) before
-   changing app loop, frame pacing, window wait/wakeup, request-frame wakeups, or immediate-present
-   CPU behavior.
-2. [`../done/SCENE_DRP2_IMPLEMENTATION.md`](../done/SCENE_DRP2_IMPLEMENTATION.md) and
-   [`../done/DRP2_SCENE_SAFETY.md`](../done/DRP2_SCENE_SAFETY.md) before changing the completed
-   scene -> DRP2 -> runtime path.
-3. [`../done/TEST_RUNNER_MODERNIZATION.md`](../done/TEST_RUNNER_MODERNIZATION.md) and
-   [`../later/TEST_RUNNER_SCHEDULING.md`](../later/TEST_RUNNER_SCHEDULING.md) before changing test
-   scheduling, process sharding, CI orchestration, or skip/reporting behavior.
-4. [`../soon/scene/SCENE_GPU_QUERY_OVERHAUL.md`](../soon/scene/SCENE_GPU_QUERY_OVERHAUL.md) and
-   [`../../spec/scene/interaction/GPU_QUERY_SYSTEM.md`](../../spec/scene/interaction/GPU_QUERY_SYSTEM.md)
-   before changing query execution, GPU request readback, visual-family query policy, or
-   CPU fallback behavior.
-5. [`../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md`](../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
-   before changing image/labels query coordinates, panzoom query mapping, or CPU fallback behavior.
-6. [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md)
-   before changing pinned readout cards, selected-item metadata cards, public overlay cards, or
-   private rich text-block lowering.
-7. [`../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md)
-   before changing visual-family boundaries, adding root-level visual switches, including
-   family-private visual headers from generic code, or adding family-specific fields to generic
-   retained visual state.
-8. [`../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../done/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md)
-   for the completed visual-boundary guardrail baseline and validation evidence.
-
-
-## Validation Defaults
-
-For documentation-only passes, run `git diff --check` and inspect `git status --short`.
-
-For scene/DRP2/runtime code changes, run `just build`, the narrowest relevant `just test <filter>`,
-and `just spec-check` for DRP2 schema, fixture, or portable-command changes. Use Vulkan validation
-or bounded GLFW/offscreen smoke when graphics lifetimes, command buffers, render targets,
-swapchains, or synchronization are touched.
+1. Keep the runtime path unified; do not create parallel renderers, presentation layers, frame
+   streams, or Vulkan wrappers.
+2. Prefer small generalizations and cleaner subsystem boundaries over ad-hoc patches.
+3. Keep examples and focused tests in lockstep with retained v0.4 slices.
+4. For documentation-only work, run `git diff --check` and inspect `git status --short`.

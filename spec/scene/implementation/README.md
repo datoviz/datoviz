@@ -27,22 +27,18 @@ behavior instead of restating it here.
 8. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): retired pointer for the completed
    broad scene source split; active work moved to `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`.
 9. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): retired pointer
-   for the completed architecture queue; historical context lives in
-   `agents/done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`.
+   for the completed architecture queue.
 
 ## Current priorities
 
 1. Keep `just shader-abi-check` green when moving shader files or bind layouts.
 2. Advance WGSL parity one visual family at a time; see `VISUAL_SHADER_REFACTOR.md`.
 3. Keep runtime emission descriptor-driven rather than adding visual-family policy there.
-4. Keep text execution plans in `agents/soon/` focused on order and validation while durable text
-   resource contracts live here or in `../semantics/TEXT.md`.
-5. Keep graph-backed effects and transparency plans in `agents/soon/` focused on pickup order while
-   durable technique implementation rules live in `GRAPH_TECHNIQUES.md`.
-6. Keep SSAO and occlusion execution plans in `agents/soon/` focused on remaining slices while
-   durable occlusion implementation rules live in `OCCLUSION_EFFECTS.md`.
-7. Keep transparency, depth-peeling, and MSAA execution plans in `agents/soon/` focused on
-   remaining slices while durable implementation rules live in `TRANSPARENCY_MSAA.md`.
+4. Keep current execution order in `agents/now/STATUS.md`; durable text resource contracts live here
+   or in `../semantics/TEXT.md`.
+5. Keep graph-backed effects and transparency implementation rules in `GRAPH_TECHNIQUES.md`.
+6. Keep SSAO and occlusion implementation rules in `OCCLUSION_EFFECTS.md`.
+7. Keep transparency, depth-peeling, and MSAA implementation rules in `TRANSPARENCY_MSAA.md`.
 8. Use `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md` before adding new root-level visual switches,
    family-private includes from generic code, or family-specific fields to generic retained visual
    state.

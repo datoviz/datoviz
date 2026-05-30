@@ -259,9 +259,8 @@ a special code path in the C API.
 
 ## Implementation Plan
 
-The first implementation sequence is recorded in
-`agents/done/SCENE_DRP2_IMPLEMENTATION.md`; current follow-up work lives in
-`agents/now/STATUS.md`.
+Current follow-up work lives in `agents/now/STATUS.md`; completed implementation sequencing is kept
+in git history.
 
 This document remains an implementation bridge for scene concepts and binding architecture. It
 should not duplicate the module bring-up order, canvas/runtime integration order, or validation

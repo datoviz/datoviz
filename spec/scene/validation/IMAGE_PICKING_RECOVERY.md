@@ -8,8 +8,7 @@
 > - **Current status:** the core GPU image-probe path, retained request executor reuse,
 >   transparent misses, and readback-failure diagnostics are now covered by scene tests.
 >   Segment label probes now belong to `dvz_labels()` raw integer probing, not hidden RGBA image
->   masks. Napari/label-specific follow-up belongs in
->   [../../../agents/soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md](../../../agents/soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md).
+>   masks. Napari/label-specific follow-up belongs in the current status docs or nearest scene spec.
 
 
 ## Problem

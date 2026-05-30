@@ -84,12 +84,9 @@ Before changing pick/probe/query execution, GPU request readback, visual-family 
 fallback behavior, read:
 
 1. [../../spec/scene/interaction/GPU_QUERY_SYSTEM.md](../../spec/scene/interaction/GPU_QUERY_SYSTEM.md)
-2. [../soon/scene/SCENE_GPU_QUERY_OVERHAUL.md](../soon/scene/SCENE_GPU_QUERY_OVERHAUL.md)
-3. [../later/SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md](../later/SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md)
+2. [../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md](../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
 
 Before changing sampled-field format/semantic interpretation, categorical colorizers,
 label-volume support, or sampled visual query schemas, read:
 
 1. [../../spec/scene/semantics/SAMPLED_FIELD_INTERPRETATION.md](../../spec/scene/semantics/SAMPLED_FIELD_INTERPRETATION.md)
-2. [../done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md](../done/SCENE_SAMPLED_FIELD_INTERPRETATION_REFACTOR.md)
-3. [../done/SCENE_SPARSE_LABEL_VOLUME_LOOKUP.md](../done/SCENE_SPARSE_LABEL_VOLUME_LOOKUP.md)

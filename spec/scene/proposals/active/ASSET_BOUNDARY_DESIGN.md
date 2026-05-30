@@ -30,8 +30,8 @@ Useful current context:
    [RESOURCE_UPDATE_DESIGN.md](../promoted/RESOURCE_UPDATE_DESIGN.md)
 3. active volume note:
    [VOLUME_DESIGN.md](VOLUME_DESIGN.md)
-4. completed offscreen/export context:
-   [agents/done/OFFSCREEN.md](../../../../agents/done/OFFSCREEN.md)
+4. current release status and validation notes:
+   [agents/now/STATUS.md](../../../../agents/now/STATUS.md)
 
 This note narrows what should be kept distinct in the active implementation path.
 

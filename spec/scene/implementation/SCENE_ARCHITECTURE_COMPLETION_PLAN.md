@@ -15,8 +15,7 @@ Use that file for:
    switching on concrete visual types;
 4. defining done criteria for the visual-boundary phase.
 
-Historical context for the completed broad source split is archived in
-[`../../../agents/done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`](../../../agents/done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md).
+Historical context for the completed broad source split is kept in git history.
 
 Do not add new active work to this file. Update `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md` when the
 remaining visual-boundary plan changes.

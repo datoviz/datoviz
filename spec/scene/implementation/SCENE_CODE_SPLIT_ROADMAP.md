@@ -16,7 +16,6 @@ Use that file before:
 3. adding visual-family callbacks or registry capabilities;
 4. writing architecture checks for scene visual boundaries.
 
-Historical context for the completed source split is archived in
-[`../../../agents/done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md`](../../../agents/done/SCENE_ARCHITECTURE_SOURCE_SPLIT_RECORD.md).
+Historical context for the completed source split is kept in git history.
 
 Do not add new active work to this file. Update `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md` instead.

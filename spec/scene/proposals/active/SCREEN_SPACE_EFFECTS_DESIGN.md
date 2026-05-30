@@ -8,9 +8,8 @@
 
 Durable user-facing semantics now live in
 [`../../semantics/EFFECTS.md`](../../semantics/EFFECTS.md). Graph-backed implementation rules live
-in [`../../implementation/GRAPH_TECHNIQUES.md`](../../implementation/GRAPH_TECHNIQUES.md). The
-execution pickup order remains in
-[`../../../../agents/soon/effects/SCENE_SCREEN_SPACE_EFFECTS_PLAN.md`](../../../../agents/soon/effects/SCENE_SCREEN_SPACE_EFFECTS_PLAN.md).
+in [`../../implementation/GRAPH_TECHNIQUES.md`](../../implementation/GRAPH_TECHNIQUES.md). Current
+pickup order belongs in [`../../../../agents/now/STATUS.md`](../../../../agents/now/STATUS.md).
 
 If this note disagrees with the specialized specs, update the specialized specs first and keep only
 concise backlog context here.

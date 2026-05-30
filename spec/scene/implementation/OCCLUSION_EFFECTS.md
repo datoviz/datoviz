@@ -2,7 +2,7 @@
 
 Status: implementation-facing notes for graph-backed occlusion techniques in the active scene
 stack. This file records durable implementation contracts for SSAO, scene occlusion, and volume
-occlusion. Execution order, open blockers, and commit sequencing remain in `agents/soon/effects/`.
+occlusion. Current execution order belongs in `agents/now/STATUS.md`.
 
 These notes refine the shared graph technique contract in
 [GRAPH_TECHNIQUES.md](GRAPH_TECHNIQUES.md).

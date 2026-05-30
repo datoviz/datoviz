@@ -138,11 +138,8 @@ The next batch should focus on precision, backend parity, and examples, in this 
 4. Visual-family showcase. Add one compact example or smoke scene containing `pixel`, `point`,
    `marker`, `segment`, and stroked `path` together so future regressions are easier to spot.
 
-Marker-specific execution phases live in `agents/soon/scene/SCENE_POINT_PIXEL_MARKER_FOLLOWUP.md`.
-Segment, path, dash, arrow, and SVG execution phases live in
-`agents/soon/scene/SCENE_VECTOR_VISUALS_PLAN.md`. Volume implementation and napari-style example
-sequencing lives in `agents/soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md`; the durable contract
-lives in `VOLUME.md`.
+Marker, vector, volume, and napari-style execution sequencing belongs in `agents/now/STATUS.md` or
+the nearest durable visual spec. The volume contract lives in `VOLUME.md`.
 
 
 ## Pixel
