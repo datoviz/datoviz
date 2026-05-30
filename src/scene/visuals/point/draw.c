@@ -32,9 +32,18 @@
  * @return whether draw metadata was resolved
  */
 bool _scene_point_visual_draw_desc(
-    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out)
+    const DvzSceneVisualDesc* visual, DvzSceneShaderFormat shader_format,
+    DvzSceneVisualDrawDesc* out)
 {
     ANN(visual);
     ANN(out);
-    return _scene_visual_default_draw_desc(visual, out);
+    if (!_scene_visual_default_draw_desc(visual, shader_format, out))
+        return false;
+    DvzScenePointLikeLoweringDesc lowering = {0};
+    if (!_scene_point_like_lowering_desc(
+            visual->point_like_kind, shader_format, visual->vertex_count, &lowering))
+        return false;
+    out->vertex_count = lowering.draw_vertex_count;
+    out->instance_count = lowering.draw_instance_count;
+    return true;
 }

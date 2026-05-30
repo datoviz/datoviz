@@ -256,7 +256,7 @@ bool _scene_draw_packet_init(
     const ConverterState* state, const DvzSceneVisualDesc* visual,
     const DvzSceneVisualPipelineDesc* pipeline, uint64_t pipeline_id, uint64_t bg_set0,
     uint64_t bg_set1, uint64_t bg_set2, uint64_t bg_set3, DvzFramePlanClipRect clip_rect,
-    DvzDiagnosticReport* report, SceneDrawPacket* out);
+    DvzSceneShaderFormat shader_format, DvzDiagnosticReport* report, SceneDrawPacket* out);
 bool _scene_draw_packet_init_fallback(
     const ConverterState* state, DvzSceneVisualDescKind kind, uint64_t pipeline_id,
     uint64_t bg_set0, uint64_t bg_set1, const uint64_t* vertex_buffer_ids,

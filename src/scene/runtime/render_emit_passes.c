@@ -392,9 +392,9 @@ bool _emitter_emit_render_multi(
          dvz_drp2_stream_begin_render_pass_region_clear(
              stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca, 0.0f, 0.0f, 1.0f, 1.0f,
              clear);
-    _label_render_pass_contract(stream, render_pass_id, render);
     ok = ok && _stream_apply_graph_color_ops(stream, graph_pass, color_id, NULL);
     ok = ok && _stream_apply_graph_depth(stream, graph_pass, graph_depth_id);
+    _label_render_pass_contract(stream, render_pass_id, render);
     if (ok && needs_depth && graph_depth_id == 0)
     {
         ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
@@ -1428,8 +1428,7 @@ bool _emitter_emit_plain_renders(
     ANN(stream);
     ANN(plan);
 
-    if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL &&
-        _plan_has_graph_render_passes(plan))
+    if (_plan_has_graph_render_passes(plan))
         return _emitter_emit_scene_graph_renders(emitter, stream, plan, readback, cfg, report);
 
     uint32_t render_node_count = 0;
@@ -1475,13 +1474,16 @@ bool _emitter_emit_plain_renders(
         uint64_t vertex_buffer_ids[DVZ_SCENE_MAX_NODE_RESOURCES] = {0};
         uint32_t vertex_buffer_count = 0;
 
-        /* Scene render nodes (visual_count > 0 with named resources) skip flat resolution;
-         * _emitter_emit_render dispatches to _emitter_emit_render_multi instead. */
+        /* Retained scene render nodes skip flat resolution; fixture visuals may also carry
+         * position metadata, but they do not identify a visual family. */
         bool is_scene_node = false;
-        if (render->u.render.visual_count > 0 && cfg != NULL &&
-            cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        if (render->u.render.visual_count > 0)
         {
-            is_scene_node = _scene_render_visual_has_position_resource(emitter, render, 0);
+            const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[0];
+            is_scene_node =
+                meta->has_metadata && (meta->visual_type != 0 || meta->desc_kind != 0 ||
+                                       meta->has_draw_contract) &&
+                _scene_render_visual_has_position_resource(emitter, render, 0);
         }
 
         if (!is_scene_node)

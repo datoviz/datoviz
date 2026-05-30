@@ -51,14 +51,15 @@ typedef bool (*DvzVisualFamilyBindDescFn)(
 typedef bool (*DvzVisualFamilyPipelineDescFn)(
     const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
     bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
-    DvzSceneVisualPipelineDesc* out);
+    DvzSceneShaderFormat shader_format, DvzSceneVisualPipelineDesc* out);
 
 typedef bool (*DvzVisualFamilyShaderDescFn)(
     const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
     const char* format_tag, DvzSceneVisualShaderDesc* out);
 
 typedef bool (*DvzVisualFamilyDrawDescFn)(
-    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out);
+    const DvzSceneVisualDesc* visual, DvzSceneShaderFormat shader_format,
+    DvzSceneVisualDrawDesc* out);
 
 typedef bool (*DvzVisualFamilyMetadataFn)(
     const DvzVisual* visual, const DvzVisualLowering* lowering,
@@ -142,7 +143,8 @@ void _scene_shader_desc_set_identity(
     DvzSceneVisualShaderDesc* out, const char* family, const char* variant);
 
 bool _scene_visual_default_draw_desc(
-    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out);
+    const DvzSceneVisualDesc* visual, DvzSceneShaderFormat shader_format,
+    DvzSceneVisualDrawDesc* out);
 
 void _scene_visual_init_point_style(DvzVisual* visual);
 void _scene_segment_visual_init_state(DvzVisual* visual);

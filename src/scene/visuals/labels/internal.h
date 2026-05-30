@@ -38,11 +38,12 @@ bool _scene_labels_visual_bind_desc(
 bool _scene_labels_visual_pipeline_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
     bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
-    DvzSceneVisualPipelineDesc* out);
+    DvzSceneShaderFormat shader_format, DvzSceneVisualPipelineDesc* out);
 
 bool _scene_labels_visual_shader_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
     const char* format_tag, DvzSceneVisualShaderDesc* out);
 
 bool _scene_labels_visual_draw_desc(
-    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out);
+    const DvzSceneVisualDesc* visual, DvzSceneShaderFormat shader_format,
+    DvzSceneVisualDrawDesc* out);

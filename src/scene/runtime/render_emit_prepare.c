@@ -92,6 +92,8 @@ bool _emitter_prepare_render_multi(
     bool depth_peel_pass =
         render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
         render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
+    DvzSceneShaderFormat shader_format =
+        cfg != NULL ? cfg->shader_format : DVZ_SCENE_SHADER_FORMAT_GLSL;
 
     uint64_t common_bgl_id = 0;
     uint64_t apply_bg_id = 0;
@@ -244,7 +246,7 @@ bool _emitter_prepare_render_multi(
         if (!_scene_visual_pipeline_desc(
                 &desc, render->u.render.picking, pass_has_depth_attachment,
                 wboit_accumulation || depth_peel_pass, alpha_mode,
-                render->u.render.controller_modes[i], &pipeline))
+                render->u.render.controller_modes[i], shader_format, &pipeline))
         {
             ok = false;
             break;
@@ -766,7 +768,7 @@ bool _emitter_prepare_render_multi(
                                              : DVZ_FRAME_PLAN_CLIP_RECT_PANEL;
         ok = _scene_draw_packet_init(
             &emitter->resources, &desc, &pipeline, pipe_id, vis_bg_set0, vis_bg_set1,
-            vis_bg_set2, vis_bg_set3, clip_rect, report, &draws[draw_count]);
+            vis_bg_set2, vis_bg_set3, clip_rect, shader_format, report, &draws[draw_count]);
         if (!ok)
             break;
         draw_count++;

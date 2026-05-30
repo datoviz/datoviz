@@ -115,7 +115,7 @@ static void _vector_path_pipeline_desc(
 bool _scene_vector_visual_pipeline_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
     bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
-    DvzSceneVisualPipelineDesc* out)
+    DvzSceneShaderFormat shader_format, DvzSceneVisualPipelineDesc* out)
 {
     ANN(visual);
     ANN(out);

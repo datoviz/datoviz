@@ -32,10 +32,12 @@
  * @return whether draw metadata was resolved
  */
 bool _scene_visual_default_draw_desc(
-    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out)
+    const DvzSceneVisualDesc* visual, DvzSceneShaderFormat shader_format,
+    DvzSceneVisualDrawDesc* out)
 {
     ANN(visual);
     ANN(out);
+    (void)shader_format;
     dvz_memset(out, sizeof(DvzSceneVisualDrawDesc), 0, sizeof(DvzSceneVisualDrawDesc));
 
     out->vertex_count = visual->vertex_count;
@@ -56,7 +58,8 @@ bool _scene_visual_default_draw_desc(
  * @return whether draw metadata was resolved
  */
 bool _scene_visual_draw_desc(
-    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out)
+    const DvzSceneVisualDesc* visual, DvzSceneShaderFormat shader_format,
+    DvzSceneVisualDrawDesc* out)
 {
     ANN(visual);
     ANN(out);
@@ -65,5 +68,5 @@ bool _scene_visual_draw_desc(
     const DvzVisualFamilyOps* ops = _scene_visual_family_ops((DvzVisualType)visual->visual_type);
     if (ops == NULL || ops->resolve_draw_desc == NULL)
         return false;
-    return ops->resolve_draw_desc(visual, out);
+    return ops->resolve_draw_desc(visual, shader_format, out);
 }

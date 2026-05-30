@@ -720,6 +720,10 @@ int test_frame_plan_render_textured_mesh_metadata_wgsl_uses_typed_labels(
     AT(dvz_frame_plan_upload(plan, "typed-mesh-color", 0, 3 * sizeof(DvzColor), ""));
     AT(dvz_frame_plan_upload(plan, "typed-mesh-uv", 0, 3 * 2 * sizeof(float), ""));
     AT(dvz_frame_plan_upload(plan, "typed-mesh-position", 0, 3 * 3 * sizeof(float), ""));
+    AT(dvz_frame_plan_upload(plan, "typed-mesh-material", 0, sizeof(DvzSceneMaterialParams), ""));
+    plan->nodes[plan->count - 1].u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM |
+                                                          DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                                                          DVZ_DRP2_BUFFER_USAGE_COPY_DST;
     AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
     AT(dvz_frame_plan_render_visual(plan, "typed-mesh"));
 
@@ -728,12 +732,13 @@ int test_frame_plan_render_textured_mesh_metadata_wgsl_uses_typed_labels(
     metadata.desc_kind = DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
     metadata.visual_index = 0;
     metadata.buffer_index = UINT32_MAX;
-    metadata.topology = UINT32_MAX;
+    metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     dvz_strlcpy(metadata.position_id, "typed-mesh-position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.color_id, "typed-mesh-color", sizeof(metadata.color_id));
     dvz_strlcpy(metadata.normal_id, "typed-mesh-normal", sizeof(metadata.normal_id));
     dvz_strlcpy(metadata.texcoords_id, "typed-mesh-uv", sizeof(metadata.texcoords_id));
     dvz_strlcpy(metadata.texture_id, "typed-mesh-texture", sizeof(metadata.texture_id));
+    dvz_strlcpy(metadata.material_id, "typed-mesh-material", sizeof(metadata.material_id));
     AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
 
     DvzCapabilitySnapshot caps = {0};

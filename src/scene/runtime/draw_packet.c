@@ -279,7 +279,7 @@ bool _scene_draw_packet_init(
     const ConverterState* state, const DvzSceneVisualDesc* visual,
     const DvzSceneVisualPipelineDesc* pipeline, uint64_t pipeline_id, uint64_t bg_set0,
     uint64_t bg_set1, uint64_t bg_set2, uint64_t bg_set3, DvzFramePlanClipRect clip_rect,
-    DvzDiagnosticReport* report, SceneDrawPacket* out)
+    DvzSceneShaderFormat shader_format, DvzDiagnosticReport* report, SceneDrawPacket* out)
 {
     ANN(state);
     ANN(visual);
@@ -295,7 +295,7 @@ bool _scene_draw_packet_init(
     out->bg_set3 = bg_set3;
     out->clip_rect = clip_rect;
     DvzSceneVisualDrawDesc draw_desc = {0};
-    if (!_scene_visual_draw_desc(visual, &draw_desc))
+    if (!_scene_visual_draw_desc(visual, shader_format, &draw_desc))
         return false;
     out->vertex_count = draw_desc.vertex_count;
     out->instance_count = draw_desc.instance_count;
@@ -369,7 +369,7 @@ bool _scene_draw_packet_init_fallback(
 
     return _scene_draw_packet_init(
         state, &visual, &pipeline, pipeline_id, bg_set0, bg_set1, 0, 0,
-        DVZ_FRAME_PLAN_CLIP_RECT_PANEL, report, out);
+        DVZ_FRAME_PLAN_CLIP_RECT_PANEL, DVZ_SCENE_SHADER_FORMAT_GLSL, report, out);
 }
 
 

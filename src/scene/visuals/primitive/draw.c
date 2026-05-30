@@ -32,9 +32,10 @@
  * @return whether draw metadata was resolved
  */
 bool _scene_primitive_visual_draw_desc(
-    const DvzSceneVisualDesc* visual, DvzSceneVisualDrawDesc* out)
+    const DvzSceneVisualDesc* visual, DvzSceneShaderFormat shader_format,
+    DvzSceneVisualDrawDesc* out)
 {
     ANN(visual);
     ANN(out);
-    return _scene_visual_default_draw_desc(visual, out);
+    return _scene_visual_default_draw_desc(visual, shader_format, out);
 }

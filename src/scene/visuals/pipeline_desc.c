@@ -122,7 +122,8 @@ void _scene_visual_pipeline_apply_standard_depth_state(
  */
 bool _scene_visual_pipeline_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth, bool wboit_accumulation,
-    DvzAlphaMode alpha_mode, DvzControllerMode controller_mode, DvzSceneVisualPipelineDesc* out)
+    DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
+    DvzSceneShaderFormat shader_format, DvzSceneVisualPipelineDesc* out)
 {
     ANN(visual);
     ANN(out);
@@ -132,7 +133,8 @@ bool _scene_visual_pipeline_desc(
     if (ops == NULL || ops->resolve_pipeline_desc == NULL)
         return false;
     return ops->resolve_pipeline_desc(
-        visual, picking, pass_needs_depth, wboit_accumulation, alpha_mode, controller_mode, out);
+        visual, picking, pass_needs_depth, wboit_accumulation, alpha_mode, controller_mode,
+        shader_format, out);
 }
 
 

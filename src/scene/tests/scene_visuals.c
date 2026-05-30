@@ -1104,7 +1104,7 @@ int test_scene_point_style_emits_glsl_and_wgsl(TstContext* suite, const TstCase*
     DvzDrp2CommandStream* wgsl_stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(wgsl_stream);
-    AT(_stream_has_render_pipeline_label(wgsl_stream, "_pipe_point_stylew"));
+    AT(_stream_has_render_pipeline_label(wgsl_stream, "_pipe_point_stylew_depth"));
     char* json = dvz_drp2_stream_json(wgsl_stream, "scene_point_style_wgsl_from_c");
     ANN(json);
     AT(strstr(json, "\"format\": \"wgsl\"") != NULL);
