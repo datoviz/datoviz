@@ -44,7 +44,7 @@ dvz_scene_off(scene, event_type, callback)
 ### `DVZ_EVENT_SELECTION_CHANGED`
 
 Fires after `DvzSelection` state is updated — either from user interaction (click, box,
-lasso) or from a programmatic `dvz_selection_set` / `dvz_selection_clear` call.
+lasso) or from a programmatic `dvz_selection_apply_query` / `dvz_selection_clear` call.
 
 Fires during stage 3 (State Update) of the frame lifecycle.
 
@@ -54,7 +54,8 @@ Callback signature:
 void on_selection(DvzScene* scene, DvzSelection* sel, void* user_data)
 ```
 
-The callback may call `dvz_selection_get` to read the current index set.
+The callback may call `dvz_selection_count` and `dvz_selection_copy` to read the current selected
+items.
 
 
 ### `DVZ_EVENT_PICK_RESULT`

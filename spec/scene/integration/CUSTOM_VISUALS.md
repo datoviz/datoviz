@@ -89,7 +89,7 @@ the runtime-facing contract.
 must be destroyed and recreated.
 
 The scene compiles and caches the shaders.
-Shader variants (e.g., with/without picking, with/without selection mask) are generated
+Shader variants (e.g., with/without picking, with/without item-state support) are generated
 automatically by the scene's shader preprocessor using standard insertion points
 (see Standard Injections below).
 
@@ -126,15 +126,15 @@ The user does not write picking shader code explicitly — the scene inserts it.
 desc.selectable      — bool (default false)
 ```
 
-When `true`, the scene injects the selection mask buffer binding and a standard
-`dvz_selection_mask` uniform into the shader.
-The fragment shader receives a `uint8 dvz_item_selected` variable (1 = selected,
-0 = unselected) and must apply it to produce the highlight effect.
+When `true`, the scene injects the `item_state` attribute and standard `item_state_style`
+uniforms into the shader.
+The shader receives a `uint dvz_item_state` bitfield and must apply it to produce the highlight
+effect.
 
-A standard highlight helper function is provided:
+A standard item-state helper function is provided:
 
 ```glsl
-vec4 dvz_apply_highlight(vec4 base_color, uint8_t selected, DvzHighlightDesc desc);
+vec4 dvz_apply_item_state_color(vec4 base_color, uint item_state);
 ```
 
 The user calls this in their fragment shader to get highlight behavior consistent with
@@ -148,16 +148,16 @@ desc.uniforms        — array of DvzUniformDesc (user-defined uniform blocks)
 desc.uniform_count   — number of user uniform blocks
 ```
 
-**Automatically injected uniforms** — the scene always provides these at fixed binding
-points; the user does not declare them:
+**Automatically injected resources** — the scene provides these through reserved slots; the user
+does not declare them:
 
-| Binding | Content |
+| Resource | Content |
 |---|---|
-| 0 | panel transform (MVP matrix, viewport) |
-| 1 | selection mask buffer (when `selectable = true`) |
-| 2 | highlight descriptor (when `selectable = true`) |
+| panel transform | MVP matrix and viewport |
+| `item_state` | per-item state bitfield attribute when `selectable = true` |
+| `item_state_style` | selected/unselected/hovered style uniform when `selectable = true` |
 
-User-declared uniforms are bound at slots starting from 3.
+User-declared uniforms are bound after the reserved scene-standard resources.
 The user sets them via:
 
 ```text
@@ -219,7 +219,7 @@ The scene's shader preprocessor inserts standard code at named injection points:
 |---|---|
 | `// DVZ_INJECT_UNIFORMS` | panel transform and scene-standard uniform blocks |
 | `// DVZ_INJECT_PICKING` | picking attachment output (picking variant only) |
-| `// DVZ_INJECT_SELECTION` | mask buffer binding and `dvz_item_selected` variable |
+| `// DVZ_INJECT_SELECTION` | item-state binding and `dvz_item_state` variable |
 
 The user places these comments in their shader source at the appropriate locations.
 If an injection point is absent, the scene appends the injected code at the end of the
@@ -243,7 +243,7 @@ A custom visual follows the same lifecycle as built-in visuals:
 |---|---|
 | `../semantics/VISUAL_CONTRACT.md` | normative contract that custom visuals satisfy |
 | `semantics/TRANSPARENCY.md` | alpha_mode and render pass assignment |
-| `interaction/SELECTION.md` | selection mask injection and highlight helper |
+| `interaction/SELECTION.md` | item-state injection and highlight helper |
 | `interaction/PICKING.md` | picking variant generation |
 | `validation/ADAPTATION.md` | capability gating and deactivation |
 | `pipeline/INVALIDATION_AND_CACHING.md` | dirty scope declaration |

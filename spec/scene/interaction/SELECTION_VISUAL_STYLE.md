@@ -1,6 +1,6 @@
 # Selection Visual Style
 
-Status: planned v0.4 slice.
+Status: implemented v0.4 point-like slice.
 
 ## Goal
 
@@ -24,14 +24,15 @@ Initial item-state flags:
 
 | Flag | Meaning | v0.4 status |
 | --- | --- | --- |
-| `DVZ_ITEM_STATE_VISUAL_ALPHA` | Multiply item alpha by `alpha`. | Implement first for point/marker. |
-| `DVZ_ITEM_STATE_VISUAL_TINT` | Mix item color toward `tint` by `tint_mix`. | Implement first for point/marker. |
+| `DVZ_ITEM_STATE_VISUAL_ALPHA` | Multiply item alpha by `alpha`. | Implemented for point/pixel/marker. |
+| `DVZ_ITEM_STATE_VISUAL_TINT` | Mix item color toward `tint` by `tint_mix`. | Implemented for point/pixel/marker. |
+| `DVZ_ITEM_STATE_VISUAL_SCALE` | Multiply point-like item size by `scale`. | Implemented for point/pixel/marker. |
 
-Reserved later flags may include scale, outline, hide, desaturate, depth raise, halo, pulse, and
+Reserved later flags may include outline, hide, desaturate, depth raise, halo, pulse, and
 selection-group color. Do not add these to the public API until they have at least one visual-family
 implementation.
 
-## Public API Direction
+## Public API
 
 Expose defaults and mutation through the selection API:
 
@@ -41,6 +42,7 @@ typedef enum DvzItemStateVisualFlag
     DVZ_ITEM_STATE_VISUAL_NONE = 0,
     DVZ_ITEM_STATE_VISUAL_ALPHA = 1u << 0,
     DVZ_ITEM_STATE_VISUAL_TINT = 1u << 1,
+    DVZ_ITEM_STATE_VISUAL_SCALE = 1u << 2,
 } DvzItemStateVisualFlag;
 
 typedef struct DvzItemStateVisualStyle
@@ -49,6 +51,7 @@ typedef struct DvzItemStateVisualStyle
     float alpha;
     DvzColor tint;
     float tint_mix;
+    float scale;
 } DvzItemStateVisualStyle;
 
 typedef struct DvzSelectionVisualStyle
@@ -66,7 +69,7 @@ Default style preserves current behavior:
 - selected: no override;
 - unselected: alpha dim, initially `0.25`.
 
-A style setter should resynchronize existing selection masks/materials so changing style after a
+A style setter resynchronizes existing `item_state_style` uniforms so changing style after a
 selection exists updates the next frame.
 
 ## v0.4 Implementation Scope
@@ -74,14 +77,15 @@ selection exists updates the next frame.
 Implement only the point-like retained selection shader path:
 
 1. `dvz_point()`
-2. `dvz_marker()`
+2. `dvz_pixel()`
+3. `dvz_marker()`
 
-These visuals already share selection-mask plumbing and shader selection variants, so they are the
-right first slice. Other visuals should keep current behavior or report unsupported until their
-selection/readout model is explicit.
+These visuals share point-like item-state plumbing and shader variants, so they are the right first
+slice. Other visuals should keep current behavior or report unsupported until their selection/readout
+model is explicit.
 
-Where possible, share shader helper code between point and marker selection shaders so selected and
-unselected state logic is not duplicated.
+Where possible, share shader helper code between point-like item-state shaders so selected,
+unselected, and hover state logic is not duplicated.
 
 ## Marker Picking Example Target
 
@@ -97,6 +101,6 @@ outside the retained selection system.
 ## Non-Goals
 
 1. Full visual-family selection styling.
-2. Hover styling unification.
-3. Animated effects, halos, outlines, z-bias, or scale changes.
+2. Per-visual style overrides.
+3. Animated effects, halos, outlines, or z-bias.
 4. Python/high-level plotting API design.

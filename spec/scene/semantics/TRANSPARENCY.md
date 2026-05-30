@@ -127,17 +127,15 @@ fragments to the WBOIT accumulation path; source-over and depth-peel modes follo
 alpha mode.
 
 
-## Interaction With Selection And Highlight
+## Interaction With Item-State Highlight
 
-The selection mask buffer and highlight descriptor apply to transparent visuals in the
-same way as opaque visuals.
-The highlight alpha multiplier modifies the per-fragment alpha before OIT accumulation.
+Item-state visual styles apply to transparent visuals in the same way as opaque visuals.
+Alpha styling modifies the per-fragment alpha before OIT accumulation.
 
-`selected_z_layer` is not meaningful for `DVZ_ALPHA_BLENDED`, `DVZ_ALPHA_WBOIT`, or
-`DVZ_ALPHA_DEPTH_PEEL` visuals because normal depth write is disabled in the transparent
-pass.
-The scene emits a diagnostic if `selected_z_layer ≠ 0` is declared on a transparent
-visual.
+Depth-raising or z-bias item-state effects are not meaningful for `DVZ_ALPHA_BLENDED`,
+`DVZ_ALPHA_WBOIT`, or `DVZ_ALPHA_DEPTH_PEEL` visuals because normal depth write is disabled in the
+transparent pass. If those effects are added later, the scene should diagnose unsupported
+transparent-visual combinations.
 
 
 ## FramePlan Structure

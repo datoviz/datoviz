@@ -172,7 +172,8 @@ Conceptual API shape:
 DvzSelection* sel = dvz_selection(scene, desc);
 dvz_selection_set_mode(sel, mode);
 dvz_selection_clear(sel);
-dvz_selection_get(sel, &items, &count);
+uint32_t count = dvz_selection_count(sel);
+dvz_selection_copy(sel, items, count);
 dvz_selection_set_input(sel, gesture, semantics);
 ```
 

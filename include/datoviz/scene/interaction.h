@@ -195,9 +195,10 @@ DVZ_EXPORT DvzSelectionVisualStyle dvz_selection_visual_style(void);
 
 
 /**
- * Configure selected/unselected visual styling for retained point/marker item states.
+ * Configure selected/unselected visual styling for retained point-like item states.
  *
- * The initial implementation affects point and marker visuals. Pass NULL to restore defaults.
+ * The initial implementation affects point, pixel, and marker visuals. Pass NULL to restore
+ * defaults.
  *
  * @param selection the selection
  * @param style the visual style descriptor, or NULL for defaults
@@ -271,7 +272,8 @@ DVZ_EXPORT void dvz_hover_clear(DvzHover* hover);
 /**
  * Configure hover visual styling.
  *
- * The initial implementation affects point and marker visuals. Pass NULL to restore defaults.
+ * The initial implementation affects point, pixel, and marker visuals. Pass NULL to restore
+ * defaults.
  *
  * @param hover the hover object
  * @param style the visual style descriptor, or NULL for defaults
