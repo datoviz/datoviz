@@ -83,6 +83,8 @@ void _scene_emit_visual_uploads(
             if (!_scene_emit_visual_material_upload_if_needed(
                     figure, plan, visual, vidx, upload_material_params))
                 continue;
+            if (!_scene_emit_visual_item_state_style_upload(figure, plan, visual, vidx))
+                continue;
             _scene_emit_visual_index_buffer_upload(figure, plan, visual, vidx, emitted_buffers);
             _scene_emit_visual_family_texture_uploads(figure, plan, visual, vidx);
         }

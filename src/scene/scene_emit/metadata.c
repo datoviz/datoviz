@@ -178,6 +178,13 @@ bool _scene_visual_frame_plan_metadata(
             figure, visual, visual_index, "item_state", metadata->selection_id,
             sizeof(metadata->selection_id)))
         return false;
+    if (_scene_visual_has_attr_data(visual, "item_state"))
+    {
+        if (!_scene_visual_attr_resource_key(
+                figure, visual, visual_index, "item_state_style", metadata->item_state_style_id,
+                sizeof(metadata->item_state_style_id)))
+            return false;
+    }
     bool path_stroke = renderable_kind == DVZ_RENDERABLE_PATH_STROKE;
     bool stroke_quad = renderable_kind == DVZ_RENDERABLE_STROKE_QUAD;
     bool stroke = path_stroke || stroke_quad;

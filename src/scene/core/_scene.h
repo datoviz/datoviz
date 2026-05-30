@@ -1113,6 +1113,19 @@ struct DvzSceneMaterialParams
 };
 
 
+typedef struct DvzSceneItemStateStyleParams DvzSceneItemStateStyleParams;
+
+struct DvzSceneItemStateStyleParams
+{
+    float selected[4];
+    float selected_tint[4];
+    float unselected[4];
+    float unselected_tint[4];
+    float hovered[4];
+    float hovered_tint[4];
+};
+
+
 typedef enum
 {
     DVZ_MATERIAL_KIND_UNLIT = 0,
@@ -1344,6 +1357,8 @@ struct DvzVisualFamilyState
     char             scale_slot[32];
     DvzSceneMaterialParams material_params;
     bool                   material_params_dirty;
+    DvzSceneItemStateStyleParams item_state_style_params;
+    bool                         item_state_style_params_dirty;
     DvzSegmentState        segment;
     DvzPathState           path;
     DvzVectorState         vector;

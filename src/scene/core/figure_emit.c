@@ -267,7 +267,9 @@ static bool _scene_visual_has_pending_render_work(const DvzVisual* visual)
     if (visual == NULL || !visual->visible)
         return false;
 
-    if (_scene_visual_dirty_material_emits_upload(visual) || _visual_family_state(visual)->texture.dirty)
+    if (_scene_visual_dirty_material_emits_upload(visual) ||
+        _visual_family_state(visual)->item_state_style_params_dirty ||
+        _visual_family_state(visual)->texture.dirty)
         return true;
     if (
         visual->type == DVZ_VISUAL_TYPE_VOLUME &&
@@ -488,6 +490,8 @@ static void _scene_commit_emit_success(DvzFigure* figure)
                 if (point_like || has_normals || visual->type == DVZ_VISUAL_TYPE_SEGMENT ||
                     visual->type == DVZ_VISUAL_TYPE_PATH || visual->type == DVZ_VISUAL_TYPE_SPHERE)
                     _visual_family_state(visual)->material_params_dirty = false;
+                if (point_like)
+                    _visual_family_state(visual)->item_state_style_params_dirty = false;
             }
             if (
                 visual->type == DVZ_VISUAL_TYPE_IMAGE ||

@@ -82,6 +82,8 @@ static const char* _draw_packet_role_name(const ConverterState* state, uint64_t 
         return "material_params";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_ITEM_STATE:
         return "item_state";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_ITEM_STATE_STYLE:
+        return "item_state_style";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_FLAGS:
         return "path_flags";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_DISTANCE:

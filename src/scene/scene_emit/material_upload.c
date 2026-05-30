@@ -80,3 +80,51 @@ bool _scene_emit_visual_material_upload(
                                   DVZ_DRP2_BUFFER_USAGE_COPY_DST;
     return true;
 }
+
+
+
+/**
+ * Emit item-state style parameter uploads for one visual.
+ *
+ * @param plan the destination frame plan
+ * @param visual the visual
+ * @param visual_index the scene visual index
+ * @return whether emission can continue for this visual
+ */
+bool _scene_emit_visual_item_state_style_upload(
+    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+{
+    ANN(figure);
+    ANN(plan);
+    ANN(visual);
+    if (!_visual_family_state(visual)->item_state_style_params_dirty)
+        return true;
+
+    char resource_id[128];
+    if (!_scene_visual_attr_resource_key(
+            figure, visual, visual_index, "item_state_style", resource_id, sizeof(resource_id)))
+    {
+        return false;
+    }
+    DvzSceneItemStateStyleParams* params =
+        (DvzSceneItemStateStyleParams*)dvz_malloc(sizeof(DvzSceneItemStateStyleParams));
+    if (params == NULL)
+        return false;
+    *params = _visual_family_state(visual)->item_state_style_params;
+    if (!dvz_frame_plan_upload_bytes(
+            plan, resource_id, 0, sizeof(DvzSceneItemStateStyleParams), "item_state_style",
+            params))
+    {
+        dvz_free(params);
+        return false;
+    }
+    plan->nodes[plan->count - 1].u.upload.owned_data = params;
+    _scene_attach_upload_metadata(
+        plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_ITEM_STATE_STYLE,
+        DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX, 1);
+    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+    node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM |
+                                  DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                                  DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+    return true;
+}

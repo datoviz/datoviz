@@ -409,7 +409,32 @@ static bool _hover_matches_visual_item(
 
 
 /**
- * Store one item-state style in a shared material payload slot.
+ * Store one item-state style in a dedicated item-state style payload slot.
+ *
+ * @param dst item-state style payload vec4
+ * @param tint_dst item-state style tint payload vec4
+ * @param style item-state style
+ */
+static void _item_state_store_style_params(
+    float dst[4], float tint_dst[4], const DvzItemStateVisualStyle* style)
+{
+    ANN(dst);
+    ANN(tint_dst);
+    ANN(style);
+    dst[0] = (float)style->flags;
+    dst[1] = isfinite(style->alpha) ? style->alpha : 1.0f;
+    dst[2] = isfinite(style->tint_mix) ? style->tint_mix : 0.0f;
+    dst[3] = isfinite(style->scale) && style->scale > 0.0f ? style->scale : 1.0f;
+    tint_dst[0] = (float)style->tint.r / 255.0f;
+    tint_dst[1] = (float)style->tint.g / 255.0f;
+    tint_dst[2] = (float)style->tint.b / 255.0f;
+    tint_dst[3] = (float)style->tint.a / 255.0f;
+}
+
+
+
+/**
+ * Store one item-state style in a legacy shared material payload slot.
  *
  * @param params material payload
  * @param style item-state style
@@ -532,6 +557,15 @@ static void _item_state_sync_visual_style(DvzScene* scene, DvzVisual* visual)
     DvzItemStateVisualStyle hover_style = normal;
     (void)_item_state_active_selection_style(scene, &selection_style);
     (void)_item_state_active_hover_style(scene, &hover_style);
+
+    DvzSceneItemStateStyleParams* item_params =
+        &_visual_family_state(visual)->item_state_style_params;
+    _item_state_store_style_params(
+        item_params->selected, item_params->selected_tint, &selection_style.selected);
+    _item_state_store_style_params(
+        item_params->unselected, item_params->unselected_tint, &selection_style.unselected);
+    _item_state_store_style_params(item_params->hovered, item_params->hovered_tint, &hover_style);
+    _visual_family_state(visual)->item_state_style_params_dirty = true;
 
     DvzSceneMaterialParams* params = &_visual_family_state(visual)->material_params;
     _item_state_store_style(params, &selection_style.selected, 0);
