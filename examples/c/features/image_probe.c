@@ -48,7 +48,8 @@
 #define PROBE_REQUEST_ID    1u
 #define PROBE_RING_SEGMENTS 28u
 #define PROBE_SEGMENTS      (PROBE_RING_SEGMENTS + 4u)
-#define PROBE_CARD_TEXT     "rgba --"
+#define PROBE_CARD_TEXT     "value --"
+#define COLORMAP_LUT_SIZE   256u
 
 static const float TAU = 6.28318530718f;
 
@@ -70,7 +71,7 @@ struct ImageProbeState
     bool cursor_valid;
     double cursor_x;
     double cursor_y;
-    double last_rgba[4];
+    double last_value;
     bool last_hit;
     bool has_last_result;
 };
@@ -160,11 +161,10 @@ static float _sample_field(float x, float y)
  * Map one scalar sample to the graphite/cyan/amber release palette.
  *
  * @param value normalized scalar value
- * @param out output RGBA8 color
+ * @return output RGBA8 color
  */
-static void _colormap(float value, uint8_t out[4])
+static DvzColor _probe_colormap(float value)
 {
-    ANN(out);
     const float v = _clamp01(value);
     float r = 0.07f;
     float g = 0.10f;
@@ -185,22 +185,38 @@ static void _colormap(float value, uint8_t out[4])
         b = 0.80f - 0.78f * t;
     }
 
-    out[0] = _u8(r);
-    out[1] = _u8(g);
-    out[2] = _u8(b);
-    out[3] = 255u;
+    return dvz_color_rgba(_u8(r), _u8(g), _u8(b), 255u);
 }
 
 
 
 /**
- * Fill the probe image texture with a deterministic scalar field rendered as RGBA.
+ * Fill the custom colormap LUT.
  *
- * @param pixels output RGBA8 texture
+ * @param colors output RGBA8 LUT
  */
-static void _fill_probe_texture(uint8_t pixels[FIELD_WIDTH * FIELD_HEIGHT * 4])
+static void _fill_probe_colormap(DvzColor colors[COLORMAP_LUT_SIZE])
 {
-    ANN(pixels);
+    ANN(colors);
+
+    for (uint32_t i = 0; i < COLORMAP_LUT_SIZE; i++)
+    {
+        const float t =
+            COLORMAP_LUT_SIZE > 1u ? (float)i / (float)(COLORMAP_LUT_SIZE - 1u) : 0.0f;
+        colors[i] = _probe_colormap(t);
+    }
+}
+
+
+
+/**
+ * Fill the probe image scalar field.
+ *
+ * @param values output normalized scalar field
+ */
+static void _fill_probe_field(float values[FIELD_WIDTH * FIELD_HEIGHT])
+{
+    ANN(values);
 
     for (uint32_t y = 0; y < FIELD_HEIGHT; y++)
     {
@@ -208,9 +224,7 @@ static void _fill_probe_texture(uint8_t pixels[FIELD_WIDTH * FIELD_HEIGHT * 4])
         {
             const float u = FIELD_WIDTH > 1u ? (float)x / (float)(FIELD_WIDTH - 1u) : 0.0f;
             const float v = FIELD_HEIGHT > 1u ? (float)y / (float)(FIELD_HEIGHT - 1u) : 0.0f;
-            const float sample = _sample_field(u, v);
-            const uint32_t k = 4u * (y * FIELD_WIDTH + x);
-            _colormap(sample, &pixels[k]);
+            values[y * FIELD_WIDTH + x] = _sample_field(u, v);
         }
     }
 }
@@ -236,19 +250,21 @@ static bool _set_probe_domain(DvzPanel* panel)
 
 
 /**
- * Add the image visual and enable pixel-query readback.
+ * Add the scalar image visual and enable pixel-query readback.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
- * @param pixels RGBA8 texture
+ * @param scale color scale bound to the scalar image
+ * @param values scalar field values
  * @return true when the image was added
  */
 static bool _add_probe_image(
-    DvzScene* scene, DvzPanel* panel, uint8_t pixels[FIELD_WIDTH * FIELD_HEIGHT * 4])
+    DvzScene* scene, DvzPanel* panel, DvzScale* scale, float values[FIELD_WIDTH * FIELD_HEIGHT])
 {
     ANN(scene);
     ANN(panel);
-    ANN(pixels);
+    ANN(scale);
+    ANN(values);
 
     vec3 data_positions[4] = {
         {0.0f, 0.0f, 0.0f},
@@ -276,7 +292,30 @@ static bool _add_probe_image(
         return false;
     if (dvz_visual_set_data(image, "texcoords", texcoords, 4) != 0)
         return false;
-    if (dvz_visual_set_texture(image, pixels, FIELD_WIDTH, FIELD_HEIGHT) != 0)
+    if (dvz_visual_set_scale(image, "colormap", scale) != 0)
+        return false;
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = FIELD_WIDTH,
+                   .height = FIELD_HEIGHT,
+                   .depth = 1,
+               });
+    if (field == NULL)
+        return false;
+    if (!dvz_sampled_field_set_data(
+            field, &(DvzFieldDataView){
+                       .data = values,
+                       .bytes_per_row = FIELD_WIDTH * sizeof(float),
+                       .rows_per_image = FIELD_HEIGHT,
+                   }))
+    {
+        return false;
+    }
+    if (!dvz_visual_set_field(image, "field", field))
         return false;
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;
@@ -581,16 +620,14 @@ static bool _add_probe_marker(
 
 
 /**
- * Create the shared color scale and matching colorbar.
+ * Create the shared scalar color scale.
  *
  * @param scene scene owning scale resources
- * @param panel panel receiving the colorbar
- * @return created colorbar, or NULL on failure
+ * @return created scale, or NULL on failure
  */
-static DvzColorbar* _add_probe_colorbar(DvzScene* scene, DvzPanel* panel)
+static DvzScale* _add_probe_scale(DvzScene* scene)
 {
     ANN(scene);
-    ANN(panel);
 
     DvzScale* scale = dvz_scale(
         scene, &(DvzScaleDesc){
@@ -603,17 +640,29 @@ static DvzColorbar* _add_probe_colorbar(DvzScene* scene, DvzPanel* panel)
     dvz_scale_set_domain(scale, 0.0, 1.0);
     dvz_scale_set_view_range(scale, 0.0, 1.0);
 
-    DvzColormap* colormap = dvz_colormap(scene, NULL);
+    DvzColor colors[COLORMAP_LUT_SIZE] = {0};
+    _fill_probe_colormap(colors);
+    DvzColormap* colormap =
+        dvz_colormap_custom(scene, "graphite_cyan_amber", colors, COLORMAP_LUT_SIZE);
     if (colormap == NULL)
         return NULL;
-    DvzColormapStop stops[4] = {
-        {.position = 0.00, .rgba = {18, 22, 30, 255}},
-        {.position = 0.42, .rgba = {35, 142, 180, 255}},
-        {.position = 0.72, .rgba = {76, 201, 240, 255}},
-        {.position = 1.00, .rgba = {255, 183, 3, 255}},
-    };
-    dvz_colormap_set_stops(colormap, stops, 4);
     dvz_scale_set_colormap(scale, colormap);
+    return scale;
+}
+
+
+
+/**
+ * Add the colorbar for the shared scale.
+ *
+ * @param panel panel receiving the colorbar
+ * @param scale scale bound to the colorbar
+ * @return created colorbar, or NULL on failure
+ */
+static DvzColorbar* _add_probe_colorbar(DvzPanel* panel, DvzScale* scale)
+{
+    ANN(panel);
+    ANN(scale);
 
     DvzColorbar* colorbar = dvz_colorbar(
         panel, scale,
@@ -621,9 +670,9 @@ static DvzColorbar* _add_probe_colorbar(DvzScene* scene, DvzPanel* panel)
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
             .title = "intensity",
-            .reserve_px = 122.0f,
+            .reserve_px = 96.0f,
             .ramp_width_px = 26.0f,
-            .plot_gap_px = 18.0f,
+            .plot_gap_px = 12.0f,
             .tick_length_px = 6.0f,
             .label_gap_px = 6.0f,
         });
@@ -676,6 +725,34 @@ static DvzOverlayCard* _add_probe_card(DvzPanel* panel)
 }
 
 
+/**
+ * Resolve one scalar probe value from a query result.
+ *
+ * @param state image probe example state
+ * @param query query result
+ * @param out_value output scalar value
+ * @return true when a scalar value was resolved
+ */
+static bool
+_query_probe_value(ImageProbeState* state, const DvzQueryResult* query, double* out_value)
+{
+    if (state == NULL || query == NULL || out_value == NULL)
+        return false;
+    if (query->status != DVZ_QUERY_STATUS_HIT || !query->hit)
+        return false;
+
+    float x = 0.0f;
+    float y = 0.0f;
+    if (!_probe_panel_to_data(
+            state->panel, query->panel_position[0], query->panel_position[1], &x, &y))
+    {
+        return false;
+    }
+    *out_value = (double)_sample_field(x, y);
+    return true;
+}
+
+
 
 /**
  * Update the compact live probe readout card from one query result.
@@ -693,19 +770,16 @@ static void _update_probe_card(ImageProbeState* state, const DvzQueryResult* que
     dvz_overlay_card_set_layout(state->probe_card, anchor, offset);
 
     char text[128] = {0};
-    if (
-        query->status == DVZ_QUERY_STATUS_HIT && query->hit &&
-        query->value_kind == DVZ_QUERY_VALUE_VEC4)
+    double value = 0.0;
+    if (_query_probe_value(state, query, &value))
     {
-        int n = dvz_snprintf(
-            text, sizeof(text), "rgba %.3f %.3f %.3f %.3f", query->vector[0],
-            query->vector[1], query->vector[2], query->vector[3]);
+        int n = dvz_snprintf(text, sizeof(text), "value %.3f", value);
         if (n <= 0 || (size_t)n >= sizeof(text))
             return;
     }
     else
     {
-        int n = dvz_snprintf(text, sizeof(text), "rgba --");
+        int n = dvz_snprintf(text, sizeof(text), "value --");
         if (n <= 0 || (size_t)n >= sizeof(text))
             return;
     }
@@ -721,7 +795,7 @@ static void _update_probe_card(ImageProbeState* state, const DvzQueryResult* que
  * @param query query result to compare
  * @return true when the result should be printed
  */
-static bool _query_changed(const ImageProbeState* state, const DvzQueryResult* query)
+static bool _query_changed(ImageProbeState* state, const DvzQueryResult* query)
 {
     if (state == NULL || query == NULL)
         return false;
@@ -730,15 +804,13 @@ static bool _query_changed(const ImageProbeState* state, const DvzQueryResult* q
     if (!query->hit)
         return false;
 
-    for (uint32_t i = 0; i < 4u; i++)
-    {
-        double delta = query->vector[i] - state->last_rgba[i];
-        if (delta < 0.0)
-            delta = -delta;
-        if (delta >= (1.0 / 255.0))
-            return true;
-    }
-    return false;
+    double value = 0.0;
+    if (!_query_probe_value(state, query, &value))
+        return true;
+    double delta = value - state->last_value;
+    if (delta < 0.0)
+        delta = -delta;
+    return delta >= 1e-3;
 }
 
 
@@ -756,8 +828,9 @@ static void _store_query_result(ImageProbeState* state, const DvzQueryResult* qu
 
     state->has_last_result = true;
     state->last_hit = query->hit;
-    for (uint32_t i = 0; i < 4u; i++)
-        state->last_rgba[i] = query->vector[i];
+    double value = 0.0;
+    if (_query_probe_value(state, query, &value))
+        state->last_value = value;
 }
 
 
@@ -840,14 +913,11 @@ static void _image_probe_frame(DvzView* win, void* user_data)
         if (!_query_changed(state, &query))
             continue;
 
-        if (
-            query.status == DVZ_QUERY_STATUS_HIT && query.hit &&
-            query.value_kind == DVZ_QUERY_VALUE_VEC4)
+        double value = 0.0;
+        if (_query_probe_value(state, &query, &value))
         {
             dvz_fprintf(
-                stdout,
-                "probe rgba=(%0.3f, %0.3f, %0.3f, %0.3f) panel=(%0.1f,%0.1f)\n",
-                query.vector[0], query.vector[1], query.vector[2], query.vector[3],
+                stdout, "probe value=%0.3f panel=(%0.1f,%0.1f)\n", value,
                 query.panel_position[0], query.panel_position[1]);
         }
         else
@@ -884,7 +954,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
 
     bool ok = dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.045f, .right = 0.155f, .bottom = 0.055f,
+        panel, &(DvzPanelLayoutReserve){.left = 0.045f, .right = 0.030f, .bottom = 0.055f,
                                         .top = 0.045f});
     EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve() failed");
     ok = _set_probe_domain(panel);
@@ -892,10 +962,13 @@ int main(int argc, char** argv)
 
     example_graphite_cyan_set_panel_background(panel);
 
-    uint8_t pixels[FIELD_WIDTH * FIELD_HEIGHT * 4] = {0};
-    _fill_probe_texture(pixels);
+    DvzScale* scale = _add_probe_scale(scene);
+    EXAMPLE_CHECK(scale != NULL, "adding probe scale failed");
 
-    ok = _add_probe_image(scene, panel, pixels);
+    float values[FIELD_WIDTH * FIELD_HEIGHT] = {0};
+    _fill_probe_field(values);
+
+    ok = _add_probe_image(scene, panel, scale, values);
     EXAMPLE_CHECK(ok, "adding probe image failed");
 
     DvzVisual* probe_segments = NULL;
@@ -903,7 +976,7 @@ int main(int argc, char** argv)
     ok = _add_probe_marker(scene, panel, &probe_segments, &probe_dot);
     EXAMPLE_CHECK(ok, "adding probe marker failed");
 
-    DvzColorbar* colorbar = _add_probe_colorbar(scene, panel);
+    DvzColorbar* colorbar = _add_probe_colorbar(panel, scale);
     EXAMPLE_CHECK(colorbar != NULL, "adding probe colorbar failed");
 
     DvzOverlayCard* probe_card = _add_probe_card(panel);
