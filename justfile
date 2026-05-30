@@ -1098,11 +1098,49 @@ webgpu-runner-smoke:
     @node tools/webgpu_runner_smoke.mjs
 #
 
+wasm-env-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export EMSDK_QUIET=1
+    if ! command -v emcmake >/dev/null 2>&1; then
+        if [ -n "${EMSDK_ENV_SH:-}" ] && [ -f "$EMSDK_ENV_SH" ]; then
+            source "$EMSDK_ENV_SH"
+        elif [ -n "${EMSDK:-}" ] && [ -f "$EMSDK/emsdk_env.sh" ]; then
+            source "$EMSDK/emsdk_env.sh"
+        elif [ -f "$HOME/SDK/emsdk/emsdk_env.sh" ]; then
+            source "$HOME/SDK/emsdk/emsdk_env.sh"
+        elif [ -f "$HOME/emsdk/emsdk_env.sh" ]; then
+            source "$HOME/emsdk/emsdk_env.sh"
+        else
+            echo "Emscripten not found."
+            echo "Install/activate emsdk, put emcmake on PATH, or set EMSDK_ENV_SH=/path/to/emsdk_env.sh."
+            exit 1
+        fi
+    fi
+    echo "emcc: $(command -v emcc)"
+    echo "emcmake: $(command -v emcmake)"
+    emcc --version | head -n 1
+#
+
 wasm-scene-build:
     #!/usr/bin/env bash
     set -euo pipefail
     export EMSDK_QUIET=1
-    source "$HOME/SDK/emsdk/emsdk_env.sh"
+    if ! command -v emcmake >/dev/null 2>&1; then
+        if [ -n "${EMSDK_ENV_SH:-}" ] && [ -f "$EMSDK_ENV_SH" ]; then
+            source "$EMSDK_ENV_SH"
+        elif [ -n "${EMSDK:-}" ] && [ -f "$EMSDK/emsdk_env.sh" ]; then
+            source "$EMSDK/emsdk_env.sh"
+        elif [ -f "$HOME/SDK/emsdk/emsdk_env.sh" ]; then
+            source "$HOME/SDK/emsdk/emsdk_env.sh"
+        elif [ -f "$HOME/emsdk/emsdk_env.sh" ]; then
+            source "$HOME/emsdk/emsdk_env.sh"
+        else
+            echo "Emscripten not found."
+            echo "Install/activate emsdk, put emcmake on PATH, or set EMSDK_ENV_SH=/path/to/emsdk_env.sh."
+            exit 1
+        fi
+    fi
     emcmake cmake -S . -B build-wasm-scene -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_SKIP_INSTALL_RULES=ON \
         -DDVZ_BUILD_VK=OFF \
