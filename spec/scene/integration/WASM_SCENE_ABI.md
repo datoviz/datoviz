@@ -27,7 +27,7 @@ port Vulkan, vklite, canvas, window, stream, or app to WASM.
    browser contract.
 3. Do not make the browser runtime understand Datoviz visual families outside DRP2 commands.
 4. Do not optimize transport before the object/lifetime contract is stable.
-5. Do not remove `src/wasm/scene_bridge.c` until the generic ABI reaches equivalent smoke coverage.
+5. Do not optimize payload transport until the object/lifetime contract is stable.
 
 ## Object Model
 
@@ -83,18 +83,17 @@ void dvz_wasm_api_scene_destroy(uint32_t scene);
 
 ## Current PoC Compatibility
 
-`src/wasm/scene_bridge.c` remains the demo-specific bridge for:
+The demo-specific `src/wasm/scene_bridge.c` path has been retired. The generic ABI now covers:
 
 1. 2D point + primitive + image + mesh + panzoom;
 2. 3D mesh + arcball.
 
-The generic ABI should be added beside it and validated independently. Once the generic ABI can
-rebuild the same demos, the demo bridge can become a compatibility shim or be removed.
+The browser pages and `just wasm-scene-smoke` use the generic `dvz_wasm_api_*` object ABI.
 
 ## Migration Plan
 
-1. Add the generic ABI with scene/figure/panel/point support and a smoke test.
-2. Add primitive, image, mesh, and controller coverage through generic calls.
-3. Add a small JS wrapper over the ABI.
-4. Move the browser demos to the JS wrapper.
+1. Done: add the generic ABI with scene/figure/panel/point support and a smoke test.
+2. Done: add primitive, image, mesh, panzoom, camera, and arcball coverage through generic calls.
+3. Done: add a small JS wrapper over the ABI.
+4. Done: move the browser demos to the JS wrapper and retire the demo-specific bridge.
 5. Replace JSON hot-path transport only after the object ABI is stable.

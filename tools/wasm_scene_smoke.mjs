@@ -6,10 +6,8 @@ import { mkdir, writeFile } from "node:fs/promises";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs");
-const outputPath = resolve(root, "build-wasm-scene/wasm/wasm_scene_point_primitive_image_mesh_panzoom.json");
-const output3dPath = resolve(root, "build-wasm-scene/wasm/wasm_scene_mesh3d_arcball.json");
-const outputApiPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_point_primitive_image_mesh_panzoom.json");
-const outputApi3dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_mesh3d_arcball.json");
+const output2dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_point_primitive_image_mesh_panzoom.json");
+const output3dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_mesh3d_arcball.json");
 
 const DVZ_POINTER_EVENT_PRESS = 1;
 const DVZ_POINTER_EVENT_RELEASE = 0;
@@ -26,90 +24,11 @@ const DVZ_WASM_VISUAL_MESH = 7;
 const DVZ_WASM_VISUAL_PRIMITIVE = 9;
 
 function requireOk(condition, message) {
-  if (!condition) {
-    throw new Error(message);
-  }
-}
-
-function readPayload(Module, handle) {
-  const ptr = Module._dvz_wasm_scene_payload_ptr(handle);
-  const size = Module._dvz_wasm_scene_payload_size(handle);
-  requireOk(ptr !== 0, "WASM scene payload pointer is null");
-  requireOk(size > 0, "WASM scene payload is empty");
-  return new TextDecoder().decode(Module.HEAPU8.subarray(ptr, ptr + size));
-}
-
-function requirePayloadCleared(Module, handle, label) {
-  const ptr = Module._dvz_wasm_scene_payload_ptr(handle);
-  const size = Module._dvz_wasm_scene_payload_size(handle);
-  requireOk(ptr === 0, `${label} did not clear borrowed payload pointer`);
-  requireOk(size === 0, `${label} did not clear borrowed payload size`);
+  if (!condition) throw new Error(message);
 }
 
 function expectStatus(status, expected, label) {
   requireOk(status === expected, `${label} returned ${status}, expected ${expected}`);
-}
-
-function diagnostics(Module, handle) {
-  const count = Module._dvz_wasm_scene_diagnostic_count(handle);
-  const messages = [];
-  for (let i = 0; i < count; i++) {
-    const ptr = Module._dvz_wasm_scene_diagnostic(handle, i);
-    messages.push(ptr !== 0 ? Module.UTF8ToString(ptr) : "<null diagnostic>");
-  }
-  return messages;
-}
-
-function requireNoDiagnostics(Module, handle, prefix) {
-  const messages = diagnostics(Module, handle);
-  requireOk(messages.length === 0, `${prefix}: ${messages.join("; ")}`);
-}
-
-function throwDiagnostics(Module, handle, prefix) {
-  const messages = diagnostics(Module, handle);
-  requireOk(messages.length > 0, `${prefix}: no diagnostic was reported`);
-  throw new Error(`${prefix}: ${messages.join("; ")}`);
-}
-
-function emitStream(Module, handle, label) {
-  const status = Module._dvz_wasm_scene_emit(handle);
-  if (status !== 0) {
-    throwDiagnostics(Module, handle, `${label} emit failed with ${status}`);
-  }
-  requireNoDiagnostics(Module, handle, `${label} emit unexpectedly reported diagnostics`);
-  const streamText = readPayload(Module, handle);
-  const stream = JSON.parse(streamText);
-  requireOk(Array.isArray(stream.commands), `${label} stream has no commands array`);
-  requireOk(stream.commands.length > 0, `${label} stream has no commands`);
-  return stream;
-}
-
-function apiDiagnostics(Module, scene) {
-  const count = Module._dvz_wasm_api_diagnostic_count(scene);
-  const messages = [];
-  for (let i = 0; i < count; i++) {
-    const ptr = Module._dvz_wasm_api_diagnostic(scene, i);
-    messages.push(ptr !== 0 ? Module.UTF8ToString(ptr) : "<null diagnostic>");
-  }
-  return messages;
-}
-
-function emitApiStream(Module, scene, figure, label) {
-  const status = Module._dvz_wasm_api_emit(scene, figure);
-  if (status !== 0) {
-    const messages = apiDiagnostics(Module, scene);
-    requireOk(messages.length > 0, `${label}: no diagnostic was reported`);
-    throw new Error(`${label}: ${messages.join("; ")}`);
-  }
-  const messages = apiDiagnostics(Module, scene);
-  requireOk(messages.length === 0, `${label} emit unexpectedly reported diagnostics: ${messages.join("; ")}`);
-  const ptr = Module._dvz_wasm_api_payload_ptr(scene);
-  const size = Module._dvz_wasm_api_payload_size(scene);
-  requireOk(ptr !== 0 && size > 0, `${label} emitted no payload`);
-  const stream = JSON.parse(new TextDecoder().decode(Module.HEAPU8.subarray(ptr, ptr + size)));
-  requireOk(Array.isArray(stream.commands), `${label} stream has no commands array`);
-  requireOk(stream.commands.length > 0, `${label} stream has no commands`);
-  return stream;
 }
 
 function allocArray(Module, typedArray) {
@@ -125,6 +44,33 @@ function allocCString(Module, text) {
   requireOk(ptr !== 0, "malloc failed");
   Module.HEAPU8.set(bytes, ptr);
   return ptr;
+}
+
+function diagnostics(Module, scene) {
+  const count = Module._dvz_wasm_api_diagnostic_count(scene);
+  const messages = [];
+  for (let i = 0; i < count; i++) {
+    const ptr = Module._dvz_wasm_api_diagnostic(scene, i);
+    messages.push(ptr !== 0 ? Module.UTF8ToString(ptr) : "<null diagnostic>");
+  }
+  return messages;
+}
+
+function emitStream(Module, scene, figure, label) {
+  const status = Module._dvz_wasm_api_emit(scene, figure);
+  const messages = diagnostics(Module, scene);
+  if (status !== 0) {
+    requireOk(messages.length > 0, `${label}: no diagnostic was reported`);
+    throw new Error(`${label}: ${messages.join("; ")}`);
+  }
+  requireOk(messages.length === 0, `${label} emit unexpectedly reported diagnostics: ${messages.join("; ")}`);
+  const ptr = Module._dvz_wasm_api_payload_ptr(scene);
+  const size = Module._dvz_wasm_api_payload_size(scene);
+  requireOk(ptr !== 0 && size > 0, `${label} emitted no payload`);
+  const stream = JSON.parse(new TextDecoder().decode(Module.HEAPU8.subarray(ptr, ptr + size)));
+  requireOk(Array.isArray(stream.commands), `${label} stream has no commands array`);
+  requireOk(stream.commands.length > 0, `${label} stream has no commands`);
+  return stream;
 }
 
 function makeCubeMesh(size) {
@@ -147,456 +93,141 @@ function makeCubeMesh(size) {
       normals.push(...face.n);
     }
   }
-  return {
-    positions: new Float32Array(positions),
-    colors: new Uint8Array(colors),
-    normals: new Float32Array(normals),
-  };
+  return { positions: new Float32Array(positions), colors: new Uint8Array(colors), normals: new Float32Array(normals) };
+}
+
+function setF32(Module, visual, attrPtr, dataPtr, count, label) {
+  expectStatus(Module._dvz_wasm_api_visual_set_f32(visual, attrPtr, dataPtr, count), 0, label);
+}
+
+function setRGBA8(Module, visual, attrPtr, dataPtr, count, label) {
+  expectStatus(Module._dvz_wasm_api_visual_set_rgba8(visual, attrPtr, dataPtr, count), 0, label);
 }
 
 const { default: createModule } = await import(pathToFileURL(modulePath).href);
-const Module = await createModule({
-  locateFile(path) {
-    return join(dirname(modulePath), path);
-  },
-});
-
+const Module = await createModule({ locateFile: (path) => join(dirname(modulePath), path) });
 const smokeSize = 64;
-const handle = Module._dvz_wasm_scene_create(smokeSize, smokeSize);
-requireOk(handle !== 0, "dvz_wasm_scene_create failed");
-requireOk(
-  Module._dvz_wasm_scene_set_canvas_format(handle, DVZ_FORMAT_R8G8B8A8_UNORM) === 0,
-  "dvz_wasm_scene_set_canvas_format failed",
-);
 
-const positions = new Float32Array([
-  -0.75, -0.45, 0.0,
-  -0.35, 0.35, 0.0,
-  0.05, -0.1, 0.0,
-  0.42, 0.5, 0.0,
-  0.72, -0.35, 0.0,
-]);
-const colors = new Uint8Array([
-  231, 77, 60, 255,
-  46, 204, 113, 255,
-  52, 152, 219, 255,
-  241, 196, 15, 255,
-  155, 89, 182, 255,
-]);
-const sizes = new Float32Array([32, 44, 36, 48, 40]);
-
-const positionsPtr = allocArray(Module, positions);
-const colorsPtr = allocArray(Module, colors);
-const sizesPtr = allocArray(Module, sizes);
-const primitivePositions = new Float32Array([
-  -0.85, -0.7, 0.15,
-  -0.15, -0.7, 0.15,
-  -0.5, 0.1, 0.15,
-]);
-const primitiveColors = new Uint8Array([
-  255, 120, 90, 220,
-  255, 180, 90, 220,
-  255, 90, 150, 220,
-]);
-const primitivePositionsPtr = allocArray(Module, primitivePositions);
-const primitiveColorsPtr = allocArray(Module, primitiveColors);
-const imageWidth = 8;
-const imageHeight = 8;
-const imagePixels = new Uint8Array(imageWidth * imageHeight * 4);
-for (let y = 0; y < imageHeight; y++) {
-  for (let x = 0; x < imageWidth; x++) {
-    const i = (y * imageWidth + x) * 4;
-    const checker = (x + y) % 2;
-    imagePixels[i + 0] = checker ? 60 : 235;
-    imagePixels[i + 1] = checker ? 125 : 245;
-    imagePixels[i + 2] = checker ? 210 : 120;
-    imagePixels[i + 3] = 255;
-  }
-}
-const imagePixelsPtr = allocArray(Module, imagePixels);
-const meshPositions = new Float32Array([
-  0.18, 0.18, 0.22,
-  0.86, 0.18, 0.22,
-  0.18, 0.78, 0.22,
-  0.86, 0.18, 0.22,
-  0.86, 0.78, 0.22,
-  0.18, 0.78, 0.22,
-]);
-const meshColors = new Uint8Array([
-  90, 170, 255, 240,
-  85, 230, 190, 240,
-  160, 120, 255, 240,
-  85, 230, 190, 240,
-  255, 135, 210, 240,
-  160, 120, 255, 240,
-]);
-const meshNormals = new Float32Array([
-  0, 0, 1,
-  0, 0, 1,
-  0, 0, 1,
-  0, 0, 1,
-  0, 0, 1,
-  0, 0, 1,
-]);
-const meshPositionsPtr = allocArray(Module, meshPositions);
-const meshColorsPtr = allocArray(Module, meshColors);
-const meshNormalsPtr = allocArray(Module, meshNormals);
-
-try {
-  expectStatus(Module._dvz_wasm_scene_set_canvas_format(0, DVZ_FORMAT_R8G8B8A8_UNORM), -1, "bad handle canvas format");
-  let status = Module._dvz_wasm_scene_set_points(
-    handle,
-    positionsPtr,
-    colorsPtr,
-    sizesPtr,
-    sizes.length,
-  );
-  expectStatus(status, 0, "dvz_wasm_scene_set_points");
-  expectStatus(
-    Module._dvz_wasm_scene_set_primitive(handle, primitivePositionsPtr, primitiveColorsPtr, 2),
-    -1,
-    "invalid primitive count",
-  );
-  requirePayloadCleared(Module, handle, "invalid primitive count");
-  status = Module._dvz_wasm_scene_set_primitive(
-    handle,
-    primitivePositionsPtr,
-    primitiveColorsPtr,
-    primitivePositions.length / 3,
-  );
-  expectStatus(status, 0, "dvz_wasm_scene_set_primitive");
-  expectStatus(Module._dvz_wasm_scene_set_image(handle, imagePixelsPtr, 0, imageHeight), -1, "zero-width image");
-  requirePayloadCleared(Module, handle, "zero-width image");
-  status = Module._dvz_wasm_scene_set_image(handle, imagePixelsPtr, imageWidth, imageHeight);
-  expectStatus(status, 0, "dvz_wasm_scene_set_image");
-  expectStatus(
-    Module._dvz_wasm_scene_set_mesh(handle, meshPositionsPtr, meshColorsPtr, 0, meshPositions.length / 3),
-    -1,
-    "mesh missing normals",
-  );
-  requirePayloadCleared(Module, handle, "mesh missing normals");
-  expectStatus(
-    Module._dvz_wasm_scene_set_mesh(handle, meshPositionsPtr, meshColorsPtr, meshNormalsPtr, 2),
-    -1,
-    "invalid mesh count",
-  );
-  requirePayloadCleared(Module, handle, "invalid mesh count");
-  status = Module._dvz_wasm_scene_set_mesh(
-    handle,
-    meshPositionsPtr,
-    meshColorsPtr,
-    meshNormalsPtr,
-    meshPositions.length / 3,
-  );
-  expectStatus(status, 0, "dvz_wasm_scene_set_mesh");
-
-  const initialStream = emitStream(Module, handle, "initial");
-
-  const t0 = 10.0;
-  Module._dvz_wasm_scene_pointer(
-    handle,
-    DVZ_POINTER_EVENT_PRESS,
-    smokeSize / 2,
-    smokeSize / 2,
-    DVZ_POINTER_BUTTON_LEFT,
-    0,
-    1,
-    t0,
-  );
-  requirePayloadCleared(Module, handle, "pointer event");
-  Module._dvz_wasm_scene_pointer(
-    handle,
-    DVZ_POINTER_EVENT_MOVE,
-    smokeSize / 2 + 6,
-    smokeSize / 2 - 2,
-    DVZ_POINTER_BUTTON_LEFT,
-    0,
-    1,
-    t0 + 16.0,
-  );
-  Module._dvz_wasm_scene_pointer(
-    handle,
-    DVZ_POINTER_EVENT_RELEASE,
-    smokeSize / 2 + 6,
-    smokeSize / 2 - 2,
-    DVZ_POINTER_BUTTON_LEFT,
-    0,
-    1,
-    t0 + 32.0,
-  );
-  Module._dvz_wasm_scene_wheel(handle, smokeSize / 2, smokeSize / 2, 0, 1, 0, 1, t0 + 48.0);
-
-  const interactiveStream = emitStream(Module, handle, "interactive");
-
-  status = Module._dvz_wasm_scene_resize(handle, smokeSize * 2, smokeSize + 16, 2.0);
-  requireOk(status === 0, `resize failed with ${status}`);
-  requirePayloadCleared(Module, handle, "resize");
-  const resizeStream = emitStream(Module, handle, "resize");
-
-  Module._dvz_wasm_scene_pointer(
-    handle,
-    DVZ_POINTER_EVENT_PRESS,
-    smokeSize / 2 + 10,
-    smokeSize / 2 + 4,
-    DVZ_POINTER_BUTTON_LEFT,
-    0,
-    2,
-    t0 + 64.0,
-  );
-  Module._dvz_wasm_scene_pointer(
-    handle,
-    DVZ_POINTER_EVENT_MOVE,
-    smokeSize / 2 + 2,
-    smokeSize / 2 + 12,
-    DVZ_POINTER_BUTTON_LEFT,
-    0,
-    2,
-    t0 + 80.0,
-  );
-  Module._dvz_wasm_scene_pointer(
-    handle,
-    DVZ_POINTER_EVENT_RELEASE,
-    smokeSize / 2 + 2,
-    smokeSize / 2 + 12,
-    DVZ_POINTER_BUTTON_LEFT,
-    0,
-    2,
-    t0 + 96.0,
-  );
-  const secondInteractiveStream = emitStream(Module, handle, "second interactive");
-
-  await mkdir(dirname(outputPath), { recursive: true });
-  await writeFile(outputPath, `${JSON.stringify(initialStream, null, 2)}\n`, "utf8");
-  console.log(`Wrote ${outputPath}`);
-  console.log(
-    `commands=initial:${initialStream.commands.length} ` +
-      `interactive:${interactiveStream.commands.length} ` +
-      `resize:${resizeStream.commands.length} ` +
-      `second_interactive:${secondInteractiveStream.commands.length}`,
-  );
-} finally {
-  Module._free(positionsPtr);
-  Module._free(colorsPtr);
-  Module._free(sizesPtr);
-  Module._free(primitivePositionsPtr);
-  Module._free(primitiveColorsPtr);
-  Module._free(imagePixelsPtr);
-  Module._free(meshPositionsPtr);
-  Module._free(meshColorsPtr);
-  Module._free(meshNormalsPtr);
-  Module._dvz_wasm_scene_destroy(handle);
-}
-
-const cube = makeCubeMesh(1.25);
-const handle3d = Module._dvz_wasm_scene_create_3d(smokeSize, smokeSize);
-requireOk(handle3d !== 0, "dvz_wasm_scene_create_3d failed");
-requireOk(
-  Module._dvz_wasm_scene_set_canvas_format(handle3d, DVZ_FORMAT_R8G8B8A8_UNORM) === 0,
-  "dvz_wasm_scene_set_canvas_format failed for 3D scene",
-);
-const cubePositionsPtr = allocArray(Module, cube.positions);
-const cubeColorsPtr = allocArray(Module, cube.colors);
-const cubeNormalsPtr = allocArray(Module, cube.normals);
-try {
-  let status = Module._dvz_wasm_scene_set_mesh(
-    handle3d,
-    cubePositionsPtr,
-    cubeColorsPtr,
-    cubeNormalsPtr,
-    cube.positions.length / 3,
-  );
-  requireOk(status === 0, `3D dvz_wasm_scene_set_mesh failed with ${status}`);
-
-  const stream3d = emitStream(Module, handle3d, "3D initial");
-  Module._dvz_wasm_scene_pointer(
-    handle3d,
-    DVZ_POINTER_EVENT_PRESS,
-    smokeSize / 2,
-    smokeSize / 2,
-    DVZ_POINTER_BUTTON_LEFT,
-    0,
-    1,
-    100.0,
-  );
-  Module._dvz_wasm_scene_pointer(
-    handle3d,
-    DVZ_POINTER_EVENT_MOVE,
-    smokeSize / 2 + 8,
-    smokeSize / 2 + 6,
-    DVZ_POINTER_BUTTON_LEFT,
-    0,
-    1,
-    116.0,
-  );
-  Module._dvz_wasm_scene_pointer(
-    handle3d,
-    DVZ_POINTER_EVENT_RELEASE,
-    smokeSize / 2 + 8,
-    smokeSize / 2 + 6,
-    DVZ_POINTER_BUTTON_LEFT,
-    0,
-    1,
-    132.0,
-  );
-  const interactive3d = emitStream(Module, handle3d, "3D interactive");
-
-  await writeFile(output3dPath, `${JSON.stringify(stream3d, null, 2)}\n`, "utf8");
-  console.log(`Wrote ${output3dPath}`);
-  console.log(`commands3d=initial:${stream3d.commands.length} interactive:${interactive3d.commands.length}`);
-} finally {
-  Module._free(cubePositionsPtr);
-  Module._free(cubeColorsPtr);
-  Module._free(cubeNormalsPtr);
-  Module._dvz_wasm_scene_destroy(handle3d);
-}
-
-const apiScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
-requireOk(apiScene !== 0, "dvz_wasm_api_scene failed");
 const positionNamePtr = allocCString(Module, "position");
 const colorNamePtr = allocCString(Module, "color");
 const diameterNamePtr = allocCString(Module, "diameter");
 const normalNamePtr = allocCString(Module, "normal");
 const texcoordsNamePtr = allocCString(Module, "texcoords");
-const apiPositionsPtr = allocArray(Module, positions);
-const apiColorsPtr = allocArray(Module, colors);
-const apiSizesPtr = allocArray(Module, sizes);
-const apiPrimitivePositionsPtr = allocArray(Module, primitivePositions);
-const apiPrimitiveColorsPtr = allocArray(Module, primitiveColors);
-const apiImagePositionsPtr = allocArray(Module, new Float32Array([
-  0.18, -0.78, 0.05,
-  0.18, -0.12, 0.05,
-  0.86, -0.78, 0.05,
-  0.86, -0.12, 0.05,
-]));
-const apiImageTexcoordsPtr = allocArray(Module, new Float32Array([0, 0, 0, 1, 1, 0, 1, 1]));
-const apiImagePixelsPtr = allocArray(Module, imagePixels);
-const apiMeshPositionsPtr = allocArray(Module, meshPositions);
-const apiMeshColorsPtr = allocArray(Module, meshColors);
-const apiMeshNormalsPtr = allocArray(Module, meshNormals);
+
 try {
-  expectStatus(
-    Module._dvz_wasm_api_set_canvas_format(apiScene, DVZ_FORMAT_R8G8B8A8_UNORM),
-    0,
-    "dvz_wasm_api_set_canvas_format",
-  );
-  const apiFigure = Module._dvz_wasm_api_figure(apiScene, smokeSize, smokeSize);
-  requireOk(apiFigure !== 0, "dvz_wasm_api_figure failed");
-  const apiPanel = Module._dvz_wasm_api_panel_full(apiFigure);
-  requireOk(apiPanel !== 0, "dvz_wasm_api_panel_full failed");
+  const positions = new Float32Array([-0.75, -0.45, 0, -0.35, 0.35, 0, 0.05, -0.1, 0, 0.42, 0.5, 0, 0.72, -0.35, 0]);
+  const colors = new Uint8Array([231, 77, 60, 255, 46, 204, 113, 255, 52, 152, 219, 255, 241, 196, 15, 255, 155, 89, 182, 255]);
+  const sizes = new Float32Array([32, 44, 36, 48, 40]);
+  const primitivePositions = new Float32Array([-0.85, -0.7, 0.15, -0.15, -0.7, 0.15, -0.5, 0.1, 0.15]);
+  const primitiveColors = new Uint8Array([255, 120, 90, 220, 255, 180, 90, 220, 255, 90, 150, 220]);
+  const imageWidth = 8;
+  const imageHeight = 8;
+  const imagePixels = new Uint8Array(imageWidth * imageHeight * 4);
+  for (let y = 0; y < imageHeight; y++) {
+    for (let x = 0; x < imageWidth; x++) {
+      const i = (y * imageWidth + x) * 4;
+      const checker = (x + y) % 2;
+      imagePixels[i + 0] = checker ? 60 : 235;
+      imagePixels[i + 1] = checker ? 125 : 245;
+      imagePixels[i + 2] = checker ? 210 : 120;
+      imagePixels[i + 3] = 255;
+    }
+  }
+  const imagePositions = new Float32Array([0.18, -0.78, 0.05, 0.18, -0.12, 0.05, 0.86, -0.78, 0.05, 0.86, -0.12, 0.05]);
+  const imageTexcoords = new Float32Array([0, 0, 0, 1, 1, 0, 1, 1]);
+  const meshPositions = new Float32Array([0.18, 0.18, 0.22, 0.86, 0.18, 0.22, 0.18, 0.78, 0.22, 0.86, 0.18, 0.22, 0.86, 0.78, 0.22, 0.18, 0.78, 0.22]);
+  const meshColors = new Uint8Array([90, 170, 255, 240, 85, 230, 190, 240, 160, 120, 255, 240, 85, 230, 190, 240, 255, 135, 210, 240, 160, 120, 255, 240]);
+  const meshNormals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
 
-  const apiPoint = Module._dvz_wasm_api_visual(apiScene, DVZ_WASM_VISUAL_POINT, 0);
-  requireOk(apiPoint !== 0, "dvz_wasm_api_visual(point) failed");
-  expectStatus(Module._dvz_wasm_api_visual_set_f32(apiPoint, positionNamePtr, apiPositionsPtr, positions.length / 3), 0, "api point position");
-  expectStatus(Module._dvz_wasm_api_visual_set_rgba8(apiPoint, colorNamePtr, apiColorsPtr, colors.length / 4), 0, "api point color");
-  expectStatus(Module._dvz_wasm_api_visual_set_f32(apiPoint, diameterNamePtr, apiSizesPtr, sizes.length), 0, "api point diameter");
-  expectStatus(Module._dvz_wasm_api_panel_add_visual(apiPanel, apiPoint), 0, "api add point");
+  const scene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
+  requireOk(scene !== 0, "dvz_wasm_api_scene failed");
+  const ptrs = [
+    allocArray(Module, positions), allocArray(Module, colors), allocArray(Module, sizes),
+    allocArray(Module, primitivePositions), allocArray(Module, primitiveColors),
+    allocArray(Module, imagePositions), allocArray(Module, imageTexcoords), allocArray(Module, imagePixels),
+    allocArray(Module, meshPositions), allocArray(Module, meshColors), allocArray(Module, meshNormals),
+  ];
+  try {
+    expectStatus(Module._dvz_wasm_api_set_canvas_format(scene, DVZ_FORMAT_R8G8B8A8_UNORM), 0, "api 2D canvas format");
+    const figure = Module._dvz_wasm_api_figure(scene, smokeSize, smokeSize);
+    const panel = Module._dvz_wasm_api_panel_full(figure);
+    requireOk(figure !== 0 && panel !== 0, "api 2D figure/panel failed");
 
-  const apiPrimitive = Module._dvz_wasm_api_visual(apiScene, DVZ_WASM_VISUAL_PRIMITIVE, 0);
-  requireOk(apiPrimitive !== 0, "dvz_wasm_api_visual(primitive) failed");
-  expectStatus(Module._dvz_wasm_api_visual_set_f32(apiPrimitive, positionNamePtr, apiPrimitivePositionsPtr, primitivePositions.length / 3), 0, "api primitive position");
-  expectStatus(Module._dvz_wasm_api_visual_set_rgba8(apiPrimitive, colorNamePtr, apiPrimitiveColorsPtr, primitiveColors.length / 4), 0, "api primitive color");
-  expectStatus(Module._dvz_wasm_api_panel_add_visual(apiPanel, apiPrimitive), 0, "api add primitive");
+    const point = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_POINT, 0);
+    setF32(Module, point, positionNamePtr, ptrs[0], positions.length / 3, "api point position");
+    setRGBA8(Module, point, colorNamePtr, ptrs[1], colors.length / 4, "api point color");
+    setF32(Module, point, diameterNamePtr, ptrs[2], sizes.length, "api point diameter");
+    expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, point), 0, "api add point");
 
-  const apiImage = Module._dvz_wasm_api_visual(apiScene, DVZ_WASM_VISUAL_IMAGE, 0);
-  requireOk(apiImage !== 0, "dvz_wasm_api_visual(image) failed");
-  expectStatus(Module._dvz_wasm_api_visual_set_f32(apiImage, positionNamePtr, apiImagePositionsPtr, 4), 0, "api image position");
-  expectStatus(Module._dvz_wasm_api_visual_set_f32(apiImage, texcoordsNamePtr, apiImageTexcoordsPtr, 4), 0, "api image texcoords");
-  expectStatus(Module._dvz_wasm_api_visual_set_texture_rgba8(apiImage, apiImagePixelsPtr, imageWidth, imageHeight), 0, "api image texture");
-  expectStatus(Module._dvz_wasm_api_panel_add_visual(apiPanel, apiImage), 0, "api add image");
+    const primitive = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_PRIMITIVE, 0);
+    setF32(Module, primitive, positionNamePtr, ptrs[3], primitivePositions.length / 3, "api primitive position");
+    setRGBA8(Module, primitive, colorNamePtr, ptrs[4], primitiveColors.length / 4, "api primitive color");
+    expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, primitive), 0, "api add primitive");
 
-  const apiMesh = Module._dvz_wasm_api_visual(apiScene, DVZ_WASM_VISUAL_MESH, 0);
-  requireOk(apiMesh !== 0, "dvz_wasm_api_visual(mesh) failed");
-  expectStatus(Module._dvz_wasm_api_visual_set_f32(apiMesh, positionNamePtr, apiMeshPositionsPtr, meshPositions.length / 3), 0, "api mesh position");
-  expectStatus(Module._dvz_wasm_api_visual_set_rgba8(apiMesh, colorNamePtr, apiMeshColorsPtr, meshColors.length / 4), 0, "api mesh color");
-  expectStatus(Module._dvz_wasm_api_visual_set_f32(apiMesh, normalNamePtr, apiMeshNormalsPtr, meshNormals.length / 3), 0, "api mesh normal");
-  expectStatus(Module._dvz_wasm_api_panel_add_visual(apiPanel, apiMesh), 0, "api add mesh");
+    const image = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_IMAGE, 0);
+    setF32(Module, image, positionNamePtr, ptrs[5], imagePositions.length / 3, "api image position");
+    setF32(Module, image, texcoordsNamePtr, ptrs[6], imageTexcoords.length / 2, "api image texcoords");
+    expectStatus(Module._dvz_wasm_api_visual_set_texture_rgba8(image, ptrs[7], imageWidth, imageHeight), 0, "api image texture");
+    expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, image), 0, "api add image");
 
-  const apiController = Module._dvz_wasm_api_controller(apiScene, DVZ_CONTROLLER_TYPE_PANZOOM);
-  requireOk(apiController !== 0, "dvz_wasm_api_controller(panzoom) failed");
-  expectStatus(Module._dvz_wasm_api_panel_bind_controller(apiPanel, apiController, DVZ_DIM_MASK_XY), 0, "api bind panzoom");
-  const apiStream = emitApiStream(Module, apiScene, apiFigure, "generic 2D initial");
-  expectStatus(
-    Module._dvz_wasm_api_pointer(apiScene, DVZ_POINTER_EVENT_PRESS, smokeSize / 2, smokeSize / 2, DVZ_POINTER_BUTTON_LEFT, 0, 1, 200.0),
-    0,
-    "api pointer press",
-  );
-  expectStatus(Module._dvz_wasm_api_emit(apiScene, apiFigure), 0, "dvz_wasm_api_emit after pointer");
-  expectStatus(Module._dvz_wasm_api_resize(apiScene, apiFigure, smokeSize * 2, smokeSize + 8, 2.0), 0, "api resize");
-  expectStatus(Module._dvz_wasm_api_emit(apiScene, apiFigure), 0, "dvz_wasm_api_emit after resize");
-  await writeFile(outputApiPath, `${JSON.stringify(apiStream, null, 2)}\n`, "utf8");
-  console.log(`Wrote ${outputApiPath}`);
-  console.log(`commands_api=${apiStream.commands.length}`);
+    const mesh = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_MESH, 0);
+    setF32(Module, mesh, positionNamePtr, ptrs[8], meshPositions.length / 3, "api mesh position");
+    setRGBA8(Module, mesh, colorNamePtr, ptrs[9], meshColors.length / 4, "api mesh color");
+    setF32(Module, mesh, normalNamePtr, ptrs[10], meshNormals.length / 3, "api mesh normal");
+    expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, mesh), 0, "api add mesh");
+
+    const panzoom = Module._dvz_wasm_api_controller(scene, DVZ_CONTROLLER_TYPE_PANZOOM);
+    expectStatus(Module._dvz_wasm_api_panel_bind_controller(panel, panzoom, DVZ_DIM_MASK_XY), 0, "api bind panzoom");
+    const initial = emitStream(Module, scene, figure, "generic 2D initial");
+    expectStatus(Module._dvz_wasm_api_pointer(scene, DVZ_POINTER_EVENT_PRESS, 32, 32, DVZ_POINTER_BUTTON_LEFT, 0, 1, 200), 0, "api pointer press");
+    expectStatus(Module._dvz_wasm_api_pointer(scene, DVZ_POINTER_EVENT_MOVE, 38, 30, DVZ_POINTER_BUTTON_LEFT, 0, 1, 216), 0, "api pointer move");
+    expectStatus(Module._dvz_wasm_api_pointer(scene, DVZ_POINTER_EVENT_RELEASE, 38, 30, DVZ_POINTER_BUTTON_LEFT, 0, 1, 232), 0, "api pointer release");
+    const interactive = emitStream(Module, scene, figure, "generic 2D interactive");
+    expectStatus(Module._dvz_wasm_api_resize(scene, figure, smokeSize * 2, smokeSize + 8, 2), 0, "api resize");
+    const resized = emitStream(Module, scene, figure, "generic 2D resized");
+    await mkdir(dirname(output2dPath), { recursive: true });
+    await writeFile(output2dPath, `${JSON.stringify(initial, null, 2)}\n`, "utf8");
+    console.log(`Wrote ${output2dPath}`);
+    console.log(`commands_api2d=initial:${initial.commands.length} interactive:${interactive.commands.length} resize:${resized.commands.length}`);
+  } finally {
+    ptrs.forEach((ptr) => Module._free(ptr));
+    Module._dvz_wasm_api_scene_destroy(scene);
+  }
+
+  const cube = makeCubeMesh(1.25);
+  const scene3d = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
+  requireOk(scene3d !== 0, "dvz_wasm_api_scene 3D failed");
+  const cubePtrs = [allocArray(Module, cube.positions), allocArray(Module, cube.colors), allocArray(Module, cube.normals)];
+  try {
+    expectStatus(Module._dvz_wasm_api_set_canvas_format(scene3d, DVZ_FORMAT_R8G8B8A8_UNORM), 0, "api 3D canvas format");
+    const figure3d = Module._dvz_wasm_api_figure(scene3d, smokeSize, smokeSize);
+    const panel3d = Module._dvz_wasm_api_panel_full(figure3d);
+    requireOk(figure3d !== 0 && panel3d !== 0, "api 3D figure/panel failed");
+    expectStatus(Module._dvz_wasm_api_panel_set_camera(panel3d, 0, 0, 3, 0, 0, 0, Math.PI / 4, 0.1, 100), 0, "api 3D camera");
+    const mesh3d = Module._dvz_wasm_api_visual(scene3d, DVZ_WASM_VISUAL_MESH, 0);
+    setF32(Module, mesh3d, positionNamePtr, cubePtrs[0], cube.positions.length / 3, "api 3D mesh position");
+    setRGBA8(Module, mesh3d, colorNamePtr, cubePtrs[1], cube.colors.length / 4, "api 3D mesh color");
+    setF32(Module, mesh3d, normalNamePtr, cubePtrs[2], cube.normals.length / 3, "api 3D mesh normal");
+    expectStatus(Module._dvz_wasm_api_panel_add_visual(panel3d, mesh3d), 0, "api 3D add mesh");
+    const arcball = Module._dvz_wasm_api_controller(scene3d, DVZ_CONTROLLER_TYPE_ARCBALL);
+    expectStatus(Module._dvz_wasm_api_panel_bind_controller(panel3d, arcball, DVZ_DIM_MASK_XYZ), 0, "api bind arcball");
+    expectStatus(Module._dvz_wasm_api_arcball_initial(arcball, 0.45, -0.65, 0.2), 0, "api arcball initial");
+    const initial3d = emitStream(Module, scene3d, figure3d, "generic 3D initial");
+    expectStatus(Module._dvz_wasm_api_pointer(scene3d, DVZ_POINTER_EVENT_PRESS, 32, 32, DVZ_POINTER_BUTTON_LEFT, 0, 1, 300), 0, "api 3D pointer press");
+    expectStatus(Module._dvz_wasm_api_pointer(scene3d, DVZ_POINTER_EVENT_MOVE, 40, 38, DVZ_POINTER_BUTTON_LEFT, 0, 1, 316), 0, "api 3D pointer move");
+    expectStatus(Module._dvz_wasm_api_pointer(scene3d, DVZ_POINTER_EVENT_RELEASE, 40, 38, DVZ_POINTER_BUTTON_LEFT, 0, 1, 332), 0, "api 3D pointer release");
+    const interactive3d = emitStream(Module, scene3d, figure3d, "generic 3D interactive");
+    await writeFile(output3dPath, `${JSON.stringify(initial3d, null, 2)}\n`, "utf8");
+    console.log(`Wrote ${output3dPath}`);
+    console.log(`commands_api3d=initial:${initial3d.commands.length} interactive:${interactive3d.commands.length}`);
+  } finally {
+    cubePtrs.forEach((ptr) => Module._free(ptr));
+    Module._dvz_wasm_api_scene_destroy(scene3d);
+  }
 } finally {
   Module._free(positionNamePtr);
   Module._free(colorNamePtr);
   Module._free(diameterNamePtr);
   Module._free(normalNamePtr);
   Module._free(texcoordsNamePtr);
-  Module._free(apiPositionsPtr);
-  Module._free(apiColorsPtr);
-  Module._free(apiSizesPtr);
-  Module._free(apiPrimitivePositionsPtr);
-  Module._free(apiPrimitiveColorsPtr);
-  Module._free(apiImagePositionsPtr);
-  Module._free(apiImageTexcoordsPtr);
-  Module._free(apiImagePixelsPtr);
-  Module._free(apiMeshPositionsPtr);
-  Module._free(apiMeshColorsPtr);
-  Module._free(apiMeshNormalsPtr);
-  Module._dvz_wasm_api_scene_destroy(apiScene);
-}
-
-const apiScene3d = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
-requireOk(apiScene3d !== 0, "dvz_wasm_api_scene 3D failed");
-const apiCubePositionNamePtr = allocCString(Module, "position");
-const apiCubeColorNamePtr = allocCString(Module, "color");
-const apiCubeNormalNamePtr = allocCString(Module, "normal");
-const apiCubePositionsPtr = allocArray(Module, cube.positions);
-const apiCubeColorsPtr = allocArray(Module, cube.colors);
-const apiCubeNormalsPtr = allocArray(Module, cube.normals);
-try {
-  expectStatus(Module._dvz_wasm_api_set_canvas_format(apiScene3d, DVZ_FORMAT_R8G8B8A8_UNORM), 0, "api 3D canvas format");
-  const apiFigure3d = Module._dvz_wasm_api_figure(apiScene3d, smokeSize, smokeSize);
-  requireOk(apiFigure3d !== 0, "dvz_wasm_api_figure 3D failed");
-  const apiPanel3d = Module._dvz_wasm_api_panel_full(apiFigure3d);
-  requireOk(apiPanel3d !== 0, "dvz_wasm_api_panel_full 3D failed");
-  expectStatus(Module._dvz_wasm_api_panel_set_camera(apiPanel3d, 0, 0, 3, 0, 0, 0, Math.PI / 4, 0.1, 100), 0, "api 3D camera");
-  const apiMesh3d = Module._dvz_wasm_api_visual(apiScene3d, DVZ_WASM_VISUAL_MESH, 0);
-  requireOk(apiMesh3d !== 0, "dvz_wasm_api_visual(mesh 3D) failed");
-  expectStatus(Module._dvz_wasm_api_visual_set_f32(apiMesh3d, apiCubePositionNamePtr, apiCubePositionsPtr, cube.positions.length / 3), 0, "api 3D mesh position");
-  expectStatus(Module._dvz_wasm_api_visual_set_rgba8(apiMesh3d, apiCubeColorNamePtr, apiCubeColorsPtr, cube.colors.length / 4), 0, "api 3D mesh color");
-  expectStatus(Module._dvz_wasm_api_visual_set_f32(apiMesh3d, apiCubeNormalNamePtr, apiCubeNormalsPtr, cube.normals.length / 3), 0, "api 3D mesh normal");
-  expectStatus(Module._dvz_wasm_api_panel_add_visual(apiPanel3d, apiMesh3d), 0, "api 3D add mesh");
-  const apiArcball = Module._dvz_wasm_api_controller(apiScene3d, DVZ_CONTROLLER_TYPE_ARCBALL);
-  requireOk(apiArcball !== 0, "dvz_wasm_api_controller(arcball) failed");
-  expectStatus(Module._dvz_wasm_api_panel_bind_controller(apiPanel3d, apiArcball, DVZ_DIM_MASK_XYZ), 0, "api bind arcball");
-  expectStatus(Module._dvz_wasm_api_arcball_initial(apiArcball, 0.45, -0.65, 0.2), 0, "api arcball initial");
-  const apiStream3d = emitApiStream(Module, apiScene3d, apiFigure3d, "generic 3D initial");
-  expectStatus(
-    Module._dvz_wasm_api_pointer(apiScene3d, DVZ_POINTER_EVENT_PRESS, smokeSize / 2, smokeSize / 2, DVZ_POINTER_BUTTON_LEFT, 0, 1, 300.0),
-    0,
-    "api 3D pointer press",
-  );
-  expectStatus(
-    Module._dvz_wasm_api_pointer(apiScene3d, DVZ_POINTER_EVENT_MOVE, smokeSize / 2 + 8, smokeSize / 2 + 6, DVZ_POINTER_BUTTON_LEFT, 0, 1, 316.0),
-    0,
-    "api 3D pointer move",
-  );
-  expectStatus(
-    Module._dvz_wasm_api_pointer(apiScene3d, DVZ_POINTER_EVENT_RELEASE, smokeSize / 2 + 8, smokeSize / 2 + 6, DVZ_POINTER_BUTTON_LEFT, 0, 1, 332.0),
-    0,
-    "api 3D pointer release",
-  );
-  const apiInteractive3d = emitApiStream(Module, apiScene3d, apiFigure3d, "generic 3D interactive");
-  await writeFile(outputApi3dPath, `${JSON.stringify(apiStream3d, null, 2)}\n`, "utf8");
-  console.log(`Wrote ${outputApi3dPath}`);
-  console.log(`commands_api3d=initial:${apiStream3d.commands.length} interactive:${apiInteractive3d.commands.length}`);
-} finally {
-  Module._free(apiCubePositionNamePtr);
-  Module._free(apiCubeColorNamePtr);
-  Module._free(apiCubeNormalNamePtr);
-  Module._free(apiCubePositionsPtr);
-  Module._free(apiCubeColorsPtr);
-  Module._free(apiCubeNormalsPtr);
-  Module._dvz_wasm_api_scene_destroy(apiScene3d);
 }

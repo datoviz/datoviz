@@ -83,14 +83,13 @@ window, stream, video, native app, GUI, CUDA, native DVZR tools, and shaderc/dlo
 
 Closed first-slice milestone:
 
-1. `src/wasm/scene_bridge.c` exports a narrow create/destroy, point-data, resize, pointer/wheel,
-   emit, payload, and diagnostic API.
-2. The first browser scene slice creates one figure, one full panel, one point visual, and a
-   scene-owned panzoom controller.
+1. `src/wasm/scene_api.c` exports a generic handle-based scene/figure/panel/visual/controller API.
+2. The browser scene slices create point, primitive, image, mesh, panzoom, camera, and arcball
+   objects through the generic ABI.
 3. Scene emission can request WGSL, target the external browser canvas format, return DRP2 JSON,
    and feed the browser WebGPU runtime.
-4. `just wasm-scene-smoke` builds the Emscripten target, emits a point/panzoom stream, and runs the
-   WebGPU fixture preflight on the emitted JSON.
+4. `just wasm-scene-smoke` builds the Emscripten target, emits 2D and 3D generic ABI streams, and
+   runs the WebGPU fixture preflight on the emitted JSON.
 
 Remaining hardening before treating the slice as release-proof:
 
@@ -259,18 +258,18 @@ bridge:
 4. submit the emitted DRP2 stream to the WebGPU runtime;
 5. render points using the portable WebGPU lowering selected by scene emission.
 
-The current first slice keeps the public bridge narrow in `src/wasm/scene_bridge.c`: one point
-visual, a scene-owned panzoom controller, resize/pointer/wheel routing, and emitted DRP2 JSON.
+The current first slice uses the generic `src/wasm/scene_api.c` object ABI for visuals,
+controllers, resize/pointer/wheel routing, and emitted DRP2 JSON.
 
 Current evidence as of 2026-05-30:
 
-1. `just wasm-scene-smoke` builds the Emscripten scene bridge, emits
-   `build-wasm-scene/wasm/wasm_scene_point_primitive_image_mesh_panzoom.json`, and passes WebGPU
-   fixture preflight.
+1. `just wasm-scene-smoke` builds the Emscripten scene ABI, emits
+   `build-wasm-scene/wasm/wasm_api_scene_point_primitive_image_mesh_panzoom.json` and
+   `build-wasm-scene/wasm/wasm_api_scene_mesh3d_arcball.json`, and passes WebGPU fixture preflight.
 2. The browser demo entry point is `examples/webgpu/wasm_scene.html`.
    A separate 3D proof entry point is `examples/webgpu/wasm_scene_3d.html`.
 3. Manual local browser proof confirms the point scene renders and panzoom interaction works through
-   the WASM scene bridge.
+   the generic WASM scene ABI.
 4. Manual local browser proof at `http://localhost:8765/examples/webgpu/wasm_scene.html` confirms
    point + primitive rendering, pan/zoom, and resize with no visible browser/WebGPU runtime errors.
 5. Reloading the same live demo after the image slice confirms point + primitive + RGBA8 image
@@ -287,17 +286,17 @@ mesh, panzoom, and a first 3D mesh + arcball scene. The next release-proofing ga
 diagnostic ABI behavior, incremental uniform updates, direct payload transport, browser app examples,
 and then broader visual/technique parity.
 
-### Experimental WASM Bridge ABI
+### Experimental WASM Scene ABI
 
-The `src/wasm/scene_bridge.c` API is an unstable experimental ABI for the browser demo:
+The `src/wasm/scene_api.c` API is an unstable experimental ABI for the browser demos:
 
 1. scene handles are opaque `uint32_t` values; JavaScript must pass them back unchanged and must not
    derive addresses or object state from them;
-2. `dvz_wasm_scene_payload_ptr()` and `dvz_wasm_scene_payload_size()` expose a borrowed UTF-8 JSON
-   payload valid only until the next bridge call on the same handle or `dvz_wasm_scene_destroy()`;
+2. `dvz_wasm_api_payload_ptr()` and `dvz_wasm_api_payload_size()` expose a borrowed UTF-8 JSON
+   payload valid only until the next bridge call on the same handle or `dvz_wasm_api_scene_destroy()`;
 3. JavaScript must copy or decode the payload before calling resize, pointer, wheel, data-upload,
    emit, canvas-format, or destroy functions again;
-4. diagnostics returned by `dvz_wasm_scene_diagnostic()` are borrowed strings with the same lifetime
+4. diagnostics returned by `dvz_wasm_api_diagnostic()` are borrowed strings with the same lifetime
    as the current diagnostic report, valid only until the next bridge call on the same handle or
    destroy;
 5. successful emits should leave the diagnostic report empty; failed emits must be surfaced with
