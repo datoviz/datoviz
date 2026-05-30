@@ -1,6 +1,16 @@
 {
   "name": "scene_point_wgsl",
   "version": { "major": 2, "minor": 0 },
+  "metadata": {
+    "datoviz": {
+      "interactive_uniforms": {
+        "panzoom": {
+          "mvp_buffer_id": 5001,
+          "viewport_buffer_id": 5002
+        }
+      }
+    }
+  },
   "commands": [
     { "cmd": "HelloRenderer", "version": { "major": 2, "minor": 0 }, "client_name": "scene-runtime" },
     { "cmd": "RendererHelloReply", "version": { "major": 2, "minor": 0 }, "status": "ok", "renderer_name": "datoviz-drp2-runtime" },

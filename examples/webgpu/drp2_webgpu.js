@@ -13,8 +13,6 @@ export const STREAMS = [
     source: "scene_point_wgsl",
     interactive: {
       type: "panzoom",
-      mvpBufferId: 5001,
-      viewportBufferId: 5002,
     },
   },
   { name: "scene_primitive_wgsl", label: "Scene primitive (WGSL)" },
@@ -68,6 +66,38 @@ function required(value, message) {
     throw new Error(message);
   }
   return value;
+}
+
+
+
+function streamPanzoomUniformTargets(stream) {
+  const panzoom = stream?.metadata?.datoviz?.interactive_uniforms?.panzoom;
+  if (panzoom === undefined || panzoom === null) {
+    return null;
+  }
+  return {
+    mvpBufferId: required(panzoom.mvp_buffer_id, "panzoom metadata needs mvp_buffer_id"),
+    viewportBufferId: required(
+      panzoom.viewport_buffer_id,
+      "panzoom metadata needs viewport_buffer_id",
+    ),
+  };
+}
+
+
+
+function resolveInteractiveConfig(config, stream) {
+  if (config?.interactive?.type !== "panzoom") {
+    return config?.interactive ?? null;
+  }
+  const targets = streamPanzoomUniformTargets(stream);
+  if (targets === null) {
+    throw new Error("panzoom stream metadata missing interactive uniform targets");
+  }
+  return {
+    ...config.interactive,
+    ...targets,
+  };
 }
 
 
@@ -2181,6 +2211,13 @@ export class WebGpuDemoSession {
 
   async loadStreamObject(name, stream) {
     this.config = streamConfigByName(name);
+    const interactive = resolveInteractiveConfig(this.config, stream);
+    if (interactive !== null) {
+      this.config = {
+        ...this.config,
+        interactive,
+      };
+    }
     this.streamName = this.config.name;
     this.stream = stream;
     this.runtime = new Drp2WebGpuRuntime(

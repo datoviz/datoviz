@@ -151,9 +151,6 @@ Manual checks:
 - No-buffer and vertex-buffer streams should still render a single RGB triangle.
 
 The main page keeps the WebGPU runtime resources alive after loading a stream. The live pan/zoom
-example mutates only the scene MVP and viewport uniform buffers before replaying the DRP2 frame
-command slice, so the browser path still exercises the scene-generated DRP2 contract instead of a
-separate renderer API.
-
-The next useful slice is portable metadata for interactive uniform targets, so demos do not need
-PoC-local knowledge of scene-emitted buffer ids.
+example discovers the scene MVP and viewport uniform buffers from stream metadata, updates those
+uniforms, and replays the DRP2 frame command slice, so the browser path still exercises the
+scene-generated DRP2 contract instead of a separate renderer API.

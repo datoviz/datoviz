@@ -183,9 +183,9 @@ forms. The fixture dashboard requires explicit bind-group layout and render-pipe
   because WebGPU requires copy row pitch to be a multiple of 256 bytes.
 - Buffer binding offsets that are valid in DRP2 but not aligned for WebGPU are bound from offset 0
   in the PoC so fixture command paths can still execute.
-- The live pan/zoom dropdown entry reuses the scene-generated point stream and updates the MVP and
-  viewport uniform buffers by their current scene-emitted ids. This is demo metadata, not a stable
-  DRP2 contract.
+- The live pan/zoom dropdown entry reuses the scene-generated point stream and discovers its MVP and
+  viewport uniform buffers from `metadata.datoviz.interactive_uniforms.panzoom`. This metadata is
+  browser-demo metadata; it is not an executable DRP2 command.
 - Bind-group layout `visibility`, storage `access`, render-pipeline `vertex_buffers`, and
   render-pipeline `color_targets` are required by the fixture dashboard. Standalone demo streams
   still use DRP2 defaults and shader-source inference as compatibility fallbacks.
@@ -214,6 +214,8 @@ The first WebGPU pass resolved these DRP2 portability questions in the protocol 
   a backend requires stricter row-pitch alignment.
 - dynamic buffer offsets remain DRP2 offsets; backends must validate alignment or adapt by
   materializing an equivalent aligned binding.
+- interactive demo uniform targets are now stream metadata, so demo code no longer carries
+  scene-emitted buffer ids in the dropdown configuration.
 
 The positive fixture dashboard now runs without bind-group or render-pipeline metadata fallbacks.
 The same strict fixture assumptions are checked without a browser by:
