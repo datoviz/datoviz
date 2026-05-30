@@ -1107,6 +1107,8 @@ wasm-env-check:
             source "$EMSDK_ENV_SH"
         elif [ -n "${EMSDK:-}" ] && [ -f "$EMSDK/emsdk_env.sh" ]; then
             source "$EMSDK/emsdk_env.sh"
+        elif [ -f "$PWD/../emsdk/emsdk_env.sh" ]; then
+            source "$PWD/../emsdk/emsdk_env.sh"
         elif [ -f "$HOME/SDK/emsdk/emsdk_env.sh" ]; then
             source "$HOME/SDK/emsdk/emsdk_env.sh"
         elif [ -f "$HOME/emsdk/emsdk_env.sh" ]; then
@@ -1131,6 +1133,8 @@ wasm-scene-build:
             source "$EMSDK_ENV_SH"
         elif [ -n "${EMSDK:-}" ] && [ -f "$EMSDK/emsdk_env.sh" ]; then
             source "$EMSDK/emsdk_env.sh"
+        elif [ -f "$PWD/../emsdk/emsdk_env.sh" ]; then
+            source "$PWD/../emsdk/emsdk_env.sh"
         elif [ -f "$HOME/SDK/emsdk/emsdk_env.sh" ]; then
             source "$HOME/SDK/emsdk/emsdk_env.sh"
         elif [ -f "$HOME/emsdk/emsdk_env.sh" ]; then
