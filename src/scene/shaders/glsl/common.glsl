@@ -38,4 +38,12 @@ vec4 transform(vec3 pos)
     return tr;
 }
 
+float transform_radius(float radius)
+{
+    float sx = length(mvp.model[0].xyz);
+    float sy = length(mvp.model[1].xyz);
+    float sz = length(mvp.model[2].xyz);
+    return radius * max(max(sx, sy), sz);
+}
+
 #endif
