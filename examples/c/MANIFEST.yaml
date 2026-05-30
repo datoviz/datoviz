@@ -85,7 +85,7 @@ examples:
     style_preset: features
     capture: 1280x960
     interaction_state: selected
-    current_source: examples/c/techniques/pick_hover.c
+    current_source: examples/c/features/pick_marker.c
     target_source: examples/c/features/pick_marker.c
     validation: smoke+interaction
 
