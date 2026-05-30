@@ -55,6 +55,7 @@
 #define DVZ_SCENE_MAX_LEGEND_TEXTS (DVZ_SCENE_MAX_SCALE_CATEGORIES + 1)
 #define DVZ_SCENE_MAX_INTERACTIONS 64
 #define DVZ_SCENE_MAX_SELECTIONS 64
+#define DVZ_SCENE_MAX_HOVERS 64
 #define DVZ_SCENE_MAX_LINK_CHANNELS 64
 #define DVZ_SCENE_MAX_PINNED_READOUTS 128
 #define DVZ_SCENE_MAX_OVERLAYS 64
@@ -855,6 +856,16 @@ struct DvzSelection
     DvzSceneCard card;
     uint32_t item_count;
     DvzSelectionItem items[DVZ_SCENE_MAX_SELECTION_ITEMS];
+};
+
+
+struct DvzHover
+{
+    DvzScene* scene;
+    DvzHoverDesc desc;
+    DvzItemStateVisualStyle visual_style;
+    bool has_item;
+    DvzSelectionItem item;
 };
 
 
@@ -1684,6 +1695,9 @@ struct DvzScene
 
     uint32_t selection_count;
     DvzSelection selections[DVZ_SCENE_MAX_SELECTIONS];
+
+    uint32_t hover_count;
+    DvzHover hovers[DVZ_SCENE_MAX_HOVERS];
 
     uint32_t link_channel_count;
     DvzLinkChannel link_channels[DVZ_SCENE_MAX_LINK_CHANNELS];

@@ -1053,13 +1053,13 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  *
  * First-slice visual families currently accept:
  * point: `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels),
- *        optional `"selection"` (uint8 mask)
+ *        optional `"item_state"` (uint32_t DvzItemStateKind bitfield)
  * splat: `"position"` (vec3f), `"color"` (RGBA8), `"sigma"` (vec2f pixels),
  *        `"angle"` (float radians)
  * pixel: `"position"` (vec3f), `"color"` (RGBA8), `"pixel_size"` (float pixels)
  * marker: `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels),
  *         `"angle"` (float radians), `"shape"` (uint32_t DvzMarkerShape),
- *         optional `"selection"` (uint8 mask)
+ *         optional `"item_state"` (uint32_t DvzItemStateKind bitfield)
  * sphere: `"position"` (vec3f), `"color"` (RGBA8), `"radius"` (float scene units)
  * segment: `"position_start"` (vec3f), `"position_end"` (vec3f), `"color"` (RGBA8),
  *          `"stroke_width"` (float pixels)

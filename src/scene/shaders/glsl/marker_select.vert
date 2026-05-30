@@ -8,7 +8,7 @@ layout(location = 1) in vec4 inColor;
 layout(location = 2) in float inSize;
 layout(location = 3) in float inAngle;
 layout(location = 4) in uint inShape;
-layout(location = 5) in uint inSelection;
+layout(location = 5) in uint inItemState;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out float fragSize;
@@ -20,8 +20,8 @@ void main()
 {
     float spriteScale = max(abs(cos(inAngle)) + abs(sin(inAngle)), 1.0);
     gl_Position = transform(inPos);
-    gl_PointSize = max(inSize * spriteScale, 0.0);
-    fragColor = applySelectionVisualStyle(inColor, inSelection);
+    gl_PointSize = max(applyItemStateScale(inSize, inItemState) * spriteScale, 0.0);
+    fragColor = applyItemStateColor(inColor, inItemState);
     fragSize = max(inSize, 1.0);
     fragAngle = inAngle;
     fragShape = inShape;

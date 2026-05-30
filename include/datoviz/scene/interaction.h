@@ -150,6 +150,14 @@ DVZ_EXPORT void dvz_link_channel_destroy(DvzLinkChannel* channel);
 /*************************************************************************************************/
 
 /**
+ * Return the default item-state visual style.
+ *
+ * @return the default item-state visual style
+ */
+DVZ_EXPORT DvzItemStateVisualStyle dvz_item_state_visual_style(void);
+
+
+/**
  * Create a retained selection object.
  *
  * @param scene the scene
@@ -187,7 +195,7 @@ DVZ_EXPORT DvzSelectionVisualStyle dvz_selection_visual_style(void);
 
 
 /**
- * Configure selected/unselected visual styling for point-like retained selection masks.
+ * Configure selected/unselected visual styling for retained point/marker item states.
  *
  * The initial implementation affects point and marker visuals. Pass NULL to restore defaults.
  *
@@ -228,6 +236,58 @@ DVZ_EXPORT uint32_t dvz_selection_count(const DvzSelection* selection);
  */
 DVZ_EXPORT void dvz_selection_copy(
     const DvzSelection* selection, DvzSelectionItem* items, uint32_t max_items);
+
+
+/*************************************************************************************************/
+/*  Hover                                                                                        */
+/*************************************************************************************************/
+
+/**
+ * Create a retained hover object.
+ *
+ * @param scene the scene
+ * @param desc hover descriptor, or NULL for defaults
+ * @return the hover object
+ */
+DVZ_EXPORT DvzHover* dvz_hover(DvzScene* scene, const DvzHoverDesc* desc);
+
+
+/**
+ * Destroy a hover object.
+ *
+ * @param hover the hover object
+ */
+DVZ_EXPORT void dvz_hover_destroy(DvzHover* hover);
+
+
+/**
+ * Clear the hovered item.
+ *
+ * @param hover the hover object
+ */
+DVZ_EXPORT void dvz_hover_clear(DvzHover* hover);
+
+
+/**
+ * Configure hover visual styling.
+ *
+ * The initial implementation affects point and marker visuals. Pass NULL to restore defaults.
+ *
+ * @param hover the hover object
+ * @param style the visual style descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_hover_set_visual_style(DvzHover* hover, const DvzItemStateVisualStyle* style);
+
+
+/**
+ * Apply one query result to a hover object.
+ *
+ * @param hover the hover object
+ * @param query the query result
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_hover_apply_query(DvzHover* hover, const DvzQueryResult* query);
 
 
 

@@ -66,7 +66,7 @@ DvzFramePlanResourceRole _scene_attr_frame_plan_role(const char* attr_name)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS;
     if (strcmp(attr_name, "normal") == 0)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL;
-    if (strcmp(attr_name, "selection") == 0)
+    if (strcmp(attr_name, "item_state") == 0)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION;
     if (strcmp(attr_name, "path_flags") == 0)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_FLAGS;

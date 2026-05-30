@@ -67,9 +67,9 @@ bool _scene_marker_visual_pipeline_desc(
     }
 
     uint32_t attr_count = picking ? 2 : 5;
-    if (visual->has_selection_mask && !picking)
+    if (visual->has_item_state && !picking)
         attr_count++;
-    out->vertex_buffer_count = visual->has_selection_mask ? 6 : 5;
+    out->vertex_buffer_count = visual->has_item_state ? 6 : 5;
     out->binding_count = out->vertex_buffer_count;
     out->attr_count = attr_count;
 
@@ -80,8 +80,8 @@ bool _scene_marker_visual_pipeline_desc(
     _scene_visual_pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32_SFLOAT, sizeof(float));
     _scene_visual_pipeline_attr(out, 3, 3, 3, VK_FORMAT_R32_SFLOAT, sizeof(float));
     _scene_visual_pipeline_attr(out, 4, 4, 4, VK_FORMAT_R32_UINT, sizeof(uint32_t));
-    if (visual->has_selection_mask && !picking)
-        _scene_visual_pipeline_attr(out, 5, 5, 5, VK_FORMAT_R8_UINT, sizeof(uint8_t));
+    if (visual->has_item_state && !picking)
+        _scene_visual_pipeline_attr(out, 5, 5, 5, VK_FORMAT_R32_UINT, sizeof(uint32_t));
     for (uint32_t i = 0; i < out->binding_count; i++)
         out->step_modes[i] = lowering.vertex_step_mode;
 

@@ -175,7 +175,7 @@ bool _scene_visual_frame_plan_metadata(
             sizeof(metadata->normal_id)))
         return false;
     if (!_scene_attr_resource_key(
-            figure, visual, visual_index, "selection", metadata->selection_id,
+            figure, visual, visual_index, "item_state", metadata->selection_id,
             sizeof(metadata->selection_id)))
         return false;
     bool path_stroke = renderable_kind == DVZ_RENDERABLE_PATH_STROKE;

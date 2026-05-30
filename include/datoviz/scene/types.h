@@ -64,6 +64,7 @@ typedef struct DvzSampledField      DvzSampledField;
 typedef struct DvzSceneBuffer       DvzSceneBuffer;
 typedef struct DvzInteractionPolicy DvzInteractionPolicy;
 typedef struct DvzSelection         DvzSelection;
+typedef struct DvzHover             DvzHover;
 typedef struct DvzLinkChannel       DvzLinkChannel;
 typedef struct DvzPinnedReadout     DvzPinnedReadout;
 typedef struct DvzOverlay           DvzOverlay;
@@ -601,6 +602,7 @@ struct DvzItemStateVisualStyle
     float alpha;
     DvzColor tint;
     float tint_mix;
+    float scale;
 };
 typedef struct DvzItemStateVisualStyle DvzItemStateVisualStyle;
 
@@ -611,6 +613,15 @@ struct DvzSelectionVisualStyle
     DvzItemStateVisualStyle unselected;
 };
 typedef struct DvzSelectionVisualStyle DvzSelectionVisualStyle;
+
+
+struct DvzHoverDesc
+{
+    DvzSceneTargetKind target;
+    DvzQueryHitPolicy hit_policy;
+    uint32_t flags;
+};
+typedef struct DvzHoverDesc DvzHoverDesc;
 
 
 struct DvzSelectionItem

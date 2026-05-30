@@ -3337,7 +3337,7 @@ int test_scene_point_typed_data_upload(TstContext* suite, const TstCase* item)
     vec3 positions[2] = {{0.0f, 0.0f, 0.0f}, {1.0f, 2.0f, 0.0f}};
     DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
     float diameters[2] = {4.0f, 8.0f};
-    uint8_t selection[2] = {1, 0};
+    uint32_t item_state[2] = {DVZ_ITEM_STATE_SELECTED, DVZ_ITEM_STATE_NONE};
 
     DvzVisualDataUpdate point_updates[] = {
         {.attr_name = "position", .data = positions, .item_count = 2},
@@ -3345,18 +3345,18 @@ int test_scene_point_typed_data_upload(TstContext* suite, const TstCase* item)
         {.attr_name = "diameter", .data = diameters, .item_count = 2},
     };
     AT(dvz_visual_set_data_many(visual, point_updates, 3) == 0);
-    AT(dvz_visual_set_data(visual, "selection", selection, 2) == 0);
+    AT(dvz_visual_set_data(visual, "item_state", item_state, 2) == 0);
 
     DvzVisualDataView view = {0};
     AT(dvz_visual_data(visual, "diameter", &view) == 0);
     const float* stored_diameters = view.data;
     AT(stored_diameters[1] == 8.0f);
 
-    DvzVisualDataView selection_view = {0};
-    AT(dvz_visual_data(visual, "selection", &selection_view) == 0);
-    const uint8_t* stored_selection = selection_view.data;
-    AT(stored_selection[0] == 1);
-    AT(stored_selection[1] == 0);
+    DvzVisualDataView state_view = {0};
+    AT(dvz_visual_data(visual, "item_state", &state_view) == 0);
+    const uint32_t* stored_state = state_view.data;
+    AT(stored_state[0] == DVZ_ITEM_STATE_SELECTED);
+    AT(stored_state[1] == DVZ_ITEM_STATE_NONE);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -3905,7 +3905,7 @@ int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCas
     vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor colors[1] = {{255, 255, 255, 255}};
     float diameters[1] = {4.0f};
-    uint8_t selection[1] = {1};
+    uint32_t item_state[1] = {DVZ_ITEM_STATE_SELECTED};
 
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(mesh, "diameter", diameters, 1) == -1);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(point, "normal", positions, 1) == -1);
@@ -3914,7 +3914,7 @@ int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCas
     AT_EXPECTED_ERROR_STRICT(
         suite, dvz_visual_set_data(sphere, "pixel_size", diameters, 1) == -1);
     AT_EXPECTED_ERROR_STRICT(
-        suite, dvz_visual_set_data(point, "selection", selection, 0) == -1);
+        suite, dvz_visual_set_data(point, "item_state", item_state, 0) == -1);
 
     DvzVisualDataUpdate mismatch[] = {
         {.attr_name = "position", .data = positions, .item_count = 1},

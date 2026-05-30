@@ -893,7 +893,7 @@ int test_scene_interaction_core(TstContext* suite, const TstCase* item);
 
 int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstCase* item);
 
-int test_scene_selection_apply_query_updates_visual_masks(TstContext* suite, const TstCase* item);
+int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const TstCase* item);
 
 int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const TstCase* item);
 

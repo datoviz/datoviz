@@ -364,9 +364,22 @@ typedef enum
 
 typedef enum
 {
+    DVZ_ITEM_STATE_NONE = 0,
+    DVZ_ITEM_STATE_HOVERED = 1u << 0,
+    DVZ_ITEM_STATE_SELECTED = 1u << 1,
+    DVZ_ITEM_STATE_ACTIVE = 1u << 2,
+    DVZ_ITEM_STATE_LINKED = 1u << 3,
+    DVZ_ITEM_STATE_FILTERED = 1u << 4,
+    DVZ_ITEM_STATE_DISABLED = 1u << 5,
+} DvzItemStateKind;
+
+
+typedef enum
+{
     DVZ_ITEM_STATE_VISUAL_NONE = 0,
     DVZ_ITEM_STATE_VISUAL_ALPHA = 1u << 0,
     DVZ_ITEM_STATE_VISUAL_TINT = 1u << 1,
+    DVZ_ITEM_STATE_VISUAL_SCALE = 1u << 2,
 } DvzItemStateVisualFlag;
 
 

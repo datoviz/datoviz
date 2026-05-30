@@ -7,8 +7,8 @@
 /* pick_marker - retained marker item picking and selection proof.
  *
  * Opens a GLFW window showing mixed marker shapes. Move the cursor over the panel to query the
- * frontmost marker item. The hovered marker grows through a partial retained update. Click a marker
- * to toggle persistent selection; click the background to clear it.
+ * frontmost marker item. Hover and selection are rendered by the retained item-state API. Click a
+ * marker to toggle persistent selection; click the background to clear it.
  *
  * Current marker queries prove item/frontmost picking. They use the marker family's query bounds;
  * exact SDF shape-discard picking is a later precision improvement.
@@ -42,6 +42,7 @@
 #define MARKER_COUNT (GRID_COLS * GRID_ROWS + 5)
 #define BASE_SIZE    34.0f
 #define HOVER_SIZE   50.0f
+#define QUERY_ID     1u
 #define PI_F         3.14159265358979323846f
 
 
@@ -56,12 +57,10 @@ struct MarkerPickState
 {
     DvzScene* scene;
     DvzPanel* panel;
-    DvzVisual* visual;
     DvzSelection* selection;
-    float diameters[MARKER_COUNT];
+    DvzHover* hover;
     DvzQueryResult latest_hover_query;
     bool has_hover_query;
-    uint32_t hovered_index;
     bool cursor_valid;
     double cursor_x;
     double cursor_y;
@@ -133,27 +132,6 @@ static DvzColor _marker_palette_color(uint32_t index, uint32_t count)
     return dvz_color_rgba(
         _mix_channel(a.r, b.r, t), _mix_channel(a.g, b.g, t),
         _mix_channel(a.b, b.b, t), 245);
-}
-
-
-
-/**
- * Update one retained marker diameter through a partial visual upload.
- *
- * @param state marker-pick example state
- * @param index marker index to update
- * @param diameter marker diameter in pixels
- */
-static void _set_marker_diameter(MarkerPickState* state, uint32_t index, float diameter)
-{
-    if (state == NULL || index >= MARKER_COUNT)
-        return;
-    if (state->diameters[index] == diameter)
-        return;
-
-    state->diameters[index] = diameter;
-    if (dvz_visual_set_data_range(state->visual, "diameter", &state->diameters[index], index, 1) != 0)
-        fprintf(stderr, "dvz_visual_set_data_range(diameter, %u) failed\n", index);
 }
 
 
@@ -231,42 +209,38 @@ static void _marker_pick_frame(DvzView* win, void* user_data)
         return;
 
     DvzQueryResult query = {0};
-    bool saw_query = false;
-    uint32_t next_hovered = UINT32_MAX;
+    bool saw_marker_query = false;
     while (dvz_scene_poll_query(state->scene, &query))
     {
-        saw_query = true;
+        if (query.request_id != QUERY_ID)
+            continue;
+
+        saw_marker_query = true;
+        if (dvz_hover_apply_query(state->hover, &query) != 0)
+            fprintf(stderr, "dvz_hover_apply_query() failed\n");
         if (
             query.status == DVZ_QUERY_STATUS_HIT && query.hit &&
             query.visual_family == DVZ_SCENE_VISUAL_FAMILY_MARKER &&
             query.resolved_target == DVZ_SCENE_TARGET_ITEM && query.resolved_id < MARKER_COUNT)
         {
-            next_hovered = (uint32_t)query.resolved_id;
             state->latest_hover_query = query;
             state->has_hover_query = true;
+            fprintf(stdout, "hover marker id=%" PRIu64 "\n", query.resolved_id);
         }
-    }
-
-    if (saw_query && next_hovered != state->hovered_index)
-    {
-        if (state->hovered_index < MARKER_COUNT)
-            _set_marker_diameter(state, state->hovered_index, BASE_SIZE);
-        if (next_hovered < MARKER_COUNT)
+        else
         {
-            _set_marker_diameter(state, next_hovered, HOVER_SIZE);
-            fprintf(stdout, "hover marker id=%u\n", next_hovered);
-        }
-        state->hovered_index = next_hovered;
-        if (next_hovered >= MARKER_COUNT)
             state->has_hover_query = false;
+        }
     }
+    if (saw_marker_query && !state->has_hover_query)
+        dvz_hover_clear(state->hover);
 
     if (state->cursor_valid)
     {
         if (dvz_panel_query(
                 state->panel, state->cursor_x, state->cursor_y,
                 &(DvzQueryRequest){
-                    .request_id = 1,
+                    .request_id = QUERY_ID,
                     .target = DVZ_SCENE_TARGET_ITEM,
                     .hit_policy = DVZ_QUERY_HIT_FRONTMOST,
                 }) != 0)
@@ -321,16 +295,27 @@ int main(int argc, char** argv)
         dvz_selection_set_visual_style(selection, &selection_style) == 0,
         "dvz_selection_set_visual_style() failed");
 
+    DvzHover* hover = dvz_hover(
+        scene,
+        &(DvzHoverDesc){.target = DVZ_SCENE_TARGET_ITEM, .hit_policy = DVZ_QUERY_HIT_FRONTMOST});
+    EXAMPLE_CHECK(hover != NULL, "dvz_hover() failed");
+    DvzItemStateVisualStyle hover_style = dvz_item_state_visual_style();
+    hover_style.flags = DVZ_ITEM_STATE_VISUAL_SCALE;
+    hover_style.scale = HOVER_SIZE / BASE_SIZE;
+    EXAMPLE_CHECK(
+        dvz_hover_set_visual_style(hover, &hover_style) == 0,
+        "dvz_hover_set_visual_style() failed");
+
     MarkerPickState state = {
         .scene = scene,
         .panel = panel,
-        .visual = visual,
         .selection = selection,
-        .hovered_index = UINT32_MAX,
+        .hover = hover,
     };
 
     vec3 positions[MARKER_COUNT] = {0};
     DvzColor colors[MARKER_COUNT] = {0};
+    float diameters[MARKER_COUNT] = {0};
     float angles[MARKER_COUNT] = {0};
     uint32_t shapes[MARKER_COUNT] = {0};
 
@@ -343,7 +328,7 @@ int main(int argc, char** argv)
             positions[index][1] = -0.72f + 1.44f * ((float)row / (float)(GRID_ROWS - 1));
             positions[index][2] = 0.0f;
             colors[index] = _marker_palette_color(index, GRID_COLS * GRID_ROWS);
-            state.diameters[index] = BASE_SIZE;
+            diameters[index] = BASE_SIZE;
             angles[index] = ((float)(index % 12u) / 12.0f) * 2.0f * PI_F;
             shapes[index] = _marker_shape(index);
         }
@@ -356,7 +341,7 @@ int main(int argc, char** argv)
         positions[index][1] = -0.02f + 0.020f * (float)(i % 3u);
         positions[index][2] = 0.0f;
         colors[index] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
-        state.diameters[index] = BASE_SIZE;
+        diameters[index] = BASE_SIZE;
         angles[index] = 0.25f * PI_F * (float)i;
         shapes[index] = _marker_shape(index + 2u);
     }
@@ -364,7 +349,7 @@ int main(int argc, char** argv)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = MARKER_COUNT},
         {.attr_name = "color", .data = colors, .item_count = MARKER_COUNT},
-        {.attr_name = "diameter", .data = state.diameters, .item_count = MARKER_COUNT},
+        {.attr_name = "diameter", .data = diameters, .item_count = MARKER_COUNT},
         {.attr_name = "angle", .data = angles, .item_count = MARKER_COUNT},
         {.attr_name = "shape", .data = shapes, .item_count = MARKER_COUNT},
     };

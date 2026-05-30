@@ -86,7 +86,7 @@ bool _scene_point_like_visual_desc_from_metadata(
     if (selection_id != 0)
     {
         out->vbuf_ids[out->vbuf_count++] = selection_id;
-        out->has_selection_mask = true;
+        out->has_item_state = true;
     }
     out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
     out->material_buffer_id = _scene_visual_desc_resource(emitter, meta->material_id);

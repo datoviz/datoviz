@@ -50,19 +50,24 @@ static bool _scene_remove_selection_item(DvzSelection* selection, const DvzSelec
 
 static void _selection_clear_items(DvzSelection* selection);
 
-static bool _selection_visual_supports_mask(const DvzVisual* visual);
+static bool _item_state_visual_supports(const DvzVisual* visual);
 
-static DvzVisual* _selection_visual_from_public_id(DvzScene* scene, uint64_t visual_id);
+static DvzVisual* _item_state_visual_from_public_id(DvzScene* scene, uint64_t visual_id);
 
-static uint32_t _selection_visual_item_count(const DvzVisual* visual);
+static uint32_t _item_state_visual_item_count(const DvzVisual* visual);
 
 static bool _selection_matches_visual_item(
     const DvzSelection* selection, const DvzVisual* visual, uint64_t visual_id,
     uint32_t item_index);
 
-static void _selection_sync_visual_style(DvzSelection* selection, DvzVisual* visual);
+static bool _hover_matches_visual_item(
+    const DvzHover* hover, const DvzVisual* visual, uint64_t visual_id, uint32_t item_index);
 
-static int _selection_sync_visual_mask(DvzSelection* selection, DvzVisual* visual);
+static void _item_state_sync_visual_style(DvzScene* scene, DvzVisual* visual);
+
+static int _item_state_sync_visual(DvzScene* scene, DvzVisual* visual);
+
+static int _item_state_sync_scene(DvzScene* scene, const char* reason);
 
 static int _selection_sync_masks(DvzSelection* selection);
 
@@ -181,12 +186,12 @@ static void _selection_clear_items(DvzSelection* selection)
 
 
 /**
- * Return whether one visual supports the first selection-mask rendering path.
+ * Return whether one visual supports the first item-state rendering path.
  *
  * @param visual the visual
- * @return whether the visual supports a per-item selection mask
+ * @return whether the visual supports a per-item state bitfield
  */
-static bool _selection_visual_supports_mask(const DvzVisual* visual)
+static bool _item_state_visual_supports(const DvzVisual* visual)
 {
     return visual != NULL &&
            (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_MARKER);
@@ -201,7 +206,7 @@ static bool _selection_visual_supports_mask(const DvzVisual* visual)
  * @param visual_id one-based public visual id
  * @return the visual, or NULL when the id is invalid
  */
-static DvzVisual* _selection_visual_from_public_id(DvzScene* scene, uint64_t visual_id)
+static DvzVisual* _item_state_visual_from_public_id(DvzScene* scene, uint64_t visual_id)
 {
     if (scene == NULL || visual_id == 0 || visual_id > scene->visual_count)
         return NULL;
@@ -219,14 +224,56 @@ static DvzVisual* _selection_visual_from_public_id(DvzScene* scene, uint64_t vis
  * @param visual the visual
  * @return the item count, or zero when unavailable
  */
-static uint32_t _selection_visual_item_count(const DvzVisual* visual)
+static uint32_t _item_state_visual_item_count(const DvzVisual* visual)
 {
-    if (!_selection_visual_supports_mask(visual))
+    if (!_item_state_visual_supports(visual))
         return 0;
     int pos_idx = _attr_index(visual, "position");
     if (pos_idx < 0 || visual->attrs[pos_idx].item_count > UINT32_MAX)
         return 0;
     return (uint32_t)visual->attrs[pos_idx].item_count;
+}
+
+
+
+/**
+ * Return the link key for one visual item.
+ *
+ * @param visual the visual
+ * @param item_index zero-based item index
+ * @return link key, or 0 when absent
+ */
+static uint64_t _item_state_visual_link_key(const DvzVisual* visual, uint32_t item_index)
+{
+    ANN(visual);
+    if (visual->link_keys != NULL && item_index < visual->link_key_count)
+        return visual->link_keys[item_index];
+    return 0;
+}
+
+
+
+/**
+ * Return whether one resolved target matches a visual item directly or through a link key.
+ *
+ * @param item resolved interaction item
+ * @param visual the visual
+ * @param visual_id one-based public visual id
+ * @param item_index zero-based item index
+ * @return whether the item matches
+ */
+static bool _item_state_matches_visual_item(
+    const DvzSelectionItem* item, const DvzVisual* visual, uint64_t visual_id, uint32_t item_index)
+{
+    ANN(item);
+    ANN(visual);
+    if (item->target != DVZ_SCENE_TARGET_ITEM)
+        return false;
+    if (item->visual_id == visual_id && item->target_id == item_index)
+        return true;
+
+    uint64_t link_key = _item_state_visual_link_key(visual, item_index);
+    return item->link_key != 0 && link_key != 0 && item->link_key == link_key;
 }
 
 
@@ -246,19 +293,9 @@ static bool _selection_matches_visual_item(
 {
     ANN(selection);
     ANN(visual);
-
-    uint64_t link_key = 0;
-    if (visual->link_keys != NULL && item_index < visual->link_key_count)
-        link_key = visual->link_keys[item_index];
-
     for (uint32_t i = 0; i < selection->item_count; i++)
     {
-        const DvzSelectionItem* item = &selection->items[i];
-        if (item->target != DVZ_SCENE_TARGET_ITEM)
-            continue;
-        if (item->visual_id == visual_id && item->target_id == item_index)
-            return true;
-        if (item->link_key != 0 && link_key != 0 && item->link_key == link_key)
+        if (_item_state_matches_visual_item(&selection->items[i], visual, visual_id, item_index))
             return true;
     }
     return false;
@@ -267,21 +304,42 @@ static bool _selection_matches_visual_item(
 
 
 /**
- * Store one item-state style in the shared material payload slots used by point-like selection
- * shaders.
+ * Return whether the retained hover contains one visual item.
+ *
+ * @param hover the hover
+ * @param visual the visual
+ * @param visual_id one-based public visual id
+ * @param item_index zero-based item index
+ * @return whether the item is hovered directly or through a link key
+ */
+static bool _hover_matches_visual_item(
+    const DvzHover* hover, const DvzVisual* visual, uint64_t visual_id, uint32_t item_index)
+{
+    ANN(hover);
+    ANN(visual);
+    if (!hover->has_item)
+        return false;
+    return _item_state_matches_visual_item(&hover->item, visual, visual_id, item_index);
+}
+
+
+
+/**
+ * Store one item-state style in a shared material payload slot.
  *
  * @param params material payload
  * @param style item-state style
- * @param selected whether this is the selected or unselected item state
+ * @param slot item-style slot: 0 selected, 1 unselected, 2 hovered
  */
-static void _selection_store_item_style(
-    DvzSceneMaterialParams* params, const DvzItemStateVisualStyle* style, bool selected)
+static void _item_state_store_style(
+    DvzSceneMaterialParams* params, const DvzItemStateVisualStyle* style, uint32_t slot)
 {
     ANN(params);
     ANN(style);
     float flags = (float)style->flags;
     float alpha = isfinite(style->alpha) ? style->alpha : 1.0f;
     float tint_mix = isfinite(style->tint_mix) ? style->tint_mix : 0.0f;
+    float scale = isfinite(style->scale) && style->scale > 0.0f ? style->scale : 1.0f;
     float tint[4] = {
         (float)style->tint.r / 255.0f,
         (float)style->tint.g / 255.0f,
@@ -289,108 +347,210 @@ static void _selection_store_item_style(
         (float)style->tint.a / 255.0f,
     };
 
-    if (selected)
+    if (slot == 0)
     {
         params->standard_params[0] = flags;
         params->standard_params[1] = alpha;
         params->standard_params[2] = tint_mix;
+        params->standard_params[3] = scale;
         params->emissive_rim[0] = tint[0];
         params->emissive_rim[1] = tint[1];
         params->emissive_rim[2] = tint[2];
         params->emissive_rim[3] = tint[3];
     }
-    else
+    else if (slot == 1)
     {
-        params->standard_params[3] = flags;
-        params->depth_cue[0] = alpha;
-        params->depth_cue[1] = tint_mix;
+        params->depth_cue[0] = flags;
+        params->depth_cue[1] = alpha;
+        params->depth_cue[2] = tint_mix;
+        params->depth_cue[3] = scale;
         params->depth_cue_color[0] = tint[0];
         params->depth_cue_color[1] = tint[1];
         params->depth_cue_color[2] = tint[2];
         params->depth_cue_color[3] = tint[3];
+    }
+    else
+    {
+        params->depth_cue_extra[0] = flags;
+        params->depth_cue_extra[1] = alpha;
+        params->depth_cue_extra[2] = tint_mix;
+        params->depth_cue_extra[3] = scale;
+        params->model[0] = tint[0];
+        params->model[1] = tint[1];
+        params->model[2] = tint[2];
+        params->model[3] = tint[3];
     }
 }
 
 
 
 /**
- * Synchronize point-like selection visual style material parameters.
+ * Return the first active selection style in the scene.
  *
- * @param selection the selection
+ * @param scene the scene
+ * @param out selected/unselected style output
+ * @return whether an active selection style was found
+ */
+static bool _item_state_active_selection_style(
+    DvzScene* scene, DvzSelectionVisualStyle* out)
+{
+    ANN(scene);
+    ANN(out);
+    for (uint32_t i = 0; i < scene->selection_count; i++)
+    {
+        DvzSelection* selection = &scene->selections[i];
+        if (selection->scene != scene || selection->item_count == 0)
+            continue;
+        *out = selection->visual_style;
+        return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Return the first active hover style in the scene.
+ *
+ * @param scene the scene
+ * @param out hover style output
+ * @return whether an active hover style was found
+ */
+static bool _item_state_active_hover_style(DvzScene* scene, DvzItemStateVisualStyle* out)
+{
+    ANN(scene);
+    ANN(out);
+    for (uint32_t i = 0; i < scene->hover_count; i++)
+    {
+        DvzHover* hover = &scene->hovers[i];
+        if (hover->scene != scene || !hover->has_item)
+            continue;
+        *out = hover->visual_style;
+        return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Synchronize point-like item-state visual style material parameters.
+ *
+ * @param scene the scene
  * @param visual the visual
  */
-static void _selection_sync_visual_style(DvzSelection* selection, DvzVisual* visual)
+static void _item_state_sync_visual_style(DvzScene* scene, DvzVisual* visual)
 {
-    ANN(selection);
+    ANN(scene);
     ANN(visual);
-    DvzSelectionVisualStyle empty_style = {
-        .selected = {.alpha = 1.0f, .tint = {255, 255, 255, 255}, .tint_mix = 0.0f},
-        .unselected = {.alpha = 1.0f, .tint = {255, 255, 255, 255}, .tint_mix = 0.0f},
-    };
-    DvzSelectionVisualStyle style = selection->item_count > 0 ? selection->visual_style : empty_style;
+    DvzItemStateVisualStyle normal = dvz_item_state_visual_style();
+    DvzSelectionVisualStyle selection_style = {.selected = normal, .unselected = normal};
+    DvzItemStateVisualStyle hover_style = normal;
+    (void)_item_state_active_selection_style(scene, &selection_style);
+    (void)_item_state_active_hover_style(scene, &hover_style);
+
     DvzSceneMaterialParams* params = &_visual_family_state(visual)->material_params;
-    _selection_store_item_style(params, &style.selected, true);
-    _selection_store_item_style(params, &style.unselected, false);
+    _item_state_store_style(params, &selection_style.selected, 0);
+    _item_state_store_style(params, &selection_style.unselected, 1);
+    _item_state_store_style(params, &hover_style, 2);
     _visual_family_state(visual)->material_params_dirty = true;
 }
 
 
 
 /**
- * Rebuild the selection mask attribute for one visual.
+ * Rebuild the item-state attribute for one visual.
  *
- * @param selection the selection
+ * @param scene the scene
  * @param visual the visual
  * @return 0 on success, -1 on error
  */
-static int _selection_sync_visual_mask(DvzSelection* selection, DvzVisual* visual)
+static int _item_state_sync_visual(DvzScene* scene, DvzVisual* visual)
 {
-    ANN(selection);
+    ANN(scene);
     ANN(visual);
-    if (!_selection_visual_supports_mask(visual))
+    if (!_item_state_visual_supports(visual))
         return 0;
 
-    uint32_t item_count = _selection_visual_item_count(visual);
-    int selection_idx = _attr_index(visual, "selection");
-    if (item_count == 0 && selection_idx < 0)
-        return 0;
+    uint32_t item_count = _item_state_visual_item_count(visual);
+    int item_state_idx = _attr_index(visual, "item_state");
     if (item_count == 0)
         return 0;
 
-    uint8_t* mask = (uint8_t*)dvz_calloc(item_count, sizeof(uint8_t));
-    if (mask == NULL)
+    uint32_t* states = (uint32_t*)dvz_calloc(item_count, sizeof(uint32_t));
+    if (states == NULL)
     {
-        log_error("selection mask allocation failed for %u items", item_count);
+        log_error("item_state allocation failed for %u items", item_count);
         return -1;
     }
 
-    uint64_t visual_id = _scene_visual_public_id(selection->scene, visual);
-    bool any_selected = false;
-    for (uint32_t i = 0; i < item_count; i++)
+    uint64_t visual_id = _scene_visual_public_id(scene, visual);
+    bool any_state = false;
+    for (uint32_t item_index = 0; item_index < item_count; item_index++)
     {
-        if (_selection_matches_visual_item(selection, visual, visual_id, i))
+        for (uint32_t i = 0; i < scene->selection_count; i++)
         {
-            mask[i] = 1;
-            any_selected = true;
+            DvzSelection* selection = &scene->selections[i];
+            if (selection->scene != scene)
+                continue;
+            if (_selection_matches_visual_item(selection, visual, visual_id, item_index))
+                states[item_index] |= DVZ_ITEM_STATE_SELECTED;
         }
+        for (uint32_t i = 0; i < scene->hover_count; i++)
+        {
+            DvzHover* hover = &scene->hovers[i];
+            if (hover->scene != scene)
+                continue;
+            if (_hover_matches_visual_item(hover, visual, visual_id, item_index))
+                states[item_index] |= DVZ_ITEM_STATE_HOVERED;
+        }
+        any_state = any_state || states[item_index] != 0;
     }
 
-    if (selection_idx < 0 && !any_selected)
+    if (item_state_idx < 0 && !any_state)
     {
-        dvz_free(mask);
+        dvz_free(states);
         return 0;
     }
 
-    _selection_sync_visual_style(selection, visual);
-    int res = dvz_visual_set_data(visual, "selection", mask, item_count);
-    dvz_free(mask);
+    _item_state_sync_visual_style(scene, visual);
+    int res = dvz_visual_set_data(visual, "item_state", states, item_count);
+    dvz_free(states);
     return res;
 }
 
 
 
 /**
- * Synchronize all point-like visual masks affected by a selection change.
+ * Synchronize all point-like item-state attributes in a scene.
+ *
+ * @param scene the scene
+ * @param reason mutation reason for diagnostics
+ * @return 0 on success, -1 on error
+ */
+static int _item_state_sync_scene(DvzScene* scene, const char* reason)
+{
+    ANN(scene);
+    if (!_scene_visual_mutation_allowed(scene, reason != NULL ? reason : "update item_state"))
+        return -1;
+
+    int res = 0;
+    for (uint32_t i = 0; i < scene->visual_count; i++)
+    {
+        DvzVisual* visual = &scene->visuals[i];
+        DvzVisual* picked_visual = _item_state_visual_from_public_id(scene, (uint64_t)i + 1);
+        if (picked_visual != visual)
+            continue;
+        if (_item_state_sync_visual(scene, visual) != 0)
+            res = -1;
+    }
+    return res;
+}
+
+
+
+/**
+ * Synchronize all point-like visual states affected by a selection change.
  *
  * @param selection the selection
  * @return 0 on success, -1 on error
@@ -400,22 +560,9 @@ static int _selection_sync_masks(DvzSelection* selection)
     ANN(selection);
     if (selection->scene == NULL)
         return 0;
-    if (!_scene_visual_mutation_allowed(selection->scene, "update selection masks"))
-        return -1;
-
-    int res = 0;
-    DvzScene* scene = selection->scene;
-    for (uint32_t i = 0; i < scene->visual_count; i++)
-    {
-        DvzVisual* visual = &scene->visuals[i];
-        DvzVisual* picked_visual = _selection_visual_from_public_id(scene, (uint64_t)i + 1);
-        if (picked_visual != visual)
-            continue;
-        if (_selection_sync_visual_mask(selection, visual) != 0)
-            res = -1;
-    }
-    return res;
+    return _item_state_sync_scene(selection->scene, "update item_state");
 }
+
 
 
 /**
@@ -1455,28 +1602,35 @@ void dvz_selection_clear(DvzSelection* selection)
 
 
 /**
+ * Return the default item-state visual style.
+ *
+ * @return the default item-state style descriptor
+ */
+DvzItemStateVisualStyle dvz_item_state_visual_style(void)
+{
+    return (DvzItemStateVisualStyle){
+        .flags = DVZ_ITEM_STATE_VISUAL_NONE,
+        .alpha = 1.0f,
+        .tint = {255, 255, 255, 255},
+        .tint_mix = 0.0f,
+        .scale = 1.0f,
+    };
+}
+
+
+
+/**
  * Return the default selection visual style.
  *
  * @return the default style descriptor
  */
 DvzSelectionVisualStyle dvz_selection_visual_style(void)
 {
-    return (DvzSelectionVisualStyle){
-        .selected =
-            {
-                .flags = DVZ_ITEM_STATE_VISUAL_NONE,
-                .alpha = 1.0f,
-                .tint = {255, 255, 255, 255},
-                .tint_mix = 0.0f,
-            },
-        .unselected =
-            {
-                .flags = DVZ_ITEM_STATE_VISUAL_ALPHA,
-                .alpha = 0.25f,
-                .tint = {255, 255, 255, 255},
-                .tint_mix = 0.0f,
-            },
-    };
+    DvzItemStateVisualStyle normal = dvz_item_state_visual_style();
+    DvzItemStateVisualStyle unselected = normal;
+    unselected.flags = DVZ_ITEM_STATE_VISUAL_ALPHA;
+    unselected.alpha = 0.25f;
+    return (DvzSelectionVisualStyle){.selected = normal, .unselected = unselected};
 }
 
 
@@ -1492,7 +1646,8 @@ int dvz_selection_set_visual_style(DvzSelection* selection, const DvzSelectionVi
 {
     ANN(selection);
     DvzSelectionVisualStyle resolved = style != NULL ? *style : dvz_selection_visual_style();
-    const uint32_t supported_flags = DVZ_ITEM_STATE_VISUAL_ALPHA | DVZ_ITEM_STATE_VISUAL_TINT;
+    const uint32_t supported_flags =
+        DVZ_ITEM_STATE_VISUAL_ALPHA | DVZ_ITEM_STATE_VISUAL_TINT | DVZ_ITEM_STATE_VISUAL_SCALE;
     if ((resolved.selected.flags & ~supported_flags) != 0 ||
         (resolved.unselected.flags & ~supported_flags) != 0)
     {
@@ -1501,7 +1656,8 @@ int dvz_selection_set_visual_style(DvzSelection* selection, const DvzSelectionVi
     }
     if (
         !isfinite(resolved.selected.alpha) || !isfinite(resolved.selected.tint_mix) ||
-        !isfinite(resolved.unselected.alpha) || !isfinite(resolved.unselected.tint_mix))
+        !isfinite(resolved.selected.scale) || !isfinite(resolved.unselected.alpha) ||
+        !isfinite(resolved.unselected.tint_mix) || !isfinite(resolved.unselected.scale))
     {
         log_error("selection visual alpha and tint_mix values must be finite");
         return -1;
@@ -1629,6 +1785,134 @@ void dvz_selection_copy(
 /*************************************************************************************************/
 /*  Hover                                                                                        */
 /*************************************************************************************************/
+
+/**
+ * Create a retained scene-owned hover object.
+ *
+ * @param scene the scene
+ * @param desc hover descriptor, or NULL for defaults
+ * @return the hover, or NULL on allocation failure
+ */
+DvzHover* dvz_hover(DvzScene* scene, const DvzHoverDesc* desc)
+{
+    ANN(scene);
+    if (scene->hover_count >= DVZ_SCENE_MAX_HOVERS)
+    {
+        log_error("maximum hover count reached");
+        return NULL;
+    }
+    DvzHover* hover = &scene->hovers[scene->hover_count++];
+    dvz_memset(hover, sizeof(DvzHover), 0, sizeof(DvzHover));
+    hover->scene = scene;
+    hover->desc = desc != NULL ? *desc : (DvzHoverDesc){.target = DVZ_SCENE_TARGET_ITEM};
+    if (hover->desc.hit_policy == 0)
+        hover->desc.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
+    hover->visual_style = dvz_item_state_visual_style();
+    return hover;
+}
+
+
+
+/**
+ * Destroy a retained hover object.
+ *
+ * @param hover the hover
+ */
+void dvz_hover_destroy(DvzHover* hover)
+{
+    if (hover == NULL)
+        return;
+    DvzScene* scene = hover->scene;
+    hover->scene = NULL;
+    hover->has_item = false;
+    hover->item = (DvzSelectionItem){0};
+    if (scene != NULL)
+        (void)_item_state_sync_scene(scene, "clear hover item_state");
+}
+
+
+
+/**
+ * Clear the hovered item.
+ *
+ * @param hover the hover
+ */
+void dvz_hover_clear(DvzHover* hover)
+{
+    ANN(hover);
+    DvzScene* scene = hover->scene;
+    hover->has_item = false;
+    hover->item = (DvzSelectionItem){0};
+    if (scene != NULL)
+        (void)_item_state_sync_scene(scene, "clear hover item_state");
+}
+
+
+
+/**
+ * Configure visual styling for a retained hover object.
+ *
+ * @param hover the hover
+ * @param style style descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
+ */
+int dvz_hover_set_visual_style(DvzHover* hover, const DvzItemStateVisualStyle* style)
+{
+    ANN(hover);
+    DvzItemStateVisualStyle resolved = style != NULL ? *style : dvz_item_state_visual_style();
+    const uint32_t supported_flags =
+        DVZ_ITEM_STATE_VISUAL_ALPHA | DVZ_ITEM_STATE_VISUAL_TINT | DVZ_ITEM_STATE_VISUAL_SCALE;
+    if ((resolved.flags & ~supported_flags) != 0)
+    {
+        log_error("unsupported hover visual style flags");
+        return -1;
+    }
+    if (!isfinite(resolved.alpha) || !isfinite(resolved.tint_mix) || !isfinite(resolved.scale))
+    {
+        log_error("hover visual alpha, tint_mix, and scale values must be finite");
+        return -1;
+    }
+
+    hover->visual_style = resolved;
+    return hover->scene != NULL ? _item_state_sync_scene(hover->scene, "update hover style") : 0;
+}
+
+
+
+/**
+ * Apply one resolved query to a retained hover object.
+ *
+ * @param hover the hover
+ * @param query query result
+ * @return 0 on success, -1 on error
+ */
+int dvz_hover_apply_query(DvzHover* hover, const DvzQueryResult* query)
+{
+    ANN(hover);
+    ANN(query);
+    if (hover->scene == NULL)
+        return -1;
+    if (!query->hit || query->resolved_target == DVZ_SCENE_TARGET_NONE)
+    {
+        hover->has_item = false;
+        hover->item = (DvzSelectionItem){0};
+        return _item_state_sync_scene(hover->scene, "clear hover item_state");
+    }
+    DvzSceneTargetKind target = hover->desc.target;
+    if (target != DVZ_SCENE_TARGET_NONE && target != query->resolved_target)
+        return -1;
+
+    hover->item = (DvzSelectionItem){
+        .visual_id = query->visual_id,
+        .target = query->resolved_target,
+        .target_id = query->resolved_id,
+        .link_key = query->link_key,
+    };
+    hover->has_item = true;
+    return _item_state_sync_scene(hover->scene, "update hover item_state");
+}
+
+
 
 /**
  * Return the retained hover state for one panel.

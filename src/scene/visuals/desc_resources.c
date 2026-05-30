@@ -101,7 +101,7 @@ static const char* _resource_role_tag(DvzFramePlanResourceRole role)
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS:
         return "material_params";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION:
-        return "selection";
+        return "item_state";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_FLAGS:
         return "path_flags";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_DISTANCE:

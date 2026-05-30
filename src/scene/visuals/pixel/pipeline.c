@@ -66,9 +66,9 @@ bool _scene_pixel_visual_pipeline_desc(
         out->depth_compare_op = VK_COMPARE_OP_ALWAYS;
     }
 
-    out->vertex_buffer_count = visual->has_selection_mask ? 4 : 3;
+    out->vertex_buffer_count = visual->has_item_state ? 4 : 3;
     out->binding_count = out->vertex_buffer_count;
-    out->attr_count = picking ? 2 : visual->has_selection_mask ? 4 : 3;
+    out->attr_count = picking ? 2 : visual->has_item_state ? 4 : 3;
 
     uint32_t color_binding = picking ? 2 : 1;
     uint32_t color_format = picking ? VK_FORMAT_R32_SFLOAT : VK_FORMAT_R8G8B8A8_UNORM;
@@ -76,8 +76,8 @@ bool _scene_pixel_visual_pipeline_desc(
     _scene_visual_pipeline_attr(
         out, 1, color_binding, color_binding, color_format, 4 * sizeof(uint8_t));
     _scene_visual_pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32_SFLOAT, sizeof(float));
-    if (visual->has_selection_mask && !picking)
-        _scene_visual_pipeline_attr(out, 3, 3, 5, VK_FORMAT_R8_UINT, sizeof(uint8_t));
+    if (visual->has_item_state && !picking)
+        _scene_visual_pipeline_attr(out, 3, 3, 5, VK_FORMAT_R32_UINT, sizeof(uint32_t));
     for (uint32_t i = 0; i < out->binding_count; i++)
         out->step_modes[i] = lowering.vertex_step_mode;
 

@@ -47,7 +47,7 @@ bool _scene_point_visual_lowering(const DvzVisual* visual, DvzVisualLowering* ou
     out->material_params_screen_scaled = visual->material.point_style_enabled;
     out->needs_material_params =
         visual->material.depth_cue_enabled || visual->material.point_style_enabled ||
-        _scene_visual_has_dense_attr(visual, "selection");
+        _scene_visual_has_dense_attr(visual, "item_state");
     return true;
 }
 

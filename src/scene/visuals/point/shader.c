@@ -55,7 +55,7 @@ bool _scene_point_like_visual_shader_desc(
 
     bool depth_cue = visual->depth_cue_enabled && (point || pixel);
     bool point_style = visual->point_style_enabled && point;
-    bool selection = visual->has_selection_mask && !picking && (point || marker) &&
+    bool selection = visual->has_item_state && !picking && (point || marker) &&
                      !depth_cue && !point_style;
 
     const char* suffix = picking                    ? "_pick"

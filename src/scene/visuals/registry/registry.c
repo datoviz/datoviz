@@ -97,7 +97,7 @@ static const DvzVisualFamilyAttrDesc POINT_ATTRS[] = {
     {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
     {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
     {"size", sizeof(float), SRC_SIZE_GROUPED, false},
-    {"selection", sizeof(uint8_t), SRC_ITEM_ONLY, false},
+    {"item_state", sizeof(uint32_t), SRC_ITEM_ONLY, false},
 };
 
 
@@ -112,7 +112,7 @@ static const DvzVisualFamilyAttrDesc MARKER_ATTRS[] = {
     {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
     {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
     {"size", sizeof(float), SRC_SIZE_GROUPED, false},
-    {"selection", sizeof(uint8_t), SRC_ITEM_ONLY, false},
+    {"item_state", sizeof(uint32_t), SRC_ITEM_ONLY, false},
     {"angle", sizeof(float), SRC_ITEM_ONLY, false},
     {"shape", sizeof(uint32_t), SRC_ITEM_ONLY, false},
 };
