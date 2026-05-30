@@ -37,7 +37,7 @@ There is already useful broader spec context:
 3. transform/controller direction in
    [TRANSFORM_CONTROLLER_DESIGN.md](TRANSFORM_CONTROLLER_DESIGN.md)
 4. picking direction in
-   [PICKING_DESIGN.md](../promoted/PICKING_DESIGN.md)
+   [PICKING_DESIGN.md](PICKING_DESIGN.md)
 
 This note does not replace the larger annotation spec. It defines the active v0.4 decisions for the
 measurement-heavy subset that you already need now.

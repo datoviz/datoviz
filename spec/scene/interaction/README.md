@@ -22,9 +22,9 @@ selection state, or animation timing.
 
 ## Active Proposal Inputs
 
-1. [../proposals/active/INTERACTION_API_DESIGN.md](../proposals/active/INTERACTION_API_DESIGN.md)
+1. [../proposals/promoted/INTERACTION_API_DESIGN.md](../proposals/promoted/INTERACTION_API_DESIGN.md)
 2. [../proposals/promoted/PICKING_DESIGN.md](../proposals/promoted/PICKING_DESIGN.md)
 3. [../proposals/promoted/PROBE_READOUT_DESIGN.md](../proposals/promoted/PROBE_READOUT_DESIGN.md)
-4. [../proposals/active/SELECTION_HIGHLIGHT_DESIGN.md](../proposals/active/SELECTION_HIGHLIGHT_DESIGN.md)
-5. [../proposals/active/TRANSFORM_CONTROLLER_DESIGN.md](../proposals/active/TRANSFORM_CONTROLLER_DESIGN.md)
+4. [../proposals/promoted/SELECTION_HIGHLIGHT_DESIGN.md](../proposals/promoted/SELECTION_HIGHLIGHT_DESIGN.md)
+5. [../proposals/promoted/TRANSFORM_CONTROLLER_DESIGN.md](../proposals/promoted/TRANSFORM_CONTROLLER_DESIGN.md)
 6. [../proposals/active/ASYNC_CALLBACKS.md](../proposals/active/ASYNC_CALLBACKS.md)

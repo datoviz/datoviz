@@ -27,8 +27,8 @@ Active rules moved to:
 4. [`../../visuals/IMAGE.md`](../../visuals/IMAGE.md) and
    [`../../visuals/VOLUME.md`](../../visuals/VOLUME.md) for image and volume payload rules.
 5. [`../active/SCIENTIFIC_COORDINATE_NORMALIZATION.md`](../active/SCIENTIFIC_COORDINATE_NORMALIZATION.md),
-   [`../active/AXES_DOMAIN_DESIGN.md`](../active/AXES_DOMAIN_DESIGN.md), and
-   [`../active/COLORBAR_COLORMAP_DESIGN.md`](../active/COLORBAR_COLORMAP_DESIGN.md) for remaining
+   [`AXES_DOMAIN_DESIGN.md`](AXES_DOMAIN_DESIGN.md), and
+   [`COLORBAR_COLORMAP_DESIGN.md`](COLORBAR_COLORMAP_DESIGN.md) for remaining
    active coordinate, domain, and scale/colorbar design.
 
 

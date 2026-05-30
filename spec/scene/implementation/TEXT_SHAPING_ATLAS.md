@@ -5,7 +5,7 @@ shaping/layout, glyph resource generation, and DRP2 emission.
 
 It does not replace the semantic text model in [../semantics/TEXT.md](../semantics/TEXT.md), the
 first rendered text slice in [../slices/TEXT_RENDERING_SLICE.md](../slices/TEXT_RENDERING_SLICE.md),
-or the rationale in [../proposals/active/TEXT_DESIGN.md](../proposals/active/TEXT_DESIGN.md).
+or the rationale in [../proposals/promoted/TEXT_DESIGN.md](../proposals/promoted/TEXT_DESIGN.md).
 
 CPU-rasterized rich paragraphs and bitmap math use the separate
 [TEXT_BLOCK_BACKENDS.md](TEXT_BLOCK_BACKENDS.md) contract. They should not be forced through the

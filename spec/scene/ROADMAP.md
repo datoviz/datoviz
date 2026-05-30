@@ -67,7 +67,7 @@ Durable contracts live in:
 2. [implementation/TRANSPARENCY_MSAA.md](implementation/TRANSPARENCY_MSAA.md)
 3. [implementation/OCCLUSION_EFFECTS.md](implementation/OCCLUSION_EFFECTS.md)
 4. [proposals/active/DEPTH_OF_FIELD_POSTPROCESS.md](proposals/active/DEPTH_OF_FIELD_POSTPROCESS.md)
-5. [proposals/active/SCREEN_SPACE_EFFECTS_DESIGN.md](proposals/active/SCREEN_SPACE_EFFECTS_DESIGN.md)
+5. [proposals/promoted/SCREEN_SPACE_EFFECTS_DESIGN.md](proposals/promoted/SCREEN_SPACE_EFFECTS_DESIGN.md)
 6. [proposals/active/MATERIAL_LIGHTING_API.md](proposals/active/MATERIAL_LIGHTING_API.md)
 
 Preserved direction:

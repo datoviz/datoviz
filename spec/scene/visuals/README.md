@@ -136,12 +136,12 @@ The granularity vocabulary (`CONSTANT`, `PER_ITEM`, `PER_SPAN`, `PER_GROUP`) and
 
 ## Active Proposal Inputs
 
-1. [../proposals/active/MESH_API_DESIGN.md](../proposals/active/MESH_API_DESIGN.md)
-2. [../proposals/active/MESH_SHADING_DESIGN.md](../proposals/active/MESH_SHADING_DESIGN.md)
+1. [../proposals/promoted/MESH_API_DESIGN.md](../proposals/promoted/MESH_API_DESIGN.md)
+2. [../proposals/promoted/MESH_SHADING_DESIGN.md](../proposals/promoted/MESH_SHADING_DESIGN.md)
 3. [../proposals/active/MATERIAL_LIGHTING_API.md](../proposals/active/MATERIAL_LIGHTING_API.md)
-4. [../proposals/active/VOLUME_DESIGN.md](../proposals/active/VOLUME_DESIGN.md)
+4. [../proposals/promoted/VOLUME_DESIGN.md](../proposals/promoted/VOLUME_DESIGN.md)
 5. [../implementation/VISUAL_SHADER_REFACTOR.md](../implementation/VISUAL_SHADER_REFACTOR.md)
-6. [../proposals/active/LABELS_VISUAL_DESIGN.md](../proposals/active/LABELS_VISUAL_DESIGN.md)
+6. [../proposals/promoted/LABELS_VISUAL_DESIGN.md](../proposals/promoted/LABELS_VISUAL_DESIGN.md)
 
 
 ## Future Semantic Resources

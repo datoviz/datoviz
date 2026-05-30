@@ -29,3 +29,30 @@ specialized `spec/scene/` documents listed below.
 8. [UI_BACKEND_INTEGRATION.md](UI_BACKEND_INTEGRATION.md) ->
    `../../integration/EXTERNAL_UI.md`, `../../integration/HOSTED_BACKENDS.md`,
    `../../pipeline/FRAME_LIFECYCLE.md`, and `../../core/RUNTIME_BOUNDARY.md`.
+9. [INTERACTION_API_DESIGN.md](INTERACTION_API_DESIGN.md),
+   [GPU_PROBE_READBACK_ARCHITECTURE.md](GPU_PROBE_READBACK_ARCHITECTURE.md),
+   [SELECTION_HIGHLIGHT_DESIGN.md](SELECTION_HIGHLIGHT_DESIGN.md), and
+   [TRANSFORM_CONTROLLER_DESIGN.md](TRANSFORM_CONTROLLER_DESIGN.md) ->
+   `../../interaction/PANEL_QUERY.md`, `../../interaction/GPU_QUERY_SYSTEM.md`,
+   `../../interaction/SELECTION.md`, `../../interaction/CONTROLLERS.md`, and
+   `../../api/API_SURFACE.md`.
+10. [ANNOTATION_TEXT_SCALE_API.md](ANNOTATION_TEXT_SCALE_API.md),
+    [ANNOTATION_MEASUREMENT_DESIGN.md](ANNOTATION_MEASUREMENT_DESIGN.md),
+    [AXES_DOMAIN_DESIGN.md](AXES_DOMAIN_DESIGN.md),
+    [COLORBAR_COLORMAP_DESIGN.md](COLORBAR_COLORMAP_DESIGN.md), and
+    [TEXT_DESIGN.md](TEXT_DESIGN.md) ->
+    `../../semantics/TEXT.md`, `../../semantics/SCALES.md`,
+    `../../semantics/LEGENDS_AND_COLORBARS.md`, `../../semantics/AXES.md`,
+    `../../semantics/ANNOTATIONS.md`, and `../../api/API_SURFACE.md`.
+11. [GEOM_DESIGN.md](GEOM_DESIGN.md) -> `../../semantics/GEOMETRY_UTILITIES.md`.
+12. [LABELS_VISUAL_DESIGN.md](LABELS_VISUAL_DESIGN.md) ->
+    `../../visuals/LABELS.md`, `../../semantics/SCALES.md`,
+    `../../semantics/LEGENDS_AND_COLORBARS.md`, and
+    `../../interaction/GPU_QUERY_SYSTEM.md`.
+13. [MESH_API_DESIGN.md](MESH_API_DESIGN.md),
+    [MESH_SHADING_DESIGN.md](MESH_SHADING_DESIGN.md), and
+    [VOLUME_DESIGN.md](VOLUME_DESIGN.md) ->
+    `../../visuals/MESH.md`, `../../visuals/VOLUME.md`, `../../semantics/LIGHTING.md`,
+    `../../semantics/TRANSPARENCY.md`, and `../../pipeline/FRAME_PLAN.md`.
+14. [SCREEN_SPACE_EFFECTS_DESIGN.md](SCREEN_SPACE_EFFECTS_DESIGN.md) ->
+    `../../semantics/EFFECTS.md` and `../../implementation/GRAPH_TECHNIQUES.md`.

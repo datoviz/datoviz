@@ -37,3 +37,6 @@ making v0.4 implementation depend on speculative public APIs.
 2. [SPLATTING_FRAME_PLAN_REQUIREMENTS.md](SPLATTING_FRAME_PLAN_REQUIREMENTS.md): non-normative
    frame-plan pressure from scalable Gaussian splatting.
 3. [UNIFIED_RAY_RENDERING.md](UNIFIED_RAY_RENDERING.md): future panel-level ray integration path.
+4. [RAY_TRACING_FORWARD_COMPAT.md](RAY_TRACING_FORWARD_COMPAT.md): non-v0.4-blocking ray-tracing
+   compatibility rationale; current preparation lives in lighting, frame-plan, and unified ray
+   rendering specs.

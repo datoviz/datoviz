@@ -28,10 +28,10 @@ scene concepts into C and language bindings.
 
 ## Active Proposal Inputs
 
-1. [../proposals/active/INTERACTION_API_DESIGN.md](../proposals/active/INTERACTION_API_DESIGN.md)
-2. [../proposals/active/ANNOTATION_TEXT_SCALE_API.md](../proposals/active/ANNOTATION_TEXT_SCALE_API.md)
+1. [../proposals/promoted/INTERACTION_API_DESIGN.md](../proposals/promoted/INTERACTION_API_DESIGN.md)
+2. [../proposals/promoted/ANNOTATION_TEXT_SCALE_API.md](../proposals/promoted/ANNOTATION_TEXT_SCALE_API.md)
    for unresolved rationale only; installed headers own landed text/colorbar/annotation names
-3. [../proposals/active/MESH_API_DESIGN.md](../proposals/active/MESH_API_DESIGN.md)
+3. [../proposals/promoted/MESH_API_DESIGN.md](../proposals/promoted/MESH_API_DESIGN.md)
 4. [../proposals/active/MATERIAL_LIGHTING_API.md](../proposals/active/MATERIAL_LIGHTING_API.md)
 5. [../proposals/promoted/SAMPLED_FIELD_API_DESIGN.md](../proposals/promoted/SAMPLED_FIELD_API_DESIGN.md)
 

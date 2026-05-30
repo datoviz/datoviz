@@ -89,8 +89,8 @@ slices once the specialized specs and proposals already agree on behavior.
 Use this map when turning proposals into implementation-ready spec changes.
 
 1. [PICKING_DESIGN.md](promoted/PICKING_DESIGN.md),
-   [SELECTION_HIGHLIGHT_DESIGN.md](active/SELECTION_HIGHLIGHT_DESIGN.md),
-   [INTERACTION_API_DESIGN.md](active/INTERACTION_API_DESIGN.md),
+   [SELECTION_HIGHLIGHT_DESIGN.md](promoted/SELECTION_HIGHLIGHT_DESIGN.md),
+   [INTERACTION_API_DESIGN.md](promoted/INTERACTION_API_DESIGN.md),
    [ASYNC_CALLBACKS.md](active/ASYNC_CALLBACKS.md), and
    [PROBE_READOUT_DESIGN.md](promoted/PROBE_READOUT_DESIGN.md) promote into
    `../interaction/PICKING.md`,
@@ -99,26 +99,26 @@ Use this map when turning proposals into implementation-ready spec changes.
    [CONTROLLER_INSPECTORS_AND_GIZMOS.md](active/CONTROLLER_INSPECTORS_AND_GIZMOS.md) promotes into
    `../integration/EXTERNAL_UI.md`,
    `../interaction/CONTROLLERS.md`, `../semantics/GEOMETRY_UTILITIES.md`,
-   [GEOM_DESIGN.md](active/GEOM_DESIGN.md), and `../visuals/MESH.md`.
-2. [ANNOTATION_MEASUREMENT_DESIGN.md](active/ANNOTATION_MEASUREMENT_DESIGN.md) and
-   [ANNOTATION_TEXT_SCALE_API.md](active/ANNOTATION_TEXT_SCALE_API.md) are now partially
+   [GEOM_DESIGN.md](promoted/GEOM_DESIGN.md), and `../visuals/MESH.md`.
+2. [ANNOTATION_MEASUREMENT_DESIGN.md](promoted/ANNOTATION_MEASUREMENT_DESIGN.md) and
+   [ANNOTATION_TEXT_SCALE_API.md](promoted/ANNOTATION_TEXT_SCALE_API.md) are now partially
    superseded by landed text, label, colorbar, and scale-bar first slices. Remaining ideas from
    those notes, plus
-   [COLORBAR_COLORMAP_DESIGN.md](active/COLORBAR_COLORMAP_DESIGN.md),
-   [AXES_DOMAIN_DESIGN.md](active/AXES_DOMAIN_DESIGN.md),
-   [TEXT_DESIGN.md](active/TEXT_DESIGN.md), and
+   [COLORBAR_COLORMAP_DESIGN.md](promoted/COLORBAR_COLORMAP_DESIGN.md),
+   [AXES_DOMAIN_DESIGN.md](promoted/AXES_DOMAIN_DESIGN.md),
+   [TEXT_DESIGN.md](promoted/TEXT_DESIGN.md), and
    [SCREEN_SPACE_OVERLAY_LAYOUT.md](active/SCREEN_SPACE_OVERLAY_LAYOUT.md) promote into
    `../semantics/ANNOTATIONS.md`, `../semantics/SCALES.md`,
    `../semantics/LEGENDS_AND_COLORBARS.md`, `../semantics/AXES.md`, `../semantics/TEXT.md`,
    `../pipeline/FRAME_PLAN.md`, and `../api/API_SURFACE.md`.
-3. [MESH_API_DESIGN.md](active/MESH_API_DESIGN.md),
-   [MESH_SHADING_DESIGN.md](active/MESH_SHADING_DESIGN.md),
+3. [MESH_API_DESIGN.md](promoted/MESH_API_DESIGN.md),
+   [MESH_SHADING_DESIGN.md](promoted/MESH_SHADING_DESIGN.md),
    [MATERIAL_LIGHTING_API.md](active/MATERIAL_LIGHTING_API.md),
    [PARTICLE_SYSTEM_DESIGN.md](active/PARTICLE_SYSTEM_DESIGN.md),
-   [SCREEN_SPACE_EFFECTS_DESIGN.md](active/SCREEN_SPACE_EFFECTS_DESIGN.md),
+   [SCREEN_SPACE_EFFECTS_DESIGN.md](promoted/SCREEN_SPACE_EFFECTS_DESIGN.md),
    [TRANSPARENCY_WBOIT_DESIGN.md](promoted/TRANSPARENCY_WBOIT_DESIGN.md),
-   [VOLUME_DESIGN.md](active/VOLUME_DESIGN.md), and
-   [RAY_TRACING_FORWARD_COMPAT.md](active/RAY_TRACING_FORWARD_COMPAT.md) promote into
+   [VOLUME_DESIGN.md](promoted/VOLUME_DESIGN.md), and
+   [RAY_TRACING_FORWARD_COMPAT.md](future/RAY_TRACING_FORWARD_COMPAT.md) promote into
    `../visuals/MESH.md`,
    `../visuals/VOLUME.md`, `../semantics/LIGHTING.md`, `../semantics/TRANSPARENCY.md`,
    `../semantics/VISUAL_CONTRACT.md`, `../pipeline/FRAME_PLAN.md`, and
@@ -128,13 +128,13 @@ Use this map when turning proposals into implementation-ready spec changes.
    [ASSET_BOUNDARY_DESIGN.md](active/ASSET_BOUNDARY_DESIGN.md),
    [CAPABILITY_FALLBACK_DESIGN.md](active/CAPABILITY_FALLBACK_DESIGN.md),
    [SAMPLED_FIELD_API_DESIGN.md](promoted/SAMPLED_FIELD_API_DESIGN.md),
-   [TRANSFORM_CONTROLLER_DESIGN.md](active/TRANSFORM_CONTROLLER_DESIGN.md), and
+   [TRANSFORM_CONTROLLER_DESIGN.md](promoted/TRANSFORM_CONTROLLER_DESIGN.md), and
    [UI_BACKEND_INTEGRATION.md](promoted/UI_BACKEND_INTEGRATION.md) promote into
    `../pipeline/RESOURCE_MODEL.md`, `../pipeline/INVALIDATION_AND_CACHING.md`,
    `../pipeline/TRANSFORM_PIPELINE.md`, `../validation/ADAPTATION.md`,
    `../validation/VALIDATION.md`, `../visuals/IMAGE.md`, `../visuals/VOLUME.md`,
    `../api/API_SURFACE.md`, and `../integration/EXTERNAL_UI.md`.
-5. [GEOM_DESIGN.md](active/GEOM_DESIGN.md) promotes into
+5. [GEOM_DESIGN.md](promoted/GEOM_DESIGN.md) promotes into
    `../semantics/GEOMETRY_UTILITIES.md` and any future public `geom` module header plan.
 6. [HIGH_PRIORITY_SPEC_DECISIONS.md](history/HIGH_PRIORITY_SPEC_DECISIONS.md) is a consolidation
    checkpoint. Do not use it as the final authority when a more focused proposal or specialized
@@ -145,10 +145,9 @@ Use this map when turning proposals into implementation-ready spec changes.
 
 Active proposal-stage notes:
 
-1. [Interaction and events](active/README.md#interaction-and-events)
-2. [Text, axes, scales, annotations, and overlays](active/README.md#text-axes-scales-annotations-and-overlays)
-3. [Visual families, material, lighting, and render modes](active/README.md#visual-families-material-lighting-and-render-modes)
-4. [Resources, transforms, geometry, validation, and integration](active/README.md#resources-transforms-geometry-validation-and-integration)
+1. [Interaction, events, and UI](active/README.md#interaction-events-and-ui)
+2. [Resources, transforms, validation, and API boundaries](active/README.md#resources-transforms-validation-and-api-boundaries)
+3. [Visual and render-mode pressure](active/README.md#visual-and-render-mode-pressure)
 
 Promoted rationale notes:
 
@@ -172,9 +171,9 @@ For the next public API pass, read these first:
 3. [../slices/TEXT_RENDERING_SLICE.md](../slices/TEXT_RENDERING_SLICE.md)
 4. [../slices/ANNOTATION_LABEL_SLICE.md](../slices/ANNOTATION_LABEL_SLICE.md)
 5. [../slices/COLORBAR_RENDERING_SLICE.md](../slices/COLORBAR_RENDERING_SLICE.md)
-6. [INTERACTION_API_DESIGN.md](active/INTERACTION_API_DESIGN.md)
-7. [ANNOTATION_TEXT_SCALE_API.md](active/ANNOTATION_TEXT_SCALE_API.md), for unresolved rationale
+6. [INTERACTION_API_DESIGN.md](promoted/INTERACTION_API_DESIGN.md)
+7. [ANNOTATION_TEXT_SCALE_API.md](promoted/ANNOTATION_TEXT_SCALE_API.md), for unresolved rationale
    only; installed headers own landed names
 8. [PICKING_DESIGN.md](promoted/PICKING_DESIGN.md)
 9. [PROBE_READOUT_DESIGN.md](promoted/PROBE_READOUT_DESIGN.md)
-10. [COLORBAR_COLORMAP_DESIGN.md](active/COLORBAR_COLORMAP_DESIGN.md)
+10. [COLORBAR_COLORMAP_DESIGN.md](promoted/COLORBAR_COLORMAP_DESIGN.md)

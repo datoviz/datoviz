@@ -30,9 +30,9 @@ There is already substantial background material:
 2. realistic mixed-use example:
    [spec/scene/examples/scenarios/v05/SCIENTIFIC_3D_AND_FIELDS.md](../../examples/scenarios/v05/SCIENTIFIC_3D_AND_FIELDS.md)
 3. active transparency direction:
-   [TRANSPARENCY_WBOIT_DESIGN.md](../promoted/TRANSPARENCY_WBOIT_DESIGN.md)
+   [TRANSPARENCY_WBOIT_DESIGN.md](TRANSPARENCY_WBOIT_DESIGN.md)
 4. active picking direction:
-   [PICKING_DESIGN.md](../promoted/PICKING_DESIGN.md)
+   [PICKING_DESIGN.md](PICKING_DESIGN.md)
 
 This note turns that background into an active recommendation set.
 

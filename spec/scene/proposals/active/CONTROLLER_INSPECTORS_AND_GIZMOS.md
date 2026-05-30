@@ -258,5 +258,5 @@ This proposal should be promoted into:
 1. `../../integration/EXTERNAL_UI.md` for controller widget ownership;
 2. `../../interaction/CONTROLLERS.md` for controller state get/set contracts;
 3. `../../semantics/GEOMETRY_UTILITIES.md` for gizmo and surface-grid generation;
-4. `../../proposals/active/GEOM_DESIGN.md` for `DvzGeometry` generator scope;
+4. `../../proposals/promoted/GEOM_DESIGN.md` for `DvzGeometry` generator scope;
 5. `../../visuals/MESH.md` for surface-plot rendering semantics.

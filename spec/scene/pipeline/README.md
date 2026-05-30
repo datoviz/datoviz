@@ -26,4 +26,4 @@ frame planning, or runtime handoff.
 1. [../proposals/active/ASSET_BOUNDARY_DESIGN.md](../proposals/active/ASSET_BOUNDARY_DESIGN.md)
 2. [../proposals/promoted/RESOURCE_UPDATE_DESIGN.md](../proposals/promoted/RESOURCE_UPDATE_DESIGN.md)
 3. [../proposals/active/SCIENTIFIC_COORDINATE_NORMALIZATION.md](../proposals/active/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
-4. [../proposals/active/TRANSFORM_CONTROLLER_DESIGN.md](../proposals/active/TRANSFORM_CONTROLLER_DESIGN.md)
+4. [../proposals/promoted/TRANSFORM_CONTROLLER_DESIGN.md](../proposals/promoted/TRANSFORM_CONTROLLER_DESIGN.md)
