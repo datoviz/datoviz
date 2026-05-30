@@ -923,7 +923,7 @@ static DvzColorbar* _add_wind_colorbar(DvzPanel* panel, DvzScale* scale)
         &(DvzColorbarDesc){
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_LEFT,
-            .title = NULL,
+            .title = "m/s",
             .reserve_px = 66.0f,
             .ramp_width_px = 24.0f,
             .plot_gap_px = 10.0f,
@@ -938,48 +938,6 @@ static DvzColorbar* _add_wind_colorbar(DvzPanel* panel, DvzScale* scale)
     }
     return colorbar;
 }
-
-
-
-/**
- * Add a vertical unit label beside the colorbar.
- *
- * @param panel panel receiving the text
- * @return true on success
- */
-static bool _add_colorbar_unit_label(DvzPanel* panel)
-{
-    ANN(panel);
-
-    DvzText* label = dvz_text(panel, 0);
-    if (label == NULL)
-        return false;
-
-    DvzColor text = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
-    if (dvz_text_set_style(
-            label,
-            &(DvzTextStyle){
-                .size_px = 25.0f,
-                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-                .color = {text.r, text.g, text.b, 235u},
-            }) != 0)
-    {
-        return false;
-    }
-    dvz_text_set_placement(
-        label,
-        &(DvzTextPlacement){
-            .mode = DVZ_TEXT_PLACEMENT_SCREEN,
-            .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
-            .position = {32.0, 0.5 * HEIGHT - 35.0, 0.0},
-            .text_anchor = {0.5f, 0.5f},
-            .has_text_anchor = true,
-            .angle = -0.25f * TAU,
-        });
-    dvz_text_set_string(label, "m/s");
-    return true;
-}
-
 
 
 /**
@@ -1167,8 +1125,6 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(scale != NULL, "_add_wind_scale() failed");
     DvzColorbar* colorbar = _add_wind_colorbar(panel, scale);
     EXAMPLE_CHECK(colorbar != NULL, "_add_wind_colorbar() failed");
-    ok = _add_colorbar_unit_label(panel);
-    EXAMPLE_CHECK(ok, "_add_colorbar_unit_label() failed");
 
     values = (float*)dvz_calloc((DvzSize)FIELD_WIDTH * FIELD_HEIGHT, sizeof(float));
     EXAMPLE_CHECK(values != NULL, "wind scalar field allocation failed");
