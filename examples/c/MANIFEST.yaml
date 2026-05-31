@@ -77,7 +77,7 @@ examples:
       status_label: supported
 
   - id: lab_gpu_particle_advection
-    title: GPU Particle Advection
+    title: GPU Particle Smoke
     stage: lab
     lane: lab
     source: examples/c/lab/gpu_particle_advection.c

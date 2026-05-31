@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* gpu_particle_advection - scene API compute-to-graphics lab.
+/* gpu_particle_advection - scene API compute-to-graphics smoke lab.
  *
  * Scenario: lab_gpu_particle_advection
- * Style: experimental scene compute, graphite_cyan, optional capture
+ * Style: dense transparent particle smoke, experimental scene compute, optional capture
  *
  * Build:  just example-c lab/gpu_particle_advection
  * Run:    ./build/examples/c/lab/gpu_particle_advection
@@ -39,9 +39,9 @@
 
 #define WIDTH          1600u
 #define HEIGHT         1000u
-#define PARTICLE_COUNT 65536u
+#define PARTICLE_COUNT 262144u
 #define WORKGROUP_SIZE 128u
-#define SIM_SPEED      0.5f
+#define SIM_SPEED      0.65f
 #define SIM_MAX_DT     (1.0f / 30.0f)
 
 static const float TAU = 6.28318530718f;
@@ -71,6 +71,36 @@ static const char* COMPUTE_GLSL =
     "layout(std430, set = 0, binding = 0) readonly buffer Params { vec4 sim; } params;\n"
     "layout(std430, set = 0, binding = 1) buffer Positions { float x[]; } positions;\n"
     "layout(std430, set = 0, binding = 2) buffer Velocities { float v[]; } velocities;\n"
+    "uint hash_u32(uint x) {\n"
+    "    x ^= x >> 16;\n"
+    "    x *= 0x7feb352du;\n"
+    "    x ^= x >> 15;\n"
+    "    x *= 0x846ca68bu;\n"
+    "    x ^= x >> 16;\n"
+    "    return x;\n"
+    "}\n"
+    "float hash01(uint x) {\n"
+    "    return float(hash_u32(x) & 0x00ffffffu) / 16777216.0;\n"
+    "}\n"
+    "vec2 source_pos(uint i, float t) {\n"
+    "    uint epoch = uint(floor(t * 18.0));\n"
+    "    float a = hash01(i * 1664525u + epoch * 1013904223u);\n"
+    "    float b = hash01(i * 22695477u + epoch * 1103515245u);\n"
+    "    float plume = 0.17 * sin(0.43 * t) + 0.06 * sin(1.31 * t);\n"
+    "    return vec2(plume + (a * 2.0 - 1.0) * 0.18, -1.03 + b * 0.13);\n"
+    "}\n"
+    "vec2 curl_flow(vec2 p, float t) {\n"
+    "    float c1 = cos(3.0 * p.x + 2.1 * p.y + 0.63 * t);\n"
+    "    float c2 = cos(-2.4 * p.x + 3.7 * p.y - 0.41 * t);\n"
+    "    float c3 = cos(5.3 * p.x - 1.9 * p.y + 0.27 * t);\n"
+    "    vec2 grad = vec2(\n"
+    "        3.0 * c1 - 2.4 * c2 + 5.3 * c3,\n"
+    "        2.1 * c1 + 3.7 * c2 - 1.9 * c3);\n"
+    "    vec2 curl = vec2(grad.y, -grad.x);\n"
+    "    vec2 rise = vec2(0.10 * sin(2.2 * p.y + 0.7 * t), 0.78);\n"
+    "    vec2 focus = vec2(-0.12 * p.x, -0.04 * p.y);\n"
+    "    return 0.18 * curl + rise + focus;\n"
+    "}\n"
     "void main() {\n"
     "    uint i = gl_GlobalInvocationID.x;\n"
     "    uint count = uint(params.sim.z);\n"
@@ -80,20 +110,17 @@ static const char* COMPUTE_GLSL =
     "    uint j = 3u * i;\n"
     "    vec2 x = vec2(positions.x[j + 0u], positions.x[j + 1u]);\n"
     "    vec2 v = vec2(velocities.v[j + 0u], velocities.v[j + 1u]);\n"
-    "    float k = 2.6 + 0.6 * sin(t * 0.17);\n"
-    "    vec2 swirl = vec2(-x.y, x.x) / (0.16 + dot(x, x));\n"
-    "    vec2 wave = vec2(\n"
-    "        sin(7.0 * x.y + 1.9 * t) + 0.45 * sin(13.0 * x.x - 0.7 * t),\n"
-    "        cos(6.0 * x.x - 1.4 * t) - 0.40 * sin(11.0 * x.y + 0.5 * t));\n"
-    "    vec2 center = 0.20 * vec2(sin(0.31 * t), cos(0.23 * t));\n"
-    "    vec2 pull = normalize(center - x + 1e-4) * 0.08;\n"
-    "    v += dt * (0.50 * k * swirl + 0.16 * wave + pull);\n"
-    "    v *= pow(0.991, dt / (1.0 / 180.0));\n"
+    "    vec2 flow = curl_flow(x, t);\n"
+    "    v = mix(v, flow, clamp(dt * 2.6, 0.0, 1.0));\n"
+    "    v += 0.020 * vec2(\n"
+    "        sin(17.0 * x.y + float(i & 255u) * 0.017 + t),\n"
+    "        cos(19.0 * x.x + float((i >> 8u) & 255u) * 0.013 - t));\n"
+    "    v *= pow(0.986, dt / (1.0 / 120.0));\n"
     "    x += dt * v;\n"
-    "    if (x.x < -1.05) x.x += 2.10;\n"
-    "    if (x.x >  1.05) x.x -= 2.10;\n"
-    "    if (x.y < -1.05) x.y += 2.10;\n"
-    "    if (x.y >  1.05) x.y -= 2.10;\n"
+    "    if (x.y > 1.10 || abs(x.x) > 1.18 || x.y < -1.12) {\n"
+    "        x = source_pos(i, t);\n"
+    "        v = vec2(0.03 * sin(float(i) * 0.11), 0.42 + 0.10 * hash01(i + uint(t * 97.0)));\n"
+    "    }\n"
     "    positions.x[j + 0u] = x.x;\n"
     "    positions.x[j + 1u] = x.y;\n"
     "    positions.x[j + 2u] = 0.0;\n"
@@ -142,10 +169,11 @@ static float _clampf(float x, float lo, float hi)
 static DvzColor _particle_color(float radius, float phase)
 {
     const float t = _clamp01((radius - 0.18f) / 0.78f);
-    const uint8_t r = (uint8_t)(32.0f + 90.0f * t + 20.0f * sinf(phase));
-    const uint8_t g = (uint8_t)(135.0f + 85.0f * (1.0f - 0.35f * t));
-    const uint8_t b = (uint8_t)(205.0f + 45.0f * sinf(0.7f + phase));
-    return dvz_color_rgba(r, g, b, 235);
+    const uint8_t r = (uint8_t)(115.0f + 65.0f * t + 18.0f * sinf(phase));
+    const uint8_t g = (uint8_t)(150.0f + 70.0f * (1.0f - 0.30f * t));
+    const uint8_t b = (uint8_t)(185.0f + 45.0f * sinf(0.6f + phase));
+    const uint8_t a = (uint8_t)(34.0f + 26.0f * (1.0f - t));
+    return dvz_color_rgba(r, g, b, a);
 }
 
 
@@ -159,18 +187,18 @@ static void _init_particles(vec3* positions, vec3* velocities, DvzColor* colors,
     for (uint32_t i = 0; i < PARTICLE_COUNT; i++)
     {
         const float a = TAU * _hash01(i * 3u + 1u);
-        const float r = 0.18f + 0.78f * sqrtf(_hash01(i * 3u + 2u));
+        const float r = sqrtf(_hash01(i * 3u + 2u));
         const float jitter = _hash01(i * 3u + 3u);
-        const float x = r * cosf(a);
-        const float y = r * sinf(a) * 0.92f;
+        const float x = 0.16f * r * cosf(a) + 0.06f * sinf(0.013f * (float)i);
+        const float y = -1.03f + 0.80f * r * r + 0.06f * sinf(a);
         positions[i][0] = x;
         positions[i][1] = y;
         positions[i][2] = 0.0f;
-        velocities[i][0] = -0.16f * y;
-        velocities[i][1] = +0.16f * x;
+        velocities[i][0] = 0.04f * cosf(a);
+        velocities[i][1] = 0.35f + 0.18f * jitter;
         velocities[i][2] = 0.0f;
         colors[i] = _particle_color(r, a);
-        sizes[i] = 1.6f + 2.2f * jitter;
+        sizes[i] = 0.85f + 1.25f * jitter;
     }
 }
 
@@ -280,6 +308,8 @@ int main(int argc, char** argv)
         dvz_visual_set_data(points, "size", sizes, PARTICLE_COUNT) == 0,
         "set point sizes failed");
     EXAMPLE_CHECK(dvz_visual_set_depth_test(points, false) == 0, "disable depth test failed");
+    EXAMPLE_CHECK(
+        dvz_visual_set_alpha_mode(points, DVZ_ALPHA_BLENDED) == 0, "enable alpha blending failed");
     EXAMPLE_CHECK(dvz_panel_add_visual(panel, points, NULL) == 0, "add point visual failed");
 
     DvzSceneCompute* compute = dvz_scene_compute(
@@ -322,11 +352,11 @@ int main(int argc, char** argv)
 
     if (frames == 0)
         printf(
-            "gpu_particle_advection: %u particles, interactive scene compute path\n",
+            "gpu_particle_advection: %u smoke particles, interactive scene compute path\n",
             PARTICLE_COUNT);
     else
         printf(
-            "gpu_particle_advection: %u particles, %u frames, scene compute path\n",
+            "gpu_particle_advection: %u smoke particles, %u frames, scene compute path\n",
             PARTICLE_COUNT, frames);
     rc = 0;
 
