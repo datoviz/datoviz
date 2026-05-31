@@ -10,7 +10,8 @@
  * Style: experimental scene compute, graphite_cyan, optional capture
  *
  * Build:  just example-c lab/gpu_particle_advection
- * Run:    ./build/examples/c/lab/gpu_particle_advection 120
+ * Run:    ./build/examples/c/lab/gpu_particle_advection
+ * Smoke:  ./build/examples/c/lab/gpu_particle_advection 120
  */
 
 
@@ -40,7 +41,7 @@
 #define HEIGHT         1000u
 #define PARTICLE_COUNT 65536u
 #define WORKGROUP_SIZE 128u
-#define DEFAULT_FRAMES 180u
+#define SIM_DT         (1.0f / 180.0f)
 
 static const float TAU = 6.28318530718f;
 
@@ -162,21 +163,10 @@ static void _init_particles(vec3* positions, vec3* velocities, DvzColor* colors,
 }
 
 
-static uint32_t _frame_count(int argc, char** argv)
-{
-    uint32_t frames = example_frame_count(argc, argv);
-    if (frames == 0)
-        frames = DEFAULT_FRAMES;
-    if (frames > 1000)
-        frames = 1000;
-    return frames;
-}
-
-
 static void _params_for_frame(uint32_t frame, vec4 params)
 {
-    params[0] = (float)frame / 60.0f;
-    params[1] = 1.0f / 60.0f;
+    params[0] = (float)frame * SIM_DT;
+    params[1] = SIM_DT;
     params[2] = (float)PARTICLE_COUNT;
     params[3] = 0.0f;
 }
@@ -210,7 +200,7 @@ int main(int argc, char** argv)
     DvzColor* colors = NULL;
     float* sizes = NULL;
 
-    const uint32_t frames = _frame_count(argc, argv);
+    const uint32_t frames = example_frame_count(argc, argv);
     positions = (vec3*)dvz_calloc(PARTICLE_COUNT, sizeof(vec3));
     velocities = (vec3*)dvz_calloc(PARTICLE_COUNT, sizeof(vec3));
     colors = (DvzColor*)dvz_calloc(PARTICLE_COUNT, sizeof(DvzColor));
@@ -314,9 +304,14 @@ int main(int argc, char** argv)
     dvz_app_run(app, frames);
     EXAMPLE_CHECK(dvz_view_capture_stop(win) == 0, "dvz_view_capture_stop() failed");
 
-    printf(
-        "gpu_particle_advection: %u particles, %u frames, scene compute path\n",
-        PARTICLE_COUNT, frames);
+    if (frames == 0)
+        printf(
+            "gpu_particle_advection: %u particles, interactive scene compute path\n",
+            PARTICLE_COUNT);
+    else
+        printf(
+            "gpu_particle_advection: %u particles, %u frames, scene compute path\n",
+            PARTICLE_COUNT, frames);
     rc = 0;
 
 cleanup:
