@@ -119,9 +119,9 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
 
     dvz_add_example(showcases protein showcases/protein.c)
     dvz_add_example(showcases wind_field showcases/wind_field.c)
-    dvz_add_example(showcases gpu_particle_advection showcases/gpu_particle_advection.c)
 
     dvz_add_example(lab axis_lattice_smoke lab/axis_lattice_smoke.c)
+    dvz_add_example(lab gpu_particle_advection lab/gpu_particle_advection.c)
     dvz_add_example(lab point_stress lab/point_stress.c)
     dvz_add_example(lab protein_viewer lab/protein_viewer.c)
     dvz_add_example(lab record_dvzr lab/record_dvzr.c)
