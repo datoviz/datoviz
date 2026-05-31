@@ -40,6 +40,11 @@ Deferred:
 4. reductions, atomics-heavy algorithms, and deterministic parallel-reduction policy;
 5. broad CUDA-owned pointer import as a supported contract.
 
+Longer-term scene compute task scheduling is tracked separately in
+[`../future/SCENE_COMPUTE_TASK_ROADMAP.md`](../future/SCENE_COMPUTE_TASK_ROADMAP.md). That roadmap
+must lower retained scene tasks into `DvzFramePlan`; it must not introduce a second executable graph
+beside FramePlan.
+
 
 ## DRP2 Synchronization Requirement
 

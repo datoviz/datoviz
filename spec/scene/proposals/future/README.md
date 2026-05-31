@@ -34,9 +34,11 @@ making v0.4 implementation depend on speculative public APIs.
 
 1. [OUT_OF_CORE_PROGRESSIVE_DESIGN.md](OUT_OF_CORE_PROGRESSIVE_DESIGN.md): page/chunk residency and
    progressive upload behavior.
-2. [SPLATTING_FRAME_PLAN_REQUIREMENTS.md](SPLATTING_FRAME_PLAN_REQUIREMENTS.md): non-normative
+2. [SCENE_COMPUTE_TASK_ROADMAP.md](SCENE_COMPUTE_TASK_ROADMAP.md): staged path from the v0.4
+   compute-to-graphics slice to retained scene compute tasks that lower into `DvzFramePlan`.
+3. [SPLATTING_FRAME_PLAN_REQUIREMENTS.md](SPLATTING_FRAME_PLAN_REQUIREMENTS.md): non-normative
    frame-plan pressure from scalable Gaussian splatting.
-3. [UNIFIED_RAY_RENDERING.md](UNIFIED_RAY_RENDERING.md): future panel-level ray integration path.
-4. [RAY_TRACING_FORWARD_COMPAT.md](RAY_TRACING_FORWARD_COMPAT.md): non-v0.4-blocking ray-tracing
+4. [UNIFIED_RAY_RENDERING.md](UNIFIED_RAY_RENDERING.md): future panel-level ray integration path.
+5. [RAY_TRACING_FORWARD_COMPAT.md](RAY_TRACING_FORWARD_COMPAT.md): non-v0.4-blocking ray-tracing
    compatibility rationale; current preparation lives in lighting, frame-plan, and unified ray
    rendering specs.
