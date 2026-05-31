@@ -28,6 +28,7 @@ experimental browser scene slice. Treat them as real implementation, not scaffol
 4. Use [../../spec/scene/README.md](../../spec/scene/README.md) before changing scene semantics.
 5. Use [../../spec/drp2/README.md](../../spec/drp2/README.md) before changing DRP2 commands,
    schemas, fixtures, or scene DRP2 emission.
+6. Use [TEST_REFACTORING.md](TEST_REFACTORING.md) for the next test-suite split checkpoint.
 
 
 ## Guardrails
