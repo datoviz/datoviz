@@ -48,6 +48,7 @@ def test_test_inventory_parses_default_and_named_groups() -> None:
     ]
     assert cases[0].lane == "fast-cpu"
     assert cases[1].lane == "runtime-vklite"
+    assert cases[1].case_id == "drp2/vklite-runtime/test_drp2_runtime_vklite_draws_render_pass"
     assert cases[1].resources == ["cpu", "gpu", "vulkan"]
     assert cases[1].fixture == "drp2-vklite-runtime"
 
@@ -80,4 +81,66 @@ def test_test_inventory_classifies_scene_semantic_and_render_cases() -> None:
         "scene-semantic",
         "render-smoke",
         "render-conformance",
+    ]
+
+
+def test_test_inventory_keeps_cpu_resize_cases_semantic() -> None:
+    tool = _load_tool()
+    list_text = "\n".join(
+        [
+            (
+                "scene/axis/panzoom_resize_visual_smoke  "
+                "function=test_axis_panzoom_resize_visual_smoke "
+                "resources=cpu isolation=serial fixture= fixture_scope=none"
+            ),
+            (
+                "canvas/resize_recreate_refreshes_state  "
+                "function=test_canvas_resize_recreate_refreshes_state "
+                "resources=cpu,gpu,vulkan,glfw isolation=process "
+                "fixture= fixture_scope=none"
+            ),
+        ]
+    )
+    groups_text = "\n".join(["scene/axis", "canvas/default"])
+
+    cases = tool.parse_list_output(list_text, groups_text)
+
+    assert [case.lane for case in cases] == ["scene-semantic", "slow-churn"]
+
+
+def test_test_inventory_keeps_video_only_cases_out_of_render_smoke() -> None:
+    tool = _load_tool()
+    list_text = (
+        "video/offline_headless_encode  function=test_video_offline_headless_encode "
+        "resources=filesystem,video isolation=process fixture= fixture_scope=none"
+    )
+    groups_text = "video/default"
+
+    cases = tool.parse_list_output(list_text, groups_text)
+
+    assert cases[0].lane == "fast-cpu"
+
+
+def test_test_inventory_filters_lanes() -> None:
+    tool = _load_tool()
+    list_text = "\n".join(
+        [
+            (
+                "common/alloc/basic  function=test_alloc_basic resources=cpu "
+                "isolation=serial fixture= fixture_scope=none"
+            ),
+            (
+                "scene/query/resolves_sample  function=test_scene_query_resolves_sample "
+                "resources=cpu,gpu,vulkan isolation=serial fixture=scene-app-gpu "
+                "fixture_scope=process"
+            ),
+        ]
+    )
+    groups_text = "\n".join(["common/alloc", "scene/query"])
+
+    cases = tool.parse_list_output(list_text, groups_text)
+    filtered = tool._filter_cases(cases, "render-conformance")
+
+    assert [case.case_id for case in filtered] == [
+        "scene/query/test_scene_query_resolves_sample"
     ]

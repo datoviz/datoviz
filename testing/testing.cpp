@@ -72,7 +72,9 @@ typedef struct TstOptions
     const char* json_path;
     const char* child_json_path;
     const char* parent_json_path;
+    const char* case_list_path;
     const char* shard_policy;
+    std::set<std::string> case_filter;
     bool list;
     bool list_groups;
     bool fail_fast;
@@ -1090,7 +1092,7 @@ static bool _tst_is_option_with_value(const char* arg)
            _tst_streq(arg, "--exclude-tag") || _tst_streq(arg, "--resource") ||
            _tst_streq(arg, "--isolation") || _tst_streq(arg, "--json") ||
            _tst_streq(arg, "--child-json") || _tst_streq(arg, "--parent-json") ||
-           _tst_streq(arg, "--repeat") || _tst_streq(arg, "--seed") ||
+           _tst_streq(arg, "--case-list") || _tst_streq(arg, "--repeat") || _tst_streq(arg, "--seed") ||
            _tst_streq(arg, "--slow") || _tst_streq(arg, "--slow-groups") ||
            _tst_streq(arg, "--timeout") || _tst_streq(arg, "--jobs") ||
            _tst_streq(arg, "--shard-index") || _tst_streq(arg, "--shard-count") ||
@@ -1121,12 +1123,56 @@ static void _tst_print_usage(void)
         stdout,
         "Usage: dvztest [filter] [--module name] [--group name] [--case name]\n"
         "               [--tag tag] [--exclude-tag tag] [--resource name]\n"
-        "               [--isolation mode] [--list] [--list-groups]\n"
+        "               [--isolation mode] [--case-list path]\n"
+        "               [--list] [--list-groups]\n"
         "               [--json path] [--fail-fast] [--repeat count]\n"
         "               [--shuffle --seed seed] [--slow count]\n"
         "               [--slow-groups count] [--timeout ms]\n"
         "               [--jobs count] [--shard-index index --shard-count count]\n"
         "               [--child-json path] [--parent-json path]\n");
+}
+
+
+
+static std::string _tst_trim(const std::string& value)
+{
+    const size_t begin = value.find_first_not_of(" \t\r\n");
+    if (begin == std::string::npos)
+    {
+        return "";
+    }
+    const size_t end = value.find_last_not_of(" \t\r\n");
+    return value.substr(begin, end - begin + 1);
+}
+
+
+
+static int _tst_load_case_list(TstOptions* options)
+{
+    ANN(options);
+    if (options->case_list_path == NULL)
+    {
+        return 0;
+    }
+
+    std::ifstream input(options->case_list_path);
+    if (!input)
+    {
+        dvz_fprintf(stderr, "could not read case list from %s\n", options->case_list_path);
+        return 1;
+    }
+
+    std::string line;
+    while (std::getline(input, line))
+    {
+        std::string value = _tst_trim(line);
+        if (value.empty() || value[0] == '#')
+        {
+            continue;
+        }
+        options->case_filter.insert(value);
+    }
+    return 0;
 }
 
 
@@ -1166,6 +1212,8 @@ static int _tst_parse_options(int argc, char** argv, TstOptions* options)
             options->child_json_path = argv[++i];
         else if (_tst_streq(arg, "--parent-json") && i + 1 < argc)
             options->parent_json_path = argv[++i];
+        else if (_tst_streq(arg, "--case-list") && i + 1 < argc)
+            options->case_list_path = argv[++i];
         else if (_tst_streq(arg, "--repeat") && i + 1 < argc)
             options->repeat = std::max<uint64_t>(1, _tst_parse_u64(argv[++i], 1));
         else if (_tst_streq(arg, "--seed") && i + 1 < argc)
@@ -1215,7 +1263,7 @@ static int _tst_parse_options(int argc, char** argv, TstOptions* options)
             return -1;
         }
     }
-    return 0;
+    return _tst_load_case_list(options);
 }
 
 
@@ -1232,6 +1280,17 @@ static bool _tst_case_matches(const TstCase* test, const TstOptions* options)
     if (options->name != NULL && !_tst_streq(test->name, options->name) &&
         !_tst_streq(test->function_name, options->name))
         return false;
+    if (!options->case_filter.empty())
+    {
+        const std::string case_id = _tst_case_id(test);
+        const std::string display_id = _tst_case_display_id(test);
+        if (options->case_filter.count(case_id) == 0 &&
+            options->case_filter.count(display_id) == 0 &&
+            options->case_filter.count(test->function_name != NULL ? test->function_name : "") == 0)
+        {
+            return false;
+        }
+    }
     if (options->tag != NULL && !_tst_contains(test->tags, options->tag))
         return false;
     if (options->exclude_tag != NULL && _tst_contains(test->tags, options->exclude_tag))

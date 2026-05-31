@@ -192,3 +192,41 @@ def test_dvztest_scheduler_process_isolation_preserves_repeat_order(
         (1, 3),
     ]
     assert all(case["status"] == "PASS" for case in process_cases)
+
+
+def test_dvztest_scheduler_case_list_filters_by_case_id(tmp_path: Path) -> None:
+    case_list = tmp_path / "cases.txt"
+    json_path = tmp_path / "scheduler-case-list.json"
+    case_list.write_text(
+        "\n".join(
+            [
+                "# comments and blanks are ignored",
+                "",
+                "scheduler/policy/parallel-cpu-a",
+                "scheduler/policy/serial-env",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    _run_scheduler(["--case-list", str(case_list), "--json", str(json_path)])
+    data = _load_json(json_path)
+
+    assert data["summary"]["selected"] == 2
+    assert [case["case_id"] for case in data["cases"]] == [
+        "scheduler/policy/parallel-cpu-a",
+        "scheduler/policy/serial-env",
+    ]
+
+
+def test_dvztest_scheduler_case_list_filters_by_display_id(tmp_path: Path) -> None:
+    case_list = tmp_path / "display-cases.txt"
+    json_path = tmp_path / "scheduler-display-case-list.json"
+    case_list.write_text("scheduler/policy/serial-log-capture\n", encoding="utf-8")
+
+    _run_scheduler(["--case-list", str(case_list), "--json", str(json_path)])
+    data = _load_json(json_path)
+
+    assert data["summary"]["selected"] == 1
+    assert data["cases"][0]["case_id"] == "scheduler/policy/serial-log-capture"

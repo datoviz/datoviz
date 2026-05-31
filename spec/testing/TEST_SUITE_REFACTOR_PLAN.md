@@ -151,8 +151,8 @@ pixel-region tests before deleting them outright.
 5. Record release-proof cases separately from broad regression cases.
 
 Initial tooling: [LANE_INVENTORY.md](LANE_INVENTORY.md) defines the metadata-only inventory command
-and optional timing merge. Keep generated inventory files under `build/testing/` while lanes are
-being reviewed.
+case-list lane routing, initial `just test-*` lane recipes, and optional timing merge. Keep generated
+inventory files under `build/testing/` while lanes are being reviewed.
 
 ### Phase 2: Low-Risk Structure
 

@@ -26,6 +26,44 @@ The default command is metadata-only. It queries:
 
 It does not execute test cases.
 
+To emit one reviewed lane and a runner case-list file:
+
+```sh
+python3 tools/test_inventory.py \
+  --lane scene-semantic \
+  --output build/testing/test_inventory_scene-semantic.json \
+  --case-list build/testing/test_lane_scene-semantic.txt
+./build/testing/dvztest --case-list build/testing/test_lane_scene-semantic.txt
+```
+
+The case list contains runner `case_id` values. `dvztest --case-list` also accepts display ids and
+function names for hand-written lists.
+
+
+## Just Recipes
+
+The initial lane recipes are exact case-list wrappers around the inventory:
+
+```sh
+just test-inventory
+just test-inventory scene-semantic
+just test-lane scene-semantic
+just test-fast
+just test-scene-cpu
+just test-drp2-contract
+just test-runtime-vklite
+just test-render-smoke
+just test-render-conformance
+just test-slow
+```
+
+Extra runner arguments may be forwarded to lane recipes, for example:
+
+```sh
+just test-fast --fail-fast
+just test-render-smoke --jobs 4
+```
+
 
 ## Timing Data
 
