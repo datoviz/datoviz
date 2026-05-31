@@ -1098,6 +1098,10 @@ webgpu-runner-smoke:
     @node tools/webgpu_runner_smoke.mjs
 #
 
+webgpu-browser-smoke: wasm-scene-build
+    @node tools/webgpu_browser_smoke.mjs
+#
+
 wasm-env-check:
     #!/usr/bin/env bash
     set -euo pipefail

@@ -106,6 +106,7 @@ Use the browserless checks first:
 just webgpu-fixture-preflight
 just webgpu-runner-smoke
 just wasm-scene-smoke
+just webgpu-browser-smoke
 ```
 
 Then run a local browser server:
@@ -127,3 +128,7 @@ Expected manual results for the current subset:
 - fixture dashboard: all committed rows pass, no unsupported rows, no failures;
 - 2D WASM page: point, primitive, image, and mesh content render; pan/zoom and resize work;
 - 3D WASM page: cube renders; arcball drag, wheel zoom, and resize work.
+
+`just webgpu-browser-smoke` automates the two WASM scene page checks with headless Chrome when
+Chrome/Chromium is available locally. It writes transient PNG evidence under
+`build/webgpu-browser-smoke/`.

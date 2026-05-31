@@ -62,6 +62,10 @@ Current status as of this note:
   visual-family stream shape for point, primitive, RGBA8 image, basic mesh, 2D update streams, and
   3D mesh/arcball update streams; generated 2D and 3D WASM streams pass WebGPU fixture preflight and
   execute through the JS WebGPU runner's repeated-frame resource-stability smoke.
+- recorded automated browser proof on 2026-05-31: `just webgpu-browser-smoke` launches headless
+  Chrome with WebGPU enabled, serves the local repo, renders `wasm_scene.html` and
+  `wasm_scene_3d.html`, exercises pointer and wheel interaction, checks the browser status remains
+  non-error, and writes nonblank canvas PNG captures under `build/webgpu-browser-smoke/`.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
