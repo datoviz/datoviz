@@ -81,10 +81,298 @@ function emitStream(Module, scene, figure, label) {
   const ptr = Module._dvz_wasm_api_payload_ptr(scene);
   const size = Module._dvz_wasm_api_payload_size(scene);
   requireOk(ptr !== 0 && size > 0, `${label} emitted no payload`);
-  const stream = JSON.parse(new TextDecoder().decode(Module.HEAPU8.subarray(ptr, ptr + size)));
+  const payload = new TextDecoder().decode(Module.HEAPU8.subarray(ptr, ptr + size));
+  const stream = JSON.parse(payload);
   requireOk(Array.isArray(stream.commands), `${label} stream has no commands array`);
   requireOk(stream.commands.length > 0, `${label} stream has no commands`);
-  return stream;
+  return { stream, payload, ptr, size };
+}
+
+function commandsOf(stream, cmd) {
+  return stream.commands.filter((command) => command.cmd === cmd);
+}
+
+function countCommands(stream) {
+  const counts = new Map();
+  for (const command of stream.commands) {
+    counts.set(command.cmd, (counts.get(command.cmd) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function expectCommandCount(stream, cmd, expected, label) {
+  const actual = countCommands(stream).get(cmd) ?? 0;
+  requireOk(actual === expected, `${label}: expected ${expected} ${cmd}, got ${actual}`);
+}
+
+function expectNoSetupCommands(stream, label) {
+  for (const cmd of [
+    "CreateBuffer",
+    "CreateTexture",
+    "CreateSampler",
+    "CreateBindGroupLayout",
+    "CreateBindGroup",
+    "CreateShaderModule",
+    "CreateRenderPipeline",
+  ]) {
+    expectCommandCount(stream, cmd, 0, label);
+  }
+}
+
+function expectAllShadersWgsl(stream, label) {
+  const shaders = commandsOf(stream, "CreateShaderModule");
+  for (const shader of shaders) {
+    requireOk(shader.format === "wgsl", `${label}: shader ${shader.id} is ${shader.format}, not wgsl`);
+    requireOk(
+      shader.stage === "VERTEX" || shader.stage === "FRAGMENT" || shader.stage === "COMPUTE",
+      `${label}: shader ${shader.id} has invalid stage ${shader.stage}`,
+    );
+  }
+}
+
+function expectPipelineMetadata(stream, label) {
+  for (const pipeline of commandsOf(stream, "CreateRenderPipeline")) {
+    requireOk(
+      Number.isInteger(pipeline.vertex_buffer_slots) && pipeline.vertex_buffer_slots >= 0,
+      `${label}: render pipeline ${pipeline.id} needs explicit vertex_buffer_slots`,
+    );
+    requireOk(
+      Array.isArray(pipeline.vertex_buffers) &&
+        pipeline.vertex_buffers.length === pipeline.vertex_buffer_slots,
+      `${label}: render pipeline ${pipeline.id} needs explicit matching vertex_buffers`,
+    );
+    for (const vertexBuffer of pipeline.vertex_buffers) {
+      requireOk(
+        vertexBuffer.step_mode === "vertex" || vertexBuffer.step_mode === "instance",
+        `${label}: render pipeline ${pipeline.id} has invalid step_mode ${vertexBuffer.step_mode}`,
+      );
+      requireOk(
+        Array.isArray(vertexBuffer.attributes) && vertexBuffer.attributes.length > 0,
+        `${label}: render pipeline ${pipeline.id} vertex buffer has no attributes`,
+      );
+    }
+    requireOk(
+      Array.isArray(pipeline.bind_group_layout_ids) && pipeline.bind_group_layout_ids.length > 0,
+      `${label}: render pipeline ${pipeline.id} needs explicit bind_group_layout_ids`,
+    );
+    requireOk(
+      Array.isArray(pipeline.color_targets) && pipeline.color_targets.length > 0,
+      `${label}: render pipeline ${pipeline.id} needs explicit color_targets`,
+    );
+    for (const target of pipeline.color_targets) {
+      requireOk(
+        target.format === "rgba8unorm" || target.format === "bgra8unorm" || target.format === "canvas",
+        `${label}: render pipeline ${pipeline.id} has unexpected color target format ${target.format}`,
+      );
+    }
+  }
+}
+
+function pipelineAttributeFormats(pipeline) {
+  return pipeline.vertex_buffers.map((vertexBuffer) => ({
+    stepMode: vertexBuffer.step_mode,
+    formats: vertexBuffer.attributes.map((attribute) => attribute.format),
+  }));
+}
+
+function expectPipeline(stream, label, predicate) {
+  const pipeline = commandsOf(stream, "CreateRenderPipeline").find(predicate);
+  requireOk(pipeline !== undefined, `${label}: missing expected render pipeline`);
+  return pipeline;
+}
+
+function expectDepthPipeline(pipeline, label, writeEnabled = true, compare = "less-equal") {
+  requireOk(pipeline.depth_stencil?.format === "depth32float", `${label}: missing depth32float state`);
+  requireOk(
+    pipeline.depth_stencil.depth_write_enabled === writeEnabled,
+    `${label}: unexpected depth write state`,
+  );
+  requireOk(
+    pipeline.depth_stencil.depth_compare === compare,
+    `${label}: unexpected depth compare ${pipeline.depth_stencil.depth_compare}`,
+  );
+}
+
+function expectCanvasRenderPass(stream, label) {
+  const passes = commandsOf(stream, "BeginRenderPass");
+  requireOk(passes.length === 1, `${label}: expected one render pass, got ${passes.length}`);
+  const pass = passes[0];
+  requireOk(
+    Array.isArray(pass.color_attachments) && pass.color_attachments.length === 1,
+    `${label}: expected one color attachment`,
+  );
+  requireOk(
+    pass.color_attachments[0].texture_id === 0,
+    `${label}: expected browser canvas color target texture_id 0`,
+  );
+  requireOk(
+    pass.depth_stencil_attachment?.texture_id === 0,
+    `${label}: expected browser canvas depth target texture_id 0`,
+  );
+  expectCommandCount(stream, "SetViewport", 1, label);
+  expectCommandCount(stream, "SetScissor", 1, label);
+}
+
+function expectDraw(stream, vertexCount, instanceCount, label) {
+  const found = commandsOf(stream, "Draw").some(
+    (draw) => draw.vertex_count === vertexCount && draw.instance_count === instanceCount,
+  );
+  requireOk(
+    found,
+    `${label}: missing Draw vertex_count=${vertexCount} instance_count=${instanceCount}`,
+  );
+}
+
+function expectFrameCommandShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCanvasRenderPass(stream, label);
+  expectCommandCount(stream, "BeginCommandEncoder", 1, label);
+  expectCommandCount(stream, "EndRenderPass", 1, label);
+  expectCommandCount(stream, "FinishCommandEncoder", 1, label);
+  expectCommandCount(stream, "QueueSubmit", 1, label);
+}
+
+function expectCommonSceneStreamShape(stream, label) {
+  expectFrameCommandShape(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+}
+
+function expect2DSceneStreamShape(stream, label) {
+  expectCommonSceneStreamShape(stream, label);
+  expectDraw(stream, 6, 5, `${label} point`);
+  expectDraw(stream, 3, 1, `${label} primitive`);
+  expectDraw(stream, 4, 1, `${label} image`);
+  expectDraw(stream, 6, 1, `${label} mesh`);
+  const pointPipeline = expectPipeline(
+    stream,
+    `${label} point`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.point",
+  );
+  requireOk(pointPipeline.topology === "triangle-list", `${label} point: unexpected topology`);
+  requireOk(
+    JSON.stringify(pipelineAttributeFormats(pointPipeline)) ===
+      JSON.stringify([
+        { stepMode: "instance", formats: ["float32x3"] },
+        { stepMode: "instance", formats: ["unorm8x4"] },
+        { stepMode: "instance", formats: ["float32"] },
+      ]),
+    `${label} point: unexpected vertex attributes`,
+  );
+  expectDepthPipeline(pointPipeline, `${label} point`);
+  const primitivePipeline = expectPipeline(
+    stream,
+    `${label} primitive`,
+    (pipeline) =>
+      pipeline.builtin_pipeline === "scene.primitive" &&
+      pipeline.vertex_buffer_slots === 2 &&
+      pipeline.topology === "triangle-list",
+  );
+  requireOk(
+    JSON.stringify(pipelineAttributeFormats(primitivePipeline)) ===
+      JSON.stringify([
+        { stepMode: "vertex", formats: ["float32x3"] },
+        { stepMode: "vertex", formats: ["unorm8x4"] },
+      ]),
+    `${label} primitive: unexpected vertex attributes`,
+  );
+  expectDepthPipeline(primitivePipeline, `${label} primitive`);
+  const imagePipeline = expectPipeline(
+    stream,
+    `${label} image`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.image",
+  );
+  requireOk(imagePipeline.topology === "triangle-strip", `${label} image: unexpected topology`);
+  requireOk(
+    JSON.stringify(pipelineAttributeFormats(imagePipeline)) ===
+      JSON.stringify([
+        { stepMode: "vertex", formats: ["float32x3"] },
+        { stepMode: "vertex", formats: ["float32x2"] },
+      ]),
+    `${label} image: unexpected vertex attributes`,
+  );
+  expectDepthPipeline(imagePipeline, `${label} image`, false, "always");
+  const meshPipeline = expectPipeline(
+    stream,
+    `${label} mesh`,
+    (pipeline) =>
+      pipeline.builtin_pipeline === "scene.primitive" &&
+      pipeline.vertex_buffer_slots === 3 &&
+      pipeline.topology === "triangle-list",
+  );
+  requireOk(
+    JSON.stringify(pipelineAttributeFormats(meshPipeline)) ===
+      JSON.stringify([
+        { stepMode: "vertex", formats: ["float32x3"] },
+        { stepMode: "vertex", formats: ["unorm8x4"] },
+        { stepMode: "vertex", formats: ["float32x3"] },
+      ]),
+    `${label} mesh: unexpected vertex attributes`,
+  );
+  expectDepthPipeline(meshPipeline, `${label} mesh`);
+  const textures = commandsOf(stream, "CreateTexture").filter((command) => command.format === "rgba8unorm");
+  const writes = commandsOf(stream, "WriteTexture");
+  requireOk(textures.length === 1, `${label}: expected one RGBA8 image texture, got ${textures.length}`);
+  requireOk(textures[0].width === 8 && textures[0].height === 8, `${label}: unexpected image texture size`);
+  requireOk(
+    textures[0].usage.includes("COPY_DST") && textures[0].usage.includes("TEXTURE_BINDING"),
+    `${label}: image texture needs COPY_DST and TEXTURE_BINDING usage`,
+  );
+  requireOk(writes.length === 1, `${label}: expected one image texture upload, got ${writes.length}`);
+  requireOk(
+    writes[0].texture_id === textures[0].id &&
+      writes[0].size?.width === 8 &&
+      writes[0].size?.height === 8,
+    `${label}: image texture upload does not match texture resource`,
+  );
+  requireOk(writes[0].bytes_per_row === 32, `${label}: unexpected image upload row pitch`);
+  requireOk(
+    commandsOf(stream, "CreateRenderPipeline").length === 4,
+    `${label}: expected point, primitive, image, and mesh pipelines`,
+  );
+}
+
+function expect2DUpdateStreamShape(stream, label) {
+  expectFrameCommandShape(stream, label);
+  expectNoSetupCommands(stream, label);
+  expectDraw(stream, 6, 5, `${label} point`);
+  expectDraw(stream, 3, 1, `${label} primitive`);
+  expectDraw(stream, 4, 1, `${label} image`);
+  expectDraw(stream, 6, 1, `${label} mesh`);
+}
+
+function expect3DSceneStreamShape(stream, label) {
+  expectCommonSceneStreamShape(stream, label);
+  expectDraw(stream, 36, 1, `${label} mesh`);
+  const meshPipeline = expectPipeline(
+    stream,
+    `${label} mesh`,
+    (pipeline) =>
+      pipeline.builtin_pipeline === "scene.primitive" &&
+      pipeline.vertex_buffer_slots === 3 &&
+      pipeline.topology === "triangle-list",
+  );
+  requireOk(
+    JSON.stringify(pipelineAttributeFormats(meshPipeline)) ===
+      JSON.stringify([
+        { stepMode: "vertex", formats: ["float32x3"] },
+        { stepMode: "vertex", formats: ["unorm8x4"] },
+        { stepMode: "vertex", formats: ["float32x3"] },
+      ]),
+    `${label} mesh: unexpected vertex attributes`,
+  );
+  expectDepthPipeline(meshPipeline, `${label} mesh`);
+  requireOk(
+    commandsOf(stream, "CreateRenderPipeline").length === 1,
+    `${label}: expected one 3D mesh pipeline`,
+  );
+}
+
+function expect3DUpdateStreamShape(stream, label) {
+  expectFrameCommandShape(stream, label);
+  expectNoSetupCommands(stream, label);
+  expectDraw(stream, 36, 1, `${label} mesh`);
 }
 
 function makeCubeMesh(size) {
@@ -261,16 +549,27 @@ try {
     const panzoom = Module._dvz_wasm_api_controller(scene, DVZ_CONTROLLER_TYPE_PANZOOM);
     expectStatus(Module._dvz_wasm_api_panel_bind_controller(panel, panzoom, DVZ_DIM_MASK_XY), 0, "api bind panzoom");
     const initial = emitStream(Module, scene, figure, "generic 2D initial");
+    expect2DSceneStreamShape(initial.stream, "generic 2D initial");
     expectStatus(Module._dvz_wasm_api_pointer(scene, DVZ_POINTER_EVENT_PRESS, 32, 32, DVZ_POINTER_BUTTON_LEFT, 0, 1, 200), 0, "api pointer press");
     expectStatus(Module._dvz_wasm_api_pointer(scene, DVZ_POINTER_EVENT_MOVE, 38, 30, DVZ_POINTER_BUTTON_LEFT, 0, 1, 216), 0, "api pointer move");
     expectStatus(Module._dvz_wasm_api_pointer(scene, DVZ_POINTER_EVENT_RELEASE, 38, 30, DVZ_POINTER_BUTTON_LEFT, 0, 1, 232), 0, "api pointer release");
     const interactive = emitStream(Module, scene, figure, "generic 2D interactive");
+    expect2DUpdateStreamShape(interactive.stream, "generic 2D interactive");
+    requireOk(
+      interactive.payload !== initial.payload && interactive.size !== initial.size,
+      "generic 2D interactive payload did not replace initial payload",
+    );
     expectStatus(Module._dvz_wasm_api_resize(scene, figure, smokeSize * 2, smokeSize + 8, 2), 0, "api resize");
     const resized = emitStream(Module, scene, figure, "generic 2D resized");
+    expect2DUpdateStreamShape(resized.stream, "generic 2D resized");
+    requireOk(
+      resized.payload !== interactive.payload,
+      "generic 2D resized payload did not replace interactive payload",
+    );
     await mkdir(dirname(output2dPath), { recursive: true });
-    await writeFile(output2dPath, `${JSON.stringify(initial, null, 2)}\n`, "utf8");
+    await writeFile(output2dPath, `${JSON.stringify(initial.stream, null, 2)}\n`, "utf8");
     console.log(`Wrote ${output2dPath}`);
-    console.log(`commands_api2d=initial:${initial.commands.length} interactive:${interactive.commands.length} resize:${resized.commands.length}`);
+    console.log(`commands_api2d=initial:${initial.stream.commands.length} interactive:${interactive.stream.commands.length} resize:${resized.stream.commands.length}`);
   } finally {
     ptrs.forEach((ptr) => Module._free(ptr));
     Module._dvz_wasm_api_scene_destroy(scene);
@@ -295,13 +594,19 @@ try {
     expectStatus(Module._dvz_wasm_api_panel_bind_controller(panel3d, arcball, DVZ_DIM_MASK_XYZ), 0, "api bind arcball");
     expectStatus(Module._dvz_wasm_api_arcball_initial(arcball, 0.45, -0.65, 0.2), 0, "api arcball initial");
     const initial3d = emitStream(Module, scene3d, figure3d, "generic 3D initial");
+    expect3DSceneStreamShape(initial3d.stream, "generic 3D initial");
     expectStatus(Module._dvz_wasm_api_pointer(scene3d, DVZ_POINTER_EVENT_PRESS, 32, 32, DVZ_POINTER_BUTTON_LEFT, 0, 1, 300), 0, "api 3D pointer press");
     expectStatus(Module._dvz_wasm_api_pointer(scene3d, DVZ_POINTER_EVENT_MOVE, 40, 38, DVZ_POINTER_BUTTON_LEFT, 0, 1, 316), 0, "api 3D pointer move");
     expectStatus(Module._dvz_wasm_api_pointer(scene3d, DVZ_POINTER_EVENT_RELEASE, 40, 38, DVZ_POINTER_BUTTON_LEFT, 0, 1, 332), 0, "api 3D pointer release");
     const interactive3d = emitStream(Module, scene3d, figure3d, "generic 3D interactive");
-    await writeFile(output3dPath, `${JSON.stringify(initial3d, null, 2)}\n`, "utf8");
+    expect3DUpdateStreamShape(interactive3d.stream, "generic 3D interactive");
+    requireOk(
+      interactive3d.payload !== initial3d.payload && interactive3d.size !== initial3d.size,
+      "generic 3D interactive payload did not replace initial payload",
+    );
+    await writeFile(output3dPath, `${JSON.stringify(initial3d.stream, null, 2)}\n`, "utf8");
     console.log(`Wrote ${output3dPath}`);
-    console.log(`commands_api3d=initial:${initial3d.commands.length} interactive:${interactive3d.commands.length}`);
+    console.log(`commands_api3d=initial:${initial3d.stream.commands.length} interactive:${interactive3d.stream.commands.length}`);
   } finally {
     cubePtrs.forEach((ptr) => Module._free(ptr));
     Module._dvz_wasm_api_scene_destroy(scene3d);

@@ -58,6 +58,10 @@ Current status as of this note:
   compatibility `120 pass, 0 unsupported, 0 fail`; retained runtime stress `7 pass, 0 fail`; 2D
   WASM point/primitive/image/mesh page rendered and pan/zoom worked; 3D WASM cube page rendered and
   arcball interaction worked.
+- recorded browserless WASM robustness proof on 2026-05-31: `just wasm-scene-smoke` validates
+  visual-family stream shape for point, primitive, RGBA8 image, basic mesh, 2D update streams, and
+  3D mesh/arcball update streams; generated 2D and 3D WASM streams pass WebGPU fixture preflight and
+  execute through the JS WebGPU runner's repeated-frame resource-stability smoke.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

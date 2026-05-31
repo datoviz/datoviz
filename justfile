@@ -1164,6 +1164,9 @@ wasm-scene-smoke: wasm-scene-build
     @node tools/wasm_scene_smoke.mjs
     @python3 tools/webgpu_fixture_preflight.py build-wasm-scene/wasm/wasm_api_scene_point_primitive_image_mesh_panzoom.json
     @python3 tools/webgpu_fixture_preflight.py build-wasm-scene/wasm/wasm_api_scene_mesh3d_arcball.json
+    @node tools/webgpu_runner_smoke.mjs --streams-only \
+        build-wasm-scene/wasm/wasm_api_scene_point_primitive_image_mesh_panzoom.json \
+        build-wasm-scene/wasm/wasm_api_scene_mesh3d_arcball.json
 #
 
 shader-abi-check:

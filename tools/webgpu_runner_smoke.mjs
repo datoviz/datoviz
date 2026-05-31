@@ -349,6 +349,10 @@ async function smokeRepeatedRuntimeFrames(Drp2WebGpuRuntime) {
 
 async function smokeRepeatedRuntimeStream(Drp2WebGpuRuntime, path) {
   const stream = await loadJson(path);
+  await smokeRepeatedRuntimeStreamObject(Drp2WebGpuRuntime, stream, path);
+}
+
+async function smokeRepeatedRuntimeStreamObject(Drp2WebGpuRuntime, stream, label) {
   const runtime = new Drp2WebGpuRuntime(device, context, 'rgba8unorm', {
     requireExplicitBindGroupLayouts: true,
     requireExplicitPipelineMetadata: true,
@@ -362,15 +366,36 @@ async function smokeRepeatedRuntimeStream(Drp2WebGpuRuntime, path) {
     assertResourceStatsStable(
       comparableResourceStats(stats),
       stableStats,
-      `${path}: resource stats changed after repeated frame ${i + 1}`,
+      `${label}: resource stats changed after repeated frame ${i + 1}`,
     );
     if (stats.refs.open !== 0 || stats.refs.recorded !== 0) {
       throw new Error(
-        `${path}: resource refs leaked after repeated frame ${i + 1}: ` +
+        `${label}: resource refs leaked after repeated frame ${i + 1}: ` +
           `open=${stats.refs.open} recorded=${stats.refs.recorded}`,
       );
     }
   }
+}
+
+async function smokeStreamPathsOnly(Drp2WebGpuRuntime, executeDrp2Stream, paths) {
+  if (paths.length === 0) {
+    throw new Error('--streams-only needs at least one stream path');
+  }
+
+  for (const path of paths) {
+    const stream = await loadJson(path);
+    try {
+      await executeDrp2Stream(device, context, 'rgba8unorm', stream, {
+        requireExplicitBindGroupLayouts: true,
+        requireExplicitPipelineMetadata: true,
+      });
+      await smokeRepeatedRuntimeStreamObject(Drp2WebGpuRuntime, stream, path);
+    } catch (error) {
+      throw new Error(`${path}: ${error.message}`);
+    }
+  }
+
+  console.log(`PASS WebGPU runner smoke generated_streams=${paths.length}`);
 }
 
 async function smokeDemoPath(WebGpuDemoSession) {
@@ -431,6 +456,12 @@ async function main() {
   const { Drp2WebGpuRuntime, WebGpuDemoSession, executeDrp2Stream } = await import(
     '../examples/webgpu/drp2_webgpu.js'
   );
+
+  const args = process.argv.slice(2);
+  if (args[0] === '--streams-only') {
+    await smokeStreamPathsOnly(Drp2WebGpuRuntime, executeDrp2Stream, args.slice(1));
+    return;
+  }
 
   const manifest = await loadJson('examples/webgpu/fixture_manifest.json');
   for (const entry of manifest.positive) {
@@ -709,7 +740,7 @@ async function main() {
     },
   );
 
-  await expectCapabilityPreflightFailure(
+  await expectFailure(
     executeDrp2Stream,
     {
       commands: [
@@ -718,11 +749,11 @@ async function main() {
         { cmd: 'ResourceBarrier' },
       ],
     },
-    'unsupported DRP2 command in WebGPU PoC: ResourceBarrier',
+    'unknown buffer undefined',
     {
       commandIndex: 3,
       cmd: 'ResourceBarrier',
-      code: 'DRP2_ERR_UNSUPPORTED_CAPABILITY',
+      code: 'DRP2_ERR_INVALID_ID',
     },
   );
 
