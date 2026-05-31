@@ -508,6 +508,17 @@ static void _scene_commit_emit_success(DvzFigure* figure)
                 _visual_family_state(visual)->labels_realized_version = _visual_family_state(visual)->labels.version;
         }
     }
+    for (uint32_t ci = 0; ci < figure->compute_count; ci++)
+    {
+        DvzSceneCompute* compute = figure->computes[ci];
+        if (compute == NULL)
+            continue;
+        for (uint32_t bi = 0; bi < compute->binding_count; bi++)
+        {
+            if (compute->bindings[bi].active && compute->bindings[bi].buffer != NULL)
+                compute->bindings[bi].buffer->dirty = false;
+        }
+    }
     for (uint32_t i = 0; i < figure->scene->field_count; i++)
         _scene_refresh_field_dirty_state(figure->scene, &figure->scene->fields[i]);
 }
@@ -640,6 +651,12 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
         return NULL;
 
     _scene_emit_visual_uploads(figure, plan, report);
+    if (!_scene_emit_compute_passes(figure, plan, report))
+    {
+        (void)dvz_diagnostic_report_add(report, "scene compute FramePlan emission failed");
+        dvz_frame_plan_destroy(plan);
+        return NULL;
+    }
 
     bool panels_ok = true;
     uint32_t graph_report_start = dvz_diagnostic_report_count(report);

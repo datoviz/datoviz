@@ -43,6 +43,7 @@ bool dvz_frame_plan_compute(
         return false;
     _frame_plan_copy_label(
         node->u.compute.shader_key, DVZ_SCENE_LABEL_SIZE, shader_key ? shader_key : "");
+    node->u.compute.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
     node->u.compute.dispatch[0] = x;
     node->u.compute.dispatch[1] = y;
     node->u.compute.dispatch[2] = z;

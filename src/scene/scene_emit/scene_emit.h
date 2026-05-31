@@ -28,6 +28,9 @@
 void _scene_emit_visual_uploads(
     DvzFigure* figure, DvzFramePlan* plan, DvzDiagnosticReport* report);
 
+bool _scene_emit_compute_passes(
+    DvzFigure* figure, DvzFramePlan* plan, DvzDiagnosticReport* report);
+
 bool _scene_emit_panel_render(
     DvzFigure* figure, uint32_t panel_index, DvzFramePlan* plan, const char* figure_id);
 

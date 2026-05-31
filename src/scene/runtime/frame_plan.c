@@ -58,9 +58,11 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     const DvzFramePlanNode* clear = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_CLEAR);
     const DvzFramePlanNode* copy = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COPY);
     const DvzFramePlanNode* readback = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_READBACK);
+    bool scene_compute = compute != NULL && compute->u.compute.binding_count > 0;
     bool clear_only = compute == NULL && clear != NULL && render == NULL;
     bool retained_render =
-        upload == NULL && compute == NULL && render != NULL && render->u.render.visual_count > 0;
+        upload == NULL && (compute == NULL || scene_compute) && render != NULL &&
+        render->u.render.visual_count > 0;
 
     if ((!clear_only && !retained_render && upload == NULL) || (!clear_only && render == NULL))
     {
@@ -106,11 +108,7 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     {
         if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_UPLOAD)
         {
-            if (compute != NULL)
-            {
-                ok = _emitter_emit_compute_buffers(emitter, stream, &plan->nodes[i], compute);
-            }
-            else if (texture_render)
+            if (texture_render)
             {
                 ok = _emitter_emit_texture_upload(emitter, stream, &plan->nodes[i], &texture_id);
             }
@@ -124,9 +122,12 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
         }
     }
 
+    if (ok && scene_compute)
+        ok = _emitter_emit_compute_passes(emitter, stream, plan, cfg, report);
+
     ok = ok &&
          (clear_only ? _emitter_emit_clear_only(emitter, stream, clear, copy, true, cfg)
-          : compute != NULL
+          : compute != NULL && !scene_compute
               ? _emitter_emit_compute_assisted_render(emitter, stream, compute, copy, cfg)
           : texture_render ? _emitter_emit_texture_render(emitter, stream, texture_id, copy, cfg)
                            : _emitter_emit_plain_renders(

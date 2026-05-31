@@ -387,6 +387,16 @@ typedef struct DvzSceneViewportUniform
 } DvzSceneViewportUniform;
 
 
+typedef struct DvzFramePlanComputeBinding
+{
+    uint32_t binding;
+    char resource_id[DVZ_SCENE_LABEL_SIZE];
+    DvzSceneComputeAccess access;
+    uint64_t byte_offset;
+    uint64_t byte_size;
+} DvzFramePlanComputeBinding;
+
+
 
 struct DvzFramePlanNode
 {
@@ -426,7 +436,11 @@ struct DvzFramePlanNode
         struct
         {
             char shader_key[DVZ_SCENE_LABEL_SIZE];
+            DvzSceneShaderFormat shader_format;
+            const char* shader_source;
             uint32_t dispatch[3];
+            uint32_t binding_count;
+            DvzFramePlanComputeBinding bindings[DVZ_SCENE_MAX_NODE_RESOURCES];
             uint32_t read_count;
             char reads[DVZ_SCENE_MAX_NODE_RESOURCES][DVZ_SCENE_LABEL_SIZE];
             uint32_t write_count;

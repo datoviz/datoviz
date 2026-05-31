@@ -4088,6 +4088,123 @@ int test_scene_point_storage_position_buffer_emits_usage(TstContext* suite, cons
 }
 
 
+int test_scene_compute_point_position_buffer_emits_drp2(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    vec3 positions[3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {+0.5f, -0.5f, 0.0f},
+        { 0.0f, +0.5f, 0.0f},
+    };
+    DvzSceneBuffer* position = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
+                   .stride = sizeof(vec3),
+                   .byte_size = sizeof(positions),
+               });
+    ANN(position);
+    AT(dvz_scene_buffer_set_data(position, positions, sizeof(positions)));
+    AT(dvz_visual_set_attr_buffer(visual, "position", position, 0, 3));
+
+    vec4 params = {0.0f, 0.0f, 3.0f, 0.0f};
+    DvzSceneBuffer* param = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_STORAGE,
+                   .stride = sizeof(vec4),
+                   .byte_size = sizeof(params),
+               });
+    ANN(param);
+    AT(dvz_scene_buffer_set_data(param, &params, sizeof(params)));
+
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+    float sizes[3] = {4.0f, 5.0f, 6.0f};
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    const char* shader =
+        "#version 450\n"
+        "layout(local_size_x = 1) in;\n"
+        "layout(std430, set = 0, binding = 0) readonly buffer Params { vec4 p; } params;\n"
+        "layout(std430, set = 0, binding = 1) buffer Positions { float x[]; } positions;\n"
+        "void main() {\n"
+        "    uint i = gl_GlobalInvocationID.x;\n"
+        "    if (i >= uint(params.p.z)) return;\n"
+        "    positions.x[3u * i + 0u] += 0.0;\n"
+        "}\n";
+    DvzSceneCompute* compute = dvz_scene_compute(
+        scene, &(DvzSceneComputeDesc){
+                   .label = "test_compute_points",
+                   .shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL,
+                   .shader_source = shader,
+                   .dispatch = {3, 1, 1},
+               });
+    ANN(compute);
+    AT(dvz_scene_compute_set_buffer(
+        compute, 0, param, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, sizeof(params)));
+    AT(dvz_scene_compute_set_buffer(
+        compute, 1, position, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0, sizeof(positions)));
+    AT(dvz_figure_add_compute(figure, compute));
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    uint64_t position_buffer_id = 0;
+    bool found_compute_pipeline = false;
+    bool found_dispatch = false;
+    bool found_barrier = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER &&
+            cmd->u.set_vertex_buffer.slot == 0)
+            position_buffer_id = cmd->u.set_vertex_buffer.buffer_id;
+        found_compute_pipeline =
+            found_compute_pipeline || cmd->type == DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE;
+        found_dispatch = found_dispatch || cmd->type == DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS;
+    }
+    AT(position_buffer_id != 0);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_RESOURCE_BARRIER &&
+            cmd->u.resource_barrier.buffer_id == position_buffer_id)
+            found_barrier = true;
+    }
+    AT(found_compute_pipeline);
+    AT(found_dispatch);
+    AT(found_barrier);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_point_external_position_buffer_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

@@ -39,6 +39,7 @@
 #include "_visual_internal.h"
 #include "core/frame_trace_internal.h"
 #include "domain/buffer_internal.h"
+#include "domain/compute_internal.h"
 #include "domain/field_internal.h"
 #include "domain/polygon_internal.h"
 #include "query/internal.h"
@@ -156,6 +157,8 @@ void dvz_scene_destroy(DvzScene* scene)
         _scene_field_reset(&scene->fields[i]);
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_BUFFERS; i++)
         _scene_buffer_reset(&scene->buffers[i]);
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_COMPUTES; i++)
+        _scene_compute_reset(&scene->computes[i]);
     for (uint32_t i = 0; i < scene->selection_count; i++)
         scene->selections[i].scene = NULL;
     for (uint32_t i = 0; i < scene->hover_count; i++)

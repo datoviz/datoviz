@@ -1247,6 +1247,82 @@ DVZ_EXPORT const DvzSceneBufferDesc* dvz_scene_buffer_desc(const DvzSceneBuffer*
 
 
 /**
+ * Create an experimental scene-owned compute pass.
+ *
+ * The compute pass owns no backend handles. It stores shader source, dispatch dimensions, and
+ * buffer bindings that are lowered into DRP2 before figure render passes.
+ *
+ * @param scene the scene
+ * @param desc the compute descriptor
+ * @return the compute pass, or NULL on error
+ */
+DVZ_EXPORT DvzSceneCompute*
+dvz_scene_compute(DvzScene* scene, const DvzSceneComputeDesc* desc);
+
+
+/**
+ * Destroy a scene-owned compute pass and detach it from all figures.
+ *
+ * @param compute the compute pass
+ */
+DVZ_EXPORT void dvz_scene_compute_destroy(DvzSceneCompute* compute);
+
+
+/**
+ * Set the dispatch size for a scene compute pass.
+ *
+ * @param compute the compute pass
+ * @param x workgroup count in X
+ * @param y workgroup count in Y
+ * @param z workgroup count in Z
+ * @return true on success, false on error
+ */
+DVZ_EXPORT bool
+dvz_scene_compute_set_dispatch(DvzSceneCompute* compute, uint32_t x, uint32_t y, uint32_t z);
+
+
+/**
+ * Bind a scene buffer to one compute shader binding.
+ *
+ * The buffer must advertise `DVZ_SCENE_BUFFER_USAGE_STORAGE`. The first slice supports storage
+ * buffers only. Ranges are passed through to the DRP2 bind group.
+ *
+ * @param compute the compute pass
+ * @param binding shader binding index
+ * @param buffer scene buffer, or NULL to clear the binding
+ * @param access read or read-write access
+ * @param byte_offset byte offset into the buffer
+ * @param byte_size bound byte range, or 0 for the remaining buffer range
+ * @return true on success, false on error
+ */
+DVZ_EXPORT bool dvz_scene_compute_set_buffer(
+    DvzSceneCompute* compute, uint32_t binding, DvzSceneBuffer* buffer,
+    DvzSceneComputeAccess access, uint64_t byte_offset, uint64_t byte_size);
+
+
+/**
+ * Attach a scene compute pass to a figure.
+ *
+ * Attached compute passes are emitted before the figure render passes.
+ *
+ * @param figure the figure
+ * @param compute the compute pass
+ * @return true on success, false on error
+ */
+DVZ_EXPORT bool dvz_figure_add_compute(DvzFigure* figure, DvzSceneCompute* compute);
+
+
+/**
+ * Detach a scene compute pass from a figure.
+ *
+ * @param figure the figure
+ * @param compute the compute pass
+ * @return true on success, false on error
+ */
+DVZ_EXPORT bool dvz_figure_remove_compute(DvzFigure* figure, DvzSceneCompute* compute);
+
+
+/**
  * Bind a scene-owned buffer to a named visual slot.
  *
  * First retained slice: primitive and mesh visuals accept the `"index"` slot. The bound scene

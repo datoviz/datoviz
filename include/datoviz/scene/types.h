@@ -54,6 +54,7 @@ typedef struct DvzFigure            DvzFigure;
 typedef struct DvzGrid              DvzGrid;
 typedef struct DvzPanel             DvzPanel;
 typedef struct DvzVisual            DvzVisual;
+typedef struct DvzSceneCompute      DvzSceneCompute;
 typedef struct DvzComposite         DvzComposite;
 typedef struct DvzPolygon           DvzPolygon;
 typedef struct DvzPolygonSet        DvzPolygonSet;
@@ -394,6 +395,24 @@ struct DvzSceneBufferDesc
     uint64_t byte_size;
 };
 typedef struct DvzSceneBufferDesc DvzSceneBufferDesc;
+
+
+typedef enum
+{
+    DVZ_SCENE_COMPUTE_ACCESS_READ = 0,
+    DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE,
+} DvzSceneComputeAccess;
+
+
+struct DvzSceneComputeDesc
+{
+    const char* label;
+    DvzSceneShaderFormat shader_format;
+    const char* shader_source;
+    const char* entry_point;
+    uint32_t dispatch[3];
+};
+typedef struct DvzSceneComputeDesc DvzSceneComputeDesc;
 
 
 struct DvzPhongMaterial

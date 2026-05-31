@@ -47,6 +47,7 @@
 #define DVZ_SCENE_MAX_POLYGON_SETS 32
 #define DVZ_SCENE_MAX_FIELDS     128
 #define DVZ_SCENE_MAX_BUFFERS    128
+#define DVZ_SCENE_MAX_COMPUTES   64
 #define DVZ_SCENE_MAX_SCALES     64
 #define DVZ_SCENE_MAX_COLORMAPS  64
 #define DVZ_SCENE_MAX_COLORBARS  64
@@ -244,6 +245,7 @@ typedef struct DvzVisual  DvzVisual;
 typedef struct DvzVisualFamilyOps DvzVisualFamilyOps;
 typedef struct DvzSampledField DvzSampledField;
 typedef struct DvzSceneBuffer DvzSceneBuffer;
+typedef struct DvzSceneCompute DvzSceneCompute;
 typedef struct DvzScale   DvzScale;
 typedef struct DvzColormap DvzColormap;
 typedef struct DvzColorbar DvzColorbar;
@@ -1097,6 +1099,28 @@ struct DvzSceneBuffer
 };
 
 
+typedef struct DvzSceneComputeBinding
+{
+    bool active;
+    uint32_t binding;
+    DvzSceneBuffer* buffer;
+    DvzSceneComputeAccess access;
+    uint64_t byte_offset;
+    uint64_t byte_size;
+} DvzSceneComputeBinding;
+
+
+struct DvzSceneCompute
+{
+    DvzScene* scene;
+    DvzSceneComputeDesc desc;
+    char label[DVZ_SCENE_LABEL_SIZE];
+    uint32_t dispatch[3];
+    uint32_t binding_count;
+    DvzSceneComputeBinding bindings[DVZ_SCENE_MAX_NODE_RESOURCES];
+};
+
+
 typedef struct DvzSceneMaterialParams DvzSceneMaterialParams;
 
 struct DvzSceneMaterialParams
@@ -1657,6 +1681,8 @@ struct DvzFigure
     DvzPanel   panels[DVZ_SCENE_MAX_PANELS];
     uint32_t   grid_count;
     DvzGrid    grids[DVZ_SCENE_MAX_GRIDS];
+    uint32_t   compute_count;
+    DvzSceneCompute* computes[DVZ_SCENE_MAX_COMPUTES];
 
     char* last_frame_plan_trace;
     bool has_last_frame_plan_trace;
@@ -1709,6 +1735,9 @@ struct DvzScene
 
     uint32_t buffer_count;
     DvzSceneBuffer buffers[DVZ_SCENE_MAX_BUFFERS];
+
+    uint32_t compute_count;
+    DvzSceneCompute computes[DVZ_SCENE_MAX_COMPUTES];
 
     uint32_t scale_count;
     DvzScale scales[DVZ_SCENE_MAX_SCALES];

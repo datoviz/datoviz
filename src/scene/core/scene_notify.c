@@ -191,6 +191,20 @@ void _scene_notify_buffer_changed(DvzSceneBuffer* buffer)
                 }
             }
         }
+        for (uint32_t ci = 0; ci < figure->compute_count && !uses_buffer; ci++)
+        {
+            DvzSceneCompute* compute = figure->computes[ci];
+            if (compute == NULL)
+                continue;
+            for (uint32_t bi = 0; bi < compute->binding_count; bi++)
+            {
+                if (compute->bindings[bi].active && compute->bindings[bi].buffer == buffer)
+                {
+                    uses_buffer = true;
+                    break;
+                }
+            }
+        }
         if (uses_buffer)
             _scene_notify_request_frame(figure);
     }

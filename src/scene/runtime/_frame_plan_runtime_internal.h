@@ -412,6 +412,9 @@ bool _emitter_emit_plain_renders(
     const uint64_t* fallback_vertex_buffer_ids, uint32_t fallback_vertex_buffer_count,
     const DvzFramePlanNode* readback, const DvzFramePlanEmitConfig* cfg,
     DvzDiagnosticReport* report);
+bool _emitter_emit_compute_passes(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const DvzFramePlanEmitConfig* cfg, DvzDiagnosticReport* report);
 bool _emitter_emit_clear_only(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* clear_node,
     const DvzFramePlanNode* readback, bool clear, const DvzFramePlanEmitConfig* cfg);
