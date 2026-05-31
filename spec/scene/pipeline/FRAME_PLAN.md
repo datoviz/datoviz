@@ -112,10 +112,17 @@ per-node read/write sets. It must express:
 
 - upload before first use;
 - compute before render/copy/readback consumers;
+- compute `STORAGE` writes before visual vertex reads, including a lowering path to DRP2
+  `ResourceBarrier`;
 - picking render before picking readback;
 - offscreen render before export readback;
 - panel-local ordering;
 - cross-panel shared-resource ordering.
+
+Scene compute objects lower to `ComputeNode` entries. Their declared buffer bindings define the
+node read/write sets, and explicit ordering such as `compute before visual` decides where the node
+appears relative to normal render nodes. Dispatch dimensions are frame-varying scene state: they may
+be initialized in the compute descriptor and changed before a later frame is emitted.
 
 ## Capability Adaptation And Diagnostics
 
@@ -150,13 +157,14 @@ Scene objects contribute:
 | `Visual` | draw items, stage participation, resource requirements |
 | `Resource` | creation intent, dirty ranges, sharing information |
 | `Animation` / `Controller` | state changes before planning begins |
+| `Compute` | custom compute shader identity, dispatch state, buffer bindings, and visual ordering |
 
 DRP2 conversion:
 
 | FramePlan node | DRP2 category |
 |---|---|
 | Upload | resource creation/write commands |
-| Compute | compute-pass commands |
+| Compute | compute-pass commands plus required resource barriers for downstream consumers |
 | Render | render-pass commands and draws |
 | Copy | DRP2 copy commands |
 | Readback | `QueueSubmit.readbacks` and reply routing metadata |
@@ -172,4 +180,5 @@ The first IR is acceptable only if it can represent:
 2. dynamic buffer updates without whole-scene rebuild;
 3. picking pass plus single-pixel readback;
 4. offscreen rendering plus deterministic image readback;
-5. one compute-assisted visual path followed by rendering.
+5. one compute-assisted visual path followed by rendering;
+6. a compute dispatch whose dimensions change between emitted frames.

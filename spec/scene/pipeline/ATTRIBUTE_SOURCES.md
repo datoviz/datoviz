@@ -29,6 +29,7 @@ Attribute layout hints may express producer and update behavior without exposing
 | Hint use | Example | Planning implication |
 |---|---|---|
 | external/frequent producer | CUDA/CuPy writes `position` every frame | keep independent external/synchronized buffer |
+| scene compute producer | compute shader writes particle state each frame | allocate a storage-capable visual buffer |
 | static style attributes | `color` + `size` rarely change together | may interleave or coalesce |
 | streaming attribute | per-frame values | ring/persistent staging if available |
 
@@ -76,6 +77,38 @@ dvz_visual_set_data_range(visual, attr_name, data, first_item, item_count)
 For the active point visual, `position`, `color`, and `size` are dense per-item attributes with the
 same `item_count`. There is not yet installed API for `CONSTANT`, `PER_SPAN`, or `PER_GROUP`
 builtin visual attributes. The full source model below is intended API direction.
+
+
+## GPU-Produced Attributes
+
+The compute-to-graphics first slice treats `DvzSceneBuffer` as the shared scene resource between
+custom compute and normal visuals. A buffer may advertise both visual and compute roles:
+
+```c
+DvzSceneBufferDesc desc = {
+    .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
+    .stride = sizeof(Particle),
+    .byte_size = particle_count * sizeof(Particle),
+};
+```
+
+If a visual attribute binds to a scene buffer that is also written by a scene compute pass, the
+FramePlan must emit compute before render and the scene-to-DRP2 converter must insert the required
+storage-write to vertex-read barrier.
+
+Interleaved GPU-produced attributes are expected for particles and similar workloads. The scene
+buffer stride names the full item layout, while each visual attribute binding supplies a byte
+offset and item count:
+
+```c
+dvz_visual_set_attr_buffer(visual, "position", particles, offsetof(Particle, position), count);
+dvz_visual_set_attr_buffer(visual, "color", particles, offsetof(Particle, color), count);
+dvz_visual_set_attr_buffer(visual, "size", particles, offsetof(Particle, size), count);
+```
+
+The scene still owns semantic validation. The compute shader may write implementation fields such
+as velocity or age that are not visual attributes, but the visual can only bind attributes supported
+by its family contract.
 
 
 ## Intended Source-Specific API

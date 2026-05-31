@@ -1,7 +1,7 @@
 Execution Status:
 
 - Status: active v0.4 experimental-slice plan
-- Updated on: 2026-05-30
+- Updated on: 2026-05-31
 - Purpose: define the minimal compute-to-graphics and native CUDA interop work that may ship in
   v0.4 without turning Datoviz into a general custom-shader or CUDA framework
 - Scope: C-first native runtime, DRP2 compute/synchronization, WebGPU parity for the portable
@@ -63,6 +63,60 @@ Rules:
 4. native Vulkan maps the marker to an explicit pipeline barrier.
 
 
+## Scene API Shape
+
+The scene-facing compute API should be a narrow experimental layer above the DRP2 contract, not a
+general custom-renderer framework. The intended user model is:
+
+```text
+scene buffer with VERTEX | STORAGE usage
+  -> scene compute pass writes the buffer
+  -> FramePlan emits ResourceBarrier
+  -> normal scene visual reads the same buffer as vertex attributes
+```
+
+The first public object should be a `DvzSceneCompute` attached to a scene. It owns no window,
+swapchain, command buffer, or backend handle. It stores:
+
+1. an explicit shader format and custom compute shader source;
+2. an optional entry point, defaulting to `main`;
+3. a mutable dispatch size;
+4. declared buffer bindings with read/write access;
+5. ordering constraints, initially `compute before visual`.
+
+The descriptor may carry the initial dispatch:
+
+```c
+DvzSceneComputeDesc desc = {
+    .shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL,
+    .shader_source = source,
+    .dispatch = {x, y, z},
+};
+```
+
+Dispatch is scene state, not immutable shader state. A setter such as
+`dvz_scene_compute_set_dispatch(compute, x, y, z)` should mark the scene dirty so particle counts,
+adaptive grids, and selection/query workloads may change between frames. Fixed dispatch remains the
+common path; animation parameters such as time, `dt`, forces, and counts should usually be updated
+through a small scene buffer instead.
+
+Custom shader source is an intentional abstraction leak for compute. Built-in visuals continue to
+hide shader code because they expose semantic marks. Custom compute asks Datoviz to run user-defined
+GPU logic, so the API must identify the shader format and source explicitly. The leak should remain
+contained to `DvzSceneCompute`; normal visuals should consume scene buffers through existing visual
+attribute bindings.
+
+The initial C example should therefore be a live GLFW scene example:
+
+```text
+DvzScene / DvzFigure / DvzPanel
+  -> DvzSceneBuffer particles: VERTEX | STORAGE
+  -> DvzVisual point attributes bound to particle-buffer offsets
+  -> DvzSceneCompute updates the particle buffer every frame
+  -> dvz_view_glfw() presents normal scene rendering
+```
+
+
 ## Preferred Gallery Example
 
 The preferred v0.4 showcase is GPU particle advection:
@@ -95,8 +149,8 @@ Secondary examples, after the particle path works:
 2. Promote minimal DRP2 synchronization semantics.
 3. Add native vklite barrier execution and focused GPU tests.
 4. Add or update WebGPU fixture-runner parity for the portable compute-to-render subset.
-5. Generalize scene `FramePlan` compute metadata only as much as the particle example requires.
-6. Build the C particle-advection gallery example.
+5. Add the narrow scene `DvzSceneCompute` API and lowering required by the particle example.
+6. Build the live GLFW scene particle-advection gallery example.
 7. Add optional CUDA SDK example if the native external-memory path remains low-risk.
 8. Publish documentation for support level, unsupported variants, and validation commands.
 

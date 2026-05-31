@@ -85,6 +85,15 @@ This resolves the apparent discrepancy between native built-in shader authoring 
 transport contract: authoring language is an implementation choice; DRP2 shader module format is
 the runtime-facing contract.
 
+Scene compute interop is a narrower API than custom visuals. `DvzSceneCompute` may accept custom
+compute shader source because its purpose is to run user-defined GPU work, but that does not imply
+that built-in visuals expose their vertex or fragment shaders. The intended boundary is:
+
+1. custom compute writes scene buffers;
+2. normal visuals consume those buffers through declared attributes;
+3. the FramePlan records dependencies and barriers;
+4. custom visual shaders remain a separate, broader feature.
+
 **Shader hot reload** is not supported in v0.4. To update a custom visual's shaders, the visual
 must be destroyed and recreated.
 
