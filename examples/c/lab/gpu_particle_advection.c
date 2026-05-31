@@ -71,6 +71,9 @@ static const char* COMPUTE_GLSL =
     "layout(std430, set = 0, binding = 0) readonly buffer Params { vec4 sim; } params;\n"
     "layout(std430, set = 0, binding = 1) buffer Positions { float x[]; } positions;\n"
     "layout(std430, set = 0, binding = 2) buffer Velocities { float v[]; } velocities;\n"
+    "layout(std430, set = 0, binding = 3) buffer Ages { float age[]; } ages;\n"
+    "layout(std430, set = 0, binding = 4) buffer Colors { uint rgba[]; } colors;\n"
+    "layout(std430, set = 0, binding = 5) buffer Sizes { float size[]; } sizes;\n"
     "uint hash_u32(uint x) {\n"
     "    x ^= x >> 16;\n"
     "    x *= 0x7feb352du;\n"
@@ -101,6 +104,21 @@ static const char* COMPUTE_GLSL =
     "    vec2 focus = vec2(-0.12 * p.x, -0.04 * p.y);\n"
     "    return 0.18 * curl + rise + focus;\n"
     "}\n"
+    "uint pack_rgba(vec4 color) {\n"
+    "    uvec4 c = uvec4(clamp(color, 0.0, 1.0) * 255.0 + 0.5);\n"
+    "    return c.r | (c.g << 8u) | (c.b << 16u) | (c.a << 24u);\n"
+    "}\n"
+    "vec3 palette(float u, float lane) {\n"
+    "    vec3 amber = vec3(1.00, 0.54, 0.20);\n"
+    "    vec3 rose = vec3(0.96, 0.64, 0.58);\n"
+    "    vec3 pearl = vec3(0.86, 0.89, 0.78);\n"
+    "    vec3 cyan = vec3(0.36, 0.76, 0.92);\n"
+    "    vec3 violet = vec3(0.44, 0.34, 0.78);\n"
+    "    vec3 a = mix(amber, rose, smoothstep(0.00, 0.34, u));\n"
+    "    vec3 b = mix(pearl, cyan, smoothstep(0.28, 0.78, u));\n"
+    "    vec3 c = mix(a, b, smoothstep(0.18, 0.70, u));\n"
+    "    return mix(c, violet, 0.20 * lane * smoothstep(0.58, 1.0, u));\n"
+    "}\n"
     "void main() {\n"
     "    uint i = gl_GlobalInvocationID.x;\n"
     "    uint count = uint(params.sim.z);\n"
@@ -110,6 +128,7 @@ static const char* COMPUTE_GLSL =
     "    uint j = 3u * i;\n"
     "    vec2 x = vec2(positions.x[j + 0u], positions.x[j + 1u]);\n"
     "    vec2 v = vec2(velocities.v[j + 0u], velocities.v[j + 1u]);\n"
+    "    float age = ages.age[i] + dt;\n"
     "    vec2 flow = curl_flow(x, t);\n"
     "    v = mix(v, flow, clamp(dt * 2.6, 0.0, 1.0));\n"
     "    v += 0.020 * vec2(\n"
@@ -117,16 +136,29 @@ static const char* COMPUTE_GLSL =
     "        cos(19.0 * x.x + float((i >> 8u) & 255u) * 0.013 - t));\n"
     "    v *= pow(0.986, dt / (1.0 / 120.0));\n"
     "    x += dt * v;\n"
-    "    if (x.y > 1.10 || abs(x.x) > 1.18 || x.y < -1.12) {\n"
+    "    if (x.y > 1.10 || abs(x.x) > 1.18 || x.y < -1.12 || age > 4.6) {\n"
     "        x = source_pos(i, t);\n"
     "        v = vec2(0.03 * sin(float(i) * 0.11), 0.42 + 0.10 * hash01(i + uint(t * 97.0)));\n"
+    "        age = 0.0;\n"
     "    }\n"
+    "    float height = smoothstep(-1.05, 1.05, x.y);\n"
+    "    float life = clamp(age / 4.6, 0.0, 1.0);\n"
+    "    float lane = hash01(i * 747796405u + 2891336453u);\n"
+    "    vec3 rgb = palette(max(height, life * 0.72), lane);\n"
+    "    float alpha = (0.16 + 0.16 * (1.0 - life)) * smoothstep(0.0, 0.16, age);\n"
+    "    alpha *= 1.0 - smoothstep(0.78, 1.0, height);\n"
+    "    alpha *= 0.75 + 0.25 * lane;\n"
+    "    float point_size = mix(0.75, 2.35, smoothstep(0.0, 1.0, life));\n"
+    "    point_size *= 0.82 + 0.36 * lane;\n"
     "    positions.x[j + 0u] = x.x;\n"
     "    positions.x[j + 1u] = x.y;\n"
     "    positions.x[j + 2u] = 0.0;\n"
     "    velocities.v[j + 0u] = v.x;\n"
     "    velocities.v[j + 1u] = v.y;\n"
     "    velocities.v[j + 2u] = 0.0;\n"
+    "    ages.age[i] = age;\n"
+    "    colors.rgba[i] = pack_rgba(vec4(rgb, alpha));\n"
+    "    sizes.size[i] = point_size;\n"
     "}\n";
 
 
@@ -177,10 +209,12 @@ static DvzColor _particle_color(float radius, float phase)
 }
 
 
-static void _init_particles(vec3* positions, vec3* velocities, DvzColor* colors, float* sizes)
+static void _init_particles(
+    vec3* positions, vec3* velocities, float* ages, DvzColor* colors, float* sizes)
 {
     ANN(positions);
     ANN(velocities);
+    ANN(ages);
     ANN(colors);
     ANN(sizes);
 
@@ -197,8 +231,9 @@ static void _init_particles(vec3* positions, vec3* velocities, DvzColor* colors,
         velocities[i][0] = 0.04f * cosf(a);
         velocities[i][1] = 0.35f + 0.18f * jitter;
         velocities[i][2] = 0.0f;
+        ages[i] = 4.6f * _hash01(i * 5u + 4u);
         colors[i] = _particle_color(r, a);
-        sizes[i] = 0.85f + 1.25f * jitter;
+        sizes[i] = 0.75f + 1.10f * jitter;
     }
 }
 
@@ -241,18 +276,21 @@ int main(int argc, char** argv)
     DvzApp* app = NULL;
     vec3* positions = NULL;
     vec3* velocities = NULL;
+    float* ages = NULL;
     DvzColor* colors = NULL;
     float* sizes = NULL;
 
     const uint32_t frames = example_frame_count(argc, argv);
     positions = (vec3*)dvz_calloc(PARTICLE_COUNT, sizeof(vec3));
     velocities = (vec3*)dvz_calloc(PARTICLE_COUNT, sizeof(vec3));
+    ages = (float*)dvz_calloc(PARTICLE_COUNT, sizeof(float));
     colors = (DvzColor*)dvz_calloc(PARTICLE_COUNT, sizeof(DvzColor));
     sizes = (float*)dvz_calloc(PARTICLE_COUNT, sizeof(float));
     EXAMPLE_CHECK(
-        positions != NULL && velocities != NULL && colors != NULL && sizes != NULL,
+        positions != NULL && velocities != NULL && ages != NULL && colors != NULL &&
+            sizes != NULL,
         "gpu_particle_advection: allocation failed");
-    _init_particles(positions, velocities, colors, sizes);
+    _init_particles(positions, velocities, ages, colors, sizes);
 
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
@@ -273,6 +311,24 @@ int main(int argc, char** argv)
                    .stride = sizeof(vec3),
                    .byte_size = (uint64_t)PARTICLE_COUNT * sizeof(vec3),
                });
+    DvzSceneBuffer* age_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_STORAGE,
+                   .stride = sizeof(float),
+                   .byte_size = (uint64_t)PARTICLE_COUNT * sizeof(float),
+               });
+    DvzSceneBuffer* color_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
+                   .stride = sizeof(DvzColor),
+                   .byte_size = (uint64_t)PARTICLE_COUNT * sizeof(DvzColor),
+               });
+    DvzSceneBuffer* size_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
+                   .stride = sizeof(float),
+                   .byte_size = (uint64_t)PARTICLE_COUNT * sizeof(float),
+               });
     DvzSceneBuffer* param_buffer = dvz_scene_buffer(
         scene, &(DvzSceneBufferDesc){
                    .usage = DVZ_SCENE_BUFFER_USAGE_STORAGE,
@@ -280,7 +336,8 @@ int main(int argc, char** argv)
                    .byte_size = sizeof(vec4),
                });
     EXAMPLE_CHECK(
-        position_buffer != NULL && velocity_buffer != NULL && param_buffer != NULL,
+        position_buffer != NULL && velocity_buffer != NULL && age_buffer != NULL &&
+            color_buffer != NULL && size_buffer != NULL && param_buffer != NULL,
         "dvz_scene_buffer() failed");
     vec4 params = {0};
     _params_for_time(0.0f, 0.0f, params);
@@ -293,6 +350,16 @@ int main(int argc, char** argv)
             velocity_buffer, velocities, (uint64_t)PARTICLE_COUNT * sizeof(vec3)),
         "velocity buffer upload failed");
     EXAMPLE_CHECK(
+        dvz_scene_buffer_set_data(age_buffer, ages, (uint64_t)PARTICLE_COUNT * sizeof(float)),
+        "age buffer upload failed");
+    EXAMPLE_CHECK(
+        dvz_scene_buffer_set_data(
+            color_buffer, colors, (uint64_t)PARTICLE_COUNT * sizeof(DvzColor)),
+        "color buffer upload failed");
+    EXAMPLE_CHECK(
+        dvz_scene_buffer_set_data(size_buffer, sizes, (uint64_t)PARTICLE_COUNT * sizeof(float)),
+        "size buffer upload failed");
+    EXAMPLE_CHECK(
         dvz_scene_buffer_set_data(param_buffer, params, sizeof(vec4)),
         "param buffer upload failed");
 
@@ -302,11 +369,11 @@ int main(int argc, char** argv)
         dvz_visual_set_attr_buffer(points, "position", position_buffer, 0, PARTICLE_COUNT),
         "bind point position buffer failed");
     EXAMPLE_CHECK(
-        dvz_visual_set_data(points, "color", colors, PARTICLE_COUNT) == 0,
-        "set point colors failed");
+        dvz_visual_set_attr_buffer(points, "color", color_buffer, 0, PARTICLE_COUNT),
+        "bind point color buffer failed");
     EXAMPLE_CHECK(
-        dvz_visual_set_data(points, "size", sizes, PARTICLE_COUNT) == 0,
-        "set point sizes failed");
+        dvz_visual_set_attr_buffer(points, "size", size_buffer, 0, PARTICLE_COUNT),
+        "bind point size buffer failed");
     EXAMPLE_CHECK(dvz_visual_set_depth_test(points, false) == 0, "disable depth test failed");
     EXAMPLE_CHECK(
         dvz_visual_set_alpha_mode(points, DVZ_ALPHA_BLENDED) == 0, "enable alpha blending failed");
@@ -334,6 +401,21 @@ int main(int argc, char** argv)
             compute, 2, velocity_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0,
             (uint64_t)PARTICLE_COUNT * sizeof(vec3)),
         "bind compute velocities failed");
+    EXAMPLE_CHECK(
+        dvz_scene_compute_set_buffer(
+            compute, 3, age_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0,
+            (uint64_t)PARTICLE_COUNT * sizeof(float)),
+        "bind compute ages failed");
+    EXAMPLE_CHECK(
+        dvz_scene_compute_set_buffer(
+            compute, 4, color_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0,
+            (uint64_t)PARTICLE_COUNT * sizeof(DvzColor)),
+        "bind compute colors failed");
+    EXAMPLE_CHECK(
+        dvz_scene_compute_set_buffer(
+            compute, 5, size_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0,
+            (uint64_t)PARTICLE_COUNT * sizeof(float)),
+        "bind compute sizes failed");
     EXAMPLE_CHECK(dvz_figure_add_compute(figure, compute), "attach compute pass failed");
 
     app = dvz_app(scene);
@@ -367,6 +449,7 @@ cleanup:
         dvz_scene_destroy(scene);
     dvz_free(sizes);
     dvz_free(colors);
+    dvz_free(ages);
     dvz_free(velocities);
     dvz_free(positions);
     return rc;
