@@ -6856,7 +6856,7 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_runtime_vklite_deferred_destroy_flush);
     TST_CASE(test_drp2_runtime_vklite_trims_destroyed_tail_slots);
 #endif
-    TST_CASE(test_drp2_runtime_download_buffer_rejects_out_of_range);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_download_buffer_rejects_out_of_range);
 #if DVZ_DRP2_HAS_VKLITE
     TST_GROUP("vklite-runtime");
     TST_DRP2_SHARED_GPU_CASE(test_drp2_write_buffer_bytes_large_payload_executes);

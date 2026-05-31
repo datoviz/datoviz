@@ -480,11 +480,24 @@ int test_gui(TstSuite* suite)
     ANN(suite);
     const char* tags = "gui";
     TST_MODULE(suite, tags);
+
+#define TST_GUI_GPU_CASE(test)                                                                   \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN | TST_RES_GLFW;          \
+        _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
     TST_CASE(test_gui_imgui_public_header);
     TST_CASE(test_gui_viewport_config_defaults);
     TST_CASE(test_gui_config_font_defaults);
     TST_CASE(test_gui_widget_wrapper_symbols);
-    TST_CASE(test_gui_viewport_resize_hidden_smoke);
-    TST_CASE(test_gui_multi_viewport_input_routers);
+    TST_GUI_GPU_CASE(test_gui_viewport_resize_hidden_smoke);
+    TST_GUI_GPU_CASE(test_gui_multi_viewport_input_routers);
+
+#undef TST_GUI_GPU_CASE
     return 0;
 }

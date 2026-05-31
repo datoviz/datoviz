@@ -131,9 +131,12 @@ def _classify_lane(
         return "slow-churn", "name contains churn/lifetime keyword"
 
     if module == "drp2":
-        if group == "vklite-runtime" or fixture == "drp2-vklite-runtime":
+        if group == "vklite-runtime" or fixture == "drp2-vklite-runtime" or "vulkan" in resource_set:
             return "runtime-vklite", "DRP2 stream executes through vklite"
         return "drp2-contract", "DRP2 stream/schema/runtime contract"
+
+    if module == "app" and {"gpu", "vulkan"} & resource_set:
+        return "render-smoke", "app GPU/resource lifecycle coverage"
 
     if module == "scene":
         if {"gpu", "vulkan"} & resource_set:

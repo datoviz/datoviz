@@ -1267,17 +1267,28 @@ int test_app(TstSuite* suite)
     ANN(suite);
     const char* tags = "app";
     TST_MODULE(suite, tags);
+
+#define TST_APP_GPU_CASE(test)                                                                   \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN;                         \
+        _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
     TST_CASE(test_app_config_defaults);
     TST_CASE(test_app_config_env_schedule);
     TST_CASE(test_app_config_env_fps_cap);
     TST_CASE(test_app_capture_config_defaults);
     TST_CASE(test_app_capture_config_env);
-    TST_CASE(test_app_resources_owned_defaults);
+    TST_APP_GPU_CASE(test_app_resources_owned_defaults);
     TST_CASE(test_app_resources_reject_runtime_without_gpu);
-    TST_CASE(test_app_resources_reject_incompatible_runtime);
-    TST_CASE(test_app_resources_borrow_gpu_ctx);
-    TST_CASE(test_app_resources_borrow_gpu_ctx_and_runtime);
-    TST_CASE(test_app_resources_borrow_gpu_ctx_and_window_host);
+    TST_APP_GPU_CASE(test_app_resources_reject_incompatible_runtime);
+    TST_APP_GPU_CASE(test_app_resources_borrow_gpu_ctx);
+    TST_APP_GPU_CASE(test_app_resources_borrow_gpu_ctx_and_runtime);
+    TST_APP_GPU_CASE(test_app_resources_borrow_gpu_ctx_and_window_host);
     TST_CASE(test_app_trace_mode_parsing);
     TST_CASE(test_app_trace_plan_normal_changed_after_open_line);
     TST_CASE(test_app_trace_plan_normal_unchanged_rewrites_in_place);
@@ -1300,5 +1311,7 @@ int test_app(TstSuite* suite)
     TST_CASE(test_app_trace_snapshot_keeps_scoped_edl_draw_payload);
     TST_CASE(test_app_trace_snapshot_rejects_truncated_suffix);
     TST_CASE(test_app_trace_snapshot_recovers_after_failed_build);
+
+#undef TST_APP_GPU_CASE
     return 0;
 }

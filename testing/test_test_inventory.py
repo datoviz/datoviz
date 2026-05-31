@@ -121,6 +121,28 @@ def test_test_inventory_keeps_video_only_cases_out_of_render_smoke() -> None:
     assert cases[0].lane == "fast-cpu"
 
 
+def test_test_inventory_routes_gpu_metadata_out_of_cpu_lanes() -> None:
+    tool = _load_tool()
+    list_text = "\n".join(
+        [
+            (
+                "app/resources_owned_defaults  function=test_app_resources_owned_defaults "
+                "resources=cpu,gpu,vulkan isolation=process fixture= fixture_scope=none"
+            ),
+            (
+                "drp2/runtime-lifecycle/download_buffer_rejects_out_of_range  "
+                "function=test_drp2_runtime_download_buffer_rejects_out_of_range "
+                "resources=cpu,gpu,vulkan isolation=process fixture= fixture_scope=none"
+            ),
+        ]
+    )
+    groups_text = "\n".join(["app/default", "drp2/runtime-lifecycle"])
+
+    cases = tool.parse_list_output(list_text, groups_text)
+
+    assert [case.lane for case in cases] == ["render-smoke", "runtime-vklite"]
+
+
 def test_test_inventory_filters_lanes() -> None:
     tool = _load_tool()
     list_text = "\n".join(
