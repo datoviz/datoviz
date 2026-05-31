@@ -104,7 +104,11 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
         emitter->handshake_sent = ok;
     }
 
-    for (uint32_t i = 0; ok && i < plan->count; i++)
+    if (compute != NULL && !scene_compute)
+    {
+        ok = _emitter_emit_compute_buffers(emitter, stream, upload, compute);
+    }
+    for (uint32_t i = 0; ok && (compute == NULL || scene_compute) && i < plan->count; i++)
     {
         if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_UPLOAD)
         {
