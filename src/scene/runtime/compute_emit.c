@@ -14,6 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -177,10 +178,16 @@ static bool _compute_emit_one(
                       stream, pipeline_id, shader_id, bgl_id))
         return false;
 
-    uint64_t bg_id = _emitter_next_transient_id(emitter);
+    uint64_t fingerprint = UINT64_C(1469598103934665603);
     DvzDrp2BindGroupEntry entries[DVZ_SCENE_MAX_NODE_RESOURCES] = {0};
     for (uint32_t i = 0; i < compute->u.compute.binding_count; i++)
     {
+        const DvzFramePlanComputeBinding* binding = &compute->u.compute.bindings[i];
+        fingerprint = (fingerprint ^ (uint64_t)binding->binding) * UINT64_C(1099511628211);
+        fingerprint = (fingerprint ^ (uint64_t)binding->access) * UINT64_C(1099511628211);
+        fingerprint = (fingerprint ^ buffer_ids[i]) * UINT64_C(1099511628211);
+        fingerprint = (fingerprint ^ binding->byte_offset) * UINT64_C(1099511628211);
+        fingerprint = (fingerprint ^ binding->byte_size) * UINT64_C(1099511628211);
         entries[i].binding = compute->u.compute.bindings[i].binding;
         entries[i].binding_type = DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER;
         entries[i].resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER;
@@ -188,9 +195,22 @@ static bool _compute_emit_one(
         entries[i].offset = compute->u.compute.bindings[i].byte_offset;
         entries[i].size = compute->u.compute.bindings[i].byte_size;
     }
-    if (!dvz_drp2_stream_create_bind_group_entries(
-            stream, bg_id, bgl_id, compute->u.compute.binding_count, entries))
+    if (fingerprint == 0)
+        fingerprint = UINT64_C(1);
+
+    if (dvz_snprintf(
+            key, sizeof(key), "compute.%s.bg.%016" PRIx64, compute->u.compute.shader_key,
+            fingerprint) < 0)
         return false;
+    uint64_t bg_id = _obj_id(emitter, key, &is_new);
+    if (bg_id == 0)
+        return false;
+    if (is_new)
+    {
+        if (!dvz_drp2_stream_create_bind_group_entries(
+                stream, bg_id, bgl_id, compute->u.compute.binding_count, entries))
+            return false;
+    }
 
     uint64_t encoder_id = _emitter_next_transient_id(emitter);
     uint64_t pass_id = _emitter_next_transient_id(emitter);

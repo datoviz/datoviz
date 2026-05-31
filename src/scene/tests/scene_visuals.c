@@ -4200,6 +4200,22 @@ int test_scene_compute_point_position_buffer_emits_drp2(
     AT(found_barrier);
 
     dvz_drp2_stream_destroy(stream);
+
+    DvzDrp2CommandStream* stream2 = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream2);
+
+    uint32_t create_bind_group_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream2); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream2, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+            create_bind_group_count++;
+    }
+    AT(create_bind_group_count == 0);
+    dvz_drp2_stream_destroy(stream2);
+
     dvz_scene_destroy(scene);
     return 0;
 }

@@ -41,7 +41,8 @@
 #define HEIGHT         1000u
 #define PARTICLE_COUNT 65536u
 #define WORKGROUP_SIZE 128u
-#define SIM_DT         (1.0f / 180.0f)
+#define SIM_SPEED      0.5f
+#define SIM_MAX_DT     (1.0f / 30.0f)
 
 static const float TAU = 6.28318530718f;
 
@@ -53,8 +54,9 @@ static const float TAU = 6.28318530718f;
 
 typedef struct ParticleState
 {
+    DvzScene* scene;
     DvzSceneBuffer* params;
-    uint32_t frame_index;
+    float sim_time;
 } ParticleState;
 
 
@@ -86,7 +88,7 @@ static const char* COMPUTE_GLSL =
     "    vec2 center = 0.20 * vec2(sin(0.31 * t), cos(0.23 * t));\n"
     "    vec2 pull = normalize(center - x + 1e-4) * 0.08;\n"
     "    v += dt * (0.50 * k * swirl + 0.16 * wave + pull);\n"
-    "    v *= 0.991;\n"
+    "    v *= pow(0.991, dt / (1.0 / 180.0));\n"
     "    x += dt * v;\n"
     "    if (x.x < -1.05) x.x += 2.10;\n"
     "    if (x.x >  1.05) x.x -= 2.10;\n"
@@ -127,6 +129,16 @@ static float _clamp01(float x)
 }
 
 
+static float _clampf(float x, float lo, float hi)
+{
+    if (x < lo)
+        return lo;
+    if (x > hi)
+        return hi;
+    return x;
+}
+
+
 static DvzColor _particle_color(float radius, float phase)
 {
     const float t = _clamp01((radius - 0.18f) / 0.78f);
@@ -163,10 +175,10 @@ static void _init_particles(vec3* positions, vec3* velocities, DvzColor* colors,
 }
 
 
-static void _params_for_frame(uint32_t frame, vec4 params)
+static void _params_for_time(float time, float dt, vec4 params)
 {
-    params[0] = (float)frame * SIM_DT;
-    params[1] = SIM_DT;
+    params[0] = time;
+    params[1] = dt;
     params[2] = (float)PARTICLE_COUNT;
     params[3] = 0.0f;
 }
@@ -175,11 +187,15 @@ static void _params_for_frame(uint32_t frame, vec4 params)
 static void _particle_frame(DvzView* win, void* user_data)
 {
     ParticleState* state = (ParticleState*)user_data;
-    if (state == NULL || state->params == NULL)
+    if (state == NULL || state->scene == NULL || state->params == NULL)
         return;
 
+    const float wall_dt = (float)dvz_scene_clock_dt(state->scene);
+    const float sim_dt = _clampf(wall_dt, 0.0f, SIM_MAX_DT) * SIM_SPEED;
+    state->sim_time += sim_dt;
+
     vec4 params = {0};
-    _params_for_frame(state->frame_index++, params);
+    _params_for_time(state->sim_time, sim_dt, params);
     (void)dvz_scene_buffer_set_data(state->params, params, sizeof(vec4));
     dvz_view_request_frame(win);
 }
@@ -239,7 +255,7 @@ int main(int argc, char** argv)
         position_buffer != NULL && velocity_buffer != NULL && param_buffer != NULL,
         "dvz_scene_buffer() failed");
     vec4 params = {0};
-    _params_for_frame(0, params);
+    _params_for_time(0.0f, 0.0f, params);
     EXAMPLE_CHECK(
         dvz_scene_buffer_set_data(
             position_buffer, positions, (uint64_t)PARTICLE_COUNT * sizeof(vec3)),
@@ -295,7 +311,7 @@ int main(int argc, char** argv)
     DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "gpu_particle_advection");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    ParticleState state = {.params = param_buffer, .frame_index = 1};
+    ParticleState state = {.scene = scene, .params = param_buffer, .sim_time = 0.0f};
     dvz_view_set_frame_callback(win, _particle_frame, &state);
     dvz_view_request_frame(win);
 
