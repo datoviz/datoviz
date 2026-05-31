@@ -149,6 +149,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_point_typed_data_upload);
     TST_CASE(test_scene_mesh_typed_data_upload);
     TST_CASE(test_scene_visual_index_data_upload);
+    TST_CASE(test_scene_point_storage_position_buffer_emits_usage);
     TST_CASE(test_scene_mesh_geometry_upload);
     TST_CASE(test_scene_polygon_composite);
     TST_CASE(test_scene_polygon_set_composite);

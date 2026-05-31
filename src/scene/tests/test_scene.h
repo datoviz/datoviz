@@ -717,6 +717,9 @@ int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_index_data_upload(TstContext* suite, const TstCase* item);
 
+int test_scene_point_storage_position_buffer_emits_usage(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item);
 
 int test_scene_polygon_composite(TstContext* suite, const TstCase* item);

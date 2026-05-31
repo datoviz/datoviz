@@ -223,11 +223,6 @@ bool dvz_visual_set_attr_buffer(
         log_error("visual attribute buffer '%s' requires item_count > 0", attr_name);
         return false;
     }
-    if (byte_offset != 0)
-    {
-        log_error("visual attribute buffer '%s' byte offsets are not supported yet", attr_name);
-        return false;
-    }
     if ((buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_VERTEX) == 0)
     {
         log_error("visual attribute buffer '%s' requires VERTEX usage", attr_name);

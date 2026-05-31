@@ -216,6 +216,8 @@ uint32_t _scene_buffer_drp2_usage(uint32_t usage)
         out |= DVZ_DRP2_BUFFER_USAGE_INDEX;
     if ((usage & DVZ_SCENE_BUFFER_USAGE_UNIFORM) != 0)
         out |= DVZ_DRP2_BUFFER_USAGE_UNIFORM;
+    if ((usage & DVZ_SCENE_BUFFER_USAGE_STORAGE) != 0)
+        out |= DVZ_DRP2_BUFFER_USAGE_STORAGE;
     return out;
 }
 
