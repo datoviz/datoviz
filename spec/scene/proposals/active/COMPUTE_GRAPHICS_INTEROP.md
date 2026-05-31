@@ -122,9 +122,9 @@ DvzScene / DvzFigure / DvzPanel
 ```
 
 
-## Preferred Gallery Example
+## Implemented Gallery Example
 
-The preferred v0.4 showcase is GPU particle advection:
+The implemented v0.4 showcase is `examples/c/showcases/gpu_particle_smoke.c`:
 
 ```text
 storage buffer input/state
@@ -155,7 +155,7 @@ Secondary examples, after the particle path works:
 3. Add native vklite barrier execution and focused GPU tests.
 4. Add or update WebGPU fixture-runner parity for the portable compute-to-render subset.
 5. Add the narrow scene `DvzSceneCompute` API and lowering required by the particle example.
-6. Build the live GLFW scene particle-advection gallery example.
+6. Keep `examples/c/showcases/gpu_particle_smoke.c` as the live GLFW gallery proof.
 7. Add optional CUDA SDK example if the native external-memory path remains low-risk.
 8. Publish documentation for support level, unsupported variants, and validation commands.
 

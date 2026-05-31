@@ -84,6 +84,7 @@ The main remaining polish or feature gaps are:
 | `image_probe` | `ready-now` | scalar image probe, custom LUT colormap, colorbar, live readout | Focused public image-query proof lives in `examples/c/features/image_probe.c`; broader linked-panel pressure remains separate. |
 | `protein_arcball_viewer` | `partial-now` | mesh, sphere, materials, SSAO/MSAA, GUI, arcball | Flagship native C showcase; defer labels/picking/molecular surface if needed. |
 | `showcase_wind_field` | `needs-rc1-proof` | image field, vector visual, paths, panzoom, colorbar | Best near-term 2D showcase; vector visual should replace primitive arrows. |
+| `showcase_gpu_particle_smoke` | `ready-now` | scene compute, shared storage/vertex buffers, blended points | Public experimental compute-to-graphics showcase lives in `examples/c/showcases/gpu_particle_smoke.c`. |
 | `textured_terrain_or_planet` | `needs-rc1-proof` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof. Current source is `examples/c/visuals/textured_mesh.c`; promote or add a showcase/fixture capture. |
 | `brain_volume_mesh` | `partial-now` | volume, transparent mesh, GUI, arcball | Narrow Allen/IBL brain slice for v0.4; full atlas explorer is v0.5. |
 | `dense_point_cloud_edl` | `ready-now` | large points/pixels, EDL, fly/camera | Use LiDAR or synthetic dense cloud as performance/showcase proof. |
@@ -175,10 +176,11 @@ optional controls for tessellation quality, stroke width, join mode, and overlay
 8. `volume`
 9. `protein_arcball_viewer`
 10. `showcase_wind_field`
-11. `textured_terrain_or_planet`
-12. `brain_volume_mesh`
-13. `dense_point_cloud_edl`
-14. `webgpu_browser_subset`
+11. `showcase_gpu_particle_smoke`
+12. `textured_terrain_or_planet`
+13. `brain_volume_mesh`
+14. `dense_point_cloud_edl`
+15. `webgpu_browser_subset`
 
 
 ## Promotion Rule

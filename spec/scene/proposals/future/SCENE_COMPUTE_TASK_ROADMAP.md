@@ -46,7 +46,8 @@ The v0.4 experimental slice is intentionally narrow:
 3. `dvz_figure_add_compute()` schedules compute before the figure render path;
 4. FramePlan/DRP2 lowering emits compute before render and inserts the required
    compute-write-to-render-read synchronization;
-5. `examples/c/lab/gpu_particle_advection.c` proves storage-buffer compute feeding point rendering.
+5. `examples/c/showcases/gpu_particle_smoke.c` proves storage-buffer compute feeding point
+   rendering.
 
 This is a frame-coupled convenience surface, not the final general model.
 

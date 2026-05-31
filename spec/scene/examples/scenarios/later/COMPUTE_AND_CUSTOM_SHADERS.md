@@ -23,5 +23,6 @@ double-single or high-precision parameter policy, progressive refinement, and op
 
 ## `gpu_particles`
 
-Needs compute-written buffers consumed by render passes, persistent buffer reuse, barriers,
-additive/transparent particle shaders, optional trails accumulation, and per-frame UI parameters.
+The baseline smoke showcase now lives in `examples/c/showcases/gpu_particle_smoke.c`. Later GPU
+particle work should cover broader custom-shader variants: alternate integrators, trails
+accumulation, texture or mesh emission, richer UI parameters, and retained scene task scheduling.

@@ -13,6 +13,7 @@ source material.
 | `image_probe` | `features/image_probe.c` | Feature proof. |
 | `marker_picking` | `features/pick_marker.c` | Feature proof. |
 | `protein_arcball_viewer` | `showcases/protein.c` | Gallery/showcase seed. |
+| `showcase_gpu_particle_smoke` | `showcases/gpu_particle_smoke.c` | Experimental compute showcase. |
 | `showcase_wind_field` | `showcases/wind_field.c` | Gallery/showcase seed. |
 
 ## Lab examples kept buildable

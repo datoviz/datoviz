@@ -28,6 +28,17 @@ vector visual lands, optional streamlines as paths, panzoom, colorbar, and deter
 or capture. Document the primitive-arrow substitution so first-class vector visuals remain visible.
 
 
+## `showcase_gpu_particle_smoke`
+
+Experimental compute-to-graphics showcase. It should communicate that scene compute can update a
+large GPU-resident particle state that normal scene point rendering consumes in the same frame.
+
+Minimal target: one million particles, storage buffers shared by compute and point attributes,
+frame-timed simulation parameters, explicit compute-before-render synchronization, transparent smoke
+styling, bounded smoke run, and deterministic screenshot capture. Keep it marked experimental until
+retained scene compute tasks replace the figure-attached convenience API.
+
+
 ## `textured_terrain_or_planet`
 
 Required retained textured-mesh proof. This can be a bounded terrain patch, a planet-like surface,
