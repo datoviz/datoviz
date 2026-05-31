@@ -7,6 +7,8 @@ This directory owns durable testing infrastructure contracts.
 
 1. [RUNNER_SCHEDULING.md](RUNNER_SCHEDULING.md): test-runner scheduling, skip, fixture, and
    validation policy.
+2. [TEST_SUITE_REFACTOR_PLAN.md](TEST_SUITE_REFACTOR_PLAN.md): post-RC test-suite modularity,
+   lane, fixture, and cleanup plan.
 
 
 ## Boundary
