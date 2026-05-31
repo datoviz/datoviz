@@ -39,10 +39,21 @@
 
 #define WIDTH          1600u
 #define HEIGHT         1000u
-#define PARTICLE_COUNT 262144u
+#define PARTICLE_COUNT 1048576u
 #define WORKGROUP_SIZE 128u
+#define COMPUTE_SOURCE_CAPACITY 8192u
 #define SIM_SPEED      0.65f
 #define SIM_MAX_DT     (1.0f / 30.0f)
+
+#define SMOKE_LIFETIME          4.6f
+#define SMOKE_ALPHA_BASE        0.36f
+#define SMOKE_ALPHA_YOUNG_BOOST 0.28f
+#define SMOKE_SIZE_MIN          1.25f
+#define SMOKE_SIZE_MAX          3.75f
+#define SMOKE_VIOLET_MIX        0.20f
+#define SMOKE_SOURCE_WIDTH      0.18f
+#define SMOKE_SOURCE_HEIGHT     0.13f
+#define SMOKE_TOP_FADE_START    0.90f
 
 static const float TAU = 6.28318530718f;
 
@@ -65,8 +76,7 @@ typedef struct ParticleState
 /*  Shaders                                                                                      */
 /*************************************************************************************************/
 
-static const char* COMPUTE_GLSL =
-    "#version 450\n"
+static const char* COMPUTE_GLSL_BODY =
     "layout(local_size_x = 128) in;\n"
     "layout(std430, set = 0, binding = 0) readonly buffer Params { vec4 sim; } params;\n"
     "layout(std430, set = 0, binding = 1) buffer Positions { float x[]; } positions;\n"
@@ -90,7 +100,8 @@ static const char* COMPUTE_GLSL =
     "    float a = hash01(i * 1664525u + epoch * 1013904223u);\n"
     "    float b = hash01(i * 22695477u + epoch * 1103515245u);\n"
     "    float plume = 0.17 * sin(0.43 * t) + 0.06 * sin(1.31 * t);\n"
-    "    return vec2(plume + (a * 2.0 - 1.0) * 0.18, -1.03 + b * 0.13);\n"
+    "    return vec2(plume + (a * 2.0 - 1.0) * SMOKE_SOURCE_WIDTH,\n"
+    "                -1.03 + b * SMOKE_SOURCE_HEIGHT);\n"
     "}\n"
     "vec2 curl_flow(vec2 p, float t) {\n"
     "    float c1 = cos(3.0 * p.x + 2.1 * p.y + 0.63 * t);\n"
@@ -117,7 +128,7 @@ static const char* COMPUTE_GLSL =
     "    vec3 a = mix(amber, rose, smoothstep(0.00, 0.34, u));\n"
     "    vec3 b = mix(pearl, cyan, smoothstep(0.28, 0.78, u));\n"
     "    vec3 c = mix(a, b, smoothstep(0.18, 0.70, u));\n"
-    "    return mix(c, violet, 0.20 * lane * smoothstep(0.58, 1.0, u));\n"
+    "    return mix(c, violet, SMOKE_VIOLET_MIX * lane * smoothstep(0.58, 1.0, u));\n"
     "}\n"
     "void main() {\n"
     "    uint i = gl_GlobalInvocationID.x;\n"
@@ -136,19 +147,20 @@ static const char* COMPUTE_GLSL =
     "        cos(19.0 * x.x + float((i >> 8u) & 255u) * 0.013 - t));\n"
     "    v *= pow(0.986, dt / (1.0 / 120.0));\n"
     "    x += dt * v;\n"
-    "    if (x.y > 1.10 || abs(x.x) > 1.18 || x.y < -1.12 || age > 4.6) {\n"
+    "    if (x.y > 1.10 || abs(x.x) > 1.18 || x.y < -1.12 || age > SMOKE_LIFETIME) {\n"
     "        x = source_pos(i, t);\n"
     "        v = vec2(0.03 * sin(float(i) * 0.11), 0.42 + 0.10 * hash01(i + uint(t * 97.0)));\n"
     "        age = 0.0;\n"
     "    }\n"
     "    float height = smoothstep(-1.05, 1.05, x.y);\n"
-    "    float life = clamp(age / 4.6, 0.0, 1.0);\n"
+    "    float life = clamp(age / SMOKE_LIFETIME, 0.0, 1.0);\n"
     "    float lane = hash01(i * 747796405u + 2891336453u);\n"
     "    vec3 rgb = palette(max(height, life * 0.72), lane);\n"
-    "    float alpha = (0.24 + 0.22 * (1.0 - life)) * smoothstep(0.0, 0.16, age);\n"
-    "    alpha *= 1.0 - smoothstep(0.86, 1.0, height);\n"
+    "    float alpha = (SMOKE_ALPHA_BASE + SMOKE_ALPHA_YOUNG_BOOST * (1.0 - life)) *\n"
+    "                  smoothstep(0.0, 0.16, age);\n"
+    "    alpha *= 1.0 - smoothstep(SMOKE_TOP_FADE_START, 1.0, height);\n"
     "    alpha *= 0.75 + 0.25 * lane;\n"
-    "    float point_size = mix(0.95, 3.05, smoothstep(0.0, 1.0, life));\n"
+    "    float point_size = mix(SMOKE_SIZE_MIN, SMOKE_SIZE_MAX, smoothstep(0.0, 1.0, life));\n"
     "    point_size *= 0.82 + 0.36 * lane;\n"
     "    positions.x[j + 0u] = x.x;\n"
     "    positions.x[j + 1u] = x.y;\n"
@@ -175,6 +187,30 @@ static float _hash01(uint32_t x)
     x *= 0x846ca68bu;
     x ^= x >> 16;
     return (float)(x & 0x00ffffffu) / (float)0x01000000u;
+}
+
+
+static bool _compute_shader_source(char* out, size_t size)
+{
+    ANN(out);
+    const int n = dvz_snprintf(
+        out, size,
+        "#version 450\n"
+        "#define SMOKE_LIFETIME %.8g\n"
+        "#define SMOKE_ALPHA_BASE %.8g\n"
+        "#define SMOKE_ALPHA_YOUNG_BOOST %.8g\n"
+        "#define SMOKE_SIZE_MIN %.8g\n"
+        "#define SMOKE_SIZE_MAX %.8g\n"
+        "#define SMOKE_VIOLET_MIX %.8g\n"
+        "#define SMOKE_SOURCE_WIDTH %.8g\n"
+        "#define SMOKE_SOURCE_HEIGHT %.8g\n"
+        "#define SMOKE_TOP_FADE_START %.8g\n"
+        "%s",
+        (double)SMOKE_LIFETIME, (double)SMOKE_ALPHA_BASE, (double)SMOKE_ALPHA_YOUNG_BOOST,
+        (double)SMOKE_SIZE_MIN, (double)SMOKE_SIZE_MAX, (double)SMOKE_VIOLET_MIX,
+        (double)SMOKE_SOURCE_WIDTH, (double)SMOKE_SOURCE_HEIGHT,
+        (double)SMOKE_TOP_FADE_START, COMPUTE_GLSL_BODY);
+    return n >= 0 && (size_t)n < size;
 }
 
 
@@ -231,7 +267,7 @@ static void _init_particles(
         velocities[i][0] = 0.04f * cosf(a);
         velocities[i][1] = 0.35f + 0.18f * jitter;
         velocities[i][2] = 0.0f;
-        ages[i] = 4.6f * _hash01(i * 5u + 4u);
+        ages[i] = SMOKE_LIFETIME * _hash01(i * 5u + 4u);
         colors[i] = _particle_color(r, a);
         sizes[i] = 0.75f + 1.10f * jitter;
     }
@@ -279,6 +315,7 @@ int main(int argc, char** argv)
     float* ages = NULL;
     DvzColor* colors = NULL;
     float* sizes = NULL;
+    char compute_glsl[COMPUTE_SOURCE_CAPACITY] = {0};
 
     const uint32_t frames = example_frame_count(argc, argv);
     positions = (vec3*)dvz_calloc(PARTICLE_COUNT, sizeof(vec3));
@@ -378,12 +415,15 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(
         dvz_visual_set_alpha_mode(points, DVZ_ALPHA_BLENDED) == 0, "enable alpha blending failed");
     EXAMPLE_CHECK(dvz_panel_add_visual(panel, points, NULL) == 0, "add point visual failed");
+    EXAMPLE_CHECK(
+        _compute_shader_source(compute_glsl, sizeof(compute_glsl)),
+        "compute shader source too long");
 
     DvzSceneCompute* compute = dvz_scene_compute(
         scene, &(DvzSceneComputeDesc){
                    .label = "gpu_particle_advection",
                    .shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL,
-                   .shader_source = COMPUTE_GLSL,
+                   .shader_source = compute_glsl,
                    .dispatch = {(PARTICLE_COUNT + WORKGROUP_SIZE - 1u) / WORKGROUP_SIZE, 1, 1},
                });
     EXAMPLE_CHECK(compute != NULL, "dvz_scene_compute() failed");
