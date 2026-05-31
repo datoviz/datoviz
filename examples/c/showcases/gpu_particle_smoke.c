@@ -28,6 +28,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/app.h"
+#include "datoviz/input.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 
@@ -55,6 +56,13 @@
 #define SMOKE_SOURCE_HEIGHT     0.13f
 #define SMOKE_TOP_FADE_START    0.90f
 
+#define MOUSE_HOVER_RADIUS   0.18f
+#define MOUSE_DRAG_STRENGTH  1.8f
+#define MOUSE_HOVER_SWIRL    0.45f
+#define MOUSE_DRAG_FOLLOW    0.9f
+#define MOUSE_VELOCITY_LIMIT 3.0f
+#define MOUSE_VELOCITY_DECAY 0.08f
+
 static const float TAU = 6.28318530718f;
 
 
@@ -68,6 +76,12 @@ typedef struct ParticleState
     DvzScene* scene;
     DvzSceneBuffer* params;
     float sim_time;
+    bool mouse_valid;
+    bool mouse_down;
+    vec2 mouse_pos;
+    vec2 mouse_prev;
+    vec2 mouse_velocity;
+    uint64_t mouse_timestamp;
 } ParticleState;
 
 
@@ -76,9 +90,13 @@ typedef struct ParticleState
 /*  Shaders                                                                                      */
 /*************************************************************************************************/
 
-static const char* COMPUTE_GLSL_BODY =
+static const char* COMPUTE_GLSL_COMMON =
     "layout(local_size_x = 128) in;\n"
-    "layout(std430, set = 0, binding = 0) readonly buffer Params { vec4 sim; } params;\n"
+    "layout(std430, set = 0, binding = 0) readonly buffer Params {\n"
+    "    vec4 sim0;\n"
+    "    vec4 sim1;\n"
+    "    vec4 sim2;\n"
+    "} params;\n"
     "layout(std430, set = 0, binding = 1) buffer Positions { float x[]; } positions;\n"
     "layout(std430, set = 0, binding = 2) buffer Velocities { float v[]; } velocities;\n"
     "layout(std430, set = 0, binding = 3) buffer Ages { float age[]; } ages;\n"
@@ -129,13 +147,22 @@ static const char* COMPUTE_GLSL_BODY =
     "    vec3 b = mix(pearl, cyan, smoothstep(0.28, 0.78, u));\n"
     "    vec3 c = mix(a, b, smoothstep(0.18, 0.70, u));\n"
     "    return mix(c, violet, SMOKE_VIOLET_MIX * lane * smoothstep(0.58, 1.0, u));\n"
-    "}\n"
+    "}\n";
+
+static const char* COMPUTE_GLSL_MAIN =
     "void main() {\n"
     "    uint i = gl_GlobalInvocationID.x;\n"
-    "    uint count = uint(params.sim.z);\n"
+    "    uint count = uint(params.sim0.z);\n"
     "    if (i >= count) return;\n"
-    "    float t = params.sim.x;\n"
-    "    float dt = params.sim.y;\n"
+    "    float t = params.sim0.x;\n"
+    "    float dt = params.sim0.y;\n"
+    "    float mouse_active = params.sim0.w;\n"
+    "    vec2 mouse = params.sim1.xy;\n"
+    "    vec2 mouse_v = params.sim1.zw;\n"
+    "    float mouse_radius = params.sim2.x;\n"
+    "    float drag_strength = params.sim2.y;\n"
+    "    float hover_swirl = params.sim2.z;\n"
+    "    float drag_follow = params.sim2.w;\n"
     "    uint j = 3u * i;\n"
     "    vec2 x = vec2(positions.x[j + 0u], positions.x[j + 1u]);\n"
     "    vec2 v = vec2(velocities.v[j + 0u], velocities.v[j + 1u]);\n"
@@ -145,6 +172,17 @@ static const char* COMPUTE_GLSL_BODY =
     "    v += 0.020 * vec2(\n"
     "        sin(17.0 * x.y + float(i & 255u) * 0.017 + t),\n"
     "        cos(19.0 * x.x + float((i >> 8u) & 255u) * 0.013 - t));\n"
+    "    if (mouse_active > 0.5) {\n"
+    "        vec2 d = x - mouse;\n"
+    "        float dist = length(d);\n"
+    "        float influence = smoothstep(mouse_radius, 0.0, dist);\n"
+    "        vec2 dir = d / max(dist, 0.001);\n"
+    "        vec2 tangent = vec2(-dir.y, dir.x);\n"
+    "        float drag = step(1.5, mouse_active);\n"
+    "        vec2 follow = drag_follow * mouse_v - 0.18 * dir;\n"
+    "        v += dt * influence * hover_swirl * tangent;\n"
+    "        v += dt * influence * drag * drag_strength * follow;\n"
+    "    }\n"
     "    v *= pow(0.986, dt / (1.0 / 120.0));\n"
     "    x += dt * v;\n"
     "    if (x.y > 1.10 || abs(x.x) > 1.18 || x.y < -1.12 || age > SMOKE_LIFETIME) {\n"
@@ -205,11 +243,11 @@ static bool _compute_shader_source(char* out, size_t size)
         "#define SMOKE_SOURCE_WIDTH %.8g\n"
         "#define SMOKE_SOURCE_HEIGHT %.8g\n"
         "#define SMOKE_TOP_FADE_START %.8g\n"
-        "%s",
+        "%s%s",
         (double)SMOKE_LIFETIME, (double)SMOKE_ALPHA_BASE, (double)SMOKE_ALPHA_YOUNG_BOOST,
         (double)SMOKE_SIZE_MIN, (double)SMOKE_SIZE_MAX, (double)SMOKE_VIOLET_MIX,
         (double)SMOKE_SOURCE_WIDTH, (double)SMOKE_SOURCE_HEIGHT, (double)SMOKE_TOP_FADE_START,
-        COMPUTE_GLSL_BODY);
+        COMPUTE_GLSL_COMMON, COMPUTE_GLSL_MAIN);
     return n >= 0 && (size_t)n < size;
 }
 
@@ -231,6 +269,40 @@ static float _clampf(float x, float lo, float hi)
     if (x > hi)
         return hi;
     return x;
+}
+
+
+static void _copy_vec2(const vec2 src, vec2 dst)
+{
+    dst[0] = src[0];
+    dst[1] = src[1];
+}
+
+
+static float _vec2_norm(const vec2 v)
+{
+    return sqrtf(v[0] * v[0] + v[1] * v[1]);
+}
+
+
+static void _limit_vec2(vec2 v, float max_norm)
+{
+    const float norm = _vec2_norm(v);
+    if (norm <= max_norm || norm <= 0.0f)
+        return;
+
+    const float scale = max_norm / norm;
+    v[0] *= scale;
+    v[1] *= scale;
+}
+
+
+static void _window_to_sim(float x, float y, vec2 out)
+{
+    const float u = _clamp01(x / (float)WIDTH);
+    const float v = _clamp01(y / (float)HEIGHT);
+    out[0] = 2.0f * u - 1.0f;
+    out[1] = 1.0f - 2.0f * v;
 }
 
 
@@ -274,12 +346,71 @@ _init_particles(vec3* positions, vec3* velocities, float* ages, DvzColor* colors
 }
 
 
-static void _params_for_time(float time, float dt, vec4 params)
+static void _params_for_state(const ParticleState* state, float dt, vec4 params[3])
 {
-    params[0] = time;
-    params[1] = dt;
-    params[2] = (float)PARTICLE_COUNT;
-    params[3] = 0.0f;
+    ANN(state);
+    ANN(params);
+    const float active = state->mouse_valid ? (state->mouse_down ? 2.0f : 1.0f) : 0.0f;
+
+    params[0][0] = state->sim_time;
+    params[0][1] = dt;
+    params[0][2] = (float)PARTICLE_COUNT;
+    params[0][3] = active;
+
+    params[1][0] = state->mouse_pos[0];
+    params[1][1] = state->mouse_pos[1];
+    params[1][2] = state->mouse_velocity[0];
+    params[1][3] = state->mouse_velocity[1];
+
+    params[2][0] = MOUSE_HOVER_RADIUS;
+    params[2][1] = MOUSE_DRAG_STRENGTH;
+    params[2][2] = MOUSE_HOVER_SWIRL;
+    params[2][3] = MOUSE_DRAG_FOLLOW;
+}
+
+
+static void _particle_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+{
+    (void)router;
+    ParticleState* state = (ParticleState*)user_data;
+    if (state == NULL || event == NULL)
+        return;
+    if (event->type == DVZ_POINTER_EVENT_WHEEL || event->type == DVZ_POINTER_EVENT_NONE)
+        return;
+
+    vec2 pos = {0};
+    _window_to_sim(event->pos[0], event->pos[1], pos);
+
+    vec2 raw_velocity = {0};
+    if (state->mouse_valid && event->timestamp_ns > state->mouse_timestamp)
+    {
+        const double seconds = (double)(event->timestamp_ns - state->mouse_timestamp) * 1e-9;
+        const float dt = _clampf((float)seconds, 1.0f / 240.0f, 0.10f);
+        raw_velocity[0] = (pos[0] - state->mouse_pos[0]) / dt;
+        raw_velocity[1] = (pos[1] - state->mouse_pos[1]) / dt;
+        _limit_vec2(raw_velocity, MOUSE_VELOCITY_LIMIT);
+        state->mouse_velocity[0] = 0.45f * state->mouse_velocity[0] + 0.55f * raw_velocity[0];
+        state->mouse_velocity[1] = 0.45f * state->mouse_velocity[1] + 0.55f * raw_velocity[1];
+        _limit_vec2(state->mouse_velocity, MOUSE_VELOCITY_LIMIT);
+    }
+    else
+    {
+        state->mouse_velocity[0] = 0.0f;
+        state->mouse_velocity[1] = 0.0f;
+    }
+
+    if (state->mouse_valid)
+        _copy_vec2(state->mouse_pos, state->mouse_prev);
+    else
+        _copy_vec2(pos, state->mouse_prev);
+    _copy_vec2(pos, state->mouse_pos);
+    state->mouse_valid = true;
+    state->mouse_timestamp = event->timestamp_ns;
+
+    if (event->type == DVZ_POINTER_EVENT_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
+        state->mouse_down = true;
+    if (event->type == DVZ_POINTER_EVENT_RELEASE && event->button == DVZ_POINTER_BUTTON_LEFT)
+        state->mouse_down = false;
 }
 
 
@@ -292,10 +423,17 @@ static void _particle_frame(DvzView* win, void* user_data)
     const float wall_dt = (float)dvz_scene_clock_dt(state->scene);
     const float sim_dt = _clampf(wall_dt, 0.0f, SIM_MAX_DT) * SIM_SPEED;
     state->sim_time += sim_dt;
+    if (state->mouse_valid)
+    {
+        const float decay = powf(MOUSE_VELOCITY_DECAY, _clampf(wall_dt, 0.0f, 0.10f));
+        state->mouse_velocity[0] *= decay;
+        state->mouse_velocity[1] *= decay;
+        _limit_vec2(state->mouse_velocity, MOUSE_VELOCITY_LIMIT);
+    }
 
-    vec4 params = {0};
-    _params_for_time(state->sim_time, sim_dt, params);
-    (void)dvz_scene_buffer_set_data(state->params, params, sizeof(vec4));
+    vec4 params[3] = {0};
+    _params_for_state(state, sim_dt, params);
+    (void)dvz_scene_buffer_set_data(state->params, params, sizeof(params));
     dvz_view_request_frame(win);
 }
 
@@ -369,14 +507,15 @@ int main(int argc, char** argv)
         scene, &(DvzSceneBufferDesc){
                    .usage = DVZ_SCENE_BUFFER_USAGE_STORAGE,
                    .stride = sizeof(vec4),
-                   .byte_size = sizeof(vec4),
+                   .byte_size = 3 * sizeof(vec4),
                });
     EXAMPLE_CHECK(
         position_buffer != NULL && velocity_buffer != NULL && age_buffer != NULL &&
             color_buffer != NULL && size_buffer != NULL && param_buffer != NULL,
         "dvz_scene_buffer() failed");
-    vec4 params = {0};
-    _params_for_time(0.0f, 0.0f, params);
+    ParticleState state = {.scene = scene, .params = param_buffer, .sim_time = 0.0f};
+    vec4 params[3] = {0};
+    _params_for_state(&state, 0.0f, params);
     EXAMPLE_CHECK(
         dvz_scene_buffer_set_data(
             position_buffer, positions, (uint64_t)PARTICLE_COUNT * sizeof(vec3)),
@@ -396,7 +535,7 @@ int main(int argc, char** argv)
         dvz_scene_buffer_set_data(size_buffer, sizes, (uint64_t)PARTICLE_COUNT * sizeof(float)),
         "size buffer upload failed");
     EXAMPLE_CHECK(
-        dvz_scene_buffer_set_data(param_buffer, params, sizeof(vec4)),
+        dvz_scene_buffer_set_data(param_buffer, params, sizeof(params)),
         "param buffer upload failed");
 
     DvzVisual* points = dvz_point(scene, 0);
@@ -428,7 +567,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(compute != NULL, "dvz_scene_compute() failed");
     EXAMPLE_CHECK(
         dvz_scene_compute_set_buffer(
-            compute, 0, param_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, sizeof(vec4)),
+            compute, 0, param_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, 3 * sizeof(vec4)),
         "bind compute params failed");
     EXAMPLE_CHECK(
         dvz_scene_compute_set_buffer(
@@ -462,7 +601,9 @@ int main(int argc, char** argv)
     DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "gpu_particle_smoke");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    ParticleState state = {.scene = scene, .params = param_buffer, .sim_time = 0.0f};
+    DvzInputRouter* router = dvz_view_input(win);
+    EXAMPLE_CHECK(router != NULL, "dvz_view_input() failed");
+    dvz_input_subscribe_pointer(router, _particle_pointer, &state);
     dvz_view_set_frame_callback(win, _particle_frame, &state);
     dvz_view_request_frame(win);
 
