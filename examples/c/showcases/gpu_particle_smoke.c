@@ -62,6 +62,8 @@
 #define MOUSE_DRAG_FOLLOW    0.9f
 #define MOUSE_VELOCITY_LIMIT 3.0f
 #define MOUSE_VELOCITY_DECAY 0.08f
+#define MOUSE_FORCE_SCALE    8.0f
+#define MOUSE_SPEED_LIMIT    2.4f
 
 static const float TAU = 6.28318530718f;
 
@@ -175,13 +177,16 @@ static const char* COMPUTE_GLSL_MAIN =
     "    if (mouse_active > 0.5) {\n"
     "        vec2 d = x - mouse;\n"
     "        float dist = length(d);\n"
-    "        float influence = smoothstep(mouse_radius, 0.0, dist);\n"
+    "        float influence = 1.0 - smoothstep(0.0, mouse_radius, dist);\n"
     "        vec2 dir = d / max(dist, 0.001);\n"
     "        vec2 tangent = vec2(-dir.y, dir.x);\n"
     "        float drag = step(1.5, mouse_active);\n"
-    "        vec2 follow = drag_follow * mouse_v - 0.18 * dir;\n"
-    "        v += dt * influence * hover_swirl * tangent;\n"
-    "        v += dt * influence * drag * drag_strength * follow;\n"
+    "        float mouse_dt = clamp(dt * MOUSE_FORCE_SCALE, 0.0, 0.16);\n"
+    "        vec2 follow = drag_follow * mouse_v - 0.28 * dir;\n"
+    "        v += mouse_dt * influence * hover_swirl * tangent;\n"
+    "        v += mouse_dt * influence * drag * drag_strength * follow;\n"
+    "        float speed = length(v);\n"
+    "        if (speed > MOUSE_SPEED_LIMIT) v *= MOUSE_SPEED_LIMIT / speed;\n"
     "    }\n"
     "    v *= pow(0.986, dt / (1.0 / 120.0));\n"
     "    x += dt * v;\n"
@@ -243,11 +248,14 @@ static bool _compute_shader_source(char* out, size_t size)
         "#define SMOKE_SOURCE_WIDTH %.8g\n"
         "#define SMOKE_SOURCE_HEIGHT %.8g\n"
         "#define SMOKE_TOP_FADE_START %.8g\n"
+        "#define MOUSE_FORCE_SCALE %.8g\n"
+        "#define MOUSE_SPEED_LIMIT %.8g\n"
         "%s%s",
         (double)SMOKE_LIFETIME, (double)SMOKE_ALPHA_BASE, (double)SMOKE_ALPHA_YOUNG_BOOST,
         (double)SMOKE_SIZE_MIN, (double)SMOKE_SIZE_MAX, (double)SMOKE_VIOLET_MIX,
         (double)SMOKE_SOURCE_WIDTH, (double)SMOKE_SOURCE_HEIGHT, (double)SMOKE_TOP_FADE_START,
-        COMPUTE_GLSL_COMMON, COMPUTE_GLSL_MAIN);
+        (double)MOUSE_FORCE_SCALE, (double)MOUSE_SPEED_LIMIT, COMPUTE_GLSL_COMMON,
+        COMPUTE_GLSL_MAIN);
     return n >= 0 && (size_t)n < size;
 }
 
