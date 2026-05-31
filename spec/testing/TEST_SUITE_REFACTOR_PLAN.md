@@ -150,6 +150,10 @@ pixel-region tests before deleting them outright.
 4. Identify the slowest groups and files.
 5. Record release-proof cases separately from broad regression cases.
 
+Initial tooling: [LANE_INVENTORY.md](LANE_INVENTORY.md) defines the metadata-only inventory command
+and optional timing merge. Keep generated inventory files under `build/testing/` while lanes are
+being reviewed.
+
 ### Phase 2: Low-Risk Structure
 
 1. Add lane labels or tags without changing behavior.
