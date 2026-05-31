@@ -2256,6 +2256,50 @@ bool dvz_drp2_stream_end_compute_pass(DvzDrp2CommandStream* stream, uint64_t pas
 }
 
 
+/**
+ * Append a ResourceBarrier command for a buffer range.
+ *
+ * @param stream the command stream
+ * @param encoder_id the open command encoder id
+ * @param buffer_id the buffer id
+ * @param src_stage the producer stage
+ * @param src_access the producer access
+ * @param dst_stage the consumer stage
+ * @param dst_access the consumer access
+ * @param offset the first byte in the synchronized range
+ * @param size the synchronized byte size, or 0 for the rest of the buffer
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_resource_barrier(
+    DvzDrp2CommandStream* stream, uint64_t encoder_id, uint64_t buffer_id,
+    const char* src_stage, const char* src_access, const char* dst_stage, const char* dst_access,
+    uint64_t offset, uint64_t size)
+{
+    if (src_stage == NULL || src_access == NULL || dst_stage == NULL || dst_access == NULL)
+        return false;
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_RESOURCE_BARRIER);
+    if (command == NULL)
+        return false;
+    command->u.resource_barrier.encoder_id = encoder_id;
+    command->u.resource_barrier.buffer_id = buffer_id;
+    command->u.resource_barrier.offset = offset;
+    command->u.resource_barrier.size = size;
+    _copy_label(
+        command->u.resource_barrier.src_stage,
+        sizeof(command->u.resource_barrier.src_stage), src_stage);
+    _copy_label(
+        command->u.resource_barrier.src_access,
+        sizeof(command->u.resource_barrier.src_access), src_access);
+    _copy_label(
+        command->u.resource_barrier.dst_stage,
+        sizeof(command->u.resource_barrier.dst_stage), dst_stage);
+    _copy_label(
+        command->u.resource_barrier.dst_access,
+        sizeof(command->u.resource_barrier.dst_access), dst_access);
+    return true;
+}
+
+
 
 /**
  * Append a CopyBufferToBuffer command.

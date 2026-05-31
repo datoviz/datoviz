@@ -86,6 +86,7 @@ The active DRP2 command set is intentionally small but complete enough for:
 9. `Draw`
 10. `DrawIndexed`
 11. `DispatchWorkgroups`
+12. `ResourceBarrier`
 
 
 ### Copy And Submission
@@ -105,10 +106,9 @@ of the active DRP2 contract and must not be treated as authoritative until promo
 
 1. `CreatePipelineLayout`
 2. `DestroyPipelineLayout`
-3. `ResourceBarrier`
-4. `DispatchWorkgroupsIndirect`
-5. `DrawIndirect`
-6. `DrawIndexedIndirect`
+3. `DispatchWorkgroupsIndirect`
+4. `DrawIndirect`
+5. `DrawIndexedIndirect`
 
 
 ## Common Field Semantics
@@ -1110,6 +1110,39 @@ Semantics:
 1. these are workgroup counts, not thread counts,
 2. a compute pipeline must already have been bound in the same open compute pass,
 3. clients should serialize all dimensions explicitly.
+
+
+### `ResourceBarrier`
+
+Records an ordered buffer resource-state marker inside an open command encoder.
+
+Required fields:
+
+- `cmd`: must be `ResourceBarrier`.
+- `encoder_id`: target command encoder.
+- `buffer_id`: buffer whose writes must be made visible to a later consumer.
+- `src_stage`: producer stage. Active `2.0` supports `COMPUTE`.
+- `src_access`: producer access. Active `2.0` supports `STORAGE_WRITE`.
+- `dst_stage`: consumer stage. Active `2.0` supports `VERTEX_INPUT` and `COPY`.
+- `dst_access`: consumer access. Active `2.0` supports `VERTEX_READ` with `VERTEX_INPUT` and
+  `COPY_READ` with `COPY`.
+
+Optional fields:
+
+- `offset`: byte offset into `buffer_id`, default `0`.
+- `size`: byte count. `0` or omission means the remainder of the buffer.
+
+Semantics:
+
+1. this command is valid only inside an open command encoder and outside render/compute pass scopes,
+2. `buffer_id` must reference a live buffer whose usage includes `STORAGE`,
+3. `COMPUTE` / `STORAGE_WRITE` -> `VERTEX_INPUT` / `VERTEX_READ` additionally requires `VERTEX`
+   usage on the buffer,
+4. `COMPUTE` / `STORAGE_WRITE` -> `COPY` / `COPY_READ` additionally requires `COPY_SRC` usage on
+   the buffer,
+5. native Vulkan runtimes map the marker to an explicit buffer memory barrier,
+6. WebGPU runtimes may treat the marker as a validated no-op when pass order already provides the
+   required visibility.
 
 
 ## Copy And Submission

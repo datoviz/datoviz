@@ -124,6 +124,9 @@
       "$ref": "./commands/DispatchWorkgroups.json"
     },
     {
+      "$ref": "./commands/ResourceBarrier.json"
+    },
+    {
       "$ref": "./commands/CopyBufferToBuffer.json"
     },
     {

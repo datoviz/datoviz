@@ -1127,6 +1127,7 @@ const SUPPORTED_DRP2_COMMANDS = new Set([
   "Draw",
   "DrawIndexed",
   "DispatchWorkgroups",
+  "ResourceBarrier",
   "CopyBufferToBuffer",
   "CopyBufferToTexture",
   "CopyTextureToBuffer",
@@ -2941,6 +2942,32 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         }
         passRecord.pass.end();
         passes.delete(command.pass_id);
+        break;
+      }
+
+      case "ResourceBarrier": {
+        requireNoOpenPass(passes, command.encoder_id);
+        addEncoderRef(state, encoderRefs, command.encoder_id, command.buffer_id, "buffer");
+        const bufferRecord = requireLiveRecord(state, command.buffer_id, "buffer");
+        requireUsage(bufferRecord, "STORAGE");
+        if (command.src_stage !== "COMPUTE" || command.src_access !== "STORAGE_WRITE") {
+          throw new Error("unsupported ResourceBarrier source");
+        }
+        if (command.dst_stage === "VERTEX_INPUT" && command.dst_access === "VERTEX_READ") {
+          requireUsage(bufferRecord, "VERTEX");
+        } else if (command.dst_stage === "COPY" && command.dst_access === "COPY_READ") {
+          requireUsage(bufferRecord, "COPY_SRC");
+        } else {
+          throw new Error("unsupported ResourceBarrier destination");
+        }
+        const offset = command.offset ?? 0;
+        const size = command.size ?? 0;
+        if (size > 0 && offset + size > bufferRecord.size) {
+          throw new Error("ResourceBarrier range is out of range");
+        }
+        if (size === 0 && offset > bufferRecord.size) {
+          throw new Error("ResourceBarrier range is out of range");
+        }
         break;
       }
 

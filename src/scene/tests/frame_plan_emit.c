@@ -2361,7 +2361,7 @@ int test_frame_plan_emit_drp2_compute_assisted(TstContext* suite, const TstCase*
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
     AT(validation.ok);
-    AT(dvz_drp2_stream_count(stream) == 26);
+    AT(dvz_drp2_stream_count(stream) == 27);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 2)) == DVZ_DRP2_COMMAND_CREATE_BUFFER);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 4)) == DVZ_DRP2_COMMAND_CREATE_BUFFER);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 7)) ==
@@ -2370,14 +2370,17 @@ int test_frame_plan_emit_drp2_compute_assisted(TstContext* suite, const TstCase*
        DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 17)) ==
        DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 24)) ==
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 19)) ==
+       DVZ_DRP2_COMMAND_RESOURCE_BARRIER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 25)) ==
        DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER);
-    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 25)) == DVZ_DRP2_COMMAND_QUEUE_SUBMIT);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 26)) == DVZ_DRP2_COMMAND_QUEUE_SUBMIT);
 
     char* json = dvz_drp2_stream_json(stream, "scene_compute_assisted_from_c");
     ANN(json);
     AT(strstr(json, "\"cmd\": \"BeginComputePass\"") != NULL);
     AT(strstr(json, "\"cmd\": \"DispatchWorkgroups\"") != NULL);
+    AT(strstr(json, "\"cmd\": \"ResourceBarrier\"") != NULL);
     AT(strstr(json, "\"usage\": [\"VERTEX\", \"STORAGE\"]") != NULL);
     AT(strstr(json, "\"binding_type\": \"storage_buffer\"") != NULL);
     AT(strstr(json, "\"binding\": 0, \"binding_type\": \"storage_buffer\", \"visibility\": "
@@ -3049,7 +3052,7 @@ int test_frame_plan_emitter_runtime_compute_two_frames(TstContext* suite, const 
         dvz_frame_plan_emitter_emit_drp2(emitter, frame0, &caps, &report, &emit_cfg);
     ANN(stream0);
     AT(dvz_diagnostic_report_count(&report) == 0);
-    AT(dvz_drp2_stream_count(stream0) == 28);
+    AT(dvz_drp2_stream_count(stream0) == 29);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream0, 2)) ==
        DVZ_DRP2_COMMAND_CREATE_BUFFER);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream0, 4)) ==
@@ -3060,13 +3063,15 @@ int test_frame_plan_emitter_runtime_compute_two_frames(TstContext* suite, const 
        DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream0, 18)) ==
        DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream0, 20)) ==
+       DVZ_DRP2_COMMAND_RESOURCE_BARRIER);
 
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream1 =
         dvz_frame_plan_emitter_emit_drp2(emitter, frame1, &caps, &report, &emit_cfg);
     ANN(stream1);
     AT(dvz_diagnostic_report_count(&report) == 0);
-    AT(dvz_drp2_stream_count(stream1) == 15);
+    AT(dvz_drp2_stream_count(stream1) == 16);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream1, 0)) ==
        DVZ_DRP2_COMMAND_WRITE_BUFFER);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream1, 1)) ==
@@ -3075,6 +3080,8 @@ int test_frame_plan_emitter_runtime_compute_two_frames(TstContext* suite, const 
        DVZ_DRP2_COMMAND_SET_BIND_GROUP);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream1, 5)) ==
        DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream1, 7)) ==
+       DVZ_DRP2_COMMAND_RESOURCE_BARRIER);
 
     DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
     runtime_cfg.semantic_only = true;

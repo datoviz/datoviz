@@ -110,6 +110,7 @@ The PoC currently executes these DRP2 commands:
 - `Draw`
 - `DrawIndexed`
 - `DispatchWorkgroups`
+- `ResourceBarrier` as a validated ordering marker
 - `CopyBufferToBuffer`
 - `CopyBufferToTexture`
 - `CopyTextureToBuffer`
@@ -128,7 +129,6 @@ the WebGPU runner rejects them through the unsupported-command path if they appe
 
 - `CreatePipelineLayout`
 - `DestroyPipelineLayout`
-- `ResourceBarrier`
 - `DrawIndirect`
 - `DrawIndexedIndirect`
 - `DispatchWorkgroupsIndirect`

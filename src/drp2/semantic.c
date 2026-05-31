@@ -1975,6 +1975,69 @@ static DvzDrp2ValidationResult _validate_end_compute_pass(
 
 
 
+static bool _resource_barrier_supported(const DvzDrp2Command* command)
+{
+    ANN(command);
+    if (strcmp(command->u.resource_barrier.src_stage, "COMPUTE") != 0 ||
+        strcmp(command->u.resource_barrier.src_access, "STORAGE_WRITE") != 0)
+        return false;
+    if (strcmp(command->u.resource_barrier.dst_stage, "VERTEX_INPUT") == 0 &&
+        strcmp(command->u.resource_barrier.dst_access, "VERTEX_READ") == 0)
+        return true;
+    if (strcmp(command->u.resource_barrier.dst_stage, "COPY") == 0 &&
+        strcmp(command->u.resource_barrier.dst_access, "COPY_READ") == 0)
+        return true;
+    return false;
+}
+
+
+
+static DvzDrp2ValidationResult _validate_resource_barrier(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    if (_open_pass(state) != NULL)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2Object* encoder = _find_object(state, command->u.resource_barrier.encoder_id);
+    if (encoder == NULL || encoder->kind != DRP2_OBJECT_ENCODER || !encoder->open)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2Object* buffer = _find_object(state, command->u.resource_barrier.buffer_id);
+    if (buffer == NULL || buffer->kind != DRP2_OBJECT_BUFFER)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if ((buffer->usage & DVZ_DRP2_BUFFER_USAGE_STORAGE) == 0)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+
+    if (strcmp(command->u.resource_barrier.dst_stage, "VERTEX_INPUT") == 0 &&
+        (buffer->usage & DVZ_DRP2_BUFFER_USAGE_VERTEX) == 0)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    if (strcmp(command->u.resource_barrier.dst_stage, "COPY") == 0 &&
+        (buffer->usage & DVZ_DRP2_BUFFER_USAGE_COPY_SRC) == 0)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+
+    if (!_resource_barrier_supported(command))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    if (command->u.resource_barrier.size == 0)
+    {
+        if (command->u.resource_barrier.offset > buffer->size)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    }
+    else if (_drp2_range_overflows(
+                 command->u.resource_barrier.offset, command->u.resource_barrier.size,
+                 buffer->size))
+    {
+        return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    }
+
+    _mark_referenced(state, command->u.resource_barrier.buffer_id);
+    return _drp2_ok();
+}
+
+
+
 static DvzDrp2ValidationResult _validate_copy_buffer_to_buffer(
     Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
 {
@@ -2312,6 +2375,8 @@ static DvzDrp2ValidationResult _validate_command(
         return _validate_dispatch_workgroups(state, command, command_index);
     case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
         return _validate_end_compute_pass(state, command, command_index);
+    case DVZ_DRP2_COMMAND_RESOURCE_BARRIER:
+        return _validate_resource_barrier(state, command, command_index);
     case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
         return _validate_copy_buffer_to_buffer(state, command, command_index);
     case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:

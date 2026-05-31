@@ -108,6 +108,7 @@
     "/spec/drp2/fixtures/negative/invalid_queue_submit_readback_unknown_buffer.json",
     "/spec/drp2/fixtures/negative/invalid_queue_submit_reused_command_buffer.json",
     "/spec/drp2/fixtures/negative/invalid_queue_submit_unknown_command_buffer.json",
+    "/spec/drp2/fixtures/negative/invalid_resource_barrier_inside_compute_pass.json",
     "/spec/drp2/fixtures/negative/invalid_set_bind_group_after_pipeline_rebind_missing_dynamic_offsets.json",
     "/spec/drp2/fixtures/negative/invalid_set_bind_group_dynamic_offsets_extra.json",
     "/spec/drp2/fixtures/negative/invalid_set_bind_group_dynamic_offsets_misordered.json",

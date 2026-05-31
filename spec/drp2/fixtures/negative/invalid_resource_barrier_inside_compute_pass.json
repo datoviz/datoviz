@@ -1,0 +1,61 @@
+{
+  "name": "invalid_resource_barrier_inside_compute_pass",
+  "description": "A ResourceBarrier is recorded while a compute pass is still open.",
+  "reason": "ResourceBarrier is an encoder-level ordering marker and is valid only outside pass scopes.",
+  "fix": "End the compute pass before recording the ResourceBarrier.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "barrier",
+    "compute_pass"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 16,
+      "usage": ["STORAGE", "VERTEX"]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 2
+    },
+    {
+      "cmd": "BeginComputePass",
+      "id": 3,
+      "encoder_id": 2
+    },
+    {
+      "cmd": "ResourceBarrier",
+      "encoder_id": 2,
+      "buffer_id": 1,
+      "src_stage": "COMPUTE",
+      "src_access": "STORAGE_WRITE",
+      "dst_stage": "VERTEX_INPUT",
+      "dst_access": "VERTEX_READ",
+      "offset": 0,
+      "size": 16
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 5
+  }
+}

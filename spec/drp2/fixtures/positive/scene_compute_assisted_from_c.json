@@ -21,6 +21,7 @@
     { "cmd": "SetBindGroup", "pass_id": 6, "slot": 0, "bind_group_id": 13 },
     { "cmd": "DispatchWorkgroups", "pass_id": 6, "x": 1, "y": 1, "z": 1 },
     { "cmd": "EndComputePass", "pass_id": 6 },
+    { "cmd": "ResourceBarrier", "encoder_id": 2, "buffer_id": 21, "src_stage": "COMPUTE", "src_access": "STORAGE_WRITE", "dst_stage": "VERTEX_INPUT", "dst_access": "VERTEX_READ", "offset": 0, "size": 36 },
     { "cmd": "BeginRenderPass", "id": 3, "encoder_id": 2, "color_attachments": [ { "texture_id": 1, "load_op": "load", "store_op": "store", "clear_value": { "r": 0, "g": 0, "b": 0, "a": 1 } } ] },
     { "cmd": "SetPipeline", "pass_id": 3, "pipeline_id": 10 },
     { "cmd": "SetVertexBuffer", "pass_id": 3, "slot": 0, "buffer_id": 21, "offset": 0 },

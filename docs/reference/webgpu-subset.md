@@ -72,7 +72,6 @@ Deferred DRP2 commands remain outside the active browser subset:
 
 - `CreatePipelineLayout`;
 - `DestroyPipelineLayout`;
-- `ResourceBarrier`;
 - `DrawIndirect`;
 - `DrawIndexedIndirect`;
 - `DispatchWorkgroupsIndirect`.

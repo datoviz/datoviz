@@ -1240,6 +1240,74 @@ DvzDrp2ValidationResult _vklite_dispatch_workgroups(
 
 
 /**
+ * Record and submit a buffer resource barrier in an owned vklite command buffer.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 ResourceBarrier command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+DvzDrp2ValidationResult _vklite_resource_barrier(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* buffer = _vklite_find(state, command->u.resource_barrier.buffer_id);
+    if (buffer == NULL || buffer->kind != DRP2_OBJECT_BUFFER || buffer->buffer == NULL)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    VkPipelineStageFlags2 dst_stage = VK_PIPELINE_STAGE_2_NONE;
+    VkAccessFlags2 dst_access = VK_ACCESS_2_NONE;
+    if (strcmp(command->u.resource_barrier.dst_stage, "VERTEX_INPUT") == 0 &&
+        strcmp(command->u.resource_barrier.dst_access, "VERTEX_READ") == 0)
+    {
+        dst_stage = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
+        dst_access = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT;
+    }
+    else if (strcmp(command->u.resource_barrier.dst_stage, "COPY") == 0 &&
+             strcmp(command->u.resource_barrier.dst_access, "COPY_READ") == 0)
+    {
+        dst_stage = VK_PIPELINE_STAGE_2_COPY_BIT;
+        dst_access = VK_ACCESS_2_TRANSFER_READ_BIT;
+    }
+    else
+    {
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    }
+
+    DvzSize size = command->u.resource_barrier.size;
+    if (size == 0)
+        size = VK_WHOLE_SIZE;
+
+    DvzCommands* cmds = _vklite_owned_commands_create(state->runtime->device);
+    if (cmds == NULL)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (dvz_cmd_begin_result(cmds) != 0)
+    {
+        _vklite_owned_commands_destroy(cmds);
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+
+    DvzBarriers barriers = {0};
+    dvz_barriers(&barriers);
+    DvzBarrierBuffer* bbuf = dvz_barriers_buffer(
+        &barriers, dvz_buffer_handle(buffer->buffer), command->u.resource_barrier.offset, size);
+    if (bbuf == NULL)
+    {
+        _vklite_owned_commands_destroy(cmds);
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+    dvz_barrier_buffer_stage(bbuf, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, dst_stage);
+    dvz_barrier_buffer_access(bbuf, VK_ACCESS_2_SHADER_WRITE_BIT, dst_access);
+    dvz_cmd_barriers(cmds, &barriers);
+
+    DvzDrp2ValidationResult result = _vklite_owned_commands_end_submit(cmds, command_index);
+    _vklite_owned_commands_destroy(cmds);
+    return result;
+}
+
+
+/**
  * End and submit a vklite dynamic-rendering pass.
  *
  * @param state vklite runtime state

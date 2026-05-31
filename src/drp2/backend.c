@@ -687,6 +687,9 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
         case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
             result = _vklite_end_compute_pass(state, command->u.end_compute_pass.pass_id, i);
             break;
+        case DVZ_DRP2_COMMAND_RESOURCE_BARRIER:
+            result = _vklite_resource_barrier(state, command, i);
+            break;
         default:
             result = _drp2_ok();
             break;

@@ -1,8 +1,8 @@
 {
   "name": "pressure_compute_assisted",
   "description": "Run a compute pass that writes transformed floats into a storage buffer, then use that buffer as vertex input in a render pass, all within a single command encoder.",
-  "reason": "The output buffer has both STORAGE and VERTEX usage, which is valid. The compute pass and render pass are sequential within the same open encoder, so the runtime is responsible for inserting any necessary backend-level barrier between them. The vertex buffer slot in the render pass references the buffer that the compute pass just wrote, which is a valid producer pattern under DRP2 implicit synchronization semantics.",
-  "notes": "Pressure test #5 from LAYER1.md. This fixture validates the compute-assisted data path: a compute shader processes input data and writes results into a shared buffer that feeds the render pipeline as vertex input. Both passes live in the same encoder, so the runtime handles synchronization at the backend level without any explicit ResourceBarrier command (which is deferred to 2.1 in schema/DEFERRED.md). The compute shader copies 9 floats (3 vec3f vertices) from the input storage buffer to the output storage buffer using one workgroup of 9 threads.",
+  "reason": "The output buffer has both STORAGE and VERTEX usage, which is valid. The compute pass is followed by an explicit ResourceBarrier that makes the compute storage writes visible to vertex input before the render pass consumes the same buffer.",
+  "notes": "Pressure test #5 from LAYER1.md. This fixture validates the compute-assisted data path: a compute shader processes input data and writes results into a shared buffer that feeds the render pipeline as vertex input. The compute shader copies 9 floats (3 vec3f vertices) from the input storage buffer to the output storage buffer using one workgroup of 9 threads.",
   "version": {
     "major": 2,
     "minor": 0
@@ -195,6 +195,17 @@
     {
       "cmd": "EndComputePass",
       "pass_id": 21
+    },
+    {
+      "cmd": "ResourceBarrier",
+      "encoder_id": 20,
+      "buffer_id": 3,
+      "src_stage": "COMPUTE",
+      "src_access": "STORAGE_WRITE",
+      "dst_stage": "VERTEX_INPUT",
+      "dst_access": "VERTEX_READ",
+      "offset": 0,
+      "size": 36
     },
     {
       "cmd": "BeginRenderPass",

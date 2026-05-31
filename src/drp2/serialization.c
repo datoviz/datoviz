@@ -102,6 +102,8 @@ static const char* _command_name(DvzDrp2CommandType type)
         return "DispatchWorkgroups";
     case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
         return "EndComputePass";
+    case DVZ_DRP2_COMMAND_RESOURCE_BARRIER:
+        return "ResourceBarrier";
     case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
         return "CopyBufferToBuffer";
     case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
@@ -1104,6 +1106,18 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 " }",
             _command_name(command->type), command->u.end_compute_pass.pass_id);
+        break;
+    case DVZ_DRP2_COMMAND_RESOURCE_BARRIER:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"encoder_id\": %" PRIu64 ", \"buffer_id\": %" PRIu64
+            ", \"src_stage\": \"%s\", \"src_access\": \"%s\", \"dst_stage\": \"%s\""
+            ", \"dst_access\": \"%s\", \"offset\": %" PRIu64 ", \"size\": %" PRIu64 " }",
+            _command_name(command->type), command->u.resource_barrier.encoder_id,
+            command->u.resource_barrier.buffer_id, command->u.resource_barrier.src_stage,
+            command->u.resource_barrier.src_access, command->u.resource_barrier.dst_stage,
+            command->u.resource_barrier.dst_access, command->u.resource_barrier.offset,
+            command->u.resource_barrier.size);
         break;
     case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
         _json_append(

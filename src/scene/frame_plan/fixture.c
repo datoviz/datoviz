@@ -282,6 +282,9 @@ static bool _emit_compute_assisted_render(
                stream, DRP2_ID_COMPUTE_PASS, compute->u.compute.dispatch[0],
                compute->u.compute.dispatch[1], compute->u.compute.dispatch[2]) &&
            dvz_drp2_stream_end_compute_pass(stream, DRP2_ID_COMPUTE_PASS) &&
+           dvz_drp2_stream_resource_barrier(
+               stream, DRP2_ID_ENCODER, state->first_compute_output_id, "COMPUTE",
+               "STORAGE_WRITE", "VERTEX_INPUT", "VERTEX_READ", 0, state->compute_buffer_size) &&
            dvz_drp2_stream_begin_render_pass(
                stream, DRP2_ID_RENDER_PASS, DRP2_ID_ENCODER, DRP2_ID_COLOR_TARGET) &&
            dvz_drp2_stream_set_pipeline(stream, DRP2_ID_RENDER_PASS, DRP2_ID_PIPELINE) &&

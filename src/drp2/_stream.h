@@ -288,6 +288,17 @@ struct DvzDrp2Command
         struct
         {
             uint64_t encoder_id;
+            uint64_t buffer_id;
+            uint64_t offset;
+            uint64_t size;
+            char src_stage[DVZ_DRP2_LABEL_SIZE];
+            char src_access[DVZ_DRP2_LABEL_SIZE];
+            char dst_stage[DVZ_DRP2_LABEL_SIZE];
+            char dst_access[DVZ_DRP2_LABEL_SIZE];
+        } resource_barrier;
+        struct
+        {
+            uint64_t encoder_id;
             uint64_t src_buffer_id;
             uint64_t src_offset;
             uint64_t dst_buffer_id;

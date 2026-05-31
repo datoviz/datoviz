@@ -1787,6 +1787,10 @@ bool _emitter_emit_compute_assisted_render(
              stream, compute_pass_id, compute->u.compute.dispatch[0],
              compute->u.compute.dispatch[1], compute->u.compute.dispatch[2]) &&
          dvz_drp2_stream_end_compute_pass(stream, compute_pass_id) &&
+         dvz_drp2_stream_resource_barrier(
+             stream, encoder_id, emitter->resources.first_compute_output_id, "COMPUTE",
+             "STORAGE_WRITE", "VERTEX_INPUT", "VERTEX_READ", 0,
+             emitter->resources.compute_buffer_size) &&
          dvz_drp2_stream_begin_render_pass_clear(
              stream, render_pass_id, encoder_id, color_id, cfg ? cfg->clear_color[0] : 0.0f,
              cfg ? cfg->clear_color[1] : 0.0f, cfg ? cfg->clear_color[2] : 0.0f,

@@ -9,7 +9,6 @@ Deferred command schema files:
 
 - `commands/CreatePipelineLayout.json`
 - `commands/DestroyPipelineLayout.json`
-- `commands/ResourceBarrier.json`
 - `commands/DispatchWorkgroupsIndirect.json`
 - `commands/DrawIndirect.json`
 - `commands/DrawIndexedIndirect.json`
@@ -39,6 +38,4 @@ Promotion must keep schema, fixtures, and prose in lockstep per the rules in `..
 ## Promotion Risk For `2.0`
 
 All remaining deferred commands are lower priority and expected to target `2.1` or later.
-`ResourceBarrier` is the exception under active review for the v0.4 experimental
-compute+graphics slice: it may be promoted earlier if the storage-buffer compute-to-render proof
-needs an explicit portable synchronization marker.
+`ResourceBarrier` has been promoted into the active v0.4 experimental compute+graphics slice.

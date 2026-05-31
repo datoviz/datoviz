@@ -1065,6 +1065,34 @@ class DRP2SemanticValidator:
         )
         self._require_bound_pipeline(index, pass_info)
 
+    def _handle_ResourceBarrier(self, index: int, command: Dict[str, Any]) -> None:
+        encoder = self._resolve_encoder(index, command['encoder_id'])
+        if encoder['open_pass'] is not None:
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_STATE', index, 'ResourceBarrier is inside a pass'
+            )
+        if command['src_stage'] != 'COMPUTE' or command['src_access'] != 'STORAGE_WRITE':
+            raise SemanticFailure('DRP2_ERR_USAGE', index, 'unsupported ResourceBarrier source')
+        buffer_state = self._buffer_usage(index, command['buffer_id'], 'STORAGE')
+        if command['dst_stage'] == 'VERTEX_INPUT' and command['dst_access'] == 'VERTEX_READ':
+            self._buffer_usage(index, command['buffer_id'], 'VERTEX')
+        elif command['dst_stage'] == 'COPY' and command['dst_access'] == 'COPY_READ':
+            self._buffer_usage(index, command['buffer_id'], 'COPY_SRC')
+        else:
+            raise SemanticFailure('DRP2_ERR_USAGE', index, 'unsupported ResourceBarrier destination')
+        offset = command.get('offset', 0)
+        size = command.get('size', 0)
+        if size == 0:
+            if offset > buffer_state.data['size']:
+                raise SemanticFailure(
+                    'DRP2_ERR_OUT_OF_RANGE',
+                    index,
+                    f'buffer range {offset}+rest exceeds {buffer_state.data["size"]}',
+                )
+        else:
+            self._check_buffer_range(index, buffer_state, offset, size)
+        encoder['resources'].add(('buffer', command['buffer_id']))
+
     def _handle_CopyBufferToBuffer(self, index: int, command: Dict[str, Any]) -> None:
         encoder = self._resolve_encoder(index, command['encoder_id'])
         if encoder['open_pass'] is not None:

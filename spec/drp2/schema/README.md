@@ -67,6 +67,7 @@ Authoritative files:
 - `commands/Draw.json`
 - `commands/DrawIndexed.json`
 - `commands/DispatchWorkgroups.json`
+- `commands/ResourceBarrier.json`
 - `commands/CopyBufferToBuffer.json`
 - `commands/CopyBufferToTexture.json`
 - `commands/CopyTextureToBuffer.json`
@@ -82,7 +83,6 @@ Deferred, non-authoritative files:
 
 - `commands/CreatePipelineLayout.json`
 - `commands/DestroyPipelineLayout.json`
-- `commands/ResourceBarrier.json`
 - `commands/DispatchWorkgroupsIndirect.json`
 - `commands/DrawIndirect.json`
 - `commands/DrawIndexedIndirect.json`

@@ -1311,6 +1311,29 @@ DVZ_EXPORT bool dvz_drp2_stream_dispatch_workgroups(
 DVZ_EXPORT bool dvz_drp2_stream_end_compute_pass(DvzDrp2CommandStream* stream, uint64_t pass_id);
 
 
+/**
+ * Append a ResourceBarrier command for a buffer range.
+ *
+ * The first active DRP2 barrier slice covers compute storage writes made visible to a later vertex
+ * input or copy read in the same command encoder.
+ *
+ * @param stream the command stream
+ * @param encoder_id the open command encoder id
+ * @param buffer_id the buffer id
+ * @param src_stage the producer stage, such as "COMPUTE"
+ * @param src_access the producer access, such as "STORAGE_WRITE"
+ * @param dst_stage the consumer stage, such as "VERTEX_INPUT" or "COPY"
+ * @param dst_access the consumer access, such as "VERTEX_READ" or "COPY_READ"
+ * @param offset the first byte in the synchronized range
+ * @param size the synchronized byte size, or 0 for the rest of the buffer
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_resource_barrier(
+    DvzDrp2CommandStream* stream, uint64_t encoder_id, uint64_t buffer_id,
+    const char* src_stage, const char* src_access, const char* dst_stage, const char* dst_access,
+    uint64_t offset, uint64_t size);
+
+
 
 /**
  * Append a CopyBufferToBuffer command.

@@ -4,33 +4,65 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "ResourceBarrier"
     },
-    "resource": {
+    "encoder_id": {
       "$ref": "../common/Id.json"
     },
-    "oldState": {
-      "type": "string"
+    "buffer_id": {
+      "$ref": "../common/Id.json"
     },
-    "newState": {
-      "type": "string"
+    "src_stage": {
+      "enum": ["COMPUTE"]
     },
-    "srcStage": {
-      "type": "string"
+    "src_access": {
+      "enum": ["STORAGE_WRITE"]
     },
-    "dstStage": {
-      "type": "string"
+    "dst_stage": {
+      "enum": ["VERTEX_INPUT", "COPY"]
     },
-    "srcAccess": {
-      "type": "string"
+    "dst_access": {
+      "enum": ["VERTEX_READ", "COPY_READ"]
     },
-    "dstAccess": {
-      "type": "string"
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0
+    },
+    "size": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0
     }
   },
   "required": [
-    "type",
-    "resource"
+    "cmd",
+    "encoder_id",
+    "buffer_id",
+    "src_stage",
+    "src_access",
+    "dst_stage",
+    "dst_access"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "dst_stage": { "const": "VERTEX_INPUT" } },
+        "required": ["dst_stage"]
+      },
+      "then": {
+        "properties": { "dst_access": { "const": "VERTEX_READ" } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "dst_stage": { "const": "COPY" } },
+        "required": ["dst_stage"]
+      },
+      "then": {
+        "properties": { "dst_access": { "const": "COPY_READ" } }
+      }
+    }
   ]
 }

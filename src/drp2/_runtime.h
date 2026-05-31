@@ -355,6 +355,8 @@ DvzDrp2ValidationResult _vklite_copy_texture_to_buffer(
     Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
 DvzDrp2ValidationResult _vklite_copy_texture_to_texture(
     Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_resource_barrier(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
 DvzDrp2ValidationResult _vklite_begin_render_pass(
     Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
 DvzDrp2ValidationResult _vklite_begin_compute_pass(
