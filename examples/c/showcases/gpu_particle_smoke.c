@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* gpu_particle_advection - scene API compute-to-graphics smoke lab.
+/* gpu_particle_smoke - scene API compute-to-graphics particle smoke showcase.
  *
- * Scenario: lab_gpu_particle_advection
+ * Scenario: showcase_gpu_particle_smoke
  * Style: dense transparent particle smoke, experimental scene compute, optional capture
  *
- * Build:  just example-c lab/gpu_particle_advection
- * Run:    ./build/examples/c/lab/gpu_particle_advection
- * Smoke:  ./build/examples/c/lab/gpu_particle_advection 120
+ * Build:  just example-c showcases/gpu_particle_smoke
+ * Run:    ./build/examples/c/showcases/gpu_particle_smoke
+ * Smoke:  ./build/examples/c/showcases/gpu_particle_smoke 120
  */
 
 
@@ -37,17 +37,17 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH          1600u
-#define HEIGHT         1000u
-#define PARTICLE_COUNT 1048576u
-#define WORKGROUP_SIZE 128u
+#define WIDTH                   1600u
+#define HEIGHT                  1000u
+#define PARTICLE_COUNT          1048576u
+#define WORKGROUP_SIZE          128u
 #define COMPUTE_SOURCE_CAPACITY 8192u
-#define SIM_SPEED      0.65f
-#define SIM_MAX_DT     (1.0f / 30.0f)
+#define SIM_SPEED               0.65f
+#define SIM_MAX_DT              (1.0f / 30.0f)
 
 #define SMOKE_LIFETIME          4.6f
-#define SMOKE_ALPHA_BASE        0.36f
-#define SMOKE_ALPHA_YOUNG_BOOST 0.28f
+#define SMOKE_ALPHA_BASE        0.26f
+#define SMOKE_ALPHA_YOUNG_BOOST 0.18f
 #define SMOKE_SIZE_MIN          1.25f
 #define SMOKE_SIZE_MAX          3.75f
 #define SMOKE_VIOLET_MIX        0.20f
@@ -208,8 +208,8 @@ static bool _compute_shader_source(char* out, size_t size)
         "%s",
         (double)SMOKE_LIFETIME, (double)SMOKE_ALPHA_BASE, (double)SMOKE_ALPHA_YOUNG_BOOST,
         (double)SMOKE_SIZE_MIN, (double)SMOKE_SIZE_MAX, (double)SMOKE_VIOLET_MIX,
-        (double)SMOKE_SOURCE_WIDTH, (double)SMOKE_SOURCE_HEIGHT,
-        (double)SMOKE_TOP_FADE_START, COMPUTE_GLSL_BODY);
+        (double)SMOKE_SOURCE_WIDTH, (double)SMOKE_SOURCE_HEIGHT, (double)SMOKE_TOP_FADE_START,
+        COMPUTE_GLSL_BODY);
     return n >= 0 && (size_t)n < size;
 }
 
@@ -245,8 +245,8 @@ static DvzColor _particle_color(float radius, float phase)
 }
 
 
-static void _init_particles(
-    vec3* positions, vec3* velocities, float* ages, DvzColor* colors, float* sizes)
+static void
+_init_particles(vec3* positions, vec3* velocities, float* ages, DvzColor* colors, float* sizes)
 {
     ANN(positions);
     ANN(velocities);
@@ -324,9 +324,8 @@ int main(int argc, char** argv)
     colors = (DvzColor*)dvz_calloc(PARTICLE_COUNT, sizeof(DvzColor));
     sizes = (float*)dvz_calloc(PARTICLE_COUNT, sizeof(float));
     EXAMPLE_CHECK(
-        positions != NULL && velocities != NULL && ages != NULL && colors != NULL &&
-            sizes != NULL,
-        "gpu_particle_advection: allocation failed");
+        positions != NULL && velocities != NULL && ages != NULL && colors != NULL && sizes != NULL,
+        "gpu_particle_smoke: allocation failed");
     _init_particles(positions, velocities, ages, colors, sizes);
 
     scene = dvz_scene();
@@ -421,7 +420,7 @@ int main(int argc, char** argv)
 
     DvzSceneCompute* compute = dvz_scene_compute(
         scene, &(DvzSceneComputeDesc){
-                   .label = "gpu_particle_advection",
+                   .label = "gpu_particle_smoke",
                    .shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL,
                    .shader_source = compute_glsl,
                    .dispatch = {(PARTICLE_COUNT + WORKGROUP_SIZE - 1u) / WORKGROUP_SIZE, 1, 1},
@@ -460,25 +459,25 @@ int main(int argc, char** argv)
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "gpu_particle_advection");
+    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "gpu_particle_smoke");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
     ParticleState state = {.scene = scene, .params = param_buffer, .sim_time = 0.0f};
     dvz_view_set_frame_callback(win, _particle_frame, &state);
     dvz_view_request_frame(win);
 
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("gpu_particle_advection");
+    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("gpu_particle_smoke");
     EXAMPLE_CHECK(dvz_view_capture_start(win, &capture) == 0, "dvz_view_capture_start() failed");
     dvz_app_run(app, frames);
     EXAMPLE_CHECK(dvz_view_capture_stop(win) == 0, "dvz_view_capture_stop() failed");
 
     if (frames == 0)
         printf(
-            "gpu_particle_advection: %u smoke particles, interactive scene compute path\n",
+            "gpu_particle_smoke: %u smoke particles, interactive scene compute path\n",
             PARTICLE_COUNT);
     else
         printf(
-            "gpu_particle_advection: %u smoke particles, %u frames, scene compute path\n",
+            "gpu_particle_smoke: %u smoke particles, %u frames, scene compute path\n",
             PARTICLE_COUNT, frames);
     rc = 0;
 

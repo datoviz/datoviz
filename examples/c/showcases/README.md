@@ -5,5 +5,6 @@ style metadata, bounded smoke paths, and capture expectations.
 
 Current public showcase seeds:
 
+- `gpu_particle_smoke.c`
 - `protein.c`
 - `wind_field.c`

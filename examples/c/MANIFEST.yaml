@@ -76,12 +76,15 @@ examples:
       card: section
       status_label: supported
 
-  - id: lab_gpu_particle_advection
+  - id: showcase_gpu_particle_smoke
     title: GPU Particle Smoke
-    stage: lab
-    lane: lab
-    source: examples/c/lab/gpu_particle_advection.c
+    stage: v0.4_required
+    lane: showcases
+    source: examples/c/showcases/gpu_particle_smoke.c
     validation: smoke+screenshot
+    gallery:
+      card: section
+      status_label: experimental
 
   - id: lab_axis_lattice_smoke
     title: Axis Lattice Smoke
