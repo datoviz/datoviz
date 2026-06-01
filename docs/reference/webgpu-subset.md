@@ -36,8 +36,9 @@ Supported browser canvas formats:
 - `rgba8unorm`;
 - `bgra8unorm`.
 
-The WASM scene ABI currently emits JSON DRP2 streams. JSON is the debug and fixture transport, not
-the intended long-term hot path.
+The browser runtime path uses split binary DRP2 setup, update, and frame packets with payload
+arenas. JSON emission remains available for debug and fixture export, but it is not used as the
+browser render path.
 
 ## Supported DRP2 Runtime Slice
 
@@ -66,7 +67,7 @@ The browser path intentionally does not support:
 - custom shader APIs;
 - text, labels, axes, colorbars, scale bars, picking, readback, volume, sphere, path, segment, and
   advanced technique parity in the WASM scene demos;
-- zero-copy or binary command transport;
+- zero-copy payload transport;
 - stable public JS/TS bindings for the WASM scene ABI.
 
 Deferred DRP2 commands remain outside the active browser subset:
