@@ -3,6 +3,7 @@
 # -------------------------------------------------------------------------------------------------
 
 set(DRP2_SRC
+    "${CMAKE_CURRENT_SOURCE_DIR}/packet.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/recording.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/runtime.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/semantic.c"

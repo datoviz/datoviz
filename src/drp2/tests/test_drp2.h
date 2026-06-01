@@ -40,6 +40,12 @@ int test_drp2_write_buffer_bytes_json_encodes_data_raw(TstContext* suite, const 
 
 int test_drp2_stream_json_payload_refs(TstContext* suite, const TstCase* item);
 
+int test_drp2_packet_roundtrip_payload_arena(TstContext* suite, const TstCase* item);
+
+int test_drp2_packet_roundtrip_frame_metadata(TstContext* suite, const TstCase* item);
+
+int test_drp2_packet_rejects_base64_payloads(TstContext* suite, const TstCase* item);
+
 int test_drp2_render_pipeline_step_modes_json(TstContext* suite, const TstCase* item);
 
 int test_drp2_recording_linear_roundtrip(TstContext* suite, const TstCase* item);

@@ -252,6 +252,131 @@ int test_drp2_stream_json_payload_refs(TstContext* suite, const TstCase* item)
 
 
 
+int test_drp2_packet_roundtrip_payload_arena(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    static const uint8_t payload[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    AT(dvz_drp2_stream_create_buffer(stream, 7, sizeof(payload), DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_buffer_bytes(stream, 7, 0, sizeof(payload), payload));
+
+    void* packet = NULL;
+    uint64_t packet_size = 0;
+    void* arena = NULL;
+    uint64_t arena_size = 0;
+    AT(dvz_drp2_packet_encode_stream(
+        stream, DVZ_DRP2_PACKET_UPDATE, 42, 9, &packet, &packet_size, &arena, &arena_size));
+    ANN(packet);
+    ANN(arena);
+    AT(packet_size > 56);
+    AT(arena_size == sizeof(payload));
+    AT(memcmp(arena, payload, sizeof(payload)) == 0);
+
+    DvzDrp2PacketInfo info = {0};
+    DvzDrp2CommandStream* decoded =
+        dvz_drp2_packet_decode_stream(packet, packet_size, arena, arena_size, &info);
+    ANN(decoded);
+    AT(info.kind == DVZ_DRP2_PACKET_UPDATE);
+    AT(info.resource_version == 42);
+    AT(info.frame_index == 9);
+    AT(info.command_count == 2);
+    AT(dvz_drp2_stream_count(decoded) == 2);
+
+    const DvzDrp2Command* cmd = dvz_drp2_stream_get(decoded, 1);
+    ANN(cmd);
+    AT(cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER);
+    AT(cmd->u.write_buffer.buffer_id == 7);
+    AT(cmd->u.write_buffer.size == sizeof(payload));
+    AT(cmd->u.write_buffer.data_raw_owned);
+    AT(memcmp(cmd->u.write_buffer.data_raw, payload, sizeof(payload)) == 0);
+
+    dvz_drp2_stream_destroy(decoded);
+    dvz_drp2_packet_destroy(arena);
+    dvz_drp2_packet_destroy(packet);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_packet_roundtrip_frame_metadata(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 100));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(stream, 100, 1, 0, 2, 4, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 100, 101));
+    AT(dvz_drp2_stream_queue_submit(stream, 101, 102));
+
+    void* packet = NULL;
+    uint64_t packet_size = 0;
+    void* arena = NULL;
+    uint64_t arena_size = 0;
+    AT(dvz_drp2_packet_encode_stream(
+        stream, DVZ_DRP2_PACKET_FRAME, 12, 34, &packet, &packet_size, &arena, &arena_size));
+    ANN(packet);
+    AT(arena == NULL);
+    AT(arena_size == 0);
+
+    DvzDrp2PacketInfo info = {0};
+    DvzDrp2CommandStream* decoded =
+        dvz_drp2_packet_decode_stream(packet, packet_size, NULL, 0, &info);
+    ANN(decoded);
+    AT(info.kind == DVZ_DRP2_PACKET_FRAME);
+    AT(info.resource_version == 12);
+    AT(info.frame_index == 34);
+    AT(dvz_drp2_stream_count(decoded) == 4);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(decoded, 3)) == DVZ_DRP2_COMMAND_QUEUE_SUBMIT);
+
+    const DvzDrp2Command* copy = dvz_drp2_stream_get(decoded, 1);
+    ANN(copy);
+    AT(copy->u.copy_buffer_to_buffer.src_buffer_id == 1);
+    AT(copy->u.copy_buffer_to_buffer.dst_buffer_id == 2);
+    AT(copy->u.copy_buffer_to_buffer.dst_offset == 4);
+    AT(copy->u.copy_buffer_to_buffer.size == 16);
+
+    dvz_drp2_stream_destroy(decoded);
+    dvz_drp2_packet_destroy(packet);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_packet_rejects_base64_payloads(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_write_buffer(stream, 1, 0, 4, "AQIDBA=="));
+
+    void* packet = NULL;
+    uint64_t packet_size = 0;
+    void* arena = NULL;
+    uint64_t arena_size = 0;
+    AT(!dvz_drp2_packet_encode_stream(
+        stream, DVZ_DRP2_PACKET_UPDATE, 1, 1, &packet, &packet_size, &arena, &arena_size));
+    AT(packet == NULL);
+    AT(packet_size == 0);
+    AT(arena == NULL);
+    AT(arena_size == 0);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_write_buffer_bytes_large_json_roundtrip(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
