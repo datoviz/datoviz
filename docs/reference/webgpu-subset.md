@@ -88,16 +88,16 @@ unchanged and must not inspect pointer values or internal scene state.
 
 Payload and diagnostics lifetime:
 
-- `dvz_wasm_api_payload_ptr()` and `dvz_wasm_api_payload_size()` return a borrowed UTF-8 JSON
-  payload;
-- the payload is valid only until the next mutating ABI call on the same scene or scene destruction;
-- JavaScript must copy or decode the payload before resize, pointer, wheel, data upload, emit,
-  canvas-format, capability, or destroy calls;
-- `dvz_wasm_api_emit_direct()` returns JSON where write commands reference WASM-memory payload
-  spans with `data_ref` instead of embedding base64 `data`;
-- `dvz_wasm_api_payload_count()`, `dvz_wasm_api_payload_command_index()`,
-  `dvz_wasm_api_payload_data_ptr()`, and `dvz_wasm_api_payload_data_size()` expose those borrowed
-  spans until the next mutating ABI call on the same scene or scene destruction;
+- `dvz_wasm_api_emit_packets()` is the browser runtime path and returns setup, update, and frame
+  binary DRP2 packets plus payload arenas through packet accessors;
+- packet and arena spans are valid only until the next mutating ABI call on the same scene or scene
+  destruction;
+- JavaScript must decode and execute packet spans immediately and must not retain packet or arena
+  views across resize, pointer, wheel, data upload, emit, canvas-format, capability, or destroy
+  calls;
+- `dvz_wasm_api_emit()` plus `dvz_wasm_api_payload_ptr()` and `dvz_wasm_api_payload_size()` expose
+  borrowed UTF-8 JSON for debug and fixture export only;
+- JSON is not used as the browser render path;
 - `dvz_wasm_api_set_capabilities()` passes normalized browser limits for texture dimension, bind
   groups, vertex buffers, buffer size, texture-copy row alignment, and sample count into scene
   emission;
@@ -148,6 +148,11 @@ Expected manual results for the current subset:
 - 2D WASM page: point, primitive, image, and mesh content render; pan/zoom and resize work;
 - 3D WASM page: cube renders; arcball drag, wheel zoom, and resize work.
 
-`just webgpu-browser-smoke` automates the two WASM scene page checks through the direct payload
-transport and the dashboard WASM Scene Smoke rows with headless Chrome when Chrome/Chromium is
+`just webgpu-browser-smoke` automates the two WASM scene page checks through the split-packet
+runtime path and the dashboard WASM Scene Smoke rows with headless Chrome when Chrome/Chromium is
 available locally. It writes transient PNG evidence under `build/webgpu-browser-smoke/`.
+
+Headless Chrome/Dawn can skip WebGPU render checks before the scene contract is exercised because
+of external instance loss, including `A valid external Instance reference no longer exists` or
+`Instance dropped in popErrorScope`. Visible browser runs of the WASM scene pages and fixture
+dashboard remain the render validation path for the current experimental subset.

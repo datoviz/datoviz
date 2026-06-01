@@ -57,6 +57,14 @@ int dvz_wasm_api_panel_bind_controller(uint32_t panel, uint32_t controller, uint
 int dvz_wasm_api_emit(uint32_t scene, uint32_t figure);
 uint32_t dvz_wasm_api_payload_ptr(uint32_t scene);
 uint32_t dvz_wasm_api_payload_size(uint32_t scene);
+int dvz_wasm_api_emit_packets(uint32_t scene, uint32_t figure);
+int dvz_wasm_api_packet_status(uint32_t scene);
+uint32_t dvz_wasm_api_packet_ptr(uint32_t scene, uint32_t kind);
+uint32_t dvz_wasm_api_packet_size(uint32_t scene, uint32_t kind);
+uint32_t dvz_wasm_api_packet_arena_ptr(uint32_t scene, uint32_t kind);
+uint32_t dvz_wasm_api_packet_arena_size(uint32_t scene, uint32_t kind);
+uint32_t dvz_wasm_api_resource_version(uint32_t scene);
+uint32_t dvz_wasm_api_frame_index(uint32_t scene);
 uint32_t dvz_wasm_api_diagnostic_count(uint32_t scene);
 uint32_t dvz_wasm_api_diagnostic(uint32_t scene, uint32_t index);
 void dvz_wasm_api_scene_destroy(uint32_t scene);
@@ -71,14 +79,19 @@ void dvz_wasm_api_scene_destroy(uint32_t scene);
    generated numeric attribute ids.
 5. Texture uploads start with tightly packed RGBA8 2D data only.
 
-## Payload And Diagnostics Lifetime
+## Packet, Payload, And Diagnostics Lifetime
 
-1. Emitted payload pointers are borrowed and valid only until the next mutating ABI call on the same
-   scene or scene destruction.
-2. JS must decode or copy payload bytes before calling another ABI function on that scene.
-3. Diagnostics are borrowed with the same lifetime as the current diagnostic report.
-4. Successful emits should leave diagnostics empty.
-5. Failed emits and rejected operations should return `-1`; detailed diagnostics are required where
+1. `dvz_wasm_api_emit_packets()` is the browser runtime path. It exposes setup, update, and frame
+   binary DRP2 packets plus one payload arena per packet kind.
+2. Packet and arena pointers are borrowed and valid only until the next mutating ABI call on the
+   same scene or scene destruction.
+3. JS must decode and execute packet spans immediately and must not retain packet or arena views
+   across another ABI call on that scene.
+4. `dvz_wasm_api_emit()` remains a debug and fixture-export path. Its JSON payload pointer is
+   borrowed with the same lifetime rules and is not a browser render path.
+5. Diagnostics are borrowed with the same lifetime as the current diagnostic report.
+6. Successful emits should leave diagnostics empty.
+7. Failed emits and rejected operations should return `-1`; detailed diagnostics are required where
    the scene/DRP2 layer can explain the failure.
 
 ## Current PoC Compatibility
@@ -96,4 +109,5 @@ The browser pages and `just wasm-scene-smoke` use the generic `dvz_wasm_api_*` o
 2. Done: add primitive, image, mesh, panzoom, camera, and arcball coverage through generic calls.
 3. Done: add a small JS wrapper over the ABI.
 4. Done: move the browser demos to the JS wrapper and retire the demo-specific bridge.
-5. Replace JSON hot-path transport only after the object ABI is stable.
+5. Done: replace JSON hot-path transport with split binary DRP2 packets and payload arenas.
+6. Done: remove the legacy direct-payload JSON ABI exports.
