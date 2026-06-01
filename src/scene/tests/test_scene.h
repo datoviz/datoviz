@@ -468,6 +468,8 @@ int test_scene_visual_local_transform_emits_per_visual_mvp(
 
 int test_scene_mesh_local_transform_without_instances(TstContext* suite, const TstCase* item);
 
+int test_scene_visual_local_transform_family_audit(TstContext* suite, const TstCase* item);
+
 int test_scene_panel_one_pass_per_panel(TstContext* suite, const TstCase* item);
 
 int test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state(

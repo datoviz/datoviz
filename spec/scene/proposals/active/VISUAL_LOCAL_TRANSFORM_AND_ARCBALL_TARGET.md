@@ -164,6 +164,10 @@ Landed behavior keeps `DvzArcball` as model/object transform state and adds `Dvz
 as a separate camera controller. Render/query frame plans now carry per-visual MVPs when
 visual-local model matrices differ. `dvz_visual_bounds()` reports bounds after the retained local
 transform, and synthetic query render plans compose the same local model as regular rendering.
+The local-transform family audit currently covers retained render lowering for point, pixel,
+marker, segment, path, image, mesh, primitive, sphere, splat, and vector visuals. Glyph, text,
+labels, and volume visuals need family-specific fixtures before they can be promoted into that
+generic audit without making the test depend on font atlases or sampled-field setup.
 10. Update transform/controller specs after implementation settles.
 
 

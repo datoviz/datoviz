@@ -23,6 +23,160 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+static DvzVisual* _local_transform_audit_visual(DvzScene* scene, DvzVisualType type)
+{
+    ANN(scene);
+
+    DvzVisual* visual = NULL;
+    vec3 positions[4] = {
+        {-0.50f, -0.50f, 0.0f},
+        {+0.50f, -0.50f, 0.0f},
+        {-0.50f, +0.50f, 0.0f},
+        {+0.50f, +0.50f, 0.0f},
+    };
+    DvzColor colors[4] = {
+        {255, 0, 0, 255},
+        {0, 255, 0, 255},
+        {0, 0, 255, 255},
+        {255, 255, 255, 255},
+    };
+    float sizes[4] = {6.0f, 6.0f, 6.0f, 6.0f};
+
+    switch (type)
+    {
+    case DVZ_VISUAL_TYPE_POINT:
+        visual = dvz_point(scene, 0);
+        if (visual == NULL || dvz_visual_set_data(visual, "position", positions, 1) != 0 ||
+            dvz_visual_set_data(visual, "color", colors, 1) != 0 ||
+            dvz_visual_set_data(visual, "size", sizes, 1) != 0)
+            return NULL;
+        break;
+
+    case DVZ_VISUAL_TYPE_PIXEL:
+        visual = dvz_pixel(scene, 0);
+        if (visual == NULL || dvz_visual_set_data(visual, "position", positions, 1) != 0 ||
+            dvz_visual_set_data(visual, "color", colors, 1) != 0 ||
+            dvz_visual_set_data(visual, "pixel_size", sizes, 1) != 0)
+            return NULL;
+        break;
+
+    case DVZ_VISUAL_TYPE_MARKER:
+    {
+        float angles[1] = {0.0f};
+        uint32_t shapes[1] = {DVZ_MARKER_SHAPE_DISC};
+        visual = dvz_marker(scene, 0);
+        if (visual == NULL || dvz_visual_set_data(visual, "position", positions, 1) != 0 ||
+            dvz_visual_set_data(visual, "color", colors, 1) != 0 ||
+            dvz_visual_set_data(visual, "size", sizes, 1) != 0 ||
+            dvz_visual_set_data(visual, "angle", angles, 1) != 0 ||
+            dvz_visual_set_data(visual, "shape", shapes, 1) != 0)
+            return NULL;
+        break;
+    }
+
+    case DVZ_VISUAL_TYPE_SEGMENT:
+    {
+        vec3 starts[1] = {{-0.50f, -0.25f, 0.0f}};
+        vec3 ends[1] = {{+0.50f, +0.25f, 0.0f}};
+        visual = dvz_segment(scene, 0);
+        if (visual == NULL || dvz_visual_set_data(visual, "position_start", starts, 1) != 0 ||
+            dvz_visual_set_data(visual, "position_end", ends, 1) != 0 ||
+            dvz_visual_set_data(visual, "color", colors, 1) != 0 ||
+            dvz_visual_set_data(visual, "stroke_width", sizes, 1) != 0)
+            return NULL;
+        break;
+    }
+
+    case DVZ_VISUAL_TYPE_PATH:
+        visual = dvz_path(scene, 0);
+        if (visual == NULL || dvz_visual_set_data(visual, "position", positions, 3) != 0 ||
+            dvz_visual_set_data(visual, "color", colors, 3) != 0 ||
+            dvz_visual_set_data(visual, "stroke_width", sizes, 3) != 0)
+            return NULL;
+        break;
+
+    case DVZ_VISUAL_TYPE_IMAGE:
+    {
+        vec2 texcoords[4] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f}};
+        uint8_t pixels[4 * 4 * 4];
+        dvz_memset(pixels, sizeof(pixels), 128, sizeof(pixels));
+        visual = dvz_image(scene, 0);
+        if (visual == NULL || dvz_visual_set_data(visual, "position", positions, 4) != 0 ||
+            dvz_visual_set_data(visual, "texcoords", texcoords, 4) != 0 ||
+            dvz_visual_set_texture(visual, pixels, 4, 4) != 0)
+            return NULL;
+        break;
+    }
+
+    case DVZ_VISUAL_TYPE_MESH:
+        visual = dvz_mesh(scene, 0);
+        if (visual == NULL || dvz_visual_set_data(visual, "position", positions, 3) != 0 ||
+            dvz_visual_set_data(visual, "color", colors, 3) != 0)
+            return NULL;
+        break;
+
+    case DVZ_VISUAL_TYPE_PRIMITIVE:
+        visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+        if (visual == NULL || dvz_visual_set_data(visual, "position", positions, 3) != 0 ||
+            dvz_visual_set_data(visual, "color", colors, 3) != 0)
+            return NULL;
+        break;
+
+    case DVZ_VISUAL_TYPE_SPHERE:
+        visual = dvz_sphere(scene, 0);
+        if (visual == NULL || dvz_visual_set_data(visual, "position", positions, 1) != 0 ||
+            dvz_visual_set_data(visual, "color", colors, 1) != 0 ||
+            dvz_visual_set_data(visual, "radius", sizes, 1) != 0)
+            return NULL;
+        break;
+
+    case DVZ_VISUAL_TYPE_SPLAT:
+    {
+        vec2 sigma[1] = {{5.0f, 4.0f}};
+        float angles[1] = {0.0f};
+        visual = dvz_splat(scene, 0);
+        if (visual == NULL || dvz_visual_set_data(visual, "position", positions, 1) != 0 ||
+            dvz_visual_set_data(visual, "color", colors, 1) != 0 ||
+            dvz_visual_set_data(visual, "sigma", sigma, 1) != 0 ||
+            dvz_visual_set_data(visual, "angle", angles, 1) != 0)
+            return NULL;
+        break;
+    }
+
+    case DVZ_VISUAL_TYPE_VECTOR:
+    {
+        vec3 vectors[1] = {{0.75f, 0.25f, 0.0f}};
+        visual = dvz_vector(scene, 0);
+        if (visual == NULL || dvz_visual_set_data(visual, "position", positions, 1) != 0 ||
+            dvz_visual_set_data(visual, "vector", vectors, 1) != 0 ||
+            dvz_visual_set_data(visual, "color", colors, 1) != 0 ||
+            dvz_visual_set_data(visual, "stroke_width", sizes, 1) != 0)
+            return NULL;
+        break;
+    }
+
+    default:
+        return NULL;
+    }
+
+    return visual;
+}
+
+
+static const DvzFramePlanNode* _first_render_with_visual(const DvzFramePlan* plan)
+{
+    ANN(plan);
+    for (uint32_t i = 0; i < dvz_frame_plan_node_count(plan); i++)
+    {
+        const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, i);
+        if (node != NULL && node->type == DVZ_FRAME_PLAN_NODE_RENDER &&
+            node->u.render.visual_count > 0)
+            return node;
+    }
+    return NULL;
+}
+
+
 int test_scene_panel_full_helper(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -660,6 +814,50 @@ int test_scene_mesh_local_transform_without_instances(TstContext* suite, const T
 
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_visual_local_transform_family_audit(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    const DvzVisualType types[] = {
+        DVZ_VISUAL_TYPE_POINT,     DVZ_VISUAL_TYPE_PIXEL,  DVZ_VISUAL_TYPE_MARKER,
+        DVZ_VISUAL_TYPE_SEGMENT,   DVZ_VISUAL_TYPE_PATH,   DVZ_VISUAL_TYPE_IMAGE,
+        DVZ_VISUAL_TYPE_MESH,      DVZ_VISUAL_TYPE_PRIMITIVE,
+        DVZ_VISUAL_TYPE_SPHERE,    DVZ_VISUAL_TYPE_SPLAT,  DVZ_VISUAL_TYPE_VECTOR,
+    };
+
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(types); i++)
+    {
+        DvzScene* scene = dvz_scene();
+        DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+        DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+        ANN(panel);
+
+        DvzVisual* visual = _local_transform_audit_visual(scene, types[i]);
+        ANN(visual);
+
+        mat4 transform = GLM_MAT4_IDENTITY_INIT;
+        glm_translate(transform, (vec3){(float)i + 1.0f, 0.0f, 0.0f});
+        AT(dvz_visual_set_transform(visual, transform) == 0);
+        AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+        DvzFramePlan* plan = dvz_frame_plan("visual.local.family.audit", i);
+        ANN(plan);
+        AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+
+        const DvzFramePlanNode* render = _first_render_with_visual(plan);
+        ANN(render);
+        AT(render->u.render.visual_has_mvp[0]);
+        AC(render->u.render.visual_mvp[0].model[3][0], (float)i + 1.0f, 1e-6);
+
+        dvz_frame_plan_destroy(plan);
+        dvz_scene_destroy(scene);
+    }
+
     return 0;
 }
 
