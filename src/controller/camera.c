@@ -205,12 +205,15 @@ void dvz_camera_set_view(DvzCamera* camera, vec3 eye, vec3 target, vec3 up)
 void dvz_camera_get_view(const DvzCamera* camera, vec3 eye, vec3 target, vec3 up)
 {
     ANN(camera);
-    if (eye != NULL)
-        glm_vec3_copy(camera->eye, eye);
-    if (target != NULL)
-        glm_vec3_copy(camera->target, target);
-    if (up != NULL)
-        glm_vec3_copy(camera->up, up);
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        if (eye != NULL)
+            eye[i] = camera->eye[i];
+        if (target != NULL)
+            target[i] = camera->target[i];
+        if (up != NULL)
+            up[i] = camera->up[i];
+    }
 }
 
 

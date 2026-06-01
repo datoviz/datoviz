@@ -121,9 +121,16 @@ static void _orbit_current_rotation(const DvzOrbitCamera* orbit, mat4 out)
 {
     ANN(orbit);
     ANN(out);
+    versor drag_q = {0};
+    for (uint32_t i = 0; i < 4; i++)
+        drag_q[i] = orbit->drag_rotation[i];
     mat4 drag = GLM_MAT4_IDENTITY_INIT;
-    glm_quat_mat4(orbit->drag_rotation, drag);
-    glm_mat4_mul(drag, orbit->rotation, out);
+    mat4 rotation = GLM_MAT4_IDENTITY_INIT;
+    for (uint32_t col = 0; col < 4; col++)
+        for (uint32_t row = 0; row < 4; row++)
+            rotation[col][row] = orbit->rotation[col][row];
+    glm_quat_mat4(drag_q, drag);
+    glm_mat4_mul(drag, rotation, out);
 }
 
 
@@ -137,6 +144,36 @@ static void _orbit_pan_drag(DvzOrbitCamera* orbit, vec2 shift_px)
         return;
     orbit->pan[0] = orbit->pan_center[0] + 2.0f * shift_px[0] / width;
     orbit->pan[1] = orbit->pan_center[1] - 2.0f * shift_px[1] / height;
+}
+
+
+
+static void _orbit_view(const DvzOrbitCamera* orbit, vec3 eye, vec3 target, vec3 up)
+{
+    ANN(orbit);
+    ANN(eye);
+    ANN(target);
+    ANN(up);
+
+    mat4 rot = GLM_MAT4_IDENTITY_INIT;
+    _orbit_current_rotation(orbit, rot);
+    vec4 base_eye = {0.0f, 0.0f, orbit->distance, 1.0f};
+    vec4 base_up = {0.0f, 1.0f, 0.0f, 0.0f};
+    vec4 eye4 = {0};
+    vec4 up4 = {0};
+    glm_mat4_mulv(rot, base_eye, eye4);
+    glm_mat4_mulv(rot, base_up, up4);
+
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        target[i] = orbit->pivot[i];
+        eye[i] = orbit->pivot[i] + eye4[i];
+        up[i] = up4[i];
+    }
+    if (glm_vec3_norm(up) <= 0.0f)
+        glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, up);
+    else
+        glm_vec3_normalize(up);
 }
 
 
@@ -271,6 +308,34 @@ void dvz_orbit_camera_pivot(DvzOrbitCamera* orbit, vec3 pivot)
 
 
 
+int dvz_orbit_camera_get_pivot(const DvzOrbitCamera* orbit, vec3 out)
+{
+    ANN(orbit);
+    ANN(out);
+    for (uint32_t i = 0; i < 3; i++)
+        out[i] = orbit->pivot[i];
+    return 0;
+}
+
+
+
+float dvz_orbit_camera_get_distance(const DvzOrbitCamera* orbit)
+{
+    ANN(orbit);
+    return orbit->distance;
+}
+
+
+
+int dvz_orbit_camera_get_view(const DvzOrbitCamera* orbit, vec3 eye, vec3 target, vec3 up)
+{
+    ANN(orbit);
+    _orbit_view(orbit, eye, target, up);
+    return 0;
+}
+
+
+
 void dvz_orbit_camera_set_camera(DvzOrbitCamera* orbit, DvzCamera* camera)
 {
     ANN(orbit);
@@ -319,22 +384,9 @@ void dvz_orbit_camera_apply_camera(DvzOrbitCamera* orbit)
     if (orbit->camera == NULL)
         return;
 
-    mat4 rot = GLM_MAT4_IDENTITY_INIT;
-    _orbit_current_rotation(orbit, rot);
-    vec4 base_eye = {0.0f, 0.0f, orbit->distance, 1.0f};
-    vec4 base_up = {0.0f, 1.0f, 0.0f, 0.0f};
-    vec4 eye4 = {0};
-    vec4 up4 = {0};
-    glm_mat4_mulv(rot, base_eye, eye4);
-    glm_mat4_mulv(rot, base_up, up4);
-
-    vec3 eye = {orbit->pivot[0] + eye4[0], orbit->pivot[1] + eye4[1], orbit->pivot[2] + eye4[2]};
-    vec3 up = {up4[0], up4[1], up4[2]};
-    if (glm_vec3_norm(up) <= 0.0f)
-        glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, up);
-    else
-        glm_vec3_normalize(up);
-    dvz_camera_set_view(orbit->camera, eye, orbit->pivot, up);
+    vec3 eye = {0}, target = {0}, up = {0};
+    _orbit_view(orbit, eye, target, up);
+    dvz_camera_set_view(orbit->camera, eye, target, up);
 }
 
 

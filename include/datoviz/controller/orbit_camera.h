@@ -66,6 +66,13 @@ DVZ_EXPORT void dvz_orbit_camera_resize(DvzOrbitCamera* orbit, float width, floa
 
 DVZ_EXPORT void dvz_orbit_camera_pivot(DvzOrbitCamera* orbit, vec3 pivot);
 
+DVZ_EXPORT int dvz_orbit_camera_get_pivot(const DvzOrbitCamera* orbit, vec3 out);
+
+DVZ_EXPORT float dvz_orbit_camera_get_distance(const DvzOrbitCamera* orbit);
+
+DVZ_EXPORT int dvz_orbit_camera_get_view(
+    const DvzOrbitCamera* orbit, vec3 eye, vec3 target, vec3 up);
+
 DVZ_EXPORT void dvz_orbit_camera_set_camera(DvzOrbitCamera* orbit, DvzCamera* camera);
 
 DVZ_EXPORT void dvz_orbit_camera_apply_camera(DvzOrbitCamera* orbit);

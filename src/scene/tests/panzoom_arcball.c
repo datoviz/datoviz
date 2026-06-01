@@ -899,6 +899,14 @@ int test_orbit_camera_changes_view_not_model(TstContext* suite, const TstCase* i
     dvz_camera_get_view(camera, eye0, target0, up0);
     dvz_orbit_camera_set_camera(orbit, camera);
     dvz_orbit_camera_resize(orbit, 800.0f, 600.0f);
+
+    vec3 pivot = {0};
+    AT(dvz_orbit_camera_get_pivot(orbit, pivot) == 0);
+    AC(pivot[0], target0[0], 1e-6);
+    AC(pivot[1], target0[1], 1e-6);
+    AC(pivot[2], target0[2], 1e-6);
+    AT(dvz_orbit_camera_get_distance(orbit) > 0.0f);
+
     DvzPointerEvent ev = {0};
     ev.type = DVZ_POINTER_EVENT_DRAG;
     ev.button = DVZ_POINTER_BUTTON_LEFT;
@@ -913,6 +921,17 @@ int test_orbit_camera_changes_view_not_model(TstContext* suite, const TstCase* i
 
     vec3 eye1 = {0}, target1 = {0}, up1 = {0};
     dvz_camera_get_view(camera, eye1, target1, up1);
+    vec3 orbit_eye = {0}, orbit_target = {0}, orbit_up = {0};
+    AT(dvz_orbit_camera_get_view(orbit, orbit_eye, orbit_target, orbit_up) == 0);
+    AC(orbit_eye[0], eye1[0], 1e-6);
+    AC(orbit_eye[1], eye1[1], 1e-6);
+    AC(orbit_eye[2], eye1[2], 1e-6);
+    AC(orbit_target[0], target1[0], 1e-6);
+    AC(orbit_target[1], target1[1], 1e-6);
+    AC(orbit_target[2], target1[2], 1e-6);
+    AC(orbit_up[0], up1[0], 1e-6);
+    AC(orbit_up[1], up1[1], 1e-6);
+    AC(orbit_up[2], up1[2], 1e-6);
     AT(fabsf(eye1[0] - eye0[0]) > 1e-3f || fabsf(eye1[2] - eye0[2]) > 1e-3f);
     AC(target1[0], target0[0], 1e-6);
     AC(target1[1], target0[1], 1e-6);
