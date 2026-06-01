@@ -1,254 +1,146 @@
 #!/usr/bin/env python3
-"""Minimal PyQt6 host-window example using raw ctypes."""
+"""Embed a Datoviz view in a normal PyQt6 Widgets application."""
 
 from __future__ import annotations
 
 import ctypes
+import random
 import sys
 
-try:
-    from PyQt6.QtCore import QEvent, QSize
-    from PyQt6.QtGui import QCloseEvent, QExposeEvent, QResizeEvent, QSurface, QVulkanInstance
-    from PyQt6.QtGui import QWindow
-    from PyQt6.QtWidgets import QApplication
-except ImportError as exc:  # pragma: no cover - depends on optional local Qt build.
-    raise SystemExit(f'PyQt6 with Qt Vulkan support is required: {exc}') from exc
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication, QHBoxLayout, QLabel, QMainWindow, QPushButton
+from PyQt6.QtWidgets import QSlider, QVBoxLayout, QWidget
 
 import datoviz.raw as dvz
+from datoviz.qt import DatovizWidget
 
 
 def _void_p(array: ctypes.Array) -> ctypes.c_void_p:
     return ctypes.cast(array, ctypes.c_void_p)
 
 
-def _extension_name(extension) -> str:
-    name = extension.name() if callable(getattr(extension, 'name', None)) else extension
-    if hasattr(name, 'data'):
-        name = bytes(name)
-    if isinstance(name, bytes):
-        return name.decode()
-    return str(name)
+class ExampleScene:
+    def __init__(self):
+        self.scene = dvz.dvz_scene()
+        if not self.scene:
+            raise RuntimeError('dvz_scene() failed')
 
+        self.figure = dvz.dvz_figure(self.scene, 800, 600, 0)
+        self.panel = dvz.dvz_panel_full(self.figure)
+        self.visual = dvz.dvz_point(self.scene, 0)
+        if not self.figure or not self.panel or not self.visual:
+            raise RuntimeError('Datoviz scene setup failed')
 
-def _qt_vulkan_extensions(app: QApplication) -> list[bytes]:
-    supported = {_extension_name(ext) for ext in QVulkanInstance().supportedExtensions()}
-    platform = app.platformName().lower()
-
-    extensions = ['VK_KHR_surface']
-    if sys.platform == 'win32':
-        extensions.append('VK_KHR_win32_surface')
-    elif sys.platform == 'darwin':
-        extensions.append(
-            'VK_EXT_metal_surface'
-            if 'VK_EXT_metal_surface' in supported
-            else 'VK_MVK_macos_surface'
+        self.positions = (ctypes.c_float * 9)(
+            -0.55,
+            -0.45,
+            0.0,
+            +0.55,
+            -0.45,
+            0.0,
+            0.0,
+            +0.50,
+            0.0,
         )
-    elif platform.startswith('wayland'):
-        extensions.append('VK_KHR_wayland_surface')
-    else:
-        extensions.append('VK_KHR_xcb_surface')
+        self.colors = (dvz.DvzColor * 3)(
+            dvz.DvzColor(255, 80, 80, 255),
+            dvz.DvzColor(80, 220, 120, 255),
+            dvz.DvzColor(90, 150, 255, 255),
+        )
+        self.diameters = (ctypes.c_float * 3)(24.0, 24.0, 24.0)
 
-    missing = [extension for extension in extensions if extension not in supported]
-    if missing:
-        raise RuntimeError(f'Qt Vulkan support is missing: {", ".join(missing)}')
-    return [extension.encode() for extension in extensions]
+        self._upload()
+        if dvz.dvz_panel_add_visual(self.panel, self.visual, None) != 0:
+            raise RuntimeError('dvz_panel_add_visual() failed')
+        dvz.dvz_panel_set_background_color(self.panel, 0.05, 0.06, 0.08, 1.0)
+
+        controller = dvz.dvz_panzoom(self.scene, None)
+        if not controller:
+            raise RuntimeError('dvz_panzoom() failed')
+        if dvz.dvz_panel_bind_controller(
+            self.panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY
+        ):
+            raise RuntimeError('dvz_panel_bind_controller() failed')
+
+    def destroy(self):
+        if self.scene:
+            dvz.dvz_scene_destroy(self.scene)
+            self.scene = None
+
+    def set_point_size(self, size: int):
+        for i in range(3):
+            self.diameters[i] = float(size)
+        if dvz.dvz_visual_set_data(self.visual, b'diameter', _void_p(self.diameters), 3) != 0:
+            raise RuntimeError('dvz_visual_set_data(diameter) failed')
+
+    def randomize_colors(self):
+        for i in range(3):
+            self.colors[i] = dvz.DvzColor(
+                random.randint(80, 255),
+                random.randint(80, 255),
+                random.randint(80, 255),
+                255,
+            )
+        if dvz.dvz_visual_set_data(self.visual, b'color', _void_p(self.colors), 3) != 0:
+            raise RuntimeError('dvz_visual_set_data(color) failed')
+
+    def _upload(self):
+        if dvz.dvz_visual_set_data(self.visual, b'position', _void_p(self.positions), 3) != 0:
+            raise RuntimeError('dvz_visual_set_data(position) failed')
+        if dvz.dvz_visual_set_data(self.visual, b'color', _void_p(self.colors), 3) != 0:
+            raise RuntimeError('dvz_visual_set_data(color) failed')
+        if dvz.dvz_visual_set_data(self.visual, b'diameter', _void_p(self.diameters), 3) != 0:
+            raise RuntimeError('dvz_visual_set_data(diameter) failed')
 
 
-class HostedPyQtWindow(QWindow):
-    def __init__(self, app_handle, figure, qt_instance: QVulkanInstance):
+class MainWindow(QMainWindow):
+    def __init__(self):
         super().__init__()
-        self._app_handle = app_handle
-        self._figure = figure
-        self._qt_instance = qt_instance
-        self._view = None
-        self._repaint_requested = True
-        self._request_callback = dvz.DvzViewRequestFrameCallback(self._request_frame)
+        self.setWindowTitle('Datoviz PyQt hosting')
+        self.example = ExampleScene()
+        self.datoviz = DatovizWidget(self.example.scene, self.example.figure, self)
 
-        self.setTitle('hosted_pyqt')
-        self.setSurfaceType(QSurface.SurfaceType.VulkanSurface)
-        self.setVulkanInstance(qt_instance)
-        self.resize(QSize(800, 600))
+        point_size = QSlider(Qt.Orientation.Horizontal)
+        point_size.setRange(8, 64)
+        point_size.setValue(24)
+        point_size.valueChanged.connect(self._set_point_size)
 
-    def event(self, event):
-        if event.type() == QEvent.Type.PlatformSurface:
-            surface_type = getattr(event, 'surfaceEventType', lambda: None)()
-            if str(surface_type).endswith('SurfaceAboutToBeDestroyed'):
-                self.release_surface()
-        if event.type() == QEvent.Type.UpdateRequest:
-            self._render_once()
-            return True
-        return super().event(event)
+        randomize = QPushButton('Randomize colors')
+        randomize.clicked.connect(self._randomize_colors)
 
-    def exposeEvent(self, event: QExposeEvent):
-        del event
-        if self.isExposed():
-            self.requestUpdate()
+        controls = QWidget()
+        controls_layout = QVBoxLayout(controls)
+        controls_layout.addWidget(QLabel('Point size'))
+        controls_layout.addWidget(point_size)
+        controls_layout.addWidget(randomize)
+        controls_layout.addStretch(1)
 
-    def resizeEvent(self, event: QResizeEvent):
-        super().resizeEvent(event)
-        self._emit_resize()
+        root = QWidget()
+        layout = QHBoxLayout(root)
+        layout.addWidget(self.datoviz, 1)
+        layout.addWidget(controls)
+        self.setCentralWidget(root)
+        self.resize(1000, 650)
 
-    def closeEvent(self, event: QCloseEvent):
-        self.release_surface()
+    def closeEvent(self, event):
+        self.datoviz.release()
+        self.example.destroy()
         super().closeEvent(event)
 
-    def release_surface(self):
-        if self._view:
-            dvz.dvz_view_release_external_surface(self._view)
-            self._view = None
+    def _set_point_size(self, value: int):
+        self.example.set_point_size(value)
+        self.datoviz.request_frame()
 
-    def _request_frame(self, _view, _user_data):
-        self._repaint_requested = True
-        self.requestUpdate()
-
-    def _surface_tuple(self) -> tuple[int, int, int, int, float]:
-        scale = float(self.devicePixelRatio()) or 1.0
-        size = self.size()
-        framebuffer_width = max(0, round(size.width() * scale))
-        framebuffer_height = max(0, round(size.height() * scale))
-        surface = int(QVulkanInstance.surfaceForWindow(self) or 0)
-        instance = int(dvz.dvz_app_vk_instance(self._app_handle) or 0)
-        return instance, surface, framebuffer_width, framebuffer_height, scale
-
-    def _ensure_view(self) -> bool:
-        if self._view:
-            return True
-        instance, surface, width, height, scale = self._surface_tuple()
-        if instance == 0 or surface == 0:
-            return False
-        self._view = dvz.dvz_view_external_surface_ffi(
-            self._app_handle,
-            self._figure,
-            ctypes.c_void_p(instance),
-            surface,
-            width,
-            height,
-            scale,
-            scale,
-            False,
-        )
-        if not self._view:
-            return False
-        dvz.dvz_view_set_request_frame_callback(self._view, self._request_callback, None)
-        self._emit_resize()
-        return True
-
-    def _emit_resize(self):
-        if not self._view:
-            return
-        _instance, _surface, width, height, scale = self._surface_tuple()
-        size = self.size()
-        dvz.dvz_view_emit_resize(
-            self._view,
-            width,
-            height,
-            max(0, size.width()),
-            max(0, size.height()),
-            scale,
-            scale,
-        )
-
-    def _render_once(self):
-        if not self.isExposed():
-            return
-        if not self._ensure_view():
-            self.requestUpdate()
-            return
-
-        instance, surface, width, height, scale = self._surface_tuple()
-        rc = dvz.dvz_view_update_external_surface_ffi(
-            self._view, ctypes.c_void_p(instance), surface, width, height, scale, scale, False
-        )
-        if rc != 0:
-            raise RuntimeError('dvz_view_update_external_surface_ffi() failed')
-
-        if not self._repaint_requested:
-            return
-        self._repaint_requested = False
-        rc = dvz.dvz_view_render_once(self._view)
-        if rc < 0:
-            raise RuntimeError(f'dvz_view_render_once() failed: {rc}')
-
-
-def _make_scene():
-    scene = dvz.dvz_scene()
-    if not scene:
-        raise RuntimeError('dvz_scene() failed')
-
-    figure = dvz.dvz_figure(scene, 800, 600, 0)
-    panel = dvz.dvz_panel_full(figure)
-    visual = dvz.dvz_point(scene, 0)
-    if not figure or not panel or not visual:
-        raise RuntimeError('scene setup failed')
-
-    positions = (ctypes.c_float * 9)(
-        -0.55,
-        -0.45,
-        0.0,
-        +0.55,
-        -0.45,
-        0.0,
-        0.0,
-        +0.50,
-        0.0,
-    )
-    colors = (dvz.DvzColor * 3)(
-        dvz.DvzColor(255, 80, 80, 255),
-        dvz.DvzColor(80, 220, 120, 255),
-        dvz.DvzColor(90, 150, 255, 255),
-    )
-    diameters = (ctypes.c_float * 3)(24.0, 24.0, 24.0)
-
-    dvz.dvz_visual_set_data(visual, b'position', _void_p(positions), 3)
-    dvz.dvz_visual_set_data(visual, b'color', _void_p(colors), 3)
-    dvz.dvz_visual_set_data(visual, b'diameter', _void_p(diameters), 3)
-    dvz.dvz_panel_add_visual(panel, visual, None)
-    dvz.dvz_panel_set_background_color(panel, 0.05, 0.06, 0.08, 1.0)
-    return scene, figure, (positions, colors, diameters)
+    def _randomize_colors(self):
+        self.example.randomize_colors()
+        self.datoviz.request_frame()
 
 
 def main() -> int:
-    qt_app = QApplication(sys.argv)
-    extensions = _qt_vulkan_extensions(qt_app)
-    extension_array = (ctypes.c_char_p * len(extensions))(*extensions)
-
-    scene = None
-    app_handle = None
-    qt_instance = None
-    window = None
-    try:
-        scene, figure, _data = _make_scene()
-        app_config = dvz.dvz_app_config()
-        app_config.instance_extension_count = len(extensions)
-        app_config.instance_extensions = extension_array
-        app_config.enable_canvas_extensions = True
-        app_config.enable_glfw_extensions = False
-
-        app_handle = dvz.dvz_app_with_config(scene, ctypes.byref(app_config))
-        if not app_handle:
-            raise RuntimeError('dvz_app_with_config() failed')
-
-        instance = dvz.dvz_app_vk_instance(app_handle)
-        if not instance:
-            raise RuntimeError('dvz_app_vk_instance() failed')
-
-        qt_instance = QVulkanInstance()
-        qt_instance.setVkInstance(int(instance))
-        if not qt_instance.create():
-            raise RuntimeError(f'QVulkanInstance.create() failed: {qt_instance.errorCode()}')
-
-        window = HostedPyQtWindow(app_handle, figure, qt_instance)
-        window.show()
-        return int(qt_app.exec())
-    finally:
-        if window is not None:
-            window.release_surface()
-        if qt_instance is not None:
-            qt_instance.destroy()
-        if app_handle:
-            dvz.dvz_app_destroy(app_handle)
-        if scene:
-            dvz.dvz_scene_destroy(scene)
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    return int(app.exec())
 
 
 if __name__ == '__main__':

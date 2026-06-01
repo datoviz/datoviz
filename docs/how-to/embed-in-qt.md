@@ -13,7 +13,8 @@ native examples live under `examples/qt/`.
 
 ## Build And Run
 
-The Qt examples are optional. They are built only when Qt6 development packages are available:
+The native C++ Qt examples are optional. They are built only when Qt6 development packages are
+available:
 
 ```sh
 just build
@@ -24,8 +25,12 @@ just build
 `hosted_qt_smoke` is the minimal contract smoke. `hosted_qt_widgets` embeds the hosted Datoviz
 window in a Qt Widgets layout and lets widget callbacks mutate retained scene data.
 
-The minimal PyQt source-tree example uses the raw `ctypes` FFI helpers and requires a PyQt6 build
-with Qt Vulkan support:
+The Python Qt adapter is pure Python and does not require Qt development headers, Qt development
+libraries, or Qt-aware Datoviz compilation. Users install PyQt6 with their Python, Conda, or system
+package manager; that PyQt6 package supplies or depends on the needed Qt runtime. The installed
+PyQt6 package must expose Qt Vulkan support, including `QVulkanInstance`.
+
+The PyQt source-tree example uses `datoviz.qt.DatovizWidget`:
 
 ```sh
 PYTHONPATH=. python examples/python/qt/hosted_pyqt.py
@@ -84,7 +89,8 @@ For Qt Widgets, the current example uses `QWidget::createWindowContainer()` arou
 `QWindow`. The surrounding widgets remain ordinary Qt controls. Their callbacks mutate retained
 Datoviz scene data, then request another Datoviz frame.
 
-Use `examples/qt/hosted_qt_widgets.cpp` as the reference for this layout.
+Use `examples/qt/hosted_qt_widgets.cpp` as the native C++ reference and
+`examples/python/qt/hosted_pyqt.py` as the PyQt reference.
 
 
 ## Surface Cleanup
@@ -103,51 +109,43 @@ A warning that the canvas surface is unavailable during this cleanup pass is exp
 validation errors are not expected.
 
 
-## PyQt Status
+## PyQt Flow
 
-PyQt uses the same hosted contract as the native adapter. The raw `ctypes` boundary should use the
-FFI convenience helpers instead of constructing `DvzWindowExternalSurfaceInfo` in Python:
+PyQt users should build the Datoviz scene normally, bind controllers to panels normally, and then
+give the scene and figure to `DatovizWidget`:
 
 ```python
-view = dvz.dvz_view_external_surface_ffi(
-    app,
-    figure,
-    ctypes.c_void_p(instance),
-    surface,
-    framebuffer_width,
-    framebuffer_height,
-    scale,
-    scale,
-    False,
-)
+from datoviz.qt import DatovizWidget
+import datoviz.raw as dvz
 
-dvz.dvz_view_update_external_surface_ffi(
-    view,
-    ctypes.c_void_p(instance),
-    surface,
-    framebuffer_width,
-    framebuffer_height,
-    scale,
-    scale,
-    False,
-)
+scene = dvz.dvz_scene()
+figure = dvz.dvz_figure(scene, 800, 600, 0)
+panel = dvz.dvz_panel_full(figure)
+
+controller = dvz.dvz_panzoom(scene, None)
+dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
+
+widget = DatovizWidget(scene, figure)
 ```
 
-These helpers accept primitive handle values and internally build the native
-`DvzWindowExternalSurfaceInfo` record. C and C++ callers should continue to prefer the struct-based
-`dvz_view_external_surface()` and `dvz_view_update_external_surface()` APIs.
+`DatovizWidget` owns the Qt hosting plumbing: Vulkan extension discovery, `QVulkanInstance`
+adoption, Qt surface wrapping, Qt event forwarding, Datoviz request-frame scheduling, and surface
+cleanup. The hosted view automatically connects the view input router to the figure's current
+panels, so panel-bound controllers receive Qt mouse, wheel, and key input without Qt-specific
+controller code.
 
-Use `examples/python/qt/hosted_pyqt.py` as the minimal PyQt reference. It keeps Qt in charge of the
-event loop, asks Qt for the native `VkSurfaceKHR` with `QVulkanInstance.surfaceForWindow()`, renders
-from the Qt update path with `dvz_view_render_once()`, and calls
-`dvz_view_release_external_surface()` before the Qt surface is destroyed.
+The low-level raw `ctypes` FFI helpers remain available for binding authors:
+`dvz_view_external_surface_ffi()` and `dvz_view_update_external_surface_ffi()` accept primitive
+handle values and internally build the native `DvzWindowExternalSurfaceInfo` record. C and C++
+callers should continue to prefer the struct-based `dvz_view_external_surface()` and
+`dvz_view_update_external_surface()` APIs.
 
 
 ## Limitations
 
 1. The in-tree examples currently target Qt6.
 2. A Vulkan-capable platform and Qt Vulkan support are required.
-3. The Qt examples are optional build targets and may be skipped when Qt development packages are
-   unavailable.
+3. The native C++ Qt examples are optional build targets and may be skipped when Qt development
+   packages are unavailable. The Python adapter does not need those development packages.
 4. `QVulkanWindow` is not the recommended path because it overlaps with Datoviz ownership of the
    Vulkan device, queues, swapchain, and command buffers.
