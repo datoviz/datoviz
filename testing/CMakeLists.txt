@@ -811,7 +811,6 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         datoviz_video
         datoviz_vk
         datoviz_vklite
-        datoviz_volk
         testing
     )
     target_link_libraries(dvztest_integration
@@ -829,7 +828,6 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         datoviz_video
         datoviz_vk
         datoviz_vklite
-        datoviz_volk
         testing
     )
 
@@ -860,6 +858,11 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
     if(TARGET datoviz_cimgui)
         target_link_libraries(dvztest PRIVATE datoviz_cimgui)
         target_link_libraries(dvztest_integration PRIVATE datoviz_cimgui)
+    endif()
+
+    if(NOT TARGET datoviz_gui)
+        target_link_libraries(dvztest PRIVATE datoviz_volk)
+        target_link_libraries(dvztest_integration PRIVATE datoviz_volk)
     endif()
 
     if(DVZ_THREADING_TARGET)
