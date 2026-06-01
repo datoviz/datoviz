@@ -600,21 +600,17 @@ async function smokePacketSessionValidation(Drp2WebGpuRuntime) {
   );
 
   const runtime = new Drp2WebGpuRuntime(device, context, 'bgra8unorm');
-  try {
-    await runtime.executePacketSet({});
-  } catch (error) {
-    if (!String(error.message).includes('needs a frame packet')) {
-      throw new Error(`expected missing frame packet failure, got ${error.message}`);
-    }
-    return;
-  }
-  await runtime.executePacketSet({ frame: { packet: emptyPacket(3, 1, 1) } });
   await expectAsyncFailure(
-    () => runtime.executePacketSet({ frame: { packet: emptyPacket(3, 1, 1) } }),
+    () => runtime.executePacketSet({}),
+    'needs a frame packet',
+  );
+  await runtime.executePacketSet({ frame: { packet: emptyPacket(3, 1, 0) } });
+  await expectAsyncFailure(
+    () => runtime.executePacketSet({ frame: { packet: emptyPacket(3, 1, 0) } }),
     'stale DRP2 packet frame_index',
   );
   await expectAsyncFailure(
-    () => runtime.executePacketSet({ frame: { packet: emptyPacket(3, 0, 2) } }),
+    () => runtime.executePacketSet({ frame: { packet: emptyPacket(3, 0, 1) } }),
     'stale DRP2 packet resource_version',
   );
   await expectAsyncFailure(
@@ -624,7 +620,7 @@ async function smokePacketSessionValidation(Drp2WebGpuRuntime) {
     }),
     'inconsistent version counters',
   );
-  await runtime.executePacketSet({ frame: { packet: emptyPacket(3, 1, 1) } }, { reset: true });
+  await runtime.executePacketSet({ frame: { packet: emptyPacket(3, 1, 0) } }, { reset: true });
 }
 
 async function main() {

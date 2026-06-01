@@ -2039,8 +2039,8 @@ export class Drp2WebGpuRuntime {
     this.setupCommands = [];
     this.frameCommands = [];
     this.frames = [];
-    this.packetResourceVersion = 0;
-    this.packetFrameIndex = 0;
+    this.packetResourceVersion = null;
+    this.packetFrameIndex = null;
   }
 
   async load(stream, options = {}) {
@@ -2053,8 +2053,8 @@ export class Drp2WebGpuRuntime {
     this.setupCommands = split.setupCommands;
     this.frameCommands = split.frameCommands;
     this.frames = Array.isArray(stream.frames) ? stream.frames : [];
-    this.packetResourceVersion = 0;
-    this.packetFrameIndex = 0;
+    this.packetResourceVersion = null;
+    this.packetFrameIndex = null;
 
     return await executeDrp2StreamChecked(
       this.device,
@@ -2103,8 +2103,8 @@ export class Drp2WebGpuRuntime {
     if (this.stream === null || options.reset === true) {
       destroyExecutionState(this.state);
       this.state = createExecutionState();
-      this.packetResourceVersion = 0;
-      this.packetFrameIndex = 0;
+      this.packetResourceVersion = null;
+      this.packetFrameIndex = null;
     }
 
     const setupCommands = decoded.setup?.commands ?? [];
@@ -2121,10 +2121,10 @@ export class Drp2WebGpuRuntime {
         throw new Error("DRP2 packet set phases have inconsistent version counters");
       }
     }
-    if (resourceVersion < this.packetResourceVersion) {
+    if (this.packetResourceVersion !== null && resourceVersion < this.packetResourceVersion) {
       throw new Error("stale DRP2 packet resource_version");
     }
-    if (frameIndex <= this.packetFrameIndex) {
+    if (this.packetFrameIndex !== null && frameIndex <= this.packetFrameIndex) {
       throw new Error("stale DRP2 packet frame_index");
     }
     this.setupCommands = setupCommands;
