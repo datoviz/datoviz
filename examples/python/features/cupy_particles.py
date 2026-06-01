@@ -32,16 +32,6 @@ def _skip(reason: str) -> int:
     return 0
 
 
-def _open_positions(scene, count: int):
-    return dvz_cuda.scene_buffer(
-        scene,
-        shape=(count, 3),
-        dtype='float32',
-        usage=('vertex', 'storage'),
-        present=True,
-    )
-
-
 def _make_style(count: int):
     colors = (dvz.DvzColor * count)()
     sizes = (ctypes.c_float * count)()
@@ -128,34 +118,10 @@ class ParticleStepper:
             pos[:, 2] = cp.float32(0.03) * cp.sin(cp.float32(2.0) * theta + self.phase)
 
 
-def _app_config():
-    config = dvz.dvz_app_config()
-    config.instance_extension_count = 0
-    config.instance_extensions = None
-    config.enable_canvas_extensions = False
-    config.enable_glfw_extensions = False
-    config.schedule_mode = dvz.DvzAppScheduleMode.DVZ_APP_SCHEDULE_CONTINUOUS
-    return config
-
-
-def _create_app(scene, figure, panel, positions, refresh_style):
-    resources = positions.app_resources(figure)
-    refresh_style()
-    config = _app_config()
-    app = dvz.dvz_app_with_resources(scene, ctypes.byref(config), ctypes.byref(resources))
-    if not app:
-        raise dvz_cuda.CudaInteropUnavailable('dvz_app_with_resources() failed')
-
-    view = dvz.dvz_view_glfw(app, figure, WIDTH, HEIGHT, b'cupy_particles')
-    if not view:
-        dvz.dvz_app_destroy(app)
-        raise dvz_cuda.CudaInteropUnavailable('dvz_view_glfw() failed')
-
+def _connect_input(panel, view, app) -> None:
     router = dvz.dvz_view_input(view)
     if not router or dvz.dvz_panel_connect_input(panel, router) != 0:
-        dvz.dvz_app_destroy(app)
         raise dvz_cuda.CudaInteropUnavailable('input setup failed')
-    return app, view
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -172,22 +138,34 @@ def main(argv: list[str] | None = None) -> int:
         if not scene:
             raise RuntimeError('dvz_scene() failed')
 
-        with _open_positions(scene, args.particles) as positions:
+        with dvz_cuda.scene_session(scene, present=True) as cuda:
+            positions = cuda.buffer(
+                shape=(args.particles, 3),
+                dtype='float32',
+                usage=('vertex', 'storage'),
+            )
             figure, panel, visual, colors, sizes = _build_scene(scene, positions, args.particles)
             refresh_style = lambda: _set_style(visual, colors, sizes, args.particles)
-            app, view = _create_app(scene, figure, panel, positions, refresh_style)
-
-            stepper = ParticleStepper(positions)
-            stepper.update()
-
-            def on_frame(view, user_data) -> None:
-                del view
-                del user_data
+            app, view = cuda.live_app(
+                figure, WIDTH, HEIGHT, b'cupy_particles', after_resources=refresh_style
+            )
+            try:
+                _connect_input(panel, view, app)
+                stepper = ParticleStepper(positions)
                 stepper.update()
 
-            dvz.dvz_view_set_frame_callback(view, on_frame, None)
-            dvz.dvz_app_run(app, 0)
-            print(f'cupy particles: OK ({args.particles} particles, zero-copy positions)')
+                def on_frame(view, user_data) -> None:
+                    del view
+                    del user_data
+                    stepper.update()
+
+                dvz.dvz_view_set_frame_callback(view, on_frame, None)
+                dvz.dvz_app_run(app, 0)
+                print(f'cupy particles: OK ({args.particles} particles, zero-copy positions)')
+            finally:
+                if app:
+                    dvz.dvz_app_destroy(app)
+                    app = None
     except dvz_cuda.CudaInteropUnavailable as exc:
         return _skip(str(exc))
     finally:

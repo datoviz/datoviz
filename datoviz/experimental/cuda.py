@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+import ctypes
 import sys
 from pathlib import Path
 from typing import Iterator
@@ -119,6 +120,7 @@ class CudaSceneBuffer:
         self._cp = None
         self._bridge = None
         self._shared = None
+        self._clear_runtime_on_close = True
 
     @property
     def cupy(self):
@@ -163,7 +165,17 @@ class CudaSceneBuffer:
             raise RuntimeError('CUDA scene buffer is not open')
 
     def __enter__(self):
-        self._raw_surface, self._cp, self._bridge = _require_runtime()
+        raw_surface, cp, bridge = _require_runtime()
+        self._open_with(raw_surface, cp, bridge, clear_runtime_on_close=True)
+        return self
+
+    def _open_with(self, raw_surface, cp, bridge, clear_runtime_on_close: bool) -> None:
+        if self._shared is not None:
+            raise RuntimeError('CUDA scene buffer is already open')
+        self._raw_surface = raw_surface
+        self._cp = cp
+        self._bridge = bridge
+        self._clear_runtime_on_close = clear_runtime_on_close
         self._shared = _runtime.CudaSceneBufferRuntime(
             self._raw_surface,
             self._cp,
@@ -176,17 +188,20 @@ class CudaSceneBuffer:
             present=self.present,
         )
         self._shared.__enter__()
-        return self
 
     def __exit__(self, exc_type, exc, tb):
+        return self._close(exc_type, exc, tb)
+
+    def _close(self, exc_type=None, exc=None, tb=None):
         if self._shared is not None:
             try:
                 return self._shared.__exit__(exc_type, exc, tb)
             finally:
                 self._shared = None
-                self._raw_surface = None
-                self._cp = None
-                self._bridge = None
+                if self._clear_runtime_on_close:
+                    self._raw_surface = None
+                    self._cp = None
+                    self._bridge = None
         return False
 
     def bind_attr(self, visual, attr: bytes | str, first: int = 0, count: int | None = None) -> None:
@@ -217,26 +232,6 @@ class CudaSceneBuffer:
         self._require_open()
         self._shared.wait_for_cuda_writes()
 
-    def app_resources(self, figure):
-        """Return app resources using this buffer's interop GPU context and runtime."""
-
-        self._require_open()
-        return self._shared.create_app_resources(figure)
-
-    def offscreen_app(
-        self, scene, figure, width: int, height: int, refresh_after_resource_resolution=None
-    ):
-        """Create an offscreen app using this buffer's interop GPU context and runtime."""
-
-        self._require_open()
-        return self._shared.create_offscreen_app(
-            scene,
-            figure,
-            width,
-            height,
-            refresh_after_resource_resolution=refresh_after_resource_resolution,
-        )
-
 
 def scene_buffer(
     scene,
@@ -257,6 +252,123 @@ def scene_buffer(
         runtime_usage=runtime_usage,
         present=present,
     )
+
+
+class CudaSceneSession:
+    """Context-managed CUDA/CuPy scene interop session.
+
+    The session owns the optional CUDA runtime surface for one Datoviz scene and creates
+    CudaSceneBuffer resources inside that lifetime. It also centralizes app resource creation so
+    examples do not need to route app plumbing through an individual buffer.
+    """
+
+    def __init__(self, scene, *, present: bool = False):
+        self.scene = scene
+        self.present = bool(present)
+        self._raw_surface = None
+        self._cp = None
+        self._bridge = None
+        self._buffers: list[CudaSceneBuffer] = []
+
+    @property
+    def cupy(self):
+        """Return the imported CuPy module after the session is opened."""
+
+        self._require_open()
+        return self._cp
+
+    def _require_open(self) -> None:
+        if self._cp is None:
+            raise RuntimeError('CUDA scene session is not open')
+
+    def __enter__(self):
+        self._raw_surface, self._cp, self._bridge = _require_runtime()
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        ok = False
+        for buffer in reversed(self._buffers):
+            ok = buffer._close(exc_type, exc, tb) or ok
+            buffer._raw_surface = None
+            buffer._cp = None
+            buffer._bridge = None
+        self._buffers.clear()
+        self._raw_surface = None
+        self._cp = None
+        self._bridge = None
+        return ok
+
+    def buffer(
+        self,
+        *,
+        shape,
+        dtype='float32',
+        usage=('vertex', 'storage'),
+        runtime_usage=None,
+    ) -> CudaSceneBuffer:
+        """Create and open one CUDA-backed Datoviz scene buffer in this session."""
+
+        self._require_open()
+        if self._buffers:
+            raise RuntimeError('CUDA scene sessions currently support one scene buffer')
+        buffer = CudaSceneBuffer(
+            self.scene,
+            shape=shape,
+            dtype=dtype,
+            usage=usage,
+            runtime_usage=runtime_usage,
+            present=self.present,
+        )
+        buffer._open_with(
+            self._raw_surface, self._cp, self._bridge, clear_runtime_on_close=False
+        )
+        self._buffers.append(buffer)
+        return buffer
+
+    def app_resources(self, figure):
+        """Return app resources using this session's first CUDA-backed scene buffer."""
+
+        self._require_open()
+        if not self._buffers:
+            raise RuntimeError('create a CUDA scene buffer before requesting app resources')
+        return self._buffers[0]._shared.create_app_resources(figure)
+
+    def live_app(
+        self,
+        figure,
+        width: int,
+        height: int,
+        title: bytes | str = b'cuda_scene',
+        after_resources=None,
+    ):
+        """Create a live app/view pair using this session's interop runtime resources."""
+
+        resources = self.app_resources(figure)
+        if after_resources is not None:
+            after_resources()
+        config = dvz.dvz_app_config()
+        config.instance_extension_count = 0
+        config.instance_extensions = None
+        config.enable_canvas_extensions = False
+        config.enable_glfw_extensions = False
+        config.schedule_mode = dvz.DvzAppScheduleMode.DVZ_APP_SCHEDULE_CONTINUOUS
+        app = dvz.dvz_app_with_resources(
+            self.scene, ctypes.byref(config), ctypes.byref(resources)
+        )
+        if not app:
+            raise CudaInteropUnavailable('dvz_app_with_resources() failed')
+        title_bytes = title if isinstance(title, bytes) else title.encode()
+        view = dvz.dvz_view_glfw(app, figure, width, height, title_bytes)
+        if not view:
+            dvz.dvz_app_destroy(app)
+            raise CudaInteropUnavailable('dvz_view_glfw() failed')
+        return app, view
+
+
+def scene_session(scene, *, present: bool = False) -> CudaSceneSession:
+    """Create an experimental CUDA/CuPy scene interop session."""
+
+    return CudaSceneSession(scene, present=present)
 
 
 InteropSkip = _runtime.InteropSkip
