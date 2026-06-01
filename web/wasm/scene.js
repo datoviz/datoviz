@@ -2,7 +2,7 @@ import {
   Drp2WebGpuRuntime,
   initWebGPU,
   resizeWebGpuCanvas,
-} from "../../examples/webgpu/drp2_webgpu.js";
+} from "../drp2/webgpu.js";
 
 const DVZ_FORMAT_R8G8B8A8_UNORM = 37;
 const DVZ_FORMAT_B8G8R8A8_UNORM = 44;
@@ -120,8 +120,8 @@ export class DatovizWasmScene {
       "WASM module is stale or missing malloc/free exports; run `just wasm-scene-smoke` and hard-refresh",
     );
 
-    const gpu = options.gpu ?? await initWebGPU();
-    resizeWebGpuCanvas(gpu.device, gpu.context, gpu.format);
+    const gpu = options.gpu ?? await initWebGPU(canvas);
+    resizeWebGpuCanvas(canvas, gpu.device, gpu.context, gpu.format);
     const scene = Module._dvz_wasm_api_scene(canvas.width, canvas.height);
     requireOk(scene !== 0, "dvz_wasm_api_scene failed");
     const formatStatus = Module._dvz_wasm_api_set_canvas_format(scene, canvasFormatCode(gpu.format));
@@ -244,7 +244,7 @@ export class DatovizWasmScene {
 
   resize() {
     this._requireAlive();
-    resizeWebGpuCanvas(this.gpu.device, this.gpu.context, this.gpu.format);
+    resizeWebGpuCanvas(this.canvas, this.gpu.device, this.gpu.context, this.gpu.format);
     const scale = Math.max(1, window.devicePixelRatio || 1);
     this._requireStatus(
       this.Module._dvz_wasm_api_resize(this.scene, this.figure, this.canvas.width, this.canvas.height, scale),
@@ -444,6 +444,7 @@ export class DatovizWasmScene {
     this._requireAlive();
     const packetSet = this.emitPackets();
     this.runtime = new Drp2WebGpuRuntime(this.gpu.device, this.gpu.context, this.gpu.format, {
+      canvas: this.canvas,
       capabilities: this.gpu.capabilities,
     });
     await this.runtime.executePacketSet(packetSet, { reset: true, replaceExistingResources: false });

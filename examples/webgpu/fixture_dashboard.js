@@ -3,8 +3,8 @@ import {
   WebGpuDemoSession,
   executeDrp2StreamChecked,
   initWebGPU,
-} from "./drp2_webgpu.js";
-import { DatovizWasmScene } from "./datoviz_wasm_scene.js";
+} from "../../web/drp2/webgpu.js";
+import { DatovizWasmScene } from "../../web/wasm/scene.js";
 
 const rowsEl = document.querySelector("#fixture-rows");
 const stressRowsEl = document.querySelector("#stress-rows");
@@ -393,6 +393,7 @@ async function createDemoSession(streamName) {
     runtime.context,
     runtime.format,
     runtime.capabilities,
+    { canvas: viewportEl },
   );
   await session.loadStream(streamName);
   return session;
@@ -429,6 +430,7 @@ async function runStressRow(row) {
       runtime.context,
       runtime.format,
       {
+        canvas: viewportEl,
         capabilities: runtime.capabilities,
         requireExplicitBindGroupLayouts: true,
         requireExplicitPipelineMetadata: true,
@@ -517,6 +519,7 @@ async function runPositiveFixture(fixture, stream) {
     runtime.format,
     stream,
     {
+      canvas: viewportEl,
       capabilities: runtime.capabilities,
       requireExplicitBindGroupLayouts: true,
       requireExplicitPipelineMetadata: true,
@@ -534,6 +537,7 @@ async function runNegativeFixture(fixture, stream) {
   const expected = expectedFailureDetail(stream);
   try {
     await executeDrp2StreamChecked(runtime.device, runtime.context, runtime.format, stream, {
+      canvas: viewportEl,
       capabilities: runtime.capabilities,
     });
   } catch (error) {
@@ -664,7 +668,7 @@ async function runWasmRows() {
 
 async function main() {
   try {
-    runtime = await initWebGPU();
+    runtime = await initWebGPU(viewportEl);
     summaryEl.title = `WebGPU capabilities: ${JSON.stringify(runtime.capabilities)}`;
     const response = await fetch("./fixture_manifest.json", { cache: "no-cache" });
     if (!response.ok) {

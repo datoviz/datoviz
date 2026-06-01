@@ -3,7 +3,7 @@
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { decodeDrp2Packet } from "../examples/webgpu/drp2_packet.js";
+import { decodeDrp2Packet } from "../web/drp2/packet.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs");

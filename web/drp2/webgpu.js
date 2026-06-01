@@ -1,11 +1,4 @@
-import { decodeDrp2PacketSet } from "./drp2_packet.js";
-
-const statusEl = document.querySelector("#status");
-const canvas = document.querySelector("#viewport");
-const streamNameEl = document.querySelector("#stream-name");
-const streamSelectEl = document.querySelector("#stream-select");
-const playToggleEl = document.querySelector("#play-toggle");
-const frameInfoEl = document.querySelector("#frame-info");
+import { decodeDrp2PacketSet } from "./packet.js";
 
 const BROWSER_CANVAS_TEXTURE_ID = 0;
 const BROWSER_CANVAS_FORMAT_ALIAS = "canvas";
@@ -28,13 +21,6 @@ export const STREAMS = [
 
 
 
-function setStatus(message, isError = false) {
-  statusEl.textContent = message;
-  statusEl.style.color = isError ? "#ff8f8f" : "#9be59b";
-}
-
-
-
 export function streamConfigByName(name) {
   return STREAMS.find((item) => item.name === name) ?? STREAMS[0];
 }
@@ -43,18 +29,6 @@ export function streamConfigByName(name) {
 
 export function streamSourceName(config) {
   return config.source ?? config.name;
-}
-
-
-
-function applyStreamCanvasAspect(stream) {
-  const width = Number(stream.canvas?.width);
-  const height = Number(stream.canvas?.height);
-  if (Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
-    canvas.style.setProperty("--stream-aspect", `${width / height}`);
-  } else {
-    canvas.style.removeProperty("--stream-aspect");
-  }
 }
 
 
@@ -1010,10 +984,10 @@ function makeTextureViewDescriptor(command) {
 
 
 
-function commandExtent(command) {
+function commandExtent(command, state) {
   return {
-    width: resolveTextureExtentValue(command.width, "width"),
-    height: resolveTextureExtentValue(command.height, "height"),
+    width: resolveTextureExtentValue(command.width, "width", state),
+    height: resolveTextureExtentValue(command.height, "height", state),
     depth: command.depth ?? 1,
   };
 }
@@ -1146,7 +1120,7 @@ function requireCapabilityValue(commandIndex, command, capabilities, field, valu
 
 
 
-function validateTextureCapabilityPreflight(commandIndex, command, capabilities) {
+function validateTextureCapabilityPreflight(commandIndex, command, capabilities, state) {
   const format = required(command.format, "CreateTexture needs format");
   validateBrowserCanvasTextureExtentAlias(command);
   requireCapabilityValue(
@@ -1158,7 +1132,7 @@ function validateTextureCapabilityPreflight(commandIndex, command, capabilities)
     "texture format",
   );
   const mappedFormat = mapTextureFormat(format);
-  const extent = commandExtent(command);
+  const extent = commandExtent(command, state);
   validateTextureCapabilities(capabilities, command, mappedFormat, extent);
 }
 
@@ -1213,7 +1187,7 @@ function validateRenderPipelineCapabilityPreflight(commandIndex, command, capabi
 
 
 
-function validateStreamCapabilities(commands, capabilities, canvasFormat) {
+function validateStreamCapabilities(commands, capabilities, canvasFormat, state) {
   for (const [commandIndex, command] of commands.entries()) {
     try {
       if (!SUPPORTED_DRP2_COMMANDS.has(command.cmd)) {
@@ -1226,7 +1200,7 @@ function validateStreamCapabilities(commands, capabilities, canvasFormat) {
 
       switch (command.cmd) {
         case "CreateTexture":
-          validateTextureCapabilityPreflight(commandIndex, command, capabilities);
+          validateTextureCapabilityPreflight(commandIndex, command, capabilities, state);
           break;
 
         case "CreateShaderModule":
@@ -1307,7 +1281,11 @@ function clearValue(value) {
 
 
 
-function canvasExtent() {
+function canvasExtent(state) {
+  const canvas = state?.canvas;
+  if (canvas === undefined || canvas === null) {
+    throw new Error("browser canvas extent needs an active canvas");
+  }
   return {
     width: Math.max(1, canvas.width),
     height: Math.max(1, canvas.height),
@@ -1316,9 +1294,9 @@ function canvasExtent() {
 
 
 
-function resolveTextureExtentValue(value, axis) {
+function resolveTextureExtentValue(value, axis, state) {
   if (isBrowserCanvasExtentAlias(value)) {
-    return canvasExtent()[axis];
+    return canvasExtent(state)[axis];
   }
   return required(value, `CreateTexture needs ${axis}`);
 }
@@ -1337,7 +1315,7 @@ function validateBrowserCanvasTextureExtentAlias(command) {
 
 
 
-function resizeCanvasToDisplaySize(device, context, format) {
+function resizeCanvasToDisplaySize(canvas, device, context, format) {
   const scale = Math.max(1, window.devicePixelRatio || 1);
   const width = Math.max(1, Math.floor(canvas.clientWidth * scale));
   const height = Math.max(1, Math.floor(canvas.clientHeight * scale));
@@ -1361,13 +1339,16 @@ function resizeCanvasToDisplaySize(device, context, format) {
 
 
 
-export function resizeWebGpuCanvas(device, context, format) {
-  return resizeCanvasToDisplaySize(device, context, format);
+export function resizeWebGpuCanvas(canvas, device, context, format) {
+  return resizeCanvasToDisplaySize(canvas, device, context, format);
 }
 
 
 
-export async function initWebGPU() {
+export async function initWebGPU(canvas) {
+  if (canvas === undefined || canvas === null) {
+    throw new Error("initWebGPU needs a canvas");
+  }
   if (!navigator.gpu) {
     throw new Error("WebGPU is not available in this browser");
   }
@@ -1384,7 +1365,7 @@ export async function initWebGPU() {
   }
 
   const format = navigator.gpu.getPreferredCanvasFormat();
-  resizeCanvasToDisplaySize(device, context, format);
+  resizeCanvasToDisplaySize(canvas, device, context, format);
   const capabilities = runtimeCapabilities(device, format, adapter);
 
   return { device, context, format, capabilities };
@@ -1501,7 +1482,7 @@ function makeComputePipeline(device, shaders, bindGroupLayouts, command, options
 
 function attachmentExtent(state, attachment) {
   if (isBrowserCanvasTextureId(attachment.texture_id)) {
-    return canvasExtent();
+    return canvasExtent(state);
   }
   const record = requireLiveRecord(state, attachment.texture_id, "texture");
   return { width: record.width, height: record.height };
@@ -1909,8 +1890,9 @@ function destroyExecutionState(state) {
 
 
 
-function createExecutionState() {
+function createExecutionState(canvas = null) {
   return {
+    canvas,
     objects: new Map(),
     buffers: new Map(),
     textures: new Map(),
@@ -2034,7 +2016,8 @@ export class Drp2WebGpuRuntime {
     this.context = context;
     this.canvasFormat = canvasFormat;
     this.options = options;
-    this.state = createExecutionState();
+    this.canvas = options.canvas ?? null;
+    this.state = createExecutionState(this.canvas);
     this.stream = null;
     this.setupCommands = [];
     this.frameCommands = [];
@@ -2047,7 +2030,8 @@ export class Drp2WebGpuRuntime {
     this.stream = stream;
     this.options = { ...this.options, ...options };
     destroyExecutionState(this.state);
-    this.state = createExecutionState();
+    this.canvas = this.options.canvas ?? this.canvas;
+    this.state = createExecutionState(this.canvas);
 
     const split = splitStreamCommands(stream);
     this.setupCommands = split.setupCommands;
@@ -2102,7 +2086,8 @@ export class Drp2WebGpuRuntime {
 
     if (this.stream === null || options.reset === true) {
       destroyExecutionState(this.state);
-      this.state = createExecutionState();
+      this.canvas = this.options.canvas ?? this.canvas;
+      this.state = createExecutionState(this.canvas);
       this.packetResourceVersion = null;
       this.packetFrameIndex = null;
     }
@@ -2223,11 +2208,13 @@ export async function fetchWebGpuStream(path) {
 
 
 export class WebGpuDemoSession {
-  constructor(device, context, canvasFormat, capabilities) {
+  constructor(device, context, canvasFormat, capabilities, options = {}) {
     this.device = device;
     this.context = context;
     this.canvasFormat = canvasFormat;
     this.capabilities = capabilities;
+    this.canvas = options.canvas ?? null;
+    this.onStreamLoaded = typeof options.onStreamLoaded === "function" ? options.onStreamLoaded : null;
     this.streamName = null;
     this.config = null;
     this.stream = null;
@@ -2252,10 +2239,13 @@ export class WebGpuDemoSession {
       this.canvasFormat,
       {
         allowDemoCompatibility: true,
+        canvas: this.canvas,
         capabilities: this.capabilities,
       },
     );
-    applyStreamCanvasAspect(stream);
+    if (this.onStreamLoaded !== null) {
+      this.onStreamLoaded(stream);
+    }
     await this.runtime.load(stream);
     this.frameIndex = 0;
     return this;
@@ -2277,7 +2267,10 @@ export class WebGpuDemoSession {
   }
 
   resize() {
-    return resizeCanvasToDisplaySize(this.device, this.context, this.canvasFormat);
+    if (this.canvas === null) {
+      return false;
+    }
+    return resizeCanvasToDisplaySize(this.canvas, this.device, this.context, this.canvasFormat);
   }
 
   async render(options = {}) {
@@ -2309,7 +2302,10 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
     options.capabilities ?? runtimeCapabilities(device, canvasFormat),
     stream.capabilities,
   );
-  const state = options.state ?? createExecutionState();
+  const state = options.state ?? createExecutionState(options.canvas ?? null);
+  if (state.canvas === null && options.canvas !== undefined) {
+    state.canvas = options.canvas;
+  }
   const buffers = state.buffers;
   const textures = state.textures;
   const textureViews = state.textureViews;
@@ -2329,7 +2325,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
   let sessionState = "initial";
 
   if (options.validateCapabilities !== false) {
-    validateStreamCapabilities(commands, capabilities, canvasFormat);
+    validateStreamCapabilities(commands, capabilities, canvasFormat, state);
   }
 
   for (const [commandIndex, command] of commands.entries()) {
@@ -2401,7 +2397,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       case "CreateTexture": {
         const textureFormat = mapTextureFormat(required(command.format, "CreateTexture needs format"));
         validateBrowserCanvasTextureExtentAlias(command);
-        const extent = commandExtent(command);
+        const extent = commandExtent(command, state);
         validateTextureCapabilities(capabilities, command, textureFormat, extent);
         prepareCreateObject(state, command.id, "texture", options);
         registerObject(
@@ -3372,197 +3368,4 @@ export async function executeDrp2StreamChecked(
     device,
     async () => await executeDrp2Stream(device, context, canvasFormat, stream, options),
   );
-}
-
-
-
-async function main() {
-  try {
-    const { device, context, format, capabilities } = await initWebGPU();
-    const params = new URLSearchParams(window.location.search);
-    let streamName = params.get("stream") ?? "indexed_quad_wgsl";
-    let stream = null;
-    let streamConfig = streamConfigByName(streamName);
-    let runtime = null;
-    let session = null;
-    let frameIndex = 0;
-    let playing = false;
-    let playbackRequest = 0;
-    let playbackStartMs = 0;
-
-    for (const item of STREAMS) {
-      const option = document.createElement("option");
-      option.value = item.name;
-      option.textContent = item.label;
-      streamSelectEl.appendChild(option);
-    }
-    streamName = streamConfig.name;
-    streamSelectEl.value = streamName;
-
-    const frameCount = () => session?.frameCount() ?? 0;
-
-    const frameTime = (index) => session?.frameTime(index) ?? 0;
-
-    const frameIndexAtTime = (timeSeconds) => {
-      const frames = runtime?.frames ?? [];
-      if (frames.length <= 1) {
-        return 0;
-      }
-      const duration = frameTime(frames.length - 1);
-      const t = duration > 0 ? timeSeconds % duration : 0;
-      let lo = 0;
-      let hi = frames.length - 1;
-      while (lo < hi) {
-        const mid = Math.ceil((lo + hi) / 2);
-        if (frameTime(mid) <= t) {
-          lo = mid;
-        } else {
-          hi = mid - 1;
-        }
-      }
-      return lo;
-    };
-
-    const updatePlaybackUi = () => {
-      const count = frameCount();
-      playToggleEl.disabled = count <= 1;
-      playToggleEl.textContent = playing ? "Pause" : "Play";
-      frameInfoEl.textContent = count > 0 ? `${frameIndex + 1}/${count}` : "0/0";
-    };
-
-    const stopPlayback = () => {
-      playing = false;
-      if (playbackRequest !== 0) {
-        cancelAnimationFrame(playbackRequest);
-        playbackRequest = 0;
-      }
-      updatePlaybackUi();
-    };
-
-    const loadStream = async (name) => {
-      if (session === null) {
-        session = new WebGpuDemoSession(device, context, format, capabilities);
-      }
-      await session.loadStream(name);
-      streamConfig = session.config;
-      stream = session.stream;
-      runtime = session.runtime;
-      streamName = session.streamName;
-      const streamPath = `./streams/${streamSourceName(streamConfig)}.json`;
-      streamNameEl.textContent = streamPath.slice(2);
-      frameIndex = 0;
-      stopPlayback();
-      updatePlaybackUi();
-      const url = new URL(window.location.href);
-      url.searchParams.set("stream", streamName);
-      window.history.replaceState(null, "", url);
-    };
-
-    let rendering = false;
-    let rerenderRequested = false;
-
-    const render = async () => {
-      if (rendering) {
-        rerenderRequested = true;
-        return;
-      }
-
-      rendering = true;
-      try {
-        do {
-          rerenderRequested = false;
-          if (stream === null) {
-            await loadStream(streamName);
-          }
-          const count = frameCount();
-          const result = await session.render({
-            frameIndex: count > 0 ? frameIndex : null,
-            reloadOnResize: true,
-          });
-          runtime = session.runtime;
-          if (result.readbacks.length > 0) {
-            const readback = result.readbacks[0];
-            setStatus(
-              `Rendered ${stream.name}; readback nonzero=${readback.summary.nonzero}`,
-            );
-          } else {
-            const frameSuffix = count > 0 ? `; frame=${frameIndex + 1}/${count}` : "";
-            setStatus(`Rendered ${streamName}; readbacks=0${frameSuffix}`);
-          }
-          updatePlaybackUi();
-        } while (rerenderRequested);
-      } finally {
-        rendering = false;
-      }
-    };
-
-    const schedulePlayback = () => {
-      playbackRequest = requestAnimationFrame(async () => {
-        playbackRequest = 0;
-        if (!playing) {
-          return;
-        }
-        const count = frameCount();
-        if (count <= 1) {
-          stopPlayback();
-          return;
-        }
-        frameIndex = frameIndexAtTime((performance.now() - playbackStartMs) / 1000);
-        try {
-          await render();
-        } catch (error) {
-          stopPlayback();
-          setStatus(error.message, true);
-          return;
-        }
-        if (playing) {
-          schedulePlayback();
-        }
-      });
-    };
-
-    playToggleEl.addEventListener("click", () => {
-      if (playing) {
-        stopPlayback();
-        return;
-      }
-      if (frameCount() <= 1 || interaction !== null) {
-        return;
-      }
-      playing = true;
-      playbackStartMs = performance.now() - frameTime(frameIndex) * 1000;
-      updatePlaybackUi();
-      schedulePlayback();
-    });
-
-    streamSelectEl.addEventListener("change", () => {
-      stopPlayback();
-      loadStream(streamSelectEl.value)
-        .then(render)
-        .catch((error) => setStatus(error.message, true));
-    });
-
-    await loadStream(streamName);
-    await render();
-    new ResizeObserver(() => {
-      stopPlayback();
-      render().catch((error) => setStatus(error.message, true));
-    }).observe(canvas);
-  } catch (error) {
-    setStatus(error.message, true);
-    console.error(error);
-  }
-}
-
-
-
-if (
-  canvas !== null &&
-  statusEl !== null &&
-  streamNameEl !== null &&
-  streamSelectEl !== null &&
-  playToggleEl !== null &&
-  frameInfoEl !== null
-) {
-  main();
 }

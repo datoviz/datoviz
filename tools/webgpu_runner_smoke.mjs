@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { readFile } from 'node:fs/promises';
-import { decodeDrp2Packet } from '../examples/webgpu/drp2_packet.js';
+import { decodeDrp2Packet } from '../web/drp2/packet.js';
 
 const fakeCanvas = {
   width: 640,
@@ -383,7 +383,7 @@ async function expectAsyncFailure(fn, expectedText) {
 
 async function expectFailure(executeDrp2Stream, stream, expectedText, expected = {}) {
   try {
-    await executeDrp2Stream(device, context, 'bgra8unorm', stream);
+    await executeDrp2Stream(device, context, 'bgra8unorm', stream, { canvas: fakeCanvas });
   } catch (error) {
     const message = String(error.message);
     if (!message.includes(expectedText)) {
@@ -418,7 +418,7 @@ async function expectNegativeFixtureParity(executeDrp2Stream, path) {
   }
 
   try {
-    await executeDrp2Stream(device, context, 'bgra8unorm', stream);
+    await executeDrp2Stream(device, context, 'bgra8unorm', stream, { canvas: fakeCanvas });
   } catch (error) {
     const expectedCmd = stream.commands[expected.command_index]?.cmd;
     const checks = {
@@ -470,6 +470,7 @@ async function smokeRepeatedRuntimeStream(Drp2WebGpuRuntime, path) {
 
 async function smokeRepeatedRuntimeStreamObject(Drp2WebGpuRuntime, stream, label) {
   const runtime = new Drp2WebGpuRuntime(device, context, 'rgba8unorm', {
+    canvas: fakeCanvas,
     requireExplicitBindGroupLayouts: true,
     requireExplicitPipelineMetadata: true,
   });
@@ -529,12 +530,13 @@ async function smokeDestroyAfterSubmittedWork(executeDrp2Stream) {
         { cmd: 'DestroyBuffer', buffer_id: 2 },
       ],
     },
-    { retireSubmittedRefs: true },
+    { canvas: fakeCanvas, retireSubmittedRefs: true },
   );
 }
 
 async function smokeBrowserCanvasDepthCache(Drp2WebGpuRuntime) {
   const runtime = new Drp2WebGpuRuntime(device, context, 'rgba8unorm', {
+    canvas: fakeCanvas,
     requireExplicitBindGroupLayouts: true,
     requireExplicitPipelineMetadata: true,
   });
@@ -588,6 +590,7 @@ async function smokeStreamPathsOnly(Drp2WebGpuRuntime, executeDrp2Stream, paths)
     const stream = await loadJson(path);
     try {
       await executeDrp2Stream(device, context, 'rgba8unorm', stream, {
+        canvas: fakeCanvas,
         requireExplicitBindGroupLayouts: true,
         requireExplicitPipelineMetadata: true,
       });
@@ -606,6 +609,8 @@ async function smokeDemoPath(WebGpuDemoSession) {
     supported_texture_formats: ['rgba8unorm', 'depth32float'],
     supported_sample_counts: [1, 4],
     supports_fp64: false,
+  }, {
+    canvas: fakeCanvas,
   });
 
   const pointStream = await loadJson('examples/webgpu/streams/scene_point_wgsl.json');
@@ -660,7 +665,7 @@ async function smokePacketSessionValidation(Drp2WebGpuRuntime) {
     'payload span',
   );
 
-  const runtime = new Drp2WebGpuRuntime(device, context, 'bgra8unorm');
+  const runtime = new Drp2WebGpuRuntime(device, context, 'bgra8unorm', { canvas: fakeCanvas });
   await expectAsyncFailure(
     () => runtime.executePacketSet({}),
     'needs a frame packet',
@@ -683,7 +688,7 @@ async function smokePacketSessionValidation(Drp2WebGpuRuntime) {
   );
   await runtime.executePacketSet({ frame: { packet: emptyPacket(3, 1, 0) } }, { reset: true });
 
-  const realistic = new Drp2WebGpuRuntime(device, context, 'bgra8unorm');
+  const realistic = new Drp2WebGpuRuntime(device, context, 'bgra8unorm', { canvas: fakeCanvas });
   const beforeBuffers = createdBufferCount;
   await realistic.executePacketSet(bufferPacketSet(10, 1, 7n, true), { reset: true });
   const firstStats = realistic.resourceStats();
@@ -716,7 +721,7 @@ async function smokePacketSessionValidation(Drp2WebGpuRuntime) {
 
 async function main() {
   const { Drp2WebGpuRuntime, WebGpuDemoSession, executeDrp2Stream } = await import(
-    '../examples/webgpu/drp2_webgpu.js'
+    '../web/drp2/webgpu.js'
   );
 
   const args = process.argv.slice(2);
@@ -733,6 +738,7 @@ async function main() {
     const stream = await loadJson(path);
     try {
       await executeDrp2Stream(device, context, 'bgra8unorm', stream, {
+        canvas: fakeCanvas,
         requireExplicitBindGroupLayouts: true,
         requireExplicitPipelineMetadata: true,
       });
@@ -748,6 +754,7 @@ async function main() {
     const stream = await loadJson(path);
     try {
       await executeDrp2Stream(device, context, 'bgra8unorm', stream, {
+        canvas: fakeCanvas,
         requireExplicitBindGroupLayouts: true,
         requireExplicitPipelineMetadata: true,
       });
@@ -787,7 +794,7 @@ async function main() {
       { cmd: 'FinishCommandEncoder', encoder_id: 1, command_buffer_id: 3 },
       { cmd: 'QueueSubmit', command_buffer_id: 3 },
     ],
-  });
+  }, { canvas: fakeCanvas });
 
   await expectFailure(
     executeDrp2Stream,
