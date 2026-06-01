@@ -103,11 +103,6 @@ typedef struct TexturedPlanetState
     DvzVisual* visual;
     DvzAnimation* spin;
     PlanetTexture textures[PLANET_COUNT];
-    vec3* base_positions;
-    vec3* base_normals;
-    vec3* rotated_positions;
-    vec3* rotated_normals;
-    uint32_t vertex_count;
     int planet_index;
     bool auto_rotate;
     float spin_speed;
@@ -513,73 +508,10 @@ fail:
 
 
 /**
- * Copy the immutable sphere geometry into animation scratch buffers.
- *
- * @param state example state
- * @param geometry sphere geometry
- * @return whether all buffers were allocated and filled
- */
-static bool _state_set_base_geometry(TexturedPlanetState* state, const DvzGeometry* geometry)
-{
-    ANN(state);
-    ANN(geometry);
-    if (geometry->vertex_count == 0 || geometry->positions == NULL)
-        return false;
-
-    state->vertex_count = geometry->vertex_count;
-    state->base_positions = (vec3*)dvz_calloc(state->vertex_count, sizeof(vec3));
-    state->base_normals = (vec3*)dvz_calloc(state->vertex_count, sizeof(vec3));
-    state->rotated_positions = (vec3*)dvz_calloc(state->vertex_count, sizeof(vec3));
-    state->rotated_normals = (vec3*)dvz_calloc(state->vertex_count, sizeof(vec3));
-    if (
-        state->base_positions == NULL || state->base_normals == NULL ||
-        state->rotated_positions == NULL || state->rotated_normals == NULL)
-    {
-        return false;
-    }
-
-    for (uint32_t i = 0; i < state->vertex_count; i++)
-    {
-        for (uint32_t k = 0; k < 3; k++)
-        {
-            state->base_positions[i][k] = (float)geometry->positions[i][k];
-            state->rotated_positions[i][k] = state->base_positions[i][k];
-        }
-        if (geometry->normals != NULL)
-        {
-            for (uint32_t k = 0; k < 3; k++)
-            {
-                state->base_normals[i][k] = (float)geometry->normals[i][k];
-                state->rotated_normals[i][k] = state->base_normals[i][k];
-            }
-        }
-        else
-        {
-            const float x = state->base_positions[i][0];
-            const float y = state->base_positions[i][1];
-            const float z = state->base_positions[i][2];
-            const float norm = sqrtf(x * x + y * y + z * z);
-            if (norm > 0.0f)
-            {
-                state->base_normals[i][0] = x / norm;
-                state->base_normals[i][1] = y / norm;
-                state->base_normals[i][2] = z / norm;
-            }
-            state->rotated_normals[i][0] = state->base_normals[i][0];
-            state->rotated_normals[i][1] = state->base_normals[i][1];
-            state->rotated_normals[i][2] = state->base_normals[i][2];
-        }
-    }
-    return true;
-}
-
-
-
-/**
  * Rotate the planet mesh around its polar axis.
  *
- * The sky is ordinary world geometry and must not be touched here; user arcball input rotates the
- * camera, while this animation updates only the planet visual attributes.
+ * The sky is ordinary world geometry and must not be touched here; user orbit-camera input moves
+ * the camera, while this animation updates only the planet visual-local transform.
  *
  * @param animation animation handle
  * @param value current phase angle
@@ -592,35 +524,19 @@ static void _planet_spin_step(
     (void)animation;
     (void)delta;
     TexturedPlanetState* state = (TexturedPlanetState*)user_data;
-    if (
-        state == NULL || state->visual == NULL || state->base_positions == NULL ||
-        state->base_normals == NULL || state->rotated_positions == NULL ||
-        state->rotated_normals == NULL || state->vertex_count == 0)
-    {
+    if (state == NULL || state->visual == NULL)
         return;
-    }
 
     const float c = cosf(value);
     const float s = sinf(value);
-    for (uint32_t i = 0; i < state->vertex_count; i++)
-    {
-        const float px = state->base_positions[i][0];
-        const float py = state->base_positions[i][1];
-        state->rotated_positions[i][0] = c * px - s * py;
-        state->rotated_positions[i][1] = s * px + c * py;
-        state->rotated_positions[i][2] = state->base_positions[i][2];
-
-        const float nx = state->base_normals[i][0];
-        const float ny = state->base_normals[i][1];
-        state->rotated_normals[i][0] = c * nx - s * ny;
-        state->rotated_normals[i][1] = s * nx + c * ny;
-        state->rotated_normals[i][2] = state->base_normals[i][2];
-    }
-
-    (void)dvz_visual_set_data_range(
-        state->visual, "position", state->rotated_positions, 0, state->vertex_count);
-    (void)dvz_visual_set_data_range(
-        state->visual, "normal", state->rotated_normals, 0, state->vertex_count);
+    mat4 transform = {0};
+    transform[0][0] = c;
+    transform[0][1] = s;
+    transform[1][0] = -s;
+    transform[1][1] = c;
+    transform[2][2] = 1.0f;
+    transform[3][3] = 1.0f;
+    (void)dvz_visual_set_transform(state->visual, transform);
 }
 
 
@@ -788,8 +704,6 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");
     gui_state.visual = visual;
 
-    ok = _state_set_base_geometry(&gui_state, sphere);
-    EXAMPLE_CHECK(ok, "failed to copy planet geometry");
 
     ok = example_mesh_geometry(visual, sphere);
     EXAMPLE_CHECK(ok, "example_mesh_geometry() failed");
@@ -820,9 +734,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
     dvz_view_set_gui_callback(win, _textured_planet_gui, &gui_state);
 
-    DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
-    EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
-    dvz_arcball_set(arcball, (vec3){0.0f, 0.0f, +0.25f});
+    DvzOrbitCamera* orbit = dvz_view_orbit_camera(win, panel, NULL);
+    EXAMPLE_CHECK(orbit != NULL, "failed to create or bind orbit-camera controller");
 
     dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
@@ -857,9 +770,5 @@ cleanup:
         dvz_scene_destroy(scene);
     for (uint32_t i = 0; i < PLANET_COUNT; i++)
         dvz_free(gui_state.textures[i].pixels);
-    dvz_free(gui_state.base_positions);
-    dvz_free(gui_state.base_normals);
-    dvz_free(gui_state.rotated_positions);
-    dvz_free(gui_state.rotated_normals);
     return ret;
 }

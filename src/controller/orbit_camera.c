@@ -283,7 +283,30 @@ void dvz_orbit_camera_set_camera(DvzOrbitCamera* orbit, DvzCamera* camera)
         glm_vec3_sub(eye, orbit->pivot, delta);
         float distance = glm_vec3_norm(delta);
         if (distance > 0.0f)
+        {
             orbit->distance = distance;
+            vec3 forward = {0};
+            glm_vec3_scale(delta, 1.0f / distance, forward);
+            if (glm_vec3_norm(up) <= 0.0f)
+                glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, up);
+            else
+                glm_vec3_normalize(up);
+            vec3 right = {0};
+            glm_vec3_cross(up, forward, right);
+            if (glm_vec3_norm(right) <= 0.0f)
+                glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, right);
+            else
+                glm_vec3_normalize(right);
+            glm_vec3_cross(forward, right, up);
+            glm_vec3_normalize(up);
+            glm_mat4_identity(orbit->rotation);
+            for (uint32_t row = 0; row < 3; row++)
+            {
+                orbit->rotation[0][row] = right[row];
+                orbit->rotation[1][row] = up[row];
+                orbit->rotation[2][row] = forward[row];
+            }
+        }
     }
     dvz_orbit_camera_apply_camera(orbit);
 }
