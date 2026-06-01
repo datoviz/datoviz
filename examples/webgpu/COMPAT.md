@@ -4,7 +4,7 @@ This note records the current browser WebGPU proof-of-concept compatibility surf
 
 The WebGPU runner is a strict subset check, not a full DRP2 backend. It tracks the active DRP2
 command surface and validates the currently portable fixture slice: `37` positive DRP2 fixtures,
-`2` WebGPU-only attachment streams, and `81` expected-failure semantic negative fixtures.
+`2` WebGPU-only attachment streams, and `82` expected-failure semantic negative fixtures.
 
 As of the capability-preflight slice (`c03e89227`), the pure browser WebGPU runner is considered
 closed for the v0.4 RC experimental subset. Remaining WebGPU/WASM release work is scene/WASM
@@ -29,15 +29,15 @@ The committed dashboard manifest currently covers:
 
 - `37` positive DRP2 fixtures under `spec/drp2/fixtures/positive`
 - `2` WebGPU-only strict stream checks under `examples/webgpu/streams`
-- `81` semantic negative fixtures under `spec/drp2/fixtures/negative`
-- `120` total dashboard rows
+- `82` semantic negative fixtures under `spec/drp2/fixtures/negative`
+- `121` total dashboard rows
 
 Current status as of this note:
 
 - positive fixture count: `37`
 - WebGPU stream count: `2`
-- negative parity fixture count: `81`
-- expected browser dashboard result for the committed subset: `120 pass, 0 unsupported, 0 fail`
+- negative parity fixture count: `82`
+- expected browser dashboard result for the committed subset: `121 pass, 0 unsupported, 0 fail`
 - recorded browser dashboard result on 2026-05-28 after the repeated-runtime-frame smoke slice
   (`183812f27`): `120 pass, 0 unsupported, 0 fail`
 - recorded browser dashboard result on 2026-05-29 after the retained browser-runtime stress slice
@@ -66,6 +66,13 @@ Current status as of this note:
   Chrome with WebGPU enabled, serves the local repo, renders `wasm_scene.html` and
   `wasm_scene_3d.html`, exercises pointer and wheel interaction, checks the browser status remains
   non-error, and writes nonblank canvas PNG captures under `build/webgpu-browser-smoke/`.
+- recorded browserless and automated browser proof on 2026-06-01 after WASM capability handoff and
+  retirement of the direct browser-side panzoom uniform path: `just webgpu-fixture-preflight`
+  passed `39` strict positive/WebGPU stream rows; `just webgpu-runner-smoke` passed
+  `37` positive fixtures, `2` WebGPU streams, and `82` negative parity fixtures;
+  `just wasm-scene-smoke` passed the 2D/3D generic ABI streams; `just webgpu-browser-smoke`
+  rendered the 2D and 3D WASM pages, exercised pointer and wheel interaction, and wrote nonblank
+  PNG captures under `build/webgpu-browser-smoke/`.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
