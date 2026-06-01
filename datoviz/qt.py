@@ -297,6 +297,7 @@ class DatovizWindow(QWindow):
         self._app = None
         self._qt_instance = None
         self._view = None
+        self._released = False
         self._repaint_requested = True
         self._request_callback = dvz.DvzViewRequestFrameCallback(self._request_frame)
 
@@ -326,6 +327,8 @@ class DatovizWindow(QWindow):
     def request_frame(self) -> None:
         """Ask Qt to schedule another Datoviz frame."""
 
+        if self._released:
+            return
         if self._view:
             dvz.dvz_view_request_frame(self._view)
         else:
@@ -334,7 +337,11 @@ class DatovizWindow(QWindow):
     def release(self) -> None:
         """Release Datoviz surface resources and destroy owned app resources."""
 
+        if self._released:
+            return
+        self._released = True
         self.release_surface()
+        self._destroy_qt_surface()
         if self._qt_instance is not None:
             self._qt_instance.destroy()
             self._qt_instance = None
@@ -349,6 +356,15 @@ class DatovizWindow(QWindow):
             dvz.dvz_view_release_external_surface(self._view)
             self._view = None
 
+    def _destroy_qt_surface(self) -> None:
+        """Destroy Qt-owned native surface objects before the adopted VkInstance dies."""
+
+        self.setVisible(False)
+        self.destroy()
+        app = QApplication.instance()
+        if app is not None:
+            app.processEvents()
+
     def event(self, event):
         if event.type() == QEvent.Type.PlatformSurface:
             surface_event = event
@@ -358,13 +374,15 @@ class DatovizWindow(QWindow):
             ):
                 self.release_surface()
         if event.type() == QEvent.Type.UpdateRequest:
+            if self._released:
+                return True
             self._render_once()
             return True
         return super().event(event)
 
     def exposeEvent(self, event: QExposeEvent) -> None:
         del event
-        if self.isExposed():
+        if not self._released and self.isExposed():
             self.requestUpdate()
 
     def resizeEvent(self, event: QResizeEvent) -> None:
@@ -530,6 +548,8 @@ class DatovizWindow(QWindow):
         dvz.dvz_view_emit_key(self._view, event_type, key, _mods(event.modifiers()))
 
     def _render_once(self) -> None:
+        if self._released or self._app is None:
+            return
         if not self.isExposed():
             return
         if not self._ensure_view():
@@ -601,10 +621,15 @@ class DatovizWidget(QWidget):
         """Release Datoviz and Qt Vulkan resources owned by this widget."""
 
         self._window.release()
+        if self._container is not None:
+            self._container.setParent(None)
+            self._container.deleteLater()
+            self._container = None
 
     def resizeEvent(self, event: QResizeEvent) -> None:
         super().resizeEvent(event)
-        self._container.setGeometry(self.rect())
+        if self._container is not None:
+            self._container.setGeometry(self.rect())
 
     def closeEvent(self, event: QCloseEvent) -> None:
         self.release()
