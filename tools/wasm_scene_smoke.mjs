@@ -7,7 +7,7 @@ import { decodeDrp2Packet } from "../examples/webgpu/drp2_packet.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs");
-const browserWrapperPath = resolve(root, "examples/webgpu/datoviz_wasm_scene.js");
+const browserWrapperPath = resolve(root, "web/wasm/scene.js");
 const output2dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_point_primitive_image_mesh_panzoom.json");
 const output3dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_mesh3d_arcball.json");
 
