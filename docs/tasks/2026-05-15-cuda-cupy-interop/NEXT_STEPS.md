@@ -29,6 +29,10 @@ Current slice update, 2026-06-01:
    Vulkan, renders the shared buffer through DRP2, and verifies a readback pixel.
 8. `dvz_interop_buffer_wait_timeline()` is the public advanced Vulkan-side wait helper used by the
    Python smoke before vertex reads from CUDA/CuPy-written shared buffers.
+9. Scene external point-position buffers now have a stable registration route: use
+   `dvz_scene_buffer_resource_key()` to get the retained buffer key and
+   `dvz_drp2_stream_label_id()` on the emitted stream to resolve the runtime DRP2 id, then register
+   the live `DvzBuffer` with `dvz_drp2_runtime_register_external_buffer()`.
 
 Current proof points:
 
@@ -86,10 +90,11 @@ that exported it.
 The raw smoke now reaches the DRP2 registered-buffer render/readback path when CuPy is available.
 Keep the next slice focused on turning this substrate into the first feature-quality example:
 
-1. Add the scene/runtime hook for an external point `position` attribute so scene emission registers
-   the shared buffer instead of emitting a CPU `WRITE_BUFFER` for positions.
+1. Wrap the raw context/export/import/wait/register pieces in the first internal Python owner object
+   for `datoviz.cuda_array()`; it should own timeline values, CUDA imports, CuPy memory, and runtime
+   external-buffer registration by scene-buffer key.
 2. Keep `dvz_interop_gpu_ctx()`, `dvz_interop_buffer_wait_timeline()`, and the CUDA bridge
-   internal/advanced and wrap them behind the eventual `datoviz.cuda_array()` API.
+   internal/advanced until the wrapper API is ready.
 3. Prepare the feature example around a dynamic point cloud whose positions are updated by CuPy
    kernels and rendered by Datoviz without GPU-buffer copies. Prefer a visually interesting but
    bounded effect such as a 50k-200k particle vortex/flow-field or orbital attractor: static

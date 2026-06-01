@@ -301,8 +301,16 @@ bool dvz_drp2_runtime_register_external_buffer(
 
 The important point is that external buffers are registered with a live runtime, not serialized as
 portable scene data. The runtime borrows the registered `DvzBuffer`; the caller must keep the buffer
-alive until the runtime is reset or destroyed. No generic public binding API is required for the
-current spec pass.
+alive until the runtime is reset or destroyed. The retained-scene route is:
+
+1. create a `DvzSceneBuffer` for the external attribute,
+2. bind it to the visual attribute with `dvz_visual_set_attr_buffer()`,
+3. resolve its retained resource key with `dvz_scene_buffer_resource_key()`,
+4. emit the figure and resolve the live DRP2 id with `dvz_drp2_stream_label_id()`,
+5. register the live `DvzBuffer` on the runtime with `dvz_drp2_runtime_register_external_buffer()`.
+
+This avoids scanning draw commands and keeps examples tied to scene resources rather than private
+vklite buffer internals. No generic raw Vulkan handle API is required for normal scene users.
 
 
 ## Current Low-Level Status
@@ -482,9 +490,9 @@ Start with narrow tests before adding Python examples:
 4. add a live example that updates positions at a fixed rate without CPU upload.
 
 The current raw smoke is intentionally below the public API: it proves Vulkan-owned buffer ->
-CUDA/CuPy import -> explicit timeline wait -> DRP2 render/readback. The public example should be
-built after the scene attribute hook exists, so the example demonstrates Datoviz rendering rather
-than low-level DRP2 command construction.
+CUDA/CuPy import -> explicit timeline wait -> DRP2 render/readback. The scene external-buffer hook
+now exists, so the next public-example slice should use retained scene resources plus the
+resource-key/label-id registration path rather than low-level DRP2 command construction.
 
 The existing CUDA import/export tests in `src/vk/tests/test_memory.c` are the right low-level
 starting point, but the public example should only be added after the synchronization path is tested
