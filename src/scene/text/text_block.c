@@ -2022,10 +2022,10 @@ int _scene_text_block_realize_image(
 
     if (block->image_field == NULL)
     {
-        DvzSampledFieldDesc desc = dvz_sampled_field_desc();
-        desc.width = block->raster_width;
-        desc.height = block->raster_height;
-        block->image_field = dvz_sampled_field(scene, &desc);
+        DvzSampledFieldDesc field_desc = dvz_sampled_field_desc();
+        field_desc.width = block->raster_width;
+        field_desc.height = block->raster_height;
+        block->image_field = dvz_sampled_field(scene, &field_desc);
         if (block->image_field == NULL)
             return -1;
         block->image_width = block->raster_width;
