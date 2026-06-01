@@ -2,6 +2,11 @@
 
 Status: active pre-release handoff. Created: 2026-06-01. Last updated: 2026-06-01.
 
+Implementation update: v0.4 now has ABI-prologued inert descriptor shells for future visual
+transform and shader extension points. `DvzVisualTransformDesc` and `DvzVisualShaderDesc` have
+canonical initializers and setter entry points, but v0.4 accepts only `NONE`; nonlinear transforms,
+custom visual families, and built-in shader replacement are rejected explicitly as deferred.
+
 This note captures a narrow release-stabilization concern from the v0.3 visible parity review:
 Datoviz v0.4 has most visible roadmap capabilities, but dynamic/customizable shaders and nonlinear
 coordinate transforms are intentionally not v0.4-final deliverables.

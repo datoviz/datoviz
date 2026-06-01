@@ -7610,6 +7610,103 @@ int test_scene_visual_alpha_mode(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Verify future visual transform/shader descriptor validation.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_shader_transform_future_compat(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzVisualTransformDesc transform = dvz_visual_transform_desc();
+    AT(transform.struct_size == DVZ_STRUCT_SIZE(DvzVisualTransformDesc));
+    AT(transform.flags == 0);
+    AT(transform.kind == DVZ_VISUAL_TRANSFORM_NONE);
+    AT(transform.input_space == DVZ_VISUAL_TRANSFORM_SPACE_DATA);
+    AT(transform.output_space == DVZ_VISUAL_TRANSFORM_SPACE_VISUAL);
+    AC(transform.matrix[0][0], 1.0f, 1e-6);
+
+    DvzVisualShaderDesc shader = dvz_visual_shader_desc();
+    AT(shader.struct_size == DVZ_STRUCT_SIZE(DvzVisualShaderDesc));
+    AT(shader.flags == 0);
+    AT(shader.kind == DVZ_VISUAL_SHADER_NONE);
+    AT(shader.vertex_source == DVZ_VISUAL_SHADER_SOURCE_NONE);
+    AT(shader.fragment_source == DVZ_VISUAL_SHADER_SOURCE_NONE);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    AT(dvz_visual_set_transform_desc(visual, NULL) == 0);
+    AT(visual->transform_desc.kind == DVZ_VISUAL_TRANSFORM_NONE);
+    AT(dvz_visual_set_transform_desc(visual, &transform) == 0);
+    AT(visual->transform_desc.kind == DVZ_VISUAL_TRANSFORM_NONE);
+
+    DvzVisualTransformDesc invalid_transform = dvz_visual_transform_desc();
+    invalid_transform.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_transform_desc(visual, &invalid_transform) < 0);
+
+    invalid_transform = dvz_visual_transform_desc();
+    invalid_transform.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_transform_desc(visual, &invalid_transform) < 0);
+
+    invalid_transform = dvz_visual_transform_desc();
+    invalid_transform.kind = DVZ_VISUAL_TRANSFORM_NONLINEAR;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_transform_desc(visual, &invalid_transform) < 0);
+    AT(visual->transform_desc.kind == DVZ_VISUAL_TRANSFORM_NONE);
+
+    invalid_transform = dvz_visual_transform_desc();
+    invalid_transform.kind = DVZ_VISUAL_TRANSFORM_CUSTOM;
+    invalid_transform.transform_id = 7;
+    invalid_transform.label = "future-custom-transform";
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_transform_desc(visual, &invalid_transform) < 0);
+
+    AT(dvz_visual_set_shader_desc(visual, NULL) == 0);
+    AT(visual->shader_desc.kind == DVZ_VISUAL_SHADER_NONE);
+    AT(dvz_visual_set_shader_desc(visual, &shader) == 0);
+    AT(visual->shader_desc.kind == DVZ_VISUAL_SHADER_NONE);
+
+    DvzVisualShaderDesc invalid_shader = dvz_visual_shader_desc();
+    invalid_shader.struct_size = DVZ_STRUCT_SIZE(DvzVisualShaderDesc) - 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_shader_desc(visual, &invalid_shader) < 0);
+
+    invalid_shader = dvz_visual_shader_desc();
+    invalid_shader.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_shader_desc(visual, &invalid_shader) < 0);
+
+    invalid_shader = dvz_visual_shader_desc();
+    invalid_shader.vertex_source = DVZ_VISUAL_SHADER_SOURCE_GLSL;
+    invalid_shader.vertex_code = "void main() {}";
+    invalid_shader.vertex_code_size = 14;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_shader_desc(visual, &invalid_shader) < 0);
+
+    invalid_shader = dvz_visual_shader_desc();
+    invalid_shader.kind = DVZ_VISUAL_SHADER_CUSTOM_FAMILY;
+    invalid_shader.family = "future.custom";
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_shader_desc(visual, &invalid_shader) < 0);
+    AT(visual->shader_desc.kind == DVZ_VISUAL_SHADER_NONE);
+
+    invalid_shader = dvz_visual_shader_desc();
+    invalid_shader.kind = DVZ_VISUAL_SHADER_BUILTIN_REPLACEMENT;
+    invalid_shader.fragment_source = DVZ_VISUAL_SHADER_SOURCE_WGSL;
+    invalid_shader.fragment_code = "@fragment fn main() {}";
+    invalid_shader.fragment_code_size = 22;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_shader_desc(visual, &invalid_shader) < 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify visual depth-test storage and mutation.
  *
  * @param suite the active test suite

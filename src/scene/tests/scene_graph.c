@@ -155,6 +155,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_visual_index_data_upload);
     TST_CASE(test_scene_point_storage_position_buffer_emits_usage);
     TST_CASE(test_scene_descriptor_abi_rejects_invalid_structs);
+    TST_CASE(test_scene_visual_shader_transform_future_compat);
     TST_CASE(test_scene_compute_point_position_buffer_emits_drp2);
     TST_CASE(test_scene_mesh_geometry_upload);
     TST_CASE(test_scene_polygon_composite);

@@ -752,6 +752,9 @@ int test_scene_point_storage_position_buffer_emits_usage(
 
 int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item);
 
+int test_scene_visual_shader_transform_future_compat(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_compute_point_position_buffer_emits_drp2(
     TstContext* suite, const TstCase* item);
 
