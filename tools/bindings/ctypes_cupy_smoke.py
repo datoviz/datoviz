@@ -24,6 +24,14 @@ BRIDGE_SOURCE = ROOT_DIR / 'tools' / 'bindings' / 'cuda_interop_bridge.c'
 BRIDGE_BUILD_DIR = ROOT_DIR / 'build' / 'bindings'
 BRIDGE_LIBRARY = BRIDGE_BUILD_DIR / 'libdatoviz_cuda_interop_bridge.so'
 VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT = 0x00000001
+VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT = 0x00000001
+VK_BUFFER_USAGE_TRANSFER_SRC_BIT = 0x00000001
+VK_BUFFER_USAGE_STORAGE_BUFFER_BIT = 0x00000020
+VK_BUFFER_USAGE_VERTEX_BUFFER_BIT = 0x00000080
+DVZ_ALLOC_DEDICATED_MEMORY = 0x00000001
+PARTICLE_COUNT = 1024
+POSITION_COMPONENTS = 3
+POSITION_DTYPE_SIZE = 4
 
 
 EXPORT_FIELDS = (
@@ -184,6 +192,163 @@ def _load_bridge():
     return bridge
 
 
+class ExportedDatovizBuffer:
+    def __init__(self, dvz, count: int = PARTICLE_COUNT):
+        self.dvz = dvz
+        self.count = count
+        self.size = count * POSITION_COMPONENTS * POSITION_DTYPE_SIZE
+        self.ctx = None
+        self.buffer = None
+        self.semaphore = None
+        self.desc = dvz.DvzInteropBufferExport()
+        self.desc.memory_handle = -1
+        self.desc.semaphore_handle = -1
+
+    def __enter__(self):
+        dvz = self.dvz
+        self.ctx = dvz.dvz_interop_gpu_ctx(0, VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT)
+        if not self.ctx:
+            _skip('Datoviz interop GPU context unavailable')
+        device = dvz.dvz_gpu_ctx_device(self.ctx)
+        allocator = dvz.dvz_gpu_ctx_alloc(self.ctx)
+        if not device or not allocator:
+            raise RuntimeError('interop GPU context is missing device or allocator')
+
+        self.buffer = dvz.dvz_buffer_create_wrapper()
+        if not self.buffer:
+            raise RuntimeError('dvz_buffer_create_wrapper() failed')
+        usage = (
+            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+            | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT
+            | VK_BUFFER_USAGE_TRANSFER_SRC_BIT
+        )
+        dvz.dvz_buffer(device, allocator, self.buffer)
+        dvz.dvz_buffer_size(self.buffer, self.size)
+        dvz.dvz_buffer_usage(self.buffer, usage)
+        dvz.dvz_buffer_flags(self.buffer, DVZ_ALLOC_DEDICATED_MEMORY)
+        if dvz.dvz_buffer_create(self.buffer) != 0:
+            raise RuntimeError('dvz_buffer_create() failed')
+
+        self.semaphore = dvz.dvz_semaphore_create_wrapper()
+        if not self.semaphore:
+            raise RuntimeError('dvz_semaphore_create_wrapper() failed')
+        dvz.dvz_semaphore_timeline(
+            device, 0, self.semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT
+        )
+
+        cfg = dvz.DvzInteropBufferExportConfig()
+        cfg.offset = 0
+        cfg.size = 0
+        cfg.drp2_usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT
+        cfg.flags = 0
+        cfg.semaphore = self.semaphore
+        cfg.semaphore_handle_type = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT
+        cfg.semaphore_value = 0
+        if dvz.dvz_interop_buffer_export_from_buffer(
+            self.buffer, ctypes.byref(cfg), ctypes.byref(self.desc)
+        ) != 0:
+            raise RuntimeError('dvz_interop_buffer_export_from_buffer() failed')
+        if self.desc.memory_handle < 0 or self.desc.semaphore_handle < 0:
+            raise RuntimeError('interop export did not return memory and semaphore handles')
+        if self.desc.size != self.size:
+            raise RuntimeError('interop export returned an unexpected logical buffer size')
+        return self
+
+    def release_exported_handles_to_cuda(self) -> None:
+        self.desc.memory_handle = -1
+        self.desc.semaphore_handle = -1
+
+    def __exit__(self, _exc_type, _exc, _tb):
+        if self.desc.memory_handle >= 0:
+            os.close(self.desc.memory_handle)
+            self.desc.memory_handle = -1
+        if self.desc.semaphore_handle >= 0:
+            os.close(self.desc.semaphore_handle)
+            self.desc.semaphore_handle = -1
+        if self.buffer is not None:
+            self.dvz.dvz_buffer_destroy(self.buffer)
+            self.dvz.dvz_buffer_free(self.buffer)
+            self.buffer = None
+        if self.semaphore is not None:
+            self.dvz.dvz_semaphore_destroy(self.semaphore)
+            self.dvz.dvz_semaphore_free(self.semaphore)
+            self.semaphore = None
+        if self.ctx is not None:
+            self.dvz.dvz_gpu_ctx_destroy(self.ctx)
+            self.ctx = None
+        return False
+
+
+class CudaMappedBufferOwner:
+    def __init__(self, bridge, handle, exported: ExportedDatovizBuffer):
+        self.bridge = bridge
+        self.handle = handle
+        self.exported = exported
+
+    def wait(self, value: int, stream_ptr: int) -> None:
+        if self.bridge.dvz_cuda_bridge_wait(self.handle, value, stream_ptr) != 0:
+            err = self.bridge.dvz_cuda_bridge_last_error().decode(errors='replace')
+            raise RuntimeError(f'CUDA external semaphore wait failed: {err}')
+
+    def signal(self, value: int, stream_ptr: int) -> None:
+        if self.bridge.dvz_cuda_bridge_signal(self.handle, value, stream_ptr) != 0:
+            err = self.bridge.dvz_cuda_bridge_last_error().decode(errors='replace')
+            raise RuntimeError(f'CUDA external semaphore signal failed: {err}')
+
+    def close(self) -> None:
+        if self.handle:
+            self.bridge.dvz_cuda_bridge_destroy(self.handle)
+            self.handle = DvzCudaInteropBridgePtr()
+
+    def __del__(self):
+        self.close()
+
+
+def _bridge_import_buffer(bridge, exported: ExportedDatovizBuffer) -> CudaMappedBufferOwner:
+    handle = DvzCudaInteropBridgePtr()
+    rc = bridge.dvz_cuda_bridge_import(
+        exported.desc.memory_handle,
+        exported.desc.allocation_size,
+        exported.desc.offset,
+        exported.desc.size,
+        exported.desc.semaphore_handle,
+        ctypes.byref(handle),
+    )
+    if rc != 0 or not handle:
+        err = bridge.dvz_cuda_bridge_last_error().decode(errors='replace')
+        _skip(f'CUDA bridge import failed: {err}')
+    exported.release_exported_handles_to_cuda()
+    return CudaMappedBufferOwner(bridge, handle, exported)
+
+
+def _cupy_array_from_export(cp, bridge, exported: ExportedDatovizBuffer):
+    owner = _bridge_import_buffer(bridge, exported)
+    ptr = bridge.dvz_cuda_bridge_ptr(owner.handle)
+    size = bridge.dvz_cuda_bridge_size(owner.handle)
+    if ptr == 0 or size != exported.size:
+        owner.close()
+        raise RuntimeError('CUDA bridge returned an invalid mapped pointer')
+    device_id = cp.cuda.runtime.getDevice()
+    unowned = cp.cuda.UnownedMemory(ptr, size, owner, device_id=device_id)
+    memptr = cp.cuda.MemoryPointer(unowned, 0)
+    array = cp.ndarray((exported.count, POSITION_COMPONENTS), dtype=cp.float32, memptr=memptr)
+    return array, owner
+
+
+def _run_cupy_write_smoke(dvz, cp, bridge) -> None:
+    with ExportedDatovizBuffer(dvz) as exported:
+        array, owner = _cupy_array_from_export(cp, bridge, exported)
+        stream = cp.cuda.get_current_stream()
+        owner.wait(0, stream.ptr)
+        t = cp.linspace(-1.0, 1.0, exported.count, dtype=cp.float32)
+        array[:, 0] = t
+        array[:, 1] = cp.sin(t * cp.float32(6.283185307179586))
+        array[:, 2] = 0
+        owner.signal(1, stream.ptr)
+        stream.synchronize()
+        owner.close()
+
+
 def _field_names(record) -> tuple[str, ...]:
     return tuple(name for name, _ctype in record._fields_)
 
@@ -263,7 +428,12 @@ def main() -> int:
         '--bridge-only', action='store_true', help='build and load the optional CUDA bridge only'
     )
     parser.add_argument(
-        '--ctx-only', action='store_true', help='create and destroy an exportable Datoviz GPU context'
+        '--ctx-only',
+        action='store_true',
+        help='create and destroy an exportable Datoviz GPU context',
+    )
+    parser.add_argument(
+        '--export-only', action='store_true', help='create and export a Datoviz buffer only'
     )
     args = parser.parse_args()
 
@@ -279,17 +449,20 @@ def main() -> int:
         _probe_interop_context(dvz)
         print('ctypes CuPy interop context: OK')
         return 0
+    if args.export_only:
+        with ExportedDatovizBuffer(dvz) as exported:
+            print(
+                'ctypes CuPy interop export: OK '
+                f'(size={exported.desc.size}, memory_fd={exported.desc.memory_handle}, '
+                f'semaphore_fd={exported.desc.semaphore_handle})'
+            )
+        return 0
+
     cp = _require_cupy()
     bridge = _load_bridge()
-
-    # Next implementation step:
-    # 1. create a Datoviz/Vulkan exportable vertex|storage DvzBuffer,
-    # 2. export it with dvz_interop_buffer_export_from_buffer(), including a timeline semaphore,
-    # 3. import the memory/semaphore FDs in a tiny CUDA bridge,
-    # 4. wrap the mapped pointer with cupy.cuda.UnownedMemory and cupy.ndarray,
-    # 5. write positions with a CuPy kernel, signal CUDA completion, then render through DRP2.
     assert bridge is not None
-    print(f'ctypes CuPy interop smoke: READY (CuPy {cp.__version__}, bridge loaded)')
+    _run_cupy_write_smoke(dvz, cp, bridge)
+    print(f'ctypes CuPy interop smoke: READY (CuPy {cp.__version__}, zero-copy write path)')
     return 0
 
 
