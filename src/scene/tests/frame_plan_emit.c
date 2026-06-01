@@ -30,6 +30,7 @@
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
 #include "datoviz/scene.h"
+#include "datoviz/scene/frame_packets.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/window.h"
@@ -1433,6 +1434,105 @@ int test_frame_plan_emit_drp2_static_render(TstContext* suite, const TstCase* it
     dvz_frame_plan_destroy(plan);
     return 0;
 }
+
+
+
+int test_frame_plan_emit_drp2_split_packets(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.split.packets", 91);
+    ANN(plan);
+
+    static const float positions[4] = {0, 0, 0, 1};
+    AT(dvz_frame_plan_upload_bytes(
+        plan, "buf.point.position", 0, sizeof(positions), "point.position", positions));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(_frame_plan_render_fixture_visual(plan, "visual.point.0", "buf.point.position"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzFramePlanPacketResult* result =
+        dvz_frame_plan_emitter_emit_drp2_packets(emitter, plan, &caps, &report, &cfg);
+    ANN(result);
+    AT(dvz_frame_plan_packet_result_status(result) == DVZ_FRAME_PLAN_PACKET_STATUS_OK);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_frame_plan_packet_result_frame_index(result) == 91);
+    AT(dvz_frame_plan_packet_result_resource_version(result) > 0);
+
+    const void* setup_packet = NULL;
+    uint64_t setup_packet_size = 0;
+    const void* setup_arena = NULL;
+    uint64_t setup_arena_size = 0;
+    AT(dvz_frame_plan_packet_result_get(
+        result, DVZ_DRP2_PACKET_SETUP, &setup_packet, &setup_packet_size, &setup_arena,
+        &setup_arena_size));
+    ANN(setup_packet);
+    AT(setup_packet_size > 0);
+    ANN(setup_arena);
+    AT(setup_arena_size > 0);
+
+    DvzDrp2PacketInfo info = {0};
+    DvzDrp2CommandStream* setup = dvz_drp2_packet_decode_stream(
+        setup_packet, setup_packet_size, setup_arena, setup_arena_size, &info);
+    ANN(setup);
+    AT(info.kind == DVZ_DRP2_PACKET_SETUP);
+    AT(info.frame_index == 91);
+    AT(dvz_drp2_stream_count(setup) > 0);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(setup, 0)) == DVZ_DRP2_COMMAND_HELLO_RENDERER);
+
+    const void* update_packet = NULL;
+    uint64_t update_packet_size = 0;
+    const void* update_arena = NULL;
+    uint64_t update_arena_size = 0;
+    AT(dvz_frame_plan_packet_result_get(
+        result, DVZ_DRP2_PACKET_UPDATE, &update_packet, &update_packet_size, &update_arena,
+        &update_arena_size));
+    ANN(update_packet);
+    ANN(update_arena);
+    AT(update_arena_size > 0);
+    DvzDrp2CommandStream* update = dvz_drp2_packet_decode_stream(
+        update_packet, update_packet_size, update_arena, update_arena_size, &info);
+    ANN(update);
+    AT(info.kind == DVZ_DRP2_PACKET_UPDATE);
+    AT(dvz_drp2_stream_count(update) > 0);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(update, 0)) == DVZ_DRP2_COMMAND_WRITE_BUFFER);
+
+    const void* frame_packet = NULL;
+    uint64_t frame_packet_size = 0;
+    const void* frame_arena = NULL;
+    uint64_t frame_arena_size = 0;
+    AT(dvz_frame_plan_packet_result_get(
+        result, DVZ_DRP2_PACKET_FRAME, &frame_packet, &frame_packet_size, &frame_arena,
+        &frame_arena_size));
+    ANN(frame_packet);
+    AT(frame_arena == NULL);
+    AT(frame_arena_size == 0);
+    DvzDrp2CommandStream* frame =
+        dvz_drp2_packet_decode_stream(frame_packet, frame_packet_size, NULL, 0, &info);
+    ANN(frame);
+    AT(info.kind == DVZ_DRP2_PACKET_FRAME);
+    AT(dvz_drp2_stream_count(frame) > 0);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(frame, dvz_drp2_stream_count(frame) - 1)) ==
+       DVZ_DRP2_COMMAND_QUEUE_SUBMIT);
+
+    dvz_drp2_stream_destroy(frame);
+    dvz_drp2_stream_destroy(update);
+    dvz_drp2_stream_destroy(setup);
+    dvz_frame_plan_packet_result_destroy(result);
+    dvz_frame_plan_destroy(plan);
+    dvz_frame_plan_emitter_destroy(emitter);
+    return 0;
+}
+
 
 
 int test_frame_plan_emit_drp2_static_render_glsl(TstContext* suite, const TstCase* item)
@@ -3133,6 +3233,7 @@ int test_scene_frame_plan_emit(TstSuite* suite)
 
     TST_CASE(test_frame_plan_emit_drp2_static_render);
     TST_CASE(test_frame_plan_emit_drp2_static_render_glsl);
+    TST_CASE(test_frame_plan_emit_drp2_split_packets);
     TST_CASE(test_frame_plan_emitter_rejects_untyped_visual_metadata);
     TST_CASE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);
     TST_CASE(test_frame_plan_emit_drp2_rejects_small_caps);

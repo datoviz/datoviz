@@ -268,6 +268,8 @@ int test_frame_plan_emit_drp2_static_render(TstContext* suite, const TstCase* it
 
 int test_frame_plan_emit_drp2_static_render_glsl(TstContext* suite, const TstCase* item);
 
+int test_frame_plan_emit_drp2_split_packets(TstContext* suite, const TstCase* item);
+
 int test_frame_plan_emit_drp2_rejects_unsupported_shader_format(
     TstContext* suite, const TstCase* item);
 
