@@ -410,6 +410,8 @@ int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* i
 int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_orbit_camera_drag_renders_cube(TstContext* suite, const TstCase* item);
 #endif
 #endif
 
