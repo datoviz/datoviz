@@ -31,6 +31,7 @@
 #include <cuda_runtime_api.h>
 #endif
 
+#include "datoviz/drp2/enums.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
@@ -433,7 +434,7 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
     DvzInteropBufferExportConfig export_cfg = {
         .offset = 32,
         .size = 0,
-        .drp2_usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+        .drp2_usage = DVZ_DRP2_BUFFER_USAGE_VERTEX | DVZ_DRP2_BUFFER_USAGE_STORAGE,
         .flags = 123,
         .semaphore = semaphore,
         .semaphore_handle_type = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT,
@@ -451,7 +452,7 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
         VK_BUFFER_USAGE_TRANSFER_DST_BIT));
     AT(export_desc.vk_usage == export_desc.usage);
     AT(export_desc.drp2_usage ==
-       (VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT));
+       (DVZ_DRP2_BUFFER_USAGE_VERTEX | DVZ_DRP2_BUFFER_USAGE_STORAGE));
     AT(export_desc.flags == 123);
     AT(export_desc.device_uuid_valid == 1);
     AT(export_desc.semaphore_handle >= 0);
