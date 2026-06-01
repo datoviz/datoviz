@@ -63,8 +63,8 @@ Current status as of this note:
   3D mesh/arcball update streams; generated 2D and 3D WASM streams pass WebGPU fixture preflight and
   execute through the JS WebGPU runner's repeated-frame resource-stability smoke.
 - recorded automated browser proof on 2026-05-31: `just webgpu-browser-smoke` launches headless
-  Chrome with WebGPU enabled, serves the local repo, renders `wasm_scene.html` and
-  `wasm_scene_3d.html`, exercises pointer and wheel interaction, checks the browser status remains
+  Chrome with WebGPU enabled, serves the local repo, renders the then-current 2D and 3D WASM scene
+  entry points, exercises pointer and wheel interaction, checks the browser status remains
   non-error, and writes nonblank canvas PNG captures under `build/webgpu-browser-smoke/`.
 - recorded browserless and automated browser proof on 2026-06-01 after WASM capability handoff and
   retirement of the direct browser-side panzoom uniform path: `just webgpu-fixture-preflight`
@@ -199,7 +199,7 @@ The PoC supports the fixture subset of:
 
 ## Capability Reporting
 
-`initWebGPU()` returns a DRP2-shaped capability snapshot alongside the adapter device, canvas
+`initWebGPU(canvas)` returns a DRP2-shaped capability snapshot alongside the adapter device, canvas
 context, and canvas format. The browser runtime uses that snapshot as the default capability set and
 lets fixture-level `capabilities` entries narrow it for negative tests. The current snapshot reports:
 

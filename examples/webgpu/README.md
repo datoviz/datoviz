@@ -41,15 +41,6 @@ controller:
 http://localhost:8765/examples/webgpu/examples.html?demo=wasm-3d
 ```
 
-Legacy single-demo pages currently remain as thin compatibility entry points while the release
-browser demo surface moves to `examples.html`:
-
-```text
-http://localhost:8765/examples/webgpu/wasm_scene.html
-http://localhost:8765/examples/webgpu/wasm_scene_3d.html
-http://localhost:8765/examples/webgpu/wasm_api_scene.html
-```
-
 Refresh the committed fixture manifest after adding or removing positive or negative fixtures:
 
 ```bash

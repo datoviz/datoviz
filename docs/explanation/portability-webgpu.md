@@ -74,8 +74,8 @@ just webgpu-runner-smoke
 just wasm-scene-smoke
 ```
 
-For browser evidence, serve the repository and inspect the fixture dashboard plus the 2D and 3D
-WASM pages:
+For browser evidence, serve the repository and inspect the fixture dashboard plus the unified WASM
+examples host:
 
 ```bash
 python3 -m http.server 8765
@@ -83,8 +83,8 @@ python3 -m http.server 8765
 
 ```text
 http://localhost:8765/examples/webgpu/fixtures.html
-http://localhost:8765/examples/webgpu/wasm_scene.html
-http://localhost:8765/examples/webgpu/wasm_scene_3d.html
+http://localhost:8765/examples/webgpu/examples.html?demo=wasm-2d
+http://localhost:8765/examples/webgpu/examples.html?demo=wasm-3d
 ```
 
 The release bar is clear scope, repeatable validation, and explicit unsupported-feature behavior.

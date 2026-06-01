@@ -319,30 +319,30 @@ bridge:
 5. render points using the portable WebGPU lowering selected by scene emission.
 
 The current first slice uses the generic `src/wasm/scene_api.c` object ABI for visuals,
-controllers, resize/pointer/wheel routing, and emitted DRP2 JSON.
+controllers, resize/pointer/wheel routing, and emitted split DRP2 packets.
 
 Current evidence as of 2026-06-01:
 
 1. `just wasm-scene-smoke` builds the Emscripten scene ABI, emits
    `build-wasm-scene/wasm/wasm_api_scene_point_primitive_image_mesh_panzoom.json` and
    `build-wasm-scene/wasm/wasm_api_scene_mesh3d_arcball.json`, and passes WebGPU fixture preflight.
-2. The browser demo entry point is `examples/webgpu/wasm_scene.html`.
-   A separate 3D proof entry point is `examples/webgpu/wasm_scene_3d.html`.
+2. The browser demo entry point is `examples/webgpu/examples.html`, with `demo=wasm-2d` and
+   `demo=wasm-3d` query parameters selecting the release-visible WASM demos.
 3. Manual local browser proof confirms the point scene renders and panzoom interaction works through
    the generic WASM scene ABI.
-4. Manual local browser proof at `http://localhost:8765/examples/webgpu/wasm_scene.html` confirms
+4. Manual local browser proof at
+   `http://localhost:8765/examples/webgpu/examples.html?demo=wasm-2d` confirms
    point + primitive rendering, pan/zoom, and resize with no visible browser/WebGPU runtime errors.
 5. Reloading the same live demo after the image slice confirms point + primitive + RGBA8 image
    rendering, pan/zoom, resize, and cache-busted WASM load with no visible browser/WebGPU runtime
    errors.
 6. Reloading the same live demo after the mesh slice confirms point + primitive + RGBA8 image +
    basic mesh rendering, pan/zoom, and resize with no visible browser/WebGPU runtime errors.
-7. Loading `http://localhost:8765/examples/webgpu/wasm_scene_3d.html` confirms the 3D cube renders,
-   arcball drag rotates it, wheel zoom works, resize works, and no visible browser/WebGPU runtime
-   errors occur.
-8. Manual local browser proof after the split-packet switch confirms
-   `examples/webgpu/wasm_api_scene.html` renders and interacts, and
-   `examples/webgpu/wasm_scene_3d.html` renders and rotates.
+7. Loading `http://localhost:8765/examples/webgpu/examples.html?demo=wasm-3d` confirms the 3D cube
+   renders, arcball drag rotates it, wheel zoom works, resize works, and no visible browser/WebGPU
+   runtime errors occur.
+8. Manual local browser proof after the unified examples host split confirms both release-visible
+   demos render and interact through `examples/webgpu/examples.html`.
 
 The supported browser-scene subset now covers point, primitive triangle-list, RGBA8 image, basic
 mesh, panzoom, and a first 3D mesh + arcball scene. The browser wrapper passes normalized WebGPU
@@ -354,11 +354,12 @@ destruction, packet-runtime use, and the fixture dashboard's WASM Scene Smoke ro
 updates, 2D image texture resize reloads, and 3D mesh retained updates. The browser wrapper now uses
 split binary DRP2 setup/update/frame packets and payload arenas for WASM scene rendering. JSON and
 payload-ref JSON remain available for fixture/debug export, not as the browser scene runtime path.
-The next release-proofing gaps are browser app examples and then broader visual/technique parity.
+The next release-proofing gaps are broader visual/technique parity and continued browser-runtime
+hardening.
 
 ### Experimental WASM Scene ABI
 
-The `src/wasm/scene_api.c` API is an unstable experimental ABI for the browser demos:
+The `src/wasm/scene_api.c` API is an unstable experimental ABI for the browser examples:
 
 1. scene handles are opaque `uint32_t` values; JavaScript must pass them back unchanged and must not
    derive addresses or object state from them;
@@ -414,5 +415,5 @@ Headless browser validation is advisory for WebGPU render proof. Headless Chrome
 external instance loss, including `A valid external Instance reference no longer exists` or
 `Instance dropped in popErrorScope`, before the Datoviz scene contract is exercised. The automated
 browser smoke may skip those render checks when that condition appears. A visible browser running
-`examples/webgpu/wasm_scene.html`, `examples/webgpu/wasm_scene_3d.html`, and the fixture dashboard
-remains the render validation path for the current experimental subset.
+`examples/webgpu/examples.html` and the fixture dashboard remains the render validation path for the
+current experimental subset.
