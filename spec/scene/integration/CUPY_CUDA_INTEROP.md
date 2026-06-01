@@ -134,6 +134,147 @@ Windows handle support can be reserved in the field model, but it should not be 
 validated until there is an equivalent smoke test.
 
 
+## Recommended C Export Surface
+
+The first public C helper should export a vklite `DvzBuffer`, not expose its internal
+`DvzAllocation`.
+
+Avoid making examples include private vklite headers or depend on fields such as
+`DvzBuffer::alloc`. That would work for a local smoke, but it would leak the current vklite wrapper
+layout into user code and make the interop story brittle. The public API should stay in
+`include/datoviz/vk/memory_interop.h`, because that header is already the explicit advanced escape
+hatch for raw external-memory workflows.
+
+Preferred shape:
+
+```c
+typedef struct DvzInteropBufferExportConfig
+{
+    uint64_t offset;             /* byte offset of the logical view, usually 0 */
+    uint64_t size;               /* 0 means the remaining logical buffer range */
+    uint32_t drp2_usage;         /* DVZ_DRP2_BUFFER_USAGE_VERTEX | STORAGE, etc. */
+    uint32_t flags;              /* export/interop policy bits */
+
+    DvzSemaphore* semaphore;     /* optional Datoviz-owned timeline semaphore */
+    uint32_t semaphore_handle_type;
+    uint64_t semaphore_value;
+} DvzInteropBufferExportConfig;
+
+DVZ_EXPORT int dvz_interop_buffer_export_from_buffer(
+    DvzBuffer* buffer,
+    const DvzInteropBufferExportConfig* config,
+    DvzInteropBufferExport* out);
+```
+
+This helper should:
+
+1. validate that the buffer and allocator are live,
+2. reject non-exportable allocators,
+3. resolve `size == 0` to the remaining logical buffer range,
+4. reject ranges outside the allocated/exported memory,
+5. export the allocation handle and transfer that handle to the caller through `out`,
+6. optionally export or package semaphore metadata,
+7. report both the Vulkan buffer usage and the DRP2 usage expected by the consumer.
+
+The existing lower-level `dvz_interop_buffer_export()` may remain useful for tests and specialized
+runtime code, but examples and Python bindings should prefer the buffer-level helper.
+
+Before documenting this as a Python-facing contract, consider extending `DvzInteropBufferExport`
+with:
+
+| Field | Why |
+|---|---|
+| `version` | Allows future extension without guessing struct layout. |
+| `vk_usage` | Describes the actual Vulkan usage used to create the buffer. |
+| `drp2_usage` | Describes how DRP2/runtime registration may consume the buffer. |
+| `flags` | Carries dedicated-allocation and export policy bits needed by CUDA import. |
+| `device_uuid` + validity bit | Lets the Python bridge reject CUDA/Vulkan device mismatches. |
+
+Keep this surface runtime-level. Do not attach export handles to ordinary scene JSON, and do not
+teach normal scene APIs about CUDA or CuPy. Scene buffers should continue to express semantic
+resource intent; live runtime registration supplies the actual shared GPU allocation.
+
+
+## Python/CuPy Bridge Shape
+
+The Python API should have a small explicit import layer and a higher-level scene-oriented layer.
+
+The low-level layer wraps a Datoviz export descriptor as a CuPy array:
+
+```python
+shared = datoviz.cuda.import_buffer(
+    export_desc,
+    shape=(n, 3),
+    dtype=cp.float32,
+)
+
+pos = shared.array
+```
+
+The higher-level layer can later allocate through Datoviz and expose both the scene buffer and the
+CuPy view:
+
+```python
+position = datoviz.cuda_array(
+    scene=scene,
+    shape=(n, 3),
+    dtype=cp.float32,
+    usage=("vertex", "storage"),
+)
+
+points.set_attr_buffer("position", position.scene_buffer)
+
+while app.running:
+    with position.cuda_write():
+        advect(position.array, t, dt)
+    app.render()
+```
+
+The bridge object should own the imported CUDA handles and the CuPy wrapper:
+
+1. `cudaExternalMemory_t`,
+2. mapped CUDA device pointer,
+3. optional `cudaExternalSemaphore_t`,
+4. `cupy.cuda.UnownedMemory` with the bridge object as owner,
+5. `cupy.cuda.MemoryPointer`,
+6. `cupy.ndarray`,
+7. failure-path cleanup for all imported handles.
+
+CuPy is the array wrapper, not necessarily the external-memory importer. A tiny optional compiled
+CUDA helper may be cleaner than pure `ctypes`, because it can own the exact CUDA Runtime structs and
+cleanup rules for `cudaImportExternalMemory()`, `cudaExternalMemoryGetMappedBuffer()`,
+`cudaImportExternalSemaphore()`, `cudaWaitExternalSemaphoresAsync()`, and
+`cudaSignalExternalSemaphoresAsync()`. The resulting pointer is then wrapped with
+`cupy.cuda.UnownedMemory(ptr, size, owner, device_id)` so CuPy does not free Datoviz-owned memory and
+the owner keeps the mapping alive.
+
+Expose synchronization as a context manager for normal use:
+
+```python
+with shared.cuda_write():
+    shared.array[:, 0] += vx * dt
+```
+
+The context manager should enqueue a CUDA wait on entry and a CUDA signal on exit, using the active
+CuPy stream unless a stream is passed explicitly. Manual methods can remain available for advanced
+users:
+
+```python
+shared.wait_vulkan(value=None, stream=None)
+shared.signal_cuda(value=None, stream=None)
+```
+
+Timeline values should normally be owned by the shared-buffer object. User code should not need to
+manually count semaphore values in the first how-to. The live Datoviz render path still needs a
+matching render-side wait/signal hook: before drawing from the shared buffer, Vulkan waits for the
+latest CUDA-ready value; after drawing, Vulkan signals that the buffer slot is available for the
+next CUDA write.
+
+The first documented platform should be Linux + NVIDIA CUDA + Vulkan opaque FD external memory +
+timeline semaphore FD. Other handle types can fit the same descriptor model later, but should stay
+undocumented as validated paths until tested.
+
+
 ## Low-Level Runtime Shape
 
 The low-level implementation should build on `include/datoviz/vk/memory_interop.h` and the vklite

@@ -57,5 +57,38 @@ that exported it.
 
 ## Next Implementation Slice
 
-Add a tiny Python/CuPy smoke that imports the exported FD, writes a vertex buffer, signals the
-exported semaphore, and reuses the existing DRP2 registered-buffer render path for verification.
+Add a buffer-level export helper before writing public examples. The preferred API is an advanced
+interop helper in `datoviz/vk/memory_interop.h`, not an accessor exposing `DvzBuffer::alloc`:
+
+```c
+DVZ_EXPORT int dvz_interop_buffer_export_from_buffer(
+    DvzBuffer* buffer,
+    const DvzInteropBufferExportConfig* config,
+    DvzInteropBufferExport* out);
+```
+
+This helper should validate the live buffer and exportable allocator, resolve the logical byte
+range, export the memory handle, package optional timeline semaphore metadata, and report both
+Vulkan usage and DRP2 usage. Consider extending `DvzInteropBufferExport` with `version`,
+`vk_usage`, `drp2_usage`, export flags, and Vulkan device UUID fields before exposing the descriptor
+to Python.
+
+Then add a tiny Python/CuPy smoke:
+
+1. Datoviz creates a Vulkan-owned exportable vertex/storage buffer.
+2. The export descriptor is imported by a small CUDA bridge.
+3. The bridge maps a CUDA pointer and wraps it as `cupy.cuda.UnownedMemory` plus a CuPy ndarray.
+4. A CuPy kernel writes point positions.
+5. CUDA signals an external timeline semaphore.
+6. The DRP2 registered-buffer render path waits, draws, and verifies by readback.
+
+The Python object should own imported CUDA external-memory/semaphore handles, the mapped pointer,
+the CuPy owner object, and cleanup. Normal users should synchronize through a context manager:
+
+```python
+with shared.cuda_write():
+    kernel(shared.array, t)
+```
+
+The first documented target remains Linux + NVIDIA CUDA + Vulkan opaque FD external memory +
+timeline semaphore FD. Keep this path advanced/unstable and outside portable WebGPU scope.
