@@ -16,6 +16,9 @@ Current slice update, 2026-06-01:
    now validates that CuPy and the generated advanced raw ctypes symbols are available.
 4. `spec/bindings/ctypes.yml` includes the memory interop header, forced descriptor layouts, and
    the buffer-level export helper in the raw smoke symbol set.
+5. `tools/bindings/cuda_interop_bridge.c` is the optional Linux CUDA Runtime bridge used by the
+   smoke. It imports opaque-FD external memory and timeline semaphore FDs, maps a device pointer,
+   exposes wait/signal calls, and owns cleanup.
 
 Current proof points:
 
@@ -72,8 +75,8 @@ that exported it.
 The buffer-level export helper has landed. Keep the next slice focused on turning the scaffold into
 a real Linux/NVIDIA smoke:
 
-1. Add the tiny CUDA bridge used by the smoke, preferably as a narrow optional compiled helper
-   rather than a high-level package dependency.
+1. Add a small raw-ctypes-friendly Datoviz GPU-context creation path for the smoke, or another
+   narrow helper that avoids by-value `DvzGpuCtxConfig`/`DvzDeviceConfig` structs.
 2. Datoviz creates a Vulkan-owned exportable vertex/storage buffer through raw ctypes.
 3. The export descriptor is imported by the CUDA bridge.
 4. The bridge maps a CUDA pointer and wraps it as `cupy.cuda.UnownedMemory` plus a CuPy ndarray.
