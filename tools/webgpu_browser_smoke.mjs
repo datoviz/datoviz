@@ -392,6 +392,13 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
   })()`, 15000);
   requireOk(!String(interactiveStatus).startsWith('ERROR:'), interactiveStatus);
   await page.screenshotCanvas(screenshotPath.replace('.png', '-interactive.png'));
+  const destroyed = await page.evaluate(`(() => {
+    const scene = window.__datovizWasmScene;
+    if (scene === undefined || scene === null || scene.scene === 0) return false;
+    window.dispatchEvent(new Event("pagehide"));
+    return window.__datovizWasmScene === null && scene.scene === 0;
+  })()`);
+  requireOk(destroyed, `${path}: WASM scene did not destroy cleanly on pagehide`);
   assertNoBrowserErrors(page, path);
   return { initialStatus, interactiveStatus };
 }

@@ -49,6 +49,7 @@ function addCube(scene, panel) {
 async function main() {
   setStatus("Loading generic WASM scene API");
   const scene = await DatovizWasmScene.create(canvas);
+  window.__datovizWasmScene = scene;
   const panel = scene.panelFull();
   scene.setCamera(panel);
   addCube(scene, panel);
@@ -77,13 +78,15 @@ async function main() {
   const stream = await scene.renderInitial();
   statsEl.textContent = `${stream.commands.length} commands`;
   setStatus("Rendered generic 3D cube + arcball");
-  scene.attachControllerInput(() => {
+  const requestRender = () => {
     renderChange().catch((error) => setStatus(error.message, true));
-  });
-  new ResizeObserver(() => {
-    scene.resize();
-    renderChange().catch((error) => setStatus(error.message, true));
-  }).observe(canvas);
+  };
+  scene.attachControllerInput(requestRender);
+  scene.attachResizeObserver(requestRender);
+  window.addEventListener("pagehide", () => {
+    scene.destroy();
+    window.__datovizWasmScene = null;
+  }, { once: true });
 }
 
 main().catch((error) => {

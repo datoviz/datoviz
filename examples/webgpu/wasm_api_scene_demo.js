@@ -124,6 +124,7 @@ function addMesh(scene, panel) {
 async function main() {
   setStatus("Loading generic WASM scene API");
   const scene = await DatovizWasmScene.create(canvas);
+  window.__datovizWasmScene = scene;
   const panel = scene.panelFull();
   addPoints(scene, panel);
   addPrimitive(scene, panel);
@@ -154,13 +155,15 @@ async function main() {
   const stream = await scene.renderInitial();
   statsEl.textContent = `${stream.commands.length} commands`;
   setStatus("Rendered generic point/primitive/image/mesh scene");
-  scene.attachPanzoomInput(() => {
+  const requestRender = () => {
     renderChange().catch((error) => setStatus(error.message, true));
-  });
-  new ResizeObserver(() => {
-    scene.resize();
-    renderChange().catch((error) => setStatus(error.message, true));
-  }).observe(canvas);
+  };
+  scene.attachPanzoomInput(requestRender);
+  scene.attachResizeObserver(requestRender);
+  window.addEventListener("pagehide", () => {
+    scene.destroy();
+    window.__datovizWasmScene = null;
+  }, { once: true });
 }
 
 main().catch((error) => {

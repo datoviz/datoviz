@@ -163,9 +163,15 @@ export class DatovizWasmScene {
     this.scene = scene;
     this.figure = figure;
     this.runtime = null;
+    this._cleanup = [];
   }
 
   destroy() {
+    for (const cleanup of this._cleanup.splice(0).reverse()) {
+      cleanup();
+    }
+    this.runtime = null;
+    this.figure = 0;
     if (this.scene !== 0) {
       this.Module._dvz_wasm_api_scene_destroy(this.scene);
       this.scene = 0;
@@ -173,11 +179,13 @@ export class DatovizWasmScene {
   }
 
   panelFull() {
+    this._requireAlive();
     const panel = this.Module._dvz_wasm_api_panel_full(this.figure);
     return this._requireHandle(panel, "dvz_wasm_api_panel_full failed");
   }
 
   visual(type, flags = 0) {
+    this._requireAlive();
     const visualType = typeof type === "string" ? DvzWasmVisual[type] : type;
     requireOk(visualType !== undefined, `unknown visual type ${type}`);
     const visual = this.Module._dvz_wasm_api_visual(this.scene, visualType, flags);
@@ -186,6 +194,7 @@ export class DatovizWasmScene {
   }
 
   addVisual(panel, visual) {
+    this._requireAlive();
     const visualHandle = visual instanceof DatovizWasmVisualHandle ? visual.handle : visual;
     this._requireStatus(
       this.Module._dvz_wasm_api_panel_add_visual(panel, visualHandle),
@@ -194,6 +203,7 @@ export class DatovizWasmScene {
   }
 
   attachPanzoom(panel) {
+    this._requireAlive();
     const controller = this.Module._dvz_wasm_api_controller(this.scene, DVZ_CONTROLLER_TYPE_PANZOOM);
     this._requireHandle(controller, "dvz_wasm_api_controller(panzoom) failed");
     this._requireStatus(
@@ -204,6 +214,7 @@ export class DatovizWasmScene {
   }
 
   attachArcball(panel, options = {}) {
+    this._requireAlive();
     const controller = this.Module._dvz_wasm_api_controller(this.scene, DVZ_CONTROLLER_TYPE_ARCBALL);
     this._requireHandle(controller, "dvz_wasm_api_controller(arcball) failed");
     this._requireStatus(
@@ -219,6 +230,7 @@ export class DatovizWasmScene {
   }
 
   setCamera(panel, options = {}) {
+    this._requireAlive();
     const eye = options.eye ?? [0, 0, 3];
     const target = options.target ?? [0, 0, 0];
     this._requireStatus(
@@ -239,6 +251,7 @@ export class DatovizWasmScene {
   }
 
   resize() {
+    this._requireAlive();
     resizeWebGpuCanvas(this.gpu.device, this.gpu.context, this.gpu.format);
     const scale = Math.max(1, window.devicePixelRatio || 1);
     this._requireStatus(
@@ -248,6 +261,7 @@ export class DatovizWasmScene {
   }
 
   pointer(type, event) {
+    this._requireAlive();
     const point = this._canvasPoint(event);
     this._requireStatus(
       this.Module._dvz_wasm_api_pointer(
@@ -265,6 +279,7 @@ export class DatovizWasmScene {
   }
 
   wheel(event) {
+    this._requireAlive();
     const point = this._canvasPoint(event);
     this._requireStatus(
       this.Module._dvz_wasm_api_wheel(
@@ -282,33 +297,62 @@ export class DatovizWasmScene {
   }
 
   attachControllerInput(onChange) {
+    this._requireAlive();
     const route = (event, type) => {
       event.preventDefault();
       this.pointer(type, event);
       onChange();
     };
-    this.canvas.addEventListener("pointerdown", (event) => {
+    const onPointerDown = (event) => {
       this.canvas.setPointerCapture(event.pointerId);
       route(event, DVZ_POINTER_EVENT_PRESS);
-    });
-    this.canvas.addEventListener("pointermove", (event) => route(event, DVZ_POINTER_EVENT_MOVE));
-    this.canvas.addEventListener("pointerup", (event) => {
+    };
+    const onPointerMove = (event) => route(event, DVZ_POINTER_EVENT_MOVE);
+    const onPointerUp = (event) => {
       route(event, DVZ_POINTER_EVENT_RELEASE);
       if (this.canvas.hasPointerCapture(event.pointerId)) {
         this.canvas.releasePointerCapture(event.pointerId);
       }
-    });
-    this.canvas.addEventListener("pointercancel", (event) => route(event, DVZ_POINTER_EVENT_RELEASE));
-    this.canvas.addEventListener("wheel", (event) => {
+    };
+    const onPointerCancel = (event) => route(event, DVZ_POINTER_EVENT_RELEASE);
+    const onWheel = (event) => {
       event.preventDefault();
       this.wheel(event);
       onChange();
-    }, { passive: false });
-    this.canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+    };
+    const onContextMenu = (event) => event.preventDefault();
+    this.canvas.addEventListener("pointerdown", onPointerDown);
+    this.canvas.addEventListener("pointermove", onPointerMove);
+    this.canvas.addEventListener("pointerup", onPointerUp);
+    this.canvas.addEventListener("pointercancel", onPointerCancel);
+    this.canvas.addEventListener("wheel", onWheel, { passive: false });
+    this.canvas.addEventListener("contextmenu", onContextMenu);
+    const detach = () => {
+      this.canvas.removeEventListener("pointerdown", onPointerDown);
+      this.canvas.removeEventListener("pointermove", onPointerMove);
+      this.canvas.removeEventListener("pointerup", onPointerUp);
+      this.canvas.removeEventListener("pointercancel", onPointerCancel);
+      this.canvas.removeEventListener("wheel", onWheel);
+      this.canvas.removeEventListener("contextmenu", onContextMenu);
+    };
+    this._cleanup.push(detach);
+    return detach;
   }
 
   attachPanzoomInput(onChange) {
-    this.attachControllerInput(onChange);
+    return this.attachControllerInput(onChange);
+  }
+
+  attachResizeObserver(onChange) {
+    this._requireAlive();
+    const observer = new ResizeObserver(() => {
+      this.resize();
+      onChange();
+    });
+    observer.observe(this.canvas);
+    const detach = () => observer.disconnect();
+    this._cleanup.push(detach);
+    return detach;
   }
 
   _canvasPoint(event) {
@@ -346,6 +390,10 @@ export class DatovizWasmScene {
     return diagnosticMessage(this.Module, this.scene, prefix);
   }
 
+  _requireAlive() {
+    requireOk(this.scene !== 0, "WASM scene has been destroyed");
+  }
+
   _requireHandle(handle, label) {
     if (handle === 0) {
       throw new Error(this._diagnosticMessage(label));
@@ -360,6 +408,7 @@ export class DatovizWasmScene {
   }
 
   emit() {
+    this._requireAlive();
     const status = this.Module._dvz_wasm_api_emit(this.scene, this.figure);
     if (status !== 0) {
       throw new Error(this._diagnosticMessage(`dvz_wasm_api_emit failed with ${status}`));
@@ -371,6 +420,7 @@ export class DatovizWasmScene {
   }
 
   async renderInitial() {
+    this._requireAlive();
     const stream = this.emit();
     this.runtime = new Drp2WebGpuRuntime(this.gpu.device, this.gpu.context, this.gpu.format, {
       capabilities: this.gpu.capabilities,
@@ -381,6 +431,7 @@ export class DatovizWasmScene {
   }
 
   async renderIncremental() {
+    this._requireAlive();
     requireOk(this.runtime !== null, "renderInitial() must be called before renderIncremental()");
     const stream = this.emit();
     if (streamNeedsRuntimeReload(stream)) {
