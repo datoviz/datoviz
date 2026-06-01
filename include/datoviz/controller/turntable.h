@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "datoviz/common/macros.h"
 #include "datoviz/input/pointer.h"
@@ -56,6 +57,8 @@ typedef struct DvzTurntable DvzTurntable;
 
 struct DvzTurntableDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     vec3 pivot;
     vec3 up;
 
@@ -73,7 +76,7 @@ struct DvzTurntableDesc
     float min_distance;
     float max_distance;
 
-    int flags;
+    uint32_t controller_flags;
 };
 
 

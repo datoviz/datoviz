@@ -828,7 +828,7 @@ int main(int argc, char** argv)
     DvzInputRouter* router = dvz_view_input(win);
     EXAMPLE_CHECK(router != NULL, "dvz_view_input() failed");
     DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
-    panzoom_desc.flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
+    panzoom_desc.controller_flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, &panzoom_desc);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
     state.panzoom = panzoom;

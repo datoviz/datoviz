@@ -31,6 +31,7 @@ int test_controller_panzoom_create(TstContext* suite, const TstCase* item)
     (void)item;
 
     DvzPanzoomDesc desc = dvz_panzoom_desc();
+    AT(desc.struct_size == DVZ_STRUCT_SIZE(DvzPanzoomDesc));
     desc.width = 640.0f;
     desc.height = 480.0f;
 
@@ -53,6 +54,7 @@ int test_controller_arcball_create(TstContext* suite, const TstCase* item)
     (void)item;
 
     DvzArcballDesc desc = dvz_arcball_desc();
+    AT(desc.struct_size == DVZ_STRUCT_SIZE(DvzArcballDesc));
     desc.width = 640.0f;
     desc.height = 480.0f;
 
@@ -74,6 +76,7 @@ int test_controller_camera_create(TstContext* suite, const TstCase* item)
     (void)item;
 
     DvzCameraDesc desc = dvz_camera_desc();
+    AT(desc.struct_size == DVZ_STRUCT_SIZE(DvzCameraDesc));
     DvzCamera* camera = dvz_camera_create(&desc);
     ANN(camera);
 
@@ -94,7 +97,9 @@ int test_controller_fly_create(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzFly* fly = dvz_fly_create(NULL);
+    DvzFlyDesc desc = dvz_fly_desc();
+    AT(desc.struct_size == DVZ_STRUCT_SIZE(DvzFlyDesc));
+    DvzFly* fly = dvz_fly_create(&desc);
     ANN(fly);
 
     vec3 position = {0};
@@ -119,12 +124,65 @@ int test_controller_turntable_create(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzTurntable* turntable = dvz_turntable_create(NULL);
+    DvzTurntableDesc desc = dvz_turntable_desc();
+    AT(desc.struct_size == DVZ_STRUCT_SIZE(DvzTurntableDesc));
+    DvzTurntable* turntable = dvz_turntable_create(&desc);
     ANN(turntable);
     AT(turntable->distance > 0.0f);
     AT(turntable->up[1] == 1.0f);
 
     dvz_turntable_destroy(turntable);
+    return 0;
+}
+
+
+
+int test_controller_desc_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzPanzoomDesc panzoom = dvz_panzoom_desc();
+    panzoom.struct_size = 0;
+    AT(dvz_panzoom_create(&panzoom) == NULL);
+    panzoom = dvz_panzoom_desc();
+    panzoom.flags = 1;
+    AT(dvz_panzoom_create(&panzoom) == NULL);
+
+    DvzArcballDesc arcball = dvz_arcball_desc();
+    arcball.struct_size = 0;
+    AT(dvz_arcball_create(&arcball) == NULL);
+    arcball = dvz_arcball_desc();
+    arcball.flags = 1;
+    AT(dvz_arcball_create(&arcball) == NULL);
+
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.struct_size = 0;
+    AT(dvz_camera_create(&camera) == NULL);
+    camera = dvz_camera_desc();
+    camera.flags = 1;
+    AT(dvz_camera_create(&camera) == NULL);
+
+    DvzFlyDesc fly = dvz_fly_desc();
+    fly.struct_size = 0;
+    AT(dvz_fly_create(&fly) == NULL);
+    fly = dvz_fly_desc();
+    fly.flags = 1;
+    AT(dvz_fly_create(&fly) == NULL);
+
+    DvzTurntableDesc turntable = dvz_turntable_desc();
+    turntable.struct_size = 0;
+    AT(dvz_turntable_create(&turntable) == NULL);
+    turntable = dvz_turntable_desc();
+    turntable.flags = 1;
+    AT(dvz_turntable_create(&turntable) == NULL);
+
+    DvzOrbitCameraDesc orbit = dvz_orbit_camera_desc();
+    orbit.struct_size = 0;
+    AT(dvz_orbit_camera_create(&orbit) == NULL);
+    orbit = dvz_orbit_camera_desc();
+    orbit.flags = 1;
+    AT(dvz_orbit_camera_create(&orbit) == NULL);
     return 0;
 }
 
@@ -146,5 +204,6 @@ int test_controller(TstSuite* suite)
     TST_CASE(test_controller_camera_create);
     TST_CASE(test_controller_fly_create);
     TST_CASE(test_controller_turntable_create);
+    TST_CASE(test_controller_desc_abi_rejects_invalid_structs);
     return 0;
 }

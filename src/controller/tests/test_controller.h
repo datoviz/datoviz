@@ -34,6 +34,8 @@ int test_controller_fly_create(TstContext* suite, const TstCase* item);
 
 int test_controller_turntable_create(TstContext* suite, const TstCase* item);
 
+int test_controller_desc_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item);
+
 
 
 int test_controller(TstSuite* suite);

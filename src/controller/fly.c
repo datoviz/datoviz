@@ -39,6 +39,7 @@
 #define DVZ_FLY_VERTICAL_SPEED 0.5f
 #define DVZ_FLY_PITCH_EPS     0.001f
 #define DVZ_FLY_PIVOT_MARKER_S 1.0
+#define DVZ_FLY_DESC_KNOWN_FLAGS 0u
 
 
 
@@ -74,6 +75,20 @@ static float _clampf(float value, float min_value, float max_value)
 static bool _vec3_valid(vec3 v)
 {
     return glm_vec3_norm(v) > 0.0f;
+}
+
+
+
+static bool _fly_desc_validate(const DvzFlyDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzFlyDesc, DVZ_FLY_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzFlyDesc ABI prologue");
+        return false;
+    }
+    return true;
 }
 
 
@@ -395,8 +410,9 @@ static void _fly_input_callback(DvzInputRouter* router, const DvzInputEvent* ev,
 DvzFlyDesc dvz_fly_desc(void)
 {
     return (DvzFlyDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzFlyDesc),
         .mode = DVZ_FLY_MODE_FREE,
-        .flags = DVZ_FLY_FLAGS_FIXED_UP | DVZ_FLY_FLAGS_DISABLE_ROLL,
+        .controller_flags = DVZ_FLY_FLAGS_FIXED_UP | DVZ_FLY_FLAGS_DISABLE_ROLL,
         .position = {0.0f, 0.0f, 3.0f},
         .target = {0.0f, 0.0f, 0.0f},
         .up = {0.0f, 1.0f, 0.0f},
@@ -425,13 +441,15 @@ DvzFly* _dvz_fly(const DvzFlyDesc* desc)
     DvzFlyDesc default_desc = dvz_fly_desc();
     if (desc == NULL)
         desc = &default_desc;
+    if (!_fly_desc_validate(desc))
+        return NULL;
 
     DvzFly* fly = (DvzFly*)dvz_calloc(1, sizeof(DvzFly));
     if (fly == NULL)
         return NULL;
 
     fly->mode = desc->mode;
-    fly->flags = desc->flags;
+    fly->flags = (int)desc->controller_flags;
     fly->viewport_size[0] = DVZ_FLY_DEFAULT_WIDTH;
     fly->viewport_size[1] = DVZ_FLY_DEFAULT_HEIGHT;
     fly->world_up[0] = desc->up[0];

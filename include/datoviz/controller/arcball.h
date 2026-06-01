@@ -86,9 +86,11 @@ typedef struct DvzArcballDesc DvzArcballDesc;
 
 struct DvzArcballDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     float width;
     float height;
-    int flags;
+    uint32_t controller_flags;
 };
 
 

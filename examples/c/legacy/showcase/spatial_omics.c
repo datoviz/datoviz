@@ -865,7 +865,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(win != NULL, "dense_points: GLFW window creation failed");
 
     DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
-    panzoom_desc.flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
+    panzoom_desc.controller_flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, &panzoom_desc);
     EXAMPLE_CHECK(panzoom != NULL, "dense_points: panzoom setup failed");
     DvzGuiConfig gui_config = dvz_gui_config();

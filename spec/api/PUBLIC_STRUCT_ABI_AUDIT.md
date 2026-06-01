@@ -33,6 +33,12 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzVisualAttachDesc` | `dvz_visual_attach_desc()` |
 | `DvzQueryRequest` | `dvz_query_request()` |
 | `DvzSampledFieldDesc` | `dvz_sampled_field_desc()` |
+| `DvzCameraDesc` | `dvz_camera_desc()` |
+| `DvzPanzoomDesc` | `dvz_panzoom_desc()` |
+| `DvzArcballDesc` | `dvz_arcball_desc()` |
+| `DvzFlyDesc` | `dvz_fly_desc()` |
+| `DvzTurntableDesc` | `dvz_turntable_desc()` |
+| `DvzOrbitCameraDesc` | `dvz_orbit_camera_desc()` |
 
 
 ## Should Add Before API Freeze
@@ -42,7 +48,6 @@ and likely to grow or gain flags after v0.4:
 
 | Area | Structs | Public consumers |
 | --- | --- | --- |
-| Controllers/camera | `DvzCameraDesc`, `DvzPanzoomDesc`, `DvzArcballDesc`, `DvzFlyDesc`, `DvzTurntableDesc`, `DvzOrbitCameraDesc` | `dvz_camera_create()`, `dvz_panel_set_camera()`, `dvz_panzoom()`, `dvz_arcball()`, `dvz_fly()`, `dvz_turntable()`, `dvz_orbit_camera()`, `dvz_view_*()` controller helpers |
 | Scene techniques | `DvzCapabilitySnapshot`, `DvzEdlDesc`, `DvzMsaaDesc`, `DvzSsaoDesc`, `DvzVolumeOcclusionDesc`, `DvzSceneOcclusionDesc` | `dvz_panel_set_*()` technique helpers and capability-aware setup paths |
 | Visual styles/materials | `DvzMaterialDesc`, `DvzDepthCueDesc`, `DvzPointStyleDesc`, `DvzVectorStyle`, `DvzMarkerStyle`, `DvzVisualDataView`, `DvzItemStateVisualStyle`, `DvzSelectionVisualStyle` | `dvz_visual_set_material()`, `dvz_visual_set_depth_cue()`, style setters, data-view setters, selection/item state helpers |
 | Interaction | `DvzSelectionDesc`, `DvzHoverDesc`, `DvzItemInteractionDesc` | `dvz_selection()`, `dvz_hover()`, `dvz_item_interaction()` |
@@ -59,11 +64,10 @@ and likely to grow or gain flags after v0.4:
 
 Recommended batching:
 
-1. controllers/camera;
-2. scene techniques and visual styles;
-3. interaction, scales, text, annotations, and overlay;
-4. GUI and advanced runtime interop;
-5. geometry utilities.
+1. scene techniques and visual styles;
+2. interaction, scales, text, annotations, and overlay;
+3. GUI and advanced runtime interop;
+4. geometry utilities.
 
 
 ## No Prologue Needed

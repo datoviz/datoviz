@@ -31,6 +31,7 @@
 
 #define DVZ_ARCBALL_ZOOM_MIN        0.02f
 #define DVZ_ARCBALL_ZOOM_MAX       50.00f
+#define DVZ_ARCBALL_DESC_KNOWN_FLAGS 0u
 
 #if defined(__APPLE__)
 #define DVZ_ARCBALL_ZOOM_WHEEL_COEF 0.0125f
@@ -199,6 +200,20 @@ static void _arcball_input_callback(
 /*  Public API                                                                                   */
 /*************************************************************************************************/
 
+static bool _arcball_desc_validate(const DvzArcballDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzArcballDesc, DVZ_ARCBALL_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzArcballDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
 /**
  * Return a default arcball descriptor.
  *
@@ -207,9 +222,10 @@ static void _arcball_input_callback(
 DvzArcballDesc dvz_arcball_desc(void)
 {
     return (DvzArcballDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzArcballDesc),
         .width = 800.0f,
         .height = 600.0f,
-        .flags = 0,
+        .controller_flags = 0,
     };
 }
 
@@ -241,7 +257,9 @@ DvzArcball* dvz_arcball_create(const DvzArcballDesc* desc)
     DvzArcballDesc default_desc = dvz_arcball_desc();
     if (desc == NULL)
         desc = &default_desc;
-    return _dvz_arcball(desc->width, desc->height, desc->flags);
+    if (!_arcball_desc_validate(desc))
+        return NULL;
+    return _dvz_arcball(desc->width, desc->height, (int)desc->controller_flags);
 }
 
 

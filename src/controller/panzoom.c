@@ -35,6 +35,7 @@
 #define BOX_MIN   +1e-12
 #define DVZ_PANZOOM_ZOOM_MIN_DEFAULT 1e-3f
 #define DVZ_PANZOOM_ZOOM_MAX_DEFAULT 1e+4f
+#define DVZ_PANZOOM_DESC_KNOWN_FLAGS 0u
 
 #if defined(__APPLE__)
 #define DVZ_PANZOOM_ZOOM_DRAG_COEF  .003
@@ -314,6 +315,20 @@ static void _panzoom_input_callback(
 /*  Public API                                                                                   */
 /*************************************************************************************************/
 
+static bool _panzoom_desc_validate(const DvzPanzoomDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzPanzoomDesc, DVZ_PANZOOM_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzPanzoomDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
 /**
  * Return a default panzoom descriptor.
  *
@@ -322,9 +337,10 @@ static void _panzoom_input_callback(
 DvzPanzoomDesc dvz_panzoom_desc(void)
 {
     return (DvzPanzoomDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzPanzoomDesc),
         .width = 800.0f,
         .height = 600.0f,
-        .flags = 0,
+        .controller_flags = 0,
     };
 }
 
@@ -358,7 +374,9 @@ DvzPanzoom* dvz_panzoom_create(const DvzPanzoomDesc* desc)
     DvzPanzoomDesc default_desc = dvz_panzoom_desc();
     if (desc == NULL)
         desc = &default_desc;
-    return _dvz_panzoom(desc->width, desc->height, desc->flags);
+    if (!_panzoom_desc_validate(desc))
+        return NULL;
+    return _dvz_panzoom(desc->width, desc->height, (int)desc->controller_flags);
 }
 
 

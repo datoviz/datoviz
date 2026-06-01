@@ -19,6 +19,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_controller.h"
+#include "_log.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/controller/orbit_camera.h"
 
@@ -33,6 +34,7 @@
 #define DVZ_ORBIT_CAMERA_ZOOM_COEF      0.0125f
 #define DVZ_ORBIT_CAMERA_MIN_DISTANCE   0.01f
 #define DVZ_ORBIT_CAMERA_MAX_DISTANCE   100000.0f
+#define DVZ_ORBIT_CAMERA_DESC_KNOWN_FLAGS 0u
 
 
 
@@ -244,12 +246,27 @@ static void _orbit_input_callback(DvzInputRouter* router, const DvzInputEvent* e
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+static bool _orbit_camera_desc_validate(const DvzOrbitCameraDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzOrbitCameraDesc, DVZ_ORBIT_CAMERA_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzOrbitCameraDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
 DvzOrbitCameraDesc dvz_orbit_camera_desc(void)
 {
     return (DvzOrbitCameraDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzOrbitCameraDesc),
         .width = DVZ_ORBIT_CAMERA_DEFAULT_WIDTH,
         .height = DVZ_ORBIT_CAMERA_DEFAULT_HEIGHT,
-        .flags = 0,
+        .controller_flags = 0,
         .pivot = {0.0f, 0.0f, 0.0f},
     };
 }
@@ -261,11 +278,13 @@ DvzOrbitCamera* dvz_orbit_camera_create(const DvzOrbitCameraDesc* desc)
     DvzOrbitCameraDesc default_desc = dvz_orbit_camera_desc();
     if (desc == NULL)
         desc = &default_desc;
+    if (!_orbit_camera_desc_validate(desc))
+        return NULL;
 
     DvzOrbitCamera* orbit = (DvzOrbitCamera*)dvz_calloc(1, sizeof(DvzOrbitCamera));
     if (orbit == NULL)
         return NULL;
-    orbit->flags = desc->flags;
+    orbit->flags = (int)desc->controller_flags;
     orbit->viewport_size[0] = desc->width > 0.0f ? desc->width : DVZ_ORBIT_CAMERA_DEFAULT_WIDTH;
     orbit->viewport_size[1] = desc->height > 0.0f ? desc->height : DVZ_ORBIT_CAMERA_DEFAULT_HEIGHT;
     glm_vec3_copy((vec3){desc->pivot[0], desc->pivot[1], desc->pivot[2]}, orbit->pivot);

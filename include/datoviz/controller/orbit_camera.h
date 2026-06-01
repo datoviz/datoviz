@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "datoviz/common/macros.h"
 #include "datoviz/input/pointer.h"
@@ -41,9 +42,11 @@ typedef struct DvzOrbitCamera DvzOrbitCamera;
 
 struct DvzOrbitCameraDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     float width;
     float height;
-    int flags;
+    uint32_t controller_flags;
     vec3 pivot;
 };
 

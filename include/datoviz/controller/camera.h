@@ -16,6 +16,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdint.h>
+
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
 #include "datoviz/controller/panzoom.h" /* for DvzMVP */
@@ -48,6 +50,8 @@ typedef struct DvzCamera DvzCamera;
 
 struct DvzCameraDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzCameraType type;
 
     vec3 eye;

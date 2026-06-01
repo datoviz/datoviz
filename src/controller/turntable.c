@@ -19,6 +19,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_controller.h"
+#include "_log.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/controller/turntable.h"
 
@@ -36,6 +37,7 @@
 #define DVZ_TURNTABLE_DEFAULT_PAN    0.003f
 #define DVZ_TURNTABLE_PITCH_EPS      0.001f
 #define DVZ_TURNTABLE_MARKER_S       1.0
+#define DVZ_TURNTABLE_DESC_KNOWN_FLAGS 0u
 
 
 
@@ -71,6 +73,20 @@ static float _clampf(float value, float min_value, float max_value)
 static bool _vec3_valid(vec3 v)
 {
     return glm_vec3_norm(v) > 0.0f;
+}
+
+
+
+static bool _turntable_desc_validate(const DvzTurntableDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzTurntableDesc, DVZ_TURNTABLE_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzTurntableDesc ABI prologue");
+        return false;
+    }
+    return true;
 }
 
 
@@ -325,6 +341,7 @@ _turntable_input_callback(DvzInputRouter* router, const DvzInputEvent* ev, void*
 DvzTurntableDesc dvz_turntable_desc(void)
 {
     return (DvzTurntableDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzTurntableDesc),
         .pivot = {0.0f, 0.0f, 0.0f},
         .up = {0.0f, 1.0f, 0.0f},
         .distance = DVZ_TURNTABLE_DEFAULT_DIST,
@@ -338,8 +355,8 @@ DvzTurntableDesc dvz_turntable_desc(void)
         .max_pitch = +GLM_PI_2f - DVZ_TURNTABLE_PITCH_EPS,
         .min_distance = 0.01f,
         .max_distance = 100000.0f,
-        .flags = DVZ_TURNTABLE_FLAGS_ALLOW_PAN | DVZ_TURNTABLE_FLAGS_WRAP_YAW |
-                 DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE,
+        .controller_flags = DVZ_TURNTABLE_FLAGS_ALLOW_PAN | DVZ_TURNTABLE_FLAGS_WRAP_YAW |
+                            DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE,
     };
 }
 
@@ -356,12 +373,14 @@ DvzTurntable* _dvz_turntable(const DvzTurntableDesc* desc)
     DvzTurntableDesc default_desc = dvz_turntable_desc();
     if (desc == NULL)
         desc = &default_desc;
+    if (!_turntable_desc_validate(desc))
+        return NULL;
 
     DvzTurntable* turntable = (DvzTurntable*)dvz_calloc(1, sizeof(DvzTurntable));
     if (turntable == NULL)
         return NULL;
 
-    turntable->flags = desc->flags;
+    turntable->flags = (int)desc->controller_flags;
     turntable->viewport_size[0] = DVZ_TURNTABLE_DEFAULT_WIDTH;
     turntable->viewport_size[1] = DVZ_TURNTABLE_DEFAULT_HEIGHT;
     glm_vec3_copy(

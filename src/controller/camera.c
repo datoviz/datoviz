@@ -20,6 +20,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_controller.h"
+#include "_log.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/controller/camera.h"
 
@@ -35,6 +36,7 @@
 #define DVZ_CAMERA_DEFAULT_NEAR 0.1f
 #define DVZ_CAMERA_DEFAULT_FAR 100.0f
 #define DVZ_CAMERA_DEFAULT_ORTHO_HEIGHT 2.0f
+#define DVZ_CAMERA_DESC_KNOWN_FLAGS 0u
 
 
 
@@ -96,6 +98,20 @@ static bool _camera_valid_orthographic(float height, float near, float far)
 
 
 
+static bool _camera_desc_validate(const DvzCameraDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzCameraDesc, DVZ_CAMERA_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzCameraDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
 /**
  * Apply a camera descriptor to an initialized camera.
  *
@@ -129,6 +145,7 @@ static void _camera_apply_desc(DvzCamera* camera, const DvzCameraDesc* desc)
 DvzCameraDesc dvz_camera_desc(void)
 {
     return (DvzCameraDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzCameraDesc),
         .type = DVZ_CAMERA_PERSPECTIVE,
         .eye = {0.0f, 0.0f, 3.0f},
         .target = {0.0f, 0.0f, 0.0f},
@@ -153,6 +170,8 @@ DvzCamera* dvz_camera_create(const DvzCameraDesc* desc)
     DvzCameraDesc default_desc = dvz_camera_desc();
     if (desc == NULL)
         desc = &default_desc;
+    if (!_camera_desc_validate(desc))
+        return NULL;
 
     DvzCamera* camera = (DvzCamera*)dvz_calloc(1, sizeof(DvzCamera));
     if (camera == NULL)

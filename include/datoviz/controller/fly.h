@@ -65,8 +65,10 @@ typedef struct DvzFly DvzFly;
 
 struct DvzFlyDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzFlyMode mode;
-    int flags;
+    uint32_t controller_flags;
 
     vec3 position;
     vec3 target;
