@@ -81,6 +81,8 @@ struct DvzGeometryBounds
 
 struct DvzGeometryCubeDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     dvec3 center;                 // cube center
     double size;                  // edge length
     DvzColor color;               // fallback vertex color, defaults to opaque white
@@ -92,6 +94,8 @@ struct DvzGeometryCubeDesc
 
 struct DvzGeometryPlaneDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     dvec3 center;   // plane center
     double width;   // plane width along X
     double height;  // plane height along Y
@@ -103,6 +107,8 @@ struct DvzGeometryPlaneDesc
 
 struct DvzGeometrySphereDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     dvec3 center;   // sphere center
     double radius;  // sphere radius
     uint32_t rings; // latitude segment count, defaults to 16
@@ -114,6 +120,8 @@ struct DvzGeometrySphereDesc
 
 struct DvzGeometrySurfaceGridDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     uint32_t rows; // number of grid rows
     uint32_t cols; // number of grid columns
 
@@ -141,6 +149,8 @@ struct DvzPolygonRing
 
 struct DvzPolygonDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzPolygonRing outer;         // borrowed outer boundary ring
     const DvzPolygonRing* holes;  // borrowed hole ring array, or NULL when hole_count is zero
     uint32_t hole_count;          // number of hole rings
@@ -150,8 +160,9 @@ struct DvzPolygonDesc
 
 struct DvzTriangulationDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzTriangulationBackend backend; // triangulation backend, defaults to Earcut
-    uint32_t flags;                  // reserved for future triangulation options
 };
 
 

@@ -26,6 +26,8 @@
 
 int test_geometry_alloc(TstContext* suite, const TstCase* tstitem);
 
+int test_geometry_descriptor_abi(TstContext* suite, const TstCase* tstitem);
+
 int test_geometry_cube(TstContext* suite, const TstCase* tstitem);
 
 int test_geometry_plane(TstContext* suite, const TstCase* tstitem);

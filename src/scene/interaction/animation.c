@@ -32,12 +32,27 @@
 
 #define DVZ_SCENE_DEFAULT_FPS 60.0
 #define DVZ_SCENE_MAX_REALTIME_DT 0.1
+#define DVZ_ANIM_PHASE_DESC_KNOWN_FLAGS 0u
 
 
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+static bool _anim_phase_desc_validate(const DvzAnimPhaseDesc* desc)
+{
+    if (desc == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(desc, DvzAnimPhaseDesc, DVZ_ANIM_PHASE_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzAnimPhaseDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
 
 /**
  * Allocate one scene-owned animation slot.
@@ -204,6 +219,18 @@ static double _scene_clock_next_dt(DvzScene* scene, uint64_t wall_time_ns)
 /*************************************************************************************************/
 
 /**
+ * Return a default phase animation descriptor.
+ */
+DvzAnimPhaseDesc dvz_anim_phase_desc(void)
+{
+    return (DvzAnimPhaseDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzAnimPhaseDesc),
+    };
+}
+
+
+
+/**
  * Set the scene clock mode used by animations.
  *
  * @param scene target scene
@@ -331,7 +358,8 @@ DvzAnimation* dvz_anim_timer(
 DvzAnimation* dvz_anim_phase(DvzScene* scene, const DvzAnimPhaseDesc* desc)
 {
     ANN(scene);
-    ANN(desc);
+    if (!_anim_phase_desc_validate(desc))
+        return NULL;
     if (desc->callback == NULL)
     {
         log_error("phase animation callback is required");

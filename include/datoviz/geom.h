@@ -153,6 +153,14 @@ DVZ_EXPORT void dvz_geometry_contours_destroy(DvzGeometryContours* contours);
 
 
 /**
+ * Return a default cube geometry descriptor.
+ *
+ * @return initialized cube descriptor
+ */
+DVZ_EXPORT DvzGeometryCubeDesc dvz_geometry_cube_desc(void);
+
+
+/**
  * Create an indexed cube geometry.
  *
  * @param desc optional cube descriptor
@@ -160,6 +168,14 @@ DVZ_EXPORT void dvz_geometry_contours_destroy(DvzGeometryContours* contours);
  */
 DVZ_EXPORT DvzGeometry* dvz_geom_cube(const DvzGeometryCubeDesc* desc);
 
+
+
+/**
+ * Return a default plane geometry descriptor.
+ *
+ * @return initialized plane descriptor
+ */
+DVZ_EXPORT DvzGeometryPlaneDesc dvz_geometry_plane_desc(void);
 
 
 /**
@@ -173,6 +189,14 @@ DVZ_EXPORT DvzGeometry* dvz_geom_plane(const DvzGeometryPlaneDesc* desc);
 
 
 /**
+ * Return a default sphere geometry descriptor.
+ *
+ * @return initialized sphere descriptor
+ */
+DVZ_EXPORT DvzGeometrySphereDesc dvz_geometry_sphere_desc(void);
+
+
+/**
  * Create an indexed UV-sphere geometry.
  *
  * @param desc optional sphere descriptor
@@ -180,6 +204,14 @@ DVZ_EXPORT DvzGeometry* dvz_geom_plane(const DvzGeometryPlaneDesc* desc);
  */
 DVZ_EXPORT DvzGeometry* dvz_geom_sphere(const DvzGeometrySphereDesc* desc);
 
+
+
+/**
+ * Return a default surface-grid geometry descriptor.
+ *
+ * @return initialized surface-grid descriptor
+ */
+DVZ_EXPORT DvzGeometrySurfaceGridDesc dvz_geometry_surface_grid_desc(void);
 
 
 /**
@@ -203,6 +235,22 @@ DVZ_EXPORT DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* 
 DVZ_EXPORT int
 dvz_geom_surface_grid_update_heights(DvzGeometry* geometry, const double* heights, uint32_t count);
 
+
+
+/**
+ * Return a default polygon descriptor.
+ *
+ * @return initialized polygon descriptor
+ */
+DVZ_EXPORT DvzPolygonDesc dvz_polygon_desc(void);
+
+
+/**
+ * Return a default triangulation descriptor.
+ *
+ * @return initialized triangulation descriptor
+ */
+DVZ_EXPORT DvzTriangulationDesc dvz_triangulation_desc(void);
 
 
 /**

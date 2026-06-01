@@ -52,11 +52,54 @@ int test_geometry_alloc(TstContext* suite, const TstCase* tstitem)
 
 
 
+int test_geometry_descriptor_abi(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    (void)tstitem;
+
+    DvzGeometryCubeDesc cube = dvz_geometry_cube_desc();
+    cube.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_cube(&cube) == NULL);
+
+    DvzGeometryPlaneDesc plane = dvz_geometry_plane_desc();
+    plane.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_plane(&plane) == NULL);
+
+    DvzGeometrySphereDesc sphere = dvz_geometry_sphere_desc();
+    sphere.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_sphere(&sphere) == NULL);
+
+    DvzGeometrySurfaceGridDesc grid = dvz_geometry_surface_grid_desc();
+    grid.rows = 2;
+    grid.cols = 2;
+    grid.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_surface_grid(&grid) == NULL);
+
+    const dvec2 xy[3] = {{0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}};
+    DvzPolygonDesc polygon = dvz_polygon_desc();
+    polygon.outer.xy = xy;
+    polygon.outer.count = 3;
+    polygon.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_triangulate_polygon(&polygon, NULL) == NULL);
+
+    polygon = dvz_polygon_desc();
+    polygon.outer.xy = xy;
+    polygon.outer.count = 3;
+    DvzTriangulationDesc triangulation = dvz_triangulation_desc();
+    triangulation.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_triangulate_polygon(&polygon, &triangulation) == NULL);
+
+    return 0;
+}
+
+
+
 int test_geometry_cube(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 
-    DvzGeometryCubeDesc desc = {.center = {1.0, 2.0, 3.0}, .size = 2.0};
+    DvzGeometryCubeDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc), .center = {1.0, 2.0, 3.0}, .size = 2.0};
     desc.color = dvz_color_rgba(10, 20, 30, 255);
 
     DvzGeometry* cube = dvz_geom_cube(&desc);
@@ -84,14 +127,11 @@ int test_geometry_cube(TstContext* suite, const TstCase* tstitem)
     dvz_geometry_destroy(cube);
 
     DvzColor face_colors[DVZ_GEOM_CUBE_FACE_COUNT] = {
-        {239, 83, 80, 255},
-        {66, 165, 245, 255},
-        {102, 187, 106, 255},
-        {255, 202, 40, 255},
-        {171, 71, 188, 255},
-        {255, 112, 67, 255},
+        {239, 83, 80, 255},  {66, 165, 245, 255}, {102, 187, 106, 255},
+        {255, 202, 40, 255}, {171, 71, 188, 255}, {255, 112, 67, 255},
     };
     DvzGeometry* colored_cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
         .size = 1.0,
         .face_colors = face_colors,
         .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT,
@@ -111,6 +151,7 @@ int test_geometry_cube(TstContext* suite, const TstCase* tstitem)
     dvz_geometry_destroy(colored_cube);
 
     AT(dvz_geom_cube(&(DvzGeometryCubeDesc){
+           DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
            .size = 1.0,
            .face_colors = face_colors,
            .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT - 1,
@@ -125,7 +166,9 @@ int test_geometry_plane(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 
-    DvzGeometryPlaneDesc desc = {.center = {2.0, 3.0, 4.0}, .width = 4.0, .height = 2.0};
+    DvzGeometryPlaneDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryPlaneDesc), .center = {2.0, 3.0, 4.0}, .width = 4.0,
+        .height = 2.0};
     DvzGeometry* plane = dvz_geom_plane(&desc);
     AT(plane != NULL);
     AT(plane->type == DVZ_GEOMETRY_PLANE);
@@ -159,9 +202,7 @@ int test_geometry_surface_grid(TstContext* suite, const TstCase* tstitem)
     ANN(suite);
 
     double heights[9] = {
-        0.0, 0.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
     };
     DvzColor colors[9] = {0};
     for (uint32_t i = 0; i < 9; i++)
@@ -170,6 +211,7 @@ int test_geometry_surface_grid(TstContext* suite, const TstCase* tstitem)
     }
 
     DvzGeometrySurfaceGridDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySurfaceGridDesc),
         .rows = 3,
         .cols = 3,
         .heights = heights,
@@ -198,7 +240,8 @@ int test_geometry_surface_grid(TstContext* suite, const TstCase* tstitem)
     for (uint32_t i = 0; i < grid->index_count; i++)
         AT(grid->indices[i] < grid->vertex_count);
 
-    DvzGeometrySurfaceGridDesc invalid = {.rows = 1, .cols = 3};
+    DvzGeometrySurfaceGridDesc invalid = {
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySurfaceGridDesc), .rows = 1, .cols = 3};
     AT(dvz_geom_surface_grid(&invalid) == NULL);
 
     dvz_geometry_destroy(grid);
@@ -213,6 +256,7 @@ int test_geometry_surface_grid_update(TstContext* suite, const TstCase* tstitem)
 
     double heights[4] = {0.0, 0.0, 0.0, 0.0};
     DvzGeometrySurfaceGridDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySurfaceGridDesc),
         .rows = 2,
         .cols = 2,
         .heights = heights,
@@ -261,6 +305,7 @@ int test_geometry_sphere(TstContext* suite, const TstCase* tstitem)
     ANN(suite);
 
     DvzGeometrySphereDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
         .center = {1.0, 2.0, 3.0},
         .radius = 2.0,
         .rings = 4,
@@ -292,7 +337,8 @@ int test_geometry_sphere(TstContext* suite, const TstCase* tstitem)
     }
     AC(sphere->texcoords[0][0], 0.0, EPS);
     AC(sphere->texcoords[8][0], 1.0, EPS);
-    AT(dvz_geom_sphere(&(DvzGeometrySphereDesc){.radius = -1.0}) == NULL);
+    AT(dvz_geom_sphere(&(DvzGeometrySphereDesc){
+           DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc), .radius = -1.0}) == NULL);
 
     dvz_geometry_destroy(sphere);
     return 0;
@@ -338,8 +384,12 @@ int test_geometry_merge(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 
-    DvzGeometryPlaneDesc desc0 = {.center = {0.0, 0.0, 0.0}, .width = 1.0, .height = 1.0};
-    DvzGeometryPlaneDesc desc1 = {.center = {2.0, 0.0, 0.0}, .width = 1.0, .height = 1.0};
+    DvzGeometryPlaneDesc desc0 = {
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryPlaneDesc), .center = {0.0, 0.0, 0.0}, .width = 1.0,
+        .height = 1.0};
+    DvzGeometryPlaneDesc desc1 = {
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryPlaneDesc), .center = {2.0, 0.0, 0.0}, .width = 1.0,
+        .height = 1.0};
     DvzGeometry* plane0 = dvz_geom_plane(&desc0);
     DvzGeometry* plane1 = dvz_geom_plane(&desc1);
     AT(plane0 != NULL);
@@ -454,7 +504,9 @@ int test_geometry_polygon_triangulation(TstContext* suite, const TstCase* tstite
         {0.0, 1.0},
     };
     DvzGeometry* triangle = dvz_triangulate_polygon(
-        &(DvzPolygonDesc){.outer = {.xy = triangle_xy, .count = 3}}, NULL);
+        &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc), .outer = {.xy = triangle_xy, .count = 3}},
+        NULL);
     AT(triangle != NULL);
     AT(triangle->type == DVZ_GEOMETRY_CUSTOM);
     AT(triangle->flags & DVZ_GEOMETRY_INDEXING_TRIANGLES);
@@ -485,7 +537,9 @@ int test_geometry_polygon_triangulation(TstContext* suite, const TstCase* tstite
         {0.0, 2.0},
     };
     DvzGeometry* square = dvz_triangulate_polygon(
-        &(DvzPolygonDesc){.outer = {.xy = square_xy, .count = 4}}, NULL);
+        &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc), .outer = {.xy = square_xy, .count = 4}},
+        NULL);
     AT(square != NULL);
     AT(square->vertex_count == 4);
     AT(square->index_count == 6);
@@ -494,14 +548,12 @@ int test_geometry_polygon_triangulation(TstContext* suite, const TstCase* tstite
     dvz_geometry_destroy(square);
 
     const dvec2 closed_xy[5] = {
-        {0.0, 0.0},
-        {2.0, 0.0},
-        {2.0, 2.0},
-        {0.0, 2.0},
-        {0.0, 0.0},
+        {0.0, 0.0}, {2.0, 0.0}, {2.0, 2.0}, {0.0, 2.0}, {0.0, 0.0},
     };
     DvzGeometry* closed = dvz_triangulate_polygon(
-        &(DvzPolygonDesc){.outer = {.xy = closed_xy, .count = 5}}, NULL);
+        &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc), .outer = {.xy = closed_xy, .count = 5}},
+        NULL);
     AT(closed != NULL);
     AT(closed->vertex_count == 4);
     AT(closed->index_count == 6);
@@ -516,11 +568,14 @@ int test_geometry_polygon_triangulation(TstContext* suite, const TstCase* tstite
     const DvzPolygonRing holes[1] = {{.xy = hole_xy, .count = 4}};
     DvzGeometry* holed = dvz_triangulate_polygon(
         &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
             .outer = {.xy = square_xy, .count = 4},
             .holes = holes,
             .hole_count = 1,
         },
-        &(DvzTriangulationDesc){.backend = DVZ_TRIANGULATION_BACKEND_EARCUT});
+        &(DvzTriangulationDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzTriangulationDesc),
+            .backend = DVZ_TRIANGULATION_BACKEND_EARCUT});
     AT(holed != NULL);
     AT(holed->vertex_count == 8);
     AT(holed->index_count > 0);
@@ -542,8 +597,10 @@ int test_geometry_polygon_triangulation_invalid(TstContext* suite, const TstCase
         {0.0, 0.0},
         {1.0, 0.0},
     };
-    AT(dvz_triangulate_polygon(&(DvzPolygonDesc){.outer = {.xy = two_xy, .count = 2}}, NULL) ==
-       NULL);
+    AT(dvz_triangulate_polygon(
+           &(DvzPolygonDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc), .outer = {.xy = two_xy, .count = 2}},
+           NULL) == NULL);
 
     const dvec2 square_xy[4] = {
         {0.0, 0.0},
@@ -552,12 +609,15 @@ int test_geometry_polygon_triangulation_invalid(TstContext* suite, const TstCase
         {0.0, 1.0},
     };
     AT(dvz_triangulate_polygon(
-           &(DvzPolygonDesc){.outer = {.xy = square_xy, .count = 4}, .hole_count = 1}, NULL) ==
-       NULL);
+           &(DvzPolygonDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc), .outer = {.xy = square_xy, .count = 4},
+               .hole_count = 1},
+           NULL) == NULL);
 
     const DvzPolygonRing short_hole[1] = {{.xy = two_xy, .count = 2}};
     AT(dvz_triangulate_polygon(
            &(DvzPolygonDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
                .outer = {.xy = square_xy, .count = 4},
                .holes = short_hole,
                .hole_count = 1,
@@ -569,8 +629,10 @@ int test_geometry_polygon_triangulation_invalid(TstContext* suite, const TstCase
         {NAN, 0.0},
         {0.0, 1.0},
     };
-    AT(dvz_triangulate_polygon(&(DvzPolygonDesc){.outer = {.xy = nan_xy, .count = 3}}, NULL) ==
-       NULL);
+    AT(dvz_triangulate_polygon(
+           &(DvzPolygonDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc), .outer = {.xy = nan_xy, .count = 3}},
+           NULL) == NULL);
 
     const dvec2 zero_area_xy[3] = {
         {0.0, 0.0},
@@ -578,11 +640,16 @@ int test_geometry_polygon_triangulation_invalid(TstContext* suite, const TstCase
         {2.0, 0.0},
     };
     AT(dvz_triangulate_polygon(
-           &(DvzPolygonDesc){.outer = {.xy = zero_area_xy, .count = 3}}, NULL) == NULL);
+           &(DvzPolygonDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc), .outer = {.xy = zero_area_xy, .count = 3}},
+           NULL) == NULL);
 
     AT(dvz_triangulate_polygon(
-           &(DvzPolygonDesc){.outer = {.xy = square_xy, .count = 4}},
-           &(DvzTriangulationDesc){.backend = (DvzTriangulationBackend)UINT32_MAX}) == NULL);
+           &(DvzPolygonDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc), .outer = {.xy = square_xy, .count = 4}},
+           &(DvzTriangulationDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzTriangulationDesc),
+               .backend = (DvzTriangulationBackend)UINT32_MAX}) == NULL);
 
     return 0;
 }
@@ -602,6 +669,7 @@ int test_geom(TstSuite* suite)
     TST_MODULE(suite, "geom");
     TST_GROUP("geometry");
     TST_CASE(test_geometry_alloc);
+    TST_CASE(test_geometry_descriptor_abi);
     TST_CASE(test_geometry_cube);
     TST_CASE(test_geometry_plane);
     TST_CASE(test_geometry_surface_grid);

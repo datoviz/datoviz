@@ -27,6 +27,7 @@ dvz_allocator_unmap
 dvz_anim_arcball_spin
 dvz_anim_destroy
 dvz_anim_phase
+dvz_anim_phase_desc
 dvz_anim_phase_set_value
 dvz_anim_set_speed
 dvz_anim_start
@@ -593,11 +594,15 @@ dvz_geometry_bounds
 dvz_geometry_compute_normals
 dvz_geometry_contours
 dvz_geometry_contours_destroy
+dvz_geometry_cube_desc
 dvz_geometry_destroy
 dvz_geometry_edges
 dvz_geometry_edges_destroy
 dvz_geometry_merge
+dvz_geometry_plane_desc
 dvz_geometry_reset
+dvz_geometry_sphere_desc
+dvz_geometry_surface_grid_desc
 dvz_geometry_transform
 dvz_glyph
 dvz_gpu_ctx
@@ -985,6 +990,7 @@ dvz_pointer_gesture_handler
 dvz_pointer_gesture_handler_destroy
 dvz_polygon
 dvz_polygon_composite
+dvz_polygon_desc
 dvz_polygon_destroy
 dvz_polygon_fill_color
 dvz_polygon_hole
@@ -1226,6 +1232,7 @@ dvz_thread_lock
 dvz_thread_unlock
 dvz_time_monotonic_ns
 dvz_triangulate_polygon
+dvz_triangulation_desc
 dvz_turntable
 dvz_turntable_apply_camera
 dvz_turntable_connect

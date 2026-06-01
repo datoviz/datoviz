@@ -693,6 +693,7 @@ int main(int argc, char** argv)
 
     DvzColor white = {255, 255, 255, 255};
     sphere = dvz_geom_sphere(&(DvzGeometrySphereDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
         .radius = SPHERE_RADIUS,
         .sectors = SPHERE_SECTORS,
         .rings = SPHERE_RINGS,
@@ -745,6 +746,7 @@ int main(int argc, char** argv)
 
     DvzAnimation* spin = dvz_anim_phase(
         scene, &(DvzAnimPhaseDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzAnimPhaseDesc),
                    .initial = 0.0f,
                    .speed = gui_state.spin_speed,
                    .wrap_min = 0.0f,

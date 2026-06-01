@@ -123,6 +123,7 @@ static bool _add_polygon(DvzScene* scene, DvzPanel* panel, PolygonExampleState* 
     int rc = dvz_polygon_set_geometry(
         polygon,
         &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
             .outer = {.xy = POLYGON_OUTER, .count = 5},
             .holes = holes,
             .hole_count = 1,
@@ -182,11 +183,19 @@ static bool _add_polygon_set(DvzScene* scene, DvzPanel* panel, PolygonExampleSta
         return false;
 
     const uint32_t first = dvz_polygon_set_add(
-        set, &(DvzPolygonDesc){.outer = {.xy = POLYGON_SET_REGION0, .count = 4}});
+        set,
+        &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+            .outer = {.xy = POLYGON_SET_REGION0, .count = 4},
+        });
     if (first == UINT32_MAX)
         return false;
     const uint32_t second = dvz_polygon_set_add(
-        set, &(DvzPolygonDesc){.outer = {.xy = POLYGON_SET_REGION1, .count = 5}});
+        set,
+        &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+            .outer = {.xy = POLYGON_SET_REGION1, .count = 5},
+        });
     if (second == UINT32_MAX)
         return false;
 
@@ -329,15 +338,24 @@ static bool _add_triangulation_overlay(
     const DvzPolygonRing holes[1] = {{.xy = POLYGON_HOLE, .count = 4}};
     DvzGeometry* polygon = dvz_triangulate_polygon(
         &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
             .outer = {.xy = POLYGON_OUTER, .count = 5},
             .holes = holes,
             .hole_count = 1,
         },
         NULL);
     DvzGeometry* region0 = dvz_triangulate_polygon(
-        &(DvzPolygonDesc){.outer = {.xy = POLYGON_SET_REGION0, .count = 4}}, NULL);
+        &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+            .outer = {.xy = POLYGON_SET_REGION0, .count = 4},
+        },
+        NULL);
     DvzGeometry* region1 = dvz_triangulate_polygon(
-        &(DvzPolygonDesc){.outer = {.xy = POLYGON_SET_REGION1, .count = 5}}, NULL);
+        &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+            .outer = {.xy = POLYGON_SET_REGION1, .count = 5},
+        },
+        NULL);
     if (polygon == NULL || region0 == NULL || region1 == NULL)
         goto error;
 

@@ -34,6 +34,8 @@
 /*************************************************************************************************/
 
 static const double DVZ_POLYGON_AREA_EPSILON = 1e-20;
+#define DVZ_POLYGON_DESC_KNOWN_FLAGS 0u
+#define DVZ_TRIANGULATION_DESC_KNOWN_FLAGS 0u
 
 
 
@@ -50,6 +52,46 @@ typedef std::vector<_DvzEarcutRing> _DvzEarcutPolygon;
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Return whether a polygon descriptor has a valid ABI prologue.
+ *
+ * @param desc polygon descriptor
+ * @return whether the descriptor may be read
+ */
+static bool _polygon_desc_validate(const DvzPolygonDesc* desc)
+{
+    if (desc == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(desc, DvzPolygonDesc, DVZ_POLYGON_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzPolygonDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Return whether a triangulation descriptor has a valid ABI prologue.
+ *
+ * @param desc optional triangulation descriptor
+ * @return whether the descriptor may be read
+ */
+static bool _triangulation_desc_validate(const DvzTriangulationDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzTriangulationDesc, DVZ_TRIANGULATION_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzTriangulationDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
 
 /**
  * Return whether a 2D point has finite coordinates.
@@ -215,6 +257,33 @@ static bool _triangulation_backend_supported(const DvzTriangulationDesc* desc)
 /*************************************************************************************************/
 
 /**
+ * Return a default polygon descriptor.
+ */
+DvzPolygonDesc dvz_polygon_desc(void)
+{
+    DvzPolygonDesc desc = {};
+    desc.struct_size = DVZ_STRUCT_SIZE(DvzPolygonDesc);
+    desc.flags = 0;
+    return desc;
+}
+
+
+
+/**
+ * Return a default triangulation descriptor.
+ */
+DvzTriangulationDesc dvz_triangulation_desc(void)
+{
+    DvzTriangulationDesc desc = {};
+    desc.struct_size = DVZ_STRUCT_SIZE(DvzTriangulationDesc);
+    desc.flags = 0;
+    desc.backend = DVZ_TRIANGULATION_BACKEND_DEFAULT;
+    return desc;
+}
+
+
+
+/**
  * Triangulate a polygon with optional holes into indexed XY mesh geometry.
  *
  * @param polygon borrowed polygon descriptor
@@ -226,8 +295,11 @@ DvzGeometry* dvz_triangulate_polygon(
 {
     try
     {
-        if (polygon == NULL || !_triangulation_backend_supported(desc))
+        if (!_polygon_desc_validate(polygon) || !_triangulation_desc_validate(desc) ||
+            !_triangulation_backend_supported(desc))
+        {
             return NULL;
+        }
 
         if (polygon->hole_count > 0 && polygon->holes == NULL)
             return NULL;

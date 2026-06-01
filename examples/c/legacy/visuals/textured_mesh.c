@@ -422,6 +422,7 @@ int main(int argc, char** argv)
 
     DvzColor white = {255, 255, 255, 255};
     sphere = dvz_geom_sphere(&(DvzGeometrySphereDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
         .radius = SPHERE_RADIUS,
         .sectors = SPHERE_SECTORS,
         .rings = SPHERE_RINGS,

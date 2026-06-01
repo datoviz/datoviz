@@ -663,6 +663,7 @@ int main(int argc, char** argv)
     _apply_marker_style(&state);
     state.rotation_animation = dvz_anim_phase(
         scene, &(DvzAnimPhaseDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzAnimPhaseDesc),
                    .initial = state.phase,
                    .speed = state.rotation_speed_rad_per_sec,
                    .wrap_min = -MARKER_STRESS_PI,

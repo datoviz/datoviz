@@ -127,7 +127,13 @@ static int _polygon_prepare_fill(DvzPolygon* polygon, DvzVisual* fill)
         return -1;
 
     DvzGeometry* geometry = dvz_triangulate_polygon(
-        &(DvzPolygonDesc){.outer = outer, .holes = holes, .hole_count = polygon->hole_count}, NULL);
+        &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+            .outer = outer,
+            .holes = holes,
+            .hole_count = polygon->hole_count,
+        },
+        NULL);
     dvz_free(holes);
     if (geometry == NULL)
         return -1;
@@ -318,7 +324,12 @@ static int _polygon_set_prepare_fill(DvzPolygonSet* set, DvzVisual* fill)
         if (!_polygon_set_item_borrowed_desc(item, &outer, &holes))
             goto error;
         DvzGeometry* geometry = dvz_triangulate_polygon(
-            &(DvzPolygonDesc){.outer = outer, .holes = holes, .hole_count = item->hole_count},
+            &(DvzPolygonDesc){
+                DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+                .outer = outer,
+                .holes = holes,
+                .hole_count = item->hole_count,
+            },
             NULL);
         dvz_free(holes);
         if (geometry == NULL)

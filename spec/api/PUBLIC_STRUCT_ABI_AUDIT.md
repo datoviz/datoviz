@@ -32,6 +32,12 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzInteropBufferExportConfig` | `dvz_interop_buffer_export_config()` |
 | `DvzFramePlanEmitConfig` | `dvz_frame_plan_emit_config()` |
 | `DvzFramePlanCopyDesc` | `dvz_frame_plan_copy_desc()` |
+| `DvzGeometryCubeDesc` | `dvz_geometry_cube_desc()` |
+| `DvzGeometryPlaneDesc` | `dvz_geometry_plane_desc()` |
+| `DvzGeometrySphereDesc` | `dvz_geometry_sphere_desc()` |
+| `DvzGeometrySurfaceGridDesc` | `dvz_geometry_surface_grid_desc()` |
+| `DvzPolygonDesc` | `dvz_polygon_desc()` |
+| `DvzTriangulationDesc` | `dvz_triangulation_desc()` |
 | `DvzPanelBackgroundDesc` | `dvz_panel_background_desc()` |
 | `DvzSceneBufferDesc` | `dvz_scene_buffer_desc()` |
 | `DvzSceneComputeDesc` | `dvz_scene_compute_desc()` |
@@ -80,6 +86,7 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzOverlayRichTextDesc` | `dvz_overlay_rich_text_desc()` |
 | `DvzGuiConfig` | `dvz_gui_config()` |
 | `DvzGuiViewportConfig` | `dvz_gui_viewport_config()` |
+| `DvzAnimPhaseDesc` | `dvz_anim_phase_desc()` |
 
 
 ## Should Add Before API Freeze
@@ -90,15 +97,10 @@ and likely to grow or gain flags after v0.4:
 | Area | Structs | Public consumers |
 | --- | --- | --- |
 | Scene techniques | `DvzCapabilitySnapshot` | capability-aware setup paths |
-| Geometry utilities | `DvzGeometryCubeDesc`, `DvzGeometryPlaneDesc`, `DvzGeometrySphereDesc`, `DvzGeometrySurfaceGridDesc`, `DvzPolygonDesc`, `DvzTriangulationDesc` | geometry constructors and triangulation helpers |
-| Animation | `DvzAnimPhaseDesc` | `dvz_anim_phase()` |
 
 Recommended batching:
 
-1. scene techniques and visual styles;
-2. text, annotations, and overlay;
-3. geometry utilities;
-4. animation.
+1. scene techniques and capability snapshots.
 
 
 ## No Prologue Needed

@@ -113,6 +113,8 @@ int test_scene_animation_timer_period_and_stop(TstContext* suite, const TstCase*
 
 int test_scene_animation_realtime_delta_clamp(TstContext* suite, const TstCase* item);
 
+int test_scene_animation_phase_descriptor_abi(TstContext* suite, const TstCase* item);
+
 int test_scene_animation_phase_linear(TstContext* suite, const TstCase* item);
 
 int test_scene_animation_phase_wrap_and_setters(TstContext* suite, const TstCase* item);

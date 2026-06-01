@@ -42,6 +42,10 @@
 #define DVZ_GEOM_PLANE_INDEX_COUNT  6
 #define DVZ_GEOM_SPHERE_DEFAULT_RINGS 16
 #define DVZ_GEOM_SPHERE_DEFAULT_SECTORS 32
+#define DVZ_GEOMETRY_CUBE_DESC_KNOWN_FLAGS 0u
+#define DVZ_GEOMETRY_PLANE_DESC_KNOWN_FLAGS 0u
+#define DVZ_GEOMETRY_SPHERE_DESC_KNOWN_FLAGS 0u
+#define DVZ_GEOMETRY_SURFACE_GRID_DESC_KNOWN_FLAGS 0u
 
 
 
@@ -61,6 +65,63 @@ struct _GeomEdgeCandidate
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+static bool _geometry_cube_desc_validate(const DvzGeometryCubeDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzGeometryCubeDesc, DVZ_GEOMETRY_CUBE_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGeometryCubeDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _geometry_plane_desc_validate(const DvzGeometryPlaneDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzGeometryPlaneDesc, DVZ_GEOMETRY_PLANE_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGeometryPlaneDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _geometry_sphere_desc_validate(const DvzGeometrySphereDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzGeometrySphereDesc, DVZ_GEOMETRY_SPHERE_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGeometrySphereDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _geometry_surface_grid_desc_validate(const DvzGeometrySurfaceGridDesc* desc)
+{
+    if (desc == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(
+            desc, DvzGeometrySurfaceGridDesc, DVZ_GEOMETRY_SURFACE_GRID_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGeometrySurfaceGridDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
 
 /**
  * Return whether a count-sized allocation is representable.
@@ -612,6 +673,64 @@ static void _geom_surface_grid_update_position(
 /*************************************************************************************************/
 
 /**
+ * Return a default cube geometry descriptor.
+ */
+DvzGeometryCubeDesc dvz_geometry_cube_desc(void)
+{
+    return (DvzGeometryCubeDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
+        .size = 1.0,
+    };
+}
+
+
+
+/**
+ * Return a default plane geometry descriptor.
+ */
+DvzGeometryPlaneDesc dvz_geometry_plane_desc(void)
+{
+    return (DvzGeometryPlaneDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryPlaneDesc),
+        .width = 1.0,
+        .height = 1.0,
+    };
+}
+
+
+
+/**
+ * Return a default sphere geometry descriptor.
+ */
+DvzGeometrySphereDesc dvz_geometry_sphere_desc(void)
+{
+    return (DvzGeometrySphereDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
+        .radius = 1.0,
+        .rings = DVZ_GEOM_SPHERE_DEFAULT_RINGS,
+        .sectors = DVZ_GEOM_SPHERE_DEFAULT_SECTORS,
+    };
+}
+
+
+
+/**
+ * Return a default surface-grid geometry descriptor.
+ */
+DvzGeometrySurfaceGridDesc dvz_geometry_surface_grid_desc(void)
+{
+    return (DvzGeometrySurfaceGridDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySurfaceGridDesc),
+        .col_basis = {1.0, 0.0, 0.0},
+        .row_basis = {0.0, 1.0, 0.0},
+        .height_axis = {0.0, 0.0, 1.0},
+        .height_scale = 1.0,
+    };
+}
+
+
+
+/**
  * Allocate a geometry object with owned vertex and index buffers.
  *
  * @param vertex_count number of vertices
@@ -1153,8 +1272,9 @@ void dvz_geometry_contours_destroy(DvzGeometryContours* contours)
  */
 DvzGeometry* dvz_geom_cube(const DvzGeometryCubeDesc* desc)
 {
-    DvzGeometryCubeDesc cfg = {0};
-    cfg.size = 1.0;
+    if (!_geometry_cube_desc_validate(desc))
+        return NULL;
+    DvzGeometryCubeDesc cfg = dvz_geometry_cube_desc();
     if (desc != NULL)
         cfg = *desc;
     if (cfg.size <= 0)
@@ -1232,9 +1352,9 @@ DvzGeometry* dvz_geom_cube(const DvzGeometryCubeDesc* desc)
  */
 DvzGeometry* dvz_geom_plane(const DvzGeometryPlaneDesc* desc)
 {
-    DvzGeometryPlaneDesc cfg = {0};
-    cfg.width = 1.0;
-    cfg.height = 1.0;
+    if (!_geometry_plane_desc_validate(desc))
+        return NULL;
+    DvzGeometryPlaneDesc cfg = dvz_geometry_plane_desc();
     if (desc != NULL)
         cfg = *desc;
     if (cfg.width <= 0 || cfg.height <= 0)
@@ -1286,10 +1406,9 @@ DvzGeometry* dvz_geom_plane(const DvzGeometryPlaneDesc* desc)
  */
 DvzGeometry* dvz_geom_sphere(const DvzGeometrySphereDesc* desc)
 {
-    DvzGeometrySphereDesc cfg = {0};
-    cfg.radius = 1.0;
-    cfg.rings = DVZ_GEOM_SPHERE_DEFAULT_RINGS;
-    cfg.sectors = DVZ_GEOM_SPHERE_DEFAULT_SECTORS;
+    if (!_geometry_sphere_desc_validate(desc))
+        return NULL;
+    DvzGeometrySphereDesc cfg = dvz_geometry_sphere_desc();
     if (desc != NULL)
         cfg = *desc;
     if (cfg.radius <= 0.0)
@@ -1371,10 +1490,10 @@ DvzGeometry* dvz_geom_sphere(const DvzGeometrySphereDesc* desc)
  */
 DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* desc)
 {
-    if (desc == NULL)
+    if (!_geometry_surface_grid_desc_validate(desc))
         return NULL;
 
-    DvzGeometrySurfaceGridDesc cfg = {0};
+    DvzGeometrySurfaceGridDesc cfg = dvz_geometry_surface_grid_desc();
     DvzColor fallback_color = {0};
     _geom_surface_grid_config(desc, &cfg, &fallback_color);
 

@@ -3512,6 +3512,7 @@ int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item)
         {255, 255, 255, 255},
     };
     DvzGeometrySurfaceGridDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySurfaceGridDesc),
         .rows = 2,
         .cols = 2,
         .colors = colors,
@@ -3586,7 +3587,11 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
         {0.0, 1.0},
     };
     AT(dvz_polygon_set_geometry(
-           polygon, &(DvzPolygonDesc){.outer = {.xy = outer, .count = 4}}) == 0);
+           polygon,
+           &(DvzPolygonDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+               .outer = {.xy = outer, .count = 4},
+           }) == 0);
 
     const DvzColor fill_color = {20, 40, 200, 255};
     const DvzColor stroke_color = {240, 220, 40, 255};
@@ -3725,9 +3730,17 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
         {2.0, 1.0},
     };
     const uint32_t left_index = dvz_polygon_set_add(
-        set, &(DvzPolygonDesc){.outer = {.xy = left, .count = 4}});
+        set,
+        &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+            .outer = {.xy = left, .count = 4},
+        });
     const uint32_t right_index = dvz_polygon_set_add(
-        set, &(DvzPolygonDesc){.outer = {.xy = right, .count = 4}});
+        set,
+        &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+            .outer = {.xy = right, .count = 4},
+        });
     AT(left_index == 0);
     AT(right_index == 1);
 

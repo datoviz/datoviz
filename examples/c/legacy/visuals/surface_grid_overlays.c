@@ -471,6 +471,7 @@ static bool _state_rebuild_geometry(SurfaceOverlayState* state)
     ANN(state->colors);
 
     DvzGeometrySurfaceGridDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySurfaceGridDesc),
         .rows = SURFACE_ROWS,
         .cols = SURFACE_COLS,
         .heights = state->heights,

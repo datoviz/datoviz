@@ -64,6 +64,8 @@ typedef struct DvzAnimPhaseDesc DvzAnimPhaseDesc;
 
 struct DvzAnimPhaseDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     float initial;
     float speed;
     float wrap_min;
@@ -140,6 +142,14 @@ DVZ_EXPORT bool dvz_scene_has_active_animations(const DvzScene* scene);
  */
 DVZ_EXPORT DvzAnimation* dvz_anim_timer(
     DvzScene* scene, double period_s, DvzAnimTimerCallback callback, void* user_data);
+
+
+/**
+ * Return a default phase animation descriptor.
+ *
+ * @return initialized phase animation descriptor
+ */
+DVZ_EXPORT DvzAnimPhaseDesc dvz_anim_phase_desc(void);
 
 
 /**

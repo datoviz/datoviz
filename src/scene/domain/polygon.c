@@ -186,7 +186,12 @@ int dvz_polygon_outer(DvzPolygon* polygon, uint32_t count, const dvec2* xy)
     }
     const int out = dvz_polygon_set_geometry(
         polygon,
-        &(DvzPolygonDesc){.outer = outer, .holes = holes, .hole_count = polygon->hole_count});
+        &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+            .outer = outer,
+            .holes = holes,
+            .hole_count = polygon->hole_count,
+        });
     dvz_free(holes);
     return out;
 }
@@ -232,6 +237,7 @@ int dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, c
     }
 
     const DvzPolygonDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
         .outer = {.xy = (const dvec2*)polygon->outer.xy, .count = polygon->outer.count},
         .holes = holes,
         .hole_count = new_hole_count,

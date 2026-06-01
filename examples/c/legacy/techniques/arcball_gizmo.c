@@ -974,6 +974,7 @@ int main(int argc, char** argv)
         {250, 202, 70, 255}, {172, 105, 235, 255}, {236, 112, 74, 255},
     };
     cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
         .size = CUBE_SIZE,
         .face_colors = face_colors,
         .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT,

@@ -128,6 +128,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
     DvzGeometrySurfaceGridDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySurfaceGridDesc),
         .rows = SURFACE_ROWS,
         .cols = SURFACE_COLS,
         .heights = heights,

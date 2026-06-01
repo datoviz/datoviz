@@ -214,6 +214,39 @@ int test_scene_animation_realtime_delta_clamp(TstContext* suite, const TstCase* 
 
 
 /**
+ * Ensure phase animation descriptors reject invalid ABI prologues.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_scene_animation_phase_descriptor_abi(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzAnimPhaseDesc desc = dvz_anim_phase_desc();
+    desc.wrap_max = 1.0f;
+    desc.callback = _phase_test_callback;
+    desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_anim_phase(scene, &desc) == NULL);
+
+    desc = dvz_anim_phase_desc();
+    desc.wrap_max = 1.0f;
+    desc.callback = _phase_test_callback;
+    desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_anim_phase(scene, &desc) == NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Ensure a phase animation advances linearly on the scene clock.
  *
  * @param suite test suite
@@ -233,6 +266,7 @@ int test_scene_animation_phase_linear(TstContext* suite, const TstCase* item)
     PhaseTestState state = {0};
     DvzAnimation* phase = dvz_anim_phase(
         scene, &(DvzAnimPhaseDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzAnimPhaseDesc),
                    .initial = 0.0f,
                    .speed = 1.0f,
                    .wrap_min = 0.0f,
@@ -284,6 +318,7 @@ int test_scene_animation_phase_wrap_and_setters(TstContext* suite, const TstCase
     PhaseTestState state = {0};
     DvzAnimation* phase = dvz_anim_phase(
         scene, &(DvzAnimPhaseDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzAnimPhaseDesc),
                    .initial = 0.9f,
                    .speed = 0.4f,
                    .wrap_min = 0.0f,
@@ -338,6 +373,7 @@ int test_scene_animation_phase_stop_restart(TstContext* suite, const TstCase* it
     PhaseTestState state = {0};
     DvzAnimation* phase = dvz_anim_phase(
         scene, &(DvzAnimPhaseDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzAnimPhaseDesc),
                    .initial = 1.0f,
                    .speed = 2.0f,
                    .wrap_min = -10.0f,
@@ -508,6 +544,7 @@ int test_scene_animation(TstSuite* suite)
     TST_CASE(test_scene_animation_offline_timer_every_frame);
     TST_CASE(test_scene_animation_timer_period_and_stop);
     TST_CASE(test_scene_animation_realtime_delta_clamp);
+    TST_CASE(test_scene_animation_phase_descriptor_abi);
     TST_CASE(test_scene_animation_phase_linear);
     TST_CASE(test_scene_animation_phase_wrap_and_setters);
     TST_CASE(test_scene_animation_phase_stop_restart);
