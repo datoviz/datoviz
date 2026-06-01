@@ -43,14 +43,17 @@ and likely to grow or gain flags after v0.4:
 | Area | Structs | Public consumers |
 | --- | --- | --- |
 | Controllers/camera | `DvzCameraDesc`, `DvzPanzoomDesc`, `DvzArcballDesc`, `DvzFlyDesc`, `DvzTurntableDesc`, `DvzOrbitCameraDesc` | `dvz_camera_create()`, `dvz_panel_set_camera()`, `dvz_panzoom()`, `dvz_arcball()`, `dvz_fly()`, `dvz_turntable()`, `dvz_orbit_camera()`, `dvz_view_*()` controller helpers |
-| Scene techniques | `DvzEdlDesc`, `DvzMsaaDesc`, `DvzSsaoDesc`, `DvzVolumeOcclusionDesc`, `DvzSceneOcclusionDesc` | `dvz_panel_set_edl()`, `dvz_panel_set_msaa()`, `dvz_panel_set_ssao()`, `dvz_panel_set_volume_occlusion()`, `dvz_panel_set_scene_occlusion()` |
-| Visual styles/materials | `DvzMaterialDesc`, `DvzDepthCueDesc`, `DvzPointStyleDesc`, `DvzVectorStyle`, `DvzMarkerStyle` | `dvz_visual_set_material()`, `dvz_visual_set_depth_cue()`, `dvz_point_set_style()`, `dvz_vector_set_style()`, `dvz_marker_set_style()` |
+| Scene techniques | `DvzCapabilitySnapshot`, `DvzEdlDesc`, `DvzMsaaDesc`, `DvzSsaoDesc`, `DvzVolumeOcclusionDesc`, `DvzSceneOcclusionDesc` | `dvz_panel_set_*()` technique helpers and capability-aware setup paths |
+| Visual styles/materials | `DvzMaterialDesc`, `DvzDepthCueDesc`, `DvzPointStyleDesc`, `DvzVectorStyle`, `DvzMarkerStyle`, `DvzVisualDataView`, `DvzItemStateVisualStyle`, `DvzSelectionVisualStyle` | `dvz_visual_set_material()`, `dvz_visual_set_depth_cue()`, style setters, data-view setters, selection/item state helpers |
 | Interaction | `DvzSelectionDesc`, `DvzHoverDesc`, `DvzItemInteractionDesc` | `dvz_selection()`, `dvz_hover()`, `dvz_item_interaction()` |
-| Scales and guides | `DvzScaleDesc`, `DvzColormapDesc`, `DvzColorbarDesc`, `DvzLegendDesc`, `DvzFormatDesc` | `dvz_scale()`, `dvz_colormap()`, `dvz_colorbar()`, `dvz_legend()`, format setters |
-| Text and annotations | `DvzFontDesc`, `DvzTextStyle`, `DvzTextPlacement`, `DvzAnnotationDesc`, `DvzLabelDesc`, `DvzScaleBarDesc` | `dvz_font()`, text/annotation/label/scalebar creation and setters |
+| Scales and guides | `DvzScaleDesc`, `DvzColormapDesc`, `DvzColorbarDesc`, `DvzLegendDesc`, `DvzFormatDesc`, `DvzAxisTickPolicy`, `DvzAxisStyle` | `dvz_scale()`, `dvz_colormap()`, `dvz_colorbar()`, `dvz_legend()`, format and axis setters |
+| Text and annotations | `DvzFontDesc`, `DvzFontDefaults`, `DvzTextStyle`, `DvzTextPlacement`, `DvzAnnotationDesc`, `DvzLabelDesc`, `DvzScaleBarDesc` | `dvz_font()`, `dvz_scene_set_font_defaults()`, text/annotation/label/scalebar creation and setters |
+| Fields | `DvzFieldGeometry`, `DvzFieldDataView` | sampled field geometry and data-view setters |
 | Overlay | `DvzOverlayCardStyle`, `DvzOverlayCardDesc`, `DvzOverlayRichTextDesc` | `dvz_overlay_card()`, `dvz_overlay_card_set_style()`, `dvz_overlay_card_set_rich_text()` |
 | GUI | `DvzGuiConfig`, `DvzGuiViewportConfig` | `dvz_view_gui()`, `dvz_gui_viewport()`, `dvz_gui_viewport_from_view()` |
-| Advanced runtime interop | `DvzDrp2ExternalBufferDesc`, `DvzInteropBufferExportConfig` | `dvz_drp2_runtime_register_external_buffer()`, `dvz_interop_buffer_export()` |
+| Canvas/stream | `DvzCanvasLiveImageSinkConfig`, `DvzStreamFrame`, `DvzStreamSinkBackend` | `dvz_canvas_configure_live_image_sink()`, stream frame and sink backend APIs |
+| Host integration | `DvzWindowExternalSurfaceInfo`, `DvzWindowBackendProcs`, `DvzWindowBackend`, `DvzWindowGlfwInputCallbacks` | external surface, custom backend, and GLFW callback registration APIs |
+| Advanced runtime interop | `DvzDrp2ExternalBufferDesc`, `DvzDrp2RecordingInfo`, `DvzInteropBufferExportConfig` | `dvz_drp2_runtime_register_external_buffer()`, DRP2 recording APIs, `dvz_interop_buffer_export()` |
 | Geometry utilities | `DvzGeometryCubeDesc`, `DvzGeometryPlaneDesc`, `DvzGeometrySphereDesc`, `DvzGeometrySurfaceGridDesc`, `DvzPolygonDesc`, `DvzTriangulationDesc` | geometry constructors and triangulation helpers |
 | Animation | `DvzAnimPhaseDesc` | `dvz_anim_phase()` |
 
@@ -73,21 +76,20 @@ they later become pointer-passed growable descriptors:
 | --- | --- |
 | Event payloads | `DvzInputResizeEvent`, `DvzInputScaleEvent`, `DvzKeyboardEvent`, `DvzPointerEvent`, `DvzPointerWheelEvent`, `DvzPointerDragEvent` |
 | Result/output structs | `DvzGpuInfo`, `DvzDrp2ValidationResult`, `DvzQueryResult`, `DvzHoverState`, `DvzFramePlanPacketResult`, `DvzInteropBufferExport` |
-| Geometry/data records | `DvzBounds`, `DvzRect`, `DvzPanelDesc`, `DvzGridCell`, `DvzPanelReserve`, `DvzDataDomain`, `DvzPlacement`, `DvzFieldGeometry`, `DvzFieldRegion`, `DvzFieldDataView`, `DvzVisualDataView`, `DvzVisualDataUpdate` |
-| Category/color records | `DvzScaleCategory`, `DvzColormapStop`, `DvzVolumeAlphaStop`, `DvzColor`, `DvzColorf`, `DvzTime` |
+| Geometry/data records | `DvzBounds`, `DvzRect`, `DvzPanelDesc`, `DvzGridCell`, `DvzPanelReserve`, `DvzDataDomain`, `DvzPlacement`, `DvzFieldRegion` |
+| Category/color records | `DvzVolumeAlphaStop`, `DvzColor`, `DvzColorf`, `DvzTime` |
 | Internal/container records exposed for low-level use | `DvzObject`, `DvzContainer`, `DvzContainerIterator`, `DvzList`, `DvzQueue`, `DvzQueues`, `DvzBarriers`, `DvzSubmit` |
 
 
 ## Ambiguous
 
-These structs are public and pointer-passed, but their role is closer to callback/backend glue or
-fixed platform interop than a growable user descriptor. Keep them out of the first ABI-prologue
-conversion unless the owning module wants them in the stable v0.4 surface:
+These structs are public and pointer-passed, but their role is closer to batch row data or low-level
+protocol records than a growable user descriptor. Keep them out of the first ABI-prologue conversion
+unless the owning module wants them in the stable v0.4 surface:
 
 | Struct | Reason |
 | --- | --- |
-| `DvzWindowExternalSurfaceInfo` | Platform handle bundle for host integration and FFI helpers; likely needs a separate ownership/lifetime review. |
-| `DvzWindowBackendProcs`, `DvzWindowBackend`, `DvzWindowGlfwInputCallbacks` | Backend registration glue, not ordinary end-user descriptors. |
-| `DvzDrp2RecordingInfo`, `DvzDrp2RecordedFrame`, `DvzDrp2RawFallback` | Recording metadata/result records; decide with DVZR stability. |
 | `DvzDrp2BindGroupLayoutEntry`, `DvzDrp2BindGroupEntry`, `DvzDrp2ColorAttachment`, `DvzDrp2ColorTarget` | DRP2 command data records; protocol versioning may be preferable to per-struct ABI prologues. |
+| `DvzVisualDataUpdate`, `DvzScaleCategory`, `DvzColormapStop` | Batch row elements; adding a prologue to every element would materially affect memory layout and upload ergonomics. |
+| `DvzDrp2RecordedFrame`, `DvzDrp2RawFallback` | Recording result/fallback records rather than caller-authored descriptors. |
 | `DvzImageBlit`, `DvzImageCopy`, `DvzSwapchainConfig` | Low-level vklite records currently used by value or internal paths; revisit only if promoted as stable public setup descriptors. |

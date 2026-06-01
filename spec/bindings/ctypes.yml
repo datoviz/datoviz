@@ -97,6 +97,7 @@ skipped_functions:
     - dvz_mutex
     - dvz_orbit_camera_desc
     - dvz_overlay_card_style
+    - dvz_panel_background_desc
     - dvz_phong_material_desc
     - dvz_standard_material_desc
     - dvz_surface_capabilities
