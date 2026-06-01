@@ -150,7 +150,7 @@ int test_turntable_pitch_and_distance_clamps(TstContext* suite, const TstCase* i
     desc.min_distance = 2.0f;
     desc.max_distance = 4.0f;
     desc.distance = 3.0f;
-    desc.flags |= DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE;
+    desc.controller_flags |= DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE;
     DvzTurntable* turntable = _dvz_turntable(&desc);
     ANN(turntable);
 

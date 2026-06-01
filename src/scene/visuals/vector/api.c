@@ -30,6 +30,8 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_VECTOR_STYLE_KNOWN_FLAGS 0u
+
 /**
  * Return whether one vector anchor enum value is supported.
  *
@@ -55,6 +57,7 @@ static bool _vector_anchor_valid(DvzVectorAnchor anchor)
 DvzVectorStyle dvz_vector_style(void)
 {
     DvzVectorStyle style = {
+        DVZ_STRUCT_INIT_FIELDS(DvzVectorStyle),
         .scale = 1.0f,
         .anchor = DVZ_VECTOR_ANCHOR_TAIL,
         .start_cap = DVZ_SEGMENT_CAP_NONE,
@@ -107,6 +110,11 @@ int dvz_vector_set_style(DvzVisual* visual, const DvzVectorStyle* style)
     DvzVectorStyle defaults = dvz_vector_style();
     if (style == NULL)
         style = &defaults;
+    if (!DVZ_STRUCT_VALID(style, DvzVectorStyle, DVZ_VECTOR_STYLE_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzVectorStyle ABI prologue");
+        return -1;
+    }
     if (!isfinite(style->scale))
     {
         log_error("vector scale must be finite");

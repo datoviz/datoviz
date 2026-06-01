@@ -39,6 +39,16 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzFlyDesc` | `dvz_fly_desc()` |
 | `DvzTurntableDesc` | `dvz_turntable_desc()` |
 | `DvzOrbitCameraDesc` | `dvz_orbit_camera_desc()` |
+| `DvzEdlDesc` | `dvz_edl_desc()` |
+| `DvzMsaaDesc` | `dvz_msaa_desc()` |
+| `DvzSsaoDesc` | `dvz_ssao_desc()` |
+| `DvzVolumeOcclusionDesc` | `dvz_volume_occlusion_desc()` |
+| `DvzSceneOcclusionDesc` | `dvz_scene_occlusion_desc()` |
+| `DvzMaterialDesc` | `dvz_material_desc()` |
+| `DvzDepthCueDesc` | `dvz_depth_cue_desc()` |
+| `DvzPointStyleDesc` | `dvz_point_style_desc()` |
+| `DvzVectorStyle` | `dvz_vector_style()` |
+| `DvzMarkerStyle` | `dvz_marker_style()` |
 
 
 ## Should Add Before API Freeze
@@ -48,8 +58,8 @@ and likely to grow or gain flags after v0.4:
 
 | Area | Structs | Public consumers |
 | --- | --- | --- |
-| Scene techniques | `DvzCapabilitySnapshot`, `DvzEdlDesc`, `DvzMsaaDesc`, `DvzSsaoDesc`, `DvzVolumeOcclusionDesc`, `DvzSceneOcclusionDesc` | `dvz_panel_set_*()` technique helpers and capability-aware setup paths |
-| Visual styles/materials | `DvzMaterialDesc`, `DvzDepthCueDesc`, `DvzPointStyleDesc`, `DvzVectorStyle`, `DvzMarkerStyle`, `DvzVisualDataView`, `DvzItemStateVisualStyle`, `DvzSelectionVisualStyle` | `dvz_visual_set_material()`, `dvz_visual_set_depth_cue()`, style setters, data-view setters, selection/item state helpers |
+| Scene techniques | `DvzCapabilitySnapshot` | capability-aware setup paths |
+| Visual styles/materials | `DvzVisualDataView`, `DvzItemStateVisualStyle`, `DvzSelectionVisualStyle` | data-view setters, selection/item state helpers |
 | Interaction | `DvzSelectionDesc`, `DvzHoverDesc`, `DvzItemInteractionDesc` | `dvz_selection()`, `dvz_hover()`, `dvz_item_interaction()` |
 | Scales and guides | `DvzScaleDesc`, `DvzColormapDesc`, `DvzColorbarDesc`, `DvzLegendDesc`, `DvzFormatDesc`, `DvzAxisTickPolicy`, `DvzAxisStyle` | `dvz_scale()`, `dvz_colormap()`, `dvz_colorbar()`, `dvz_legend()`, format and axis setters |
 | Text and annotations | `DvzFontDesc`, `DvzFontDefaults`, `DvzTextStyle`, `DvzTextPlacement`, `DvzAnnotationDesc`, `DvzLabelDesc`, `DvzScaleBarDesc` | `dvz_font()`, `dvz_scene_set_font_defaults()`, text/annotation/label/scalebar creation and setters |

@@ -28,6 +28,8 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+#define DVZ_MARKER_STYLE_KNOWN_FLAGS 0u
+
 /**
  * Return default marker styling.
  *
@@ -36,6 +38,7 @@
 DvzMarkerStyle dvz_marker_style(void)
 {
     DvzMarkerStyle style = {
+        DVZ_STRUCT_INIT_FIELDS(DvzMarkerStyle),
         .edge_color = {0, 0, 0, 255},
         .stroke_width = 0.0f,
         .aspect = DVZ_SHAPE_ASPECT_FILLED,
@@ -55,6 +58,7 @@ DvzPointStyleDesc _marker_style_to_point_style(const DvzMarkerStyle* style)
 {
     ANN(style);
     DvzPointStyleDesc out = {
+        DVZ_STRUCT_INIT_FIELDS(DvzPointStyleDesc),
         .edge_color = style->edge_color,
         .stroke_width = style->stroke_width,
         .aspect = style->aspect,
@@ -102,6 +106,11 @@ int dvz_marker_set_style(DvzVisual* visual, const DvzMarkerStyle* style)
     if (!_scene_visual_mutation_allowed(visual->scene, "update marker style"))
         return -1;
 
+    if (style != NULL && !DVZ_STRUCT_VALID(style, DvzMarkerStyle, DVZ_MARKER_STYLE_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzMarkerStyle ABI prologue");
+        return -1;
+    }
     DvzMarkerStyle marker_style = style != NULL ? *style : dvz_marker_style();
     if (!isfinite(marker_style.stroke_width) || marker_style.stroke_width < 0.0f)
     {

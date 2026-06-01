@@ -47,10 +47,46 @@
 #include "datoviz/scene.h"
 
 
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_VOLUME_OCCLUSION_DESC_KNOWN_FLAGS 0u
+#define DVZ_SCENE_OCCLUSION_DESC_KNOWN_FLAGS 0u
+
+
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+static bool _volume_occlusion_desc_validate(const DvzVolumeOcclusionDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzVolumeOcclusionDesc, DVZ_VOLUME_OCCLUSION_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzVolumeOcclusionDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _scene_occlusion_desc_validate(const DvzSceneOcclusionDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzSceneOcclusionDesc, DVZ_SCENE_OCCLUSION_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzSceneOcclusionDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
 
 /**
  * Allocate the next monotonically increasing request freshness serial.
@@ -301,11 +337,70 @@ void dvz_figure_destroy(DvzFigure* figure)
 DvzMsaaDesc dvz_msaa_desc(void)
 {
     return (DvzMsaaDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc),
         .enabled = true,
         .sample_count = 4,
         .alpha_to_coverage = true,
     };
 }
+
+
+DvzEdlDesc dvz_edl_desc(void)
+{
+    return (DvzEdlDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc),
+        .radius = 2.0f,
+        .strength = 55.0f,
+        .depth_scale = 1.0f,
+    };
+}
+
+
+
+DvzSsaoDesc dvz_ssao_desc(void)
+{
+    return (DvzSsaoDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzSsaoDesc),
+        .radius = 3.0f,
+        .strength = 8.0f,
+        .bias = 0.0f,
+        .power = 1.0f,
+        .min_visibility = 0.0f,
+        .blur_radius = 2.0f,
+        .blur_depth_sigma = 0.65f,
+        .blur_normal_sigma = 0.35f,
+        .sample_count = 16,
+        .blur_enabled = true,
+        .debug_view = false,
+    };
+}
+
+
+
+DvzVolumeOcclusionDesc dvz_volume_occlusion_desc(void)
+{
+    return (DvzVolumeOcclusionDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
+        .enabled = true,
+        .alpha_threshold = 0.08f,
+        .fade_distance = 0.08f,
+        .occluded_alpha = 0.20f,
+    };
+}
+
+
+
+DvzSceneOcclusionDesc dvz_scene_occlusion_desc(void)
+{
+    return (DvzSceneOcclusionDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
+        .enabled = true,
+        .depth_bias = 0.0005f,
+        .soft_edge = 0.002f,
+        .hidden_alpha = 0.20f,
+    };
+}
+
 
 
 DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
@@ -432,6 +527,8 @@ bool dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc)
 int dvz_panel_set_scene_occlusion(DvzPanel* panel, const DvzSceneOcclusionDesc* desc)
 {
     ANN(panel);
+    if (!_scene_occlusion_desc_validate(desc))
+        return -1;
     if (desc == NULL || !desc->enabled)
     {
         panel->scene_occlusion_enabled = false;
@@ -468,6 +565,8 @@ int dvz_panel_set_volume_occluder(
     DvzPanel* panel, DvzVisual* volume, const DvzVolumeOcclusionDesc* desc)
 {
     ANN(panel);
+    if (!_volume_occlusion_desc_validate(desc))
+        return -1;
     if (volume == NULL || desc == NULL || !desc->enabled)
     {
         panel->volume_occluder_visual = NULL;

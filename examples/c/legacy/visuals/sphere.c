@@ -222,7 +222,7 @@ static void _apply_ssao(SsaoExampleState* state)
     if (state->sample_count > 32.0f)
         state->sample_count = 32.0f;
 
-    DvzSsaoDesc desc = {
+    DvzSsaoDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzSsaoDesc),
         .radius = state->radius,
         .strength = state->strength,
         .bias = state->bias,

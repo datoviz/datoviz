@@ -470,11 +470,13 @@ dvz_drp2_stream_write_texture_2d_region_bytes
 dvz_drp2_stream_write_texture_3d
 dvz_drp2_stream_write_texture_3d_bytes
 dvz_drp2_validate_stream
+dvz_depth_cue_desc
 dvz_dvec3
 dvz_dvec3_copy
 dvz_dvec4
 dvz_dvec4_copy
 dvz_easing
+dvz_edl_desc
 dvz_error_callback
 dvz_fence
 dvz_fence_create_wrapper
@@ -1074,6 +1076,7 @@ dvz_scene_has_active_animations
 dvz_scene_hover
 dvz_scene_json
 dvz_scene_json_destroy
+dvz_scene_occlusion_desc
 dvz_scene_poll_query
 dvz_scene_set_capabilities
 dvz_scene_set_clock_mode
@@ -1122,6 +1125,7 @@ dvz_slots_set_layout
 dvz_sphere
 dvz_sphere_mode
 dvz_splat
+dvz_ssao_desc
 dvz_standard_material_desc
 dvz_stream_attach_sink
 dvz_stream_attach_sink_name
@@ -1311,6 +1315,7 @@ dvz_visual_set_volume_occluded
 dvz_volume
 dvz_volume_clear_clipping
 dvz_volume_clear_clipping_plane
+dvz_volume_occlusion_desc
 dvz_volume_set_alpha_stops
 dvz_volume_set_axis_mapping
 dvz_volume_set_bounds

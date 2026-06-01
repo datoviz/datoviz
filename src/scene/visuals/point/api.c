@@ -28,6 +28,8 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+#define DVZ_POINT_STYLE_DESC_KNOWN_FLAGS 0u
+
 /**
  * Return default point styling.
  *
@@ -36,6 +38,7 @@
 DvzPointStyleDesc dvz_point_style_desc(void)
 {
     DvzPointStyleDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzPointStyleDesc),
         .edge_color = {0, 0, 0, 255},
         .stroke_width = 0.0f,
         .aspect = DVZ_SHAPE_ASPECT_FILLED,
@@ -119,6 +122,11 @@ int dvz_point_set_style(DvzVisual* visual, const DvzPointStyleDesc* desc)
     if (!_scene_visual_mutation_allowed(visual->scene, "update point style"))
         return -1;
 
+    if (desc != NULL && !DVZ_STRUCT_VALID(desc, DvzPointStyleDesc, DVZ_POINT_STYLE_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzPointStyleDesc ABI prologue");
+        return -1;
+    }
     DvzPointStyleDesc style = desc != NULL ? *desc : dvz_point_style_desc();
     if (!isfinite(style.stroke_width) || style.stroke_width < 0.0f)
     {

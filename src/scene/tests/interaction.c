@@ -463,7 +463,7 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     AT(dvz_point_set_style(point, &point_style) == 0);
     AT(dvz_visual_set_depth_cue(
            point,
-           &(DvzDepthCueDesc){
+           &(DvzDepthCueDesc){DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
                .mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
                .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
                .falloff = DVZ_DEPTH_CUE_FALLOFF_LINEAR,
@@ -488,7 +488,7 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     AT(dvz_visual_set_link_keys(pixel, channel, pixel_keys, 3) == 0);
     AT(dvz_visual_set_depth_cue(
            pixel,
-           &(DvzDepthCueDesc){
+           &(DvzDepthCueDesc){DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
                .mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
                .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
                .falloff = DVZ_DEPTH_CUE_FALLOFF_LINEAR,

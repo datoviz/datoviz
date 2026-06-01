@@ -606,7 +606,7 @@ int main(int argc, char** argv)
 
     if (edl_enabled)
     {
-        DvzEdlDesc edl = {
+        DvzEdlDesc edl = {DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc),
             .radius = 2.0f,
             .strength = 0.42f,
             .depth_scale = 0.70f,

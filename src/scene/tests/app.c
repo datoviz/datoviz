@@ -656,7 +656,7 @@ static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
     }
     if (scene_occlusion_enabled &&
         dvz_panel_set_scene_occlusion(
-            panel, &(DvzSceneOcclusionDesc){
+            panel, &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
                        .enabled = true,
                        .depth_bias = 0.0f,
                        .soft_edge = 0.001f,
@@ -1094,7 +1094,7 @@ static AppRgbaCapture _app_edl_point_capture(TstContext* suite, bool enabled)
     dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
     if (enabled &&
         !dvz_panel_set_edl(
-            panel, &(DvzEdlDesc){.radius = 2.0f, .strength = 90.0f, .depth_scale = 1.0f}))
+            panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 90.0f, .depth_scale = 1.0f}))
     {
         dvz_scene_destroy(scene);
         return out;
@@ -2109,7 +2109,7 @@ int test_app_offscreen_point_depth_cue_darkens_far(TstContext* suite, const TstC
     AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
     AT(dvz_visual_set_depth_cue(
            visual,
-           &(DvzDepthCueDesc){
+           &(DvzDepthCueDesc){DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
                .mode = DVZ_DEPTH_CUE_DARKEN,
                .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
                .falloff = DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL,
@@ -2538,7 +2538,7 @@ int test_app_offscreen_points_edl_renders(TstContext* suite, const TstCase* item
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
     dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
     AT(dvz_panel_set_edl(
-        panel, &(DvzEdlDesc){.radius = 2.0f, .strength = 65.0f, .depth_scale = 1.0f}));
+        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 65.0f, .depth_scale = 1.0f}));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -2694,7 +2694,7 @@ int test_app_offscreen_mesh_ssao_changes_pixels(TstContext* suite, const TstCase
 
     AT(_scene_technique_state_set_ssao(
         &panel->techniques,
-        &(DvzSceneSsaoDesc){.radius = 3.0f, .strength = 8.0f, .bias = 0.0f,
+        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 3.0f, .strength = 8.0f, .bias = 0.0f,
                             .sample_count = 16}));
     dvz_app_run(app, 1);
     uint32_t width1 = 0, height1 = 0;
@@ -2801,7 +2801,7 @@ int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstC
     AT(height0 == 96);
 
     AT(dvz_panel_set_ssao(
-        panel, &(DvzSsaoDesc){.radius = 3.0f, .strength = 8.0f, .bias = 0.0f,
+        panel, &(DvzSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSsaoDesc), .radius = 3.0f, .strength = 8.0f, .bias = 0.0f,
                               .sample_count = 16}));
     dvz_app_run(app, 1);
     uint32_t width1 = 0, height1 = 0;
@@ -4219,7 +4219,7 @@ int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
            visual, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
     AT(dvz_visual_set_depth_cue(
            visual,
-           &(DvzDepthCueDesc){
+           &(DvzDepthCueDesc){DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
                .mode = DVZ_DEPTH_CUE_DARKEN,
                .near_depth = 0.50f,
                .far_depth = 0.95f,
@@ -6180,7 +6180,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
     if (mode == APP_VOLUME_OCCLUSION_MODE_VOLUME &&
         dvz_panel_set_volume_occluder(
             panel, volume,
-            &(DvzVolumeOcclusionDesc){
+            &(DvzVolumeOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
                 .enabled = true,
                 .alpha_threshold = 0.005f,
                 .fade_distance = 0.02f,
@@ -6192,7 +6192,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
     }
     if (mode == APP_VOLUME_OCCLUSION_MODE_SCENE &&
         dvz_panel_set_scene_occlusion(
-            panel, &(DvzSceneOcclusionDesc){
+            panel, &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
                        .enabled = true,
                        .depth_bias = 0.0f,
                        .soft_edge = 0.02f,
@@ -6561,7 +6561,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
            panel, mesh, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2}) == 0);
     AT(dvz_panel_set_volume_occluder(
            panel, volume,
-           &(DvzVolumeOcclusionDesc){
+           &(DvzVolumeOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
                .enabled = true,
                .alpha_threshold = 0.005f,
                .fade_distance = 0.02f,
@@ -6603,7 +6603,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
     AT(dvz_visual_set_scene_occluder(mesh, true) == 0);
     AT(dvz_visual_set_scene_occluded(slice, true) == 0);
     AT(dvz_panel_set_scene_occlusion(
-           panel, &(DvzSceneOcclusionDesc){
+           panel, &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
                       .enabled = true,
                       .depth_bias = 0.0005f,
                       .soft_edge = 0.02f,

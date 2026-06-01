@@ -35,6 +35,9 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+#define DVZ_MATERIAL_DESC_KNOWN_FLAGS  0u
+#define DVZ_DEPTH_CUE_DESC_KNOWN_FLAGS 0u
+
 /**
  * Initialize material uniform defaults.
  *
@@ -72,6 +75,7 @@ void _material_params_default(DvzSceneMaterialParams* params)
 DvzMaterialDesc dvz_material_desc(void)
 {
     DvzMaterialDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzMaterialDesc),
         .model = DVZ_MATERIAL_MODEL_PHONG,
         .alpha_mode = DVZ_ALPHA_OPAQUE,
         .opacity = 1.0f,
@@ -81,6 +85,22 @@ DvzMaterialDesc dvz_material_desc(void)
         .standard = {.roughness = 0.5f, .specular = 0.5f},
     };
     return desc;
+}
+
+
+DvzDepthCueDesc dvz_depth_cue_desc(void)
+{
+    return (DvzDepthCueDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
+        .mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
+        .metric = DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH,
+        .falloff = DVZ_DEPTH_CUE_FALLOFF_LINEAR,
+        .near_depth = 0.0f,
+        .far_depth = 1.0f,
+        .strength = 1.0f,
+        .density = 3.0f,
+        .background_color = {0.0f, 0.0f, 0.0f, 1.0f},
+    };
 }
 
 
@@ -194,6 +214,11 @@ bool _material_alpha_mode_valid(DvzAlphaMode mode)
 bool _material_desc_valid(const DvzMaterialDesc* desc)
 {
     ANN(desc);
+    if (!DVZ_STRUCT_VALID(desc, DvzMaterialDesc, DVZ_MATERIAL_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzMaterialDesc ABI prologue");
+        return false;
+    }
     if (!_material_model_valid(desc->model))
     {
         log_error("invalid material model %d", (int)desc->model);
@@ -418,6 +443,11 @@ int _material_apply_depth_cue(DvzSceneMaterialState* material, const DvzDepthCue
         material->depth_cue_background[3] = 1.0f;
         return 0;
     }
+    if (!DVZ_STRUCT_VALID(desc, DvzDepthCueDesc, DVZ_DEPTH_CUE_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzDepthCueDesc ABI prologue");
+        return -1;
+    }
 
     if (desc->mode <= DVZ_DEPTH_CUE_NONE || desc->mode > DVZ_DEPTH_CUE_DARKEN)
     {
@@ -538,9 +568,9 @@ int dvz_visual_set_material(DvzVisual* visual, const DvzMaterialDesc* desc)
     if (!_scene_visual_mutation_allowed(visual->scene, "update visual material"))
         return -1;
 
-    DvzMaterialDesc material_desc = desc != NULL ? *desc : dvz_material_desc();
-    if (!_material_desc_valid(&material_desc))
+    if (desc != NULL && !_material_desc_valid(desc))
         return -1;
+    DvzMaterialDesc material_desc = desc != NULL ? *desc : dvz_material_desc();
 
     _material_state_apply_desc(&visual->material, &material_desc);
     visual->alpha_mode = material_desc.alpha_mode;

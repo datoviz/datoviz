@@ -500,7 +500,7 @@ int test_scene_panel_graph_failure_reports_specific_diagnostic(TstContext* suite
     AT(dvz_panel_add_visual(panel, slice, NULL) == 0);
     AT(dvz_panel_set_volume_occluder(
            panel, volume,
-           &(DvzVolumeOcclusionDesc){
+           &(DvzVolumeOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
                .enabled = true,
                .alpha_threshold = 0.01f,
                .fade_distance = 0.04f,
@@ -853,7 +853,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     AT(dvz_panel_set_msaa(
-        panel, &(DvzMsaaDesc){.enabled = true, .sample_count = 4, .alpha_to_coverage = true}));
+        panel, &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4, .alpha_to_coverage = true}));
 
     DvzVisual* sphere = dvz_sphere(scene, 0);
     AT(sphere != NULL);
@@ -999,7 +999,7 @@ int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     AT(dvz_panel_set_msaa(
-        panel, &(DvzMsaaDesc){.enabled = true, .sample_count = 16,
+        panel, &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 16,
                               .alpha_to_coverage = true}));
 
     DvzVisual* sphere = dvz_sphere(scene, 0);
@@ -1163,7 +1163,7 @@ int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
     dvz_frame_plan_destroy(default_plan);
 
     AT(dvz_panel_set_edl(
-        panel, &(DvzEdlDesc){.radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
+        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
 
     DvzFramePlan* plan = dvz_frame_plan("figure.edl", 0);
     ANN(plan);
@@ -1347,7 +1347,7 @@ int test_scene_edl_depth_producer_capabilities(TstContext* suite, const TstCase*
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
     AT(dvz_panel_set_edl(
-        panel, &(DvzEdlDesc){.radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
+        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
 
     DvzFramePlan* plan = dvz_frame_plan("figure.edl.depth_producers", 0);
     ANN(plan);
@@ -1412,7 +1412,7 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
            fixed_panel, fixed_visual,
            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
     AT(dvz_panel_set_edl(
-        fixed_panel, &(DvzEdlDesc){.radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
+        fixed_panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
 
     DvzFramePlan* fixed_plan = dvz_frame_plan("figure.edl.fixed", 0);
     ANN(fixed_plan);
@@ -1430,7 +1430,7 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
     AT(dvz_panel_add_visual(transparent_panel, transparent_point, NULL) == 0);
     AT(dvz_panel_set_edl(
         transparent_panel,
-        &(DvzEdlDesc){.radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
+        &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
 
     DvzFramePlan* transparent_plan = dvz_frame_plan("figure.edl.transparent", 0);
     ANN(transparent_plan);
@@ -1520,7 +1520,7 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
 
     AT(_scene_technique_state_set_ssao(
         &panel->techniques,
-        &(DvzSceneSsaoDesc){.radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
+        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
                             .sample_count = 32}));
     const DvzSceneSsaoTechniqueState* ssao = _scene_technique_ssao_state(scene, panel);
     ANN(ssao);
@@ -1598,7 +1598,7 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
 
     AT(_scene_technique_state_set_ssao(
         &panel->techniques,
-        &(DvzSceneSsaoDesc){.radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
+        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
                             .sample_count = 32, .blur_enabled = true}));
     plan = dvz_frame_plan("figure.ssao.blur", 0);
     ANN(plan);
@@ -1650,7 +1650,7 @@ int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     AT(dvz_panel_set_msaa(
-        panel, &(DvzMsaaDesc){.enabled = true, .sample_count = 4, .alpha_to_coverage = true}));
+        panel, &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4, .alpha_to_coverage = true}));
 
     DvzVisual* mesh = dvz_mesh(scene, 0);
     AT(mesh != NULL);
@@ -1682,7 +1682,7 @@ int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
     AT(_scene_technique_state_set_ssao(
         &panel->techniques,
-        &(DvzSceneSsaoDesc){.radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
+        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
                             .sample_count = 16}));
 
     DvzCapabilitySnapshot caps = {0};
@@ -1843,7 +1843,7 @@ int test_scene_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
     AT(_scene_technique_state_set_ssao(
         &panel->techniques,
-        &(DvzSceneSsaoDesc){.radius = 1.0f, .strength = 2.5f, .bias = 0.02f,
+        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.0f, .strength = 2.5f, .bias = 0.02f,
                             .sample_count = 16}));
 
     DvzCapabilitySnapshot caps;
@@ -1935,7 +1935,7 @@ int test_scene_sphere_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
     AT(_scene_technique_state_set_ssao(
         &panel->techniques,
-        &(DvzSceneSsaoDesc){.radius = 1.0f, .strength = 2.5f, .bias = 0.02f,
+        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.0f, .strength = 2.5f, .bias = 0.02f,
                             .sample_count = 16}));
 
     DvzCapabilitySnapshot caps;
@@ -2007,7 +2007,7 @@ int test_scene_ssao_ignores_ineligible_visuals(TstContext* suite, const TstCase*
     AT(dvz_panel_add_visual(panel, primitive, NULL) == 0);
     AT(_scene_technique_state_set_ssao(
         &panel->techniques,
-        &(DvzSceneSsaoDesc){.radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
+        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
                             .sample_count = 32}));
 
     DvzFramePlan* plan = dvz_frame_plan("figure.ssao.ineligible", 0);
@@ -2436,7 +2436,7 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
            panel, mesh, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2}) == 0);
     AT(dvz_panel_set_volume_occluder(
            panel, volume,
-           &(DvzVolumeOcclusionDesc){
+           &(DvzVolumeOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
                .enabled = true,
                .alpha_threshold = 0.01f,
                .fade_distance = 0.04f,
@@ -2444,7 +2444,7 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
            }) == 0);
     AT(dvz_panel_set_scene_occlusion(
            panel,
-           &(DvzSceneOcclusionDesc){
+           &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
                .enabled = true,
                .depth_bias = 0.0005f,
                .soft_edge = 0.01f,

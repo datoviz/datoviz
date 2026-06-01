@@ -688,6 +688,14 @@ DVZ_EXPORT void dvz_panel_set_background_color(
 
 
 /**
+ * Return default Eye-Dome Lighting options.
+ *
+ * @return EDL descriptor
+ */
+DVZ_EXPORT DvzEdlDesc dvz_edl_desc(void);
+
+
+/**
  * Configure Eye-Dome Lighting for one panel.
  *
  * EDL is a depth-based post-process intended to improve local depth perception for dense point,
@@ -715,6 +723,14 @@ DVZ_EXPORT bool dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc);
 
 
 /**
+ * Return default screen-space ambient occlusion options.
+ *
+ * @return SSAO descriptor
+ */
+DVZ_EXPORT DvzSsaoDesc dvz_ssao_desc(void);
+
+
+/**
  * Configure screen-space ambient occlusion for one panel.
  *
  * SSAO renders eligible opaque normal-producing visuals through an internal G-buffer, computes an
@@ -730,6 +746,14 @@ DVZ_EXPORT bool dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc);
 
 
 /**
+ * Return default volume-occlusion options.
+ *
+ * @return volume-occlusion descriptor
+ */
+DVZ_EXPORT DvzVolumeOcclusionDesc dvz_volume_occlusion_desc(void);
+
+
+/**
  * Configure a panel volume visual as the screen-space occluder for embedded visuals.
  *
  * @param panel the panel
@@ -739,6 +763,14 @@ DVZ_EXPORT bool dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc);
  */
 DVZ_EXPORT int dvz_panel_set_volume_occluder(
     DvzPanel* panel, DvzVisual* volume, const DvzVolumeOcclusionDesc* desc);
+
+
+/**
+ * Return default scene-occlusion options.
+ *
+ * @return scene-occlusion descriptor
+ */
+DVZ_EXPORT DvzSceneOcclusionDesc dvz_scene_occlusion_desc(void);
 
 
 /**
@@ -1526,6 +1558,14 @@ DVZ_EXPORT DvzMaterialDesc dvz_standard_material_desc(void);
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT int dvz_visual_set_material(DvzVisual* visual, const DvzMaterialDesc* desc);
+
+
+/**
+ * Return default depth-cue options.
+ *
+ * @return depth-cue descriptor
+ */
+DVZ_EXPORT DvzDepthCueDesc dvz_depth_cue_desc(void);
 
 
 /**

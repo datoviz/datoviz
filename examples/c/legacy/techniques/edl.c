@@ -166,7 +166,7 @@ static void _apply_edl(EdlExampleState* state)
         return;
     }
 
-    DvzEdlDesc desc = {
+    DvzEdlDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc),
         .radius = state->radius,
         .strength = state->strength,
         .depth_scale = state->depth_scale,
@@ -247,7 +247,7 @@ static void _apply_depth_cue(EdlExampleState* state)
     if (state->depth_cue_far <= state->depth_cue_near + CUE_DISTANCE_EPS)
         state->depth_cue_far = state->depth_cue_near + CUE_DISTANCE_EPS;
 
-    DvzDepthCueDesc desc = {
+    DvzDepthCueDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
         .mode = state->depth_cue_mode,
         .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
         .near_depth = state->depth_cue_near,

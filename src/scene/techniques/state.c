@@ -23,6 +23,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_log.h"
 #include "_scene.h"
 #include "_scene_resource_key.h"
 #include "_technique.h"
@@ -38,6 +39,54 @@
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
+
+#define DVZ_EDL_DESC_KNOWN_FLAGS  0u
+#define DVZ_MSAA_DESC_KNOWN_FLAGS 0u
+#define DVZ_SSAO_DESC_KNOWN_FLAGS 0u
+
+
+
+static bool _edl_desc_validate(const DvzEdlDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzEdlDesc, DVZ_EDL_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzEdlDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _msaa_desc_validate(const DvzMsaaDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzMsaaDesc, DVZ_MSAA_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzMsaaDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _ssao_desc_validate(const DvzSsaoDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzSsaoDesc, DVZ_SSAO_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzSsaoDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
 
 const DvzSceneTechniquePassPolicy TECHNIQUE_PASS_POLICIES[] = {
     {
@@ -372,6 +421,8 @@ bool _scene_technique_gbuffer_enabled(const DvzScene* scene, const DvzPanel* pan
 bool _scene_technique_state_set_edl(DvzSceneTechniqueState* state, const DvzEdlDesc* desc)
 {
     ANN(state);
+    if (!_edl_desc_validate(desc))
+        return false;
     if (desc == NULL)
     {
         state->edl.enabled = false;
@@ -429,6 +480,8 @@ _scene_technique_edl_state(const DvzScene* scene, const DvzPanel* panel)
 bool _scene_technique_state_set_ssao(DvzSceneTechniqueState* state, const DvzSceneSsaoDesc* desc)
 {
     ANN(state);
+    if (!_ssao_desc_validate(desc))
+        return false;
     if (desc == NULL)
     {
         state->ssao.enabled = false;
@@ -500,6 +553,8 @@ _scene_technique_ssao_state(const DvzScene* scene, const DvzPanel* panel)
 bool _scene_technique_state_set_msaa(DvzSceneTechniqueState* state, const DvzMsaaDesc* desc)
 {
     ANN(state);
+    if (!_msaa_desc_validate(desc))
+        return false;
     if (desc == NULL || !desc->enabled)
     {
         state->msaa.enabled = false;

@@ -364,7 +364,7 @@ static void _apply_depth_cue(DepthCueExampleState* state)
     if (state->depth_cue_far <= state->depth_cue_near + CUE_EPS)
         state->depth_cue_far = state->depth_cue_near + CUE_EPS;
 
-    DvzDepthCueDesc desc = {
+    DvzDepthCueDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
         .mode = state->depth_cue_mode,
         .metric = state->depth_cue_metric,
         .falloff = state->depth_cue_falloff,

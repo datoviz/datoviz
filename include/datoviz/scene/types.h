@@ -329,6 +329,8 @@ typedef struct DvzPlacement DvzPlacement;
 
 struct DvzEdlDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     float radius;
     float strength;
     float depth_scale;
@@ -338,6 +340,8 @@ typedef struct DvzEdlDesc DvzEdlDesc;
 
 struct DvzMsaaDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     bool enabled;
     uint32_t sample_count;
     bool alpha_to_coverage;
@@ -347,6 +351,8 @@ typedef struct DvzMsaaDesc DvzMsaaDesc;
 
 struct DvzSsaoDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     float radius;
     float strength;
     float bias;
@@ -364,6 +370,8 @@ typedef struct DvzSsaoDesc DvzSsaoDesc;
 
 struct DvzVolumeOcclusionDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     bool enabled;
     float alpha_threshold;
     float fade_distance;
@@ -374,6 +382,8 @@ typedef struct DvzVolumeOcclusionDesc DvzVolumeOcclusionDesc;
 
 struct DvzSceneOcclusionDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     bool enabled;
     float depth_bias;
     float soft_edge;
@@ -384,6 +394,8 @@ typedef struct DvzSceneOcclusionDesc DvzSceneOcclusionDesc;
 
 struct DvzVectorStyle
 {
+    uint32_t struct_size;
+    uint32_t flags;
     float scale;
     DvzVectorAnchor anchor;
     DvzSegmentCap start_cap;
@@ -448,6 +460,8 @@ typedef struct DvzStandardMaterial DvzStandardMaterial;
 
 struct DvzMaterialDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzMaterialModel model;
     DvzAlphaMode alpha_mode;
     float opacity;
@@ -461,6 +475,8 @@ typedef struct DvzMaterialDesc DvzMaterialDesc;
 
 struct DvzDepthCueDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzDepthCueMode mode;
     DvzDepthCueMetric metric;
     DvzDepthCueFalloff falloff;
@@ -475,6 +491,8 @@ typedef struct DvzDepthCueDesc DvzDepthCueDesc;
 
 struct DvzPointStyleDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzColor edge_color;
     float stroke_width;
     DvzShapeAspect aspect;
@@ -484,6 +502,8 @@ typedef struct DvzPointStyleDesc DvzPointStyleDesc;
 
 struct DvzMarkerStyle
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzColor edge_color;
     float stroke_width;
     DvzShapeAspect aspect;

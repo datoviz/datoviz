@@ -323,7 +323,7 @@ static void _apply_depth_and_msaa(PointStressState* state)
         sample_count = 8;
     state->msaa_sample_count = (float)sample_count;
 
-    DvzMsaaDesc msaa = {
+    DvzMsaaDesc msaa = {DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc),
         .enabled = true,
         .sample_count = sample_count,
         .alpha_to_coverage = state->msaa_alpha_to_coverage,
@@ -360,7 +360,7 @@ static void _apply_depth_cue(PointStressState* state)
     if (state->depth_cue_far <= state->depth_cue_near + CUE_DISTANCE_EPS)
         state->depth_cue_far = state->depth_cue_near + CUE_DISTANCE_EPS;
 
-    DvzDepthCueDesc desc = {
+    DvzDepthCueDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
         .mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
         .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
         .falloff = DVZ_DEPTH_CUE_FALLOFF_LINEAR,

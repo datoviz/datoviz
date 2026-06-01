@@ -539,7 +539,7 @@ static void _protein_apply_edl(ProteinDiagnostics* diagnostics)
         return;
     }
 
-    DvzEdlDesc desc = {
+    DvzEdlDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc),
         .radius = diagnostics->edl.radius,
         .strength = diagnostics->edl.strength,
         .depth_scale = diagnostics->edl.depth_scale,
@@ -591,7 +591,7 @@ static void _protein_apply_ssao(ProteinDiagnostics* diagnostics)
         return;
     }
 
-    DvzSsaoDesc desc = {
+    DvzSsaoDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzSsaoDesc),
         .radius = diagnostics->ssao.radius,
         .strength = diagnostics->ssao.strength,
         .bias = diagnostics->ssao.bias,
@@ -823,7 +823,7 @@ int main(int argc, char** argv)
     msaa_desc.alpha_to_coverage = true;
     (void)dvz_panel_set_msaa(panel, &msaa_desc);
 
-    DvzSsaoDesc ssao_desc = {
+    DvzSsaoDesc ssao_desc = {DVZ_STRUCT_INIT_FIELDS(DvzSsaoDesc),
         .radius = 0.72f,
         .strength = 1.82f,
         .bias = 0.007f,

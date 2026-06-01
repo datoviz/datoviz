@@ -1480,13 +1480,13 @@ static void _apply_volume_occlusion_controls(AllenMouseBrainState* state)
     if (state->panel == NULL || state->slice_visual == NULL)
         return;
 
-    DvzVolumeOcclusionDesc volume_occlusion = {
+    DvzVolumeOcclusionDesc volume_occlusion = {DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
         .enabled = state->volume_occlusion_enabled,
         .alpha_threshold = state->occlusion_threshold,
         .fade_distance = state->occlusion_fade,
         .occluded_alpha = state->occlusion_hidden_alpha,
     };
-    DvzSceneOcclusionDesc scene_occlusion = {
+    DvzSceneOcclusionDesc scene_occlusion = {DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
         .enabled = state->volume_occlusion_enabled,
         .depth_bias = 0.0005f,
         .soft_edge = state->occlusion_fade,

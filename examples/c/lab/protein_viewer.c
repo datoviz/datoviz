@@ -870,7 +870,7 @@ static void _apply_ssao(ProteinExampleState* state)
 
     (void)dvz_panel_set_ssao(
         state->panel,
-        &(DvzSsaoDesc){
+        &(DvzSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSsaoDesc),
             .radius = state->ssao_radius,
             .strength = state->ssao_strength,
             .bias = state->ssao_bias,

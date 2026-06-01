@@ -539,7 +539,7 @@ int test_scene_vector_style_and_bounds(TstContext* suite, const TstCase* item)
     AT(_visual_family_state(visual)->vector.start_cap == DVZ_SEGMENT_CAP_NONE);
     AT(_visual_family_state(visual)->vector.end_cap == DVZ_SEGMENT_CAP_TRIANGLE_OUT);
 
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_vector_set_style(visual, &(DvzVectorStyle){
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_vector_set_style(visual, &(DvzVectorStyle){DVZ_STRUCT_INIT_FIELDS(DvzVectorStyle),
                                                             .scale = 1.0f,
                                                             .anchor = (DvzVectorAnchor)99,
                                                             .start_cap = DVZ_SEGMENT_CAP_NONE,
@@ -1067,7 +1067,7 @@ int test_scene_point_style_emits_glsl_and_wgsl(TstContext* suite, const TstCase*
     AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
     AT(dvz_point_set_style(
            visual,
-           &(DvzPointStyleDesc){
+           &(DvzPointStyleDesc){DVZ_STRUCT_INIT_FIELDS(DvzPointStyleDesc),
                .edge_color = {0, 0, 0, 255},
                .stroke_width = 3.0f,
                .aspect = DVZ_SHAPE_ASPECT_OUTLINE,
@@ -1161,7 +1161,7 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     AT(visual->attr_count == 5);
     AT(dvz_marker_set_style(
            visual,
-           &(DvzMarkerStyle){
+           &(DvzMarkerStyle){DVZ_STRUCT_INIT_FIELDS(DvzMarkerStyle),
                .edge_color = {0, 0, 0, 255},
                .stroke_width = 2.0f,
                .aspect = DVZ_SHAPE_ASPECT_OUTLINE,
@@ -2781,6 +2781,12 @@ int test_scene_rejects_unsupported_point_attribute(TstContext* suite, const TstC
     ANN(scene);
     DvzVisual* visual = dvz_point(scene, 0);
     ANN(visual);
+    DvzVisual* marker = dvz_marker(scene, 0);
+    ANN(marker);
+    DvzVisual* vector = dvz_vector(scene, 0);
+    ANN(vector);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
 
     float opacity[2] = {0.25f, 0.75f};
     tst_log_capture_begin(suite);
@@ -4095,6 +4101,12 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
     ANN(panel);
     DvzVisual* visual = dvz_point(scene, 0);
     ANN(visual);
+    DvzVisual* marker = dvz_marker(scene, 0);
+    ANN(marker);
+    DvzVisual* vector = dvz_vector(scene, 0);
+    ANN(vector);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
 
     DvzSceneBufferDesc buffer_desc = dvz_scene_buffer_desc();
     buffer_desc.struct_size = 0;
@@ -4145,6 +4157,88 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
     request = dvz_query_request();
     request.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_query(panel, 0.0, 0.0, &request) < 0);
+
+    DvzEdlDesc edl = dvz_edl_desc();
+    edl.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_edl(panel, &edl));
+
+    edl = dvz_edl_desc();
+    edl.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_edl(panel, &edl));
+
+    DvzMsaaDesc msaa = dvz_msaa_desc();
+    msaa.struct_size = DVZ_STRUCT_SIZE(DvzMsaaDesc) - 1;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_msaa(panel, &msaa));
+
+    msaa = dvz_msaa_desc();
+    msaa.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_msaa(panel, &msaa));
+
+    DvzSsaoDesc ssao = dvz_ssao_desc();
+    ssao.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_ssao(panel, &ssao));
+
+    ssao = dvz_ssao_desc();
+    ssao.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_ssao(panel, &ssao));
+
+    DvzVolumeOcclusionDesc volume_occlusion = dvz_volume_occlusion_desc();
+    volume_occlusion.struct_size = DVZ_STRUCT_SIZE(DvzVolumeOcclusionDesc) - 1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_panel_set_volume_occluder(panel, NULL, &volume_occlusion) < 0);
+
+    volume_occlusion = dvz_volume_occlusion_desc();
+    volume_occlusion.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_panel_set_volume_occluder(panel, NULL, &volume_occlusion) < 0);
+
+    DvzSceneOcclusionDesc scene_occlusion = dvz_scene_occlusion_desc();
+    scene_occlusion.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_scene_occlusion(panel, &scene_occlusion) < 0);
+
+    scene_occlusion = dvz_scene_occlusion_desc();
+    scene_occlusion.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_scene_occlusion(panel, &scene_occlusion) < 0);
+
+    DvzPointStyleDesc point_style = dvz_point_style_desc();
+    point_style.struct_size = DVZ_STRUCT_SIZE(DvzPointStyleDesc) - 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_point_set_style(visual, &point_style) < 0);
+
+    point_style = dvz_point_style_desc();
+    point_style.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_point_set_style(visual, &point_style) < 0);
+
+    DvzMarkerStyle marker_style = dvz_marker_style();
+    marker_style.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_marker_set_style(marker, &marker_style) < 0);
+
+    marker_style = dvz_marker_style();
+    marker_style.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_marker_set_style(marker, &marker_style) < 0);
+
+    DvzVectorStyle vector_style = dvz_vector_style();
+    vector_style.struct_size = DVZ_STRUCT_SIZE(DvzVectorStyle) - 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_vector_set_style(vector, &vector_style) < 0);
+
+    vector_style = dvz_vector_style();
+    vector_style.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_vector_set_style(vector, &vector_style) < 0);
+
+    DvzMaterialDesc material = dvz_material_desc();
+    material.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_material(mesh, &material) < 0);
+
+    material = dvz_material_desc();
+    material.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_material(mesh, &material) < 0);
+
+    DvzDepthCueDesc depth_cue = dvz_depth_cue_desc();
+    depth_cue.struct_size = DVZ_STRUCT_SIZE(DvzDepthCueDesc) - 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_depth_cue(visual, &depth_cue) < 0);
+
+    depth_cue = dvz_depth_cue_desc();
+    depth_cue.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_depth_cue(visual, &depth_cue) < 0);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -7101,7 +7195,7 @@ int test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes(
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
     AT(dvz_panel_set_scene_occlusion(
            panel,
-           &(DvzSceneOcclusionDesc){
+           &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
                .enabled = true,
                .depth_bias = 0.0005f,
                .soft_edge = 0.01f,
@@ -7667,7 +7761,7 @@ int test_scene_visual_scene_occlusion_flags(TstContext* suite, const TstCase* it
 
     AT(dvz_panel_set_scene_occlusion(
            panel,
-           &(DvzSceneOcclusionDesc){
+           &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
                .enabled = true,
                .depth_bias = 0.001f,
                .soft_edge = 0.01f,
@@ -7726,7 +7820,7 @@ int test_scene_visual_scene_occlusion_frame_plan(TstContext* suite, const TstCas
     AT(dvz_panel_add_visual(panel, occluded, NULL) == 0);
     AT(dvz_panel_set_scene_occlusion(
            panel,
-           &(DvzSceneOcclusionDesc){
+           &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
                .enabled = true,
                .depth_bias = 0.001f,
                .soft_edge = 0.01f,
@@ -7849,7 +7943,7 @@ int test_scene_visual_scene_occlusion_emits_drp2(TstContext* suite, const TstCas
     AT(dvz_panel_add_visual(panel, occluded, NULL) == 0);
     AT(dvz_panel_set_scene_occlusion(
            panel,
-           &(DvzSceneOcclusionDesc){
+           &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
                .enabled = true,
                .depth_bias = 0.001f,
                .soft_edge = 0.01f,
@@ -8013,7 +8107,7 @@ int test_scene_volume_slice_uses_volume_occlusion(TstContext* suite, const TstCa
     AT(dvz_panel_add_visual(panel, slice, NULL) == 0);
     AT(dvz_panel_set_volume_occluder(
            panel, volume,
-           &(DvzVolumeOcclusionDesc){
+           &(DvzVolumeOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
                .enabled = true,
                .alpha_threshold = 0.01f,
                .fade_distance = 0.04f,
@@ -8191,7 +8285,7 @@ int test_scene_volume_slice_uses_generic_scene_occlusion(TstContext* suite, cons
     AT(dvz_panel_add_visual(panel, slice, NULL) == 0);
     AT(dvz_panel_set_volume_occluder(
            panel, volume,
-           &(DvzVolumeOcclusionDesc){
+           &(DvzVolumeOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
                .enabled = true,
                .alpha_threshold = 0.01f,
                .fade_distance = 0.04f,
@@ -8199,7 +8293,7 @@ int test_scene_volume_slice_uses_generic_scene_occlusion(TstContext* suite, cons
            }) == 0);
     AT(dvz_panel_set_scene_occlusion(
            panel,
-           &(DvzSceneOcclusionDesc){
+           &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
                .enabled = true,
                .depth_bias = 0.0005f,
                .soft_edge = 0.01f,
@@ -8324,7 +8418,7 @@ int test_scene_visual_internal_material_state(TstContext* suite, const TstCase* 
     uint64_t point_material_version = point->material.version;
     AT(dvz_visual_set_depth_cue(
            point,
-           &(DvzDepthCueDesc){
+           &(DvzDepthCueDesc){DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
                .mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
                .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
                .falloff = DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL,
@@ -8374,7 +8468,7 @@ int test_scene_visual_internal_material_state(TstContext* suite, const TstCase* 
 
     AT(dvz_visual_set_depth_cue(
            mesh,
-           &(DvzDepthCueDesc){
+           &(DvzDepthCueDesc){DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
                .mode = DVZ_DEPTH_CUE_DESATURATE,
                .near_depth = 0.25f,
                .far_depth = 0.9f,
@@ -8513,7 +8607,7 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
 
     AT(dvz_visual_set_depth_cue(
            mesh,
-           &(DvzDepthCueDesc){
+           &(DvzDepthCueDesc){DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
                .mode = DVZ_DEPTH_CUE_DARKEN,
                .near_depth = 0.1f,
                .far_depth = 0.9f,
@@ -8589,7 +8683,7 @@ int test_scene_pixel_depth_cue_toggle_switches_pipeline(TstContext* suite, const
 
     AT(dvz_visual_set_depth_cue(
            pixel,
-           &(DvzDepthCueDesc){
+           &(DvzDepthCueDesc){DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
                .mode = DVZ_DEPTH_CUE_DARKEN,
                .near_depth = 0.0f,
                .far_depth = 1.0f,
@@ -8668,7 +8762,7 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data(mesh, "normal", normals, 3) == 0);
     AT(dvz_visual_set_depth_cue(
            point,
-           &(DvzDepthCueDesc){
+           &(DvzDepthCueDesc){DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
                .mode = DVZ_DEPTH_CUE_DARKEN,
                .near_depth = 0.1f,
                .far_depth = 0.9f,
@@ -8677,7 +8771,7 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
            }) == 0);
     AT(dvz_visual_set_depth_cue(
            mesh,
-           &(DvzDepthCueDesc){
+           &(DvzDepthCueDesc){DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
                .mode = DVZ_DEPTH_CUE_DARKEN,
                .near_depth = 0.1f,
                .far_depth = 0.9f,
