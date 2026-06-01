@@ -264,10 +264,11 @@ shared.signal_cuda(value=None, stream=None)
 ```
 
 Timeline values should normally be owned by the shared-buffer object. User code should not need to
-manually count semaphore values in the first how-to. The live Datoviz render path still needs a
-matching render-side wait/signal hook: before drawing from the shared buffer, Vulkan waits for the
-latest CUDA-ready value; after drawing, Vulkan signals that the buffer slot is available for the
-next CUDA write.
+manually count semaphore values in the first how-to. The live Datoviz render path uses
+`dvz_interop_buffer_wait_timeline()` as the current advanced render-side wait hook: before drawing
+from the shared buffer, Vulkan waits for the latest CUDA-ready value and records a buffer barrier
+that makes CUDA writes visible to vertex reads. A future steady state loop should add the matching
+Vulkan signal after the render work that releases the buffer slot for the next CUDA write.
 
 The first documented platform should be Linux + NVIDIA CUDA + Vulkan opaque FD external memory +
 timeline semaphore FD. Other handle types can fit the same descriptor model later, but should stay
@@ -340,7 +341,10 @@ The DRP2 CUDA smoke
 shape: a Vulkan-owned exportable vertex buffer is imported into CUDA, filled by CUDA, synchronized
 through an external timeline semaphore, registered through
 `dvz_drp2_runtime_register_external_buffer()`, drawn by the vklite runtime, and checked by texture
-readback. This establishes the C-side route needed by the future CuPy wrapper.
+readback. The raw Python smoke mirrors this route for CuPy: it imports the Vulkan-owned buffer via
+the CUDA bridge, wraps it as `cupy.cuda.UnownedMemory`, writes positions with CuPy, waits on the
+CUDA-ready timeline value from Vulkan, renders through DRP2, and verifies a readback pixel. This
+establishes the low-level route needed by the future `datoviz.cuda_array()` wrapper.
 
 NVIDIA CIG (`VK_NV_external_compute_queue` / CUDA-in-Graphics contexts) is not used by these paths
 and should remain optional NVIDIA-specific scheduling work. It is not required for Vulkan-owned
@@ -476,6 +480,11 @@ Start with narrow tests before adding Python examples:
 2. add double-buffered CUDA write and Vulkan draw coverage with external semaphore waits/signals,
 3. add the Python CuPy wrapper lifetime test,
 4. add a live example that updates positions at a fixed rate without CPU upload.
+
+The current raw smoke is intentionally below the public API: it proves Vulkan-owned buffer ->
+CUDA/CuPy import -> explicit timeline wait -> DRP2 render/readback. The public example should be
+built after the scene attribute hook exists, so the example demonstrates Datoviz rendering rather
+than low-level DRP2 command construction.
 
 The existing CUDA import/export tests in `src/vk/tests/test_memory.c` are the right low-level
 starting point, but the public example should only be added after the synchronization path is tested

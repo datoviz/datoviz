@@ -25,7 +25,10 @@ Current slice update, 2026-06-01:
    vertex/storage buffer, exports memory and timeline semaphore FDs, and closes them without
    touching private `DvzBuffer` internals. When CuPy is installed, the full smoke imports the
    descriptor with the CUDA bridge, wraps the pointer with `cupy.cuda.UnownedMemory`, writes a
-   small position field, and signals the external timeline semaphore.
+   small position field, signals the external timeline semaphore, waits on that semaphore from
+   Vulkan, renders the shared buffer through DRP2, and verifies a readback pixel.
+8. `dvz_interop_buffer_wait_timeline()` is the public advanced Vulkan-side wait helper used by the
+   Python smoke before vertex reads from CUDA/CuPy-written shared buffers.
 
 Current proof points:
 
@@ -38,7 +41,8 @@ Current proof points:
    verifies the rendered color by readback.
 3. `src/vk/tests/test_memory.c:test_memory_interop_buffer_export` verifies the low-level
    `DvzInteropBufferExport` package: exported memory handle, allocation size, logical byte range,
-   usage flags, external semaphore handle metadata, and semaphore value.
+   usage flags, external semaphore handle metadata, semaphore value, and the Vulkan-side timeline
+   wait/barrier helper.
 
 `test_memory_cuda_2` remains useful for later CUDA-owned allocation experiments, but it is not the
 primary v0.4 route.
@@ -79,17 +83,19 @@ that exported it.
 
 ## Next Implementation Slice
 
-The buffer-level export helper has landed. Keep the next slice focused on turning the scaffold into
-a real Linux/NVIDIA smoke:
+The raw smoke now reaches the DRP2 registered-buffer render/readback path when CuPy is available.
+Keep the next slice focused on turning this substrate into the first feature-quality example:
 
-1. Connect the smoke to the DRP2 registered-buffer render path so Vulkan waits on the CUDA-ready
-   timeline value, draws positions directly from the shared buffer, and verifies by readback.
-2. Keep `dvz_interop_gpu_ctx()` and the CUDA bridge internal/advanced and wrap them behind the
-   eventual `datoviz.cuda_array()` API.
+1. Add the scene/runtime hook for an external point `position` attribute so scene emission registers
+   the shared buffer instead of emitting a CPU `WRITE_BUFFER` for positions.
+2. Keep `dvz_interop_gpu_ctx()`, `dvz_interop_buffer_wait_timeline()`, and the CUDA bridge
+   internal/advanced and wrap them behind the eventual `datoviz.cuda_array()` API.
 3. Prepare the feature example around a dynamic point cloud whose positions are updated by CuPy
    kernels and rendered by Datoviz without GPU-buffer copies. Prefer a visually interesting but
    bounded effect such as a 50k-200k particle vortex/flow-field or orbital attractor: static
    colors/sizes in scene-owned buffers, zero-copy position buffer updated each frame.
+4. Add a Linux/NVIDIA CI/manual gate that runs the full CuPy smoke on a machine with CuPy installed;
+   local validation currently reaches context/export/bridge and skips only at CuPy import.
 
 The Python object should own imported CUDA external-memory/semaphore handles, the mapped pointer,
 the CuPy owner object, and cleanup. Normal users should synchronize through a context manager:

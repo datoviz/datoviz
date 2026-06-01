@@ -29,6 +29,15 @@ VK_BUFFER_USAGE_TRANSFER_SRC_BIT = 0x00000001
 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT = 0x00000020
 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT = 0x00000080
 DVZ_ALLOC_DEDICATED_MEMORY = 0x00000001
+DVZ_DRP2_BUFFER_USAGE_COPY_DST = 0x0002
+DVZ_DRP2_BUFFER_USAGE_MAP_READ = 0x0004
+DVZ_DRP2_BUFFER_USAGE_VERTEX = 0x0010
+DVZ_DRP2_TEXTURE_USAGE_COPY_SRC = 0x0001
+DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT = 0x0010
+DVZ_DRP2_VALIDATION_OK = 0
+DVZ_DRP2_VERTEX_STEP_MODE_VERTEX = 0
+VK_FORMAT_R32G32_SFLOAT = 103
+VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3
 PARTICLE_COUNT = 1024
 POSITION_COMPONENTS = 3
 POSITION_DTYPE_SIZE = 4
@@ -68,6 +77,7 @@ REQUIRED_RAW_SYMBOLS = (
     'DvzInteropBufferExport',
     'DvzInteropBufferExportConfig',
     'dvz_interop_buffer_export_from_buffer',
+    'dvz_interop_buffer_wait_timeline',
     'dvz_interop_gpu_ctx',
     'dvz_gpu_ctx_alloc',
     'dvz_gpu_ctx_device',
@@ -85,6 +95,30 @@ REQUIRED_RAW_SYMBOLS = (
     'dvz_semaphore_free',
     'dvz_semaphore_timeline',
     'dvz_semaphore_destroy',
+    'DvzDrp2ExternalBufferDesc',
+    'dvz_drp2_runtime_vklite_config',
+    'dvz_drp2_runtime_vklite',
+    'dvz_drp2_runtime_register_external_buffer',
+    'dvz_drp2_runtime_execute',
+    'dvz_drp2_runtime_download_buffer',
+    'dvz_drp2_runtime_destroy',
+    'dvz_drp2_stream',
+    'dvz_drp2_stream_destroy',
+    'dvz_drp2_stream_hello_renderer',
+    'dvz_drp2_stream_renderer_hello_reply',
+    'dvz_drp2_stream_create_shader_module_format',
+    'dvz_drp2_stream_create_render_pipeline_ex2',
+    'dvz_drp2_stream_create_texture_2d_usage',
+    'dvz_drp2_stream_create_buffer',
+    'dvz_drp2_stream_begin_command_encoder',
+    'dvz_drp2_stream_begin_render_pass_clear',
+    'dvz_drp2_stream_set_pipeline',
+    'dvz_drp2_stream_set_vertex_buffer',
+    'dvz_drp2_stream_draw',
+    'dvz_drp2_stream_end_render_pass',
+    'dvz_drp2_stream_copy_texture_to_buffer',
+    'dvz_drp2_stream_finish_command_encoder',
+    'dvz_drp2_stream_queue_submit',
 )
 
 
@@ -335,7 +369,135 @@ def _cupy_array_from_export(cp, bridge, exported: ExportedDatovizBuffer):
     return array, owner
 
 
-def _run_cupy_write_smoke(dvz, cp, bridge) -> None:
+def _check_drp2(ok: bool, label: str) -> None:
+    if not ok:
+        raise RuntimeError(f'DRP2 command append failed: {label}')
+
+
+def _render_drp2_external_buffer(dvz, exported: ExportedDatovizBuffer) -> tuple[int, int, int, int]:
+    device = dvz.dvz_gpu_ctx_device(exported.ctx)
+    allocator = dvz.dvz_gpu_ctx_alloc(exported.ctx)
+    cfg = dvz.dvz_drp2_runtime_vklite_config(device, allocator)
+    runtime = dvz.dvz_drp2_runtime_vklite(ctypes.byref(cfg))
+    if not runtime:
+        raise RuntimeError('dvz_drp2_runtime_vklite() failed')
+
+    stream = None
+    try:
+        desc = dvz.DvzDrp2ExternalBufferDesc()
+        desc.buffer = exported.buffer
+        desc.size = exported.size
+        desc.usage = DVZ_DRP2_BUFFER_USAGE_VERTEX
+        _check_drp2(
+            dvz.dvz_drp2_runtime_register_external_buffer(runtime, 1, ctypes.byref(desc)),
+            'register external vertex buffer',
+        )
+
+        binding_stride = (ctypes.c_uint32 * 1)(POSITION_COMPONENTS * POSITION_DTYPE_SIZE)
+        binding_step = (ctypes.c_uint32 * 1)(DVZ_DRP2_VERTEX_STEP_MODE_VERTEX)
+        attr_binding = (ctypes.c_uint32 * 1)(0)
+        attr_location = (ctypes.c_uint32 * 1)(0)
+        attr_format = (ctypes.c_uint32 * 1)(VK_FORMAT_R32G32_SFLOAT)
+        attr_offset = (ctypes.c_uint32 * 1)(0)
+
+        stream = dvz.dvz_drp2_stream()
+        if not stream:
+            raise RuntimeError('dvz_drp2_stream() failed')
+        _check_drp2(dvz.dvz_drp2_stream_hello_renderer(stream, b'cupy-smoke'), 'hello')
+        _check_drp2(dvz.dvz_drp2_stream_renderer_hello_reply(stream, b'datoviz'), 'hello reply')
+        _check_drp2(
+            dvz.dvz_drp2_stream_create_shader_module_format(
+                stream,
+                2,
+                b'VERTEX',
+                b'glsl',
+                b'#version 450\nlayout(location=0)in vec2 pos;'
+                b'void main(){gl_Position=vec4(pos,0,1);}',
+            ),
+            'vertex shader',
+        )
+        _check_drp2(
+            dvz.dvz_drp2_stream_create_shader_module_format(
+                stream,
+                3,
+                b'FRAGMENT',
+                b'glsl',
+                b'#version 450\nlayout(location=0)out vec4 color;'
+                b'void main(){color=vec4(1,0,0,1);}',
+            ),
+            'fragment shader',
+        )
+        _check_drp2(
+            dvz.dvz_drp2_stream_create_render_pipeline_ex2(
+                stream,
+                4,
+                2,
+                3,
+                1,
+                VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+                1,
+                binding_stride,
+                binding_step,
+                1,
+                attr_binding,
+                attr_location,
+                attr_format,
+                attr_offset,
+            ),
+            'render pipeline',
+        )
+        _check_drp2(
+            dvz.dvz_drp2_stream_create_texture_2d_usage(
+                stream,
+                5,
+                2,
+                2,
+                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC,
+            ),
+            'render target',
+        )
+        _check_drp2(
+            dvz.dvz_drp2_stream_create_buffer(
+                stream, 6, 4, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ
+            ),
+            'readback buffer',
+        )
+        _check_drp2(dvz.dvz_drp2_stream_begin_command_encoder(stream, 10), 'encoder')
+        _check_drp2(
+            dvz.dvz_drp2_stream_begin_render_pass_clear(stream, 11, 10, 5, 0, 0, 0, 1),
+            'render pass',
+        )
+        _check_drp2(dvz.dvz_drp2_stream_set_pipeline(stream, 11, 4), 'set pipeline')
+        _check_drp2(dvz.dvz_drp2_stream_set_vertex_buffer(stream, 11, 0, 1, 0), 'vertex buffer')
+        _check_drp2(dvz.dvz_drp2_stream_draw(stream, 11, 3, 1, 0, 0), 'draw')
+        _check_drp2(dvz.dvz_drp2_stream_end_render_pass(stream, 11), 'end render pass')
+        _check_drp2(
+            dvz.dvz_drp2_stream_copy_texture_to_buffer(stream, 10, 5, 6, 0, 1, 1, 4, 1),
+            'copy readback',
+        )
+        _check_drp2(dvz.dvz_drp2_stream_finish_command_encoder(stream, 10, 12), 'finish')
+        _check_drp2(dvz.dvz_drp2_stream_queue_submit(stream, 12, 13), 'submit')
+
+        result = dvz.dvz_drp2_runtime_execute(runtime, stream)
+        if not result.ok or result.code != DVZ_DRP2_VALIDATION_OK:
+            raise RuntimeError(
+                f'DRP2 execution failed: code={result.code}, command={result.command_index}'
+            )
+
+        pixel = (ctypes.c_uint8 * 4)()
+        if not dvz.dvz_drp2_runtime_download_buffer(runtime, 6, 0, 4, pixel):
+            raise RuntimeError('DRP2 readback failed')
+        rgba = tuple(int(x) for x in pixel)
+        if rgba != (255, 0, 0, 255):
+            raise RuntimeError(f'DRP2 readback pixel mismatch: {rgba!r}')
+        return rgba
+    finally:
+        if stream is not None:
+            dvz.dvz_drp2_stream_destroy(stream)
+        dvz.dvz_drp2_runtime_destroy(runtime)
+
+
+def _run_cupy_write_smoke(dvz, cp, bridge) -> tuple[int, int, int, int]:
     with ExportedDatovizBuffer(dvz) as exported:
         array, owner = _cupy_array_from_export(cp, bridge, exported)
         stream = cp.cuda.get_current_stream()
@@ -344,9 +506,22 @@ def _run_cupy_write_smoke(dvz, cp, bridge) -> None:
         array[:, 0] = t
         array[:, 1] = cp.sin(t * cp.float32(6.283185307179586))
         array[:, 2] = 0
-        owner.signal(1, stream.ptr)
-        stream.synchronize()
-        owner.close()
+        array[:3, :] = cp.asarray(
+            [[-0.8, -0.8, 0.0], [0.8, -0.8, 0.0], [0.0, 0.8, 0.0]], dtype=cp.float32
+        )
+        try:
+            owner.signal(1, stream.ptr)
+            if not dvz.dvz_interop_buffer_wait_timeline(
+                dvz.dvz_gpu_ctx_device(exported.ctx),
+                exported.buffer,
+                exported.size,
+                exported.semaphore,
+                1,
+            ):
+                raise RuntimeError('Vulkan wait on CUDA timeline semaphore failed')
+            return _render_drp2_external_buffer(dvz, exported)
+        finally:
+            owner.close()
 
 
 def _field_names(record) -> tuple[str, ...]:
@@ -367,6 +542,17 @@ def _validate_raw_surface(dvz) -> None:
     fn = dvz.dvz_interop_buffer_export_from_buffer
     if fn.argtypes != expected_args or fn.restype is not ctypes.c_int:
         raise RuntimeError('dvz_interop_buffer_export_from_buffer ctypes signature is stale')
+
+    wait_args = [
+        ctypes.POINTER(dvz.DvzDevice),
+        ctypes.POINTER(dvz.DvzBuffer),
+        ctypes.c_uint64,
+        ctypes.POINTER(dvz.DvzSemaphore),
+        ctypes.c_uint64,
+    ]
+    wait_fn = dvz.dvz_interop_buffer_wait_timeline
+    if wait_fn.argtypes != wait_args or wait_fn.restype is not ctypes.c_bool:
+        raise RuntimeError('dvz_interop_buffer_wait_timeline ctypes signature is stale')
 
 
 def _skip(reason: str) -> NoReturn:
@@ -461,8 +647,11 @@ def main() -> int:
     cp = _require_cupy()
     bridge = _load_bridge()
     assert bridge is not None
-    _run_cupy_write_smoke(dvz, cp, bridge)
-    print(f'ctypes CuPy interop smoke: READY (CuPy {cp.__version__}, zero-copy write path)')
+    rgba = _run_cupy_write_smoke(dvz, cp, bridge)
+    print(
+        f'ctypes CuPy interop smoke: READY '
+        f'(CuPy {cp.__version__}, zero-copy write+render, pixel={rgba})'
+    )
     return 0
 
 
