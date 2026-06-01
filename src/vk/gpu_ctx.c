@@ -26,6 +26,7 @@
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/memory.h"
+#include "datoviz/vk/memory_interop.h"
 #include "datoviz/vk/queues.h"
 
 
@@ -48,6 +49,37 @@ struct DvzGpuCtx
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Request device extensions needed when exporting memory to external APIs.
+ *
+ * @param cfg GPU context configuration
+ * @param dcfg device configuration being built
+ */
+static void _gpu_ctx_request_export_extensions(
+    const DvzGpuCtxConfig* cfg, DvzDeviceConfig* dcfg)
+{
+    ANN(cfg);
+    ANN(dcfg);
+
+    if (cfg->export_handle_type == 0)
+    {
+        return;
+    }
+
+    dvz_device_config_request_extension(dcfg, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+    dvz_device_config_request_extension(dcfg, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
+    dvz_device_config_request_extension(dcfg, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
+#if OS_LINUX
+    dvz_device_config_request_extension(dcfg, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+    dvz_device_config_request_extension(dcfg, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
+#elif OS_WINDOWS
+    dvz_device_config_request_extension(dcfg, VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME);
+    dvz_device_config_request_extension(dcfg, VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME);
+#endif
+}
+
+
 
 /**
  * Create the default queue requests for a selected GPU.
@@ -292,6 +324,7 @@ DvzGpuCtx* dvz_gpu_ctx(const DvzGpuCtxConfig* cfg)
     {
         dvz_device_config_enable_canvas_extensions(&dcfg, true);
     }
+    _gpu_ctx_request_export_extensions(cfg, &dcfg);
 
     ctx->device = dvz_device_create(&dcfg);
     if (ctx->device == NULL)
@@ -313,6 +346,41 @@ DvzGpuCtx* dvz_gpu_ctx(const DvzGpuCtxConfig* cfg)
     }
 
     return ctx;
+}
+
+
+/**
+ * Create an advanced GPU context for Vulkan-owned CUDA/CuPy interop buffers.
+ *
+ * @param gpu_index Vulkan physical-device index to use
+ * @param memory_handle_type external memory handle type for exported allocations
+ * @return owned GPU context, or NULL on failure
+ */
+DvzGpuCtx* dvz_interop_gpu_ctx(
+    uint32_t gpu_index, VkExternalMemoryHandleTypeFlagsKHR memory_handle_type)
+{
+    if (memory_handle_type == 0)
+    {
+        log_error("interop GPU context requires an external memory handle type");
+        return NULL;
+    }
+
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    dvz_gpu_ctx_config_validation(&cfg, false);
+    dvz_gpu_ctx_config_gpu(&cfg, gpu_index);
+    dvz_gpu_ctx_config_alloc(&cfg, memory_handle_type);
+    dvz_gpu_ctx_config_add_instance_extension(
+        &cfg, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
+    dvz_gpu_ctx_config_add_instance_extension(
+        &cfg, VK_KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_EXTENSION_NAME);
+
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+        .timelineSemaphore = true,
+    };
+    dvz_gpu_ctx_config_features12(&cfg, &features12);
+
+    return dvz_gpu_ctx(&cfg);
 }
 
 

@@ -25,6 +25,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzBuffer DvzBuffer;
+typedef struct DvzGpuCtx DvzGpuCtx;
 typedef struct DvzSemaphore DvzSemaphore;
 
 typedef struct DvzInteropBufferExport DvzInteropBufferExport;
@@ -110,6 +111,24 @@ EXTERN_C_ON
  * current branch, because allocator interop hardening is expected to continue here rather than
  * through private vk-only helpers.
  */
+
+
+/**
+ * Create an advanced GPU context for Vulkan-owned CUDA/CuPy interop buffers.
+ *
+ * This helper is binding substrate, not the final high-level Python API. It creates a Datoviz GPU
+ * context whose allocator exports Vulkan memory with `memory_handle_type`, and whose device has the
+ * external-memory, external-semaphore, and timeline-semaphore support needed by the Linux/NVIDIA
+ * CuPy smoke. Destroy the returned context with dvz_gpu_ctx_destroy().
+ *
+ * @param gpu_index Vulkan physical-device index to use
+ * @param memory_handle_type external memory handle type for exported allocations
+ * @return owned GPU context, or NULL on failure
+ */
+DVZ_EXPORT DvzGpuCtx* dvz_interop_gpu_ctx(
+    uint32_t gpu_index, VkExternalMemoryHandleTypeFlagsKHR memory_handle_type);
+
+
 
 /**
  * Return the external-handle type configured on an allocator.
