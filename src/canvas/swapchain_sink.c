@@ -667,7 +667,7 @@ static VkResult canvas_swapchain_prepare_surface(DvzCanvasSwapchain* swapchain, 
     VkSurfaceKHR surface = canvas_surface_handle(canvas);
     if (surface == VK_NULL_HANDLE)
     {
-        log_warn("canvas surface unavailable, postponing swapchain creation");
+        log_debug("canvas surface unavailable, postponing swapchain creation");
         swapchain->dirty = true;
         canvas_runtime_transition(
             swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "surface unavailable");

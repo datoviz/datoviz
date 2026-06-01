@@ -1898,12 +1898,9 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
            win, (void*)instance, (uint64_t)(uintptr_t)surface, 64, 64, 1.0f, 1.0f, false) == 0);
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
 
-    AT_EXPECTED_LOG_STRICT(
-        suite, LOG_WARN,
-        dvz_view_release_external_surface(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
-    AT_EXPECTED_LOG_STRICT(
-        suite, LOG_WARN, dvz_view_render_once(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
-    AT_EXPECTED_LOG_STRICT(suite, LOG_WARN, dvz_app_render_once(app) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
+    AT(dvz_view_release_external_surface(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
+    AT(dvz_app_render_once(app) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
 
     vkDestroySurfaceKHR(instance, surface, NULL);
     glfwDestroyWindow(glfw_window);
