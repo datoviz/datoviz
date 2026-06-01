@@ -120,6 +120,7 @@ class CudaSceneBuffer:
         self._cp = None
         self._bridge = None
         self._shared = None
+        self._owns_shared = True
         self._clear_runtime_on_close = True
 
     @property
@@ -169,25 +170,37 @@ class CudaSceneBuffer:
         self._open_with(raw_surface, cp, bridge, clear_runtime_on_close=True)
         return self
 
-    def _open_with(self, raw_surface, cp, bridge, clear_runtime_on_close: bool) -> None:
+    def _open_with(
+        self, raw_surface, cp, bridge, clear_runtime_on_close: bool, session_runtime=None
+    ) -> None:
         if self._shared is not None:
             raise RuntimeError('CUDA scene buffer is already open')
         self._raw_surface = raw_surface
         self._cp = cp
         self._bridge = bridge
         self._clear_runtime_on_close = clear_runtime_on_close
-        self._shared = _runtime.CudaSceneBufferRuntime(
-            self._raw_surface,
-            self._cp,
-            self._bridge,
-            self.scene,
-            count=self.count,
-            components=self.components,
-            scene_usage=_usage_bits(self.usage, _SCENE_USAGE_BITS, 'scene'),
-            runtime_usage=_usage_bits(self.runtime_usage, _RUNTIME_USAGE_BITS, 'runtime'),
-            present=self.present,
-        )
-        self._shared.__enter__()
+        if session_runtime is None:
+            self._owns_shared = True
+            self._shared = _runtime.CudaSceneBufferRuntime(
+                self._raw_surface,
+                self._cp,
+                self._bridge,
+                self.scene,
+                count=self.count,
+                components=self.components,
+                scene_usage=_usage_bits(self.usage, _SCENE_USAGE_BITS, 'scene'),
+                runtime_usage=_usage_bits(self.runtime_usage, _RUNTIME_USAGE_BITS, 'runtime'),
+                present=self.present,
+            )
+            self._shared.__enter__()
+        else:
+            self._owns_shared = False
+            self._shared = session_runtime.buffer(
+                count=self.count,
+                components=self.components,
+                scene_usage=_usage_bits(self.usage, _SCENE_USAGE_BITS, 'scene'),
+                runtime_usage=_usage_bits(self.runtime_usage, _RUNTIME_USAGE_BITS, 'runtime'),
+            )
 
     def __exit__(self, exc_type, exc, tb):
         return self._close(exc_type, exc, tb)
@@ -195,9 +208,12 @@ class CudaSceneBuffer:
     def _close(self, exc_type=None, exc=None, tb=None):
         if self._shared is not None:
             try:
-                return self._shared.__exit__(exc_type, exc, tb)
+                if self._owns_shared:
+                    return self._shared.__exit__(exc_type, exc, tb)
+                return False
             finally:
                 self._shared = None
+                self._owns_shared = True
                 if self._clear_runtime_on_close:
                     self._raw_surface = None
                     self._cp = None
@@ -268,6 +284,7 @@ class CudaSceneSession:
         self._raw_surface = None
         self._cp = None
         self._bridge = None
+        self._session = None
         self._buffers: list[CudaSceneBuffer] = []
 
     @property
@@ -278,11 +295,15 @@ class CudaSceneSession:
         return self._cp
 
     def _require_open(self) -> None:
-        if self._cp is None:
+        if self._session is None:
             raise RuntimeError('CUDA scene session is not open')
 
     def __enter__(self):
         self._raw_surface, self._cp, self._bridge = _require_runtime()
+        self._session = _runtime.CudaSceneSessionRuntime(
+            self._raw_surface, self._cp, self._bridge, self.scene, present=self.present
+        )
+        self._session.__enter__()
         return self
 
     def __exit__(self, exc_type, exc, tb):
@@ -293,6 +314,9 @@ class CudaSceneSession:
             buffer._cp = None
             buffer._bridge = None
         self._buffers.clear()
+        if self._session is not None:
+            ok = self._session.__exit__(exc_type, exc, tb) or ok
+            self._session = None
         self._raw_surface = None
         self._cp = None
         self._bridge = None
@@ -309,8 +333,6 @@ class CudaSceneSession:
         """Create and open one CUDA-backed Datoviz scene buffer in this session."""
 
         self._require_open()
-        if self._buffers:
-            raise RuntimeError('CUDA scene sessions currently support one scene buffer')
         buffer = CudaSceneBuffer(
             self.scene,
             shape=shape,
@@ -320,18 +342,22 @@ class CudaSceneSession:
             present=self.present,
         )
         buffer._open_with(
-            self._raw_surface, self._cp, self._bridge, clear_runtime_on_close=False
+            self._raw_surface,
+            self._cp,
+            self._bridge,
+            clear_runtime_on_close=False,
+            session_runtime=self._session,
         )
         self._buffers.append(buffer)
         return buffer
 
     def app_resources(self, figure):
-        """Return app resources using this session's first CUDA-backed scene buffer."""
+        """Return app resources using all CUDA-backed scene buffers in this session."""
 
         self._require_open()
         if not self._buffers:
             raise RuntimeError('create a CUDA scene buffer before requesting app resources')
-        return self._buffers[0]._shared.create_app_resources(figure)
+        return self._session.create_app_resources(figure)
 
     def live_app(
         self,

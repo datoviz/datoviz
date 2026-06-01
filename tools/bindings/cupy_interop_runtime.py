@@ -741,6 +741,7 @@ class CudaSceneBufferRuntime:
         scene_usage: int = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
         runtime_usage: int = DVZ_DRP2_BUFFER_USAGE_VERTEX,
         present: bool = False,
+        context=None,
     ):
         self.dvz = dvz
         self.cp = cp
@@ -751,7 +752,14 @@ class CudaSceneBufferRuntime:
         self.scene_usage = scene_usage
         self.runtime_usage = runtime_usage
         self.shared = CudaMappedDatovizBuffer(
-            dvz, cp, bridge, count=count, components=components, present=present
+            dvz,
+            cp,
+            bridge,
+            count=count,
+            components=components,
+            present=present,
+            context=context,
+            drp2_usage=runtime_usage,
         )
         self.scene_buffer = None
         self.runtime = None
@@ -884,3 +892,110 @@ class CudaSceneBufferRuntime:
         self._resources = None
         self.scene_buffer = None
         return self.shared.__exit__(exc_type, exc, tb)
+
+
+class CudaSceneSessionRuntime:
+    """Own one CUDA-capable Datoviz scene runtime and its mapped scene buffers."""
+
+    def __init__(self, dvz, cp, bridge, scene, *, present: bool = False):
+        self.dvz = dvz
+        self.cp = cp
+        self.bridge = bridge
+        self.scene = scene
+        self.present = present
+        self.context = DatovizCudaContext(dvz, present=present)
+        self.buffers: list[CudaSceneBufferRuntime] = []
+        self.runtime = None
+        self._resources = None
+
+    @property
+    def device(self):
+        return self.context.device
+
+    @property
+    def allocator(self):
+        return self.context.allocator
+
+    def __enter__(self):
+        self.context.__enter__()
+        return self
+
+    def buffer(
+        self,
+        *,
+        count: int,
+        components: int = POSITION_COMPONENTS,
+        scene_usage: int = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
+        runtime_usage: int = DVZ_DRP2_BUFFER_USAGE_VERTEX,
+    ) -> CudaSceneBufferRuntime:
+        if self.runtime is not None:
+            raise RuntimeError('create CUDA scene buffers before creating app resources')
+        buffer = CudaSceneBufferRuntime(
+            self.dvz,
+            self.cp,
+            self.bridge,
+            self.scene,
+            count=count,
+            components=components,
+            scene_usage=scene_usage,
+            runtime_usage=runtime_usage,
+            present=self.present,
+            context=self.context,
+        )
+        buffer.__enter__()
+        self.buffers.append(buffer)
+        return buffer
+
+    def _emit_setup_stream(self, figure):
+        if not self.buffers:
+            raise RuntimeError('create at least one CUDA scene buffer before app resources')
+        caps = scene_setup_caps(self.dvz)
+        report = self.dvz.DvzDiagnosticReport()
+        self.dvz.dvz_diagnostic_report_init(ctypes.byref(report))
+        emit_cfg = scene_setup_emit_config(self.dvz)
+        stream = self.dvz.dvz_figure_emit_ex(
+            figure, ctypes.byref(caps), ctypes.byref(report), ctypes.byref(emit_cfg)
+        )
+        if self.dvz.dvz_diagnostic_report_count(ctypes.byref(report)) != 0 or not stream:
+            raise RuntimeError('dvz_figure_emit_ex() failed while priming CUDA scene buffers')
+        return stream
+
+    def create_app_resources(self, figure):
+        if self.runtime is not None:
+            return self._resources
+        cfg = self.dvz.dvz_drp2_runtime_vklite_config(self.device, self.allocator)
+        self.runtime = self.dvz.dvz_drp2_runtime_vklite(ctypes.byref(cfg))
+        if not self.runtime:
+            raise RuntimeError('dvz_drp2_runtime_vklite() failed')
+        stream = None
+        try:
+            stream = self._emit_setup_stream(figure)
+            for buffer in self.buffers:
+                buffer.shared.register_scene_buffer(
+                    self.runtime, stream, buffer.scene_buffer, usage=buffer.runtime_usage
+                )
+            result = self.dvz.dvz_drp2_runtime_execute(self.runtime, stream)
+            if not result.ok:
+                raise RuntimeError(
+                    f'DRP2 setup execution failed: code={result.code}, '
+                    f'command={result.command_index}'
+                )
+        finally:
+            if stream is not None:
+                self.dvz.dvz_drp2_stream_destroy(stream)
+        resources = self.dvz.DvzAppResources()
+        resources.gpu_ctx = self.context.ctx
+        resources.runtime = self.runtime
+        self._resources = resources
+        return resources
+
+    def __exit__(self, exc_type, exc, tb):
+        if self.runtime is not None:
+            self.dvz.dvz_drp2_runtime_destroy(self.runtime)
+            self.runtime = None
+        self._resources = None
+        ok = False
+        for buffer in reversed(self.buffers):
+            ok = buffer.__exit__(exc_type, exc, tb) or ok
+        self.buffers.clear()
+        return self.context.__exit__(exc_type, exc, tb) or ok
