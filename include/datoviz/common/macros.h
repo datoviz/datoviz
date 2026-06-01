@@ -98,7 +98,12 @@
     ((ptr) != NULL && (ptr)->struct_size == DVZ_STRUCT_SIZE(T))
 
 #define DVZ_STRUCT_UNKNOWN_FLAGS(ptr, known_flags)                                                \
-    ((ptr) != NULL && (((ptr)->flags & ~(known_flags)) != 0))
+    ((ptr) != NULL && (((uint32_t)(ptr)->flags & ~((uint32_t)(known_flags))) != 0))
+
+#define DVZ_STRUCT_VALID(ptr, T, known_flags)                                                     \
+    (DVZ_STRUCT_VALID_SIZE((ptr), T) && !DVZ_STRUCT_UNKNOWN_FLAGS((ptr), (known_flags)))
+
+#define DVZ_STRUCT_INIT_FIELDS(T) .struct_size = DVZ_STRUCT_SIZE(T), .flags = 0
 
 
 

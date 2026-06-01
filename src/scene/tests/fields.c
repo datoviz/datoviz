@@ -2342,7 +2342,8 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const Ts
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    DvzFramePlanEmitConfig cfg = {.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     dvz_capability_snapshot_default(&caps);
     dvz_diagnostic_report_init(&report);
 
@@ -2855,7 +2856,8 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    DvzFramePlanEmitConfig cfg = {.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     dvz_capability_snapshot_default(&caps);
     dvz_diagnostic_report_init(&report);
 
@@ -3023,7 +3025,8 @@ int test_scene_volume_label_slice_uses_categorical_scale(TstContext* suite, cons
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    DvzFramePlanEmitConfig cfg = {.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     dvz_capability_snapshot_default(&caps);
     dvz_diagnostic_report_init(&report);
 
@@ -3095,7 +3098,8 @@ int test_scene_volume_label_composite_uses_first_hit_shader(
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    DvzFramePlanEmitConfig cfg = {.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     dvz_capability_snapshot_default(&caps);
     dvz_diagnostic_report_init(&report);
 
@@ -3166,7 +3170,8 @@ int test_scene_volume_signed_label_composite_uses_first_hit_shader(
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    DvzFramePlanEmitConfig cfg = {.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     dvz_capability_snapshot_default(&caps);
     dvz_diagnostic_report_init(&report);
 
@@ -3236,7 +3241,8 @@ int test_scene_volume_label_sparse_lookup_buffer(TstContext* suite, const TstCas
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    DvzFramePlanEmitConfig cfg = {.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     dvz_capability_snapshot_default(&caps);
     dvz_diagnostic_report_init(&report);
 
@@ -3318,7 +3324,8 @@ int test_scene_volume_signed_label_sparse_lookup_buffer(TstContext* suite, const
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    DvzFramePlanEmitConfig cfg = {.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     dvz_capability_snapshot_default(&caps);
     dvz_diagnostic_report_init(&report);
 
@@ -3456,7 +3463,8 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    DvzFramePlanEmitConfig cfg = {.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     dvz_capability_snapshot_default(&caps);
     dvz_diagnostic_report_init(&report);
 

@@ -51,7 +51,8 @@ typedef struct VkInstance_T* VkInstance;
 
 struct DvzInstanceConfig
 {
-    int flags;
+    uint32_t struct_size;
+    uint32_t flags;
     uint32_t vk_version;
     const char* app_name;
     uint32_t app_version;
@@ -218,5 +219,4 @@ DVZ_EXPORT char** dvz_instance_supported_extensions(DvzInstance* instance, uint3
  * @returns a boolean indicating whether this extension is supported
  */
 DVZ_EXPORT bool dvz_instance_has_extension(DvzInstance* instance, const char* extension);
-
 

@@ -26,6 +26,31 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_VIDEO_SINK_CONFIG_KNOWN_FLAGS 0u
+#define DVZ_VIDEO_ENCODER_CONFIG_KNOWN_FLAGS 0u
+
+
+
+static bool canvas_video_sink_config_validate(const DvzVideoSinkConfig* cfg)
+{
+    if (cfg == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(cfg, DvzVideoSinkConfig, DVZ_VIDEO_SINK_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzVideoSinkConfig ABI prologue");
+        return false;
+    }
+    if (!DVZ_STRUCT_VALID(
+            &cfg->encoder, DvzVideoEncoderConfig, DVZ_VIDEO_ENCODER_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid nested DvzVideoEncoderConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
 static void canvas_register_swapchain_sink(DvzCanvas* canvas)
 {
     ANN(canvas);
@@ -446,6 +471,8 @@ int dvz_canvas_stream_enable_video(
 {
     ANN(canvas);
     ANN(canvas->stream);
+    if (!canvas_video_sink_config_validate(cfg))
+        return -1;
 
     if (enable)
     {

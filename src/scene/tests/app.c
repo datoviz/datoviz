@@ -362,8 +362,10 @@ static DvzApp* _app_test_create(TstContext* suite, DvzScene* scene)
     }
 
     dvz_drp2_runtime_reset(fixture->runtime);
-    DvzAppResources resources = {
-        .gpu_ctx = fixture->gpu_ctx, .runtime = fixture->runtime, .window_host = fixture->window_host};
+    DvzAppResources resources = dvz_app_resources();
+    resources.gpu_ctx = fixture->gpu_ctx;
+    resources.runtime = fixture->runtime;
+    resources.window_host = fixture->window_host;
     DvzAppConfig config = _app_test_resource_config();
     DvzApp* app = dvz_app_with_resources(scene, &config, &resources);
     if (app == NULL)

@@ -157,6 +157,22 @@ bool _drp2_frame_target_valid(uint64_t texture_id, const DvzStreamFrame* frame)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+#define DVZ_DRP2_RUNTIME_CONFIG_KNOWN_FLAGS 0u
+
+
+
+static bool _drp2_runtime_config_validate(const DvzDrp2RuntimeConfig* cfg)
+{
+    if (cfg == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(cfg, DvzDrp2RuntimeConfig, DVZ_DRP2_RUNTIME_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzDrp2RuntimeConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
 /**
  * Return a DRP2 runtime configuration for a vklite-backed runtime.
  *
@@ -166,7 +182,7 @@ bool _drp2_frame_target_valid(uint64_t texture_id, const DvzStreamFrame* frame)
  */
 DvzDrp2RuntimeConfig dvz_drp2_runtime_vklite_config(DvzDevice* device, DvzVma* allocator)
 {
-    DvzDrp2RuntimeConfig cfg = {0};
+    DvzDrp2RuntimeConfig cfg = {DVZ_STRUCT_INIT_FIELDS(DvzDrp2RuntimeConfig)};
     cfg.device = device;
     cfg.allocator = allocator;
     return cfg;
@@ -182,7 +198,7 @@ DvzDrp2RuntimeConfig dvz_drp2_runtime_vklite_config(DvzDevice* device, DvzVma* a
  */
 DvzDrp2Runtime* dvz_drp2_runtime_vklite(const DvzDrp2RuntimeConfig* cfg)
 {
-    if (cfg == NULL)
+    if (!_drp2_runtime_config_validate(cfg))
         return NULL;
 #if !DVZ_DRP2_HAS_VKLITE
     if (!cfg->semantic_only)
@@ -209,7 +225,7 @@ DvzDrp2Runtime* dvz_drp2_runtime_vklite(const DvzDrp2RuntimeConfig* cfg)
  */
 DvzDrp2RuntimeConfig dvz_drp2_runtime_get_config(const DvzDrp2Runtime* runtime)
 {
-    DvzDrp2RuntimeConfig cfg = {0};
+    DvzDrp2RuntimeConfig cfg = {DVZ_STRUCT_INIT_FIELDS(DvzDrp2RuntimeConfig)};
     if (runtime == NULL)
         return cfg;
     cfg.device = runtime->device;

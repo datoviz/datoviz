@@ -278,6 +278,22 @@ static void destroy_dpool(DvzDevice* device)
 /*  Device                                                                                       */
 /*************************************************************************************************/
 
+#define DVZ_DEVICE_CONFIG_KNOWN_FLAGS 0u
+
+
+
+static bool _device_config_validate(const DvzDeviceConfig* cfg)
+{
+    if (cfg == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(cfg, DvzDeviceConfig, DVZ_DEVICE_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzDeviceConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
 /**
  * Return default configuration values for creating a device.
  *
@@ -287,6 +303,7 @@ static void destroy_dpool(DvzDevice* device)
 DvzDeviceConfig dvz_device_config(DvzInstance* instance)
 {
     INIT(DvzDeviceConfig, cfg);
+    cfg.struct_size = DVZ_STRUCT_SIZE(DvzDeviceConfig);
     cfg.instance = instance;
     cfg.gpu_index = 0;
     return cfg;
@@ -303,7 +320,8 @@ DvzDeviceConfig dvz_device_config(DvzInstance* instance)
  */
 bool dvz_device_config_set_gpu_index(DvzDeviceConfig* cfg, uint32_t gpu_index)
 {
-    ANN(cfg);
+    if (!_device_config_validate(cfg))
+        return false;
     cfg->gpu_index = gpu_index;
     return true;
 }
@@ -320,7 +338,8 @@ bool dvz_device_config_set_gpu_index(DvzDeviceConfig* cfg, uint32_t gpu_index)
  */
 bool dvz_device_config_request_queue(DvzDeviceConfig* cfg, uint32_t family, uint32_t count)
 {
-    ANN(cfg);
+    if (!_device_config_validate(cfg))
+        return false;
     if (count == 0)
     {
         return false;
@@ -359,8 +378,10 @@ bool dvz_device_config_request_queue(DvzDeviceConfig* cfg, uint32_t family, uint
  */
 bool dvz_device_config_request_extension(DvzDeviceConfig* cfg, const char* extension)
 {
-    ANN(cfg);
     ANN(extension);
+    if (!_device_config_validate(cfg))
+        return false;
+
     if (cfg->extension_count >= DVZ_MAX_REQ_EXTENSIONS)
     {
         return false;
@@ -383,7 +404,8 @@ bool dvz_device_config_request_extension(DvzDeviceConfig* cfg, const char* exten
  */
 void dvz_device_config_enable_canvas_extensions(DvzDeviceConfig* cfg, bool enabled)
 {
-    ANN(cfg);
+    if (!_device_config_validate(cfg))
+        return;
     cfg->enable_canvas_extensions = enabled;
 }
 
@@ -398,8 +420,9 @@ void dvz_device_config_enable_canvas_extensions(DvzDeviceConfig* cfg, bool enabl
 void dvz_device_config_set_features10(
     DvzDeviceConfig* cfg, const VkPhysicalDeviceFeatures* features)
 {
-    ANN(cfg);
     ANN(features);
+    if (!_device_config_validate(cfg))
+        return;
     dvz_memcpy(
         &cfg->features10, sizeof(VkPhysicalDeviceFeatures), features,
         sizeof(VkPhysicalDeviceFeatures));
@@ -417,8 +440,9 @@ void dvz_device_config_set_features10(
 void dvz_device_config_set_features11(
     DvzDeviceConfig* cfg, const VkPhysicalDeviceVulkan11Features* features)
 {
-    ANN(cfg);
     ANN(features);
+    if (!_device_config_validate(cfg))
+        return;
     dvz_memcpy(
         &cfg->features11, sizeof(VkPhysicalDeviceVulkan11Features), features,
         sizeof(VkPhysicalDeviceVulkan11Features));
@@ -436,8 +460,9 @@ void dvz_device_config_set_features11(
 void dvz_device_config_set_features12(
     DvzDeviceConfig* cfg, const VkPhysicalDeviceVulkan12Features* features)
 {
-    ANN(cfg);
     ANN(features);
+    if (!_device_config_validate(cfg))
+        return;
     dvz_memcpy(
         &cfg->features12, sizeof(VkPhysicalDeviceVulkan12Features), features,
         sizeof(VkPhysicalDeviceVulkan12Features));
@@ -455,8 +480,9 @@ void dvz_device_config_set_features12(
 void dvz_device_config_set_features13(
     DvzDeviceConfig* cfg, const VkPhysicalDeviceVulkan13Features* features)
 {
-    ANN(cfg);
     ANN(features);
+    if (!_device_config_validate(cfg))
+        return;
     dvz_memcpy(
         &cfg->features13, sizeof(VkPhysicalDeviceVulkan13Features), features,
         sizeof(VkPhysicalDeviceVulkan13Features));
@@ -473,7 +499,8 @@ void dvz_device_config_set_features13(
  */
 DvzDevice* dvz_device_create(const DvzDeviceConfig* cfg)
 {
-    ANN(cfg);
+    if (!_device_config_validate(cfg))
+        return NULL;
     ANN(cfg->instance);
 
     uint32_t gpu_count = 0;

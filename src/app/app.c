@@ -211,6 +211,53 @@ struct DvzApp
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_APP_CONFIG_KNOWN_FLAGS 0u
+#define DVZ_APP_RESOURCES_KNOWN_FLAGS 0u
+#define DVZ_APP_CAPTURE_KNOWN_FLAGS                                                              \
+    (DVZ_APP_CAPTURE_DVZR | DVZ_APP_CAPTURE_VIDEO | DVZ_APP_CAPTURE_PNG)
+
+
+
+static bool _app_config_validate(const DvzAppConfig* config)
+{
+    if (config == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(config, DvzAppConfig, DVZ_APP_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzAppConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _app_resources_validate(const DvzAppResources* resources)
+{
+    if (resources == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(resources, DvzAppResources, DVZ_APP_RESOURCES_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzAppResources ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _app_capture_config_validate(const DvzAppCaptureConfig* config)
+{
+    if (config == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(config, DvzAppCaptureConfig, DVZ_APP_CAPTURE_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzAppCaptureConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
 /**
  * Return the app configuration before environment overrides are applied.
  *
@@ -218,7 +265,7 @@ struct DvzApp
  */
 static DvzAppConfig _app_config_defaults(void)
 {
-    DvzAppConfig config = {0};
+    DvzAppConfig config = {DVZ_STRUCT_INIT_FIELDS(DvzAppConfig)};
     config.instance_extension_count = 0;
     config.instance_extensions = NULL;
     config.enable_canvas_extensions = false;
@@ -3026,6 +3073,14 @@ DvzAppConfig dvz_app_config(void)
 
 
 
+DvzAppResources dvz_app_resources(void)
+{
+    DvzAppResources resources = {DVZ_STRUCT_INIT_FIELDS(DvzAppResources)};
+    return resources;
+}
+
+
+
 DvzApp* dvz_app(DvzScene* scene)
 {
     return dvz_app_with_config(scene, NULL);
@@ -3054,9 +3109,12 @@ dvz_app_with_resources(DvzScene* scene, const DvzAppConfig* config, const DvzApp
     ANN(scene);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (!_app_config_validate(config) || !_app_resources_validate(resources))
+        return NULL;
+
     DvzAppConfig resolved = config != NULL ? *config : _app_config_defaults();
     _app_config_apply_env(&resolved);
-    const DvzAppResources empty_resources = {0};
+    const DvzAppResources empty_resources = dvz_app_resources();
     const DvzAppResources* res = resources != NULL ? resources : &empty_resources;
     if (res->runtime != NULL && res->gpu_ctx == NULL)
     {
@@ -4046,6 +4104,7 @@ int dvz_view_capture_png(DvzView* win, const char* path)
 DvzAppCaptureConfig dvz_app_capture_config(void)
 {
     DvzAppCaptureConfig config = {
+        .struct_size = DVZ_STRUCT_SIZE(DvzAppCaptureConfig),
         .flags = DVZ_APP_CAPTURE_NONE,
         .directory = ".",
         .basename = "capture",
@@ -4103,6 +4162,9 @@ DvzAppCaptureConfig dvz_app_capture_config_from_env(const char* basename)
 int dvz_view_capture_start(DvzView* win, const DvzAppCaptureConfig* config)
 {
     ANN(win);
+    if (!_app_capture_config_validate(config))
+        return -1;
+
     DvzAppCaptureConfig resolved = config != NULL ? *config : dvz_app_capture_config();
     if (resolved.flags == DVZ_APP_CAPTURE_NONE)
         return 0;

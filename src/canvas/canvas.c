@@ -40,6 +40,22 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_CANVAS_CONFIG_KNOWN_FLAGS 0u
+
+
+
+static bool _canvas_config_validate(const DvzCanvasConfig* cfg)
+{
+    if (cfg == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(cfg, DvzCanvasConfig, DVZ_CANVAS_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzCanvasConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
 static DvzStreamConfig canvas_stream_config(const DvzCanvas* canvas)
 {
     ANN(canvas);
@@ -973,6 +989,7 @@ static int canvas_offscreen_capture_rgba_into(
 DvzCanvasConfig dvz_canvas_config(void)
 {
     DvzCanvasConfig cfg = {
+        DVZ_STRUCT_INIT_FIELDS(DvzCanvasConfig),
         .window = NULL,
         .device = NULL,
         .render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT,
@@ -993,6 +1010,9 @@ DvzCanvasConfig dvz_canvas_config(void)
  */
 DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
 {
+    if (!_canvas_config_validate(cfg))
+        return NULL;
+
     DvzCanvasConfig resolved = cfg ? *cfg : dvz_canvas_config();
     if (
         resolved.render_mode != DVZ_CANVAS_RENDER_MODE_PRESENT &&

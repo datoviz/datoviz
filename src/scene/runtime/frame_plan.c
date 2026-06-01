@@ -32,6 +32,32 @@
 
 
 /*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+#define DVZ_FRAME_PLAN_EMIT_CONFIG_KNOWN_FLAGS 0u
+
+
+
+static bool _runtime_emit_config_validate(
+    const DvzFramePlanEmitConfig* cfg, DvzDiagnosticReport* report)
+{
+    if (cfg == NULL)
+    {
+        _diagnostic(report, "missing DvzFramePlanEmitConfig");
+        return false;
+    }
+    if (!DVZ_STRUCT_VALID(cfg, DvzFramePlanEmitConfig, DVZ_FRAME_PLAN_EMIT_CONFIG_KNOWN_FLAGS))
+    {
+        _diagnostic(report, "invalid DvzFramePlanEmitConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -51,6 +77,8 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
 {
     ANN(emitter);
     ANN(plan);
+    if (!_runtime_emit_config_validate(cfg, report))
+        return NULL;
 
     const DvzFramePlanNode* upload = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_UPLOAD);
     const DvzFramePlanNode* compute = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COMPUTE);

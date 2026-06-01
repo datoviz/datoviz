@@ -166,6 +166,8 @@ struct DvzDiagnosticReport
 
 struct DvzFramePlanEmitConfig
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzSceneShaderFormat shader_format;
     bool external_color_target;
     uint64_t color_target_id;

@@ -82,6 +82,8 @@ typedef void (*DvzVideoSinkReleaseFn)(void* user_data, uint8_t* rgba);
 // Video encoder config.
 typedef struct
 {
+    uint32_t struct_size;
+    uint32_t flags;
     uint32_t width;
     uint32_t height;
     uint32_t fps;
@@ -91,7 +93,6 @@ typedef struct
     const char* mp4_path;
     const char* raw_path;
     const char* backend; // "auto", "nvenc", ...
-    int flags;
 } DvzVideoEncoderConfig;
 
 
@@ -99,6 +100,8 @@ typedef struct
 // Video sink config.
 typedef struct
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzVideoEncoderConfig encoder;
     FILE* bitstream;
     DvzVideoCaptureMode capture_mode;

@@ -32,6 +32,7 @@
 
 #define DVZ_WINDOW_BACKEND_INIT_CAP  4
 #define DVZ_WINDOW_INSTANCE_INIT_CAP 4
+#define DVZ_WINDOW_CONFIG_KNOWN_FLAGS 0u
 
 
 
@@ -267,6 +268,20 @@ static void _window_setup_config(DvzWindow* window, const DvzWindowConfig* confi
 
 
 
+static bool _window_config_validate(const DvzWindowConfig* config)
+{
+    if (config == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(config, DvzWindowConfig, DVZ_WINDOW_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzWindowConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -277,6 +292,7 @@ static void _window_setup_config(DvzWindow* window, const DvzWindowConfig* confi
 DvzWindowConfig dvz_window_config(void)
 {
     DvzWindowConfig config = {
+        DVZ_STRUCT_INIT_FIELDS(DvzWindowConfig),
         .width = DVZ_WINDOW_DEFAULT_WIDTH,
         .height = DVZ_WINDOW_DEFAULT_HEIGHT,
         .title = DVZ_WINDOW_DEFAULT_TITLE,
@@ -358,6 +374,9 @@ DvzWindow*
 dvz_window_create(DvzWindowHost* host, DvzBackend backend, const DvzWindowConfig* config)
 {
     ANN(host);
+    if (!_window_config_validate(config))
+        return NULL;
+
     DvzWindowConfig chosen = config ? *config : dvz_window_config();
     DvzWindowBackendSlot* slot = _window_pick_backend(host, backend);
     if (slot == NULL || !slot->available || slot->backend.procs.create == NULL)

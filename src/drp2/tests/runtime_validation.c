@@ -1079,7 +1079,7 @@ int test_drp2_runtime_validate_recreate_bind_group_resources(TstContext* suite, 
     ANN(suite);
     (void)item;
 
-    DvzDrp2RuntimeConfig cfg = {0};
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
     cfg.semantic_only = true;
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
     ANN(runtime);
@@ -1181,7 +1181,7 @@ int test_drp2_runtime_reuses_submitted_transient_ids(TstContext* suite, const Ts
     ANN(suite);
     (void)item;
 
-    DvzDrp2RuntimeConfig cfg = {0};
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
     cfg.semantic_only = true;
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
     ANN(runtime);
@@ -1252,7 +1252,7 @@ int test_drp2_runtime_registers_external_buffer_semantic(TstContext* suite, cons
     ANN(suite);
     (void)item;
 
-    DvzDrp2RuntimeConfig cfg = {0};
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
     cfg.semantic_only = true;
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
     ANN(runtime);
@@ -1771,6 +1771,5 @@ int test_drp2_runtime_rejects_destroy_live_shader_module(TstContext* suite, cons
     dvz_drp2_stream_destroy(stream);
     return 0;
 }
-
 
 

@@ -54,6 +54,8 @@ typedef struct DvzWindowConfig DvzWindowConfig;
 
 struct DvzWindowConfig
 {
+    uint32_t struct_size;
+    uint32_t flags;
     uint32_t width;
     uint32_t height;
     const char* title;

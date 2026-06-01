@@ -36,6 +36,7 @@ dvz_app
 dvz_app_capture_config
 dvz_app_capture_config_from_env
 dvz_app_config
+dvz_app_resources
 dvz_app_destroy
 dvz_app_render_once
 dvz_app_run

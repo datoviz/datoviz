@@ -24,6 +24,31 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_VIDEO_SINK_CONFIG_KNOWN_FLAGS 0u
+#define DVZ_VIDEO_ENCODER_CONFIG_KNOWN_FLAGS 0u
+
+
+
+static bool _video_sink_config_validate(const DvzVideoSinkConfig* cfg)
+{
+    if (cfg == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(cfg, DvzVideoSinkConfig, DVZ_VIDEO_SINK_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzVideoSinkConfig ABI prologue");
+        return false;
+    }
+    if (!DVZ_STRUCT_VALID(
+            &cfg->encoder, DvzVideoEncoderConfig, DVZ_VIDEO_ENCODER_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid nested DvzVideoEncoderConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
 typedef struct
 {
     DvzVideoEncoder* encoder;
@@ -68,7 +93,8 @@ static const DvzVideoSinkConfig* video_sink_config(const void* config)
 {
     if (config)
     {
-        return (const DvzVideoSinkConfig*)config;
+        const DvzVideoSinkConfig* cfg = (const DvzVideoSinkConfig*)config;
+        return _video_sink_config_validate(cfg) ? cfg : NULL;
     }
     static DvzVideoSinkConfig default_cfg;
     static bool initialized = false;
@@ -155,6 +181,9 @@ static int video_sink_create(DvzStreamSink* sink, const void* config)
     ANN(state);
 
     const DvzVideoSinkConfig* requested = video_sink_config(config);
+    if (requested == NULL)
+        return -1;
+
     state->cfg = *requested;
     state->resolved_capture_mode = video_sink_resolve_capture_mode(&state->cfg);
     if (state->resolved_capture_mode == DVZ_VIDEO_CAPTURE_CPU_READBACK)
@@ -360,6 +389,7 @@ const DvzStreamSinkBackend DVZ_STREAM_SINK_VIDEO = {
 DVZ_EXPORT DvzVideoSinkConfig dvz_video_sink_config(void)
 {
     DvzVideoSinkConfig cfg = {
+        DVZ_STRUCT_INIT_FIELDS(DvzVideoSinkConfig),
         .encoder = dvz_video_encoder_config(),
         .bitstream = NULL,
         .capture_mode = DVZ_VIDEO_CAPTURE_AUTO,

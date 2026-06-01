@@ -372,10 +372,12 @@ static int test_app_resources_reject_runtime_without_gpu(TstContext* suite, cons
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
-    DvzDrp2RuntimeConfig runtime_cfg = {.semantic_only = true};
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
-    DvzAppResources resources = {.runtime = runtime};
+    DvzAppResources resources = dvz_app_resources();
+    resources.runtime = runtime;
     DvzAppConfig config = _test_app_resource_config();
 
     tst_expect_error_begin(suite);
@@ -406,10 +408,13 @@ static int test_app_resources_reject_incompatible_runtime(TstContext* suite, con
     }
     DvzScene* scene = dvz_scene();
     ANN(scene);
-    DvzDrp2RuntimeConfig runtime_cfg = {.semantic_only = true};
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
-    DvzAppResources resources = {.gpu_ctx = gpu_ctx, .runtime = runtime};
+    DvzAppResources resources = dvz_app_resources();
+    resources.gpu_ctx = gpu_ctx;
+    resources.runtime = runtime;
     DvzAppConfig config = _test_app_resource_config();
 
     tst_expect_error_begin(suite);
@@ -441,7 +446,8 @@ static int test_app_resources_borrow_gpu_ctx(TstContext* suite, const TstCase* i
     }
     DvzScene* scene = dvz_scene();
     ANN(scene);
-    DvzAppResources resources = {.gpu_ctx = gpu_ctx};
+    DvzAppResources resources = dvz_app_resources();
+    resources.gpu_ctx = gpu_ctx;
     DvzAppConfig config = _test_app_resource_config();
 
     DvzApp* app = dvz_app_with_resources(scene, &config, &resources);
@@ -476,7 +482,9 @@ static int test_app_resources_borrow_gpu_ctx_and_runtime(TstContext* suite, cons
     ANN(runtime);
     DvzScene* scene = dvz_scene();
     ANN(scene);
-    DvzAppResources resources = {.gpu_ctx = gpu_ctx, .runtime = runtime};
+    DvzAppResources resources = dvz_app_resources();
+    resources.gpu_ctx = gpu_ctx;
+    resources.runtime = runtime;
     DvzAppConfig config = _test_app_resource_config();
 
     DvzApp* app = dvz_app_with_resources(scene, &config, &resources);
@@ -518,7 +526,9 @@ static int test_app_resources_borrow_gpu_ctx_and_window_host(TstContext* suite, 
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
-    DvzAppResources resources = {.gpu_ctx = gpu_ctx, .window_host = host};
+    DvzAppResources resources = dvz_app_resources();
+    resources.gpu_ctx = gpu_ctx;
+    resources.window_host = host;
     DvzAppConfig config = _test_app_resource_config();
 
     DvzApp* app = dvz_app_with_resources(scene, &config, &resources);

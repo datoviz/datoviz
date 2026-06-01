@@ -56,6 +56,8 @@ typedef struct DvzDevice DvzDevice;
 // Canvas configuration.
 typedef struct
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzWindow* window;
     DvzDevice* device;
     DvzCanvasRenderMode render_mode;

@@ -107,6 +107,22 @@ static bool _dvz_has_config_string(uint32_t count, const char* const* values, co
 /*  Instance                                                                                     */
 /*************************************************************************************************/
 
+#define DVZ_INSTANCE_CONFIG_KNOWN_FLAGS DVZ_INSTANCE_VALIDATION_FLAGS
+
+
+
+static bool _instance_config_validate(const DvzInstanceConfig* cfg)
+{
+    if (cfg == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(cfg, DvzInstanceConfig, DVZ_INSTANCE_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzInstanceConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
 /**
  * Return default configuration values for creating an instance.
  *
@@ -115,6 +131,7 @@ static bool _dvz_has_config_string(uint32_t count, const char* const* values, co
 DvzInstanceConfig dvz_instance_config(void)
 {
     INIT(DvzInstanceConfig, cfg);
+    cfg.struct_size = DVZ_STRUCT_SIZE(DvzInstanceConfig);
     cfg.vk_version = VK_API_VERSION_1_3;
     cfg.portability = true;
     return cfg;
@@ -131,8 +148,10 @@ DvzInstanceConfig dvz_instance_config(void)
  */
 bool dvz_instance_config_request_layer(DvzInstanceConfig* cfg, const char* layer)
 {
-    ANN(cfg);
     ANN(layer);
+    if (!_instance_config_validate(cfg))
+        return false;
+
     if (cfg->layer_count >= DVZ_MAX_REQ_LAYERS)
     {
         log_warn("too many requested instance layers");
@@ -157,8 +176,10 @@ bool dvz_instance_config_request_layer(DvzInstanceConfig* cfg, const char* layer
  */
 bool dvz_instance_config_request_extension(DvzInstanceConfig* cfg, const char* extension)
 {
-    ANN(cfg);
     ANN(extension);
+    if (!_instance_config_validate(cfg))
+        return false;
+
     if (cfg->extension_count >= DVZ_MAX_REQ_EXTENSIONS)
     {
         log_warn("too many requested instance extensions");
@@ -182,7 +203,9 @@ bool dvz_instance_config_request_extension(DvzInstanceConfig* cfg, const char* e
  */
 DvzInstance* dvz_instance_create(const DvzInstanceConfig* cfg)
 {
-    ANN(cfg);
+    if (!_instance_config_validate(cfg))
+        return NULL;
+
     DvzInstance* instance = (DvzInstance*)dvz_calloc(1, sizeof(DvzInstance));
     if (instance == NULL)
     {
@@ -190,7 +213,7 @@ DvzInstance* dvz_instance_create(const DvzInstanceConfig* cfg)
         return NULL;
     }
 
-    dvz_instance(instance, cfg->flags);
+    dvz_instance(instance, (int)cfg->flags);
     instance->is_heap_allocated = true;
     instance->portability = cfg->portability;
     dvz_instance_info(instance, cfg->app_name, cfg->app_version);

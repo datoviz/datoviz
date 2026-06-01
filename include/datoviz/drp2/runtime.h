@@ -48,6 +48,8 @@ struct DvzDrp2ValidationResult
 
 struct DvzDrp2RuntimeConfig
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzDevice* device;
     DvzVma* allocator;
     bool semantic_only;

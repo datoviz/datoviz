@@ -48,6 +48,8 @@ struct DvzDeviceQueueRequest
 
 struct DvzDeviceConfig
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzInstance* instance;
     uint32_t gpu_index;
     bool enable_canvas_extensions;

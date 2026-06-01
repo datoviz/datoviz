@@ -87,6 +87,8 @@ typedef enum DvzAppCaptureFlags
 
 struct DvzAppConfig
 {
+    uint32_t struct_size;
+    uint32_t flags;
     uint32_t instance_extension_count;
     const char* const* instance_extensions;
     bool enable_canvas_extensions;
@@ -99,6 +101,7 @@ struct DvzAppConfig
 
 struct DvzAppCaptureConfig
 {
+    uint32_t struct_size;
     uint32_t flags;
     const char* directory;
     const char* basename;
@@ -110,6 +113,9 @@ struct DvzAppCaptureConfig
 
 struct DvzAppResources
 {
+    uint32_t struct_size;
+    uint32_t flags;
+
     /* Optional borrowed GPU context.  The app creates and owns one when NULL. */
     DvzGpuCtx* gpu_ctx;
 
@@ -134,6 +140,13 @@ EXTERN_C_ON
  * @return the default app configuration
  */
 DVZ_EXPORT DvzAppConfig dvz_app_config(void);
+
+/**
+ * Return an empty app resource bundle.
+ *
+ * @return the empty app resources bundle
+ */
+DVZ_EXPORT DvzAppResources dvz_app_resources(void);
 
 
 /**

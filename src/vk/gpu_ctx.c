@@ -50,6 +50,24 @@ struct DvzGpuCtx
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_GPU_CTX_CONFIG_KNOWN_FLAGS 0u
+
+
+
+static bool _gpu_ctx_config_validate(const DvzGpuCtxConfig* cfg)
+{
+    if (cfg == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(cfg, DvzGpuCtxConfig, DVZ_GPU_CTX_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGpuCtxConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
 /**
  * Request device extensions needed when exporting memory to external APIs.
  *
@@ -131,6 +149,7 @@ static bool _gpu_ctx_configure_queues(
 DvzGpuCtxConfig dvz_gpu_ctx_config(void)
 {
     DvzGpuCtxConfig cfg = {
+        DVZ_STRUCT_INIT_FIELDS(DvzGpuCtxConfig),
         .enable_validation = true,
         .gpu_index = 0,
         .export_handle_type = 0,
@@ -152,7 +171,8 @@ DvzGpuCtxConfig dvz_gpu_ctx_config(void)
  */
 void dvz_gpu_ctx_config_validation(DvzGpuCtxConfig* cfg, bool enable_validation)
 {
-    ANN(cfg);
+    if (!_gpu_ctx_config_validate(cfg))
+        return;
     cfg->enable_validation = enable_validation;
 }
 
@@ -166,7 +186,8 @@ void dvz_gpu_ctx_config_validation(DvzGpuCtxConfig* cfg, bool enable_validation)
  */
 void dvz_gpu_ctx_config_gpu(DvzGpuCtxConfig* cfg, uint32_t gpu_index)
 {
-    ANN(cfg);
+    if (!_gpu_ctx_config_validate(cfg))
+        return;
     cfg->gpu_index = gpu_index;
 }
 
@@ -181,7 +202,8 @@ void dvz_gpu_ctx_config_gpu(DvzGpuCtxConfig* cfg, uint32_t gpu_index)
 void dvz_gpu_ctx_config_alloc(
     DvzGpuCtxConfig* cfg, VkExternalMemoryHandleTypeFlagsKHR export_handle_type)
 {
-    ANN(cfg);
+    if (!_gpu_ctx_config_validate(cfg))
+        return;
     cfg->export_handle_type = export_handle_type;
 }
 
@@ -195,8 +217,9 @@ void dvz_gpu_ctx_config_alloc(
  */
 void dvz_gpu_ctx_config_features10(DvzGpuCtxConfig* cfg, const VkPhysicalDeviceFeatures* features)
 {
-    ANN(cfg);
     ANN(features);
+    if (!_gpu_ctx_config_validate(cfg))
+        return;
     cfg->features10 = *features;
     cfg->has_features10 = true;
 }
@@ -211,8 +234,9 @@ void dvz_gpu_ctx_config_features10(DvzGpuCtxConfig* cfg, const VkPhysicalDeviceF
 void dvz_gpu_ctx_config_features12(
     DvzGpuCtxConfig* cfg, const VkPhysicalDeviceVulkan12Features* features)
 {
-    ANN(cfg);
     ANN(features);
+    if (!_gpu_ctx_config_validate(cfg))
+        return;
     cfg->features12 = *features;
     cfg->has_features12 = true;
 }
@@ -228,8 +252,9 @@ void dvz_gpu_ctx_config_features12(
 void dvz_gpu_ctx_config_features13(
     DvzGpuCtxConfig* cfg, const VkPhysicalDeviceVulkan13Features* features)
 {
-    ANN(cfg);
     ANN(features);
+    if (!_gpu_ctx_config_validate(cfg))
+        return;
     cfg->features13 = *features;
     cfg->has_features13 = true;
 }
@@ -241,8 +266,9 @@ void dvz_gpu_ctx_config_features13(
  */
 void dvz_gpu_ctx_config_add_instance_extension(DvzGpuCtxConfig* cfg, const char* extension)
 {
-    ANN(cfg);
     ANN(extension);
+    if (!_gpu_ctx_config_validate(cfg))
+        return;
     if (cfg->instance_extension_count >= 16)
     {
         log_warn("too many instance extensions in DvzGpuCtxConfig");
@@ -258,7 +284,8 @@ void dvz_gpu_ctx_config_add_instance_extension(DvzGpuCtxConfig* cfg, const char*
  */
 void dvz_gpu_ctx_config_enable_canvas_extensions(DvzGpuCtxConfig* cfg, bool enable)
 {
-    ANN(cfg);
+    if (!_gpu_ctx_config_validate(cfg))
+        return;
     cfg->enable_canvas_extensions = enable;
 }
 
@@ -272,7 +299,8 @@ void dvz_gpu_ctx_config_enable_canvas_extensions(DvzGpuCtxConfig* cfg, bool enab
  */
 DvzGpuCtx* dvz_gpu_ctx(const DvzGpuCtxConfig* cfg)
 {
-    ANN(cfg);
+    if (!_gpu_ctx_config_validate(cfg))
+        return NULL;
 
     DvzGpuCtx* ctx = (DvzGpuCtx*)dvz_calloc(1, sizeof(DvzGpuCtx));
     ANN(ctx);

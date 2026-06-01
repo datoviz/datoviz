@@ -23,6 +23,24 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_STREAM_CONFIG_KNOWN_FLAGS 0u
+
+
+
+static bool _stream_config_validate(const DvzStreamConfig* cfg)
+{
+    if (cfg == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(cfg, DvzStreamConfig, DVZ_STREAM_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzStreamConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
 struct DvzStream
 {
     DvzDevice* device;
@@ -156,6 +174,7 @@ static void stream_release_sinks(DvzStream* stream)
 DvzStreamConfig dvz_stream_config(void)
 {
     DvzStreamConfig cfg = {
+        DVZ_STRUCT_INIT_FIELDS(DvzStreamConfig),
         .width = 1920,
         .height = 1080,
         .fps = 60,
@@ -178,6 +197,9 @@ DvzStream* dvz_stream_create(
     DvzDevice* device, DvzStreamSinkRegistry* sink_registry, const DvzStreamConfig* cfg)
 {
     ANN(sink_registry);
+    if (!_stream_config_validate(cfg))
+        return NULL;
+
     DvzStream* stream = (DvzStream*)dvz_calloc(1, sizeof(DvzStream));
     ANN(stream);
     stream->device = device;

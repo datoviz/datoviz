@@ -36,10 +36,13 @@ class VkExtent2D(ctypes.Structure):
 
 class DvzWindowConfig(ctypes.Structure):
     _fields_ = [
+        ("struct_size", ctypes.c_uint32),
+        ("flags", ctypes.c_uint32),
         ("width", ctypes.c_uint32),
         ("height", ctypes.c_uint32),
         ("title", ctypes.c_char_p),
         ("resizable", ctypes.c_bool),
+        ("visible", ctypes.c_bool),
         ("user_scale", ctypes.c_float),
     ]
 

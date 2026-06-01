@@ -28,6 +28,22 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#define DVZ_VIDEO_ENCODER_CONFIG_KNOWN_FLAGS 0u
+
+
+
+static bool _video_encoder_config_validate(const DvzVideoEncoderConfig* cfg)
+{
+    if (cfg == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(cfg, DvzVideoEncoderConfig, DVZ_VIDEO_ENCODER_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzVideoEncoderConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
 // ====== Params ======
 // Video settings cheat sheet:
 // - Prefer HEVC/H.265 when hardware encoders exist (NVENC, VideoToolbox, VA-API). Fall back to
@@ -106,6 +122,7 @@ static void video_encoder_release(DvzVideoEncoder* enc)
 DvzVideoEncoderConfig dvz_video_encoder_config(void)
 {
     DvzVideoEncoderConfig cfg = {
+        DVZ_STRUCT_INIT_FIELDS(DvzVideoEncoderConfig),
         .width = WIDTH,
         .height = HEIGHT,
         .fps = FPS,
@@ -115,7 +132,6 @@ DvzVideoEncoderConfig dvz_video_encoder_config(void)
         .mp4_path = "out.mp4",
         .raw_path = "out.h26x",
         .backend = "auto",
-        .flags = 0,
     };
     return cfg;
 }
@@ -124,6 +140,9 @@ DvzVideoEncoderConfig dvz_video_encoder_config(void)
 
 DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncoderConfig* cfg)
 {
+    if (!_video_encoder_config_validate(cfg))
+        return NULL;
+
     DvzVideoEncoder* enc = (DvzVideoEncoder*)dvz_calloc(1, sizeof(DvzVideoEncoder));
     ANN(enc);
     enc->device = device;

@@ -44,6 +44,8 @@ typedef struct DvzGpuCtxConfig DvzGpuCtxConfig;
 
 struct DvzGpuCtxConfig
 {
+    uint32_t struct_size;
+    uint32_t flags;
     bool enable_validation;
     uint32_t gpu_index;
     VkExternalMemoryHandleTypeFlagsKHR export_handle_type;
