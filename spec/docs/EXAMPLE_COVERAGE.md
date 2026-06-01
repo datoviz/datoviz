@@ -63,6 +63,7 @@ Recommended implementation states:
 | `candidate` | A source file exists or legacy source can be salvaged, but docs/capture may need rewrite. |
 | `ready-now` | Current source can be polished without waiting for release blockers. |
 | `needs-rc1-proof` | Feature exists, but needs a runnable example, capture, fixture, or validation pass. |
+| `experimental` | In the v0.4 public experimental subset; docs and metadata must label it honestly. |
 | `conditional` | Include only if the visual or feature remains public for v0.4. |
 | `deferred` | Do not force into v0.4 minimal coverage. |
 | `external/GSP` | Belongs primarily outside Datoviz C examples. |
@@ -121,8 +122,8 @@ not the old gallery page that may currently occupy a similar slot.
 | `visual.volume` | `examples/c/visuals/volume.c` | `planned` | A compact 3D volume rendering or slice stack with clear internal structure and deterministic transfer defaults. | Teaches 3D sampled-field or volume visual setup. Avoid full medical-viewer controls. |
 | `visual.text` | `examples/c/visuals/text.c` | `conditional` | A few short strings placed in data and/or screen space with legible anchors, color, and size. | Teaches semantic text creation if text is public. Do not expose internal glyph visual details. |
 | `visual.labels` | `examples/c/visuals/labels.c` | `conditional` | An integer label field or labeled regions with distinct categorical colors and stable ids. | Teaches label-field upload and categorical styling if labels are public. Put probe/readout in `feature.probe_labels`. |
-| `visual.splat` | `examples/c/visuals/splat.c` | `conditional` | A small splat cloud with obvious footprint, color, and depth blending behavior. | Include only if splats ship as a public experimental visual. Keep full Gaussian-splat asset pipelines out of v0.4 coverage. |
-| `visual.polygon` | `examples/c/visuals/polygon.c` | `conditional` | A few filled polygons with holes or boundaries only if those semantics are public. | Include only if polygon helpers are public release surface. Otherwise keep polygon as a future builder or feature. |
+| `visual.splat` | `examples/c/visuals/splat.c` | `experimental` | A small splat cloud with obvious footprint, color, and depth blending behavior. | Public experimental coverage only. Keep full Gaussian-splat asset pipelines out of v0.4 coverage. |
+| `visual.polygon` | `examples/c/visuals/polygon.c` | `planned` | A few filled polygons with boundaries, winding, and hole behavior visible if supported by the release API. | Teaches polygon vertex/ring data and fill styling. Keep shape builders and geographic regions out of the minimal example. |
 | `visual.errorbar` | `examples/c/visuals/errorbar.c` | `deferred` | A minimal uncertainty glyph around points if error bars become a first-class visual. | Do not force into v0.4 unless the visual contract is promoted. |
 | `visual.boxplot` | `examples/c/visuals/boxplot.c` | `deferred` | A compact statistical distribution plot if boxplots become first-class. | Likely belongs in GSP/plot unless Datoviz exposes a low-level visual. |
 | `visual.tube` | `examples/c/visuals/tube.c` | `deferred` | A 3D tubular path with lighting and radius variation if tubes become public. | Do not replace the segment/path/vector minimal examples. |
@@ -151,8 +152,8 @@ Current implementation seeds:
 | `visual.volume` | `examples/c/legacy/visuals/volume.c`, `docs/gallery/visuals/volume.md` | Salvage volume setup; keep full brain/medical composition as showcase. |
 | `visual.text` | `examples/c/legacy/visuals/text.c`, `examples/c/lab/text_msdf_diagnostics.c` | Salvage only through the public text API; do not document raw glyph internals. |
 | `visual.labels` | `examples/c/legacy/showcase/labels.c` | Promote only if labels remain public; split probing into `feature.probe_labels`. |
-| `visual.splat` | `examples/c/legacy/showcase/gothic_splat.c` | Experimental only; do not block v0.4 minimal coverage. |
-| `visual.polygon` | `examples/c/legacy/visuals/polygon.c`, `docs/gallery/features/polygon.md` | Include only if semantic polygon support is promoted. |
+| `visual.splat` | `examples/c/legacy/showcase/gothic_splat.c` | Experimental v0.4 visual; publish with explicit experimental labeling and no full asset-pipeline promise. |
+| `visual.polygon` | `examples/c/legacy/visuals/polygon.c`, `docs/gallery/features/polygon.md` | Polygon is in v0.4 release scope; rebuild the old feature page as a C-first visual-family page. |
 
 
 ## AI-Assisted Coverage Matrix
@@ -174,7 +175,8 @@ live under `features/` or `runtime/` when they are shared across visual families
 | Sphere | required | desired | required | sphere picking |
 | Volume | required | desired | required | proxy picking or probe |
 | Text/labels | required when public | desired | desired | label probe/readout |
-| Polygon | required when public | desired | desired | polygon selection if exposed |
+| Splat | experimental | desired | desired | splat picking only if the experimental API exposes it |
+| Polygon | required | desired | desired | polygon selection if exposed |
 
 For every visual family with a public API, agents should be able to find one complete source file
 that answers: "How do I create this visual with valid data?" More advanced examples should then
@@ -372,6 +374,7 @@ Current high-level docs actions:
 | `docs/gallery/visuals/{point,pixel,path,segment,image,mesh,sphere,volume}.md` | Salvage idea and screenshots only; rewrite as C-first v0.4 examples. |
 | `docs/gallery/features/{axes,panel,arcball,fly,offscreen}.md` | Replace with targeted C-first feature or runtime pages. |
 | `docs/gallery/features/{colorbar,colormaps}.md` | Salvage into scalar field, colormap, colorbar, and image-probe feature rows. |
+| `docs/gallery/features/polygon.md` | Rebuild as `docs/gallery/visuals/polygon.md`; polygon is a v0.4 visual-family example. |
 | `docs/gallery/features/{animation,timer,video}.md` | Replace with one deterministic animation example plus optional video-export page. |
 | `docs/gallery/features/{keyboard,mouse,camera,orbit,timestamps,gui_panel}.md` | Defer unless the corresponding public v0.4 surface is explicitly kept. |
 | `docs/gallery/features/{fixed,hide,stop}.md` | Delete from public gallery or move to reference/API notes. |
