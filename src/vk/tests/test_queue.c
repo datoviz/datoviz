@@ -40,7 +40,7 @@ int test_queues_caps(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Create an instance.
-    DvzInstanceConfig cfg = dvz_instance_default_config();
+    DvzInstanceConfig cfg = dvz_instance_config();
     cfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
     DvzInstance* instance = dvz_instance_create(&cfg);
     AT(instance != NULL);

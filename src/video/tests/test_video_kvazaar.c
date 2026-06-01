@@ -350,7 +350,7 @@ int test_video_kvazaar(TstContext* suite, const TstCase* tstitem)
     device->gpu = gpu;
     gpu->pdevice = ctx.phys;
 
-    DvzVideoEncoderConfig cfg = dvz_video_encoder_default_config();
+    DvzVideoEncoderConfig cfg = dvz_video_encoder_config();
     cfg.width = KVZ_TEST_VIDEO_WIDTH;
     cfg.height = KVZ_TEST_VIDEO_HEIGHT;
     cfg.fps = KVZ_TEST_VIDEO_FPS;

@@ -313,7 +313,7 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
     int semaphore_fd = -1;
     DvzInteropBufferExport export_desc = {.memory_handle = -1, .semaphore_handle = -1};
 
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
     icfg.flags = 0;
     dvz_instance_config_request_extension(
         &icfg, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
@@ -337,7 +337,7 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
     DvzQueues queues = {0};
     dvz_queues(&qc, &queues);
 
-    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    DvzDeviceConfig dcfg = dvz_device_config(instance);
     dvz_device_config_set_gpu_index(&dcfg, 0);
     VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
@@ -557,7 +557,7 @@ int test_memory_cuda_1(TstContext* suite, const TstCase* tstitem)
     int semaphore_fd = -1;
 
     /******************* Vulkan setup *******************/
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
     icfg.flags = 0;
     // IMPORTANT: need external memory instance extension.
     dvz_instance_config_request_extension(
@@ -585,7 +585,7 @@ int test_memory_cuda_1(TstContext* suite, const TstCase* tstitem)
     // Initialize a device.
     DvzQueues queues = {0};
     dvz_queues(&qc, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    DvzDeviceConfig dcfg = dvz_device_config(instance);
     dvz_device_config_set_gpu_index(&dcfg, vk_gpu_index);
     VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
@@ -1102,7 +1102,7 @@ int test_memory_cuda_2(TstContext* suite, const TstCase* tstitem)
     }
 
     /******************* Vulkan setup *******************/
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
     icfg.flags = 0;
     dvz_instance_config_request_extension(
         &icfg, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
@@ -1127,7 +1127,7 @@ int test_memory_cuda_2(TstContext* suite, const TstCase* tstitem)
 
     DvzQueues queues = {0};
     dvz_queues(&qc, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    DvzDeviceConfig dcfg = dvz_device_config(instance);
     dvz_device_config_set_gpu_index(&dcfg, vk_gpu_index);
     VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};

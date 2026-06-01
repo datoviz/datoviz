@@ -35,7 +35,7 @@ int test_instance_layers(TstContext* suite, const TstCase* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzInstanceConfig cfg = dvz_instance_default_config();
+    DvzInstanceConfig cfg = dvz_instance_config();
     cfg.flags = 0;
     DvzInstance* instance = dvz_instance_create(&cfg);
     AT(instance != NULL);
@@ -65,7 +65,7 @@ int test_instance_extensions(TstContext* suite, const TstCase* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzInstanceConfig cfg = dvz_instance_default_config();
+    DvzInstanceConfig cfg = dvz_instance_config();
     cfg.flags = 0;
     DvzInstance* instance = dvz_instance_create(&cfg);
     AT(instance != NULL);
@@ -95,7 +95,7 @@ int test_instance_creation(TstContext* suite, const TstCase* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzInstanceConfig cfg = dvz_instance_default_config();
+    DvzInstanceConfig cfg = dvz_instance_config();
     cfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
     cfg.app_name = "Instance test";
     cfg.app_version = 42;
@@ -120,7 +120,7 @@ int test_instance_invalid_layer(TstContext* suite, const TstCase* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzInstanceConfig cfg = dvz_instance_default_config();
+    DvzInstanceConfig cfg = dvz_instance_config();
     cfg.flags = 0;
     cfg.app_name = "Invalid layer test";
     cfg.app_version = 1;

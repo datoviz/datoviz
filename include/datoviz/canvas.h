@@ -125,7 +125,7 @@ EXTERN_C_ON
  *
  * @returns a configuration with null handles, RGBA8 color format, and empty timing history
  */
-DVZ_EXPORT DvzCanvasConfig dvz_canvas_default_config(void);
+DVZ_EXPORT DvzCanvasConfig dvz_canvas_config(void);
 
 
 

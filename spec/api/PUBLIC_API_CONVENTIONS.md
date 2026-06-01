@@ -65,6 +65,16 @@ Do not rename a public struct just to make suffixes uniform. Prefer renaming onl
 suffix misleads users about ownership, mutability, or whether the record is an input descriptor,
 runtime configuration, request, state snapshot, or borrowed view.
 
+Initializer functions should match the struct suffix:
+
+1. `dvz_<thing>_config()` returns the canonical initialized `Dvz<Thing>Config`;
+2. `dvz_<thing>_desc()` returns the canonical initialized `Dvz<Thing>Desc`;
+3. `dvz_<thing>_style()` returns the canonical initialized `Dvz<Thing>Style`;
+4. `dvz_<thing>_get_config()` returns the current config retained by an existing object.
+
+Do not add new `dvz_<thing>_default_config()` functions. A config initializer already implies
+default values.
+
 
 ## Visuals, Semantic Objects, And Composites
 

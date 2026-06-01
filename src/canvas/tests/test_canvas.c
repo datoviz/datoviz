@@ -351,7 +351,7 @@ static bool canvas_test_create_instance_device(
         *skip_reason = NULL;
     }
 
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
     DvzInstance* instance = dvz_instance_create(&icfg);
     if (instance == NULL)
@@ -387,7 +387,7 @@ static bool canvas_test_create_instance_device(
 
     DvzQueues queues = {0};
     dvz_queues(&caps, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    DvzDeviceConfig dcfg = dvz_device_config(instance);
     dvz_device_config_set_gpu_index(&dcfg, 0);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
@@ -491,7 +491,7 @@ int test_canvas_defaults(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
-    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    DvzCanvasConfig cfg = dvz_canvas_config();
     AT(cfg.window == NULL);
     AT(cfg.device == NULL);
     AT(cfg.render_mode == DVZ_CANVAS_RENDER_MODE_PRESENT);
@@ -573,7 +573,7 @@ int test_canvas_offscreen_destroy_recreate(TstContext* suite, const TstCase* ite
     host = dvz_window_host();
     ANN(host);
 
-    DvzWindowConfig window_cfg = dvz_window_default_config();
+    DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "canvas-offscreen-destroy-recreate";
     window_cfg.width = 320;
     window_cfg.height = 240;
@@ -584,7 +584,7 @@ int test_canvas_offscreen_destroy_recreate(TstContext* suite, const TstCase* ite
         goto offscreen_recreate_cleanup;
     }
 
-    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    DvzCanvasConfig cfg = dvz_canvas_config();
     cfg.window = window;
     cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
@@ -660,7 +660,7 @@ int test_canvas_glfw_destroy_recreate(TstContext* suite, const TstCase* item)
         goto glfw_recreate_cleanup;
     }
 
-    DvzWindowConfig window_cfg = dvz_window_default_config();
+    DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "canvas-glfw-destroy-recreate";
     window_cfg.width = 320;
     window_cfg.height = 240;
@@ -673,7 +673,7 @@ int test_canvas_glfw_destroy_recreate(TstContext* suite, const TstCase* item)
         goto glfw_recreate_cleanup;
     }
 
-    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    DvzCanvasConfig cfg = dvz_canvas_config();
     cfg.window = window;
     cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;
@@ -744,7 +744,7 @@ static int test_canvas_offscreen_mode_headless(TstContext* suite, const TstCase*
     host = dvz_window_host();
     ANN(host);
 
-    DvzWindowConfig window_cfg = dvz_window_default_config();
+    DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "canvas-offscreen-test";
     window_cfg.width = 320;
     window_cfg.height = 240;
@@ -755,7 +755,7 @@ static int test_canvas_offscreen_mode_headless(TstContext* suite, const TstCase*
         goto offscreen_cleanup;
     }
 
-    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    DvzCanvasConfig cfg = dvz_canvas_config();
     cfg.window = window;
     cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
@@ -766,7 +766,7 @@ static int test_canvas_offscreen_mode_headless(TstContext* suite, const TstCase*
     dvz_canvas_set_draw_callback(canvas, canvas_offscreen_clear_draw, NULL);
     AT(dvz_canvas_render_mode(canvas) == DVZ_CANVAS_RENDER_MODE_OFFSCREEN);
     AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
-    DvzVideoSinkConfig external_cfg = dvz_video_sink_default_config();
+    DvzVideoSinkConfig external_cfg = dvz_video_sink_config();
     external_cfg.capture_mode = DVZ_VIDEO_CAPTURE_EXTERNAL;
     int external_video_rc = -1;
     bool external_supported =
@@ -882,7 +882,7 @@ static int test_canvas_offscreen_video_sink_cpu_readback(TstContext* suite, cons
     host = dvz_window_host();
     ANN(host);
 
-    DvzWindowConfig window_cfg = dvz_window_default_config();
+    DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "canvas-offscreen-video-test";
     window_cfg.width = 320;
     window_cfg.height = 240;
@@ -893,7 +893,7 @@ static int test_canvas_offscreen_video_sink_cpu_readback(TstContext* suite, cons
         goto offscreen_video_cleanup;
     }
 
-    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    DvzCanvasConfig cfg = dvz_canvas_config();
     cfg.window = window;
     cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
@@ -901,7 +901,7 @@ static int test_canvas_offscreen_video_sink_cpu_readback(TstContext* suite, cons
     canvas = dvz_canvas_create(&cfg);
     AT(canvas != NULL);
 
-    DvzVideoSinkConfig sink_cfg = dvz_video_sink_default_config();
+    DvzVideoSinkConfig sink_cfg = dvz_video_sink_config();
     sink_cfg.capture_mode = DVZ_VIDEO_CAPTURE_CPU_READBACK;
     sink_cfg.encoder.backend = "auto";
     sink_cfg.encoder.width = 320;
@@ -996,7 +996,7 @@ static int test_canvas_offscreen_state_on_stream_submit_failure(TstContext* suit
     host = dvz_window_host();
     ANN(host);
 
-    DvzWindowConfig window_cfg = dvz_window_default_config();
+    DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "canvas-offscreen-submit-fail-test";
     window_cfg.width = 320;
     window_cfg.height = 240;
@@ -1007,7 +1007,7 @@ static int test_canvas_offscreen_state_on_stream_submit_failure(TstContext* suit
         goto offscreen_submit_fail_cleanup;
     }
 
-    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    DvzCanvasConfig cfg = dvz_canvas_config();
     cfg.window = window;
     cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
@@ -1090,7 +1090,7 @@ static int test_canvas_offscreen_state_device_lost(TstContext* suite, const TstC
     host = dvz_window_host();
     ANN(host);
 
-    DvzWindowConfig window_cfg = dvz_window_default_config();
+    DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "canvas-offscreen-device-lost-test";
     window_cfg.width = 320;
     window_cfg.height = 240;
@@ -1101,7 +1101,7 @@ static int test_canvas_offscreen_state_device_lost(TstContext* suite, const TstC
         goto offscreen_device_lost_cleanup;
     }
 
-    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    DvzCanvasConfig cfg = dvz_canvas_config();
     cfg.window = window;
     cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
@@ -1184,7 +1184,7 @@ static int test_canvas_offscreen_handles_clean_after_rebuild(TstContext* suite, 
     host = dvz_window_host();
     ANN(host);
 
-    DvzWindowConfig window_cfg = dvz_window_default_config();
+    DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "canvas-offscreen-clean-handles-test";
     window_cfg.width = 320;
     window_cfg.height = 240;
@@ -1195,7 +1195,7 @@ static int test_canvas_offscreen_handles_clean_after_rebuild(TstContext* suite, 
         goto offscreen_clean_handles_cleanup;
     }
 
-    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    DvzCanvasConfig cfg = dvz_canvas_config();
     cfg.window = window;
     cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
@@ -1271,7 +1271,7 @@ static int test_canvas_offscreen_live_wait_monotonic_across_rebuild(TstContext* 
     host = dvz_window_host();
     ANN(host);
 
-    DvzWindowConfig window_cfg = dvz_window_default_config();
+    DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "canvas-offscreen-live-wait-test";
     window_cfg.width = 320;
     window_cfg.height = 240;
@@ -1282,7 +1282,7 @@ static int test_canvas_offscreen_live_wait_monotonic_across_rebuild(TstContext* 
         goto offscreen_live_wait_cleanup;
     }
 
-    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    DvzCanvasConfig cfg = dvz_canvas_config();
     cfg.window = window;
     cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
@@ -1374,7 +1374,7 @@ static int test_canvas_offscreen_start_update_order_across_rebuild(TstContext* s
     host = dvz_window_host();
     ANN(host);
 
-    DvzWindowConfig window_cfg = dvz_window_default_config();
+    DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "canvas-offscreen-order-test";
     window_cfg.width = 320;
     window_cfg.height = 240;
@@ -1385,7 +1385,7 @@ static int test_canvas_offscreen_start_update_order_across_rebuild(TstContext* s
         goto offscreen_order_cleanup;
     }
 
-    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    DvzCanvasConfig cfg = dvz_canvas_config();
     cfg.window = window;
     cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
@@ -1494,7 +1494,7 @@ static int test_canvas_offscreen_video_wait_monotonic_across_rebuild(TstContext*
     host = dvz_window_host();
     ANN(host);
 
-    DvzWindowConfig window_cfg = dvz_window_default_config();
+    DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "canvas-offscreen-video-wait-test";
     window_cfg.width = 320;
     window_cfg.height = 240;
@@ -1505,7 +1505,7 @@ static int test_canvas_offscreen_video_wait_monotonic_across_rebuild(TstContext*
         goto offscreen_video_wait_cleanup;
     }
 
-    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    DvzCanvasConfig cfg = dvz_canvas_config();
     cfg.window = window;
     cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
@@ -1521,7 +1521,7 @@ static int test_canvas_offscreen_video_wait_monotonic_across_rebuild(TstContext*
     };
     AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
 
-    DvzVideoSinkConfig sink_cfg = dvz_video_sink_default_config();
+    DvzVideoSinkConfig sink_cfg = dvz_video_sink_config();
     sink_cfg.capture_mode = DVZ_VIDEO_CAPTURE_CPU_READBACK;
     sink_cfg.encoder.backend = "auto";
     sink_cfg.encoder.width = 320;
@@ -1633,7 +1633,7 @@ static int test_canvas_present_mode_rejects_offscreen_window(TstContext* suite, 
     host = dvz_window_host();
     ANN(host);
 
-    DvzWindowConfig window_cfg = dvz_window_default_config();
+    DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "canvas-offscreen-guard-test";
     window_cfg.width = 320;
     window_cfg.height = 240;
@@ -1644,7 +1644,7 @@ static int test_canvas_present_mode_rejects_offscreen_window(TstContext* suite, 
         goto guard_cleanup;
     }
 
-    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    DvzCanvasConfig cfg = dvz_canvas_config();
     cfg.window = window;
     cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;

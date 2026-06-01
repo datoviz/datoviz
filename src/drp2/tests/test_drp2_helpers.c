@@ -79,7 +79,7 @@ static DvzGpuCtxConfig _drp2_vklite_gpu_ctx_config(void)
 
 bool drp2_test_vklite_runtime_available(void)
 {
-    DvzInstanceConfig cfg = dvz_instance_default_config();
+    DvzInstanceConfig cfg = dvz_instance_config();
     cfg.flags = 0;
     DvzInstance* instance = dvz_instance_create(&cfg);
     if (instance == NULL)

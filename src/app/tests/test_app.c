@@ -483,7 +483,7 @@ static int test_app_resources_borrow_gpu_ctx_and_runtime(TstContext* suite, cons
     AT(app != NULL);
     dvz_app_destroy(app);
 
-    DvzDrp2RuntimeConfig after_cfg = dvz_drp2_runtime_config(runtime);
+    DvzDrp2RuntimeConfig after_cfg = dvz_drp2_runtime_get_config(runtime);
     AT(after_cfg.device == dvz_gpu_ctx_device(gpu_ctx));
     AT(after_cfg.allocator == dvz_gpu_ctx_alloc(gpu_ctx));
     dvz_drp2_runtime_destroy(runtime);

@@ -112,7 +112,7 @@ def main() -> int:
         got = [out[i] for i in range(count)]
         assert got == ext_names, (got, ext_names)
 
-        cfg = lib.dvz_window_default_config()
+        cfg = lib.dvz_window_config()
         cfg.title = b"py-wrap-smoke"
         window = lib.dvz_window_create(host, DVZ_BACKEND_WRAP, ctypes.byref(cfg))
         assert window, "failed to create wrap window"

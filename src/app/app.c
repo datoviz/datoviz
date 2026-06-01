@@ -1462,7 +1462,7 @@ static bool _app_runtime_matches_gpu_ctx(DvzDrp2Runtime* runtime, DvzGpuCtx* gpu
     ANN(runtime);
     ANN(gpu_ctx);
 
-    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_config(runtime);
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_get_config(runtime);
     if (cfg.semantic_only)
         return false;
     return cfg.device == dvz_gpu_ctx_device(gpu_ctx) &&
@@ -3285,7 +3285,7 @@ dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t heig
         return NULL;
 
     /* Create the offscreen window. */
-    DvzWindowConfig wcfg = dvz_window_default_config();
+    DvzWindowConfig wcfg = dvz_window_config();
     wcfg.width           = width;
     wcfg.height          = height;
     DvzWindow* window = dvz_window_create(app->window_host, DVZ_BACKEND_OFFSCREEN, &wcfg);
@@ -3293,7 +3293,7 @@ dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t heig
         return NULL;
 
     /* Create an offscreen canvas. */
-    DvzCanvasConfig ccfg = dvz_canvas_default_config();
+    DvzCanvasConfig ccfg = dvz_canvas_config();
     ccfg.window          = window;
     ccfg.device          = dvz_gpu_ctx_device(app->gpu_ctx);
     ccfg.render_mode     = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
@@ -3345,7 +3345,7 @@ dvz_view_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height,
     if (app->view_count >= DVZ_APP_MAX_VIEWS)
         return NULL;
 
-    DvzWindowConfig wcfg = dvz_window_default_config();
+    DvzWindowConfig wcfg = dvz_window_config();
     wcfg.width  = width;
     wcfg.height = height;
     if (title != NULL)
@@ -3361,7 +3361,7 @@ dvz_view_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height,
     /* Poll once so the initial resize event sets the surface extent. */
     dvz_window_host_poll(app->window_host);
 
-    DvzCanvasConfig ccfg = dvz_canvas_default_config();
+    DvzCanvasConfig ccfg = dvz_canvas_config();
     ccfg.window = window;
     ccfg.device = dvz_gpu_ctx_device(app->gpu_ctx);
     /* render_mode defaults to DVZ_CANVAS_RENDER_MODE_PRESENT */
@@ -3434,7 +3434,7 @@ DvzView* dvz_view_external_surface(
     if (app->view_count >= DVZ_APP_MAX_VIEWS)
         return NULL;
 
-    DvzWindowConfig wcfg = dvz_window_default_config();
+    DvzWindowConfig wcfg = dvz_window_config();
     wcfg.width = surface->extent.width;
     wcfg.height = surface->extent.height;
     DvzWindow* window = dvz_window_create(app->window_host, DVZ_BACKEND_WRAP, &wcfg);
@@ -3450,7 +3450,7 @@ DvzView* dvz_view_external_surface(
         return NULL;
     }
 
-    DvzCanvasConfig ccfg = dvz_canvas_default_config();
+    DvzCanvasConfig ccfg = dvz_canvas_config();
     ccfg.window = window;
     ccfg.device = dvz_gpu_ctx_device(app->gpu_ctx);
     _app_canvas_config_apply_present_mode_env(&ccfg);
@@ -4138,7 +4138,7 @@ int dvz_view_capture_start(DvzView* win, const DvzAppCaptureConfig* config)
             return -1;
         }
 
-        DvzVideoSinkConfig video = dvz_video_sink_default_config();
+        DvzVideoSinkConfig video = dvz_video_sink_config();
         const char* backend = resolved.video_backend != NULL ? resolved.video_backend : "auto";
         int backend_rc = dvz_snprintf(
             win->capture_video_backend, sizeof(win->capture_video_backend), "%s", backend);

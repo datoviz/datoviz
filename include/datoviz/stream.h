@@ -31,7 +31,7 @@ EXTERN_C_ON
  *
  * @returns a configuration initialized with common output parameters
  */
-DVZ_EXPORT DvzStreamConfig dvz_stream_default_config(void);
+DVZ_EXPORT DvzStreamConfig dvz_stream_config(void);
 
 
 
@@ -144,7 +144,7 @@ DVZ_EXPORT DvzDevice* dvz_stream_device(DvzStream* stream);
  * @param stream stream handle
  * @returns pointer to the configuration or NULL when the stream is NULL
  */
-DVZ_EXPORT const DvzStreamConfig* dvz_stream_config(DvzStream* stream);
+DVZ_EXPORT const DvzStreamConfig* dvz_stream_get_config(DvzStream* stream);
 
 
 

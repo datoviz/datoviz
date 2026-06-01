@@ -211,10 +211,10 @@ int main(int argc, char** argv)
     DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
 
     DvzWindowHost* host = dvz_window_host();
-    DvzWindowConfig wcfg = dvz_window_default_config();
+    DvzWindowConfig wcfg = dvz_window_config();
     wcfg.width = 800; wcfg.height = 600;
 
-    DvzCanvasConfig ccfg = dvz_canvas_default_config();
+    DvzCanvasConfig ccfg = dvz_canvas_config();
     ccfg.device = dvz_gpu_ctx_device(ctx);
 
     if (strcmp(backend_name, "glfw") == 0) {

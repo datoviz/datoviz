@@ -100,7 +100,7 @@ static const DvzStreamSinkBackend* canvas_primary_sink_backend(DvzCanvas* canvas
 static DvzStreamConfig canvas_stream_config(const DvzCanvas* canvas)
 {
     ANN(canvas);
-    DvzStreamConfig cfg = dvz_stream_default_config();
+    DvzStreamConfig cfg = dvz_stream_config();
     if (canvas->surface)
     {
         cfg.width = canvas->surface->extent.width;
@@ -244,7 +244,7 @@ static int canvas_create_stream_with_sinks(
             dvz_stream_destroy(stream);
             return -1;
         }
-        DvzVideoSinkConfig sink_cfg = cfg ? *cfg : dvz_video_sink_default_config();
+        DvzVideoSinkConfig sink_cfg = cfg ? *cfg : dvz_video_sink_config();
         sink_cfg.capture_mode = capture_mode;
         if (cfg == NULL)
         {
@@ -463,7 +463,7 @@ int dvz_canvas_stream_enable_video(
         {
             return 0;
         }
-        canvas->video_sink_cfg = cfg ? *cfg : dvz_video_sink_default_config();
+        canvas->video_sink_cfg = cfg ? *cfg : dvz_video_sink_config();
         canvas->video_sink_cfg.capture_mode = capture_mode;
         canvas->video_sink_cfg_valid = true;
         return canvas_rebuild_stream(

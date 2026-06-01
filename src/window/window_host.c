@@ -274,7 +274,7 @@ static void _window_setup_config(DvzWindow* window, const DvzWindowConfig* confi
 /**
  * Return the default configuration for a window.
  */
-DvzWindowConfig dvz_window_default_config(void)
+DvzWindowConfig dvz_window_config(void)
 {
     DvzWindowConfig config = {
         .width = DVZ_WINDOW_DEFAULT_WIDTH,
@@ -358,7 +358,7 @@ DvzWindow*
 dvz_window_create(DvzWindowHost* host, DvzBackend backend, const DvzWindowConfig* config)
 {
     ANN(host);
-    DvzWindowConfig chosen = config ? *config : dvz_window_default_config();
+    DvzWindowConfig chosen = config ? *config : dvz_window_config();
     DvzWindowBackendSlot* slot = _window_pick_backend(host, backend);
     if (slot == NULL || !slot->available || slot->backend.procs.create == NULL)
     {

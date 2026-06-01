@@ -92,7 +92,7 @@ typedef struct DvzVideoEncoder
  * Allocate and configure an encoder instance backed by the given device.
  *
  * @param device Vulkan device used for image/memory imports (may be NULL)
- * @param cfg optional encoder configuration, falls back to `dvz_video_encoder_default_config()`
+ * @param cfg optional encoder configuration, falls back to `dvz_video_encoder_config()`
  * @returns a new encoder handle or NULL on allocation failure
  */
 DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncoderConfig* cfg);

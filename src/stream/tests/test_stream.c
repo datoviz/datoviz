@@ -180,12 +180,12 @@ int test_stream_attach_video(TstContext* suite, const TstCase* item)
     DvzStreamSinkRegistry* registry = dvz_stream_sink_registry_create();
     ANN(registry);
 
-    DvzStreamConfig cfg = dvz_stream_default_config();
+    DvzStreamConfig cfg = dvz_stream_config();
     dvz_stream_sink_registry_register(registry, dvz_stream_sink_video());
     DvzStream* stream = dvz_stream_create(NULL, registry, &cfg);
     AT(stream != NULL);
 
-    DvzVideoSinkConfig vc = dvz_video_sink_default_config();
+    DvzVideoSinkConfig vc = dvz_video_sink_config();
     AT(dvz_stream_attach_sink(stream, dvz_stream_sink_video(), &vc) == 0);
 
     dvz_stream_destroy(stream);
@@ -203,7 +203,7 @@ int test_stream_start_rollback_on_sink_failure(TstContext* suite, const TstCase*
     DvzStreamSinkRegistry* registry = dvz_stream_sink_registry_create();
     ANN(registry);
 
-    DvzStreamConfig cfg = dvz_stream_default_config();
+    DvzStreamConfig cfg = dvz_stream_config();
     DvzStream* stream = dvz_stream_create(NULL, registry, &cfg);
     AT(stream != NULL);
 
@@ -277,7 +277,7 @@ int test_stream_submit_returns_first_error(TstContext* suite, const TstCase* ite
     DvzStreamSinkRegistry* registry = dvz_stream_sink_registry_create();
     ANN(registry);
 
-    DvzStreamConfig cfg = dvz_stream_default_config();
+    DvzStreamConfig cfg = dvz_stream_config();
     DvzStream* stream = dvz_stream_create(NULL, registry, &cfg);
     AT(stream != NULL);
 
@@ -349,7 +349,7 @@ int test_stream_update_restart_failure_stops_stream(TstContext* suite, const Tst
     DvzStreamSinkRegistry* registry = dvz_stream_sink_registry_create();
     ANN(registry);
 
-    DvzStreamConfig cfg = dvz_stream_default_config();
+    DvzStreamConfig cfg = dvz_stream_config();
     DvzStream* stream = dvz_stream_create(NULL, registry, &cfg);
     AT(stream != NULL);
 
@@ -426,7 +426,7 @@ int test_stream_attach_sink_name_prefers_requested_then_auto(TstContext* suite, 
     DvzStreamSinkRegistry* registry = dvz_stream_sink_registry_create();
     ANN(registry);
 
-    DvzStreamConfig cfg = dvz_stream_default_config();
+    DvzStreamConfig cfg = dvz_stream_config();
     DvzStream* stream = dvz_stream_create(NULL, registry, &cfg);
     AT(stream != NULL);
 

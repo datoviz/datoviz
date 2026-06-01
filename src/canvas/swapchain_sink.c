@@ -227,7 +227,7 @@ static VkFormat canvas_frame_format(const DvzCanvas* canvas)
     ANN(canvas);
     if (canvas->stream)
     {
-        const DvzStreamConfig* stream_cfg = dvz_stream_config(canvas->stream);
+        const DvzStreamConfig* stream_cfg = dvz_stream_get_config(canvas->stream);
         if (stream_cfg && stream_cfg->color_format != VK_FORMAT_UNDEFINED)
         {
             return stream_cfg->color_format;

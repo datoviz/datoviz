@@ -85,7 +85,7 @@ typedef enum
  *
  * @returns the default instance configuration
  */
-DVZ_EXPORT DvzInstanceConfig dvz_instance_default_config(void);
+DVZ_EXPORT DvzInstanceConfig dvz_instance_config(void);
 
 
 

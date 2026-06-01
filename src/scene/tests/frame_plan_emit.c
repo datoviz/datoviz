@@ -2170,7 +2170,7 @@ int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* ite
     DvzWindowHost* host = dvz_window_host();
     ANN(host);
 
-    DvzWindowConfig window_cfg = dvz_window_default_config();
+    DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "scene-drp2-offscreen-canvas";
     window_cfg.width = 64;
     window_cfg.height = 64;
@@ -2184,7 +2184,7 @@ int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* ite
         return 0;
     }
 
-    DvzCanvasConfig canvas_cfg = dvz_canvas_default_config();
+    DvzCanvasConfig canvas_cfg = dvz_canvas_config();
     canvas_cfg.window = window;
     canvas_cfg.device = dvz_gpu_ctx_device(ctx);
     canvas_cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;

@@ -284,7 +284,7 @@ static void destroy_dpool(DvzDevice* device)
  * @param instance source instance
  * @return initialized device configuration with sensible defaults
  */
-DvzDeviceConfig dvz_device_default_config(DvzInstance* instance)
+DvzDeviceConfig dvz_device_config(DvzInstance* instance)
 {
     INIT(DvzDeviceConfig, cfg);
     cfg.instance = instance;

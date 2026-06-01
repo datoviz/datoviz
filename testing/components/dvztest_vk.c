@@ -41,7 +41,7 @@ static const char* _vklite_skip_unless_runtime(TstContext* suite, const TstCase*
     (void)suite;
     (void)item;
 
-    DvzInstanceConfig cfg = dvz_instance_default_config();
+    DvzInstanceConfig cfg = dvz_instance_config();
     cfg.flags = 0;
     DvzInstance* instance = dvz_instance_create(&cfg);
     if (instance == NULL)

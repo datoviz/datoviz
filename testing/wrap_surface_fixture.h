@@ -36,7 +36,7 @@
 static inline DvzWindowConfig
 dvz_test_wrap_window_config(const char* title, uint32_t width, uint32_t height)
 {
-    DvzWindowConfig cfg = dvz_window_default_config();
+    DvzWindowConfig cfg = dvz_window_config();
     cfg.title = title;
     cfg.width = width;
     cfg.height = height;

@@ -74,7 +74,7 @@ static const DvzVideoSinkConfig* video_sink_config(const void* config)
     static bool initialized = false;
     if (!initialized)
     {
-        default_cfg = dvz_video_sink_default_config();
+        default_cfg = dvz_video_sink_config();
         initialized = true;
     }
     return &default_cfg;
@@ -166,7 +166,7 @@ static int video_sink_create(DvzStreamSink* sink, const void* config)
         }
     }
 
-    const DvzStreamConfig* stream_cfg = dvz_stream_config(sink->stream);
+    const DvzStreamConfig* stream_cfg = dvz_stream_get_config(sink->stream);
     if (stream_cfg)
     {
         state->cfg.encoder.color_format = stream_cfg->color_format;
@@ -357,10 +357,10 @@ const DvzStreamSinkBackend DVZ_STREAM_SINK_VIDEO = {
  *
  * @returns sink configuration with default encoder settings and no bitstream file
  */
-DVZ_EXPORT DvzVideoSinkConfig dvz_video_sink_default_config(void)
+DVZ_EXPORT DvzVideoSinkConfig dvz_video_sink_config(void)
 {
     DvzVideoSinkConfig cfg = {
-        .encoder = dvz_video_encoder_default_config(),
+        .encoder = dvz_video_encoder_config(),
         .bitstream = NULL,
         .capture_mode = DVZ_VIDEO_CAPTURE_AUTO,
         .capture_rgba = NULL,

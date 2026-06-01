@@ -254,13 +254,13 @@ int main(int argc, char** argv)
 
     /* Window + canvas (offscreen for both modes) */
     DvzWindowHost* host = dvz_window_host();
-    DvzWindowConfig wcfg = dvz_window_default_config();
+    DvzWindowConfig wcfg = dvz_window_config();
     wcfg.width  = 800;
     wcfg.height = 600;
     DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &wcfg);
     if (!window) { fprintf(stderr, "Window creation failed\n"); dvz_gpu_ctx_destroy(ctx); return 1; }
 
-    DvzCanvasConfig ccfg = dvz_canvas_default_config();
+    DvzCanvasConfig ccfg = dvz_canvas_config();
     ccfg.window      = window;
     ccfg.device      = dvz_gpu_ctx_device(ctx);
     ccfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
@@ -269,7 +269,7 @@ int main(int argc, char** argv)
 
     /* Video sink */
     if (video_mode) {
-        DvzVideoSinkConfig vsink = dvz_video_sink_default_config();
+        DvzVideoSinkConfig vsink = dvz_video_sink_config();
         vsink.encoder.backend  = "auto";
         vsink.encoder.width    = wcfg.width;
         vsink.encoder.height   = wcfg.height;

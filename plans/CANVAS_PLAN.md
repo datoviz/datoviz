@@ -77,7 +77,7 @@ Canvases derive their size from `DvzWindowSurface` (logical × DPI scale) and do
 
 ## Current implementation status (`src/canvas/`)
 
-- `canvas.c` already exposes the public API (`dvz_canvas_default_config()`, `dvz_canvas_create/destroy()`, `dvz_canvas_frame()`, `dvz_canvas_submit()`, draw callback registration, timings accessor, router proxy). It initializes a per-canvas `DvzStream`, rotates through a small CPU-side `DvzCanvasFramePool`, and records CPU submit timings in `dvz_canvas_timings_*`.
+- `canvas.c` already exposes the public API (`dvz_canvas_config()`, `dvz_canvas_create/destroy()`, `dvz_canvas_frame()`, `dvz_canvas_submit()`, draw callback registration, timings accessor, router proxy). It initializes a per-canvas `DvzStream`, rotates through a small CPU-side `DvzCanvasFramePool`, and records CPU submit timings in `dvz_canvas_timings_*`.
 - `canvas_stream.c` wires canvases to the frame-stream module: it registers the swapchain sink backend stub, attaches it, starts/submits the stream, and toggles the optional video sink (`dvz_canvas_stream_enable_video()` delegates to `dvz_stream_sink_video()`).
 - `window_surface.c` caches/retrieves `DvzWindowSurface` snapshots so canvases can track extent/format/scale without poking window internals.
 - `tests/test_canvas.c` already covers default configuration, frame pool rotation, and timing buffer wraparound. As swapchain/presentation logic comes online, extend these tests rather than replacing them.

@@ -95,7 +95,7 @@ DVZ_EXPORT DvzDrp2Runtime* dvz_drp2_runtime_vklite(const DvzDrp2RuntimeConfig* c
  * @param runtime the runtime
  * @return the runtime configuration, or zero-initialized fields when runtime is NULL
  */
-DVZ_EXPORT DvzDrp2RuntimeConfig dvz_drp2_runtime_config(const DvzDrp2Runtime* runtime);
+DVZ_EXPORT DvzDrp2RuntimeConfig dvz_drp2_runtime_get_config(const DvzDrp2Runtime* runtime);
 
 
 

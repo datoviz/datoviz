@@ -112,7 +112,7 @@ static bool _dvz_has_config_string(uint32_t count, const char* const* values, co
  *
  * @return initialized instance configuration with sensible defaults
  */
-DvzInstanceConfig dvz_instance_default_config(void)
+DvzInstanceConfig dvz_instance_config(void)
 {
     INIT(DvzInstanceConfig, cfg);
     cfg.vk_version = VK_API_VERSION_1_3;

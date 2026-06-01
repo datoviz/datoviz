@@ -130,7 +130,7 @@ static void _present_fixture_destroy(DvzVklitePresentFixture* fixture)
 static DvzInstance* _present_instance_create(
     const char** extensions, uint32_t ext_count, uint32_t vk_version, bool force_portability)
 {
-    DvzInstanceConfig cfg = dvz_instance_default_config();
+    DvzInstanceConfig cfg = dvz_instance_config();
     cfg.flags = 0;
     cfg.vk_version = vk_version;
     dvz_instance_config_request_extension(&cfg, VK_KHR_SURFACE_EXTENSION_NAME);
@@ -305,7 +305,7 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
     }
     DvzQueues queues = {0};
     dvz_queues(&gpu_info.queue_caps, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(fixture->instance);
+    DvzDeviceConfig dcfg = dvz_device_config(fixture->instance);
     dvz_device_config_set_gpu_index(&dcfg, 0);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
@@ -320,7 +320,7 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
         return false;
     }
 
-    DvzWindowConfig cfg = dvz_window_default_config();
+    DvzWindowConfig cfg = dvz_window_config();
     cfg.title = "vklite-present-test";
     cfg.width = 320;
     cfg.height = 240;

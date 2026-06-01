@@ -32,7 +32,7 @@ own all rendering logic.
 
 **Primary API anchors:**
 
-- `dvz_canvas_default_config()`
+- `dvz_canvas_config()`
 - `dvz_canvas_create()` / `dvz_canvas_destroy()`
 - `dvz_canvas_set_draw_callback()`
 - `dvz_canvas_frame()`

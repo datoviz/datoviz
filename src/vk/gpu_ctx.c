@@ -278,7 +278,7 @@ DvzGpuCtx* dvz_gpu_ctx(const DvzGpuCtxConfig* cfg)
     ANN(ctx);
     ctx->cfg = *cfg;
 
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
     icfg.flags = cfg->enable_validation ? DVZ_INSTANCE_VALIDATION_FLAGS : 0;
     for (uint32_t i = 0; i < cfg->instance_extension_count; i++)
         dvz_instance_config_request_extension(&icfg, cfg->instance_extensions[i]);
@@ -297,7 +297,7 @@ DvzGpuCtx* dvz_gpu_ctx(const DvzGpuCtxConfig* cfg)
         return NULL;
     }
 
-    DvzDeviceConfig dcfg = dvz_device_default_config(ctx->instance);
+    DvzDeviceConfig dcfg = dvz_device_config(ctx->instance);
     if (!dvz_device_config_set_gpu_index(&dcfg, cfg->gpu_index))
     {
         dvz_gpu_ctx_destroy(ctx);

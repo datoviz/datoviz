@@ -43,7 +43,7 @@
 static DvzStreamConfig canvas_stream_config(const DvzCanvas* canvas)
 {
     ANN(canvas);
-    DvzStreamConfig cfg = dvz_stream_default_config();
+    DvzStreamConfig cfg = dvz_stream_config();
     if (canvas->surface)
     {
         cfg.width = canvas->surface->extent.width;
@@ -970,7 +970,7 @@ static int canvas_offscreen_capture_rgba_into(
  *
  * @returns a configuration initialized with sensible defaults
  */
-DvzCanvasConfig dvz_canvas_default_config(void)
+DvzCanvasConfig dvz_canvas_config(void)
 {
     DvzCanvasConfig cfg = {
         .window = NULL,
@@ -993,7 +993,7 @@ DvzCanvasConfig dvz_canvas_default_config(void)
  */
 DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
 {
-    DvzCanvasConfig resolved = cfg ? *cfg : dvz_canvas_default_config();
+    DvzCanvasConfig resolved = cfg ? *cfg : dvz_canvas_config();
     if (
         resolved.render_mode != DVZ_CANVAS_RENDER_MODE_PRESENT &&
         resolved.render_mode != DVZ_CANVAS_RENDER_MODE_OFFSCREEN)

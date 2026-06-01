@@ -104,7 +104,7 @@ DVZ_EXPORT void dvz_window_host_request_frame(DvzWindowHost* host, DvzWindow* wi
  *
  * @returns sensible defaults (width, height, title, scale)
  */
-DVZ_EXPORT DvzWindowConfig dvz_window_default_config(void);
+DVZ_EXPORT DvzWindowConfig dvz_window_config(void);
 
 
 

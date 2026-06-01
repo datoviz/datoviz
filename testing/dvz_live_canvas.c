@@ -932,7 +932,7 @@ static void _dvz_canvas_toggle_recording(DvzCanvasApp* app)
     {
         const DvzWindowSurface* surface = dvz_window_surface(app->window);
         ANN(surface);
-        app->video_cfg = dvz_video_sink_default_config();
+        app->video_cfg = dvz_video_sink_config();
         app->video_cfg.encoder.backend = "auto";
         app->video_cfg.encoder.width = surface->extent.width;
         app->video_cfg.encoder.height = surface->extent.height;
@@ -1157,7 +1157,7 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
         return false;
     }
 
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
 #if ENABLE_VALIDATION_LAYERS
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
 #endif
@@ -1214,7 +1214,7 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
 
     DvzQueues queues = {0};
     dvz_queues(&caps, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(app->instance);
+    DvzDeviceConfig dcfg = dvz_device_config(app->instance);
     dvz_device_config_set_gpu_index(&dcfg, 0);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
@@ -1247,7 +1247,7 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
         return false;
     }
 
-    DvzWindowConfig wcfg = dvz_window_default_config();
+    DvzWindowConfig wcfg = dvz_window_config();
     wcfg.width = app->options.width;
     wcfg.height = app->options.height;
     wcfg.title = app->options.title;
@@ -1286,7 +1286,7 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
         dvz_fprintf(stderr, "offscreen backend selected, defaulting duration to %.1fs\\n", 5.0);
     }
 
-    DvzCanvasConfig ccfg = dvz_canvas_default_config();
+    DvzCanvasConfig ccfg = dvz_canvas_config();
     ccfg.window = app->window;
     ccfg.device = app->device;
     ccfg.render_mode = app->options.render_mode;

@@ -77,7 +77,7 @@ struct DvzDeviceConfig
  * @param instance the source instance
  * @returns the default device configuration
  */
-DVZ_EXPORT DvzDeviceConfig dvz_device_default_config(DvzInstance* instance);
+DVZ_EXPORT DvzDeviceConfig dvz_device_config(DvzInstance* instance);
 
 
 

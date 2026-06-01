@@ -103,7 +103,7 @@ static void video_encoder_release(DvzVideoEncoder* enc)
 /*  Front-end API                                                                                */
 /*************************************************************************************************/
 
-DvzVideoEncoderConfig dvz_video_encoder_default_config(void)
+DvzVideoEncoderConfig dvz_video_encoder_config(void)
 {
     DvzVideoEncoderConfig cfg = {
         .width = WIDTH,
@@ -127,7 +127,7 @@ DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncod
     DvzVideoEncoder* enc = (DvzVideoEncoder*)dvz_calloc(1, sizeof(DvzVideoEncoder));
     ANN(enc);
     enc->device = device;
-    enc->cfg = cfg ? *cfg : dvz_video_encoder_default_config();
+    enc->cfg = cfg ? *cfg : dvz_video_encoder_config();
     enc->memory_fd = -1;
     enc->wait_semaphore_fd = -1;
     enc->mp4_writer = NULL;

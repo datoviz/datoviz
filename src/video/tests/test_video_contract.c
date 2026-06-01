@@ -27,7 +27,7 @@ int test_video_offline_headless_encode(TstContext* suite, const TstCase* tstitem
     ANN(suite);
     ANN(tstitem);
 
-    DvzVideoEncoderConfig cfg = dvz_video_encoder_default_config();
+    DvzVideoEncoderConfig cfg = dvz_video_encoder_config();
     AT(cfg.width > 0);
     AT(cfg.height > 0);
     AT(cfg.fps > 0);

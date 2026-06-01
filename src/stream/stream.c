@@ -153,7 +153,7 @@ static void stream_release_sinks(DvzStream* stream)
 /*  API                                                                                          */
 /*************************************************************************************************/
 
-DvzStreamConfig dvz_stream_default_config(void)
+DvzStreamConfig dvz_stream_config(void)
 {
     DvzStreamConfig cfg = {
         .width = 1920,
@@ -181,7 +181,7 @@ DvzStream* dvz_stream_create(
     DvzStream* stream = (DvzStream*)dvz_calloc(1, sizeof(DvzStream));
     ANN(stream);
     stream->device = device;
-    stream->cfg = cfg ? *cfg : dvz_stream_default_config();
+    stream->cfg = cfg ? *cfg : dvz_stream_config();
     stream_reset_frame(&stream->frame);
     stream->frame_valid = false;
     stream->sink_registry = sink_registry;
@@ -426,7 +426,7 @@ DvzDevice* dvz_stream_device(DvzStream* stream)
 
 
 
-const DvzStreamConfig* dvz_stream_config(DvzStream* stream)
+const DvzStreamConfig* dvz_stream_get_config(DvzStream* stream)
 {
     return stream ? &stream->cfg : NULL;
 }

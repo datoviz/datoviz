@@ -40,7 +40,7 @@ int test_device_1(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Create an instance.
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
     DvzInstance* instance = dvz_instance_create(&icfg);
     AT(instance != NULL);
@@ -52,7 +52,7 @@ int test_device_1(TstContext* suite, const TstCase* tstitem)
     // Initialize a device.
     DvzQueues queues = {0};
     dvz_queues(&qc, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    DvzDeviceConfig dcfg = dvz_device_config(instance);
     dvz_device_config_set_gpu_index(&dcfg, 0);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
@@ -76,7 +76,7 @@ int test_device_2(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Create an instance.
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
     DvzInstance* instance = dvz_instance_create(&icfg);
     AT(instance != NULL);
@@ -87,7 +87,7 @@ int test_device_2(TstContext* suite, const TstCase* tstitem)
     DvzGpu* gpu = &gpus[0];
 
     // Initialize a device.
-    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    DvzDeviceConfig dcfg = dvz_device_config(instance);
 
     // Device extensions.
     dvz_gpu_probe_extensions(gpu);
@@ -140,7 +140,7 @@ int test_device_3(TstContext* suite, const TstCase* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
     DvzInstance* instance = dvz_instance_create(&icfg);
     AT(instance != NULL);
@@ -150,7 +150,7 @@ int test_device_3(TstContext* suite, const TstCase* tstitem)
     AT(gpus != NULL);
     AT(count > 0);
 
-    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    DvzDeviceConfig dcfg = dvz_device_config(instance);
     dvz_device_config_set_gpu_index(&dcfg, count);
     DvzDevice* device = NULL;
     AT_EXPECTED_ERROR_STRICT(suite, (device = dvz_device_create(&dcfg)) == NULL);
@@ -166,7 +166,7 @@ int test_device_4(TstContext* suite, const TstCase* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
     DvzInstance* instance = dvz_instance_create(&icfg);
     AT(instance != NULL);
@@ -182,7 +182,7 @@ int test_device_destroy_rebuild(TstContext* suite, const TstCase* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
     DvzInstance* instance = dvz_instance_create(&icfg);
     AT(instance != NULL);
@@ -235,7 +235,7 @@ int test_device_build_requires_destroy(TstContext* suite, const TstCase* tstitem
     ANN(suite);
     ANN(tstitem);
 
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
     DvzInstance* instance = dvz_instance_create(&icfg);
     AT(instance != NULL);

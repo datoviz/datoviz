@@ -92,7 +92,7 @@ bool _scene_request_executor_prepare(DvzSceneRequestExecutor* executor, DvzDrp2R
     ANN(executor);
     ANN(source_runtime);
 
-    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_config(source_runtime);
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_get_config(source_runtime);
     if (executor->runtime != NULL && executor->emitter != NULL &&
         _query_runtime_config_matches(&executor->runtime_cfg, &runtime_cfg))
     {

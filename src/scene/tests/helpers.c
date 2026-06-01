@@ -80,7 +80,7 @@ const uint8_t* _pixel_at(
  */
 bool _scene_vklite_runtime_available(void)
 {
-    DvzInstanceConfig cfg = dvz_instance_default_config();
+    DvzInstanceConfig cfg = dvz_instance_config();
     cfg.flags = 0;
     DvzInstance* instance = dvz_instance_create(&cfg);
     if (instance == NULL)

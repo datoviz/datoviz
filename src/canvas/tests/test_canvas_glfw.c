@@ -224,7 +224,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     log_warn("canvas glfw fixture unavailable because Datoviz was not build with glfw support");
     return 0;
 #else
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
     dvz_instance_config_request_extension(&icfg, VK_KHR_SURFACE_EXTENSION_NAME);
 
@@ -293,7 +293,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
 
     DvzQueues queues = {0};
     dvz_queues(&caps, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(fixture->instance);
+    DvzDeviceConfig dcfg = dvz_device_config(fixture->instance);
     dvz_device_config_set_gpu_index(&dcfg, 0);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
@@ -316,7 +316,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
         return 0;
     }
 
-    DvzWindowConfig window_cfg = dvz_window_default_config();
+    DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "canvas-glfw-test";
     window_cfg.visible = _canvas_glfw_test_visible();
     fixture->window = dvz_window_create(fixture->host, DVZ_BACKEND_GLFW, &window_cfg);
@@ -329,7 +329,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
 
     dvz_window_host_poll(fixture->host);
 
-    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    DvzCanvasConfig cfg = dvz_canvas_config();
     cfg.window = fixture->window;
     cfg.device = fixture->device;
     cfg.present_mode = VK_PRESENT_MODE_FIFO_KHR;
@@ -1103,7 +1103,7 @@ int test_canvas_video_sink_start_submit_integration(TstContext* suite, const Tst
     }
 
     DvzCanvasSurfaceInfo surface = dvz_canvas_window_surface_info(canvas);
-    DvzVideoSinkConfig sink_cfg = dvz_video_sink_default_config();
+    DvzVideoSinkConfig sink_cfg = dvz_video_sink_config();
     sink_cfg.encoder.backend = "auto";
     sink_cfg.encoder.width = surface.extent.width ? surface.extent.width : 640;
     sink_cfg.encoder.height = surface.extent.height ? surface.extent.height : 480;
@@ -1216,7 +1216,7 @@ int test_canvas_video_sink_disable_rebuild(TstContext* suite, const TstCase* ite
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
 
     DvzCanvasSurfaceInfo surface = dvz_canvas_window_surface_info(canvas);
-    DvzVideoSinkConfig sink_cfg = dvz_video_sink_default_config();
+    DvzVideoSinkConfig sink_cfg = dvz_video_sink_config();
     sink_cfg.encoder.backend = "auto";
     sink_cfg.encoder.width = surface.extent.width ? surface.extent.width : 640;
     sink_cfg.encoder.height = surface.extent.height ? surface.extent.height : 480;
@@ -1624,7 +1624,7 @@ int test_canvas_glfw_wrap_surface_present_recovery(TstContext* suite, const TstC
         return 0;
     }
 
-    DvzCanvasConfig canvas_cfg = dvz_canvas_default_config();
+    DvzCanvasConfig canvas_cfg = dvz_canvas_config();
     canvas_cfg.window = wrap.wrap_window;
     canvas_cfg.device = fixture.device;
     canvas_cfg.present_mode = VK_PRESENT_MODE_FIFO_KHR;
@@ -1774,7 +1774,7 @@ int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstContext* su
         return 0;
     }
 
-    DvzCanvasConfig canvas_cfg = dvz_canvas_default_config();
+    DvzCanvasConfig canvas_cfg = dvz_canvas_config();
     canvas_cfg.window = wrap.wrap_window;
     canvas_cfg.device = fixture.device;
     canvas_cfg.present_mode = VK_PRESENT_MODE_FIFO_KHR;
@@ -1938,7 +1938,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
     const char* skip_reason = NULL;
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
     dvz_instance_config_request_extension(&icfg, VK_KHR_SURFACE_EXTENSION_NAME);
 
@@ -2007,7 +2007,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     // Create the device.
     DvzQueues queues = {0};
     dvz_queues(&caps, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    DvzDeviceConfig dcfg = dvz_device_config(instance);
     dvz_device_config_set_gpu_index(&dcfg, 0);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
@@ -2031,7 +2031,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     }
 
     log_trace("creating window");
-    DvzWindowConfig window_cfg = dvz_window_default_config();
+    DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "canvas-glfw-test";
     window_cfg.visible = _canvas_glfw_test_visible();
     window = dvz_window_create(host, DVZ_BACKEND_GLFW, &window_cfg);
@@ -2044,7 +2044,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
 
     dvz_window_host_poll(host);
 
-    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    DvzCanvasConfig cfg = dvz_canvas_config();
     cfg.window = window;
     cfg.device = device;
     cfg.present_mode = VK_PRESENT_MODE_FIFO_KHR;
@@ -2076,7 +2076,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
         bool has_external_semaphore = canvas->supports_external_semaphore;
         if (has_external_memory && has_external_semaphore)
         {
-            DvzVideoSinkConfig sink_cfg = dvz_video_sink_default_config();
+            DvzVideoSinkConfig sink_cfg = dvz_video_sink_config();
             sink_cfg.encoder.backend = "nvenc";
             sink_cfg.encoder.width = surface.extent.width ? surface.extent.width : 1920;
             sink_cfg.encoder.height = surface.extent.height ? surface.extent.height : 1080;

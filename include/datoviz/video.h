@@ -120,17 +120,17 @@ EXTERN_C_ON
  *
  * @returns a config tuned for 1080p60 HEVC capture with MP4 streaming muxing
  */
-DVZ_EXPORT DvzVideoEncoderConfig dvz_video_encoder_default_config(void);
+DVZ_EXPORT DvzVideoEncoderConfig dvz_video_encoder_config(void);
 
 
 
 /**
  * Return the default video sink configuration that wraps the encoder defaults.
  *
- * @returns a sink config whose encoder uses `dvz_video_encoder_default_config()` and null
+ * @returns a sink config whose encoder uses `dvz_video_encoder_config()` and null
  * bitstream
  */
-DVZ_EXPORT DvzVideoSinkConfig dvz_video_sink_default_config(void);
+DVZ_EXPORT DvzVideoSinkConfig dvz_video_sink_config(void);
 
 
 

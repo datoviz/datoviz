@@ -545,7 +545,7 @@ int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(TstContext* suite
     cudaExternalSemaphore_t cuda_semaphore = NULL;
     void* cuda_ptr = NULL;
 
-    DvzInstanceConfig icfg = dvz_instance_default_config();
+    DvzInstanceConfig icfg = dvz_instance_config();
     icfg.flags = 0;
     dvz_instance_config_request_extension(
         &icfg, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
@@ -570,7 +570,7 @@ int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(TstContext* suite
     DvzQueues queues = {0};
     dvz_queues(&qc, &queues);
 
-    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    DvzDeviceConfig dcfg = dvz_device_config(instance);
     dvz_device_config_set_gpu_index(&dcfg, vk_gpu_index);
     VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
