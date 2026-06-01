@@ -742,7 +742,12 @@ static int _emit_packets(uint32_t scene_handle, uint32_t figure_handle)
     DvzWasmApiScene* scene = _scene(scene_handle);
     DvzWasmApiFigure* figure = _figure(figure_handle);
     if (scene == NULL || figure == NULL || figure->owner != scene || figure->figure == NULL)
-        return _fail(scene, "invalid WASM packet emit request");
+    {
+        int ret = _fail(scene, "invalid WASM packet emit request");
+        if (scene != NULL)
+            scene->packet_status = -1;
+        return ret;
+    }
     _clear_payload(scene);
 
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();

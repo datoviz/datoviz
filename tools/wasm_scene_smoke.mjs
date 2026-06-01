@@ -675,6 +675,11 @@ try {
     expectStatus(Module._dvz_wasm_api_emit(diagnosticScene, 0), -1, "invalid emit");
     expectDiagnostics(Module, diagnosticScene, "invalid WASM emit request", "invalid emit");
 
+    expectStatus(Module._dvz_wasm_api_emit_packets(diagnosticScene, 0), -1, "invalid packet emit");
+    expectStatus(Module._dvz_wasm_api_packet_status(diagnosticScene), -1, "invalid packet status");
+    expectDiagnostics(
+      Module, diagnosticScene, "invalid WASM packet emit request", "invalid packet emit");
+
     const badVisual = Module._dvz_wasm_api_visual(diagnosticScene, 9999, 0);
     requireOk(badVisual === 0, "unsupported visual type unexpectedly succeeded");
     expectDiagnostics(Module, diagnosticScene, "unsupported WASM visual type", "unsupported visual");
