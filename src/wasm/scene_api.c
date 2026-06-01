@@ -30,6 +30,7 @@
 #include "datoviz/input/pointer.h"
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
+#include "datoviz/scene/frame_packets.h"
 #include "datoviz/vk/enums.h"
 
 
@@ -85,6 +86,13 @@ struct DvzWasmApiScene
     DvzCapabilitySnapshot caps;
     char* json;
     DvzDiagnosticReport report;
+    void* packets[4];
+    uint64_t packet_sizes[4];
+    void* arenas[4];
+    uint64_t arena_sizes[4];
+    int packet_status;
+    uint64_t resource_version;
+    uint64_t frame_index;
     void* wrappers[DVZ_WASM_API_MAX_WRAPPERS];
     uint32_t wrapper_count;
     uint32_t width;
@@ -139,6 +147,16 @@ static void _clear_payload(DvzWasmApiScene* scene)
         dvz_drp2_stream_destroy(scene->stream);
         scene->stream = NULL;
     }
+    for (uint32_t i = DVZ_DRP2_PACKET_SETUP; i <= DVZ_DRP2_PACKET_FRAME; i++)
+    {
+        dvz_drp2_packet_destroy(scene->packets[i]);
+        dvz_drp2_packet_destroy(scene->arenas[i]);
+        scene->packets[i] = NULL;
+        scene->packet_sizes[i] = 0;
+        scene->arenas[i] = NULL;
+        scene->arena_sizes[i] = 0;
+    }
+    scene->packet_status = 0;
     dvz_diagnostic_report_init(&scene->report);
 }
 
@@ -729,6 +747,70 @@ int dvz_wasm_api_emit_direct(uint32_t scene_handle, uint32_t figure_handle)
 
 
 
+static int _emit_packets(uint32_t scene_handle, uint32_t figure_handle)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    DvzWasmApiFigure* figure = _figure(figure_handle);
+    if (scene == NULL || figure == NULL || figure->owner != scene || figure->figure == NULL)
+        return _fail(scene, "invalid WASM packet emit request");
+    _clear_payload(scene);
+
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    emit_cfg.external_color_target = true;
+    emit_cfg.color_target_id = 0;
+    emit_cfg.color_target_format = scene->color_format;
+    emit_cfg.target_width = scene->width;
+    emit_cfg.target_height = scene->height;
+
+    scene->stream = dvz_figure_emit_ex(figure->figure, &scene->caps, &scene->report, &emit_cfg);
+    if (scene->stream == NULL)
+    {
+        if (dvz_diagnostic_report_count(&scene->report) == 0)
+            (void)dvz_diagnostic_report_add(&scene->report, "WASM scene packet emission failed");
+        scene->packet_status = -1;
+        return -1;
+    }
+    if (dvz_diagnostic_report_count(&scene->report) > 0)
+    {
+        scene->packet_status = -1;
+        return -1;
+    }
+
+    scene->frame_index++;
+    scene->resource_version++;
+    const DvzDrp2PacketKind phases[3] = {
+        DVZ_DRP2_PACKET_SETUP,
+        DVZ_DRP2_PACKET_UPDATE,
+        DVZ_DRP2_PACKET_FRAME,
+    };
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        DvzDrp2PacketKind kind = phases[i];
+        if (!dvz_drp2_packet_encode_stream_phase(
+                scene->stream, kind, scene->resource_version, scene->frame_index,
+                &scene->packets[kind], &scene->packet_sizes[kind], &scene->arenas[kind],
+                &scene->arena_sizes[kind]))
+        {
+            (void)_fail(scene, "WASM DRP2 packet encoding failed");
+            scene->packet_status = -2;
+            return -1;
+        }
+    }
+    scene->packet_status = 0;
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_emit_packets(uint32_t scene_handle, uint32_t figure_handle)
+{
+    return _emit_packets(scene_handle, figure_handle);
+}
+
+
+
 EMSCRIPTEN_KEEPALIVE
 uint32_t dvz_wasm_api_payload_ptr(uint32_t scene_handle)
 {
@@ -787,6 +869,83 @@ uint32_t dvz_wasm_api_payload_data_size(uint32_t scene_handle, uint32_t payload_
                         ? dvz_drp2_stream_payload_size(scene->stream, payload_index)
                         : 0;
     return size <= UINT32_MAX ? (uint32_t)size : 0;
+}
+
+
+
+static bool _valid_packet_kind(uint32_t kind)
+{
+    return kind >= DVZ_DRP2_PACKET_SETUP && kind <= DVZ_DRP2_PACKET_FRAME;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_packet_status(uint32_t scene_handle)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    return scene != NULL ? scene->packet_status : -1;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_packet_ptr(uint32_t scene_handle, uint32_t kind)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    return scene != NULL && _valid_packet_kind(kind) && scene->packets[kind] != NULL
+               ? (uint32_t)(uintptr_t)scene->packets[kind]
+               : 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_packet_size(uint32_t scene_handle, uint32_t kind)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    uint64_t size = scene != NULL && _valid_packet_kind(kind) ? scene->packet_sizes[kind] : 0;
+    return size <= UINT32_MAX ? (uint32_t)size : 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_packet_arena_ptr(uint32_t scene_handle, uint32_t kind)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    return scene != NULL && _valid_packet_kind(kind) && scene->arenas[kind] != NULL
+               ? (uint32_t)(uintptr_t)scene->arenas[kind]
+               : 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_packet_arena_size(uint32_t scene_handle, uint32_t kind)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    uint64_t size = scene != NULL && _valid_packet_kind(kind) ? scene->arena_sizes[kind] : 0;
+    return size <= UINT32_MAX ? (uint32_t)size : 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_resource_version(uint32_t scene_handle)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    return scene != NULL && scene->resource_version <= UINT32_MAX ? (uint32_t)scene->resource_version
+                                                                  : 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_frame_index(uint32_t scene_handle)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    return scene != NULL && scene->frame_index <= UINT32_MAX ? (uint32_t)scene->frame_index : 0;
 }
 
 

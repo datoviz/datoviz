@@ -22,6 +22,9 @@ const DVZ_WASM_VISUAL_POINT = 1;
 const DVZ_WASM_VISUAL_IMAGE = 6;
 const DVZ_WASM_VISUAL_MESH = 7;
 const DVZ_WASM_VISUAL_PRIMITIVE = 9;
+const DVZ_DRP2_PACKET_SETUP = 1;
+const DVZ_DRP2_PACKET_UPDATE = 2;
+const DVZ_DRP2_PACKET_FRAME = 3;
 
 function requireOk(condition, message) {
   if (!condition) throw new Error(message);
@@ -81,6 +84,23 @@ function expectNoPayload(Module, scene, label) {
   requireOk(ptr === 0 && size === 0, `${label}: expected no live payload, got ptr=${ptr} size=${size}`);
 }
 
+function readU16LE(bytes, offset) {
+  return bytes[offset] | (bytes[offset + 1] << 8);
+}
+
+function readU32LE(bytes, offset) {
+  return (
+    bytes[offset] |
+    (bytes[offset + 1] << 8) |
+    (bytes[offset + 2] << 16) |
+    (bytes[offset + 3] << 24)
+  ) >>> 0;
+}
+
+function readU64LEAsNumber(bytes, offset) {
+  return readU32LE(bytes, offset) + readU32LE(bytes, offset + 4) * 2 ** 32;
+}
+
 function emitStream(Module, scene, figure, label) {
   const status = Module._dvz_wasm_api_emit(scene, figure);
   const messages = diagnostics(Module, scene);
@@ -97,6 +117,57 @@ function emitStream(Module, scene, figure, label) {
   requireOk(Array.isArray(stream.commands), `${label} stream has no commands array`);
   requireOk(stream.commands.length > 0, `${label} stream has no commands`);
   return { stream, payload, ptr, size };
+}
+
+function expectPacket(Module, scene, kind, label, { expectArena = false } = {}) {
+  requireOk(typeof Module._dvz_wasm_api_packet_ptr === "function", `${label}: missing packet ABI`);
+
+  const ptr = Module._dvz_wasm_api_packet_ptr(scene, kind);
+  const size = Module._dvz_wasm_api_packet_size(scene, kind);
+  requireOk(ptr !== 0 && size >= 56, `${label}: missing packet kind ${kind}`);
+
+  const bytes = Module.HEAPU8.subarray(ptr, ptr + size);
+  requireOk(
+    bytes[0] === 0x44 && bytes[1] === 0x56 && bytes[2] === 0x50 && bytes[3] === 0x32 &&
+      bytes[4] === 0x50 && bytes[5] === 0x4b && bytes[6] === 0x54 && bytes[7] === 0,
+    `${label}: bad packet magic`,
+  );
+  requireOk(readU16LE(bytes, 8) === 56, `${label}: bad header size`);
+  requireOk(readU16LE(bytes, 10) === 2, `${label}: bad major`);
+  requireOk(readU16LE(bytes, 14) === kind, `${label}: bad packet kind`);
+
+  const commandCount = readU32LE(bytes, 20);
+  const commandBytes = readU64LEAsNumber(bytes, 24);
+  const arenaSize = readU64LEAsNumber(bytes, 32);
+  requireOk(commandCount > 0, `${label}: no commands`);
+  requireOk(commandBytes + 56 === size, `${label}: command bytes mismatch`);
+
+  const arenaPtr = Module._dvz_wasm_api_packet_arena_ptr(scene, kind);
+  const arenaSizeApi = Module._dvz_wasm_api_packet_arena_size(scene, kind);
+  requireOk(arenaSizeApi === arenaSize, `${label}: arena size mismatch`);
+  if (expectArena) requireOk(arenaPtr !== 0 && arenaSize > 0, `${label}: expected arena`);
+  return { ptr, size, commandCount, arenaPtr, arenaSize };
+}
+
+function emitPacketStream(Module, scene, figure, label) {
+  requireOk(typeof Module._dvz_wasm_api_emit_packets === "function", `${label}: missing packet emit ABI`);
+
+  const status = Module._dvz_wasm_api_emit_packets(scene, figure);
+  const messages = diagnostics(Module, scene);
+  if (status !== 0) {
+    requireOk(messages.length > 0, `${label}: no diagnostic was reported`);
+    throw new Error(`${label}: ${messages.join("; ")}`);
+  }
+  requireOk(Module._dvz_wasm_api_packet_status(scene) === 0, `${label}: packet status not OK`);
+  requireOk(messages.length === 0, `${label}: diagnostics: ${messages.join("; ")}`);
+  requireOk(Module._dvz_wasm_api_resource_version(scene) > 0, `${label}: missing resource version`);
+  requireOk(Module._dvz_wasm_api_frame_index(scene) > 0, `${label}: missing frame index`);
+
+  return {
+    setup: expectPacket(Module, scene, DVZ_DRP2_PACKET_SETUP, `${label} setup`),
+    update: expectPacket(Module, scene, DVZ_DRP2_PACKET_UPDATE, `${label} update`, { expectArena: true }),
+    frame: expectPacket(Module, scene, DVZ_DRP2_PACKET_FRAME, `${label} frame`),
+  };
 }
 
 function emitDirectStream(Module, scene, figure, label) {
@@ -740,6 +811,19 @@ try {
       const directReload = emitDirectStream(Module, scene, figure, "generic 2D direct payload reload");
       expectFrameCommandShape(directReload.stream, "generic 2D direct payload reload");
       expectWriteCommands(directReload.stream, "generic 2D direct payload reload");
+      expectStatus(
+        Module._dvz_wasm_api_visual_set_texture_rgba8(image, ptrs[7], imageWidth, imageHeight),
+        0,
+        "api image texture restore for split packet",
+      );
+      const splitReload = emitPacketStream(Module, scene, figure, "generic 2D split packet reload");
+      requireOk(
+        splitReload.setup.commandCount > 0 &&
+          splitReload.update.commandCount > 0 &&
+          splitReload.frame.commandCount > 0,
+        "generic 2D split packet reload missing commands",
+      );
+      expectNoPayload(Module, scene, "split packet emit invalidates JSON payload");
     } finally {
       Module._free(largerImagePtr);
     }
