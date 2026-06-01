@@ -67,6 +67,19 @@ typedef struct PacketWriteTextureBody
 } PacketWriteTextureBody;
 
 
+typedef struct PacketShaderBody
+{
+    uint64_t id;
+    char stage[DVZ_DRP2_LABEL_SIZE];
+    char format[DVZ_DRP2_LABEL_SIZE];
+    char builtin_family[DVZ_DRP2_LABEL_SIZE];
+    char builtin_variant[DVZ_DRP2_LABEL_SIZE];
+    uint32_t builtin_version;
+    uint32_t payload_kind; /* 1=UTF-8 source, 2=SPIR-V bytes. */
+    uint64_t payload_size;
+} PacketShaderBody;
+
+
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
@@ -134,6 +147,63 @@ static uint64_t _get_u64(const uint8_t* src)
     return out;
 }
 
+
+
+
+
+DvzDrp2PacketKind dvz_drp2_packet_command_kind(DvzDrp2CommandType type)
+{
+    switch (type)
+    {
+    case DVZ_DRP2_COMMAND_HELLO_RENDERER:
+    case DVZ_DRP2_COMMAND_RENDERER_HELLO_REPLY:
+    case DVZ_DRP2_COMMAND_CREATE_BUFFER:
+    case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
+    case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
+    case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
+    case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
+    case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
+    case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
+    case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
+    case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
+    case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
+    case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
+        return DVZ_DRP2_PACKET_SETUP;
+    case DVZ_DRP2_COMMAND_WRITE_BUFFER:
+    case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
+        return DVZ_DRP2_PACKET_UPDATE;
+    case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
+    case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
+    case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
+    case DVZ_DRP2_COMMAND_SET_VIEWPORT:
+    case DVZ_DRP2_COMMAND_SET_SCISSOR:
+    case DVZ_DRP2_COMMAND_SET_PIPELINE:
+    case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
+    case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
+    case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
+    case DVZ_DRP2_COMMAND_DRAW:
+    case DVZ_DRP2_COMMAND_DRAW_INDEXED:
+    case DVZ_DRP2_COMMAND_END_RENDER_PASS:
+    case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
+    case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
+    case DVZ_DRP2_COMMAND_RESOURCE_BARRIER:
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE:
+    case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
+    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT:
+    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT_REPLY:
+        return DVZ_DRP2_PACKET_FRAME;
+    case DVZ_DRP2_COMMAND_NONE:
+    default:
+        return DVZ_DRP2_PACKET_NONE;
+    }
+}
 
 
 static uint64_t _fixed_body_size(DvzDrp2CommandType type)
@@ -220,6 +290,7 @@ static uint64_t _fixed_body_size(DvzDrp2CommandType type)
     case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
         return sizeof(PacketWriteTextureBody);
     case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
+        return sizeof(PacketShaderBody);
     case DVZ_DRP2_COMMAND_NONE:
     default:
         return 0;
@@ -252,6 +323,19 @@ static bool _payload_info(const DvzDrp2Command* command, const void** out_ptr, u
                 (uint64_t)command->u.write_texture.rows_per_image, &size) ||
             _dvz_mul_u64_overflows(size, (uint64_t)command->u.write_texture.bytes_per_row, &size))
             return false;
+    }
+    else if (command->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+    {
+        if (command->u.create_shader_module.code != NULL)
+        {
+            ptr = command->u.create_shader_module.code;
+            size = (uint64_t)strlen(command->u.create_shader_module.code) + 1;
+        }
+        else
+        {
+            ptr = command->u.create_shader_module.spirv;
+            size = command->u.create_shader_module.spirv_size;
+        }
     }
 
     if (ptr == NULL || size == 0)
@@ -293,6 +377,30 @@ static const void* _body_ptr(const DvzDrp2Command* command, uint8_t* scratch)
             command->u.write_texture.bytes_per_row,
             command->u.write_texture.rows_per_image,
         };
+        memcpy(scratch, &body, sizeof(body));
+        return scratch;
+    }
+    if (command->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+    {
+        PacketShaderBody body = {0};
+        body.id = command->u.create_shader_module.id;
+        memcpy(body.stage, command->u.create_shader_module.stage, sizeof(body.stage));
+        memcpy(body.format, command->u.create_shader_module.format, sizeof(body.format));
+        memcpy(body.builtin_family, command->u.create_shader_module.builtin_family,
+               sizeof(body.builtin_family));
+        memcpy(body.builtin_variant, command->u.create_shader_module.builtin_variant,
+               sizeof(body.builtin_variant));
+        body.builtin_version = command->u.create_shader_module.builtin_version;
+        if (command->u.create_shader_module.code != NULL)
+        {
+            body.payload_kind = 1;
+            body.payload_size = (uint64_t)strlen(command->u.create_shader_module.code) + 1;
+        }
+        else
+        {
+            body.payload_kind = 2;
+            body.payload_size = command->u.create_shader_module.spirv_size;
+        }
         memcpy(scratch, &body, sizeof(body));
         return scratch;
     }
@@ -352,6 +460,41 @@ static bool _decode_body(
         return true;
     }
 
+    if (command->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+    {
+        const PacketShaderBody* sh = (const PacketShaderBody*)body;
+        if (payload_offset == DVZ_DRP2_PACKET_NO_PAYLOAD || payload_size != sh->payload_size)
+            return false;
+        command->u.create_shader_module.id = sh->id;
+        memcpy(command->u.create_shader_module.stage, sh->stage,
+               sizeof(command->u.create_shader_module.stage));
+        memcpy(command->u.create_shader_module.format, sh->format,
+               sizeof(command->u.create_shader_module.format));
+        memcpy(command->u.create_shader_module.builtin_family, sh->builtin_family,
+               sizeof(command->u.create_shader_module.builtin_family));
+        memcpy(command->u.create_shader_module.builtin_variant, sh->builtin_variant,
+               sizeof(command->u.create_shader_module.builtin_variant));
+        command->u.create_shader_module.builtin_version = sh->builtin_version;
+        if (sh->payload_kind == 1)
+        {
+            if (payload_size == 0 || arena[payload_offset + payload_size - 1] != 0)
+                return false;
+            char* code = (char*)dvz_malloc(payload_size);
+            if (code == NULL)
+                return false;
+            memcpy(code, arena + payload_offset, (size_t)payload_size);
+            command->u.create_shader_module.code = code;
+        }
+        else if (sh->payload_kind == 2)
+        {
+            command->u.create_shader_module.spirv = arena + payload_offset;
+            command->u.create_shader_module.spirv_size = payload_size;
+        }
+        else
+            return false;
+        return true;
+    }
+
     if (payload_offset != DVZ_DRP2_PACKET_NO_PAYLOAD || payload_size != 0)
         return false;
     memcpy(&command->u, body, (size_t)body_size);
@@ -385,9 +528,9 @@ static bool _ensure_decode_capacity(DvzDrp2CommandStream* stream, uint32_t count
 /**
  * Encode a DRP2 command stream as a binary packet plus payload arena.
  */
-bool dvz_drp2_packet_encode_stream(
+static bool _packet_encode_stream_filtered(
     const DvzDrp2CommandStream* stream, DvzDrp2PacketKind kind, uint64_t resource_version,
-    uint64_t frame_index, void** packet, uint64_t* packet_size, void** arena,
+    uint64_t frame_index, bool filter_phase, void** packet, uint64_t* packet_size, void** arena,
     uint64_t* arena_size)
 {
     if (packet != NULL)
@@ -402,11 +545,15 @@ bool dvz_drp2_packet_encode_stream(
         arena_size == NULL || kind == DVZ_DRP2_PACKET_NONE)
         return false;
 
+    uint32_t selected_count = 0;
     uint64_t command_bytes = 0;
     uint64_t payload_bytes = 0;
     for (uint32_t i = 0; i < stream->count; i++)
     {
         const DvzDrp2Command* command = &stream->commands[i];
+        if (filter_phase && dvz_drp2_packet_command_kind(command->type) != kind)
+            continue;
+        selected_count++;
         const uint64_t body_size = _fixed_body_size(command->type);
         if (body_size == 0)
         {
@@ -433,6 +580,9 @@ bool dvz_drp2_packet_encode_stream(
         }
     }
 
+    if (filter_phase && selected_count == 0)
+        return true;
+
     uint64_t total_size = 0;
     if (_dvz_add_u64_overflows(DVZ_DRP2_PACKET_HEADER_SIZE, command_bytes, &total_size) ||
         total_size > SIZE_MAX || payload_bytes > SIZE_MAX)
@@ -458,7 +608,7 @@ bool dvz_drp2_packet_encode_stream(
     _put_u16(bytes + 12, DVZ_DRP2_PACKET_VERSION_MINOR);
     _put_u16(bytes + 14, (uint16_t)kind);
     _put_u32(bytes + 16, 0);
-    _put_u32(bytes + 20, stream->count);
+    _put_u32(bytes + 20, selected_count);
     _put_u64(bytes + 24, command_bytes);
     _put_u64(bytes + 32, payload_bytes);
     _put_u64(bytes + 40, resource_version);
@@ -469,6 +619,8 @@ bool dvz_drp2_packet_encode_stream(
     for (uint32_t i = 0; i < stream->count; i++)
     {
         const DvzDrp2Command* command = &stream->commands[i];
+        if (filter_phase && dvz_drp2_packet_command_kind(command->type) != kind)
+            continue;
         const uint64_t body_size = _fixed_body_size(command->type);
         const uint64_t body_padded = _align8(body_size);
         const void* payload_ptr = NULL;
@@ -489,7 +641,7 @@ bool dvz_drp2_packet_encode_stream(
         _put_u64(bytes + rec + 16, command_payload_offset);
         _put_u64(bytes + rec + 24, payload_size);
 
-        uint8_t scratch[sizeof(PacketWriteTextureBody)] = {0};
+        uint8_t scratch[sizeof(PacketShaderBody)] = {0};
         const void* body = _body_ptr(command, scratch);
         memcpy(bytes + rec + DVZ_DRP2_PACKET_RECORD_SIZE, body, (size_t)body_size);
         rec += DVZ_DRP2_PACKET_RECORD_SIZE + body_padded;
@@ -502,6 +654,29 @@ bool dvz_drp2_packet_encode_stream(
     return true;
 }
 
+
+
+
+
+bool dvz_drp2_packet_encode_stream(
+    const DvzDrp2CommandStream* stream, DvzDrp2PacketKind kind, uint64_t resource_version,
+    uint64_t frame_index, void** packet, uint64_t* packet_size, void** arena,
+    uint64_t* arena_size)
+{
+    return _packet_encode_stream_filtered(
+        stream, kind, resource_version, frame_index, false, packet, packet_size, arena, arena_size);
+}
+
+
+
+bool dvz_drp2_packet_encode_stream_phase(
+    const DvzDrp2CommandStream* stream, DvzDrp2PacketKind kind, uint64_t resource_version,
+    uint64_t frame_index, void** packet, uint64_t* packet_size, void** arena,
+    uint64_t* arena_size)
+{
+    return _packet_encode_stream_filtered(
+        stream, kind, resource_version, frame_index, true, packet, packet_size, arena, arena_size);
+}
 
 
 /**

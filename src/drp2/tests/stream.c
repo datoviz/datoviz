@@ -377,6 +377,140 @@ int test_drp2_packet_rejects_base64_payloads(TstContext* suite, const TstCase* i
 
 
 
+
+
+
+int test_drp2_packet_phase_split_roundtrip(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    static const uint8_t payload[4] = {9, 8, 7, 6};
+    AT(dvz_drp2_stream_hello_renderer(stream, "split"));
+    AT(dvz_drp2_stream_create_buffer(stream, 1, sizeof(payload), DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_buffer_bytes(stream, 1, 0, sizeof(payload), payload));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 10));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 10, 11));
+    AT(dvz_drp2_stream_queue_submit(stream, 11, 12));
+
+    void* setup_packet = NULL;
+    uint64_t setup_packet_size = 0;
+    void* setup_arena = NULL;
+    uint64_t setup_arena_size = 0;
+    AT(dvz_drp2_packet_encode_stream_phase(
+        stream, DVZ_DRP2_PACKET_SETUP, 3, 4, &setup_packet, &setup_packet_size, &setup_arena,
+        &setup_arena_size));
+    ANN(setup_packet);
+    AT(setup_arena == NULL);
+    AT(setup_arena_size == 0);
+
+    DvzDrp2PacketInfo info = {0};
+    DvzDrp2CommandStream* setup =
+        dvz_drp2_packet_decode_stream(setup_packet, setup_packet_size, NULL, 0, &info);
+    ANN(setup);
+    AT(info.kind == DVZ_DRP2_PACKET_SETUP);
+    AT(info.command_count == 2);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(setup, 1)) == DVZ_DRP2_COMMAND_CREATE_BUFFER);
+
+    void* update_packet = NULL;
+    uint64_t update_packet_size = 0;
+    void* update_arena = NULL;
+    uint64_t update_arena_size = 0;
+    AT(dvz_drp2_packet_encode_stream_phase(
+        stream, DVZ_DRP2_PACKET_UPDATE, 3, 4, &update_packet, &update_packet_size, &update_arena,
+        &update_arena_size));
+    ANN(update_packet);
+    ANN(update_arena);
+    AT(update_arena_size == sizeof(payload));
+
+    DvzDrp2CommandStream* update = dvz_drp2_packet_decode_stream(
+        update_packet, update_packet_size, update_arena, update_arena_size, &info);
+    ANN(update);
+    AT(info.kind == DVZ_DRP2_PACKET_UPDATE);
+    AT(info.command_count == 1);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(update, 0)) == DVZ_DRP2_COMMAND_WRITE_BUFFER);
+
+    void* frame_packet = NULL;
+    uint64_t frame_packet_size = 0;
+    void* frame_arena = NULL;
+    uint64_t frame_arena_size = 0;
+    AT(dvz_drp2_packet_encode_stream_phase(
+        stream, DVZ_DRP2_PACKET_FRAME, 3, 4, &frame_packet, &frame_packet_size, &frame_arena,
+        &frame_arena_size));
+    ANN(frame_packet);
+    AT(frame_arena == NULL);
+    AT(frame_arena_size == 0);
+
+    DvzDrp2CommandStream* frame =
+        dvz_drp2_packet_decode_stream(frame_packet, frame_packet_size, NULL, 0, &info);
+    ANN(frame);
+    AT(info.kind == DVZ_DRP2_PACKET_FRAME);
+    AT(info.command_count == 3);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(frame, 2)) == DVZ_DRP2_COMMAND_QUEUE_SUBMIT);
+
+    dvz_drp2_stream_destroy(frame);
+    dvz_drp2_packet_destroy(frame_packet);
+    dvz_drp2_stream_destroy(update);
+    dvz_drp2_packet_destroy(update_arena);
+    dvz_drp2_packet_destroy(update_packet);
+    dvz_drp2_stream_destroy(setup);
+    dvz_drp2_packet_destroy(setup_packet);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_packet_shader_module_roundtrip(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    const char* code = "@vertex fn main() -> @builtin(position) vec4f { return vec4f(); }";
+    AT(dvz_drp2_stream_create_shader_module_format(stream, 77, "VERTEX", "wgsl", code));
+    AT(dvz_drp2_stream_shader_set_builtin_identity(stream, 77, "point", "main", 2));
+
+    void* packet = NULL;
+    uint64_t packet_size = 0;
+    void* arena = NULL;
+    uint64_t arena_size = 0;
+    AT(dvz_drp2_packet_encode_stream_phase(
+        stream, DVZ_DRP2_PACKET_SETUP, 8, 9, &packet, &packet_size, &arena, &arena_size));
+    ANN(packet);
+    ANN(arena);
+    AT(arena_size == strlen(code) + 1);
+
+    DvzDrp2PacketInfo info = {0};
+    DvzDrp2CommandStream* decoded =
+        dvz_drp2_packet_decode_stream(packet, packet_size, arena, arena_size, &info);
+    ANN(decoded);
+    AT(info.kind == DVZ_DRP2_PACKET_SETUP);
+    AT(info.command_count == 1);
+    const DvzDrp2Command* cmd = dvz_drp2_stream_get(decoded, 0);
+    ANN(cmd);
+    AT(cmd->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE);
+    AT(cmd->u.create_shader_module.id == 77);
+    AT(strcmp(cmd->u.create_shader_module.format, "wgsl") == 0);
+    AT(strcmp(cmd->u.create_shader_module.builtin_family, "point") == 0);
+    AT(strcmp(cmd->u.create_shader_module.builtin_variant, "main") == 0);
+    AT(cmd->u.create_shader_module.builtin_version == 2);
+    AT(strcmp(cmd->u.create_shader_module.code, code) == 0);
+
+    dvz_drp2_stream_destroy(decoded);
+    dvz_drp2_packet_destroy(arena);
+    dvz_drp2_packet_destroy(packet);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_write_buffer_bytes_large_json_roundtrip(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

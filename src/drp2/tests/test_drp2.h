@@ -46,6 +46,10 @@ int test_drp2_packet_roundtrip_frame_metadata(TstContext* suite, const TstCase* 
 
 int test_drp2_packet_rejects_base64_payloads(TstContext* suite, const TstCase* item);
 
+int test_drp2_packet_phase_split_roundtrip(TstContext* suite, const TstCase* item);
+
+int test_drp2_packet_shader_module_roundtrip(TstContext* suite, const TstCase* item);
+
 int test_drp2_render_pipeline_step_modes_json(TstContext* suite, const TstCase* item);
 
 int test_drp2_recording_linear_roundtrip(TstContext* suite, const TstCase* item);

@@ -85,6 +85,8 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_packet_roundtrip_payload_arena);
     TST_CASE(test_drp2_packet_roundtrip_frame_metadata);
     TST_CASE(test_drp2_packet_rejects_base64_payloads);
+    TST_CASE(test_drp2_packet_phase_split_roundtrip);
+    TST_CASE(test_drp2_packet_shader_module_roundtrip);
     TST_CASE(test_drp2_write_buffer_bytes_large_json_roundtrip);
     TST_CASE(test_drp2_render_pipeline_step_modes_json);
     TST_CASE(test_drp2_render_pipeline_color_targets_json);
