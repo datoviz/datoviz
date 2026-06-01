@@ -3259,6 +3259,21 @@ void dvz_app_destroy(DvzApp* app)
 /*  View management                                                                            */
 /*************************************************************************************************/
 
+/**
+ * Connect all current figure panels to a view's input router.
+ *
+ * @param win the view
+ */
+static void _view_connect_figure_panels(DvzView* win)
+{
+    if (win == NULL || win->figure == NULL)
+        return;
+    for (uint32_t i = 0; i < win->figure->panel_count; i++)
+        (void)dvz_view_connect_panel(win, &win->figure->panels[i]);
+}
+
+
+
 DvzView*
 dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height)
 {
@@ -3308,6 +3323,7 @@ dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t heig
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
     _view_subscribe_input(win);
+    _view_connect_figure_panels(win);
     return win;
 #else
     (void)width;
@@ -3380,6 +3396,7 @@ dvz_view_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height,
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
     _view_subscribe_input(win);
+    _view_connect_figure_panels(win);
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     if (win->fps_overlay_enabled && dvz_view_gui(win, NULL) == NULL)
         log_warn("DVZ_FPS_OVERLAY is enabled but the Dear ImGui overlay could not be created");
@@ -3463,6 +3480,7 @@ DvzView* dvz_view_external_surface(
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
     _view_subscribe_input(win);
+    _view_connect_figure_panels(win);
     return win;
 #else
     return NULL;

@@ -1773,6 +1773,45 @@ int test_view_panel_panzoom_helper(TstContext* suite, const TstCase* item)
 }
 
 
+int test_view_connects_prebound_panel_controller(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzController* controller = dvz_panzoom(scene, NULL);
+    ANN(controller);
+    DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
+    ANN(panzoom);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) == 0);
+    AC(panzoom->zoom[0], 1.0f, EPS);
+    AC(panzoom->zoom[1], 1.0f, EPS);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_view_connects_prebound_panel_controller skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+    ANN(win);
+
+    AT(dvz_view_emit_wheel(win, 32.0f, 32.0f, 64.0f, 64.0f, 0.0f, 1.0f, 0) == 0);
+    AT(panzoom->zoom[0] > 1.0f);
+    AT(panzoom->zoom[1] > 1.0f);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 #if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
 int test_app_external_surface_release_waits(TstContext* suite, const TstCase* item)
@@ -6722,6 +6761,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_timer_advances_in_render_once);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_render_enabled_gate);
     TST_SCENE_APP_SHARED_CASE(test_view_panel_panzoom_helper);
+    TST_SCENE_APP_SHARED_CASE(test_view_connects_prebound_panel_controller);
 #if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
     TST_SCENE_APP_CASE(
         test_app_external_surface_release_waits, TST_SCENE_APP_GPU_RES | TST_RES_GLFW,
