@@ -24,6 +24,13 @@ just build
 `hosted_qt_smoke` is the minimal contract smoke. `hosted_qt_widgets` embeds the hosted Datoviz
 window in a Qt Widgets layout and lets widget callbacks mutate retained scene data.
 
+The minimal PyQt source-tree example uses the raw `ctypes` FFI helpers and requires a PyQt6 build
+with Qt Vulkan support:
+
+```sh
+PYTHONPATH=. python examples/python/qt/hosted_pyqt.py
+```
+
 
 ## Ownership Model
 
@@ -98,19 +105,42 @@ validation errors are not expected.
 
 ## PyQt Status
 
-PyQt should use the same hosted contract, but the raw `ctypes` boundary needs a small FFI
-convenience layer before this is a documented example path.
+PyQt uses the same hosted contract as the native adapter. The raw `ctypes` boundary should use the
+FFI convenience helpers instead of constructing `DvzWindowExternalSurfaceInfo` in Python:
 
-The preferred API shape is:
+```python
+view = dvz.dvz_view_external_surface_ffi(
+    app,
+    figure,
+    ctypes.c_void_p(instance),
+    surface,
+    framebuffer_width,
+    framebuffer_height,
+    scale,
+    scale,
+    False,
+)
 
-```c
-dvz_view_external_surface_ffi(...)
-dvz_view_update_external_surface_ffi(...)
+dvz.dvz_view_update_external_surface_ffi(
+    view,
+    ctypes.c_void_p(instance),
+    surface,
+    framebuffer_width,
+    framebuffer_height,
+    scale,
+    scale,
+    False,
+)
 ```
 
-These helpers would accept primitive handle values and internally build the native
+These helpers accept primitive handle values and internally build the native
 `DvzWindowExternalSurfaceInfo` record. C and C++ callers should continue to prefer the struct-based
 `dvz_view_external_surface()` and `dvz_view_update_external_surface()` APIs.
+
+Use `examples/python/qt/hosted_pyqt.py` as the minimal PyQt reference. It keeps Qt in charge of the
+event loop, asks Qt for the native `VkSurfaceKHR` with `QVulkanInstance.surfaceForWindow()`, renders
+from the Qt update path with `dvz_view_render_once()`, and calls
+`dvz_view_release_external_surface()` before the Qt surface is destroyed.
 
 
 ## Limitations
