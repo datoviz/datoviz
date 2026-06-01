@@ -93,6 +93,11 @@ Current status as of this note:
   transport: `just wasm-scene-smoke` validates payload-ref JSON plus borrowed WASM-memory payload
   spans; `just test drp2` covers the native payload-ref serializer/accessors; and
   `just webgpu-browser-smoke` renders the 2D/3D WASM pages through typed-array payloads.
+- recorded browserless and automated browser proof on 2026-06-01 after packet diagnostic hardening:
+  `just wasm-scene-smoke` validates failed packet emits set a nonzero packet status with an explicit
+  diagnostic, and `just webgpu-browser-smoke` renders the 2D/3D WASM pages, exercises retained
+  update/frame packet lifecycles, checks pagehide destruction, and reports `2` dashboard WASM scene
+  checks passing.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
