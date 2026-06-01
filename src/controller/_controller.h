@@ -19,6 +19,7 @@
 #include "datoviz/controller/arcball.h"
 #include "datoviz/controller/camera.h"
 #include "datoviz/controller/fly.h"
+#include "datoviz/controller/orbit_camera.h"
 #include "datoviz/controller/panzoom.h"
 #include "datoviz/controller/turntable.h"
 
@@ -43,6 +44,10 @@ void _dvz_arcball_clear_view(DvzArcball* arcball);
 DvzFly* _dvz_fly(const DvzFlyDesc* desc);
 
 DvzTurntable* _dvz_turntable(const DvzTurntableDesc* desc);
+
+void dvz_orbit_camera_connect(DvzOrbitCamera* orbit, DvzInputRouter* router);
+
+void dvz_orbit_camera_disconnect(DvzOrbitCamera* orbit, DvzInputRouter* router);
 
 
 

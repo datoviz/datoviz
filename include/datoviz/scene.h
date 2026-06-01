@@ -27,6 +27,7 @@
 #include "scene/fly.h"
 #include "scene/frame_plan.h"
 #include "scene/interaction.h"
+#include "scene/orbit_camera.h"
 #include "scene/overlay.h"
 #include "scene/panzoom.h"
 #include "scene/scale.h"
@@ -338,6 +339,15 @@ DVZ_EXPORT DvzFly* dvz_controller_fly(DvzController* controller);
  * @return the borrowed turntable payload, or NULL for the wrong family
  */
 DVZ_EXPORT DvzTurntable* dvz_controller_turntable(DvzController* controller);
+
+
+/**
+ * Return the orbit-camera payload of an orbit-camera controller.
+ *
+ * @param controller the controller
+ * @return the borrowed orbit-camera payload, or NULL for the wrong family
+ */
+DVZ_EXPORT DvzOrbitCamera* dvz_controller_orbit_camera(DvzController* controller);
 
 
 /**
@@ -989,6 +999,28 @@ DVZ_EXPORT int dvz_visual_set_scene_occluded(DvzVisual* visual, bool enabled);
  * @return the alpha handling mode
  */
 DVZ_EXPORT DvzAlphaMode dvz_visual_alpha_mode(const DvzVisual* visual);
+
+
+/**
+ * Set the retained visual-local transform.
+ *
+ * The transform is stored on the visual and applies to every panel attachment before panel
+ * controller/view transforms.
+ *
+ * @param visual the visual
+ * @param transform local model transform
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_visual_set_transform(DvzVisual* visual, mat4 transform);
+
+
+/**
+ * Clear the retained visual-local transform back to identity.
+ *
+ * @param visual the visual
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_visual_clear_transform(DvzVisual* visual);
 
 
 /**

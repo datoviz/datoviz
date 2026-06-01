@@ -671,6 +671,29 @@ static bool _scene_append_visual_to_render_pass(
         sizeof(DvzFramePlanVisualMeta));
     node->u.render.visual_metadata[slot].has_metadata = true;
     node->u.render.controller_modes[slot] = attach->controller_mode;
+
+    DvzMVP visual_mvp = node->u.render.apply_mvp;
+    if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
+    {
+        glm_mat4_identity(visual_mvp.model);
+        glm_mat4_identity(visual_mvp.view);
+        glm_mat4_identity(visual_mvp.proj);
+        visual_mvp.flags = 0;
+    }
+    if (visual->has_local_transform)
+    {
+        mat4 local = GLM_MAT4_IDENTITY_INIT;
+        mat4 composed = GLM_MAT4_IDENTITY_INIT;
+        for (uint32_t col = 0; col < 4; col++)
+        {
+            for (uint32_t row = 0; row < 4; row++)
+                local[col][row] = visual->local_transform[col][row];
+        }
+        glm_mat4_mul(visual_mvp.model, local, composed);
+        glm_mat4_copy(composed, visual_mvp.model);
+    }
+    node->u.render.visual_mvp[slot] = visual_mvp;
+    node->u.render.visual_has_mvp[slot] = true;
     return true;
 }
 

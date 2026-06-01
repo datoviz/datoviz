@@ -18,6 +18,7 @@
 #include "_alloc.h"
 #include "_log.h"
 #include "_overflow.h"
+#include "datoviz/math/_cglm.h"
 #include "internal.h"
 
 
@@ -135,8 +136,8 @@ bool _dvz_scene_query_target_extent(
  * @param target_height offscreen target height
  */
 void _dvz_scene_query_apply_render_state(
-    DvzFramePlan* plan, const DvzPanel* panel, const vec2 request_ndc, uint32_t target_width,
-    uint32_t target_height)
+    DvzFramePlan* plan, const DvzPanel* panel, const DvzVisual* visual, const vec2 request_ndc,
+    uint32_t target_width, uint32_t target_height)
 {
     ANN(plan);
     ANN(panel);
@@ -147,6 +148,16 @@ void _dvz_scene_query_apply_render_state(
 
     DvzMVP mvp = {0};
     _scene_panel_apply_mvp(panel, &mvp);
+    if (visual != NULL && visual->has_local_transform)
+    {
+        mat4 local = GLM_MAT4_IDENTITY_INIT;
+        mat4 composed = GLM_MAT4_IDENTITY_INIT;
+        for (uint32_t col = 0; col < 4; col++)
+            for (uint32_t row = 0; row < 4; row++)
+                local[col][row] = visual->local_transform[col][row];
+        glm_mat4_mul(mvp.model, local, composed);
+        glm_mat4_copy(composed, mvp.model);
+    }
     vec2 target_ndc = {
         -1.0f + 1.0f / (float)target_width,
         1.0f - 1.0f / (float)target_height,

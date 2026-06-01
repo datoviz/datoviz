@@ -61,10 +61,10 @@ static bool _query_point_like_attr(
  * @param target_height offscreen target height
  */
 static void _query_point_like_apply_render_state(
-    DvzFramePlan* plan, const DvzPanel* panel, const vec2 request_ndc, uint32_t target_width,
-    uint32_t target_height)
+    DvzFramePlan* plan, const DvzPanel* panel, const DvzVisual* visual,
+    const vec2 request_ndc, uint32_t target_width, uint32_t target_height)
 {
-    _dvz_scene_query_apply_render_state(plan, panel, request_ndc, target_width, target_height);
+    _dvz_scene_query_apply_render_state(plan, panel, visual, request_ndc, target_width, target_height);
 }
 
 
@@ -156,7 +156,7 @@ bool _scene_query_point_like_build(
          dvz_frame_plan_render_visual_metadata(plan, &metadata);
     if (ok)
         _query_point_like_apply_render_state(
-            plan, ctx->panel, ctx->request_ndc, target_width, target_height);
+            plan, ctx->panel, ctx->visual, ctx->request_ndc, target_width, target_height);
 
     DvzFramePlanCopyDesc copy = {
         .src_resource_id = "target.query",

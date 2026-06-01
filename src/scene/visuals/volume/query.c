@@ -338,10 +338,10 @@ static bool _volume_query_voxel_id(
  * @param target_height offscreen target height
  */
 static void _volume_query_apply_render_state(
-    DvzFramePlan* plan, const DvzPanel* panel, const vec2 request_ndc, uint32_t target_width,
-    uint32_t target_height)
+    DvzFramePlan* plan, const DvzPanel* panel, const DvzVisual* visual,
+    const vec2 request_ndc, uint32_t target_width, uint32_t target_height)
 {
-    _dvz_scene_query_apply_render_state(plan, panel, request_ndc, target_width, target_height);
+    _dvz_scene_query_apply_render_state(plan, panel, visual, request_ndc, target_width, target_height);
 }
 
 
@@ -474,7 +474,7 @@ static bool _volume_query_build_sample(
     if (render != NULL)
     {
         DvzMVP mvp = {0};
-        _scene_request_apply_mvp(ctx->panel, ctx->request_ndc, &mvp);
+        _scene_request_visual_mvp(ctx->panel, ctx->visual, ctx->request_ndc, &mvp);
         render->u.render.has_mvp = true;
         render->u.render.apply_mvp = mvp;
         render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
@@ -675,7 +675,7 @@ static bool _volume_query_build(
          dvz_frame_plan_render_visual_metadata(plan, &metadata);
     if (ok)
         _volume_query_apply_render_state(
-            plan, ctx->panel, ctx->request_ndc, target_width, target_height);
+            plan, ctx->panel, ctx->visual, ctx->request_ndc, target_width, target_height);
 
     DvzFramePlanCopyDesc copy = {
         .src_resource_id = "target.query",

@@ -465,6 +465,8 @@ struct DvzFramePlanNode
             bool has_mvp;
             DvzMVP apply_mvp;  /* panel APPLY MVP from panzoom/arcball; identity MVP for FIXED computed by converter */
             DvzControllerMode controller_modes[DVZ_SCENE_MAX_RENDER_VISUALS];  /* parallel to visuals[] */
+            DvzMVP visual_mvp[DVZ_SCENE_MAX_RENDER_VISUALS];
+            bool visual_has_mvp[DVZ_SCENE_MAX_RENDER_VISUALS];
         } render;
         struct
         {

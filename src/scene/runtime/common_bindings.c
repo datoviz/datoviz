@@ -143,7 +143,7 @@ static void _mvp_uniform_copy(DvzMVP* dst, const DvzMVP* src)
 static bool _resolve_common_set(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     uint64_t common_bgl_id, const char* mode_tag, bool fixed, uint32_t mvp_flags,
-    uint64_t* out_bg_id)
+    const DvzMVP* override_mvp, uint64_t* out_bg_id)
 {
     ANN(emitter);
     ANN(stream);
@@ -223,7 +223,9 @@ static bool _resolve_common_set(
     DvzMVP* mvp_slot = _emitter_mvp_slot(emitter, mvp_slot_key);
     if (mvp_slot == NULL)
         return false;
-    if (fixed)
+    if (override_mvp != NULL)
+        mvp_src = override_mvp;
+    else if (fixed)
     {
         _identity_mvp(&local_identity);
         mvp_src = &local_identity;
@@ -308,14 +310,14 @@ bool _scene_common_bindings_resolve_panel_sets(
     uint64_t apply_bg_id = 0, fixed_bg_id = 0, isotropic_bg_id = 0;
     if (needs_apply && ok)
         ok = _resolve_common_set(
-            emitter, stream, render, common_bgl_id, "apply", false, 0, &apply_bg_id);
+            emitter, stream, render, common_bgl_id, "apply", false, 0, NULL, &apply_bg_id);
     if (needs_fixed && ok)
         ok = _resolve_common_set(
-            emitter, stream, render, common_bgl_id, "fixed", true, 0, &fixed_bg_id);
+            emitter, stream, render, common_bgl_id, "fixed", true, 0, NULL, &fixed_bg_id);
     if (needs_isotropic && ok)
         ok = _resolve_common_set(
             emitter, stream, render, common_bgl_id, "apply_iso", false,
-            DVZ_MVP_FLAGS_ISOTROPIC_LOCAL, &isotropic_bg_id);
+            DVZ_MVP_FLAGS_ISOTROPIC_LOCAL, NULL, &isotropic_bg_id);
 
     if (!ok)
         return false;
@@ -326,6 +328,49 @@ bool _scene_common_bindings_resolve_panel_sets(
     return true;
 }
 
+
+
+/**
+ * Resolve the common bind group for one visual-specific MVP.
+ *
+ * @param emitter the persistent emitter
+ * @param stream the DRP2 command stream
+ * @param render the render node
+ * @param visual_index index in render->visuals
+ * @param common_bgl_id the shared common bind group layout id
+ * @param out_bg_id resolved bind group id
+ * @return whether the common bind group was resolved
+ */
+bool _scene_common_bindings_resolve_visual_set(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
+    uint32_t visual_index, uint64_t common_bgl_id, uint64_t* out_bg_id)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(render);
+    ANN(out_bg_id);
+    if (visual_index >= render->u.render.visual_count ||
+        !render->u.render.visual_has_mvp[visual_index])
+    {
+        *out_bg_id = 0;
+        return false;
+    }
+
+    const char* mode_tag =
+        render->u.render.controller_modes[visual_index] == DVZ_CONTROLLER_FIXED ? "fixed" :
+        render->u.render.controller_modes[visual_index] == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL
+            ? "apply_iso"
+            : "apply";
+    char tag[160];
+    dvz_snprintf(tag, sizeof(tag), "%s_visual_%u", mode_tag, visual_index);
+    uint32_t flags =
+        render->u.render.controller_modes[visual_index] == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL
+            ? DVZ_MVP_FLAGS_ISOTROPIC_LOCAL
+            : 0;
+    return _resolve_common_set(
+        emitter, stream, render, common_bgl_id, tag, false, flags,
+        &render->u.render.visual_mvp[visual_index], out_bg_id);
+}
 
 
 /**
@@ -371,7 +416,7 @@ bool _scene_common_bindings_resolve_single_set(
     uint64_t common_bg_id = 0;
     ok = ok && _resolve_common_set(
                    emitter, stream, render, common_bgl_id, mode_tag, fixed, mvp_flags,
-                   &common_bg_id);
+                   NULL, &common_bg_id);
 
     if (!ok)
         return false;

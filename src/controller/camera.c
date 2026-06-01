@@ -195,6 +195,27 @@ void dvz_camera_set_view(DvzCamera* camera, vec3 eye, vec3 target, vec3 up)
 
 
 /**
+ * Return a camera view transform.
+ *
+ * @param camera the camera
+ * @param eye output eye position, or NULL
+ * @param target output look-at target, or NULL
+ * @param up output up direction, or NULL
+ */
+void dvz_camera_get_view(const DvzCamera* camera, vec3 eye, vec3 target, vec3 up)
+{
+    ANN(camera);
+    if (eye != NULL)
+        glm_vec3_copy(camera->eye, eye);
+    if (target != NULL)
+        glm_vec3_copy(camera->target, target);
+    if (up != NULL)
+        glm_vec3_copy(camera->up, up);
+}
+
+
+
+/**
  * Set perspective projection parameters.
  *
  * @param camera the camera

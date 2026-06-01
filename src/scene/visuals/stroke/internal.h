@@ -72,8 +72,8 @@ bool _stroke_query_target_extent(
     const DvzFigure* figure, const DvzPanel* panel, uint32_t* out_target_width,
     uint32_t* out_target_height);
 void _stroke_query_apply_render_state(
-    DvzFramePlan* plan, const DvzPanel* panel, const float* request_ndc, uint32_t target_width,
-    uint32_t target_height);
+    DvzFramePlan* plan, const DvzPanel* panel, const DvzVisual* visual,
+    const float* request_ndc, uint32_t target_width, uint32_t target_height);
 void _stroke_query_mark_last_upload_index(DvzFramePlan* plan, uint32_t stride);
 void _stroke_query_mark_last_upload_uniform(DvzFramePlan* plan);
 bool _stroke_quad_query_geometry(

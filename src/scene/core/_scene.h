@@ -24,6 +24,7 @@
 #include "datoviz/controller/camera.h"
 #include "datoviz/scene/enums.h"
 #include "datoviz/controller/fly.h"
+#include "datoviz/controller/orbit_camera.h"
 #include "datoviz/scene/frame_plan.h"
 #include "datoviz/scene/overlay.h"
 #include "datoviz/controller/panzoom.h"
@@ -284,6 +285,7 @@ struct DvzController
     DvzArcball* arcball;
     DvzFly* fly;
     DvzTurntable* turntable;
+    DvzOrbitCamera* orbit_camera;
 };
 
 
@@ -1424,6 +1426,9 @@ struct DvzVisual
     uint32_t        link_key_count;
     bool                   scene_occluder;
     bool                   scene_occluded;
+    mat4                   local_transform;
+    bool                   has_local_transform;
+    uint64_t               local_transform_version;
 
     /* Attribute slots — indexed by attr index (type-specific) */
     uint32_t      attr_count;
@@ -1600,6 +1605,7 @@ struct DvzPanel
     DvzVisual* bounds_occluded_visual; /* optional panel-owned occluded bounds overlay */
     bool bounds_visible;
     DvzTurntable* turntable; /* optional turntable camera controller (owned) */
+    DvzOrbitCamera* orbit_camera; /* optional orbit camera controller (borrowed) */
     DvzAxis axes[2];
     DvzInteractionPolicy* interaction;
     DvzItemInteraction* item_interaction;

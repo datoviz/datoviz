@@ -282,6 +282,31 @@ _panel_find_visual_attach(const DvzPanel* panel, const DvzVisual* visual)
  * @param z input z coordinate
  * @param out output screen bounds
  */
+static void _bounds_include_mvp_point(
+    DvzMVP* mvp, double x, double y, double z, vec4 clip)
+{
+    ANN(mvp);
+    ANN(clip);
+    vec4 p = {(float)x, (float)y, (float)z, 1.0f};
+    vec4 tmp0 = {0};
+    vec4 tmp1 = {0};
+    glm_mat4_mulv(mvp->model, p, tmp0);
+    glm_mat4_mulv(mvp->view, tmp0, tmp1);
+    glm_mat4_mulv(mvp->proj, tmp1, clip);
+}
+
+
+
+/**
+ * Project one visual-space point to panel screen pixels.
+ *
+ * @param mvp MVP transform
+ * @param panel panel owning the viewport
+ * @param x input x coordinate
+ * @param y input y coordinate
+ * @param z input z coordinate
+ * @param out output screen bounds
+ */
 static void _bounds_include_screen_point(
     DvzMVP* mvp, const DvzPanel* panel, double x, double y, double z, DvzBounds* out)
 {
@@ -289,13 +314,8 @@ static void _bounds_include_screen_point(
     ANN(panel);
     ANN(out);
 
-    vec4 p = {(float)x, (float)y, (float)z, 1.0f};
-    vec4 tmp0 = {0};
-    vec4 tmp1 = {0};
     vec4 clip = {0};
-    glm_mat4_mulv(mvp->model, p, tmp0);
-    glm_mat4_mulv(mvp->view, tmp0, tmp1);
-    glm_mat4_mulv(mvp->proj, tmp1, clip);
+    _bounds_include_mvp_point(mvp, x, y, z, clip);
     if (clip[3] == 0.0f)
         return;
 
@@ -628,6 +648,56 @@ static bool _bounds_overlay_sync_panel(DvzPanel* panel)
 
 
 
+
+/**
+ * Transform a source AABB through a visual-local model matrix.
+ *
+ * @param visual visual carrying the local transform
+ * @param bounds source/output bounds
+ */
+static void _bounds_apply_visual_transform(const DvzVisual* visual, DvzBounds* bounds)
+{
+    ANN(visual);
+    ANN(bounds);
+    if (!bounds->valid || !visual->has_local_transform)
+        return;
+
+    DvzBounds transformed = {0};
+    _bounds_reset(&transformed);
+    for (uint32_t x = 0; x < 2; x++)
+    {
+        for (uint32_t y = 0; y < 2; y++)
+        {
+            for (uint32_t z = 0; z < 2; z++)
+            {
+                vec4 p = {
+                    x == 0 ? (float)bounds->min[0] : (float)bounds->max[0],
+                    y == 0 ? (float)bounds->min[1] : (float)bounds->max[1],
+                    z == 0 ? (float)bounds->min[2] : (float)bounds->max[2],
+                    1.0f,
+                };
+                vec4 q = {0};
+                mat4 local = GLM_MAT4_IDENTITY_INIT;
+                for (uint32_t col = 0; col < 4; col++)
+                {
+                    for (uint32_t row = 0; row < 4; row++)
+                        local[col][row] = visual->local_transform[col][row];
+                }
+                glm_mat4_mulv(local, p, q);
+                if (q[3] != 0.0f)
+                    _bounds_include_point(
+                        &transformed, (double)q[0] / (double)q[3],
+                        (double)q[1] / (double)q[3], (double)q[2] / (double)q[3]);
+            }
+        }
+    }
+    if (transformed.valid)
+    {
+        transformed.dims = bounds->dims;
+        *bounds = transformed;
+    }
+}
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -651,6 +721,8 @@ int dvz_visual_bounds(const DvzVisual* visual, DvzBounds* out)
         return -1;
 
     (void)ops->resolve_bounds(visual, out, &force_3d);
+    _bounds_finalize(out, force_3d);
+    _bounds_apply_visual_transform(visual, out);
 
     _bounds_finalize(out, force_3d);
     return out->valid ? 0 : -1;

@@ -85,6 +85,9 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_background_descriptor_gradient_and_image);
     TST_CASE(test_scene_panel_plot_clip_rect_metadata);
     TST_CASE(test_scene_controller_mode_fixed_emits_separate_mvp);
+    TST_CASE(test_scene_visual_local_transform_bounds_and_clear);
+    TST_CASE(test_scene_visual_local_transform_emits_per_visual_mvp);
+    TST_CASE(test_scene_mesh_local_transform_without_instances);
     TST_CASE(test_scene_panel_one_pass_per_panel);
     TST_CASE(test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state);
     TST_CASE(test_scene_multi_panel_glsl_emits_viewport_scissor_commands);

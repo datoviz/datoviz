@@ -548,6 +548,121 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
     return 0;
 }
 
+int test_scene_visual_local_transform_bounds_and_clear(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzVisual* visual = dvz_point(scene, 0);
+    vec3 positions[2] = {{0.0f, -1.0f, 0.0f}, {1.0f, +1.0f, 0.0f}};
+    DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
+    float sizes[2] = {4.0f, 4.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
+
+    mat4 transform = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(transform, (vec3){2.0f, 0.0f, 0.0f});
+    AT(dvz_visual_set_transform(visual, transform) == 0);
+
+    DvzBounds bounds = {0};
+    AT(dvz_visual_bounds(visual, &bounds) == 0);
+    AC(bounds.min[0], 2.0, 1e-6);
+    AC(bounds.max[0], 3.0, 1e-6);
+    AC(bounds.min[1], -1.0, 1e-6);
+    AC(bounds.max[1], +1.0, 1e-6);
+
+    AT(dvz_visual_clear_transform(visual) == 0);
+    AT(dvz_visual_bounds(visual, &bounds) == 0);
+    AC(bounds.min[0], 0.0, 1e-6);
+    AC(bounds.max[0], 1.0, 1e-6);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_visual_local_transform_emits_per_visual_mvp(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+
+    vec3 pos[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor col[1] = {{255, 255, 255, 255}};
+    float size[1] = {4.0f};
+    DvzVisual* a = dvz_point(scene, 0);
+    DvzVisual* b = dvz_point(scene, 0);
+    AT(dvz_visual_set_data(a, "position", pos, 1) == 0);
+    AT(dvz_visual_set_data(a, "color", col, 1) == 0);
+    AT(dvz_visual_set_data(a, "size", size, 1) == 0);
+    AT(dvz_visual_set_data(b, "position", pos, 1) == 0);
+    AT(dvz_visual_set_data(b, "color", col, 1) == 0);
+    AT(dvz_visual_set_data(b, "size", size, 1) == 0);
+
+    mat4 ta = GLM_MAT4_IDENTITY_INIT;
+    mat4 tb = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(ta, (vec3){1.0f, 0.0f, 0.0f});
+    glm_translate(tb, (vec3){2.0f, 0.0f, 0.0f});
+    AT(dvz_visual_set_transform(a, ta) == 0);
+    AT(dvz_visual_set_transform(b, tb) == 0);
+    AT(dvz_panel_add_visual(panel, a, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, b, NULL) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("visual.local.mvp", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
+    ANN(render);
+    AT(render->u.render.visual_count == 2);
+    AT(render->u.render.visual_has_mvp[0]);
+    AT(render->u.render.visual_has_mvp[1]);
+    AC(render->u.render.visual_mvp[0].model[3][0], 1.0f, 1e-6);
+    AC(render->u.render.visual_mvp[1].model[3][0], 2.0f, 1e-6);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_mesh_local_transform_without_instances(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+
+    vec3 positions[3] = {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+    AT(dvz_visual_set_data(mesh, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(mesh, "color", colors, 3) == 0);
+    mat4 transform = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(transform, (vec3){0.0f, 3.0f, 0.0f});
+    AT(dvz_visual_set_transform(mesh, transform) == 0);
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("mesh.local.mvp", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
+    ANN(render);
+    AT(render->u.render.visual_count == 1);
+    AT(render->u.render.visual_has_mvp[0]);
+    AC(render->u.render.visual_mvp[0].model[3][1], 3.0f, 1e-6);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
 
 int test_scene_controller_mode_fixed_emits_separate_mvp(TstContext* suite, const TstCase* item)
 {

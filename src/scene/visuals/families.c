@@ -31,6 +31,7 @@
 #include "_scene_resource_key.h"
 #include "_visual_internal.h"
 #include "bindings_internal.h"
+#include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
 #include "domain/buffer_internal.h"
 #include "domain/field_internal.h"
@@ -67,6 +68,9 @@ DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t fla
     visual->alpha_mode = DVZ_ALPHA_OPAQUE;
     visual->depth_test_enabled = true;
     visual->depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
+    glm_mat4_identity(visual->local_transform);
+    visual->has_local_transform = false;
+    visual->local_transform_version = 1;
     _material_state_default(&visual->material, type);
     _material_params_default(&state->material_params);
     _material_params_sync_state(&state->material_params, &visual->material);
@@ -804,4 +808,48 @@ void dvz_visual_set_visible(DvzVisual* visual, bool visible)
     ANN(visual);
     visual->visible = visible;
     _scene_notify_visual_changed(visual);
+}
+
+
+
+/**
+ * Set the retained visual-local transform.
+ *
+ * @param visual the visual
+ * @param transform retained local model transform
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_visual_set_transform(DvzVisual* visual, mat4 transform)
+{
+    ANN(visual);
+    ANN(transform);
+    if (!_scene_visual_mutation_allowed(visual->scene, "set visual transform"))
+        return -1;
+    for (uint32_t col = 0; col < 4; col++)
+        for (uint32_t row = 0; row < 4; row++)
+            visual->local_transform[col][row] = transform[col][row];
+    visual->has_local_transform = true;
+    _visual_bump_version(&visual->local_transform_version);
+    _scene_notify_visual_changed(visual);
+    return 0;
+}
+
+
+
+/**
+ * Clear the retained visual-local transform.
+ *
+ * @param visual the visual
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_visual_clear_transform(DvzVisual* visual)
+{
+    ANN(visual);
+    if (!_scene_visual_mutation_allowed(visual->scene, "clear visual transform"))
+        return -1;
+    glm_mat4_identity(visual->local_transform);
+    visual->has_local_transform = false;
+    _visual_bump_version(&visual->local_transform_version);
+    _scene_notify_visual_changed(visual);
+    return 0;
 }

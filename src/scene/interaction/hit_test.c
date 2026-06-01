@@ -132,3 +132,34 @@ void _scene_request_apply_mvp(const DvzPanel* panel, const vec2 request_ndc, Dvz
     vec2 delta = {request_ndc[0] - target_ndc[0], -request_ndc[1] - target_ndc[1]};
     _scene_center_apply_mvp(out, delta);
 }
+
+
+
+/**
+ * Build a request MVP including a visual-local model transform.
+ *
+ * @param panel panel receiving the query
+ * @param visual visual being queried, or NULL
+ * @param request_ndc request coordinate in panel-local NDC
+ * @param out destination MVP
+ */
+void _scene_request_visual_mvp(
+    const DvzPanel* panel, const DvzVisual* visual, const vec2 request_ndc, DvzMVP* out)
+{
+    ANN(panel);
+    ANN(request_ndc);
+    ANN(out);
+    _scene_request_apply_mvp(panel, request_ndc, out);
+    if (visual != NULL && visual->has_local_transform)
+    {
+        mat4 local = GLM_MAT4_IDENTITY_INIT;
+        mat4 composed = GLM_MAT4_IDENTITY_INIT;
+        for (uint32_t col = 0; col < 4; col++)
+        {
+            for (uint32_t row = 0; row < 4; row++)
+                local[col][row] = visual->local_transform[col][row];
+        }
+        glm_mat4_mul(out->model, local, composed);
+        glm_mat4_copy(composed, out->model);
+    }
+}

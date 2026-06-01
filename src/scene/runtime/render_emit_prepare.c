@@ -511,7 +511,14 @@ bool _emitter_prepare_render_multi(
             scene_occlusion_depth_id);
         if (bind.uses_common_set0)
         {
-            if (bind.uses_fixed_common)
+            if (render->u.render.visual_has_mvp[i])
+            {
+                ok = _scene_common_bindings_resolve_visual_set(
+                    emitter, stream, render, i, common_bgl_id, &vis_bg_set0);
+                if (!ok)
+                    break;
+            }
+            else if (bind.uses_fixed_common)
                 vis_bg_set0 = fixed_bg_id;
             else if (bind.controller_mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL)
                 vis_bg_set0 = isotropic_bg_id;

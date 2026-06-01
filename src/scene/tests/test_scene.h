@@ -165,6 +165,8 @@ int test_panzoom_panel_input_uses_hidpi_figure_coordinates(
 
 int test_split_panzoom_x_y_bindings(TstContext* suite, const TstCase* item);
 
+int test_orbit_camera_changes_view_not_model(TstContext* suite, const TstCase* item);
+
 int test_arcball_create_reset(TstContext* suite, const TstCase* item);
 
 int test_arcball_rotate_produces_nonidentity_model(TstContext* suite, const TstCase* item);
@@ -454,6 +456,13 @@ int test_scene_rejects_cross_scene_visual(TstContext* suite, const TstCase* item
 int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item);
 
 int test_scene_controller_mode_fixed_emits_separate_mvp(TstContext* suite, const TstCase* item);
+
+int test_scene_visual_local_transform_bounds_and_clear(TstContext* suite, const TstCase* item);
+
+int test_scene_visual_local_transform_emits_per_visual_mvp(
+    TstContext* suite, const TstCase* item);
+
+int test_scene_mesh_local_transform_without_instances(TstContext* suite, const TstCase* item);
 
 int test_scene_panel_one_pass_per_panel(TstContext* suite, const TstCase* item);
 

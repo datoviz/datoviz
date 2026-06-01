@@ -102,6 +102,19 @@ DVZ_EXPORT void dvz_camera_set_view(DvzCamera* camera, vec3 eye, vec3 target, ve
 
 
 /**
+ * Return a camera view transform.
+ *
+ * @param camera the camera
+ * @param eye output eye position, or NULL
+ * @param target output look-at target, or NULL
+ * @param up output up direction, or NULL
+ */
+DVZ_EXPORT void dvz_camera_get_view(
+    const DvzCamera* camera, vec3 eye, vec3 target, vec3 up);
+
+
+
+/**
  * Set perspective projection parameters.
  *
  * @param camera the camera

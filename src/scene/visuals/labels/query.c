@@ -653,7 +653,7 @@ static bool _labels_query_build(
     if (render != NULL)
     {
         DvzMVP mvp = {0};
-        _scene_request_apply_mvp(ctx->panel, ctx->request_ndc, &mvp);
+        _scene_request_visual_mvp(ctx->panel, ctx->visual, ctx->request_ndc, &mvp);
         render->u.render.has_mvp = true;
         render->u.render.apply_mvp = mvp;
         render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;

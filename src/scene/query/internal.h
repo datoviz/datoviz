@@ -186,6 +186,9 @@ uint64_t _scene_panel_public_id(const DvzFigure* figure, const DvzPanel* panel);
 
 void _scene_request_apply_mvp(const DvzPanel* panel, const vec2 request_ndc, DvzMVP* out);
 
+void _scene_request_visual_mvp(
+    const DvzPanel* panel, const DvzVisual* visual, const vec2 request_ndc, DvzMVP* out);
+
 void _scene_request_executor_init(DvzSceneRequestExecutor* executor);
 
 void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor);
@@ -259,8 +262,8 @@ bool _dvz_scene_query_target_extent(
     uint32_t* out_target_height);
 
 void _dvz_scene_query_apply_render_state(
-    DvzFramePlan* plan, const DvzPanel* panel, const vec2 request_ndc, uint32_t target_width,
-    uint32_t target_height);
+    DvzFramePlan* plan, const DvzPanel* panel, const DvzVisual* visual, const vec2 request_ndc,
+    uint32_t target_width, uint32_t target_height);
 
 const DvzSceneQueryFamilyOps* _dvz_scene_query_point_ops(void);
 

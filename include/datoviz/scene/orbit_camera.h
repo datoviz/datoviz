@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Scene common bind group helpers                                                              */
+/*  Scene orbit camera controller                                                                */
 /*************************************************************************************************/
 
 #pragma once
@@ -16,28 +16,27 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "frame_plan/frame_plan.h"
-#include "frame_plan/emit.h"
-#include "datoviz/drp2/stream.h"
+#include "datoviz/controller/orbit_camera.h"
+#include "datoviz/scene/types.h"
 
 
+
+EXTERN_C_ON
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-bool _scene_common_bindings_resolve_panel_sets(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    uint64_t* out_bgl_id, uint64_t* out_apply_bg_id, uint64_t* out_fixed_bg_id,
-    uint64_t* out_isotropic_bg_id);
+/**
+ * Create a scene-owned orbit-camera controller.
+ *
+ * @param scene the scene
+ * @param desc orbit camera descriptor, or NULL for defaults
+ * @return the scene-owned controller handle
+ */
+DVZ_EXPORT DvzController* dvz_orbit_camera(
+    DvzScene* scene, const DvzOrbitCameraDesc* desc);
 
-bool _scene_common_bindings_resolve_visual_set(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    uint32_t visual_index, uint64_t common_bgl_id, uint64_t* out_bg_id);
 
-bool _scene_common_bindings_resolve_single_set(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    uint64_t* out_bgl_id, uint64_t* out_bg_id);
+
+EXTERN_C_OFF

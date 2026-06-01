@@ -47,6 +47,8 @@ typedef struct DvzFlyDesc DvzFlyDesc;
 typedef struct DvzGpuCtx DvzGpuCtx;
 typedef struct DvzPanzoom DvzPanzoom;
 typedef struct DvzPanzoomDesc DvzPanzoomDesc;
+typedef struct DvzOrbitCamera DvzOrbitCamera;
+typedef struct DvzOrbitCameraDesc DvzOrbitCameraDesc;
 typedef struct DvzTurntable DvzTurntable;
 typedef struct DvzTurntableDesc DvzTurntableDesc;
 typedef struct DvzWindowHost DvzWindowHost;
@@ -492,6 +494,18 @@ dvz_view_panzoom(DvzView* view, DvzPanel* panel, const DvzPanzoomDesc* desc);
  */
 DVZ_EXPORT DvzArcball*
 dvz_view_arcball(DvzView* view, DvzPanel* panel, const DvzArcballDesc* desc);
+
+
+/**
+ * Create, bind, and connect an orbit-camera controller for one panel.
+ *
+ * @param view the view
+ * @param panel the panel
+ * @param desc orbit-camera descriptor, or NULL for defaults
+ * @return the orbit-camera payload, or NULL on validation error
+ */
+DVZ_EXPORT DvzOrbitCamera* dvz_view_orbit_camera(
+    DvzView* view, DvzPanel* panel, const DvzOrbitCameraDesc* desc);
 
 
 /**

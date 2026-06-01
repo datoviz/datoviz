@@ -878,6 +878,57 @@ int test_scene_camera_arcball_mvp_composition(TstContext* suite, const TstCase* 
     return 0;
 }
 
+int test_orbit_camera_changes_view_not_model(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzCamera* camera = dvz_panel_set_camera(panel, NULL);
+    ANN(camera);
+
+    DvzController* controller = dvz_orbit_camera(scene, NULL);
+    ANN(controller);
+    DvzOrbitCamera* orbit = dvz_controller_orbit_camera(controller);
+    ANN(orbit);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
+
+    vec3 eye0 = {0}, target0 = {0}, up0 = {0};
+    dvz_camera_get_view(camera, eye0, target0, up0);
+    dvz_orbit_camera_set_camera(orbit, camera);
+    dvz_orbit_camera_resize(orbit, 800.0f, 600.0f);
+    DvzPointerEvent ev = {0};
+    ev.type = DVZ_POINTER_EVENT_DRAG;
+    ev.button = DVZ_POINTER_BUTTON_LEFT;
+    ev.pos[0] = 500.0f;
+    ev.pos[1] = 300.0f;
+    ev.content.d.press_pos[0] = 400.0f;
+    ev.content.d.press_pos[1] = 300.0f;
+    ev.content.d.last_pos[0] = 400.0f;
+    ev.content.d.last_pos[1] = 300.0f;
+    ev.content.d.is_press_valid = true;
+    AT(dvz_orbit_camera_pointer(orbit, &ev));
+
+    vec3 eye1 = {0}, target1 = {0}, up1 = {0};
+    dvz_camera_get_view(camera, eye1, target1, up1);
+    AT(fabsf(eye1[0] - eye0[0]) > 1e-3f || fabsf(eye1[2] - eye0[2]) > 1e-3f);
+    AC(target1[0], target0[0], 1e-6);
+    AC(target1[1], target0[1], 1e-6);
+    AC(target1[2], target0[2], 1e-6);
+
+    DvzMVP mvp = {0};
+    _scene_panel_apply_mvp(panel, &mvp);
+    AC(mvp.model[0][0], 1.0f, 1e-6);
+    AC(mvp.model[1][1], 1.0f, 1e-6);
+    AC(mvp.model[2][2], 1.0f, 1e-6);
+    AC(mvp.model[3][0], 0.0f, 1e-6);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
 
 int test_arcball_create_reset(TstContext* suite, const TstCase* item)
 {
@@ -1248,6 +1299,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_split_panzoom_x_y_bindings);
 
     TST_GROUP("arcball");
+    TST_CASE(test_orbit_camera_changes_view_not_model);
     TST_CASE(test_arcball_create_reset);
     TST_CASE(test_arcball_rotate_produces_nonidentity_model);
     TST_CASE(test_arcball_end_commits_rotation);

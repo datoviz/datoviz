@@ -19,5 +19,6 @@
 #include "controller/arcball.h"
 #include "controller/camera.h"
 #include "controller/fly.h"
+#include "controller/orbit_camera.h"
 #include "controller/panzoom.h"
 #include "controller/turntable.h"

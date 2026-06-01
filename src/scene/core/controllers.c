@@ -98,6 +98,11 @@ void _scene_controller_destroy(DvzController* controller)
         dvz_turntable_destroy(controller->turntable);
         controller->turntable = NULL;
     }
+    if (controller->orbit_camera != NULL)
+    {
+        dvz_orbit_camera_destroy(controller->orbit_camera);
+        controller->orbit_camera = NULL;
+    }
     controller->scene = NULL;
     controller->type = DVZ_CONTROLLER_TYPE_NONE;
     controller->active = false;
@@ -525,6 +530,14 @@ static void _scene_apply_controller_to_bound_panels(DvzController* controller)
                 dvz_turntable_set_camera(controller->turntable, panel->camera);
                 controller->turntable->camera = previous_camera;
             }
+            else if (
+                controller->type == DVZ_CONTROLLER_TYPE_ORBIT_CAMERA &&
+                controller->orbit_camera != NULL)
+            {
+                DvzOrbitCamera* orbit = controller->orbit_camera;
+                dvz_orbit_camera_set_camera(orbit, panel->camera);
+                dvz_orbit_camera_set_camera(orbit, NULL);
+            }
         }
     }
 }
@@ -754,6 +767,19 @@ static bool _scene_panel_dispatch_pointer_controller(
             _scene_apply_controller_to_bound_panels(controller);
         break;
     }
+    case DVZ_CONTROLLER_TYPE_ORBIT_CAMERA:
+    {
+        DvzOrbitCamera* orbit = controller->orbit_camera;
+        if (orbit == NULL || _scene_panel_ensure_camera(panel) == NULL)
+            return false;
+        dvz_orbit_camera_viewport(orbit, x, y, w, h);
+        dvz_orbit_camera_set_camera(orbit, panel->camera);
+        consumed = dvz_orbit_camera_pointer(orbit, ev);
+        dvz_orbit_camera_set_camera(orbit, NULL);
+        if (consumed)
+            _scene_apply_controller_to_bound_panels(controller);
+        break;
+    }
     default:
         break;
     }
@@ -960,6 +986,31 @@ DvzController* dvz_arcball(DvzScene* scene, const DvzArcballDesc* desc)
  * @param desc fly descriptor, or NULL for defaults
  * @return the scene-owned controller handle
  */
+/**
+ * Create a scene-owned orbit-camera controller.
+ *
+ * @param scene the scene
+ * @param desc orbit-camera descriptor, or NULL for defaults
+ * @return the scene-owned controller handle
+ */
+DvzController* dvz_orbit_camera(DvzScene* scene, const DvzOrbitCameraDesc* desc)
+{
+    ANN(scene);
+    DvzController* controller = _scene_controller(scene, DVZ_CONTROLLER_TYPE_ORBIT_CAMERA);
+    if (controller == NULL)
+        return NULL;
+    controller->orbit_camera = dvz_orbit_camera_create(desc);
+    if (controller->orbit_camera == NULL)
+    {
+        _scene_controller_destroy(controller);
+        scene->controller_count--;
+        return NULL;
+    }
+    return controller;
+}
+
+
+
 DvzController* dvz_fly(DvzScene* scene, const DvzFlyDesc* desc)
 {
     ANN(scene);
@@ -1188,6 +1239,24 @@ bool _dvz_figure_fly_update(DvzFigure* figure, double dt)
 
 
 /**
+ * Return the orbit-camera payload of an orbit-camera controller.
+ *
+ * @param controller the controller
+ * @return the borrowed orbit-camera payload, or NULL for the wrong family
+ */
+DvzOrbitCamera* dvz_controller_orbit_camera(DvzController* controller)
+{
+    if (controller == NULL || !controller->active ||
+        controller->type != DVZ_CONTROLLER_TYPE_ORBIT_CAMERA)
+    {
+        return NULL;
+    }
+    return controller->orbit_camera;
+}
+
+
+
+/**
  * Bind a scene-owned controller to one panel.
  *
  * @param panel the panel
@@ -1277,6 +1346,27 @@ int dvz_panel_bind_controller(DvzPanel* panel, DvzController* controller, DvzDim
         _scene_apply_controller_to_bound_panels(controller);
         break;
     }
+    case DVZ_CONTROLLER_TYPE_ORBIT_CAMERA:
+    {
+        if (dims != DVZ_DIM_MASK_XYZ)
+            return -1;
+        DvzOrbitCamera* orbit = dvz_controller_orbit_camera(controller);
+        if (orbit == NULL)
+            return -1;
+        DvzCamera* camera = _scene_panel_ensure_camera(panel);
+        if (camera == NULL)
+            return -1;
+        panel->controllers[DVZ_DIM_X] = controller;
+        panel->controllers[DVZ_DIM_Y] = controller;
+        panel->controllers[DVZ_DIM_Z] = controller;
+        panel->orbit_camera = orbit;
+        float w = 0.0f;
+        float h = 0.0f;
+        _scene_panel_pixel_size(panel, &w, &h);
+        dvz_camera_resize(camera, w, h);
+        _scene_apply_controller_to_bound_panels(controller);
+        break;
+    }
     default:
         return -1;
     }
@@ -1354,7 +1444,8 @@ DvzCamera* dvz_panel_set_camera(DvzPanel* panel, const DvzCameraDesc* desc)
                 continue;
             seen[seen_count++] = controller;
             if (controller->type == DVZ_CONTROLLER_TYPE_FLY ||
-                controller->type == DVZ_CONTROLLER_TYPE_TURNTABLE)
+                controller->type == DVZ_CONTROLLER_TYPE_TURNTABLE ||
+                controller->type == DVZ_CONTROLLER_TYPE_ORBIT_CAMERA)
             {
                 _scene_apply_controller_to_bound_panels(controller);
             }
