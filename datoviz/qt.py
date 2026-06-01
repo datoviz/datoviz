@@ -46,7 +46,9 @@ _KEY_MAP = {
 
 
 def _extension_name(extension) -> str:
-    name = extension.name() if callable(getattr(extension, 'name', None)) else extension
+    name = getattr(extension, 'name', extension)
+    if callable(name):
+        name = name()
     if hasattr(name, 'data'):
         name = bytes(name)
     if isinstance(name, bytes):
