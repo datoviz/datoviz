@@ -496,8 +496,9 @@ Start with narrow tests before adding Python examples:
 
 The current raw smoke is intentionally below the public API: it proves Vulkan-owned buffer ->
 CUDA/CuPy import -> explicit timeline wait -> DRP2 render/readback. The scene external-buffer hook
-now exists, so the next public-example slice should use retained scene resources plus the
-resource-key/label-id registration path rather than low-level DRP2 command construction.
+now exists. `examples/python/features/cupy_particles.py` uses retained scene resources plus the
+resource-key/label-id registration path rather than low-level DRP2 command construction: CuPy runs
+the particle compute logic, and Datoviz renders the shared position buffer as a point visual.
 
 The existing CUDA import/export tests in `src/vk/tests/test_memory.c` are the right low-level
 starting point, but the public example should only be added after the synchronization path is tested

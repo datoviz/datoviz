@@ -37,6 +37,9 @@ Current slice update, 2026-06-01:
     smoke: Datoviz exportable buffer lifetime, CUDA bridge import lifetime, CuPy `UnownedMemory`,
     timeline values, `cuda_write()` context manager, Vulkan wait, and DRP2/scene registration
     helpers.
+11. `examples/python/features/cupy_particles.py` is the first experimental visual example: CuPy
+    runs a CUDA kernel that writes particle positions into a Datoviz/Vulkan-owned zero-copy buffer,
+    while Datoviz renders a point visual with static color/size scene attributes.
 
 Current proof points:
 
@@ -94,9 +97,9 @@ that exported it.
 The raw smoke now reaches the DRP2 registered-buffer render/readback path when CuPy is available.
 Keep the next slice focused on turning this substrate into the first feature-quality example:
 
-1. Shape the first feature example around the internal owner: create a scene point visual, bind an
-   external `position` scene buffer, register the shared Vulkan buffer by resource key, update
-   positions in `cuda_write()`, wait from Vulkan, and render through Datoviz.
+1. Run and tune `examples/python/features/cupy_particles.py` on a Linux/NVIDIA/CuPy workstation:
+   verify the rendered PNG/video, tune particle count/colors/animation, and decide whether to keep
+   it as an experimental feature or move it behind the future public `datoviz.cuda_array()` API.
 2. Keep `dvz_interop_gpu_ctx()`, `dvz_interop_buffer_wait_timeline()`, and the CUDA bridge
    internal/advanced until the public `datoviz.cuda_array()` API is ready.
 3. Prepare the feature example around a dynamic point cloud whose positions are updated by CuPy
