@@ -70,6 +70,12 @@ function expectNoDiagnostics(Module, scene, label) {
   requireOk(messages.length === 0, `${label}: unexpected diagnostics: ${messages.join("; ")}`);
 }
 
+function expectNoPayload(Module, scene, label) {
+  const ptr = Module._dvz_wasm_api_payload_ptr(scene);
+  const size = Module._dvz_wasm_api_payload_size(scene);
+  requireOk(ptr === 0 && size === 0, `${label}: expected no live payload, got ptr=${ptr} size=${size}`);
+}
+
 function emitStream(Module, scene, figure, label) {
   const status = Module._dvz_wasm_api_emit(scene, figure);
   const messages = diagnostics(Module, scene);
@@ -481,6 +487,32 @@ try {
     );
     expectDiagnostics(
       Module, diagnosticScene, "WASM controller is not an arcball", "arcball on panzoom");
+
+    const diagnosticFigure = Module._dvz_wasm_api_figure(diagnosticScene, smokeSize, smokeSize);
+    const diagnosticPanel = Module._dvz_wasm_api_panel_full(diagnosticFigure);
+    requireOk(diagnosticFigure !== 0 && diagnosticPanel !== 0, "diagnostic figure/panel failed");
+    expectStatus(
+      Module._dvz_wasm_api_panel_add_visual(diagnosticPanel, 0),
+      -1,
+      "null visual handle",
+    );
+    expectDiagnostics(Module, diagnosticScene, "invalid WASM panel/visual handle", "null visual");
+
+    const otherScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
+    requireOk(otherScene !== 0, "cross-scene diagnostic scene creation failed");
+    try {
+      const otherPoint = Module._dvz_wasm_api_visual(otherScene, DVZ_WASM_VISUAL_POINT, 0);
+      requireOk(otherPoint !== 0, "cross-scene diagnostic point creation failed");
+      expectStatus(
+        Module._dvz_wasm_api_panel_add_visual(diagnosticPanel, otherPoint),
+        -1,
+        "cross-scene visual handle",
+      );
+      expectDiagnostics(
+        Module, diagnosticScene, "invalid WASM panel/visual handle", "cross-scene visual");
+    } finally {
+      Module._dvz_wasm_api_scene_destroy(otherScene);
+    }
   } finally {
     Module._dvz_wasm_api_scene_destroy(diagnosticScene);
   }
@@ -551,6 +583,7 @@ try {
     const initial = emitStream(Module, scene, figure, "generic 2D initial");
     expect2DSceneStreamShape(initial.stream, "generic 2D initial");
     expectStatus(Module._dvz_wasm_api_pointer(scene, DVZ_POINTER_EVENT_PRESS, 32, 32, DVZ_POINTER_BUTTON_LEFT, 0, 1, 200), 0, "api pointer press");
+    expectNoPayload(Module, scene, "pointer press invalidates 2D payload");
     expectStatus(Module._dvz_wasm_api_pointer(scene, DVZ_POINTER_EVENT_MOVE, 38, 30, DVZ_POINTER_BUTTON_LEFT, 0, 1, 216), 0, "api pointer move");
     expectStatus(Module._dvz_wasm_api_pointer(scene, DVZ_POINTER_EVENT_RELEASE, 38, 30, DVZ_POINTER_BUTTON_LEFT, 0, 1, 232), 0, "api pointer release");
     const interactive = emitStream(Module, scene, figure, "generic 2D interactive");
@@ -560,6 +593,7 @@ try {
       "generic 2D interactive payload did not replace initial payload",
     );
     expectStatus(Module._dvz_wasm_api_resize(scene, figure, smokeSize * 2, smokeSize + 8, 2), 0, "api resize");
+    expectNoPayload(Module, scene, "resize invalidates 2D payload");
     const resized = emitStream(Module, scene, figure, "generic 2D resized");
     expect2DUpdateStreamShape(resized.stream, "generic 2D resized");
     requireOk(
@@ -596,6 +630,7 @@ try {
     const initial3d = emitStream(Module, scene3d, figure3d, "generic 3D initial");
     expect3DSceneStreamShape(initial3d.stream, "generic 3D initial");
     expectStatus(Module._dvz_wasm_api_pointer(scene3d, DVZ_POINTER_EVENT_PRESS, 32, 32, DVZ_POINTER_BUTTON_LEFT, 0, 1, 300), 0, "api 3D pointer press");
+    expectNoPayload(Module, scene3d, "pointer press invalidates 3D payload");
     expectStatus(Module._dvz_wasm_api_pointer(scene3d, DVZ_POINTER_EVENT_MOVE, 40, 38, DVZ_POINTER_BUTTON_LEFT, 0, 1, 316), 0, "api 3D pointer move");
     expectStatus(Module._dvz_wasm_api_pointer(scene3d, DVZ_POINTER_EVENT_RELEASE, 40, 38, DVZ_POINTER_BUTTON_LEFT, 0, 1, 332), 0, "api 3D pointer release");
     const interactive3d = emitStream(Module, scene3d, figure3d, "generic 3D interactive");
