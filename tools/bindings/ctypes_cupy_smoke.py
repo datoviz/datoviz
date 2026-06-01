@@ -23,6 +23,7 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 BRIDGE_SOURCE = ROOT_DIR / 'tools' / 'bindings' / 'cuda_interop_bridge.c'
 BRIDGE_BUILD_DIR = ROOT_DIR / 'build' / 'bindings'
 BRIDGE_LIBRARY = BRIDGE_BUILD_DIR / 'libdatoviz_cuda_interop_bridge.so'
+VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT = 0x00000001
 
 
 EXPORT_FIELDS = (
@@ -59,6 +60,11 @@ REQUIRED_RAW_SYMBOLS = (
     'DvzInteropBufferExport',
     'DvzInteropBufferExportConfig',
     'dvz_interop_buffer_export_from_buffer',
+    'dvz_interop_gpu_ctx',
+    'dvz_gpu_ctx_alloc',
+    'dvz_gpu_ctx_device',
+    'dvz_gpu_ctx_destroy',
+    'dvz_allocator_external',
     'dvz_buffer_create_wrapper',
     'dvz_buffer_free',
     'dvz_buffer',
@@ -208,6 +214,22 @@ def _require_linux() -> None:
         _skip('Linux opaque-FD external memory/semaphore path required')
 
 
+
+def _probe_interop_context(dvz) -> None:
+    ctx = dvz.dvz_interop_gpu_ctx(0, VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT)
+    if not ctx:
+        _skip('Datoviz interop GPU context unavailable')
+    try:
+        allocator = dvz.dvz_gpu_ctx_alloc(ctx)
+        if not allocator:
+            raise RuntimeError('interop GPU context has no allocator')
+        external = dvz.dvz_allocator_external(allocator)
+        if external != VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT:
+            raise RuntimeError('interop GPU context allocator is not opaque-FD exportable')
+    finally:
+        dvz.dvz_gpu_ctx_destroy(ctx)
+
+
 def _require_cupy():
     try:
         import cupy as cp  # noqa: PLC0415
@@ -240,6 +262,9 @@ def main() -> int:
     parser.add_argument(
         '--bridge-only', action='store_true', help='build and load the optional CUDA bridge only'
     )
+    parser.add_argument(
+        '--ctx-only', action='store_true', help='create and destroy an exportable Datoviz GPU context'
+    )
     args = parser.parse_args()
 
     _require_linux()
@@ -249,7 +274,11 @@ def main() -> int:
         print(f'ctypes CuPy interop bridge: OK ({BRIDGE_LIBRARY})')
         return 0
 
-    _require_raw_surface()
+    dvz = _require_raw_surface()
+    if args.ctx_only:
+        _probe_interop_context(dvz)
+        print('ctypes CuPy interop context: OK')
+        return 0
     cp = _require_cupy()
     bridge = _load_bridge()
 

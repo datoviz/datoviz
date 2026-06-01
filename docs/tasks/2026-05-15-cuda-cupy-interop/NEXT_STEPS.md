@@ -19,6 +19,8 @@ Current slice update, 2026-06-01:
 5. `tools/bindings/cuda_interop_bridge.c` is the optional Linux CUDA Runtime bridge used by the
    smoke. It imports opaque-FD external memory and timeline semaphore FDs, maps a device pointer,
    exposes wait/signal calls, and owns cleanup.
+6. `dvz_interop_gpu_ctx()` creates the advanced exportable GPU context used by raw Python smoke
+   setup. This remains binding substrate, not the final high-level Python API.
 
 Current proof points:
 
@@ -75,9 +77,9 @@ that exported it.
 The buffer-level export helper has landed. Keep the next slice focused on turning the scaffold into
 a real Linux/NVIDIA smoke:
 
-1. Add a small raw-ctypes-friendly Datoviz GPU-context creation path for the smoke, or another
-   narrow helper that avoids by-value `DvzGpuCtxConfig`/`DvzDeviceConfig` structs.
-2. Datoviz creates a Vulkan-owned exportable vertex/storage buffer through raw ctypes.
+1. Use `dvz_interop_gpu_ctx()` in the smoke to allocate and export a Vulkan-owned
+   vertex/storage buffer through raw ctypes.
+2. Keep the helper internal/advanced and wrap it behind the eventual `datoviz.cuda_array()` API.
 3. The export descriptor is imported by the CUDA bridge.
 4. The bridge maps a CUDA pointer and wraps it as `cupy.cuda.UnownedMemory` plus a CuPy ndarray.
 5. A CuPy kernel writes point positions.

@@ -35,6 +35,7 @@ smoke_symbols:
   - dvz_view_external_surface_ffi
   - dvz_view_update_external_surface_ffi
   - dvz_interop_buffer_export_from_buffer
+  - dvz_interop_gpu_ctx
 
 layout_records:
   include:
@@ -93,6 +94,7 @@ skipped_functions:
     - dvz_gpu_ctx_config
     - dvz_material_desc
     - dvz_mutex
+    - dvz_orbit_camera_desc
     - dvz_overlay_card_style
     - dvz_phong_material_desc
     - dvz_standard_material_desc
