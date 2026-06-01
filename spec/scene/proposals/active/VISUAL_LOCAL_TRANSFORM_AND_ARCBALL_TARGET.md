@@ -2,6 +2,8 @@
 
 > **Status:** active proposal
 > **Updated on:** 2026-06-01
+> **Implementation:** landed in scene/controller code; examples now use orbit camera plus
+> visual-local spin.
 > **Scope:** retained visual-local transforms, separate model-arcball and orbit-camera controller
 > semantics, and the `textured_planet.c` showcase cleanup.
 
@@ -49,7 +51,7 @@ to visuals. View/projection transforms belong to panels and their camera control
 Visual transform:
 
 ```c
-int dvz_visual_set_transform(DvzVisual* visual, const mat4 transform);
+int dvz_visual_set_transform(DvzVisual* visual, mat4 transform);
 int dvz_visual_clear_transform(DvzVisual* visual);
 ```
 
@@ -148,12 +150,20 @@ V/P = fixed overlay mapping
    math where practical and composing its result into the effective panel view around the pivot.
 7. Update query, picking, bounds, and synthetic query render plans so they use the same visual-local
    model as the render path.
-8. Revert or supersede the CPU-vertex planet spin in `textured_planet.c`.
+8. Revert or supersede the CPU-vertex planet spin in `textured_planet.c`. **Landed:**
+   spin now updates the retained visual-local transform.
 9. Update `textured_planet.c` to use:
    - orbit-camera controller for user navigation;
    - visual-local transform animation for planet self-spin;
    - static world-space star shell;
    - default Phong material without a standard-material switch.
+
+## Implementation Notes
+
+Landed behavior keeps `DvzArcball` as model/object transform state and adds `DvzOrbitCamera`
+as a separate camera controller. Render/query frame plans now carry per-visual MVPs when
+visual-local model matrices differ. `dvz_visual_bounds()` reports bounds after the retained local
+transform, and synthetic query render plans compose the same local model as regular rendering.
 10. Update transform/controller specs after implementation settles.
 
 
