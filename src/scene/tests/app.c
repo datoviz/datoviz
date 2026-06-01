@@ -3016,7 +3016,7 @@ int test_app_offscreen_colorbar_has_visible_ramp_and_labels(TstContext* suite, c
     AT(panel != NULL);
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS, .label = "Intensity"});
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS, .label = "Intensity"});
     AT(scale != NULL);
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormap* colormap = dvz_colormap(scene, NULL);
@@ -3074,13 +3074,13 @@ int test_app_offscreen_colorbar_has_visible_ramp_and_labels(TstContext* suite, c
 
     DvzColorbar* colorbar = dvz_colorbar(
         panel, scale,
-        &(DvzColorbarDesc){
+        &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
             .title = "Intensity",
         });
     AT(colorbar != NULL);
-    dvz_colorbar_set_format(colorbar, &(DvzFormatDesc){.precision = 1});
+    dvz_colorbar_set_format(colorbar, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 1});
     dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
 
     DvzApp* app = _app_test_create(suite, scene);
@@ -3569,7 +3569,7 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormap* colormap = dvz_colormap(scene, NULL);
@@ -4856,8 +4856,8 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
-    DvzScale* scale0 = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
-    DvzScale* scale1 = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale0 = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale1 = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale0);
     ANN(scale1);
     dvz_scale_set_domain(scale0, 0.0, 1.0);
@@ -5913,7 +5913,7 @@ int test_app_offscreen_volume_label_composite_renders_category(
         }));
     AT(dvz_visual_set_field(volume, "field", field));
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory category = {
         .category_id = 2,
@@ -6015,7 +6015,7 @@ int test_app_offscreen_volume_label_composite_renders_sparse_category(
         }));
     AT(dvz_visual_set_field(volume, "field", field));
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory category = {
         .category_id = 70000,

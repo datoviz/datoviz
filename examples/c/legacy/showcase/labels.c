@@ -761,7 +761,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(base != NULL, "image visual setup failed");
 
     DvzScale* labels_scale = dvz_scale(
-        scene, &(DvzScaleDesc){
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CATEGORICAL,
                    .label = "labels",
                });
@@ -809,7 +809,7 @@ int main(int argc, char** argv)
 
     DvzLegend* legend = dvz_legend(
         panel, labels_scale,
-        &(DvzLegendDesc){
+        &(DvzLegendDesc){DVZ_STRUCT_INIT_FIELDS(DvzLegendDesc),
             .title = "Labels",
             .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
             .reserve_px = 168.0f,

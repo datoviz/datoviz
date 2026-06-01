@@ -21,6 +21,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_log.h"
 #include "_scene.h"
 #include "axis_internal.h"
 #include "core/scene_notify_internal.h"
@@ -32,6 +33,37 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_AXIS_TICK_POLICY_KNOWN_FLAGS 0u
+#define DVZ_AXIS_STYLE_KNOWN_FLAGS 0u
+
+
+static bool _axis_tick_policy_validate(const DvzAxisTickPolicy* policy)
+{
+    if (policy == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(policy, DvzAxisTickPolicy, DVZ_AXIS_TICK_POLICY_KNOWN_FLAGS))
+    {
+        log_error("invalid axis tick policy ABI");
+        return false;
+    }
+    return true;
+}
+
+
+static bool _axis_style_validate(const DvzAxisStyle* style)
+{
+    if (style == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(style, DvzAxisStyle, DVZ_AXIS_STYLE_KNOWN_FLAGS))
+    {
+        log_error("invalid axis style ABI");
+        return false;
+    }
+    return true;
+}
+
+
+
 /**
  * Return the default WIP axis tick policy.
  *
@@ -40,7 +72,11 @@
 DvzAxisTickPolicy _axis_default_tick_policy(void)
 {
     return (DvzAxisTickPolicy){
-        .target_count = 6, .min_pixel_spacing = 100.0f, .minor_per_interval = 4};
+        DVZ_STRUCT_INIT_FIELDS(DvzAxisTickPolicy),
+        .target_count = 6,
+        .min_pixel_spacing = 100.0f,
+        .minor_per_interval = 4,
+    };
 }
 
 
@@ -53,6 +89,7 @@ DvzAxisTickPolicy _axis_default_tick_policy(void)
 DvzAxisStyle _axis_default_style(void)
 {
     return (DvzAxisStyle){
+        DVZ_STRUCT_INIT_FIELDS(DvzAxisStyle),
         .spine_width = 1.0f,
         .major_tick_width = 1.0f,
         .minor_tick_width = 1.0f,
@@ -492,6 +529,8 @@ bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy)
 {
     if (axis == NULL)
         return false;
+    if (!_axis_tick_policy_validate(policy))
+        return false;
     axis->tick_policy = policy != NULL ? *policy : _axis_default_tick_policy();
     axis->tick_lstep = 0.0;
     _axis_mark_dirty(axis);
@@ -510,6 +549,8 @@ bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy)
 bool dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style)
 {
     if (axis == NULL)
+        return false;
+    if (!_axis_style_validate(style))
         return false;
     axis->style = style != NULL ? *style : _axis_default_style();
     _axis_mark_dirty(axis);

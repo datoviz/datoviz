@@ -173,7 +173,7 @@ static int test_scene_colorizer_categorical_palette(TstContext* suite, const Tst
     DvzScene* scene = dvz_scene();
     ANN(scene);
     DvzScale* scale =
-        dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL, .label = "regions"});
+        dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL, .label = "regions"});
     ANN(scale);
     DvzScaleCategory categories[] = {
         {.category_id = 0, .order = 0, .label = "background", .color = {0, 0, 0, 0}},

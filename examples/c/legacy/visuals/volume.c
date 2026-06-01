@@ -444,7 +444,7 @@ int main(int argc, char** argv)
     int rc = dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_alpha_mode() failed");
 
-    DvzScale* transfer_scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* transfer_scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     EXAMPLE_CHECK(transfer_scale != NULL, "dvz_scale() failed");
     dvz_scale_set_domain(transfer_scale, 0.0, 1.0);
     DvzColormap* transfer_map = dvz_colormap(scene, NULL);

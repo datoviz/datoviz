@@ -883,11 +883,11 @@ static DvzScale* _add_wind_scale(DvzScene* scene)
     ANN(scene);
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CONTINUOUS,
                    .label = "wind speed",
                    .unit = "m/s",
-                   .format = {.precision = 0, .trim_trailing_zeros = true},
+                   .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0, .trim_trailing_zeros = true},
                });
     if (scale == NULL)
         return NULL;
@@ -920,7 +920,7 @@ static DvzColorbar* _add_wind_colorbar(DvzPanel* panel, DvzScale* scale)
 
     DvzColorbar* colorbar = dvz_colorbar(
         panel, scale,
-        &(DvzColorbarDesc){
+        &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_LEFT,
             .title = "m/s",
@@ -934,7 +934,7 @@ static DvzColorbar* _add_wind_colorbar(DvzPanel* panel, DvzScale* scale)
     if (colorbar != NULL)
     {
         dvz_colorbar_set_format(
-            colorbar, &(DvzFormatDesc){.precision = 0, .trim_trailing_zeros = true});
+            colorbar, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0, .trim_trailing_zeros = true});
     }
     return colorbar;
 }

@@ -52,6 +52,7 @@
 #define COLORBAR_TITLE_TEXT_SIZE_PX 16.0f
 #define COLORBAR_EPS 1e-12
 #define COLORBAR_LAYOUT_EPS 1e-3f
+#define DVZ_COLORBAR_DESC_KNOWN_FLAGS 0u
 
 
 
@@ -82,6 +83,25 @@ void _scene_mark_colorbar_dirty(DvzColorbar* colorbar)
     colorbar->version = colorbar->version == UINT64_MAX ? 1 : colorbar->version + 1;
     _colorbar_apply_auto_reserve(colorbar);
     _scene_notify_request_frame(colorbar->panel != NULL ? colorbar->panel->figure : NULL);
+}
+
+
+/**
+ * Validate public colorbar descriptor ABI fields.
+ *
+ * @param desc the colorbar descriptor
+ * @return whether the descriptor is accepted
+ */
+static bool _colorbar_desc_validate(const DvzColorbarDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzColorbarDesc, DVZ_COLORBAR_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid colorbar descriptor ABI");
+        return false;
+    }
+    return true;
 }
 
 
@@ -1216,6 +1236,28 @@ static bool _colorbar_needs_visual_update(const DvzColorbar* colorbar)
 /*************************************************************************************************/
 
 /**
+ * Return the default colorbar descriptor.
+ *
+ * @return default colorbar descriptor
+ */
+DvzColorbarDesc dvz_colorbar_desc(void)
+{
+    return (DvzColorbarDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
+        .placement_mode = DVZ_COLORBAR_PLACEMENT_ATTACHED,
+        .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+        .text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+        .placement =
+            (DvzPlacement){
+                .space = DVZ_PLACEMENT_SPACE_PANEL,
+                .horizontal_anchor = DVZ_HORIZONTAL_ANCHOR_LEFT,
+                .vertical_anchor = DVZ_VERTICAL_ANCHOR_TOP,
+            },
+    };
+}
+
+
+/**
  * Create a panel-attached colorbar bound to a scale.
  *
  * @param panel the panel
@@ -1227,6 +1269,8 @@ DvzColorbar* dvz_colorbar(DvzPanel* panel, DvzScale* scale, const DvzColorbarDes
 {
     ANN(panel);
     ANN(scale);
+    if (!_colorbar_desc_validate(desc))
+        return NULL;
     if (panel->figure == NULL || panel->figure->scene == NULL)
     {
         log_error("cannot create a colorbar on a detached panel");
@@ -1279,7 +1323,7 @@ DvzColorbar* dvz_colorbar(DvzPanel* panel, DvzScale* scale, const DvzColorbarDes
     colorbar->placement_mode = placement_mode;
     colorbar->orientation = orientation;
     colorbar->anchor = anchor;
-    colorbar->flags = desc != NULL ? desc->flags : 0;
+    colorbar->flags = desc != NULL ? desc->colorbar_flags : 0;
     colorbar->reserve_px = _colorbar_positive_or_default(
         desc != NULL ? desc->reserve_px : 0.0f, _colorbar_default_reserve_px(orientation));
     colorbar->ramp_width_px = _colorbar_positive_or_default(
@@ -1359,6 +1403,8 @@ void dvz_colorbar_destroy(DvzColorbar* colorbar)
 void dvz_colorbar_set_format(DvzColorbar* colorbar, const DvzFormatDesc* format)
 {
     ANN(colorbar);
+    if (!_scene_format_desc_validate(format))
+        return;
     colorbar->has_format = format != NULL;
     _scene_format_state_copy(&colorbar->format, format);
     _scene_mark_colorbar_dirty(colorbar);
@@ -1433,6 +1479,8 @@ bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc)
     ANN(colorbar);
     if (desc == NULL)
         return false;
+    if (!_colorbar_desc_validate(desc))
+        return false;
     DvzColorbarPlacementMode placement_mode = desc->placement_mode;
     DvzColorbarOrientation orientation = desc->orientation;
     DvzSceneAnchor anchor =
@@ -1452,7 +1500,7 @@ bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc)
     colorbar->placement_mode = placement_mode;
     colorbar->orientation = orientation;
     colorbar->anchor = anchor;
-    colorbar->flags = desc->flags;
+    colorbar->flags = desc->colorbar_flags;
     colorbar->reserve_px =
         _colorbar_positive_or_default(desc->reserve_px, _colorbar_default_reserve_px(orientation));
     colorbar->ramp_width_px =

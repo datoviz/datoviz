@@ -216,6 +216,7 @@ dvz_cmd_reset
 dvz_cmd_submit
 dvz_cmd_submit_result
 dvz_colorbar
+dvz_colorbar_desc
 dvz_colorbar_destroy
 dvz_colorbar_set_anchor
 dvz_colorbar_set_format
@@ -226,6 +227,7 @@ dvz_colormap
 dvz_colormap_builtin
 dvz_colormap_builtin_sample
 dvz_colormap_custom
+dvz_colormap_desc
 dvz_colormap_destroy
 dvz_colormap_sample
 dvz_colormap_set_center
@@ -537,6 +539,7 @@ dvz_fly_set_camera
 dvz_fly_set_mode
 dvz_fly_update
 dvz_fly_viewport
+dvz_format_desc
 dvz_font
 dvz_font_defaults
 dvz_font_destroy
@@ -806,6 +809,7 @@ dvz_labels_set_slice_position
 dvz_labels_state
 dvz_legend
 dvz_legend_clear_highlight
+dvz_legend_desc
 dvz_legend_destroy
 dvz_legend_set_highlight
 dvz_legend_set_highlights
@@ -1049,6 +1053,7 @@ dvz_sampler_handle
 dvz_sampler_mag_filter
 dvz_sampler_min_filter
 dvz_scale
+dvz_scale_desc
 dvz_scale_destroy
 dvz_scale_remove_categories
 dvz_scale_set_categories

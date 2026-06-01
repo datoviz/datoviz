@@ -28,6 +28,22 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 /**
+ * Return the default format descriptor.
+ *
+ * @return default format descriptor
+ */
+DVZ_EXPORT DvzFormatDesc dvz_format_desc(void);
+
+
+/**
+ * Return the default scale descriptor.
+ *
+ * @return default scale descriptor
+ */
+DVZ_EXPORT DvzScaleDesc dvz_scale_desc(void);
+
+
+/**
  * Create a scene-owned scale object.
  *
  * @param scene the scene
@@ -138,6 +154,14 @@ DVZ_EXPORT DvzColormap* dvz_colormap(DvzScene* scene, const DvzColormapDesc* des
 
 
 /**
+ * Return the default colormap descriptor.
+ *
+ * @return default colormap descriptor
+ */
+DVZ_EXPORT DvzColormapDesc dvz_colormap_desc(void);
+
+
+/**
  * Create a scene-owned built-in colormap object.
  *
  * @param scene the scene
@@ -221,6 +245,14 @@ DVZ_EXPORT void dvz_colormap_set_center(DvzColormap* colormap, double center);
 /*************************************************************************************************/
 
 /**
+ * Return the default colorbar descriptor.
+ *
+ * @return default colorbar descriptor
+ */
+DVZ_EXPORT DvzColorbarDesc dvz_colorbar_desc(void);
+
+
+/**
  * Create a panel-attached colorbar bound to a scale.
  *
  * @param panel the panel
@@ -277,8 +309,8 @@ DVZ_EXPORT bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor an
  * Update colorbar layout and placement parameters.
  *
  * The descriptor updates orientation, placement mode, anchor, reserve size, geometry gaps, explicit
- * detached placement, flags, and title when a non-NULL title is supplied. Attached colorbar anchors
- * must match the requested orientation.
+ * detached placement, colorbar flags, and title when a non-NULL title is supplied. Attached
+ * colorbar anchors must match the requested orientation.
  *
  * @param colorbar the colorbar
  * @param desc layout descriptor
@@ -300,6 +332,14 @@ DVZ_EXPORT void dvz_colorbar_set_title(DvzColorbar* colorbar, const char* title)
 /*************************************************************************************************/
 /*  Legends                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Return the default legend descriptor.
+ *
+ * @return default legend descriptor
+ */
+DVZ_EXPORT DvzLegendDesc dvz_legend_desc(void);
+
 
 /**
  * Create a panel-attached legend bound to a categorical scale.

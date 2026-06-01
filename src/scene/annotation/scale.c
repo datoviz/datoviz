@@ -37,6 +37,8 @@
 /*  Function prototypes                                                                          */
 /*************************************************************************************************/
 
+#define DVZ_SCALE_DESC_KNOWN_FLAGS 0u
+
 static void _scene_texture_bump_version(DvzVisual* visual);
 
 static bool _scale_categories_have_duplicate_ids(
@@ -49,6 +51,8 @@ static void _scale_release_categories(DvzScale* scale);
 static int32_t _scale_category_index(const DvzScale* scale, DvzCategoryId id);
 
 static void _scale_category_copy(DvzScaleCategoryState* dst, const DvzScaleCategory* src);
+
+static bool _scale_desc_validate(const DvzScaleDesc* desc);
 
 
 
@@ -258,10 +262,47 @@ static void _scale_category_copy(DvzScaleCategoryState* dst, const DvzScaleCateg
 }
 
 
+/**
+ * Validate public scale descriptor ABI fields.
+ *
+ * @param desc the scale descriptor
+ * @return whether the descriptor is accepted
+ */
+static bool _scale_desc_validate(const DvzScaleDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzScaleDesc, DVZ_SCALE_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid scale descriptor ABI");
+        return false;
+    }
+    if (!_scene_format_desc_is_zero(&desc->format) &&
+        !_scene_format_desc_validate(&desc->format))
+        return false;
+    return true;
+}
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Return the default scale descriptor.
+ *
+ * @return default scale descriptor
+ */
+DvzScaleDesc dvz_scale_desc(void)
+{
+    return (DvzScaleDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
+        .kind = DVZ_SCALE_CONTINUOUS,
+        .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc)},
+    };
+}
+
 
 /**
  * Create a scene-owned scale object.
@@ -273,6 +314,8 @@ static void _scale_category_copy(DvzScaleCategoryState* dst, const DvzScaleCateg
 DvzScale* dvz_scale(DvzScene* scene, const DvzScaleDesc* desc)
 {
     ANN(scene);
+    if (!_scale_desc_validate(desc))
+        return NULL;
     if (scene->scale_count >= DVZ_SCENE_MAX_SCALES)
     {
         log_error("maximum scale count reached");
@@ -288,7 +331,8 @@ DvzScale* dvz_scale(DvzScene* scene, const DvzScaleDesc* desc)
             dvz_strlcpy(scale->label, desc->label, sizeof(scale->label));
         if (desc->unit != NULL)
             dvz_strlcpy(scale->unit, desc->unit, sizeof(scale->unit));
-        _scene_format_state_copy(&scale->format, &desc->format);
+        if (!_scene_format_desc_is_zero(&desc->format))
+            _scene_format_state_copy(&scale->format, &desc->format);
     }
     return scale;
 }
@@ -378,6 +422,8 @@ void dvz_scale_set_colormap(DvzScale* scale, DvzColormap* colormap)
 void dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* format)
 {
     ANN(scale);
+    if (!_scene_format_desc_validate(format))
+        return;
     _scene_format_state_copy(&scale->format, format);
     _scene_mark_scale_dirty(scale);
 }

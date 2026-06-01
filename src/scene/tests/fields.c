@@ -184,12 +184,12 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
     ANN(panel);
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CONTINUOUS,
                    .label = "Depth",
                    .unit = "um",
                    .format =
-                       (DvzFormatDesc){
+                       (DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
                            .precision = 2,
                            .show_unit = true,
                            .unit = "um",
@@ -276,7 +276,7 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
     AT(scale->colormap == colormap);
 
     DvzColorbar* colorbar = dvz_colorbar(
-        panel, scale, &(DvzColorbarDesc){
+        panel, scale, &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
                           .orientation = DVZ_COLORBAR_ORIENTATION_HORIZONTAL,
                           .anchor = DVZ_SCENE_ANCHOR_PANEL_BOTTOM,
                           .title = "Depth map",
@@ -294,7 +294,7 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
     AT(strcmp(colorbar->title, "Depth map") == 0);
 
     dvz_colorbar_set_format(
-        colorbar, &(DvzFormatDesc){
+        colorbar, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
                        .precision = 0,
                        .unit = "um",
                    });
@@ -314,7 +314,7 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
     DvzScene* scene = dvz_scene();
     ANN(scene);
 
-    DvzScale* categorical = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* categorical = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(categorical);
     DvzScaleCategory categories[3] = {
         {.category_id = 7, .order = 2, .label = "Beta", .color = {220, 40, 40, 255}},
@@ -371,7 +371,7 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
     AT(categorical->category_capacity >= 96);
     AT(categorical->categories[95].category_id == 1095);
 
-    DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(continuous);
     AT_EXPECTED_ERROR_STRICT(suite, !dvz_scale_set_categories(continuous, categories, 3));
     AT(continuous->category_count == 0);
@@ -397,7 +397,7 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory categories[2] = {
         {.category_id = 1, .order = 0, .label = "One", .color = {255, 0, 0, 255}},
@@ -406,7 +406,7 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
     AT(dvz_scale_set_categories(scale, categories, 2));
 
     DvzLegend* legend = dvz_legend(
-        panel, scale, &(DvzLegendDesc){
+        panel, scale, &(DvzLegendDesc){DVZ_STRUCT_INIT_FIELDS(DvzLegendDesc),
                           .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
                           .title = "Classes",
                           .reserve_px = 120.0f,
@@ -432,7 +432,7 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
     AT(legend->version > version);
 
     AT(dvz_legend_set_layout(
-        legend, &(DvzLegendDesc){
+        legend, &(DvzLegendDesc){DVZ_STRUCT_INIT_FIELDS(DvzLegendDesc),
                     .placement_mode = DVZ_LEGEND_PLACEMENT_DETACHED,
                     .title = "Detached",
                     .text_renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
@@ -457,7 +457,7 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
     AT(legend->panel == NULL);
     AT(legend->scale == NULL);
 
-    DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(continuous);
     DvzLegend* invalid = NULL;
     AT_EXPECTED_ERROR_STRICT(suite, (invalid = dvz_legend(panel, continuous, NULL)) == NULL);
@@ -465,7 +465,7 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
 
     DvzScene* other_scene = dvz_scene();
     ANN(other_scene);
-    DvzScale* foreign = dvz_scale(other_scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* foreign = dvz_scale(other_scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(foreign);
     AT_EXPECTED_ERROR_STRICT(suite, (invalid = dvz_legend(panel, foreign, NULL)) == NULL);
     AT(invalid == NULL);
@@ -474,7 +474,7 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
     AT_EXPECTED_ERROR_STRICT(
         suite,
         (invalid = dvz_legend(
-             panel, scale, &(DvzLegendDesc){.anchor = DVZ_SCENE_ANCHOR_PANEL_CENTER})) == NULL);
+             panel, scale, &(DvzLegendDesc){DVZ_STRUCT_INIT_FIELDS(DvzLegendDesc), .anchor = DVZ_SCENE_ANCHOR_PANEL_CENTER})) == NULL);
     AT(invalid == NULL);
 
     dvz_scene_destroy(scene);
@@ -494,7 +494,7 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory categories[4] = {
         {.category_id = 7, .order = 2, .label = "Beta", .color = {220, 40, 40, 255}},
@@ -505,7 +505,7 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
     AT(dvz_scale_set_categories(scale, categories, 4));
 
     DvzLegend* legend = dvz_legend(
-        panel, scale, &(DvzLegendDesc){
+        panel, scale, &(DvzLegendDesc){DVZ_STRUCT_INIT_FIELDS(DvzLegendDesc),
                           .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
                           .title = "Classes",
                           .reserve_px = 150.0f,
@@ -608,7 +608,7 @@ int test_scene_legend_emit_stream_contains_derived_visuals(
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory categories[2] = {
         {.category_id = 1, .order = 0, .label = "A", .color = {255, 80, 80, 255}},
@@ -616,7 +616,7 @@ int test_scene_legend_emit_stream_contains_derived_visuals(
     };
     AT(dvz_scale_set_categories(scale, categories, 2));
     DvzLegend* legend = dvz_legend(
-        panel, scale, &(DvzLegendDesc){
+        panel, scale, &(DvzLegendDesc){DVZ_STRUCT_INIT_FIELDS(DvzLegendDesc),
                           .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
                           .title = "Group",
                       });
@@ -693,10 +693,10 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     ANN(panel);
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CONTINUOUS,
                    .unit = "u",
-                   .format = (DvzFormatDesc){.precision = 1, .show_unit = true},
+                   .format = (DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 1, .show_unit = true},
                });
     ANN(scale);
     dvz_scale_set_domain(scale, 0.0, 1.0);
@@ -710,7 +710,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     dvz_scale_set_colormap(scale, colormap);
 
     DvzColorbar* colorbar = dvz_colorbar(
-        panel, scale, &(DvzColorbarDesc){
+        panel, scale, &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
                           .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
                           .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
                           .title = "Intensity",
@@ -810,7 +810,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(positions[3 * (pos_view.item_count - 1) + 0] > 0.95f);
 
     AT(dvz_colorbar_set_layout(
-        colorbar, &(DvzColorbarDesc){
+        colorbar, &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
                       .placement_mode = DVZ_COLORBAR_PLACEMENT_DETACHED,
                       .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
                       .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
@@ -833,7 +833,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(fabsf(reserve.bottom_px - 35.0f) < 1e-6f);
 
     AT(dvz_colorbar_set_layout(
-        colorbar, &(DvzColorbarDesc){
+        colorbar, &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
                       .placement_mode = DVZ_COLORBAR_PLACEMENT_ATTACHED,
                       .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
                       .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
@@ -870,7 +870,7 @@ int test_scene_colorbar_prepare_is_idempotent(TstContext* suite, const TstCase* 
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
@@ -879,7 +879,7 @@ int test_scene_colorbar_prepare_is_idempotent(TstContext* suite, const TstCase* 
 
     DvzColorbar* colorbar = dvz_colorbar(
         panel, scale,
-        &(DvzColorbarDesc){
+        &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
             .title = "Intensity",
@@ -935,7 +935,7 @@ int test_scene_colorbar_auto_reserve_tracks_resize(TstContext* suite, const TstC
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
@@ -944,7 +944,7 @@ int test_scene_colorbar_auto_reserve_tracks_resize(TstContext* suite, const TstC
 
     DvzColorbar* colorbar = dvz_colorbar(
         panel, scale,
-        &(DvzColorbarDesc){
+        &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
             .title = "Intensity",
@@ -991,9 +991,9 @@ int test_scene_colorbar_left_title_uses_content_lane(TstContext* suite, const Ts
     ANN(panel);
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CONTINUOUS,
-                   .format = {.precision = 0, .trim_trailing_zeros = true},
+                   .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0, .trim_trailing_zeros = true},
                });
     ANN(scale);
     dvz_scale_set_domain(scale, 0.0, 80.0);
@@ -1003,7 +1003,7 @@ int test_scene_colorbar_left_title_uses_content_lane(TstContext* suite, const Ts
 
     DvzColorbar* colorbar = dvz_colorbar(
         panel, scale,
-        &(DvzColorbarDesc){
+        &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_LEFT,
             .title = "m/s",
@@ -1065,7 +1065,7 @@ int test_scene_colorbar_attached_respects_panel_padding(TstContext* suite, const
                    .bottom_px = 30.0f,
                }));
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
@@ -1074,7 +1074,7 @@ int test_scene_colorbar_attached_respects_panel_padding(TstContext* suite, const
 
     DvzColorbar* colorbar = dvz_colorbar(
         panel, scale,
-        &(DvzColorbarDesc){
+        &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
         });
@@ -1167,7 +1167,7 @@ int test_scene_colorbar_detached_placement(TstContext* suite, const TstCase* ite
     DvzRect before = {0};
     AT(dvz_panel_plot_rect_px(panel, &before));
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
@@ -1176,7 +1176,7 @@ int test_scene_colorbar_detached_placement(TstContext* suite, const TstCase* ite
 
     DvzColorbar* colorbar = dvz_colorbar(
         panel, scale,
-        &(DvzColorbarDesc){
+        &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
             .placement_mode = DVZ_COLORBAR_PLACEMENT_DETACHED,
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .title = "Detached",
@@ -1242,7 +1242,7 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
     AT(dvz_panel_set_reserve(panel, &(DvzPanelReserve){.left_px = 24.0f}));
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS, .format = {.precision = 0}});
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS, .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0}});
     ANN(scale);
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormapStop stops0[2] = {
@@ -1256,7 +1256,7 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
 
     DvzColorbar* colorbar = dvz_colorbar(
         panel, scale,
-        &(DvzColorbarDesc){
+        &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
             .title = "Initial",
@@ -1342,7 +1342,7 @@ int test_scene_colorbar_emit_stream_contains_derived_visuals(
     ANN(panel);
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS, .format = {.precision = 1}});
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS, .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 1}});
     ANN(scale);
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
@@ -1350,7 +1350,7 @@ int test_scene_colorbar_emit_stream_contains_derived_visuals(
     dvz_scale_set_colormap(scale, colormap);
     DvzColorbar* colorbar = dvz_colorbar(
         panel, scale,
-        &(DvzColorbarDesc){
+        &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
             .title = "Intensity",
@@ -1469,7 +1469,7 @@ int test_scene_colorbar_invalid_domain_reports_diagnostic(
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     dvz_scale_set_domain(scale, 1.0, 1.0);
     DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
@@ -1512,17 +1512,17 @@ int test_scene_colorbar_rejects_unsupported_requests(TstContext* suite, const Ts
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     DvzColorbar* colorbar = NULL;
     AT_EXPECTED_ERROR_STRICT(
         suite,
         (colorbar = dvz_colorbar(
              panel, scale,
-             &(DvzColorbarDesc){.anchor = DVZ_SCENE_ANCHOR_PANEL_CENTER})) == NULL);
+             &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc), .anchor = DVZ_SCENE_ANCHOR_PANEL_CENTER})) == NULL);
     AT(colorbar == NULL);
 
-    DvzScale* categorical = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* categorical = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(categorical);
     AT_EXPECTED_ERROR_STRICT(suite, (colorbar = dvz_colorbar(panel, categorical, NULL)) == NULL);
     AT(colorbar == NULL);
@@ -1573,7 +1573,7 @@ int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCas
     ANN(scene);
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CONTINUOUS,
                    .label = "Intensity",
                    .unit = "a.u.",
@@ -1655,7 +1655,7 @@ int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const Ts
     AT(labels->alpha_mode == DVZ_ALPHA_BLENDED);
     AT(!labels->depth_test_enabled);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory categories[2] = {
         {.category_id = -1, .order = 0, .label = "unassigned", .color = {128, 128, 128, 120}},
@@ -1683,7 +1683,7 @@ int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const Ts
     AT(dvz_visual_set_field(labels, "field", field));
     AT(_visual_family_state(labels)->field == field);
 
-    DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(continuous);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(labels, "labels", continuous) != 0);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(labels, "colormap", scale) != 0);
@@ -1835,7 +1835,7 @@ int test_scene_image_scalar_texture_uses_bound_scale(TstContext* suite, const Ts
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     dvz_scale_set_domain(scale, 0.0, 1.0);
 
@@ -1900,7 +1900,7 @@ int test_scene_image_r16_float_field_uses_bound_scale(TstContext* suite, const T
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormap* colormap = dvz_colormap(scene, NULL);
@@ -1976,7 +1976,7 @@ int test_scene_image_r16_snorm_field_uses_bound_scale(TstContext* suite, const T
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     dvz_scale_set_domain(scale, -1.0, 1.0);
     DvzColormap* colormap = dvz_colormap(scene, NULL);
@@ -2631,7 +2631,7 @@ int test_scene_volume_retained_controls(TstContext* suite, const TstCase* item)
         suite, dvz_volume_set_bounds(volume, invalid_bounds_min, invalid_bounds_max) != 0);
     AT(_captured_log_contains(suite, "volume bounds must be finite"));
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     DvzColormap* colormap = dvz_colormap(scene, NULL);
     ANN(colormap);
@@ -2708,7 +2708,7 @@ int test_scene_volume_visual_metadata_lowering(TstContext* suite, const TstCase*
     ANN(field);
     AT(dvz_visual_set_field(volume, "field", field));
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     DvzColormap* volume_colormap = dvz_colormap(scene, NULL);
     ANN(volume_colormap);
@@ -3004,7 +3004,7 @@ int test_scene_volume_label_slice_uses_categorical_scale(TstContext* suite, cons
         }));
     AT(dvz_visual_set_field(volume, "field", field));
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory categories[] = {
         {.category_id = 0, .order = 0, .label = "background", .color = {0, 0, 0, 0}},
@@ -3084,7 +3084,7 @@ int test_scene_volume_label_composite_uses_first_hit_shader(
         }));
     AT(dvz_visual_set_field(volume, "field", field));
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory categories[] = {
         {.category_id = 0, .order = 0, .label = "background", .color = {0, 0, 0, 0}},
@@ -3157,7 +3157,7 @@ int test_scene_volume_signed_label_composite_uses_first_hit_shader(
         }));
     AT(dvz_visual_set_field(volume, "field", field));
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory categories[] = {
         {.category_id = -1, .order = 0, .label = "minus one", .color = {255, 0, 0, 255}},
@@ -3228,7 +3228,7 @@ int test_scene_volume_label_sparse_lookup_buffer(TstContext* suite, const TstCas
         }));
     AT(dvz_visual_set_field(volume, "field", field));
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory categories[] = {
         {.category_id = 23, .order = 0, .label = "low", .color = {1, 2, 3, 4}},
@@ -3311,7 +3311,7 @@ int test_scene_volume_signed_label_sparse_lookup_buffer(TstContext* suite, const
         }));
     AT(dvz_visual_set_field(volume, "field", field));
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory categories[] = {
         {.category_id = -7, .order = 0, .label = "negative", .color = {9, 10, 11, 12}},
@@ -3394,7 +3394,7 @@ int test_scene_volume_label_mip_reports_unsupported(TstContext* suite, const Tst
         }));
     AT(dvz_visual_set_field(volume, "field", field));
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory category = {
         .category_id = 1,
@@ -3447,7 +3447,7 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
         field, &(DvzFieldDataView){.data = values, .bytes_per_row = 2, .rows_per_image = 2}));
     AT(dvz_visual_set_field(volume, "field", field));
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     DvzColormap* colormap = dvz_colormap(scene, NULL);
     ANN(colormap);
@@ -3828,7 +3828,7 @@ int test_scene_image_field_partial_update_emits_texture_subregion(TstContext* su
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormap* colormap = dvz_colormap(scene, NULL);
@@ -4056,8 +4056,8 @@ int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, co
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzScale* scale0 = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
-    DvzScale* scale1 = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale0 = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale1 = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale0);
     ANN(scale1);
     dvz_scale_set_domain(scale0, 0.0, 1.0);
@@ -4167,6 +4167,86 @@ int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, co
 }
 
 
+int test_scene_scale_guide_descriptor_abi_rejects_invalid_structs(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzScaleDesc scale_desc = dvz_scale_desc();
+    scale_desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_scale(scene, &scale_desc) == NULL);
+
+    scale_desc = dvz_scale_desc();
+    scale_desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_scale(scene, &scale_desc) == NULL);
+
+    scale_desc = dvz_scale_desc();
+    scale_desc.format.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_scale(scene, &scale_desc) == NULL);
+
+    DvzScale* continuous = dvz_scale(scene, NULL);
+    ANN(continuous);
+    DvzScale* categorical =
+        dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
+    ANN(categorical);
+
+    DvzFormatDesc format = dvz_format_desc();
+    format.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, (dvz_scale_set_format(continuous, &format), true));
+
+    DvzColormapDesc colormap_desc = dvz_colormap_desc();
+    colormap_desc.struct_size = DVZ_STRUCT_SIZE(DvzColormapDesc) - 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_colormap(scene, &colormap_desc) == NULL);
+
+    colormap_desc = dvz_colormap_desc();
+    colormap_desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_colormap(scene, &colormap_desc) == NULL);
+
+    DvzColorbarDesc colorbar_desc = dvz_colorbar_desc();
+    colorbar_desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_colorbar(panel, continuous, &colorbar_desc) == NULL);
+
+    colorbar_desc = dvz_colorbar_desc();
+    colorbar_desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_colorbar(panel, continuous, &colorbar_desc) == NULL);
+
+    DvzColorbar* colorbar = dvz_colorbar(panel, continuous, NULL);
+    ANN(colorbar);
+    colorbar_desc = dvz_colorbar_desc();
+    colorbar_desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_colorbar_set_layout(colorbar, &colorbar_desc));
+
+    format = dvz_format_desc();
+    format.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, (dvz_colorbar_set_format(colorbar, &format), true));
+
+    DvzLegendDesc legend_desc = dvz_legend_desc();
+    legend_desc.struct_size = DVZ_STRUCT_SIZE(DvzLegendDesc) - 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_legend(panel, categorical, &legend_desc) == NULL);
+
+    legend_desc = dvz_legend_desc();
+    legend_desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_legend(panel, categorical, &legend_desc) == NULL);
+
+    DvzLegend* legend = dvz_legend(panel, categorical, NULL);
+    ANN(legend);
+    legend_desc = dvz_legend_desc();
+    legend_desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_legend_set_layout(legend, &legend_desc));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Register scene field and scale tests.
  *
@@ -4181,6 +4261,7 @@ int test_scene_fields(TstSuite* suite)
     TST_MODULE(suite, "scene");
     TST_GROUP("fields");
 
+    TST_CASE(test_scene_scale_guide_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_scale_colormap_colorbar_core);
     TST_CASE(test_scene_categorical_scale_entries);
     TST_CASE(test_scene_legend_lifecycle_and_reserve);

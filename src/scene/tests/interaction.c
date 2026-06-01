@@ -1124,7 +1124,7 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
     AT(annotation->version == 1);
 
     annotation->dirty_flags = DVZ_TEXT_DIRTY_NONE;
-    dvz_annotation_set_format(annotation, &(DvzFormatDesc){.precision = 3, .suffix = " ms"});
+    dvz_annotation_set_format(annotation, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 3, .suffix = " ms"});
     AT(annotation->has_format);
     AT(strcmp(annotation->format.suffix, " ms") == 0);
     AT(annotation->dirty_flags ==

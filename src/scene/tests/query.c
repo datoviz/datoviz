@@ -2086,7 +2086,7 @@ int test_scene_volume_query_resolves_label_sample(TstContext* suite, const TstCa
     AT(dvz_visual_set_field(volume, "field", field));
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL, .label = "regions"});
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL, .label = "regions"});
     ANN(scale);
     DvzScaleCategory category = {
         .category_id = 23,
@@ -2200,7 +2200,7 @@ static int _test_scene_volume_query_label_sample_value(
     AT(dvz_visual_set_field(volume, "field", field));
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL, .label = "regions"});
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL, .label = "regions"});
     ANN(scale);
     DvzScaleCategory category = {
         .category_id = category_id,
@@ -2675,7 +2675,7 @@ int test_scene_labels_query_resolves_category(TstContext* suite, const TstCase* 
     AT(dvz_labels_set_background(labels, 0) == 0);
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL, .label = "segments"});
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL, .label = "segments"});
     ANN(scale);
     DvzScaleCategory categories[2] = {
         {.category_id = -7, .order = 0, .label = "negative seven", .color = {255, 0, 0, 255}},

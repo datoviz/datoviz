@@ -1688,7 +1688,7 @@ int test_axis_dynamic_segment_draw_count(TstContext* suite, const TstCase* item)
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
 
     AT(dvz_axis_set_tick_policy(
-        axis, &(DvzAxisTickPolicy){.target_count = 12, .min_pixel_spacing = 0.0f}));
+        axis, &(DvzAxisTickPolicy){DVZ_STRUCT_INIT_FIELDS(DvzAxisTickPolicy), .target_count = 12, .min_pixel_spacing = 0.0f}));
     DvzDrp2CommandStream* stream0 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
     ANN(stream0);
     uint32_t draw0 = _axis_test_draw_vertex_count(stream0);
@@ -1697,13 +1697,48 @@ int test_axis_dynamic_segment_draw_count(TstContext* suite, const TstCase* item)
 
     dvz_diagnostic_report_init(&report);
     AT(dvz_axis_set_tick_policy(
-        axis, &(DvzAxisTickPolicy){.target_count = 2, .min_pixel_spacing = 0.0f}));
+        axis, &(DvzAxisTickPolicy){DVZ_STRUCT_INIT_FIELDS(DvzAxisTickPolicy), .target_count = 2, .min_pixel_spacing = 0.0f}));
     DvzDrp2CommandStream* stream1 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
     ANN(stream1);
     uint32_t draw1 = _axis_test_draw_vertex_count(stream1);
     AT(draw1 > 0);
     AT(draw1 < draw0);
     dvz_drp2_stream_destroy(stream1);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_axis_descriptor_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+
+    DvzAxisTickPolicy policy = dvz_axis_tick_policy();
+    policy.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_tick_policy(axis, &policy));
+
+    policy = dvz_axis_tick_policy();
+    policy.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_tick_policy(axis, &policy));
+
+    DvzAxisStyle style = dvz_axis_style();
+    style.struct_size = DVZ_STRUCT_SIZE(DvzAxisStyle) - 1;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_style(axis, &style));
+
+    style = dvz_axis_style();
+    style.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_style(axis, &style));
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1740,5 +1775,6 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_static_prepare_idempotent);
     TST_CASE(test_axis_visual_clip_rect_panel);
     TST_CASE(test_axis_dynamic_segment_draw_count);
+    TST_CASE(test_axis_descriptor_abi_rejects_invalid_structs);
     return 0;
 }

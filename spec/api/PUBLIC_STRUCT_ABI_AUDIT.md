@@ -54,6 +54,13 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzItemStateVisualStyle` | `dvz_item_state_visual_style()` |
 | `DvzSelectionVisualStyle` | `dvz_selection_visual_style()` |
 | `DvzItemInteractionDesc` | `dvz_item_interaction_desc()` |
+| `DvzFormatDesc` | `dvz_format_desc()` |
+| `DvzScaleDesc` | `dvz_scale_desc()` |
+| `DvzColormapDesc` | `dvz_colormap_desc()` |
+| `DvzColorbarDesc` | `dvz_colorbar_desc()` |
+| `DvzLegendDesc` | `dvz_legend_desc()` |
+| `DvzAxisTickPolicy` | `dvz_axis_tick_policy()` |
+| `DvzAxisStyle` | `dvz_axis_style()` |
 
 
 ## Should Add Before API Freeze
@@ -65,7 +72,6 @@ and likely to grow or gain flags after v0.4:
 | --- | --- | --- |
 | Scene techniques | `DvzCapabilitySnapshot` | capability-aware setup paths |
 | Visual styles/materials | `DvzVisualDataView` | data-view setters |
-| Scales and guides | `DvzScaleDesc`, `DvzColormapDesc`, `DvzColorbarDesc`, `DvzLegendDesc`, `DvzFormatDesc`, `DvzAxisTickPolicy`, `DvzAxisStyle` | `dvz_scale()`, `dvz_colormap()`, `dvz_colorbar()`, `dvz_legend()`, format and axis setters |
 | Text and annotations | `DvzFontDesc`, `DvzFontDefaults`, `DvzTextStyle`, `DvzTextPlacement`, `DvzAnnotationDesc`, `DvzLabelDesc`, `DvzScaleBarDesc` | `dvz_font()`, `dvz_scene_set_font_defaults()`, text/annotation/label/scalebar creation and setters |
 | Fields | `DvzFieldGeometry`, `DvzFieldDataView` | sampled field geometry and data-view setters |
 | Overlay | `DvzOverlayCardStyle`, `DvzOverlayCardDesc`, `DvzOverlayRichTextDesc` | `dvz_overlay_card()`, `dvz_overlay_card_set_style()`, `dvz_overlay_card_set_rich_text()` |
@@ -79,7 +85,7 @@ and likely to grow or gain flags after v0.4:
 Recommended batching:
 
 1. scene techniques and visual styles;
-2. interaction, scales, text, annotations, and overlay;
+2. text, annotations, and overlay;
 3. GUI and advanced runtime interop;
 4. geometry utilities.
 

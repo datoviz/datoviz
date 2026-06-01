@@ -46,12 +46,54 @@
 #define LEGEND_TEXT_SIZE_PX 12.0f
 #define LEGEND_TITLE_TEXT_SIZE_PX 13.0f
 #define LEGEND_LAYOUT_EPS 1e-3f
+#define DVZ_LEGEND_DESC_KNOWN_FLAGS 0u
 
 
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Validate public legend descriptor ABI fields.
+ *
+ * @param desc the legend descriptor
+ * @return whether the descriptor is accepted
+ */
+static bool _legend_desc_validate(const DvzLegendDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzLegendDesc, DVZ_LEGEND_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid legend descriptor ABI");
+        return false;
+    }
+    return true;
+}
+
+
+/**
+ * Return the default legend descriptor.
+ *
+ * @return default legend descriptor
+ */
+DvzLegendDesc dvz_legend_desc(void)
+{
+    return (DvzLegendDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzLegendDesc),
+        .placement_mode = DVZ_LEGEND_PLACEMENT_ATTACHED,
+        .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+        .text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+        .placement =
+            (DvzPlacement){
+                .space = DVZ_PLACEMENT_SPACE_PANEL,
+                .horizontal_anchor = DVZ_HORIZONTAL_ANCHOR_LEFT,
+                .vertical_anchor = DVZ_VERTICAL_ANCHOR_TOP,
+            },
+    };
+}
+
 
 /**
  * Report a legend realization error through logs and optional diagnostics.
@@ -707,6 +749,8 @@ DvzLegend* dvz_legend(DvzPanel* panel, DvzScale* scale, const DvzLegendDesc* des
 {
     ANN(panel);
     ANN(scale);
+    if (!_legend_desc_validate(desc))
+        return NULL;
     if (panel->figure == NULL || panel->figure->scene == NULL)
     {
         log_error("cannot create a legend on a detached panel");
@@ -751,7 +795,7 @@ DvzLegend* dvz_legend(DvzPanel* panel, DvzScale* scale, const DvzLegendDesc* des
     legend->scale = scale;
     legend->placement_mode = placement_mode;
     legend->anchor = anchor;
-    legend->flags = desc != NULL ? desc->flags : 0;
+    legend->flags = desc != NULL ? desc->legend_flags : 0;
     legend->reserve_px =
         _legend_positive_or_default(desc != NULL ? desc->reserve_px : 0.0f, LEGEND_RESERVE_PX);
     legend->edge_offset_px = _legend_positive_or_default(
@@ -831,6 +875,8 @@ bool dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc)
     ANN(legend);
     if (desc == NULL)
         return false;
+    if (!_legend_desc_validate(desc))
+        return false;
     DvzLegendPlacementMode placement_mode = desc->placement_mode;
     DvzSceneAnchor anchor =
         desc->anchor != DVZ_SCENE_ANCHOR_NONE ? desc->anchor : DVZ_SCENE_ANCHOR_PANEL_RIGHT;
@@ -841,7 +887,7 @@ bool dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc)
     }
     legend->placement_mode = placement_mode;
     legend->anchor = anchor;
-    legend->flags = desc->flags;
+    legend->flags = desc->legend_flags;
     legend->reserve_px = _legend_positive_or_default(desc->reserve_px, LEGEND_RESERVE_PX);
     legend->edge_offset_px =
         _legend_positive_or_default(desc->edge_offset_px, LEGEND_EDGE_OFFSET_PX);

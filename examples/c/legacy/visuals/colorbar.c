@@ -243,7 +243,7 @@ static DvzTextRenderer _text_renderer_from_index(int index)
  */
 static DvzAxisStyle _axis_style(void)
 {
-    return (DvzAxisStyle){
+    return (DvzAxisStyle){DVZ_STRUCT_INIT_FIELDS(DvzAxisStyle),
         .spine_width = 1.0f,
         .major_tick_width = 1.0f,
         .minor_tick_width = 1.0f,
@@ -291,7 +291,7 @@ static void _apply_colorbar_layout(ColorbarState* state)
         .height_px = state->detached_height,
     };
     (void)dvz_colorbar_set_layout(
-        state->colorbar, &(DvzColorbarDesc){
+        state->colorbar, &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
                              .placement_mode = placement_mode,
                              .orientation = orientation,
                              .anchor = _anchor_from_state(state, orientation),
@@ -568,10 +568,10 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CONTINUOUS,
                    .label = "Intensity",
-                   .format = {.precision = 2},
+                   .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 2},
                });
     EXAMPLE_CHECK(scale != NULL, "dvz_scale() failed");
     dvz_scale_set_domain(scale, SCALE_MIN, SCALE_MAX);
@@ -684,13 +684,13 @@ int main(int argc, char** argv)
 
     DvzColorbar* colorbar = dvz_colorbar(
         panel, scale,
-        &(DvzColorbarDesc){
+        &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
             .title = "Intensity",
         });
     EXAMPLE_CHECK(colorbar != NULL, "dvz_colorbar() failed");
-    dvz_colorbar_set_format(colorbar, &(DvzFormatDesc){.precision = 2});
+    dvz_colorbar_set_format(colorbar, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 2});
     state.colorbar = colorbar;
 
     rc = dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 1.0);

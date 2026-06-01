@@ -267,6 +267,8 @@ typedef struct DvzDataDomain DvzDataDomain;
 
 struct DvzAxisTickPolicy
 {
+    uint32_t struct_size;
+    uint32_t flags;
     uint32_t target_count;
     float min_pixel_spacing;
     uint32_t minor_per_interval;
@@ -276,6 +278,8 @@ typedef struct DvzAxisTickPolicy DvzAxisTickPolicy;
 
 struct DvzAxisStyle
 {
+    uint32_t struct_size;
+    uint32_t flags;
     float spine_width;
     float major_tick_width;
     float minor_tick_width;
@@ -628,6 +632,8 @@ typedef struct DvzBounds DvzBounds;
 
 struct DvzFormatDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     int32_t precision;
     bool scientific;
     bool trim_trailing_zeros;
@@ -787,6 +793,8 @@ typedef struct DvzHoverState DvzHoverState;
 
 struct DvzScaleDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzScaleKind kind;
     const char* label;
     const char* unit;
@@ -816,6 +824,8 @@ typedef struct DvzColormapStop DvzColormapStop;
 
 struct DvzColormapDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzColormapKind kind;
     DvzBuiltinColormap builtin;
     double center;
@@ -826,6 +836,8 @@ typedef struct DvzColormapDesc DvzColormapDesc;
 
 struct DvzColorbarDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzColorbarPlacementMode placement_mode;
     DvzColorbarOrientation orientation;
     DvzSceneAnchor anchor;
@@ -838,13 +850,15 @@ struct DvzColorbarDesc
     float label_gap_px;
     DvzTextRenderer text_renderer;
     DvzPlacement placement;
-    uint32_t flags;
+    uint32_t colorbar_flags;
 };
 typedef struct DvzColorbarDesc DvzColorbarDesc;
 
 
 struct DvzLegendDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzLegendPlacementMode placement_mode;
     DvzSceneAnchor anchor;
     const char* title;
@@ -856,7 +870,7 @@ struct DvzLegendDesc
     float mark_label_gap_px;
     DvzTextRenderer text_renderer;
     DvzPlacement placement;
-    uint32_t flags;
+    uint32_t legend_flags;
 };
 typedef struct DvzLegendDesc DvzLegendDesc;
 

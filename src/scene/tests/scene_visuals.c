@@ -5905,7 +5905,7 @@ static int _labels_emit_figure(
                }));
     AT(dvz_visual_set_field(labels, "field", field));
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory categories[3] = {
         {.category_id = -7, .order = 0, .label = "negative", .color = {200, 40, 40, 180}},

@@ -2869,6 +2869,8 @@ void dvz_pinned_readout_destroy(DvzPinnedReadout* readout)
 void dvz_pinned_readout_set_format(DvzPinnedReadout* readout, const DvzFormatDesc* format)
 {
     ANN(readout);
+    if (!_scene_format_desc_validate(format))
+        return;
     readout->has_format = format != NULL;
     _scene_format_state_copy(&readout->format, format);
     _readout_refresh_text(readout);

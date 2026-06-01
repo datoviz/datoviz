@@ -12,4 +12,8 @@
 
 #include "_scene.h"
 
+bool _scene_format_desc_is_zero(const DvzFormatDesc* src);
+
+bool _scene_format_desc_validate(const DvzFormatDesc* src);
+
 void _scene_format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* src);

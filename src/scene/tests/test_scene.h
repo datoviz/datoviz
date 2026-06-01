@@ -38,6 +38,9 @@ int test_axis_panzoom_visible_domain(TstContext* suite, const TstCase* item);
 
 int test_axis_dynamic_segment_draw_count(TstContext* suite, const TstCase* item);
 
+int test_axis_descriptor_abi_rejects_invalid_structs(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_fly(TstSuite* suite);
 
 int test_scene_turntable(TstSuite* suite);
@@ -515,6 +518,9 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
 int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* item);
 
 int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* item);
+
+int test_scene_scale_guide_descriptor_abi_rejects_invalid_structs(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item);
 

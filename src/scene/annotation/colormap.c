@@ -28,8 +28,49 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_COLORMAP_DESC_KNOWN_FLAGS 0u
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Validate public colormap descriptor ABI fields.
+ *
+ * @param desc the colormap descriptor
+ * @return whether the descriptor is accepted
+ */
+static bool _colormap_desc_validate(const DvzColormapDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzColormapDesc, DVZ_COLORMAP_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid colormap descriptor ABI");
+        return false;
+    }
+    return true;
+}
+
+
+/**
+ * Return the default colormap descriptor.
+ *
+ * @return default colormap descriptor
+ */
+DvzColormapDesc dvz_colormap_desc(void)
+{
+    return (DvzColormapDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzColormapDesc),
+        .kind = DVZ_COLORMAP_CONTINUOUS,
+        .builtin = DVZ_BUILTIN_COLORMAP_NONE,
+    };
+}
+
 
 /**
  * Sample an ordered colormap stop table.
@@ -331,6 +372,8 @@ bool dvz_colormap_builtin_sample(DvzBuiltinColormap builtin, double t, DvzColor*
 DvzColormap* dvz_colormap(DvzScene* scene, const DvzColormapDesc* desc)
 {
     ANN(scene);
+    if (!_colormap_desc_validate(desc))
+        return NULL;
     if (scene->colormap_count >= DVZ_SCENE_MAX_COLORMAPS)
     {
         log_error("maximum colormap count reached");
@@ -362,10 +405,8 @@ DvzColormap* dvz_colormap(DvzScene* scene, const DvzColormapDesc* desc)
  */
 DvzColormap* dvz_colormap_builtin(DvzScene* scene, DvzBuiltinColormap builtin)
 {
-    DvzColormapDesc desc = {
-        .kind = DVZ_COLORMAP_CONTINUOUS,
-        .builtin = builtin,
-    };
+    DvzColormapDesc desc = dvz_colormap_desc();
+    desc.builtin = builtin;
     return dvz_colormap(scene, &desc);
 }
 
@@ -406,6 +447,7 @@ DvzColormap* dvz_colormap_custom(
 
     DvzColormap* colormap = dvz_colormap(
         scene, &(DvzColormapDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzColormapDesc),
                    .kind = DVZ_COLORMAP_CONTINUOUS,
                    .builtin = DVZ_BUILTIN_COLORMAP_NONE,
                    .label = label,

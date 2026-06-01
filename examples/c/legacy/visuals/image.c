@@ -249,7 +249,7 @@ int main(int argc, char** argv)
     DvzPanel* panel = dvz_panel_full(figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     EXAMPLE_CHECK(scale != NULL, "dvz_scale() failed");
     dvz_scale_set_domain(scale, 0.0, 1.0);
 

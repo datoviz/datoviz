@@ -218,7 +218,7 @@ static void _image_probe_frame(DvzView* win, void* user_data)
                 if (readout != NULL)
                 {
                     dvz_pinned_readout_set_format(
-                        readout, &(DvzFormatDesc){.precision = 3, .trim_trailing_zeros = true});
+                        readout, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 3, .trim_trailing_zeros = true});
                     state->pinned_count++;
                     dvz_fprintf(stdout, "pinned readout %u\n", state->pinned_count);
                 }

@@ -129,6 +129,8 @@ void dvz_annotation_destroy(DvzAnnotation* annotation)
 void dvz_annotation_set_format(DvzAnnotation* annotation, const DvzFormatDesc* format)
 {
     ANN(annotation);
+    if (!_scene_format_desc_validate(format))
+        return;
     annotation->has_format = format != NULL;
     _scene_format_state_copy(&annotation->format, format);
     if (annotation->kind == DVZ_ANNOTATION_SCALEBAR)
