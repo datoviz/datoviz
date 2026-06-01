@@ -1,9 +1,9 @@
-# Visual Local Transform And Arcball Target
+# Visual Local Transform And Orbit Camera
 
 > **Status:** active proposal
 > **Updated on:** 2026-06-01
-> **Scope:** retained visual-local transforms, arcball model/camera target semantics, and the
-> `textured_planet.c` showcase cleanup.
+> **Scope:** retained visual-local transforms, separate model-arcball and orbit-camera controller
+> semantics, and the `textured_planet.c` showcase cleanup.
 
 
 ## Problem
@@ -32,19 +32,16 @@ visual attributes -> visual-local model -> panel/controller transform -> clip sp
 This transform must be stored in scene state, lowered through the normal frame-plan/common MVP path,
 and used consistently for rendering, capture, and query/picking paths.
 
-Add an explicit arcball target mode:
+Keep object/model arcball and camera orbit as separate controller concepts, not as target modes on
+one public arcball descriptor:
 
-```c
-typedef enum DvzArcballTarget
-{
-    DVZ_ARCBALL_TARGET_MODEL = 0,
-    DVZ_ARCBALL_TARGET_CAMERA_ORBIT = 1,
-} DvzArcballTarget;
-```
+1. `DvzArcball` remains the fixed-camera object/model arcball controller;
+2. a new orbit-camera controller, tentatively `DvzOrbitCamera`, uses the same pointer feel but
+   changes the panel camera/view transform around a pivot;
+3. both controllers may share internal arcball gesture math, but the public semantics stay separate.
 
-Default remains `MODEL` so existing examples and tests keep current behavior. `CAMERA_ORBIT` is an
-opt-in mode for scenes such as textured planets where the arcball represents camera movement around
-a pivot instead of object/model rotation.
+This avoids hiding two different ownership models behind one enum. Model/object transforms belong
+to visuals. View/projection transforms belong to panels and their camera controllers.
 
 
 ## Public API Candidate
@@ -65,25 +62,30 @@ Rules:
 5. query and picking passes use the same transform;
 6. per-panel visual transforms are deferred until there is a concrete multi-panel need.
 
-Arcball target:
+Orbit-camera controller candidate:
 
 ```c
-struct DvzArcballDesc
+typedef struct DvzOrbitCamera DvzOrbitCamera;
+
+struct DvzOrbitCameraDesc
 {
     float width;
     float height;
     int flags;
-    DvzArcballTarget target;
+    vec3 pivot;
 };
+
+DvzController* dvz_orbit_camera(DvzScene* scene, const DvzOrbitCameraDesc* desc);
 ```
 
 Rules:
 
-1. `DVZ_ARCBALL_TARGET_MODEL` preserves the current model-matrix arcball behavior;
-2. `DVZ_ARCBALL_TARGET_CAMERA_ORBIT` changes the panel view/camera orbit instead of the model
-   matrix;
-3. camera-orbit mode is not a replacement for turntable, fly, or stable-up camera navigation;
-4. turntable remains the preferred stable-up orbit controller.
+1. `DvzArcball` changes model/object transform state and does not mutate panel view/projection;
+2. `DvzOrbitCamera` changes effective panel view/camera orbit state and does not mutate visual
+   model transforms;
+3. the first orbit pivot is explicit in the descriptor or defaults to the panel camera target;
+4. orbit-camera mode is not a replacement for turntable, fly, or stable-up camera navigation;
+5. turntable remains the preferred stable-up orbit controller.
 
 
 ## Visual Family Semantics
@@ -106,18 +108,18 @@ animation.
 
 ## Transform Composition
 
-Model-target arcball:
+Object/model arcball:
 
 ```text
 M = arcball_model * visual_local_model
 clip = P * V * M * position
 ```
 
-Camera-orbit arcball:
+Orbit camera:
 
 ```text
 M = visual_local_model
-V = arcball_camera_view * panel_camera_view
+V = orbit_camera_view * panel_camera_view
 clip = P * V * M * position
 ```
 
@@ -131,19 +133,46 @@ V/P = fixed overlay mapping
 
 ## Implementation Plan
 
-1. Revert or supersede the CPU-vertex planet spin in `textured_planet.c`.
-2. Add visual-local transform storage, set/clear API, dirtying, and common MVP lowering.
+1. Add visual-local transform storage, set/clear API, dirtying, and common MVP lowering.
+2. Make MVP emission effectively per visual/draw where model differs:
+   - panel/controller state supplies view/projection;
+   - visual state supplies the retained local model;
+   - fixed overlays still apply visual-local model while skipping panel controller transforms.
 3. Ensure all visual families that consume the shared MVP path observe the transform.
 4. Add tests for retained state, emitted non-identity model matrices, clear-to-identity behavior,
-   and textured mesh transform support without `instance_transform`.
-5. Add `DvzArcballTarget` to the arcball descriptor, defaulting to model target.
-6. Implement camera-orbit arcball composition at the panel/controller transform stage.
-7. Update `textured_planet.c` to use:
-   - camera-orbit arcball for user navigation;
+   two visuals in one panel with different local transforms, and textured mesh transform support
+   without `instance_transform`.
+5. Keep `DvzArcball` as the object/model arcball controller, but route its model effect through the
+   same per-visual/per-draw model path instead of treating it as view/projection state.
+6. Add a new orbit-camera controller, tentatively `DvzOrbitCamera`, sharing internal arcball gesture
+   math where practical and composing its result into the effective panel view around the pivot.
+7. Update query, picking, bounds, and synthetic query render plans so they use the same visual-local
+   model as the render path.
+8. Revert or supersede the CPU-vertex planet spin in `textured_planet.c`.
+9. Update `textured_planet.c` to use:
+   - orbit-camera controller for user navigation;
    - visual-local transform animation for planet self-spin;
    - static world-space star shell;
    - default Phong material without a standard-material switch.
-8. Update transform/controller specs after implementation settles.
+10. Update transform/controller specs after implementation settles.
+
+
+## Open Decisions
+
+Settled for the next implementation slice:
+
+1. orbit pivot defaults to the panel camera target when no explicit pivot is provided;
+2. orbit-camera pan/zoom initially preserve the existing arcball interaction feel;
+3. `dvz_visual_bounds()` should account for retained visual-local transforms;
+4. visual-local transform composition is `final_model = arcball_model * visual_local_model` for
+   object/model arcball and `final_model = visual_local_model` for orbit camera.
+
+Still to settle during implementation:
+
+1. public naming: `DvzOrbitCamera` is the current preference;
+2. whether object/model arcball binds to one visual, a selected visual set, or a temporary panel-level
+   model scope for migration;
+3. exact internal split of shared arcball gesture math versus controller-specific state.
 
 
 ## Validation
@@ -158,8 +187,8 @@ git diff --check
 
 Focused tests should prove:
 
-1. default arcball mode remains model-target;
-2. camera-orbit arcball changes view/camera state, not the visual model matrix;
+1. object/model arcball changes model state, not panel view/projection;
+2. orbit-camera changes view/camera state, not visual model matrix;
 3. visual-local transform affects rendering through MVP, not attribute reupload;
 4. stars remain static while planet self-spin affects only the planet visual;
 5. picking/query paths use the same visual-local transform as the render path.
