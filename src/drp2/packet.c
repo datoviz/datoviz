@@ -421,11 +421,12 @@ static bool _decode_body(
 
     if (command->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
     {
-        const PacketWriteBufferBody* wb = (const PacketWriteBufferBody*)body;
-        command->u.write_buffer.buffer_id = wb->buffer_id;
-        command->u.write_buffer.offset = wb->offset;
-        command->u.write_buffer.size = wb->size;
-        if (payload_size != wb->size || payload_offset == DVZ_DRP2_PACKET_NO_PAYLOAD)
+        PacketWriteBufferBody wb = {0};
+        memcpy(&wb, body, sizeof(wb));
+        command->u.write_buffer.buffer_id = wb.buffer_id;
+        command->u.write_buffer.offset = wb.offset;
+        command->u.write_buffer.size = wb.size;
+        if (payload_size != wb.size || payload_offset == DVZ_DRP2_PACKET_NO_PAYLOAD)
             return false;
         void* data = dvz_malloc(payload_size);
         if (data == NULL)
@@ -438,21 +439,22 @@ static bool _decode_body(
 
     if (command->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
     {
-        const PacketWriteTextureBody* wt = (const PacketWriteTextureBody*)body;
-        command->u.write_texture.texture_id = wt->texture_id;
-        command->u.write_texture.mip_level = wt->mip_level;
-        command->u.write_texture.origin_x = wt->origin_x;
-        command->u.write_texture.origin_y = wt->origin_y;
-        command->u.write_texture.origin_z = wt->origin_z;
-        command->u.write_texture.width = wt->width;
-        command->u.write_texture.height = wt->height;
-        command->u.write_texture.depth = wt->depth;
-        command->u.write_texture.bytes_per_row = wt->bytes_per_row;
-        command->u.write_texture.rows_per_image = wt->rows_per_image;
+        PacketWriteTextureBody wt = {0};
+        memcpy(&wt, body, sizeof(wt));
+        command->u.write_texture.texture_id = wt.texture_id;
+        command->u.write_texture.mip_level = wt.mip_level;
+        command->u.write_texture.origin_x = wt.origin_x;
+        command->u.write_texture.origin_y = wt.origin_y;
+        command->u.write_texture.origin_z = wt.origin_z;
+        command->u.write_texture.width = wt.width;
+        command->u.write_texture.height = wt.height;
+        command->u.write_texture.depth = wt.depth;
+        command->u.write_texture.bytes_per_row = wt.bytes_per_row;
+        command->u.write_texture.rows_per_image = wt.rows_per_image;
         uint64_t expected_payload_size = 0;
-        if (_dvz_mul_u64_overflows((uint64_t)wt->depth, (uint64_t)wt->rows_per_image,
+        if (_dvz_mul_u64_overflows((uint64_t)wt.depth, (uint64_t)wt.rows_per_image,
                                    &expected_payload_size) ||
-            _dvz_mul_u64_overflows(expected_payload_size, (uint64_t)wt->bytes_per_row,
+            _dvz_mul_u64_overflows(expected_payload_size, (uint64_t)wt.bytes_per_row,
                                    &expected_payload_size) ||
             payload_offset == DVZ_DRP2_PACKET_NO_PAYLOAD || payload_size != expected_payload_size)
             return false;
@@ -462,20 +464,21 @@ static bool _decode_body(
 
     if (command->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
     {
-        const PacketShaderBody* sh = (const PacketShaderBody*)body;
-        if (payload_offset == DVZ_DRP2_PACKET_NO_PAYLOAD || payload_size != sh->payload_size)
+        PacketShaderBody sh = {0};
+        memcpy(&sh, body, sizeof(sh));
+        if (payload_offset == DVZ_DRP2_PACKET_NO_PAYLOAD || payload_size != sh.payload_size)
             return false;
-        command->u.create_shader_module.id = sh->id;
-        memcpy(command->u.create_shader_module.stage, sh->stage,
+        command->u.create_shader_module.id = sh.id;
+        memcpy(command->u.create_shader_module.stage, sh.stage,
                sizeof(command->u.create_shader_module.stage));
-        memcpy(command->u.create_shader_module.format, sh->format,
+        memcpy(command->u.create_shader_module.format, sh.format,
                sizeof(command->u.create_shader_module.format));
-        memcpy(command->u.create_shader_module.builtin_family, sh->builtin_family,
+        memcpy(command->u.create_shader_module.builtin_family, sh.builtin_family,
                sizeof(command->u.create_shader_module.builtin_family));
-        memcpy(command->u.create_shader_module.builtin_variant, sh->builtin_variant,
+        memcpy(command->u.create_shader_module.builtin_variant, sh.builtin_variant,
                sizeof(command->u.create_shader_module.builtin_variant));
-        command->u.create_shader_module.builtin_version = sh->builtin_version;
-        if (sh->payload_kind == 1)
+        command->u.create_shader_module.builtin_version = sh.builtin_version;
+        if (sh.payload_kind == 1)
         {
             if (payload_size == 0 || arena[payload_offset + payload_size - 1] != 0)
                 return false;
@@ -485,7 +488,7 @@ static bool _decode_body(
             memcpy(code, arena + payload_offset, (size_t)payload_size);
             command->u.create_shader_module.code = code;
         }
-        else if (sh->payload_kind == 2)
+        else if (sh.payload_kind == 2)
         {
             command->u.create_shader_module.spirv = arena + payload_offset;
             command->u.create_shader_module.spirv_size = payload_size;
