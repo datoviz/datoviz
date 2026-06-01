@@ -413,6 +413,113 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
     return scene?.runtime?.stream?.name === "drp2_packet_set";
   })()`);
   requireOk(usesPacketRuntime, `${path}: WASM scene did not use DRP2 packet runtime`);
+  const packetLifecycle = await page.evaluate(`(async () => {
+    const scene = window.__datovizWasmScene;
+    if (scene === undefined || scene === null || scene.scene === 0 || scene.runtime === null) {
+      return "missing live scene";
+    }
+    const cloneSpan = (span) => ({
+      packet: new Uint8Array(span.packet),
+      arena: new Uint8Array(span.arena),
+    });
+    const clonePacketSet = (packetSet) => ({
+      setup: cloneSpan(packetSet.setup),
+      update: cloneSpan(packetSet.update),
+      frame: cloneSpan(packetSet.frame),
+      resource_version: packetSet.resource_version,
+      frame_index: packetSet.frame_index,
+    });
+    const packetStats = (packetSet) => ({
+      setup: packetSet.setup.packet.byteLength,
+      update: packetSet.update.packet.byteLength,
+      frame: packetSet.frame.packet.byteLength,
+      updateArena: packetSet.update.arena.byteLength,
+    });
+
+    const first = clonePacketSet(scene.emitPackets());
+    const firstStats = packetStats(first);
+    if (firstStats.setup === 0 || firstStats.update === 0 || firstStats.frame === 0) {
+      return "missing split packet bytes " + JSON.stringify(firstStats);
+    }
+    if (firstStats.updateArena === 0) {
+      return "missing update payload arena";
+    }
+    await scene.runtime.executePacketSet(first);
+    const second = clonePacketSet(scene.emitPackets());
+    await scene.runtime.executePacketSet(second);
+
+    let staleRejected = false;
+    try {
+      await scene.runtime.executePacketSet(first);
+    } catch (error) {
+      staleRejected = String(error.message).includes("stale DRP2 packet");
+    }
+    if (!staleRejected) {
+      return "stale packet was accepted after newer emit";
+    }
+
+    const resetPacket = clonePacketSet(scene.emitPackets());
+    await scene.runtime.executePacketSet(resetPacket, { reset: true, replaceExistingResources: false });
+    const afterReset = clonePacketSet(scene.emitPackets());
+    await scene.runtime.executePacketSet(afterReset);
+
+    let staleAfterResetRejected = false;
+    try {
+      await scene.runtime.executePacketSet(resetPacket);
+    } catch (error) {
+      staleAfterResetRejected = String(error.message).includes("stale DRP2 packet");
+    }
+    if (!staleAfterResetRejected) {
+      return "stale packet was accepted after runtime reset";
+    }
+
+    return {
+      first: firstStats,
+      reset: packetStats(resetPacket),
+      resource_version: scene.runtime.packetResourceVersion,
+      frame_index: scene.runtime.packetFrameIndex,
+    };
+  })()`);
+  requireOk(typeof packetLifecycle === 'object', `${path}: packet lifecycle failed: ${packetLifecycle}`);
+  const resizeLifecycle = await page.evaluate(`(async () => {
+    const scene = window.__datovizWasmScene;
+    const canvas = document.querySelector("#viewport");
+    if (scene === undefined || scene === null || scene.scene === 0 || scene.runtime === null) {
+      return "missing live scene";
+    }
+    const before = {
+      width: canvas.width,
+      height: canvas.height,
+      resource_version: scene.runtime.packetResourceVersion,
+      frame_index: scene.runtime.packetFrameIndex,
+    };
+    const rect = canvas.getBoundingClientRect();
+    canvas.style.width = Math.max(96, Math.floor(rect.width * 0.75)) + "px";
+    canvas.style.height = Math.max(96, Math.floor(rect.height * 0.75)) + "px";
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    scene.resize();
+    if (canvas.width === before.width && canvas.height === before.height) {
+      return "canvas framebuffer size did not change";
+    }
+    const packetSet = scene.emitPackets();
+    await scene.runtime.executePacketSet(packetSet);
+    if (scene.runtime.stream?.name !== "drp2_packet_set") {
+      return "resize render left packet runtime";
+    }
+    if (scene.runtime.packetFrameIndex <= before.frame_index) {
+      return "resize packet frame index did not advance";
+    }
+    return {
+      before,
+      after: {
+        width: canvas.width,
+        height: canvas.height,
+        resource_version: scene.runtime.packetResourceVersion,
+        frame_index: scene.runtime.packetFrameIndex,
+      },
+    };
+  })()`);
+  requireOk(typeof resizeLifecycle === 'object', `${path}: resize lifecycle failed: ${resizeLifecycle}`);
   await page.dragCanvas(48, 24);
   await page.wheelCanvas(-180);
   const interactiveStatus = await page.waitFor(`(() => {
@@ -489,6 +596,13 @@ async function main() {
         '/examples/webgpu/wasm_scene.html',
         'Rendered generic point/primitive/image/mesh scene',
         join(artifactsDir, 'wasm_scene.png'),
+      );
+      await smokeWasmPage(
+        page,
+        baseUrl,
+        '/examples/webgpu/wasm_scene.html',
+        'Rendered generic point/primitive/image/mesh scene',
+        join(artifactsDir, 'wasm_scene_recreate.png'),
       );
       wasm3d = await smokeWasmPage(
         page,
