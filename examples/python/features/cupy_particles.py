@@ -132,19 +132,21 @@ def _render_particles(app, stepper: ParticleStepper, frames: int) -> None:
             raise RuntimeError('dvz_app_render_once() failed')
 
 
-def _borrowed_app_config():
+def _borrowed_app_config(schedule_mode=None):
     app_config = dvz.dvz_app_config()
     app_config.instance_extension_count = 0
     app_config.instance_extensions = None
     app_config.enable_canvas_extensions = False
     app_config.enable_glfw_extensions = False
+    if schedule_mode is not None:
+        app_config.schedule_mode = schedule_mode
     return app_config
 
 
 def _create_live_app(scene, figure, positions: ci.SharedSceneCudaArray, refresh_static_attrs):
     resources = positions.create_app_resources(figure)
     refresh_static_attrs()
-    app_config = _borrowed_app_config()
+    app_config = _borrowed_app_config(dvz.DvzAppScheduleMode.DVZ_APP_SCHEDULE_CONTINUOUS)
     app = dvz.dvz_app_with_resources(scene, ctypes.byref(app_config), ctypes.byref(resources))
     if not app:
         raise ci.InteropSkip('dvz_app_with_resources() failed')
@@ -163,12 +165,11 @@ def _run_live(
     stepper.update()
 
     def on_frame(view, user_data) -> None:
+        del view
         del user_data
         stepper.update()
-        dvz.dvz_view_request_frame(view)
 
     dvz.dvz_view_set_frame_callback(view, on_frame, None)
-    dvz.dvz_view_request_frame(view)
     dvz.dvz_app_run(app, frames)
     print(
         f'cupy particles: OK ({particles} particles, '
