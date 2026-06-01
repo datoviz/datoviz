@@ -2,11 +2,12 @@
 
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { decodeDrp2Packet } from "../examples/webgpu/drp2_packet.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs");
+const browserWrapperPath = resolve(root, "examples/webgpu/datoviz_wasm_scene.js");
 const output2dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_point_primitive_image_mesh_panzoom.json");
 const output3dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_mesh3d_arcball.json");
 
@@ -102,6 +103,67 @@ function readU64LEAsNumber(bytes, offset) {
   return readU32LE(bytes, offset) + readU32LE(bytes, offset + 4) * 2 ** 32;
 }
 
+function packetPayloadRecords(bytes) {
+  const commandCount = readU32LE(bytes, 20);
+  const records = [];
+  let recordOffset = 56;
+  for (let i = 0; i < commandCount; i++) {
+    const type = readU32LE(bytes, recordOffset);
+    const bodySize = readU32LE(bytes, recordOffset + 8);
+    const payloadOffsetLow = readU32LE(bytes, recordOffset + 16);
+    const payloadOffsetHigh = readU32LE(bytes, recordOffset + 20);
+    const payloadSize = readU64LEAsNumber(bytes, recordOffset + 24);
+    const bodyPadded = (bodySize + 7) & ~7;
+    const hasPayload = payloadOffsetLow !== 0xffffffff || payloadOffsetHigh !== 0xffffffff;
+    if (hasPayload && payloadSize > 0) {
+      const payloadOffset = payloadOffsetLow + payloadOffsetHigh * 2 ** 32;
+      records.push({ index: i, type, offset: payloadOffset, size: payloadSize });
+    }
+    recordOffset += 32 + bodyPadded;
+  }
+  return records;
+}
+
+function expectPacketPayloadArena(packet, arena, decoded, label) {
+  const records = packetPayloadRecords(packet);
+  requireOk(records.length > 0, `${label}: expected payload-bearing packet records`);
+  for (const record of records) {
+    requireOk((record.offset & 7) === 0, `${label}: payload ${record.index} offset is not aligned`);
+    requireOk(
+      record.offset + record.size <= arena.byteLength,
+      `${label}: payload ${record.index} exceeds arena`,
+    );
+  }
+  const payloadEnd = Math.max(...records.map((record) => record.offset + record.size));
+  requireOk(payloadEnd <= decoded.arena_size, `${label}: payload end exceeds declared arena size`);
+  const writePayloadBytes = records
+    .filter((record) => record.type === 18 || record.type === 19)
+    .reduce((sum, record) => sum + record.size, 0);
+  const decodedWritePayloadBytes = decoded.commands
+    .filter((command) => command.cmd === "WriteBuffer" || command.cmd === "WriteTexture")
+    .reduce((sum, command) => sum + command.data.byteLength, 0);
+  requireOk(
+    decodedWritePayloadBytes === writePayloadBytes,
+    `${label}: decoded write payload bytes ${decodedWritePayloadBytes} did not match arena records ${writePayloadBytes}`,
+  );
+  const shaderPayloads = records.filter((record) => record.type === 7).length;
+  const decodedShaders = decoded.commands.filter((command) => command.cmd === "CreateShaderModule");
+  requireOk(decodedShaders.length >= shaderPayloads, `${label}: missing decoded shader payloads`);
+  for (const shader of decodedShaders) {
+    requireOk(typeof shader.code === "string" && shader.code.length > 0, `${label}: empty shader code`);
+  }
+  if (arena.byteLength > 0) {
+    const truncatedArena = arena.subarray(0, Math.max(0, payloadEnd - 1));
+    let threw = false;
+    try {
+      decodeDrp2Packet(packet, truncatedArena);
+    } catch {
+      threw = true;
+    }
+    requireOk(threw, `${label}: truncated payload arena was accepted`);
+  }
+}
+
 function emitStream(Module, scene, figure, label) {
   const status = Module._dvz_wasm_api_emit(scene, figure);
   const messages = diagnostics(Module, scene);
@@ -151,6 +213,10 @@ function expectPacket(Module, scene, kind, label, { expectArena = false } = {}) 
   const decoded = decodeDrp2Packet(bytes, arena);
   requireOk(decoded.kind_id === kind, `${label}: decoded wrong packet kind`);
   requireOk(decoded.commands.length === commandCount, `${label}: decoded command count mismatch`);
+  if (packetPayloadRecords(bytes).length > 0) {
+    requireOk(arenaPtr !== 0 && arenaSize > 0, `${label}: payload records require arena`);
+    expectPacketPayloadArena(bytes, arena, decoded, label);
+  }
   return { ptr, size, commandCount, arenaPtr, arenaSize, decoded };
 }
 
@@ -173,6 +239,35 @@ function emitPacketStream(Module, scene, figure, label) {
     update: expectPacket(Module, scene, DVZ_DRP2_PACKET_UPDATE, `${label} update`, { expectArena: true }),
     frame: expectPacket(Module, scene, DVZ_DRP2_PACKET_FRAME, `${label} frame`),
   };
+}
+
+async function expectBrowserWrapperPacketRuntime() {
+  const source = await readFile(browserWrapperPath, "utf8");
+  const renderInitial = source.match(/async renderInitial\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
+  const renderIncremental = source.match(/async renderIncremental\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
+  requireOk(renderInitial.includes("this.emitPackets()"), "renderInitial does not emit packets");
+  requireOk(renderInitial.includes("executePacketSet"), "renderInitial does not execute packet sets");
+  requireOk(renderIncremental.includes("this.emitPackets()"), "renderIncremental does not emit packets");
+  requireOk(
+    renderIncremental.includes("executePacketSet"),
+    "renderIncremental does not execute packet sets",
+  );
+  requireOk(!renderInitial.includes("emitDebugJson"), "renderInitial uses debug JSON");
+  requireOk(!renderIncremental.includes("emitDebugJson"), "renderIncremental uses debug JSON");
+  requireOk(!renderInitial.includes("_dvz_wasm_api_emit("), "renderInitial uses JSON ABI");
+  requireOk(!renderIncremental.includes("_dvz_wasm_api_emit("), "renderIncremental uses JSON ABI");
+}
+
+function expectNoLegacyDirectAbi(Module) {
+  for (const name of [
+    "_dvz_wasm_api_emit_direct",
+    "_dvz_wasm_api_payload_count",
+    "_dvz_wasm_api_payload_command_index",
+    "_dvz_wasm_api_payload_data_ptr",
+    "_dvz_wasm_api_payload_data_size",
+  ]) {
+    requireOk(typeof Module[name] === "undefined", `legacy direct-payload ABI still exported: ${name}`);
+  }
 }
 
 function commandsOf(stream, cmd) {
@@ -541,6 +636,9 @@ function setCapabilities(
 const { default: createModule } = await import(pathToFileURL(modulePath).href);
 const Module = await createModule({ locateFile: (path) => join(dirname(modulePath), path) });
 const smokeSize = 64;
+
+await expectBrowserWrapperPacketRuntime();
+expectNoLegacyDirectAbi(Module);
 
 const positionNamePtr = allocCString(Module, "position");
 const colorNamePtr = allocCString(Module, "color");
