@@ -27,7 +27,7 @@ The current codebase has the active ingredients needed for native host surfaces:
 9. request-frame callbacks let Datoviz signal a passive need for the host to schedule rendering.
 
 Qt/PyQt remains the first expected serious consumer, without adding a Qt dependency to Datoviz
-core.
+core. The Qt-specific hosting and PyQt FFI policy lives in [QT_HOSTING.md](QT_HOSTING.md).
 
 
 ## Why Qt Should Stay Out Of Core
