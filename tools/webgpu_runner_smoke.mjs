@@ -523,6 +523,19 @@ async function smokeDemoPath(WebGpuDemoSession) {
   );
 }
 
+async function smokePacketSessionValidation(Drp2WebGpuRuntime) {
+  const runtime = new Drp2WebGpuRuntime(device, context, 'bgra8unorm');
+  try {
+    await runtime.executePacketSet({});
+  } catch (error) {
+    if (!String(error.message).includes('needs a frame packet')) {
+      throw new Error(`expected missing frame packet failure, got ${error.message}`);
+    }
+    return;
+  }
+  throw new Error('expected missing frame packet failure');
+}
+
 async function main() {
   const { Drp2WebGpuRuntime, WebGpuDemoSession, executeDrp2Stream } = await import(
     '../examples/webgpu/drp2_webgpu.js'
@@ -533,6 +546,8 @@ async function main() {
     await smokeStreamPathsOnly(Drp2WebGpuRuntime, executeDrp2Stream, args.slice(1));
     return;
   }
+
+  await smokePacketSessionValidation(Drp2WebGpuRuntime);
 
   const manifest = await loadJson('examples/webgpu/fixture_manifest.json');
   for (const entry of manifest.positive) {
