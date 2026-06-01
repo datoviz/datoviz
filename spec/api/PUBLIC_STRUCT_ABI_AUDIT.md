@@ -32,6 +32,7 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzInteropBufferExportConfig` | `dvz_interop_buffer_export_config()` |
 | `DvzFramePlanEmitConfig` | `dvz_frame_plan_emit_config()` |
 | `DvzFramePlanCopyDesc` | `dvz_frame_plan_copy_desc()` |
+| `DvzCapabilitySnapshot` | `dvz_capability_snapshot()` |
 | `DvzGeometryCubeDesc` | `dvz_geometry_cube_desc()` |
 | `DvzGeometryPlaneDesc` | `dvz_geometry_plane_desc()` |
 | `DvzGeometrySphereDesc` | `dvz_geometry_sphere_desc()` |
@@ -91,16 +92,7 @@ These public caller-authored structs already have the ABI prologue and initializ
 
 ## Should Add Before API Freeze
 
-These structs are public, caller-authored, passed by pointer to public create/configure functions,
-and likely to grow or gain flags after v0.4:
-
-| Area | Structs | Public consumers |
-| --- | --- | --- |
-| Scene techniques | `DvzCapabilitySnapshot` | capability-aware setup paths |
-
-Recommended batching:
-
-1. scene techniques and capability snapshots.
+No remaining caller-authored growable descriptors are identified for the v0.4 API freeze.
 
 
 ## No Prologue Needed

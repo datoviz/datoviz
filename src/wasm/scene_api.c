@@ -242,7 +242,7 @@ uint32_t dvz_wasm_api_scene(uint32_t width, uint32_t height)
     if (scene == NULL)
         return 0;
     dvz_diagnostic_report_init(&scene->report);
-    dvz_capability_snapshot_default(&scene->caps);
+    scene->caps = dvz_capability_snapshot();
     scene->caps.shader_format_wgsl = true;
     scene->caps.shader_format_glsl = false;
     scene->width = width;

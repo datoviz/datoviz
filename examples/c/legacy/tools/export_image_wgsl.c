@@ -84,8 +84,7 @@ int main(int argc, char** argv)
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_wgsl = true;
     caps.shader_format_glsl = false;
     caps.max_vertex_buffers = 16;

@@ -129,8 +129,7 @@ int main(int argc, char** argv)
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 3;
     caps.render_target_format_rgba16float = true;
     caps.supports_render_target_sampling = true;

@@ -780,8 +780,7 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
        (float)DVZ_ITEM_STATE_VISUAL_ALPHA);
     AC(_visual_family_state(marker)->item_state_style_params.unselected[1], 0.25f, 1e-6f);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
@@ -1361,8 +1360,7 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
     _scene_prepare_text_visuals(figure);
     AT(strcmp(scalebar->text, "200 um") == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     caps.max_vertex_buffers = 16;
     caps.max_bind_groups = 4;
@@ -1854,8 +1852,7 @@ static int test_scene_scalebar_minimal_stream(TstContext* suite, const TstCase* 
         });
     ANN(scalebar);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     caps.max_vertex_buffers = 16;
     caps.max_bind_groups = 4;
@@ -2055,8 +2052,7 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
     AT(dvz_visual_set_data_many(right_points, right_updates, 3) == 0);
     AT(dvz_panel_add_visual(right, right_points, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     caps.max_vertex_buffers = 16;
     caps.max_bind_groups = 4;

@@ -64,11 +64,11 @@ typedef struct DvzFramePlanCopyDesc
 DVZ_EXPORT DvzFramePlanCopyDesc dvz_frame_plan_copy_desc(void);
 
 /**
- * Initialize a capability snapshot.
+ * Return the default capability snapshot.
  *
- * @param snapshot the capability snapshot
+ * @return default capability snapshot
  */
-DVZ_EXPORT void dvz_capability_snapshot_default(DvzCapabilitySnapshot* snapshot);
+DVZ_EXPORT DvzCapabilitySnapshot dvz_capability_snapshot(void);
 
 
 

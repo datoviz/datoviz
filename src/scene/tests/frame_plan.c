@@ -47,9 +47,10 @@ int test_scene_capabilities_diagnostics(TstContext* suite, const TstCase* item)
     ANN(suite);
     (void)item;
 
-    DvzCapabilitySnapshot caps = {0};
-    DvzCapabilitySnapshot copy = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzCapabilitySnapshot copy = dvz_capability_snapshot();
+    AT(caps.struct_size == DVZ_STRUCT_SIZE(DvzCapabilitySnapshot));
+    AT(caps.flags == 0);
     AT(caps.max_buffer_size > 0);
     AT(caps.max_texture_dimension_2d > 0);
     AT(caps.supports_readback);
@@ -65,6 +66,31 @@ int test_scene_capabilities_diagnostics(TstContext* suite, const TstCase* item)
     AT(copy.max_buffer_size == caps.max_buffer_size);
     AT(copy.max_vertex_buffers == caps.max_vertex_buffers);
     AT(copy.query_profile_u64_rg32 == caps.query_profile_u64_rg32);
+
+    DvzCapabilitySnapshot invalid = dvz_capability_snapshot();
+    invalid.struct_size = 0;
+    copy.max_buffer_size = 123;
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        (dvz_capability_snapshot_copy(&copy, &invalid), copy.max_buffer_size == 123));
+
+    invalid = dvz_capability_snapshot();
+    invalid.flags = 0x01u;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_capability_snapshot_valid(&invalid));
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    caps.max_texture_dimension_2d = 2048;
+    dvz_scene_set_capabilities(scene, &caps);
+    AT(scene->caps.max_texture_dimension_2d == 2048);
+    invalid = dvz_capability_snapshot();
+    invalid.max_texture_dimension_2d = 8192;
+    invalid.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        (dvz_scene_set_capabilities(scene, &invalid),
+         scene->caps.max_texture_dimension_2d == 2048));
+    dvz_scene_destroy(scene);
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
@@ -331,7 +357,7 @@ int test_frame_plan_render_visual_metadata(TstContext* suite, const TstCase* ite
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
@@ -388,7 +414,7 @@ int test_frame_plan_render_visual_metadata_wgsl_uses_typed_labels(
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     caps.shader_format_wgsl = true;
     caps.shader_format_glsl = false;
     dvz_diagnostic_report_init(&report);
@@ -474,7 +500,7 @@ int test_frame_plan_render_splat_metadata_wgsl_uses_typed_labels(
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     caps.shader_format_wgsl = true;
     caps.shader_format_glsl = false;
     dvz_diagnostic_report_init(&report);
@@ -559,7 +585,7 @@ int test_frame_plan_render_primitive_metadata_wgsl_uses_typed_labels(
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     caps.shader_format_wgsl = true;
     caps.shader_format_glsl = false;
     dvz_diagnostic_report_init(&report);
@@ -646,7 +672,7 @@ int test_frame_plan_render_image_metadata_wgsl_uses_typed_labels(
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     caps.shader_format_wgsl = true;
     caps.shader_format_glsl = false;
     dvz_diagnostic_report_init(&report);
@@ -745,7 +771,7 @@ int test_frame_plan_render_textured_mesh_metadata_wgsl_uses_typed_labels(
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     caps.shader_format_wgsl = true;
     caps.shader_format_glsl = false;
     dvz_diagnostic_report_init(&report);
@@ -876,7 +902,7 @@ static int test_frame_plan_runtime_uses_graph_pass_order(TstContext* suite, cons
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     emit_cfg.target_width = 100;
     emit_cfg.target_height = 100;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
@@ -985,7 +1011,7 @@ int test_frame_plan_render_visual_metadata_diagnostic(TstContext* suite, const T
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
@@ -1055,7 +1081,7 @@ int test_frame_plan_draw_resource_validation_rejects_short_position(
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
@@ -1249,8 +1275,7 @@ int test_frame_plan_abi_rejects_invalid_structs(TstContext* suite, const TstCase
     AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
     AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 

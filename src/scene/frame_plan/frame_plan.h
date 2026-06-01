@@ -577,3 +577,5 @@ char* dvz_frame_plan_graph_dump(const DvzFramePlan* plan);
 char* dvz_frame_plan_graph_ascii(const DvzFramePlan* plan, uint32_t flags);
 
 void dvz_frame_plan_graph_ascii_destroy(char* text);
+
+bool dvz_capability_snapshot_valid(const DvzCapabilitySnapshot* snapshot);

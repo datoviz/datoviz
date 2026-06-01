@@ -146,7 +146,7 @@ DvzScene* dvz_scene(void)
     DvzScene* scene = (DvzScene*)dvz_calloc(1, sizeof(DvzScene));
     if (scene == NULL)
         return NULL;
-    dvz_capability_snapshot_default(&scene->caps);
+    scene->caps = dvz_capability_snapshot();
     _scene_technique_state_init(&scene->techniques);
     scene->font_defaults = dvz_font_defaults();
     scene->clock.mode = DVZ_CLOCK_REALTIME;
@@ -194,7 +194,8 @@ DvzFontDefaults dvz_scene_font_defaults(const DvzScene* scene)
 void dvz_scene_set_capabilities(DvzScene* scene, const DvzCapabilitySnapshot* caps)
 {
     ANN(scene);
-    ANN(caps);
+    if (!dvz_capability_snapshot_valid(caps))
+        return;
     dvz_capability_snapshot_copy(&scene->caps, caps);
 }
 

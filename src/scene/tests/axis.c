@@ -574,8 +574,7 @@ static int test_axis_text_hidpi_scales_glyph_bounds(TstContext* suite, const Tst
     AT(dvz_axis_set_style(axis, &style));
     AT(dvz_axis_set_label(axis, "Time"));
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     caps.supports_color_blending = true;
     DvzDiagnosticReport report;
@@ -1569,8 +1568,7 @@ static int test_axis_static_prepare_idempotent(TstContext* suite, const TstCase*
     AT(dvz_axis_set_grid(axis, true));
     AT(dvz_axis_set_label(axis, "x"));
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.supports_color_blending = true;
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
@@ -1679,8 +1677,7 @@ int test_axis_dynamic_segment_draw_count(TstContext* suite, const TstCase* item)
     ANN(axis);
     AT(dvz_axis_set_grid(axis, true));
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.supports_color_blending = true;
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);

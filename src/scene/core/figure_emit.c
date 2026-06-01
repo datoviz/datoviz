@@ -72,7 +72,7 @@ static void _scene_emit_defaults(
     ANN(default_cfg);
     if (*caps == NULL)
     {
-        dvz_capability_snapshot_default(default_caps);
+        *default_caps = dvz_capability_snapshot();
         *caps = default_caps;
     }
     *default_cfg = dvz_frame_plan_emit_config();
@@ -615,6 +615,8 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
     DvzDiagnosticReport local_report;
     DvzFramePlanEmitConfig default_cfg;
     _scene_emit_defaults(&caps, &default_caps, &report, &local_report, &cfg, &default_cfg);
+    if (!dvz_capability_snapshot_valid(caps))
+        return NULL;
     float next_device_scale_x = _scene_scale_or_one(cfg->device_scale_x);
     float next_device_scale_y = _scene_scale_or_one(cfg->device_scale_y);
     float next_render_scale = _scene_scale_or_one(cfg->render_scale);

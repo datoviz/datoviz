@@ -75,8 +75,7 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
            panel, image,
            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     caps.max_vertex_buffers = 16;
     caps.max_bind_groups = 4;

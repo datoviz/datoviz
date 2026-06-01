@@ -130,6 +130,8 @@ typedef enum
 
 struct DvzCapabilitySnapshot
 {
+    uint32_t struct_size;
+    uint32_t flags;
     uint64_t max_buffer_size;
     uint32_t max_texture_dimension_2d;
     uint32_t max_bind_groups;

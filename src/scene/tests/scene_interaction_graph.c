@@ -315,8 +315,7 @@ int test_scene_grid_panel_recomputes_before_emit(TstContext* suite, const TstCas
     AT(dvz_panel_add_visual(left, vl, NULL) == 0);
     AT(dvz_panel_add_visual(right, vr, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     caps.max_vertex_buffers = 16;
     caps.max_bind_groups = 4;
@@ -436,8 +435,7 @@ int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item)
     AT(dvz_panel_add_visual(panel, v_front,  &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = +1}) == 0);
     AT(dvz_panel_add_visual(panel, v_behind, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     caps.max_vertex_buffers = 16;
     caps.max_bind_groups    = 4;
@@ -661,8 +659,7 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
     AT(render->u.render.visual_metadata[0].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PANEL);
     AT(render->u.render.visual_metadata[1].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     caps.max_vertex_buffers = 16;
     caps.max_bind_groups = 4;
@@ -905,8 +902,7 @@ int test_scene_controller_mode_fixed_emits_separate_mvp(TstContext* suite, const
     AT(dvz_panel_add_visual(panel, v_fixed,
                             &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     caps.max_vertex_buffers = 16;
     caps.max_bind_groups    = 4;
@@ -972,8 +968,7 @@ int test_scene_panel_one_pass_per_panel(TstContext* suite, const TstCase* item)
     AT(dvz_panel_add_visual(panel, v1, NULL) == 0);
     AT(dvz_panel_add_visual(panel, v2, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     caps.max_vertex_buffers = 16;
     caps.max_bind_groups    = 4;
@@ -1037,8 +1032,7 @@ int test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state(
     AT(dvz_panel_add_visual(left, vl, &fixed) == 0);
     AT(dvz_panel_add_visual(right, vr, &fixed) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     caps.max_vertex_buffers = 16;
     caps.max_bind_groups = 4;
@@ -1111,8 +1105,7 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
     AT(dvz_panel_add_visual(left, vl, NULL) == 0);
     AT(dvz_panel_add_visual(right, vr, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     caps.max_vertex_buffers = 16;
     caps.max_bind_groups = 4;
@@ -1218,8 +1211,7 @@ int test_scene_overlapping_depth_panels_glsl_clear_depth(TstContext* suite, cons
     AT(dvz_panel_add_visual(main, main_point, NULL) == 0);
     AT(dvz_panel_add_visual(inset, inset_point, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     caps.max_vertex_buffers = 16;
     caps.max_bind_groups = 4;

@@ -279,8 +279,7 @@ int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase
     ANN(utf8_glyph);
     AT(_visual_family_state(_visual_family_state(text)->text.glyph_visual)->field == atlas->field);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.supports_color_blending = true;
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);

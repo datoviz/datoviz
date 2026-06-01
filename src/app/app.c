@@ -3011,8 +3011,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     }
 
     /* Emit the DRP2 command stream with the canvas as external color target. */
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     _app_apply_runtime_caps(app, &caps);
     caps.shader_format_glsl = true;
     caps.max_color_attachments = 3;

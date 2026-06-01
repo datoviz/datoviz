@@ -628,7 +628,7 @@ int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item)
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     cfg.target_width = 64;
     cfg.target_height = 64;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
@@ -904,7 +904,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     cfg.target_width = 64;
     cfg.target_height = 64;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
@@ -1032,8 +1032,7 @@ int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase
     AT(msaa_color->sample_count == 16);
     AT(depth->sample_count == 16);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_sample_count = 16;
     caps.max_depth_sample_count = 8;
 
@@ -1201,7 +1200,7 @@ int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     cfg.target_width = 64;
     cfg.target_height = 64;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
@@ -1691,7 +1690,7 @@ int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     cfg.target_width = 64;
     cfg.target_height = 64;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     caps.supports_color_blending = true;
     dvz_diagnostic_report_init(&report);
 
@@ -1846,8 +1845,7 @@ int test_scene_ssao_glsl_executes(TstContext* suite, const TstCase* item)
         &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.0f, .strength = 2.5f, .bias = 0.02f,
                             .sample_count = 16}));
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.supports_color_blending = true;
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
@@ -1938,8 +1936,7 @@ int test_scene_sphere_ssao_glsl_executes(TstContext* suite, const TstCase* item)
         &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.0f, .strength = 2.5f, .bias = 0.02f,
                             .sample_count = 16}));
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.supports_color_blending = true;
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
@@ -2098,8 +2095,7 @@ int test_scene_visual_alpha_mode_standard_blend(TstContext* suite, const TstCase
         blend_contract.draws[0].blend_targets[0].src_alpha_blend_factor ==
         VK_BLEND_FACTOR_ONE);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
@@ -2320,8 +2316,7 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     AT(_scene_pass_contract_validate(&contract, &graph_report));
     AT(dvz_diagnostic_report_count(&graph_report) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.supports_render_target_sampling = true;
     caps.supports_color_blending = true;
     DvzDiagnosticReport report;
@@ -2595,8 +2590,7 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     AT(!_scene_pass_contract_validate(&exact_contract, &graph_report));
     AT(dvz_diagnostic_report_count(&graph_report) > 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 3;
     caps.render_target_format_rgba16float = true;
     caps.render_target_format_r16float = true;
@@ -2932,8 +2926,7 @@ int test_scene_visual_alpha_mode_wboit_transparent_only_depth(TstContext* suite,
     AT(_scene_pass_contract_validate(&accum_contract, &graph_report));
     AT(dvz_diagnostic_report_count(&graph_report) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 2;
     caps.render_target_format_rgba16float = true;
     caps.render_target_format_r16float = true;
@@ -3181,8 +3174,7 @@ int test_scene_visual_alpha_mode_mixed_oit_rejected(TstContext* suite, const Tst
     AT(dvz_panel_add_visual(panel, wboit, NULL) == 0);
     AT(dvz_panel_add_visual(panel, peel, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 3;
     caps.render_target_format_rgba16float = true;
     caps.render_target_format_r16float = true;
@@ -3250,8 +3242,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
     AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 3;
     caps.render_target_format_rgba16float = true;
     caps.supports_render_target_sampling = true;
@@ -3514,8 +3505,7 @@ int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstContext* suite, 
     AT(dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
@@ -3586,8 +3576,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
     AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
     dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 2;
     caps.render_target_format_rgba16float = true;
     caps.render_target_format_r16float = true;
@@ -3947,8 +3936,7 @@ int test_scene_splat_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCas
     AT(dvz_visual_set_alpha_mode(splat, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_panel_add_visual(panel, splat, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 2;
     caps.render_target_format_rgba16float = true;
     caps.render_target_format_r16float = true;
@@ -4066,8 +4054,7 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstContext* suite, c
     AT(_scene_frame_plan_contracts_validate(figure, plan, &report));
     AT(dvz_diagnostic_report_count(&report) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 2;
     caps.render_target_format_rgba16float = true;
     caps.render_target_format_r16float = true;
@@ -4253,8 +4240,7 @@ int test_scene_drp2_contract_checker_rejects_raster_drift(TstContext* suite, con
     _scene_emit_visual_uploads(figure, plan, NULL);
     AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 3;
     caps.render_target_format_rgba16float = true;
     caps.supports_render_target_sampling = true;
@@ -4367,8 +4353,7 @@ int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstContext* suite, con
     AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
     AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 2;
     caps.render_target_format_rgba16float = true;
     caps.render_target_format_r16float = true;
@@ -4512,8 +4497,7 @@ int test_scene_visual_alpha_mode_wboit_glsl_executes(TstContext* suite, const Ts
     AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 2;
     caps.render_target_format_rgba16float = true;
     caps.render_target_format_r16float = true;
@@ -4653,8 +4637,7 @@ int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstContext* suite, con
     AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_DEPTH_PEEL) == 0);
     AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 3;
     caps.render_target_format_rgba16float = true;
     caps.supports_render_target_sampling = true;

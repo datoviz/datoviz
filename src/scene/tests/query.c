@@ -130,8 +130,7 @@ int test_scene_query_queue_processes_native_results(TstContext* suite, const Tst
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 11, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(scene->pending_query_count == 1);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
     AT(scene->pending_query_count == 0);
     AT(scene->query_result_count == 1);
@@ -174,8 +173,7 @@ int test_scene_query_queue_coalesces_pending_requests(TstContext* suite, const T
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 12, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(scene->pending_query_count == 1);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
 
     DvzQueryResult result = {0};
@@ -212,8 +210,7 @@ int test_scene_query_volume_sample_is_explicitly_unsupported(TstContext* suite, 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 33, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     AT(dvz_figure_process_queries(figure, NULL, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -252,8 +249,7 @@ int test_scene_query_skips_fixed_visuals(TstContext* suite, const TstCase* item)
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 37, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -298,8 +294,7 @@ int test_scene_query_rejects_missing_query_profile(TstContext* suite, const TstC
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 38, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.query_profile_u32_r32 = false;
     caps.query_profile_u64_rg32 = false;
     caps.query_profile_u64_2xr32 = false;
@@ -348,8 +343,7 @@ int test_scene_query_does_not_auto_select_2xr32_profile(TstContext* suite, const
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 40, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.query_profile_u32_r32 = false;
     caps.query_profile_u64_rg32 = false;
     caps.query_profile_u64_2xr32 = true;
@@ -402,8 +396,7 @@ int test_scene_query_rejects_family_unsupported_profile(TstContext* suite, const
                .target = DVZ_SCENE_TARGET_ITEM,
                .profile = DVZ_QUERY_PROFILE_U64_RG32,
            }) == 0);
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     AT(dvz_figure_process_queries(figure, NULL, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -491,8 +484,7 @@ int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* ite
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 35, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
@@ -587,8 +579,7 @@ int test_scene_image_query_generated_rect_samples_position(
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -698,8 +689,7 @@ int test_scene_image_query_panzoom_samples_transformed_position(
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     for (uint64_t request_id = 140; request_id <= 141; request_id++)
@@ -800,8 +790,7 @@ int test_scene_image_query_reuses_retained_request_executor(
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -905,8 +894,7 @@ int test_scene_image_sample_query_readback_failure(TstContext* suite, const TstC
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -981,8 +969,7 @@ int test_scene_point_query_misses_empty_pixel(TstContext* suite, const TstCase* 
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -1049,8 +1036,7 @@ int test_scene_pixel_query_accepts_square_corner(TstContext* suite, const TstCas
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -1124,8 +1110,7 @@ int test_scene_marker_query_accepts_bbox_corner(TstContext* suite, const TstCase
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -1204,8 +1189,7 @@ int test_scene_sphere_query_resolves_item(TstContext* suite, const TstCase* item
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -1291,8 +1275,7 @@ int test_scene_segment_query_resolves_item(TstContext* suite, const TstCase* ite
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -1379,8 +1362,7 @@ int test_scene_path_query_resolves_item(TstContext* suite, const TstCase* item)
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -1472,8 +1454,7 @@ int test_scene_vector_query_resolves_straight_item(TstContext* suite, const TstC
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -1564,8 +1545,7 @@ int test_scene_vector_query_resolves_curved_item(TstContext* suite, const TstCas
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -1653,8 +1633,7 @@ int test_scene_primitive_query_resolves_item(TstContext* suite, const TstCase* i
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -1751,8 +1730,7 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -1833,8 +1811,7 @@ int test_scene_image_query_resolves_item(TstContext* suite, const TstCase* item)
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -1908,8 +1885,7 @@ int test_scene_volume_query_resolves_item(TstContext* suite, const TstCase* item
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -1997,8 +1973,7 @@ int test_scene_volume_query_resolves_sample(TstContext* suite, const TstCase* it
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -2103,8 +2078,7 @@ int test_scene_volume_query_resolves_label_sample(TstContext* suite, const TstCa
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -2217,8 +2191,7 @@ static int _test_scene_volume_query_label_sample_value(
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -2345,8 +2318,7 @@ int test_scene_volume_query_resolves_sample_uvw_profile(TstContext* suite, const
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -2430,8 +2402,7 @@ int test_scene_volume_sample_query_rejects_deferred_policies(
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 113, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -2493,8 +2464,7 @@ int test_scene_volume_sample_query_rejects_unsupported_format(
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 114, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -2571,8 +2541,7 @@ int test_scene_volume_sample_query_readback_failure(TstContext* suite, const Tst
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
     scene->test.force_readback_download_failure = true;
 
@@ -2690,8 +2659,7 @@ int test_scene_labels_query_resolves_category(TstContext* suite, const TstCase* 
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -2818,8 +2786,7 @@ int test_scene_labels_query_high_unsigned_id(TstContext* suite, const TstCase* i
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -2872,8 +2839,7 @@ int test_scene_labels_query_rejects_missing_field(TstContext* suite, const TstCa
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 146, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -2929,8 +2895,7 @@ int test_scene_labels_query_rejects_unsupported_format(TstContext* suite, const 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 153, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     AT(dvz_figure_process_queries(figure, NULL, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -3027,8 +2992,7 @@ int test_scene_labels_query_readback_failure(TstContext* suite, const TstCase* i
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
@@ -3122,8 +3086,7 @@ int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const T
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzCapabilitySnapshot caps = {0};
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(

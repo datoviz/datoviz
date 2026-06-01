@@ -183,8 +183,8 @@ dvz_canvas_set_draw_callback
 dvz_canvas_stream
 dvz_canvas_submit
 dvz_canvas_timings
+dvz_capability_snapshot
 dvz_capability_snapshot_copy
-dvz_capability_snapshot_default
 dvz_circular_2D
 dvz_circular_3D
 dvz_cmd_barriers

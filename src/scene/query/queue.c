@@ -313,9 +313,11 @@ uint32_t dvz_figure_process_queries(
     DvzCapabilitySnapshot local_caps = {0};
     if (caps == NULL)
     {
-        dvz_capability_snapshot_default(&local_caps);
+        local_caps = dvz_capability_snapshot();
         caps = &local_caps;
     }
+    if (!dvz_capability_snapshot_valid(caps))
+        return 0;
 
     if (!_scene_figure_resolve_layouts(figure))
         return 0;

@@ -1310,7 +1310,7 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
             dvz_fprintf(stderr, "failed to create scene/DRP2 runtime\\n");
             return false;
         }
-        dvz_capability_snapshot_default(&app->scene_caps);
+        app->scene_caps = dvz_capability_snapshot();
         app->scene_emit_cfg = dvz_frame_plan_emit_config();
         app->scene_emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
         app->scene_emit_cfg.external_color_target = true;

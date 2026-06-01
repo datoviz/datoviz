@@ -626,7 +626,7 @@ int test_scene_legend_emit_stream_contains_derived_visuals(
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     caps.supports_color_blending = true;
     dvz_diagnostic_report_init(&report);
 
@@ -1361,7 +1361,7 @@ int test_scene_colorbar_emit_stream_contains_derived_visuals(
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     caps.supports_color_blending = true;
     dvz_diagnostic_report_init(&report);
 
@@ -1480,7 +1480,7 @@ int test_scene_colorbar_invalid_domain_reports_diagnostic(
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = NULL;
@@ -1624,8 +1624,7 @@ int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCas
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
     ANN(stream);
     dvz_drp2_stream_destroy(stream);
@@ -1868,8 +1867,7 @@ int test_scene_image_scalar_texture_uses_bound_scale(TstContext* suite, const Ts
     AT(dvz_visual_set_texture_f32(visual, pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
@@ -1944,8 +1942,7 @@ int test_scene_image_r16_float_field_uses_bound_scale(TstContext* suite, const T
     AT(dvz_visual_set_field(image, "field", field));
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
@@ -2020,8 +2017,7 @@ int test_scene_image_r16_snorm_field_uses_bound_scale(TstContext* suite, const T
     AT(dvz_visual_set_field(image, "field", field));
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
@@ -2344,7 +2340,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const Ts
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream0 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
@@ -2858,7 +2854,7 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
@@ -3027,7 +3023,7 @@ int test_scene_volume_label_slice_uses_categorical_scale(TstContext* suite, cons
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
@@ -3100,7 +3096,7 @@ int test_scene_volume_label_composite_uses_first_hit_shader(
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
@@ -3172,7 +3168,7 @@ int test_scene_volume_signed_label_composite_uses_first_hit_shader(
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
@@ -3243,7 +3239,7 @@ int test_scene_volume_label_sparse_lookup_buffer(TstContext* suite, const TstCas
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
@@ -3326,7 +3322,7 @@ int test_scene_volume_signed_label_sparse_lookup_buffer(TstContext* suite, const
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
@@ -3465,7 +3461,7 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
@@ -3586,7 +3582,7 @@ int test_scene_sampled_field_3d_emits_runtime_texture_upload(
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream0 =
         dvz_frame_plan_emitter_emit_drp2(emitter, frame0, &caps, &report, &emit_cfg);
@@ -3869,8 +3865,7 @@ int test_scene_image_field_partial_update_emits_texture_subregion(TstContext* su
     AT(dvz_visual_set_field(image, "field", field));
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
@@ -3961,8 +3956,7 @@ int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, 
     AT(dvz_visual_set_field(image, "field", field));
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
@@ -4115,8 +4109,7 @@ int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, co
     AT(dvz_visual_set_field(image1, "field", field));
     AT(dvz_panel_add_visual(panel, image1, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 

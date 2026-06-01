@@ -1321,7 +1321,7 @@ static int _scene_visual_records_portable_dvzr(SceneDvzrVisualKind kind, const c
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
@@ -1403,7 +1403,7 @@ int test_frame_plan_emit_drp2_static_render(TstContext* suite, const TstCase* it
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
@@ -1458,7 +1458,7 @@ int test_frame_plan_emit_drp2_split_packets(TstContext* suite, const TstCase* it
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzFramePlanPacketResult* result =
@@ -1552,7 +1552,7 @@ int test_frame_plan_emit_drp2_static_render_glsl(TstContext* suite, const TstCas
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2_ex(plan, &caps, &report, &cfg);
@@ -1595,7 +1595,7 @@ static int test_frame_plan_emitter_rejects_untyped_visual_metadata(
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream =
@@ -1626,7 +1626,7 @@ int test_frame_plan_emit_drp2_rejects_unsupported_shader_format(TstContext* suit
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     caps.shader_format_glsl = false;
     dvz_diagnostic_report_init(&report);
 
@@ -1654,7 +1654,7 @@ int test_frame_plan_emit_drp2_rejects_small_caps(TstContext* suite, const TstCas
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     caps.max_buffer_size = 8;
     dvz_diagnostic_report_init(&report);
 
@@ -1664,7 +1664,7 @@ int test_frame_plan_emit_drp2_rejects_small_caps(TstContext* suite, const TstCas
     AT(strcmp(dvz_diagnostic_report_get(&report, 0), "upload buffer exceeds max_buffer_size") == 0);
 
     dvz_diagnostic_report_init(&report);
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     caps.max_texture_dimension_2d = 3;
     stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
     AT(stream == NULL);
@@ -1674,7 +1674,7 @@ int test_frame_plan_emit_drp2_rejects_small_caps(TstContext* suite, const TstCas
            "max_texture_dimension_2d is too small for fixture render target") == 0);
 
     dvz_diagnostic_report_init(&report);
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     caps.max_vertex_buffers = 0;
     stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
     AT(stream == NULL);
@@ -1692,7 +1692,7 @@ int test_frame_plan_emit_drp2_rejects_small_caps(TstContext* suite, const TstCas
         "tex.image.rgba"));
 
     dvz_diagnostic_report_init(&report);
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     caps.max_bind_groups = 0;
     stream = dvz_frame_plan_emit_drp2(texture_plan, &caps, &report);
     AT(stream == NULL);
@@ -1728,7 +1728,7 @@ int test_frame_plan_emit_drp2_static_render_glsl_executes(TstContext* suite, con
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2_ex(plan, &caps, &report, &emit_cfg);
@@ -1768,7 +1768,7 @@ int test_frame_plan_emit_drp2_readback_glsl_executes(TstContext* suite, const Ts
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2_ex(plan, &caps, &report, &emit_cfg);
@@ -1822,7 +1822,7 @@ int test_frame_plan_emitter_runtime_two_frames_glsl_executes(TstContext* suite, 
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream0 =
@@ -1891,7 +1891,7 @@ int test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes(
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream0 =
@@ -1964,7 +1964,7 @@ int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream0 =
@@ -2035,7 +2035,7 @@ int test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes(
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream0 =
@@ -2209,7 +2209,7 @@ int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* ite
     state.emit_cfg.external_color_target = true;
     state.emit_cfg.color_target_id = 1;
     state.emit_cfg.fullscreen_triangle = true;
-    dvz_capability_snapshot_default(&state.caps);
+    state.caps = dvz_capability_snapshot();
 
     dvz_canvas_set_draw_callback(canvas, _scene_canvas_drp2_draw, &state);
     AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
@@ -2267,7 +2267,7 @@ int test_frame_plan_emit_drp2_readback(TstContext* suite, const TstCase* item)
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
@@ -2314,7 +2314,7 @@ int test_frame_plan_emit_drp2_dynamic_uploads(TstContext* suite, const TstCase* 
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
@@ -2364,7 +2364,7 @@ int test_frame_plan_emit_drp2_texture_sampling(TstContext* suite, const TstCase*
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
@@ -2454,7 +2454,7 @@ int test_frame_plan_emit_drp2_compute_assisted(TstContext* suite, const TstCase*
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
@@ -2527,7 +2527,7 @@ int test_frame_plan_emitter_runtime_two_frames(TstContext* suite, const TstCase*
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream0 =
@@ -2609,7 +2609,7 @@ int test_frame_plan_emitter_runtime_dynamic_two_frames(TstContext* suite, const 
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream0 =
@@ -2686,7 +2686,7 @@ int test_frame_plan_emitter_runtime_dynamic_grow_buffer(TstContext* suite, const
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream0 =
@@ -2792,7 +2792,7 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream0 =
@@ -3029,7 +3029,7 @@ int test_frame_plan_emitter_runtime_texture_two_frames(TstContext* suite, const 
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream0 =
@@ -3146,7 +3146,7 @@ int test_frame_plan_emitter_runtime_compute_two_frames(TstContext* suite, const 
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    dvz_capability_snapshot_default(&caps);
+    caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream0 =

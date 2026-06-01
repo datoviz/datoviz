@@ -70,8 +70,7 @@ int test_scene_render_pass_scope_excludes_resource_commands(TstContext* suite, c
     AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();

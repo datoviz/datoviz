@@ -95,6 +95,8 @@ REQUIRED_RAW_SYMBOLS = (
     'dvz_semaphore_destroy',
     'DvzDrp2ExternalBufferDesc',
     'DvzFramePlanEmitConfig',
+    'DvzCapabilitySnapshot',
+    'dvz_capability_snapshot',
     'dvz_drp2_runtime_vklite_config',
     'dvz_drp2_runtime_vklite',
     'dvz_drp2_runtime_register_external_buffer',
@@ -326,8 +328,7 @@ def scene_setup_emit_config(dvz):
 
 
 def scene_setup_caps(dvz):
-    caps = dvz.DvzCapabilitySnapshot()
-    dvz.dvz_capability_snapshot_default(ctypes.byref(caps))
+    caps = dvz.dvz_capability_snapshot()
     caps.shader_format_glsl = True
     caps.max_color_attachments = 3
     caps.render_target_format_rgba16float = True
