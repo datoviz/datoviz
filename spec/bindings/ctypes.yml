@@ -90,7 +90,7 @@ skipped_functions:
     - dvz_deq_dequeue_return
     - dvz_deq_peek_first
     - dvz_deq_peek_last
-    - dvz_device_default_config
+    - dvz_device_config
     - dvz_frame_plan_emit_config
     - dvz_gpu_ctx_config
     - dvz_material_desc

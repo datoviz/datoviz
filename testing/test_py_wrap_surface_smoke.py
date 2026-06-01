@@ -63,7 +63,7 @@ def main() -> int:
 
     lib.dvz_window_host.restype = ctypes.c_void_p
     lib.dvz_window_host_destroy.argtypes = [ctypes.c_void_p]
-    lib.dvz_window_default_config.restype = DvzWindowConfig
+    lib.dvz_window_config.restype = DvzWindowConfig
     lib.dvz_window_create.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.POINTER(DvzWindowConfig)]
     lib.dvz_window_create.restype = ctypes.c_void_p
     lib.dvz_window_destroy.argtypes = [ctypes.c_void_p]
