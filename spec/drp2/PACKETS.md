@@ -58,7 +58,11 @@ Current browser runtime requirements:
 1. a packet set must include a `frame` packet;
 2. all non-empty phases in one packet set must carry the same `resource_version` and `frame_index`;
 3. runtimes reject packet sets with older `resource_version` or non-increasing `frame_index`;
-4. reset starts a new retained browser runtime session and clears packet counters.
+4. reset starts a new retained browser runtime session and clears packet counters;
+5. after reset, the first packet set must rebuild every retained resource needed by later update and
+   frame packets;
+6. ordinary retained execution should not replay setup commands for unchanged resources, because
+   duplicate stable ids are invalid in a live session.
 
 ## Packet Phases
 
@@ -74,6 +78,10 @@ Allowed command families:
 
 A setup packet advances `resource_version`. Replaying an older setup packet against a newer retained
 session is invalid unless the session has been reset.
+
+After a reset, setup is required for resources that later update/frame packets reference. Reset does
+not make old borrowed packet spans valid again; JavaScript must request or retain a packet set that
+contains the setup needed to rebuild the session.
 
 ### `update`
 
@@ -174,6 +182,13 @@ A failed packet leaves the session in the previous committed state for setup/upd
 frame packet may discard transient command encoder/pass state but must not mutate retained scene
 resources except for uploads already committed before the failure; runtimes should validate before
 execution where practical.
+
+Packet counters are session-order guards, not resource lifetime owners. A reset clears the runtime's
+remembered `resource_version` and `frame_index` so a fresh setup-bearing packet set can rebuild the
+session. Once a newer packet set has executed in that reset session, older packet sets from before or
+after the reset are stale and must be rejected by `resource_version` or `frame_index`. Replaying
+setup commands with unchanged ids in a live session is invalid unless the stream first destroys or
+otherwise recreates those ids through explicit DRP2 lifetime commands.
 
 ## JSON Export
 
