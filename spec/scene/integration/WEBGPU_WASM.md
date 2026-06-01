@@ -217,6 +217,57 @@ Resource update rules:
 8. visual item-count growth is rejected by the current per-attribute ABI until a batch update or
    explicit topology-rebuild contract exists.
 
+## Break-Compatible Long-Term Plan
+
+If v0.4 development can break the current experimental WebGPU/WASM compatibility layer, the
+preferred architecture is to stop extending JSON as the runtime protocol and move directly to a
+structured browser runtime boundary.
+
+Target architecture:
+
+1. make binary DRP2 packets the primary WASM-to-browser transport;
+2. keep JSON only for fixture export, debugging, and human-readable evidence;
+3. split every scene emission into explicit `setup`, `update`, and `frame` packets;
+4. remove JavaScript heuristics that infer setup commands from command names;
+5. make resource lifetime explicit in DRP2 with stable ids, create/update/destroy commands,
+   dependency rules, and no implicit reload semantics;
+6. introduce a browser runtime session object that owns the WebGPU device, canvas context, retained
+   resource tables, packet execution, resize, input, render scheduling, diagnostics, and destroy;
+7. make the WASM scene bridge return a structured frame result containing status, diagnostics,
+   packet pointers and sizes, a payload arena pointer and size, and resource/version counters;
+8. use a payload arena with stable offsets referenced by commands, instead of per-payload pointers
+   or base64 data;
+9. route browser input and resize through a formal scene event queue consumed by WASM scene state;
+10. keep JavaScript responsible for browser event normalization and WebGPU execution, but never for
+    scene-owned controller math or direct mutation of scene-owned GPU resources.
+
+Compatibility to remove:
+
+1. JSON as the browser runtime hot path;
+2. base64 write payloads in runtime execution;
+3. inferred setup/frame splitting;
+4. demo-local shader metadata fallbacks;
+5. hard-coded scene uniform ids or browser-side scene uniform updates;
+6. demo-specific browser canvas assumptions outside a declared external-target contract;
+7. legacy v0.3-facing API compromises inside the experimental browser path.
+
+Execution sequence:
+
+1. write the binary DRP2 packet, payload arena, and split setup/update/frame contract in `spec/drp2/`;
+2. implement native packet encode/decode tests before changing browser execution;
+3. change scene emission to produce split frame results with explicit resource versions;
+4. replace the WASM ABI with split packet pointers, payload arena metadata, diagnostics, and
+   lifecycle ownership rules;
+5. rewrite the browser WebGPU runtime to execute packets against retained resource tables;
+6. port the current 2D and 3D WASM demos onto the browser runtime session object;
+7. delete JSON execution from the demos while preserving JSON fixture/debug export;
+8. rebuild `just wasm-scene-smoke` and `just webgpu-browser-smoke` around the new session contract;
+9. only then expand the browser visual-family subset.
+
+This plan intentionally prefers a larger compatibility break over continued incremental polish of
+the direct-payload JSON bridge. The bridge remains useful evidence and a transition point, but it is
+not the desired final browser runtime protocol.
+
 ## Browser App Layer
 
 The browser app layer is equivalent in role to native `app`, but it is not a port of native
