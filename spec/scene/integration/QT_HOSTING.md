@@ -1,11 +1,15 @@
 # Qt Hosting And PyQt FFI
 
-Status: design note for the hosted Qt path and the proposed PyQt FFI convenience layer.
+Status: design note for the hosted Qt path, PyQt FFI convenience layer, and optional Qt host
+bridge.
 
 This note records the Qt-specific policy on top of
 [HOSTED_BACKENDS.md](HOSTED_BACKENDS.md). The durable rule remains that Qt is an optional host
 adapter over the generic hosted rendering contract, not a dependency or alternate rendering path in
 `libdatoviz`.
+
+Implementation handoff for the v0.4 PyQt bridge lives in
+[QT_HOST_BRIDGE.md](QT_HOST_BRIDGE.md).
 
 
 ## Goals
@@ -88,6 +92,14 @@ Generated `ctypes` layouts are appropriate for small, stable Datoviz-owned POD r
 validated. They are less attractive for foreign SDK handles and host-window bridge structs because
 they expose low-level Vulkan layout policy to Python examples and documentation. PyQt users should
 not need to construct a Vulkan-flavored C struct by hand just to host a Datoviz view.
+
+There is also a binding gap in the currently tested PyQt6 wheels: `QVulkanInstance` and
+`QWindow.setVulkanInstance()` are present, but `QVulkanInstance::setVkInstance()` and
+`QVulkanInstance::vkInstance()` are not exposed to Python. Qt's C++ API supports those methods, and
+Datoviz needs `setVkInstance()` so Qt adopts the Datoviz-created Vulkan instance.
+
+The v0.4 route is therefore a separate optional native Qt bridge loaded by `datoviz.qt`, not a Qt
+dependency in `libdatoviz`. See [QT_HOST_BRIDGE.md](QT_HOST_BRIDGE.md).
 
 
 ## FFI Helper Decision
@@ -191,9 +203,8 @@ expected; validation errors are not.
 
 ## Open Questions
 
-1. Whether the PyQt example should target only PyQt6 first or also PySide6.
-2. Whether the Python extra should be named `datoviz[qt]`, a separate `datoviz-qt` package, or kept
+1. Whether the Python extra should be named `datoviz[qt]`, a separate `datoviz-qt` package, or kept
    as a source-tree example for v0.4.
-3. How much Linux platform policy to expose in public docs for Wayland versus XCB.
-4. Whether CI can reliably run the Qt smoke in a Vulkan-capable environment.
-5. Whether later FFI bindings should also expose the struct layout after the handle helper is proven.
+2. How much Linux platform policy to expose in public docs for Wayland versus XCB.
+3. Whether CI can reliably run the Qt smoke in a Vulkan-capable environment.
+4. Whether later FFI bindings should also expose the struct layout after the handle helper is proven.
