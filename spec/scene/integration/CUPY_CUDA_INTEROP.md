@@ -8,7 +8,9 @@ This document records the recommended design direction for zero-copy Python/CuPy
 Datoviz.
 
 The focus is real-time visualization of CUDA-produced data through the active scene -> DRP2 ->
-vklite/canvas path, without CPU readback and without per-frame GPU copies.
+vklite/canvas path, without CPU readback and without per-frame GPU copies. DRP2 remains the
+internal runtime lowering path; Python examples and scene-facing APIs should present scene
+attributes and CuPy arrays instead of protocol objects, runtime ids, or command streams.
 
 
 ## Goals
@@ -52,17 +54,18 @@ policy, and vertex/storage binding layout.
 The first Python-facing API should look like a high-level shared array, not a Vulkan handle API:
 
 ```python
-shared = datoviz.cuda_array(
+position = datoviz.cuda_array(
+    scene=scene,
     shape=(n, 3),
     dtype=cp.float32,
-    usage="vertex",
+    usage=("vertex", "storage"),
     semantic="position",
 )
 
-pos = shared.cupy_array
+points.set_attr_buffer("position", position.scene_buffer)
 
 while app.running:
-    with shared.cuda_write():
+    with position.cuda_write() as pos:
         kernel(pos, t)
     app.render()
 ```
@@ -72,6 +75,8 @@ The exact names can change, but the ownership should remain:
 1. Datoviz owns the underlying Vulkan allocation.
 2. CUDA/CuPy owns a mapped view while the shared object is alive.
 3. Python keeps the Datoviz shared object alive for as long as the CuPy array exists.
+4. Runtime registration, emitted resource-id lookup, and synchronization details remain internal to
+   the shared-array implementation.
 
 This section is a product/API sketch, not an implementation requirement for the current C-side
 interop pass. The immediate contract work can be completed without writing Python code: define the
@@ -196,7 +201,8 @@ resource intent; live runtime registration supplies the actual shared GPU alloca
 
 ## Python/CuPy Bridge Shape
 
-The Python API should have a small explicit import layer and a higher-level scene-oriented layer.
+The Python API should have a small explicit import layer for tests and a higher-level
+scene-oriented layer for examples and normal use.
 
 The low-level layer wraps a Datoviz export descriptor as a CuPy array:
 
@@ -210,8 +216,8 @@ shared = datoviz.cuda.import_buffer(
 pos = shared.array
 ```
 
-The higher-level layer can later allocate through Datoviz and expose both the scene buffer and the
-CuPy view:
+The higher-level layer allocates through Datoviz and exposes both the scene buffer and the CuPy
+view:
 
 ```python
 position = datoviz.cuda_array(
@@ -231,7 +237,8 @@ while app.running:
 
 The bridge object should own the imported CUDA handles and the CuPy wrapper. The current internal
 prototype is `tools/bindings/cupy_interop_runtime.py`; it is intentionally smoke infrastructure, not
-a public API, but it captures the ownership model for the future `datoviz.cuda_array()` wrapper:
+a public API, but it should already hide low-level runtime plumbing from feature examples. It
+captures the ownership model for the future `datoviz.cuda_array()` wrapper:
 
 1. Datoviz GPU context, Vulkan buffer, and timeline semaphore,
 2. exported memory/semaphore handles until CUDA import consumes them,
@@ -241,7 +248,8 @@ a public API, but it captures the ownership model for the future `datoviz.cuda_a
 6. `cupy.cuda.MemoryPointer`,
 7. `cupy.ndarray`,
 8. timeline values and a `cuda_write()` context manager,
-9. failure-path cleanup for all imported handles.
+9. scene-buffer resource-key lookup and runtime external-buffer registration,
+10. failure-path cleanup for all imported handles.
 
 CuPy is the array wrapper, not necessarily the external-memory importer. A tiny optional compiled
 CUDA helper may be cleaner than pure `ctypes`, because it can own the exact CUDA Runtime structs and
@@ -294,6 +302,9 @@ Required pieces:
 6. import or share synchronization primitives with CUDA,
 7. register the runtime buffer with DRP2 object ids used by scene emission.
 
+These pieces are implementation substrate. They should be exercised by raw smokes and internal
+helpers, but public examples should not call them directly.
+
 The runtime exposes a registration path:
 
 ```c
@@ -305,7 +316,7 @@ bool dvz_drp2_runtime_register_external_buffer(
 
 The important point is that external buffers are registered with a live runtime, not serialized as
 portable scene data. The runtime borrows the registered `DvzBuffer`; the caller must keep the buffer
-alive until the runtime is reset or destroyed. The retained-scene route is:
+alive until the runtime is reset or destroyed. The internal retained-scene route is:
 
 1. create a `DvzSceneBuffer` for the external attribute,
 2. bind it to the visual attribute with `dvz_visual_set_attr_buffer()`,
@@ -314,7 +325,9 @@ alive until the runtime is reset or destroyed. The retained-scene route is:
 5. register the live `DvzBuffer` on the runtime with `dvz_drp2_runtime_register_external_buffer()`.
 
 This avoids scanning draw commands and keeps examples tied to scene resources rather than private
-vklite buffer internals. No generic raw Vulkan handle API is required for normal scene users.
+vklite buffer internals. No generic raw Vulkan handle API is required for normal scene users. The
+scene-level Python helper should own these steps so examples bind a shared scene buffer and render
+without mentioning DRP2.
 
 
 ## Current Low-Level Status
@@ -496,9 +509,9 @@ Start with narrow tests before adding Python examples:
 
 The current raw smoke is intentionally below the public API: it proves Vulkan-owned buffer ->
 CUDA/CuPy import -> explicit timeline wait -> DRP2 render/readback. The scene external-buffer hook
-now exists. `examples/python/features/cupy_particles.py` uses retained scene resources plus the
-resource-key/label-id registration path rather than low-level DRP2 command construction: CuPy runs
-the particle compute logic, and Datoviz renders the shared position buffer as a point visual.
+now exists. `examples/python/features/cupy_particles.py` should use retained scene resources through
+the internal scene-level helper: CuPy runs the particle update logic, and Datoviz renders the shared
+position buffer as a point visual without exposing the resource-key/label-id registration path.
 
 The existing CUDA import/export tests in `src/vk/tests/test_memory.c` are the right low-level
 starting point, but the public example should only be added after the synchronization path is tested
@@ -511,7 +524,7 @@ The first public example should visualize a dynamic point cloud:
 
 1. create `N` positions as a Datoviz shared CUDA array,
 2. create static scene-owned colors and sizes,
-3. run a CuPy kernel each frame that updates positions,
+3. run CuPy array operations each frame that update positions,
 4. render the point visual directly from the shared position buffer,
 5. report frame rate and update rate separately.
 
