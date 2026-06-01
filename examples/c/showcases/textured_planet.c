@@ -36,7 +36,6 @@
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
-#include "example_gui_controls.h"
 
 
 
@@ -95,13 +94,6 @@ typedef struct PlanetPreset
     const char* texture_path;
     const char* fallback_path;
     float spin_speed;
-    float light_direction[3];
-    float ambient;
-    float diffuse;
-    float specular;
-    float shininess;
-    float roughness;
-    float rim_strength;
 } PlanetPreset;
 
 
@@ -111,17 +103,14 @@ typedef struct TexturedPlanetState
     DvzVisual* visual;
     DvzAnimation* spin;
     PlanetTexture textures[PLANET_COUNT];
+    vec3* base_positions;
+    vec3* base_normals;
+    vec3* rotated_positions;
+    vec3* rotated_normals;
+    uint32_t vertex_count;
     int planet_index;
     bool auto_rotate;
-    bool standard_material;
     float spin_speed;
-    float light_direction[3];
-    float ambient;
-    float diffuse;
-    float specular;
-    float shininess;
-    float roughness;
-    float rim_strength;
 } TexturedPlanetState;
 
 
@@ -133,13 +122,6 @@ static const PlanetPreset PLANETS[PLANET_COUNT] = {
             .texture_path = EARTH_TEXTURE_PATH,
             .fallback_path = EARTH_TEXTURE_FALLBACK_PATH,
             .spin_speed = ROTATION_SPEED_RAD_PER_SEC,
-            .light_direction = {-0.034f, -0.035f, +0.067f},
-            .ambient = 0.734f,
-            .diffuse = 0.637f,
-            .specular = 0.188f,
-            .shininess = 24.602f,
-            .roughness = 0.58f,
-            .rim_strength = 0.08f,
         },
     [PLANET_MARS] =
         {
@@ -147,13 +129,6 @@ static const PlanetPreset PLANETS[PLANET_COUNT] = {
             .texture_path = MARS_TEXTURE_PATH,
             .fallback_path = MARS_TEXTURE_FALLBACK_PATH,
             .spin_speed = 0.12f,
-            .light_direction = {-0.14f, -0.05f, +0.10f},
-            .ambient = 0.68f,
-            .diffuse = 0.72f,
-            .specular = 0.09f,
-            .shininess = 18.0f,
-            .roughness = 0.74f,
-            .rim_strength = 0.05f,
         },
 };
 
@@ -538,7 +513,120 @@ fail:
 
 
 /**
- * Reset GUI-controlled animation and material parameters from the selected preset.
+ * Copy the immutable sphere geometry into animation scratch buffers.
+ *
+ * @param state example state
+ * @param geometry sphere geometry
+ * @return whether all buffers were allocated and filled
+ */
+static bool _state_set_base_geometry(TexturedPlanetState* state, const DvzGeometry* geometry)
+{
+    ANN(state);
+    ANN(geometry);
+    if (geometry->vertex_count == 0 || geometry->positions == NULL)
+        return false;
+
+    state->vertex_count = geometry->vertex_count;
+    state->base_positions = (vec3*)dvz_calloc(state->vertex_count, sizeof(vec3));
+    state->base_normals = (vec3*)dvz_calloc(state->vertex_count, sizeof(vec3));
+    state->rotated_positions = (vec3*)dvz_calloc(state->vertex_count, sizeof(vec3));
+    state->rotated_normals = (vec3*)dvz_calloc(state->vertex_count, sizeof(vec3));
+    if (
+        state->base_positions == NULL || state->base_normals == NULL ||
+        state->rotated_positions == NULL || state->rotated_normals == NULL)
+    {
+        return false;
+    }
+
+    for (uint32_t i = 0; i < state->vertex_count; i++)
+    {
+        for (uint32_t k = 0; k < 3; k++)
+        {
+            state->base_positions[i][k] = (float)geometry->positions[i][k];
+            state->rotated_positions[i][k] = state->base_positions[i][k];
+        }
+        if (geometry->normals != NULL)
+        {
+            for (uint32_t k = 0; k < 3; k++)
+            {
+                state->base_normals[i][k] = (float)geometry->normals[i][k];
+                state->rotated_normals[i][k] = state->base_normals[i][k];
+            }
+        }
+        else
+        {
+            const float x = state->base_positions[i][0];
+            const float y = state->base_positions[i][1];
+            const float z = state->base_positions[i][2];
+            const float norm = sqrtf(x * x + y * y + z * z);
+            if (norm > 0.0f)
+            {
+                state->base_normals[i][0] = x / norm;
+                state->base_normals[i][1] = y / norm;
+                state->base_normals[i][2] = z / norm;
+            }
+            state->rotated_normals[i][0] = state->base_normals[i][0];
+            state->rotated_normals[i][1] = state->base_normals[i][1];
+            state->rotated_normals[i][2] = state->base_normals[i][2];
+        }
+    }
+    return true;
+}
+
+
+
+/**
+ * Rotate the planet mesh around its polar axis.
+ *
+ * The sky is ordinary world geometry and must not be touched here; user arcball input rotates the
+ * camera, while this animation updates only the planet visual attributes.
+ *
+ * @param animation animation handle
+ * @param value current phase angle
+ * @param delta phase delta
+ * @param user_data example state
+ */
+static void _planet_spin_step(
+    DvzAnimation* animation, float value, float delta, void* user_data)
+{
+    (void)animation;
+    (void)delta;
+    TexturedPlanetState* state = (TexturedPlanetState*)user_data;
+    if (
+        state == NULL || state->visual == NULL || state->base_positions == NULL ||
+        state->base_normals == NULL || state->rotated_positions == NULL ||
+        state->rotated_normals == NULL || state->vertex_count == 0)
+    {
+        return;
+    }
+
+    const float c = cosf(value);
+    const float s = sinf(value);
+    for (uint32_t i = 0; i < state->vertex_count; i++)
+    {
+        const float px = state->base_positions[i][0];
+        const float py = state->base_positions[i][1];
+        state->rotated_positions[i][0] = c * px - s * py;
+        state->rotated_positions[i][1] = s * px + c * py;
+        state->rotated_positions[i][2] = state->base_positions[i][2];
+
+        const float nx = state->base_normals[i][0];
+        const float ny = state->base_normals[i][1];
+        state->rotated_normals[i][0] = c * nx - s * ny;
+        state->rotated_normals[i][1] = s * nx + c * ny;
+        state->rotated_normals[i][2] = state->base_normals[i][2];
+    }
+
+    (void)dvz_visual_set_data_range(
+        state->visual, "position", state->rotated_positions, 0, state->vertex_count);
+    (void)dvz_visual_set_data_range(
+        state->visual, "normal", state->rotated_normals, 0, state->vertex_count);
+}
+
+
+
+/**
+ * Reset GUI-controlled animation parameters from the selected preset.
  *
  * @param state example state
  */
@@ -550,51 +638,7 @@ static void _state_reset_controls(TexturedPlanetState* state)
     const PlanetPreset* preset = &PLANETS[state->planet_index];
 
     state->auto_rotate = true;
-    state->standard_material = false;
     state->spin_speed = preset->spin_speed;
-    state->light_direction[0] = preset->light_direction[0];
-    state->light_direction[1] = preset->light_direction[1];
-    state->light_direction[2] = preset->light_direction[2];
-    state->ambient = preset->ambient;
-    state->diffuse = preset->diffuse;
-    state->specular = preset->specular;
-    state->shininess = preset->shininess;
-    state->roughness = preset->roughness;
-    state->rim_strength = preset->rim_strength;
-}
-
-
-
-/**
- * Apply GUI-controlled material parameters to the textured mesh.
- *
- * @param state example state
- */
-static void _state_apply_material(TexturedPlanetState* state)
-{
-    ANN(state);
-    if (state->visual == NULL)
-        return;
-
-    DvzMaterialDesc material =
-        state->standard_material ? dvz_standard_material_desc() : dvz_phong_material_desc();
-    material.light_direction[0] = state->light_direction[0];
-    material.light_direction[1] = state->light_direction[1];
-    material.light_direction[2] = state->light_direction[2];
-    if (state->standard_material)
-    {
-        material.standard.roughness = state->roughness;
-        material.standard.specular = state->specular;
-        material.standard.rim_strength = state->rim_strength;
-    }
-    else
-    {
-        material.phong.ambient = state->ambient;
-        material.phong.diffuse = state->diffuse;
-        material.phong.specular = state->specular;
-        material.phong.shininess = state->shininess;
-    }
-    (void)dvz_visual_set_material(state->visual, &material);
 }
 
 
@@ -652,7 +696,6 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
 
     static const char* const planet_items[PLANET_COUNT] = {"Earth", "Mars"};
     bool planet_changed = false;
-    bool material_changed = false;
     bool spin_changed = false;
     bool reset = false;
 
@@ -667,27 +710,6 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
         spin_changed |= dvz_gui_slider_float_format(
             gui, "Rotation speed", &state->spin_speed, 0.0f, 0.8f, "%.2f rad/s");
 
-        dvz_gui_separator_text(gui, "Lighting");
-        material_changed |=
-            dvz_gui_slider_float3(gui, "Light direction", state->light_direction, -1.0f, 1.0f);
-        DvzExampleGuiMaterialControls material = {
-            .standard_material = state->standard_material,
-            .ambient = state->ambient,
-            .diffuse = state->diffuse,
-            .specular = state->specular,
-            .shininess = state->shininess,
-            .roughness = state->roughness,
-            .rim_strength = state->rim_strength,
-        };
-        material_changed |= dvz_example_gui_material(gui, &material);
-        state->standard_material = material.standard_material;
-        state->ambient = material.ambient;
-        state->diffuse = material.diffuse;
-        state->specular = material.specular;
-        state->shininess = material.shininess;
-        state->roughness = material.roughness;
-        state->rim_strength = material.rim_strength;
-
         reset = dvz_gui_button(gui, "Reset");
     }
     dvz_gui_end(gui);
@@ -696,17 +718,13 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
     {
         _state_reset_controls(state);
         _state_apply_planet(state);
-        material_changed = true;
         spin_changed = true;
     }
     if (reset)
     {
         _state_reset_controls(state);
-        material_changed = true;
         spin_changed = true;
     }
-    if (material_changed)
-        _state_apply_material(state);
     if (spin_changed)
         _state_apply_spin(state);
 }
@@ -770,6 +788,9 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");
     gui_state.visual = visual;
 
+    ok = _state_set_base_geometry(&gui_state, sphere);
+    EXAMPLE_CHECK(ok, "failed to copy planet geometry");
+
     ok = example_mesh_geometry(visual, sphere);
     EXAMPLE_CHECK(ok, "example_mesh_geometry() failed");
     dvz_geometry_destroy(sphere);
@@ -783,7 +804,6 @@ int main(int argc, char** argv)
 
     ok = dvz_visual_set_field(visual, "texture", gui_state.textures[gui_state.planet_index].field);
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(texture) failed");
-    _state_apply_material(&gui_state);
 
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
@@ -810,10 +830,16 @@ int main(int argc, char** argv)
     rc = dvz_view_capture_start(win, &capture);
     EXAMPLE_CHECK(rc == 0, "dvz_view_capture_start() failed");
 
-    DvzAnimation* spin = dvz_anim_arcball_spin(
-        scene, arcball, (vec3){0.0f, 0.0f, 1.0f}, gui_state.spin_speed,
-        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
+    DvzAnimation* spin = dvz_anim_phase(
+        scene, &(DvzAnimPhaseDesc){
+                   .initial = 0.0f,
+                   .speed = gui_state.spin_speed,
+                   .wrap_min = 0.0f,
+                   .wrap_max = 2.0f * (float)M_PI,
+                   .callback = _planet_spin_step,
+                   .user_data = &gui_state,
+               });
+    EXAMPLE_CHECK(spin != NULL, "dvz_anim_phase() failed");
     gui_state.spin = spin;
     dvz_anim_start(spin, 0.0);
 
@@ -831,5 +857,9 @@ cleanup:
         dvz_scene_destroy(scene);
     for (uint32_t i = 0; i < PLANET_COUNT; i++)
         dvz_free(gui_state.textures[i].pixels);
+    dvz_free(gui_state.base_positions);
+    dvz_free(gui_state.base_normals);
+    dvz_free(gui_state.rotated_positions);
+    dvz_free(gui_state.rotated_normals);
     return ret;
 }
