@@ -5,6 +5,9 @@ Datoviz owns a renderable position buffer and exposes it as a CuPy array. CuPy u
 shared scene attribute directly with array operations, and Datoviz renders points from the same GPU
 memory. There is no per-frame CPU upload for particle positions.
 
+The default mode opens a live GLFW window and runs until the window is closed. Use --offscreen for
+bounded PNG capture.
+
 Current platform target: Linux + NVIDIA CUDA + CuPy + Vulkan opaque-FD external memory.
 """
 
@@ -31,6 +34,7 @@ WIDTH = 1024
 HEIGHT = 768
 DEFAULT_PARTICLES = 65536
 DEFAULT_FRAMES = 180
+DEFAULT_FPS = 60.0
 GOLDEN_ANGLE = 2.39996322972865332
 
 
@@ -80,49 +84,145 @@ def _build_scene(scene, positions: ci.SharedSceneCudaArray, count: int):
     return figure, visual, colors, sizes
 
 
-def _render_particles(
-    app, cp, positions: ci.SharedSceneCudaArray, frames: int, fps: float
-) -> None:
-    idx = cp.arange(positions.count, dtype=cp.float32)
-    u = (idx + cp.float32(0.5)) / cp.float32(positions.count)
-    r0 = cp.sqrt(u)
-    theta0 = idx * cp.float32(GOLDEN_ANGLE)
-    dt = 1.0 / fps
-    for frame in range(frames):
-        t = cp.float32(frame * dt)
-        with positions.cuda_write() as pos:
-            arm = cp.float32(6.0) * r0 + cp.float32(0.65) * cp.sin(
-                cp.float32(0.7) * t + cp.float32(17.0) * u
+class ParticleStepper:
+    def __init__(self, cp, positions: ci.SharedSceneCudaArray, fps: float):
+        self.cp = cp
+        self.positions = positions
+        self.dt = 1.0 / fps
+        self.frame = 0
+        idx = cp.arange(positions.count, dtype=cp.float32)
+        self.u = (idx + cp.float32(0.5)) / cp.float32(positions.count)
+        self.r0 = cp.sqrt(self.u)
+        self.theta0 = idx * cp.float32(GOLDEN_ANGLE)
+
+    def update(self) -> None:
+        cp = self.cp
+        t = cp.float32(self.frame * self.dt)
+        with self.positions.cuda_write() as pos:
+            arm = cp.float32(6.0) * self.r0 + cp.float32(0.65) * cp.sin(
+                cp.float32(0.7) * t + cp.float32(17.0) * self.u
             )
-            spin = t * (cp.float32(0.25) + cp.float32(1.45) * (cp.float32(1.0) - r0))
+            spin = t * (
+                cp.float32(0.25) + cp.float32(1.45) * (cp.float32(1.0) - self.r0)
+            )
             wave = cp.float32(0.045) * cp.sin(
-                cp.float32(10.0) * r0
+                cp.float32(10.0) * self.r0
                 - cp.float32(2.2) * t
-                + cp.float32(3.0) * cp.sin(theta0)
+                + cp.float32(3.0) * cp.sin(self.theta0)
             )
-            pulse = cp.float32(0.035) * cp.sin(cp.float32(3.0) * t + cp.float32(25.0) * u)
-            radius = cp.float32(0.88) * r0 + wave + pulse
-            theta = theta0 + arm + spin
+            pulse = cp.float32(0.035) * cp.sin(cp.float32(3.0) * t + cp.float32(25.0) * self.u)
+            radius = cp.float32(0.88) * self.r0 + wave + pulse
+            theta = self.theta0 + arm + spin
 
             pos[:, 0] = radius * cp.cos(theta)
             pos[:, 1] = radius * cp.sin(theta)
             pos[:, 2] = (
                 cp.float32(0.16)
                 * cp.sin(cp.float32(2.0) * theta - cp.float32(1.7) * t)
-                * (cp.float32(1.0) - r0)
+                * (cp.float32(1.0) - self.r0)
             )
-        positions.wait_for_cuda_writes()
+        self.positions.wait_for_cuda_writes()
+        self.frame += 1
+
+
+def _render_particles(app, stepper: ParticleStepper, frames: int) -> None:
+    for _frame in range(frames):
+        stepper.update()
         if dvz.dvz_app_render_once(app) != 0:
             raise RuntimeError('dvz_app_render_once() failed')
+
+
+def _borrowed_app_config():
+    app_config = dvz.dvz_app_config()
+    app_config.instance_extension_count = 0
+    app_config.instance_extensions = None
+    app_config.enable_canvas_extensions = False
+    app_config.enable_glfw_extensions = False
+    return app_config
+
+
+def _create_live_app(scene, figure, positions: ci.SharedSceneCudaArray, refresh_static_attrs):
+    resources = positions.create_app_resources(figure)
+    refresh_static_attrs()
+    app_config = _borrowed_app_config()
+    app = dvz.dvz_app_with_resources(scene, ctypes.byref(app_config), ctypes.byref(resources))
+    if not app:
+        raise ci.InteropSkip('dvz_app_with_resources() failed')
+    view = dvz.dvz_view_glfw(app, figure, WIDTH, HEIGHT, b'cupy_particles')
+    if not view:
+        dvz.dvz_app_destroy(app)
+        raise ci.InteropSkip('dvz_view_glfw() failed')
+    return app, view
+
+
+def _run_live(
+    cp, scene, figure, positions, refresh_static_attrs, particles: int, frames: int, fps: float
+):
+    app, view = _create_live_app(scene, figure, positions, refresh_static_attrs)
+    stepper = ParticleStepper(cp, positions, fps)
+    stepper.update()
+
+    def on_frame(view, user_data) -> None:
+        del user_data
+        stepper.update()
+        dvz.dvz_view_request_frame(view)
+
+    dvz.dvz_view_set_frame_callback(view, on_frame, None)
+    dvz.dvz_view_request_frame(view)
+    dvz.dvz_app_run(app, frames)
+    print(
+        f'cupy particles: OK ({particles} particles, '
+        f'{"live" if frames == 0 else f"{frames} live frames"}, zero-copy positions)'
+    )
+    return app
+
+
+def _run_offscreen(
+    cp,
+    scene,
+    figure,
+    positions,
+    refresh_static_attrs,
+    particles: int,
+    frames: int,
+    fps: float,
+    output: Path,
+):
+    app, view = positions.create_offscreen_app(
+        scene,
+        figure,
+        WIDTH,
+        HEIGHT,
+        refresh_after_resource_resolution=refresh_static_attrs,
+    )
+    stepper = ParticleStepper(cp, positions, fps)
+    _render_particles(app, stepper, frames)
+
+    if dvz.dvz_view_capture_png(view, str(output).encode()) != 0:
+        raise RuntimeError('dvz_view_capture_png() failed')
+    if not output.exists() or output.stat().st_size == 0:
+        raise RuntimeError('PNG capture was not written')
+    print(
+        f'cupy particles: OK ({particles} particles, {frames} offscreen frames, '
+        f'zero-copy positions, output={output})'
+    )
+    return app
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--particles', type=int, default=DEFAULT_PARTICLES)
-    parser.add_argument('--frames', type=int, default=DEFAULT_FRAMES)
-    parser.add_argument('--fps', type=float, default=60.0)
-    parser.add_argument('--output', type=Path, help='PNG output path for the last rendered frame')
+    parser.add_argument(
+        '--frames',
+        type=int,
+        help='live frames to run (0 = until window close); offscreen default is 180',
+    )
+    parser.add_argument('--fps', type=float, default=DEFAULT_FPS)
+    parser.add_argument('--offscreen', action='store_true', help='render bounded frames to a PNG')
+    parser.add_argument('--output', type=Path, help='offscreen PNG path for the last rendered frame')
     args = parser.parse_args(argv)
+    if args.output is not None and not args.offscreen:
+        parser.error('--output requires --offscreen')
 
     try:
         ci.require_linux()
@@ -132,9 +232,10 @@ def main(argv: list[str] | None = None) -> int:
     except ci.InteropSkip as exc:
         return _skip(str(exc))
 
+    frames = args.frames if args.frames is not None else (DEFAULT_FRAMES if args.offscreen else 0)
     output = args.output
     tempdir = None
-    if output is None:
+    if args.offscreen and output is None:
         tempdir = tempfile.TemporaryDirectory(prefix='datoviz-cupy-particles-')
         output = Path(tempdir.name) / 'cupy_particles.png'
 
@@ -153,28 +254,37 @@ def main(argv: list[str] | None = None) -> int:
                 def refresh_static_attrs() -> None:
                     _set_static_attrs(visual, colors, sizes, args.particles)
 
-                app, view = positions.create_offscreen_app(
-                    scene,
-                    figure,
-                    WIDTH,
-                    HEIGHT,
-                    refresh_after_resource_resolution=refresh_static_attrs,
-                )
-
-                _render_particles(app, cp, positions, args.frames, args.fps)
-
-                if dvz.dvz_view_capture_png(view, str(output).encode()) != 0:
-                    raise RuntimeError('dvz_view_capture_png() failed')
-                if not output.exists() or output.stat().st_size == 0:
-                    raise RuntimeError('PNG capture was not written')
-                print(
-                    f'cupy particles: OK ({args.particles} particles, {args.frames} frames, '
-                    f'zero-copy positions, output={output})'
-                )
+                if args.offscreen:
+                    if output is None:
+                        raise RuntimeError('offscreen output path was not initialized')
+                    app = _run_offscreen(
+                        cp,
+                        scene,
+                        figure,
+                        positions,
+                        refresh_static_attrs,
+                        args.particles,
+                        frames,
+                        args.fps,
+                        output,
+                    )
+                else:
+                    app = _run_live(
+                        cp,
+                        scene,
+                        figure,
+                        positions,
+                        refresh_static_attrs,
+                        args.particles,
+                        frames,
+                        args.fps,
+                    )
             finally:
                 if app:
                     dvz.dvz_app_destroy(app)
                     app = None
+    except ci.InteropSkip as exc:
+        return _skip(str(exc))
     finally:
         if app:
             dvz.dvz_app_destroy(app)
