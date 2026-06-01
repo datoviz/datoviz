@@ -1511,12 +1511,7 @@ function makeDepthStencilAttachment(device, state, textures, command) {
     return undefined;
   }
   const texture = isBrowserCanvasTextureId(attachment.texture_id)
-    ? device.createTexture({
-        label: command.label === undefined ? "transient-depth" : `${command.label}:depth`,
-        size: renderPassExtent(state, command),
-        format: "depth32float",
-        usage: GPUTextureUsage.RENDER_ATTACHMENT,
-      })
+    ? browserCanvasDepthTexture(device, state, renderPassExtent(state, command), command.label)
     : required(textures.get(attachment.texture_id), `unknown depth texture ${attachment.texture_id}`);
   return {
     view: texture.createView(),
@@ -1789,6 +1784,68 @@ function submitCommandBuffer(record) {
 
 
 
+function retireSubmittedRefs(record) {
+  if (!record.submitted) {
+    return;
+  }
+  for (const objectRecord of record.refs) {
+    objectRecord.submittedRefs = Math.max(0, objectRecord.submittedRefs - 1);
+  }
+  record.submitted = false;
+}
+
+
+
+function destroyBrowserCanvasDepth(state) {
+  const depth = state.browserCanvasDepth;
+  if (depth?.texture !== undefined && typeof depth.texture.destroy === "function") {
+    depth.texture.destroy();
+  }
+  state.browserCanvasDepth = null;
+}
+
+
+
+function browserCanvasDepthTexture(device, state, extent, label = undefined) {
+  const width = required(extent.width, "browser depth extent needs width");
+  const height = required(extent.height, "browser depth extent needs height");
+  const depth = state.browserCanvasDepth;
+  if (
+    depth !== null &&
+    depth.width === width &&
+    depth.height === height &&
+    depth.format === "depth32float"
+  ) {
+    return depth.texture;
+  }
+  destroyBrowserCanvasDepth(state);
+  const texture = device.createTexture({
+    label: label === undefined ? "browser-canvas-depth" : `${label}:browser-depth`,
+    size: { width, height },
+    format: "depth32float",
+    usage: GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+  state.browserCanvasDepth = { texture, width, height, format: "depth32float" };
+  return texture;
+}
+
+
+
+function destroyExecutionState(state) {
+  if (state === null || state === undefined) {
+    return;
+  }
+  destroyBrowserCanvasDepth(state);
+  for (const record of state.objects.values()) {
+    if (!record.destroyed && typeof record.object.destroy === "function") {
+      record.object.destroy();
+    }
+    record.destroyed = true;
+  }
+}
+
+
+
 function createExecutionState() {
   return {
     objects: new Map(),
@@ -1800,6 +1857,7 @@ function createExecutionState() {
     bindGroups: new Map(),
     shaders: new Map(),
     pipelines: new Map(),
+    browserCanvasDepth: null,
   };
 }
 
@@ -1831,6 +1889,7 @@ function resourceStats(state) {
     bindGroups: state.bindGroups.size,
     shaders: state.shaders.size,
     pipelines: state.pipelines.size,
+    browserCanvasDepthTextures: state.browserCanvasDepth === null ? 0 : 1,
     byKind,
     refs: {
       open: openRefs,
@@ -1911,6 +1970,7 @@ export class Drp2WebGpuRuntime {
   async load(stream, options = {}) {
     this.stream = stream;
     this.options = { ...this.options, ...options };
+    destroyExecutionState(this.state);
     this.state = createExecutionState();
 
     const split = splitStreamCommands(stream);
@@ -1954,6 +2014,7 @@ export class Drp2WebGpuRuntime {
       {
         ...this.options,
         ...options,
+        retireSubmittedRefs: options.retireSubmittedRefs ?? true,
         commands,
         state: this.state,
       },
@@ -2999,13 +3060,20 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         if (new Set(ids).size !== ids.length) {
           throw new Error("duplicate command buffer id in QueueSubmit");
         }
-        const submitBuffers = ids.map((id) =>
-          submitCommandBuffer(required(commandBuffers.get(id), `unknown command buffer ${id}`)),
+        const submittedRecords = ids.map((id) =>
+          required(commandBuffers.get(id), `unknown command buffer ${id}`),
         );
+        const submitBuffers = submittedRecords.map((record) => submitCommandBuffer(record));
         device.queue.submit(submitBuffers);
         const readbacks = command.readbacks ?? [];
-        if (readbacks.length > 0) {
+        const retireSubmitted = options.retireSubmittedRefs === true;
+        if ((readbacks.length > 0 || retireSubmitted) && typeof device.queue.onSubmittedWorkDone === "function") {
           await device.queue.onSubmittedWorkDone();
+        }
+        if (retireSubmitted) {
+          for (const record of submittedRecords) {
+            retireSubmittedRefs(record);
+          }
         }
         for (const readback of readbacks) {
           const bufferRecord = requireLiveRecord(state, readback.buffer_id, "buffer");

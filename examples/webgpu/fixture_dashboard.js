@@ -161,10 +161,11 @@ function assertResourceStatsStable(actual, expected, label) {
 
 
 
-function assertNoOpenRecordedRefs(stats, label) {
-  if (stats.refs.open !== 0 || stats.refs.recorded !== 0) {
+function assertNoActiveRefs(stats, label) {
+  if (stats.refs.open !== 0 || stats.refs.recorded !== 0 || stats.refs.submitted !== 0) {
     throw new Error(
-      `${label}: resource refs leaked open=${stats.refs.open} recorded=${stats.refs.recorded}`,
+      `${label}: resource refs leaked open=${stats.refs.open} recorded=${stats.refs.recorded} ` +
+        `submitted=${stats.refs.submitted}`,
     );
   }
 }
@@ -219,9 +220,11 @@ async function runStressRow(row) {
       },
     );
     await retainedRuntime.load(stream);
+    await retainedRuntime.render();
+    assertNoActiveRefs(retainedRuntime.resourceStats(), `${row.name} frame 1`);
 
     const stableStats = comparableResourceStats(retainedRuntime.resourceStats());
-    for (let i = 0; i < STRESS_FRAME_COUNT; i++) {
+    for (let i = 1; i < STRESS_FRAME_COUNT; i++) {
       await retainedRuntime.render();
       const stats = retainedRuntime.resourceStats();
       assertResourceStatsStable(
@@ -229,7 +232,7 @@ async function runStressRow(row) {
         stableStats,
         `${row.name} frame ${i + 1}`,
       );
-      assertNoOpenRecordedRefs(stats, `${row.name} frame ${i + 1}`);
+      assertNoActiveRefs(stats, `${row.name} frame ${i + 1}`);
     }
 
     const stats = retainedRuntime.resourceStats();
@@ -253,7 +256,7 @@ async function runDemoResizeStress(row) {
   await session.render();
   const stats = session.resourceStats();
   assertResourceStatsStable(comparableResourceStats(stats), stableStats, row.name);
-  assertNoOpenRecordedRefs(stats, row.name);
+  assertNoActiveRefs(stats, row.name);
 
   viewportEl.width = oldWidth;
   viewportEl.height = oldHeight;
@@ -269,13 +272,13 @@ async function runDemoStreamReloadStress(row) {
 
   await session.loadStream("texture_sampling_wgsl");
   await session.render();
-  assertNoOpenRecordedRefs(session.resourceStats(), `${row.name} texture reload`);
+  assertNoActiveRefs(session.resourceStats(), `${row.name} texture reload`);
 
   await session.loadStream("scene_point_wgsl");
   await session.render();
   const stats = session.resourceStats();
   assertResourceStatsStable(comparableResourceStats(stats), pointStats, `${row.name} point reload`);
-  assertNoOpenRecordedRefs(stats, `${row.name} point reload`);
+  assertNoActiveRefs(stats, `${row.name} point reload`);
   setStressStatus(row, "pass", stressDetail(stats, 3));
 }
 

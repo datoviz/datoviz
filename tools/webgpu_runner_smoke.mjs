@@ -228,6 +228,7 @@ function renderPipeline(colorTargets, depthStencil = undefined) {
     cmd: 'CreateRenderPipeline',
     id: 10,
     vertex_buffer_slots: 0,
+    vertex_buffers: [],
     vertex_shader_module_id: 9000,
     fragment_shader_module_id: 9001,
     topology: 'triangle-list',
@@ -358,9 +359,18 @@ async function smokeRepeatedRuntimeStreamObject(Drp2WebGpuRuntime, stream, label
     requireExplicitPipelineMetadata: true,
   });
   await runtime.load(stream);
+  await runtime.render();
+  const firstStats = runtime.resourceStats();
+  if (firstStats.refs.open !== 0 || firstStats.refs.recorded !== 0 || firstStats.refs.submitted !== 0) {
+    throw new Error(
+      `${label}: resource refs leaked after repeated frame 1: ` +
+        `open=${firstStats.refs.open} recorded=${firstStats.refs.recorded} ` +
+        `submitted=${firstStats.refs.submitted}`,
+    );
+  }
 
   const stableStats = comparableResourceStats(runtime.resourceStats());
-  for (let i = 0; i < 10; i++) {
+  for (let i = 1; i < 10; i++) {
     await runtime.render();
     const stats = runtime.resourceStats();
     assertResourceStatsStable(
@@ -368,13 +378,90 @@ async function smokeRepeatedRuntimeStreamObject(Drp2WebGpuRuntime, stream, label
       stableStats,
       `${label}: resource stats changed after repeated frame ${i + 1}`,
     );
-    if (stats.refs.open !== 0 || stats.refs.recorded !== 0) {
+    if (stats.refs.open !== 0 || stats.refs.recorded !== 0 || stats.refs.submitted !== 0) {
       throw new Error(
         `${label}: resource refs leaked after repeated frame ${i + 1}: ` +
-          `open=${stats.refs.open} recorded=${stats.refs.recorded}`,
+          `open=${stats.refs.open} recorded=${stats.refs.recorded} ` +
+          `submitted=${stats.refs.submitted}`,
       );
     }
   }
+}
+
+async function smokeDestroyAfterSubmittedWork(executeDrp2Stream) {
+  await executeDrp2Stream(
+    device,
+    context,
+    'bgra8unorm',
+    {
+      commands: [
+        ...header,
+        { cmd: 'CreateBuffer', id: 1, size: 4, usage: ['COPY_SRC'] },
+        { cmd: 'CreateBuffer', id: 2, size: 4, usage: ['COPY_DST'] },
+        { cmd: 'BeginCommandEncoder', id: 10 },
+        {
+          cmd: 'CopyBufferToBuffer',
+          encoder_id: 10,
+          src_buffer_id: 1,
+          src_offset: 0,
+          dst_buffer_id: 2,
+          dst_offset: 0,
+          size: 4,
+        },
+        { cmd: 'FinishCommandEncoder', encoder_id: 10, command_buffer_id: 11 },
+        { cmd: 'QueueSubmit', command_buffer_id: 11 },
+        { cmd: 'DestroyBuffer', buffer_id: 1 },
+        { cmd: 'DestroyBuffer', buffer_id: 2 },
+      ],
+    },
+    { retireSubmittedRefs: true },
+  );
+}
+
+async function smokeBrowserCanvasDepthCache(Drp2WebGpuRuntime) {
+  const runtime = new Drp2WebGpuRuntime(device, context, 'rgba8unorm', {
+    requireExplicitBindGroupLayouts: true,
+    requireExplicitPipelineMetadata: true,
+  });
+  await runtime.load({
+    commands: [
+      ...header,
+      ...triangleShaders,
+      renderPipeline(
+        [{ format: 'rgba8unorm', write_mask: ['all'] }],
+        { format: 'depth32float', depth_write_enabled: true, depth_compare: 'less' },
+      ),
+      { cmd: 'BeginCommandEncoder', id: 20 },
+      renderPass(
+        [colorAttachment(0)],
+        {
+          texture_id: 0,
+          depth_load_op: 'clear',
+          depth_store_op: 'store',
+          depth_clear_value: 1,
+        },
+      ),
+      { cmd: 'SetPipeline', pass_id: 21, pipeline_id: 10 },
+      { cmd: 'Draw', pass_id: 21, vertex_count: 3, instance_count: 1 },
+      { cmd: 'EndRenderPass', pass_id: 21 },
+      { cmd: 'FinishCommandEncoder', encoder_id: 20, command_buffer_id: 22 },
+      { cmd: 'QueueSubmit', command_buffer_id: 22 },
+    ],
+  });
+  await runtime.render();
+  const firstStats = comparableResourceStats(runtime.resourceStats());
+  if (firstStats.browserCanvasDepthTextures !== 1) {
+    throw new Error(
+      `browser canvas depth cache expected one texture, got ` +
+        `${firstStats.browserCanvasDepthTextures}`,
+    );
+  }
+  await runtime.render();
+  assertResourceStatsStable(
+    comparableResourceStats(runtime.resourceStats()),
+    firstStats,
+    'browser canvas depth cache changed across retained renders',
+  );
 }
 
 async function smokeStreamPathsOnly(Drp2WebGpuRuntime, executeDrp2Stream, paths) {
@@ -607,6 +694,7 @@ async function main() {
     },
     'recorded work',
   );
+  await smokeDestroyAfterSubmittedWork(executeDrp2Stream);
 
   await expectFailure(
     executeDrp2Stream,
@@ -746,6 +834,7 @@ async function main() {
   }
 
   await smokeRepeatedRuntimeFrames(Drp2WebGpuRuntime);
+  await smokeBrowserCanvasDepthCache(Drp2WebGpuRuntime);
   await smokeDemoPath(WebGpuDemoSession);
 
   console.log(
