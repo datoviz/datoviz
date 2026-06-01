@@ -21,6 +21,11 @@ Current slice update, 2026-06-01:
    exposes wait/signal calls, and owns cleanup.
 6. `dvz_interop_gpu_ctx()` creates the advanced exportable GPU context used by raw Python smoke
    setup. This remains binding substrate, not the final high-level Python API.
+7. `tools/bindings/ctypes_cupy_smoke.py --export-only` now creates a Vulkan-owned
+   vertex/storage buffer, exports memory and timeline semaphore FDs, and closes them without
+   touching private `DvzBuffer` internals. When CuPy is installed, the full smoke imports the
+   descriptor with the CUDA bridge, wraps the pointer with `cupy.cuda.UnownedMemory`, writes a
+   small position field, and signals the external timeline semaphore.
 
 Current proof points:
 
@@ -77,14 +82,14 @@ that exported it.
 The buffer-level export helper has landed. Keep the next slice focused on turning the scaffold into
 a real Linux/NVIDIA smoke:
 
-1. Use `dvz_interop_gpu_ctx()` in the smoke to allocate and export a Vulkan-owned
-   vertex/storage buffer through raw ctypes.
-2. Keep the helper internal/advanced and wrap it behind the eventual `datoviz.cuda_array()` API.
-3. The export descriptor is imported by the CUDA bridge.
-4. The bridge maps a CUDA pointer and wraps it as `cupy.cuda.UnownedMemory` plus a CuPy ndarray.
-5. A CuPy kernel writes point positions.
-6. CUDA signals an external timeline semaphore.
-7. The DRP2 registered-buffer render path waits, draws, and verifies by readback.
+1. Connect the smoke to the DRP2 registered-buffer render path so Vulkan waits on the CUDA-ready
+   timeline value, draws positions directly from the shared buffer, and verifies by readback.
+2. Keep `dvz_interop_gpu_ctx()` and the CUDA bridge internal/advanced and wrap them behind the
+   eventual `datoviz.cuda_array()` API.
+3. Prepare the feature example around a dynamic point cloud whose positions are updated by CuPy
+   kernels and rendered by Datoviz without GPU-buffer copies. Prefer a visually interesting but
+   bounded effect such as a 50k-200k particle vortex/flow-field or orbital attractor: static
+   colors/sizes in scene-owned buffers, zero-copy position buffer updated each frame.
 
 The Python object should own imported CUDA external-memory/semaphore handles, the mapped pointer,
 the CuPy owner object, and cleanup. Normal users should synchronize through a context manager:
