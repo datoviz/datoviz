@@ -13,7 +13,9 @@ Current slice update, 2026-06-01:
 2. `DvzInteropBufferExport` now carries a descriptor version, Vulkan usage, DRP2 usage, flags,
    and a Vulkan device UUID validity bit plus UUID bytes for CUDA/Vulkan device matching.
 3. `tools/bindings/ctypes_cupy_smoke.py` is the first Linux/NVIDIA-only Python smoke scaffold; it
-   skips until CuPy and the generated advanced raw ctypes symbols are available.
+   now validates that CuPy and the generated advanced raw ctypes symbols are available.
+4. `spec/bindings/ctypes.yml` includes the memory interop header, forced descriptor layouts, and
+   the buffer-level export helper in the raw smoke symbol set.
 
 Current proof points:
 
@@ -70,10 +72,10 @@ that exported it.
 The buffer-level export helper has landed. Keep the next slice focused on turning the scaffold into
 a real Linux/NVIDIA smoke:
 
-1. Generate or hand-write the advanced raw ctypes surface for `datoviz/vk/memory_interop.h`
-   without exposing it through high-level Python APIs.
-2. Datoviz creates a Vulkan-owned exportable vertex/storage buffer.
-3. The export descriptor is imported by a small CUDA bridge.
+1. Add the tiny CUDA bridge used by the smoke, preferably as a narrow optional compiled helper
+   rather than a high-level package dependency.
+2. Datoviz creates a Vulkan-owned exportable vertex/storage buffer through raw ctypes.
+3. The export descriptor is imported by the CUDA bridge.
 4. The bridge maps a CUDA pointer and wraps it as `cupy.cuda.UnownedMemory` plus a CuPy ndarray.
 5. A CuPy kernel writes point positions.
 6. CUDA signals an external timeline semaphore.
