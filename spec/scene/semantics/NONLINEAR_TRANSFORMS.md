@@ -1,5 +1,8 @@
 # Non-Linear Coordinate Transforms
 
+Status: CPU-side pre-projection is the supported v0.4 pattern. Scene-managed nonlinear transforms
+and GPU projection pre-passes are deferred future work.
+
 This document defines how the scene layer handles non-linear coordinate projections
 such as geographic projections and polar coordinates.
 
@@ -37,11 +40,12 @@ This approach is simple, has no shader complexity, and works correctly with the
 existing F64 precision policy (projection in F64, downcast at UploadNode).
 
 
-## v0.4+ Path: GPU Projection Compute Pre-Pass
+## Deferred Future Path: GPU Projection Compute Pre-Pass
 
 For large datasets where CPU re-projection on every data update is expensive,
 or where the projection must respond to runtime parameters (e.g., globe rotation),
-the scene will support a GPU projection compute pre-pass.
+the future scene-managed path should support a GPU projection compute pre-pass. This section is a
+design direction, not a v0.4 public API contract.
 
 
 ### Model
@@ -97,7 +101,8 @@ The `ComputeNode` is omitted when neither positions nor projection parameters ar
 
 ### Built-In Projections
 
-The following projections will be supported as built-in compute shaders:
+The following projections are candidate built-in compute shaders for the deferred scene-managed
+path:
 
 | Name | Description |
 |---|---|

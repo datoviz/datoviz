@@ -23,10 +23,12 @@ Until a robust, lightweight solution is found, DRP will remain experimental and 
 DRP is designed to:
 
 - Represent GPU rendering pipelines declaratively
-- Support custom visuals and advanced rendering techniques
-- Enable fully dynamic shader graphs and GPU computation workflows
+- Support advanced rendering techniques
+- Carry the narrow compute and render command streams used by the v0.4 scene path
 
-In the long term, it will serve as the backend for custom shaders and rendering pipelines.
+In the long term, it can serve as the backend for custom visual families and broader rendering
+pipelines. General custom render shaders, built-in shader replacement, and shader hot reload are
+deferred from the v0.4 public surface.
 
 ---
 

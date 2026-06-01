@@ -1,13 +1,19 @@
 # Custom Visual Families
 
+Status: deferred design direction. This is not an installed v0.4 public C API.
+
 This document defines how user-defined visual families are registered and integrated
 into the scene layer.
 
 
 ## Purpose
 
-Built-in visual families cover the common scientific visualization cases.
-Custom visual families allow users to define new rendering primitives that:
+Built-in visual families cover the common scientific visualization cases. In v0.4, general custom
+visual/render shaders are explicitly deferred; `DvzSceneCompute` is a narrower advanced/unstable
+compute path and does not expose built-in visual shader replacement.
+
+The future custom visual direction is that custom visual families allow users to define new
+rendering primitives that:
 
 1. participate fully in the scene machinery (picking, selection, invalidation,
    capability adaptation, transparency),

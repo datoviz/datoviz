@@ -20,6 +20,11 @@ explicit status labels:
 | Retained visual families | supported/experimental by visual |
 | Offscreen and GLFW app presentation | supported/experimental |
 | DRP2 command stream and fixtures | advanced/unstable |
+| Scene compute shaders | advanced/unstable |
+| CPU-side nonlinear/geographic pre-projection | supported pattern |
+| Scene-managed nonlinear transforms | deferred |
+| Custom visual/render shaders | deferred |
+| Built-in shader replacement and hot reload | deferred |
 | Raw generated `ctypes` bindings | experimental |
 | WebGPU/WASM path | experimental |
 | Old Datoviz Python plotting API | external/GSP |
