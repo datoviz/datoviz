@@ -74,6 +74,12 @@ def _usage_bits(usage, table: dict[str, int], kind: str) -> int:
     return bits
 
 
+def _usage_names(usage) -> tuple[str, ...]:
+    if isinstance(usage, str):
+        return (usage,)
+    return tuple(usage)
+
+
 def _require_runtime():
     try:
         _runtime.require_linux()
@@ -101,10 +107,8 @@ class SceneCudaArray:
         self.scene = scene
         self.shape = _normalize_shape(shape)
         self.dtype = _normalize_dtype(dtype)
-        self.usage = tuple(usage) if not isinstance(usage, str) else (usage,)
-        self.runtime_usage = (
-            self.usage if runtime_usage is None else tuple(runtime_usage)
-        )
+        self.usage = _usage_names(usage)
+        self.runtime_usage = self.usage if runtime_usage is None else _usage_names(runtime_usage)
         self.present = bool(present)
         self._raw_surface = None
         self._cp = None
@@ -191,9 +195,11 @@ class SceneCudaArray:
         """Yield a CuPy view for external writes, then synchronize Datoviz reads."""
 
         self._require_open()
-        with self._shared.cuda_write(stream) as array:
-            yield array
-        self._shared.wait_for_cuda_writes()
+        try:
+            with self._shared.cuda_write(stream) as array:
+                yield array
+        finally:
+            self._shared.wait_for_cuda_writes()
 
     def wait_for_writes(self) -> None:
         """Wait until the latest CUDA writes are visible to Datoviz."""
