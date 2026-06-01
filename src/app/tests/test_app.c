@@ -267,6 +267,36 @@ static int test_app_capture_config_defaults(TstContext* suite, const TstCase* it
 
 
 
+static int test_app_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzAppConfig config = dvz_app_config();
+    config.struct_size = 0;
+    AT(dvz_app_with_config(scene, &config) == NULL);
+
+    config = dvz_app_config();
+    config.flags = 1;
+    AT(dvz_app_with_config(scene, &config) == NULL);
+
+    DvzAppResources resources = dvz_app_resources();
+    resources.struct_size = DVZ_STRUCT_SIZE(DvzAppResources) - 1;
+    AT(dvz_app_with_resources(scene, NULL, &resources) == NULL);
+
+    resources = dvz_app_resources();
+    resources.flags = 1;
+    AT(dvz_app_with_resources(scene, NULL, &resources) == NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 static int test_app_capture_config_env(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -1292,6 +1322,7 @@ int test_app(TstSuite* suite)
     TST_CASE(test_app_config_env_schedule);
     TST_CASE(test_app_config_env_fps_cap);
     TST_CASE(test_app_capture_config_defaults);
+    TST_CASE(test_app_abi_rejects_invalid_structs);
     TST_CASE(test_app_capture_config_env);
     TST_APP_GPU_CASE(test_app_resources_owned_defaults);
     TST_CASE(test_app_resources_reject_runtime_without_gpu);

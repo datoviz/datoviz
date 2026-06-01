@@ -238,6 +238,8 @@ int test_frame_plan_readbacks(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_query_readback_copy_metadata(TstContext* suite, const TstCase* item);
 
+int test_frame_plan_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item);
+
 int test_frame_plan_graph_static_multipass(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_graph_ascii(TstContext* suite, const TstCase* item);
@@ -736,6 +738,8 @@ int test_scene_visual_index_data_upload(TstContext* suite, const TstCase* item);
 
 int test_scene_point_storage_position_buffer_emits_usage(
     TstContext* suite, const TstCase* item);
+
+int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item);
 
 int test_scene_compute_point_position_buffer_emits_drp2(
     TstContext* suite, const TstCase* item);

@@ -74,6 +74,27 @@ int test_window_headless(TstContext* suite, const TstCase* item)
 
 
 
+int test_window_config_rejects_invalid_abi(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+
+    DvzWindowConfig cfg = dvz_window_config();
+    cfg.struct_size = 0;
+    AT(dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &cfg) == NULL);
+
+    cfg = dvz_window_config();
+    cfg.flags = 1;
+    AT(dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &cfg) == NULL);
+
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
 /**
  * Verify resize events propagate through the router.
  */
@@ -208,6 +229,7 @@ int test_window(TstSuite* suite)
     const char* tags = "window";
     TST_MODULE(suite, tags);
     TST_CASE(test_window_headless);
+    TST_CASE(test_window_config_rejects_invalid_abi);
     TST_CASE(test_window_resize_events);
     TST_CASE(test_window_frame_requests);
     TST_CASE(test_window_wait_hooks_headless);

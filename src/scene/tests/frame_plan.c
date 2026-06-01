@@ -1229,6 +1229,47 @@ int test_frame_plan_query_readback_copy_metadata(TstContext* suite, const TstCas
 }
 
 
+int test_frame_plan_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.abi", 1);
+    ANN(plan);
+
+    DvzFramePlanCopyDesc copy = dvz_frame_plan_copy_desc();
+    copy.struct_size = 0;
+    AT(!dvz_frame_plan_copy_ex(plan, &copy));
+
+    copy = dvz_frame_plan_copy_desc();
+    copy.flags = 1;
+    AT(!dvz_frame_plan_copy_ex(plan, &copy));
+
+    AT(dvz_frame_plan_upload(plan, "buf.position", 0, 48, "point.position"));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.struct_size = DVZ_STRUCT_SIZE(DvzFramePlanEmitConfig) - 1;
+    AT(dvz_frame_plan_emit_drp2_ex(plan, &caps, &report, &emit_cfg) == NULL);
+    AT(dvz_diagnostic_report_count(&report) >= 1);
+
+    dvz_diagnostic_report_init(&report);
+    emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.flags = 1;
+    AT(dvz_frame_plan_emit_drp2_ex(plan, &caps, &report, &emit_cfg) == NULL);
+    AT(dvz_diagnostic_report_count(&report) >= 1);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
 /**
  * Ensure the internal FramePlan graph records typed resources, passes, and attachments.
  *
@@ -2406,6 +2447,7 @@ int test_scene_frame_plan(TstSuite* suite)
     TST_CASE(test_frame_plan_texture_upload_json_includes_region);
     TST_CASE(test_frame_plan_readbacks);
     TST_CASE(test_frame_plan_query_readback_copy_metadata);
+    TST_CASE(test_frame_plan_abi_rejects_invalid_structs);
     TST_CASE(test_frame_plan_graph_static_multipass);
     TST_CASE(test_frame_plan_graph_ascii);
     TST_CASE(test_frame_plan_trace_env);

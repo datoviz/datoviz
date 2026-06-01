@@ -504,6 +504,24 @@ int test_canvas_defaults(TstContext* suite, const TstCase* item)
 
 
 
+int test_canvas_config_rejects_invalid_abi(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzCanvasConfig cfg = dvz_canvas_config();
+    cfg.struct_size = 0;
+    AT(dvz_canvas_create(&cfg) == NULL);
+
+    cfg = dvz_canvas_config();
+    cfg.flags = 1;
+    AT(dvz_canvas_create(&cfg) == NULL);
+
+    return 0;
+}
+
+
+
 /**
  * Ensure the frame pool rotates across entries.
  */
@@ -1703,6 +1721,7 @@ int test_canvas(TstSuite* suite)
     const char* tags = "canvas";
     TST_MODULE(suite, tags);
     TST_CANVAS_CASE(test_canvas_defaults, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
+    TST_CANVAS_CASE(test_canvas_config_rejects_invalid_abi, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_frame_pool, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_timings, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(
