@@ -16,6 +16,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
+
 #include "datoviz/vk/memory.h"
 
 
@@ -25,6 +27,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzBuffer DvzBuffer;
+typedef struct DvzDevice DvzDevice;
 typedef struct DvzGpuCtx DvzGpuCtx;
 typedef struct DvzSemaphore DvzSemaphore;
 
@@ -198,6 +201,25 @@ DVZ_EXPORT int dvz_interop_buffer_export(
 DVZ_EXPORT int dvz_interop_buffer_export_from_buffer(
     DvzBuffer* buffer, const DvzInteropBufferExportConfig* config,
     DvzInteropBufferExport* out);
+
+
+
+/**
+ * Wait on a timeline semaphore before Vulkan reads an interop buffer as vertex input.
+ *
+ * This helper is the explicit Vulkan-side synchronization point for CUDA/CuPy writes into a
+ * Vulkan-owned exported buffer. It submits a short barrier command on the main queue that waits for
+ * `semaphore` to reach `value`, then makes external writes visible to vertex-attribute reads.
+ *
+ * @param device logical device owning the main Vulkan queue
+ * @param buffer buffer whose contents were written externally
+ * @param size byte size of the synchronized buffer range
+ * @param semaphore timeline semaphore signaled by the external API
+ * @param value timeline value to wait on
+ * @return true on success
+ */
+DVZ_EXPORT bool dvz_interop_buffer_wait_timeline(
+    DvzDevice* device, DvzBuffer* buffer, uint64_t size, DvzSemaphore* semaphore, uint64_t value);
 
 
 

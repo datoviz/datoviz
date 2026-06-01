@@ -33,6 +33,8 @@
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/memory_interop.h"
+#include "datoviz/vk/queues.h"
+#include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/sync.h"
@@ -360,6 +362,96 @@ int dvz_interop_buffer_export_from_buffer(
 
     return 0;
 }
+
+
+/**
+ * Wait on a timeline semaphore before Vulkan reads an interop buffer as vertex input.
+ *
+ * @param device logical device owning the main Vulkan queue
+ * @param buffer buffer whose contents were written externally
+ * @param size byte size of the synchronized buffer range
+ * @param semaphore timeline semaphore signaled by the external API
+ * @param value timeline value to wait on
+ * @return true on success
+ */
+bool dvz_interop_buffer_wait_timeline(
+    DvzDevice* device, DvzBuffer* buffer, uint64_t size, DvzSemaphore* semaphore, uint64_t value)
+{
+    ANN(device);
+    ANN(buffer);
+    ANN(semaphore);
+    ASSERT(size > 0);
+
+    VkSemaphore vk_semaphore = dvz_semaphore_handle(semaphore);
+    if (vk_semaphore == VK_NULL_HANDLE)
+    {
+        log_error("cannot wait on an uncreated interop semaphore");
+        return false;
+    }
+    if (!dvz_obj_is_created(&buffer->obj) || buffer->vk_buffer == VK_NULL_HANDLE)
+    {
+        log_error("cannot synchronize an uncreated interop buffer");
+        return false;
+    }
+
+    DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
+    if (queue == NULL)
+    {
+        log_error("main Vulkan queue unavailable for interop buffer wait");
+        return false;
+    }
+
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands(device, queue, 1, cmds);
+    if (dvz_commands_count(cmds) == 0)
+    {
+        log_error("failed to allocate command buffer for interop buffer wait");
+        dvz_commands_free(cmds);
+        return false;
+    }
+
+    bool ok = false;
+    if (dvz_cmd_begin_result(cmds) == 0)
+    {
+        DvzBarriers barriers = {0};
+        dvz_barriers(&barriers);
+        DvzBarrierBuffer* bbuf =
+            dvz_barriers_buffer(&barriers, dvz_buffer_handle(buffer), 0, (VkDeviceSize)size);
+        dvz_barrier_buffer_stage(
+            bbuf, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT);
+        dvz_barrier_buffer_access(
+            bbuf, VK_ACCESS_2_MEMORY_WRITE_BIT, VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT);
+        dvz_cmd_barriers(cmds, &barriers);
+
+        if (dvz_cmd_end_result(cmds) == 0)
+        {
+            DvzSubmit* submit = dvz_submit_create_wrapper();
+            ANN(submit);
+            dvz_submit(submit);
+            dvz_submit_wait(
+                submit, vk_semaphore, value, VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT);
+            dvz_submit_command(submit, dvz_commands_handle(cmds));
+            VkResult res = (VkResult)dvz_submit_send(
+                submit, dvz_queue_handle(queue), VK_NULL_HANDLE);
+            if (res == VK_SUCCESS)
+            {
+                dvz_queue_wait(queue);
+                ok = true;
+            }
+            else
+            {
+                log_error("Vulkan interop buffer wait submit failed (%d)", res);
+            }
+            dvz_submit_free(submit);
+        }
+    }
+
+    dvz_commands_destroy(cmds);
+    dvz_commands_free(cmds);
+    return ok;
+}
+
 
 
 

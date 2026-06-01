@@ -35,6 +35,7 @@ smoke_symbols:
   - dvz_view_external_surface_ffi
   - dvz_view_update_external_surface_ffi
   - dvz_interop_buffer_export_from_buffer
+  - dvz_interop_buffer_wait_timeline
   - dvz_interop_gpu_ctx
 
 layout_records:

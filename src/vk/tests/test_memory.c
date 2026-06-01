@@ -458,6 +458,9 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
     AT(export_desc.semaphore_handle_type == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
     AT(export_desc.semaphore_value == 9);
 
+    dvz_semaphore_signal(semaphore, 11);
+    AT(dvz_interop_buffer_wait_timeline(device, buffer, export_desc.size, semaphore, 11));
+
     interop_ctx = dvz_interop_gpu_ctx(0, VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT);
     AT(interop_ctx != NULL);
     AT(dvz_allocator_external(dvz_gpu_ctx_alloc(interop_ctx)) ==
