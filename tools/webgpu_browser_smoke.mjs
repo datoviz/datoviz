@@ -130,6 +130,33 @@ async function startChrome() {
   return { chrome, debugPort, userDataDir };
 }
 
+async function waitForProcessExit(process, timeoutMs = 5000) {
+  if (process.exitCode !== null || process.signalCode !== null) {
+    return;
+  }
+  await new Promise((resolveExit) => {
+    const timeout = setTimeout(resolveExit, timeoutMs);
+    process.once('exit', () => {
+      clearTimeout(timeout);
+      resolveExit();
+    });
+  });
+}
+
+async function removeWithRetry(path, attempts = 20) {
+  let lastError = null;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      await rm(path, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+      return;
+    } catch (error) {
+      lastError = error;
+      await new Promise((resolveTimeout) => setTimeout(resolveTimeout, 100));
+    }
+  }
+  throw lastError;
+}
+
 class CdpPage {
   constructor(wsUrl) {
     this.ws = new WebSocket(wsUrl);
@@ -382,6 +409,11 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
   })()`, 45000);
   requireOk(!String(initialStatus).startsWith('ERROR:'), initialStatus);
   await page.screenshotCanvas(screenshotPath);
+  const usesPacketRuntime = await page.evaluate(`(() => {
+    const scene = window.__datovizWasmScene;
+    return scene?.runtime?.stream?.name === "drp2_packet_set";
+  })()`);
+  requireOk(usesPacketRuntime, `${path}: WASM scene did not use DRP2 packet runtime`);
   await page.dragCanvas(48, 24);
   await page.wheelCanvas(-180);
   const interactiveStatus = await page.waitFor(`(() => {
@@ -467,7 +499,8 @@ async function main() {
     server.closeAllConnections?.();
     await new Promise((resolveClose) => server.close(resolveClose));
     chrome.chrome.kill('SIGTERM');
-    await rm(chrome.userDataDir, { recursive: true, force: true });
+    await waitForProcessExit(chrome.chrome);
+    await removeWithRetry(chrome.userDataDir);
   }
 }
 
