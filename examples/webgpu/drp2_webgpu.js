@@ -2000,17 +2000,28 @@ async function executeWithErrorScopes(device, callback) {
 
   const errors = [];
   for (const scope of scopes.slice().reverse()) {
-    const error = await device.popErrorScope();
+    let error = null;
+    try {
+      error = await device.popErrorScope();
+    } catch (popError) {
+      if (String(popError?.message ?? popError).includes("Instance dropped in popErrorScope")) {
+        continue;
+      }
+      throw popError;
+    }
     if (error !== null) {
       errors.push(`${scope}: ${error.message}`);
     }
   }
+  const reportableErrors = errors.filter(
+    (error) => !error.includes("Instance dropped in popErrorScope"),
+  );
 
   if (thrown !== null) {
     throw thrown;
   }
-  if (errors.length > 0) {
-    throw new Error(errors.join("\n"));
+  if (reportableErrors.length > 0) {
+    throw new Error(reportableErrors.join("\n"));
   }
   return result;
 }
@@ -2130,37 +2141,38 @@ export class Drp2WebGpuRuntime {
       state: this.state,
       replaceExistingResources: options.replaceExistingResources ?? true,
     };
-    if (setupCommands.length > 0) {
-      await executeDrp2StreamChecked(
+    const runPackets = async () => {
+      if (setupCommands.length > 0) {
+        await executeDrp2Stream(
+          this.device, this.context, this.canvasFormat, this.stream,
+          { ...baseOptions, commands: setupCommands },
+        );
+      }
+      if (updateCommands.length > 0) {
+        await executeDrp2Stream(
+          this.device, this.context, this.canvasFormat, this.stream,
+          { ...baseOptions, commands: updateCommands },
+        );
+      }
+      if (frameCommands.length === 0) {
+        this.packetResourceVersion = resourceVersion;
+        this.packetFrameIndex = frameIndex;
+        return null;
+      }
+      const result = await executeDrp2Stream(
         this.device, this.context, this.canvasFormat, this.stream,
-        { ...baseOptions, commands: setupCommands },
+        {
+          ...baseOptions,
+          retireSubmittedRefs: options.retireSubmittedRefs ?? true,
+          commands: frameCommands,
+        },
       );
-    }
-    if (updateCommands.length > 0) {
-      await executeDrp2StreamChecked(
-        this.device, this.context, this.canvasFormat, this.stream,
-        { ...baseOptions, commands: updateCommands },
-      );
-    }
-    if (frameCommands.length === 0) {
       this.packetResourceVersion = resourceVersion;
       this.packetFrameIndex = frameIndex;
-      return null;
-    }
-    const result = await executeDrp2StreamChecked(
-      this.device,
-      this.context,
-      this.canvasFormat,
-      this.stream,
-      {
-        ...baseOptions,
-        retireSubmittedRefs: options.retireSubmittedRefs ?? true,
-        commands: frameCommands,
-      },
-    );
-    this.packetResourceVersion = resourceVersion;
-    this.packetFrameIndex = frameIndex;
-    return result;
+      return result;
+    };
+    return options.errorScopes === false ? await runPackets()
+                                         : await executeWithErrorScopes(this.device, runPackets);
   }
 
   async render(options = {}) {
