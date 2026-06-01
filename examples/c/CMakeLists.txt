@@ -117,6 +117,8 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(features image_probe features/image_probe.c)
     dvz_add_example(features pick_marker features/pick_marker.c)
 
+    dvz_add_example(visuals volume visuals/volume.c)
+
     dvz_add_example(showcases protein showcases/protein.c)
     dvz_add_example(showcases gpu_particle_smoke showcases/gpu_particle_smoke.c)
     dvz_add_example(showcases textured_planet showcases/textured_planet.c)

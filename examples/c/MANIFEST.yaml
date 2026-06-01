@@ -56,6 +56,23 @@ examples:
     source: examples/c/features/pick_marker.c
     validation: smoke+interaction
 
+  - id: visual_volume
+    title: Volume
+    stage: v0.4_required
+    lane: visuals
+    source: examples/c/visuals/volume.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - sampled-field
+      - volume
+      - transfer-function
+      - boundary-box
+      - arcball
+      - capture
+
   - id: protein_arcball_viewer
     title: Protein
     stage: v0.4_required
