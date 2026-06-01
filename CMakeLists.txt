@@ -57,8 +57,11 @@ option(DVZ_BUILD_APP "Build the app presentation layer" ON)
 option(DVZ_BUILD_GUI "Build the Dear ImGui app overlay layer" ON)
 option(DVZ_WITH_FREETYPE "Enable FreeType-backed scene text atlases when available" ON)
 option(DVZ_WITH_MSDF_ATLAS "Enable msdf-atlas-gen scene text atlases when available" ON)
+set(DVZ_ENABLE_QT_BRIDGE "AUTO" CACHE STRING "Build the optional Qt bridge provider (AUTO, ON, or OFF)")
+set_property(CACHE DVZ_ENABLE_QT_BRIDGE PROPERTY STRINGS AUTO ON OFF)
 set(DVZ_MSDF_ATLAS_SOURCE_DIR "${PROJECT_SOURCE_DIR}/external/msdf-atlas-gen" CACHE PATH
     "Optional local msdf-atlas-gen source directory")
+set(DVZ_HAS_QT_BRIDGE 0 CACHE INTERNAL "Qt bridge provider availability flag" FORCE)
 
 if(DVZ_ENABLE_GPROF)
     add_compile_options(
@@ -639,6 +642,8 @@ message(STATUS "DVZ_BUILD_WEBGPU: ${DVZ_BUILD_WEBGPU}")
 message(STATUS "DVZ_BUILD_SCENE: ${DVZ_BUILD_SCENE}")
 message(STATUS "DVZ_BUILD_APP: ${DVZ_BUILD_APP}")
 message(STATUS "DVZ_BUILD_GUI: ${DVZ_BUILD_GUI}")
+message(STATUS "DVZ_ENABLE_QT_BRIDGE: ${DVZ_ENABLE_QT_BRIDGE}")
+message(STATUS "DVZ_HAS_QT_BRIDGE: ${DVZ_HAS_QT_BRIDGE}")
 
 if(DEFINED DVZ_USE_VALIDATION)
     message(STATUS "DVZ_USE_VALIDATION: ${DVZ_USE_VALIDATION} (Release configs disable validation unless explicitly ON)")

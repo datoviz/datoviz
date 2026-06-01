@@ -450,6 +450,9 @@ if(DVZ_BUILD_APP)
     add_subdirectory(app)
 endif()
 
+set(_dvz_qt_bridge_modes AUTO ON OFF)
+add_subdirectory(qtbridge)
+
 # -------------------------------------------------------------------------------------------------
 # Layered targets
 # -------------------------------------------------------------------------------------------------
