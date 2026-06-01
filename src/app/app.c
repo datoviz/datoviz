@@ -3470,6 +3470,37 @@ DvzView* dvz_view_external_surface(
 }
 
 
+/**
+ * Create a view around an externally-owned Vulkan surface from FFI-friendly handles.
+ *
+ * @param app app that owns the rendering runtime
+ * @param figure figure rendered into the surface
+ * @param instance borrowed Vulkan instance handle
+ * @param surface borrowed Vulkan surface handle value
+ * @param framebuffer_width framebuffer width in physical pixels
+ * @param framebuffer_height framebuffer height in physical pixels
+ * @param scale_x horizontal content scale
+ * @param scale_y vertical content scale
+ * @param owned_by_datoviz whether Datoviz should destroy the surface
+ * @return view handle, or NULL on failure
+ */
+DvzView* dvz_view_external_surface_ffi(
+    DvzApp* app, DvzFigure* figure, void* instance, uint64_t surface,
+    uint32_t framebuffer_width, uint32_t framebuffer_height, float scale_x, float scale_y,
+    bool owned_by_datoviz)
+{
+    DvzWindowExternalSurfaceInfo info = {0};
+    info.instance = (VkInstance)instance;
+    info.surface = (VkSurfaceKHR)(uintptr_t)surface;
+    info.extent.width = framebuffer_width;
+    info.extent.height = framebuffer_height;
+    info.scale_x = scale_x;
+    info.scale_y = scale_y;
+    info.owned_by_datoviz = owned_by_datoviz;
+    return dvz_view_external_surface(app, figure, &info);
+}
+
+
 
 /*************************************************************************************************/
 /*  Window accessors                                                                             */
@@ -3520,6 +3551,35 @@ int dvz_view_update_external_surface(
 #else
     return -1;
 #endif
+}
+
+
+/**
+ * Update the external Vulkan surface associated with a hosted view from FFI-friendly handles.
+ *
+ * @param win hosted view
+ * @param instance borrowed Vulkan instance handle, or NULL for surface loss
+ * @param surface borrowed Vulkan surface handle value, or zero for surface loss
+ * @param framebuffer_width framebuffer width in physical pixels
+ * @param framebuffer_height framebuffer height in physical pixels
+ * @param scale_x horizontal content scale
+ * @param scale_y vertical content scale
+ * @param owned_by_datoviz whether Datoviz should destroy the surface
+ * @return 0 on success, negative on error
+ */
+int dvz_view_update_external_surface_ffi(
+    DvzView* win, void* instance, uint64_t surface, uint32_t framebuffer_width,
+    uint32_t framebuffer_height, float scale_x, float scale_y, bool owned_by_datoviz)
+{
+    DvzWindowExternalSurfaceInfo info = {0};
+    info.instance = (VkInstance)instance;
+    info.surface = (VkSurfaceKHR)(uintptr_t)surface;
+    info.extent.width = framebuffer_width;
+    info.extent.height = framebuffer_height;
+    info.scale_x = scale_x;
+    info.scale_y = scale_y;
+    info.owned_by_datoviz = owned_by_datoviz;
+    return dvz_view_update_external_surface(win, &info);
 }
 
 

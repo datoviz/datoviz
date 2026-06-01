@@ -31,6 +31,8 @@ smoke_symbols:
   - dvz_time_monotonic_ns
   - dvz_scene
   - dvz_scene_destroy
+  - dvz_view_external_surface_ffi
+  - dvz_view_update_external_surface_ffi
 
 layout_records:
   include:

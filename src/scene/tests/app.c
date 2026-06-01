@@ -1193,36 +1193,6 @@ static bool _app_capture_rgb_sum(
 }
 
 
-#if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
-/**
- * Return an external-surface description for a GLFW-hosted app test.
- *
- * @param instance Vulkan instance used to create the surface
- * @param surface borrowed Vulkan surface handle
- * @param width framebuffer width in pixels
- * @param height framebuffer height in pixels
- * @return external surface description
- */
-static DvzWindowExternalSurfaceInfo _app_glfw_surface_info(
-    VkInstance instance, VkSurfaceKHR surface, uint32_t width, uint32_t height)
-{
-    DvzWindowExternalSurfaceInfo info = {0};
-    info.instance = instance;
-    info.surface = surface;
-    info.extent.width = width;
-    info.extent.height = height;
-    info.scale_x = 1.0f;
-    info.scale_y = 1.0f;
-    info.owned_by_datoviz = false;
-    return info;
-}
-
-
-
-#endif
-
-
-
 /**
  * Create a minimal scene/figure/panel used by app timer integration tests.
  *
@@ -1879,13 +1849,14 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
         return 0;
     }
 
-    DvzWindowExternalSurfaceInfo surface_info =
-        _app_glfw_surface_info(instance, surface, 64, 64);
-    DvzView* win = dvz_view_external_surface(app, figure, &surface_info);
+    DvzView* win = dvz_view_external_surface_ffi(
+        app, figure, (void*)instance, (uint64_t)(uintptr_t)surface, 64, 64, 1.0f, 1.0f, false);
     AT(win != NULL);
 
     AppRequestFrameProbe request_probe = {0};
     dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
+    AT(dvz_view_update_external_surface_ffi(
+           win, (void*)instance, (uint64_t)(uintptr_t)surface, 64, 64, 1.0f, 1.0f, false) == 0);
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
 
     AT_EXPECTED_LOG_STRICT(

@@ -35,6 +35,33 @@ def main() -> int:
     for symbol in _smoke_symbols():
         assert hasattr(dvz, symbol), f'missing datoviz.raw.{symbol}'
 
+    expected_create_args = [
+        ctypes.POINTER(dvz.DvzApp),
+        ctypes.POINTER(dvz.DvzFigure),
+        ctypes.c_void_p,
+        ctypes.c_uint64,
+        ctypes.c_uint32,
+        ctypes.c_uint32,
+        ctypes.c_float,
+        ctypes.c_float,
+        ctypes.c_bool,
+    ]
+    assert dvz.dvz_view_external_surface_ffi.argtypes == expected_create_args
+    assert dvz.dvz_view_external_surface_ffi.restype == ctypes.POINTER(dvz.DvzView)
+
+    expected_update_args = [
+        ctypes.POINTER(dvz.DvzView),
+        ctypes.c_void_p,
+        ctypes.c_uint64,
+        ctypes.c_uint32,
+        ctypes.c_uint32,
+        ctypes.c_float,
+        ctypes.c_float,
+        ctypes.c_bool,
+    ]
+    assert dvz.dvz_view_update_external_surface_ffi.argtypes == expected_update_args
+    assert dvz.dvz_view_update_external_surface_ffi.restype == ctypes.c_int
+
     t0 = dvz.dvz_time_monotonic_ns()
     t1 = dvz.dvz_time_monotonic_ns()
     assert isinstance(t0, int)

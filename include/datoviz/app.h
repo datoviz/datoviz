@@ -255,6 +255,30 @@ DVZ_EXPORT DvzView* dvz_view_external_surface(
 
 
 /**
+ * Create a hosted present view around an external Vulkan surface from FFI-friendly handles.
+ *
+ * Foreign-function-interface adapters may use this helper when constructing
+ * DvzWindowExternalSurfaceInfo directly is undesirable. Native C and C++ callers should prefer
+ * dvz_view_external_surface().
+ *
+ * @param app the app
+ * @param figure the figure to render (borrowed)
+ * @param instance borrowed VkInstance handle as an opaque pointer
+ * @param surface borrowed or Datoviz-owned VkSurfaceKHR handle value
+ * @param framebuffer_width framebuffer width in physical pixels
+ * @param framebuffer_height framebuffer height in physical pixels
+ * @param scale_x horizontal content scale
+ * @param scale_y vertical content scale
+ * @param owned_by_datoviz whether Datoviz should destroy the surface
+ * @return the view handle, or NULL on failure
+ */
+DVZ_EXPORT DvzView* dvz_view_external_surface_ffi(
+    DvzApp* app, DvzFigure* figure, void* instance, uint64_t surface,
+    uint32_t framebuffer_width, uint32_t framebuffer_height, float scale_x, float scale_y,
+    bool owned_by_datoviz);
+
+
+/**
  * Update the hosted external surface associated with a view.
  *
  * Use this when the host toolkit recreates or resizes its native surface.  A NULL surface handle is
@@ -267,6 +291,28 @@ DVZ_EXPORT DvzView* dvz_view_external_surface(
  */
 DVZ_EXPORT int dvz_view_update_external_surface(
     DvzView* view, const DvzWindowExternalSurfaceInfo* surface);
+
+
+/**
+ * Update a hosted external surface from FFI-friendly handles.
+ *
+ * Foreign-function-interface adapters may use this helper when constructing
+ * DvzWindowExternalSurfaceInfo directly is undesirable. Native C and C++ callers should prefer
+ * dvz_view_update_external_surface().
+ *
+ * @param view view created with dvz_view_external_surface() or dvz_view_external_surface_ffi()
+ * @param instance borrowed VkInstance handle as an opaque pointer, or NULL for surface loss
+ * @param surface borrowed or Datoviz-owned VkSurfaceKHR handle value, or zero for surface loss
+ * @param framebuffer_width framebuffer width in physical pixels
+ * @param framebuffer_height framebuffer height in physical pixels
+ * @param scale_x horizontal content scale
+ * @param scale_y vertical content scale
+ * @param owned_by_datoviz whether Datoviz should destroy the surface
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_view_update_external_surface_ffi(
+    DvzView* view, void* instance, uint64_t surface, uint32_t framebuffer_width,
+    uint32_t framebuffer_height, float scale_x, float scale_y, bool owned_by_datoviz);
 
 
 /**
