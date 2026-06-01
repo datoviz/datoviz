@@ -435,7 +435,7 @@ export class DatovizWasmScene {
     requireOk(this.runtime !== null, "renderInitial() must be called before renderIncremental()");
     const stream = this.emit();
     if (streamNeedsRuntimeReload(stream)) {
-      await this.runtime.load(stream);
+      await this.runtime.update(stream);
       await this.runtime.render();
       return stream;
     }

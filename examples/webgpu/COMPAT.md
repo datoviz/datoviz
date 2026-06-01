@@ -86,6 +86,9 @@ Current status as of this note:
   hardening: `just webgpu-browser-smoke` rendered the 2D and 3D WASM pages, exercised pointer and
   wheel interaction, checked pagehide scene destruction, ran the fixture dashboard's WASM Scene
   Smoke rows, and reported `2` dashboard WASM scene checks passing.
+- recorded automated browser proof on 2026-06-01 after retained setup-update hardening:
+  `just webgpu-browser-smoke` now covers the dashboard 2D WASM row with same-shape point updates and
+  RGBA8 image texture resize reloads against retained browser runtime state.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

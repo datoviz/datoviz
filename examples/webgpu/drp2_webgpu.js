@@ -1748,6 +1748,58 @@ function destroyObject(map, record) {
 
 
 
+function objectMapForKind(state, kind) {
+  switch (kind) {
+    case "buffer":
+      return state.buffers;
+    case "texture":
+      return state.textures;
+    case "texture_view":
+      return state.textureViews;
+    case "sampler":
+      return state.samplers;
+    case "bind_group_layout":
+      return state.bindGroupLayouts;
+    case "bind_group":
+      return state.bindGroups;
+    case "shader_module":
+      return state.shaders;
+    case "pipeline":
+      return state.pipelines;
+    default:
+      throw new Error(`unsupported object kind ${kind}`);
+  }
+}
+
+
+
+function destroyObjectTree(state, record) {
+  for (const dependent of Array.from(state.objects.values())) {
+    if (!dependent.destroyed && dependent.dependencies.includes(record)) {
+      destroyObjectTree(state, dependent);
+    }
+  }
+  destroyObject(objectMapForKind(state, record.kind), record);
+}
+
+
+
+function prepareCreateObject(state, id, kind, options) {
+  const record = state.objects.get(id);
+  if (record === undefined || record.destroyed) {
+    return;
+  }
+  if (record.kind !== kind) {
+    throw new Error(`object ${id} is ${objectLabel(record.kind)}, not ${objectLabel(kind)}`);
+  }
+  if (options.replaceExistingResources !== true) {
+    throw new Error(`duplicate or reused object id ${id}`);
+  }
+  destroyObjectTree(state, record);
+}
+
+
+
 function addEncoderRef(state, encoderRefs, encoderId, id, kind) {
   const record = requireLiveRecord(state, id, kind);
   const refs = required(encoderRefs.get(encoderId), `unknown command encoder ${encoderId}`);
@@ -1997,6 +2049,33 @@ export class Drp2WebGpuRuntime {
     );
   }
 
+  async update(stream, options = {}) {
+    if (this.stream === null) {
+      return await this.load(stream, options);
+    }
+
+    this.stream = stream;
+    this.options = { ...this.options, ...options };
+
+    const split = splitStreamCommands(stream);
+    this.setupCommands = split.setupCommands;
+    this.frameCommands = split.frameCommands;
+    this.frames = Array.isArray(stream.frames) ? stream.frames : [];
+
+    return await executeDrp2StreamChecked(
+      this.device,
+      this.context,
+      this.canvasFormat,
+      stream,
+      {
+        ...this.options,
+        commands: this.setupCommands,
+        replaceExistingResources: true,
+        state: this.state,
+      },
+    );
+  }
+
   async render(options = {}) {
     return await this.renderFrame(options.frameIndex ?? null, options);
   }
@@ -2186,6 +2265,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         break;
 
       case "CreateBuffer":
+        prepareCreateObject(state, command.id, "buffer", options);
         registerObject(
           state,
           buffers,
@@ -2224,6 +2304,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         validateBrowserCanvasTextureExtentAlias(command);
         const extent = commandExtent(command);
         validateTextureCapabilities(capabilities, command, textureFormat, extent);
+        prepareCreateObject(state, command.id, "texture", options);
         registerObject(
           state,
           textures,
@@ -2265,6 +2346,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           textures.get(command.texture_id),
           `unknown texture ${command.texture_id}`,
         );
+        prepareCreateObject(state, command.id, "texture_view", options);
         const record = registerObject(
           state,
           textureViews,
@@ -2318,6 +2400,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       }
 
       case "CreateSampler":
+        prepareCreateObject(state, command.id, "sampler", options);
         registerObject(
           state,
           samplers,
@@ -2336,6 +2419,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         break;
 
       case "CreateBindGroupLayout":
+        prepareCreateObject(state, command.id, "bind_group_layout", options);
         registerObject(
           state,
           bindGroupLayouts,
@@ -2354,6 +2438,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         break;
 
       case "CreateBindGroup": {
+        prepareCreateObject(state, command.id, "bind_group", options);
         const bindGroupLayoutRecord = requireLiveRecord(
           state,
           command.bind_group_layout_id,
@@ -2443,6 +2528,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         if (errors.length > 0) {
           throw new Error(errors.map((message) => message.message).join("\n"));
         }
+        prepareCreateObject(state, command.id, "shader_module", options);
         registerObject(
           state,
           shaders,
@@ -2466,6 +2552,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
             requireLiveRecord(state, id, "bind_group_layout"),
           ),
         ];
+        prepareCreateObject(state, command.id, "pipeline", options);
         const record = registerObject(
           state,
           pipelines,
@@ -2486,6 +2573,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
             requireLiveRecord(state, id, "bind_group_layout"),
           ),
         ];
+        prepareCreateObject(state, command.id, "pipeline", options);
         const record = registerObject(
           state,
           pipelines,

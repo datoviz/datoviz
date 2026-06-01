@@ -138,7 +138,8 @@ http://localhost:8765/examples/webgpu/wasm_scene_3d.html
 Expected manual results for the current subset:
 
 - fixture dashboard: all committed rows pass, no unsupported rows, no failures;
-- fixture dashboard WASM Scene Smoke section: 2D point update and 3D mesh update rows pass;
+- fixture dashboard WASM Scene Smoke section: 2D point update, 2D image texture resize reload, and
+  3D mesh update rows pass;
 - 2D WASM page: point, primitive, image, and mesh content render; pan/zoom and resize work;
 - 3D WASM page: cube renders; arcball drag, wheel zoom, and resize work.
 

@@ -33,7 +33,7 @@ const DEMO_STRESS_CHECKS = [
   { name: "demo path: stream reload", fn: runDemoStreamReloadStress },
 ];
 const WASM_SCENE_CHECKS = [
-  { name: "wasm scene: 2D update/lifecycle", fn: runWasm2DSceneSmoke },
+  { name: "wasm scene: 2D update/reload/lifecycle", fn: runWasm2DSceneSmoke },
   { name: "wasm scene: 3D update/lifecycle", fn: runWasm3DSceneSmoke },
 ];
 
@@ -219,6 +219,23 @@ function assertPositiveCommandCount(stream, label) {
 
 
 
+function makeWasmTexture(width, height, phase) {
+  const pixels = new Uint8Array(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      const checker = ((x >> 1) + (y >> 1) + phase) & 1;
+      pixels[i + 0] = checker ? 55 : 225;
+      pixels[i + 1] = checker ? 165 : 245;
+      pixels[i + 2] = checker ? 235 : 105;
+      pixels[i + 3] = 255;
+    }
+  }
+  return pixels;
+}
+
+
+
 function addWasm2DPoints(scene, panel) {
   const points = scene.visual("point");
   points.setF32("position", new Float32Array([
@@ -234,6 +251,22 @@ function addWasm2DPoints(scene, panel) {
   points.setF32("diameter", new Float32Array([16, 20, 18]), 3);
   scene.addVisual(panel, points);
   return points;
+}
+
+
+
+function addWasmImage(scene, panel) {
+  const image = scene.visual("image");
+  image.setF32("position", new Float32Array([
+    0.05, -0.72, 0.05,
+    0.05, -0.12, 0.05,
+    0.72, -0.72, 0.05,
+    0.72, -0.12, 0.05,
+  ]), 4);
+  image.setF32("texcoords", new Float32Array([0, 0, 0, 1, 1, 0, 1, 1]), 4);
+  image.setTextureRGBA8(makeWasmTexture(4, 4, 0), 4, 4);
+  scene.addVisual(panel, image);
+  return image;
 }
 
 
@@ -285,6 +318,7 @@ async function runWasm2DSceneSmoke(row) {
   try {
     const panel = scene.panelFull();
     const points = addWasm2DPoints(scene, panel);
+    const image = addWasmImage(scene, panel);
 
     const initial = await scene.renderInitial();
     assertPositiveCommandCount(initial, `${row.name} initial`);
@@ -297,10 +331,14 @@ async function runWasm2DSceneSmoke(row) {
     const update = await scene.renderIncremental();
     assertPositiveCommandCount(update, `${row.name} update`);
 
+    image.setTextureRGBA8(makeWasmTexture(8, 8, 1), 8, 8);
+    const reload = await scene.renderIncremental();
+    assertPositiveCommandCount(reload, `${row.name} reload`);
+
     const stats = scene.runtime.resourceStats();
     const detail =
       `initial=${initial.commands.length}, update=${update.commands.length}, ` +
-      `objects=${stats.objects}`;
+      `reload=${reload.commands.length}, objects=${stats.objects}`;
     scene.destroy();
     assertWasmSceneDestroyed(scene, row.name);
     setWasmStatus(row, "pass", detail);
