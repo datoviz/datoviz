@@ -14,15 +14,17 @@ threads, high-DPI windows, or custom user-provided visual families.
 3. [HIGH_DPI.md](HIGH_DPI.md): logical pixels, device pixel ratio, and DPI changes.
 4. [DPI_SCALE_IMPLEMENTATION_PLAN.md](DPI_SCALE_IMPLEMENTATION_PLAN.md): implementation roadmap
    for high-DPI consistency and dynamic user scale.
-5. [CUSTOM_VISUALS.md](CUSTOM_VISUALS.md): registration and integration of user-defined visuals.
-6. [HOSTED_BACKENDS.md](HOSTED_BACKENDS.md): Qt, Python console, IPython, Jupyter, SDL, Tk,
+5. [OPTIONAL_PROVIDERS.md](OPTIONAL_PROVIDERS.md): optional dependency, bridge, recipe, custom
+   visual, and technique extension boundaries.
+6. [CUSTOM_VISUALS.md](CUSTOM_VISUALS.md): registration and integration of user-defined visuals.
+7. [HOSTED_BACKENDS.md](HOSTED_BACKENDS.md): Qt, Python console, IPython, Jupyter, SDL, Tk,
    and other host-owned event-loop integrations.
-7. [CUPY_CUDA_INTEROP.md](CUPY_CUDA_INTEROP.md): zero-copy CUDA/CuPy memory sharing design for
+8. [CUPY_CUDA_INTEROP.md](CUPY_CUDA_INTEROP.md): zero-copy CUDA/CuPy memory sharing design for
    real-time Datoviz visualization.
-8. [WEBGPU_WASM.md](WEBGPU_WASM.md): experimental browser WebGPU and WASM scene integration
+9. [WEBGPU_WASM.md](WEBGPU_WASM.md): experimental browser WebGPU and WASM scene integration
     contract.
-9. [future](future/README.md): Android, iOS, and touch pressure notes.
-10. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
+10. [future](future/README.md): Android, iOS, and touch pressure notes.
+11. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
 
 
 ## Active Proposal Inputs
