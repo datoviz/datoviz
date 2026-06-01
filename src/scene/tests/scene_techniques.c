@@ -3968,29 +3968,47 @@ int test_scene_splat_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCas
 
     bool has_splat_wboit_shader = false;
     bool has_splat_wboit_pipeline = false;
+    bool has_splat_wboit_pipeline_identity = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
         ANN(command);
         if (command->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
         {
-            has_splat_wboit_shader =
-                has_splat_wboit_shader ||
-                (strcmp(command->u.create_shader_module.builtin_family, "scene.splat") == 0 &&
-                 strcmp(command->u.create_shader_module.builtin_variant, "wboit") == 0);
+            bool splat_wboit =
+                strcmp(command->u.create_shader_module.builtin_family, "scene.splat") == 0 &&
+                strcmp(command->u.create_shader_module.builtin_variant, "wboit") == 0;
+            if (splat_wboit)
+            {
+                has_splat_wboit_shader = true;
+                AT(
+                    command->u.create_shader_module.builtin_version ==
+                    DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION);
+            }
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
-            has_splat_wboit_pipeline =
-                has_splat_wboit_pipeline ||
-                (command->u.create_render_pipeline.binding_count == 4 &&
-                 command->u.create_render_pipeline.color_target_count == 2 &&
-                 command->u.create_render_pipeline.color_targets[0].blend_enabled &&
-                 command->u.create_render_pipeline.color_targets[1].blend_enabled);
+            bool splat_wboit_pipeline =
+                command->u.create_render_pipeline.binding_count == 4 &&
+                command->u.create_render_pipeline.color_target_count == 2 &&
+                command->u.create_render_pipeline.color_targets[0].blend_enabled &&
+                command->u.create_render_pipeline.color_targets[1].blend_enabled;
+            if (splat_wboit_pipeline)
+            {
+                has_splat_wboit_pipeline = true;
+                if (strcmp(command->u.create_render_pipeline.builtin_pipeline, "scene.splat") == 0)
+                {
+                    has_splat_wboit_pipeline_identity = true;
+                    AT(
+                        command->u.create_render_pipeline.builtin_version ==
+                        DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION);
+                }
+            }
         }
     }
     AT(has_splat_wboit_shader);
     AT(has_splat_wboit_pipeline);
+    AT(has_splat_wboit_pipeline_identity);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);

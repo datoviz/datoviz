@@ -90,7 +90,12 @@ Rules:
 
 ## Coordinate Transform Stage
 
-A visual attachment may apply a coordinate transform before panel-domain normalization:
+Status: deferred future work. v0.4 does not install a public API that applies this stage inside the
+scene. Users should pre-project nonlinear coordinates on the CPU before upload when they need polar,
+geographic, or other nonlinear projections.
+
+A future visual attachment or panel projection descriptor may apply a coordinate transform before
+panel-domain normalization:
 
 ```text
 DataSpace -> coord_transform -> Cartesian DataSpace -> domain normalization -> VisualSpace
@@ -109,6 +114,12 @@ DataSpace -> coord_transform -> Cartesian DataSpace -> domain normalization -> V
 Zero-initialized params use defaults. Panel domains always refer to the post-transform Cartesian
 space. Polar axes, graticules, map tiling/LOD, and geographic tick formatting are deferred.
 
+The installed v0.4 public ABI is intentionally limited to already-supported attachment fields:
+`struct_size`, `flags`, `z_layer`, and `controller_mode`. Future coordinate-space,
+domain-override, or transform descriptor fields should be appended to `DvzVisualAttachDesc` or
+introduced through a new growable descriptor with the same `struct_size`/`flags` prologue. v0.4
+must reject unknown attachment flags rather than accepting a no-op projection request.
+
 
 ## Aspect Ratio
 
@@ -125,15 +136,15 @@ the declared X/Y domains use matching physical extents.
 
 ## Visual Attachment
 
-`DvzVisualAttachDesc` declares coordinate interpretation, controller application, optional domain
-overrides, and draw order.
+`DvzVisualAttachDesc` currently declares controller application and draw order. The future
+attachment contract may also declare coordinate interpretation and optional domain overrides.
 
 | Field | Rule |
 |---|---|
-| `coord_space` | `DVZ_COORD_DATA`, `DVZ_COORD_NDC`, or `DVZ_COORD_PIXEL` |
-| `coord_transform` / `transform_params` | optional pre-normalization transform |
+| `coord_space` | future field: `DVZ_COORD_DATA`, `DVZ_COORD_NDC`, or `DVZ_COORD_PIXEL` |
+| `coord_transform` / `transform_params` | future field: optional pre-normalization transform |
 | `controller_mode` | `DVZ_CONTROLLER_APPLY` or `DVZ_CONTROLLER_FIXED` |
-| `domain_x/y/z` | `NULL` uses panel domain; non-`NULL` overrides that dimension |
+| `domain_x/y/z` | future field: `NULL` uses panel domain; non-`NULL` overrides that dimension |
 | `z_layer` | signed draw order; lower draws first; same layer uses insertion order |
 
 Coordinate-space meanings:

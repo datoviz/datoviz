@@ -23,6 +23,7 @@
 #include "_compat.h"
 #include "_scene_resource_key.h"
 #include "_shader_registry.h"
+#include "_scene_shader_abi.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
@@ -85,7 +86,9 @@ void _scene_shader_desc_set_identity(
     ANN(out);
     out->builtin_family = family;
     out->builtin_variant = variant != NULL ? variant : "default";
+    out->builtin_version = DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION;
     out->builtin_pipeline = family;
+    out->builtin_pipeline_version = DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION;
 }
 
 
@@ -250,7 +253,9 @@ bool _scene_visual_shader_desc_apply_query_pick(
         shader->fragment_spirv_key = "point_query_u32_frag";
     shader->builtin_family = NULL;
     shader->builtin_variant = NULL;
+    shader->builtin_version = 0;
     shader->builtin_pipeline = NULL;
+    shader->builtin_pipeline_version = 0;
     *out_applied = true;
     return true;
 }
@@ -359,9 +364,7 @@ bool _scene_visual_shader_desc_for_pass(
             _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH, true);
         shader->vertex_spirv_key = "volume_slice_vert";
         shader->fragment_spirv_key = "volume_occlusion_depth_frag";
-        shader->builtin_family = "scene.volume";
-        shader->builtin_variant = "occlusion_depth";
-        shader->builtin_pipeline = "scene.volume";
+        _scene_shader_desc_set_identity(shader, "scene.volume", "occlusion_depth");
         return true;
     }
 
@@ -633,7 +636,9 @@ bool _scene_visual_shader_desc_apply_pass_policy(
         shader->fragment_wgsl = NULL;
         shader->builtin_family = NULL;
         shader->builtin_variant = NULL;
+        shader->builtin_version = 0;
         shader->builtin_pipeline = NULL;
+        shader->builtin_pipeline_version = 0;
         if (shader->fragment_glsl == NULL)
             return false;
     }

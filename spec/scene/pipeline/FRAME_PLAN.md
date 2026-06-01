@@ -143,8 +143,13 @@ The scene-to-DRP2 converter assigns deterministic runtime ids from scene shader 
 
 - shader modules are keyed by stage, source hash, and transport format;
 - render pipelines are keyed by vertex module id, fragment module id, and pipeline state;
+- built-in scene shaders and pipelines also carry stable family/variant identity plus a contract
+  version in DRP2 metadata;
 - create commands are emitted once per unique key and omitted when already live;
 - destroy commands are emitted when the referencing visual is removed or its variant changes.
+
+The built-in contract version is scene-owned metadata. It is not a custom-shader API and should only
+change when the built-in binding/resource contract changes.
 
 ## Relationship To Scene Objects And DRP2
 

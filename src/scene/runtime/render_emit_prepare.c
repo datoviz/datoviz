@@ -204,7 +204,9 @@ bool _emitter_prepare_render_multi(
                 ok = ok && _emit_shader(stream, vs_id, "VERTEX", NULL, shader.vertex_glsl, cfg);
             if (ok && shader.builtin_family != NULL && shader.builtin_variant != NULL)
                 ok = dvz_drp2_stream_shader_set_builtin_identity(
-                    stream, vs_id, shader.builtin_family, shader.builtin_variant, 1);
+                    stream, vs_id, shader.builtin_family, shader.builtin_variant,
+                    shader.builtin_version != 0 ? shader.builtin_version
+                                                : DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION);
         }
 
         uint64_t fs_id = _obj_id(emitter, shader.fragment_key, &is_new);
@@ -233,7 +235,9 @@ bool _emitter_prepare_render_multi(
                     ok && _emit_shader(stream, fs_id, "FRAGMENT", NULL, shader.fragment_glsl, cfg);
             if (ok && shader.builtin_family != NULL && shader.builtin_variant != NULL)
                 ok = dvz_drp2_stream_shader_set_builtin_identity(
-                    stream, fs_id, shader.builtin_family, shader.builtin_variant, 1);
+                    stream, fs_id, shader.builtin_family, shader.builtin_variant,
+                    shader.builtin_version != 0 ? shader.builtin_version
+                                                : DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION);
         }
         _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
 
@@ -354,7 +358,10 @@ bool _emitter_prepare_render_multi(
                     stream, pass_sample_count, pipeline.alpha_to_coverage);
             if (ok && shader.builtin_pipeline != NULL)
                 ok = dvz_drp2_stream_pipeline_set_builtin_identity(
-                    stream, pipe_id, shader.builtin_pipeline, 1);
+                    stream, pipe_id, shader.builtin_pipeline,
+                    shader.builtin_pipeline_version != 0
+                        ? shader.builtin_pipeline_version
+                        : DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION);
             if (ok)
             {
                 uint64_t layouts[DVZ_DRP2_MAX_BIND_GROUPS] = {0};

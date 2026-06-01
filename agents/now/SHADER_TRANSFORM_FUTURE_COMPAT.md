@@ -1,6 +1,6 @@
 # v0.4 Shader And Transform Future Compatibility
 
-Status: active pre-release handoff. Created: 2026-06-01.
+Status: active pre-release handoff. Created: 2026-06-01. Last updated: 2026-06-01.
 
 This note captures a narrow release-stabilization concern from the v0.3 visible parity review:
 Datoviz v0.4 has most visible roadmap capabilities, but dynamic/customizable shaders and nonlinear
@@ -25,9 +25,11 @@ shader inside built-in point, mesh, image, volume, or annotation visuals.
 
 Before v0.4 final:
 
-1. Mark general custom visual/render shaders as `deferred`.
-2. Mark `DvzSceneCompute` as `advanced/unstable`, not as the general custom shader API.
+1. Mark general custom visual/render shaders as `deferred`. Done in the public feature-status docs.
+2. Mark `DvzSceneCompute` as `advanced/unstable`, not as the general custom shader API. Done in
+   the public feature-status docs.
 3. Document built-in shader ABI as internal unless a specific entry point is explicitly exported.
+   Done in `spec/scene/api/API_SURFACE.md`.
 4. Keep DRP2 shader identity based on transport format, source/hash, and optional built-in
    family/variant/version metadata.
 5. Avoid promising shader hot reload or built-in shader replacement.
@@ -55,14 +57,19 @@ positions or projection parameters change. Pan/zoom should update only panel tra
 
 Before v0.4 final:
 
-1. Document CPU pre-projection as the supported v0.4 user pattern.
-2. Mark scene-managed nonlinear transforms/projections as `deferred`.
+1. Document CPU pre-projection as the supported v0.4 user pattern. Done in public feature-status
+   docs and `spec/scene/semantics/NONLINEAR_TRANSFORMS.md`.
+2. Mark scene-managed nonlinear transforms/projections as `deferred`. Done in public feature-status
+   docs and transform specs.
 3. Keep the transform pipeline distinction explicit:
    `DataSpace -> VisualSpace -> PanelSpace -> ClipSpace`.
 4. Preserve the invariant that DRP2 receives visual-ready resources plus panel transform state, not
    scientific coordinate semantics.
-5. Do not expose a no-op projection API.
+5. Do not expose a no-op projection API. Current policy: rely on append-only growable descriptors
+   such as `DvzVisualAttachDesc`, and reject unknown flags in v0.4.
 6. Decide how future transform/domain data will extend the public API without breaking v0.4 users.
+   Current direction: append fields to growable descriptors or add a new growable descriptor rather
+   than changing existing defaults.
 
 Useful source documents:
 

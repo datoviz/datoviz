@@ -39,6 +39,12 @@ No scene-layer API is needed for v0.4 projection support.
 This approach is simple, has no shader complexity, and works correctly with the
 existing F64 precision policy (projection in F64, downcast at UploadNode).
 
+The v0.4 public API should not expose a projection setter or attachment field that accepts
+nonlinear transform parameters but has no effect. The ABI preparation is instead append-only:
+growable descriptors such as `DvzVisualAttachDesc` carry `struct_size` and `flags`, unknown flags
+are rejected, and future transform fields can be added without changing the default v0.4 Cartesian
+behavior.
+
 
 ## Deferred Future Path: GPU Projection Compute Pre-Pass
 
@@ -55,6 +61,8 @@ The panel declares a non-linear projection:
 ```text
 dvz_panel_set_coord_transform(panel, &transform_desc)  // type = DVZ_COORD_TRANSFORM_MERCATOR
 ```
+
+This is future API direction only. It is not an installed v0.4 symbol.
 
 When a non-affine projection is set on a panel, the scene:
 
