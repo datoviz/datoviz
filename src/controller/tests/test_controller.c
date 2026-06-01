@@ -144,45 +144,45 @@ int test_controller_desc_abi_rejects_invalid_structs(TstContext* suite, const Ts
 
     DvzPanzoomDesc panzoom = dvz_panzoom_desc();
     panzoom.struct_size = 0;
-    AT(dvz_panzoom_create(&panzoom) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panzoom_create(&panzoom) == NULL);
     panzoom = dvz_panzoom_desc();
     panzoom.flags = 1;
-    AT(dvz_panzoom_create(&panzoom) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panzoom_create(&panzoom) == NULL);
 
     DvzArcballDesc arcball = dvz_arcball_desc();
     arcball.struct_size = 0;
-    AT(dvz_arcball_create(&arcball) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_arcball_create(&arcball) == NULL);
     arcball = dvz_arcball_desc();
     arcball.flags = 1;
-    AT(dvz_arcball_create(&arcball) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_arcball_create(&arcball) == NULL);
 
     DvzCameraDesc camera = dvz_camera_desc();
     camera.struct_size = 0;
-    AT(dvz_camera_create(&camera) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_camera_create(&camera) == NULL);
     camera = dvz_camera_desc();
     camera.flags = 1;
-    AT(dvz_camera_create(&camera) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_camera_create(&camera) == NULL);
 
     DvzFlyDesc fly = dvz_fly_desc();
     fly.struct_size = 0;
-    AT(dvz_fly_create(&fly) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_fly_create(&fly) == NULL);
     fly = dvz_fly_desc();
     fly.flags = 1;
-    AT(dvz_fly_create(&fly) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_fly_create(&fly) == NULL);
 
     DvzTurntableDesc turntable = dvz_turntable_desc();
     turntable.struct_size = 0;
-    AT(dvz_turntable_create(&turntable) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_turntable_create(&turntable) == NULL);
     turntable = dvz_turntable_desc();
     turntable.flags = 1;
-    AT(dvz_turntable_create(&turntable) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_turntable_create(&turntable) == NULL);
 
     DvzOrbitCameraDesc orbit = dvz_orbit_camera_desc();
     orbit.struct_size = 0;
-    AT(dvz_orbit_camera_create(&orbit) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_orbit_camera_create(&orbit) == NULL);
     orbit = dvz_orbit_camera_desc();
     orbit.flags = 1;
-    AT(dvz_orbit_camera_create(&orbit) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_orbit_camera_create(&orbit) == NULL);
     return 0;
 }
 
