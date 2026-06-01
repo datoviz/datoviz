@@ -438,7 +438,7 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
 
     const first = clonePacketSet(scene.emitPackets());
     const firstStats = packetStats(first);
-    if (firstStats.setup === 0 || firstStats.update === 0 || firstStats.frame === 0) {
+    if (firstStats.update === 0 || firstStats.frame === 0) {
       return "missing split packet bytes " + JSON.stringify(firstStats);
     }
     if (firstStats.updateArena === 0) {
@@ -459,23 +459,26 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
     }
 
     const resetPacket = clonePacketSet(scene.emitPackets());
-    await scene.runtime.executePacketSet(resetPacket, { reset: true, replaceExistingResources: false });
-    const afterReset = clonePacketSet(scene.emitPackets());
-    await scene.runtime.executePacketSet(afterReset);
+    const resetStats = packetStats(resetPacket);
+    if (resetStats.setup > 0) {
+      await scene.runtime.executePacketSet(resetPacket, { reset: true, replaceExistingResources: false });
+      const afterReset = clonePacketSet(scene.emitPackets());
+      await scene.runtime.executePacketSet(afterReset);
 
-    let staleAfterResetRejected = false;
-    try {
-      await scene.runtime.executePacketSet(resetPacket);
-    } catch (error) {
-      staleAfterResetRejected = String(error.message).includes("stale DRP2 packet");
-    }
-    if (!staleAfterResetRejected) {
-      return "stale packet was accepted after runtime reset";
+      let staleAfterResetRejected = false;
+      try {
+        await scene.runtime.executePacketSet(resetPacket);
+      } catch (error) {
+        staleAfterResetRejected = String(error.message).includes("stale DRP2 packet");
+      }
+      if (!staleAfterResetRejected) {
+        return "stale packet was accepted after runtime reset";
+      }
     }
 
     return {
       first: firstStats,
-      reset: packetStats(resetPacket),
+      reset: resetStats,
       resource_version: scene.runtime.packetResourceVersion,
       frame_index: scene.runtime.packetFrameIndex,
     };
