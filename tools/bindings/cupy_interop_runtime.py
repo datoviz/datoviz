@@ -407,14 +407,22 @@ class ExportedDatovizBuffer:
     """Own a Vulkan-exportable Datoviz buffer plus exported handles."""
 
     def __init__(
-        self, dvz, count: int, components: int = POSITION_COMPONENTS, present: bool = False
+        self,
+        dvz,
+        count: int,
+        components: int = POSITION_COMPONENTS,
+        present: bool = False,
+        context=None,
+        drp2_usage: int = DVZ_DRP2_BUFFER_USAGE_VERTEX | DVZ_DRP2_BUFFER_USAGE_STORAGE,
     ):
         self.dvz = dvz
         self.count = count
         self.components = components
         self.size = count * components * POSITION_DTYPE_SIZE
         self.present = present
-        self.ctx = None
+        self.context = context
+        self._owned_context = None
+        self.drp2_usage = drp2_usage
         self.buffer = None
         self.semaphore = None
         self.desc = dvz.DvzInteropBufferExport()
@@ -422,18 +430,25 @@ class ExportedDatovizBuffer:
         self.desc.semaphore_handle = -1
 
     @property
+    def ctx(self):
+        context = self.context or self._owned_context
+        return context.ctx if context is not None else None
+
+    @property
     def device(self):
-        return self.dvz.dvz_gpu_ctx_device(self.ctx) if self.ctx else None
+        context = self.context or self._owned_context
+        return context.device if context is not None else None
 
     @property
     def allocator(self):
-        return self.dvz.dvz_gpu_ctx_alloc(self.ctx) if self.ctx else None
+        context = self.context or self._owned_context
+        return context.allocator if context is not None else None
 
     def __enter__(self):
         dvz = self.dvz
-        self.ctx = interop_gpu_ctx(dvz, present=self.present)
-        if not self.ctx:
-            skip('Datoviz interop GPU context unavailable')
+        if self.context is None:
+            self._owned_context = DatovizCudaContext(dvz, present=self.present)
+            self._owned_context.__enter__()
         device = self.device
         allocator = self.allocator
         if not device or not allocator:
@@ -464,7 +479,7 @@ class ExportedDatovizBuffer:
         cfg = dvz.DvzInteropBufferExportConfig()
         cfg.offset = 0
         cfg.size = 0
-        cfg.drp2_usage = DVZ_DRP2_BUFFER_USAGE_VERTEX | DVZ_DRP2_BUFFER_USAGE_STORAGE
+        cfg.drp2_usage = self.drp2_usage
         cfg.flags = 0
         cfg.semaphore = self.semaphore
         cfg.semaphore_handle_type = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT
@@ -498,6 +513,37 @@ class ExportedDatovizBuffer:
             self.dvz.dvz_semaphore_destroy(self.semaphore)
             self.dvz.dvz_semaphore_free(self.semaphore)
             self.semaphore = None
+        if self._owned_context is not None:
+            self._owned_context.__exit__(_exc_type, _exc, _tb)
+            self._owned_context = None
+        return False
+
+
+class DatovizCudaContext:
+    """Own one exportable Datoviz GPU context for CUDA interop."""
+
+    def __init__(self, dvz, *, present: bool = False):
+        self.dvz = dvz
+        self.present = present
+        self.ctx = None
+
+    @property
+    def device(self):
+        return self.dvz.dvz_gpu_ctx_device(self.ctx) if self.ctx else None
+
+    @property
+    def allocator(self):
+        return self.dvz.dvz_gpu_ctx_alloc(self.ctx) if self.ctx else None
+
+    def __enter__(self):
+        self.ctx = interop_gpu_ctx(self.dvz, present=self.present)
+        if not self.ctx:
+            skip('Datoviz interop GPU context unavailable')
+        if not self.device or not self.allocator:
+            raise RuntimeError('interop GPU context is missing device or allocator')
+        return self
+
+    def __exit__(self, _exc_type, _exc, _tb):
         if self.ctx is not None:
             self.dvz.dvz_gpu_ctx_destroy(self.ctx)
             self.ctx = None
@@ -562,12 +608,19 @@ class CudaMappedDatovizBuffer:
         count: int,
         components: int = POSITION_COMPONENTS,
         present: bool = False,
+        context=None,
+        drp2_usage: int = DVZ_DRP2_BUFFER_USAGE_VERTEX | DVZ_DRP2_BUFFER_USAGE_STORAGE,
     ):
         self.dvz = dvz
         self.cp = cp
         self.bridge = bridge
         self.exported = ExportedDatovizBuffer(
-            dvz, count=count, components=components, present=present
+            dvz,
+            count=count,
+            components=components,
+            present=present,
+            context=context,
+            drp2_usage=drp2_usage,
         )
         self.owner: CudaMappedBufferOwner | None = None
         self.array = None
