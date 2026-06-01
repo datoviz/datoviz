@@ -240,7 +240,7 @@ static DvzOverlayCard* _add_plain_header(DvzOverlay* overlay)
 
     return dvz_overlay_card(
         overlay,
-        &(DvzOverlayCardDesc){
+        &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = "image probe readout",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_LEFT,
             .offset_px = {18.0f, 18.0f},
@@ -383,7 +383,7 @@ static int _set_probe_card_rich_text(DvzOverlayCard* card, const char* source)
         return -1;
     return dvz_overlay_card_set_rich_text(
         card,
-        &(DvzOverlayRichTextDesc){
+        &(DvzOverlayRichTextDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayRichTextDesc),
             .source = source,
             .max_width_px = 330.0f,
             .char_width_px = 7.2f,
@@ -574,7 +574,7 @@ int main(int argc, char** argv)
     rich_style.min_width_px = 330.0f;
     DvzOverlayCard* rich = dvz_overlay_card(
         overlay,
-        &(DvzOverlayCardDesc){
+        &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = "fallback",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_RIGHT,
             .offset_px = {22.0f, 22.0f},

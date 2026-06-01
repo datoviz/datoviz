@@ -68,6 +68,11 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzAnnotationDesc` | `dvz_annotation_desc()` |
 | `DvzLabelDesc` | `dvz_label_desc()` |
 | `DvzScaleBarDesc` | `dvz_scalebar_desc()` |
+| `DvzFieldGeometry` | `dvz_field_geometry()` |
+| `DvzFieldDataView` | `dvz_field_data_view()` |
+| `DvzOverlayCardStyle` | `dvz_overlay_card_style()` |
+| `DvzOverlayCardDesc` | `dvz_overlay_card_desc()` |
+| `DvzOverlayRichTextDesc` | `dvz_overlay_rich_text_desc()` |
 
 
 ## Should Add Before API Freeze
@@ -79,8 +84,6 @@ and likely to grow or gain flags after v0.4:
 | --- | --- | --- |
 | Scene techniques | `DvzCapabilitySnapshot` | capability-aware setup paths |
 | Visual styles/materials | `DvzVisualDataView` | data-view setters |
-| Fields | `DvzFieldGeometry`, `DvzFieldDataView` | sampled field geometry and data-view setters |
-| Overlay | `DvzOverlayCardStyle`, `DvzOverlayCardDesc`, `DvzOverlayRichTextDesc` | `dvz_overlay_card()`, `dvz_overlay_card_set_style()`, `dvz_overlay_card_set_rich_text()` |
 | GUI | `DvzGuiConfig`, `DvzGuiViewportConfig` | `dvz_view_gui()`, `dvz_gui_viewport()`, `dvz_gui_viewport_from_view()` |
 | Canvas/stream | `DvzCanvasLiveImageSinkConfig`, `DvzStreamFrame`, `DvzStreamSinkBackend` | `dvz_canvas_configure_live_image_sink()`, stream frame and sink backend APIs |
 | Host integration | `DvzWindowExternalSurfaceInfo`, `DvzWindowBackendProcs`, `DvzWindowBackend`, `DvzWindowGlfwInputCallbacks` | external surface, custom backend, and GLFW callback registration APIs |

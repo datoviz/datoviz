@@ -156,7 +156,7 @@ static bool _add_image_panel(DvzScene* scene, DvzPanel* panel)
     if (field == NULL)
         return false;
     if (!dvz_sampled_field_set_data(
-            field, &(DvzFieldDataView){
+            field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = pixels,
                        .bytes_per_row = IMG * 4,
                        .rows_per_image = IMG,

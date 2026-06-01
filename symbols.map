@@ -892,6 +892,7 @@ dvz_orbit_camera_viewport
 dvz_overlay
 dvz_overlay_card
 dvz_overlay_card_clear_rich_text
+dvz_overlay_card_desc
 dvz_overlay_card_destroy
 dvz_overlay_card_set_layout
 dvz_overlay_card_set_placement
@@ -901,6 +902,7 @@ dvz_overlay_card_set_text
 dvz_overlay_card_set_visible
 dvz_overlay_card_style
 dvz_overlay_destroy
+dvz_overlay_rich_text_desc
 dvz_panel
 dvz_panel_add_composite
 dvz_panel_add_visual
@@ -1037,6 +1039,8 @@ dvz_resource_shader
 dvz_resource_testdata
 dvz_resource_texture
 dvz_resource_wgsl
+dvz_field_data_view
+dvz_field_geometry
 dvz_sampled_field
 dvz_sampled_field_desc
 dvz_sampled_field_destroy

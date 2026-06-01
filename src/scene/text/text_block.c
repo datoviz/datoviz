@@ -2034,6 +2034,7 @@ int _scene_text_block_realize_image(
     }
 
     DvzFieldDataView view = {
+        DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
         .data = block->rgba,
         .bytes_per_row = 4u * (uint64_t)block->raster_width,
         .rows_per_image = block->raster_height,

@@ -365,6 +365,58 @@ int test_scene_text_annotation_descriptor_abi_rejects_invalid_structs(
 }
 
 
+int test_scene_overlay_descriptor_abi_rejects_invalid_structs(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+    DvzOverlay* overlay = dvz_overlay(panel, 0);
+    ANN(overlay);
+
+    DvzOverlayCardDesc card_desc = dvz_overlay_card_desc();
+    card_desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_overlay_card(overlay, &card_desc) == NULL);
+
+    card_desc = dvz_overlay_card_desc();
+    card_desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_overlay_card(overlay, &card_desc) == NULL);
+
+    DvzOverlayCardStyle style = dvz_overlay_card_style();
+    style.struct_size = 0;
+    card_desc = dvz_overlay_card_desc();
+    card_desc.style = &style;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_overlay_card(overlay, &card_desc) == NULL);
+
+    DvzOverlayCard* card = dvz_overlay_card(overlay, NULL);
+    ANN(card);
+
+    style = dvz_overlay_card_style();
+    style.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_overlay_card_set_style(card, &style) < 0);
+
+    DvzOverlayRichTextDesc rich_desc = dvz_overlay_rich_text_desc();
+    rich_desc.struct_size = 0;
+    rich_desc.source = "invalid";
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_overlay_card_set_rich_text(card, &rich_desc) < 0);
+
+    rich_desc = dvz_overlay_rich_text_desc();
+    rich_desc.flags = 1;
+    rich_desc.source = "invalid";
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_overlay_card_set_rich_text(card, &rich_desc) < 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_item_interaction_defaults_and_lifetime(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -893,7 +945,7 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
     style.text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     DvzOverlayCard* card = dvz_overlay_card(
         overlay,
-        &(DvzOverlayCardDesc){
+        &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = "overlay",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_RIGHT,
             .anchor_px = {40.0f, 50.0f},
@@ -1018,7 +1070,7 @@ int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCas
     style.padding_px[1] = 8.0f;
     DvzOverlayCard* card = dvz_overlay_card(
         overlay,
-        &(DvzOverlayCardDesc){
+        &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = "fallback",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_LEFT,
             .offset_px = {16.0f, 18.0f},
@@ -1027,7 +1079,7 @@ int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCas
 
     AT(dvz_overlay_card_set_rich_text(
            card,
-           &(DvzOverlayRichTextDesc){
+           &(DvzOverlayRichTextDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayRichTextDesc),
                .source = "Rich <b>card</b> <u><color=#2A80E6>blue</color></u>",
                .max_width_px = 126.0f,
                .char_width_px = 7.0f,
@@ -1086,7 +1138,7 @@ int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCas
         AT(n > 0 && (size_t)n < sizeof(source));
         AT(dvz_overlay_card_set_rich_text(
                card,
-               &(DvzOverlayRichTextDesc){
+               &(DvzOverlayRichTextDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayRichTextDesc),
                    .source = source,
                    .max_width_px = 126.0f,
                    .char_width_px = 7.0f,
@@ -3332,6 +3384,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_interaction_core);
     TST_CASE(test_scene_interaction_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_text_annotation_descriptor_abi_rejects_invalid_structs);
+    TST_CASE(test_scene_overlay_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_item_interaction_defaults_and_lifetime);
     TST_CASE(test_scene_item_interaction_input_queries);
     TST_CASE(test_scene_item_interaction_applies_results);

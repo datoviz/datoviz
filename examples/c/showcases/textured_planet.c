@@ -411,7 +411,7 @@ static bool _create_planet_texture(
         return false;
 
     return dvz_sampled_field_set_data(
-        texture->field, &(DvzFieldDataView){
+        texture->field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                             .data = texture->pixels,
                             .bytes_per_row = texture->width * 4,
                             .rows_per_image = texture->height,

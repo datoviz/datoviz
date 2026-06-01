@@ -1619,7 +1619,7 @@ int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCas
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
     AT(dvz_sampled_field_set_data(
-           field, &(DvzFieldDataView){.data = pixels, .bytes_per_row = 16, .rows_per_image = 4}));
+           field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = pixels, .bytes_per_row = 16, .rows_per_image = 4}));
     AT(dvz_visual_set_field(image, "field", field));
 
     DvzDiagnosticReport report;
@@ -1678,7 +1678,7 @@ int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const Ts
                });
     ANN(field);
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 2 * sizeof(int32_t),
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = values, .bytes_per_row = 2 * sizeof(int32_t),
                                    .rows_per_image = 2}));
     AT(dvz_visual_set_field(labels, "field", field));
     AT(_visual_family_state(labels)->field == field);
@@ -1940,7 +1940,7 @@ int test_scene_image_r16_float_field_uses_bound_scale(TstContext* suite, const T
                });
     ANN(field);
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 4 * sizeof(uint16_t), .rows_per_image = 4}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = values, .bytes_per_row = 4 * sizeof(uint16_t), .rows_per_image = 4}));
     AT(dvz_visual_set_field(image, "field", field));
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
@@ -2016,7 +2016,7 @@ int test_scene_image_r16_snorm_field_uses_bound_scale(TstContext* suite, const T
                });
     ANN(field);
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 4 * sizeof(int16_t), .rows_per_image = 4}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = values, .bytes_per_row = 4 * sizeof(int16_t), .rows_per_image = 4}));
     AT(dvz_visual_set_field(image, "field", field));
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
@@ -2093,12 +2093,12 @@ int test_scene_sampled_field_update_region(TstContext* suite, const TstCase* ite
 
     uint8_t base[16] = {0};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = base, .bytes_per_row = 4, .rows_per_image = 4}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = base, .bytes_per_row = 4, .rows_per_image = 4}));
 
     uint8_t patch[4] = {1, 2, 3, 4};
     AT(dvz_sampled_field_update_region(
         field, (DvzFieldRegion){.x = 1, .y = 1, .z = 0, .width = 2, .height = 2, .depth = 1},
-        &(DvzFieldDataView){.data = patch, .bytes_per_row = 2, .rows_per_image = 2}));
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = patch, .bytes_per_row = 2, .rows_per_image = 2}));
 
     uint8_t* data = (uint8_t*)field->data;
     AT(data[5] == 1);
@@ -2204,7 +2204,7 @@ int test_scene_mesh_visual_binds_texture_field(TstContext* suite, const TstCase*
                });
     ANN(rgba);
     AT(dvz_sampled_field_set_data(
-        rgba, &(DvzFieldDataView){.data = pixels, .bytes_per_row = 2 * 4, .rows_per_image = 2}));
+        rgba, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = pixels, .bytes_per_row = 2 * 4, .rows_per_image = 2}));
     AT(dvz_visual_set_field(mesh, "texture", rgba));
     AT(_visual_family_state(mesh)->field == rgba);
     AT(strcmp(_visual_family_state(mesh)->field_slot, "texture") == 0);
@@ -2332,7 +2332,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const Ts
 
     uint16_t base[8] = {0, 1, 2, 3, 4, 5, 6, 7};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                    .data = base,
                    .bytes_per_row = 2 * sizeof(uint16_t),
                    .rows_per_image = 2,
@@ -2415,7 +2415,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const Ts
     uint16_t patch[2] = {101, 102};
     AT(dvz_sampled_field_update_region(
         field, (DvzFieldRegion){.x = 1, .y = 0, .z = 1, .width = 1, .height = 2, .depth = 1},
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = patch,
             .bytes_per_row = sizeof(uint16_t),
             .rows_per_image = 2,
@@ -2835,7 +2835,7 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
     ANN(field);
     AT(dvz_sampled_field_set_data(
         field,
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = data,
             .bytes_per_row = width * 4,
             .rows_per_image = height,
@@ -2997,7 +2997,7 @@ int test_scene_volume_label_slice_uses_categorical_scale(TstContext* suite, cons
     ANN(field);
     AT(dvz_sampled_field_set_data(
         field,
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = labels,
             .bytes_per_row = 2 * sizeof(uint16_t),
             .rows_per_image = 2,
@@ -3077,7 +3077,7 @@ int test_scene_volume_label_composite_uses_first_hit_shader(
     ANN(field);
     AT(dvz_sampled_field_set_data(
         field,
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = labels,
             .bytes_per_row = 2 * sizeof(uint16_t),
             .rows_per_image = 2,
@@ -3150,7 +3150,7 @@ int test_scene_volume_signed_label_composite_uses_first_hit_shader(
     ANN(field);
     AT(dvz_sampled_field_set_data(
         field,
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = labels,
             .bytes_per_row = 2 * sizeof(int16_t),
             .rows_per_image = 2,
@@ -3221,7 +3221,7 @@ int test_scene_volume_label_sparse_lookup_buffer(TstContext* suite, const TstCas
     ANN(field);
     AT(dvz_sampled_field_set_data(
         field,
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = labels,
             .bytes_per_row = 2 * sizeof(uint32_t),
             .rows_per_image = 2,
@@ -3304,7 +3304,7 @@ int test_scene_volume_signed_label_sparse_lookup_buffer(TstContext* suite, const
     ANN(field);
     AT(dvz_sampled_field_set_data(
         field,
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = labels,
             .bytes_per_row = 2 * sizeof(int32_t),
             .rows_per_image = 2,
@@ -3387,7 +3387,7 @@ int test_scene_volume_label_mip_reports_unsupported(TstContext* suite, const Tst
     ANN(field);
     AT(dvz_sampled_field_set_data(
         field,
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = labels,
             .bytes_per_row = 2 * sizeof(uint16_t),
             .rows_per_image = 2,
@@ -3444,7 +3444,7 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
     ANN(field);
     uint8_t values[8] = {0, 64, 128, 255, 32, 96, 160, 224};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = values, .bytes_per_row = 2, .rows_per_image = 2}));
     AT(dvz_visual_set_field(volume, "field", field));
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
@@ -3570,7 +3570,7 @@ int test_scene_sampled_field_3d_emits_runtime_texture_upload(
 
     uint16_t base[8] = {0, 1, 2, 3, 4, 5, 6, 7};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                    .data = base,
                    .bytes_per_row = 2 * sizeof(uint16_t),
                    .rows_per_image = 2,
@@ -3635,7 +3635,7 @@ int test_scene_sampled_field_3d_emits_runtime_texture_upload(
     uint16_t patch[2] = {101, 102};
     AT(dvz_sampled_field_update_region(
         field, (DvzFieldRegion){.x = 1, .y = 0, .z = 1, .width = 1, .height = 2, .depth = 1},
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = patch,
             .bytes_per_row = sizeof(uint16_t),
             .rows_per_image = 2,
@@ -3721,12 +3721,12 @@ int test_scene_sampled_field_update_region_rejects_out_of_bounds(
     uint8_t base[16] = {0};
     uint8_t patch[4] = {1, 2, 3, 4};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = base, .bytes_per_row = 4, .rows_per_image = 4}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = base, .bytes_per_row = 4, .rows_per_image = 4}));
     AT_EXPECTED_ERROR_STRICT(
         suite,
         !dvz_sampled_field_update_region(
             field, (DvzFieldRegion){.x = 3, .y = 3, .z = 0, .width = 2, .height = 2, .depth = 1},
-            &(DvzFieldDataView){.data = patch, .bytes_per_row = 2, .rows_per_image = 2}));
+            &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = patch, .bytes_per_row = 2, .rows_per_image = 2}));
     AT(_captured_log_contains(suite, "update region exceeds field dimensions"));
 
     dvz_scene_destroy(scene);
@@ -3756,7 +3756,7 @@ int test_scene_sampled_field_destroy_clears_visual_binding(TstContext* suite, co
 
     uint8_t rgba[16] = {0};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = rgba, .bytes_per_row = 8, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = rgba, .bytes_per_row = 8, .rows_per_image = 2}));
     AT(dvz_visual_set_field(image, "field", field));
     AT(_visual_family_state(image)->field == field);
     AT(strcmp(_visual_family_state(image)->field_slot, "field") == 0);
@@ -3794,7 +3794,7 @@ int test_scene_shared_field_update_marks_two_visuals_dirty(TstContext* suite, co
     ANN(field);
     float values[4] = {0.0f, 0.0f, 0.0f, 0.0f};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 2 * sizeof(float), .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = values, .bytes_per_row = 2 * sizeof(float), .rows_per_image = 2}));
     AT(dvz_visual_set_field(image0, "field", field));
     AT(dvz_visual_set_field(image1, "field", field));
 
@@ -3805,7 +3805,7 @@ int test_scene_shared_field_update_marks_two_visuals_dirty(TstContext* suite, co
     float patch[1] = {1.0f};
     AT(dvz_sampled_field_update_region(
         field, (DvzFieldRegion){.x = 1, .y = 1, .z = 0, .width = 1, .height = 1, .depth = 1},
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = patch, .bytes_per_row = sizeof(float), .rows_per_image = 1}));
     AT(field->dirty);
     AT(_visual_family_state(image0)->texture.dirty);
@@ -3865,7 +3865,7 @@ int test_scene_image_field_partial_update_emits_texture_subregion(TstContext* su
     ANN(field);
     float values[16] = {0};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 4 * sizeof(float), .rows_per_image = 4}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = values, .bytes_per_row = 4 * sizeof(float), .rows_per_image = 4}));
     AT(dvz_visual_set_field(image, "field", field));
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
@@ -3881,7 +3881,7 @@ int test_scene_image_field_partial_update_emits_texture_subregion(TstContext* su
     float patch[2] = {1.0f, 1.0f};
     AT(dvz_sampled_field_update_region(
         field, (DvzFieldRegion){.x = 1, .y = 2, .z = 0, .width = 2, .height = 1, .depth = 1},
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = patch,
             .bytes_per_row = 2 * sizeof(float),
             .rows_per_image = 1,
@@ -3957,7 +3957,7 @@ int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, 
     ANN(field);
     uint8_t pixels[2 * 2 * 4] = {0};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = pixels, .bytes_per_row = 2 * 4, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = pixels, .bytes_per_row = 2 * 4, .rows_per_image = 2}));
     AT(dvz_visual_set_field(image, "field", field));
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
@@ -3995,7 +3995,7 @@ int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, 
     uint8_t resized[4 * 3 * 4] = {0};
     AT(dvz_sampled_field_resize(
         field, 4, 3, 1,
-        &(DvzFieldDataView){.data = resized, .bytes_per_row = 4 * 4, .rows_per_image = 3}));
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = resized, .bytes_per_row = 4 * 4, .rows_per_image = 3}));
     const DvzSampledFieldDesc* desc = dvz_sampled_field_get_desc(field);
     ANN(desc);
     AT(desc->width == 4);
@@ -4085,7 +4085,7 @@ int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, co
     ANN(field);
     float values[16] = {0};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 4 * sizeof(float), .rows_per_image = 4}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = values, .bytes_per_row = 4 * sizeof(float), .rows_per_image = 4}));
 
     vec3 positions0[4] = {
         {-1.0f, -1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f},
@@ -4127,7 +4127,7 @@ int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, co
     float patch[2] = {1.0f, 1.0f};
     AT(dvz_sampled_field_update_region(
         field, (DvzFieldRegion){.x = 1, .y = 2, .z = 0, .width = 2, .height = 1, .depth = 1},
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = patch,
             .bytes_per_row = 2 * sizeof(float),
             .rows_per_image = 1,
@@ -4247,6 +4247,51 @@ int test_scene_scale_guide_descriptor_abi_rejects_invalid_structs(
 }
 
 
+int test_scene_field_descriptor_abi_rejects_invalid_structs(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzSampledFieldDesc desc = dvz_sampled_field_desc();
+    desc.width = 2;
+    desc.height = 2;
+    desc.depth = 1;
+    DvzSampledField* field = dvz_sampled_field(scene, &desc);
+    ANN(field);
+
+    uint8_t pixels[2 * 2 * 4] = {0};
+
+    DvzFieldDataView view = dvz_field_data_view();
+    view.struct_size = 0;
+    view.data = pixels;
+    view.bytes_per_row = 2 * 4;
+    view.rows_per_image = 2;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_sampled_field_set_data(field, &view));
+
+    view = dvz_field_data_view();
+    view.flags = 1;
+    view.data = pixels;
+    view.bytes_per_row = 2 * 4;
+    view.rows_per_image = 2;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_sampled_field_set_data(field, &view));
+
+    DvzFieldGeometry geometry = dvz_field_geometry();
+    geometry.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_sampled_field_set_geometry(field, &geometry));
+
+    geometry = dvz_field_geometry();
+    geometry.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_sampled_field_set_geometry(field, &geometry));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Register scene field and scale tests.
  *
@@ -4262,6 +4307,7 @@ int test_scene_fields(TstSuite* suite)
     TST_GROUP("fields");
 
     TST_CASE(test_scene_scale_guide_descriptor_abi_rejects_invalid_structs);
+    TST_CASE(test_scene_field_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_scale_colormap_colorbar_core);
     TST_CASE(test_scene_categorical_scale_entries);
     TST_CASE(test_scene_legend_lifecycle_and_reserve);

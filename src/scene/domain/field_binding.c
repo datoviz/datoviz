@@ -230,7 +230,7 @@ int dvz_visual_set_texture(
     if (field == NULL)
         return -1;
     if (!dvz_sampled_field_set_data(
-            field, &(DvzFieldDataView){
+            field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = rgba,
                        .bytes_per_row = (uint64_t)width * 4u,
                        .rows_per_image = height,
@@ -278,7 +278,7 @@ int dvz_visual_set_texture_f32(
     if (field == NULL)
         return -1;
     if (!dvz_sampled_field_set_data(
-            field, &(DvzFieldDataView){
+            field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = values,
                        .bytes_per_row = (uint64_t)width * sizeof(float),
                        .rows_per_image = height,

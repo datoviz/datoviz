@@ -783,7 +783,7 @@ int main(int argc, char** argv)
                });
     EXAMPLE_CHECK(label_field != NULL, "dvz_sampled_field(labels) failed");
     ok = dvz_sampled_field_set_data(
-        label_field, &(DvzFieldDataView){
+        label_field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                          .data = labels,
                          .bytes_per_row = TEX_W * sizeof(int32_t),
                          .rows_per_image = TEX_H,

@@ -460,7 +460,7 @@ static bool _add_wind_image(
     if (field == NULL)
         return false;
     if (!dvz_sampled_field_set_data(
-            field, &(DvzFieldDataView){
+            field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = values,
                        .bytes_per_row = FIELD_WIDTH * sizeof(float),
                        .rows_per_image = FIELD_HEIGHT,
@@ -861,7 +861,7 @@ static bool _add_probe(DvzScene* scene, DvzPanel* panel)
 
     DvzOverlayCard* card = dvz_overlay_card(
         overlay,
-        &(DvzOverlayCardDesc){
+        &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = readout,
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_RIGHT,
             .offset_px = {-112.0f, -46.0f},
@@ -963,7 +963,7 @@ static bool _update_wind_image(WindShowcaseState* state, float time_s)
             .height = FIELD_HEIGHT,
             .depth = 1,
         },
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = state->values,
             .bytes_per_row = FIELD_WIDTH * sizeof(float),
             .rows_per_image = FIELD_HEIGHT,

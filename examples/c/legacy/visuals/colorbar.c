@@ -669,7 +669,7 @@ int main(int argc, char** argv)
     float values[FIELD_SIZE * FIELD_SIZE] = {0};
     _fill_field(values);
     bool ok = dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                    .data = values,
                    .bytes_per_row = FIELD_SIZE * sizeof(float),
                    .rows_per_image = FIELD_SIZE,

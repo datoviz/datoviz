@@ -307,7 +307,7 @@ static bool _add_probe_image(
     if (field == NULL)
         return false;
     if (!dvz_sampled_field_set_data(
-            field, &(DvzFieldDataView){
+            field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = values,
                        .bytes_per_row = FIELD_WIDTH * sizeof(float),
                        .rows_per_image = FIELD_HEIGHT,
@@ -717,7 +717,7 @@ static DvzOverlayCard* _add_probe_card(DvzPanel* panel)
 
     return dvz_overlay_card(
         overlay,
-        &(DvzOverlayCardDesc){
+        &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = PROBE_CARD_TEXT,
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_PIXEL,
             .anchor_px = {anchor[0], anchor[1]},

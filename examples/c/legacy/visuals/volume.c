@@ -427,7 +427,7 @@ int main(int argc, char** argv)
                });
     EXAMPLE_CHECK(field != NULL, "dvz_sampled_field() failed");
     ok = dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                    .data = data,
                    .bytes_per_row = VOLUME_SIZE,
                    .rows_per_image = VOLUME_SIZE,

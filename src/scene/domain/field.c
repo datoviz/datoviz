@@ -37,6 +37,7 @@ static DvzSampledField* _scene_alloc_field_slot(DvzScene* scene);
 /*************************************************************************************************/
 
 #define DVZ_SAMPLED_FIELD_DESC_KNOWN_FLAGS 0u
+#define DVZ_FIELD_GEOMETRY_KNOWN_FLAGS 0u
 
 
 
@@ -54,6 +55,20 @@ static bool _sampled_field_desc_validate(const DvzSampledFieldDesc* desc)
 
 
 
+static bool _field_geometry_validate(const DvzFieldGeometry* geometry)
+{
+    if (geometry == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(geometry, DvzFieldGeometry, DVZ_FIELD_GEOMETRY_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzFieldGeometry ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
 DvzSampledFieldDesc dvz_sampled_field_desc(void)
 {
     DvzSampledFieldDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc)};
@@ -62,6 +77,20 @@ DvzSampledFieldDesc dvz_sampled_field_desc(void)
     desc.semantic = DVZ_FIELD_SEMANTIC_COLOR;
     desc.depth = 1;
     return desc;
+}
+
+
+
+DvzFieldGeometry dvz_field_geometry(void)
+{
+    DvzFieldGeometry geometry = {DVZ_STRUCT_INIT_FIELDS(DvzFieldGeometry)};
+    geometry.axis_order[0] = 0;
+    geometry.axis_order[1] = 1;
+    geometry.axis_order[2] = 2;
+    geometry.spacing[0] = 1.0;
+    geometry.spacing[1] = 1.0;
+    geometry.spacing[2] = 1.0;
+    return geometry;
 }
 
 
@@ -159,12 +188,7 @@ DvzSampledField* dvz_sampled_field(DvzScene* scene, const DvzSampledFieldDesc* d
     }
     field->desc = *desc;
     field->data_size = data_size;
-    field->geometry.axis_order[0] = 0;
-    field->geometry.axis_order[1] = 1;
-    field->geometry.axis_order[2] = 2;
-    field->geometry.spacing[0] = 1.0;
-    field->geometry.spacing[1] = 1.0;
-    field->geometry.spacing[2] = 1.0;
+    field->geometry = dvz_field_geometry();
     field->dirty = false;
     field->dirty_full = false;
     return field;
@@ -203,6 +227,8 @@ bool dvz_sampled_field_set_geometry(
 {
     ANN(field);
     ANN(geometry);
+    if (!_field_geometry_validate(geometry))
+        return false;
     if (!_scene_visual_mutation_allowed(field->scene, "update sampled field geometry"))
         return false;
     field->geometry = *geometry;

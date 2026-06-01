@@ -450,7 +450,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(texture != NULL, "dvz_sampled_field() failed");
 
     ok = dvz_sampled_field_set_data(
-        texture, &(DvzFieldDataView){
+        texture, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                      .data = pixels,
                      .bytes_per_row = texture_width * 4,
                      .rows_per_image = texture_height,

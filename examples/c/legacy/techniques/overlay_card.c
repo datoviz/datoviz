@@ -115,7 +115,7 @@ static DvzOverlayCard* _add_card(
 
     return dvz_overlay_card(
         overlay,
-        &(DvzOverlayCardDesc){
+        &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = text,
             .placement = placement,
             .offset_px = {offset_x, offset_y},

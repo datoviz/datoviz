@@ -107,6 +107,8 @@ typedef struct DvzSampledFieldDesc DvzSampledFieldDesc;
 
 struct DvzFieldGeometry
 {
+    uint32_t struct_size;
+    uint32_t flags;
     uint32_t axis_order[3];
     bool axis_flip[3];
     double origin[3];
@@ -132,6 +134,8 @@ typedef struct DvzFieldRegion DvzFieldRegion;
 
 struct DvzFieldDataView
 {
+    uint32_t struct_size;
+    uint32_t flags;
     const void* data;
     uint64_t bytes_per_row;
     uint64_t rows_per_image;
@@ -150,6 +154,22 @@ typedef struct DvzFieldDataView DvzFieldDataView;
  * @return default sampled-field descriptor
  */
 DVZ_EXPORT DvzSampledFieldDesc dvz_sampled_field_desc(void);
+
+
+/**
+ * Return the default sampled-field geometry descriptor.
+ *
+ * @return default sampled-field geometry descriptor
+ */
+DVZ_EXPORT DvzFieldGeometry dvz_field_geometry(void);
+
+
+/**
+ * Return the default sampled-field data view descriptor.
+ *
+ * @return default sampled-field data view descriptor
+ */
+DVZ_EXPORT DvzFieldDataView dvz_field_data_view(void);
 
 
 /**

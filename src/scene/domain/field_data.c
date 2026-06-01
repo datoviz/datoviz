@@ -33,6 +33,31 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_FIELD_DATA_VIEW_KNOWN_FLAGS 0u
+
+
+
+static bool _field_data_view_abi_validate(const DvzFieldDataView* view)
+{
+    if (view == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(view, DvzFieldDataView, DVZ_FIELD_DATA_VIEW_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzFieldDataView ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+DvzFieldDataView dvz_field_data_view(void)
+{
+    return (DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView)};
+}
+
+
+
 bool _field_data_view_valid(
     const DvzSampledFieldDesc* desc, const DvzFieldDataView* view, const DvzFieldRegion* region)
 {
@@ -155,6 +180,8 @@ bool dvz_sampled_field_set_data(DvzSampledField* field, const DvzFieldDataView* 
 {
     ANN(field);
     ANN(view);
+    if (!_field_data_view_abi_validate(view))
+        return false;
     if (!_scene_visual_mutation_allowed(field->scene, "replace sampled field data"))
         return false;
 
@@ -195,6 +222,8 @@ bool dvz_sampled_field_resize(
 {
     ANN(field);
     ANN(view);
+    if (!_field_data_view_abi_validate(view))
+        return false;
     if (!_scene_visual_mutation_allowed(field->scene, "resize sampled field"))
         return false;
     if (width == 0 || height == 0 || depth == 0)
@@ -256,6 +285,8 @@ bool dvz_sampled_field_update_region(
 {
     ANN(field);
     ANN(view);
+    if (!_field_data_view_abi_validate(view))
+        return false;
     if (!_scene_visual_mutation_allowed(field->scene, "update sampled field data"))
         return false;
     if (field->data == NULL)

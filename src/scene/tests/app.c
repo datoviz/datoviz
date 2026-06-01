@@ -3061,7 +3061,7 @@ int test_app_offscreen_colorbar_has_visible_ramp_and_labels(TstContext* suite, c
             values[y * 8 + x] = (float)x / 7.0f;
     }
     bool ok = dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                    .data = values,
                    .bytes_per_row = 8 * sizeof(float),
                    .rows_per_image = 8,
@@ -3487,7 +3487,7 @@ int test_app_offscreen_overlay_rich_card_has_visible_pixels(
     style.min_width_px = 120.0f;
     DvzOverlayCard* card = dvz_overlay_card(
         overlay,
-        &(DvzOverlayCardDesc){
+        &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = "fallback",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_RIGHT,
             .offset_px = {12.0f, 10.0f},
@@ -3496,7 +3496,7 @@ int test_app_offscreen_overlay_rich_card_has_visible_pixels(
     AT(card != NULL);
     AT(dvz_overlay_card_set_rich_text(
            card,
-           &(DvzOverlayRichTextDesc){
+           &(DvzOverlayRichTextDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayRichTextDesc),
                .source = "<b>Rich card</b> visible",
                .max_width_px = 112.0f,
                .char_width_px = 7.0f,
@@ -3606,7 +3606,7 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
     ANN(field);
     float values[16] = {0};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                    .data = values,
                    .bytes_per_row = 4 * sizeof(float),
                    .rows_per_image = 4,
@@ -3643,7 +3643,7 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
         patch[i] = 1.0f;
     AT(dvz_sampled_field_update_region(
         field, (DvzFieldRegion){.x = 2, .y = 0, .z = 0, .width = 2, .height = 4, .depth = 1},
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = patch,
             .bytes_per_row = 2 * sizeof(float),
             .rows_per_image = 4,
@@ -4888,7 +4888,7 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
     ANN(field);
     float values[16] = {0};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                    .data = values,
                    .bytes_per_row = 4 * sizeof(float),
                    .rows_per_image = 4,
@@ -4955,7 +4955,7 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
         patch[i] = 1.0f;
     AT(dvz_sampled_field_update_region(
         field, (DvzFieldRegion){.x = 2, .y = 0, .z = 0, .width = 2, .height = 4, .depth = 1},
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = patch,
             .bytes_per_row = 2 * sizeof(float),
             .rows_per_image = 4,
@@ -5652,7 +5652,7 @@ int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCa
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
     AT(dvz_visual_set_field(volume, "field", field));
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
     dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -5738,7 +5738,7 @@ int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const 
         255, 255, 255, 255,
     };
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
     AT(dvz_visual_set_field(volume, "field", field));
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
     AT(dvz_volume_set_step_count(volume, 16) == 0);
@@ -5821,7 +5821,7 @@ int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const T
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
     AT(dvz_visual_set_field(volume, "field", field));
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
     AT(dvz_volume_set_step_count(volume, 64) == 0);
@@ -5906,7 +5906,7 @@ int test_app_offscreen_volume_label_composite_renders_category(
     const uint16_t labels[8] = {2, 2, 2, 2, 2, 2, 2, 2};
     AT(dvz_sampled_field_set_data(
         field,
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = labels,
             .bytes_per_row = 2 * sizeof(uint16_t),
             .rows_per_image = 2,
@@ -6008,7 +6008,7 @@ int test_app_offscreen_volume_label_composite_renders_sparse_category(
     const uint32_t labels[8] = {70000, 70000, 70000, 70000, 70000, 70000, 70000, 70000};
     AT(dvz_sampled_field_set_data(
         field,
-        &(DvzFieldDataView){
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
             .data = labels,
             .bytes_per_row = 2 * sizeof(uint32_t),
             .rows_per_image = 2,
@@ -6141,7 +6141,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
         255, 255, 255, 255,
     };
     if (!dvz_sampled_field_set_data(
-            field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}))
+            field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}))
     {
         dvz_scene_destroy(scene);
         return out;
@@ -6496,7 +6496,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
         255, 255, 255, 255,
     };
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
 
     DvzVisual* volume = dvz_volume(scene, 0);
     DvzVisual* slice = dvz_volume(scene, 0);
@@ -6682,7 +6682,7 @@ int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, con
         255, 255, 255, 255,
     };
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
     AT(dvz_visual_set_field(volume, "field", field));
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
     AT(dvz_volume_set_step_count(volume, 16) == 0);

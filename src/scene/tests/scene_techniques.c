@@ -485,7 +485,7 @@ int test_scene_panel_graph_failure_reports_specific_diagnostic(TstContext* suite
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
 
     DvzVisual* volume = dvz_volume(scene, 0);
     DvzVisual* slice = dvz_volume(scene, 0);
@@ -2193,7 +2193,7 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
 
     DvzVisual* volume = dvz_volume(scene, 0);
     DvzVisual* slice = dvz_volume(scene, 0);
@@ -2375,7 +2375,7 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
 
     DvzVisual* volume = dvz_volume(scene, 0);
     DvzVisual* slice = dvz_volume(scene, 0);

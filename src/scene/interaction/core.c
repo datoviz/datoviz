@@ -50,6 +50,9 @@
 #define DVZ_ITEM_STATE_VISUAL_STYLE_KNOWN_FLAGS 0u
 #define DVZ_SELECTION_VISUAL_STYLE_KNOWN_FLAGS 0u
 #define DVZ_ITEM_INTERACTION_DESC_KNOWN_FLAGS 0u
+#define DVZ_OVERLAY_CARD_STYLE_KNOWN_FLAGS 0u
+#define DVZ_OVERLAY_CARD_DESC_KNOWN_FLAGS 0u
+#define DVZ_OVERLAY_RICH_TEXT_DESC_KNOWN_FLAGS 0u
 
 
 
@@ -118,6 +121,12 @@ static void _scene_card_hide(DvzSceneCard* card);
 static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card);
 
 static bool _scene_card_renderer_supported(DvzTextRenderer renderer);
+
+static bool _overlay_card_style_validate(const DvzOverlayCardStyle* style);
+
+static bool _overlay_card_desc_validate(const DvzOverlayCardDesc* desc);
+
+static bool _overlay_rich_text_desc_validate(const DvzOverlayRichTextDesc* desc);
 
 static int _scene_card_apply_style(DvzSceneCard* card, const DvzOverlayCardStyle* style);
 
@@ -210,6 +219,56 @@ static bool _item_interaction_desc_validate(const DvzItemInteractionDesc* desc)
     if (!DVZ_STRUCT_VALID(desc, DvzItemInteractionDesc, DVZ_ITEM_INTERACTION_DESC_KNOWN_FLAGS))
     {
         log_error("invalid DvzItemInteractionDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _overlay_card_style_validate(const DvzOverlayCardStyle* style)
+{
+    if (style == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(style, DvzOverlayCardStyle, DVZ_OVERLAY_CARD_STYLE_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzOverlayCardStyle ABI prologue");
+        return false;
+    }
+    if (!_scene_card_renderer_supported(style->text_renderer))
+    {
+        log_error("overlay card text renderer %d is not implemented", style->text_renderer);
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _overlay_card_desc_validate(const DvzOverlayCardDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzOverlayCardDesc, DVZ_OVERLAY_CARD_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzOverlayCardDesc ABI prologue");
+        return false;
+    }
+    if (!_overlay_card_style_validate(desc->style))
+        return false;
+    return true;
+}
+
+
+
+static bool _overlay_rich_text_desc_validate(const DvzOverlayRichTextDesc* desc)
+{
+    if (desc == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(
+            desc, DvzOverlayRichTextDesc, DVZ_OVERLAY_RICH_TEXT_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzOverlayRichTextDesc ABI prologue");
         return false;
     }
     return true;
@@ -1010,11 +1069,8 @@ static int _scene_card_apply_style(DvzSceneCard* card, const DvzOverlayCardStyle
     ANN(card);
     if (style == NULL)
         return 0;
-    if (!_scene_card_renderer_supported(style->text_renderer))
-    {
-        log_error("overlay card text renderer %d is not implemented", style->text_renderer);
+    if (!_overlay_card_style_validate(style))
         return -1;
-    }
 
     card->background_color = style->background_color;
     card->text_color = style->text_color;
@@ -2498,6 +2554,7 @@ DvzOverlayCardStyle dvz_overlay_card_style(void)
     DvzSceneCard card = {0};
     _scene_card_init(&card, NULL);
     return (DvzOverlayCardStyle){
+        DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardStyle),
         .background_color = card.background_color,
         .text_color = card.text_color,
         .padding_px = {card.padding_px[0], card.padding_px[1]},
@@ -2509,6 +2566,20 @@ DvzOverlayCardStyle dvz_overlay_card_style(void)
         .max_text_chars = card.max_text_chars,
     };
 }
+
+
+DvzOverlayCardDesc dvz_overlay_card_desc(void)
+{
+    return (DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc)};
+}
+
+
+
+DvzOverlayRichTextDesc dvz_overlay_rich_text_desc(void)
+{
+    return (DvzOverlayRichTextDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayRichTextDesc)};
+}
+
 
 
 /**
@@ -2523,6 +2594,8 @@ DvzOverlayCard* dvz_overlay_card(DvzOverlay* overlay, const DvzOverlayCardDesc* 
     ANN(overlay);
     if (!overlay->active || overlay->scene == NULL || overlay->panel == NULL)
         return NULL;
+    if (!_overlay_card_desc_validate(desc))
+        return NULL;
     DvzScene* scene = overlay->scene;
     if (scene->overlay_card_count >= DVZ_SCENE_MAX_OVERLAY_CARDS)
     {
@@ -2536,7 +2609,7 @@ DvzOverlayCard* dvz_overlay_card(DvzOverlay* overlay, const DvzOverlayCardDesc* 
     card->overlay = overlay;
     card->panel = overlay->panel;
     card->active = true;
-    card->flags = desc != NULL ? desc->flags : 0;
+    card->flags = desc != NULL ? desc->card_flags : 0;
     _scene_card_init(&card->card, overlay->panel);
     if (desc != NULL)
     {
@@ -2596,6 +2669,8 @@ int dvz_overlay_card_set_style(DvzOverlayCard* card, const DvzOverlayCardStyle* 
     ANN(card);
     if (!card->active)
         return -1;
+    if (!_overlay_card_style_validate(style))
+        return -1;
     DvzOverlayCardStyle resolved = style != NULL ? *style : dvz_overlay_card_style();
     if (_scene_card_apply_style(&card->card, &resolved) != 0)
         return -1;
@@ -2642,6 +2717,8 @@ int dvz_overlay_card_set_rich_text(DvzOverlayCard* card, const DvzOverlayRichTex
 {
     ANN(card);
     if (!card->active || desc == NULL || desc->source == NULL)
+        return -1;
+    if (!_overlay_rich_text_desc_validate(desc))
         return -1;
 
     if (card->rich_enabled)

@@ -2076,7 +2076,7 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
                });
     ANN(field);
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = pixels, .bytes_per_row = 2 * 4, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = pixels, .bytes_per_row = 2 * 4, .rows_per_image = 2}));
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
@@ -2665,7 +2665,7 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
     ANN(field);
     uint8_t base[4 * 4 * 4] = {0};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = base, .bytes_per_row = 4 * 4, .rows_per_image = 4}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = base, .bytes_per_row = 4 * 4, .rows_per_image = 4}));
     AT(dvz_visual_set_field(image, "field", field));
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
@@ -2680,7 +2680,7 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
     uint8_t patch[2 * 4] = {1, 2, 3, 4, 5, 6, 7, 8};
     AT(dvz_sampled_field_update_region(
         field, (DvzFieldRegion){.x = 1, .y = 2, .z = 0, .width = 2, .height = 1, .depth = 1},
-        &(DvzFieldDataView){.data = patch, .bytes_per_row = 2 * 4, .rows_per_image = 1}));
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = patch, .bytes_per_row = 2 * 4, .rows_per_image = 1}));
 
     char* json = dvz_scene_json(scene);
     ANN(json);
@@ -4798,7 +4798,7 @@ int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstContext* su
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
     AT(dvz_sampled_field_set_data(
-           field, &(DvzFieldDataView){.data = pixels, .bytes_per_row = 16, .rows_per_image = 4}));
+           field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = pixels, .bytes_per_row = 16, .rows_per_image = 4}));
     AT(dvz_visual_set_field(image, "field", field));
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
@@ -5898,7 +5898,7 @@ static int _labels_emit_figure(
                });
     ANN(field);
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                    .data = values,
                    .bytes_per_row = bytes_per_row,
                    .rows_per_image = 2,
@@ -6821,7 +6821,7 @@ int test_scene_pending_render_work_tracks_volume_state(TstContext* suite, const 
     AT(field != NULL);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
 
     DvzVisual* volume = dvz_volume(scene, 0);
     AT(volume != NULL);
@@ -7139,7 +7139,7 @@ int test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes(
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
 
     DvzVisual* volume = dvz_volume(scene, 0);
     DvzVisual* slice = dvz_volume(scene, 0);
@@ -8091,7 +8091,7 @@ int test_scene_volume_slice_uses_volume_occlusion(TstContext* suite, const TstCa
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
 
     DvzVisual* volume = dvz_volume(scene, 0);
     DvzVisual* slice = dvz_volume(scene, 0);
@@ -8268,7 +8268,7 @@ int test_scene_volume_slice_uses_generic_scene_occlusion(TstContext* suite, cons
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
 
     DvzVisual* volume = dvz_volume(scene, 0);
     DvzVisual* slice = dvz_volume(scene, 0);

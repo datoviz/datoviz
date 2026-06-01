@@ -522,6 +522,9 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
 int test_scene_scale_guide_descriptor_abi_rejects_invalid_structs(
     TstContext* suite, const TstCase* item);
 
+int test_scene_field_descriptor_abi_rejects_invalid_structs(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item);
 
 int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* item);
@@ -928,6 +931,9 @@ int test_scene_interaction_descriptor_abi_rejects_invalid_structs(
     TstContext* suite, const TstCase* item);
 
 int test_scene_text_annotation_descriptor_abi_rejects_invalid_structs(
+    TstContext* suite, const TstCase* item);
+
+int test_scene_overlay_descriptor_abi_rejects_invalid_structs(
     TstContext* suite, const TstCase* item);
 
 int test_scene_item_interaction_defaults_and_lifetime(TstContext* suite, const TstCase* item);

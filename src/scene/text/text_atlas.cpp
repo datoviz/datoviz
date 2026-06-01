@@ -1027,7 +1027,7 @@ static bool _text_atlas_upload_rgba(
     desc.width = width;
     desc.height = height;
     DvzSampledField* field = dvz_sampled_field(font->scene, &desc);
-    DvzFieldDataView view = {};
+    DvzFieldDataView view = dvz_field_data_view();
     view.data = rgba;
     view.bytes_per_row = (uint64_t)width * 4u;
     view.rows_per_image = height;
@@ -1143,7 +1143,7 @@ static bool _text_atlas_replace_field_data(DvzSampledField* field, const DvzSamp
     {
         const uint8_t* data = (const uint8_t*)src->data;
         uint64_t offset = ((uint64_t)region.y * src->desc.width + region.x) * 4u;
-        DvzFieldDataView region_view = {};
+        DvzFieldDataView region_view = dvz_field_data_view();
         region_view.data = data + offset;
         region_view.bytes_per_row = (uint64_t)src->desc.width * 4u;
         region_view.rows_per_image = src->desc.height;
@@ -1154,7 +1154,7 @@ static bool _text_atlas_replace_field_data(DvzSampledField* field, const DvzSamp
     {
         return true;
     }
-    DvzFieldDataView view = {};
+    DvzFieldDataView view = dvz_field_data_view();
     view.data = src->data;
     view.bytes_per_row = (uint64_t)src->desc.width * 4u;
     view.rows_per_image = src->desc.height;
@@ -1911,7 +1911,7 @@ static bool _text_atlas_try_append(
         }
         if (ok)
         {
-            DvzFieldDataView view = {};
+            DvzFieldDataView view = dvz_field_data_view();
             view.data = grown;
             view.bytes_per_row = (uint64_t)target_width * 4u;
             view.rows_per_image = target_height;

@@ -49,6 +49,8 @@ typedef enum
 
 typedef struct DvzOverlayCardStyle
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzColor background_color;
     DvzColor text_color;
     float padding_px[2];
@@ -63,17 +65,21 @@ typedef struct DvzOverlayCardStyle
 
 typedef struct DvzOverlayCardDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     const char* text;
     DvzOverlayCardPlacement placement;
     float anchor_px[2];
     float offset_px[2];
     const DvzOverlayCardStyle* style;
-    uint32_t flags;
+    uint32_t card_flags;
 } DvzOverlayCardDesc;
 
 
 typedef struct DvzOverlayRichTextDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     const char* source;
     float max_width_px;
     float char_width_px;
@@ -108,6 +114,22 @@ DVZ_EXPORT void dvz_overlay_destroy(DvzOverlay* overlay);
  * @return the default style descriptor
  */
 DVZ_EXPORT DvzOverlayCardStyle dvz_overlay_card_style(void);
+
+
+/**
+ * Return the default overlay-card descriptor.
+ *
+ * @return the default card descriptor
+ */
+DVZ_EXPORT DvzOverlayCardDesc dvz_overlay_card_desc(void);
+
+
+/**
+ * Return the default overlay rich-text descriptor.
+ *
+ * @return the default rich-text descriptor
+ */
+DVZ_EXPORT DvzOverlayRichTextDesc dvz_overlay_rich_text_desc(void);
 
 
 /**
