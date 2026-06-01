@@ -3,6 +3,7 @@
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { mkdir, writeFile } from "node:fs/promises";
+import { decodeDrp2Packet } from "../examples/webgpu/drp2_packet.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs");
@@ -146,7 +147,11 @@ function expectPacket(Module, scene, kind, label, { expectArena = false } = {}) 
   const arenaSizeApi = Module._dvz_wasm_api_packet_arena_size(scene, kind);
   requireOk(arenaSizeApi === arenaSize, `${label}: arena size mismatch`);
   if (expectArena) requireOk(arenaPtr !== 0 && arenaSize > 0, `${label}: expected arena`);
-  return { ptr, size, commandCount, arenaPtr, arenaSize };
+  const arena = arenaPtr !== 0 ? Module.HEAPU8.subarray(arenaPtr, arenaPtr + arenaSizeApi) : new Uint8Array();
+  const decoded = decodeDrp2Packet(bytes, arena);
+  requireOk(decoded.kind_id === kind, `${label}: decoded wrong packet kind`);
+  requireOk(decoded.commands.length === commandCount, `${label}: decoded command count mismatch`);
+  return { ptr, size, commandCount, arenaPtr, arenaSize, decoded };
 }
 
 function emitPacketStream(Module, scene, figure, label) {

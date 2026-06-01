@@ -1,3 +1,5 @@
+import { decodeDrp2PacketSet } from "./drp2_packet.js";
+
 const statusEl = document.querySelector("#status");
 const canvas = document.querySelector("#viewport");
 const streamNameEl = document.querySelector("#stream-name");
@@ -2075,6 +2077,60 @@ export class Drp2WebGpuRuntime {
         commands: this.setupCommands,
         replaceExistingResources: true,
         state: this.state,
+      },
+    );
+  }
+
+  async executePacketSet(packetSet, options = {}) {
+    const decoded = decodeDrp2PacketSet(packetSet);
+    this.options = { ...this.options, ...options };
+
+    if (this.stream === null || options.reset === true) {
+      destroyExecutionState(this.state);
+      this.state = createExecutionState();
+    }
+
+    const setupCommands = decoded.setup?.commands ?? [];
+    const updateCommands = decoded.update?.commands ?? [];
+    const frameCommands = decoded.frame?.commands ?? [];
+    this.setupCommands = setupCommands;
+    this.frameCommands = frameCommands;
+    this.frames = [];
+    this.stream = {
+      name: "drp2_packet_set",
+      version: { major: 2, minor: 0 },
+      commands: [...setupCommands, ...updateCommands, ...frameCommands],
+    };
+
+    const baseOptions = {
+      ...this.options,
+      state: this.state,
+      replaceExistingResources: options.replaceExistingResources ?? true,
+    };
+    if (setupCommands.length > 0) {
+      await executeDrp2StreamChecked(
+        this.device, this.context, this.canvasFormat, this.stream,
+        { ...baseOptions, commands: setupCommands },
+      );
+    }
+    if (updateCommands.length > 0) {
+      await executeDrp2StreamChecked(
+        this.device, this.context, this.canvasFormat, this.stream,
+        { ...baseOptions, commands: updateCommands },
+      );
+    }
+    if (frameCommands.length === 0) {
+      return null;
+    }
+    return await executeDrp2StreamChecked(
+      this.device,
+      this.context,
+      this.canvasFormat,
+      this.stream,
+      {
+        ...baseOptions,
+        retireSubmittedRefs: options.retireSubmittedRefs ?? true,
+        commands: frameCommands,
       },
     );
   }

@@ -1,6 +1,5 @@
 import {
   Drp2WebGpuRuntime,
-  executeDrp2StreamChecked,
   initWebGPU,
   resizeWebGpuCanvas,
 } from "./drp2_webgpu.js";
@@ -64,23 +63,6 @@ function browserCapabilityArgs(capabilities = {}) {
   };
 }
 
-function streamNeedsRuntimeReload(stream) {
-  const setupCommands = new Set([
-    "HelloRenderer",
-    "RendererHelloReply",
-    "CreateBuffer",
-    "CreateTexture",
-    "CreateTextureView",
-    "CreateSampler",
-    "CreateBindGroupLayout",
-    "CreateBindGroup",
-    "CreateShaderModule",
-    "CreateRenderPipeline",
-    "CreateComputePipeline",
-  ]);
-  return stream.commands.some((command) => setupCommands.has(command.cmd));
-}
-
 function wasmModuleUrl() {
   const url = new URL("../../build-wasm-scene/wasm/datoviz_wasm_scene.mjs", import.meta.url);
   url.searchParams.set("v", Date.now().toString());
@@ -119,6 +101,16 @@ function hasDirectPayloadApi(Module) {
     typeof Module._dvz_wasm_api_payload_command_index === "function" &&
     typeof Module._dvz_wasm_api_payload_data_ptr === "function" &&
     typeof Module._dvz_wasm_api_payload_data_size === "function"
+  );
+}
+
+function hasPacketApi(Module) {
+  return (
+    typeof Module._dvz_wasm_api_emit_packets === "function" &&
+    typeof Module._dvz_wasm_api_packet_ptr === "function" &&
+    typeof Module._dvz_wasm_api_packet_size === "function" &&
+    typeof Module._dvz_wasm_api_packet_arena_ptr === "function" &&
+    typeof Module._dvz_wasm_api_packet_arena_size === "function"
   );
 }
 
@@ -453,32 +445,51 @@ export class DatovizWasmScene {
     return stream;
   }
 
+  emitPackets() {
+    this._requireAlive();
+    requireOk(
+      hasPacketApi(this.Module),
+      "WASM module is stale or missing split packet exports; run `just wasm-scene-smoke` and hard-refresh",
+    );
+    const status = this.Module._dvz_wasm_api_emit_packets(this.scene, this.figure);
+    if (status !== 0) {
+      throw new Error(this._diagnosticMessage(`dvz_wasm_api_emit_packets failed with ${status}`));
+    }
+    const span = (kind) => {
+      const packetPtr = this.Module._dvz_wasm_api_packet_ptr(this.scene, kind);
+      const packetSize = this.Module._dvz_wasm_api_packet_size(this.scene, kind);
+      const arenaPtr = this.Module._dvz_wasm_api_packet_arena_ptr(this.scene, kind);
+      const arenaSize = this.Module._dvz_wasm_api_packet_arena_size(this.scene, kind);
+      return {
+        packet: packetPtr !== 0 ? this.Module.HEAPU8.subarray(packetPtr, packetPtr + packetSize) : new Uint8Array(),
+        arena: arenaPtr !== 0 ? this.Module.HEAPU8.subarray(arenaPtr, arenaPtr + arenaSize) : new Uint8Array(),
+      };
+    };
+    return {
+      setup: span(1),
+      update: span(2),
+      frame: span(3),
+      resource_version: this.Module._dvz_wasm_api_resource_version?.(this.scene) ?? 0,
+      frame_index: this.Module._dvz_wasm_api_frame_index?.(this.scene) ?? 0,
+    };
+  }
+
   async renderInitial() {
     this._requireAlive();
-    const stream = this.emit();
+    const packetSet = this.emitPackets();
     this.runtime = new Drp2WebGpuRuntime(this.gpu.device, this.gpu.context, this.gpu.format, {
       capabilities: this.gpu.capabilities,
     });
-    await this.runtime.load(stream);
-    await this.runtime.render();
-    return stream;
+    await this.runtime.executePacketSet(packetSet, { reset: true, replaceExistingResources: false });
+    return this.runtime.stream;
   }
 
   async renderIncremental() {
     this._requireAlive();
     requireOk(this.runtime !== null, "renderInitial() must be called before renderIncremental()");
-    const stream = this.emit();
-    if (streamNeedsRuntimeReload(stream)) {
-      await this.runtime.update(stream);
-      await this.runtime.render();
-      return stream;
-    }
-    await executeDrp2StreamChecked(this.gpu.device, this.gpu.context, this.gpu.format, stream, {
-      commands: stream.commands,
-      state: this.runtime.state,
-      validateCapabilities: false,
-    });
-    return stream;
+    const packetSet = this.emitPackets();
+    await this.runtime.executePacketSet(packetSet);
+    return this.runtime.stream;
   }
 }
 
