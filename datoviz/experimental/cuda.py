@@ -164,7 +164,7 @@ class CudaSceneBuffer:
 
     def __enter__(self):
         self._raw_surface, self._cp, self._bridge = _require_runtime()
-        self._shared = _runtime.SharedSceneCudaArray(
+        self._shared = _runtime.CudaSceneBufferRuntime(
             self._raw_surface,
             self._cp,
             self._bridge,
@@ -206,7 +206,7 @@ class CudaSceneBuffer:
 
         self._require_open()
         try:
-            with self._shared.cuda_write(stream) as array:
+            with self._shared.cupy_write(stream) as array:
                 yield array
         finally:
             self._shared.wait_for_cuda_writes()

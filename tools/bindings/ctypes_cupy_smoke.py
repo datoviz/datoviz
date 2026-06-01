@@ -30,7 +30,9 @@ def _check_drp2(ok: bool, label: str) -> None:
         raise RuntimeError(f'DRP2 command append failed: {label}')
 
 
-def _render_drp2_external_buffer(dvz, shared: ci.SharedDatovizCudaArray) -> tuple[int, int, int, int]:
+def _render_drp2_external_buffer(
+    dvz, shared: ci.CudaMappedDatovizBuffer
+) -> tuple[int, int, int, int]:
     cfg = dvz.dvz_drp2_runtime_vklite_config(shared.device, shared.allocator)
     runtime = dvz.dvz_drp2_runtime_vklite(ctypes.byref(cfg))
     if not runtime:
@@ -145,9 +147,9 @@ def _render_drp2_external_buffer(dvz, shared: ci.SharedDatovizCudaArray) -> tupl
 
 
 def _run_cupy_write_smoke(dvz, cp, bridge) -> tuple[int, int, int, int]:
-    with ci.SharedDatovizCudaArray(dvz, cp, bridge, count=PARTICLE_COUNT) as shared:
+    with ci.CudaMappedDatovizBuffer(dvz, cp, bridge, count=PARTICLE_COUNT) as shared:
         stream = cp.cuda.get_current_stream()
-        with shared.cuda_write(stream) as array:
+        with shared.cupy_write(stream) as array:
             t = cp.linspace(-1.0, 1.0, shared.count, dtype=cp.float32)
             array[:, 0] = t
             array[:, 1] = cp.sin(t * cp.float32(6.283185307179586))

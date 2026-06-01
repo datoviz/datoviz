@@ -547,8 +547,12 @@ def bridge_import_buffer(bridge, exported: ExportedDatovizBuffer) -> CudaMappedB
     return CudaMappedBufferOwner(bridge, handle)
 
 
-class SharedDatovizCudaArray:
-    """Internal owner for one CuPy view over a Datoviz/Vulkan-owned buffer."""
+class CudaMappedDatovizBuffer:
+    """Datoviz-owned Vulkan buffer imported into CUDA and exposed as a CuPy ndarray.
+
+    This layer owns no scene semantics. It is responsible for external memory import, CUDA view
+    creation, and timeline-semaphore handoff between CUDA writes and Vulkan reads.
+    """
 
     def __init__(
         self,
@@ -612,9 +616,9 @@ class SharedDatovizCudaArray:
         return self
 
     @contextmanager
-    def cuda_write(self, stream=None):
+    def cupy_write(self, stream=None):
         if self.owner is None or self.array is None:
-            raise RuntimeError('shared CUDA array is not open')
+            raise RuntimeError('CUDA-mapped Datoviz buffer is not open')
         stream = stream or self.cp.cuda.get_current_stream()
         self.owner.wait(self.vulkan_ready_value, stream.ptr)
         signal_value = self._next_value
@@ -665,8 +669,13 @@ class SharedDatovizCudaArray:
         return self.exported.__exit__(exc_type, exc, tb)
 
 
-class SharedSceneCudaArray:
-    """Scene-facing owner for one Datoviz shared buffer exposed as a CuPy array."""
+class CudaSceneBufferRuntime:
+    """Scene-facing runtime owner for a CUDA-mapped Datoviz scene buffer.
+
+    This layer creates the retained scene buffer, binds it to visual attributes, and registers the
+    external buffer with the DRP2 runtime. The lower CudaMappedDatovizBuffer owns memory import and
+    CUDA/Vulkan synchronization.
+    """
 
     def __init__(
         self,
@@ -688,7 +697,7 @@ class SharedSceneCudaArray:
         self.components = components
         self.scene_usage = scene_usage
         self.runtime_usage = runtime_usage
-        self.shared = SharedDatovizCudaArray(
+        self.shared = CudaMappedDatovizBuffer(
             dvz, cp, bridge, count=count, components=components, present=present
         )
         self.scene_buffer = None
@@ -720,7 +729,7 @@ class SharedSceneCudaArray:
             desc.byte_size = self.shared.size
             self.scene_buffer = self.dvz.dvz_scene_buffer(self.scene, ctypes.byref(desc))
             if not self.scene_buffer:
-                raise RuntimeError('dvz_scene_buffer(shared CUDA array) failed')
+                raise RuntimeError('dvz_scene_buffer(CUDA scene buffer runtime) failed')
         except Exception:
             self.shared.__exit__(*sys.exc_info())
             raise
@@ -730,7 +739,7 @@ class SharedSceneCudaArray:
         self, visual, attr: bytes | str, first: int = 0, count: int | None = None
     ) -> None:
         if self.scene_buffer is None:
-            raise RuntimeError('shared scene CUDA array is not open')
+            raise RuntimeError('CUDA scene buffer runtime is not open')
         count = self.count if count is None else count
         if not self.dvz.dvz_visual_set_attr_buffer(
             visual, _as_bytes(attr), self.scene_buffer, first, count
@@ -739,7 +748,7 @@ class SharedSceneCudaArray:
 
     def _emit_setup_stream(self, figure):
         if self.scene_buffer is None:
-            raise RuntimeError('shared scene CUDA array is not open')
+            raise RuntimeError('CUDA scene buffer runtime is not open')
         caps = scene_setup_caps(self.dvz)
         report = self.dvz.DvzDiagnosticReport()
         self.dvz.dvz_diagnostic_report_init(ctypes.byref(report))
@@ -809,8 +818,8 @@ class SharedSceneCudaArray:
             skip('dvz_view_offscreen() failed')
         return app, view
 
-    def cuda_write(self, stream=None):
-        return self.shared.cuda_write(stream)
+    def cupy_write(self, stream=None):
+        return self.shared.cupy_write(stream)
 
     def wait_for_cuda_writes(self) -> None:
         self.shared.wait_for_cuda_writes()
