@@ -1074,6 +1074,33 @@ DVZ_EXPORT DvzAlphaMode dvz_visual_alpha_mode(const DvzVisual* visual);
 
 
 /**
+ * Set the future scene-managed visual transform descriptor.
+ *
+ * v0.4 accepts only NULL or `DVZ_VISUAL_TRANSFORM_NONE`. Scene-managed nonlinear/custom transforms
+ * are reserved for future releases and return -1.
+ *
+ * @param visual the visual
+ * @param desc transform descriptor, or NULL to clear the future transform slot
+ * @return 0 on success, -1 on validation error or unsupported transform kind
+ */
+DVZ_EXPORT int
+dvz_visual_set_transform_desc(DvzVisual* visual, const DvzVisualTransformDesc* desc);
+
+
+/**
+ * Set the future visual shader descriptor.
+ *
+ * v0.4 accepts only NULL or `DVZ_VISUAL_SHADER_NONE`. Custom visual families and built-in shader
+ * replacement are reserved for future releases and return -1.
+ *
+ * @param visual the visual
+ * @param desc shader descriptor, or NULL to clear the future shader slot
+ * @return 0 on success, -1 on validation error or unsupported shader kind
+ */
+DVZ_EXPORT int dvz_visual_set_shader_desc(DvzVisual* visual, const DvzVisualShaderDesc* desc);
+
+
+/**
  * Set the retained visual-local transform.
  *
  * The transform is stored on the visual and applies to every panel attachment before panel

@@ -47,6 +47,8 @@
 
 #define DVZ_VISUAL_ATTACH_DESC_KNOWN_FLAGS 0u
 #define DVZ_PANEL_BACKGROUND_DESC_KNOWN_FLAGS 0u
+#define DVZ_VISUAL_TRANSFORM_DESC_KNOWN_FLAGS 0u
+#define DVZ_VISUAL_SHADER_DESC_KNOWN_FLAGS 0u
 
 
 
@@ -71,6 +73,139 @@ static bool _panel_background_desc_validate(const DvzPanelBackgroundDesc* desc)
     if (!DVZ_STRUCT_VALID(desc, DvzPanelBackgroundDesc, DVZ_PANEL_BACKGROUND_DESC_KNOWN_FLAGS))
     {
         log_error("invalid DvzPanelBackgroundDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _visual_transform_kind_valid(DvzVisualTransformKind kind)
+{
+    switch (kind)
+    {
+    case DVZ_VISUAL_TRANSFORM_NONE:
+    case DVZ_VISUAL_TRANSFORM_LINEAR:
+    case DVZ_VISUAL_TRANSFORM_NONLINEAR:
+    case DVZ_VISUAL_TRANSFORM_CUSTOM:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+
+static bool _visual_transform_space_valid(DvzVisualTransformSpace space)
+{
+    switch (space)
+    {
+    case DVZ_VISUAL_TRANSFORM_SPACE_DATA:
+    case DVZ_VISUAL_TRANSFORM_SPACE_VISUAL:
+    case DVZ_VISUAL_TRANSFORM_SPACE_PANEL:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+
+static bool _visual_transform_desc_validate(const DvzVisualTransformDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzVisualTransformDesc, DVZ_VISUAL_TRANSFORM_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzVisualTransformDesc ABI prologue");
+        return false;
+    }
+    if (!_visual_transform_kind_valid(desc->kind))
+    {
+        log_error("invalid DvzVisualTransformDesc kind");
+        return false;
+    }
+    if (
+        !_visual_transform_space_valid(desc->input_space) ||
+        !_visual_transform_space_valid(desc->output_space))
+    {
+        log_error("invalid DvzVisualTransformDesc space");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _visual_shader_kind_valid(DvzVisualShaderKind kind)
+{
+    switch (kind)
+    {
+    case DVZ_VISUAL_SHADER_NONE:
+    case DVZ_VISUAL_SHADER_CUSTOM_FAMILY:
+    case DVZ_VISUAL_SHADER_BUILTIN_REPLACEMENT:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+
+static bool _visual_shader_source_valid(DvzVisualShaderSource source)
+{
+    switch (source)
+    {
+    case DVZ_VISUAL_SHADER_SOURCE_NONE:
+    case DVZ_VISUAL_SHADER_SOURCE_GLSL:
+    case DVZ_VISUAL_SHADER_SOURCE_WGSL:
+    case DVZ_VISUAL_SHADER_SOURCE_SPIRV:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+
+static bool _visual_shader_desc_validate(const DvzVisualShaderDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzVisualShaderDesc, DVZ_VISUAL_SHADER_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzVisualShaderDesc ABI prologue");
+        return false;
+    }
+    if (!_visual_shader_kind_valid(desc->kind))
+    {
+        log_error("invalid DvzVisualShaderDesc kind");
+        return false;
+    }
+    if (
+        !_visual_shader_source_valid(desc->vertex_source) ||
+        !_visual_shader_source_valid(desc->fragment_source))
+    {
+        log_error("invalid DvzVisualShaderDesc source");
+        return false;
+    }
+    if (
+        (desc->vertex_code == NULL && desc->vertex_code_size != 0) ||
+        (desc->vertex_code != NULL && desc->vertex_code_size == 0) ||
+        (desc->fragment_code == NULL && desc->fragment_code_size != 0) ||
+        (desc->fragment_code != NULL && desc->fragment_code_size == 0))
+    {
+        log_error("invalid DvzVisualShaderDesc code payload");
+        return false;
+    }
+    if (
+        desc->kind == DVZ_VISUAL_SHADER_NONE &&
+        (desc->vertex_source != DVZ_VISUAL_SHADER_SOURCE_NONE ||
+         desc->fragment_source != DVZ_VISUAL_SHADER_SOURCE_NONE || desc->shader_id != 0 ||
+         desc->family != NULL || desc->variant != NULL || desc->vertex_code != NULL ||
+         desc->fragment_code != NULL))
+    {
+        log_error("DvzVisualShaderDesc payload requires a non-NONE shader kind");
         return false;
     }
     return true;
@@ -151,6 +286,8 @@ DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t fla
     visual->alpha_mode = DVZ_ALPHA_OPAQUE;
     visual->depth_test_enabled = true;
     visual->depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
+    visual->transform_desc = dvz_visual_transform_desc();
+    visual->shader_desc = dvz_visual_shader_desc();
     glm_mat4_identity(visual->local_transform);
     visual->has_local_transform = false;
     visual->local_transform_version = 1;
@@ -978,5 +1115,61 @@ int dvz_visual_clear_transform(DvzVisual* visual)
     visual->has_local_transform = false;
     _visual_bump_version(&visual->local_transform_version);
     _scene_notify_visual_changed(visual);
+    return 0;
+}
+
+
+
+/**
+ * Set the future scene-managed visual transform descriptor.
+ *
+ * @param visual the visual
+ * @param desc transform descriptor, or NULL to clear the future transform slot
+ * @return 0 on success, -1 on validation error or unsupported transform kind
+ */
+int dvz_visual_set_transform_desc(DvzVisual* visual, const DvzVisualTransformDesc* desc)
+{
+    ANN(visual);
+    DvzVisualTransformDesc default_desc = dvz_visual_transform_desc();
+    if (desc == NULL)
+        desc = &default_desc;
+    if (!_visual_transform_desc_validate(desc))
+        return -1;
+    if (!_scene_visual_mutation_allowed(visual->scene, "set future visual transform descriptor"))
+        return -1;
+    if (desc->kind != DVZ_VISUAL_TRANSFORM_NONE)
+    {
+        log_error("scene-managed nonlinear/custom visual transforms are deferred in v0.4");
+        return -1;
+    }
+    visual->transform_desc = *desc;
+    return 0;
+}
+
+
+
+/**
+ * Set the future visual shader descriptor.
+ *
+ * @param visual the visual
+ * @param desc shader descriptor, or NULL to clear the future shader slot
+ * @return 0 on success, -1 on validation error or unsupported shader kind
+ */
+int dvz_visual_set_shader_desc(DvzVisual* visual, const DvzVisualShaderDesc* desc)
+{
+    ANN(visual);
+    DvzVisualShaderDesc default_desc = dvz_visual_shader_desc();
+    if (desc == NULL)
+        desc = &default_desc;
+    if (!_visual_shader_desc_validate(desc))
+        return -1;
+    if (!_scene_visual_mutation_allowed(visual->scene, "set future visual shader descriptor"))
+        return -1;
+    if (desc->kind != DVZ_VISUAL_SHADER_NONE)
+    {
+        log_error("custom visual shaders and built-in shader replacement are deferred in v0.4");
+        return -1;
+    }
+    visual->shader_desc = *desc;
     return 0;
 }

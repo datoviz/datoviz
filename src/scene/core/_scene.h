@@ -1426,6 +1426,8 @@ struct DvzVisual
     uint32_t        link_key_count;
     bool                   scene_occluder;
     bool                   scene_occluded;
+    DvzVisualTransformDesc transform_desc;
+    DvzVisualShaderDesc    shader_desc;
     mat4                   local_transform;
     bool                   has_local_transform;
     uint64_t               local_transform_version;
