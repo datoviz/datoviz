@@ -601,6 +601,28 @@ DVZ_EXPORT DvzVisualAttachDesc dvz_visual_attach_desc(void);
 
 
 /**
+ * Return the default future visual transform descriptor.
+ *
+ * v0.4 accepts only `DVZ_VISUAL_TRANSFORM_NONE` through the descriptor path. Use
+ * dvz_visual_set_transform() for the supported affine visual-local transform.
+ *
+ * @return default visual transform descriptor
+ */
+DVZ_EXPORT DvzVisualTransformDesc dvz_visual_transform_desc(void);
+
+
+/**
+ * Return the default future visual shader descriptor.
+ *
+ * v0.4 accepts only `DVZ_VISUAL_SHADER_NONE`; custom visual families and built-in shader
+ * replacement are reserved for future releases.
+ *
+ * @return default visual shader descriptor
+ */
+DVZ_EXPORT DvzVisualShaderDesc dvz_visual_shader_desc(void);
+
+
+/**
  * Add a visual to a panel.
  *
  * @param panel the panel

@@ -1340,6 +1340,8 @@ dvz_visual_set_texture_f32
 dvz_visual_set_transform
 dvz_visual_set_visible
 dvz_visual_set_volume_occluded
+dvz_visual_shader_desc
+dvz_visual_transform_desc
 dvz_volume
 dvz_volume_clear_clipping
 dvz_volume_clear_clipping_plane

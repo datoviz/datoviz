@@ -33,6 +33,8 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzFramePlanEmitConfig` | `dvz_frame_plan_emit_config()` |
 | `DvzFramePlanCopyDesc` | `dvz_frame_plan_copy_desc()` |
 | `DvzCapabilitySnapshot` | `dvz_capability_snapshot()` |
+| `DvzVisualTransformDesc` | `dvz_visual_transform_desc()` |
+| `DvzVisualShaderDesc` | `dvz_visual_shader_desc()` |
 | `DvzGeometryCubeDesc` | `dvz_geometry_cube_desc()` |
 | `DvzGeometryPlaneDesc` | `dvz_geometry_plane_desc()` |
 | `DvzGeometrySphereDesc` | `dvz_geometry_sphere_desc()` |

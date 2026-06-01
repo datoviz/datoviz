@@ -47,6 +47,8 @@ typedef struct DvzFramePlanEmitter DvzFramePlanEmitter;
 typedef struct DvzFramePlanEmitConfig DvzFramePlanEmitConfig;
 typedef struct DvzFramePlan DvzFramePlan;
 typedef struct DvzFramePlanNode DvzFramePlanNode;
+typedef struct DvzVisualTransformDesc DvzVisualTransformDesc;
+typedef struct DvzVisualShaderDesc DvzVisualShaderDesc;
 
 /* Scene graph objects (opaque handles) */
 typedef struct DvzScene             DvzScene;
@@ -193,6 +195,37 @@ struct DvzPanelDesc
     float width, height;  /* extent in normalized figure coords */
 };
 typedef struct DvzPanelDesc DvzPanelDesc;
+
+
+struct DvzVisualTransformDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzVisualTransformKind kind;
+    DvzVisualTransformSpace input_space;
+    DvzVisualTransformSpace output_space;
+    uint64_t transform_id;
+    const char* label;
+    mat4 matrix;
+};
+
+
+struct DvzVisualShaderDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzVisualShaderKind kind;
+    DvzVisualShaderSource vertex_source;
+    DvzVisualShaderSource fragment_source;
+    uint64_t shader_id;
+    const char* family;
+    const char* variant;
+    const char* label;
+    const void* vertex_code;
+    uint64_t vertex_code_size;
+    const void* fragment_code;
+    uint64_t fragment_code_size;
+};
 
 
 struct DvzGridCell

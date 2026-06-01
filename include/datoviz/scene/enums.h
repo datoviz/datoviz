@@ -107,6 +107,40 @@ typedef enum
 } DvzVisualAttrMutability;
 
 
+typedef enum
+{
+    DVZ_VISUAL_TRANSFORM_NONE = 0,
+    DVZ_VISUAL_TRANSFORM_LINEAR,
+    DVZ_VISUAL_TRANSFORM_NONLINEAR,
+    DVZ_VISUAL_TRANSFORM_CUSTOM,
+} DvzVisualTransformKind;
+
+
+typedef enum
+{
+    DVZ_VISUAL_TRANSFORM_SPACE_DATA = 0,
+    DVZ_VISUAL_TRANSFORM_SPACE_VISUAL,
+    DVZ_VISUAL_TRANSFORM_SPACE_PANEL,
+} DvzVisualTransformSpace;
+
+
+typedef enum
+{
+    DVZ_VISUAL_SHADER_NONE = 0,
+    DVZ_VISUAL_SHADER_CUSTOM_FAMILY,
+    DVZ_VISUAL_SHADER_BUILTIN_REPLACEMENT,
+} DvzVisualShaderKind;
+
+
+typedef enum
+{
+    DVZ_VISUAL_SHADER_SOURCE_NONE = 0,
+    DVZ_VISUAL_SHADER_SOURCE_GLSL,
+    DVZ_VISUAL_SHADER_SOURCE_WGSL,
+    DVZ_VISUAL_SHADER_SOURCE_SPIRV,
+} DvzVisualShaderSource;
+
+
 
 /* Whether a visual is affected by its panel's controller (panzoom/arcball). */
 typedef enum

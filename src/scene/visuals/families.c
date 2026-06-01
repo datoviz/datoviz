@@ -89,6 +89,32 @@ DvzVisualAttachDesc dvz_visual_attach_desc(void)
 }
 
 
+DvzVisualTransformDesc dvz_visual_transform_desc(void)
+{
+    DvzVisualTransformDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzVisualTransformDesc),
+        .kind = DVZ_VISUAL_TRANSFORM_NONE,
+        .input_space = DVZ_VISUAL_TRANSFORM_SPACE_DATA,
+        .output_space = DVZ_VISUAL_TRANSFORM_SPACE_VISUAL,
+    };
+    glm_mat4_identity(desc.matrix);
+    return desc;
+}
+
+
+
+DvzVisualShaderDesc dvz_visual_shader_desc(void)
+{
+    DvzVisualShaderDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzVisualShaderDesc),
+        .kind = DVZ_VISUAL_SHADER_NONE,
+        .vertex_source = DVZ_VISUAL_SHADER_SOURCE_NONE,
+        .fragment_source = DVZ_VISUAL_SHADER_SOURCE_NONE,
+    };
+    return desc;
+}
+
+
 
 DvzPanelBackgroundDesc dvz_panel_background_desc(void)
 {
