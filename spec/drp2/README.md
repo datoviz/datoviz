@@ -36,6 +36,7 @@ The goal is to freeze a small, backend-agnostic renderer contract that can suppo
 - [READING_ORDER.md](READING_ORDER.md): review order for DRP2 contributors
 - [COMMANDS.md](COMMANDS.md): active `2.0` command surface
 - [LIFETIMES.md](LIFETIMES.md): object lifetime and encoder/pass state rules
+- [PACKETS.md](PACKETS.md): binary packet, payload arena, and setup/update/frame transport
 - [ERRORS.md](ERRORS.md): validation and error model
 - [CAPABILITIES.md](CAPABILITIES.md): feature and format capability reporting
 - [CONFORMANCE.md](CONFORMANCE.md): conformance levels and requirements
