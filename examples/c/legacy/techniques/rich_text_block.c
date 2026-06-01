@@ -100,7 +100,7 @@ static bool _add_screen_text(
 
     int rc = dvz_text_set_style(
         text,
-        &(DvzTextStyle){
+        &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
             .size_px = size,
             .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
             .color = {color.r, color.g, color.b, color.a},
@@ -110,7 +110,7 @@ static bool _add_screen_text(
 
     dvz_text_set_placement(
         text,
-        &(DvzTextPlacement){
+        &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
             .mode = DVZ_TEXT_PLACEMENT_SCREEN,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
             .position = {x, y, 0.0f},

@@ -927,6 +927,9 @@ int test_scene_interaction_core(TstContext* suite, const TstCase* item);
 int test_scene_interaction_descriptor_abi_rejects_invalid_structs(
     TstContext* suite, const TstCase* item);
 
+int test_scene_text_annotation_descriptor_abi_rejects_invalid_structs(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_item_interaction_defaults_and_lifetime(TstContext* suite, const TstCase* item);
 
 int test_scene_item_interaction_input_queries(TstContext* suite, const TstCase* item);

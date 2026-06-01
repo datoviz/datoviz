@@ -28,6 +28,14 @@
 #define DVZ_TEXT_BITMAP_ATLAS_CELL_W (DVZ_TEXT_BITMAP_GLYPH_WIDTH + 2u * DVZ_TEXT_BITMAP_ATLAS_PAD)
 #define DVZ_TEXT_BITMAP_ATLAS_CELL_H (DVZ_TEXT_BITMAP_GLYPH_HEIGHT + 2u * DVZ_TEXT_BITMAP_ATLAS_PAD)
 
+bool _text_style_is_zero(const DvzTextStyle* style);
+
+bool _text_placement_is_zero(const DvzTextPlacement* placement);
+
+bool _text_style_validate(const DvzTextStyle* style);
+
+bool _text_placement_validate(const DvzTextPlacement* placement);
+
 float _text_style_size_px(const DvzTextStyle* style, float fallback_size_px);
 
 DvzTextAtlasBackend _text_renderer_backend(

@@ -53,6 +53,8 @@
 
 #define DVZ_VOLUME_OCCLUSION_DESC_KNOWN_FLAGS 0u
 #define DVZ_SCENE_OCCLUSION_DESC_KNOWN_FLAGS 0u
+#define DVZ_FONT_DESC_KNOWN_FLAGS             0u
+#define DVZ_FONT_DEFAULTS_KNOWN_FLAGS         0u
 
 
 
@@ -69,6 +71,34 @@ static bool _volume_occlusion_desc_validate(const DvzVolumeOcclusionDesc* desc)
         log_error("invalid DvzVolumeOcclusionDesc ABI prologue");
         return false;
     }
+    return true;
+}
+
+
+static bool _font_desc_validate(const DvzFontDesc* desc)
+{
+    if (desc == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(desc, DvzFontDesc, DVZ_FONT_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid font descriptor ABI");
+        return false;
+    }
+    return true;
+}
+
+
+static bool _font_defaults_validate(const DvzFontDefaults* defaults)
+{
+    if (defaults == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(defaults, DvzFontDefaults, DVZ_FONT_DEFAULTS_KNOWN_FLAGS))
+    {
+        log_error("invalid font defaults ABI");
+        return false;
+    }
+    if (!_font_desc_validate(&defaults->sans) || !_font_desc_validate(&defaults->mono))
+        return false;
     return true;
 }
 
@@ -141,6 +171,8 @@ DvzScene* dvz_scene(void)
 void dvz_scene_set_font_defaults(DvzScene* scene, const DvzFontDefaults* defaults)
 {
     ANN(scene);
+    if (!_font_defaults_validate(defaults))
+        return;
     scene->font_defaults = defaults != NULL ? *defaults : dvz_font_defaults();
 }
 

@@ -28,6 +28,30 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 /**
+ * Return the default annotation descriptor.
+ *
+ * @return default annotation descriptor
+ */
+DVZ_EXPORT DvzAnnotationDesc dvz_annotation_desc(void);
+
+
+/**
+ * Return the default label annotation descriptor.
+ *
+ * @return default label descriptor
+ */
+DVZ_EXPORT DvzLabelDesc dvz_label_desc(void);
+
+
+/**
+ * Return the default scale-bar annotation descriptor.
+ *
+ * @return default scale-bar descriptor
+ */
+DVZ_EXPORT DvzScaleBarDesc dvz_scalebar_desc(void);
+
+
+/**
  * Create a retained annotation object attached to a panel.
  *
  * @param panel the panel

@@ -35,6 +35,91 @@
 /*  Text                                                                                         */
 /*************************************************************************************************/
 
+#define DVZ_TEXT_STYLE_KNOWN_FLAGS     0u
+#define DVZ_TEXT_PLACEMENT_KNOWN_FLAGS 0u
+
+
+bool _text_style_is_zero(const DvzTextStyle* style)
+{
+    if (style == NULL)
+        return true;
+    return style->struct_size == 0 && style->flags == 0 && style->font == NULL &&
+           style->size_px == 0.0f && style->renderer == 0 && style->color[0] == 0 &&
+           style->color[1] == 0 && style->color[2] == 0 && style->color[3] == 0 &&
+           style->style_flags == 0 && !style->bold && !style->italic && !style->underline;
+}
+
+
+bool _text_placement_is_zero(const DvzTextPlacement* placement)
+{
+    if (placement == NULL)
+        return true;
+    return placement->struct_size == 0 && placement->flags == 0 && placement->mode == 0 &&
+           placement->anchor == 0 && placement->position[0] == 0.0 &&
+           placement->position[1] == 0.0 && placement->position[2] == 0.0 &&
+           placement->offset[0] == 0.0f && placement->offset[1] == 0.0f &&
+           placement->text_anchor[0] == 0.0f && placement->text_anchor[1] == 0.0f &&
+           !placement->has_text_anchor && placement->angle == 0.0f && !placement->depth_test;
+}
+
+
+bool _text_style_validate(const DvzTextStyle* style)
+{
+    if (style == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(style, DvzTextStyle, DVZ_TEXT_STYLE_KNOWN_FLAGS))
+    {
+        log_error("invalid text style ABI");
+        return false;
+    }
+    return true;
+}
+
+
+bool _text_placement_validate(const DvzTextPlacement* placement)
+{
+    if (placement == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(placement, DvzTextPlacement, DVZ_TEXT_PLACEMENT_KNOWN_FLAGS))
+    {
+        log_error("invalid text placement ABI");
+        return false;
+    }
+    return true;
+}
+
+
+/**
+ * Return the default retained text style.
+ *
+ * @return default text style
+ */
+DvzTextStyle dvz_text_style(void)
+{
+    return (DvzTextStyle){
+        DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+        .size_px = dvz_font_defaults().text_size_px,
+        .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+        .color = {255, 255, 255, 255},
+    };
+}
+
+
+/**
+ * Return the default retained text placement.
+ *
+ * @return default text placement
+ */
+DvzTextPlacement dvz_text_placement(void)
+{
+    return (DvzTextPlacement){
+        DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
+        .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+        .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
+    };
+}
+
+
 /**
  * Return the default retained text style.
  *
@@ -43,16 +128,9 @@
  */
 static DvzTextStyle _text_default_style(const DvzScene* scene)
 {
-    float size_px = dvz_font_defaults().text_size_px;
+    DvzTextStyle style = dvz_text_style();
     if (scene != NULL && scene->font_defaults.text_size_px > 0.0f)
-        size_px = scene->font_defaults.text_size_px;
-    DvzTextStyle style = {0};
-    style.size_px = size_px;
-    style.renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
-    style.color[0] = 255;
-    style.color[1] = 255;
-    style.color[2] = 255;
-    style.color[3] = 255;
+        style.size_px = scene->font_defaults.text_size_px;
     return style;
 }
 
@@ -65,10 +143,7 @@ static DvzTextStyle _text_default_style(const DvzScene* scene)
  */
 static DvzTextPlacement _text_default_placement(void)
 {
-    DvzTextPlacement placement = {0};
-    placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
-    placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
-    return placement;
+    return dvz_text_placement();
 }
 
 
@@ -186,6 +261,8 @@ void dvz_text_set_string(DvzText* text, const char* string)
 int dvz_text_set_style(DvzText* text, const DvzTextStyle* style)
 {
     ANN(text);
+    if (style != NULL && !_text_style_validate(style))
+        return -1;
     DvzTextStyle resolved = style != NULL ? *style : _text_default_style(text->scene);
     if (resolved.font != NULL && resolved.font->scene != text->scene)
     {
@@ -213,6 +290,8 @@ int dvz_text_set_style(DvzText* text, const DvzTextStyle* style)
 void dvz_text_set_placement(DvzText* text, const DvzTextPlacement* placement)
 {
     ANN(text);
+    if (placement != NULL && !_text_placement_validate(placement))
+        return;
     text->placement = placement != NULL ? *placement : _text_default_placement();
     _text_mark_dirty(text, DVZ_TEXT_DIRTY_PLACEMENT | DVZ_TEXT_DIRTY_LAYOUT);
 }

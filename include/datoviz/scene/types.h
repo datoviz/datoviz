@@ -877,11 +877,13 @@ typedef struct DvzLegendDesc DvzLegendDesc;
 
 struct DvzTextStyle
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzFont* font;
     float size_px;
     DvzTextRenderer renderer;
     uint8_t color[4];
-    uint32_t flags;
+    uint32_t style_flags;
     bool bold;
     bool italic;
     bool underline;
@@ -891,6 +893,8 @@ typedef struct DvzTextStyle DvzTextStyle;
 
 struct DvzTextPlacement
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzTextPlacementMode mode;
     DvzSceneAnchor anchor;
     double position[3];
@@ -905,27 +909,33 @@ typedef struct DvzTextPlacement DvzTextPlacement;
 
 struct DvzAnnotationDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzAnnotationKind kind;
     const char* text;
     DvzTextStyle style;
     DvzTextPlacement placement;
-    uint32_t flags;
+    uint32_t annotation_flags;
 };
 typedef struct DvzAnnotationDesc DvzAnnotationDesc;
 
 
 struct DvzLabelDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     const char* text;
     DvzTextStyle style;
     DvzTextPlacement placement;
-    uint32_t flags;
+    uint32_t label_flags;
 };
 typedef struct DvzLabelDesc DvzLabelDesc;
 
 
 struct DvzScaleBarDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzDim dimension;
     DvzSceneAnchor anchor;
     DvzScaleBarReferenceMode reference_mode;
@@ -945,6 +955,6 @@ struct DvzScaleBarDesc
     float line_width_px;
     uint8_t line_color[4];
     uint8_t background_color[4];
-    uint32_t flags;
+    uint32_t scalebar_flags;
 };
 typedef struct DvzScaleBarDesc DvzScaleBarDesc;

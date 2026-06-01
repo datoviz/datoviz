@@ -33,6 +33,7 @@ dvz_anim_start
 dvz_anim_stop
 dvz_anim_timer
 dvz_annotation
+dvz_annotation_desc
 dvz_annotation_destroy
 dvz_annotation_label
 dvz_annotation_scalebar
@@ -542,6 +543,7 @@ dvz_fly_viewport
 dvz_format_desc
 dvz_font
 dvz_font_defaults
+dvz_font_desc
 dvz_font_destroy
 dvz_frame_plan
 dvz_frame_plan_clear
@@ -807,6 +809,7 @@ dvz_labels_set_selected
 dvz_labels_set_slice_axis
 dvz_labels_set_slice_position
 dvz_labels_state
+dvz_label_desc
 dvz_legend
 dvz_legend_clear_highlight
 dvz_legend_desc
@@ -1062,6 +1065,7 @@ dvz_scale_set_domain
 dvz_scale_set_format
 dvz_scale_set_view_range
 dvz_scale_update_categories
+dvz_scalebar_desc
 dvz_scene
 dvz_scene_buffer
 dvz_scene_buffer_desc
@@ -1202,10 +1206,12 @@ dvz_swapchain_ready
 dvz_swapchain_recreate
 dvz_text
 dvz_text_destroy
+dvz_text_placement
 dvz_text_set_placement
 dvz_text_set_renderer
 dvz_text_set_string
 dvz_text_set_style
+dvz_text_style
 dvz_thread
 dvz_thread_join
 dvz_thread_lock

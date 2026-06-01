@@ -104,7 +104,7 @@ int main(int argc, char** argv)
         EXAMPLE_CHECK(text != NULL, "dvz_text() failed");
         int rc = dvz_text_set_style(
             text,
-            &(DvzTextStyle){
+            &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .size_px = sizes[i],
                 .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
                 .color = {colors[i].r, colors[i].g, colors[i].b, colors[i].a},
@@ -112,7 +112,7 @@ int main(int argc, char** argv)
         EXAMPLE_CHECK(rc == 0, "dvz_text_set_style() failed");
         dvz_text_set_placement(
             text,
-            &(DvzTextPlacement){
+            &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
                 .mode = DVZ_TEXT_PLACEMENT_SCREEN,
                 .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
                 .position = {positions[i][0], positions[i][1], positions[i][2]},

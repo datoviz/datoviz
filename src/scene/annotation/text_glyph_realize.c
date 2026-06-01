@@ -720,6 +720,7 @@ bool _text_visual_prepare(
         spec_size_px = visual->scene->font_defaults.text_size_px;
     spec_size_px *= screen_scale;
     DvzTextStyle backend_style = {
+        DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
         .size_px = spec_size_px,
         .renderer = renderer,
     };
@@ -732,6 +733,7 @@ bool _text_visual_prepare(
     if (!use_builtin)
     {
         DvzTextStyle atlas_style = {
+            DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
             .font = NULL,
             .size_px = backend_style.size_px,
             .renderer = renderer,
@@ -866,6 +868,7 @@ bool _text_visual_prepare(
     for (uint32_t i = 0; i < count; i++)
     {
         DvzTextStyle style = {
+            DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
             .size_px = (sizes != NULL ? sizes[i] : 12.0f) * screen_scale,
             .renderer = renderer,
             .color = {255, 255, 255, 255},

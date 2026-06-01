@@ -61,6 +61,13 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzLegendDesc` | `dvz_legend_desc()` |
 | `DvzAxisTickPolicy` | `dvz_axis_tick_policy()` |
 | `DvzAxisStyle` | `dvz_axis_style()` |
+| `DvzFontDesc` | `dvz_font_desc()` |
+| `DvzFontDefaults` | `dvz_font_defaults()` |
+| `DvzTextStyle` | `dvz_text_style()` |
+| `DvzTextPlacement` | `dvz_text_placement()` |
+| `DvzAnnotationDesc` | `dvz_annotation_desc()` |
+| `DvzLabelDesc` | `dvz_label_desc()` |
+| `DvzScaleBarDesc` | `dvz_scalebar_desc()` |
 
 
 ## Should Add Before API Freeze
@@ -72,7 +79,6 @@ and likely to grow or gain flags after v0.4:
 | --- | --- | --- |
 | Scene techniques | `DvzCapabilitySnapshot` | capability-aware setup paths |
 | Visual styles/materials | `DvzVisualDataView` | data-view setters |
-| Text and annotations | `DvzFontDesc`, `DvzFontDefaults`, `DvzTextStyle`, `DvzTextPlacement`, `DvzAnnotationDesc`, `DvzLabelDesc`, `DvzScaleBarDesc` | `dvz_font()`, `dvz_scene_set_font_defaults()`, text/annotation/label/scalebar creation and setters |
 | Fields | `DvzFieldGeometry`, `DvzFieldDataView` | sampled field geometry and data-view setters |
 | Overlay | `DvzOverlayCardStyle`, `DvzOverlayCardDesc`, `DvzOverlayRichTextDesc` | `dvz_overlay_card()`, `dvz_overlay_card_set_style()`, `dvz_overlay_card_set_rich_text()` |
 | GUI | `DvzGuiConfig`, `DvzGuiViewportConfig` | `dvz_view_gui()`, `dvz_gui_viewport()`, `dvz_gui_viewport_from_view()` |

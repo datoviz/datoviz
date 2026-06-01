@@ -28,17 +28,21 @@
 
 struct DvzFontDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     const char* path;
     const char* family;
     const char* style;
     uint32_t face_index;
-    uint32_t flags;
+    uint32_t font_flags;
 };
 typedef struct DvzFontDesc DvzFontDesc;
 
 
 struct DvzFontDefaults
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzFontDesc sans;
     DvzFontDesc mono;
     float ui_size_px;
@@ -54,6 +58,14 @@ EXTERN_C_ON
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Return an empty font descriptor.
+ *
+ * @return default font descriptor
+ */
+DVZ_EXPORT DvzFontDesc dvz_font_desc(void);
+
 
 /**
  * Return Datoviz's shared default font policy.

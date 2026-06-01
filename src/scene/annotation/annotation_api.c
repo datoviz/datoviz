@@ -36,6 +36,77 @@
 /*  Annotations                                                                                  */
 /*************************************************************************************************/
 
+#define DVZ_ANNOTATION_DESC_KNOWN_FLAGS 0u
+#define DVZ_LABEL_DESC_KNOWN_FLAGS      0u
+
+
+static bool _annotation_desc_validate(const DvzAnnotationDesc* desc)
+{
+    if (desc == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(desc, DvzAnnotationDesc, DVZ_ANNOTATION_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid annotation descriptor ABI");
+        return false;
+    }
+    if (!_text_style_is_zero(&desc->style) && !_text_style_validate(&desc->style))
+        return false;
+    if (!_text_placement_is_zero(&desc->placement) &&
+        !_text_placement_validate(&desc->placement))
+        return false;
+    return true;
+}
+
+
+static bool _label_desc_validate(const DvzLabelDesc* desc)
+{
+    if (desc == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(desc, DvzLabelDesc, DVZ_LABEL_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid label descriptor ABI");
+        return false;
+    }
+    if (!_text_style_is_zero(&desc->style) && !_text_style_validate(&desc->style))
+        return false;
+    if (!_text_placement_is_zero(&desc->placement) &&
+        !_text_placement_validate(&desc->placement))
+        return false;
+    return true;
+}
+
+
+/**
+ * Return the default annotation descriptor.
+ *
+ * @return default annotation descriptor
+ */
+DvzAnnotationDesc dvz_annotation_desc(void)
+{
+    return (DvzAnnotationDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzAnnotationDesc),
+        .kind = DVZ_ANNOTATION_LABEL,
+        .style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle)},
+        .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement)},
+    };
+}
+
+
+/**
+ * Return the default label annotation descriptor.
+ *
+ * @return default label descriptor
+ */
+DvzLabelDesc dvz_label_desc(void)
+{
+    return (DvzLabelDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
+        .style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle)},
+        .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement)},
+    };
+}
+
+
 /**
  * Create a retained annotation object attached to a panel.
  *
@@ -47,6 +118,8 @@ DvzAnnotation* dvz_annotation(DvzPanel* panel, const DvzAnnotationDesc* desc)
 {
     ANN(panel);
     ANN(desc);
+    if (!_annotation_desc_validate(desc))
+        return NULL;
     if (panel->figure == NULL || panel->figure->scene == NULL)
         return NULL;
     DvzScene* scene = panel->figure->scene;
@@ -67,7 +140,7 @@ DvzAnnotation* dvz_annotation(DvzPanel* panel, const DvzAnnotationDesc* desc)
     annotation->kind = desc->kind;
     annotation->style = desc->style;
     annotation->placement = desc->placement;
-    annotation->flags = desc->flags;
+    annotation->flags = desc->annotation_flags;
     annotation->dirty_flags = DVZ_TEXT_DIRTY_ALL;
     annotation->version = 1;
     if (desc->text != NULL)
@@ -88,13 +161,16 @@ DvzAnnotation* dvz_annotation(DvzPanel* panel, const DvzAnnotationDesc* desc)
 DvzAnnotation* dvz_annotation_label(DvzPanel* panel, const DvzLabelDesc* desc)
 {
     ANN(desc);
+    if (!_label_desc_validate(desc))
+        return NULL;
     return dvz_annotation(
         panel, &(DvzAnnotationDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzAnnotationDesc),
                    .kind = DVZ_ANNOTATION_LABEL,
                    .text = desc->text,
                    .style = desc->style,
                    .placement = desc->placement,
-                   .flags = desc->flags});
+                   .annotation_flags = desc->label_flags});
 }
 
 

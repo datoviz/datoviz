@@ -22,8 +22,10 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_log.h"
 #include "_scale_ticks.h"
 #include "_scene.h"
+#include "core/format_state_internal.h"
 #include "core/scene_notify_internal.h"
 #include "core/panel_layout_internal.h"
 #include "datoviz/scene.h"
@@ -35,6 +37,8 @@
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
+
+#define DVZ_SCALEBAR_DESC_KNOWN_FLAGS 0u
 
 #define DVZ_SCALEBAR_TARGET_LENGTH_PX 120.0f
 #define DVZ_SCALEBAR_MIN_LENGTH_PX    70.0f
@@ -51,6 +55,43 @@
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+static bool _scalebar_desc_validate(const DvzScaleBarDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzScaleBarDesc, DVZ_SCALEBAR_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid scale-bar descriptor ABI");
+        return false;
+    }
+    if (!_text_style_is_zero(&desc->label_style) && !_text_style_validate(&desc->label_style))
+        return false;
+    if (!_text_placement_is_zero(&desc->placement) &&
+        !_text_placement_validate(&desc->placement))
+        return false;
+    if (!_scene_format_desc_is_zero(&desc->format) &&
+        !_scene_format_desc_validate(&desc->format))
+        return false;
+    return true;
+}
+
+
+/**
+ * Return the default scale-bar annotation descriptor.
+ *
+ * @return default scale-bar descriptor
+ */
+DvzScaleBarDesc dvz_scalebar_desc(void)
+{
+    return (DvzScaleBarDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
+        .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle)},
+        .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement)},
+        .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc)},
+    };
+}
+
 
 /**
  * Return a positive finite scale-bar descriptor value or a fallback.
@@ -869,12 +910,17 @@ DvzAnnotation* dvz_annotation_scalebar(DvzPanel* panel, const DvzScaleBarDesc* d
     ANN(panel);
     if (panel->figure == NULL || panel->figure->scene == NULL)
         return NULL;
-    DvzScaleBarDesc fallback = {0};
+    if (!_scalebar_desc_validate(desc))
+        return NULL;
+    DvzScaleBarDesc fallback = dvz_scalebar_desc();
     if (desc == NULL)
         desc = &fallback;
 
     DvzAnnotation* annotation = dvz_annotation(
-        panel, &(DvzAnnotationDesc){.kind = DVZ_ANNOTATION_SCALEBAR, .flags = desc->flags});
+        panel, &(DvzAnnotationDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzAnnotationDesc),
+                   .kind = DVZ_ANNOTATION_SCALEBAR,
+                   .annotation_flags = desc->scalebar_flags});
     if (annotation == NULL)
         return NULL;
     annotation->scalebar = *desc;

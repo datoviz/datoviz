@@ -385,6 +385,7 @@ static bool _add_panel_scalebar(
     ANN(unit);
 
     DvzScaleBarDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
         .dimension = DVZ_DIM_X,
         .anchor = anchor,
         .label_position = label_position,
@@ -397,6 +398,7 @@ static bool _add_panel_scalebar(
         .unit = unit,
         .data_to_unit = data_to_unit,
         .label_style = {
+        DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
             .size_px = 16.0f,
             .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
         },
@@ -421,6 +423,7 @@ static bool _add_world_scalebar(DvzPanel* panel)
 
     DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
     DvzScaleBarDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
         .dimension = DVZ_DIM_X,
         .reference_mode = DVZ_SCALEBAR_REFERENCE_VIEW_PLANE,
         .reference_position = {0.0, 0.0, 0.0},
@@ -435,6 +438,7 @@ static bool _add_world_scalebar(DvzPanel* panel)
         .unit = "m",
         .data_to_unit = 0.001,
         .label_style = {
+        DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
             .size_px = 16.0f,
             .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
         },

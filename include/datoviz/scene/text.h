@@ -28,6 +28,22 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 /**
+ * Return the default retained text style.
+ *
+ * @return default text style
+ */
+DVZ_EXPORT DvzTextStyle dvz_text_style(void);
+
+
+/**
+ * Return the default retained text placement.
+ *
+ * @return default text placement
+ */
+DVZ_EXPORT DvzTextPlacement dvz_text_placement(void);
+
+
+/**
  * Create a scene-owned font resource.
  *
  * @param scene the scene

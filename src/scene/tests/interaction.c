@@ -287,6 +287,84 @@ int test_scene_interaction_descriptor_abi_rejects_invalid_structs(
 }
 
 
+int test_scene_text_annotation_descriptor_abi_rejects_invalid_structs(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzFontDesc font_desc = dvz_font_desc();
+    font_desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_font(scene, &font_desc) == NULL);
+
+    font_desc = dvz_font_desc();
+    font_desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_font(scene, &font_desc) == NULL);
+
+    DvzFontDefaults font_defaults = dvz_font_defaults();
+    font_defaults.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, (dvz_scene_set_font_defaults(scene, &font_defaults), true));
+
+    font_defaults = dvz_font_defaults();
+    font_defaults.sans.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, (dvz_scene_set_font_defaults(scene, &font_defaults), true));
+
+    DvzText* text = dvz_text(panel, 0);
+    ANN(text);
+    DvzTextStyle text_style = dvz_text_style();
+    text_style.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_text_set_style(text, &text_style) < 0);
+
+    text_style = dvz_text_style();
+    text_style.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_text_set_style(text, &text_style) < 0);
+
+    DvzTextPlacement text_placement = dvz_text_placement();
+    text_placement.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, (dvz_text_set_placement(text, &text_placement), true));
+
+    text_placement = dvz_text_placement();
+    text_placement.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, (dvz_text_set_placement(text, &text_placement), true));
+
+    DvzAnnotationDesc annotation_desc = dvz_annotation_desc();
+    annotation_desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_annotation(panel, &annotation_desc) == NULL);
+
+    annotation_desc = dvz_annotation_desc();
+    annotation_desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_annotation(panel, &annotation_desc) == NULL);
+
+    DvzLabelDesc label_desc = dvz_label_desc();
+    label_desc.struct_size = DVZ_STRUCT_SIZE(DvzLabelDesc) - 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_annotation_label(panel, &label_desc) == NULL);
+
+    label_desc = dvz_label_desc();
+    label_desc.style.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_annotation_label(panel, &label_desc) == NULL);
+
+    DvzScaleBarDesc scalebar_desc = dvz_scalebar_desc();
+    scalebar_desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_annotation_scalebar(panel, &scalebar_desc) == NULL);
+
+    scalebar_desc = dvz_scalebar_desc();
+    scalebar_desc.format.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_annotation_scalebar(panel, &scalebar_desc) == NULL);
+
+    dvz_text_destroy(text);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_item_interaction_defaults_and_lifetime(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -1057,7 +1135,7 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     DvzFont* font = dvz_font(
         scene,
-        &(DvzFontDesc){
+        &(DvzFontDesc){DVZ_STRUCT_INIT_FIELDS(DvzFontDesc),
             .path = "Demo.ttf",
             .family = "Demo",
             .style = "Regular",
@@ -1104,14 +1182,14 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
 
     DvzAnnotation* annotation = dvz_annotation_label(
         panel,
-        &(DvzLabelDesc){
+        &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
             .text = "peak",
-            .style = {
+            .style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .font = font,
                 .size_px = 12.0f,
                 .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
             },
-            .placement = {
+            .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
                 .mode = DVZ_TEXT_PLACEMENT_SCREEN,
                 .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
             },
@@ -1195,7 +1273,7 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
 
     DvzAnnotation* scalebar = dvz_annotation_scalebar(
         panel,
-        &(DvzScaleBarDesc){
+        &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
             .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
             .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
@@ -1206,7 +1284,7 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
             .offset_px = {20.0f, 20.0f},
             .line_width_px = 2.0f,
             .line_color = {255, 255, 255, 255},
-            .label_style = {
+            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .size_px = 10.0f,
                 .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
                 .color = {255, 255, 255, 255},
@@ -1327,7 +1405,7 @@ static int test_scene_scalebar_update_churn(TstContext* suite, const TstCase* it
 
     DvzAnnotation* scalebar = dvz_annotation_scalebar(
         panel,
-        &(DvzScaleBarDesc){
+        &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
             .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
             .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
@@ -1338,7 +1416,7 @@ static int test_scene_scalebar_update_churn(TstContext* suite, const TstCase* it
             .offset_px = {20.0f, 20.0f},
             .line_width_px = 2.0f,
             .line_color = {255, 255, 255, 255},
-            .label_style = {
+            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .size_px = 10.0f,
                 .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
                 .color = {255, 255, 255, 255},
@@ -1461,7 +1539,7 @@ static int test_scene_scalebar_3d_world_reference(TstContext* suite, const TstCa
 
     DvzAnnotation* scalebar = dvz_annotation_scalebar(
         panel,
-        &(DvzScaleBarDesc){
+        &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
             .reference_mode = DVZ_SCALEBAR_REFERENCE_WORLD_POINT,
             .reference_position = {0.0, 0.0, 0.0},
@@ -1476,7 +1554,7 @@ static int test_scene_scalebar_3d_world_reference(TstContext* suite, const TstCa
             .line_color = {255, 255, 255, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {
+            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .size_px = 10.0f,
                 .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
                 .color = {255, 255, 255, 255},
@@ -1540,7 +1618,7 @@ static int test_scene_scalebar_3d_view_plane_reference(TstContext* suite, const 
 
     DvzAnnotation* scalebar = dvz_annotation_scalebar(
         panel,
-        &(DvzScaleBarDesc){
+        &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
             .reference_mode = DVZ_SCALEBAR_REFERENCE_VIEW_PLANE,
             .reference_position = {0.0, 0.0, 0.0},
@@ -1554,7 +1632,7 @@ static int test_scene_scalebar_3d_view_plane_reference(TstContext* suite, const 
             .line_color = {255, 255, 255, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {
+            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .size_px = 10.0f,
                 .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
                 .color = {255, 255, 255, 255},
@@ -1611,7 +1689,7 @@ static int test_scene_scalebar_render_emit_keeps_upload_sources(
 
     DvzAnnotation* scalebar = dvz_annotation_scalebar(
         panel,
-        &(DvzScaleBarDesc){
+        &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
             .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
             .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
@@ -1624,7 +1702,7 @@ static int test_scene_scalebar_render_emit_keeps_upload_sources(
             .line_color = {245, 248, 252, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {
+            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .size_px = 22.0f,
                 .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
                 .color = {255, 236, 176, 255},
@@ -1703,7 +1781,7 @@ static int test_scene_scalebar_minimal_stream(TstContext* suite, const TstCase* 
 
     DvzAnnotation* scalebar = dvz_annotation_scalebar(
         panel,
-        &(DvzScaleBarDesc){
+        &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
             .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
             .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
@@ -1716,7 +1794,7 @@ static int test_scene_scalebar_minimal_stream(TstContext* suite, const TstCase* 
             .line_color = {245, 248, 252, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {
+            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .size_px = 22.0f,
                 .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
                 .color = {255, 236, 176, 255},
@@ -1854,7 +1932,7 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
 
     DvzAnnotation* scalebar = dvz_annotation_scalebar(
         left,
-        &(DvzScaleBarDesc){
+        &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
             .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
             .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
@@ -1867,7 +1945,7 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
             .line_color = {245, 248, 252, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {
+            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .size_px = 18.0f,
                 .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
                 .color = {255, 236, 176, 255},
@@ -1886,7 +1964,7 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
 
     DvzAnnotation* right_scalebar = dvz_annotation_scalebar(
         right,
-        &(DvzScaleBarDesc){
+        &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
             .reference_mode = DVZ_SCALEBAR_REFERENCE_WORLD_POINT,
             .reference_position = {0.0, 0.0, 0.0},
@@ -1902,7 +1980,7 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
             .line_color = {235, 246, 255, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {
+            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .size_px = 18.0f,
                 .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
                 .color = {178, 226, 255, 255},
@@ -2128,14 +2206,14 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
     AT(text->style.renderer == DVZ_TEXT_RENDERER_AUTO);
     AT(dvz_text_set_style(
            text,
-           &(DvzTextStyle){
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                .size_px = 16.0f,
                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
                .color = {180, 220, 255, 255},
            }) == 0);
     dvz_text_set_placement(
         text,
-        &(DvzTextPlacement){
+        &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
             .mode = DVZ_TEXT_PLACEMENT_SCREEN,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
             .position = {10.0, 20.0, 0.0},
@@ -2158,7 +2236,7 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
 
     dvz_text_set_placement(
         text,
-        &(DvzTextPlacement){
+        &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
             .mode = DVZ_TEXT_PLACEMENT_DATA,
             .position = {0.25, -0.5, 0.1},
             .text_anchor = {0.0f, 0.0f},
@@ -2342,14 +2420,14 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
 
     DvzAnnotation* annotation = dvz_annotation_label(
         panel,
-        &(DvzLabelDesc){
+        &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
             .text = "A",
-            .style = {
+            .style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .size_px = 8.0f,
                 .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
                 .color = {255, 255, 255, 255},
             },
-            .placement = {
+            .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
                 .mode = DVZ_TEXT_PLACEMENT_SCREEN,
                 .anchor = DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT,
                 .offset = {-4.0f, -4.0f},
@@ -2491,13 +2569,13 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
 
     DvzAnnotation* annotation = dvz_annotation_label(
         panel,
-        &(DvzLabelDesc){
+        &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
             .text = "A",
-            .style = {
+            .style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .size_px = 14.0f,
                 .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
             },
-            .placement = {
+            .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
                 .mode = DVZ_TEXT_PLACEMENT_SCREEN,
                 .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
                 .offset = {4.0f, 4.0f},
@@ -3253,6 +3331,7 @@ int test_scene_interaction(TstSuite* suite)
 
     TST_CASE(test_scene_interaction_core);
     TST_CASE(test_scene_interaction_descriptor_abi_rejects_invalid_structs);
+    TST_CASE(test_scene_text_annotation_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_item_interaction_defaults_and_lifetime);
     TST_CASE(test_scene_item_interaction_input_queries);
     TST_CASE(test_scene_item_interaction_applies_results);

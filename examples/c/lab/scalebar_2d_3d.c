@@ -133,7 +133,7 @@ static bool _add_2d_scalebar(DvzPanel* panel)
 
     DvzAnnotation* scalebar = dvz_annotation_scalebar(
         panel,
-        &(DvzScaleBarDesc){
+        &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
             .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
             .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
@@ -146,7 +146,7 @@ static bool _add_2d_scalebar(DvzPanel* panel)
             .line_color = {245, 248, 252, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {
+            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .size_px = 18.0f,
                 .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
                 .color = {255, 236, 176, 255},
@@ -169,7 +169,7 @@ static bool _add_3d_scalebar(DvzPanel* panel)
 
     DvzAnnotation* scalebar = dvz_annotation_scalebar(
         panel,
-        &(DvzScaleBarDesc){
+        &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
             .reference_mode = DVZ_SCALEBAR_REFERENCE_WORLD_POINT,
             .reference_position = {0.0, 0.0, 0.0},
@@ -185,7 +185,7 @@ static bool _add_3d_scalebar(DvzPanel* panel)
             .line_color = {235, 246, 255, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {
+            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .size_px = 18.0f,
                 .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
                 .color = {178, 226, 255, 255},

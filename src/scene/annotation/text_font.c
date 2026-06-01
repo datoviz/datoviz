@@ -31,6 +31,22 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_FONT_DESC_KNOWN_FLAGS 0u
+
+
+static bool _font_desc_validate(const DvzFontDesc* desc)
+{
+    if (desc == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(desc, DvzFontDesc, DVZ_FONT_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid font descriptor ABI");
+        return false;
+    }
+    return true;
+}
+
+
 /**
  * Return the scene default SDF font, creating it lazily.
  *
@@ -133,6 +149,8 @@ DvzFont* dvz_font(DvzScene* scene, const DvzFontDesc* desc)
 {
     ANN(scene);
     ANN(desc);
+    if (!_font_desc_validate(desc))
+        return NULL;
     if (scene->font_count >= DVZ_SCENE_MAX_FONTS)
     {
         log_error("maximum font count reached");
@@ -142,7 +160,7 @@ DvzFont* dvz_font(DvzScene* scene, const DvzFontDesc* desc)
     dvz_memset(font, sizeof(DvzFont), 0, sizeof(DvzFont));
     font->scene = scene;
     font->face_index = desc->face_index;
-    font->flags = desc->flags;
+    font->flags = desc->font_flags;
     font->version = 1;
     if (desc->path != NULL)
         dvz_strlcpy(font->path, desc->path, sizeof(font->path));
@@ -166,6 +184,5 @@ void dvz_font_destroy(DvzFont* font)
         return;
     _scene_font_release(font);
 }
-
 
 

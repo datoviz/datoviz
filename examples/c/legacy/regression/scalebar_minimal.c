@@ -90,7 +90,7 @@ static bool _add_scalebar(DvzPanel* panel, DvzTextRenderer renderer)
 
     DvzAnnotation* scalebar = dvz_annotation_scalebar(
         panel,
-        &(DvzScaleBarDesc){
+        &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
             .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
             .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
@@ -103,7 +103,7 @@ static bool _add_scalebar(DvzPanel* panel, DvzTextRenderer renderer)
             .line_color = {245, 248, 252, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {
+            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
                 .size_px = 22.0f,
                 .renderer = renderer,
                 .color = {255, 236, 176, 255},
