@@ -20,6 +20,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_compat.h"
 #include "_device.h"
 #include "_instance.h"
 #include "_log.h"
@@ -677,12 +678,27 @@ int dvz_interop_buffer_export(
         return -1;
     }
 
+    out->version = DVZ_INTEROP_BUFFER_EXPORT_VERSION;
     out->memory_handle = memory_handle;
     out->memory_handle_type = (uint32_t)dvz_allocator_external(allocator);
     out->allocation_size = allocation_size;
     out->offset = offset;
     out->size = size;
     out->usage = usage;
+    out->vk_usage = usage;
+    out->drp2_usage = usage;
+    out->flags = dvz_allocation_flags(alloc);
+
+    VkPhysicalDeviceIDProperties id = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES,
+    };
+    VkPhysicalDeviceProperties2 props = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+        .pNext = &id,
+    };
+    vkGetPhysicalDeviceProperties2(dvz_device_physical_device(allocator->device), &props);
+    dvz_memcpy(out->device_uuid, sizeof(out->device_uuid), id.deviceUUID, VK_UUID_SIZE);
+    out->device_uuid_valid = 1;
     out->semaphore_handle = semaphore_handle;
     out->semaphore_handle_type = semaphore_handle_type;
     out->semaphore_value = semaphore_value;

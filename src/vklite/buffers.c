@@ -18,6 +18,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <volk.h>
+#if OS_UNIX
+#include <unistd.h>
+#endif
 
 #include "_vk_utils.h"
 #include "_alloc.h"
@@ -27,9 +30,61 @@
 #include "_log.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/vk/memory.h"
+#include "datoviz/vk/memory_interop.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/graphics.h"
+#include "datoviz/vklite/sync.h"
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Close an exported interop handle on Unix failure paths.
+ *
+ * @param handle exported handle, or -1 when absent
+ */
+static void _interop_close_exported_handle(int handle)
+{
+#if OS_UNIX
+    if (handle >= 0)
+    {
+        close(handle);
+    }
+#else
+    (void)handle;
+#endif
+}
+
+
+
+/**
+ * Fill the Vulkan physical-device UUID in an interop export descriptor.
+ *
+ * @param buffer live buffer whose device owns the physical device
+ * @param[out] out export descriptor to update
+ */
+static void _interop_buffer_export_device_uuid(DvzBuffer* buffer, DvzInteropBufferExport* out)
+{
+    ANN(buffer);
+    ANN(buffer->device);
+    ANN(out);
+
+    VkPhysicalDeviceIDProperties id = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES,
+    };
+    VkPhysicalDeviceProperties2 props = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+        .pNext = &id,
+    };
+    vkGetPhysicalDeviceProperties2(dvz_device_physical_device(buffer->device), &props);
+    dvz_memcpy(out->device_uuid, sizeof(out->device_uuid), id.deviceUUID, VK_UUID_SIZE);
+    out->device_uuid_valid = 1;
+}
 
 
 
@@ -196,6 +251,114 @@ DvzSize dvz_buffer_size_value(DvzBuffer* buffer)
 {
     ANN(buffer);
     return buffer->req_size;
+}
+
+
+
+/**
+ * Export a vklite buffer and package external interop metadata.
+ *
+ * @param buffer the live Vulkan-owned buffer
+ * @param config logical export range and optional timeline semaphore metadata
+ * @param[out] out export descriptor
+ * @return 0 on success, -1 on failure
+ */
+int dvz_interop_buffer_export_from_buffer(
+    DvzBuffer* buffer, const DvzInteropBufferExportConfig* config,
+    DvzInteropBufferExport* out)
+{
+    ANN(buffer);
+    ANN(out);
+
+    dvz_memset(out, sizeof(*out), 0, sizeof(*out));
+    out->memory_handle = -1;
+    out->semaphore_handle = -1;
+
+    if (!dvz_obj_is_created(&buffer->obj) || buffer->vk_buffer == VK_NULL_HANDLE ||
+        buffer->alloc == NULL)
+    {
+        log_error("cannot export an uncreated interop buffer");
+        return -1;
+    }
+    if (buffer->allocator == NULL || dvz_allocator_external(buffer->allocator) == 0)
+    {
+        log_error("cannot export an interop buffer without an exportable allocator");
+        return -1;
+    }
+
+    uint64_t allocation_size = (uint64_t)dvz_allocation_size(buffer->alloc);
+    uint64_t logical_size = (uint64_t)buffer->req_size;
+    if (logical_size == 0 || allocation_size == 0)
+    {
+        log_error("cannot export an empty interop buffer");
+        return -1;
+    }
+    if (logical_size > allocation_size)
+    {
+        logical_size = allocation_size;
+    }
+
+    uint64_t offset = config != NULL ? config->offset : 0;
+    if (offset >= logical_size)
+    {
+        log_error("interop buffer export offset exceeds the logical buffer size");
+        return -1;
+    }
+
+    uint64_t size = config != NULL ? config->size : 0;
+    if (size == 0)
+    {
+        size = logical_size - offset;
+    }
+    if (size == 0 || size > logical_size - offset)
+    {
+        log_error("interop buffer export range exceeds the logical buffer size");
+        return -1;
+    }
+
+    int semaphore_handle = -1;
+    uint32_t semaphore_handle_type = 0;
+    uint64_t semaphore_value = 0;
+    uint32_t drp2_usage = 0;
+    uint32_t flags = 0;
+    if (config != NULL)
+    {
+        drp2_usage = config->drp2_usage;
+        flags = config->flags;
+        semaphore_value = config->semaphore_value;
+        if (config->semaphore != NULL)
+        {
+            if (config->semaphore_handle_type == 0)
+            {
+                log_error("interop semaphore export requires an external semaphore handle type");
+                return -1;
+            }
+            semaphore_handle_type = config->semaphore_handle_type;
+            semaphore_handle = dvz_semaphore_export_fd(config->semaphore, semaphore_handle_type);
+            if (semaphore_handle < 0)
+            {
+                log_error("failed to export interop semaphore handle");
+                return -1;
+            }
+        }
+    }
+
+    if (dvz_interop_buffer_export(
+            buffer->allocator, buffer->alloc, offset, size, buffer->req_usage, semaphore_handle,
+            semaphore_handle_type, semaphore_value, out) != 0)
+    {
+        _interop_close_exported_handle(semaphore_handle);
+        return -1;
+    }
+
+    out->version = DVZ_INTEROP_BUFFER_EXPORT_VERSION;
+    out->usage = buffer->req_usage;
+    out->vk_usage = buffer->req_usage;
+    out->drp2_usage = drp2_usage;
+    out->flags = flags;
+    _interop_buffer_export_device_uuid(buffer, out);
+
+    return 0;
 }
 
 

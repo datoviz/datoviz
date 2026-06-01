@@ -38,6 +38,7 @@
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/memory_interop.h"
 #include "datoviz/vk/queues.h"
+#include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/sync.h"
 #include "test_vk.h"
@@ -306,6 +307,7 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
     DvzAllocation* alloc = NULL;
     VkBuffer vk_buffer = VK_NULL_HANDLE;
     DvzSemaphore* semaphore = NULL;
+    DvzBuffer* buffer = NULL;
     int semaphore_fd = -1;
     DvzInteropBufferExport export_desc = {.memory_handle = -1, .semaphore_handle = -1};
 
@@ -399,21 +401,74 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
     AT(dvz_interop_buffer_export(
            allocator, alloc, 16, 128, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, semaphore_fd,
            VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT, 7, &export_desc) == 0);
+    AT(export_desc.version == DVZ_INTEROP_BUFFER_EXPORT_VERSION);
     AT(export_desc.memory_handle >= 0);
     AT(export_desc.memory_handle_type == VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT);
     AT(export_desc.allocation_size >= 256);
     AT(export_desc.offset == 16);
     AT(export_desc.size == 128);
     AT(export_desc.usage == VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    AT(export_desc.vk_usage == VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    AT(export_desc.drp2_usage == VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    AT(export_desc.flags == DVZ_ALLOC_DEDICATED_MEMORY);
+    AT(export_desc.device_uuid_valid == 1);
     AT(export_desc.semaphore_handle == semaphore_fd);
     AT(export_desc.semaphore_handle_type == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
     AT(export_desc.semaphore_value == 7);
+    close(export_desc.memory_handle);
+    export_desc.memory_handle = -1;
+    export_desc.semaphore_handle = -1;
+
+    buffer = dvz_buffer_create_wrapper();
+    ANN(buffer);
+    dvz_buffer(device, allocator, buffer);
+    dvz_buffer_size(buffer, 256);
+    dvz_buffer_usage(
+        buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                    VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    dvz_buffer_flags(buffer, DVZ_ALLOC_DEDICATED_MEMORY);
+    AT(dvz_buffer_create(buffer) == 0);
+
+    DvzInteropBufferExportConfig export_cfg = {
+        .offset = 32,
+        .size = 0,
+        .drp2_usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+        .flags = 123,
+        .semaphore = semaphore,
+        .semaphore_handle_type = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT,
+        .semaphore_value = 9,
+    };
+    AT(dvz_interop_buffer_export_from_buffer(buffer, &export_cfg, &export_desc) == 0);
+    AT(export_desc.version == DVZ_INTEROP_BUFFER_EXPORT_VERSION);
+    AT(export_desc.memory_handle >= 0);
+    AT(export_desc.memory_handle_type == VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT);
+    AT(export_desc.allocation_size >= 256);
+    AT(export_desc.offset == 32);
+    AT(export_desc.size == 224);
+    AT(export_desc.usage ==
+       (VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT));
+    AT(export_desc.vk_usage == export_desc.usage);
+    AT(export_desc.drp2_usage ==
+       (VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT));
+    AT(export_desc.flags == 123);
+    AT(export_desc.device_uuid_valid == 1);
+    AT(export_desc.semaphore_handle >= 0);
+    AT(export_desc.semaphore_handle_type == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
+    AT(export_desc.semaphore_value == 9);
 
 cleanup:
     if (export_desc.memory_handle >= 0)
         close(export_desc.memory_handle);
+    if (export_desc.semaphore_handle >= 0 && export_desc.semaphore_handle != semaphore_fd)
+        close(export_desc.semaphore_handle);
     if (semaphore_fd >= 0)
         close(semaphore_fd);
+    if (buffer != NULL)
+    {
+        dvz_buffer_destroy(buffer);
+        dvz_buffer_free(buffer);
+    }
     if (semaphore != NULL)
     {
         dvz_semaphore_destroy(semaphore);

@@ -24,7 +24,19 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct DvzBuffer DvzBuffer;
+typedef struct DvzSemaphore DvzSemaphore;
+
 typedef struct DvzInteropBufferExport DvzInteropBufferExport;
+typedef struct DvzInteropBufferExportConfig DvzInteropBufferExportConfig;
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_INTEROP_BUFFER_EXPORT_VERSION 1
 
 
 
@@ -34,13 +46,32 @@ typedef struct DvzInteropBufferExport DvzInteropBufferExport;
 
 struct DvzInteropBufferExport
 {
+    uint32_t version;
     int memory_handle;
     uint32_t memory_handle_type;
     uint64_t allocation_size;
     uint64_t offset;
     uint64_t size;
     uint32_t usage;
+    uint32_t vk_usage;
+    uint32_t drp2_usage;
+    uint32_t flags;
+    uint32_t device_uuid_valid;
+    uint8_t device_uuid[VK_UUID_SIZE];
     int semaphore_handle;
+    uint32_t semaphore_handle_type;
+    uint64_t semaphore_value;
+};
+
+
+
+struct DvzInteropBufferExportConfig
+{
+    uint64_t offset;
+    uint64_t size;
+    uint32_t drp2_usage;
+    uint32_t flags;
+    DvzSemaphore* semaphore;
     uint32_t semaphore_handle_type;
     uint64_t semaphore_value;
 };
@@ -127,6 +158,26 @@ DVZ_EXPORT int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int
 DVZ_EXPORT int dvz_interop_buffer_export(
     DvzVma* allocator, DvzAllocation* alloc, uint64_t offset, uint64_t size, uint32_t usage,
     int semaphore_handle, uint32_t semaphore_handle_type, uint64_t semaphore_value,
+    DvzInteropBufferExport* out);
+
+
+
+/**
+ * Export a vklite buffer and package external interop metadata.
+ *
+ * This is the preferred public helper for CUDA/CuPy import of Datoviz/Vulkan-owned buffers. It
+ * avoids exposing private `DvzBuffer` allocation internals to examples and bindings. On success,
+ * ownership of `out->memory_handle` transfers to the caller. If `config->semaphore` is non-NULL,
+ * this function also exports a semaphore handle and transfers `out->semaphore_handle` ownership to
+ * the caller.
+ *
+ * @param buffer the live Vulkan-owned buffer
+ * @param config logical export range and optional timeline semaphore metadata
+ * @param[out] out export descriptor
+ * @return 0 on success, -1 on failure
+ */
+DVZ_EXPORT int dvz_interop_buffer_export_from_buffer(
+    DvzBuffer* buffer, const DvzInteropBufferExportConfig* config,
     DvzInteropBufferExport* out);
 
 
