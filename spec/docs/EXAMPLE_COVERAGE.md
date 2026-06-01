@@ -199,6 +199,7 @@ the visible point of the example.
 | `feature.panel_linked` | `examples/c/features/panel_linked.c` | `planned` | Two or more panels where pan/zoom or camera state is visibly linked. | Teaches shared controller or linked state. Avoid colorbar/probe complexity. |
 | `feature.update_visual_data` | `examples/c/features/update_visual_data.c` | `planned` | A visual changes position, color, or size over a few deterministic frames. | Teaches retained data replacement or update API. Avoid streaming performance claims. |
 | `feature.update_partial` | `examples/c/features/update_partial.c` | `planned` | Only a highlighted subset of a larger visual changes while the rest remains stable. | Teaches partial uploads and item ranges. Avoid using it as a large-data benchmark. |
+| `feature.visibility` | `examples/c/features/visibility.c` | `planned` | A small scene where one visual can be hidden and shown deterministically. | Teaches retained visual visibility state. Avoid GUI controls unless the feature is specifically GUI. |
 
 ### Fields, Scales, And Adornments
 
@@ -232,15 +233,18 @@ the visible point of the example.
 | `feature.selection` | `examples/c/features/selection.c` | `planned` | A small visual where selected items remain highlighted after a click or scripted selection. | Teaches selection model and visual feedback. Avoid multi-visual selection linking. |
 | `feature.panel_linked_probe` | `examples/c/features/panel_linked_probe.c` | `needs-rc1-proof` | Two linked panels, one scalar image, one context/detail view, with colorbar and readout synchronized. | Teaches composed explanatory layout. This is not a minimal image, colorbar, or panel example. |
 
-### Materials, Rendering, And Visual State
+### Materials And Appearance
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
 | `feature.material_mesh` | `examples/c/features/material_mesh.c` | `planned` | One mesh rendered with a neutral material where normals and shading are clear. | Teaches mesh material parameters. Avoid texture sampling. |
 | `feature.mesh_texture` | `examples/c/features/mesh_texture.c` | `needs-rc1-proof` | A textured mesh with UVs and visible texture orientation, ideally with a simple checker or planet texture. | Teaches mesh-bound texture resources and UVs. Do not turn into a terrain/planet showcase. |
 | `feature.lighting` | `examples/c/features/lighting.c` | `planned` | A simple 3D object where changing light direction or intensity is visibly meaningful. | Teaches light setup. Avoid material matrix demos. |
-| `feature.depth` | `examples/c/features/depth.c` | `planned` | Overlapping 3D objects that make depth testing or depth cueing obvious. | Teaches depth behavior. Put EDL/SSAO/WBOIT in techniques. |
-| `feature.visibility` | `examples/c/features/visibility.c` | `planned` | A small scene where one visual can be hidden and shown deterministically. | Teaches visual visibility state. Avoid GUI controls unless the feature is specifically GUI. |
+
+### Animation And Media
+
+| ID | Source | State | Expected rendered result | Teaches and limits |
+| --- | --- | --- | --- | --- |
 | `feature.timer_animation` | `examples/c/features/timer_animation.c` | `planned` | A simple animated visual driven by a timer or frame callback. | Teaches app callbacks and animation loop. Avoid video export. |
 | `feature.video_export` | `examples/c/features/video_export.c` | `conditional` | A deterministic short animation captured as a video artifact. | Include only if video export is in the public v0.4 surface. Keep backend requirements explicit. |
 
@@ -292,6 +296,7 @@ rendering technique:
 | `technique.transparency` | `examples/c/techniques/transparency.c` | Overlapping translucent objects with ordering behavior visible. | Teaches basic transparency constraints. |
 | `technique.wboit` | `examples/c/techniques/wboit.c` | Side-by-side or toggled weighted blended OIT effect. | Teaches WBOIT, backend requirements, and limitations. |
 | `technique.msaa` | `examples/c/techniques/msaa.c` | Geometry with clear edge aliasing improvement. | Teaches MSAA configuration. |
+| `technique.depth_testing` | `examples/c/techniques/depth_testing.c` | Overlapping 3D objects that make depth testing or ordering behavior obvious. | Teaches depth-buffer behavior. Keep depth cueing, transparency, and WBOIT separate. |
 | `technique.edl` | `examples/c/techniques/edl.c` | Dense point or pixel cloud with depth enhancement visible. | Teaches EDL as a rendering technique, not point visual basics. |
 | `technique.ssao` | `examples/c/techniques/ssao.c` | 3D mesh or sphere scene with ambient occlusion visible. | Teaches SSAO configuration. |
 | `technique.depth_cue` | `examples/c/techniques/depth_cue.c` | 3D objects fading or scaling with depth. | Teaches depth cueing. |
