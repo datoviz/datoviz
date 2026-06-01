@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { readFile } from 'node:fs/promises';
+import { decodeDrp2Packet } from '../examples/webgpu/drp2_packet.js';
 
 const fakeCanvas = {
   width: 640,
@@ -266,6 +267,59 @@ async function loadJson(path) {
   return JSON.parse(await readFile(path, 'utf8'));
 }
 
+function emptyPacket(kind, resourceVersion, frameIndex) {
+  const packet = new Uint8Array(56);
+  packet.set([0x44, 0x56, 0x50, 0x32, 0x50, 0x4b, 0x54, 0]);
+  const view = new DataView(packet.buffer);
+  view.setUint16(8, 56, true);
+  view.setUint16(10, 2, true);
+  view.setUint16(14, kind, true);
+  view.setBigUint64(40, BigInt(resourceVersion), true);
+  view.setBigUint64(48, BigInt(frameIndex), true);
+  return packet;
+}
+
+function writeBufferPacket({ payloadOffset = 0n, payloadSize = 4n, arenaSize = 8n } = {}) {
+  const packet = new Uint8Array(56 + 32 + 24);
+  packet.set(emptyPacket(2, 1, 1));
+  const view = new DataView(packet.buffer);
+  view.setUint32(20, 1, true);
+  view.setBigUint64(24, 56n, true);
+  view.setBigUint64(32, arenaSize, true);
+  view.setUint32(56, 18, true);
+  view.setUint32(64, 24, true);
+  view.setBigUint64(72, payloadOffset, true);
+  view.setBigUint64(80, payloadSize, true);
+  view.setBigUint64(88, 7n, true);
+  view.setBigUint64(96, 0n, true);
+  view.setBigUint64(104, payloadSize, true);
+  return packet;
+}
+
+function expectThrows(fn, expectedText) {
+  try {
+    fn();
+  } catch (error) {
+    if (!String(error.message).includes(expectedText)) {
+      throw new Error(`expected "${expectedText}" failure, got "${error.message}"`);
+    }
+    return;
+  }
+  throw new Error(`expected "${expectedText}" failure`);
+}
+
+async function expectAsyncFailure(fn, expectedText) {
+  try {
+    await fn();
+  } catch (error) {
+    if (!String(error.message).includes(expectedText)) {
+      throw new Error(`expected "${expectedText}" failure, got "${error.message}"`);
+    }
+    return;
+  }
+  throw new Error(`expected "${expectedText}" failure`);
+}
+
 async function expectFailure(executeDrp2Stream, stream, expectedText, expected = {}) {
   try {
     await executeDrp2Stream(device, context, 'bgra8unorm', stream);
@@ -524,6 +578,27 @@ async function smokeDemoPath(WebGpuDemoSession) {
 }
 
 async function smokePacketSessionValidation(Drp2WebGpuRuntime) {
+  const arena = new Uint8Array([1, 2, 3, 4, 0, 0, 0, 0]);
+  const decoded = decodeDrp2Packet(writeBufferPacket(), arena);
+  if (
+    decoded.kind !== 'update' ||
+    decoded.commands.length !== 1 ||
+    decoded.commands[0].cmd !== 'WriteBuffer' ||
+    decoded.commands[0].data.byteLength !== 4
+  ) {
+    throw new Error('DRP2 packet decoder failed WriteBuffer smoke');
+  }
+  const badMagic = writeBufferPacket();
+  badMagic[0] = 0;
+  expectThrows(() => decodeDrp2Packet(badMagic, arena), 'magic');
+  expectThrows(
+    () => decodeDrp2Packet(
+      writeBufferPacket({ payloadOffset: 8n, payloadSize: 4n, arenaSize: 10n }),
+      new Uint8Array(10),
+    ),
+    'payload span',
+  );
+
   const runtime = new Drp2WebGpuRuntime(device, context, 'bgra8unorm');
   try {
     await runtime.executePacketSet({});
@@ -533,7 +608,23 @@ async function smokePacketSessionValidation(Drp2WebGpuRuntime) {
     }
     return;
   }
-  throw new Error('expected missing frame packet failure');
+  await runtime.executePacketSet({ frame: { packet: emptyPacket(3, 1, 1) } });
+  await expectAsyncFailure(
+    () => runtime.executePacketSet({ frame: { packet: emptyPacket(3, 1, 1) } }),
+    'stale DRP2 packet frame_index',
+  );
+  await expectAsyncFailure(
+    () => runtime.executePacketSet({ frame: { packet: emptyPacket(3, 0, 2) } }),
+    'stale DRP2 packet resource_version',
+  );
+  await expectAsyncFailure(
+    () => runtime.executePacketSet({
+      setup: { packet: emptyPacket(1, 2, 3) },
+      frame: { packet: emptyPacket(3, 2, 4) },
+    }),
+    'inconsistent version counters',
+  );
+  await runtime.executePacketSet({ frame: { packet: emptyPacket(3, 1, 1) } }, { reset: true });
 }
 
 async function main() {
