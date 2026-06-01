@@ -2,12 +2,13 @@
 """Advanced Linux/NVIDIA CuPy interop smoke scaffold.
 
 This is intentionally not a public example. It records the first Python-side smoke target for the
-Vulkan-owned buffer -> CUDA/CuPy import route and skips cleanly until the raw advanced interop
-ctypes surface is generated.
+Vulkan-owned buffer -> CUDA/CuPy import route. It validates the raw advanced interop ctypes
+surface before gating on local CuPy/CUDA availability.
 """
 
 from __future__ import annotations
 
+import ctypes
 import platform
 import sys
 from pathlib import Path
@@ -15,6 +16,36 @@ from typing import NoReturn
 
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
+
+
+EXPORT_FIELDS = (
+    'version',
+    'memory_handle',
+    'memory_handle_type',
+    'allocation_size',
+    'offset',
+    'size',
+    'usage',
+    'vk_usage',
+    'drp2_usage',
+    'flags',
+    'device_uuid_valid',
+    'device_uuid',
+    'semaphore_handle',
+    'semaphore_handle_type',
+    'semaphore_value',
+)
+
+
+CONFIG_FIELDS = (
+    'offset',
+    'size',
+    'drp2_usage',
+    'flags',
+    'semaphore',
+    'semaphore_handle_type',
+    'semaphore_value',
+)
 
 
 REQUIRED_RAW_SYMBOLS = (
@@ -34,6 +65,27 @@ REQUIRED_RAW_SYMBOLS = (
     'dvz_semaphore_timeline',
     'dvz_semaphore_destroy',
 )
+
+
+
+def _field_names(record) -> tuple[str, ...]:
+    return tuple(name for name, _ctype in record._fields_)
+
+
+def _validate_raw_surface(dvz) -> None:
+    if _field_names(dvz.DvzInteropBufferExport) != EXPORT_FIELDS:
+        raise RuntimeError('DvzInteropBufferExport ctypes layout is stale')
+    if _field_names(dvz.DvzInteropBufferExportConfig) != CONFIG_FIELDS:
+        raise RuntimeError('DvzInteropBufferExportConfig ctypes layout is stale')
+
+    expected_args = [
+        ctypes.POINTER(dvz.DvzBuffer),
+        ctypes.POINTER(dvz.DvzInteropBufferExportConfig),
+        ctypes.POINTER(dvz.DvzInteropBufferExport),
+    ]
+    fn = dvz.dvz_interop_buffer_export_from_buffer
+    if fn.argtypes != expected_args or fn.restype is not ctypes.c_int:
+        raise RuntimeError('dvz_interop_buffer_export_from_buffer ctypes signature is stale')
 
 
 def _skip(reason: str) -> NoReturn:
@@ -69,15 +121,16 @@ def _require_raw_surface():
     missing = [name for name in REQUIRED_RAW_SYMBOLS if not hasattr(dvz, name)]
     if missing:
         _skip('advanced interop ctypes symbols not generated yet: ' + ', '.join(missing[:4]))
+    _validate_raw_surface(dvz)
     return dvz
 
 
 def main() -> int:
     _require_linux()
-    cp = _require_cupy()
     _require_raw_surface()
+    cp = _require_cupy()
 
-    # Next implementation step once the raw surface exists:
+    # Next implementation step:
     # 1. create a Datoviz/Vulkan exportable vertex|storage DvzBuffer,
     # 2. export it with dvz_interop_buffer_export_from_buffer(), including a timeline semaphore,
     # 3. import the memory/semaphore FDs in a tiny CUDA bridge,
