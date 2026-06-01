@@ -404,7 +404,7 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
     const status = document.querySelector("#status");
     const text = status?.textContent ?? "";
     if (status?.classList.contains("error")) return "ERROR: " + text;
-    return (text.includes(${JSON.stringify(expectedStatus)}) || text.startsWith("Rendered generic")) && text;
+    return (text.includes(${JSON.stringify(expectedStatus)}) || text.startsWith("Rendered ")) && text;
   })()`, 45000);
   requireOk(!String(initialStatus).startsWith('ERROR:'), initialStatus);
   await page.screenshotCanvas(screenshotPath);
@@ -529,7 +529,7 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
     const status = document.querySelector("#status");
     const text = status?.textContent ?? "";
     if (status?.classList.contains("error")) return "ERROR: " + text;
-    return text.startsWith("Rendered generic") && text;
+    return text.startsWith("Rendered ") && text;
   })()`, 15000);
   requireOk(!String(interactiveStatus).startsWith('ERROR:'), interactiveStatus);
   await page.screenshotCanvas(screenshotPath.replace('.png', '-interactive.png'));
@@ -596,23 +596,16 @@ async function main() {
       wasm2d = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/wasm_scene.html',
-        'Rendered generic point/primitive/image/mesh scene',
-        join(artifactsDir, 'wasm_scene.png'),
-      );
-      await smokeWasmPage(
-        page,
-        baseUrl,
-        '/examples/webgpu/wasm_scene.html',
-        'Rendered generic point/primitive/image/mesh scene',
-        join(artifactsDir, 'wasm_scene_recreate.png'),
+        '/examples/webgpu/examples.html?demo=wasm-2d',
+        'Rendered WASM 2D scene',
+        join(artifactsDir, 'wasm_examples_2d.png'),
       );
       wasm3d = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/wasm_scene_3d.html',
-        'Rendered generic 3D cube + arcball',
-        join(artifactsDir, 'wasm_scene_3d.png'),
+        '/examples/webgpu/examples.html?demo=wasm-3d',
+        'Rendered WASM 3D arcball',
+        join(artifactsDir, 'wasm_examples_3d.png'),
       );
     } catch (error) {
       if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {

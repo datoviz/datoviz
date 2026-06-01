@@ -28,9 +28,9 @@ function setStats(message) {
   statsEl.textContent = message;
 }
 
-async function destroySession() {
+function destroySession() {
   if (session !== null) {
-    await session.destroy();
+    session.destroy();
     session = null;
   }
   window.__datovizWasmSession = null;
@@ -40,7 +40,7 @@ async function destroySession() {
 async function loadDemo(id) {
   const entry = DEMOS.find((item) => item.id === id) ?? DEMOS[0];
   select.value = entry.id;
-  await destroySession();
+  destroySession();
   setStats("");
   const { demo } = await entry.load();
   session = new WasmSceneSession({
@@ -70,7 +70,7 @@ select.addEventListener("change", () => {
 });
 
 window.addEventListener("pagehide", () => {
-  void destroySession();
+  destroySession();
 }, { once: true });
 
 const params = new URLSearchParams(window.location.search);

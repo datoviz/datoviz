@@ -85,7 +85,7 @@ export class WasmSceneSession {
     })();
   }
 
-  async destroy() {
+  destroy() {
     this.rendering = false;
     this.pending = false;
     if (this.scene !== null) {
