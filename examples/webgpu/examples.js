@@ -1,0 +1,80 @@
+import { WasmSceneSession } from "../../web/wasm/session.js";
+
+const DEMOS = [
+  {
+    id: "wasm-2d",
+    label: "WASM 2D scene",
+    load: () => import("./demos/wasm_2d.js"),
+  },
+  {
+    id: "wasm-3d",
+    label: "WASM 3D arcball",
+    load: () => import("./demos/wasm_3d.js"),
+  },
+];
+
+const canvas = document.querySelector("#viewport");
+const select = document.querySelector("#demo-select");
+const statusEl = document.querySelector("#status");
+const statsEl = document.querySelector("#stats");
+let session = null;
+
+function setStatus(message, isError = false) {
+  statusEl.textContent = message;
+  statusEl.classList.toggle("error", isError);
+}
+
+function setStats(message) {
+  statsEl.textContent = message;
+}
+
+async function destroySession() {
+  if (session !== null) {
+    await session.destroy();
+    session = null;
+  }
+  window.__datovizWasmSession = null;
+  window.__datovizWasmScene = null;
+}
+
+async function loadDemo(id) {
+  const entry = DEMOS.find((item) => item.id === id) ?? DEMOS[0];
+  select.value = entry.id;
+  await destroySession();
+  setStats("");
+  const { demo } = await entry.load();
+  session = new WasmSceneSession({
+    canvas,
+    status: setStatus,
+    stats: setStats,
+  });
+  window.__datovizWasmSession = session;
+  await session.load(demo);
+  window.__datovizWasmScene = session.scene;
+  const url = new URL(window.location.href);
+  url.searchParams.set("demo", demo.id);
+  window.history.replaceState(null, "", url);
+}
+
+for (const demo of DEMOS) {
+  const option = document.createElement("option");
+  option.value = demo.id;
+  option.textContent = demo.label;
+  select.appendChild(option);
+}
+
+select.addEventListener("change", () => {
+  loadDemo(select.value).catch((error) => {
+    setStatus(error instanceof Error ? error.message : String(error), true);
+  });
+});
+
+window.addEventListener("pagehide", () => {
+  void destroySession();
+}, { once: true });
+
+const params = new URLSearchParams(window.location.search);
+loadDemo(params.get("demo") ?? DEMOS[0].id).catch((error) => {
+  setStatus(error instanceof Error ? error.message : String(error), true);
+  console.error(error);
+});
