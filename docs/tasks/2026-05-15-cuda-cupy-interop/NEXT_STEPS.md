@@ -33,6 +33,10 @@ Current slice update, 2026-06-01:
    `dvz_scene_buffer_resource_key()` to get the retained buffer key and
    `dvz_drp2_stream_label_id()` on the emitted stream to resolve the runtime DRP2 id, then register
    the live `DvzBuffer` with `dvz_drp2_runtime_register_external_buffer()`.
+10. `tools/bindings/cupy_interop_runtime.py` now centralizes the internal Python owner used by the
+    smoke: Datoviz exportable buffer lifetime, CUDA bridge import lifetime, CuPy `UnownedMemory`,
+    timeline values, `cuda_write()` context manager, Vulkan wait, and DRP2/scene registration
+    helpers.
 
 Current proof points:
 
@@ -90,11 +94,11 @@ that exported it.
 The raw smoke now reaches the DRP2 registered-buffer render/readback path when CuPy is available.
 Keep the next slice focused on turning this substrate into the first feature-quality example:
 
-1. Wrap the raw context/export/import/wait/register pieces in the first internal Python owner object
-   for `datoviz.cuda_array()`; it should own timeline values, CUDA imports, CuPy memory, and runtime
-   external-buffer registration by scene-buffer key.
+1. Shape the first feature example around the internal owner: create a scene point visual, bind an
+   external `position` scene buffer, register the shared Vulkan buffer by resource key, update
+   positions in `cuda_write()`, wait from Vulkan, and render through Datoviz.
 2. Keep `dvz_interop_gpu_ctx()`, `dvz_interop_buffer_wait_timeline()`, and the CUDA bridge
-   internal/advanced until the wrapper API is ready.
+   internal/advanced until the public `datoviz.cuda_array()` API is ready.
 3. Prepare the feature example around a dynamic point cloud whose positions are updated by CuPy
    kernels and rendered by Datoviz without GPU-buffer copies. Prefer a visually interesting but
    bounded effect such as a 50k-200k particle vortex/flow-field or orbital attractor: static

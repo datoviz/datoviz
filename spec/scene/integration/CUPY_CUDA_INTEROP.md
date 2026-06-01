@@ -229,15 +229,19 @@ while app.running:
     app.render()
 ```
 
-The bridge object should own the imported CUDA handles and the CuPy wrapper:
+The bridge object should own the imported CUDA handles and the CuPy wrapper. The current internal
+prototype is `tools/bindings/cupy_interop_runtime.py`; it is intentionally smoke infrastructure, not
+a public API, but it captures the ownership model for the future `datoviz.cuda_array()` wrapper:
 
-1. `cudaExternalMemory_t`,
-2. mapped CUDA device pointer,
-3. optional `cudaExternalSemaphore_t`,
-4. `cupy.cuda.UnownedMemory` with the bridge object as owner,
-5. `cupy.cuda.MemoryPointer`,
-6. `cupy.ndarray`,
-7. failure-path cleanup for all imported handles.
+1. Datoviz GPU context, Vulkan buffer, and timeline semaphore,
+2. exported memory/semaphore handles until CUDA import consumes them,
+3. `cudaExternalMemory_t` and mapped CUDA device pointer through the compiled bridge,
+4. optional `cudaExternalSemaphore_t`,
+5. `cupy.cuda.UnownedMemory` with the bridge owner object,
+6. `cupy.cuda.MemoryPointer`,
+7. `cupy.ndarray`,
+8. timeline values and a `cuda_write()` context manager,
+9. failure-path cleanup for all imported handles.
 
 CuPy is the array wrapper, not necessarily the external-memory importer. A tiny optional compiled
 CUDA helper may be cleaner than pure `ctypes`, because it can own the exact CUDA Runtime structs and
@@ -349,8 +353,9 @@ The DRP2 CUDA smoke
 shape: a Vulkan-owned exportable vertex buffer is imported into CUDA, filled by CUDA, synchronized
 through an external timeline semaphore, registered through
 `dvz_drp2_runtime_register_external_buffer()`, drawn by the vklite runtime, and checked by texture
-readback. The raw Python smoke mirrors this route for CuPy: it imports the Vulkan-owned buffer via
-the CUDA bridge, wraps it as `cupy.cuda.UnownedMemory`, writes positions with CuPy, waits on the
+readback. The raw Python smoke mirrors this route for CuPy through the internal
+`tools/bindings/cupy_interop_runtime.py` owner: it imports the Vulkan-owned buffer via the CUDA
+bridge, wraps it as `cupy.cuda.UnownedMemory`, writes positions inside `cuda_write()`, waits on the
 CUDA-ready timeline value from Vulkan, renders through DRP2, and verifies a readback pixel. This
 establishes the low-level route needed by the future `datoviz.cuda_array()` wrapper.
 
