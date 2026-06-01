@@ -17,7 +17,9 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzAppCaptureConfig` | `dvz_app_capture_config()` |
 | `DvzAppResources` | `dvz_app_resources()` |
 | `DvzCanvasConfig` | `dvz_canvas_config()` |
+| `DvzCanvasLiveImageSinkConfig` | `dvz_canvas_live_image_sink_config()` |
 | `DvzWindowConfig` | `dvz_window_config()` |
+| `DvzWindowExternalSurfaceInfo` | `dvz_window_external_surface_info()` |
 | `DvzInstanceConfig` | `dvz_instance_config()` |
 | `DvzDeviceConfig` | `dvz_device_config()` |
 | `DvzGpuCtxConfig` | `dvz_gpu_ctx_config()` |
@@ -25,6 +27,9 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzVideoEncoderConfig` | `dvz_video_encoder_config()` |
 | `DvzVideoSinkConfig` | `dvz_video_sink_config()` |
 | `DvzDrp2RuntimeConfig` | `dvz_drp2_runtime_vklite_config()` |
+| `DvzDrp2ExternalBufferDesc` | `dvz_drp2_external_buffer_desc()` |
+| `DvzDrp2RecordingInfo` | `dvz_drp2_recording_info()` |
+| `DvzInteropBufferExportConfig` | `dvz_interop_buffer_export_config()` |
 | `DvzFramePlanEmitConfig` | `dvz_frame_plan_emit_config()` |
 | `DvzFramePlanCopyDesc` | `dvz_frame_plan_copy_desc()` |
 | `DvzPanelBackgroundDesc` | `dvz_panel_background_desc()` |
@@ -85,10 +90,6 @@ and likely to grow or gain flags after v0.4:
 | Area | Structs | Public consumers |
 | --- | --- | --- |
 | Scene techniques | `DvzCapabilitySnapshot` | capability-aware setup paths |
-| Visual styles/materials | `DvzVisualDataView` | data-view setters |
-| Canvas/stream | `DvzCanvasLiveImageSinkConfig`, `DvzStreamFrame`, `DvzStreamSinkBackend` | `dvz_canvas_configure_live_image_sink()`, stream frame and sink backend APIs |
-| Host integration | `DvzWindowExternalSurfaceInfo`, `DvzWindowBackendProcs`, `DvzWindowBackend`, `DvzWindowGlfwInputCallbacks` | external surface, custom backend, and GLFW callback registration APIs |
-| Advanced runtime interop | `DvzDrp2ExternalBufferDesc`, `DvzDrp2RecordingInfo`, `DvzInteropBufferExportConfig` | `dvz_drp2_runtime_register_external_buffer()`, DRP2 recording APIs, `dvz_interop_buffer_export()` |
 | Geometry utilities | `DvzGeometryCubeDesc`, `DvzGeometryPlaneDesc`, `DvzGeometrySphereDesc`, `DvzGeometrySurfaceGridDesc`, `DvzPolygonDesc`, `DvzTriangulationDesc` | geometry constructors and triangulation helpers |
 | Animation | `DvzAnimPhaseDesc` | `dvz_anim_phase()` |
 
@@ -96,8 +97,8 @@ Recommended batching:
 
 1. scene techniques and visual styles;
 2. text, annotations, and overlay;
-3. GUI and advanced runtime interop;
-4. geometry utilities.
+3. geometry utilities;
+4. animation.
 
 
 ## No Prologue Needed
@@ -109,10 +110,11 @@ they later become pointer-passed growable descriptors:
 | Category | Examples |
 | --- | --- |
 | Event payloads | `DvzInputResizeEvent`, `DvzInputScaleEvent`, `DvzKeyboardEvent`, `DvzPointerEvent`, `DvzPointerWheelEvent`, `DvzPointerDragEvent` |
-| Result/output structs | `DvzGpuInfo`, `DvzDrp2ValidationResult`, `DvzQueryResult`, `DvzHoverState`, `DvzFramePlanPacketResult`, `DvzInteropBufferExport` |
+| Result/output structs | `DvzGpuInfo`, `DvzDrp2ValidationResult`, `DvzQueryResult`, `DvzHoverState`, `DvzFramePlanPacketResult`, `DvzInteropBufferExport`, `DvzVisualDataView` |
 | Geometry/data records | `DvzBounds`, `DvzRect`, `DvzPanelDesc`, `DvzGridCell`, `DvzPanelReserve`, `DvzDataDomain`, `DvzPlacement`, `DvzFieldRegion` |
 | Category/color records | `DvzVolumeAlphaStop`, `DvzColor`, `DvzColorf`, `DvzTime` |
 | Internal/container records exposed for low-level use | `DvzObject`, `DvzContainer`, `DvzContainerIterator`, `DvzList`, `DvzQueue`, `DvzQueues`, `DvzBarriers`, `DvzSubmit` |
+| Borrowed runtime records | `DvzStreamFrame` |
 
 
 ## Ambiguous
@@ -126,4 +128,5 @@ unless the owning module wants them in the stable v0.4 surface:
 | `DvzDrp2BindGroupLayoutEntry`, `DvzDrp2BindGroupEntry`, `DvzDrp2ColorAttachment`, `DvzDrp2ColorTarget` | DRP2 command data records; protocol versioning may be preferable to per-struct ABI prologues. |
 | `DvzVisualDataUpdate`, `DvzScaleCategory`, `DvzColormapStop` | Batch row elements; adding a prologue to every element would materially affect memory layout and upload ergonomics. |
 | `DvzDrp2RecordedFrame`, `DvzDrp2RawFallback` | Recording result/fallback records rather than caller-authored descriptors. |
+| `DvzStreamSinkBackend`, `DvzWindowBackendProcs`, `DvzWindowBackend`, `DvzWindowGlfwInputCallbacks` | Callback/vtable registration records. Keep their fixed layout for now; revisit only if the backend plugin surface becomes a versioned public extension API. |
 | `DvzImageBlit`, `DvzImageCopy`, `DvzSwapchainConfig` | Low-level vklite records currently used by value or internal paths; revisit only if promoted as stable public setup descriptors. |

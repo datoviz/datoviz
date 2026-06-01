@@ -45,6 +45,36 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_INTEROP_BUFFER_EXPORT_CONFIG_KNOWN_FLAGS 0u
+
+
+
+static bool _interop_buffer_export_config_validate(
+    const DvzInteropBufferExportConfig* config)
+{
+    if (config == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(
+            config, DvzInteropBufferExportConfig,
+            DVZ_INTEROP_BUFFER_EXPORT_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzInteropBufferExportConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+DvzInteropBufferExportConfig dvz_interop_buffer_export_config(void)
+{
+    return (DvzInteropBufferExportConfig){
+        DVZ_STRUCT_INIT_FIELDS(DvzInteropBufferExportConfig),
+    };
+}
+
+
+
 /**
  * Close an exported interop handle on Unix failure paths.
  *
@@ -275,6 +305,8 @@ int dvz_interop_buffer_export_from_buffer(
     dvz_memset(out, sizeof(*out), 0, sizeof(*out));
     out->memory_handle = -1;
     out->semaphore_handle = -1;
+    if (!_interop_buffer_export_config_validate(config))
+        return -1;
 
     if (!dvz_obj_is_created(&buffer->obj) || buffer->vk_buffer == VK_NULL_HANDLE ||
         buffer->alloc == NULL)
@@ -326,7 +358,7 @@ int dvz_interop_buffer_export_from_buffer(
     if (config != NULL)
     {
         drp2_usage = config->drp2_usage;
-        flags = config->flags;
+        flags = config->export_flags;
         semaphore_value = config->semaphore_value;
         if (config->semaphore != NULL)
         {

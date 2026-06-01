@@ -158,6 +158,7 @@ bool _drp2_frame_target_valid(uint64_t texture_id, const DvzStreamFrame* frame)
 /*************************************************************************************************/
 
 #define DVZ_DRP2_RUNTIME_CONFIG_KNOWN_FLAGS 0u
+#define DVZ_DRP2_EXTERNAL_BUFFER_DESC_KNOWN_FLAGS 0u
 
 
 
@@ -173,6 +174,23 @@ static bool _drp2_runtime_config_validate(const DvzDrp2RuntimeConfig* cfg)
     return true;
 }
 
+
+
+static bool _drp2_external_buffer_desc_validate(const DvzDrp2ExternalBufferDesc* desc)
+{
+    if (desc == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(
+            desc, DvzDrp2ExternalBufferDesc, DVZ_DRP2_EXTERNAL_BUFFER_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzDrp2ExternalBufferDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
 /**
  * Return a DRP2 runtime configuration for a vklite-backed runtime.
  *
@@ -186,6 +204,15 @@ DvzDrp2RuntimeConfig dvz_drp2_runtime_vklite_config(DvzDevice* device, DvzVma* a
     cfg.device = device;
     cfg.allocator = allocator;
     return cfg;
+}
+
+
+
+DvzDrp2ExternalBufferDesc dvz_drp2_external_buffer_desc(void)
+{
+    return (DvzDrp2ExternalBufferDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2ExternalBufferDesc),
+    };
 }
 
 
@@ -302,7 +329,9 @@ void dvz_drp2_runtime_reset(DvzDrp2Runtime* runtime)
 bool dvz_drp2_runtime_register_external_buffer(
     DvzDrp2Runtime* runtime, uint64_t buffer_id, const DvzDrp2ExternalBufferDesc* desc)
 {
-    if (runtime == NULL || desc == NULL || buffer_id == 0 || desc->size == 0 ||
+    if (!_drp2_external_buffer_desc_validate(desc))
+        return false;
+    if (runtime == NULL || buffer_id == 0 || desc->size == 0 ||
         desc->usage == DVZ_DRP2_BUFFER_USAGE_NONE)
     {
         return false;

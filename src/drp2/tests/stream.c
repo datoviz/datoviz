@@ -664,12 +664,23 @@ int test_drp2_render_pipeline_raster_state(TstContext* suite, const TstCase* ite
     DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
     AT(result.ok);
     DvzDrp2RecordingInfo info = {
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2RecordingInfo),
         .width = 8,
         .height = 8,
         .duration_s = 0.0,
         .t_present = 0.0,
         .backend_hint = "semantic",
     };
+    DvzDrp2RecordingInfo invalid_abi = info;
+    invalid_abi.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !dvz_drp2_recording_write_stream(
+                   "/tmp/dvz_drp2_recording_bad_abi.dvzr", stream, &invalid_abi));
+    invalid_abi = info;
+    invalid_abi.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !dvz_drp2_recording_write_stream(
+                   "/tmp/dvz_drp2_recording_unknown_flags.dvzr", stream, &invalid_abi));
     const char* path = "/tmp/dvz_drp2_recording_raster_state.dvzr";
     AT(dvz_drp2_recording_write_stream(path, stream, &info));
     DvzDrp2CommandStream* replay = dvz_drp2_recording_read_stream(path);

@@ -39,6 +39,8 @@ typedef struct DvzDrp2Recorder DvzDrp2Recorder;
 
 struct DvzDrp2RecordingInfo
 {
+    uint32_t struct_size;
+    uint32_t flags;
     uint32_t width;
     uint32_t height;
     double duration_s;
@@ -67,6 +69,14 @@ struct DvzDrp2RawFallback
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Return a default DRP2 recording info descriptor.
+ *
+ * @return zeroed recording info with a valid ABI prologue
+ */
+DVZ_EXPORT DvzDrp2RecordingInfo dvz_drp2_recording_info(void);
+
 
 /**
  * Open a linear DRP2 recorder.

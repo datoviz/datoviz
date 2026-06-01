@@ -4466,6 +4466,7 @@ int test_scene_point_external_position_buffer_executes(TstContext* suite, const 
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
     DvzDrp2ExternalBufferDesc external = {
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2ExternalBufferDesc),
         .buffer = runtime_position,
         .size = position_bytes,
         .usage = DVZ_DRP2_BUFFER_USAGE_VERTEX,

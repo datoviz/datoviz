@@ -53,6 +53,7 @@
 
 #define DVZ_DRP2_RECORDING_PATH_SIZE 4096
 #define DVZ_DRP2_RECORDING_LINE_SIZE 4096
+#define DVZ_DRP2_RECORDING_INFO_KNOWN_FLAGS 0u
 #define DVZ_DRP2_RECORDING_INLINE_PAYLOAD_MAX_SIZE 1024
 
 
@@ -97,6 +98,20 @@ struct DvzDrp2Recorder
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+static bool _recording_info_validate(const DvzDrp2RecordingInfo* info)
+{
+    if (info == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(info, DvzDrp2RecordingInfo, DVZ_DRP2_RECORDING_INFO_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzDrp2RecordingInfo ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
 
 /**
  * Create one directory if it does not already exist.
@@ -3014,6 +3029,13 @@ static bool _recording_write_manifest(const char* path, const DvzDrp2RecordingIn
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+DvzDrp2RecordingInfo dvz_drp2_recording_info(void)
+{
+    return (DvzDrp2RecordingInfo){DVZ_STRUCT_INIT_FIELDS(DvzDrp2RecordingInfo)};
+}
+
+
+
 /**
  * Open a linear DRP2 recorder.
  *
@@ -3025,6 +3047,8 @@ DvzDrp2Recorder* dvz_drp2_recorder_open(
     const char* path, const DvzDrp2RecordingInfo* info)
 {
     if (path == NULL)
+        return NULL;
+    if (!_recording_info_validate(info))
         return NULL;
     if (!_recording_mkdir(path))
         return NULL;
@@ -3141,6 +3165,8 @@ bool dvz_drp2_recording_write_stream(
     const char* path, const DvzDrp2CommandStream* stream, const DvzDrp2RecordingInfo* info)
 {
     if (path == NULL || stream == NULL)
+        return false;
+    if (!_recording_info_validate(info))
         return false;
     DvzDrp2Recorder* recorder = dvz_drp2_recorder_open(path, info);
     if (recorder == NULL)

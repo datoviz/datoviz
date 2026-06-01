@@ -808,9 +808,18 @@ static int test_canvas_offscreen_mode_headless(TstContext* suite, const TstCase*
     }
     CanvasLiveProbeState live_probe = {0};
     DvzCanvasLiveImageSinkConfig live_cfg = {
+        DVZ_STRUCT_INIT_FIELDS(DvzCanvasLiveImageSinkConfig),
         .callback = canvas_live_probe_callback,
         .user_data = &live_probe,
     };
+    DvzCanvasLiveImageSinkConfig bad_live_cfg = live_cfg;
+    bad_live_cfg.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_canvas_configure_live_image_sink(canvas, true, &bad_live_cfg) < 0);
+    bad_live_cfg = live_cfg;
+    bad_live_cfg.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_canvas_configure_live_image_sink(canvas, true, &bad_live_cfg) < 0);
     AT(dvz_canvas_configure_live_image_sink(canvas, true, &live_cfg) == 0);
 
     for (uint32_t i = 0; i < 3; ++i)
@@ -1222,6 +1231,7 @@ static int test_canvas_offscreen_handles_clean_after_rebuild(TstContext* suite, 
     AT(canvas != NULL);
 
     DvzCanvasLiveImageSinkConfig live_cfg = {
+        DVZ_STRUCT_INIT_FIELDS(DvzCanvasLiveImageSinkConfig),
         .callback = canvas_live_probe_callback,
         .user_data = &(CanvasLiveProbeState){0},
     };
@@ -1314,6 +1324,7 @@ static int test_canvas_offscreen_live_wait_monotonic_across_rebuild(TstContext* 
         .non_increasing_wait_count = 0,
     };
     DvzCanvasLiveImageSinkConfig live_cfg = {
+        DVZ_STRUCT_INIT_FIELDS(DvzCanvasLiveImageSinkConfig),
         .callback = canvas_live_gap_probe_callback,
         .user_data = &probe,
     };
@@ -1431,6 +1442,7 @@ static int test_canvas_offscreen_start_update_order_across_rebuild(TstContext* s
 
     CanvasLiveProbeState live_probe = {0};
     DvzCanvasLiveImageSinkConfig live_cfg = {
+        DVZ_STRUCT_INIT_FIELDS(DvzCanvasLiveImageSinkConfig),
         .callback = canvas_live_probe_callback,
         .user_data = &live_probe,
     };

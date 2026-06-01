@@ -106,6 +106,8 @@ typedef int (*DvzCanvasLiveImageCallback)(
 // Configuration for the optional live-image sink.
 typedef struct
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzCanvasLiveImageCallback callback;
     void* user_data;
 } DvzCanvasLiveImageSinkConfig;
@@ -128,6 +130,14 @@ EXTERN_C_ON
  * @returns a configuration with null handles, RGBA8 color format, and empty timing history
  */
 DVZ_EXPORT DvzCanvasConfig dvz_canvas_config(void);
+
+
+/**
+ * Return a default live-image sink configuration.
+ *
+ * @returns a configuration with no callback or user data
+ */
+DVZ_EXPORT DvzCanvasLiveImageSinkConfig dvz_canvas_live_image_sink_config(void);
 
 
 

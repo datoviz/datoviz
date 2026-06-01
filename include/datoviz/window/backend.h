@@ -90,6 +90,8 @@ struct DvzWindowBackend
 
 struct DvzWindowExternalSurfaceInfo
 {
+    uint32_t struct_size;
+    uint32_t flags;
     VkInstance instance;
     VkSurfaceKHR surface;
     VkExtent2D extent;
@@ -116,6 +118,14 @@ EXTERN_C_ON
 /*************************************************************************************************/
 /*  Backend helpers                                                                              */
 /*************************************************************************************************/
+
+/**
+ * Return a default external-surface descriptor.
+ *
+ * @return zeroed surface descriptor with a valid ABI prologue
+ */
+DVZ_EXPORT DvzWindowExternalSurfaceInfo dvz_window_external_surface_info(void);
+
 
 /**
  * Access the router attached to the window.

@@ -43,7 +43,7 @@ typedef struct DvzCanvasLiveImageSinkState
 static bool canvas_live_image_probe(const void* config)
 {
     const DvzCanvasLiveImageSinkConfig* cfg = (const DvzCanvasLiveImageSinkConfig*)config;
-    return cfg != NULL && cfg->callback != NULL;
+    return dvz_canvas_live_image_sink_config_validate(cfg) && cfg != NULL && cfg->callback != NULL;
 }
 
 
@@ -52,6 +52,8 @@ static int canvas_live_image_create(DvzStreamSink* sink, const void* config)
 {
     ANN(sink);
     const DvzCanvasLiveImageSinkConfig* cfg = (const DvzCanvasLiveImageSinkConfig*)config;
+    if (!dvz_canvas_live_image_sink_config_validate(cfg))
+        return -1;
     if (!cfg || !cfg->callback)
     {
         log_error("live-image sink requires a callback");

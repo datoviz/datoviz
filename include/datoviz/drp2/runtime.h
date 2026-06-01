@@ -58,6 +58,8 @@ struct DvzDrp2RuntimeConfig
 
 struct DvzDrp2ExternalBufferDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzBuffer* buffer;
     uint64_t size;
     uint32_t usage;
@@ -78,6 +80,14 @@ struct DvzDrp2ExternalBufferDesc
  */
 DVZ_EXPORT DvzDrp2RuntimeConfig
 dvz_drp2_runtime_vklite_config(DvzDevice* device, DvzVma* allocator);
+
+
+/**
+ * Return a default external-buffer descriptor.
+ *
+ * @return zeroed descriptor with a valid ABI prologue
+ */
+DVZ_EXPORT DvzDrp2ExternalBufferDesc dvz_drp2_external_buffer_desc(void);
 
 
 

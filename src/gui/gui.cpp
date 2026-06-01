@@ -647,7 +647,7 @@ static void _gui_viewport_resize_source(DvzGuiViewport* viewport, uint32_t width
     viewport->requested_height = height;
     if (viewport->canvas != NULL)
     {
-        DvzCanvasLiveImageSinkConfig cfg = {};
+        DvzCanvasLiveImageSinkConfig cfg = dvz_canvas_live_image_sink_config();
         cfg.callback = _gui_viewport_live_image_callback;
         cfg.user_data = viewport;
         (void)dvz_canvas_configure_live_image_sink(viewport->canvas, false, NULL);
@@ -1945,7 +1945,7 @@ static DvzGuiViewport* _gui_viewport_from_window(
         return NULL;
     }
 
-    DvzCanvasLiveImageSinkConfig cfg = {};
+    DvzCanvasLiveImageSinkConfig cfg = dvz_canvas_live_image_sink_config();
     cfg.callback = _gui_viewport_live_image_callback;
     cfg.user_data = viewport;
     if (dvz_canvas_configure_live_image_sink(canvas, true, &cfg) != 0)

@@ -215,6 +215,9 @@ struct DvzApp
 #define DVZ_APP_RESOURCES_KNOWN_FLAGS 0u
 #define DVZ_APP_CAPTURE_KNOWN_FLAGS                                                              \
     (DVZ_APP_CAPTURE_DVZR | DVZ_APP_CAPTURE_VIDEO | DVZ_APP_CAPTURE_PNG)
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+#define DVZ_APP_EXTERNAL_SURFACE_INFO_KNOWN_FLAGS 0u
+#endif
 
 
 
@@ -257,6 +260,24 @@ static bool _app_capture_config_validate(const DvzAppCaptureConfig* config)
     }
     return true;
 }
+
+
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+static bool _app_external_surface_info_validate(const DvzWindowExternalSurfaceInfo* surface)
+{
+    if (surface == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(
+            surface, DvzWindowExternalSurfaceInfo,
+            DVZ_APP_EXTERNAL_SURFACE_INFO_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzWindowExternalSurfaceInfo ABI prologue");
+        return false;
+    }
+    return true;
+}
+#endif
 
 /**
  * Return the app configuration before environment overrides are applied.
@@ -3486,9 +3507,10 @@ DvzView* dvz_view_external_surface(
 {
     ANN(app);
     ANN(figure);
-    ANN(surface);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (!_app_external_surface_info_validate(surface))
+        return NULL;
     if (app->view_count >= DVZ_APP_MAX_VIEWS)
         return NULL;
 
@@ -3565,7 +3587,7 @@ DvzView* dvz_view_external_surface_ffi(
     uint32_t framebuffer_width, uint32_t framebuffer_height, float scale_x, float scale_y,
     bool owned_by_datoviz)
 {
-    DvzWindowExternalSurfaceInfo info = {0};
+    DvzWindowExternalSurfaceInfo info = dvz_window_external_surface_info();
     info.instance = (VkInstance)instance;
     info.surface = (VkSurfaceKHR)(uintptr_t)surface;
     info.extent.width = framebuffer_width;
@@ -3616,8 +3638,9 @@ int dvz_view_update_external_surface(
     DvzView* win, const DvzWindowExternalSurfaceInfo* surface)
 {
     ANN(win);
-    ANN(surface);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (!_app_external_surface_info_validate(surface))
+        return -1;
     if (win->window == NULL || dvz_window_backend_type(win->window) != DVZ_BACKEND_WRAP)
         return -1;
     int rc = dvz_window_wrap_update_surface(win->window, surface);
@@ -3647,7 +3670,7 @@ int dvz_view_update_external_surface_ffi(
     DvzView* win, void* instance, uint64_t surface, uint32_t framebuffer_width,
     uint32_t framebuffer_height, float scale_x, float scale_y, bool owned_by_datoviz)
 {
-    DvzWindowExternalSurfaceInfo info = {0};
+    DvzWindowExternalSurfaceInfo info = dvz_window_external_surface_info();
     info.instance = (VkInstance)instance;
     info.surface = (VkSurfaceKHR)(uintptr_t)surface;
     info.extent.width = framebuffer_width;
@@ -3675,7 +3698,7 @@ int dvz_view_release_external_surface(DvzView* win)
 
     dvz_view_set_request_frame_callback(win, NULL, NULL);
 
-    DvzWindowExternalSurfaceInfo surface = {0};
+    DvzWindowExternalSurfaceInfo surface = dvz_window_external_surface_info();
     surface.scale_x = 1.0f;
     surface.scale_y = 1.0f;
     if (dvz_view_update_external_surface(win, &surface) != 0)
@@ -4331,14 +4354,13 @@ int dvz_view_record_start(DvzView* win, const char* path)
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     if (win->recorder != NULL)
         return -1;
-    DvzDrp2RecordingInfo info = {
-        .width = win->figure != NULL ? win->figure->width : 0,
-        .height = win->figure != NULL ? win->figure->height : 0,
-        .duration_s = 0.0,
-        .t_present = 0.0,
-        .fps_cap = _app_record_fps_from_env(),
-        .backend_hint = "app",
-    };
+    DvzDrp2RecordingInfo info = dvz_drp2_recording_info();
+    info.width = win->figure != NULL ? win->figure->width : 0;
+    info.height = win->figure != NULL ? win->figure->height : 0;
+    info.duration_s = 0.0;
+    info.t_present = 0.0;
+    info.fps_cap = _app_record_fps_from_env();
+    info.backend_hint = "app";
     win->recorder = dvz_drp2_recorder_open(path, &info);
     if (win->recorder == NULL)
         return -1;

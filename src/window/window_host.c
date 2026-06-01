@@ -33,6 +33,7 @@
 #define DVZ_WINDOW_BACKEND_INIT_CAP  4
 #define DVZ_WINDOW_INSTANCE_INIT_CAP 4
 #define DVZ_WINDOW_CONFIG_KNOWN_FLAGS 0u
+#define DVZ_WINDOW_EXTERNAL_SURFACE_INFO_KNOWN_FLAGS 0u
 
 
 
@@ -301,6 +302,18 @@ DvzWindowConfig dvz_window_config(void)
         .user_scale = 1.f,
     };
     return config;
+}
+
+
+
+/**
+ * Return the default external-surface descriptor.
+ */
+DvzWindowExternalSurfaceInfo dvz_window_external_surface_info(void)
+{
+    return (DvzWindowExternalSurfaceInfo){
+        DVZ_STRUCT_INIT_FIELDS(DvzWindowExternalSurfaceInfo),
+    };
 }
 
 

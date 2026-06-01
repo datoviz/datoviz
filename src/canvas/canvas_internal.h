@@ -166,6 +166,9 @@ int dvz_canvas_stream_submit(DvzCanvas* canvas, uint64_t wait_value);
 int dvz_canvas_stream_enable_video(
     DvzCanvas* canvas, bool enable, const DvzVideoSinkConfig* cfg);
 
+bool dvz_canvas_live_image_sink_config_validate(
+    const DvzCanvasLiveImageSinkConfig* cfg);
+
 int dvz_canvas_stream_enable_live_image(
     DvzCanvas* canvas, bool enable, const DvzCanvasLiveImageSinkConfig* cfg);
 

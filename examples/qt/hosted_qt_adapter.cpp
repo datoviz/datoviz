@@ -385,7 +385,7 @@ DvzWindowExternalSurfaceInfo DvzQtHostedWindow::_surface_info(VkSurfaceKHR surfa
     const QSize win_size = size();
     const int fb_width = (int)std::lround((double)win_size.width() * scale);
     const int fb_height = (int)std::lround((double)win_size.height() * scale);
-    DvzWindowExternalSurfaceInfo info = {};
+    DvzWindowExternalSurfaceInfo info = dvz_window_external_surface_info();
     info.instance = _instance != nullptr ? _instance->vkInstance() : VK_NULL_HANDLE;
     info.surface = surface;
     info.extent.width = _positive_u32(fb_width);

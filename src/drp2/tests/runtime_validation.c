@@ -1271,10 +1271,19 @@ int test_drp2_runtime_registers_external_buffer_semantic(TstContext* suite, cons
     AT(result.ok);
 
     DvzDrp2ExternalBufferDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2ExternalBufferDesc),
         .buffer = NULL,
         .size = 64,
         .usage = DVZ_DRP2_BUFFER_USAGE_VERTEX,
     };
+    DvzDrp2ExternalBufferDesc invalid_abi = desc;
+    invalid_abi.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !dvz_drp2_runtime_register_external_buffer(runtime, 12, &invalid_abi));
+    invalid_abi = desc;
+    invalid_abi.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !dvz_drp2_runtime_register_external_buffer(runtime, 13, &invalid_abi));
     AT(dvz_drp2_runtime_register_external_buffer(runtime, 11, &desc));
     AT(!dvz_drp2_runtime_register_external_buffer(runtime, 11, &desc));
 
@@ -1771,5 +1780,4 @@ int test_drp2_runtime_rejects_destroy_live_shader_module(TstContext* suite, cons
     dvz_drp2_stream_destroy(stream);
     return 0;
 }
-
 

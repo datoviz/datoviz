@@ -71,10 +71,12 @@ struct DvzInteropBufferExport
 
 struct DvzInteropBufferExportConfig
 {
+    uint32_t struct_size;
+    uint32_t flags;
     uint64_t offset;
     uint64_t size;
     uint32_t drp2_usage;
-    uint32_t flags;
+    uint32_t export_flags;
     DvzSemaphore* semaphore;
     uint32_t semaphore_handle_type;
     uint64_t semaphore_value;
@@ -93,6 +95,14 @@ EXTERN_C_ON
 /*************************************************************************************************/
 /*  External-memory interop API                                                                  */
 /*************************************************************************************************/
+
+/**
+ * Return a default interop buffer export configuration.
+ *
+ * @return default export configuration
+ */
+DVZ_EXPORT DvzInteropBufferExportConfig dvz_interop_buffer_export_config(void);
+
 
 /**
  * Advanced allocator interop surface.

@@ -1338,6 +1338,7 @@ static int _scene_visual_records_portable_dvzr(SceneDvzrVisualKind kind, const c
     dvz_drp2_runtime_destroy(runtime);
 
     DvzDrp2RecordingInfo info = {
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2RecordingInfo),
         .width = 64,
         .height = 64,
         .duration_s = 0.0,

@@ -130,16 +130,25 @@ int test_window_wrap_invalid_args(TstContext* suite, const TstCase* item)
         (VkInstance)0x1, (VkSurfaceKHR)0x2, 320, 240, 1.0f, 1.0f, false);
     DvzWindowExternalSurfaceInfo invalid_tuple = valid;
     invalid_tuple.instance = VK_NULL_HANDLE;
+    DvzWindowExternalSurfaceInfo invalid_abi = valid;
+    invalid_abi.struct_size = 0;
+    DvzWindowExternalSurfaceInfo unknown_flags = valid;
+    unknown_flags.flags = 1;
 
     AT(dvz_window_wrap_attach_surface(NULL, &valid) == -1);
     AT(dvz_window_wrap_attach_surface(wrap_window, NULL) == -1);
     AT(dvz_window_wrap_attach_surface(wrap_window, &invalid_tuple) == -1);
-    AT(dvz_window_wrap_attach_surface(wrap_window, &(DvzWindowExternalSurfaceInfo){0}) == -1);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_window_wrap_attach_surface(wrap_window, &invalid_abi) == -1);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_window_wrap_attach_surface(wrap_window, &unknown_flags) == -1);
     AT(dvz_window_wrap_attach_surface(offscreen_window, &valid) == -1);
 
     AT(dvz_window_wrap_update_surface(NULL, &valid) == -1);
     AT(dvz_window_wrap_update_surface(wrap_window, NULL) == -1);
     AT(dvz_window_wrap_update_surface(wrap_window, &invalid_tuple) == -1);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_window_wrap_update_surface(wrap_window, &invalid_abi) == -1);
     AT(dvz_window_wrap_update_surface(offscreen_window, &valid) == -1);
 
     dvz_window_wrap_detach_surface(NULL);

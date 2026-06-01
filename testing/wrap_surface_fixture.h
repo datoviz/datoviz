@@ -63,6 +63,7 @@ static inline DvzWindowExternalSurfaceInfo dvz_test_wrap_surface_info(
     float scale_y, bool owned_by_datoviz)
 {
     DvzWindowExternalSurfaceInfo info = {
+        DVZ_STRUCT_INIT_FIELDS(DvzWindowExternalSurfaceInfo),
         .instance = instance,
         .surface = surface,
         .extent = {.width = width, .height = height},

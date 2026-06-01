@@ -260,6 +260,7 @@ _surface_info(GLFWwindow* window, VkInstance instance, VkSurfaceKHR surface, boo
         scale_y = 1.0f;
 
     DvzWindowExternalSurfaceInfo info = {
+        DVZ_STRUCT_INIT_FIELDS(DvzWindowExternalSurfaceInfo),
         .instance = instance,
         .surface = surface,
         .extent = {

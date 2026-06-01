@@ -174,6 +174,7 @@ dvz_canvas_create
 dvz_canvas_destroy
 dvz_canvas_frame
 dvz_canvas_input
+dvz_canvas_live_image_sink_config
 dvz_canvas_offscreen_runtime_state
 dvz_canvas_present_runtime_state
 dvz_canvas_render_mode
@@ -341,6 +342,7 @@ dvz_dmat4_mulv
 dvz_dmat4_mulv3
 dvz_dmat4_scale_p
 dvz_drp2_command_type
+dvz_drp2_external_buffer_desc
 dvz_drp2_packet_command_kind
 dvz_drp2_packet_decode_stream
 dvz_drp2_packet_destroy
@@ -355,6 +357,7 @@ dvz_drp2_recording_execute_frame
 dvz_drp2_recording_frame
 dvz_drp2_recording_frame_count
 dvz_drp2_recording_frame_stream
+dvz_drp2_recording_info
 dvz_drp2_recording_open
 dvz_drp2_recording_playback
 dvz_drp2_recording_raw_fallback
@@ -779,6 +782,7 @@ dvz_interaction_set_link_channel
 dvz_interaction_set_query_hit_policy
 dvz_interaction_set_selection
 dvz_interop_buffer_export
+dvz_interop_buffer_export_config
 dvz_interop_buffer_export_from_buffer
 dvz_interop_buffer_wait_timeline
 dvz_interop_gpu_ctx
@@ -1358,6 +1362,7 @@ dvz_window_backend_type
 dvz_window_config
 dvz_window_create
 dvz_window_destroy
+dvz_window_external_surface_info
 dvz_window_frame_pending
 dvz_window_glfw_init
 dvz_window_glfw_set_input_callbacks

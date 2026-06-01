@@ -29,6 +29,32 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_WINDOW_EXTERNAL_SURFACE_INFO_KNOWN_FLAGS 0u
+
+
+
+/**
+ * Return whether an external surface descriptor has a valid ABI prologue.
+ *
+ * @param info external surface description
+ * @return true when the descriptor may be read
+ */
+static bool _wrap_external_surface_info_validate(const DvzWindowExternalSurfaceInfo* info)
+{
+    if (info == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(
+            info, DvzWindowExternalSurfaceInfo,
+            DVZ_WINDOW_EXTERNAL_SURFACE_INFO_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzWindowExternalSurfaceInfo ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
 /**
  * Return whether a Vulkan instance/surface pair is valid for wrap backend operations.
  *
@@ -190,7 +216,8 @@ static int
 _wrap_apply_surface_update(DvzWindow* window, const DvzWindowExternalSurfaceInfo* info, bool allow_null_surface)
 {
     ANN(window);
-    ANN(info);
+    if (!_wrap_external_surface_info_validate(info))
+        return -1;
     if (!_wrap_surface_tuple_valid(info->instance, info->surface))
         return -1;
     if (!allow_null_surface && info->surface == VK_NULL_HANDLE)

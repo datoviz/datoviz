@@ -447,6 +447,7 @@ int test_drp2_runtime_vklite_uses_external_buffer(TstContext* suite, const TstCa
     dvz_buffer_upload(external, 4, 16, source);
 
     DvzDrp2ExternalBufferDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2ExternalBufferDesc),
         .buffer = external,
         .size = 32,
         .usage = DVZ_DRP2_BUFFER_USAGE_COPY_SRC | DVZ_DRP2_BUFFER_USAGE_VERTEX,
@@ -716,6 +717,7 @@ int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(TstContext* suite
     runtime = dvz_drp2_runtime_vklite(&cfg);
     ANN(runtime);
     DvzDrp2ExternalBufferDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2ExternalBufferDesc),
         .buffer = external,
         .size = vertex_size,
         .usage = DVZ_DRP2_BUFFER_USAGE_VERTEX,

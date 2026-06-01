@@ -41,6 +41,7 @@
 /*************************************************************************************************/
 
 #define DVZ_CANVAS_CONFIG_KNOWN_FLAGS 0u
+#define DVZ_CANVAS_LIVE_IMAGE_SINK_CONFIG_KNOWN_FLAGS 0u
 
 
 
@@ -51,6 +52,23 @@ static bool _canvas_config_validate(const DvzCanvasConfig* cfg)
     if (!DVZ_STRUCT_VALID(cfg, DvzCanvasConfig, DVZ_CANVAS_CONFIG_KNOWN_FLAGS))
     {
         log_error("invalid DvzCanvasConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+bool dvz_canvas_live_image_sink_config_validate(
+    const DvzCanvasLiveImageSinkConfig* cfg)
+{
+    if (cfg == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(
+            cfg, DvzCanvasLiveImageSinkConfig,
+            DVZ_CANVAS_LIVE_IMAGE_SINK_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzCanvasLiveImageSinkConfig ABI prologue");
         return false;
     }
     return true;
@@ -1003,6 +1021,15 @@ DvzCanvasConfig dvz_canvas_config(void)
 
 
 
+DvzCanvasLiveImageSinkConfig dvz_canvas_live_image_sink_config(void)
+{
+    return (DvzCanvasLiveImageSinkConfig){
+        DVZ_STRUCT_INIT_FIELDS(DvzCanvasLiveImageSinkConfig),
+    };
+}
+
+
+
 /**
  * Create a canvas instance associated with the provided window/device pair.
  *
@@ -1593,6 +1620,8 @@ int dvz_canvas_configure_live_image_sink(
     DvzCanvas* canvas, bool enable, const DvzCanvasLiveImageSinkConfig* cfg)
 {
     ANN(canvas);
+    if (!dvz_canvas_live_image_sink_config_validate(cfg))
+        return -1;
     return dvz_canvas_stream_enable_live_image(canvas, enable, cfg);
 }
 

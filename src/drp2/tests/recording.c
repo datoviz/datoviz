@@ -56,6 +56,7 @@ int test_drp2_recording_preserves_attachment_ops(TstContext* suite, const TstCas
         stream, DVZ_DRP2_ATTACHMENT_ACCESS_READ));
 
     DvzDrp2RecordingInfo info = {
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2RecordingInfo),
         .width = 8,
         .height = 8,
         .duration_s = 0.0,
@@ -123,6 +124,7 @@ int test_drp2_recording_preserves_named_depth(TstContext* suite, const TstCase* 
         stream, DVZ_DRP2_ATTACHMENT_LOAD_CLEAR, DVZ_DRP2_ATTACHMENT_STORE_STORE));
 
     DvzDrp2RecordingInfo info = {
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2RecordingInfo),
         .width = 8,
         .height = 8,
         .duration_s = 0.0,
@@ -222,6 +224,7 @@ int test_drp2_recording_linear_roundtrip(TstContext* suite, const TstCase* item)
         update_stream, 2, 0, 0, 0, 2, 2, 8, 2, texture_payload));
 
     DvzDrp2RecordingInfo info = {
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2RecordingInfo),
         .width = 64,
         .height = 64,
         .duration_s = 0.016,
@@ -383,6 +386,7 @@ int test_drp2_recording_render_jsonl_no_raw_fallback(TstContext* suite, const Ts
     dvz_drp2_runtime_destroy(runtime);
 
     DvzDrp2RecordingInfo info = {
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2RecordingInfo),
         .width = 8,
         .height = 8,
         .duration_s = 0.0,
@@ -532,6 +536,7 @@ int test_drp2_recording_compute_copy_jsonl_no_raw_fallback(TstContext* suite, co
     dvz_drp2_runtime_destroy(runtime);
 
     DvzDrp2RecordingInfo info = {
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2RecordingInfo),
         .width = 0,
         .height = 0,
         .duration_s = 0.0,
@@ -600,6 +605,7 @@ int test_drp2_recording_reports_raw_fallback_command(TstContext* suite, const Ts
     AT(dvz_drp2_stream_destroy_buffer(stream, 1));
 
     DvzDrp2RecordingInfo info = {
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2RecordingInfo),
         .width = 0,
         .height = 0,
         .duration_s = 0.0,

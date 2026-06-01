@@ -432,14 +432,23 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
     AT(dvz_buffer_create(buffer) == 0);
 
     DvzInteropBufferExportConfig export_cfg = {
+        DVZ_STRUCT_INIT_FIELDS(DvzInteropBufferExportConfig),
         .offset = 32,
         .size = 0,
         .drp2_usage = DVZ_DRP2_BUFFER_USAGE_VERTEX | DVZ_DRP2_BUFFER_USAGE_STORAGE,
-        .flags = 123,
+        .export_flags = 123,
         .semaphore = semaphore,
         .semaphore_handle_type = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT,
         .semaphore_value = 9,
     };
+    DvzInteropBufferExportConfig invalid_export_cfg = export_cfg;
+    invalid_export_cfg.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_interop_buffer_export_from_buffer(buffer, &invalid_export_cfg, &export_desc) < 0);
+    invalid_export_cfg = export_cfg;
+    invalid_export_cfg.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_interop_buffer_export_from_buffer(buffer, &invalid_export_cfg, &export_desc) < 0);
     AT(dvz_interop_buffer_export_from_buffer(buffer, &export_cfg, &export_desc) == 0);
     AT(export_desc.version == DVZ_INTEROP_BUFFER_EXPORT_VERSION);
     AT(export_desc.memory_handle >= 0);

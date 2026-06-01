@@ -524,6 +524,8 @@ int dvz_canvas_stream_enable_live_image(
 {
     ANN(canvas);
     ANN(canvas->stream);
+    if (!dvz_canvas_live_image_sink_config_validate(cfg))
+        return -1;
 
     if (enable)
     {
