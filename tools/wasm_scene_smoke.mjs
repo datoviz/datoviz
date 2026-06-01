@@ -130,6 +130,25 @@ function expectNoSetupCommands(stream, label) {
   }
 }
 
+function expectSetupCommands(stream, label) {
+  const setup = [
+    "CreateBuffer",
+    "CreateTexture",
+    "CreateSampler",
+    "CreateBindGroupLayout",
+    "CreateBindGroup",
+    "CreateShaderModule",
+    "CreateRenderPipeline",
+  ];
+  const found = setup.filter((cmd) => (countCommands(stream).get(cmd) ?? 0) > 0);
+  requireOk(found.length > 0, `${label}: expected setup commands`);
+}
+
+function expectWriteCommands(stream, label) {
+  const writes = commandsOf(stream, "WriteBuffer").length + commandsOf(stream, "WriteTexture").length;
+  requireOk(writes > 0, `${label}: expected buffer or texture writes`);
+}
+
 function expectAllShadersWgsl(stream, label) {
   const shaders = commandsOf(stream, "CreateShaderModule");
   for (const shader of shaders) {
@@ -344,10 +363,10 @@ function expect2DSceneStreamShape(stream, label) {
   );
 }
 
-function expect2DUpdateStreamShape(stream, label) {
+function expect2DUpdateStreamShape(stream, label, pointInstances = 5) {
   expectFrameCommandShape(stream, label);
   expectNoSetupCommands(stream, label);
-  expectDraw(stream, 6, 5, `${label} point`);
+  expectDraw(stream, 6, pointInstances, `${label} point`);
   expectDraw(stream, 3, 1, `${label} primitive`);
   expectDraw(stream, 4, 1, `${label} image`);
   expectDraw(stream, 6, 1, `${label} mesh`);
@@ -626,6 +645,62 @@ try {
     setCapabilities(Module, scene, 4096, 4, 8, 256 * 1024 * 1024, 256, 1, "restore buffer capability");
     const initial = emitStream(Module, scene, figure, "generic 2D initial");
     expect2DSceneStreamShape(initial.stream, "generic 2D initial");
+    const updatedColors = new Uint8Array(colors);
+    updatedColors[0] = 32;
+    updatedColors[1] = 220;
+    updatedColors[2] = 180;
+    const updatedColorsPtr = allocArray(Module, updatedColors);
+    try {
+      setRGBA8(
+        Module, point, colorNamePtr, updatedColorsPtr, updatedColors.length / 4,
+        "api point color update");
+      const visualUpdate = emitStream(Module, scene, figure, "generic 2D visual update");
+      expect2DUpdateStreamShape(visualUpdate.stream, "generic 2D visual update");
+      expectWriteCommands(visualUpdate.stream, "generic 2D visual update");
+    } finally {
+      Module._free(updatedColorsPtr);
+    }
+    const grownPositionPtr = allocArray(Module, new Float32Array([...positions, -0.1, 0.75, 0]));
+    try {
+      expectStatus(
+        Module._dvz_wasm_api_visual_set_f32(
+          point, positionNamePtr, grownPositionPtr, positions.length / 3 + 1),
+        -1,
+        "api point count growth",
+      );
+    expectDiagnostics(
+      Module, scene, "WASM f32 visual upload failed: attr=position item_count=6",
+      "point count growth");
+    } finally {
+      Module._free(grownPositionPtr);
+    }
+    const largerImageWidth = 16;
+    const largerImageHeight = 16;
+    const largerImagePixels = new Uint8Array(largerImageWidth * largerImageHeight * 4);
+    for (let i = 0; i < largerImagePixels.length; i += 4) {
+      largerImagePixels[i + 0] = 80;
+      largerImagePixels[i + 1] = 180;
+      largerImagePixels[i + 2] = 240;
+      largerImagePixels[i + 3] = 255;
+    }
+    const largerImagePtr = allocArray(Module, largerImagePixels);
+    try {
+      expectStatus(
+        Module._dvz_wasm_api_visual_set_texture_rgba8(
+          image, largerImagePtr, largerImageWidth, largerImageHeight),
+        0,
+        "api image texture resize",
+      );
+      const visualReload = emitStream(Module, scene, figure, "generic 2D visual reload");
+      expectFrameCommandShape(visualReload.stream, "generic 2D visual reload");
+      expectSetupCommands(visualReload.stream, "generic 2D visual reload");
+      expectDraw(visualReload.stream, 6, 5, "generic 2D visual reload point");
+      expectDraw(visualReload.stream, 3, 1, "generic 2D visual reload primitive");
+      expectDraw(visualReload.stream, 4, 1, "generic 2D visual reload image");
+      expectDraw(visualReload.stream, 6, 1, "generic 2D visual reload mesh");
+    } finally {
+      Module._free(largerImagePtr);
+    }
     expectStatus(Module._dvz_wasm_api_pointer(scene, DVZ_POINTER_EVENT_PRESS, 32, 32, DVZ_POINTER_BUTTON_LEFT, 0, 1, 200), 0, "api pointer press");
     expectNoPayload(Module, scene, "pointer press invalidates 2D payload");
     expectStatus(Module._dvz_wasm_api_pointer(scene, DVZ_POINTER_EVENT_MOVE, 38, 30, DVZ_POINTER_BUTTON_LEFT, 0, 1, 216), 0, "api pointer move");

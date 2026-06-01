@@ -64,6 +64,23 @@ function browserCapabilityArgs(capabilities = {}) {
   };
 }
 
+function streamNeedsRuntimeReload(stream) {
+  const setupCommands = new Set([
+    "HelloRenderer",
+    "RendererHelloReply",
+    "CreateBuffer",
+    "CreateTexture",
+    "CreateTextureView",
+    "CreateSampler",
+    "CreateBindGroupLayout",
+    "CreateBindGroup",
+    "CreateShaderModule",
+    "CreateRenderPipeline",
+    "CreateComputePipeline",
+  ]);
+  return stream.commands.some((command) => setupCommands.has(command.cmd));
+}
+
 function wasmModuleUrl() {
   const url = new URL("../../build-wasm-scene/wasm/datoviz_wasm_scene.mjs", import.meta.url);
   url.searchParams.set("v", Date.now().toString());
@@ -366,6 +383,11 @@ export class DatovizWasmScene {
   async renderIncremental() {
     requireOk(this.runtime !== null, "renderInitial() must be called before renderIncremental()");
     const stream = this.emit();
+    if (streamNeedsRuntimeReload(stream)) {
+      await this.runtime.load(stream);
+      await this.runtime.render();
+      return stream;
+    }
     await executeDrp2StreamChecked(this.gpu.device, this.gpu.context, this.gpu.format, stream, {
       commands: stream.commands,
       state: this.runtime.state,

@@ -16,6 +16,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -160,6 +161,20 @@ static uint32_t _fail_handle(DvzWasmApiScene* scene, const char* diagnostic)
 {
     (void)_fail(scene, diagnostic);
     return 0;
+}
+
+
+
+static int _fail_upload(
+    DvzWasmApiScene* scene, const char* kind, const char* attr, uint32_t item_count)
+{
+    char diagnostic[DVZ_SCENE_DIAGNOSTIC_SIZE];
+    int ret = snprintf(
+        diagnostic, sizeof(diagnostic), "WASM %s visual upload failed: attr=%s item_count=%u",
+        kind != NULL ? kind : "data", attr != NULL ? attr : "<null>", item_count);
+    if (ret < 0 || (size_t)ret >= sizeof(diagnostic))
+        return _fail(scene, "WASM visual upload failed");
+    return _fail(scene, diagnostic);
 }
 
 
@@ -500,7 +515,7 @@ int dvz_wasm_api_visual_set_f32(
     }
     _clear_payload(visual->owner);
     if (dvz_visual_set_data(visual->visual, attr, data, item_count) != 0)
-        return _fail(visual->owner, "WASM f32 visual upload failed");
+        return _fail_upload(visual->owner, "f32", attr, item_count);
     return 0;
 }
 
@@ -519,7 +534,7 @@ int dvz_wasm_api_visual_set_rgba8(
     }
     _clear_payload(visual->owner);
     if (dvz_visual_set_data(visual->visual, attr, data, item_count) != 0)
-        return _fail(visual->owner, "WASM rgba8 visual upload failed");
+        return _fail_upload(visual->owner, "rgba8", attr, item_count);
     return 0;
 }
 
@@ -538,7 +553,15 @@ int dvz_wasm_api_visual_set_texture_rgba8(
     }
     _clear_payload(visual->owner);
     if (dvz_visual_set_texture(visual->visual, rgba, width, height) != 0)
-        return _fail(visual->owner, "WASM RGBA8 texture upload failed");
+    {
+        char diagnostic[DVZ_SCENE_DIAGNOSTIC_SIZE];
+        int ret = snprintf(
+            diagnostic, sizeof(diagnostic), "WASM RGBA8 texture upload failed: %ux%u", width,
+            height);
+        if (ret < 0 || (size_t)ret >= sizeof(diagnostic))
+            return _fail(visual->owner, "WASM RGBA8 texture upload failed");
+        return _fail(visual->owner, diagnostic);
+    }
     return 0;
 }
 
