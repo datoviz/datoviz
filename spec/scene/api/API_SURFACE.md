@@ -74,7 +74,7 @@ The first public header split has landed. Treat these groups as implemented APIs
 4. retained visual attributes and scene buffers,
 5. sampled fields and image field binding,
 6. scale/colormap core and image colormap binding,
-7. panzoom and arcball controllers,
+7. panzoom, object/model arcball, orbit-camera, fly, and turntable controllers,
 8. interaction policy, selection, link-channel, pick/probe queue, hover-state, and pinned-readout
    bookkeeping,
 9. first request execution slices through the DRP2 runtime request processor, including item
@@ -87,7 +87,8 @@ The first public header split has landed. Treat these groups as implemented APIs
 13. rendered continuous colorbar ramp, ticks, title, and labels,
 14. rendered 2D/3D scale bars through `dvz_annotation_scalebar()`,
 15. retained categorical scale entries and rendered categorical legends,
-16. semantic polygon and polygon-set composites lowered to fill/stroke visuals.
+16. semantic polygon and polygon-set composites lowered to fill/stroke visuals,
+17. retained per-visual local transforms with copy-out inspection helpers.
 
 Treat these installed declarations as draft contracts until implemented in `src/scene`:
 
@@ -154,6 +155,40 @@ Vector APIs should follow the same boundary. The public vector visual exposes on
 surface for straight and curved vectors while lowering internally to generated leaf roles such as
 `"shaft"`, `"head_start"`, and `"head_end"`. Arrowhead behavior should be shared across straight and
 curved variants through one head-style semantic contract rather than per-leaf ad hoc setters.
+
+
+## Transform And Controller Semantics
+
+The public API distinguishes three transform owners:
+
+1. **visual-local transform**: retained on a `DvzVisual` with
+   `dvz_visual_set_transform()`, `dvz_visual_clear_transform()`,
+   `dvz_visual_has_transform()`, and `dvz_visual_get_transform()`;
+2. **object/model arcball**: `DvzArcball` is an object/model controller and does not move the panel
+   camera;
+3. **camera orbit**: `DvzOrbitCamera` moves the panel camera around a pivot and does not mutate
+   visual-local model matrices.
+
+The effective world transform for controller-attached visuals is:
+
+```text
+clip = projection * view * controller_model * visual_local_model * position
+```
+
+For orbit camera, `controller_model` remains identity and the camera effect is in `view`. For
+object/model arcball, the camera view remains stable and the arcball contribution is model-space.
+Fixed overlays skip panel/controller model participation as before, but still apply their retained
+visual-local transform.
+
+Examples should use these concepts intentionally:
+
+1. use visual-local transforms for object spin, object placement, and per-visual presentation;
+2. use object/model arcball when user input should manipulate model state under a fixed camera;
+3. use orbit camera when user input should inspect a stable scene from different viewpoints;
+4. avoid baking controller motion into vertex attributes or field payloads.
+
+Inspection APIs should copy state out, never expose mutable internal pointers. This keeps bindings
+and UI inspectors stable while allowing renderer-side transform storage to change.
 
 
 ## Opaque Handles Versus Public Structs
