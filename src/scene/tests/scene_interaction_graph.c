@@ -715,10 +715,19 @@ int test_scene_visual_local_transform_bounds_and_clear(TstContext* suite, const 
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
+    AT(!dvz_visual_has_transform(visual));
+
+    mat4 current = GLM_MAT4_IDENTITY_INIT;
+    AT(dvz_visual_get_transform(visual, current) == 0);
+    AC(current[0][0], 1.0f, 1e-6);
+    AC(current[3][0], 0.0f, 1e-6);
 
     mat4 transform = GLM_MAT4_IDENTITY_INIT;
     glm_translate(transform, (vec3){2.0f, 0.0f, 0.0f});
     AT(dvz_visual_set_transform(visual, transform) == 0);
+    AT(dvz_visual_has_transform(visual));
+    AT(dvz_visual_get_transform(visual, current) == 0);
+    AC(current[3][0], 2.0f, 1e-6);
 
     DvzBounds bounds = {0};
     AT(dvz_visual_bounds(visual, &bounds) == 0);
@@ -728,6 +737,9 @@ int test_scene_visual_local_transform_bounds_and_clear(TstContext* suite, const 
     AC(bounds.max[1], +1.0, 1e-6);
 
     AT(dvz_visual_clear_transform(visual) == 0);
+    AT(!dvz_visual_has_transform(visual));
+    AT(dvz_visual_get_transform(visual, current) == 0);
+    AC(current[3][0], 0.0f, 1e-6);
     AT(dvz_visual_bounds(visual, &bounds) == 0);
     AC(bounds.min[0], 0.0, 1e-6);
     AC(bounds.max[0], 1.0, 1e-6);

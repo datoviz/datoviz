@@ -1015,6 +1015,27 @@ DVZ_EXPORT int dvz_visual_set_transform(DvzVisual* visual, mat4 transform);
 
 
 /**
+ * Return whether a visual has a retained local transform.
+ *
+ * @param visual the visual
+ * @return whether a non-default local transform is retained
+ */
+DVZ_EXPORT bool dvz_visual_has_transform(const DvzVisual* visual);
+
+
+/**
+ * Copy the retained visual-local transform.
+ *
+ * When no transform is retained, this writes identity to `out`.
+ *
+ * @param visual the visual
+ * @param out output local model transform
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_visual_get_transform(const DvzVisual* visual, mat4 out);
+
+
+/**
  * Clear the retained visual-local transform back to identity.
  *
  * @param visual the visual

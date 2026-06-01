@@ -835,6 +835,43 @@ int dvz_visual_set_transform(DvzVisual* visual, mat4 transform)
 }
 
 
+/**
+ * Return whether a visual has a retained local transform.
+ *
+ * @param visual the visual
+ * @return whether a local transform is retained
+ */
+bool dvz_visual_has_transform(const DvzVisual* visual)
+{
+    ANN(visual);
+    return visual->has_local_transform;
+}
+
+
+
+/**
+ * Copy the retained visual-local transform.
+ *
+ * @param visual the visual
+ * @param out output local model transform
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_visual_get_transform(const DvzVisual* visual, mat4 out)
+{
+    ANN(visual);
+    ANN(out);
+    if (visual->has_local_transform)
+    {
+        for (uint32_t col = 0; col < 4; col++)
+            for (uint32_t row = 0; row < 4; row++)
+                out[col][row] = visual->local_transform[col][row];
+    }
+    else
+        glm_mat4_identity(out);
+    return 0;
+}
+
+
 
 /**
  * Clear the retained visual-local transform.
