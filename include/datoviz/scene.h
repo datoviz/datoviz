@@ -16,6 +16,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stddef.h>
+
 #include "datoviz/common/macros.h"
 #include "datoviz/geom/types.h"
 #include "scene/annotation.h"
@@ -1297,6 +1299,22 @@ dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_t byt
  * @return the descriptor, or NULL on error
  */
 DVZ_EXPORT const DvzSceneBufferDesc* dvz_scene_buffer_desc(const DvzSceneBuffer* buffer);
+
+
+/**
+ * Return the retained scene resource key for a scene buffer.
+ *
+ * The key is stable for the buffer lifetime and is attached as a DRP2 stream label when a figure is
+ * emitted. Advanced runtimes can combine this with `dvz_drp2_stream_label_id()` to register a live
+ * external buffer without scanning draw commands.
+ *
+ * @param buffer the scene buffer
+ * @param out output string buffer
+ * @param out_size output string capacity
+ * @return whether the resource key was written
+ */
+DVZ_EXPORT bool
+dvz_scene_buffer_resource_key(const DvzSceneBuffer* buffer, char* out, size_t out_size);
 
 
 /**

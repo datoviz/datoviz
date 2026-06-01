@@ -90,10 +90,15 @@ int test_drp2_stream_debug_labels(TstContext* suite, const TstCase* item)
     AT(dvz_drp2_stream_label(stream, 1) == NULL);
     AT(dvz_drp2_stream_set_label(stream, 1, "visual.0.position"));
     AT(strcmp(dvz_drp2_stream_label(stream, 1), "visual.0.position") == 0);
+    AT(dvz_drp2_stream_label_id(stream, "visual.0.position") == 1);
     AT(dvz_drp2_stream_set_label(stream, 1, "visual.0.color"));
     AT(strcmp(dvz_drp2_stream_label(stream, 1), "visual.0.color") == 0);
+    AT(dvz_drp2_stream_label_id(stream, "visual.0.color") == 1);
+    AT(dvz_drp2_stream_label_id(stream, "visual.0.position") == 0);
     AT(!dvz_drp2_stream_set_label(NULL, 1, "ignored"));
     AT(!dvz_drp2_stream_set_label(stream, 0, "ignored"));
+    AT(dvz_drp2_stream_label_id(NULL, "ignored") == 0);
+    AT(dvz_drp2_stream_label_id(stream, NULL) == 0);
 
     dvz_drp2_stream_destroy(stream);
     return 0;

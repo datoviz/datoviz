@@ -26,6 +26,7 @@
 #include "_overflow.h"
 #include "_scene.h"
 #include "core/scene_notify_internal.h"
+#include "core/_scene_resource_key.h"
 #include "buffer_internal.h"
 #include "visuals/bindings_internal.h"
 #include "_visual_internal.h"
@@ -224,6 +225,28 @@ bool dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_
 const DvzSceneBufferDesc* dvz_scene_buffer_desc(const DvzSceneBuffer* buffer)
 {
     return buffer != NULL ? &buffer->desc : NULL;
+}
+
+
+
+/**
+ * Return the retained scene resource key for a scene buffer.
+ *
+ * @param buffer the scene buffer
+ * @param out output string buffer
+ * @param out_size output string capacity
+ * @return whether the resource key was written
+ */
+bool dvz_scene_buffer_resource_key(const DvzSceneBuffer* buffer, char* out, size_t out_size)
+{
+    ANN(out);
+    if (buffer == NULL || buffer->scene == NULL || out_size == 0)
+        return false;
+
+    uint32_t idx = _scene_buffer_index(buffer->scene, buffer);
+    if (idx == UINT32_MAX)
+        return false;
+    return _scene_resource_key_buffer(idx, out, out_size);
 }
 
 

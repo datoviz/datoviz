@@ -3968,21 +3968,13 @@ int test_scene_point_external_position_buffer_emits_no_upload(TstContext* suite,
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream != NULL);
 
-    uint64_t position_buffer_id = 0;
-    uint32_t create_count = 0;
-    uint32_t write_count = 0;
-    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
-    {
-        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
-        ANN(cmd);
-        if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER &&
-            cmd->u.set_vertex_buffer.slot == 0)
-        {
-            position_buffer_id = cmd->u.set_vertex_buffer.buffer_id;
-        }
-    }
+    char position_key[DVZ_SCENE_LABEL_SIZE] = {0};
+    AT(dvz_scene_buffer_resource_key(position, position_key, sizeof(position_key)));
+    uint64_t position_buffer_id = dvz_drp2_stream_label_id(stream, position_key);
     AT(position_buffer_id != 0);
 
+    uint32_t create_count = 0;
+    uint32_t write_count = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
@@ -4295,17 +4287,9 @@ int test_scene_point_external_position_buffer_executes(TstContext* suite, const 
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
-    uint64_t position_buffer_id = 0;
-    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
-    {
-        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
-        ANN(cmd);
-        if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER &&
-            cmd->u.set_vertex_buffer.slot == 0)
-        {
-            position_buffer_id = cmd->u.set_vertex_buffer.buffer_id;
-        }
-    }
+    char position_key[DVZ_SCENE_LABEL_SIZE] = {0};
+    AT(dvz_scene_buffer_resource_key(scene_position, position_key, sizeof(position_key)));
+    uint64_t position_buffer_id = dvz_drp2_stream_label_id(stream, position_key);
     AT(position_buffer_id != 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =

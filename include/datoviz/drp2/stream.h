@@ -98,6 +98,18 @@ dvz_drp2_stream_label(const DvzDrp2CommandStream* stream, uint64_t id);
 
 
 /**
+ * Return the numeric DRP2 id attached to a debug label.
+ *
+ * @param stream the command stream
+ * @param label the debug label
+ * @return the id, or 0 when the stream has no id for the label
+ */
+DVZ_EXPORT uint64_t
+dvz_drp2_stream_label_id(const DvzDrp2CommandStream* stream, const char* label);
+
+
+
+/**
  * Return a command type.
  *
  * @param command the command

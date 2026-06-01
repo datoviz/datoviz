@@ -16,6 +16,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <vulkan/vulkan_core.h>
 
@@ -383,6 +384,28 @@ const char* dvz_drp2_stream_label(const DvzDrp2CommandStream* stream, uint64_t i
             return stream->labels[i].label[0] != '\0' ? stream->labels[i].label : NULL;
     }
     return NULL;
+}
+
+
+
+/**
+ * Return the numeric DRP2 id attached to a debug label.
+ *
+ * @param stream the command stream
+ * @param label the debug label
+ * @return the id, or 0 when none exists
+ */
+uint64_t dvz_drp2_stream_label_id(const DvzDrp2CommandStream* stream, const char* label)
+{
+    if (stream == NULL || label == NULL || label[0] == '\0')
+        return 0;
+
+    for (uint32_t i = 0; i < stream->label_count; i++)
+    {
+        if (strcmp(stream->labels[i].label, label) == 0)
+            return stream->labels[i].id;
+    }
+    return 0;
 }
 
 
