@@ -912,7 +912,7 @@ int test_scene_image_sample_query_readback_failure(TstContext* suite, const TstC
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 36, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
-    AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
     AT(dvz_scene_poll_query(scene, &query));
@@ -2579,7 +2579,7 @@ int test_scene_volume_sample_query_readback_failure(TstContext* suite, const Tst
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 115, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
-    AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
     AT(dvz_scene_poll_query(scene, &query));
@@ -3034,7 +3034,7 @@ int test_scene_labels_query_readback_failure(TstContext* suite, const TstCase* i
     AT(dvz_panel_query(
            panel, 48.0, 16.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 147, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
-    AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
     AT(dvz_scene_poll_query(scene, &query));

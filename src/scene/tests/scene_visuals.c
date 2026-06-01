@@ -816,9 +816,9 @@ int test_scene_splat_api_and_attrs(TstContext* suite, const TstCase* item)
     AT(view.item_size == sizeof(float));
 
     vec2 bad_sigma[2] = {{4.0f, 0.0f}, {6.0f, 3.0f}};
-    AT(dvz_visual_set_data(visual, "sigma", bad_sigma, 2) == -1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(visual, "sigma", bad_sigma, 2) == -1);
     float bad_angles[2] = {0.0f, NAN};
-    AT(dvz_visual_set_data(visual, "angle", bad_angles, 2) == -1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(visual, "angle", bad_angles, 2) == -1);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -4099,52 +4099,52 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
     DvzSceneBufferDesc buffer_desc = dvz_scene_buffer_desc();
     buffer_desc.struct_size = 0;
     buffer_desc.usage = DVZ_SCENE_BUFFER_USAGE_VERTEX;
-    AT(dvz_scene_buffer(scene, &buffer_desc) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_scene_buffer(scene, &buffer_desc) == NULL);
 
     buffer_desc = dvz_scene_buffer_desc();
     buffer_desc.flags = 1;
     buffer_desc.usage = DVZ_SCENE_BUFFER_USAGE_VERTEX;
-    AT(dvz_scene_buffer(scene, &buffer_desc) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_scene_buffer(scene, &buffer_desc) == NULL);
 
     DvzSampledFieldDesc field_desc = dvz_sampled_field_desc();
     field_desc.struct_size = DVZ_STRUCT_SIZE(DvzSampledFieldDesc) - 1;
-    AT(dvz_sampled_field(scene, &field_desc) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_sampled_field(scene, &field_desc) == NULL);
 
     field_desc = dvz_sampled_field_desc();
     field_desc.flags = 1;
-    AT(dvz_sampled_field(scene, &field_desc) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_sampled_field(scene, &field_desc) == NULL);
 
     DvzSceneComputeDesc compute_desc = dvz_scene_compute_desc();
     compute_desc.struct_size = 0;
-    AT(dvz_scene_compute(scene, &compute_desc) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_scene_compute(scene, &compute_desc) == NULL);
 
     compute_desc = dvz_scene_compute_desc();
     compute_desc.flags = 1;
-    AT(dvz_scene_compute(scene, &compute_desc) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_scene_compute(scene, &compute_desc) == NULL);
 
     DvzVisualAttachDesc attach_desc = dvz_visual_attach_desc();
     attach_desc.struct_size = DVZ_STRUCT_SIZE(DvzVisualAttachDesc) - 1;
-    AT(dvz_panel_add_visual(panel, visual, &attach_desc) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_add_visual(panel, visual, &attach_desc) < 0);
 
     attach_desc = dvz_visual_attach_desc();
     attach_desc.flags = 1;
-    AT(dvz_panel_add_visual(panel, visual, &attach_desc) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_add_visual(panel, visual, &attach_desc) < 0);
 
     DvzPanelBackgroundDesc background_desc = dvz_panel_background_desc();
     background_desc.struct_size = 0;
-    AT(!dvz_panel_set_background(panel, &background_desc));
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_background(panel, &background_desc));
 
     background_desc = dvz_panel_background_desc();
     background_desc.flags = 1;
-    AT(!dvz_panel_set_background(panel, &background_desc));
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_background(panel, &background_desc));
 
     DvzQueryRequest request = dvz_query_request();
     request.struct_size = DVZ_STRUCT_SIZE(DvzQueryRequest) - 1;
-    AT(dvz_panel_query(panel, 0.0, 0.0, &request) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_query(panel, 0.0, 0.0, &request) < 0);
 
     request = dvz_query_request();
     request.flags = 1;
-    AT(dvz_panel_query(panel, 0.0, 0.0, &request) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_query(panel, 0.0, 0.0, &request) < 0);
 
     dvz_scene_destroy(scene);
     return 0;
