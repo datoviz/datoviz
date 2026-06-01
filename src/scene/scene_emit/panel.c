@@ -693,7 +693,7 @@ static bool _scene_append_visual_to_render_pass(
         glm_mat4_copy(composed, visual_mvp.model);
     }
     node->u.render.visual_mvp[slot] = visual_mvp;
-    node->u.render.visual_has_mvp[slot] = true;
+    node->u.render.visual_has_mvp[slot] = visual->has_local_transform;
     return true;
 }
 
