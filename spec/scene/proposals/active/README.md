@@ -36,6 +36,9 @@ non-v0.4-blocking roadmaps live in [`../future/`](../future/).
    an active API and planning question.
 7. [VISUAL_COMMAND_STREAM.md](VISUAL_COMMAND_STREAM.md): visual command stream remains active
    design pressure.
+8. [VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md](VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md):
+   retained visual-local transform and arcball model/camera target semantics for the textured
+   planet cleanup.
 
 
 ## Visual And Render-Mode Pressure
