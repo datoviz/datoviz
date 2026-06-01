@@ -21,6 +21,8 @@
 #include "_frame_plan_runtime_internal.h"
 #include "core/figure_emit_internal.h"
 #include "datoviz/geom.h"
+#include "datoviz/vk/memory_interop.h"
+#include "datoviz/vklite/sync.h"
 #include "domain/polygon_internal.h"
 #include "registry/registry.h"
 #include "scene_emit/internal.h"
@@ -4221,10 +4223,14 @@ int test_scene_point_external_position_buffer_executes(TstContext* suite, const 
     TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+    features12.timelineSemaphore = true;
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
     features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features12(&gpu_cfg, &features12);
     dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
     DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
     if (ctx == NULL)
@@ -4303,11 +4309,20 @@ int test_scene_point_external_position_buffer_executes(TstContext* suite, const 
     };
     AT(dvz_drp2_runtime_register_external_buffer(runtime, position_buffer_id, &external));
 
+    DvzSemaphore* ready = dvz_semaphore_create_wrapper();
+    ANN(ready);
+    dvz_semaphore_timeline(dvz_gpu_ctx_device(ctx), 0, ready, 0);
+    dvz_semaphore_signal(ready, 1);
+    AT(dvz_interop_buffer_wait_timeline(
+        dvz_gpu_ctx_device(ctx), runtime_position, position_bytes, ready, 1));
+
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
+    dvz_semaphore_destroy(ready);
+    dvz_semaphore_free(ready);
     dvz_drp2_runtime_destroy(runtime);
     dvz_drp2_stream_destroy(stream);
     dvz_buffer_destroy(runtime_position);
@@ -6392,10 +6407,14 @@ int test_scene_indexed_primitive_material_updates_runtime(TstContext* suite, con
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+    features12.timelineSemaphore = true;
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
     features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features12(&gpu_cfg, &features12);
     dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
     DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
     DvzDrp2Runtime* runtime = NULL;
@@ -6460,10 +6479,14 @@ int test_scene_point_large_count_executes(TstContext* suite, const TstCase* item
     TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+    features12.timelineSemaphore = true;
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
     features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features12(&gpu_cfg, &features12);
     dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
     DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
     if (ctx == NULL)
