@@ -247,7 +247,7 @@ int test_scene_query_skips_fixed_visuals(TstContext* suite, const TstCase* item)
     ANN(point);
     dvz_visual_set_query_capabilities(point, DVZ_QUERY_CAPABILITY_ITEM);
     AT(dvz_panel_add_visual(
-           panel, point, &(DvzVisualAttachDesc){.controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           panel, point, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
@@ -3115,7 +3115,7 @@ int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const T
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
     AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
-    AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){.z_layer = -1}) == 0);
+    AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
         dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));

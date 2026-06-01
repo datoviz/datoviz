@@ -1467,7 +1467,7 @@ int test_app_offscreen_query_requests_notify_hosted_callback(
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
     AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
-    AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){.z_layer = -1}) == 0);
+    AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -3182,7 +3182,7 @@ int test_app_offscreen_text_has_nonblank_pixels(TstContext* suite, const TstCase
     AT(dvz_visual_set_data_many(text, updates, 5) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -3265,7 +3265,7 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
     AT(dvz_visual_set_data_many(text, updates, 5) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -5331,7 +5331,7 @@ int test_app_offscreen_query_request_steady_state(TstContext* suite, const TstCa
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
     AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
-    AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){.z_layer = -1}) == 0);
+    AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -6554,11 +6554,11 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
     dvz_visual_set_visible(mesh, false);
 
     AT(dvz_panel_add_visual(
-           panel, volume, &(DvzVisualAttachDesc){.z_layer = 0}) == 0);
+           panel, volume, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 0}) == 0);
     AT(dvz_panel_add_visual(
-           panel, slice, &(DvzVisualAttachDesc){.z_layer = 1}) == 0);
+           panel, slice, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1}) == 0);
     AT(dvz_panel_add_visual(
-           panel, mesh, &(DvzVisualAttachDesc){.z_layer = 2}) == 0);
+           panel, mesh, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2}) == 0);
     AT(dvz_panel_set_volume_occluder(
            panel, volume,
            &(DvzVolumeOcclusionDesc){

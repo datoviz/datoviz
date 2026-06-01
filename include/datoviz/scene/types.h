@@ -553,6 +553,8 @@ typedef struct DvzLabelsState DvzLabelsState;
  */
 struct DvzVisualAttachDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     int32_t           z_layer;          /* signed; lower draws behind, higher in front; default 0 */
     DvzControllerMode controller_mode;  /* APPLY (default), FIXED, or shader isotropic local */
 };

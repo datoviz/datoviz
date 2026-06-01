@@ -368,7 +368,9 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
         if (dvz_visual_set_depth_test(axis->visual, false) != 0)
             return NULL;
         axis->visual->visible = false;
-        DvzVisualAttachDesc attach = {.z_layer = 1000, .controller_mode = DVZ_CONTROLLER_FIXED};
+        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+        attach.z_layer = 1000;
+        attach.controller_mode = DVZ_CONTROLLER_FIXED;
         if (dvz_panel_add_visual(panel, axis->visual, &attach) != 0)
         {
             axis->visual = NULL;
@@ -384,7 +386,9 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
         if (dvz_visual_set_depth_test(axis->grid_visual, false) != 0)
             return NULL;
         axis->grid_visual->visible = false;
-        DvzVisualAttachDesc attach = {.z_layer = -1, .controller_mode = DVZ_CONTROLLER_APPLY};
+        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+        attach.z_layer = -1;
+        attach.controller_mode = DVZ_CONTROLLER_APPLY;
         if (dvz_panel_add_visual(panel, axis->grid_visual, &attach) != 0)
         {
             axis->grid_visual = NULL;

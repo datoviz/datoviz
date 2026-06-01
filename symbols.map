@@ -1194,6 +1194,7 @@ dvz_view_update_external_surface
 dvz_view_update_external_surface_ffi
 dvz_view_user_scale
 dvz_visual_alpha_mode
+dvz_visual_attach_desc
 dvz_visual_attr_mutability
 dvz_visual_attr_source
 dvz_visual_bounds

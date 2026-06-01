@@ -1007,7 +1007,7 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
     AT(_visual_family_state(text)->text.strings_version == 1);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     DvzAnnotation* annotation = dvz_annotation_label(
         panel,
@@ -2003,7 +2003,7 @@ int test_scene_text_sdf_default_font(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data_many(text, updates, 1) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     _scene_prepare_text_visuals(figure);
     AT(scene->font_count == 1);
@@ -2128,7 +2128,7 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     AT(dvz_visual_set_data_many(text, updates, 5) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
     AT(panel->visual_count == 1);
 
     _scene_prepare_text_visuals(figure);
@@ -2316,7 +2316,7 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
     AT(dvz_visual_set_data_many(text, updates, 4) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     _scene_prepare_text_visuals(figure);
     DvzVisual* glyph = _visual_family_state(text)->text.glyph_visual;
@@ -2456,7 +2456,7 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
     AT(dvz_visual_set_data_many(small, small_updates, 2) == 0);
     AT(dvz_panel_add_visual(
            panel, small,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     DvzVisual* large = _scene_text_visual(scene, 0);
     ANN(large);
@@ -2472,7 +2472,7 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
     AT(dvz_visual_set_data_many(large, large_updates, 2) == 0);
     AT(dvz_panel_add_visual(
            panel, large,
-           &(DvzVisualAttachDesc){.z_layer = 2, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     _scene_prepare_text_visuals(figure);
     AT(_visual_family_state(small)->text.glyph_visual != NULL);
@@ -2571,7 +2571,7 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
     AT(dvz_visual_set_data_many(utf8, utf8_updates, 2) == 0);
     AT(dvz_panel_add_visual(
            panel, ascii,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     _scene_prepare_text_visuals(figure);
     AT(scene->font_count == 1);
@@ -2591,7 +2591,7 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
 
     AT(dvz_panel_add_visual(
            panel, utf8,
-           &(DvzVisualAttachDesc){.z_layer = 2, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     _scene_prepare_text_visuals(figure);
     DvzTextAtlas* atlas = text_test_atlas(scene, DVZ_TEXT_ATLAS_BACKEND_MSDF, sizes[0]);
@@ -2659,7 +2659,7 @@ int test_scene_text_font_atlas_missing_glyph_fallback(TstContext* suite, const T
     AT(dvz_visual_set_data_many(text, updates, 2) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     _scene_prepare_text_visuals(figure);
     AT(scene->font_count == 1);
@@ -2729,7 +2729,7 @@ int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* it
     AT(dvz_visual_set_data_many(text, updates, 5) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_APPLY}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_APPLY}) == 0);
     _scene_prepare_text_visuals(figure);
     AT(_visual_family_state(text)->text.glyph_visual != NULL);
     AT(panel->visual_count == 2);
@@ -2786,7 +2786,7 @@ int test_scene_text_panzoom_glyph_anchor_coordinates(TstContext* suite, const Ts
     AT(dvz_visual_set_data_many(text, updates, 2) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_APPLY}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_APPLY}) == 0);
 
     _scene_prepare_text_visuals(figure);
     AT(_visual_family_state(text)->text.glyph_visual != NULL);
@@ -2840,7 +2840,7 @@ int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, con
     AT(dvz_visual_set_data_many(text, updates, 2) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     _scene_prepare_text_visuals(figure);
     AT(_visual_family_state(text)->text.glyph_visual != NULL);

@@ -502,11 +502,9 @@ static DvzVisual* _bounds_overlay_visual(DvzPanel* panel, bool occluded)
     if (dvz_visual_set_depth_test(visual, true) != 0)
         return NULL;
     visual->depth_compare_op = occluded ? VK_COMPARE_OP_GREATER : VK_COMPARE_OP_LESS_OR_EQUAL;
-    DvzVisualAttachDesc attach = {
-        .z_layer =
-            occluded ? BOUNDS_OVERLAY_Z_LAYER_OCCLUDED : BOUNDS_OVERLAY_Z_LAYER_VISIBLE,
-        .controller_mode = DVZ_CONTROLLER_APPLY,
-    };
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.z_layer = occluded ? BOUNDS_OVERLAY_Z_LAYER_OCCLUDED : BOUNDS_OVERLAY_Z_LAYER_VISIBLE;
+    attach.controller_mode = DVZ_CONTROLLER_APPLY;
     if (dvz_panel_add_visual(panel, visual, &attach) != 0)
         return NULL;
     if (occluded)

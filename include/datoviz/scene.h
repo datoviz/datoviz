@@ -593,6 +593,14 @@ DVZ_EXPORT DvzController* dvz_panel_controller(DvzPanel* panel, DvzDim dim);
 
 
 /**
+ * Return the default visual attachment descriptor.
+ *
+ * @return default visual attachment descriptor
+ */
+DVZ_EXPORT DvzVisualAttachDesc dvz_visual_attach_desc(void);
+
+
+/**
  * Add a visual to a panel.
  *
  * @param panel the panel

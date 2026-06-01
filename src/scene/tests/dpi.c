@@ -73,7 +73,7 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
     AT(dvz_visual_set_texture(image, image_pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(
            panel, image,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);

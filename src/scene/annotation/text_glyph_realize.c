@@ -207,11 +207,10 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         _text_renderer_backend(text->style.renderer, &text->style, default_size_px);
     bool use_builtin = backend == DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP;
     bool screen_placement = text->placement.mode == DVZ_TEXT_PLACEMENT_SCREEN;
-    DvzVisualAttachDesc attach = {
-        .z_layer = INT32_MAX / 4,
-        .controller_mode =
-            screen_placement ? DVZ_CONTROLLER_FIXED : DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL,
-    };
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.z_layer = INT32_MAX / 4;
+    attach.controller_mode =
+        screen_placement ? DVZ_CONTROLLER_FIXED : DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL;
     uint32_t visible = 0;
     DvzSampledField* atlas = NULL;
     DvzTextAtlas* font_atlas = NULL;
@@ -754,10 +753,9 @@ bool _text_visual_prepare(
     }
     if (atlas == NULL)
         return false;
-    DvzVisualAttachDesc glyph_attach = {
-        .z_layer = attach->z_layer,
-        .controller_mode = attach->controller_mode,
-    };
+    DvzVisualAttachDesc glyph_attach = dvz_visual_attach_desc();
+    glyph_attach.z_layer = attach->z_layer;
+    glyph_attach.controller_mode = attach->controller_mode;
     bool realized_cache_valid =
         _visual_family_state(visual)->text.glyph_visual != NULL &&
         _visual_family_state(_visual_family_state(visual)->text.glyph_visual)->field != NULL &&

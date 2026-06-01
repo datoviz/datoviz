@@ -530,7 +530,9 @@ static bool _colorbar_attach_visual(DvzColorbar* colorbar, DvzVisual* visual, in
     ANN(colorbar);
     ANN(colorbar->panel);
     ANN(visual);
-    DvzVisualAttachDesc attach = {.z_layer = z_layer, .controller_mode = DVZ_CONTROLLER_FIXED};
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.z_layer = z_layer;
+    attach.controller_mode = DVZ_CONTROLLER_FIXED;
     for (uint32_t i = 0; i < colorbar->panel->visual_count; i++)
     {
         DvzPanelAttach* existing = &colorbar->panel->visuals[i];

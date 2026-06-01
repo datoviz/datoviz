@@ -212,10 +212,10 @@ static bool _scalebar_ensure_visuals(DvzAnnotation* annotation)
         if (dvz_segment_set_caps(
                 annotation->scalebar_visual, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT) != 0)
             return false;
-        if (dvz_panel_add_visual(
-                annotation->panel, annotation->scalebar_visual,
-                &(DvzVisualAttachDesc){
-                    .z_layer = INT32_MAX / 4 - 1, .controller_mode = DVZ_CONTROLLER_FIXED}) != 0)
+        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+        attach.z_layer = INT32_MAX / 4 - 1;
+        attach.controller_mode = DVZ_CONTROLLER_FIXED;
+        if (dvz_panel_add_visual(annotation->panel, annotation->scalebar_visual, &attach) != 0)
             return false;
     }
     if (annotation->visual == NULL)
@@ -226,10 +226,10 @@ static bool _scalebar_ensure_visuals(DvzAnnotation* annotation)
         _visual_family_state(annotation->visual)->text.reserved_glyph_vertices =
             DVZ_SCALEBAR_LABEL_RESERVED_GLYPHS * 6u;
         annotation->visual->visible = false;
-        if (dvz_panel_add_visual(
-                annotation->panel, annotation->visual,
-                &(DvzVisualAttachDesc){
-                    .z_layer = INT32_MAX / 4, .controller_mode = DVZ_CONTROLLER_FIXED}) != 0)
+        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+        attach.z_layer = INT32_MAX / 4;
+        attach.controller_mode = DVZ_CONTROLLER_FIXED;
+        if (dvz_panel_add_visual(annotation->panel, annotation->visual, &attach) != 0)
             return false;
     }
     return true;

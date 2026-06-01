@@ -186,7 +186,9 @@ static bool _axis_ensure_text_visual(DvzAxis* axis)
     if (axis->text_visual == NULL)
         return false;
     axis->text_visual->visible = false;
-    DvzVisualAttachDesc attach = {.z_layer = 1001, .controller_mode = DVZ_CONTROLLER_FIXED};
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.z_layer = 1001;
+    attach.controller_mode = DVZ_CONTROLLER_FIXED;
     if (dvz_panel_add_visual(axis->panel, axis->text_visual, &attach) != 0)
     {
         axis->text_visual = NULL;
@@ -397,4 +399,3 @@ void _axis_update_text(
         _axis_hide_text(axis);
     }
 }
-

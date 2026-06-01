@@ -135,7 +135,7 @@ int test_scene_point_emit_glsl_executes(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
     AT(dvz_panel_add_visual(
            panel, visual,
-           &(DvzVisualAttachDesc){
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
                .controller_mode = DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL,
            }) == 0);
     AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL);
@@ -3597,7 +3597,7 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     ANN(stroke);
     AT(dvz_composite_visual_at(composite, 0) == fill);
 
-    AT(dvz_panel_add_composite(panel, composite, &(DvzVisualAttachDesc){.z_layer = 5}) == 0);
+    AT(dvz_panel_add_composite(panel, composite, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 5}) == 0);
     AT(panel->visual_count == 2);
     AT(panel->visuals[0].visual == fill);
     AT(panel->visuals[0].z_layer == 5);
@@ -5175,7 +5175,7 @@ int test_scene_image_pixel_anchor_emit_wgsl(TstContext* suite, const TstCase* it
     AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(
            panel, visual,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -8618,10 +8618,9 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_alpha_mode(point, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) == 0);
 
-    DvzVisualAttachDesc fixed = {
-        .z_layer = 0,
-        .controller_mode = DVZ_CONTROLLER_FIXED,
-    };
+    DvzVisualAttachDesc fixed = dvz_visual_attach_desc();
+    fixed.z_layer = 0;
+    fixed.controller_mode = DVZ_CONTROLLER_FIXED;
     AT(dvz_panel_add_visual(panel, point, NULL) == 0);
     AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
     AT(dvz_panel_add_visual(panel, primitive, NULL) == 0);

@@ -45,6 +45,36 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+#define DVZ_VISUAL_ATTACH_DESC_KNOWN_FLAGS 0u
+
+
+
+static bool _visual_attach_desc_validate(const DvzVisualAttachDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzVisualAttachDesc, DVZ_VISUAL_ATTACH_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzVisualAttachDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+DvzVisualAttachDesc dvz_visual_attach_desc(void)
+{
+    DvzVisualAttachDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
+        .z_layer = 0,
+        .controller_mode = DVZ_CONTROLLER_APPLY,
+    };
+    return desc;
+}
+
+
+
 DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t flags)
 {
     ANN(scene);
@@ -470,9 +500,10 @@ static bool _panel_background_attach(
 {
     ANN(panel);
     ANN(visual);
-    if (dvz_panel_add_visual(
-            panel, visual,
-            &(DvzVisualAttachDesc){.z_layer = -1, .controller_mode = DVZ_CONTROLLER_FIXED}) != 0)
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.z_layer = -1;
+    attach.controller_mode = DVZ_CONTROLLER_FIXED;
+    if (dvz_panel_add_visual(panel, visual, &attach) != 0)
     {
         return false;
     }
@@ -509,6 +540,8 @@ int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual, const DvzVisualAtta
 {
     ANN(panel);
     ANN(visual);
+    if (!_visual_attach_desc_validate(desc))
+        return -1;
     if (panel->figure == NULL || panel->figure->scene == NULL)
         return -1;
     if (visual->scene != panel->figure->scene)

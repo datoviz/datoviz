@@ -433,8 +433,8 @@ int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data(v_behind, "color",    col,  3) == 0);
     AT(dvz_visual_set_data(v_behind, "size",     sz,   3) == 0);
 
-    AT(dvz_panel_add_visual(panel, v_front,  &(DvzVisualAttachDesc){.z_layer = +1}) == 0);
-    AT(dvz_panel_add_visual(panel, v_behind, &(DvzVisualAttachDesc){.z_layer = -1}) == 0);
+    AT(dvz_panel_add_visual(panel, v_front,  &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = +1}) == 0);
+    AT(dvz_panel_add_visual(panel, v_behind, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -903,7 +903,7 @@ int test_scene_controller_mode_fixed_emits_separate_mvp(TstContext* suite, const
 
     AT(dvz_panel_add_visual(panel, v_apply, NULL) == 0);
     AT(dvz_panel_add_visual(panel, v_fixed,
-                            &(DvzVisualAttachDesc){.controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+                            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -1032,7 +1032,8 @@ int test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state(
     AT(dvz_visual_set_data(vr, "color", &col, 1) == 0);
     AT(dvz_visual_set_data(vr, "size", &sz, 1) == 0);
 
-    DvzVisualAttachDesc fixed = {.controller_mode = DVZ_CONTROLLER_FIXED};
+    DvzVisualAttachDesc fixed = dvz_visual_attach_desc();
+    fixed.controller_mode = DVZ_CONTROLLER_FIXED;
     AT(dvz_panel_add_visual(left, vl, &fixed) == 0);
     AT(dvz_panel_add_visual(right, vr, &fixed) == 0);
 

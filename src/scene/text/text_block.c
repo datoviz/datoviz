@@ -2103,12 +2103,10 @@ int _scene_text_block_realize_image(
     }
     if (!block->image_attached)
     {
-        if (dvz_panel_add_visual(
-                panel, block->image_visual,
-                &(DvzVisualAttachDesc){
-                    .z_layer = resolved.z_layer,
-                    .controller_mode = resolved.controller_mode,
-                }) != 0)
+        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+        attach.z_layer = resolved.z_layer;
+        attach.controller_mode = resolved.controller_mode;
+        if (dvz_panel_add_visual(panel, block->image_visual, &attach) != 0)
             return -1;
         block->image_attached = true;
     }

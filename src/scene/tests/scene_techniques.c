@@ -1410,7 +1410,7 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
     AT(dvz_visual_set_data(fixed_visual, "color", colors, 3) == 0);
     AT(dvz_panel_add_visual(
            fixed_panel, fixed_visual,
-           &(DvzVisualAttachDesc){.controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
     AT(dvz_panel_set_edl(
         fixed_panel, &(DvzEdlDesc){.radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
 
@@ -2235,11 +2235,11 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_BLENDED) == 0);
 
     AT(dvz_panel_add_visual(
-           panel, volume, &(DvzVisualAttachDesc){.z_layer = 0}) == 0);
+           panel, volume, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 0}) == 0);
     AT(dvz_panel_add_visual(
-           panel, slice, &(DvzVisualAttachDesc){.z_layer = 1}) == 0);
+           panel, slice, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1}) == 0);
     AT(dvz_panel_add_visual(
-           panel, mesh, &(DvzVisualAttachDesc){.z_layer = 2}) == 0);
+           panel, mesh, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2}) == 0);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.alpha.volume_mesh", 0);
     ANN(plan);
@@ -2429,11 +2429,11 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     AT(dvz_visual_set_scene_occluder(mesh, true) == 0);
 
     AT(dvz_panel_add_visual(
-           panel, volume, &(DvzVisualAttachDesc){.z_layer = 0}) == 0);
+           panel, volume, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 0}) == 0);
     AT(dvz_panel_add_visual(
-           panel, slice, &(DvzVisualAttachDesc){.z_layer = 1}) == 0);
+           panel, slice, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1}) == 0);
     AT(dvz_panel_add_visual(
-           panel, mesh, &(DvzVisualAttachDesc){.z_layer = 2}) == 0);
+           panel, mesh, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2}) == 0);
     AT(dvz_panel_set_volume_occluder(
            panel, volume,
            &(DvzVolumeOcclusionDesc){

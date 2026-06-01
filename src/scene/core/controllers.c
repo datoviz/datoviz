@@ -182,10 +182,10 @@ bool _scene_panel_sync_fly_pivot_marker(DvzPanel* panel)
             return false;
         if (dvz_visual_set_depth_test(marker, false) != 0)
             return false;
-        if (dvz_panel_add_visual(
-                panel, marker,
-                &(DvzVisualAttachDesc){.z_layer = 10000, .controller_mode = DVZ_CONTROLLER_APPLY}) !=
-            0)
+        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+        attach.z_layer = 10000;
+        attach.controller_mode = DVZ_CONTROLLER_APPLY;
+        if (dvz_panel_add_visual(panel, marker, &attach) != 0)
         {
             return false;
         }
