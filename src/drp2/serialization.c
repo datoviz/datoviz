@@ -32,6 +32,10 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_DRP2_JSON_INLINE_PAYLOAD UINT32_MAX
+
+
+
 static const char* _command_name(DvzDrp2CommandType type)
 {
     switch (type)
@@ -588,7 +592,26 @@ static const char* _attachment_access_name(DvzDrp2AttachmentAccess access)
 
 
 
-static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* command)
+static bool _command_has_raw_payload(const DvzDrp2Command* command)
+{
+    if (command == NULL)
+        return false;
+    if (command->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+        return command->u.write_buffer.data_raw != NULL && command->u.write_buffer.size > 0;
+    if (command->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+    {
+        uint64_t size = (uint64_t)command->u.write_texture.depth *
+                        (uint64_t)command->u.write_texture.rows_per_image *
+                        (uint64_t)command->u.write_texture.bytes_per_row;
+        return command->u.write_texture.data_raw != NULL && size > 0;
+    }
+    return false;
+}
+
+
+
+static void _json_append_command(
+    JsonBuilder* builder, const DvzDrp2Command* command, uint32_t payload_ref)
 {
     ANN(builder);
     ANN(command);
@@ -854,6 +877,17 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         break;
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
     {
+        if (payload_ref != DVZ_DRP2_JSON_INLINE_PAYLOAD)
+        {
+            _json_append(
+                builder,
+                "{ \"cmd\": \"%s\", \"buffer_id\": %" PRIu64 ", \"offset\": %" PRIu64
+                ", \"size\": %" PRIu64 ", \"data_ref\": %" PRIu32
+                ", \"data_encoding\": \"wasm-memory\" }",
+                _command_name(command->type), command->u.write_buffer.buffer_id,
+                command->u.write_buffer.offset, command->u.write_buffer.size, payload_ref);
+            break;
+        }
         const char* b64_wb = command->u.write_buffer.data_base64;
         char* b64_wb_tmp   = NULL;
         if (b64_wb == NULL && command->u.write_buffer.data_raw != NULL)
@@ -881,6 +915,24 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         uint64_t tex_size = (uint64_t)command->u.write_texture.depth *
                             command->u.write_texture.rows_per_image *
                             command->u.write_texture.bytes_per_row;
+        if (payload_ref != DVZ_DRP2_JSON_INLINE_PAYLOAD)
+        {
+            _json_append(
+                builder,
+                "{ \"cmd\": \"%s\", \"texture_id\": %" PRIu64 ", \"mip_level\": %" PRIu32
+                ", \"origin\": { \"x\": %" PRIu32 ", \"y\": %" PRIu32 ", \"z\": %" PRIu32
+                " }, \"size\": { \"width\": %" PRIu32 ", \"height\": %" PRIu32
+                ", \"depth\": %" PRIu32 " }, \"bytes_per_row\": %" PRIu32
+                ", \"rows_per_image\": %" PRIu32 ", \"data_ref\": %" PRIu32
+                ", \"data_encoding\": \"wasm-memory\" }",
+                _command_name(command->type), command->u.write_texture.texture_id,
+                command->u.write_texture.mip_level, command->u.write_texture.origin_x,
+                command->u.write_texture.origin_y, command->u.write_texture.origin_z,
+                command->u.write_texture.width, command->u.write_texture.height,
+                command->u.write_texture.depth, command->u.write_texture.bytes_per_row,
+                command->u.write_texture.rows_per_image, payload_ref);
+            break;
+        }
         const char* b64_wt = command->u.write_texture.data_base64;
         char* b64_wt_tmp   = NULL;
         if (b64_wt == NULL && command->u.write_texture.data_raw != NULL)
@@ -1265,7 +1317,7 @@ char* dvz_drp2_stream_json(const DvzDrp2CommandStream* stream, const char* name)
     for (uint32_t i = 0; i < stream->count; i++)
     {
         _json_append(&builder, "    ");
-        _json_append_command(&builder, &stream->commands[i]);
+        _json_append_command(&builder, &stream->commands[i], DVZ_DRP2_JSON_INLINE_PAYLOAD);
         _json_append(&builder, "%s\n", i + 1 < stream->count ? "," : "");
     }
 
@@ -1279,6 +1331,46 @@ char* dvz_drp2_stream_json(const DvzDrp2CommandStream* stream, const char* name)
         dvz_free(builder.data);
         return NULL;
     }
+    return builder.data;
+}
+
+
+
+char* dvz_drp2_stream_json_payload_refs(const DvzDrp2CommandStream* stream, const char* name)
+{
+    if (stream == NULL)
+        return NULL;
+
+    JsonBuilder builder = {0};
+    if (!_json_init(&builder))
+        return NULL;
+
+    const char* fixture_name = name != NULL ? name : "drp2_stream";
+    _json_append(
+        &builder,
+        "{\n"
+        "  \"name\": \"%s\",\n"
+        "  \"version\": { \"major\": 2, \"minor\": 0 },\n"
+        "  \"commands\": [\n",
+        fixture_name);
+
+    uint32_t payload_ref = 0;
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        _json_append(&builder, "    ");
+        const bool has_ref = _command_has_raw_payload(&stream->commands[i]);
+        _json_append_command(
+            &builder, &stream->commands[i],
+            has_ref ? payload_ref++ : DVZ_DRP2_JSON_INLINE_PAYLOAD);
+        _json_append(&builder, "%s\n", i + 1 < stream->count ? "," : "");
+    }
+
+    _json_append(
+        &builder,
+        "  ],\n"
+        "  \"expected\": { \"outcome\": \"success\" }\n"
+        "}\n");
+
     return builder.data;
 }
 

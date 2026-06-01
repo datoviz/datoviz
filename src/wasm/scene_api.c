@@ -678,8 +678,7 @@ int dvz_wasm_api_set_capabilities(
 
 
 
-EMSCRIPTEN_KEEPALIVE
-int dvz_wasm_api_emit(uint32_t scene_handle, uint32_t figure_handle)
+static int _emit(uint32_t scene_handle, uint32_t figure_handle, bool direct_payloads)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
     DvzWasmApiFigure* figure = _figure(figure_handle);
@@ -704,10 +703,28 @@ int dvz_wasm_api_emit(uint32_t scene_handle, uint32_t figure_handle)
     }
     if (dvz_diagnostic_report_count(&scene->report) > 0)
         return -1;
-    scene->json = dvz_drp2_stream_json(scene->stream, "wasm_api_scene");
+    scene->json = direct_payloads
+                      ? dvz_drp2_stream_json_payload_refs(scene->stream, "wasm_api_scene")
+                      : dvz_drp2_stream_json(scene->stream, "wasm_api_scene");
     if (scene->json == NULL)
         return _fail(scene, "WASM DRP2 JSON serialization failed");
     return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_emit(uint32_t scene_handle, uint32_t figure_handle)
+{
+    return _emit(scene_handle, figure_handle, false);
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_emit_direct(uint32_t scene_handle, uint32_t figure_handle)
+{
+    return _emit(scene_handle, figure_handle, true);
 }
 
 
@@ -726,6 +743,50 @@ uint32_t dvz_wasm_api_payload_size(uint32_t scene_handle)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
     return scene != NULL && scene->json != NULL ? (uint32_t)strlen(scene->json) : 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_payload_count(uint32_t scene_handle)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    return scene != NULL && scene->stream != NULL ? dvz_drp2_stream_payload_count(scene->stream) : 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_payload_command_index(uint32_t scene_handle, uint32_t payload_index)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    return scene != NULL && scene->stream != NULL
+               ? dvz_drp2_stream_payload_command_index(scene->stream, payload_index)
+               : UINT32_MAX;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_payload_data_ptr(uint32_t scene_handle, uint32_t payload_index)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    const void* ptr = scene != NULL && scene->stream != NULL
+                          ? dvz_drp2_stream_payload_ptr(scene->stream, payload_index)
+                          : NULL;
+    return ptr != NULL ? (uint32_t)(uintptr_t)ptr : 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_payload_data_size(uint32_t scene_handle, uint32_t payload_index)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    uint64_t size = scene != NULL && scene->stream != NULL
+                        ? dvz_drp2_stream_payload_size(scene->stream, payload_index)
+                        : 0;
+    return size <= UINT32_MAX ? (uint32_t)size : 0;
 }
 
 

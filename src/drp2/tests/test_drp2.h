@@ -38,6 +38,8 @@ int test_drp2_write_buffer_bytes_uses_data_raw(TstContext* suite, const TstCase*
 
 int test_drp2_write_buffer_bytes_json_encodes_data_raw(TstContext* suite, const TstCase* item);
 
+int test_drp2_stream_json_payload_refs(TstContext* suite, const TstCase* item);
+
 int test_drp2_render_pipeline_step_modes_json(TstContext* suite, const TstCase* item);
 
 int test_drp2_recording_linear_roundtrip(TstContext* suite, const TstCase* item);

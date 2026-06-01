@@ -617,6 +617,9 @@ function decodeBase64(data) {
 
 
 async function decodePayload(command, label) {
+  if (command.data instanceof Uint8Array) {
+    return command.data;
+  }
   const bytes = decodeBase64(required(command.data, `${label} needs data`));
   const encoding = command.data_encoding ?? "base64";
   if (encoding === "base64") {

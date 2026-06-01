@@ -112,6 +112,33 @@ function diagnosticMessage(Module, scene, prefix) {
   return `${prefix}${messages.length > 0 ? `: ${messages.join("; ")}` : ""}`;
 }
 
+function hasDirectPayloadApi(Module) {
+  return (
+    typeof Module._dvz_wasm_api_emit_direct === "function" &&
+    typeof Module._dvz_wasm_api_payload_count === "function" &&
+    typeof Module._dvz_wasm_api_payload_command_index === "function" &&
+    typeof Module._dvz_wasm_api_payload_data_ptr === "function" &&
+    typeof Module._dvz_wasm_api_payload_data_size === "function"
+  );
+}
+
+function attachDirectPayloads(Module, scene, stream) {
+  const payloadCount = Module._dvz_wasm_api_payload_count(scene);
+  for (let i = 0; i < payloadCount; i++) {
+    const commandIndex = Module._dvz_wasm_api_payload_command_index(scene, i);
+    const ptr = Module._dvz_wasm_api_payload_data_ptr(scene, i);
+    const size = Module._dvz_wasm_api_payload_data_size(scene, i);
+    requireOk(commandIndex < stream.commands.length, `invalid WASM payload command index ${commandIndex}`);
+    requireOk(ptr !== 0 && size > 0, `invalid WASM payload span ${i}`);
+    const command = stream.commands[commandIndex];
+    requireOk(command.data_ref === i, `WASM payload ${i} does not match command ${commandIndex}`);
+    command.data = new Uint8Array(Module.HEAPU8.buffer, ptr, size);
+    command.data_encoding = "uint8array";
+    delete command.data_ref;
+  }
+  stream.wasm_payload_count = payloadCount;
+}
+
 export class DatovizWasmScene {
   static async create(canvas, options = {}) {
     const moduleUrl = wasmModuleUrl();
@@ -409,14 +436,21 @@ export class DatovizWasmScene {
 
   emit() {
     this._requireAlive();
-    const status = this.Module._dvz_wasm_api_emit(this.scene, this.figure);
+    const directPayloads = hasDirectPayloadApi(this.Module);
+    const status = directPayloads
+      ? this.Module._dvz_wasm_api_emit_direct(this.scene, this.figure)
+      : this.Module._dvz_wasm_api_emit(this.scene, this.figure);
     if (status !== 0) {
       throw new Error(this._diagnosticMessage(`dvz_wasm_api_emit failed with ${status}`));
     }
     const ptr = this.Module._dvz_wasm_api_payload_ptr(this.scene);
     const size = this.Module._dvz_wasm_api_payload_size(this.scene);
     requireOk(ptr !== 0 && size > 0, "WASM scene emitted no payload");
-    return JSON.parse(new TextDecoder().decode(this.Module.HEAPU8.subarray(ptr, ptr + size)));
+    const stream = JSON.parse(new TextDecoder().decode(this.Module.HEAPU8.subarray(ptr, ptr + size)));
+    if (directPayloads) {
+      attachDirectPayloads(this.Module, this.scene, stream);
+    }
+    return stream;
   }
 
   async renderInitial() {

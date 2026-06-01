@@ -1466,6 +1466,64 @@ DVZ_EXPORT char*
 dvz_drp2_stream_json(const DvzDrp2CommandStream* stream, const char* name);
 
 
+/**
+ * Serialize a command stream as JSON with write payloads referenced by index.
+ *
+ * WriteBuffer and WriteTexture commands backed by in-process raw bytes are serialized with a
+ * `data_ref` index and `data_encoding: "wasm-memory"` instead of inline base64. The referenced
+ * payloads are available through `dvz_drp2_stream_payload_*()`. Commands that only have a base64
+ * payload keep the normal inline `data` field.
+ *
+ * @param stream the command stream
+ * @param name the fixture name
+ * @return an owned NUL-terminated JSON string
+ */
+DVZ_EXPORT char*
+dvz_drp2_stream_json_payload_refs(const DvzDrp2CommandStream* stream, const char* name);
+
+
+/**
+ * Return the number of raw binary write payloads in a command stream.
+ *
+ * @param stream the command stream
+ * @return the number of raw payload spans
+ */
+DVZ_EXPORT uint32_t dvz_drp2_stream_payload_count(const DvzDrp2CommandStream* stream);
+
+
+/**
+ * Return the command index owning a raw binary payload.
+ *
+ * @param stream the command stream
+ * @param payload_index the payload index
+ * @return the command index, or UINT32_MAX when not found
+ */
+DVZ_EXPORT uint32_t
+dvz_drp2_stream_payload_command_index(const DvzDrp2CommandStream* stream, uint32_t payload_index);
+
+
+/**
+ * Return the raw binary payload pointer for a payload index.
+ *
+ * @param stream the command stream
+ * @param payload_index the payload index
+ * @return the borrowed payload pointer, or NULL when not found
+ */
+DVZ_EXPORT const void*
+dvz_drp2_stream_payload_ptr(const DvzDrp2CommandStream* stream, uint32_t payload_index);
+
+
+/**
+ * Return the raw binary payload byte size for a payload index.
+ *
+ * @param stream the command stream
+ * @param payload_index the payload index
+ * @return the payload byte size, or 0 when not found
+ */
+DVZ_EXPORT uint64_t
+dvz_drp2_stream_payload_size(const DvzDrp2CommandStream* stream, uint32_t payload_index);
+
+
 
 /**
  * Destroy a JSON string returned by dvz_drp2_stream_json().

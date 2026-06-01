@@ -81,6 +81,7 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_stream_growth_json);
     TST_CASE(test_drp2_write_buffer_bytes_uses_data_raw);
     TST_CASE(test_drp2_write_buffer_bytes_json_encodes_data_raw);
+    TST_CASE(test_drp2_stream_json_payload_refs);
     TST_CASE(test_drp2_write_buffer_bytes_large_json_roundtrip);
     TST_CASE(test_drp2_render_pipeline_step_modes_json);
     TST_CASE(test_drp2_render_pipeline_color_targets_json);

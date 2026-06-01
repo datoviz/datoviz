@@ -93,6 +93,11 @@ Payload and diagnostics lifetime:
 - the payload is valid only until the next mutating ABI call on the same scene or scene destruction;
 - JavaScript must copy or decode the payload before resize, pointer, wheel, data upload, emit,
   canvas-format, capability, or destroy calls;
+- `dvz_wasm_api_emit_direct()` returns JSON where write commands reference WASM-memory payload
+  spans with `data_ref` instead of embedding base64 `data`;
+- `dvz_wasm_api_payload_count()`, `dvz_wasm_api_payload_command_index()`,
+  `dvz_wasm_api_payload_data_ptr()`, and `dvz_wasm_api_payload_data_size()` expose those borrowed
+  spans until the next mutating ABI call on the same scene or scene destruction;
 - `dvz_wasm_api_set_capabilities()` passes normalized browser limits for texture dimension, bind
   groups, vertex buffers, buffer size, texture-copy row alignment, and sample count into scene
   emission;
@@ -105,8 +110,8 @@ Payload and diagnostics lifetime:
 Visual update behavior:
 
 - same-shape visual data updates emit retained-runtime update streams;
-- texture size changes emit setup-bearing streams and the browser wrapper reloads the runtime before
-  frame replay;
+- texture size changes emit setup-bearing streams and the browser wrapper updates retained runtime
+  state before frame replay;
 - point item-count growth is rejected by the current per-attribute ABI and reports attr/count
   diagnostics.
 
@@ -143,6 +148,6 @@ Expected manual results for the current subset:
 - 2D WASM page: point, primitive, image, and mesh content render; pan/zoom and resize work;
 - 3D WASM page: cube renders; arcball drag, wheel zoom, and resize work.
 
-`just webgpu-browser-smoke` automates the two WASM scene page checks and the dashboard WASM Scene
-Smoke rows with headless Chrome when Chrome/Chromium is available locally. It writes transient PNG
-evidence under `build/webgpu-browser-smoke/`.
+`just webgpu-browser-smoke` automates the two WASM scene page checks through the direct payload
+transport and the dashboard WASM Scene Smoke rows with headless Chrome when Chrome/Chromium is
+available locally. It writes transient PNG evidence under `build/webgpu-browser-smoke/`.

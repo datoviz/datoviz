@@ -99,6 +99,45 @@ function emitStream(Module, scene, figure, label) {
   return { stream, payload, ptr, size };
 }
 
+function emitDirectStream(Module, scene, figure, label) {
+  requireOk(
+    typeof Module._dvz_wasm_api_emit_direct === "function",
+    `${label}: missing direct payload emit ABI`,
+  );
+  const status = Module._dvz_wasm_api_emit_direct(scene, figure);
+  const messages = diagnostics(Module, scene);
+  if (status !== 0) {
+    requireOk(messages.length > 0, `${label}: no diagnostic was reported`);
+    throw new Error(`${label}: ${messages.join("; ")}`);
+  }
+  requireOk(messages.length === 0, `${label} emit unexpectedly reported diagnostics: ${messages.join("; ")}`);
+  const ptr = Module._dvz_wasm_api_payload_ptr(scene);
+  const size = Module._dvz_wasm_api_payload_size(scene);
+  requireOk(ptr !== 0 && size > 0, `${label} emitted no payload`);
+  const payload = new TextDecoder().decode(Module.HEAPU8.subarray(ptr, ptr + size));
+  const stream = JSON.parse(payload);
+  requireOk(Array.isArray(stream.commands), `${label} stream has no commands array`);
+
+  const payloadCount = Module._dvz_wasm_api_payload_count(scene);
+  requireOk(payloadCount > 0, `${label}: expected direct payload spans`);
+  const refs = [];
+  for (let i = 0; i < payloadCount; i++) {
+    const commandIndex = Module._dvz_wasm_api_payload_command_index(scene, i);
+    const dataPtr = Module._dvz_wasm_api_payload_data_ptr(scene, i);
+    const dataSize = Module._dvz_wasm_api_payload_data_size(scene, i);
+    requireOk(commandIndex < stream.commands.length, `${label}: invalid command index ${commandIndex}`);
+    requireOk(dataPtr !== 0 && dataSize > 0, `${label}: invalid payload span ${i}`);
+    const command = stream.commands[commandIndex];
+    requireOk(command.data_ref === i, `${label}: payload ref ${i} missing from command ${commandIndex}`);
+    requireOk(command.data === undefined, `${label}: command ${commandIndex} still has inline data`);
+    refs.push({ commandIndex, dataPtr, dataSize });
+  }
+  const writeCount = commandsOf(stream, "WriteBuffer").length + commandsOf(stream, "WriteTexture").length;
+  requireOk(payloadCount === writeCount, `${label}: expected ${writeCount} payloads, got ${payloadCount}`);
+  requireOk(!payload.includes('"data":'), `${label}: direct JSON contains inline data`);
+  return { stream, payload, ptr, size, refs };
+}
+
 function commandsOf(stream, cmd) {
   return stream.commands.filter((command) => command.cmd === cmd);
 }
@@ -698,6 +737,9 @@ try {
       expectDraw(visualReload.stream, 3, 1, "generic 2D visual reload primitive");
       expectDraw(visualReload.stream, 4, 1, "generic 2D visual reload image");
       expectDraw(visualReload.stream, 6, 1, "generic 2D visual reload mesh");
+      const directReload = emitDirectStream(Module, scene, figure, "generic 2D direct payload reload");
+      expectFrameCommandShape(directReload.stream, "generic 2D direct payload reload");
+      expectWriteCommands(directReload.stream, "generic 2D direct payload reload");
     } finally {
       Module._free(largerImagePtr);
     }

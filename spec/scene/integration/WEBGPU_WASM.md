@@ -195,7 +195,8 @@ JSON remains a debugging and fixture format, not the final hot path.
 Transport levels:
 
 1. JSON stream returned by WASM;
-2. JSON commands with binary payloads passed as WASM memory views;
+2. done for the browser wrapper: JSON commands with binary payloads passed as borrowed WASM memory
+   views;
 3. compact binary command stream plus direct payload spans;
 4. split setup/update/draw streams with stable resource ids and minimal per-frame payload.
 
@@ -211,8 +212,8 @@ Resource update rules:
 5. browser runtime must not retain borrowed WASM memory after the caller frees or overwrites it.
 6. same-shape visual data updates should emit update-only streams that replay against retained
    browser runtime state;
-7. setup-bearing visual updates, such as texture size changes, require runtime reload before frame
-   replay;
+7. setup-bearing visual updates, such as texture size changes, require retained runtime setup
+   update before frame replay;
 8. visual item-count growth is rejected by the current per-attribute ABI until a batch update or
    explicit topology-rebuild contract exists.
 
@@ -296,8 +297,10 @@ uniform mutation path has been retired from the release-visible demos. Retained 
 stress now tracks browser-owned frame resources and retires submitted references after explicit
 queue completion in retained sessions. Automated browser smoke now also checks pagehide scene
 destruction and the fixture dashboard's WASM Scene Smoke rows for 2D point updates, 2D image
-texture resize reloads, and 3D mesh retained updates. The next release-proofing gaps are direct
-payload transport, browser app examples, and then broader visual/technique parity.
+texture resize reloads, and 3D mesh retained updates. The browser wrapper now uses payload-ref JSON
+plus borrowed WASM-memory `Uint8Array` views for `WriteBuffer` and `WriteTexture`, while the base64
+JSON path remains available for debug fixtures. The next release-proofing gaps are browser app
+examples and then broader visual/technique parity.
 
 ### Experimental WASM Scene ABI
 
@@ -309,19 +312,23 @@ The `src/wasm/scene_api.c` API is an unstable experimental ABI for the browser d
    payload valid only until the next bridge call on the same handle or `dvz_wasm_api_scene_destroy()`;
 3. JavaScript must copy or decode the payload before calling resize, pointer, wheel, data-upload,
    emit, canvas-format, capability, or destroy functions again;
-4. diagnostics returned by `dvz_wasm_api_diagnostic()` are borrowed strings with the same lifetime
+4. `dvz_wasm_api_emit_direct()` exposes write payloads as `data_ref` JSON commands plus borrowed
+   WASM-memory spans available through the `dvz_wasm_api_payload_*()` accessors;
+5. JavaScript may pass those spans directly to WebGPU for immediate command execution, but must not
+   retain them across another mutating bridge call or scene destruction;
+6. diagnostics returned by `dvz_wasm_api_diagnostic()` are borrowed strings with the same lifetime
    as the current diagnostic report, valid only until the next bridge call on the same handle or
    destroy;
-5. successful emits should leave the diagnostic report empty; failed emits must be surfaced with
+7. successful emits should leave the diagnostic report empty; failed emits must be surfaced with
    non-empty diagnostics where the scene/DRP2 layer can explain the failure;
-6. the supported browser canvas formats are `rgba8unorm` and `bgra8unorm`, mapped to
+8. the supported browser canvas formats are `rgba8unorm` and `bgra8unorm`, mapped to
    `DVZ_FORMAT_R8G8B8A8_UNORM` and `DVZ_FORMAT_B8G8R8A8_UNORM`;
-7. `dvz_wasm_api_set_capabilities()` accepts browser-normalized texture dimension, bind-group,
+9. `dvz_wasm_api_set_capabilities()` accepts browser-normalized texture dimension, bind-group,
    vertex-buffer, buffer-size, texture-copy alignment, and sample-count limits used by scene
    emission;
-8. resize arguments are framebuffer pixel width/height plus device scale; the bridge derives logical
+10. resize arguments are framebuffer pixel width/height plus device scale; the bridge derives logical
    window size for the scene input router;
-9. pointer and wheel positions are CSS-pixel canvas coordinates plus content scale, so high-DPI
+11. pointer and wheel positions are CSS-pixel canvas coordinates plus content scale, so high-DPI
    browsers keep controller math in the scene layer while still using framebuffer-sized targets.
 
 ## Validation Matrix

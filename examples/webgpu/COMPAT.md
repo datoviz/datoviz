@@ -89,6 +89,10 @@ Current status as of this note:
 - recorded automated browser proof on 2026-06-01 after retained setup-update hardening:
   `just webgpu-browser-smoke` now covers the dashboard 2D WASM row with same-shape point updates and
   RGBA8 image texture resize reloads against retained browser runtime state.
+- recorded browserless, native, and automated browser proof on 2026-06-01 after direct WASM payload
+  transport: `just wasm-scene-smoke` validates payload-ref JSON plus borrowed WASM-memory payload
+  spans; `just test drp2` covers the native payload-ref serializer/accessors; and
+  `just webgpu-browser-smoke` renders the 2D/3D WASM pages through typed-array payloads.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

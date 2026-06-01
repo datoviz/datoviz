@@ -212,6 +212,46 @@ int test_drp2_write_buffer_bytes_json_encodes_data_raw(TstContext* suite, const 
 
 
 
+int test_drp2_stream_json_payload_refs(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    static const uint8_t buffer_payload[4] = {1, 2, 3, 4};
+    static const uint8_t texture_payload[16] = {
+        255, 0,   0,   255,
+        0,   255, 0,   255,
+        0,   0,   255, 255,
+        255, 255, 0,   255,
+    };
+    AT(dvz_drp2_stream_write_buffer_bytes(stream, 1, 0, sizeof(buffer_payload), buffer_payload));
+    AT(dvz_drp2_stream_write_texture_2d_bytes(stream, 2, 0, 2, 2, 8, 2, texture_payload));
+
+    AT(dvz_drp2_stream_payload_count(stream) == 2);
+    AT(dvz_drp2_stream_payload_command_index(stream, 0) == 0);
+    AT(dvz_drp2_stream_payload_command_index(stream, 1) == 1);
+    AT(dvz_drp2_stream_payload_size(stream, 0) == sizeof(buffer_payload));
+    AT(dvz_drp2_stream_payload_size(stream, 1) == sizeof(texture_payload));
+    AT(memcmp(dvz_drp2_stream_payload_ptr(stream, 0), buffer_payload, sizeof(buffer_payload)) == 0);
+    AT(memcmp(dvz_drp2_stream_payload_ptr(stream, 1), texture_payload, sizeof(texture_payload)) == 0);
+
+    char* json = dvz_drp2_stream_json_payload_refs(stream, "payload_refs");
+    ANN(json);
+    AT(strstr(json, "\"data_ref\": 0") != NULL);
+    AT(strstr(json, "\"data_ref\": 1") != NULL);
+    AT(strstr(json, "\"data_encoding\": \"wasm-memory\"") != NULL);
+    AT(strstr(json, "\"data\":") == NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_write_buffer_bytes_large_json_roundtrip(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

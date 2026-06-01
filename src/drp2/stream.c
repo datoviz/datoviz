@@ -207,6 +207,114 @@ uint32_t dvz_drp2_stream_count(const DvzDrp2CommandStream* stream)
 }
 
 
+static bool _payload_info(
+    const DvzDrp2Command* command, const void** out_ptr, uint64_t* out_size)
+{
+    if (out_ptr != NULL)
+        *out_ptr = NULL;
+    if (out_size != NULL)
+        *out_size = 0;
+    if (command == NULL)
+        return false;
+
+    const void* ptr = NULL;
+    uint64_t size = 0;
+    if (command->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+    {
+        ptr = command->u.write_buffer.data_raw;
+        size = command->u.write_buffer.size;
+    }
+    else if (command->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+    {
+        ptr = command->u.write_texture.data_raw;
+        size = (uint64_t)command->u.write_texture.depth *
+               (uint64_t)command->u.write_texture.rows_per_image *
+               (uint64_t)command->u.write_texture.bytes_per_row;
+    }
+
+    if (ptr == NULL || size == 0)
+        return false;
+    if (out_ptr != NULL)
+        *out_ptr = ptr;
+    if (out_size != NULL)
+        *out_size = size;
+    return true;
+}
+
+
+
+uint32_t dvz_drp2_stream_payload_count(const DvzDrp2CommandStream* stream)
+{
+    if (stream == NULL)
+        return 0;
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        if (_payload_info(&stream->commands[i], NULL, NULL))
+            count++;
+    }
+    return count;
+}
+
+
+
+static const DvzDrp2Command* _payload_command(
+    const DvzDrp2CommandStream* stream, uint32_t payload_index, uint32_t* out_command_index)
+{
+    if (out_command_index != NULL)
+        *out_command_index = UINT32_MAX;
+    if (stream == NULL)
+        return NULL;
+
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        if (!_payload_info(&stream->commands[i], NULL, NULL))
+            continue;
+        if (count == payload_index)
+        {
+            if (out_command_index != NULL)
+                *out_command_index = i;
+            return &stream->commands[i];
+        }
+        count++;
+    }
+    return NULL;
+}
+
+
+
+uint32_t
+dvz_drp2_stream_payload_command_index(const DvzDrp2CommandStream* stream, uint32_t payload_index)
+{
+    uint32_t command_index = UINT32_MAX;
+    (void)_payload_command(stream, payload_index, &command_index);
+    return command_index;
+}
+
+
+
+const void* dvz_drp2_stream_payload_ptr(
+    const DvzDrp2CommandStream* stream, uint32_t payload_index)
+{
+    const DvzDrp2Command* command = _payload_command(stream, payload_index, NULL);
+    const void* ptr = NULL;
+    (void)_payload_info(command, &ptr, NULL);
+    return ptr;
+}
+
+
+
+uint64_t dvz_drp2_stream_payload_size(
+    const DvzDrp2CommandStream* stream, uint32_t payload_index)
+{
+    const DvzDrp2Command* command = _payload_command(stream, payload_index, NULL);
+    uint64_t size = 0;
+    (void)_payload_info(command, NULL, &size);
+    return size;
+}
+
+
 
 /**
  * Return a command from a DRP2 command stream.
