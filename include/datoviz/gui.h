@@ -69,7 +69,9 @@ typedef enum DvzGuiViewportFlags
 
 typedef struct DvzGuiConfig
 {
+    uint32_t struct_size;
     uint32_t flags;
+    uint32_t gui_flags;
     const char* ini_path;
     DvzFontDefaults font_defaults;
 } DvzGuiConfig;
@@ -78,7 +80,9 @@ typedef struct DvzGuiConfig
 
 typedef struct DvzGuiViewportConfig
 {
+    uint32_t struct_size;
     uint32_t flags;
+    uint32_t viewport_flags;
 
     /* Initial size of the owned offscreen source window created by dvz_gui_viewport(). */
     uint32_t initial_width;

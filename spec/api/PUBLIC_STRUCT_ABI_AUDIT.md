@@ -73,6 +73,8 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzOverlayCardStyle` | `dvz_overlay_card_style()` |
 | `DvzOverlayCardDesc` | `dvz_overlay_card_desc()` |
 | `DvzOverlayRichTextDesc` | `dvz_overlay_rich_text_desc()` |
+| `DvzGuiConfig` | `dvz_gui_config()` |
+| `DvzGuiViewportConfig` | `dvz_gui_viewport_config()` |
 
 
 ## Should Add Before API Freeze
@@ -84,7 +86,6 @@ and likely to grow or gain flags after v0.4:
 | --- | --- | --- |
 | Scene techniques | `DvzCapabilitySnapshot` | capability-aware setup paths |
 | Visual styles/materials | `DvzVisualDataView` | data-view setters |
-| GUI | `DvzGuiConfig`, `DvzGuiViewportConfig` | `dvz_view_gui()`, `dvz_gui_viewport()`, `dvz_gui_viewport_from_view()` |
 | Canvas/stream | `DvzCanvasLiveImageSinkConfig`, `DvzStreamFrame`, `DvzStreamSinkBackend` | `dvz_canvas_configure_live_image_sink()`, stream frame and sink backend APIs |
 | Host integration | `DvzWindowExternalSurfaceInfo`, `DvzWindowBackendProcs`, `DvzWindowBackend`, `DvzWindowGlfwInputCallbacks` | external surface, custom backend, and GLFW callback registration APIs |
 | Advanced runtime interop | `DvzDrp2ExternalBufferDesc`, `DvzDrp2RecordingInfo`, `DvzInteropBufferExportConfig` | `dvz_drp2_runtime_register_external_buffer()`, DRP2 recording APIs, `dvz_interop_buffer_export()` |

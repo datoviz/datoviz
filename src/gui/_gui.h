@@ -40,6 +40,7 @@ DvzGui*
 _dvz_gui_create(
     DvzApp* app, DvzGpuCtx* gpu_ctx, DvzView* view, DvzWindow* window,
     const DvzGuiConfig* config);
+bool _dvz_gui_config_validate(const DvzGuiConfig* config);
 void _dvz_gui_destroy(DvzGui* gui);
 void _dvz_gui_set_callback(DvzGui* gui, DvzGuiCallback callback, void* user_data);
 void _dvz_gui_begin_frame(DvzGui* gui, DvzView* view, const DvzStreamFrame* frame);

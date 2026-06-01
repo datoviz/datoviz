@@ -49,6 +49,10 @@
 #define DVZ_GUI_VIEWPORT_DEFAULT_MIN_HEIGHT 32u
 #define DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_STEP 8u
 #define DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_DELAY_FRAMES 2u
+#define DVZ_GUI_CONFIG_KNOWN_FLAGS 0u
+#define DVZ_GUI_VIEWPORT_CONFIG_KNOWN_FLAGS 0u
+#define DVZ_FONT_DEFAULTS_KNOWN_FLAGS 0u
+#define DVZ_FONT_DESC_KNOWN_FLAGS 0u
 
 
 
@@ -202,6 +206,66 @@ static float _gui_font_size(float size, float fallback)
 
 
 
+static bool _gui_font_desc_validate(const DvzFontDesc* desc)
+{
+    if (desc == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(desc, DvzFontDesc, DVZ_FONT_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzFontDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _gui_font_defaults_validate(const DvzFontDefaults* defaults)
+{
+    if (defaults == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(defaults, DvzFontDefaults, DVZ_FONT_DEFAULTS_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzFontDefaults ABI prologue");
+        return false;
+    }
+    if (!_gui_font_desc_validate(&defaults->sans) || !_gui_font_desc_validate(&defaults->mono))
+        return false;
+    return true;
+}
+
+
+
+bool _dvz_gui_config_validate(const DvzGuiConfig* config)
+{
+    if (config == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(config, DvzGuiConfig, DVZ_GUI_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGuiConfig ABI prologue");
+        return false;
+    }
+    if (!_gui_font_defaults_validate(&config->font_defaults))
+        return false;
+    return true;
+}
+
+
+
+static bool _gui_viewport_config_validate(const DvzGuiViewportConfig* config)
+{
+    if (config == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(config, DvzGuiViewportConfig, DVZ_GUI_VIEWPORT_CONFIG_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGuiViewportConfig ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
 /**
  * Return a resize dimension snapped to viewport policy.
  *
@@ -335,7 +399,7 @@ static void _gui_viewport_set_visible(DvzGuiViewport* viewport, bool visible)
         return;
 
     const bool render_hidden =
-        (viewport->config.flags & DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN) != 0;
+        (viewport->config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN) != 0;
     const bool enabled = visible || !viewport->has_frame || render_hidden;
     dvz_view_set_render_enabled(viewport->source, enabled);
 }
@@ -1067,7 +1131,7 @@ static bool _gui_ensure_vulkan(DvzGui* gui, const DvzStreamFrame* frame)
 static void _gui_submit_dockspace(DvzGui* gui)
 {
     ANN(gui);
-    if ((gui->config.flags & DVZ_GUI_FLAGS_DOCKSPACE) == 0)
+    if ((gui->config.gui_flags & DVZ_GUI_FLAGS_DOCKSPACE) == 0)
         return;
     ImGuiDockNodeFlags flags = ImGuiDockNodeFlags_PassthruCentralNode;
     ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), flags);
@@ -1096,6 +1160,8 @@ DvzGui* _dvz_gui_create(
     ANN(app);
     ANN(gpu_ctx);
     ANN(window);
+    if (!_dvz_gui_config_validate(config))
+        return NULL;
 
     GLFWwindow* glfw_window = (GLFWwindow*)dvz_window_backend_handle(window);
     if (glfw_window == NULL)
@@ -1330,7 +1396,9 @@ void _dvz_gui_render_frame(DvzGui* gui, const DvzStreamFrame* frame)
 DvzGuiConfig dvz_gui_config(void)
 {
     DvzGuiConfig config = {};
-    config.flags = DVZ_GUI_FLAGS_DOCKING | DVZ_GUI_FLAGS_DOCKSPACE;
+    config.struct_size = DVZ_STRUCT_SIZE(DvzGuiConfig);
+    config.flags = 0;
+    config.gui_flags = DVZ_GUI_FLAGS_DOCKING | DVZ_GUI_FLAGS_DOCKSPACE;
     config.font_defaults = dvz_font_defaults();
     return config;
 }
@@ -1345,7 +1413,9 @@ DvzGuiConfig dvz_gui_config(void)
 DvzGuiViewportConfig dvz_gui_viewport_config(void)
 {
     DvzGuiViewportConfig config = {};
-    config.flags = DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT;
+    config.struct_size = DVZ_STRUCT_SIZE(DvzGuiViewportConfig);
+    config.flags = 0;
+    config.viewport_flags = DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT;
     config.initial_width = DVZ_GUI_VIEWPORT_DEFAULT_INITIAL_WIDTH;
     config.initial_height = DVZ_GUI_VIEWPORT_DEFAULT_INITIAL_HEIGHT;
     config.min_width = DVZ_GUI_VIEWPORT_DEFAULT_MIN_WIDTH;
@@ -1905,6 +1975,8 @@ dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* con
     ANN(figure);
     if (gui->app == NULL)
         return NULL;
+    if (!_gui_viewport_config_validate(config))
+        return NULL;
 
     DvzGuiViewportConfig cfg = _gui_viewport_config_normalize(config);
     DvzView* source =
@@ -1935,6 +2007,8 @@ dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* con
 DvzGuiViewport* dvz_gui_viewport_from_window(
     DvzGui* gui, DvzView* source, const DvzGuiViewportConfig* config)
 {
+    if (!_gui_viewport_config_validate(config))
+        return NULL;
     return _gui_viewport_from_window(gui, source, config, false);
 }
 
@@ -2056,7 +2130,7 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
             ImGui::GetWindowDrawList()->AddImage(
                 (ImTextureID)viewport->texture, image_min, image_max, ImVec2(0, 0), ImVec2(1, 1));
             _gui_viewport_update_mouse(viewport, image_min, avail);
-            if ((viewport->config.flags & DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT) != 0)
+            if ((viewport->config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT) != 0)
                 _gui_viewport_forward_input(viewport, image_min, avail);
             shown = true;
         }

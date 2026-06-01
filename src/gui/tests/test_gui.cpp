@@ -199,8 +199,10 @@ static int test_gui_viewport_config_defaults(TstContext* suite, const TstCase* i
     (void)item;
 
     DvzGuiViewportConfig config = dvz_gui_viewport_config();
-    AT((config.flags & DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT) != 0);
-    AT((config.flags & DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN) == 0);
+    AT(config.struct_size == DVZ_STRUCT_SIZE(DvzGuiViewportConfig));
+    AT(config.flags == 0);
+    AT((config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT) != 0);
+    AT((config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN) == 0);
     AT(config.initial_width == 640);
     AT(config.initial_height == 480);
     AT(config.min_width > 0);
@@ -225,6 +227,10 @@ static int test_gui_config_font_defaults(TstContext* suite, const TstCase* item)
 
     DvzGuiConfig config = dvz_gui_config();
     DvzFontDefaults defaults = dvz_font_defaults();
+    AT(config.struct_size == DVZ_STRUCT_SIZE(DvzGuiConfig));
+    AT(config.flags == 0);
+    AT((config.gui_flags & DVZ_GUI_FLAGS_DOCKING) != 0);
+    AT((config.gui_flags & DVZ_GUI_FLAGS_DOCKSPACE) != 0);
     AT(strcmp(config.font_defaults.sans.family, defaults.sans.family) == 0);
     AT(strcmp(config.font_defaults.sans.style, defaults.sans.style) == 0);
     AT(strcmp(config.font_defaults.mono.family, defaults.mono.family) == 0);
@@ -332,6 +338,18 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
         return 0;
     }
 
+    DvzGuiConfig invalid_gui = dvz_gui_config();
+    invalid_gui.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_view_gui(host_win, &invalid_gui) == NULL);
+
+    invalid_gui = dvz_gui_config();
+    invalid_gui.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_view_gui(host_win, &invalid_gui) == NULL);
+
+    invalid_gui = dvz_gui_config();
+    invalid_gui.font_defaults.sans.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_view_gui(host_win, &invalid_gui) == NULL);
+
     DvzGui* gui = dvz_view_gui(host_win, NULL);
     if (gui == NULL)
     {
@@ -345,6 +363,16 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     DvzGuiViewportConfig config = dvz_gui_viewport_config();
     config.resize_step = 1;
     config.resize_delay_frames = 0;
+    DvzGuiViewportConfig invalid_viewport = config;
+    invalid_viewport.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_gui_viewport_from_window(gui, source_win, &invalid_viewport) == NULL);
+
+    invalid_viewport = config;
+    invalid_viewport.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_gui_viewport_from_window(gui, source_win, &invalid_viewport) == NULL);
+
     GuiViewportSmoke smoke = {};
     smoke.viewport = dvz_gui_viewport_from_window(gui, source_win, &config);
     AT(smoke.viewport != NULL);
