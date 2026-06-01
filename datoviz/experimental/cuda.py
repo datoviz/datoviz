@@ -39,7 +39,7 @@ def _normalize_dtype(dtype) -> str:
     name = getattr(dtype, 'name', None)
     if name == 'float32':
         return 'float32'
-    raise ValueError('only float32 scene CUDA arrays are supported by this experimental API')
+    raise ValueError('only float32 CUDA scene buffers are supported by this experimental API')
 
 
 def _normalize_shape(shape) -> tuple[int, int]:
@@ -91,8 +91,13 @@ def _require_runtime():
     return raw_surface, cp, bridge
 
 
-class SceneCudaArray:
-    """Datoviz-owned scene buffer exposed as a CuPy array."""
+class CudaSceneBuffer:
+    """Context-managed Datoviz scene buffer exposed to CuPy.
+
+    Datoviz owns the GPU allocation and scene buffer. CUDA imports that allocation and exposes a
+    CuPy view while the context manager is open. Mutating the buffer must happen inside
+    `cupy_write()`, which brackets writes with the current CUDA/Vulkan synchronization contract.
+    """
 
     def __init__(
         self,
@@ -117,10 +122,10 @@ class SceneCudaArray:
 
     @property
     def cupy(self):
-        """Return the imported CuPy module after the array is opened."""
+        """Return the imported CuPy module after the buffer is opened."""
 
         if self._cp is None:
-            raise RuntimeError('scene CUDA array is not open')
+            raise RuntimeError('CUDA scene buffer is not open')
         return self._cp
 
     @property
@@ -155,7 +160,7 @@ class SceneCudaArray:
 
     def _require_open(self) -> None:
         if self._shared is None:
-            raise RuntimeError('scene CUDA array is not open')
+            raise RuntimeError('CUDA scene buffer is not open')
 
     def __enter__(self):
         self._raw_surface, self._cp, self._bridge = _require_runtime()
@@ -191,8 +196,13 @@ class SceneCudaArray:
         self._shared.bind_attr(visual, attr, first=first, count=count)
 
     @contextmanager
-    def write_cupy(self, stream=None) -> Iterator:
-        """Yield a CuPy view for external writes, then synchronize Datoviz reads."""
+    def cupy_write(self, stream=None) -> Iterator:
+        """Yield a writable CuPy view, then synchronize Datoviz reads.
+
+        The returned view is borrowed. Callers should keep all writes inside this scope so the
+        helper can wait for previous Datoviz use before yielding and make CUDA writes visible to
+        Datoviz before the next render.
+        """
 
         self._require_open()
         try:
@@ -208,7 +218,7 @@ class SceneCudaArray:
         self._shared.wait_for_cuda_writes()
 
     def app_resources(self, figure):
-        """Return app resources using this array's interop GPU context and runtime."""
+        """Return app resources using this buffer's interop GPU context and runtime."""
 
         self._require_open()
         return self._shared.create_app_resources(figure)
@@ -216,7 +226,7 @@ class SceneCudaArray:
     def offscreen_app(
         self, scene, figure, width: int, height: int, refresh_after_resource_resolution=None
     ):
-        """Create an offscreen app using this array's interop GPU context and runtime."""
+        """Create an offscreen app using this buffer's interop GPU context and runtime."""
 
         self._require_open()
         return self._shared.create_offscreen_app(
@@ -228,7 +238,7 @@ class SceneCudaArray:
         )
 
 
-def scene_array(
+def scene_buffer(
     scene,
     *,
     shape,
@@ -236,10 +246,10 @@ def scene_array(
     usage=('vertex', 'storage'),
     runtime_usage=None,
     present: bool = False,
-) -> SceneCudaArray:
-    """Create an experimental Datoviz-owned scene buffer with a CuPy view."""
+) -> CudaSceneBuffer:
+    """Create an experimental Datoviz-owned scene buffer with a CuPy write view."""
 
-    return SceneCudaArray(
+    return CudaSceneBuffer(
         scene,
         shape=shape,
         dtype=dtype,
