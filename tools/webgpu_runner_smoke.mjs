@@ -279,6 +279,38 @@ function emptyPacket(kind, resourceVersion, frameIndex) {
   return packet;
 }
 
+function packetWithRecords(kind, resourceVersion, frameIndex, records, arenaSize = 0n) {
+  const commandBytes = records.reduce((sum, record) => sum + 32 + ((record.body.length + 7) & ~7), 0);
+  const packet = new Uint8Array(56 + commandBytes);
+  packet.set(emptyPacket(kind, resourceVersion, frameIndex));
+  const view = new DataView(packet.buffer);
+  view.setUint32(20, records.length, true);
+  view.setBigUint64(24, BigInt(commandBytes), true);
+  view.setBigUint64(32, arenaSize, true);
+  let offset = 56;
+  for (const record of records) {
+    const body = record.body;
+    const bodyPadded = (body.length + 7) & ~7;
+    view.setUint32(offset + 0, record.type, true);
+    view.setUint32(offset + 4, 0, true);
+    view.setUint32(offset + 8, body.length, true);
+    view.setBigUint64(offset + 16, record.payloadOffset ?? 0xffffffffffffffffn, true);
+    view.setBigUint64(offset + 24, record.payloadSize ?? 0n, true);
+    packet.set(body, offset + 32);
+    offset += 32 + bodyPadded;
+  }
+  return packet;
+}
+
+function createBufferPacket(resourceVersion, frameIndex, id = 7n, size = 8n) {
+  const body = new Uint8Array(24);
+  const view = new DataView(body.buffer);
+  view.setBigUint64(0, id, true);
+  view.setBigUint64(8, size, true);
+  view.setUint32(16, GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC, true);
+  return packetWithRecords(1, resourceVersion, frameIndex, [{ type: 3, body }]);
+}
+
 function writeBufferPacket({ payloadOffset = 0n, payloadSize = 4n, arenaSize = 8n } = {}) {
   const packet = new Uint8Array(56 + 32 + 24);
   packet.set(emptyPacket(2, 1, 1));
@@ -294,6 +326,35 @@ function writeBufferPacket({ payloadOffset = 0n, payloadSize = 4n, arenaSize = 8
   view.setBigUint64(96, 0n, true);
   view.setBigUint64(104, payloadSize, true);
   return packet;
+}
+
+function writeBufferPacketForVersion(resourceVersion, frameIndex, id = 7n, payloadSize = 4n) {
+  const body = new Uint8Array(24);
+  const view = new DataView(body.buffer);
+  view.setBigUint64(0, id, true);
+  view.setBigUint64(8, 0n, true);
+  view.setBigUint64(16, payloadSize, true);
+  return packetWithRecords(
+    2,
+    resourceVersion,
+    frameIndex,
+    [{ type: 18, body, payloadOffset: 0n, payloadSize }],
+    8n,
+  );
+}
+
+function bufferPacketSet(resourceVersion, frameIndex, id = 7n, includeSetup = false) {
+  const packetSet = {
+    update: {
+      packet: writeBufferPacketForVersion(resourceVersion, frameIndex, id),
+      arena: new Uint8Array([1, 2, 3, 4, 0, 0, 0, 0]),
+    },
+    frame: { packet: emptyPacket(3, resourceVersion, frameIndex) },
+  };
+  if (includeSetup) {
+    packetSet.setup = { packet: createBufferPacket(resourceVersion, frameIndex, id) };
+  }
+  return packetSet;
 }
 
 function expectThrows(fn, expectedText) {
@@ -621,6 +682,36 @@ async function smokePacketSessionValidation(Drp2WebGpuRuntime) {
     'inconsistent version counters',
   );
   await runtime.executePacketSet({ frame: { packet: emptyPacket(3, 1, 0) } }, { reset: true });
+
+  const realistic = new Drp2WebGpuRuntime(device, context, 'bgra8unorm');
+  const beforeBuffers = createdBufferCount;
+  await realistic.executePacketSet(bufferPacketSet(10, 1, 7n, true), { reset: true });
+  const firstStats = realistic.resourceStats();
+  if (firstStats.buffers !== 1 || firstStats.destroyedObjects !== 0) {
+    throw new Error(`realistic packet setup did not create one live buffer: ${JSON.stringify(firstStats)}`);
+  }
+  if (createdBufferCount !== beforeBuffers + 1) {
+    throw new Error('realistic packet setup did not create a GPU buffer');
+  }
+  await realistic.executePacketSet(bufferPacketSet(11, 2));
+  const secondStats = realistic.resourceStats();
+  if (secondStats.buffers !== 1 || secondStats.destroyedObjects !== 0) {
+    throw new Error(`realistic packet update did not preserve one live buffer: ${JSON.stringify(secondStats)}`);
+  }
+  await expectAsyncFailure(
+    () => realistic.executePacketSet(bufferPacketSet(10, 1)),
+    'stale DRP2 packet resource_version',
+  );
+  await realistic.executePacketSet(bufferPacketSet(1, 1, 7n, true), { reset: true });
+  const resetStats = realistic.resourceStats();
+  if (resetStats.buffers !== 1 || resetStats.destroyedObjects !== 0) {
+    throw new Error(`realistic packet reset did not rebuild one live buffer: ${JSON.stringify(resetStats)}`);
+  }
+  await realistic.executePacketSet(bufferPacketSet(2, 2));
+  await expectAsyncFailure(
+    () => realistic.executePacketSet(bufferPacketSet(1, 1)),
+    'stale DRP2 packet resource_version',
+  );
 }
 
 async function main() {
