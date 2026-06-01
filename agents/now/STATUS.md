@@ -16,6 +16,7 @@ Blockers:
 | --- | --- | --- |
 | WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits WGSL DRP2 JSON for point, primitive, RGBA8 image, basic mesh, panzoom, and a 3D mesh/arcball proof. | Publish the experimental subset, record fresh browser evidence, harden diagnostic ABI behavior, and remove remaining demo shortcuts. |
 | Compute+graphics experimental path | DRP2, FramePlan, vklite, and WebGPU already have partial compute support and compute-to-render fixtures. | Promote minimal DRP2 synchronization, prove native execution, mirror portable WebGPU behavior, and prepare a C particle-advection gallery example. |
+| Qt/PyQt hosted path | Native Qt hosting has an optional example path; PyQt needs a native Qt bridge because current PyQt6 wheels do not expose `QVulkanInstance::setVkInstance()` or `vkInstance()`. | Implement the optional `datoviz_qtbridge` provider from `spec/scene/integration/QT_HOST_BRIDGE.md` and prove the PyQt hosted example. |
 | v0.3 visible parity audit | Missing. | Table each visible capability as fixed, deferred, or external/GSP. |
 | Public API/status cleanup | Missing. | Mark public surfaces as supported, experimental, advanced/unstable, deferred, or external/GSP. |
 | Release example proof | Partial. | Compact native + WebGPU proof set with validation notes and captured artifacts where needed. |
@@ -36,7 +37,9 @@ paths, scene visual-boundary checks, WebGPU fixture runner, and WASM point/panzo
    WebGPU parity diagnostics, and a C-first particle-advection gallery target.
 5. **Runtime hardening:** concrete scene -> DRP2 -> vklite/canvas/app lifetime, resize, descriptor,
    repeated-frame, or churn bugs.
-6. **Docs inventory:** public header inventory, ownership notes, raw `ctypes` scope, WebGPU/WASM
+6. **Qt/PyQt provider:** optional Qt bridge shared library, dynamic Python loader, binding
+   diagnostics, and hosted PyQt smoke proof.
+7. **Docs inventory:** public header inventory, ownership notes, raw `ctypes` scope, WebGPU/WASM
    scope, known issues, and GSP/VisPy2 boundary.
 
 When adding visible capability work, prefer gallery-proof improvements first, then vector visual
@@ -53,6 +56,8 @@ release-proof lanes remain on track.
 5. [../../spec/scene/validation/DEFERRED_TRACKER.md](../../spec/scene/validation/DEFERRED_TRACKER.md)
 6. [../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md)
 7. [SHADER_TRANSFORM_FUTURE_COMPAT.md](SHADER_TRANSFORM_FUTURE_COMPAT.md)
+8. [../../spec/scene/integration/OPTIONAL_PROVIDERS.md](../../spec/scene/integration/OPTIONAL_PROVIDERS.md)
+9. [../../spec/scene/integration/QT_HOST_BRIDGE.md](../../spec/scene/integration/QT_HOST_BRIDGE.md)
 
 
 ## Validation Defaults

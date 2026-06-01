@@ -24,6 +24,8 @@ Required before feature freeze:
 6. Core examples compile and exercise the release feature set.
 7. Minimal compute+graphics interop has an experimental C-first proof, including explicit DRP2
    synchronization and a gallery-oriented particle-advection plan or example.
+8. Low-level Qt/PyQt hosted rendering works through the optional Qt bridge provider, without adding
+   Qt as a dependency of `libdatoviz`.
 
 Not required for v0.4:
 
@@ -56,6 +58,8 @@ Exit criteria:
 3. Retained textured mesh remains in validation with deterministic proof.
 4. Text, axes, ticks, colorbars, annotations, scale bars, and retained visuals are represented in
    examples or tests.
+5. Qt/PyQt hosting is either proven with the optional bridge or tracked as the remaining release
+   blocker with the implementation handoff in `spec/scene/integration/QT_HOST_BRIDGE.md`.
 
 Suggested validation:
 
@@ -104,7 +108,21 @@ Exit criteria:
    artifact target.
 6. Optional CUDA SDK interop remains native-only, capability-gated, and advanced/unstable.
 
-### 5. Raw `ctypes` API Candidate
+### 5. Qt/PyQt Hosted Path
+
+Exit criteria:
+
+1. `datoviz_qtbridge` builds only when Qt development headers and libraries are available.
+2. `libdatoviz` has no Qt link dependency.
+3. `datoviz.qt` dynamically loads the bridge when PyQt hosting is requested.
+4. PyQt6 hosting no longer calls missing Python bindings for
+   `QVulkanInstance::setVkInstance()` or `QVulkanInstance::vkInstance()` directly.
+5. Unsupported PyQt/PySide bindings, missing bridge libraries, and Qt runtime mismatches fail with
+   clear diagnostics.
+6. The native Qt smoke and Python PyQt hosted example are proven locally or recorded as blocked by
+   environment constraints.
+
+### 6. Raw `ctypes` API Candidate
 
 Exit criteria:
 
@@ -113,7 +131,7 @@ Exit criteria:
 3. Raw examples cover the supported low-level Python path.
 4. The docs state that high-level Python plotting is GSP/VisPy2 scope.
 
-### 6. RC1
+### 7. RC1
 
 Exit criteria:
 
@@ -125,7 +143,7 @@ Exit criteria:
 5. Required RC note fields from
    [../../spec/release/RC_PROCESS.md](../../spec/release/RC_PROCESS.md) are present.
 
-### 7. RC2
+### 8. RC2
 
 Exit criteria:
 
@@ -136,7 +154,7 @@ Exit criteria:
 5. Gallery/data attribution and outreach candidates satisfy
    [../../spec/release/GALLERY_OUTREACH.md](../../spec/release/GALLERY_OUTREACH.md).
 
-### 8. RC3
+### 9. RC3
 
 Exit criteria:
 
@@ -146,7 +164,7 @@ Exit criteria:
    [../../spec/release/READINESS.md](../../spec/release/READINESS.md) are clean or recorded as
    known issues.
 
-### 9. Final `v0.4.0`
+### 10. Final `v0.4.0`
 
 Exit criteria:
 
