@@ -29,6 +29,8 @@ VK_BUFFER_USAGE_TRANSFER_SRC_BIT = 0x00000001
 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT = 0x00000020
 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT = 0x00000080
 DVZ_ALLOC_DEDICATED_MEMORY = 0x00000001
+DVZ_SCENE_BUFFER_USAGE_VERTEX = 0x0001
+DVZ_SCENE_BUFFER_USAGE_STORAGE = 0x0008
 DVZ_DRP2_BUFFER_USAGE_VERTEX = 0x0010
 DVZ_DRP2_BUFFER_USAGE_STORAGE = 0x0080
 POSITION_COMPONENTS = 3
@@ -304,6 +306,12 @@ def probe_interop_context(dvz) -> None:
         dvz.dvz_gpu_ctx_destroy(ctx)
 
 
+def _as_bytes(value: bytes | str) -> bytes:
+    if isinstance(value, bytes):
+        return value
+    return value.encode()
+
+
 class ExportedDatovizBuffer:
     """Own a Vulkan-exportable Datoviz buffer plus exported handles."""
 
@@ -551,3 +559,141 @@ class SharedDatovizCudaArray:
             self.owner = None
         self.array = None
         return self.exported.__exit__(exc_type, exc, tb)
+
+
+class SharedSceneCudaArray:
+    """Scene-facing owner for one Datoviz shared buffer exposed as a CuPy array."""
+
+    def __init__(
+        self,
+        dvz,
+        cp,
+        bridge,
+        scene,
+        count: int,
+        components: int = POSITION_COMPONENTS,
+        scene_usage: int = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
+        runtime_usage: int = DVZ_DRP2_BUFFER_USAGE_VERTEX,
+    ):
+        self.dvz = dvz
+        self.cp = cp
+        self.bridge = bridge
+        self.scene = scene
+        self.count = count
+        self.components = components
+        self.scene_usage = scene_usage
+        self.runtime_usage = runtime_usage
+        self.shared = SharedDatovizCudaArray(dvz, cp, bridge, count=count, components=components)
+        self.scene_buffer = None
+        self.runtime = None
+        self._resources = None
+
+    @property
+    def array(self):
+        return self.shared.array
+
+    @property
+    def size(self) -> int:
+        return self.shared.size
+
+    @property
+    def device(self):
+        return self.shared.device
+
+    @property
+    def allocator(self):
+        return self.shared.allocator
+
+    def __enter__(self):
+        self.shared.__enter__()
+        try:
+            desc = self.dvz.DvzSceneBufferDesc()
+            desc.usage = self.scene_usage
+            desc.stride = self.components * POSITION_DTYPE_SIZE
+            desc.byte_size = self.shared.size
+            self.scene_buffer = self.dvz.dvz_scene_buffer(self.scene, ctypes.byref(desc))
+            if not self.scene_buffer:
+                raise RuntimeError('dvz_scene_buffer(shared CUDA array) failed')
+        except Exception:
+            self.shared.__exit__(*sys.exc_info())
+            raise
+        return self
+
+    def bind_attr(
+        self, visual, attr: bytes | str, first: int = 0, count: int | None = None
+    ) -> None:
+        if self.scene_buffer is None:
+            raise RuntimeError('shared scene CUDA array is not open')
+        count = self.count if count is None else count
+        if not self.dvz.dvz_visual_set_attr_buffer(
+            visual, _as_bytes(attr), self.scene_buffer, first, count
+        ):
+            raise RuntimeError(f'dvz_visual_set_attr_buffer({attr!r}) failed')
+
+    def _resolve_buffer_id(self, figure) -> int:
+        if self.scene_buffer is None:
+            raise RuntimeError('shared scene CUDA array is not open')
+        caps = self.dvz.DvzCapabilitySnapshot()
+        self.dvz.dvz_capability_snapshot_default(ctypes.byref(caps))
+        report = self.dvz.DvzDiagnosticReport()
+        self.dvz.dvz_diagnostic_report_init(ctypes.byref(report))
+        stream = self.dvz.dvz_figure_emit(figure, ctypes.byref(caps), ctypes.byref(report))
+        if self.dvz.dvz_diagnostic_report_count(ctypes.byref(report)) != 0 or not stream:
+            raise RuntimeError('dvz_figure_emit() failed while resolving shared scene buffer')
+        try:
+            key = ctypes.create_string_buffer(128)
+            if not self.dvz.dvz_scene_buffer_resource_key(self.scene_buffer, key, len(key)):
+                raise RuntimeError('dvz_scene_buffer_resource_key() failed')
+            buffer_id = int(self.dvz.dvz_drp2_stream_label_id(stream, key.value))
+            if buffer_id == 0:
+                raise RuntimeError(f'emitted stream has no id for scene buffer {key.value!r}')
+            return buffer_id
+        finally:
+            self.dvz.dvz_drp2_stream_destroy(stream)
+
+    def create_app_resources(self, figure):
+        if self.runtime is not None:
+            return self._resources
+        cfg = self.dvz.dvz_drp2_runtime_vklite_config(self.device, self.allocator)
+        self.runtime = self.dvz.dvz_drp2_runtime_vklite(ctypes.byref(cfg))
+        if not self.runtime:
+            raise RuntimeError('dvz_drp2_runtime_vklite() failed')
+        buffer_id = self._resolve_buffer_id(figure)
+        self.shared.register_external_buffer(self.runtime, buffer_id, usage=self.runtime_usage)
+        resources = self.dvz.DvzAppResources()
+        resources.gpu_ctx = self.shared.exported.ctx
+        resources.runtime = self.runtime
+        self._resources = resources
+        return resources
+
+    def create_offscreen_app(
+        self, scene, figure, width: int, height: int, refresh_after_resource_resolution=None
+    ):
+        resources = self.create_app_resources(figure)
+        if refresh_after_resource_resolution is not None:
+            refresh_after_resource_resolution()
+        app_config = self.dvz.dvz_app_config()
+        app = self.dvz.dvz_app_with_resources(
+            scene, ctypes.byref(app_config), ctypes.byref(resources)
+        )
+        if not app:
+            skip('dvz_app_with_resources() failed')
+        view = self.dvz.dvz_view_offscreen(app, figure, width, height)
+        if not view:
+            self.dvz.dvz_app_destroy(app)
+            skip('dvz_view_offscreen() failed')
+        return app, view
+
+    def cuda_write(self, stream=None):
+        return self.shared.cuda_write(stream)
+
+    def wait_for_cuda_writes(self) -> None:
+        self.shared.wait_for_cuda_writes()
+
+    def __exit__(self, exc_type, exc, tb):
+        if self.runtime is not None:
+            self.dvz.dvz_drp2_runtime_destroy(self.runtime)
+            self.runtime = None
+        self._resources = None
+        self.scene_buffer = None
+        return self.shared.__exit__(exc_type, exc, tb)
