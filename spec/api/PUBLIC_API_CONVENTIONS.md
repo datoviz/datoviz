@@ -145,6 +145,13 @@ Structs likely to grow after v0.4 should have a compatibility strategy before AP
 strategies include reserved fields, a documented version/size field, or keeping the struct out of the
 stable public surface until it settles.
 
+Growable public descriptor and config structs should put `uint32_t struct_size` first and
+`uint32_t flags` second. Canonical initializer functions must set `struct_size = sizeof(struct)` and
+`flags = 0`. Public entry points should reject caller-provided size-versioned structs with
+`struct_size == 0`, with a size other than the current `sizeof(struct)`, or with unknown nonzero
+flags. Future releases may relax the size check for older smaller struct sizes after defining
+field-presence rules, but v0.4 should require explicit current-size initialization.
+
 Public structs must not expose Vulkan handles, DRP2 runtime object ids, command buffers, atlas
 pages, C++ standard-library types, or third-party-library structs.
 

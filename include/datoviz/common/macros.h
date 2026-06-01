@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 
@@ -84,6 +85,20 @@
 #else
 #define INIT(t, n) t n = {0};
 #endif
+
+
+
+/*************************************************************************************************/
+/*  Public struct ABI                                                                            */
+/*************************************************************************************************/
+
+#define DVZ_STRUCT_SIZE(T) ((uint32_t)sizeof(T))
+
+#define DVZ_STRUCT_VALID_SIZE(ptr, T)                                                            \
+    ((ptr) != NULL && (ptr)->struct_size == DVZ_STRUCT_SIZE(T))
+
+#define DVZ_STRUCT_UNKNOWN_FLAGS(ptr, known_flags)                                                \
+    ((ptr) != NULL && (((ptr)->flags & ~(known_flags)) != 0))
 
 
 
