@@ -284,23 +284,32 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(dvz_marker_set_style(visual, &style) == 0, "dvz_marker_set_style() failed");
 
     DvzSelection* selection = dvz_selection(
-        scene, &(DvzSelectionDesc){.mode = DVZ_SELECT_TOGGLE, .target = DVZ_SCENE_TARGET_ITEM});
+        scene,
+        &(DvzSelectionDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
+            .mode = DVZ_SELECT_TOGGLE,
+            .target = DVZ_SCENE_TARGET_ITEM,
+        });
     EXAMPLE_CHECK(selection != NULL, "dvz_selection() failed");
     DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
-    selection_style.selected.flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    selection_style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
     selection_style.selected.tint = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
     selection_style.selected.tint_mix = 1.0f;
-    selection_style.unselected.flags = DVZ_ITEM_STATE_VISUAL_NONE;
+    selection_style.unselected.visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
     EXAMPLE_CHECK(
         dvz_selection_set_visual_style(selection, &selection_style) == 0,
         "dvz_selection_set_visual_style() failed");
 
     DvzHover* hover = dvz_hover(
         scene,
-        &(DvzHoverDesc){.target = DVZ_SCENE_TARGET_ITEM, .hit_policy = DVZ_QUERY_HIT_FRONTMOST});
+        &(DvzHoverDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzHoverDesc),
+            .target = DVZ_SCENE_TARGET_ITEM,
+            .hit_policy = DVZ_QUERY_HIT_FRONTMOST,
+        });
     EXAMPLE_CHECK(hover != NULL, "dvz_hover() failed");
     DvzItemStateVisualStyle hover_style = dvz_item_state_visual_style();
-    hover_style.flags = DVZ_ITEM_STATE_VISUAL_SCALE;
+    hover_style.visual_flags = DVZ_ITEM_STATE_VISUAL_SCALE;
     hover_style.scale = HOVER_SIZE / BASE_SIZE;
     EXAMPLE_CHECK(
         dvz_hover_set_visual_style(hover, &hover_style) == 0,

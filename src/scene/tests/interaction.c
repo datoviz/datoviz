@@ -188,8 +188,12 @@ int test_scene_interaction_core(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     DvzInteractionPolicy* interaction = dvz_interaction(scene);
-    DvzSelection* selection =
-        dvz_selection(scene, &(DvzSelectionDesc){.mode = DVZ_SELECT_ADDITIVE});
+    DvzSelection* selection = dvz_selection(
+        scene,
+        &(DvzSelectionDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
+            .mode = DVZ_SELECT_ADDITIVE,
+        });
     DvzLinkChannel* channel = dvz_link_channel(scene, "cells");
     ANN(interaction);
     ANN(selection);
@@ -207,6 +211,76 @@ int test_scene_interaction_core(TstContext* suite, const TstCase* item)
     AT(interaction->link_channel == channel);
     AT(interaction->query_hit_policy == DVZ_QUERY_HIT_OPAQUE_PREFERRED);
     AT(interaction->auto_pin_readout);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_interaction_descriptor_abi_rejects_invalid_structs(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzSelectionDesc selection_desc = dvz_selection_desc();
+    selection_desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_selection(scene, &selection_desc) == NULL);
+
+    selection_desc = dvz_selection_desc();
+    selection_desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_selection(scene, &selection_desc) == NULL);
+
+    DvzHoverDesc hover_desc = dvz_hover_desc();
+    hover_desc.struct_size = DVZ_STRUCT_SIZE(DvzHoverDesc) - 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_hover(scene, &hover_desc) == NULL);
+
+    hover_desc = dvz_hover_desc();
+    hover_desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_hover(scene, &hover_desc) == NULL);
+
+    DvzHover* hover = dvz_hover(scene, NULL);
+    ANN(hover);
+    DvzItemStateVisualStyle item_style = dvz_item_state_visual_style();
+    item_style.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_hover_set_visual_style(hover, &item_style) < 0);
+
+    item_style = dvz_item_state_visual_style();
+    item_style.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_hover_set_visual_style(hover, &item_style) < 0);
+
+    DvzSelection* selection = dvz_selection(scene, NULL);
+    ANN(selection);
+    DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
+    selection_style.struct_size = DVZ_STRUCT_SIZE(DvzSelectionVisualStyle) - 1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_selection_set_visual_style(selection, &selection_style) < 0);
+
+    selection_style = dvz_selection_visual_style();
+    selection_style.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_selection_set_visual_style(selection, &selection_style) < 0);
+
+    selection_style = dvz_selection_visual_style();
+    selection_style.selected.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_selection_set_visual_style(selection, &selection_style) < 0);
+
+    DvzItemInteractionDesc item_desc = dvz_item_interaction_desc();
+    item_desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_item_interaction(panel, &item_desc) == NULL);
+
+    item_desc = dvz_item_interaction_desc();
+    item_desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_item_interaction(panel, &item_desc) == NULL);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -364,7 +438,12 @@ int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstC
     ANN(scene);
     DvzLinkChannel* channel = dvz_link_channel(scene, "items");
     DvzSelection* selection = dvz_selection(
-        scene, &(DvzSelectionDesc){.mode = DVZ_SELECT_TOGGLE, .target = DVZ_SCENE_TARGET_ITEM});
+        scene,
+        &(DvzSelectionDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
+            .mode = DVZ_SELECT_TOGGLE,
+            .target = DVZ_SCENE_TARGET_ITEM,
+        });
     DvzVisual* visual = dvz_point(scene, 0);
     uint64_t keys[] = {10, 11, 12};
     ANN(channel);
@@ -378,18 +457,18 @@ int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstC
     AT(visual->link_key_count == 3);
     AT(visual->link_keys[1] == 11);
     DvzSelectionVisualStyle style = dvz_selection_visual_style();
-    AT(style.selected.flags == DVZ_ITEM_STATE_VISUAL_NONE);
-    AT(style.unselected.flags == DVZ_ITEM_STATE_VISUAL_ALPHA);
+    AT(style.selected.visual_flags == DVZ_ITEM_STATE_VISUAL_NONE);
+    AT(style.unselected.visual_flags == DVZ_ITEM_STATE_VISUAL_ALPHA);
     AC(style.unselected.alpha, 0.25f, 1e-6f);
     AC(style.selected.scale, 1.0f, 1e-6f);
     AC(dvz_item_state_visual_style().scale, 1.0f, 1e-6f);
-    style.selected.flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
     style.selected.tint = (DvzColor){255, 183, 3, 255};
     style.selected.tint_mix = 1.0f;
-    style.unselected.flags = DVZ_ITEM_STATE_VISUAL_NONE;
+    style.unselected.visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
     AT(dvz_selection_set_visual_style(selection, &style) == 0);
-    AT(selection->visual_style.selected.flags == DVZ_ITEM_STATE_VISUAL_TINT);
-    AT(selection->visual_style.unselected.flags == DVZ_ITEM_STATE_VISUAL_NONE);
+    AT(selection->visual_style.selected.visual_flags == DVZ_ITEM_STATE_VISUAL_TINT);
+    AT(selection->visual_style.unselected.visual_flags == DVZ_ITEM_STATE_VISUAL_NONE);
 
     DvzQueryResult query = {
         .request_id = 1,
@@ -433,7 +512,12 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     DvzLinkChannel* channel = dvz_link_channel(scene, "items");
     DvzSelection* selection = dvz_selection(
-        scene, &(DvzSelectionDesc){.mode = DVZ_SELECT_TOGGLE, .target = DVZ_SCENE_TARGET_ITEM});
+        scene,
+        &(DvzSelectionDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
+            .mode = DVZ_SELECT_TOGGLE,
+            .target = DVZ_SCENE_TARGET_ITEM,
+        });
     DvzVisual* point = dvz_point(scene, 0);
     DvzVisual* pixel = dvz_pixel(scene, 0);
     DvzVisual* marker = dvz_marker(scene, 0);
@@ -614,10 +698,14 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
 
     DvzHover* hover = dvz_hover(
         scene,
-        &(DvzHoverDesc){.target = DVZ_SCENE_TARGET_ITEM, .hit_policy = DVZ_QUERY_HIT_FRONTMOST});
+        &(DvzHoverDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzHoverDesc),
+            .target = DVZ_SCENE_TARGET_ITEM,
+            .hit_policy = DVZ_QUERY_HIT_FRONTMOST,
+        });
     ANN(hover);
     DvzItemStateVisualStyle hover_style = dvz_item_state_visual_style();
-    hover_style.flags = DVZ_ITEM_STATE_VISUAL_SCALE;
+    hover_style.visual_flags = DVZ_ITEM_STATE_VISUAL_SCALE;
     hover_style.scale = 1.5f;
     AT(dvz_hover_set_visual_style(hover, &hover_style) == 0);
     AT(dvz_hover_apply_query(hover, &query) == 0);
@@ -659,7 +747,12 @@ int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const T
     DvzPanel* panel = dvz_panel(
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     DvzSelection* selection = dvz_selection(
-        scene, &(DvzSelectionDesc){.mode = DVZ_SELECT_REPLACE, .target = DVZ_SCENE_TARGET_ITEM});
+        scene,
+        &(DvzSelectionDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
+            .mode = DVZ_SELECT_REPLACE,
+            .target = DVZ_SCENE_TARGET_ITEM,
+        });
     ANN(figure);
     ANN(panel);
     ANN(selection);
@@ -3159,6 +3252,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_GROUP("interaction");
 
     TST_CASE(test_scene_interaction_core);
+    TST_CASE(test_scene_interaction_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_item_interaction_defaults_and_lifetime);
     TST_CASE(test_scene_item_interaction_input_queries);
     TST_CASE(test_scene_item_interaction_applies_results);

@@ -45,14 +45,17 @@
 
 #define DVZ_ITEM_INTERACTION_HOVER_REQUEST_ID UINT64_C(0xD171000000000001)
 #define DVZ_ITEM_INTERACTION_SELECTION_REQUEST_ID UINT64_C(0xD171000000000002)
+#define DVZ_SELECTION_DESC_KNOWN_FLAGS 0u
+#define DVZ_HOVER_DESC_KNOWN_FLAGS 0u
+#define DVZ_ITEM_STATE_VISUAL_STYLE_KNOWN_FLAGS 0u
+#define DVZ_SELECTION_VISUAL_STYLE_KNOWN_FLAGS 0u
+#define DVZ_ITEM_INTERACTION_DESC_KNOWN_FLAGS 0u
 
 
 
 /*************************************************************************************************/
 /*  Function prototypes                                                                          */
 /*************************************************************************************************/
-
-static bool _item_interaction_desc_is_zero(const DvzItemInteractionDesc* desc);
 
 static DvzItemInteractionDesc _item_interaction_resolve_desc(
     const DvzItemInteractionDesc* desc);
@@ -136,11 +139,80 @@ static bool _overlay_card_realize_rich(DvzFigure* figure, DvzOverlayCard* card);
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static bool _item_interaction_desc_is_zero(const DvzItemInteractionDesc* desc)
+static bool _selection_desc_validate(const DvzSelectionDesc* desc)
 {
-    ANN(desc);
-    DvzItemInteractionDesc zero = {0};
-    return memcmp(desc, &zero, sizeof(DvzItemInteractionDesc)) == 0;
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzSelectionDesc, DVZ_SELECTION_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzSelectionDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _hover_desc_validate(const DvzHoverDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzHoverDesc, DVZ_HOVER_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzHoverDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _item_state_visual_style_abi_validate(const DvzItemStateVisualStyle* style)
+{
+    if (style == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(
+            style, DvzItemStateVisualStyle, DVZ_ITEM_STATE_VISUAL_STYLE_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzItemStateVisualStyle ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _selection_visual_style_abi_validate(const DvzSelectionVisualStyle* style)
+{
+    if (style == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(
+            style, DvzSelectionVisualStyle, DVZ_SELECTION_VISUAL_STYLE_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzSelectionVisualStyle ABI prologue");
+        return false;
+    }
+    if (
+        !_item_state_visual_style_abi_validate(&style->selected) ||
+        !_item_state_visual_style_abi_validate(&style->unselected))
+    {
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _item_interaction_desc_validate(const DvzItemInteractionDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzItemInteractionDesc, DVZ_ITEM_INTERACTION_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzItemInteractionDesc ABI prologue");
+        return false;
+    }
+    return true;
 }
 
 
@@ -149,7 +221,7 @@ static DvzItemInteractionDesc _item_interaction_resolve_desc(
     const DvzItemInteractionDesc* desc)
 {
     DvzItemInteractionDesc defaults = dvz_item_interaction_desc();
-    if (desc == NULL || _item_interaction_desc_is_zero(desc))
+    if (desc == NULL)
         return defaults;
 
     DvzItemInteractionDesc resolved = *desc;
@@ -421,7 +493,7 @@ static void _item_state_store_style_params(
     ANN(dst);
     ANN(tint_dst);
     ANN(style);
-    dst[0] = (float)style->flags;
+    dst[0] = (float)style->visual_flags;
     dst[1] = isfinite(style->alpha) ? style->alpha : 1.0f;
     dst[2] = isfinite(style->tint_mix) ? style->tint_mix : 0.0f;
     dst[3] = isfinite(style->scale) && style->scale > 0.0f ? style->scale : 1.0f;
@@ -493,7 +565,11 @@ static void _item_state_sync_visual_style(DvzScene* scene, DvzVisual* visual)
     ANN(scene);
     ANN(visual);
     DvzItemStateVisualStyle normal = dvz_item_state_visual_style();
-    DvzSelectionVisualStyle selection_style = {.selected = normal, .unselected = normal};
+    DvzSelectionVisualStyle selection_style = {
+        DVZ_STRUCT_INIT_FIELDS(DvzSelectionVisualStyle),
+        .selected = normal,
+        .unselected = normal,
+    };
     DvzItemStateVisualStyle hover_style = normal;
     (void)_item_state_active_selection_style(scene, &selection_style);
     (void)_item_state_active_hover_style(scene, &hover_style);
@@ -1585,6 +1661,18 @@ void dvz_link_channel_destroy(DvzLinkChannel* channel)
 /*  Selections                                                                                   */
 /*************************************************************************************************/
 
+DvzSelectionDesc dvz_selection_desc(void)
+{
+    return (DvzSelectionDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
+        .mode = DVZ_SELECT_REPLACE,
+        .target = DVZ_SCENE_TARGET_NONE,
+        .selection_flags = 0,
+    };
+}
+
+
+
 /**
  * Create a retained scene-owned selection object.
  *
@@ -1595,6 +1683,8 @@ void dvz_link_channel_destroy(DvzLinkChannel* channel)
 DvzSelection* dvz_selection(DvzScene* scene, const DvzSelectionDesc* desc)
 {
     ANN(scene);
+    if (!_selection_desc_validate(desc))
+        return NULL;
     if (scene->selection_count >= DVZ_SCENE_MAX_SELECTIONS)
     {
         log_error("maximum selection count reached");
@@ -1603,10 +1693,7 @@ DvzSelection* dvz_selection(DvzScene* scene, const DvzSelectionDesc* desc)
     DvzSelection* selection = &scene->selections[scene->selection_count++];
     dvz_memset(selection, sizeof(DvzSelection), 0, sizeof(DvzSelection));
     selection->scene = scene;
-    if (desc != NULL)
-        selection->desc = *desc;
-    else
-        selection->desc.mode = DVZ_SELECT_REPLACE;
+    selection->desc = desc != NULL ? *desc : dvz_selection_desc();
     selection->visual_style = dvz_selection_visual_style();
     selection->card_enabled = true;
     return selection;
@@ -1673,7 +1760,8 @@ void dvz_selection_clear(DvzSelection* selection)
 DvzItemStateVisualStyle dvz_item_state_visual_style(void)
 {
     return (DvzItemStateVisualStyle){
-        .flags = DVZ_ITEM_STATE_VISUAL_NONE,
+        DVZ_STRUCT_INIT_FIELDS(DvzItemStateVisualStyle),
+        .visual_flags = DVZ_ITEM_STATE_VISUAL_NONE,
         .alpha = 1.0f,
         .tint = {255, 255, 255, 255},
         .tint_mix = 0.0f,
@@ -1692,9 +1780,13 @@ DvzSelectionVisualStyle dvz_selection_visual_style(void)
 {
     DvzItemStateVisualStyle normal = dvz_item_state_visual_style();
     DvzItemStateVisualStyle unselected = normal;
-    unselected.flags = DVZ_ITEM_STATE_VISUAL_ALPHA;
+    unselected.visual_flags = DVZ_ITEM_STATE_VISUAL_ALPHA;
     unselected.alpha = 0.25f;
-    return (DvzSelectionVisualStyle){.selected = normal, .unselected = unselected};
+    return (DvzSelectionVisualStyle){
+        DVZ_STRUCT_INIT_FIELDS(DvzSelectionVisualStyle),
+        .selected = normal,
+        .unselected = unselected,
+    };
 }
 
 
@@ -1709,11 +1801,13 @@ DvzSelectionVisualStyle dvz_selection_visual_style(void)
 int dvz_selection_set_visual_style(DvzSelection* selection, const DvzSelectionVisualStyle* style)
 {
     ANN(selection);
+    if (!_selection_visual_style_abi_validate(style))
+        return -1;
     DvzSelectionVisualStyle resolved = style != NULL ? *style : dvz_selection_visual_style();
     const uint32_t supported_flags =
         DVZ_ITEM_STATE_VISUAL_ALPHA | DVZ_ITEM_STATE_VISUAL_TINT | DVZ_ITEM_STATE_VISUAL_SCALE;
-    if ((resolved.selected.flags & ~supported_flags) != 0 ||
-        (resolved.unselected.flags & ~supported_flags) != 0)
+    if ((resolved.selected.visual_flags & ~supported_flags) != 0 ||
+        (resolved.unselected.visual_flags & ~supported_flags) != 0)
     {
         log_error("unsupported selection visual style flags");
         return -1;
@@ -1850,6 +1944,18 @@ void dvz_selection_copy(
 /*  Hover                                                                                        */
 /*************************************************************************************************/
 
+DvzHoverDesc dvz_hover_desc(void)
+{
+    return (DvzHoverDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzHoverDesc),
+        .target = DVZ_SCENE_TARGET_ITEM,
+        .hit_policy = DVZ_QUERY_HIT_FRONTMOST,
+        .hover_flags = 0,
+    };
+}
+
+
+
 /**
  * Create a retained scene-owned hover object.
  *
@@ -1860,6 +1966,8 @@ void dvz_selection_copy(
 DvzHover* dvz_hover(DvzScene* scene, const DvzHoverDesc* desc)
 {
     ANN(scene);
+    if (!_hover_desc_validate(desc))
+        return NULL;
     if (scene->hover_count >= DVZ_SCENE_MAX_HOVERS)
     {
         log_error("maximum hover count reached");
@@ -1868,7 +1976,7 @@ DvzHover* dvz_hover(DvzScene* scene, const DvzHoverDesc* desc)
     DvzHover* hover = &scene->hovers[scene->hover_count++];
     dvz_memset(hover, sizeof(DvzHover), 0, sizeof(DvzHover));
     hover->scene = scene;
-    hover->desc = desc != NULL ? *desc : (DvzHoverDesc){.target = DVZ_SCENE_TARGET_ITEM};
+    hover->desc = desc != NULL ? *desc : dvz_hover_desc();
     if (hover->desc.hit_policy == 0)
         hover->desc.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
     hover->visual_style = dvz_item_state_visual_style();
@@ -1931,10 +2039,12 @@ void dvz_hover_clear(DvzHover* hover)
 int dvz_hover_set_visual_style(DvzHover* hover, const DvzItemStateVisualStyle* style)
 {
     ANN(hover);
+    if (!_item_state_visual_style_abi_validate(style))
+        return -1;
     DvzItemStateVisualStyle resolved = style != NULL ? *style : dvz_item_state_visual_style();
     const uint32_t supported_flags =
         DVZ_ITEM_STATE_VISUAL_ALPHA | DVZ_ITEM_STATE_VISUAL_TINT | DVZ_ITEM_STATE_VISUAL_SCALE;
-    if ((resolved.flags & ~supported_flags) != 0)
+    if ((resolved.visual_flags & ~supported_flags) != 0)
     {
         log_error("unsupported hover visual style flags");
         return -1;
@@ -1998,6 +2108,7 @@ int dvz_hover_apply_query(DvzHover* hover, const DvzQueryResult* query)
 DvzItemInteractionDesc dvz_item_interaction_desc(void)
 {
     return (DvzItemInteractionDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzItemInteractionDesc),
         .hover_enabled = true,
         .selection_enabled = true,
         .select_mode = DVZ_SELECT_TOGGLE,
@@ -2020,6 +2131,8 @@ DvzItemInteractionDesc dvz_item_interaction_desc(void)
 DvzItemInteraction* dvz_item_interaction(DvzPanel* panel, const DvzItemInteractionDesc* desc)
 {
     ANN(panel);
+    if (!_item_interaction_desc_validate(desc))
+        return NULL;
     if (panel->figure == NULL || panel->figure->scene == NULL)
         return NULL;
     if (panel->item_interaction != NULL && panel->item_interaction->active)
@@ -2057,9 +2170,10 @@ DvzItemInteraction* dvz_item_interaction(DvzPanel* panel, const DvzItemInteracti
         }
         else
         {
-            interaction->hover = dvz_hover(
-                scene,
-                &(DvzHoverDesc){.target = resolved.target, .hit_policy = resolved.hit_policy});
+            DvzHoverDesc hover_desc = dvz_hover_desc();
+            hover_desc.target = resolved.target;
+            hover_desc.hit_policy = resolved.hit_policy;
+            interaction->hover = dvz_hover(scene, &hover_desc);
             interaction->owns_hover = interaction->hover != NULL;
         }
         if (interaction->hover == NULL)
@@ -2085,9 +2199,10 @@ DvzItemInteraction* dvz_item_interaction(DvzPanel* panel, const DvzItemInteracti
         }
         else
         {
-            interaction->selection = dvz_selection(
-                scene,
-                &(DvzSelectionDesc){.mode = resolved.select_mode, .target = resolved.target});
+            DvzSelectionDesc selection_desc = dvz_selection_desc();
+            selection_desc.mode = resolved.select_mode;
+            selection_desc.target = resolved.target;
+            interaction->selection = dvz_selection(scene, &selection_desc);
             interaction->owns_selection = interaction->selection != NULL;
         }
         if (interaction->selection == NULL)

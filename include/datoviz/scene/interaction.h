@@ -150,6 +150,14 @@ DVZ_EXPORT void dvz_link_channel_destroy(DvzLinkChannel* channel);
 /*************************************************************************************************/
 
 /**
+ * Return the default selection descriptor.
+ *
+ * @return the default selection descriptor
+ */
+DVZ_EXPORT DvzSelectionDesc dvz_selection_desc(void);
+
+
+/**
  * Return the default item-state visual style.
  *
  * @return the default item-state visual style
@@ -242,6 +250,14 @@ DVZ_EXPORT void dvz_selection_copy(
 /*************************************************************************************************/
 /*  Hover                                                                                        */
 /*************************************************************************************************/
+
+/**
+ * Return the default hover descriptor.
+ *
+ * @return the default hover descriptor
+ */
+DVZ_EXPORT DvzHoverDesc dvz_hover_desc(void);
+
 
 /**
  * Create a retained hover object.

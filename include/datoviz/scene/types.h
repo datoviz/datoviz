@@ -641,16 +641,20 @@ typedef struct DvzFormatDesc DvzFormatDesc;
 
 struct DvzSelectionDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzSelectMode mode;
     DvzSceneTargetKind target;
-    uint32_t flags;
+    uint32_t selection_flags;
 };
 typedef struct DvzSelectionDesc DvzSelectionDesc;
 
 
 struct DvzItemStateVisualStyle
 {
+    uint32_t struct_size;
     uint32_t flags;
+    uint32_t visual_flags;
     float alpha;
     DvzColor tint;
     float tint_mix;
@@ -661,6 +665,8 @@ typedef struct DvzItemStateVisualStyle DvzItemStateVisualStyle;
 
 struct DvzSelectionVisualStyle
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzItemStateVisualStyle selected;
     DvzItemStateVisualStyle unselected;
 };
@@ -669,15 +675,19 @@ typedef struct DvzSelectionVisualStyle DvzSelectionVisualStyle;
 
 struct DvzHoverDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzSceneTargetKind target;
     DvzQueryHitPolicy hit_policy;
-    uint32_t flags;
+    uint32_t hover_flags;
 };
 typedef struct DvzHoverDesc DvzHoverDesc;
 
 
 struct DvzItemInteractionDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzHover* hover;
     DvzSelection* selection;
     bool hover_enabled;

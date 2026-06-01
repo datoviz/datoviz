@@ -685,6 +685,7 @@ dvz_gui_viewport_window
 dvz_hover
 dvz_hover_apply_query
 dvz_hover_clear
+dvz_hover_desc
 dvz_hover_destroy
 dvz_hover_set_visual_style
 dvz_image
@@ -1089,6 +1090,7 @@ dvz_selection_apply_query
 dvz_selection_clear
 dvz_selection_copy
 dvz_selection_count
+dvz_selection_desc
 dvz_selection_destroy
 dvz_selection_set_visual_style
 dvz_selection_visual_style

@@ -49,6 +49,11 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzPointStyleDesc` | `dvz_point_style_desc()` |
 | `DvzVectorStyle` | `dvz_vector_style()` |
 | `DvzMarkerStyle` | `dvz_marker_style()` |
+| `DvzSelectionDesc` | `dvz_selection_desc()` |
+| `DvzHoverDesc` | `dvz_hover_desc()` |
+| `DvzItemStateVisualStyle` | `dvz_item_state_visual_style()` |
+| `DvzSelectionVisualStyle` | `dvz_selection_visual_style()` |
+| `DvzItemInteractionDesc` | `dvz_item_interaction_desc()` |
 
 
 ## Should Add Before API Freeze
@@ -59,8 +64,7 @@ and likely to grow or gain flags after v0.4:
 | Area | Structs | Public consumers |
 | --- | --- | --- |
 | Scene techniques | `DvzCapabilitySnapshot` | capability-aware setup paths |
-| Visual styles/materials | `DvzVisualDataView`, `DvzItemStateVisualStyle`, `DvzSelectionVisualStyle` | data-view setters, selection/item state helpers |
-| Interaction | `DvzSelectionDesc`, `DvzHoverDesc`, `DvzItemInteractionDesc` | `dvz_selection()`, `dvz_hover()`, `dvz_item_interaction()` |
+| Visual styles/materials | `DvzVisualDataView` | data-view setters |
 | Scales and guides | `DvzScaleDesc`, `DvzColormapDesc`, `DvzColorbarDesc`, `DvzLegendDesc`, `DvzFormatDesc`, `DvzAxisTickPolicy`, `DvzAxisStyle` | `dvz_scale()`, `dvz_colormap()`, `dvz_colorbar()`, `dvz_legend()`, format and axis setters |
 | Text and annotations | `DvzFontDesc`, `DvzFontDefaults`, `DvzTextStyle`, `DvzTextPlacement`, `DvzAnnotationDesc`, `DvzLabelDesc`, `DvzScaleBarDesc` | `dvz_font()`, `dvz_scene_set_font_defaults()`, text/annotation/label/scalebar creation and setters |
 | Fields | `DvzFieldGeometry`, `DvzFieldDataView` | sampled field geometry and data-view setters |

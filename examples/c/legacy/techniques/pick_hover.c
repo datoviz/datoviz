@@ -96,7 +96,7 @@ int main(int argc, char** argv)
     DvzItemInteraction* pick = dvz_item_interaction(panel, NULL);
     EXAMPLE_CHECK(pick != NULL, "dvz_item_interaction() failed");
     DvzItemStateVisualStyle hover_style = dvz_item_state_visual_style();
-    hover_style.flags = DVZ_ITEM_STATE_VISUAL_SCALE;
+    hover_style.visual_flags = DVZ_ITEM_STATE_VISUAL_SCALE;
     hover_style.scale = HOVER_SIZE / BASE_SIZE;
     rc = dvz_hover_set_visual_style(dvz_item_interaction_hover(pick), &hover_style);
     EXAMPLE_CHECK(rc == 0, "dvz_hover_set_visual_style() failed");
