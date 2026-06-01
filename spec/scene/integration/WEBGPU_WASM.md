@@ -284,9 +284,11 @@ Current evidence as of 2026-05-30:
    errors occur.
 
 The supported browser-scene subset now covers point, primitive triangle-list, RGBA8 image, basic
-mesh, panzoom, and a first 3D mesh + arcball scene. The next release-proofing gaps are further
-diagnostic ABI behavior, incremental uniform updates, direct payload transport, browser app examples,
-and then broader visual/technique parity.
+mesh, panzoom, and a first 3D mesh + arcball scene. The browser wrapper passes normalized WebGPU
+limits into the WASM scene emitter before figure creation, and the old direct browser-side panzoom
+uniform mutation path has been retired from the release-visible demos. The next release-proofing
+gaps are further diagnostic ABI behavior, direct payload transport, browser app examples, and then
+broader visual/technique parity.
 
 ### Experimental WASM Scene ABI
 
@@ -297,7 +299,7 @@ The `src/wasm/scene_api.c` API is an unstable experimental ABI for the browser d
 2. `dvz_wasm_api_payload_ptr()` and `dvz_wasm_api_payload_size()` expose a borrowed UTF-8 JSON
    payload valid only until the next bridge call on the same handle or `dvz_wasm_api_scene_destroy()`;
 3. JavaScript must copy or decode the payload before calling resize, pointer, wheel, data-upload,
-   emit, canvas-format, or destroy functions again;
+   emit, canvas-format, capability, or destroy functions again;
 4. diagnostics returned by `dvz_wasm_api_diagnostic()` are borrowed strings with the same lifetime
    as the current diagnostic report, valid only until the next bridge call on the same handle or
    destroy;
@@ -305,9 +307,12 @@ The `src/wasm/scene_api.c` API is an unstable experimental ABI for the browser d
    non-empty diagnostics where the scene/DRP2 layer can explain the failure;
 6. the supported browser canvas formats are `rgba8unorm` and `bgra8unorm`, mapped to
    `DVZ_FORMAT_R8G8B8A8_UNORM` and `DVZ_FORMAT_B8G8R8A8_UNORM`;
-7. resize arguments are framebuffer pixel width/height plus device scale; the bridge derives logical
+7. `dvz_wasm_api_set_capabilities()` accepts browser-normalized texture dimension, bind-group,
+   vertex-buffer, buffer-size, texture-copy alignment, and sample-count limits used by scene
+   emission;
+8. resize arguments are framebuffer pixel width/height plus device scale; the bridge derives logical
    window size for the scene input router;
-8. pointer and wheel positions are CSS-pixel canvas coordinates plus content scale, so high-DPI
+9. pointer and wheel positions are CSS-pixel canvas coordinates plus content scale, so high-DPI
    browsers keep controller math in the scene layer while still using framebuffer-sized targets.
 
 ## Validation Matrix

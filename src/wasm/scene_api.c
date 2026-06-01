@@ -81,6 +81,7 @@ struct DvzWasmApiScene
     DvzDrp2CommandStream* stream;
     DvzInputRouter* router;
     DvzPointerGestureHandler* gestures;
+    DvzCapabilitySnapshot caps;
     char* json;
     DvzDiagnosticReport report;
     void* wrappers[DVZ_WASM_API_MAX_WRAPPERS];
@@ -208,6 +209,9 @@ uint32_t dvz_wasm_api_scene(uint32_t width, uint32_t height)
     if (scene == NULL)
         return 0;
     dvz_diagnostic_report_init(&scene->report);
+    dvz_capability_snapshot_default(&scene->caps);
+    scene->caps.shader_format_wgsl = true;
+    scene->caps.shader_format_glsl = false;
     scene->width = width;
     scene->height = height;
     scene->color_format = DVZ_FORMAT_R8G8B8A8_UNORM;
@@ -622,6 +626,36 @@ int dvz_wasm_api_set_canvas_format(uint32_t scene_handle, uint32_t color_format)
 
 
 EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_set_capabilities(
+    uint32_t scene_handle, uint32_t max_texture_dimension_2d, uint32_t max_bind_groups,
+    uint32_t max_vertex_buffers, uint32_t max_buffer_size,
+    uint32_t min_texture_copy_bytes_per_row_alignment, uint32_t max_sample_count)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    if (scene == NULL)
+        return -1;
+    if (
+        max_texture_dimension_2d == 0 || max_bind_groups == 0 || max_vertex_buffers == 0 ||
+        max_buffer_size == 0 || min_texture_copy_bytes_per_row_alignment == 0 ||
+        max_sample_count == 0)
+    {
+        return _fail(scene, "invalid WASM capability snapshot");
+    }
+    _clear_payload(scene);
+    scene->caps.max_texture_dimension_2d = max_texture_dimension_2d;
+    scene->caps.max_bind_groups = max_bind_groups;
+    scene->caps.max_vertex_buffers = max_vertex_buffers;
+    scene->caps.max_buffer_size = max_buffer_size;
+    scene->caps.max_color_sample_count = max_sample_count;
+    scene->caps.max_depth_sample_count = max_sample_count;
+    scene->caps.min_texture_copy_bytes_per_row_alignment =
+        min_texture_copy_bytes_per_row_alignment;
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
 int dvz_wasm_api_emit(uint32_t scene_handle, uint32_t figure_handle)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
@@ -629,14 +663,6 @@ int dvz_wasm_api_emit(uint32_t scene_handle, uint32_t figure_handle)
     if (scene == NULL || figure == NULL || figure->owner != scene || figure->figure == NULL)
         return _fail(scene, "invalid WASM emit request");
     _clear_payload(scene);
-
-    DvzCapabilitySnapshot caps;
-    dvz_capability_snapshot_default(&caps);
-    caps.shader_format_wgsl = true;
-    caps.shader_format_glsl = false;
-    caps.max_vertex_buffers = 16;
-    caps.max_bind_groups = 4;
-    caps.max_buffer_size = 256u * 1024u * 1024u;
 
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
@@ -646,7 +672,7 @@ int dvz_wasm_api_emit(uint32_t scene_handle, uint32_t figure_handle)
     emit_cfg.target_width = scene->width;
     emit_cfg.target_height = scene->height;
 
-    scene->stream = dvz_figure_emit_ex(figure->figure, &caps, &scene->report, &emit_cfg);
+    scene->stream = dvz_figure_emit_ex(figure->figure, &scene->caps, &scene->report, &emit_cfg);
     if (scene->stream == NULL)
     {
         if (dvz_diagnostic_report_count(&scene->report) == 0)

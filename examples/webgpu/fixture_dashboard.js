@@ -25,7 +25,6 @@ const STRESS_STREAMS = [
   { name: "runtime repeat: attachment_depth_wgsl", path: "./streams/attachment_depth_wgsl.json" },
 ];
 const DEMO_STRESS_CHECKS = [
-  { name: "demo path: panzoom uniform updates", fn: runDemoPanzoomStress },
   { name: "demo path: resize reload", fn: runDemoResizeStress },
   { name: "demo path: stream reload", fn: runDemoStreamReloadStress },
 ];
@@ -238,31 +237,6 @@ async function runStressRow(row) {
   } catch (error) {
     setStressStatus(row, "fail", errorDetail(error));
   }
-}
-
-
-
-async function runDemoPanzoomStress(row) {
-  const session = await createDemoSession("scene_point_panzoom_wgsl");
-  const stableStats = comparableResourceStats(session.resourceStats());
-  const states = [
-    { zoomX: 1.2, zoomY: 1.1, offsetX: 0.05, offsetY: -0.04 },
-    { zoomX: 1.8, zoomY: 1.4, offsetX: -0.12, offsetY: 0.08 },
-    { zoomX: 0.7, zoomY: 0.9, offsetX: 0.18, offsetY: 0.13 },
-    { zoomX: 1.0, zoomY: 1.0, offsetX: 0.0, offsetY: 0.0 },
-  ];
-  for (let i = 0; i < states.length; i++) {
-    session.setPanzoom(states[i]);
-    await session.render();
-    const stats = session.resourceStats();
-    assertResourceStatsStable(
-      comparableResourceStats(stats),
-      stableStats,
-      `${row.name} frame ${i + 1}`,
-    );
-    assertNoOpenRecordedRefs(stats, `${row.name} frame ${i + 1}`);
-  }
-  setStressStatus(row, "pass", stressDetail(session.resourceStats(), states.length));
 }
 
 

@@ -420,22 +420,6 @@ async function smokeDemoPath(WebGpuDemoSession) {
     'demo resize reload changed point resource stats',
   );
 
-  const panzoomStream = await loadJson('examples/webgpu/streams/scene_point_wgsl.json');
-  await session.loadStreamObject('scene_point_panzoom_wgsl', panzoomStream);
-  const panzoomStats = comparableResourceStats(session.resourceStats());
-  for (const state of [
-    { zoomX: 1.2, zoomY: 1.1, offsetX: 0.05, offsetY: -0.04 },
-    { zoomX: 0.7, zoomY: 0.9, offsetX: -0.11, offsetY: 0.08 },
-  ]) {
-    session.setPanzoom(state);
-    await session.render();
-    assertResourceStatsStable(
-      comparableResourceStats(session.resourceStats()),
-      panzoomStats,
-      'demo panzoom update changed resource stats',
-    );
-  }
-
   const textureStream = await loadJson('examples/webgpu/streams/texture_sampling_wgsl.json');
   await session.loadStreamObject('texture_sampling_wgsl', textureStream);
   await session.render();

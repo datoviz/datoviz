@@ -209,9 +209,9 @@ forms. The fixture dashboard requires explicit bind-group layout and render-pipe
   because WebGPU requires copy row pitch to be a multiple of 256 bytes.
 - Buffer binding offsets must be WebGPU-aligned in the browser runner. DRP2 streams that use
   non-aligned offsets are rejected explicitly instead of silently binding a different range.
-- The live pan/zoom dropdown entry reuses the scene-generated point stream and discovers its MVP and
-  viewport uniform buffers from `metadata.datoviz.interactive_uniforms.panzoom`. This metadata is
-  browser-demo metadata; it is not an executable DRP2 command.
+- The old live pan/zoom dropdown path has been retired. Release-visible browser interaction now
+  goes through the generic WASM scene ABI, which routes DOM input to scene controllers and replays
+  scene-emitted DRP2 update streams.
 - Bind-group layout `visibility`, storage `access`, render-pipeline `vertex_buffers`, and
   render-pipeline `color_targets` are required by the fixture dashboard and present in committed
   browser streams. Shader input vertex-buffer inference is limited to the explicit
@@ -221,8 +221,8 @@ forms. The fixture dashboard requires explicit bind-group layout and render-pipe
   `10` repeated frames through `Drp2WebGpuRuntime`, and checks stable resource counts with no open
   or recorded references after every frame.
 - The fixture dashboard demo-path stress rows drive the same `WebGpuDemoSession` used by the main
-  demo page through pan/zoom uniform updates, resize-triggered reload, and stream reload while
-  checking stable persistent resource counts and no open or recorded references.
+  demo page through resize-triggered reload and stream reload while checking stable persistent
+  resource counts and no open or recorded references.
 - Destroy commands validate live-object dependencies, use-after-destroy, recorded-work references,
   and submitted-work references. The runner calls native WebGPU `destroy()` only for object types
   that expose it and otherwise tombstones the DRP2 object id.

@@ -75,7 +75,6 @@ The earlier smoke streams remain available:
 
 ```text
 http://localhost:8765/examples/webgpu/?stream=mesh_dvzr_wgsl
-http://localhost:8765/examples/webgpu/?stream=scene_point_panzoom_wgsl
 http://localhost:8765/examples/webgpu/?stream=triangle_wgsl
 http://localhost:8765/examples/webgpu/?stream=triangle_vertex_buffer_wgsl
 http://localhost:8765/examples/webgpu/?stream=triangle_offscreen_readback_wgsl
@@ -146,12 +145,10 @@ Manual checks:
 - Depth stream: the smaller green triangle must appear in front of the larger red triangle where
   they overlap.
 - Scene points stream: the canvas should show five circular points emitted as instanced quads.
-- Scene points pan/zoom stream: left-drag the canvas to pan, right-drag for anisotropic X/Y zoom,
-  use the wheel for isotropic zoom around the cursor, and double-click to reset the view.
 - Offscreen readback stream: the status line should include `readback nonzero=` with a nonzero value.
 - No-buffer and vertex-buffer streams should still render a single RGB triangle.
 
-The main page keeps the WebGPU runtime resources alive after loading a stream. The live pan/zoom
-example discovers the scene MVP and viewport uniform buffers from stream metadata, updates those
-uniforms, and replays the DRP2 frame command slice, so the browser path still exercises the
-scene-generated DRP2 contract instead of a separate renderer API.
+The main page keeps the WebGPU runtime resources alive after loading a stream and replays the DRP2
+frame command slice. Browser interaction for the release-visible scene path is exercised by
+`wasm_scene.html` and `wasm_scene_3d.html`, where DOM input is routed through the generic WASM scene
+ABI and emitted DRP2 update streams.

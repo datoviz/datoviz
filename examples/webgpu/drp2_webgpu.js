@@ -2,7 +2,6 @@ const statusEl = document.querySelector("#status");
 const canvas = document.querySelector("#viewport");
 const streamNameEl = document.querySelector("#stream-name");
 const streamSelectEl = document.querySelector("#stream-select");
-const interactionHelpEl = document.querySelector("#interaction-help");
 const playToggleEl = document.querySelector("#play-toggle");
 const frameInfoEl = document.querySelector("#frame-info");
 
@@ -11,14 +10,6 @@ const BROWSER_CANVAS_FORMAT_ALIAS = "canvas";
 const BROWSER_CANVAS_EXTENT_ALIAS = "canvas";
 
 export const STREAMS = [
-  {
-    name: "scene_point_panzoom_wgsl",
-    label: "Scene points pan/zoom",
-    source: "scene_point_wgsl",
-    interactive: {
-      type: "panzoom",
-    },
-  },
   { name: "scene_primitive_wgsl", label: "Scene primitive (WGSL)" },
   { name: "scene_point_wgsl", label: "Scene points (WGSL)" },
   { name: "attachment_multi_color_wgsl", label: "Attachment validation (multi-color)" },
@@ -88,38 +79,6 @@ function isBrowserCanvasFormatAlias(format) {
 
 function isBrowserCanvasExtentAlias(value) {
   return value === BROWSER_CANVAS_EXTENT_ALIAS;
-}
-
-
-
-function streamPanzoomUniformTargets(stream) {
-  const panzoom = stream?.metadata?.datoviz?.interactive_uniforms?.panzoom;
-  if (panzoom === undefined || panzoom === null) {
-    return null;
-  }
-  return {
-    mvpBufferId: required(panzoom.mvp_buffer_id, "panzoom metadata needs mvp_buffer_id"),
-    viewportBufferId: required(
-      panzoom.viewport_buffer_id,
-      "panzoom metadata needs viewport_buffer_id",
-    ),
-  };
-}
-
-
-
-function resolveInteractiveConfig(config, stream) {
-  if (config?.interactive?.type !== "panzoom") {
-    return config?.interactive ?? null;
-  }
-  const targets = streamPanzoomUniformTargets(stream);
-  if (targets === null) {
-    throw new Error("panzoom stream metadata missing interactive uniform targets");
-  }
-  return {
-    ...config.interactive,
-    ...targets,
-  };
 }
 
 
@@ -420,14 +379,27 @@ function supportedTextureFormats(canvasFormat) {
 function runtimeCapabilities(device, canvasFormat, adapter = null) {
   const limits = device?.limits ?? adapter?.limits ?? {};
   const maxTextureDimension2d = limits.maxTextureDimension2D ?? limits.maxTextureDimension2d;
+  const maxBindGroups = limits.maxBindGroups;
+  const maxVertexBuffers = limits.maxVertexBuffers;
+  const maxBufferSize = limits.maxBufferSize;
   const capabilities = {
     supported_shader_formats: ["wgsl"],
     supported_texture_formats: supportedTextureFormats(canvasFormat),
     supported_sample_counts: [1, 4],
     supports_fp64: false,
+    min_texture_copy_bytes_per_row_alignment: 256,
   };
   if (Number.isFinite(maxTextureDimension2d)) {
     capabilities.max_texture_dimension_2d = maxTextureDimension2d;
+  }
+  if (Number.isFinite(maxBindGroups)) {
+    capabilities.max_bind_groups = maxBindGroups;
+  }
+  if (Number.isFinite(maxVertexBuffers)) {
+    capabilities.max_vertex_buffers = maxVertexBuffers;
+  }
+  if (Number.isFinite(maxBufferSize)) {
+    capabilities.max_buffer_size = maxBufferSize;
   }
   return capabilities;
 }
@@ -1384,225 +1356,6 @@ export function resizeWebGpuCanvas(device, context, format) {
 
 
 
-function identityMat4() {
-  const mat = new Float32Array(16);
-  mat[0] = 1;
-  mat[5] = 1;
-  mat[10] = 1;
-  mat[15] = 1;
-  return mat;
-}
-
-
-
-function panzoomProjMat4(zoomX, zoomY, offsetX, offsetY) {
-  const mat = identityMat4();
-  mat[0] = zoomX;
-  mat[5] = zoomY;
-  mat[12] = offsetX;
-  mat[13] = offsetY;
-  return mat;
-}
-
-
-
-function mvpUniformBytes(zoomX, zoomY, offsetX, offsetY) {
-  const buffer = new ArrayBuffer(208);
-  const f32 = new Float32Array(buffer);
-  f32.set(identityMat4(), 0);
-  f32.set(identityMat4(), 16);
-  f32.set(panzoomProjMat4(zoomX, zoomY, offsetX, offsetY), 32);
-  return new Uint8Array(buffer);
-}
-
-
-
-function viewportUniformBytes() {
-  return new Uint8Array(new Float32Array([0, 0, canvas.width, canvas.height]).buffer);
-}
-
-
-
-function defaultPanzoomState() {
-  return {
-    zoomX: 1,
-    zoomY: 1,
-    offsetX: 0,
-    offsetY: 0,
-  };
-}
-
-
-
-function writePanzoomUniforms(runtime, config, state) {
-  runtime.writeBuffer(
-    config.mvpBufferId,
-    0,
-    mvpUniformBytes(state.zoomX, state.zoomY, state.offsetX, state.offsetY),
-  );
-  runtime.writeBuffer(config.viewportBufferId, 0, viewportUniformBytes());
-}
-
-
-
-function clamp(value, minValue, maxValue) {
-  return Math.min(maxValue, Math.max(minValue, value));
-}
-
-
-
-function eventNdc(event) {
-  const rect = canvas.getBoundingClientRect();
-  const x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
-  const y = 1 - ((event.clientY - rect.top) / Math.max(1, rect.height)) * 2;
-  return { x, y };
-}
-
-
-
-class PanzoomInteraction {
-  constructor(config, requestRender) {
-    this.config = config;
-    this.requestRender = requestRender;
-    this.zoomX = 1;
-    this.zoomY = 1;
-    this.offsetX = 0;
-    this.offsetY = 0;
-    this.dragging = false;
-    this.dragButton = -1;
-    this.lastX = 0;
-    this.lastY = 0;
-    this.pressX = 0;
-    this.pressY = 0;
-    this.pressNdcX = 0;
-    this.pressNdcY = 0;
-    this.pressZoomX = 1;
-    this.pressZoomY = 1;
-    this.pressOffsetX = 0;
-    this.pressOffsetY = 0;
-
-    this.onPointerDown = this.onPointerDown.bind(this);
-    this.onPointerMove = this.onPointerMove.bind(this);
-    this.onPointerUp = this.onPointerUp.bind(this);
-    this.onWheel = this.onWheel.bind(this);
-    this.onDoubleClick = this.onDoubleClick.bind(this);
-    this.onContextMenu = this.onContextMenu.bind(this);
-
-    canvas.addEventListener("pointerdown", this.onPointerDown);
-    canvas.addEventListener("pointermove", this.onPointerMove);
-    canvas.addEventListener("pointerup", this.onPointerUp);
-    canvas.addEventListener("pointercancel", this.onPointerUp);
-    canvas.addEventListener("wheel", this.onWheel, { passive: false });
-    canvas.addEventListener("dblclick", this.onDoubleClick);
-    canvas.addEventListener("contextmenu", this.onContextMenu);
-  }
-
-  destroy() {
-    canvas.removeEventListener("pointerdown", this.onPointerDown);
-    canvas.removeEventListener("pointermove", this.onPointerMove);
-    canvas.removeEventListener("pointerup", this.onPointerUp);
-    canvas.removeEventListener("pointercancel", this.onPointerUp);
-    canvas.removeEventListener("wheel", this.onWheel);
-    canvas.removeEventListener("dblclick", this.onDoubleClick);
-    canvas.removeEventListener("contextmenu", this.onContextMenu);
-  }
-
-  reset() {
-    this.zoomX = 1;
-    this.zoomY = 1;
-    this.offsetX = 0;
-    this.offsetY = 0;
-    this.requestRender();
-  }
-
-  onPointerDown(event) {
-    if (event.button !== 0 && event.button !== 2) {
-      return;
-    }
-    this.dragging = true;
-    this.dragButton = event.button;
-    this.lastX = event.clientX;
-    this.lastY = event.clientY;
-    this.pressX = event.clientX;
-    this.pressY = event.clientY;
-    const ndc = eventNdc(event);
-    this.pressNdcX = ndc.x;
-    this.pressNdcY = ndc.y;
-    this.pressZoomX = this.zoomX;
-    this.pressZoomY = this.zoomY;
-    this.pressOffsetX = this.offsetX;
-    this.pressOffsetY = this.offsetY;
-    canvas.setPointerCapture(event.pointerId);
-  }
-
-  onPointerMove(event) {
-    if (!this.dragging) {
-      return;
-    }
-    const rect = canvas.getBoundingClientRect();
-    const dx = event.clientX - this.lastX;
-    const dy = event.clientY - this.lastY;
-    this.lastX = event.clientX;
-    this.lastY = event.clientY;
-    if (this.dragButton === 0) {
-      this.offsetX += (2 * dx) / Math.max(1, rect.width);
-      this.offsetY -= (2 * dy) / Math.max(1, rect.height);
-    } else if (this.dragButton === 2) {
-      const shiftX = 2 * (event.clientX - this.pressX) / Math.max(1, rect.width);
-      const shiftY = -2 * (event.clientY - this.pressY) / Math.max(1, rect.height);
-      const factorX = Math.exp(2.5 * shiftX);
-      const factorY = Math.exp(2.5 * shiftY);
-      this.zoomX = clamp(this.pressZoomX * factorX, 0.05, 100);
-      this.zoomY = clamp(this.pressZoomY * factorY, 0.05, 100);
-      const ratioX = this.zoomX / this.pressZoomX;
-      const ratioY = this.zoomY / this.pressZoomY;
-      this.offsetX = this.pressNdcX - (this.pressNdcX - this.pressOffsetX) * ratioX;
-      this.offsetY = this.pressNdcY - (this.pressNdcY - this.pressOffsetY) * ratioY;
-    }
-    this.requestRender();
-  }
-
-  onPointerUp(event) {
-    if (!this.dragging) {
-      return;
-    }
-    this.dragging = false;
-    this.dragButton = -1;
-    if (canvas.hasPointerCapture(event.pointerId)) {
-      canvas.releasePointerCapture(event.pointerId);
-    }
-  }
-
-  onWheel(event) {
-    event.preventDefault();
-    const ndc = eventNdc(event);
-    const oldZoomX = this.zoomX;
-    const oldZoomY = this.zoomY;
-    const factor = Math.exp(-event.deltaY * 0.0015);
-    this.zoomX = clamp(this.zoomX * factor, 0.05, 100);
-    this.zoomY = clamp(this.zoomY * factor, 0.05, 100);
-    const ratioX = this.zoomX / oldZoomX;
-    const ratioY = this.zoomY / oldZoomY;
-    this.offsetX = ndc.x - (ndc.x - this.offsetX) * ratioX;
-    this.offsetY = ndc.y - (ndc.y - this.offsetY) * ratioY;
-    this.requestRender();
-  }
-
-  onDoubleClick() {
-    this.reset();
-  }
-
-  onContextMenu(event) {
-    event.preventDefault();
-  }
-
-  beforeRender(runtime) {
-    writePanzoomUniforms(runtime, this.config, this);
-  }
-}
-
-
-
 export async function initWebGPU() {
   if (!navigator.gpu) {
     throw new Error("WebGPU is not available in this browser");
@@ -2207,12 +1960,6 @@ export class Drp2WebGpuRuntime {
     );
   }
 
-  writeBuffer(bufferId, offset, bytes) {
-    requireLiveRecord(this.state, bufferId, "buffer");
-    const buffer = required(this.state.buffers.get(bufferId), `unknown buffer ${bufferId}`);
-    this.device.queue.writeBuffer(buffer, offset, bytes, 0, bytes.byteLength);
-  }
-
   resourceStats() {
     return resourceStats(this.state);
   }
@@ -2241,7 +1988,6 @@ export class WebGpuDemoSession {
     this.stream = null;
     this.runtime = null;
     this.frameIndex = 0;
-    this.panzoom = defaultPanzoomState();
   }
 
   async loadStream(name) {
@@ -2253,13 +1999,6 @@ export class WebGpuDemoSession {
 
   async loadStreamObject(name, stream) {
     this.config = streamConfigByName(name);
-    const interactive = resolveInteractiveConfig(this.config, stream);
-    if (interactive !== null) {
-      this.config = {
-        ...this.config,
-        interactive,
-      };
-    }
     this.streamName = this.config.name;
     this.stream = stream;
     this.runtime = new Drp2WebGpuRuntime(
@@ -2274,7 +2013,6 @@ export class WebGpuDemoSession {
     applyStreamCanvasAspect(stream);
     await this.runtime.load(stream);
     this.frameIndex = 0;
-    this.panzoom = defaultPanzoomState();
     return this;
   }
 
@@ -2293,10 +2031,6 @@ export class WebGpuDemoSession {
     return Number(this.runtime?.frames?.[index]?.t ?? 0);
   }
 
-  setPanzoom(state) {
-    this.panzoom = { ...this.panzoom, ...state };
-  }
-
   resize() {
     return resizeCanvasToDisplaySize(this.device, this.context, this.canvasFormat);
   }
@@ -2308,13 +2042,6 @@ export class WebGpuDemoSession {
     const resized = options.resize === false ? false : this.resize();
     if (resized && options.reloadOnResize !== false && this.config?.interactive === undefined) {
       await this.runtime.load(this.stream);
-    }
-    if (this.config?.interactive?.type === "panzoom" && options.panzoom !== false) {
-      writePanzoomUniforms(
-        this.runtime,
-        this.config.interactive,
-        options.panzoom ?? this.panzoom,
-      );
     }
     if (typeof options.beforeRender === "function") {
       options.beforeRender(this.runtime);
@@ -3397,7 +3124,6 @@ async function main() {
     let streamConfig = streamConfigByName(streamName);
     let runtime = null;
     let session = null;
-    let interaction = null;
     let frameIndex = 0;
     let playing = false;
     let playbackRequest = 0;
@@ -3411,22 +3137,6 @@ async function main() {
     }
     streamName = streamConfig.name;
     streamSelectEl.value = streamName;
-
-    const configureInteraction = (config) => {
-      if (interaction !== null) {
-        interaction.destroy();
-        interaction = null;
-      }
-      if (config.interactive?.type === "panzoom") {
-        interaction = new PanzoomInteraction(config.interactive, () => {
-          render().catch((error) => setStatus(error.message, true));
-        });
-        interactionHelpEl.textContent =
-          "left-drag to pan, right-drag/wheel to zoom, double-click to reset";
-      } else {
-        interactionHelpEl.textContent = "";
-      }
-    };
 
     const frameCount = () => session?.frameCount() ?? 0;
 
@@ -3454,7 +3164,7 @@ async function main() {
 
     const updatePlaybackUi = () => {
       const count = frameCount();
-      playToggleEl.disabled = count <= 1 || interaction !== null;
+      playToggleEl.disabled = count <= 1;
       playToggleEl.textContent = playing ? "Pause" : "Play";
       frameInfoEl.textContent = count > 0 ? `${frameIndex + 1}/${count}` : "0/0";
     };
@@ -3479,7 +3189,6 @@ async function main() {
       streamName = session.streamName;
       const streamPath = `./streams/${streamSourceName(streamConfig)}.json`;
       streamNameEl.textContent = streamPath.slice(2);
-      configureInteraction(streamConfig);
       frameIndex = 0;
       stopPlayback();
       updatePlaybackUi();
@@ -3507,11 +3216,7 @@ async function main() {
           const count = frameCount();
           const result = await session.render({
             frameIndex: count > 0 ? frameIndex : null,
-            panzoom: false,
-            beforeRender: interaction !== null ? (activeRuntime) => {
-              interaction.beforeRender(activeRuntime);
-            } : null,
-            reloadOnResize: interaction === null,
+            reloadOnResize: true,
           });
           runtime = session.runtime;
           if (result.readbacks.length > 0) {
@@ -3520,9 +3225,8 @@ async function main() {
               `Rendered ${stream.name}; readback nonzero=${readback.summary.nonzero}`,
             );
           } else {
-            const suffix = interaction !== null ? "; pan/zoom active" : "";
             const frameSuffix = count > 0 ? `; frame=${frameIndex + 1}/${count}` : "";
-            setStatus(`Rendered ${streamName}; readbacks=0${frameSuffix}${suffix}`);
+            setStatus(`Rendered ${streamName}; readbacks=0${frameSuffix}`);
           }
           updatePlaybackUi();
         } while (rerenderRequested);

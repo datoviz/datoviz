@@ -43,6 +43,27 @@ function canvasFormatCode(format) {
   }
 }
 
+function positiveInteger(value, fallback) {
+  return Number.isFinite(value) && value > 0 ? Math.floor(value) : fallback;
+}
+
+function browserCapabilityArgs(capabilities = {}) {
+  const sampleCounts = Array.isArray(capabilities.supported_sample_counts)
+    ? capabilities.supported_sample_counts.filter((value) => Number.isFinite(value) && value > 0)
+    : [];
+  return {
+    maxTextureDimension2d: positiveInteger(capabilities.max_texture_dimension_2d, 4096),
+    maxBindGroups: positiveInteger(capabilities.max_bind_groups, 4),
+    maxVertexBuffers: positiveInteger(capabilities.max_vertex_buffers, 8),
+    maxBufferSize: positiveInteger(capabilities.max_buffer_size, 256 * 1024 * 1024),
+    minTextureCopyBytesPerRowAlignment: positiveInteger(
+      capabilities.min_texture_copy_bytes_per_row_alignment,
+      256,
+    ),
+    maxSampleCount: Math.max(1, ...sampleCounts),
+  };
+}
+
 function wasmModuleUrl() {
   const url = new URL("../../build-wasm-scene/wasm/datoviz_wasm_scene.mjs", import.meta.url);
   url.searchParams.set("v", Date.now().toString());
@@ -97,6 +118,19 @@ export class DatovizWasmScene {
     const formatStatus = Module._dvz_wasm_api_set_canvas_format(scene, canvasFormatCode(gpu.format));
     if (formatStatus !== 0) {
       throw new Error(diagnosticMessage(Module, scene, `scene rejected browser canvas format ${gpu.format}`));
+    }
+    const caps = browserCapabilityArgs(gpu.capabilities);
+    const capsStatus = Module._dvz_wasm_api_set_capabilities(
+      scene,
+      caps.maxTextureDimension2d,
+      caps.maxBindGroups,
+      caps.maxVertexBuffers,
+      caps.maxBufferSize,
+      caps.minTextureCopyBytesPerRowAlignment,
+      caps.maxSampleCount,
+    );
+    if (capsStatus !== 0) {
+      throw new Error(diagnosticMessage(Module, scene, "scene rejected browser capabilities"));
     }
     const figure = Module._dvz_wasm_api_figure(scene, canvas.width, canvas.height);
     if (figure === 0) {

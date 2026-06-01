@@ -65,6 +65,11 @@ function expectDiagnostics(Module, scene, needle, label) {
   );
 }
 
+function expectAnyDiagnostics(Module, scene, label) {
+  const messages = diagnostics(Module, scene);
+  requireOk(messages.length > 0, `${label}: expected diagnostics`);
+}
+
 function expectNoDiagnostics(Module, scene, label) {
   const messages = diagnostics(Module, scene);
   requireOk(messages.length === 0, `${label}: unexpected diagnostics: ${messages.join("; ")}`);
@@ -412,6 +417,32 @@ function setRGBA8(Module, visual, attrPtr, dataPtr, count, label) {
   expectStatus(Module._dvz_wasm_api_visual_set_rgba8(visual, attrPtr, dataPtr, count), 0, label);
 }
 
+function setCapabilities(
+  Module,
+  scene,
+  maxTextureDimension2d,
+  maxBindGroups,
+  maxVertexBuffers,
+  maxBufferSize,
+  minTextureCopyBytesPerRowAlignment,
+  maxSampleCount,
+  label,
+) {
+  expectStatus(
+    Module._dvz_wasm_api_set_capabilities(
+      scene,
+      maxTextureDimension2d,
+      maxBindGroups,
+      maxVertexBuffers,
+      maxBufferSize,
+      minTextureCopyBytesPerRowAlignment,
+      maxSampleCount,
+    ),
+    0,
+    label,
+  );
+}
+
 const { default: createModule } = await import(pathToFileURL(modulePath).href);
 const Module = await createModule({ locateFile: (path) => join(dirname(modulePath), path) });
 const smokeSize = 64;
@@ -438,6 +469,15 @@ try {
       "reset canvas format",
     );
     expectNoDiagnostics(Module, diagnosticScene, "successful format reset");
+    expectStatus(
+      Module._dvz_wasm_api_set_capabilities(diagnosticScene, 0, 4, 8, 1024, 256, 1),
+      -1,
+      "invalid capabilities",
+    );
+    expectDiagnostics(
+      Module, diagnosticScene, "invalid WASM capability snapshot", "invalid capabilities");
+    setCapabilities(Module, diagnosticScene, 4096, 4, 8, 1024 * 1024, 256, 1, "reset capabilities");
+    expectNoDiagnostics(Module, diagnosticScene, "successful capability reset");
 
     expectStatus(Module._dvz_wasm_api_emit(diagnosticScene, 0), -1, "invalid emit");
     expectDiagnostics(Module, diagnosticScene, "invalid WASM emit request", "invalid emit");
@@ -580,6 +620,10 @@ try {
 
     const panzoom = Module._dvz_wasm_api_controller(scene, DVZ_CONTROLLER_TYPE_PANZOOM);
     expectStatus(Module._dvz_wasm_api_panel_bind_controller(panel, panzoom, DVZ_DIM_MASK_XY), 0, "api bind panzoom");
+    setCapabilities(Module, scene, 4096, 4, 8, 128, 256, 1, "restrict buffer capability");
+    expectStatus(Module._dvz_wasm_api_emit(scene, figure), -1, "buffer capability emit rejection");
+    expectAnyDiagnostics(Module, scene, "buffer capability emit rejection");
+    setCapabilities(Module, scene, 4096, 4, 8, 256 * 1024 * 1024, 256, 1, "restore buffer capability");
     const initial = emitStream(Module, scene, figure, "generic 2D initial");
     expect2DSceneStreamShape(initial.stream, "generic 2D initial");
     expectStatus(Module._dvz_wasm_api_pointer(scene, DVZ_POINTER_EVENT_PRESS, 32, 32, DVZ_POINTER_BUTTON_LEFT, 0, 1, 200), 0, "api pointer press");

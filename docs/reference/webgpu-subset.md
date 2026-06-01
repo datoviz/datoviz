@@ -91,7 +91,10 @@ Payload and diagnostics lifetime:
   payload;
 - the payload is valid only until the next mutating ABI call on the same scene or scene destruction;
 - JavaScript must copy or decode the payload before resize, pointer, wheel, data upload, emit,
-  canvas-format, or destroy calls;
+  canvas-format, capability, or destroy calls;
+- `dvz_wasm_api_set_capabilities()` passes normalized browser limits for texture dimension, bind
+  groups, vertex buffers, buffer size, texture-copy row alignment, and sample count into scene
+  emission;
 - `dvz_wasm_api_diagnostic()` returns borrowed strings with the same lifetime as the current
   diagnostic report;
 - successful emits should leave diagnostics empty;
