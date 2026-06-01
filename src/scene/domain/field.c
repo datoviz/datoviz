@@ -36,6 +36,36 @@ static DvzSampledField* _scene_alloc_field_slot(DvzScene* scene);
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_SAMPLED_FIELD_DESC_KNOWN_FLAGS 0u
+
+
+
+static bool _sampled_field_desc_validate(const DvzSampledFieldDesc* desc)
+{
+    if (desc == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(desc, DvzSampledFieldDesc, DVZ_SAMPLED_FIELD_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzSampledFieldDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+DvzSampledFieldDesc dvz_sampled_field_desc(void)
+{
+    DvzSampledFieldDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc)};
+    desc.dim = DVZ_FIELD_DIM_2D;
+    desc.format = DVZ_FIELD_FORMAT_RGBA8_UNORM;
+    desc.semantic = DVZ_FIELD_SEMANTIC_COLOR;
+    desc.depth = 1;
+    return desc;
+}
+
+
+
 uint32_t _scene_field_index(const DvzScene* scene, const DvzSampledField* field)
 {
     if (scene == NULL || field == NULL)
@@ -92,7 +122,8 @@ void _scene_field_reset(DvzSampledField* field)
 DvzSampledField* dvz_sampled_field(DvzScene* scene, const DvzSampledFieldDesc* desc)
 {
     ANN(scene);
-    ANN(desc);
+    if (!_sampled_field_desc_validate(desc))
+        return NULL;
     if (!_field_format_supported(desc->format))
     {
         log_error("unsupported sampled field format %d", (int)desc->format);
@@ -186,7 +217,7 @@ bool dvz_sampled_field_set_geometry(
  * @param field the sampled field
  * @return the descriptor, or NULL on error
  */
-const DvzSampledFieldDesc* dvz_sampled_field_desc(const DvzSampledField* field)
+const DvzSampledFieldDesc* dvz_sampled_field_get_desc(const DvzSampledField* field)
 {
     return field != NULL ? &field->desc : NULL;
 }

@@ -34,6 +34,8 @@ EXTERN_C_ON
 
 typedef struct DvzFramePlanCopyDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     const char* src_resource_id;
     const char* dst_resource_id;
     uint32_t src_attachment_index;
@@ -53,6 +55,13 @@ typedef struct DvzFramePlanCopyDesc
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Return the default FramePlan copy descriptor.
+ *
+ * @return default copy descriptor
+ */
+DVZ_EXPORT DvzFramePlanCopyDesc dvz_frame_plan_copy_desc(void);
 
 /**
  * Initialize a capability snapshot.

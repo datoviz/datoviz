@@ -38,16 +38,25 @@ bool dvz_frame_plan_copy(
     DvzFramePlan* plan, const char* src_resource_id, const char* dst_resource_id,
     uint64_t byte_size)
 {
-    DvzFramePlanCopyDesc desc = {
-        .src_resource_id = src_resource_id,
-        .dst_resource_id = dst_resource_id,
-        .extent = {1, 1, 1},
-        .bytes_per_texel = byte_size > UINT32_MAX ? UINT32_MAX : (uint32_t)byte_size,
-        .bytes_per_row = byte_size,
-        .rows_per_image = 1,
-        .byte_size = byte_size,
-    };
+    DvzFramePlanCopyDesc desc = dvz_frame_plan_copy_desc();
+    desc.src_resource_id = src_resource_id;
+    desc.dst_resource_id = dst_resource_id;
+    desc.extent[0] = 1;
+    desc.extent[1] = 1;
+    desc.extent[2] = 1;
+    desc.bytes_per_texel = byte_size > UINT32_MAX ? UINT32_MAX : (uint32_t)byte_size;
+    desc.bytes_per_row = byte_size;
+    desc.rows_per_image = 1;
+    desc.byte_size = byte_size;
     return dvz_frame_plan_copy_ex(plan, &desc);
+}
+
+
+
+DvzFramePlanCopyDesc dvz_frame_plan_copy_desc(void)
+{
+    DvzFramePlanCopyDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzFramePlanCopyDesc)};
+    return desc;
 }
 
 
@@ -61,7 +70,8 @@ bool dvz_frame_plan_copy(
  */
 bool dvz_frame_plan_copy_ex(DvzFramePlan* plan, const DvzFramePlanCopyDesc* desc)
 {
-    ANN(desc);
+    if (desc == NULL || !DVZ_STRUCT_VALID(desc, DvzFramePlanCopyDesc, 0))
+        return false;
     DvzFramePlanNode* node = _frame_plan_append_node(plan, DVZ_FRAME_PLAN_NODE_COPY);
     if (node == NULL)
         return false;

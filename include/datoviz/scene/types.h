@@ -214,6 +214,8 @@ typedef enum
 
 struct DvzPanelBackgroundDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzPanelBackgroundType type;
     float color[4]; /* RGBA in [0, 1], used by DVZ_PANEL_BACKGROUND_COLOR */
 
@@ -394,6 +396,8 @@ typedef struct DvzVectorStyle DvzVectorStyle;
 
 struct DvzSceneBufferDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     uint32_t usage;
     uint32_t stride;
     uint64_t byte_size;
@@ -410,6 +414,8 @@ typedef enum
 
 struct DvzSceneComputeDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     const char* label;
     DvzSceneShaderFormat shader_format;
     const char* shader_source;
@@ -677,11 +683,12 @@ typedef struct DvzSelectionItem DvzSelectionItem;
 
 struct DvzQueryRequest
 {
+    uint32_t struct_size;
+    uint32_t flags;
     uint64_t request_id;
     DvzSceneTargetKind target;
     DvzQueryHitPolicy hit_policy;
     DvzQueryProfile profile;
-    uint32_t flags;
 };
 typedef struct DvzQueryRequest DvzQueryRequest;
 

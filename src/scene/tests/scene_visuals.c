@@ -1452,7 +1452,7 @@ static int _scene_mesh_emit_executes(TstContext* suite)
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -1777,7 +1777,7 @@ int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstContext* suite, 
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -1862,7 +1862,7 @@ int test_scene_mesh_instance_transform_emits_instanced_draw(TstContext* suite, c
     };
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -1948,7 +1948,7 @@ int test_scene_mesh_emits_depth_attachment(TstContext* suite, const TstCase* ite
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -2058,7 +2058,7 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     };
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -2066,7 +2066,7 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
@@ -2219,7 +2219,7 @@ int test_scene_indexed_primitive_emits_draw_indexed(TstContext* suite, const Tst
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -2299,7 +2299,7 @@ int test_scene_shared_index_buffer_emits_one_upload(TstContext* suite, const Tst
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -2654,7 +2654,7 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
@@ -2720,7 +2720,7 @@ int test_scene_json_includes_buffer_binding_metadata(TstContext* suite, const Ts
     DvzIndex indices[3] = {0, 1, 2};
 
     DvzSceneBuffer* buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){.usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc), .usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
     ANN(buffer);
     AT(dvz_scene_buffer_set_data(buffer, indices, sizeof(indices)));
     AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
@@ -3944,7 +3944,7 @@ int test_scene_point_external_position_buffer_emits_no_upload(TstContext* suite,
     DvzVisual* visual = dvz_point(scene, 0);
     ANN(visual);
 
-    DvzSceneBufferDesc desc = {
+    DvzSceneBufferDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
         .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX,
         .stride = sizeof(vec3),
         .byte_size = 3 * sizeof(vec3),
@@ -4021,7 +4021,7 @@ int test_scene_point_storage_position_buffer_emits_usage(TstContext* suite, cons
         {+0.5f, -0.5f, 0.0f},
         { 0.0f, +0.5f, 0.0f},
     };
-    DvzSceneBufferDesc desc = {
+    DvzSceneBufferDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
         .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
         .stride = sizeof(vec3),
     };
@@ -4103,7 +4103,7 @@ int test_scene_compute_point_position_buffer_emits_drp2(
         { 0.0f, +0.5f, 0.0f},
     };
     DvzSceneBuffer* position = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
                    .stride = sizeof(vec3),
                    .byte_size = sizeof(positions),
@@ -4114,7 +4114,7 @@ int test_scene_compute_point_position_buffer_emits_drp2(
 
     vec4 params = {0.0f, 0.0f, 3.0f, 0.0f};
     DvzSceneBuffer* param = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_STORAGE,
                    .stride = sizeof(vec4),
                    .byte_size = sizeof(params),
@@ -4139,7 +4139,7 @@ int test_scene_compute_point_position_buffer_emits_drp2(
         "    positions.x[3u * i + 0u] += 0.0;\n"
         "}\n";
     DvzSceneCompute* compute = dvz_scene_compute(
-        scene, &(DvzSceneComputeDesc){
+        scene, &(DvzSceneComputeDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneComputeDesc),
                    .label = "test_compute_points",
                    .shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL,
                    .shader_source = shader,
@@ -4267,7 +4267,7 @@ int test_scene_point_external_position_buffer_executes(TstContext* suite, const 
     DvzVisual* visual = dvz_point(scene, 0);
     ANN(visual);
 
-    DvzSceneBufferDesc desc = {
+    DvzSceneBufferDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
         .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX,
         .stride = sizeof(vec3),
         .byte_size = position_bytes,
@@ -4622,7 +4622,7 @@ int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstContext* su
     };
     uint8_t pixels[4 * 4 * 4] = {0};
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
@@ -5725,7 +5725,7 @@ static int _labels_emit_figure(
     AT(dvz_visual_set_data(labels, "extent", extents, 1) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = format,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -6102,7 +6102,7 @@ int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCa
     };
     DvzIndex mesh_index[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -6385,7 +6385,7 @@ int test_scene_indexed_primitive_material_updates_runtime(TstContext* suite, con
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -6647,7 +6647,7 @@ int test_scene_pending_render_work_tracks_volume_state(TstContext* suite, const 
     AT(panel != NULL);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -6884,7 +6884,7 @@ int test_scene_hidden_indexed_mesh_first_visible_later_uploads(TstContext* suite
     };
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){.usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc), .usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
     AT(index_buffer != NULL);
     AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
@@ -6965,7 +6965,7 @@ int test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes(
     AT(panel != NULL);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -7012,7 +7012,7 @@ int test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes(
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
         scene,
-        &(DvzSceneBufferDesc){
+        &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
             .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
             .stride = sizeof(DvzIndex),
         });
@@ -7917,7 +7917,7 @@ int test_scene_volume_slice_uses_volume_occlusion(TstContext* suite, const TstCa
     AT(panel != NULL);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -8094,7 +8094,7 @@ int test_scene_volume_slice_uses_generic_scene_occlusion(TstContext* suite, cons
     AT(panel != NULL);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,

@@ -46,6 +46,7 @@
 /*************************************************************************************************/
 
 #define DVZ_VISUAL_ATTACH_DESC_KNOWN_FLAGS 0u
+#define DVZ_PANEL_BACKGROUND_DESC_KNOWN_FLAGS 0u
 
 
 
@@ -63,6 +64,20 @@ static bool _visual_attach_desc_validate(const DvzVisualAttachDesc* desc)
 
 
 
+static bool _panel_background_desc_validate(const DvzPanelBackgroundDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzPanelBackgroundDesc, DVZ_PANEL_BACKGROUND_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzPanelBackgroundDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
 DvzVisualAttachDesc dvz_visual_attach_desc(void)
 {
     DvzVisualAttachDesc desc = {
@@ -70,6 +85,18 @@ DvzVisualAttachDesc dvz_visual_attach_desc(void)
         .z_layer = 0,
         .controller_mode = DVZ_CONTROLLER_APPLY,
     };
+    return desc;
+}
+
+
+
+DvzPanelBackgroundDesc dvz_panel_background_desc(void)
+{
+    DvzPanelBackgroundDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzPanelBackgroundDesc)};
+    desc.type = DVZ_PANEL_BACKGROUND_NONE;
+    desc.color[3] = 1.0f;
+    desc.gradient.color0[3] = 1.0f;
+    desc.gradient.color1[3] = 1.0f;
     return desc;
 }
 
@@ -588,6 +615,8 @@ void dvz_panel_clear_background(DvzPanel* panel)
 bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* background)
 {
     ANN(panel);
+    if (!_panel_background_desc_validate(background))
+        return false;
     if (panel->figure == NULL || panel->figure->scene == NULL)
         return false;
     DvzScene* scene = panel->figure->scene;
@@ -739,10 +768,12 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
  */
 void dvz_panel_set_background_color(DvzPanel* panel, float r, float g, float b, float a)
 {
-    DvzPanelBackgroundDesc background = {
-        .type = DVZ_PANEL_BACKGROUND_COLOR,
-        .color = {r, g, b, a},
-    };
+    DvzPanelBackgroundDesc background = dvz_panel_background_desc();
+    background.type = DVZ_PANEL_BACKGROUND_COLOR;
+    background.color[0] = r;
+    background.color[1] = g;
+    background.color[2] = b;
+    background.color[3] = a;
     (void)dvz_panel_set_background(panel, &background);
 }
 

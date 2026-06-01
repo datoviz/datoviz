@@ -37,6 +37,36 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_SCENE_BUFFER_DESC_KNOWN_FLAGS 0u
+
+
+
+static bool _scene_buffer_desc_validate(const DvzSceneBufferDesc* desc)
+{
+    if (desc == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(desc, DvzSceneBufferDesc, DVZ_SCENE_BUFFER_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzSceneBufferDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+DvzSceneBufferDesc dvz_scene_buffer_desc(void)
+{
+    DvzSceneBufferDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc)};
+    return desc;
+}
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
 uint32_t _scene_buffer_index(const DvzScene* scene, const DvzSceneBuffer* buffer)
 {
     if (scene == NULL || buffer == NULL)
@@ -102,7 +132,8 @@ static DvzSceneBuffer* _scene_alloc_buffer_slot(DvzScene* scene)
 DvzSceneBuffer* dvz_scene_buffer(DvzScene* scene, const DvzSceneBufferDesc* desc)
 {
     ANN(scene);
-    ANN(desc);
+    if (!_scene_buffer_desc_validate(desc))
+        return NULL;
     if (desc->usage == 0)
     {
         log_error("scene buffer usage must be non-zero");
@@ -222,7 +253,7 @@ bool dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_
  * @param buffer the buffer
  * @return the descriptor, or NULL on error
  */
-const DvzSceneBufferDesc* dvz_scene_buffer_desc(const DvzSceneBuffer* buffer)
+const DvzSceneBufferDesc* dvz_scene_buffer_get_desc(const DvzSceneBuffer* buffer)
 {
     return buffer != NULL ? &buffer->desc : NULL;
 }
@@ -329,12 +360,10 @@ int dvz_visual_set_index_data(
         return -1;
     }
 
-    DvzSceneBuffer* buffer = dvz_scene_buffer(
-        visual->scene,
-        &(DvzSceneBufferDesc){
-            .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
-            .stride = sizeof(DvzIndex),
-        });
+    DvzSceneBufferDesc desc = dvz_scene_buffer_desc();
+    desc.usage = DVZ_SCENE_BUFFER_USAGE_INDEX;
+    desc.stride = sizeof(DvzIndex);
+    DvzSceneBuffer* buffer = dvz_scene_buffer(visual->scene, &desc);
     if (buffer == NULL)
         return -1;
     if (!dvz_scene_buffer_set_data(buffer, indices, byte_size))

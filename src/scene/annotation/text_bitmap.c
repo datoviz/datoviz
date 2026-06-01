@@ -252,15 +252,10 @@ DvzSampledField* _text_bitmap_atlas_field(DvzScene* scene)
             glyph + DVZ_TEXT_BITMAP_FIRST_CHAR, white);
     }
 
-    DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
-                   .dim = DVZ_FIELD_DIM_2D,
-                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
-                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
-                   .width = width,
-                   .height = height,
-                   .depth = 1,
-               });
+    DvzSampledFieldDesc desc = dvz_sampled_field_desc();
+    desc.width = width;
+    desc.height = height;
+    DvzSampledField* field = dvz_sampled_field(scene, &desc);
     if (field == NULL ||
         !dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){

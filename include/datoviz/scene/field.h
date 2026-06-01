@@ -92,13 +92,14 @@ typedef enum
 
 struct DvzSampledFieldDesc
 {
+    uint32_t struct_size;
+    uint32_t flags;
     DvzFieldDim dim;
     DvzFieldFormat format;
     DvzFieldSemantic semantic;
     uint32_t width;
     uint32_t height;
     uint32_t depth;
-    uint32_t flags;
 };
 typedef struct DvzSampledFieldDesc DvzSampledFieldDesc;
 
@@ -142,6 +143,14 @@ typedef struct DvzFieldDataView DvzFieldDataView;
 /*************************************************************************************************/
 /*  Sampled-field lifecycle                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Return the default sampled-field descriptor.
+ *
+ * @return default sampled-field descriptor
+ */
+DVZ_EXPORT DvzSampledFieldDesc dvz_sampled_field_desc(void);
+
 
 /**
  * Create a scene-owned sampled field.
@@ -223,7 +232,7 @@ DVZ_EXPORT bool dvz_sampled_field_set_geometry(
  * @param field the sampled field
  * @return the descriptor, or NULL on error
  */
-DVZ_EXPORT const DvzSampledFieldDesc* dvz_sampled_field_desc(const DvzSampledField* field);
+DVZ_EXPORT const DvzSampledFieldDesc* dvz_sampled_field_get_desc(const DvzSampledField* field);
 
 
 

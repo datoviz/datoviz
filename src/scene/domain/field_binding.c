@@ -57,15 +57,12 @@ static DvzSampledField* _scene_ensure_owned_image_field(
     }
     if (field != NULL)
         dvz_sampled_field_destroy(field);
-    field = dvz_sampled_field(
-        visual->scene, &(DvzSampledFieldDesc){
-                           .dim = DVZ_FIELD_DIM_2D,
-                           .format = format,
-                           .semantic = semantic,
-                           .width = width,
-                           .height = height,
-                           .depth = 1,
-                       });
+    DvzSampledFieldDesc desc = dvz_sampled_field_desc();
+    desc.format = format;
+    desc.semantic = semantic;
+    desc.width = width;
+    desc.height = height;
+    field = dvz_sampled_field(visual->scene, &desc);
     return field;
 }
 

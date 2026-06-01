@@ -2022,15 +2022,10 @@ int _scene_text_block_realize_image(
 
     if (block->image_field == NULL)
     {
-        block->image_field = dvz_sampled_field(
-            scene, &(DvzSampledFieldDesc){
-                       .dim = DVZ_FIELD_DIM_2D,
-                       .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
-                       .semantic = DVZ_FIELD_SEMANTIC_COLOR,
-                       .width = block->raster_width,
-                       .height = block->raster_height,
-                       .depth = 1,
-                   });
+        DvzSampledFieldDesc desc = dvz_sampled_field_desc();
+        desc.width = block->raster_width;
+        desc.height = block->raster_height;
+        block->image_field = dvz_sampled_field(scene, &desc);
         if (block->image_field == NULL)
             return -1;
         block->image_width = block->raster_width;

@@ -483,17 +483,18 @@ static bool _volume_query_build_sample(
     bool rg32_profile = !label_profile && ctx->profile == DVZ_QUERY_PROFILE_U64_RG32;
     uint32_t query_format = rg32_profile ? VK_FORMAT_R32G32_UINT : VK_FORMAT_R32_UINT;
     uint32_t query_byte_size = rg32_profile ? 2u * sizeof(uint32_t) : sizeof(uint32_t);
-    DvzFramePlanCopyDesc copy = {
-        .src_resource_id = "target.query.volume.sample",
-        .dst_resource_id = "buf.query.volume.sample",
-        .extent = {1, 1, 1},
-        .format = query_format,
-        .bytes_per_texel = query_byte_size,
-        .bytes_per_row = query_byte_size,
-        .rows_per_image = 1,
-        .byte_size = query_byte_size,
-        .request_id = ctx->pending->request.request_id,
-    };
+    DvzFramePlanCopyDesc copy = dvz_frame_plan_copy_desc();
+    copy.src_resource_id = "target.query.volume.sample";
+    copy.dst_resource_id = "buf.query.volume.sample";
+    copy.extent[0] = 1;
+    copy.extent[1] = 1;
+    copy.extent[2] = 1;
+    copy.format = query_format;
+    copy.bytes_per_texel = query_byte_size;
+    copy.bytes_per_row = query_byte_size;
+    copy.rows_per_image = 1;
+    copy.byte_size = query_byte_size;
+    copy.request_id = ctx->pending->request.request_id;
     ok = ok && dvz_frame_plan_copy_ex(plan, &copy) &&
          dvz_frame_plan_readback(plan, "buf.query.volume.sample", "request.query.volume.sample");
     if (!ok)
@@ -677,17 +678,18 @@ static bool _volume_query_build(
         _volume_query_apply_render_state(
             plan, ctx->panel, ctx->visual, ctx->request_ndc, target_width, target_height);
 
-    DvzFramePlanCopyDesc copy = {
-        .src_resource_id = "target.query",
-        .dst_resource_id = "buf.query",
-        .extent = {1, 1, 1},
-        .format = VK_FORMAT_R32_UINT,
-        .bytes_per_texel = sizeof(uint32_t),
-        .bytes_per_row = sizeof(uint32_t),
-        .rows_per_image = 1,
-        .byte_size = sizeof(uint32_t),
-        .request_id = ctx->pending->request.request_id,
-    };
+    DvzFramePlanCopyDesc copy = dvz_frame_plan_copy_desc();
+    copy.src_resource_id = "target.query";
+    copy.dst_resource_id = "buf.query";
+    copy.extent[0] = 1;
+    copy.extent[1] = 1;
+    copy.extent[2] = 1;
+    copy.format = VK_FORMAT_R32_UINT;
+    copy.bytes_per_texel = sizeof(uint32_t);
+    copy.bytes_per_row = sizeof(uint32_t);
+    copy.rows_per_image = 1;
+    copy.byte_size = sizeof(uint32_t);
+    copy.request_id = ctx->pending->request.request_id;
     ok = ok && dvz_frame_plan_copy_ex(plan, &copy) &&
          dvz_frame_plan_readback(plan, "buf.query", "request.query");
     if (!ok)

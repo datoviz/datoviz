@@ -498,7 +498,7 @@ static AppSsaoQuad _app_ssao_add_quad(
 
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -1489,12 +1489,12 @@ int test_app_offscreen_query_requests_notify_hosted_callback(
     AppRequestFrameProbe request_probe = {0};
     dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
 
-    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){.request_id = 1}) == 0);
+    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 1}) == 0);
     AT(request_probe.calls == 1);
     AT(request_probe.last_window == win);
     AT(_dvz_view_scheduler_should_render(win, false, 0));
 
-    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){.request_id = 2}) == 0);
+    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 2}) == 0);
     AT(request_probe.calls == 2);
     AT(request_probe.last_window == win);
     AT(_dvz_view_scheduler_should_render(win, false, 0));
@@ -1560,14 +1560,14 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
     dvz_view_set_request_frame_callback(win1, _app_request_frame_probe_callback, &probe1);
     dvz_view_set_request_frame_callback(win2, _app_request_frame_probe_callback, &probe2);
 
-    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){.request_id = 1}) == 0);
+    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 1}) == 0);
     AT(probe1.calls == 1);
     AT(probe1.last_window == win1);
     AT(probe2.calls == 1);
     AT(probe2.last_window == win2);
 
     dvz_app_destroy(app1);
-    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){.request_id = 2}) == 0);
+    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 2}) == 0);
     AT(probe1.calls == 1);
     AT(probe2.calls == 2);
     AT(probe2.last_window == win2);
@@ -3045,7 +3045,7 @@ int test_app_offscreen_colorbar_has_visible_ramp_and_labels(TstContext* suite, c
     AT(rc == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -3595,7 +3595,7 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
     AT(dvz_visual_set_scale(image, "colormap", scale) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -4308,7 +4308,7 @@ int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* i
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -4554,7 +4554,7 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const 
     _rotated_mesh_build_cube(positions, colors, normals, indices);
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -4653,7 +4653,7 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
     _mesh_build_cube_object_space(positions, colors, normals, indices);
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -4754,7 +4754,7 @@ int test_app_offscreen_orbit_camera_drag_renders_cube(TstContext* suite, const T
     _mesh_build_cube_object_space(positions, colors, normals, indices);
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -4877,7 +4877,7 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
     dvz_scale_set_colormap(scale1, colormap1);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -5184,7 +5184,7 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
     DvzIndex mesh_indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -5350,10 +5350,10 @@ int test_app_offscreen_query_request_steady_state(TstContext* suite, const TstCa
         uint64_t second_id = 200 + frame;
         AT(dvz_panel_query(
                panel, 32.0, 32.0,
-               &(DvzQueryRequest){.request_id = first_id, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+               &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = first_id, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
         AT(dvz_panel_query(
                panel, 32.0, 32.0,
-               &(DvzQueryRequest){.request_id = second_id, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+               &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = second_id, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
         AT(scene->pending_query_count == 2);
 
         AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
@@ -5641,7 +5641,7 @@ int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCa
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -5722,7 +5722,7 @@ int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const 
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -5810,7 +5810,7 @@ int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const T
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -5894,7 +5894,7 @@ int test_app_offscreen_volume_label_composite_renders_category(
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R16_UINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -5996,7 +5996,7 @@ int test_app_offscreen_volume_label_composite_renders_sparse_category(
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R32_UINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -6121,7 +6121,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
     }
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -6480,7 +6480,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
     ANN(panel);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -6525,7 +6525,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
     };
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -6666,7 +6666,7 @@ int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, con
     AT(dvz_panel_add_visual(panel, occluder, NULL) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,

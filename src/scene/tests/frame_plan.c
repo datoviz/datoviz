@@ -1194,7 +1194,7 @@ int test_frame_plan_query_readback_copy_metadata(TstContext* suite, const TstCas
     DvzFramePlan* plan = dvz_frame_plan("figure.query.readback", 10);
     ANN(plan);
 
-    DvzFramePlanCopyDesc desc = {
+    DvzFramePlanCopyDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzFramePlanCopyDesc),
         .src_resource_id = "target.panel.0.query.identity",
         .dst_resource_id = "buf.query.readback",
         .src_attachment_index = 1,

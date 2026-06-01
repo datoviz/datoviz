@@ -33,6 +33,31 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_QUERY_REQUEST_KNOWN_FLAGS 0u
+
+
+
+static bool _query_request_validate(const DvzQueryRequest* request)
+{
+    if (request == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(request, DvzQueryRequest, DVZ_QUERY_REQUEST_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzQueryRequest ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+DvzQueryRequest dvz_query_request(void)
+{
+    DvzQueryRequest request = {DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest)};
+    return request;
+}
+
+
 /**
  * Return whether two request ids belong to the same query freshness scope.
  *
@@ -240,10 +265,12 @@ static void _query_remove_pending_at(DvzScene* scene, uint32_t index)
 int dvz_panel_query(DvzPanel* panel, double x, double y, const DvzQueryRequest* request)
 {
     ANN(panel);
+    if (!_query_request_validate(request))
+        return -1;
     if (panel->figure == NULL || panel->figure->scene == NULL)
         return -1;
     DvzScene* scene = panel->figure->scene;
-    DvzQueryRequest local = {0};
+    DvzQueryRequest local = dvz_query_request();
     if (request != NULL)
         local = *request;
 

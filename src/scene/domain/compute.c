@@ -108,10 +108,40 @@ static DvzSceneCompute* _scene_alloc_compute_slot(DvzScene* scene)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+#define DVZ_SCENE_COMPUTE_DESC_KNOWN_FLAGS 0u
+
+
+
+static bool _scene_compute_desc_validate(const DvzSceneComputeDesc* desc)
+{
+    if (desc == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(desc, DvzSceneComputeDesc, DVZ_SCENE_COMPUTE_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzSceneComputeDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+DvzSceneComputeDesc dvz_scene_compute_desc(void)
+{
+    DvzSceneComputeDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzSceneComputeDesc)};
+    desc.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    desc.entry_point = "main";
+    desc.dispatch[0] = 1;
+    desc.dispatch[1] = 1;
+    desc.dispatch[2] = 1;
+    return desc;
+}
+
 DvzSceneCompute* dvz_scene_compute(DvzScene* scene, const DvzSceneComputeDesc* desc)
 {
     ANN(scene);
-    ANN(desc);
+    if (!_scene_compute_desc_validate(desc))
+        return NULL;
     if (desc->shader_source == NULL || desc->shader_source[0] == '\0')
     {
         log_error("scene compute shader source is required");

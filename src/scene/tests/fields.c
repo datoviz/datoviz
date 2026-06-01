@@ -1607,7 +1607,7 @@ int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCas
     };
     static const uint8_t pixels[4 * 4 * 4] = {0};
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
@@ -1668,7 +1668,7 @@ int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const Ts
 
     int32_t values[4] = {0, -1, 42, -1};
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_SINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -1689,7 +1689,7 @@ int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const Ts
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(labels, "colormap", scale) != 0);
 
     DvzSampledField* scalar = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -1809,7 +1809,7 @@ int test_scene_visual_buffer_rejects_cross_scene_buffer(TstContext* suite, const
     ANN(scene1);
 
     DvzSceneBuffer* foreign_buffer = dvz_scene_buffer(
-        scene1, &(DvzSceneBufferDesc){.usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
+        scene1, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc), .usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
     ANN(foreign_buffer);
     DvzVisual* visual = dvz_primitive(scene0, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     ANN(visual);
@@ -1930,7 +1930,7 @@ int test_scene_image_r16_float_field_uses_bound_scale(TstContext* suite, const T
         values[i] = 0x3c00u; /* half-float 1.0 */
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R16_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -2006,7 +2006,7 @@ int test_scene_image_r16_snorm_field_uses_bound_scale(TstContext* suite, const T
         values[i] = 32767; /* SNORM 1.0 */
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R16_SNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -2053,7 +2053,7 @@ int test_scene_visual_field_rejects_cross_scene_field(TstContext* suite, const T
     DvzVisual* image = dvz_image(scene0, 0);
     ANN(image);
     DvzSampledField* field = dvz_sampled_field(
-        scene1, &(DvzSampledFieldDesc){
+        scene1, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                     .dim = DVZ_FIELD_DIM_2D,
                     .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                     .semantic = DVZ_FIELD_SEMANTIC_COLOR,
@@ -2081,7 +2081,7 @@ int test_scene_sampled_field_update_region(TstContext* suite, const TstCase* ite
     ANN(scene);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R8_UINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -2124,7 +2124,7 @@ int test_scene_sampled_field_rejects_unsupported_format(TstContext* suite, const
     AT_EXPECTED_ERROR_STRICT(
         suite,
         (field = dvz_sampled_field(
-             scene, &(DvzSampledFieldDesc){
+             scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                         .dim = DVZ_FIELD_DIM_2D,
                         .format = DVZ_FIELD_FORMAT_RG32_FLOAT,
                         .semantic = DVZ_FIELD_SEMANTIC_VECTOR_2,
@@ -2151,7 +2151,7 @@ int test_scene_image_visual_rejects_3d_field(TstContext* suite, const TstCase* i
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -2194,7 +2194,7 @@ int test_scene_mesh_visual_binds_texture_field(TstContext* suite, const TstCase*
         255, 255, 255, 255,
     };
     DvzSampledField* rgba = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
@@ -2210,7 +2210,7 @@ int test_scene_mesh_visual_binds_texture_field(TstContext* suite, const TstCase*
     AT(strcmp(_visual_family_state(mesh)->field_slot, "texture") == 0);
 
     DvzSampledField* scalar = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -2223,7 +2223,7 @@ int test_scene_mesh_visual_binds_texture_field(TstContext* suite, const TstCase*
     AT(_captured_log_contains(suite, "mesh texture fields require RGBA8_UNORM"));
 
     DvzSampledField* volume = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
@@ -2269,7 +2269,7 @@ int test_scene_volume_visual_binds_3d_field(TstContext* suite, const TstCase* it
     AT(texcoords[11 * 3 + 2] == 1.0f);
 
     DvzSampledField* field3d = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -2284,7 +2284,7 @@ int test_scene_volume_visual_binds_3d_field(TstContext* suite, const TstCase* it
     AT(_visual_family_state(volume)->texture.dirty);
 
     DvzSampledField* field2d = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -2320,7 +2320,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const Ts
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R16_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -2697,7 +2697,7 @@ int test_scene_volume_visual_metadata_lowering(TstContext* suite, const TstCase*
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -2824,7 +2824,7 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
     }
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
@@ -2986,7 +2986,7 @@ int test_scene_volume_label_slice_uses_categorical_scale(TstContext* suite, cons
     ANN(volume);
     uint16_t labels[8] = {0, 1, 2, 0, 1, 2, 0, 2};
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R16_UINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -3066,7 +3066,7 @@ int test_scene_volume_label_composite_uses_first_hit_shader(
     ANN(volume);
     uint16_t labels[8] = {0, 1, 2, 0, 1, 2, 0, 2};
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R16_UINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -3139,7 +3139,7 @@ int test_scene_volume_signed_label_composite_uses_first_hit_shader(
     ANN(volume);
     int16_t labels[8] = {0, -1, 2, 0, -1, 2, 0, 2};
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R16_SINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -3210,7 +3210,7 @@ int test_scene_volume_label_sparse_lookup_buffer(TstContext* suite, const TstCas
     ANN(volume);
     uint32_t labels[8] = {0, 23, 4000000000u, 0, 23, 4000000000u, 0, 23};
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R32_UINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -3293,7 +3293,7 @@ int test_scene_volume_signed_label_sparse_lookup_buffer(TstContext* suite, const
     ANN(volume);
     int32_t labels[8] = {0, -7, 23, 0, -7, 23, 0, -7};
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R32_SINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -3376,7 +3376,7 @@ int test_scene_volume_label_mip_reports_unsupported(TstContext* suite, const Tst
     ANN(volume);
     uint16_t labels[8] = {0, 1, 2, 0, 1, 2, 0, 2};
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R16_UINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -3433,7 +3433,7 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -3558,7 +3558,7 @@ int test_scene_sampled_field_3d_emits_runtime_texture_upload(
     DvzScene* scene = dvz_scene();
     ANN(scene);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R16_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -3708,7 +3708,7 @@ int test_scene_sampled_field_update_region_rejects_out_of_bounds(
     DvzScene* scene = dvz_scene();
     ANN(scene);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R8_UINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -3744,7 +3744,7 @@ int test_scene_sampled_field_destroy_clears_visual_binding(TstContext* suite, co
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
@@ -3783,7 +3783,7 @@ int test_scene_shared_field_update_marks_two_visuals_dirty(TstContext* suite, co
     ANN(image1);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -3854,7 +3854,7 @@ int test_scene_image_field_partial_update_emits_texture_subregion(TstContext* su
     AT(dvz_visual_set_scale(image, "colormap", scale) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -3946,7 +3946,7 @@ int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, 
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
@@ -3996,7 +3996,7 @@ int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, 
     AT(dvz_sampled_field_resize(
         field, 4, 3, 1,
         &(DvzFieldDataView){.data = resized, .bytes_per_row = 4 * 4, .rows_per_image = 3}));
-    const DvzSampledFieldDesc* desc = dvz_sampled_field_desc(field);
+    const DvzSampledFieldDesc* desc = dvz_sampled_field_get_desc(field);
     ANN(desc);
     AT(desc->width == 4);
     AT(desc->height == 3);
@@ -4074,7 +4074,7 @@ int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, co
     dvz_scale_set_colormap(scale1, colormap);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,

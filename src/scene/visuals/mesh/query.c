@@ -168,17 +168,18 @@ static bool _mesh_query_build(
         _mesh_query_apply_render_state(
             plan, ctx->panel, ctx->visual, ctx->request_ndc, target_width, target_height);
 
-    DvzFramePlanCopyDesc copy = {
-        .src_resource_id = "target.query",
-        .dst_resource_id = "buf.query",
-        .extent = {1, 1, 1},
-        .format = VK_FORMAT_R32_UINT,
-        .bytes_per_texel = sizeof(uint32_t),
-        .bytes_per_row = sizeof(uint32_t),
-        .rows_per_image = 1,
-        .byte_size = sizeof(uint32_t),
-        .request_id = ctx->pending->request.request_id,
-    };
+    DvzFramePlanCopyDesc copy = dvz_frame_plan_copy_desc();
+    copy.src_resource_id = "target.query";
+    copy.dst_resource_id = "buf.query";
+    copy.extent[0] = 1;
+    copy.extent[1] = 1;
+    copy.extent[2] = 1;
+    copy.format = VK_FORMAT_R32_UINT;
+    copy.bytes_per_texel = sizeof(uint32_t);
+    copy.bytes_per_row = sizeof(uint32_t);
+    copy.rows_per_image = 1;
+    copy.byte_size = sizeof(uint32_t);
+    copy.request_id = ctx->pending->request.request_id;
     ok = ok && dvz_frame_plan_copy_ex(plan, &copy) &&
          dvz_frame_plan_readback(plan, "buf.query", "request.query");
     if (!ok)

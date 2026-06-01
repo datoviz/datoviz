@@ -1023,13 +1023,9 @@ static bool _text_atlas_upload_rgba(
     ANN(font);
     ANN(atlas);
     ANN(rgba);
-    DvzSampledFieldDesc desc = {};
-    desc.dim = DVZ_FIELD_DIM_2D;
-    desc.format = DVZ_FIELD_FORMAT_RGBA8_UNORM;
-    desc.semantic = DVZ_FIELD_SEMANTIC_COLOR;
+    DvzSampledFieldDesc desc = dvz_sampled_field_desc();
     desc.width = width;
     desc.height = height;
-    desc.depth = 1;
     DvzSampledField* field = dvz_sampled_field(font->scene, &desc);
     DvzFieldDataView view = {};
     view.data = rgba;

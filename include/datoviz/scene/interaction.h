@@ -348,6 +348,14 @@ DVZ_EXPORT DvzSelection* dvz_item_interaction_selection(DvzItemInteraction* inte
 /*************************************************************************************************/
 
 /**
+ * Return the default query request descriptor.
+ *
+ * @return default query request descriptor
+ */
+DVZ_EXPORT DvzQueryRequest dvz_query_request(void);
+
+
+/**
  * Queue an explicit GPU-backed query request on a panel.
  *
  * @param panel the panel

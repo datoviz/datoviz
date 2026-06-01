@@ -408,7 +408,7 @@ static bool _add_dvzr_visual(DvzScene* scene, DvzPanel* panel, SceneDvzrVisualKi
         };
         DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
         DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-            scene, &(DvzSceneBufferDesc){
+            scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                        .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                        .stride = sizeof(DvzIndex),
                    });

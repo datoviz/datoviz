@@ -526,7 +526,7 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
 
-    DvzPanelBackgroundDesc gradient = {
+    DvzPanelBackgroundDesc gradient = {DVZ_STRUCT_INIT_FIELDS(DvzPanelBackgroundDesc),
         .type = DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT,
         .gradient = {
             .start = {0.0f, 0.0f},
@@ -567,7 +567,7 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
         255, 0, 0, 255, 0, 255, 0, 255,
         0, 0, 255, 255, 255, 255, 255, 255,
     };
-    DvzPanelBackgroundDesc image = {
+    DvzPanelBackgroundDesc image = {DVZ_STRUCT_INIT_FIELDS(DvzPanelBackgroundDesc),
         .type = DVZ_PANEL_BACKGROUND_IMAGE,
         .image = {.rgba = pixels, .width = 2, .height = 2},
     };

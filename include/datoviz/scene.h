@@ -636,6 +636,14 @@ DVZ_EXPORT int dvz_panel_add_composite(
 
 
 /**
+ * Return the default panel background descriptor.
+ *
+ * @return default panel background descriptor
+ */
+DVZ_EXPORT DvzPanelBackgroundDesc dvz_panel_background_desc(void);
+
+
+/**
  * Set or update a panel background.
  *
  * Backgrounds are rendered as a fixed full-panel visual behind regular visuals. Passing NULL or
@@ -1281,6 +1289,14 @@ DVZ_EXPORT DvzSceneBuffer* dvz_scene_buffer(DvzScene* scene, const DvzSceneBuffe
 
 
 /**
+ * Return the default scene buffer descriptor.
+ *
+ * @return default scene buffer descriptor
+ */
+DVZ_EXPORT DvzSceneBufferDesc dvz_scene_buffer_desc(void);
+
+
+/**
  * Destroy a scene-owned buffer resource.
  *
  * @param buffer the buffer
@@ -1306,7 +1322,7 @@ dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_t byt
  * @param buffer the buffer
  * @return the descriptor, or NULL on error
  */
-DVZ_EXPORT const DvzSceneBufferDesc* dvz_scene_buffer_desc(const DvzSceneBuffer* buffer);
+DVZ_EXPORT const DvzSceneBufferDesc* dvz_scene_buffer_get_desc(const DvzSceneBuffer* buffer);
 
 
 /**
@@ -1337,6 +1353,14 @@ dvz_scene_buffer_resource_key(const DvzSceneBuffer* buffer, char* out, size_t ou
  */
 DVZ_EXPORT DvzSceneCompute*
 dvz_scene_compute(DvzScene* scene, const DvzSceneComputeDesc* desc);
+
+
+/**
+ * Return the default scene compute descriptor.
+ *
+ * @return default scene compute descriptor
+ */
+DVZ_EXPORT DvzSceneComputeDesc dvz_scene_compute_desc(void);
 
 
 /**

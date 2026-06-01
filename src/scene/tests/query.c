@@ -127,7 +127,7 @@ int test_scene_query_queue_processes_native_results(TstContext* suite, const Tst
 
     AT(dvz_panel_query(
            panel, 10.0, 20.0,
-           &(DvzQueryRequest){.request_id = 11, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 11, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(scene->pending_query_count == 1);
 
     DvzCapabilitySnapshot caps = {0};
@@ -168,10 +168,10 @@ int test_scene_query_queue_coalesces_pending_requests(TstContext* suite, const T
 
     AT(dvz_panel_query(
            panel, 8.0, 8.0,
-           &(DvzQueryRequest){.request_id = 12, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 12, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_panel_query(
            panel, 16.0, 16.0,
-           &(DvzQueryRequest){.request_id = 12, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 12, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(scene->pending_query_count == 1);
 
     DvzCapabilitySnapshot caps = {0};
@@ -211,7 +211,7 @@ int test_scene_query_volume_sample_is_explicitly_unsupported(TstContext* suite, 
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 33, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 33, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
     DvzCapabilitySnapshot caps = {0};
     dvz_capability_snapshot_default(&caps);
     AT(dvz_figure_process_queries(figure, NULL, &caps) == 1);
@@ -251,7 +251,7 @@ int test_scene_query_skips_fixed_visuals(TstContext* suite, const TstCase* item)
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 37, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 37, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     DvzCapabilitySnapshot caps = {0};
     dvz_capability_snapshot_default(&caps);
     AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
@@ -297,7 +297,7 @@ int test_scene_query_rejects_missing_query_profile(TstContext* suite, const TstC
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 38, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 38, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     DvzCapabilitySnapshot caps = {0};
     dvz_capability_snapshot_default(&caps);
     caps.query_profile_u32_r32 = false;
@@ -347,7 +347,7 @@ int test_scene_query_does_not_auto_select_2xr32_profile(TstContext* suite, const
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 40, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 40, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     DvzCapabilitySnapshot caps = {0};
     dvz_capability_snapshot_default(&caps);
     caps.query_profile_u32_r32 = false;
@@ -397,7 +397,7 @@ int test_scene_query_rejects_family_unsupported_profile(TstContext* suite, const
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest),
                .request_id = 39,
                .target = DVZ_SCENE_TARGET_ITEM,
                .profile = DVZ_QUERY_PROFILE_U64_RG32,
@@ -490,7 +490,7 @@ int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* ite
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 35, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 35, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
     DvzCapabilitySnapshot caps = {0};
     dvz_capability_snapshot_default(&caps);
     caps.shader_format_glsl = true;
@@ -593,7 +593,7 @@ int test_scene_image_query_generated_rect_samples_position(
 
     AT(dvz_panel_query(
            panel, 44.0, 32.0,
-           &(DvzQueryRequest){.request_id = 135, .target = DVZ_SCENE_TARGET_PIXEL}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 135, .target = DVZ_SCENE_TARGET_PIXEL}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -706,7 +706,7 @@ int test_scene_image_query_panzoom_samples_transformed_position(
     {
         AT(dvz_panel_query(
                panel, 32.0, 16.0,
-               &(DvzQueryRequest){.request_id = request_id, .target = DVZ_SCENE_TARGET_PIXEL}) ==
+               &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = request_id, .target = DVZ_SCENE_TARGET_PIXEL}) ==
            0);
         AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
@@ -806,7 +806,7 @@ int test_scene_image_query_reuses_retained_request_executor(
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 601, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 601, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
     AT(scene->query_executor.runtime_create_count == 1);
     AT(scene->query_executor.emitter_create_count == 1);
@@ -820,7 +820,7 @@ int test_scene_image_query_reuses_retained_request_executor(
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 602, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 602, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
     AT(scene->query_executor.runtime_create_count == 1);
     AT(scene->query_executor.emitter_create_count == 1);
@@ -911,7 +911,7 @@ int test_scene_image_sample_query_readback_failure(TstContext* suite, const TstC
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 36, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 36, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -987,7 +987,7 @@ int test_scene_point_query_misses_empty_pixel(TstContext* suite, const TstCase* 
 
     AT(dvz_panel_query(
            panel, 2.0, 2.0,
-           &(DvzQueryRequest){.request_id = 34, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 34, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -1055,7 +1055,7 @@ int test_scene_pixel_query_accepts_square_corner(TstContext* suite, const TstCas
 
     AT(dvz_panel_query(
            panel, 42.0, 42.0,
-           &(DvzQueryRequest){.request_id = 52, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 52, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -1130,7 +1130,7 @@ int test_scene_marker_query_accepts_bbox_corner(TstContext* suite, const TstCase
 
     AT(dvz_panel_query(
            panel, 42.0, 42.0,
-           &(DvzQueryRequest){.request_id = 54, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 54, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -1210,7 +1210,7 @@ int test_scene_sphere_query_resolves_item(TstContext* suite, const TstCase* item
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 61, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 61, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -1297,7 +1297,7 @@ int test_scene_segment_query_resolves_item(TstContext* suite, const TstCase* ite
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 71, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 71, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -1385,7 +1385,7 @@ int test_scene_path_query_resolves_item(TstContext* suite, const TstCase* item)
 
     AT(dvz_panel_query(
            panel, 48.0, 32.0,
-           &(DvzQueryRequest){.request_id = 73, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 73, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -1478,7 +1478,7 @@ int test_scene_vector_query_resolves_straight_item(TstContext* suite, const TstC
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 75, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 75, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -1570,7 +1570,7 @@ int test_scene_vector_query_resolves_curved_item(TstContext* suite, const TstCas
 
     AT(dvz_panel_query(
            panel, 48.0, 32.0,
-           &(DvzQueryRequest){.request_id = 77, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 77, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -1659,7 +1659,7 @@ int test_scene_primitive_query_resolves_item(TstContext* suite, const TstCase* i
 
     AT(dvz_panel_query(
            panel, 48.0, 32.0,
-           &(DvzQueryRequest){.request_id = 81, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 81, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -1732,7 +1732,7 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
     };
     DvzIndex mesh_indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -1757,7 +1757,7 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
 
     AT(dvz_panel_query(
            panel, 48.0, 32.0,
-           &(DvzQueryRequest){.request_id = 83, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 83, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -1839,7 +1839,7 @@ int test_scene_image_query_resolves_item(TstContext* suite, const TstCase* item)
 
     AT(dvz_panel_query(
            panel, 48.0, 32.0,
-           &(DvzQueryRequest){.request_id = 91, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 91, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -1914,7 +1914,7 @@ int test_scene_volume_query_resolves_item(TstContext* suite, const TstCase* item
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 111, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 111, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -1977,7 +1977,7 @@ int test_scene_volume_query_resolves_sample(TstContext* suite, const TstCase* it
     AT(dvz_volume_set_sampling(volume, DVZ_VOLUME_SAMPLING_NEAREST) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -2003,7 +2003,7 @@ int test_scene_volume_query_resolves_sample(TstContext* suite, const TstCase* it
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 112, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 112, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -2066,7 +2066,7 @@ int test_scene_volume_query_resolves_label_sample(TstContext* suite, const TstCa
     AT(dvz_volume_set_sampling(volume, DVZ_VOLUME_SAMPLING_NEAREST) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R16_UINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -2109,7 +2109,7 @@ int test_scene_volume_query_resolves_label_sample(TstContext* suite, const TstCa
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 117, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 117, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -2181,7 +2181,7 @@ static int _test_scene_volume_query_label_sample_value(
     AT(dvz_volume_set_sampling(volume, DVZ_VOLUME_SAMPLING_NEAREST) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = format,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -2223,7 +2223,7 @@ static int _test_scene_volume_query_label_sample_value(
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = request_id, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = request_id, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -2325,7 +2325,7 @@ int test_scene_volume_query_resolves_sample_uvw_profile(TstContext* suite, const
     AT(dvz_volume_set_sampling(volume, DVZ_VOLUME_SAMPLING_NEAREST) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -2351,7 +2351,7 @@ int test_scene_volume_query_resolves_sample_uvw_profile(TstContext* suite, const
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest),
                .request_id = 116,
                .target = DVZ_SCENE_TARGET_SAMPLE,
                .profile = DVZ_QUERY_PROFILE_U64_RG32,
@@ -2412,7 +2412,7 @@ int test_scene_volume_sample_query_rejects_deferred_policies(
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -2429,7 +2429,7 @@ int test_scene_volume_sample_query_rejects_deferred_policies(
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 113, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 113, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
     DvzCapabilitySnapshot caps = {0};
     dvz_capability_snapshot_default(&caps);
     AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
@@ -2475,7 +2475,7 @@ int test_scene_volume_sample_query_rejects_unsupported_format(
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_SLICE) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UINT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -2492,7 +2492,7 @@ int test_scene_volume_sample_query_rejects_unsupported_format(
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 114, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 114, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
     DvzCapabilitySnapshot caps = {0};
     dvz_capability_snapshot_default(&caps);
     AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
@@ -2551,7 +2551,7 @@ int test_scene_volume_sample_query_readback_failure(TstContext* suite, const Tst
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_SLICE) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -2578,7 +2578,7 @@ int test_scene_volume_sample_query_readback_failure(TstContext* suite, const Tst
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 115, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 115, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -2656,7 +2656,7 @@ int test_scene_labels_query_resolves_category(TstContext* suite, const TstCase* 
     label_data[3 * 4 + 1] = -7;
     label_data[3 * 4 + 3] = 17;
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_SINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -2696,13 +2696,13 @@ int test_scene_labels_query_resolves_category(TstContext* suite, const TstCase* 
 
     AT(dvz_panel_query(
            panel, 16.0, 16.0,
-           &(DvzQueryRequest){.request_id = 141, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 141, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
     AT(dvz_panel_query(
            panel, 48.0, 16.0,
-           &(DvzQueryRequest){.request_id = 142, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 142, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
     AT(dvz_panel_query(
            panel, 16.0, 48.0,
-           &(DvzQueryRequest){.request_id = 143, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 143, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 3);
 
     DvzQueryResult query = {0};
@@ -2795,7 +2795,7 @@ int test_scene_labels_query_high_unsigned_id(TstContext* suite, const TstCase* i
     uint32_t label_data[4 * 4] = {0};
     label_data[3 * 4 + 3] = 4000000000u;
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_UINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -2824,7 +2824,7 @@ int test_scene_labels_query_high_unsigned_id(TstContext* suite, const TstCase* i
 
     AT(dvz_panel_query(
            panel, 48.0, 16.0,
-           &(DvzQueryRequest){.request_id = 145, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 145, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -2871,7 +2871,7 @@ int test_scene_labels_query_rejects_missing_field(TstContext* suite, const TstCa
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 146, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 146, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
     DvzCapabilitySnapshot caps = {0};
     dvz_capability_snapshot_default(&caps);
     AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
@@ -2914,7 +2914,7 @@ int test_scene_labels_query_rejects_unsupported_format(TstContext* suite, const 
     ANN(labels);
     dvz_visual_set_query_capabilities(labels, DVZ_QUERY_CAPABILITY_ITEM);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -2928,7 +2928,7 @@ int test_scene_labels_query_rejects_unsupported_format(TstContext* suite, const 
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 153, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 153, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
     DvzCapabilitySnapshot caps = {0};
     dvz_capability_snapshot_default(&caps);
     AT(dvz_figure_process_queries(figure, NULL, &caps) == 1);
@@ -3004,7 +3004,7 @@ int test_scene_labels_query_readback_failure(TstContext* suite, const TstCase* i
     int32_t label_data[4 * 4] = {0};
     label_data[3 * 4 + 3] = 17;
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_SINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -3033,7 +3033,7 @@ int test_scene_labels_query_readback_failure(TstContext* suite, const TstCase* i
 
     AT(dvz_panel_query(
            panel, 48.0, 16.0,
-           &(DvzQueryRequest){.request_id = 147, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 147, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 
     DvzQueryResult query = {0};
@@ -3128,10 +3128,10 @@ int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const T
 
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 101, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 101, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_panel_query(
            panel, 32.0, 32.0,
-           &(DvzQueryRequest){.request_id = 102, .target = DVZ_SCENE_TARGET_PIXEL}) == 0);
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 102, .target = DVZ_SCENE_TARGET_PIXEL}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 2);
 
     DvzQueryResult item_result = {0};

@@ -93,7 +93,7 @@ bool dvz_sampled_field_set_data(DvzSampledField* field, const DvzFieldDataView* 
 bool dvz_sampled_field_update_region(
     DvzSampledField* field, DvzFieldRegion region, const DvzFieldDataView* view);
 bool dvz_sampled_field_set_geometry(DvzSampledField* field, const DvzFieldGeometry* geometry);
-const DvzSampledFieldDesc* dvz_sampled_field_desc(const DvzSampledField* field);
+const DvzSampledFieldDesc* dvz_sampled_field_get_desc(const DvzSampledField* field);
 bool dvz_visual_set_field(DvzVisual* visual, const char* slot, DvzSampledField* field);
 ```
 

@@ -182,11 +182,10 @@ static int _item_interaction_queue_query(
     uint64_t request_id = query_kind == DVZ_ITEM_INTERACTION_QUERY_SELECTION
                               ? DVZ_ITEM_INTERACTION_SELECTION_REQUEST_ID
                               : DVZ_ITEM_INTERACTION_HOVER_REQUEST_ID;
-    DvzQueryRequest request = {
-        .request_id = request_id,
-        .target = interaction->desc.target,
-        .hit_policy = interaction->desc.hit_policy,
-    };
+    DvzQueryRequest request = dvz_query_request();
+    request.request_id = request_id;
+    request.target = interaction->desc.target;
+    request.hit_policy = interaction->desc.hit_policy;
     if (dvz_panel_query(interaction->panel, x, y, &request) != 0)
         return -1;
 
