@@ -25,16 +25,24 @@ just build
 `hosted_qt_smoke` is the minimal contract smoke. `hosted_qt_widgets` embeds the hosted Datoviz
 window in a Qt Widgets layout and lets widget callbacks mutate retained scene data.
 
-The Python Qt adapter is pure Python and does not require Qt development headers, Qt development
-libraries, or Qt-aware Datoviz compilation. Users install PyQt6 with their Python, Conda, or system
-package manager; that PyQt6 package supplies or depends on the needed Qt runtime. The installed
-PyQt6 package must expose Qt Vulkan support, including `QVulkanInstance`.
+The Python Qt adapter uses PyQt6 plus the optional `datoviz_qtbridge` provider. The bridge is a
+small shared library built only when Qt6 Gui development files are available; it lets PyQt6 call
+Qt C++ Vulkan methods that current PyQt6 wheels do not expose directly. `libdatoviz` still does
+not link Qt.
+
+Source builds use `-DDVZ_ENABLE_QT_BRIDGE=AUTO` by default. If Qt6 Gui development files are
+found, the bridge is built under `build/qtbridge/`. If the bridge is installed somewhere else, set
+`DATOVIZ_QTBRIDGE_LIBRARY` to the shared library path.
 
 The PyQt source-tree example uses `datoviz.qt.DatovizWidget`:
 
 ```sh
+PYTHONPATH=. python -m datoviz.qt
 PYTHONPATH=. python examples/python/qt/hosted_pyqt.py
 ```
+
+The first command is a bridge probe. It checks PyQt Vulkan bindings, bridge loading, bridge ABI,
+and the Qt runtime version without opening a visible hosted window.
 
 
 ## Ownership Model
@@ -54,8 +62,10 @@ Datoviz owns:
 3. scene emission and rendering;
 4. one-frame rendering through `dvz_view_render_once()`.
 
-Qt adopts the Datoviz-created Vulkan instance with `QVulkanInstance::setVkInstance()`. Qt does not
-own that instance; Datoviz destroys it when `dvz_app_destroy()` runs.
+Qt adopts the Datoviz-created Vulkan instance with `QVulkanInstance::setVkInstance()`. Native C++
+examples call that Qt method directly. PyQt uses `datoviz_qtbridge` because current PyQt6 wheels
+do not expose that method. Qt does not own the adopted instance; Datoviz destroys it when
+`dvz_app_destroy()` runs.
 
 
 ## Native Qt Flow
@@ -129,10 +139,10 @@ widget = DatovizWidget(scene, figure)
 ```
 
 `DatovizWidget` owns the Qt hosting plumbing: Vulkan extension discovery, `QVulkanInstance`
-adoption, Qt surface wrapping, Qt event forwarding, Datoviz request-frame scheduling, and surface
-cleanup. The hosted view automatically connects the view input router to the figure's current
-panels, so panel-bound controllers receive Qt mouse, wheel, and key input without Qt-specific
-controller code.
+adoption through the optional bridge, Qt surface wrapping, Qt event forwarding, Datoviz
+request-frame scheduling, and surface cleanup. The hosted view automatically connects the view
+input router to the figure's current panels, so panel-bound controllers receive Qt mouse, wheel,
+and key input without Qt-specific controller code.
 
 The low-level raw `ctypes` FFI helpers remain available for binding authors:
 `dvz_view_external_surface_ffi()` and `dvz_view_update_external_surface_ffi()` accept primitive
@@ -146,6 +156,7 @@ callers should continue to prefer the struct-based `dvz_view_external_surface()`
 1. The in-tree examples currently target Qt6.
 2. A Vulkan-capable platform and Qt Vulkan support are required.
 3. The native C++ Qt examples are optional build targets and may be skipped when Qt development
-   packages are unavailable. The Python adapter does not need those development packages.
+   packages are unavailable. PyQt hosting also requires `datoviz_qtbridge`, which is built or
+   installed separately from core `libdatoviz`.
 4. `QVulkanWindow` is not the recommended path because it overlaps with Datoviz ownership of the
    Vulkan device, queues, swapchain, and command buffers.

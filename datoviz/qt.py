@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import ctypes
+import ctypes.util
+import os
 import sys
 from collections.abc import Callable
+from pathlib import Path
 
 try:
-    from PyQt6.QtCore import QEvent, QSize, Qt, pyqtSignal
+    from PyQt6.QtCore import QT_VERSION_STR, QEvent, QSize, Qt, pyqtSignal
     from PyQt6.QtGui import QCloseEvent, QExposeEvent, QKeyEvent, QMouseEvent
     from PyQt6.QtGui import QPlatformSurfaceEvent, QResizeEvent, QSurface, QVulkanInstance
     from PyQt6.QtGui import QWheelEvent, QWindow
@@ -19,6 +22,11 @@ except ImportError as exc:  # pragma: no cover - depends on optional local Qt bu
     ) from exc
 
 import datoviz.raw as dvz
+
+
+_QTBRIDGE_ABI_VERSION = 1
+_QTBRIDGE_ENV = 'DATOVIZ_QTBRIDGE_LIBRARY'
+_qt_bridge = None
 
 
 _KEY_MAP = {
@@ -43,6 +51,158 @@ _KEY_MAP = {
     Qt.Key.Key_Alt: dvz.DvzKeyCode.DVZ_KEY_LEFT_ALT,
     Qt.Key.Key_Meta: dvz.DvzKeyCode.DVZ_KEY_LEFT_SUPER,
 }
+
+
+class _QtBridge:
+    def __init__(self, lib: ctypes.CDLL, path: str):
+        self.lib = lib
+        self.path = path
+
+        lib.dvz_qtbridge_abi_version.restype = ctypes.c_uint32
+        lib.dvz_qtbridge_qt_version.restype = ctypes.c_char_p
+        lib.dvz_qtbridge_qvulkan_set_vk_instance.argtypes = [ctypes.c_size_t, ctypes.c_size_t]
+        lib.dvz_qtbridge_qvulkan_set_vk_instance.restype = ctypes.c_int
+        lib.dvz_qtbridge_qvulkan_vk_instance.argtypes = [ctypes.c_size_t]
+        lib.dvz_qtbridge_qvulkan_vk_instance.restype = ctypes.c_size_t
+
+        self.abi_version = int(lib.dvz_qtbridge_abi_version())
+        if self.abi_version != _QTBRIDGE_ABI_VERSION:
+            raise RuntimeError(
+                f'datoviz_qtbridge ABI mismatch: expected {_QTBRIDGE_ABI_VERSION}, '
+                f'got {self.abi_version} from {path}'
+            )
+
+    @property
+    def qt_version(self) -> str:
+        value = self.lib.dvz_qtbridge_qt_version()
+        return value.decode() if value else 'unknown'
+
+    def set_vk_instance(self, qvulkan_instance: int, vk_instance: int) -> None:
+        rc = int(
+            self.lib.dvz_qtbridge_qvulkan_set_vk_instance(
+                ctypes.c_size_t(qvulkan_instance),
+                ctypes.c_size_t(vk_instance),
+            )
+        )
+        if rc != 0:
+            reasons = {
+                -1: 'null QVulkanInstance pointer',
+                -2: 'null VkInstance handle',
+                -3: 'unsupported Qt bridge runtime state',
+            }
+            reason = reasons.get(rc, f'error code {rc}')
+            raise RuntimeError(f'datoviz_qtbridge could not adopt the Vulkan instance: {reason}')
+
+    def vk_instance(self, qvulkan_instance: int) -> int:
+        return int(
+            self.lib.dvz_qtbridge_qvulkan_vk_instance(ctypes.c_size_t(qvulkan_instance))
+        )
+
+
+def _qt_bridge_names() -> list[str]:
+    if sys.platform == 'win32':
+        return ['datoviz_qtbridge.dll', 'libdatoviz_qtbridge.dll']
+    if sys.platform == 'darwin':
+        return ['libdatoviz_qtbridge.dylib', 'datoviz_qtbridge.dylib']
+    return ['libdatoviz_qtbridge.so', 'datoviz_qtbridge.so']
+
+
+def _qt_bridge_candidates() -> list[Path | str]:
+    env_path = os.environ.get(_QTBRIDGE_ENV)
+    candidates: list[Path | str] = []
+    if env_path:
+        candidates.append(Path(env_path))
+
+    package_dir = Path(__file__).resolve().parent
+    repo_dir = package_dir.parent
+    search_dirs = [
+        package_dir,
+        package_dir / '.libs',
+        repo_dir / 'build' / 'qtbridge',
+        repo_dir / 'build' / 'lib',
+        repo_dir / 'lib',
+    ]
+    for directory in search_dirs:
+        candidates.extend(directory / name for name in _qt_bridge_names())
+
+    found = ctypes.util.find_library('datoviz_qtbridge')
+    if found:
+        candidates.append(found)
+
+    return candidates
+
+
+def _load_qt_bridge() -> _QtBridge:
+    global _qt_bridge
+
+    if _qt_bridge is not None:
+        return _qt_bridge
+
+    errors = []
+    env_path = os.environ.get(_QTBRIDGE_ENV)
+    for candidate in _qt_bridge_candidates():
+        candidate_text = str(candidate)
+        if isinstance(candidate, Path) and not candidate.exists():
+            if env_path and candidate == Path(env_path):
+                errors.append(f'{candidate_text}: file does not exist')
+            continue
+        try:
+            lib = ctypes.CDLL(candidate_text)
+            bridge = _QtBridge(lib, candidate_text)
+            _check_qt_bridge_runtime(bridge)
+            _qt_bridge = bridge
+            return _qt_bridge
+        except OSError as exc:
+            errors.append(f'{candidate_text}: {exc}')
+
+    detail = '; '.join(errors) if errors else 'no candidate library was found'
+    raise RuntimeError(
+        'PyQt hosting requires the optional datoviz_qtbridge provider. Build Datoviz with '
+        f'-DDVZ_ENABLE_QT_BRIDGE=AUTO or ON, or set {_QTBRIDGE_ENV} to the bridge library. '
+        f'Lookup detail: {detail}.'
+    )
+
+
+def _check_qt_bridge_runtime(bridge: _QtBridge) -> None:
+    pyqt_version = str(QT_VERSION_STR)
+    bridge_version = bridge.qt_version
+    pyqt_major_minor = '.'.join(pyqt_version.split('.')[:2])
+    bridge_major_minor = '.'.join(bridge_version.split('.')[:2])
+    if pyqt_major_minor != bridge_major_minor:
+        raise RuntimeError(
+            'datoviz_qtbridge Qt runtime mismatch: '
+            f'PyQt6 uses Qt {pyqt_version}, but {bridge.path} reports Qt {bridge_version}. '
+            'Use a bridge built against the same Qt major/minor runtime.'
+        )
+
+
+def _require_pyqt_vulkan_surface() -> None:
+    missing = []
+    if not hasattr(QWindow, 'setVulkanInstance'):
+        missing.append('QWindow.setVulkanInstance')
+    if not hasattr(QVulkanInstance, 'surfaceForWindow'):
+        missing.append('QVulkanInstance.surfaceForWindow')
+    if missing:
+        raise RuntimeError(
+            'datoviz.qt requires PyQt6 bindings with Qt Vulkan support; missing '
+            + ', '.join(missing)
+        )
+
+
+def _unwrap_qvulkan_instance(qt_instance: QVulkanInstance) -> int:
+    try:
+        from PyQt6 import sip
+    except ImportError as exc:  # pragma: no cover - depends on optional PyQt packaging.
+        raise RuntimeError('datoviz.qt requires PyQt6.sip.unwrapinstance()') from exc
+
+    unwrap = getattr(sip, 'unwrapinstance', None)
+    if unwrap is None:
+        raise RuntimeError('datoviz.qt requires PyQt6.sip.unwrapinstance()')
+
+    ptr = int(unwrap(qt_instance) or 0)
+    if ptr == 0:
+        raise RuntimeError('PyQt6.sip.unwrapinstance(QVulkanInstance) returned a null pointer')
+    return ptr
 
 
 def _extension_name(extension) -> str:
@@ -276,8 +436,19 @@ class DatovizWindow(QWindow):
         instance = dvz.dvz_app_vk_instance(self._app)
         if not instance:
             raise RuntimeError('dvz_app_vk_instance() failed')
+        _require_pyqt_vulkan_surface()
+
         self._qt_instance = QVulkanInstance()
-        self._qt_instance.setVkInstance(int(instance))
+        qt_instance_ptr = _unwrap_qvulkan_instance(self._qt_instance)
+        vk_instance = int(instance)
+        bridge = _load_qt_bridge()
+        bridge.set_vk_instance(qt_instance_ptr, vk_instance)
+        adopted = bridge.vk_instance(qt_instance_ptr)
+        if adopted != vk_instance:
+            raise RuntimeError(
+                'datoviz_qtbridge Vulkan instance readback mismatch: '
+                f'expected 0x{vk_instance:x}, got 0x{adopted:x}'
+            )
         if not self._qt_instance.create():
             raise RuntimeError(f'QVulkanInstance.create() failed: {self._qt_instance.errorCode()}')
 
@@ -447,4 +618,39 @@ def _require_qapplication() -> QApplication:
     return app
 
 
+def _probe_qt_bridge() -> dict[str, object]:
+    """Return optional Qt bridge diagnostics without constructing a visible window."""
+
+    _require_pyqt_vulkan_surface()
+    qt_instance = QVulkanInstance()
+    qt_instance_ptr = _unwrap_qvulkan_instance(qt_instance)
+    bridge = _load_qt_bridge()
+    return {
+        'bridge_path': bridge.path,
+        'bridge_abi': bridge.abi_version,
+        'bridge_qt_version': bridge.qt_version,
+        'pyqt_qt_version': str(QT_VERSION_STR),
+        'qvulkan_instance_ptr': qt_instance_ptr,
+        'qvulkan_instance_readback': bridge.vk_instance(qt_instance_ptr),
+        'has_qwindow_set_vulkan_instance': hasattr(QWindow, 'setVulkanInstance'),
+        'has_qvulkan_surface_for_window': hasattr(QVulkanInstance, 'surfaceForWindow'),
+    }
+
+
+def _main() -> int:
+    try:
+        info = _probe_qt_bridge()
+    except Exception as exc:  # pragma: no cover - diagnostic command.
+        print(f'datoviz.qt probe failed: {exc}', file=sys.stderr)
+        return 1
+
+    for key, value in info.items():
+        print(f'{key}: {value}')
+    return 0
+
+
 __all__ = ['DatovizWidget', 'DatovizWindow']
+
+
+if __name__ == '__main__':
+    raise SystemExit(_main())
