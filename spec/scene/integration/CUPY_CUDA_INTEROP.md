@@ -105,9 +105,10 @@ Optional synchronization fields:
 | `semaphore_value` | Timeline value associated with the exported buffer state. |
 
 The current C carrier for this data is `DvzInteropBufferExport` from
-`include/datoviz/vk/memory_interop.h`, filled by `dvz_interop_buffer_export()`. A future Python
-binding may wrap this in a higher-level object, but the field semantics above are the stable
-contract to preserve.
+`include/datoviz/vk/memory_interop.h`, filled by `dvz_interop_buffer_export()` for allocation-level
+callers or `dvz_interop_buffer_export_from_buffer()` for the preferred public buffer-level path. A
+future Python binding may wrap this in a higher-level object, but the field semantics above are the
+stable contract to preserve.
 
 Ownership rules:
 
@@ -136,8 +137,7 @@ validated until there is an equivalent smoke test.
 
 ## Recommended C Export Surface
 
-The first public C helper should export a vklite `DvzBuffer`, not expose its internal
-`DvzAllocation`.
+The public C helper exports a vklite `DvzBuffer`, not its internal `DvzAllocation`.
 
 Avoid making examples include private vklite headers or depend on fields such as
 `DvzBuffer::alloc`. That would work for a local smoke, but it would leak the current vklite wrapper
@@ -145,7 +145,7 @@ layout into user code and make the interop story brittle. The public API should 
 `include/datoviz/vk/memory_interop.h`, because that header is already the explicit advanced escape
 hatch for raw external-memory workflows.
 
-Preferred shape:
+Current shape:
 
 ```c
 typedef struct DvzInteropBufferExportConfig
@@ -166,7 +166,7 @@ DVZ_EXPORT int dvz_interop_buffer_export_from_buffer(
     DvzInteropBufferExport* out);
 ```
 
-This helper should:
+This helper:
 
 1. validate that the buffer and allocator are live,
 2. reject non-exportable allocators,
@@ -179,8 +179,7 @@ This helper should:
 The existing lower-level `dvz_interop_buffer_export()` may remain useful for tests and specialized
 runtime code, but examples and Python bindings should prefer the buffer-level helper.
 
-Before documenting this as a Python-facing contract, consider extending `DvzInteropBufferExport`
-with:
+`DvzInteropBufferExport` includes these Python-facing extension fields:
 
 | Field | Why |
 |---|---|

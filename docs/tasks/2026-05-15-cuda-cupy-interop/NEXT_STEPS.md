@@ -5,6 +5,16 @@
 The active route is Vulkan-owned allocation exported outward to CUDA/CuPy. Do not design new
 architecture around importing CUDA/CuPy-owned device pointers into Vulkan.
 
+Current slice update, 2026-06-01:
+
+1. `dvz_interop_buffer_export_from_buffer()` is now the public buffer-level helper in
+   `datoviz/vk/memory_interop.h`; examples and bindings no longer need private `DvzBuffer::alloc`
+   access.
+2. `DvzInteropBufferExport` now carries a descriptor version, Vulkan usage, DRP2 usage, flags,
+   and a Vulkan device UUID validity bit plus UUID bytes for CUDA/Vulkan device matching.
+3. `tools/bindings/ctypes_cupy_smoke.py` is the first Linux/NVIDIA-only Python smoke scaffold; it
+   skips until CuPy and the generated advanced raw ctypes symbols are available.
+
 Current proof points:
 
 1. `src/vk/tests/test_memory.c:test_memory_cuda_1` creates a Vulkan-owned exportable buffer,
@@ -57,30 +67,17 @@ that exported it.
 
 ## Next Implementation Slice
 
-Add a buffer-level export helper before writing public examples. The preferred API is an advanced
-interop helper in `datoviz/vk/memory_interop.h`, not an accessor exposing `DvzBuffer::alloc`:
+The buffer-level export helper has landed. Keep the next slice focused on turning the scaffold into
+a real Linux/NVIDIA smoke:
 
-```c
-DVZ_EXPORT int dvz_interop_buffer_export_from_buffer(
-    DvzBuffer* buffer,
-    const DvzInteropBufferExportConfig* config,
-    DvzInteropBufferExport* out);
-```
-
-This helper should validate the live buffer and exportable allocator, resolve the logical byte
-range, export the memory handle, package optional timeline semaphore metadata, and report both
-Vulkan usage and DRP2 usage. Consider extending `DvzInteropBufferExport` with `version`,
-`vk_usage`, `drp2_usage`, export flags, and Vulkan device UUID fields before exposing the descriptor
-to Python.
-
-Then add a tiny Python/CuPy smoke:
-
-1. Datoviz creates a Vulkan-owned exportable vertex/storage buffer.
-2. The export descriptor is imported by a small CUDA bridge.
-3. The bridge maps a CUDA pointer and wraps it as `cupy.cuda.UnownedMemory` plus a CuPy ndarray.
-4. A CuPy kernel writes point positions.
-5. CUDA signals an external timeline semaphore.
-6. The DRP2 registered-buffer render path waits, draws, and verifies by readback.
+1. Generate or hand-write the advanced raw ctypes surface for `datoviz/vk/memory_interop.h`
+   without exposing it through high-level Python APIs.
+2. Datoviz creates a Vulkan-owned exportable vertex/storage buffer.
+3. The export descriptor is imported by a small CUDA bridge.
+4. The bridge maps a CUDA pointer and wraps it as `cupy.cuda.UnownedMemory` plus a CuPy ndarray.
+5. A CuPy kernel writes point positions.
+6. CUDA signals an external timeline semaphore.
+7. The DRP2 registered-buffer render path waits, draws, and verifies by readback.
 
 The Python object should own imported CUDA external-memory/semaphore handles, the mapped pointer,
 the CuPy owner object, and cleanup. Normal users should synchronize through a context manager:
