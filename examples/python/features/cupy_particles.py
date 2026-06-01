@@ -16,23 +16,17 @@ from __future__ import annotations
 import argparse
 import ctypes
 import math
-import sys
 import tempfile
+import time
 from pathlib import Path
 
 import datoviz.raw as dvz
+from datoviz.experimental import cuda as dvz_cuda
 
 
-ROOT_DIR = Path(__file__).resolve().parents[3]
-TOOLS_DIR = ROOT_DIR / 'tools' / 'bindings'
-sys.path.insert(0, str(TOOLS_DIR))
-
-import cupy_interop_runtime as ci  # noqa: E402
-
-
-WIDTH = 1024
-HEIGHT = 768
-DEFAULT_PARTICLES = 65536
+WIDTH = 1600
+HEIGHT = 1200
+DEFAULT_PARTICLES = 65536*4
 DEFAULT_FRAMES = 180
 DEFAULT_FPS = 60.0
 GOLDEN_ANGLE = 2.39996322972865332
@@ -51,16 +45,36 @@ def _skip(reason: str) -> int:
 def _make_static_attrs(count: int):
     colors = (dvz.DvzColor * count)()
     sizes = (ctypes.c_float * count)()
+
+    def mix(a, b, t):
+        return tuple(a[j] * (1.0 - t) + b[j] * t for j in range(3))
+
+    warm_core = (220.0, 150.0, 65.0)
+    cyan_mid = (45.0, 195.0, 220.0)
+    violet_outer = (90.0, 80.0, 210.0)
+    deep_edge = (20.0, 55.0, 135.0)
+    rose_accent = (220.0, 60.0, 135.0)
+
     for i in range(count):
         u = (i + 0.5) / count
         r = math.sqrt(u)
+        theta = (i * GOLDEN_ANGLE) % TAU
         core = (1.0 - r) ** 1.4
-        red = int(28 + 60 * core)
-        green = int(125 + 85 * core)
-        blue = int(205 + 35 * core)
-        alpha = int(58 + 54 * core)
+
+        if r < 0.30:
+            rgb = mix(warm_core, cyan_mid, r / 0.30)
+        elif r < 0.68:
+            rgb = mix(cyan_mid, violet_outer, (r - 0.30) / 0.38)
+        else:
+            rgb = mix(violet_outer, deep_edge, (r - 0.68) / 0.32)
+
+        accent = 0.16 * (0.5 + 0.5 * math.sin(5.0 * theta)) * (1.0 - r)
+        red = int(rgb[0] * (1.0 - accent) + rose_accent[0] * accent)
+        green = int(rgb[1] * (1.0 - accent) + rose_accent[1] * accent)
+        blue = int(rgb[2] * (1.0 - accent) + rose_accent[2] * accent)
+        alpha = int(192 + 64 * core)
         colors[i] = dvz.DvzColor(red, green, blue, alpha)
-        sizes[i] = 0.85 + 1.45 * core
+        sizes[i] = 0.70 + 1.25 * core
     return colors, sizes
 
 
@@ -71,7 +85,7 @@ def _set_static_attrs(visual, colors, sizes, count: int) -> None:
         raise RuntimeError('dvz_visual_set_data(size) failed')
 
 
-def _build_scene(scene, positions: ci.SharedSceneCudaArray, count: int):
+def _build_scene(scene, positions: dvz_cuda.SceneCudaArray, count: int):
     figure = dvz.dvz_figure(scene, WIDTH, HEIGHT, 0)
     panel = dvz.dvz_panel_full(figure)
     visual = dvz.dvz_point(scene, 0)
@@ -88,15 +102,23 @@ def _build_scene(scene, positions: ci.SharedSceneCudaArray, count: int):
     _set_static_attrs(visual, colors, sizes, count)
     if dvz.dvz_panel_add_visual(panel, visual, None) != 0:
         raise RuntimeError('dvz_panel_add_visual() failed')
-    return figure, visual, colors, sizes
+    controller = dvz.dvz_panzoom(scene, None)
+    if not controller:
+        raise RuntimeError('dvz_panzoom() failed')
+    if dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY) != 0:
+        raise RuntimeError('dvz_panel_bind_controller() failed')
+    return figure, panel, visual, colors, sizes
 
 
 class ParticleStepper:
-    def __init__(self, cp, positions: ci.SharedSceneCudaArray, fps: float):
+    def __init__(
+        self, cp, positions: dvz_cuda.SceneCudaArray, fps: float, realtime: bool = False
+    ):
         self.cp = cp
         self.positions = positions
         self.dt = 1.0 / fps
         self.frame = 0
+        self.start_time = time.perf_counter() if realtime else None
         idx = cp.arange(positions.count, dtype=cp.float32)
         self.idx = idx
         u = (idx + cp.float32(0.5)) / cp.float32(positions.count)
@@ -109,10 +131,15 @@ class ParticleStepper:
         value = cp.sin((self.idx + salt) * cp.float32(12.9898)) * cp.float32(43758.5453)
         return value - cp.floor(value)
 
+    def time(self) -> float:
+        if self.start_time is not None:
+            return time.perf_counter() - self.start_time
+        return self.frame * self.dt
+
     def update(self) -> None:
         cp = self.cp
-        t = cp.float32(self.frame * self.dt)
-        with self.positions.cuda_write() as pos:
+        t = cp.float32(self.time())
+        with self.positions.write_cupy() as pos:
             theta = self.theta0 + cp.float32(0.55) * t
             wave = cp.float32(1.0) + cp.float32(0.08) * cp.sin(
                 cp.float32(1.3) * t + self.phase
@@ -120,7 +147,6 @@ class ParticleStepper:
             pos[:, 0] = self.radius * wave * cp.cos(theta)
             pos[:, 1] = self.radius * wave * cp.sin(theta)
             pos[:, 2] = cp.float32(0.12) * cp.sin(cp.float32(2.0) * theta + self.phase)
-        self.positions.wait_for_cuda_writes()
         self.frame += 1
 
 
@@ -142,25 +168,40 @@ def _borrowed_app_config(schedule_mode=None):
     return app_config
 
 
-def _create_live_app(scene, figure, positions: ci.SharedSceneCudaArray, refresh_static_attrs):
-    resources = positions.create_app_resources(figure)
+def _create_live_app(scene, figure, panel, positions: dvz_cuda.SceneCudaArray, refresh_static_attrs):
+    resources = positions.app_resources(figure)
     refresh_static_attrs()
     app_config = _borrowed_app_config(dvz.DvzAppScheduleMode.DVZ_APP_SCHEDULE_CONTINUOUS)
     app = dvz.dvz_app_with_resources(scene, ctypes.byref(app_config), ctypes.byref(resources))
     if not app:
-        raise ci.InteropSkip('dvz_app_with_resources() failed')
+        raise dvz_cuda.CudaInteropUnavailable('dvz_app_with_resources() failed')
     view = dvz.dvz_view_glfw(app, figure, WIDTH, HEIGHT, b'cupy_particles')
     if not view:
         dvz.dvz_app_destroy(app)
-        raise ci.InteropSkip('dvz_view_glfw() failed')
+        raise dvz_cuda.CudaInteropUnavailable('dvz_view_glfw() failed')
+    router = dvz.dvz_view_input(view)
+    if not router:
+        dvz.dvz_app_destroy(app)
+        raise dvz_cuda.CudaInteropUnavailable('dvz_view_input() failed')
+    if dvz.dvz_panel_connect_input(panel, router) != 0:
+        dvz.dvz_app_destroy(app)
+        raise dvz_cuda.CudaInteropUnavailable('dvz_panel_connect_input() failed')
     return app, view
 
 
 def _run_live(
-    cp, scene, figure, positions, refresh_static_attrs, particles: int, frames: int, fps: float
+    cp,
+    scene,
+    figure,
+    panel,
+    positions,
+    refresh_static_attrs,
+    particles: int,
+    frames: int,
+    fps: float,
 ):
-    app, view = _create_live_app(scene, figure, positions, refresh_static_attrs)
-    stepper = ParticleStepper(cp, positions, fps)
+    app, view = _create_live_app(scene, figure, panel, positions, refresh_static_attrs)
+    stepper = ParticleStepper(cp, positions, fps, realtime=True)
     stepper.update()
 
     def on_frame(view, user_data) -> None:
@@ -188,7 +229,7 @@ def _run_offscreen(
     fps: float,
     output: Path,
 ):
-    app, view = positions.create_offscreen_app(
+    app, view = positions.offscreen_app(
         scene,
         figure,
         WIDTH,
@@ -224,14 +265,6 @@ def main(argv: list[str] | None = None) -> int:
     if args.output is not None and not args.offscreen:
         parser.error('--output requires --offscreen')
 
-    try:
-        ci.require_linux()
-        dvz_raw = ci.require_raw_surface()
-        cp = ci.require_cupy()
-        bridge = ci.load_bridge()
-    except ci.InteropSkip as exc:
-        return _skip(str(exc))
-
     frames = args.frames if args.frames is not None else (DEFAULT_FRAMES if args.offscreen else 0)
     output = args.output
     tempdir = None
@@ -245,11 +278,18 @@ def main(argv: list[str] | None = None) -> int:
         scene = dvz.dvz_scene()
         if not scene:
             raise RuntimeError('dvz_scene() failed')
-        with ci.SharedSceneCudaArray(
-            dvz_raw, cp, bridge, scene, count=args.particles, present=not args.offscreen
+        with dvz_cuda.scene_array(
+            scene,
+            shape=(args.particles, 3),
+            dtype='float32',
+            usage=('vertex', 'storage'),
+            present=not args.offscreen,
         ) as positions:
+            cp = positions.cupy
             try:
-                figure, visual, colors, sizes = _build_scene(scene, positions, args.particles)
+                figure, panel, visual, colors, sizes = _build_scene(
+                    scene, positions, args.particles
+                )
 
                 def refresh_static_attrs() -> None:
                     _set_static_attrs(visual, colors, sizes, args.particles)
@@ -273,6 +313,7 @@ def main(argv: list[str] | None = None) -> int:
                         cp,
                         scene,
                         figure,
+                        panel,
                         positions,
                         refresh_static_attrs,
                         args.particles,
@@ -283,7 +324,7 @@ def main(argv: list[str] | None = None) -> int:
                 if app:
                     dvz.dvz_app_destroy(app)
                     app = None
-    except ci.InteropSkip as exc:
+    except dvz_cuda.CudaInteropUnavailable as exc:
         return _skip(str(exc))
     finally:
         if app:
