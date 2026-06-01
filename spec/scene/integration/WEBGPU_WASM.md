@@ -209,6 +209,12 @@ Resource update rules:
 3. repeated frames use buffer, texture, or uniform updates;
 4. resize recreates extent-dependent targets and refreshes or invalidates dependent bind groups;
 5. browser runtime must not retain borrowed WASM memory after the caller frees or overwrites it.
+6. same-shape visual data updates should emit update-only streams that replay against retained
+   browser runtime state;
+7. setup-bearing visual updates, such as texture size changes, require runtime reload before frame
+   replay;
+8. visual item-count growth is rejected by the current per-attribute ABI until a batch update or
+   explicit topology-rebuild contract exists.
 
 ## Browser App Layer
 
@@ -286,9 +292,10 @@ Current evidence as of 2026-05-30:
 The supported browser-scene subset now covers point, primitive triangle-list, RGBA8 image, basic
 mesh, panzoom, and a first 3D mesh + arcball scene. The browser wrapper passes normalized WebGPU
 limits into the WASM scene emitter before figure creation, and the old direct browser-side panzoom
-uniform mutation path has been retired from the release-visible demos. The next release-proofing
-gaps are further diagnostic ABI behavior, direct payload transport, browser app examples, and then
-broader visual/technique parity.
+uniform mutation path has been retired from the release-visible demos. Retained browser runtime
+stress now tracks browser-owned frame resources and retires submitted references after explicit
+queue completion in retained sessions. The next release-proofing gaps are direct payload transport,
+browser app examples, and then broader visual/technique parity.
 
 ### Experimental WASM Scene ABI
 

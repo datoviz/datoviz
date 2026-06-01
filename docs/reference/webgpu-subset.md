@@ -101,6 +101,14 @@ Payload and diagnostics lifetime:
 - failed emits and rejected operations should return an error status and expose diagnostics when the
   scene or DRP2 layer can explain the failure.
 
+Visual update behavior:
+
+- same-shape visual data updates emit retained-runtime update streams;
+- texture size changes emit setup-bearing streams and the browser wrapper reloads the runtime before
+  frame replay;
+- point item-count growth is rejected by the current per-attribute ABI and reports attr/count
+  diagnostics.
+
 ## Validation
 
 Use the browserless checks first:

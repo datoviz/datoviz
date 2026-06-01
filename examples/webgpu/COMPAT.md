@@ -73,6 +73,15 @@ Current status as of this note:
   `just wasm-scene-smoke` passed the 2D/3D generic ABI streams; `just webgpu-browser-smoke`
   rendered the 2D and 3D WASM pages, exercised pointer and wheel interaction, and wrote nonblank
   PNG captures under `build/webgpu-browser-smoke/`.
+- recorded browserless and automated browser proof on 2026-06-01 after retained frame-resource
+  tracking and visual update contract hardening: `just webgpu-fixture-preflight` passed `39` strict
+  positive/WebGPU stream rows; `just webgpu-runner-smoke` passed `37` positive fixtures,
+  `2` WebGPU streams, and `82` negative parity fixtures; retained runtime stress now checks stable
+  resource counts and zero open, recorded, or retired submitted references; `just wasm-scene-smoke`
+  validates same-shape visual updates, rejected point count growth, texture-resize reload streams,
+  and the 2D/3D generic ABI streams; `just webgpu-browser-smoke` rendered the 2D and 3D WASM pages,
+  exercised pointer and wheel interaction, and wrote nonblank PNG captures under
+  `build/webgpu-browser-smoke/`.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
@@ -225,11 +234,12 @@ forms. The fixture dashboard requires explicit bind-group layout and render-pipe
   demo-compatibility option.
 - The fixture dashboard retained runtime stress section loads `scene_point_wgsl`,
   `scene_primitive_wgsl`, `texture_sampling_wgsl`, and `attachment_depth_wgsl` once each, renders
-  `10` repeated frames through `Drp2WebGpuRuntime`, and checks stable resource counts with no open
-  or recorded references after every frame.
+  `10` repeated frames through `Drp2WebGpuRuntime`, and checks stable resource counts with no open,
+  recorded, or submitted references after every frame. Browser-canvas depth targets are cached as
+  runtime-owned frame resources and counted separately from DRP2 texture objects.
 - The fixture dashboard demo-path stress rows drive the same `WebGpuDemoSession` used by the main
   demo page through resize-triggered reload and stream reload while checking stable persistent
-  resource counts and no open or recorded references.
+  resource counts and no open, recorded, or submitted references.
 - Destroy commands validate live-object dependencies, use-after-destroy, recorded-work references,
   and submitted-work references. The runner calls native WebGPU `destroy()` only for object types
   that expose it and otherwise tombstones the DRP2 object id.
