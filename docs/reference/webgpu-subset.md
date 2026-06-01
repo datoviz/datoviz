@@ -14,6 +14,8 @@ parity and should be treated as an unstable preview.
 ## Supported Scene Slice
 
 The browser scene demos use the generic `dvz_wasm_api_*` object ABI in `src/wasm/scene_api.c`.
+The reusable browser wrapper and session code lives under `web/wasm/`; files under
+`examples/webgpu/demos/` are demo content only.
 
 Supported visual and interaction families:
 
@@ -26,8 +28,8 @@ Supported visual and interaction families:
 
 Supported browser pages:
 
-- `examples/webgpu/wasm_scene.html`: point + primitive + image + mesh + panzoom;
-- `examples/webgpu/wasm_scene_3d.html`: basic 3D mesh + camera + arcball;
+- `examples/webgpu/examples.html?demo=wasm-2d`: point + primitive + image + mesh + panzoom;
+- `examples/webgpu/examples.html?demo=wasm-3d`: basic 3D mesh + camera + arcball;
 - `examples/webgpu/fixtures.html`: DRP2 fixture dashboard for the pure browser WebGPU runner,
   retained runtime stress checks, and WASM scene smoke rows.
 
@@ -137,8 +139,8 @@ Open:
 
 ```text
 http://localhost:8765/examples/webgpu/fixtures.html
-http://localhost:8765/examples/webgpu/wasm_scene.html
-http://localhost:8765/examples/webgpu/wasm_scene_3d.html
+http://localhost:8765/examples/webgpu/examples.html?demo=wasm-2d
+http://localhost:8765/examples/webgpu/examples.html?demo=wasm-3d
 ```
 
 Expected manual results for the current subset:
@@ -146,14 +148,14 @@ Expected manual results for the current subset:
 - fixture dashboard: all committed rows pass, no unsupported rows, no failures;
 - fixture dashboard WASM Scene Smoke section: 2D point update, 2D image texture resize reload, and
   3D mesh update rows pass;
-- 2D WASM page: point, primitive, image, and mesh content render; pan/zoom and resize work;
-- 3D WASM page: cube renders; arcball drag, wheel zoom, and resize work.
+- 2D WASM example: point, primitive, image, and mesh content render; pan/zoom and resize work;
+- 3D WASM example: cube renders; arcball drag, wheel zoom, and resize work.
 
-`just webgpu-browser-smoke` automates the two WASM scene page checks through the split-packet
+`just webgpu-browser-smoke` automates the two WASM example checks through the split-packet
 runtime path and the dashboard WASM Scene Smoke rows with headless Chrome when Chrome/Chromium is
 available locally. It writes transient PNG evidence under `build/webgpu-browser-smoke/`.
 
 Headless Chrome/Dawn can skip WebGPU render checks before the scene contract is exercised because
 of external instance loss, including `A valid external Instance reference no longer exists` or
-`Instance dropped in popErrorScope`. Visible browser runs of the WASM scene pages and fixture
+`Instance dropped in popErrorScope`. Visible browser runs of the WASM examples host and fixture
 dashboard remain the render validation path for the current experimental subset.

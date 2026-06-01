@@ -21,28 +21,32 @@ streams, and semantic negative fixture parity checks against the browser WebGPU 
 http://localhost:8765/examples/webgpu/fixtures.html
 ```
 
-The WASM scene demo builds the generic scene ABI with Emscripten, routes pointer input through
-the compiled panzoom controller, and executes the emitted DRP2 commands with the browser WebGPU
-runtime:
+The WASM examples build the generic scene ABI with Emscripten, route pointer input through compiled
+controllers, and execute emitted DRP2 packets with the browser WebGPU runtime. Reusable browser
+bridge/session code lives under `web/wasm/`; `examples/webgpu/demos/` contains content-only demo
+modules.
 
 ```bash
 just wasm-scene-smoke
 ```
 
 ```text
+http://localhost:8765/examples/webgpu/examples.html?demo=wasm-2d
+```
+
+The 3D WASM proof uses the same generic ABI wrapper with a scene-owned camera and arcball
+controller:
+
+```text
+http://localhost:8765/examples/webgpu/examples.html?demo=wasm-3d
+```
+
+Legacy single-demo pages currently remain as thin compatibility entry points while the release
+browser demo surface moves to `examples.html`:
+
+```text
 http://localhost:8765/examples/webgpu/wasm_scene.html
-```
-
-The 3D WASM proof uses the same generic ABI wrapper with a scene-owned camera and arcball controller:
-
-```text
 http://localhost:8765/examples/webgpu/wasm_scene_3d.html
-```
-
-`examples/webgpu/wasm_scene.html` is the generic wrapper entry point. The alias below serves
-the same `examples/webgpu/datoviz_wasm_scene.js` wrapper over `src/wasm/scene_api.c`:
-
-```text
 http://localhost:8765/examples/webgpu/wasm_api_scene.html
 ```
 
@@ -148,7 +152,7 @@ Manual checks:
 - Offscreen readback stream: the status line should include `readback nonzero=` with a nonzero value.
 - No-buffer and vertex-buffer streams should still render a single RGB triangle.
 
-The main page keeps the WebGPU runtime resources alive after loading a stream and replays the DRP2
-frame command slice. Browser interaction for the release-visible scene path is exercised by
-`wasm_scene.html` and `wasm_scene_3d.html`, where DOM input is routed through the generic WASM scene
-ABI and emitted DRP2 update streams.
+The main stream page keeps the WebGPU runtime resources alive after loading a stream and replays the
+DRP2 frame command slice. Browser interaction for the release-visible scene path is exercised by
+`examples.html`, where DOM input is routed through the generic WASM scene ABI and emitted DRP2
+update streams.

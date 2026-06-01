@@ -98,6 +98,11 @@ Current status as of this note:
   diagnostic, and `just webgpu-browser-smoke` renders the 2D/3D WASM pages, exercises retained
   update/frame packet lifecycles, checks pagehide destruction, and reports `2` dashboard WASM scene
   checks passing.
+- recorded automated browser proof on 2026-06-01 after the unified examples host split:
+  reusable WASM browser session code lives under `web/wasm/`, the release-visible 2D and 3D demos
+  load through `examples/webgpu/examples.html`, and `just webgpu-browser-smoke` renders both demos,
+  exercises retained packet lifecycles, checks pagehide destruction, and reports `2` dashboard WASM
+  scene checks passing.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
