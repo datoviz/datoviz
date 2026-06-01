@@ -44,9 +44,13 @@ retained scene compute tasks replace the figure-attached convenience API.
 Required retained textured-mesh proof. This can be a bounded terrain patch, a planet-like surface,
 or a narrow Mars/Earth slice, but it must use UVs and real texture sampling.
 
-Minimal target: mesh vertices, indices, UV attribute, sampled texture resource, texture color mode,
-lighting/material integration, camera path or arcball, and a deterministic capture. Baked vertex
-colors do not satisfy this scenario.
+Current v0.4 implementation target: `examples/c/showcases/textured_planet.c`, a retained
+Earth/Mars textured-planet showcase using a UV sphere, mesh-bound sampled RGBA textures,
+lighting/material integration, arcball interaction, slow rotation, procedural star field, and
+deterministic capture. Baked vertex colors do not satisfy this scenario.
+
+Mars DEM terrain analysis, registered orthoimage/DEM preprocessing, slope/hazard layers, masks,
+probes, and GIS cache policy remain outside this v0.4 slice.
 
 
 ## `brain_volume_mesh`

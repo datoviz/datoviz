@@ -85,7 +85,7 @@ The main remaining polish or feature gaps are:
 | `protein_arcball_viewer` | `partial-now` | mesh, sphere, materials, SSAO/MSAA, GUI, arcball | Flagship native C showcase; defer labels/picking/molecular surface if needed. |
 | `showcase_wind_field` | `needs-rc1-proof` | image field, vector visual, paths, panzoom, colorbar | Best near-term 2D showcase; vector visual should replace primitive arrows. |
 | `showcase_gpu_particle_smoke` | `ready-now` | scene compute, shared storage/vertex buffers, blended points | Public experimental compute-to-graphics showcase lives in `examples/c/showcases/gpu_particle_smoke.c`. |
-| `textured_terrain_or_planet` | `needs-rc1-proof` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof. Current source is `examples/c/visuals/textured_mesh.c`; promote or add a showcase/fixture capture. |
+| `textured_terrain_or_planet` | `ready-now` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof lives in `examples/c/showcases/textured_planet.c`: Earth/Mars UV sphere with real sampled textures and procedural fallbacks. Mars DEM terrain analysis remains v0.5/later. |
 | `brain_volume_mesh` | `partial-now` | volume, transparent mesh, GUI, arcball | Narrow Allen/IBL brain slice for v0.4; full atlas explorer is v0.5. |
 | `dense_point_cloud_edl` | `ready-now` | large points/pixels, EDL, fly/camera | Use LiDAR or synthetic dense cloud as performance/showcase proof. |
 
@@ -117,7 +117,7 @@ The main remaining polish or feature gaps are:
 | `tracks_tractography_vectors` | vector visual, packed ragged paths, per-track identity, selection | Combine napari tracks and diffusion tractography into one v0.5 lane. |
 | `galaxy_labels` | large star cache, label overlay, marker/sprite polish | Keep C version engine-focused. |
 | `wind_projections` | projection transforms, vector visual, graticule/coastline helpers | v0.4 wind field is the subset. |
-| `textured_surface_full_workflow` | terrain/planet/Mars asset cache, camera-path polish, optional overlays | Follows the v0.4 retained textured-mesh proof. |
+| `textured_surface_full_workflow` | terrain/planet/Mars asset cache, camera-path polish, optional overlays | Follows the v0.4 `textured_planet.c` retained textured-mesh proof; real Mars DEM terrain remains outside the v0.4 slice. |
 | `finite_element_stress` | mesh scalar fields, selection, colorbar, isolines | Applied mesh/field target. |
 | `crystal_phonon` | sphere/mesh animation, selection, labels | Materials-science showcase after sphere/text/animation polish. |
 

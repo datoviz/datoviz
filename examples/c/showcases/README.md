@@ -7,4 +7,5 @@ Current public showcase seeds:
 
 - `gpu_particle_smoke.c`
 - `protein.c`
+- `textured_planet.c`
 - `wind_field.c`

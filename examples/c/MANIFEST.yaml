@@ -86,6 +86,22 @@ examples:
       card: section
       status_label: experimental
 
+  - id: showcase_textured_planet
+    title: Textured Planets
+    stage: v0.4_required
+    lane: showcases
+    source: examples/c/showcases/textured_planet.c
+    validation: smoke+screenshot
+    gallery:
+      card: section
+      status_label: supported
+    features:
+      - mesh
+      - sampled-field
+      - texture
+      - arcball
+      - capture
+
   - id: lab_axis_lattice_smoke
     title: Axis Lattice Smoke
     stage: lab
