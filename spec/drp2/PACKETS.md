@@ -30,6 +30,36 @@ A zero packet pointer or zero size means that phase has no commands. Packet poin
 arena are borrowed WASM memory; JavaScript must execute or copy them before another mutating bridge
 call. Browser runtimes must never retain borrowed WASM spans after result destroy or scene destroy.
 
+## WASM Scene Bridge ABI
+
+The experimental browser scene bridge exposes split packet emission through these C/WASM exports:
+
+```text
+int      dvz_wasm_api_emit_packets(scene, figure)
+int      dvz_wasm_api_packet_status(scene)
+uint32_t dvz_wasm_api_packet_ptr(scene, kind)
+uint32_t dvz_wasm_api_packet_size(scene, kind)
+uint32_t dvz_wasm_api_packet_arena_ptr(scene, kind)
+uint32_t dvz_wasm_api_packet_arena_size(scene, kind)
+uint32_t dvz_wasm_api_resource_version(scene)
+uint32_t dvz_wasm_api_frame_index(scene)
+```
+
+`kind` is the numeric packet phase id: `1` setup, `2` update, `3` frame.
+
+All returned pointers are borrowed WASM linear-memory addresses. They remain valid only until the
+next mutating scene bridge call, the next emit call, or scene destruction. JavaScript may create
+temporary `Uint8Array` views for immediate decode/upload, but must not retain those views across
+another bridge call. JSON emit functions remain a debug/fixture export and are not the browser
+runtime path.
+
+Current browser runtime requirements:
+
+1. a packet set must include a `frame` packet;
+2. all non-empty phases in one packet set must carry the same `resource_version` and `frame_index`;
+3. runtimes reject packet sets with older `resource_version` or non-increasing `frame_index`;
+4. reset starts a new retained browser runtime session and clears packet counters.
+
 ## Packet Phases
 
 ### `setup`

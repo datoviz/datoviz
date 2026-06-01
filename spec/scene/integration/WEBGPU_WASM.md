@@ -321,7 +321,7 @@ bridge:
 The current first slice uses the generic `src/wasm/scene_api.c` object ABI for visuals,
 controllers, resize/pointer/wheel routing, and emitted DRP2 JSON.
 
-Current evidence as of 2026-05-30:
+Current evidence as of 2026-06-01:
 
 1. `just wasm-scene-smoke` builds the Emscripten scene ABI, emits
    `build-wasm-scene/wasm/wasm_api_scene_point_primitive_image_mesh_panzoom.json` and
@@ -340,6 +340,9 @@ Current evidence as of 2026-05-30:
 7. Loading `http://localhost:8765/examples/webgpu/wasm_scene_3d.html` confirms the 3D cube renders,
    arcball drag rotates it, wheel zoom works, resize works, and no visible browser/WebGPU runtime
    errors occur.
+8. Manual local browser proof after the split-packet switch confirms
+   `examples/webgpu/wasm_api_scene.html` renders and interacts, and
+   `examples/webgpu/wasm_scene_3d.html` renders and rotates.
 
 The supported browser-scene subset now covers point, primitive triangle-list, RGBA8 image, basic
 mesh, panzoom, and a first 3D mesh + arcball scene. The browser wrapper passes normalized WebGPU
@@ -347,11 +350,11 @@ limits into the WASM scene emitter before figure creation, and the old direct br
 uniform mutation path has been retired from the release-visible demos. Retained browser runtime
 stress now tracks browser-owned frame resources and retires submitted references after explicit
 queue completion in retained sessions. Automated browser smoke now also checks pagehide scene
-destruction and the fixture dashboard's WASM Scene Smoke rows for 2D point updates, 2D image
-texture resize reloads, and 3D mesh retained updates. The browser wrapper now uses payload-ref JSON
-plus borrowed WASM-memory `Uint8Array` views for `WriteBuffer` and `WriteTexture`, while the base64
-JSON path remains available for debug fixtures. The next release-proofing gaps are browser app
-examples and then broader visual/technique parity.
+destruction, packet-runtime use, and the fixture dashboard's WASM Scene Smoke rows for 2D point
+updates, 2D image texture resize reloads, and 3D mesh retained updates. The browser wrapper now uses
+split binary DRP2 setup/update/frame packets and payload arenas for WASM scene rendering. JSON and
+payload-ref JSON remain available for fixture/debug export, not as the browser scene runtime path.
+The next release-proofing gaps are browser app examples and then broader visual/technique parity.
 
 ### Experimental WASM Scene ABI
 
@@ -359,27 +362,35 @@ The `src/wasm/scene_api.c` API is an unstable experimental ABI for the browser d
 
 1. scene handles are opaque `uint32_t` values; JavaScript must pass them back unchanged and must not
    derive addresses or object state from them;
-2. `dvz_wasm_api_payload_ptr()` and `dvz_wasm_api_payload_size()` expose a borrowed UTF-8 JSON
+2. `dvz_wasm_api_emit_packets()` is the browser runtime emit path and exposes split binary DRP2
+   setup/update/frame packets plus payload arenas through the packet accessors documented in
+   `spec/drp2/PACKETS.md`;
+3. packet pointers, arena pointers, and diagnostic strings are borrowed WASM linear-memory spans
+   valid only until the next mutating bridge call on the same handle or
+   `dvz_wasm_api_scene_destroy()`;
+4. JavaScript decodes and executes packets immediately and must not retain packet or arena views
+   across another bridge call;
+5. `dvz_wasm_api_payload_ptr()` and `dvz_wasm_api_payload_size()` expose a borrowed UTF-8 JSON
    payload valid only until the next bridge call on the same handle or `dvz_wasm_api_scene_destroy()`;
-3. JavaScript must copy or decode the payload before calling resize, pointer, wheel, data-upload,
+6. JavaScript must copy or decode the payload before calling resize, pointer, wheel, data-upload,
    emit, canvas-format, capability, or destroy functions again;
-4. `dvz_wasm_api_emit_direct()` exposes write payloads as `data_ref` JSON commands plus borrowed
+7. `dvz_wasm_api_emit_direct()` exposes write payloads as `data_ref` JSON commands plus borrowed
    WASM-memory spans available through the `dvz_wasm_api_payload_*()` accessors;
-5. JavaScript may pass those spans directly to WebGPU for immediate command execution, but must not
+8. JavaScript may pass those spans directly to WebGPU for debug execution, but must not
    retain them across another mutating bridge call or scene destruction;
-6. diagnostics returned by `dvz_wasm_api_diagnostic()` are borrowed strings with the same lifetime
+9. diagnostics returned by `dvz_wasm_api_diagnostic()` are borrowed strings with the same lifetime
    as the current diagnostic report, valid only until the next bridge call on the same handle or
    destroy;
-7. successful emits should leave the diagnostic report empty; failed emits must be surfaced with
+10. successful emits should leave the diagnostic report empty; failed emits must be surfaced with
    non-empty diagnostics where the scene/DRP2 layer can explain the failure;
-8. the supported browser canvas formats are `rgba8unorm` and `bgra8unorm`, mapped to
+11. the supported browser canvas formats are `rgba8unorm` and `bgra8unorm`, mapped to
    `DVZ_FORMAT_R8G8B8A8_UNORM` and `DVZ_FORMAT_B8G8R8A8_UNORM`;
-9. `dvz_wasm_api_set_capabilities()` accepts browser-normalized texture dimension, bind-group,
+12. `dvz_wasm_api_set_capabilities()` accepts browser-normalized texture dimension, bind-group,
    vertex-buffer, buffer-size, texture-copy alignment, and sample-count limits used by scene
    emission;
-10. resize arguments are framebuffer pixel width/height plus device scale; the bridge derives logical
+13. resize arguments are framebuffer pixel width/height plus device scale; the bridge derives logical
    window size for the scene input router;
-11. pointer and wheel positions are CSS-pixel canvas coordinates plus content scale, so high-DPI
+14. pointer and wheel positions are CSS-pixel canvas coordinates plus content scale, so high-DPI
    browsers keep controller math in the scene layer while still using framebuffer-sized targets.
 
 ## Validation Matrix
