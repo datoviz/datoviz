@@ -38,6 +38,34 @@ Backend or third-party names should not appear in high-level user APIs unless th
 an explicit backend policy such as a triangulation backend.
 
 
+## Public Struct Naming
+
+Public struct suffixes should describe the role of the record, not just its shape.
+
+Use `Desc` for user-authored descriptors that define one object, resource, attachment, or atomic
+operation. These records are commonly passed to constructors or operation functions and may be
+size-versioned when they are likely to grow.
+
+Use `Config` for broader runtime, device, application, window, stream, or integration policy. A
+config record is usually initialized from a default helper, then optionally modified before creating
+or wiring a subsystem.
+
+Use `Request` for one-shot operation input that asks the system to perform work and may produce a
+result now or later. Query, readback, capture, and similar command-like inputs should prefer this
+suffix when the operation identity matters.
+
+Use `Info` for descriptive metadata and discovery/reporting records. Avoid `Info` for behavior that
+the caller expects the callee to enact; use `Desc`, `Config`, or `Request` instead.
+
+Use `State` for current retained state snapshots, `Style` for appearance values, `View` for borrowed
+views over caller or internal memory, and `Resources` for bundles of existing borrowed handles or
+objects.
+
+Do not rename a public struct just to make suffixes uniform. Prefer renaming only when the current
+suffix misleads users about ownership, mutability, or whether the record is an input descriptor,
+runtime configuration, request, state snapshot, or borrowed view.
+
+
 ## Visuals, Semantic Objects, And Composites
 
 `DvzVisual` is a low-level render leaf: point, marker, segment, path, mesh, image, volume, and
