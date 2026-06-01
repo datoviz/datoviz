@@ -29,10 +29,12 @@ VK_BUFFER_USAGE_TRANSFER_SRC_BIT = 0x00000001
 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT = 0x00000020
 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT = 0x00000080
 DVZ_ALLOC_DEDICATED_MEMORY = 0x00000001
+DVZ_SCENE_SHADER_FORMAT_GLSL = 1
 DVZ_SCENE_BUFFER_USAGE_VERTEX = 0x0001
 DVZ_SCENE_BUFFER_USAGE_STORAGE = 0x0008
 DVZ_DRP2_BUFFER_USAGE_VERTEX = 0x0010
 DVZ_DRP2_BUFFER_USAGE_STORAGE = 0x0080
+DRP2_ID_COLOR_TARGET = 1
 POSITION_COMPONENTS = 3
 POSITION_DTYPE_SIZE = 4
 
@@ -90,6 +92,7 @@ REQUIRED_RAW_SYMBOLS = (
     'dvz_semaphore_timeline',
     'dvz_semaphore_destroy',
     'DvzDrp2ExternalBufferDesc',
+    'DvzFramePlanEmitConfig',
     'dvz_drp2_runtime_vklite_config',
     'dvz_drp2_runtime_vklite',
     'dvz_drp2_runtime_register_external_buffer',
@@ -113,6 +116,7 @@ REQUIRED_RAW_SYMBOLS = (
     'dvz_drp2_stream_copy_texture_to_buffer',
     'dvz_drp2_stream_finish_command_encoder',
     'dvz_drp2_stream_queue_submit',
+    'dvz_figure_emit_ex',
     'dvz_scene_buffer_resource_key',
     'dvz_drp2_stream_label_id',
 )
@@ -275,6 +279,55 @@ def validate_raw_surface(dvz) -> None:
     wait_fn = dvz.dvz_interop_buffer_wait_timeline
     if wait_fn.argtypes != wait_args or wait_fn.restype is not ctypes.c_bool:
         raise RuntimeError('dvz_interop_buffer_wait_timeline ctypes signature is stale')
+
+
+def ensure_frame_plan_emit_config_layout(dvz) -> None:
+    """Install the small skipped ctypes layout needed by this internal helper."""
+    if getattr(dvz.DvzFramePlanEmitConfig, '_fields_', None) is not None:
+        return
+    dvz.DvzFramePlanEmitConfig._fields_ = [
+        ('shader_format', ctypes.c_int),
+        ('external_color_target', ctypes.c_bool),
+        ('color_target_id', ctypes.c_uint64),
+        ('color_target_format', ctypes.c_uint32),
+        ('target_width', ctypes.c_uint32),
+        ('target_height', ctypes.c_uint32),
+        ('device_scale_x', ctypes.c_float),
+        ('device_scale_y', ctypes.c_float),
+        ('render_scale', ctypes.c_float),
+        ('user_scale', ctypes.c_float),
+        ('fullscreen_triangle', ctypes.c_bool),
+        ('runtime_resource_scope_id', ctypes.c_uint64),
+        ('clear_color', ctypes.c_float * 4),
+    ]
+
+
+def scene_setup_emit_config(dvz):
+    ensure_frame_plan_emit_config_layout(dvz)
+    cfg = dvz.DvzFramePlanEmitConfig()
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL
+    cfg.external_color_target = False
+    cfg.color_target_id = DRP2_ID_COLOR_TARGET
+    cfg.target_width = 4
+    cfg.target_height = 4
+    cfg.device_scale_x = 1.0
+    cfg.device_scale_y = 1.0
+    cfg.render_scale = 1.0
+    cfg.user_scale = 1.0
+    cfg.clear_color[3] = 1.0
+    return cfg
+
+
+def scene_setup_caps(dvz):
+    caps = dvz.DvzCapabilitySnapshot()
+    dvz.dvz_capability_snapshot_default(ctypes.byref(caps))
+    caps.shader_format_glsl = True
+    caps.max_color_attachments = 3
+    caps.render_target_format_rgba16float = True
+    caps.render_target_format_r16float = True
+    caps.supports_render_target_sampling = True
+    caps.supports_color_blending = True
+    return caps
 
 
 def require_raw_surface():
@@ -630,16 +683,18 @@ class SharedSceneCudaArray:
         ):
             raise RuntimeError(f'dvz_visual_set_attr_buffer({attr!r}) failed')
 
-    def _resolve_buffer_id(self, figure) -> int:
+    def _emit_setup_stream(self, figure):
         if self.scene_buffer is None:
             raise RuntimeError('shared scene CUDA array is not open')
-        caps = self.dvz.DvzCapabilitySnapshot()
-        self.dvz.dvz_capability_snapshot_default(ctypes.byref(caps))
+        caps = scene_setup_caps(self.dvz)
         report = self.dvz.DvzDiagnosticReport()
         self.dvz.dvz_diagnostic_report_init(ctypes.byref(report))
-        stream = self.dvz.dvz_figure_emit(figure, ctypes.byref(caps), ctypes.byref(report))
+        emit_cfg = scene_setup_emit_config(self.dvz)
+        stream = self.dvz.dvz_figure_emit_ex(
+            figure, ctypes.byref(caps), ctypes.byref(report), ctypes.byref(emit_cfg)
+        )
         if self.dvz.dvz_diagnostic_report_count(ctypes.byref(report)) != 0 or not stream:
-            raise RuntimeError('dvz_figure_emit() failed while resolving shared scene buffer')
+            raise RuntimeError('dvz_figure_emit_ex() failed while priming shared scene buffer')
         try:
             key = ctypes.create_string_buffer(128)
             if not self.dvz.dvz_scene_buffer_resource_key(self.scene_buffer, key, len(key)):
@@ -647,9 +702,10 @@ class SharedSceneCudaArray:
             buffer_id = int(self.dvz.dvz_drp2_stream_label_id(stream, key.value))
             if buffer_id == 0:
                 raise RuntimeError(f'emitted stream has no id for scene buffer {key.value!r}')
-            return buffer_id
-        finally:
+            return stream, buffer_id
+        except Exception:
             self.dvz.dvz_drp2_stream_destroy(stream)
+            raise
 
     def create_app_resources(self, figure):
         if self.runtime is not None:
@@ -658,8 +714,19 @@ class SharedSceneCudaArray:
         self.runtime = self.dvz.dvz_drp2_runtime_vklite(ctypes.byref(cfg))
         if not self.runtime:
             raise RuntimeError('dvz_drp2_runtime_vklite() failed')
-        buffer_id = self._resolve_buffer_id(figure)
-        self.shared.register_external_buffer(self.runtime, buffer_id, usage=self.runtime_usage)
+        stream = None
+        try:
+            stream, buffer_id = self._emit_setup_stream(figure)
+            self.shared.register_external_buffer(self.runtime, buffer_id, usage=self.runtime_usage)
+            result = self.dvz.dvz_drp2_runtime_execute(self.runtime, stream)
+            if not result.ok:
+                raise RuntimeError(
+                    f'DRP2 setup execution failed: code={result.code}, '
+                    f'command={result.command_index}'
+                )
+        finally:
+            if stream is not None:
+                self.dvz.dvz_drp2_stream_destroy(stream)
         resources = self.dvz.DvzAppResources()
         resources.gpu_ctx = self.shared.exported.ctx
         resources.runtime = self.runtime
@@ -673,6 +740,10 @@ class SharedSceneCudaArray:
         if refresh_after_resource_resolution is not None:
             refresh_after_resource_resolution()
         app_config = self.dvz.dvz_app_config()
+        app_config.instance_extension_count = 0
+        app_config.instance_extensions = None
+        app_config.enable_canvas_extensions = False
+        app_config.enable_glfw_extensions = False
         app = self.dvz.dvz_app_with_resources(
             scene, ctypes.byref(app_config), ctypes.byref(resources)
         )
