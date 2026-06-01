@@ -246,7 +246,7 @@ def main(argv: list[str] | None = None) -> int:
         if not scene:
             raise RuntimeError('dvz_scene() failed')
         with ci.SharedSceneCudaArray(
-            dvz_raw, cp, bridge, scene, count=args.particles
+            dvz_raw, cp, bridge, scene, count=args.particles, present=not args.offscreen
         ) as positions:
             try:
                 figure, visual, colors, sizes = _build_scene(scene, positions, args.particles)

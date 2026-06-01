@@ -28,6 +28,7 @@ VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT = 0x00000001
 VK_BUFFER_USAGE_TRANSFER_SRC_BIT = 0x00000001
 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT = 0x00000020
 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT = 0x00000080
+DVZ_BACKEND_GLFW = 1
 DVZ_ALLOC_DEDICATED_MEMORY = 0x00000001
 DVZ_SCENE_SHADER_FORMAT_GLSL = 1
 DVZ_SCENE_BUFFER_USAGE_VERTEX = 0x0001
@@ -75,6 +76,7 @@ REQUIRED_RAW_SYMBOLS = (
     'dvz_interop_buffer_export_from_buffer',
     'dvz_interop_buffer_wait_timeline',
     'dvz_interop_gpu_ctx',
+    'dvz_interop_gpu_ctx_ex',
     'dvz_gpu_ctx_alloc',
     'dvz_gpu_ctx_device',
     'dvz_gpu_ctx_destroy',
@@ -117,6 +119,11 @@ REQUIRED_RAW_SYMBOLS = (
     'dvz_drp2_stream_finish_command_encoder',
     'dvz_drp2_stream_queue_submit',
     'dvz_figure_emit_ex',
+    'dvz_window_glfw_init',
+    'dvz_window_host',
+    'dvz_window_host_destroy',
+    'dvz_window_host_required_extension_count',
+    'dvz_window_host_required_extensions',
     'dvz_scene_buffer_resource_key',
     'dvz_drp2_stream_label_id',
 )
@@ -359,6 +366,37 @@ def probe_interop_context(dvz) -> None:
         dvz.dvz_gpu_ctx_destroy(ctx)
 
 
+def glfw_instance_extensions(dvz) -> tuple[bytes, ...]:
+    if not dvz.dvz_window_glfw_init():
+        skip('GLFW unavailable')
+    host = dvz.dvz_window_host()
+    if not host:
+        skip('Datoviz window host unavailable')
+    try:
+        count = int(dvz.dvz_window_host_required_extension_count(host, DVZ_BACKEND_GLFW))
+        if count <= 0:
+            skip('GLFW reported no Vulkan surface extensions')
+        extensions = (ctypes.c_char_p * count)()
+        written = int(
+            dvz.dvz_window_host_required_extensions(host, DVZ_BACKEND_GLFW, count, extensions)
+        )
+        if written != count:
+            skip('GLFW Vulkan surface extension query failed')
+        return tuple(extensions[i] for i in range(count))
+    finally:
+        dvz.dvz_window_host_destroy(host)
+
+
+def interop_gpu_ctx(dvz, present: bool = False):
+    if not present:
+        return dvz.dvz_interop_gpu_ctx(0, VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT)
+    extensions = glfw_instance_extensions(dvz)
+    ext_array = (ctypes.c_char_p * len(extensions))(*extensions)
+    return dvz.dvz_interop_gpu_ctx_ex(
+        0, VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT, len(extensions), ext_array, True
+    )
+
+
 def _as_bytes(value: bytes | str) -> bytes:
     if isinstance(value, bytes):
         return value
@@ -368,11 +406,14 @@ def _as_bytes(value: bytes | str) -> bytes:
 class ExportedDatovizBuffer:
     """Own a Vulkan-exportable Datoviz buffer plus exported handles."""
 
-    def __init__(self, dvz, count: int, components: int = POSITION_COMPONENTS):
+    def __init__(
+        self, dvz, count: int, components: int = POSITION_COMPONENTS, present: bool = False
+    ):
         self.dvz = dvz
         self.count = count
         self.components = components
         self.size = count * components * POSITION_DTYPE_SIZE
+        self.present = present
         self.ctx = None
         self.buffer = None
         self.semaphore = None
@@ -390,7 +431,7 @@ class ExportedDatovizBuffer:
 
     def __enter__(self):
         dvz = self.dvz
-        self.ctx = dvz.dvz_interop_gpu_ctx(0, VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT)
+        self.ctx = interop_gpu_ctx(dvz, present=self.present)
         if not self.ctx:
             skip('Datoviz interop GPU context unavailable')
         device = self.device
@@ -509,11 +550,21 @@ def bridge_import_buffer(bridge, exported: ExportedDatovizBuffer) -> CudaMappedB
 class SharedDatovizCudaArray:
     """Internal owner for one CuPy view over a Datoviz/Vulkan-owned buffer."""
 
-    def __init__(self, dvz, cp, bridge, count: int, components: int = POSITION_COMPONENTS):
+    def __init__(
+        self,
+        dvz,
+        cp,
+        bridge,
+        count: int,
+        components: int = POSITION_COMPONENTS,
+        present: bool = False,
+    ):
         self.dvz = dvz
         self.cp = cp
         self.bridge = bridge
-        self.exported = ExportedDatovizBuffer(dvz, count=count, components=components)
+        self.exported = ExportedDatovizBuffer(
+            dvz, count=count, components=components, present=present
+        )
         self.owner: CudaMappedBufferOwner | None = None
         self.array = None
         self.cuda_ready_value = 0
@@ -627,6 +678,7 @@ class SharedSceneCudaArray:
         components: int = POSITION_COMPONENTS,
         scene_usage: int = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
         runtime_usage: int = DVZ_DRP2_BUFFER_USAGE_VERTEX,
+        present: bool = False,
     ):
         self.dvz = dvz
         self.cp = cp
@@ -636,7 +688,9 @@ class SharedSceneCudaArray:
         self.components = components
         self.scene_usage = scene_usage
         self.runtime_usage = runtime_usage
-        self.shared = SharedDatovizCudaArray(dvz, cp, bridge, count=count, components=components)
+        self.shared = SharedDatovizCudaArray(
+            dvz, cp, bridge, count=count, components=components, present=present
+        )
         self.scene_buffer = None
         self.runtime = None
         self._resources = None

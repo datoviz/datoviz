@@ -132,6 +132,27 @@ DVZ_EXPORT DvzGpuCtx* dvz_interop_gpu_ctx(
     uint32_t gpu_index, VkExternalMemoryHandleTypeFlagsKHR memory_handle_type);
 
 
+/**
+ * Create an advanced GPU context for CUDA/CuPy interop that also supports presentation.
+ *
+ * This is the configurable variant of dvz_interop_gpu_ctx(). It keeps the same external-memory
+ * allocator policy and timeline-semaphore setup, then optionally adds caller-provided Vulkan
+ * instance extensions and canvas/swapchain device extensions. Use it when a borrowed interop GPU
+ * context must also back a visible GLFW or hosted-surface canvas.
+ *
+ * @param gpu_index Vulkan physical-device index to use
+ * @param memory_handle_type external memory handle type for exported allocations
+ * @param instance_extension_count number of Vulkan instance extension names
+ * @param instance_extensions extension-name array, or NULL when count is zero
+ * @param enable_canvas_extensions whether swapchain/surface device extensions should be requested
+ * @return owned GPU context, or NULL on failure
+ */
+DVZ_EXPORT DvzGpuCtx* dvz_interop_gpu_ctx_ex(
+    uint32_t gpu_index, VkExternalMemoryHandleTypeFlagsKHR memory_handle_type,
+    uint32_t instance_extension_count, const char* const* instance_extensions,
+    bool enable_canvas_extensions);
+
+
 
 /**
  * Return the external-handle type configured on an allocator.

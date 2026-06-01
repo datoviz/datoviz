@@ -356,12 +356,24 @@ DvzGpuCtx* dvz_gpu_ctx(const DvzGpuCtxConfig* cfg)
  * @param memory_handle_type external memory handle type for exported allocations
  * @return owned GPU context, or NULL on failure
  */
-DvzGpuCtx* dvz_interop_gpu_ctx(
-    uint32_t gpu_index, VkExternalMemoryHandleTypeFlagsKHR memory_handle_type)
+DvzGpuCtx* dvz_interop_gpu_ctx_ex(
+    uint32_t gpu_index, VkExternalMemoryHandleTypeFlagsKHR memory_handle_type,
+    uint32_t instance_extension_count, const char* const* instance_extensions,
+    bool enable_canvas_extensions)
 {
     if (memory_handle_type == 0)
     {
         log_error("interop GPU context requires an external memory handle type");
+        return NULL;
+    }
+    if (instance_extension_count > 0 && instance_extensions == NULL)
+    {
+        log_error("interop GPU context requires an extension-name array when count is nonzero");
+        return NULL;
+    }
+    if (instance_extension_count > 16)
+    {
+        log_error("interop GPU context supports at most 16 Vulkan instance extensions");
         return NULL;
     }
 
@@ -369,10 +381,25 @@ DvzGpuCtx* dvz_interop_gpu_ctx(
     dvz_gpu_ctx_config_validation(&cfg, false);
     dvz_gpu_ctx_config_gpu(&cfg, gpu_index);
     dvz_gpu_ctx_config_alloc(&cfg, memory_handle_type);
+    for (uint32_t i = 0; i < instance_extension_count; i++)
+    {
+        if (instance_extensions[i] == NULL)
+        {
+            log_error("interop GPU context received a NULL Vulkan instance extension name");
+            return NULL;
+        }
+        dvz_gpu_ctx_config_add_instance_extension(&cfg, instance_extensions[i]);
+    }
     dvz_gpu_ctx_config_add_instance_extension(
         &cfg, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
     dvz_gpu_ctx_config_add_instance_extension(
         &cfg, VK_KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_EXTENSION_NAME);
+    if (enable_canvas_extensions)
+        dvz_gpu_ctx_config_enable_canvas_extensions(&cfg, true);
+
+    VkPhysicalDeviceFeatures features10 = {0};
+    features10.independentBlend = true;
+    dvz_gpu_ctx_config_features10(&cfg, &features10);
 
     VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
@@ -380,7 +407,29 @@ DvzGpuCtx* dvz_interop_gpu_ctx(
     };
     dvz_gpu_ctx_config_features12(&cfg, &features12);
 
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .dynamicRendering = true,
+        .synchronization2 = true,
+    };
+    dvz_gpu_ctx_config_features13(&cfg, &features13);
+
     return dvz_gpu_ctx(&cfg);
+}
+
+
+
+/**
+ * Create an advanced GPU context for Vulkan-owned CUDA/CuPy interop buffers.
+ *
+ * @param gpu_index Vulkan physical-device index to use
+ * @param memory_handle_type external memory handle type for exported allocations
+ * @return owned GPU context, or NULL on failure
+ */
+DvzGpuCtx* dvz_interop_gpu_ctx(
+    uint32_t gpu_index, VkExternalMemoryHandleTypeFlagsKHR memory_handle_type)
+{
+    return dvz_interop_gpu_ctx_ex(gpu_index, memory_handle_type, 0, NULL, false);
 }
 
 
