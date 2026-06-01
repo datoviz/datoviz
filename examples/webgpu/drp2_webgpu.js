@@ -8,6 +8,7 @@ const frameInfoEl = document.querySelector("#frame-info");
 const BROWSER_CANVAS_TEXTURE_ID = 0;
 const BROWSER_CANVAS_FORMAT_ALIAS = "canvas";
 const BROWSER_CANVAS_EXTENT_ALIAS = "canvas";
+const configuredCanvasContexts = new WeakSet();
 
 export const STREAMS = [
   { name: "scene_primitive_wgsl", label: "Scene primitive (WGSL)" },
@@ -1335,17 +1336,22 @@ function resizeCanvasToDisplaySize(device, context, format) {
   const scale = Math.max(1, window.devicePixelRatio || 1);
   const width = Math.max(1, Math.floor(canvas.clientWidth * scale));
   const height = Math.max(1, Math.floor(canvas.clientHeight * scale));
-  if (canvas.width === width && canvas.height === height) {
+  const resized = canvas.width !== width || canvas.height !== height;
+  const needsConfigure = resized || !configuredCanvasContexts.has(context);
+  if (!needsConfigure) {
     return false;
   }
-  canvas.width = width;
-  canvas.height = height;
+  if (resized) {
+    canvas.width = width;
+    canvas.height = height;
+  }
   context.configure({
     device,
     format,
     alphaMode: "opaque",
   });
-  return true;
+  configuredCanvasContexts.add(context);
+  return resized;
 }
 
 

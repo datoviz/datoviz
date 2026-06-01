@@ -4,17 +4,21 @@ import {
   executeDrp2StreamChecked,
   initWebGPU,
 } from "./drp2_webgpu.js";
+import { DatovizWasmScene } from "./datoviz_wasm_scene.js";
 
 const rowsEl = document.querySelector("#fixture-rows");
 const stressRowsEl = document.querySelector("#stress-rows");
+const wasmRowsEl = document.querySelector("#wasm-rows");
 const runAllEl = document.querySelector("#run-all");
 const summaryEl = document.querySelector("#summary");
 const stressSummaryEl = document.querySelector("#stress-summary");
+const wasmSummaryEl = document.querySelector("#wasm-summary");
 const viewportEl = document.querySelector("#viewport");
 
 let runtime = null;
 let fixtures = [];
 let stressRows = [];
+let wasmRows = [];
 let running = false;
 
 const STRESS_FRAME_COUNT = 10;
@@ -27,6 +31,10 @@ const STRESS_STREAMS = [
 const DEMO_STRESS_CHECKS = [
   { name: "demo path: resize reload", fn: runDemoResizeStress },
   { name: "demo path: stream reload", fn: runDemoStreamReloadStress },
+];
+const WASM_SCENE_CHECKS = [
+  { name: "wasm scene: 2D update/lifecycle", fn: runWasm2DSceneSmoke },
+  { name: "wasm scene: 3D update/lifecycle", fn: runWasm3DSceneSmoke },
 ];
 
 
@@ -63,6 +71,19 @@ function setStressSummary() {
 
 
 
+function setWasmSummary() {
+  const counts = { pass: 0, fail: 0, pending: 0, running: 0 };
+  for (const row of wasmRows) {
+    counts[row.status] = (counts[row.status] ?? 0) + 1;
+  }
+  wasmSummaryEl.textContent =
+    `${wasmRows.length} WASM scene checks: ` +
+    `${counts.pass} pass, ${counts.fail} fail, ` +
+    `${counts.running} running, ${counts.pending} pending`;
+}
+
+
+
 function setFixtureStatus(fixture, status, detail = "") {
   fixture.status = status;
   fixture.statusEl.textContent = status;
@@ -79,6 +100,16 @@ function setStressStatus(row, status, detail = "") {
   row.statusEl.className = `status-${status}`;
   row.detailEl.textContent = detail;
   setStressSummary();
+}
+
+
+
+function setWasmStatus(row, status, detail = "") {
+  row.status = status;
+  row.statusEl.textContent = status;
+  row.statusEl.className = `status-${status}`;
+  row.detailEl.textContent = detail;
+  setWasmSummary();
 }
 
 
@@ -172,6 +203,152 @@ function assertNoActiveRefs(stats, label) {
 
 
 
+function assertWasmSceneDestroyed(scene, label) {
+  if (scene.scene !== 0 || scene.figure !== 0 || scene.runtime !== null) {
+    throw new Error(`${label}: WASM scene did not release JS-side handles`);
+  }
+}
+
+
+
+function assertPositiveCommandCount(stream, label) {
+  if (!stream || !Array.isArray(stream.commands) || stream.commands.length === 0) {
+    throw new Error(`${label}: emitted no DRP2 commands`);
+  }
+}
+
+
+
+function addWasm2DPoints(scene, panel) {
+  const points = scene.visual("point");
+  points.setF32("position", new Float32Array([
+    -0.65, -0.45, 0,
+    -0.18, 0.5, 0,
+    0.38, -0.12, 0,
+  ]), 3);
+  points.setRGBA8("color", new Uint8Array([
+    80, 200, 245, 255,
+    245, 130, 95, 255,
+    150, 130, 245, 255,
+  ]), 3);
+  points.setF32("diameter", new Float32Array([16, 20, 18]), 3);
+  scene.addVisual(panel, points);
+  return points;
+}
+
+
+
+function makeWasmCubeMesh(size) {
+  const s = size / 2;
+  const faces = [
+    { n: [0, 0, 1], c: [90, 170, 255, 255], v: [[-s, -s, s], [s, -s, s], [-s, s, s], [s, -s, s], [s, s, s], [-s, s, s]] },
+    { n: [0, 0, -1], c: [245, 135, 190, 255], v: [[s, -s, -s], [-s, -s, -s], [s, s, -s], [-s, -s, -s], [-s, s, -s], [s, s, -s]] },
+    { n: [1, 0, 0], c: [85, 220, 170, 255], v: [[s, -s, s], [s, -s, -s], [s, s, s], [s, -s, -s], [s, s, -s], [s, s, s]] },
+    { n: [-1, 0, 0], c: [250, 180, 80, 255], v: [[-s, -s, -s], [-s, -s, s], [-s, s, -s], [-s, -s, s], [-s, s, s], [-s, s, -s]] },
+    { n: [0, 1, 0], c: [160, 120, 245, 255], v: [[-s, s, s], [s, s, s], [-s, s, -s], [s, s, s], [s, s, -s], [-s, s, -s]] },
+    { n: [0, -1, 0], c: [245, 115, 95, 255], v: [[-s, -s, -s], [s, -s, -s], [-s, -s, s], [s, -s, -s], [s, -s, s], [-s, -s, s]] },
+  ];
+  const positions = [];
+  const colors = [];
+  const normals = [];
+  for (const face of faces) {
+    for (const vertex of face.v) {
+      positions.push(...vertex);
+      colors.push(...face.c);
+      normals.push(...face.n);
+    }
+  }
+  return {
+    positions: new Float32Array(positions),
+    colors: new Uint8Array(colors),
+    normals: new Float32Array(normals),
+    count: positions.length / 3,
+  };
+}
+
+
+
+function addWasm3DContent(scene, panel) {
+  const cube = makeWasmCubeMesh(1.2);
+  const mesh = scene.visual("mesh");
+  mesh.setF32("position", cube.positions, cube.count);
+  mesh.setRGBA8("color", cube.colors, cube.count);
+  mesh.setF32("normal", cube.normals, cube.count);
+  scene.addVisual(panel, mesh);
+  return { mesh, cube };
+}
+
+
+
+async function runWasm2DSceneSmoke(row) {
+  const scene = await DatovizWasmScene.create(viewportEl, { gpu: runtime });
+  try {
+    const panel = scene.panelFull();
+    const points = addWasm2DPoints(scene, panel);
+
+    const initial = await scene.renderInitial();
+    assertPositiveCommandCount(initial, `${row.name} initial`);
+
+    points.setRGBA8("color", new Uint8Array([
+      245, 220, 90, 255,
+      80, 210, 195, 255,
+      225, 100, 170, 255,
+    ]), 3);
+    const update = await scene.renderIncremental();
+    assertPositiveCommandCount(update, `${row.name} update`);
+
+    const stats = scene.runtime.resourceStats();
+    const detail =
+      `initial=${initial.commands.length}, update=${update.commands.length}, ` +
+      `objects=${stats.objects}`;
+    scene.destroy();
+    assertWasmSceneDestroyed(scene, row.name);
+    setWasmStatus(row, "pass", detail);
+  } catch (error) {
+    scene.destroy();
+    throw error;
+  }
+}
+
+
+
+async function runWasm3DSceneSmoke(row) {
+  const scene = await DatovizWasmScene.create(viewportEl, { gpu: runtime });
+  try {
+    const panel = scene.panelFull();
+    scene.setCamera(panel);
+    const { mesh, cube } = addWasm3DContent(scene, panel);
+    scene.attachArcball(panel);
+    scene.attachControllerInput(() => {});
+
+    const initial = await scene.renderInitial();
+    assertPositiveCommandCount(initial, `${row.name} initial`);
+
+    const colors = new Uint8Array(cube.colors);
+    for (let i = 0; i < colors.length; i += 4) {
+      colors[i + 0] = 255 - colors[i + 0];
+      colors[i + 1] = Math.max(40, colors[i + 1] - 35);
+      colors[i + 2] = Math.min(255, colors[i + 2] + 20);
+    }
+    mesh.setRGBA8("color", colors, cube.count);
+    const update = await scene.renderIncremental();
+    assertPositiveCommandCount(update, `${row.name} update`);
+
+    const stats = scene.runtime.resourceStats();
+    const detail =
+      `initial=${initial.commands.length}, update=${update.commands.length}, ` +
+      `objects=${stats.objects}`;
+    scene.destroy();
+    assertWasmSceneDestroyed(scene, row.name);
+    setWasmStatus(row, "pass", detail);
+  } catch (error) {
+    scene.destroy();
+    throw error;
+  }
+}
+
+
+
 async function createDemoSession(streamName) {
   const session = new WebGpuDemoSession(
     runtime.device,
@@ -239,6 +416,17 @@ async function runStressRow(row) {
     setStressStatus(row, "pass", stressDetail(stats, STRESS_FRAME_COUNT));
   } catch (error) {
     setStressStatus(row, "fail", errorDetail(error));
+  }
+}
+
+
+
+async function runWasmRow(row) {
+  setWasmStatus(row, "running");
+  try {
+    await row.fn(row);
+  } catch (error) {
+    setWasmStatus(row, "fail", errorDetail(error));
   }
 }
 
@@ -358,6 +546,9 @@ async function runAll() {
     for (const row of stressRows) {
       await runStressRow(row);
     }
+    for (const row of wasmRows) {
+      await runWasmRow(row);
+    }
   } finally {
     running = false;
     runAllEl.disabled = false;
@@ -414,6 +605,25 @@ function addStressRow(config) {
 
 
 
+function addWasmRow(config) {
+  const row = addRow(wasmRowsEl, config.name);
+  wasmRows.push({
+    ...config,
+    ...row,
+  });
+}
+
+
+
+async function runWasmRows() {
+  for (const row of wasmRows) {
+    await runWasmRow(row);
+  }
+  return wasmSummaryEl.textContent;
+}
+
+
+
 async function main() {
   try {
     runtime = await initWebGPU();
@@ -438,6 +648,10 @@ async function main() {
     for (const config of DEMO_STRESS_CHECKS) {
       addStressRow(config);
     }
+    for (const config of WASM_SCENE_CHECKS) {
+      addWasmRow(config);
+    }
+    window.__datovizRunWasmRows = runWasmRows;
     runAllEl.disabled = false;
     runAllEl.addEventListener("click", () => {
       runAll().catch((error) => {
@@ -446,9 +660,11 @@ async function main() {
     });
     setSummary();
     setStressSummary();
+    setWasmSummary();
   } catch (error) {
     summaryEl.textContent = error?.message ?? String(error);
     stressSummaryEl.textContent = "Runtime stress unavailable";
+    wasmSummaryEl.textContent = "WASM scene checks unavailable";
   }
 }
 

@@ -82,6 +82,10 @@ Current status as of this note:
   and the 2D/3D generic ABI streams; `just webgpu-browser-smoke` rendered the 2D and 3D WASM pages,
   exercised pointer and wheel interaction, and wrote nonblank PNG captures under
   `build/webgpu-browser-smoke/`.
+- recorded automated browser proof on 2026-06-01 after browser scene lifecycle and dashboard
+  hardening: `just webgpu-browser-smoke` rendered the 2D and 3D WASM pages, exercised pointer and
+  wheel interaction, checked pagehide scene destruction, ran the fixture dashboard's WASM Scene
+  Smoke rows, and reported `2` dashboard WASM scene checks passing.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

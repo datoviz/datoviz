@@ -294,8 +294,10 @@ mesh, panzoom, and a first 3D mesh + arcball scene. The browser wrapper passes n
 limits into the WASM scene emitter before figure creation, and the old direct browser-side panzoom
 uniform mutation path has been retired from the release-visible demos. Retained browser runtime
 stress now tracks browser-owned frame resources and retires submitted references after explicit
-queue completion in retained sessions. The next release-proofing gaps are direct payload transport,
-browser app examples, and then broader visual/technique parity.
+queue completion in retained sessions. Automated browser smoke now also checks pagehide scene
+destruction and the fixture dashboard's WASM Scene Smoke rows for 2D point and 3D mesh retained
+updates. The next release-proofing gaps are direct payload transport, retained-browser coverage for
+image texture resize/update paths, browser app examples, and then broader visual/technique parity.
 
 ### Experimental WASM Scene ABI
 
@@ -339,4 +341,4 @@ Use progressively broader validation:
 
 Retained-runtime browser stress should load a stream once, render repeated frames, require stable
 resource counts, and require `refs.open == 0` and `refs.recorded == 0` after each render. Fixture
-compatibility and runtime stress counts should remain reported separately.
+compatibility, runtime stress, and WASM scene smoke counts should remain reported separately.

@@ -28,7 +28,8 @@ Supported browser pages:
 
 - `examples/webgpu/wasm_scene.html`: point + primitive + image + mesh + panzoom;
 - `examples/webgpu/wasm_scene_3d.html`: basic 3D mesh + camera + arcball;
-- `examples/webgpu/fixtures.html`: DRP2 fixture dashboard for the pure browser WebGPU runner.
+- `examples/webgpu/fixtures.html`: DRP2 fixture dashboard for the pure browser WebGPU runner,
+  retained runtime stress checks, and WASM scene smoke rows.
 
 Supported browser canvas formats:
 
@@ -137,9 +138,10 @@ http://localhost:8765/examples/webgpu/wasm_scene_3d.html
 Expected manual results for the current subset:
 
 - fixture dashboard: all committed rows pass, no unsupported rows, no failures;
+- fixture dashboard WASM Scene Smoke section: 2D point update and 3D mesh update rows pass;
 - 2D WASM page: point, primitive, image, and mesh content render; pan/zoom and resize work;
 - 3D WASM page: cube renders; arcball drag, wheel zoom, and resize work.
 
-`just webgpu-browser-smoke` automates the two WASM scene page checks with headless Chrome when
-Chrome/Chromium is available locally. It writes transient PNG evidence under
-`build/webgpu-browser-smoke/`.
+`just webgpu-browser-smoke` automates the two WASM scene page checks and the dashboard WASM Scene
+Smoke rows with headless Chrome when Chrome/Chromium is available locally. It writes transient PNG
+evidence under `build/webgpu-browser-smoke/`.

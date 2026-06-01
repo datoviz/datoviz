@@ -403,6 +403,26 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
   return { initialStatus, interactiveStatus };
 }
 
+async function smokeWasmDashboard(page, baseUrl) {
+  await page.navigate(`${baseUrl}/examples/webgpu/fixtures.html`);
+  requireOk(
+    await page.evaluate('typeof navigator.gpu === "object"'),
+    'navigator.gpu is not available for fixture dashboard',
+  );
+  await page.waitFor('typeof window.__datovizRunWasmRows === "function"', 45000);
+  const summary = await page.evaluate('window.__datovizRunWasmRows()');
+  const details = await page.evaluate(`Array.from(document.querySelectorAll("#wasm-rows tr")).map((row) => {
+    const cells = Array.from(row.querySelectorAll("td"));
+    return cells.map((cell) => cell.textContent.trim()).join(" | ");
+  }).join("; ")`);
+  requireOk(
+    typeof summary === 'string' && summary.includes('2 pass') && summary.includes('0 fail'),
+    `fixture dashboard WASM rows failed: ${summary}; ${details}`,
+  );
+  assertNoBrowserErrors(page, 'fixture dashboard WASM rows');
+  return summary;
+}
+
 function assertNoBrowserErrors(page, label) {
   requireOk(page.errors.length === 0, `${label}: browser errors: ${page.errors.join('; ')}`);
   requireOk(
@@ -437,8 +457,10 @@ async function main() {
       'Rendered generic 3D cube + arcball',
       join(artifactsDir, 'wasm_scene_3d.png'),
     );
+    const wasmDashboard = await smokeWasmDashboard(page, baseUrl);
     console.log(`PASS 2D WASM: ${wasm2d.initialStatus}; ${wasm2d.interactiveStatus}`);
     console.log(`PASS 3D WASM: ${wasm3d.initialStatus}; ${wasm3d.interactiveStatus}`);
+    console.log(`PASS WASM dashboard: ${wasmDashboard}`);
     console.log(`Wrote ${artifactsDir}`);
   } finally {
     page?.close();
