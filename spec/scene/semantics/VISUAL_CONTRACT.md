@@ -69,6 +69,22 @@ canonical in [`../pipeline/RESOURCE_MODEL.md`](../pipeline/RESOURCE_MODEL.md); p
 rules are in [`../pipeline/ATTRIBUTE_SOURCES.md`](../pipeline/ATTRIBUTE_SOURCES.md).
 
 
+## Coordinate Precision Boundary
+
+Scene semantic and domain objects keep authoritative CPU-side coordinates in double precision unless
+their semantics are explicitly screen-space or pixel-space. This applies to geometry utilities,
+panel domains, polygon rings, graph layouts, curve tessellation, volume bounds, and similar
+scientific-coordinate state.
+
+Visual dense attributes are render payloads and use GPU-facing float precision by default, for
+example `vec3f` positions in point, marker, segment, path, primitive, mesh, glyph, and image
+families. Composites and other lowering paths own the explicit F64-to-F32 conversion boundary when a
+semantic object is realized as one or more visuals.
+
+This split preserves scientific/domain precision in retained scene state while keeping visual
+uploads compact, backend-native, and compatible with shader attribute formats.
+
+
 ## Resource And Parameter Schemas
 
 | Family | Typical resource schema |

@@ -71,6 +71,8 @@ The scene spec is split by kind of authority:
 1. Keep pushing scene semantics and producer contracts.
 2. Avoid freezing backend-shaped details too early.
 3. Let DRP2 and runtime work continue underneath without leaking upward.
+4. Keep semantic/domain coordinates authoritative in F64; visual render attributes are lowered to
+   GPU-facing F32 unless their family contract says otherwise.
 
 Deferred items by milestone are tracked in
 [validation/DEFERRED_TRACKER.md](validation/DEFERRED_TRACKER.md).
