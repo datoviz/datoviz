@@ -387,6 +387,62 @@ int dvz_graph_set_edges(DvzGraph* graph, uint32_t edge_count, const DvzGraphEdge
 
 
 /**
+ * Set stable graph node user ids.
+ *
+ * @param graph the graph
+ * @param first_node first node index
+ * @param node_count number of nodes
+ * @param ids borrowed user-id array
+ * @return 0 on success, -1 on error
+ */
+int dvz_graph_set_node_ids(
+    DvzGraph* graph, uint32_t first_node, uint32_t node_count, const uint64_t* ids)
+{
+    if (
+        graph == NULL || graph->scene == NULL || ids == NULL ||
+        !_graph_range_valid(graph->node_count, first_node, node_count))
+    {
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(graph->scene, "update graph node ids"))
+        return -1;
+    for (uint32_t i = 0; i < node_count; i++)
+        graph->nodes[first_node + i].user_id = ids[i];
+    graph->version++;
+    return 0;
+}
+
+
+
+/**
+ * Set stable graph edge user ids.
+ *
+ * @param graph the graph
+ * @param first_edge first edge index
+ * @param edge_count number of edges
+ * @param ids borrowed user-id array
+ * @return 0 on success, -1 on error
+ */
+int dvz_graph_set_edge_ids(
+    DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const uint64_t* ids)
+{
+    if (
+        graph == NULL || graph->scene == NULL || ids == NULL ||
+        !_graph_range_valid(graph->edge_count, first_edge, edge_count))
+    {
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(graph->scene, "update graph edge ids"))
+        return -1;
+    for (uint32_t i = 0; i < edge_count; i++)
+        graph->edges[first_edge + i].user_id = ids[i];
+    graph->version++;
+    return 0;
+}
+
+
+
+/**
  * Configure graph edge rendering.
  *
  * @param graph the graph

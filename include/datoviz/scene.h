@@ -1973,6 +1973,34 @@ dvz_graph_set_edges(DvzGraph* graph, uint32_t edge_count, const DvzGraphEdge* ed
 
 
 /**
+ * Set stable graph node user ids.
+ *
+ * @param graph the graph
+ * @param first_node first node index
+ * @param node_count number of nodes
+ * @param ids borrowed user-id array
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_graph_set_node_ids(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
+                       const uint64_t* ids);
+
+
+/**
+ * Set stable graph edge user ids.
+ *
+ * @param graph the graph
+ * @param first_edge first edge index
+ * @param edge_count number of edges
+ * @param ids borrowed user-id array
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_graph_set_edge_ids(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+                       const uint64_t* ids);
+
+
+/**
  * Configure graph edge rendering.
  *
  * `DVZ_GRAPH_EDGE_SEGMENT` lowers edges to fast independent segment visuals. `DVZ_GRAPH_EDGE_PATH`

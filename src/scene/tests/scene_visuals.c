@@ -3879,6 +3879,14 @@ int test_scene_graph_composite(TstContext* suite, const TstCase* item)
     AT(dvz_graph_set_nodes(graph, 3, positions) == 0);
     const DvzGraphEdge edges[2] = {{.source = 0, .target = 1}, {.source = 1, .target = 2}};
     AT(dvz_graph_set_edges(graph, 2, edges) == 0);
+    const uint64_t node_ids[3] = {101, 102, 103};
+    const uint64_t edge_ids[2] = {201, 202};
+    AT(dvz_graph_set_node_ids(graph, 0, 3, node_ids) == 0);
+    AT(dvz_graph_set_edge_ids(graph, 0, 2, edge_ids) == 0);
+    AT(graph->nodes[0].user_id == 101);
+    AT(graph->nodes[2].user_id == 103);
+    AT(graph->edges[0].user_id == 201);
+    AT(graph->edges[1].user_id == 202);
     const DvzColor node_colors[3] = {
         {255, 80, 80, 255},
         {80, 255, 80, 255},

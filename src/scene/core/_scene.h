@@ -206,6 +206,7 @@ struct DvzPolygonSet
 struct DvzGraphNode
 {
     dvec3 position;
+    uint64_t user_id;
     DvzColor color;
     float size;
     DvzMarkerShape shape;
@@ -219,6 +220,7 @@ struct DvzGraphEdgeRecord
 {
     uint32_t source;
     uint32_t target;
+    uint64_t user_id;
     dvec3 control0;
     dvec3 control1;
     bool has_controls;
