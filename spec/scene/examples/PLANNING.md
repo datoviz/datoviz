@@ -80,7 +80,7 @@ The main remaining polish or feature gaps are:
 | `marker_picking` | `needs-rc1-proof` | marker visual, item pick, selection highlight | Required if marker remains public v0.4 visual family. |
 | `sphere_impostor` | `ready-now` | sphere visual, lighting/depth | Small 3D visual-polish proof. |
 | `volume` | `needs-rc1-proof` | 3D sampled field, slice/render, capture | Keeps volume rendering and export covered. |
-| `scale_bar` | `needs-rc1-proof` | retained scale bar, label, panzoom/domain updates | Minimal feature proof lives in `examples/c/features/scalebar.c`; richer overview/detail/3D measurement composition lives in `examples/c/workflows/scalebar_measurement.c`. |
+| `scale_bar` | `needs-rc1-proof` | retained scale bar, label, panzoom/domain updates | Minimal feature proof lives in `examples/c/features/scalebar.c`; unit conversion proof lives in `examples/c/features/scalebar_units.c`; richer overview/detail/3D measurement composition lives in `examples/c/workflows/scalebar_measurement.c`. |
 | `colorbar` | `ready-now` | scalar field, continuous colorbar, range labels | Standalone feature proof lives in `examples/c/features/colorbar.c`; probing stays separate. |
 | `annotation_readout` | `ready-now` | anchored text/readout, highlighted data target | Standalone feature proof lives in `examples/c/features/annotation_readout.c`; query behavior stays separate. |
 | `image_probe` | `ready-now` | scalar sampled image, pixel query, probe marker, stdout readback | Focused public image-query proof lives in `examples/c/features/image_probe.c`; colorbar/readout and broader linked-panel pressure remain separate. |
@@ -100,6 +100,7 @@ The main remaining polish or feature gaps are:
 | --- | --- | --- |
 | `webgpu_browser_subset` | DRP2 WebGPU subset, WGSL, browser runtime | Point, primitive, image, and basic mesh only; visible experimental status. |
 | `animation_video_export` | frame callbacks, deterministic capture/video | Keep simple; defer transition/camera-path helper polish. |
+| `datetime_axis` | UTC datetime tick formatting, data-to-timestamp axis mapping, duration scale bar | Planned feature proof lives in `examples/c/features/datetime_axis.c` once the datetime API lands; not a v0.4 release blocker. |
 | `splat_cloud` | retained splat visual, blend/depth policy, deterministic capture | Include only if the visual lands cleanly; not a release blocker. |
 | `cpu_fluid_or_particles` | dynamic image/point/path updates, panzoom, colorbar | CPU-side stretch only; GPU compute remains later. |
 | `dense_streaming_2d` | path/pixel updates, axes/text, linked x panzoom | Pick one DAQ/physiology example if time allows. |
