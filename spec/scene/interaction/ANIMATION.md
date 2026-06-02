@@ -416,3 +416,329 @@ produced by animations are included in the current frame's dirty scope.
 | `CONTROLLERS.md` | controllers and animations are distinct but both mark scene dirty |
 | `core/REQUIREMENTS.md` | animation and scheduling listed as scene-owned responsibilities |
 | `core/RUNTIME_BOUNDARY.md` | runtime provides wall-clock timestamp; scene clock consumes it |
+
+
+## Track-Based Rewrite Plan
+
+This section supersedes the older transition/camera-path constructor direction above for v0.4 API
+work. Keep `dvz_anim_timer()` and `dvz_anim_phase()` as low-level escape hatches, but make the
+preferred high-level animation surface track-based.
+
+The desired split is:
+
+```text
+track      = pure typed function of local animation time
+animation  = scene-clock lifecycle and running state
+adapter    = applies evaluated track values to a scene target
+```
+
+Do not expose "trajectory" as a public concept. A spatial trajectory is a `DvzTrack` whose type is
+`vec2` or `vec3`.
+
+
+### Track Model
+
+`DvzTrack` is a scene-independent object that evaluates a typed value at time `t`.
+
+```c
+typedef struct DvzTrack DvzTrack;
+
+typedef enum
+{
+    DVZ_TRACK_FLOAT,
+    DVZ_TRACK_VEC2,
+    DVZ_TRACK_VEC3,
+    DVZ_TRACK_VEC4,
+    DVZ_TRACK_QUAT,
+} DvzTrackType;
+
+typedef enum
+{
+    DVZ_TRACK_REPEAT_NONE,
+    DVZ_TRACK_REPEAT_LOOP,
+    DVZ_TRACK_REPEAT_PINGPONG,
+} DvzTrackRepeat;
+
+typedef enum
+{
+    DVZ_TRACK_INTERP_STEP,
+    DVZ_TRACK_INTERP_LINEAR,
+    DVZ_TRACK_INTERP_CATMULL_ROM,
+    DVZ_TRACK_INTERP_CUBIC_HERMITE,
+    DVZ_TRACK_INTERP_SLERP,
+    DVZ_TRACK_INTERP_MONOTONE_CUBIC,
+} DvzTrackInterpolation;
+```
+
+Required constructors should use descriptor structs with `struct_size` and `flags`:
+
+```c
+DvzTrack* dvz_track_constant(const DvzTrackConstantDesc* desc);
+DvzTrack* dvz_track_linear(const DvzTrackLinearDesc* desc);
+DvzTrack* dvz_track_keyframes(const DvzTrackKeyframesDesc* desc);
+DvzTrack* dvz_track_circle2(const DvzTrackCircle2Desc* desc);
+DvzTrack* dvz_track_circle3(const DvzTrackCircle3Desc* desc);
+DvzTrack* dvz_track_rotation(const DvzTrackRotationDesc* desc);
+bool dvz_track_eval(const DvzTrack* track, double t, void* out);
+void dvz_track_destroy(DvzTrack* track);
+```
+
+Keyframe tracks must be descriptor-based from the first implementation so interpolation, tangent,
+ownership, and extrapolation behavior can grow without signature churn:
+
+```c
+typedef enum
+{
+    DVZ_TRACK_TANGENT_AUTO,
+    DVZ_TRACK_TANGENT_FLAT,
+    DVZ_TRACK_TANGENT_USER,
+} DvzTrackTangentMode;
+
+struct DvzTrackKeyframesDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+
+    DvzTrackType type;
+    uint32_t count;
+    const double* times;
+    const void* values;
+
+    DvzTrackRepeat repeat;
+    DvzTrackInterpolation interpolation;
+    DvzTrackTangentMode tangents;
+
+    float tension;
+    const void* in_tangents;
+    const void* out_tangents;
+};
+```
+
+Implementation order:
+
+1. implement `STEP`, `LINEAR`, and `CATMULL_ROM` for float/vec tracks,
+2. implement `SLERP` for quaternion keyframes and `dvz_track_rotation()`,
+3. add `CUBIC_HERMITE` when user tangents are needed,
+4. add `MONOTONE_CUBIC` for scalar tracks where overshoot is harmful, such as opacity, slice index,
+   or time cursor values.
+
+Constructors should copy borrowed input arrays by default. Add a borrow flag only if profiling
+shows that copying keyframes is a real cost.
+
+
+### Track Time
+
+Tracks evaluate in local animation time, not absolute scene time.
+
+`dvz_anim_start(animation, t_start)` maps the scene clock to local `t = 0` at the start point. This
+makes repeating animations restart predictably and allows the same track to be reused by multiple
+animations with different start times.
+
+All speeds are in units per second. Angles are radians. Circle and rotation constructors use
+`speed_rad_per_sec`.
+
+
+### Generic Track Animation
+
+The lowest-level reusable adapter evaluates one track and forwards the typed value to user code:
+
+```c
+typedef void (*DvzTrackApplyCallback)(
+    DvzAnimation* animation,
+    double t,
+    const void* value,
+    void* user_data);
+
+DvzAnimation* dvz_anim_track(
+    DvzScene* scene,
+    const DvzTrack* track,
+    DvzTrackApplyCallback callback,
+    void* user_data);
+```
+
+This should replace most example-local `dvz_anim_phase()` callbacks. Keep `dvz_anim_phase()` only
+for unusual procedural cases or compatibility during the rewrite.
+
+
+### Transform Motion Adapter
+
+Visual/object motion should be declarative. A transform adapter composes optional translation,
+rotation, and scale tracks and writes the retained visual-local transform.
+
+```c
+struct DvzTransformMotionDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+
+    const DvzTrack* translation; // vec3, optional
+    const DvzTrack* rotation;    // quat, optional
+    const DvzTrack* scale;       // vec3, optional
+
+    vec3 pivot;
+    DvzTransformOrder order;
+};
+
+DvzTransformMotionDesc dvz_transform_motion_desc(void);
+
+DvzAnimation* dvz_anim_visual_transform(
+    DvzScene* scene, DvzVisual* visual, const DvzTransformMotionDesc* desc);
+```
+
+Define transform order explicitly in the implementation. The default should match scene retained
+visual-local transform semantics and must be documented before public exposure. Pivot application
+must be tested.
+
+Example: rotating planet or molecule:
+
+```c
+DvzTrack* spin = dvz_track_rotation(&(DvzTrackRotationDesc){
+    .axis = {0, 0, 1},
+    .speed_rad_per_sec = 0.12f,
+});
+
+DvzTransformMotionDesc motion = dvz_transform_motion_desc();
+motion.rotation = spin;
+
+DvzAnimation* animation = dvz_anim_visual_transform(scene, visual, &motion);
+```
+
+
+### Camera Motion Adapter
+
+Camera motion should compose tracks rather than use a special "flyover" or "camera path" API.
+
+```c
+typedef enum
+{
+    DVZ_CAMERA_UP_FIXED,
+    DVZ_CAMERA_UP_WORLD,
+    DVZ_CAMERA_UP_TRACK,
+} DvzCameraUpMode;
+
+struct DvzCameraMotionDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+
+    const DvzTrack* eye;    // vec3
+    const DvzTrack* target; // vec3
+
+    DvzCameraUpMode up_mode;
+    vec3 up;
+    const DvzTrack* up_track; // vec3, optional
+};
+
+DvzCameraMotionDesc dvz_camera_motion_desc(void);
+
+DvzAnimation* dvz_anim_camera_motion(
+    DvzScene* scene, DvzCamera* camera, const DvzCameraMotionDesc* desc);
+```
+
+`DVZ_CAMERA_UP_WORLD` should stabilize roll by projecting the world-up vector onto the current view
+plane and falling back to a valid perpendicular vector near singularities.
+
+Example: tilted offset planet flyover with camera direction opposite planet spin:
+
+```c
+DvzTrack* eye = dvz_track_circle3(&(DvzTrackCircle3Desc){
+    .center = {0.0f, -0.45f, 0.25f},
+    .normal = {0.25f, 0.0f, 1.0f},
+    .radius = 2.8f,
+    .phase = 0.0f,
+    .speed_rad_per_sec = -0.025f,
+});
+
+DvzTrack* target = dvz_track_constant(&(DvzTrackConstantDesc){
+    .type = DVZ_TRACK_VEC3,
+    .value = (float[3]){0, 0, 0},
+});
+
+DvzCameraMotionDesc camera_motion = dvz_camera_motion_desc();
+camera_motion.eye = eye;
+camera_motion.target = target;
+camera_motion.up_mode = DVZ_CAMERA_UP_WORLD;
+glm_vec3_copy((vec3){0, 0, 1}, camera_motion.up);
+
+DvzAnimation* flyover = dvz_anim_camera_motion(scene, camera, &camera_motion);
+```
+
+
+### Interaction Policy
+
+Interaction policy belongs to `DvzAnimation`, not to tracks. Tracks describe values; policies
+describe ownership conflicts between animations and controllers.
+
+```c
+typedef enum
+{
+    DVZ_ANIM_INTERACTION_CONTINUE,
+    DVZ_ANIM_INTERACTION_STOP,
+    DVZ_ANIM_INTERACTION_PAUSE,
+    DVZ_ANIM_INTERACTION_RESUME_AFTER_IDLE,
+} DvzAnimInteractionPolicy;
+
+void dvz_anim_set_interaction_policy(
+    DvzAnimation* animation,
+    DvzController* controller,
+    DvzAnimInteractionPolicy policy,
+    double idle_s);
+```
+
+The first implementation may support only `CONTINUE` and `STOP`. Add pause/resume-after-idle once a
+real UI needs them. For `textured_planet`, the flyover camera animation should stop on first
+orbit-camera pointer or wheel interaction.
+
+
+### Scientific Visualization Use Cases
+
+These are intended API pressure tests, not mandatory examples for the first patch.
+
+1. 2D electrophysiology playback cursor:
+   `linear float track -> dvz_anim_track() -> update vertical cursor x`.
+2. 2D microscopy scan reticle:
+   `keyframed vec2 track -> dvz_anim_track() -> update marker or overlay position`.
+3. Brain or tomography slice sweep:
+   `pingpong float track -> dvz_anim_track() -> update volume slice parameter`.
+4. Oceanography drifter:
+   `keyframed vec3 track -> visual transform translation`.
+5. Molecular rotation:
+   `rotation quat track -> visual transform rotation`.
+6. Moving probe in a 3D volume:
+   `keyframed vec3 track -> probe marker translation and optional readout`.
+7. Camera following a simulated particle:
+   `keyframed vec3 target track + offset/circle eye track -> camera motion`.
+8. Planet showcase:
+   `rotation track -> planet spin`; `tilted circle3 eye + constant target -> camera flyover`.
+
+
+### Aggressive v0.4 Replacement Plan
+
+Once the track API lands, replace v0.4-era callback-heavy code rather than adding parallel examples.
+
+Implementation sequence:
+
+1. Add internal `DvzTrack` storage and evaluator in `src/scene/interaction/`.
+2. Add public declarations in `include/datoviz/scene/animation.h` or a focused
+   `include/datoviz/scene/track.h` included by the umbrella scene header.
+3. Add tests for constant, linear, repeat, pingpong, circle2, circle3, rotation, and keyframe
+   interpolation. Tests must cover local-time restart behavior.
+4. Add `dvz_anim_track()` and verify lifecycle, start/stop/restart, destruction, and scene dirty
+   marking.
+5. Add `dvz_anim_visual_transform()` and tests for translation, rotation, scale, pivot, and order.
+6. Add `dvz_anim_camera_motion()` and tests for eye/target evaluation, world-up stabilization, and
+   invalid track type rejection.
+7. Add the first `dvz_anim_set_interaction_policy()` slice with controller-interaction stop.
+8. Rewrite `examples/c/showcases/textured_planet.c`:
+   - planet spin uses `dvz_track_rotation()` plus `dvz_anim_visual_transform()`;
+   - default camera flyover uses `dvz_track_circle3()` plus `dvz_anim_camera_motion()`;
+   - flyover stops on orbit-camera interaction;
+   - Mars texture remains required, with no procedural Mars fallback.
+9. Sweep scene examples for `dvz_anim_phase()` callbacks that only implement scalar, rotation,
+   translation, cursor, slice, or camera motion. Replace them with tracks and adapters.
+10. Re-evaluate `dvz_anim_arcball_spin()`. Prefer removing it from the public v0.4 surface if no
+    release example or binding requires it. If kept, implement it internally as a compatibility
+    wrapper over track/adapter machinery or mark it as a narrow convenience.
+
+Keep `dvz_anim_timer()` and `dvz_anim_phase()` for low-level escape hatches, but they should not be
+the default pattern in new examples or docs once tracks exist.
