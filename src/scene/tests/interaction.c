@@ -32,6 +32,7 @@
 #include "query/internal.h"
 #include "scene_emit/internal.h"
 #include "scene_emit/scene_emit.h"
+#include "core/units_internal.h"
 #include "datoviz/scene.h"
 #include "helpers.h"
 #include "text/internal.h"
@@ -1297,6 +1298,69 @@ static int test_scene_scalebar_formatting(TstContext* suite, const TstCase* item
     AT(strcmp(label, "2 cm") == 0);
     _scene_format_si_value(2000.0, "m", label, sizeof(label));
     AT(strcmp(label, "2 km") == 0);
+    return 0;
+}
+
+
+/**
+ * Check unit-ladder formatting core behavior.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_scene_units_formatting_core(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzUnits* duration = dvz_units_builtin(scene, DVZ_UNIT_LADDER_DURATION, 1e-3);
+    ANN(duration);
+    char label[64] = {0};
+    AT(_scene_units_format(duration, 50.0, NULL, label, sizeof(label)));
+    AT(strcmp(label, "50 ms") == 0);
+    AT(_scene_units_format(duration, 2500.0, NULL, label, sizeof(label)));
+    AT(strcmp(label, "2.5 s") == 0);
+
+    DvzUnitLadder* genome = dvz_unit_ladder_create(scene, "bp");
+    ANN(genome);
+    AT(dvz_unit_ladder_add(genome, 1e6, "Mb") == 0);
+    AT(dvz_unit_ladder_add(genome, 1.0, "bp") == 0);
+    AT(dvz_unit_ladder_add(genome, 1e3, "kb") == 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_unit_ladder_add(genome, 1e3, "kilobase") < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_unit_ladder_add(genome, 1e9, "kb") < 0);
+
+    DvzUnits* bp = dvz_units_create(scene);
+    ANN(bp);
+    AT(dvz_units_ladder(bp, genome) == 0);
+    AT(_scene_units_format(bp, 2500000.0, NULL, label, sizeof(label)));
+    AT(strcmp(label, "2.5 Mb") == 0);
+
+    DvzUnitFormatContext axis_ctx = {
+        .mode = DVZ_UNIT_DISPLAY_AXIS_STABLE,
+        .has_axis_range = true,
+        .axis_data_min = 0.0,
+        .axis_data_max = 2500000.0,
+    };
+    AT(_scene_units_format(bp, 1000.0, &axis_ctx, label, sizeof(label)));
+    AT(strcmp(label, "0.001 Mb") == 0);
+
+    AT(dvz_units_fixed_label(bp, "kb") == 0);
+    AT(_scene_units_format(bp, 2500000.0, NULL, label, sizeof(label)));
+    AT(strcmp(label, "2500 kb") == 0);
+
+    DvzDateTimeFormat* dt =
+        dvz_datetime_format_builtin(scene, DVZ_DATETIME_FORMAT_CONCISE_UTC);
+    ANN(dt);
+    DvzTimestamp ts = (DvzTimestamp)1714552496123456LL; /* 2024-05-01 12:34:56.123456 UTC */
+    AT(_scene_datetime_format(dt, ts, DVZ_TIME_INTERVAL_MICROSECOND, label, sizeof(label)));
+    AT(strcmp(label, "12:34:56.123456") == 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_datetime_format_timezone(dt, "Europe/Paris") < 0);
+
+    dvz_scene_destroy(scene);
     return 0;
 }
 
@@ -3391,6 +3455,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_overlay_card_rich_text_public_api);
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_scalebar_formatting);
+    TST_CASE(test_scene_units_formatting_core);
     TST_CASE(test_scene_scalebar_2d_realization);
     TST_CASE(test_scene_scalebar_update_churn);
     TST_CASE(test_scene_scalebar_3d_world_reference);

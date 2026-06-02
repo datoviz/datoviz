@@ -28,6 +28,157 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 /**
+ * Return a scene-owned builtin unit ladder.
+ *
+ * @param scene the scene
+ * @param builtin builtin ladder kind
+ * @return the ladder, or NULL on validation/allocation error
+ */
+DVZ_EXPORT DvzUnitLadder* dvz_unit_ladder_builtin(
+    DvzScene* scene, DvzUnitLadderBuiltin builtin);
+
+
+/**
+ * Create a scene-owned custom unit ladder.
+ *
+ * @param scene the scene
+ * @param canonical_unit canonical unit label
+ * @return the ladder, or NULL on validation/allocation error
+ */
+DVZ_EXPORT DvzUnitLadder* dvz_unit_ladder_create(
+    DvzScene* scene, const char* canonical_unit);
+
+
+/**
+ * Add one display entry to a custom unit ladder.
+ *
+ * Duplicate factors or labels are rejected.
+ *
+ * @param ladder the ladder
+ * @param factor display-unit factor in canonical units
+ * @param label display unit label
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_unit_ladder_add(DvzUnitLadder* ladder, double factor, const char* label);
+
+
+/**
+ * Clear all entries from a custom unit ladder.
+ *
+ * Builtin ladders ignore this call.
+ *
+ * @param ladder the ladder
+ */
+DVZ_EXPORT void dvz_unit_ladder_clear(DvzUnitLadder* ladder);
+
+
+/**
+ * Create a scene-owned units object.
+ *
+ * @param scene the scene
+ * @return the units object, or NULL on allocation error
+ */
+DVZ_EXPORT DvzUnits* dvz_units_create(DvzScene* scene);
+
+
+/**
+ * Create a scene-owned units object using a builtin ladder.
+ *
+ * @param scene the scene
+ * @param builtin builtin ladder kind
+ * @param data_to_canonical factor from data coordinates to canonical units
+ * @return the units object, or NULL on validation/allocation error
+ */
+DVZ_EXPORT DvzUnits* dvz_units_builtin(
+    DvzScene* scene, DvzUnitLadderBuiltin builtin, double data_to_canonical);
+
+
+/**
+ * Set the factor from data coordinates to canonical units.
+ *
+ * @param units the units object
+ * @param factor finite positive conversion factor
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_units_data_to_canonical(DvzUnits* units, double factor);
+
+
+/**
+ * Attach a ladder to a units object.
+ *
+ * @param units the units object
+ * @param ladder the display ladder
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_units_ladder(DvzUnits* units, DvzUnitLadder* ladder);
+
+
+/**
+ * Set the unit display mode.
+ *
+ * @param units the units object
+ * @param mode display mode
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_units_display_mode(DvzUnits* units, DvzUnitDisplayMode mode);
+
+
+/**
+ * Force a display label for fixed display mode.
+ *
+ * @param units the units object
+ * @param label ladder entry label
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_units_fixed_label(DvzUnits* units, const char* label);
+
+
+/**
+ * Return a scene-owned builtin datetime format.
+ *
+ * @param scene the scene
+ * @param builtin builtin datetime format kind
+ * @return the format, or NULL on validation/allocation error
+ */
+DVZ_EXPORT DvzDateTimeFormat* dvz_datetime_format_builtin(
+    DvzScene* scene, DvzDateTimeBuiltin builtin);
+
+
+/**
+ * Create a scene-owned datetime format.
+ *
+ * @param scene the scene
+ * @return the datetime format, or NULL on allocation error
+ */
+DVZ_EXPORT DvzDateTimeFormat* dvz_datetime_format_create(DvzScene* scene);
+
+
+/**
+ * Set the timezone used by a datetime format.
+ *
+ * The first v0.4 slice supports only UTC.
+ *
+ * @param format the datetime format
+ * @param timezone timezone name
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_datetime_format_timezone(
+    DvzDateTimeFormat* format, const char* timezone);
+
+
+/**
+ * Set the formatting rule for a calendar interval.
+ *
+ * @param format the datetime format
+ * @param interval interval kind
+ * @param strftime_format C strftime-compatible format
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_datetime_format_rule(
+    DvzDateTimeFormat* format, DvzTimeInterval interval, const char* strftime_format);
+
+
+/**
  * Return the default format descriptor.
  *
  * @return default format descriptor

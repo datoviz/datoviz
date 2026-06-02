@@ -82,11 +82,16 @@ typedef struct DvzLegend            DvzLegend;
 typedef struct DvzFont              DvzFont;
 typedef struct DvzText              DvzText;
 typedef struct DvzAnnotation        DvzAnnotation;
+typedef struct DvzAnnotation        DvzScaleBar;
 typedef struct DvzAxis              DvzAxis;
+typedef struct DvzUnitLadder        DvzUnitLadder;
+typedef struct DvzUnits             DvzUnits;
+typedef struct DvzDateTimeFormat    DvzDateTimeFormat;
 typedef struct DvzOrbitCamera       DvzOrbitCamera;
 
 
 typedef int64_t DvzCategoryId;
+typedef int64_t DvzTimestamp; /* microseconds since Unix epoch UTC */
 
 
 
@@ -100,6 +105,43 @@ typedef enum
     DVZ_DIM_Y = 1,
     DVZ_DIM_Z = 2,
 } DvzDim;
+
+
+typedef enum
+{
+    DVZ_UNIT_LADDER_METRIC_LENGTH = 0,
+    DVZ_UNIT_LADDER_DURATION      = 1,
+    DVZ_UNIT_LADDER_RAW           = 2,
+} DvzUnitLadderBuiltin;
+
+
+typedef enum
+{
+    DVZ_UNIT_DISPLAY_AUTO        = 0,
+    DVZ_UNIT_DISPLAY_AXIS_STABLE = 1,
+    DVZ_UNIT_DISPLAY_FIXED       = 2,
+} DvzUnitDisplayMode;
+
+
+typedef enum
+{
+    DVZ_TIME_INTERVAL_NANOSECOND  = 0,
+    DVZ_TIME_INTERVAL_MICROSECOND = 1,
+    DVZ_TIME_INTERVAL_MILLISECOND = 2,
+    DVZ_TIME_INTERVAL_SECOND      = 3,
+    DVZ_TIME_INTERVAL_MINUTE      = 4,
+    DVZ_TIME_INTERVAL_HOUR        = 5,
+    DVZ_TIME_INTERVAL_DAY         = 6,
+    DVZ_TIME_INTERVAL_MONTH       = 7,
+    DVZ_TIME_INTERVAL_YEAR        = 8,
+} DvzTimeInterval;
+
+
+typedef enum
+{
+    DVZ_DATETIME_FORMAT_CONCISE_UTC = 0,
+    DVZ_DATETIME_FORMAT_ISO_UTC     = 1,
+} DvzDateTimeBuiltin;
 
 
 typedef uint32_t DvzDimMask;

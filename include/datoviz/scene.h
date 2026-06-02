@@ -975,6 +975,42 @@ DVZ_EXPORT bool dvz_axis_set_plot_margins(
     DvzAxis* axis, float left, float right, float bottom, float top);
 
 
+/**
+ * Attach numeric units to one panel-owned axis.
+ *
+ * Tick positions remain in panel data coordinates; labels are formatted through the units object.
+ *
+ * @param axis the axis
+ * @param units units object, or NULL to restore plain numeric formatting
+ * @return whether the axis was updated
+ */
+DVZ_EXPORT bool dvz_axis_set_units(DvzAxis* axis, DvzUnits* units);
+
+
+/**
+ * Attach an absolute datetime formatter to one panel-owned axis.
+ *
+ * @param axis the axis
+ * @param format datetime format, or NULL to restore numeric/unit formatting
+ * @return whether the axis was updated
+ */
+DVZ_EXPORT bool dvz_axis_set_datetime(DvzAxis* axis, DvzDateTimeFormat* format);
+
+
+/**
+ * Map compact data coordinates to an absolute datetime interval.
+ *
+ * @param axis the axis
+ * @param data0 first data coordinate
+ * @param data1 second data coordinate
+ * @param t0 timestamp corresponding to data0, in microseconds since Unix epoch UTC
+ * @param t1 timestamp corresponding to data1, in microseconds since Unix epoch UTC
+ * @return whether the mapping was updated
+ */
+DVZ_EXPORT bool dvz_axis_set_datetime_range(
+    DvzAxis* axis, double data0, double data1, DvzTimestamp t0, DvzTimestamp t1);
+
+
 /*************************************************************************************************/
 /*  Visuals                                                                                      */
 /*************************************************************************************************/

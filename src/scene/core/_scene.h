@@ -72,6 +72,10 @@
 #define DVZ_SCENE_MAX_COLORBAR_TICKS 16
 #define DVZ_SCENE_MAX_COLORBAR_TEXTS (DVZ_SCENE_MAX_COLORBAR_TICKS + 1)
 #define DVZ_SCENE_MAX_COLOR_STOPS 32
+#define DVZ_SCENE_MAX_UNIT_LADDERS 64
+#define DVZ_SCENE_MAX_UNIT_LADDER_ENTRIES 16
+#define DVZ_SCENE_MAX_UNITS 128
+#define DVZ_SCENE_MAX_DATETIME_FORMATS 64
 #define DVZ_SCENE_MAX_ITEM_ATTRS 8
 #define DVZ_SCENE_MAX_VISUAL_BINDINGS 3
 #define DVZ_SCENE_MAX_SELECTION_ITEMS 1024
@@ -443,6 +447,7 @@ void _scene_panel_refresh_legend_reserve(DvzPanel* panel);
 
 typedef struct DvzSceneFormatState DvzSceneFormatState;
 typedef struct DvzSceneCard DvzSceneCard;
+typedef struct DvzUnitLadderEntry DvzUnitLadderEntry;
 
 
 typedef enum
@@ -461,6 +466,47 @@ struct DvzSceneFormatState
     char unit[32];
     char prefix[DVZ_SCENE_LABEL_SIZE];
     char suffix[DVZ_SCENE_LABEL_SIZE];
+};
+
+
+struct DvzUnitLadderEntry
+{
+    double factor;
+    char label[32];
+};
+
+
+struct DvzUnitLadder
+{
+    DvzScene* scene;
+    bool active;
+    bool builtin;
+    DvzUnitLadderBuiltin builtin_kind;
+    char canonical_unit[32];
+    uint32_t entry_count;
+    DvzUnitLadderEntry entries[DVZ_SCENE_MAX_UNIT_LADDER_ENTRIES];
+};
+
+
+struct DvzUnits
+{
+    DvzScene* scene;
+    bool active;
+    double data_to_canonical;
+    DvzUnitLadder* ladder;
+    DvzUnitDisplayMode display_mode;
+    char fixed_label[32];
+};
+
+
+struct DvzDateTimeFormat
+{
+    DvzScene* scene;
+    bool active;
+    bool builtin;
+    DvzDateTimeBuiltin builtin_kind;
+    char timezone[32];
+    char rules[DVZ_TIME_INTERVAL_YEAR + 1][32];
 };
 
 
@@ -1076,6 +1122,7 @@ struct DvzAnnotation
     uint32_t visual_figure_width;
     uint32_t visual_figure_height;
     DvzScaleBarDesc scalebar;
+    DvzUnits* scalebar_units_format;
     DvzVisual* scalebar_visual;
     double scalebar_units;
     float scalebar_px;
@@ -1601,6 +1648,13 @@ struct DvzAxis
     DvzDataDomain domain;
     DvzAxisTickPolicy tick_policy;
     DvzAxisStyle style;
+    DvzUnits* units;
+    DvzDateTimeFormat* datetime_format;
+    bool datetime_range_set;
+    double datetime_data0;
+    double datetime_data1;
+    DvzTimestamp datetime_t0;
+    DvzTimestamp datetime_t1;
     char label[DVZ_SCENE_LABEL_SIZE];
     uint32_t tick_count;
     double tick_lmin;
@@ -1815,6 +1869,15 @@ struct DvzScene
 
     uint32_t scale_count;
     DvzScale scales[DVZ_SCENE_MAX_SCALES];
+
+    uint32_t unit_ladder_count;
+    DvzUnitLadder unit_ladders[DVZ_SCENE_MAX_UNIT_LADDERS];
+
+    uint32_t units_count;
+    DvzUnits units[DVZ_SCENE_MAX_UNITS];
+
+    uint32_t datetime_format_count;
+    DvzDateTimeFormat datetime_formats[DVZ_SCENE_MAX_DATETIME_FORMATS];
 
     uint32_t colormap_count;
     DvzColormap colormaps[DVZ_SCENE_MAX_COLORMAPS];

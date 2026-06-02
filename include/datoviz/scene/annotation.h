@@ -83,6 +83,57 @@ DVZ_EXPORT DvzAnnotation* dvz_annotation_scalebar(
 
 
 /**
+ * Create a retained scale bar attached to a panel.
+ *
+ * @param panel the panel
+ * @return the scale bar
+ */
+DVZ_EXPORT DvzScaleBar* dvz_scalebar(DvzPanel* panel);
+
+
+/**
+ * Set the data dimension measured by a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param dim dimension
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_scalebar_dimension(DvzScaleBar* scalebar, DvzDim dim);
+
+
+/**
+ * Set the panel anchor of a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param anchor panel anchor
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_scalebar_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor);
+
+
+/**
+ * Attach numeric units to a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param units units object
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units);
+
+
+/**
+ * Attach duration units to a retained scale bar.
+ *
+ * This is an alias for dvz_scalebar_set_units() in the first retained scale-bar slice.
+ *
+ * @param scalebar the scale bar
+ * @param duration_units duration units object
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_scalebar_set_duration(DvzScaleBar* scalebar, DvzUnits* duration_units);
+
+
+/**
  * Destroy a retained annotation object.
  *
  * @param annotation the annotation
