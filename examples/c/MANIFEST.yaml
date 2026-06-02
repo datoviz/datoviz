@@ -42,6 +42,13 @@ examples:
     source: examples/c/features/scalebar.c
     validation: smoke+screenshot
 
+  - id: colorbar
+    title: Colorbar
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/colorbar.c
+    validation: smoke+screenshot
+
   - id: image_probe
     title: Image Probe
     stage: v0.4_required
