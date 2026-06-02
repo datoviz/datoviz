@@ -10,6 +10,7 @@ material.
 | --- | --- |
 | `features/` | Public feature examples: axes, panels, scale bars, probing, picking, annotations, and composed reusable scene capabilities. |
 | `visuals/` | Future public one-visual examples. Old visual smoke tests currently live in `legacy/visuals/`. |
+| `composites/` | Public semantic composite examples such as polygons and graphs. |
 | `showcases/` | Public gallery-facing scientific examples. |
 | `lab/` | Non-public experiments, diagnostics, stress/perf demos, and development workbenches. Flat folder only. |
 | `legacy/` | Temporary archive of older examples that are not built by default. Promote or delete from here deliberately. |

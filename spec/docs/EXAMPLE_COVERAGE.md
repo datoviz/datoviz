@@ -123,7 +123,6 @@ not the old gallery page that may currently occupy a similar slot.
 | `visual.text` | `examples/c/visuals/text.c` | `conditional` | A few short strings placed in data and/or screen space with legible anchors, color, and size. | Teaches semantic text creation if text is public. Do not expose internal glyph visual details. |
 | `visual.labels` | `examples/c/visuals/labels.c` | `conditional` | An integer label field or labeled regions with distinct categorical colors and stable ids. | Teaches label-field upload and categorical styling if labels are public. Put probe/readout in `feature.probe_labels`. |
 | `visual.splat` | `examples/c/visuals/splat.c` | `experimental` | A small splat cloud with obvious footprint, color, and depth blending behavior. | Public experimental coverage only. Keep full Gaussian-splat asset pipelines out of v0.4 coverage. |
-| `visual.polygon` | `examples/c/visuals/polygon.c` | `planned` | A few filled polygons with boundaries, winding, and hole behavior visible if supported by the release API. | Teaches polygon vertex/ring data and fill styling. Keep shape builders and geographic regions out of the minimal example. |
 | `visual.errorbar` | `examples/c/visuals/errorbar.c` | `deferred` | A minimal uncertainty glyph around points if error bars become a first-class visual. | Do not force into v0.4 unless the visual contract is promoted. |
 | `visual.boxplot` | `examples/c/visuals/boxplot.c` | `deferred` | A compact statistical distribution plot if boxplots become first-class. | Likely belongs in GSP/plot unless Datoviz exposes a low-level visual. |
 | `visual.tube` | `examples/c/visuals/tube.c` | `deferred` | A 3D tubular path with lighting and radius variation if tubes become public. | Do not replace the segment/path/vector minimal examples. |
@@ -153,7 +152,7 @@ Current implementation seeds:
 | `visual.text` | `examples/c/legacy/visuals/text.c`, `examples/c/lab/text_msdf_diagnostics.c` | Salvage only through the public text API; do not document raw glyph internals. |
 | `visual.labels` | `examples/c/legacy/showcase/labels.c` | Promote only if labels remain public; split probing into `feature.probe_labels`. |
 | `visual.splat` | `examples/c/legacy/showcase/gothic_splat.c` | Experimental v0.4 visual; publish with explicit experimental labeling and no full asset-pipeline promise. |
-| `visual.polygon` | `examples/c/legacy/visuals/polygon.c`, `docs/gallery/features/polygon.md` | Polygon is in v0.4 release scope; rebuild the old feature page as a C-first visual-family page. |
+| `composite.polygon` | `examples/c/legacy/visuals/polygon.c`, `docs/gallery/features/polygon.md` | Polygon is in v0.4 release scope as a semantic composite; rebuild the old feature page as a C-first composite page. |
 
 
 ## AI-Assisted Coverage Matrix

@@ -9,6 +9,7 @@ folders:
   public:
     - examples/c/features
     - examples/c/visuals
+    - examples/c/composites
     - examples/c/showcases
   non_public:
     - examples/c/lab
@@ -72,6 +73,22 @@ examples:
       - boundary-box
       - arcball
       - capture
+
+  - id: composite_polygon
+    title: Polygon Composite
+    stage: v0.4_required
+    lane: composites
+    source: examples/c/composites/polygon.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - composite
+      - polygon
+      - polygon-set
+      - holes
+      - panzoom
 
   - id: protein_arcball_viewer
     title: Protein
