@@ -106,6 +106,22 @@ examples:
       - bezier-edges
       - panzoom
 
+  - id: composite_graph_edge_modes
+    title: Graph Edge Modes
+    stage: v0.4_required
+    lane: composites
+    source: examples/c/composites/graph_edge_modes.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - composite
+      - graph
+      - segment-edges
+      - path-edges
+      - bezier-edges
+
   - id: protein_arcball_viewer
     title: Protein
     stage: v0.4_required
