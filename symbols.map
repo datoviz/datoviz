@@ -918,10 +918,12 @@ dvz_panel_add_visual
 dvz_panel_axis
 dvz_panel_background_desc
 dvz_panel_bind_controller
+dvz_panel_border_desc
 dvz_panel_bounds
 dvz_panel_bounds_visible
 dvz_panel_camera
 dvz_panel_clear_background
+dvz_panel_clear_border
 dvz_panel_connect_input
 dvz_panel_controller
 dvz_panel_data_to_visual_positions
@@ -937,6 +939,7 @@ dvz_panel_query
 dvz_panel_query_now
 dvz_panel_set_background
 dvz_panel_set_background_color
+dvz_panel_set_border
 dvz_panel_set_bounds_visible
 dvz_panel_set_camera
 dvz_panel_set_desc

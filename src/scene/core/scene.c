@@ -319,6 +319,7 @@ void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height)
     {
         DvzPanel* panel = &figure->panels[i];
         (void)_scene_panel_refresh_layout_reserve(panel);
+        (void)_scene_panel_refresh_border(panel);
         if (panel->camera != NULL)
         {
             float panel_width = 0.0f;
@@ -464,6 +465,9 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
     panel->bounds_visual = NULL;
     panel->bounds_occluded_visual = NULL;
     panel->bounds_visible = false;
+    panel->border_visual = NULL;
+    panel->border = dvz_panel_border_desc();
+    panel->border.visible = false;
     return panel;
 }
 

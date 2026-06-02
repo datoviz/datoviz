@@ -316,6 +316,18 @@ struct DvzPanelBackgroundDesc
 typedef struct DvzPanelBackgroundDesc DvzPanelBackgroundDesc;
 
 
+struct DvzPanelBorderDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    bool visible;
+    DvzColor color;
+    float width_px;
+    float inset_px;
+};
+typedef struct DvzPanelBorderDesc DvzPanelBorderDesc;
+
+
 struct DvzRect
 {
     float x;

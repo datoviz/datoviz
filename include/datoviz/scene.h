@@ -710,6 +710,37 @@ DVZ_EXPORT void dvz_panel_set_background_color(
 
 
 /**
+ * Return the default panel border descriptor.
+ *
+ * The default is a visible one-pixel border inset by half a pixel so it is fully inside the panel.
+ *
+ * @return default panel border descriptor
+ */
+DVZ_EXPORT DvzPanelBorderDesc dvz_panel_border_desc(void);
+
+
+/**
+ * Set, update, or clear a fixed panel border.
+ *
+ * Borders are panel chrome: they are rendered as a fixed screen-space overlay, do not affect plot
+ * layout, and do not reserve space. Passing NULL, visible=false, or width_px=0 clears the border.
+ *
+ * @param panel the panel
+ * @param border border descriptor, or NULL to clear
+ * @return whether the border was updated
+ */
+DVZ_EXPORT bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border);
+
+
+/**
+ * Clear a panel border.
+ *
+ * @param panel the panel
+ */
+DVZ_EXPORT void dvz_panel_clear_border(DvzPanel* panel);
+
+
+/**
  * Return default Eye-Dome Lighting options.
  *
  * @return EDL descriptor

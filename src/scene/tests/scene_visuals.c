@@ -4330,6 +4330,14 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
     background_desc.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_background(panel, &background_desc));
 
+    DvzPanelBorderDesc border_desc = dvz_panel_border_desc();
+    border_desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_border(panel, &border_desc));
+
+    border_desc = dvz_panel_border_desc();
+    border_desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_border(panel, &border_desc));
+
     DvzQueryRequest request = dvz_query_request();
     request.struct_size = DVZ_STRUCT_SIZE(DvzQueryRequest) - 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_query(panel, 0.0, 0.0, &request) < 0);

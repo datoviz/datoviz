@@ -422,6 +422,7 @@ bool _scene_panel_set_desc_internal(DvzPanel* panel, DvzPanelDesc desc)
         _scene_panel_pixel_size(panel, &panel_width, &panel_height);
         dvz_camera_resize(panel->camera, panel_width, panel_height);
     }
+    (void)_scene_panel_refresh_border(panel);
     _panel_mark_layout_changed(panel);
     return true;
 }
@@ -544,6 +545,5 @@ DvzPanel* dvz_grid_panel(DvzGrid* grid, uint32_t row, uint32_t col)
 {
     return dvz_grid_panel_span(grid, row, col, 1, 1);
 }
-
 
 

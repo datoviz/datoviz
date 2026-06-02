@@ -816,6 +816,7 @@ bool _panel_desc_valid(DvzPanelDesc desc);
 bool _scene_panel_set_desc_internal(DvzPanel* panel, DvzPanelDesc desc);
 void _scene_controller_destroy(DvzController* controller);
 bool _scene_panel_sync_fly_pivot_marker(DvzPanel* panel);
+bool _scene_panel_refresh_border(DvzPanel* panel);
 
 bool _dvz_figure_fly_update(DvzFigure* figure, double dt);
 
@@ -1742,6 +1743,8 @@ struct DvzPanel
      * existing visual instead of stacking new ones. */
     DvzVisual* background_visual;
     DvzPanelBackgroundType background_type;
+    DvzVisual* border_visual;
+    DvzPanelBorderDesc border;
 
     uint32_t colorbar_count;
     DvzColorbar* colorbars[DVZ_SCENE_MAX_PANEL_COLORBARS];

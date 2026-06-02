@@ -83,6 +83,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_z_layer_orders_emit);
     TST_CASE(test_scene_background_color_creates_fixed_quad);
     TST_CASE(test_scene_background_descriptor_gradient_and_image);
+    TST_CASE(test_scene_panel_border_creates_fixed_overlay);
     TST_CASE(test_scene_panel_plot_clip_rect_metadata);
     TST_CASE(test_scene_controller_mode_fixed_emits_separate_mvp);
     TST_CASE(test_scene_visual_local_transform_bounds_and_clear);

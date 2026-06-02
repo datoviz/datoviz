@@ -453,7 +453,7 @@ static DvzFramePlanClipRect _scene_visual_clip_rect(const DvzPanel* panel, const
     ANN(visual);
     if (_scene_visual_is_axis_grid(panel, visual))
         return DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
-    if (visual == panel->background_visual ||
+    if (visual == panel->background_visual || visual == panel->border_visual ||
         (visual->ops != NULL && visual->ops->panel_clip_rect) ||
         _scene_visual_is_axis_derived(panel, visual) ||
         _scene_visual_is_colorbar_derived(panel, visual) ||

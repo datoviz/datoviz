@@ -592,6 +592,75 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
 }
 
 
+int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 100, 80, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+
+    DvzPanelBorderDesc border = dvz_panel_border_desc();
+    border.color = dvz_color_rgba(10, 20, 30, 255);
+    border.width_px = 2.0f;
+    border.inset_px = 4.0f;
+
+    AT(panel->border_visual == NULL);
+    AT(dvz_panel_set_border(panel, &border));
+    AT(panel->visual_count == 1);
+    ANN(panel->border_visual);
+    AT(panel->visuals[0].visual == panel->border_visual);
+    AT(panel->visuals[0].z_layer > 0);
+    AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
+    AT(panel->border_visual->type == DVZ_VISUAL_TYPE_SEGMENT);
+    AT(panel->border.visible);
+    AT(panel->border.width_px == 2.0f);
+
+    int start_idx = _attr_index(panel->border_visual, "position_start");
+    int width_idx = _attr_index(panel->border_visual, "line_width");
+    int color_idx = _attr_index(panel->border_visual, "color");
+    AT(start_idx >= 0);
+    AT(width_idx >= 0);
+    AT(color_idx >= 0);
+    const float* starts = (const float*)panel->border_visual->attrs[start_idx].data;
+    const float* widths = (const float*)panel->border_visual->attrs[width_idx].data;
+    const DvzColor* colors = (const DvzColor*)panel->border_visual->attrs[color_idx].data;
+    ANN(starts);
+    ANN(widths);
+    ANN(colors);
+    AC(starts[0], -0.92f, 1e-6f);
+    AC(widths[0], 2.0f, 1e-6f);
+    AT(colors[0].r == 10);
+    AT(colors[0].g == 20);
+    AT(colors[0].b == 30);
+
+    DvzVisual* before = panel->border_visual;
+    border.inset_px = 8.0f;
+    AT(dvz_panel_set_border(panel, &border));
+    AT(panel->visual_count == 1);
+    AT(panel->border_visual == before);
+    starts = (const float*)panel->border_visual->attrs[start_idx].data;
+    AC(starts[0], -0.84f, 1e-6f);
+
+    dvz_figure_resize(figure, 200, 80);
+    starts = (const float*)panel->border_visual->attrs[start_idx].data;
+    AC(starts[0], -0.92f, 1e-6f);
+
+    dvz_panel_clear_border(panel);
+    AT(panel->visual_count == 0);
+    AT(panel->border_visual == NULL);
+    AT(!panel->border.visible);
+
+    border.visible = false;
+    AT(dvz_panel_set_border(panel, &border));
+    AT(panel->visual_count == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* item)
 {
     (void)suite;

@@ -517,6 +517,8 @@ int test_scene_background_color_creates_fixed_quad(TstContext* suite, const TstC
 
 int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const TstCase* item);
 
+int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCase* item);
+
 int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* item);
 
 int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* item);

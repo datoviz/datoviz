@@ -47,6 +47,7 @@
 
 #define DVZ_VISUAL_ATTACH_DESC_KNOWN_FLAGS 0u
 #define DVZ_PANEL_BACKGROUND_DESC_KNOWN_FLAGS 0u
+#define DVZ_PANEL_BORDER_DESC_KNOWN_FLAGS 0u
 #define DVZ_VISUAL_TRANSFORM_DESC_KNOWN_FLAGS 0u
 #define DVZ_VISUAL_SHADER_DESC_KNOWN_FLAGS 0u
 
@@ -73,6 +74,29 @@ static bool _panel_background_desc_validate(const DvzPanelBackgroundDesc* desc)
     if (!DVZ_STRUCT_VALID(desc, DvzPanelBackgroundDesc, DVZ_PANEL_BACKGROUND_DESC_KNOWN_FLAGS))
     {
         log_error("invalid DvzPanelBackgroundDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+static bool _panel_border_desc_validate(const DvzPanelBorderDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzPanelBorderDesc, DVZ_PANEL_BORDER_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzPanelBorderDesc ABI prologue");
+        return false;
+    }
+    if (!isfinite(desc->width_px) || desc->width_px < 0.0f)
+    {
+        log_error("panel border width must be finite and non-negative");
+        return false;
+    }
+    if (!isfinite(desc->inset_px) || desc->inset_px < 0.0f)
+    {
+        log_error("panel border inset must be finite and non-negative");
         return false;
     }
     return true;
@@ -259,6 +283,18 @@ DvzPanelBackgroundDesc dvz_panel_background_desc(void)
     desc.gradient.color0[3] = 1.0f;
     desc.gradient.color1[3] = 1.0f;
     return desc;
+}
+
+
+DvzPanelBorderDesc dvz_panel_border_desc(void)
+{
+    return (DvzPanelBorderDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzPanelBorderDesc),
+        .visible = true,
+        .color = {91, 118, 139, 255},
+        .width_px = 1.0f,
+        .inset_px = 0.5f,
+    };
 }
 
 
@@ -628,6 +664,113 @@ static void _panel_background_detach(DvzPanel* panel)
 }
 
 
+/**
+ * Detach the current border visual from one panel.
+ *
+ * @param panel the panel
+ */
+static void _panel_border_detach(DvzPanel* panel)
+{
+    ANN(panel);
+    if (panel->border_visual == NULL)
+    {
+        panel->border.visible = false;
+        return;
+    }
+
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        if (panel->visuals[i].visual != panel->border_visual)
+            continue;
+        for (uint32_t j = i + 1; j < panel->visual_count; j++)
+            panel->visuals[j - 1] = panel->visuals[j];
+        panel->visual_count--;
+        for (uint32_t j = 0; j < panel->visual_count; j++)
+            panel->visuals[j].insertion_index = j;
+        break;
+    }
+
+    dvz_visual_destroy(panel->border_visual);
+    panel->border_visual = NULL;
+    panel->border.visible = false;
+    if (panel->figure != NULL)
+        _scene_notify_request_frame(panel->figure);
+}
+
+
+/**
+ * Fill one panel border segment payload from a descriptor.
+ *
+ * @param panel the panel
+ * @param border border descriptor
+ * @param starts output start positions
+ * @param ends output end positions
+ * @param colors output colors
+ * @param widths output widths
+ * @return whether the payload was finite
+ */
+static bool _panel_border_payload(
+    const DvzPanel* panel, const DvzPanelBorderDesc* border, vec3 starts[4], vec3 ends[4],
+    DvzColor colors[4], float widths[4])
+{
+    ANN(panel);
+    ANN(border);
+    ANN(starts);
+    ANN(ends);
+    ANN(colors);
+    ANN(widths);
+
+    float width = 0.0f;
+    float height = 0.0f;
+    _scene_panel_pixel_size(panel, &width, &height);
+    if (width <= 0.0f || height <= 0.0f)
+        return false;
+
+    const float inset = border->inset_px;
+    float x0 = -1.0f + 2.0f * inset / width;
+    float x1 = +1.0f - 2.0f * inset / width;
+    float y0 = -1.0f + 2.0f * inset / height;
+    float y1 = +1.0f - 2.0f * inset / height;
+    if (!isfinite(x0) || !isfinite(x1) || !isfinite(y0) || !isfinite(y1) || x0 > x1 || y0 > y1)
+        return false;
+
+    starts[0][0] = x0;
+    starts[0][1] = y0;
+    starts[0][2] = 0.0f;
+    ends[0][0] = x1;
+    ends[0][1] = y0;
+    ends[0][2] = 0.0f;
+
+    starts[1][0] = x1;
+    starts[1][1] = y0;
+    starts[1][2] = 0.0f;
+    ends[1][0] = x1;
+    ends[1][1] = y1;
+    ends[1][2] = 0.0f;
+
+    starts[2][0] = x1;
+    starts[2][1] = y1;
+    starts[2][2] = 0.0f;
+    ends[2][0] = x0;
+    ends[2][1] = y1;
+    ends[2][2] = 0.0f;
+
+    starts[3][0] = x0;
+    starts[3][1] = y1;
+    starts[3][2] = 0.0f;
+    ends[3][0] = x0;
+    ends[3][1] = y0;
+    ends[3][2] = 0.0f;
+
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        colors[i] = border->color;
+        widths[i] = border->width_px;
+    }
+    return true;
+}
+
+
 
 /**
  * Fill the four fullscreen background quad colors from a linear gradient.
@@ -938,6 +1081,149 @@ void dvz_panel_set_background_color(DvzPanel* panel, float r, float g, float b, 
     background.color[2] = b;
     background.color[3] = a;
     (void)dvz_panel_set_background(panel, &background);
+}
+
+
+/**
+ * Clear a panel border.
+ *
+ * @param panel the panel
+ */
+void dvz_panel_clear_border(DvzPanel* panel)
+{
+    ANN(panel);
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+        return;
+    DvzScene* scene = panel->figure->scene;
+    if (!_scene_visual_mutation_allowed(scene, "clear panel border"))
+        return;
+    _panel_border_detach(panel);
+}
+
+
+/**
+ * Set or update a panel border visual.
+ *
+ * @param panel the panel
+ * @param border the border descriptor, or NULL to clear
+ * @return whether the border was updated
+ */
+bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
+{
+    ANN(panel);
+    if (!_panel_border_desc_validate(border))
+        return false;
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+        return false;
+    DvzScene* scene = panel->figure->scene;
+    if (!_scene_visual_mutation_allowed(scene, "set panel border"))
+        return false;
+
+    if (border == NULL || !border->visible || border->width_px == 0.0f)
+    {
+        _panel_border_detach(panel);
+        return true;
+    }
+
+    vec3 starts[4] = {{0}};
+    vec3 ends[4] = {{0}};
+    DvzColor colors[4] = {{0}};
+    float widths[4] = {0};
+    if (!_panel_border_payload(panel, border, starts, ends, colors, widths))
+    {
+        log_error("dvz_panel_set_border: failed to resolve border geometry");
+        return false;
+    }
+
+    if (panel->border_visual == NULL)
+    {
+        DvzVisual* visual = dvz_segment(scene, 0);
+        if (visual == NULL)
+        {
+            log_error("dvz_panel_set_border: failed to allocate border visual");
+            return false;
+        }
+        if (dvz_segment_set_caps(visual, DVZ_SEGMENT_CAP_SQUARE, DVZ_SEGMENT_CAP_SQUARE) != 0 ||
+            dvz_visual_set_depth_test(visual, false) != 0)
+        {
+            log_error("dvz_panel_set_border: failed to configure border visual");
+            dvz_visual_destroy(visual);
+            return false;
+        }
+
+        DvzVisualDataUpdate updates[4] = {
+            {.attr_name = "position_start", .data = starts, .item_count = 4},
+            {.attr_name = "position_end", .data = ends, .item_count = 4},
+            {.attr_name = "color", .data = colors, .item_count = 4},
+            {.attr_name = "line_width", .data = widths, .item_count = 4},
+        };
+        if (dvz_visual_set_data_many(visual, updates, 4) != 0)
+        {
+            log_error("dvz_panel_set_border: failed to set border data");
+            dvz_visual_destroy(visual);
+            return false;
+        }
+
+        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+        attach.z_layer = INT32_MAX / 8;
+        attach.controller_mode = DVZ_CONTROLLER_FIXED;
+        if (dvz_panel_add_visual(panel, visual, &attach) != 0)
+        {
+            log_error("dvz_panel_set_border: failed to attach border visual");
+            dvz_visual_destroy(visual);
+            return false;
+        }
+        panel->border_visual = visual;
+    }
+    else
+    {
+        DvzVisualDataUpdate updates[4] = {
+            {.attr_name = "position_start", .data = starts, .item_count = 4},
+            {.attr_name = "position_end", .data = ends, .item_count = 4},
+            {.attr_name = "color", .data = colors, .item_count = 4},
+            {.attr_name = "line_width", .data = widths, .item_count = 4},
+        };
+        if (dvz_visual_set_data_many(panel->border_visual, updates, 4) != 0)
+        {
+            log_error("dvz_panel_set_border: failed to update border data");
+            return false;
+        }
+    }
+
+    panel->border = *border;
+    dvz_visual_set_visible(panel->border_visual, true);
+    _scene_notify_request_frame(panel->figure);
+    return true;
+}
+
+
+/**
+ * Refresh one panel border visual after pixel-size changes.
+ *
+ * @param panel the panel
+ * @return whether the refresh succeeded or no border exists
+ */
+bool _scene_panel_refresh_border(DvzPanel* panel)
+{
+    if (panel == NULL || panel->border_visual == NULL || !panel->border.visible)
+        return true;
+
+    vec3 starts[4] = {{0}};
+    vec3 ends[4] = {{0}};
+    DvzColor colors[4] = {{0}};
+    float widths[4] = {0};
+    if (!_panel_border_payload(panel, &panel->border, starts, ends, colors, widths))
+        return false;
+
+    DvzVisualDataUpdate updates[4] = {
+        {.attr_name = "position_start", .data = starts, .item_count = 4},
+        {.attr_name = "position_end", .data = ends, .item_count = 4},
+        {.attr_name = "color", .data = colors, .item_count = 4},
+        {.attr_name = "line_width", .data = widths, .item_count = 4},
+    };
+    if (dvz_visual_set_data_many(panel->border_visual, updates, 4) != 0)
+        return false;
+    return true;
 }
 
 

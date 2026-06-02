@@ -42,6 +42,7 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzPolygonDesc` | `dvz_polygon_desc()` |
 | `DvzTriangulationDesc` | `dvz_triangulation_desc()` |
 | `DvzPanelBackgroundDesc` | `dvz_panel_background_desc()` |
+| `DvzPanelBorderDesc` | `dvz_panel_border_desc()` |
 | `DvzSceneBufferDesc` | `dvz_scene_buffer_desc()` |
 | `DvzSceneComputeDesc` | `dvz_scene_compute_desc()` |
 | `DvzVisualAttachDesc` | `dvz_visual_attach_desc()` |
