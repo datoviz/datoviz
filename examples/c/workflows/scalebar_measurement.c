@@ -153,7 +153,7 @@ static void _copy_color(uint8_t out[4], DvzColor color, uint8_t alpha)
 
 
 /**
- * Configure a panel with the shared feature-example background and a light layout reserve.
+ * Configure a panel with the shared feature-example background.
  *
  * @param panel target panel
  * @return true when panel layout was configured
@@ -162,9 +162,7 @@ static bool _configure_panel(DvzPanel* panel)
 {
     ANN(panel);
     example_graphite_cyan_set_panel_background(panel);
-    return dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.04f, .right = 0.04f, .bottom = 0.04f,
-                                        .top = 0.04f});
+    return true;
 }
 
 
