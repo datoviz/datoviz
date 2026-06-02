@@ -119,6 +119,7 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(features pick_marker features/pick_marker.c)
 
     dvz_add_example(workflows panel_linked_axes workflows/panel_linked_axes.c)
+    dvz_add_example(workflows scalebar_measurement workflows/scalebar_measurement.c)
 
     dvz_add_example(visuals volume visuals/volume.c)
 

@@ -75,10 +75,11 @@ controls as constants, and offscreen readback or screenshot validation.
 
 ## `scale_bar`
 
-Narrow proof for retained scale bars in 2D and 3D contexts.
+Narrow proof for retained scale bars in a 2D context.
 
-Minimal target: one 2D panel and one 3D panel with scale bars whose labels update only when the
-formatted value or relevant style changes.
+Minimal target: one 2D panel with a simple reference visual and one scale bar whose label updates
+only when the formatted value or relevant style changes. The composed overview/detail/3D measurement
+workflow lives in `examples/c/workflows/scalebar_measurement.c`.
 
 
 ## `colorbar`

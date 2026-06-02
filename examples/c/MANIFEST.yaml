@@ -38,10 +38,17 @@ examples:
     validation: smoke+interaction
 
   - id: scale_bar
-    title: Scale Bars
+    title: Scale Bar
     stage: v0.4_required
     lane: features
     source: examples/c/features/scalebar.c
+    validation: smoke+screenshot
+
+  - id: scalebar_measurement_workflow
+    title: Scale Bar Measurement Workflow
+    stage: v0.4_required
+    lane: workflows
+    source: examples/c/workflows/scalebar_measurement.c
     validation: smoke+screenshot
 
   - id: colorbar
