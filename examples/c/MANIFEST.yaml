@@ -10,7 +10,9 @@ folders:
     - examples/c/features
     - examples/c/visuals
     - examples/c/composites
+    - examples/c/workflows
     - examples/c/showcases
+    - examples/c/scientific
   non_public:
     - examples/c/lab
     - examples/c/legacy
@@ -31,8 +33,8 @@ examples:
   - id: linked_panels_axes_panzoom
     title: Linked Panels With Axes
     stage: v0.4_required
-    lane: features
-    source: examples/c/features/panel_linked_axes.c
+    lane: workflows
+    source: examples/c/workflows/panel_linked_axes.c
     validation: smoke+interaction
 
   - id: scale_bar
