@@ -1,7 +1,7 @@
 # Scene Example Planning
 
 > **Status:** active planning
-> **Updated on:** 2026-05-30
+> **Updated on:** 2026-06-02
 > **Scope:** worked example specs, release staging, gallery priorities, and current support gaps
 > **Purpose:** keep one source of truth for which examples matter, when they matter, and what still
 > blocks them.
@@ -55,11 +55,13 @@ point/pixel/marker/primitive/mesh/path/image/volume/sphere/text visuals, panzoom
 turntable controllers, EDL/SSAO/MSAA/WBOIT/depth-peeling-shaped passes, colorbars, legends,
 annotations, scale bars, and first GPU-backed point/marker/image/labels/volume request paths.
 
-The main remaining polish or feature gaps are:
+The main remaining polish, promotion, or feature gaps are:
 
-1. release proof for text, axes, colorbars, legends, annotations, and scale bars;
-2. fixture/gallery proof for retained textured mesh, now that UVs, mesh-bound textures, texture
-   shader variant, and material integration are implemented;
+1. release capture proof for the existing text, axes, colorbar, annotation/readout, scale-bar, and
+   retained textured-mesh public examples;
+2. promotion or rewrite of the missing required public C examples: `point_2d`,
+   `linked_panels_probe_colorbar`, `sphere_impostor`, `brain_volume_mesh`, and
+   `dense_point_cloud_edl`;
 3. vector visuals so wind, flow, and track examples stop relying on primitive triangles;
 4. richer picking/probe payloads for marker exact hit tests, mesh regions, paths, labels, text, and
    volume ray hits;
@@ -73,25 +75,27 @@ The main remaining polish or feature gaps are:
 
 | Scenario | Readiness | Required slice | Decision |
 | --- | --- | --- | --- |
-| `point_2d` | `ready-now` | retained scene, point visual, panzoom/offscreen | Keep as the smallest retained-scene smoke. |
-| `path_axes_2d` | `needs-rc1-proof` | path, rendered text, 2D axes/ticks | First axes/text regression target. |
-| `linked_panels_axes_panzoom` | `needs-rc1-proof` | grid/layout, linked panzoom, axes | Proves linked panels are real, not only layout. |
-| `linked_panels_probe_colorbar` | `needs-rc1-proof` | image probe, colorbar, annotation/readout, linked state | Main 2D explanatory-object pressure test. |
-| `marker_picking` | `needs-rc1-proof` | marker visual, item pick, selection highlight | Required if marker remains public v0.4 visual family. |
-| `sphere_impostor` | `ready-now` | sphere visual, lighting/depth | Small 3D visual-polish proof. |
-| `volume` | `needs-rc1-proof` | 3D sampled field, slice/render, capture | Keeps volume rendering and export covered. |
-| `scale_bar` | `needs-rc1-proof` | retained scale bar, label, panzoom/domain updates | Minimal feature proof lives in `examples/c/features/scalebar.c`; unit conversion proof lives in `examples/c/features/scalebar_units.c`; richer overview/detail/3D measurement composition lives in `examples/c/workflows/scalebar_measurement.c`. |
+| `point_2d` | `needs-rc1-proof` | retained scene, point visual, panzoom/offscreen | Still missing from the public C manifest. Keep as the smallest retained-scene smoke; use legacy point examples or `examples/c/lab/point_stress.c` only as source material. |
+| `path_axes_2d` | `ready-now` | path, rendered text, 2D axes/ticks | Public proof lives in `examples/c/features/axes_2d.c`. |
+| `linked_panels_axes_panzoom` | `ready-now` | grid/layout, linked panzoom, axes | Public proof lives in `examples/c/workflows/panel_linked_axes.c`. |
+| `linked_panels_probe_colorbar` | `needs-rc1-proof` | image probe, colorbar, annotation/readout, linked state | Still missing as a composed public C example. Current public proofs cover the parts separately in `image_probe`, `colorbar`, and `annotation_readout`. |
+| `marker_picking` | `ready-now` | marker visual, item pick, selection highlight | Public proof lives in `examples/c/features/pick_marker.c`. |
+| `sphere_impostor` | `needs-rc1-proof` | sphere visual, lighting/depth | Still missing from the public C manifest. Use legacy sphere/protein material as source, but keep this as a small visual proof. |
+| `volume` | `ready-now` | 3D sampled field, slice/render, capture | Public proof lives in `examples/c/visuals/volume.c`. |
+| `scale_bar` | `ready-now` | retained scale bar, label, panzoom/domain updates | Minimal feature proof lives in `examples/c/features/scalebar.c`; unit conversion proof lives in `examples/c/features/scalebar_units.c`; richer overview/detail/3D measurement composition lives in `examples/c/workflows/scalebar_measurement.c`. |
+| `scalebar_units` | `ready-now` | retained scale bar, non-spatial unit conversion | Public proof lives in `examples/c/features/scalebar_units.c`. |
+| `scalebar_measurement_workflow` | `ready-now` | overview/detail/3D measurement composition | Public proof lives in `examples/c/workflows/scalebar_measurement.c`. |
 | `colorbar` | `ready-now` | scalar field, continuous colorbar, range labels | Standalone feature proof lives in `examples/c/features/colorbar.c`; probing stays separate. |
 | `annotation_readout` | `ready-now` | anchored text/readout, highlighted data target | Standalone feature proof lives in `examples/c/features/annotation_readout.c`; query behavior stays separate. |
 | `image_probe` | `ready-now` | scalar sampled image, pixel query, probe marker, stdout readback | Focused public image-query proof lives in `examples/c/features/image_probe.c`; colorbar/readout and broader linked-panel pressure remain separate. |
-| `protein_arcball_viewer` | `partial-now` | real PDB data, sphere impostors, materials, SSAO/MSAA, GUI, arcball | Flagship native C scientific example; defer labels/picking/molecular surface if needed. |
-| `showcase_wind_field` | `needs-rc1-proof` | image field, vector visual, paths, panzoom, colorbar | Best near-term 2D showcase; vector visual should replace primitive arrows. |
+| `protein_arcball_viewer` | `ready-now` | real PDB data, sphere impostors, materials, SSAO/MSAA, GUI, arcball | Public proof lives in `examples/c/scientific/protein.c`; defer labels/picking/molecular surface if needed. |
+| `showcase_wind_field` | `partial-now` | image field, vector visual, paths, panzoom, colorbar | Public proof lives in `examples/c/showcases/wind_field.c` using primitive-arrow substitution until the vector visual is promoted. |
 | `showcase_gpu_particle_smoke` | `ready-now` | scene compute, shared storage/vertex buffers, blended points | Public experimental compute-to-graphics showcase lives in `examples/c/showcases/gpu_particle_smoke.c`. |
 | `textured_terrain_or_planet` | `ready-now` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof lives in `examples/c/showcases/textured_planet.c`: Earth/Mars UV sphere with real sampled textures and procedural fallbacks. Mars DEM terrain analysis remains v0.5/later. |
-| `brain_volume_mesh` | `partial-now` | volume, transparent mesh, GUI, arcball | Narrow Allen/IBL brain slice for v0.4; full atlas explorer is v0.5. |
-| `dense_point_cloud_edl` | `ready-now` | large points/pixels, EDL, fly/camera | Use LiDAR or synthetic dense cloud as performance/showcase proof. |
-| `composite_polygon` | `needs-rc1-proof` | semantic polygon/polygon-set, fill+stroke composite, holes, region styling | Public composite example target; polygon is not a visual family even if it appears near visual examples. |
-| `composite_graph` | `needs-rc1-proof` | semantic graph, user-provided layout, nodes+edges composite, stable ids, Bezier edges | Required if graph API is promoted into v0.4. Keep layout user-supplied first; edge-mode comparisons belong in tests or lab examples. |
+| `brain_volume_mesh` | `needs-rc1-proof` | volume, transparent mesh, GUI, arcball | Still missing from the public C manifest. Legacy Allen/IBL brain examples are source material; full atlas explorer is v0.5. |
+| `dense_point_cloud_edl` | `needs-rc1-proof` | large points/pixels, EDL, fly/camera | Still missing from the public C manifest. Use LiDAR or synthetic dense cloud as performance/showcase proof. |
+| `composite_polygon` | `ready-now` | semantic polygon/polygon-set, fill+stroke composite, holes, region styling | Public proof lives in `examples/c/composites/polygon.c`; polygon is not a visual family even if it appears near visual examples. |
+| `composite_graph` | `ready-now` | semantic graph, user-provided layout, nodes+edges composite, stable ids, Bezier edges | Public proof lives in `examples/c/composites/graph.c`. Keep layout user-supplied first; edge-mode comparisons belong in tests or lab examples. |
 
 
 ## v0.4 Experimental Set
@@ -175,21 +179,23 @@ optional controls for tessellation quality, stroke width, join mode, and overlay
 2. `path_axes_2d`
 3. `linked_panels_axes_panzoom`
 4. `scale_bar`
-5. `colorbar`
-6. `annotation_readout`
-7. `image_probe`
-8. `linked_panels_probe_colorbar`
-9. `marker_picking`
-10. `volume`
-11. `protein_arcball_viewer`
-12. `showcase_wind_field`
-13. `showcase_gpu_particle_smoke`
-14. `textured_terrain_or_planet`
-15. `brain_volume_mesh`
-16. `dense_point_cloud_edl`
+5. `scalebar_units`
+6. `scalebar_measurement_workflow`
+7. `colorbar`
+8. `annotation_readout`
+9. `image_probe`
+10. `linked_panels_probe_colorbar`
+11. `marker_picking`
+12. `volume`
+13. `protein_arcball_viewer`
+14. `showcase_wind_field`
+15. `showcase_gpu_particle_smoke`
+16. `textured_terrain_or_planet`
 17. `composite_polygon`
 18. `composite_graph`
-17. `webgpu_browser_subset`
+19. `brain_volume_mesh`
+20. `dense_point_cloud_edl`
+21. `webgpu_browser_subset`
 
 
 ## Promotion Rule

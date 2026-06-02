@@ -23,5 +23,7 @@ lane in the active C tree: tests own regressions, and lab owns temporary diagnos
 
 ## Metadata
 
-`MANIFEST.yaml` indexes the current public/lab examples. `MIGRATION.md` records the reset and where
-legacy material went.
+`MANIFEST.yaml` indexes the current public/lab examples using the canonical scenario IDs from
+`../../spec/scene/examples/PLANNING.md`. Required scenarios that are still absent from the manifest
+remain explicit gaps in the planning table; `MIGRATION.md` records the reset and where legacy
+material went.

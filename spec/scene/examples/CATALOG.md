@@ -3,6 +3,15 @@
 This catalog maps scenario IDs to their owning bundle after the examples reorganization. Use it to
 find a scenario quickly; use [PLANNING.md](PLANNING.md) for staging decisions and readiness.
 
+As of 2026-06-02, the public C manifest has runnable `v0.4 required` entries for
+`path_axes_2d`, `linked_panels_axes_panzoom`, `scale_bar`, `scalebar_units`,
+`scalebar_measurement_workflow`, `colorbar`, `annotation_readout`, `image_probe`,
+`marker_picking`, `volume`, `composite_polygon`, `composite_graph`, `protein_arcball_viewer`,
+`showcase_wind_field`, `showcase_gpu_particle_smoke`, and `textured_terrain_or_planet`.
+The remaining required scenarios without a public C manifest entry are `point_2d`,
+`linked_panels_probe_colorbar`, `sphere_impostor`, `brain_volume_mesh`, and
+`dense_point_cloud_edl`.
+
 | Scenario ID | Stage | Bundle |
 | --- | --- | --- |
 | `point_2d` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |

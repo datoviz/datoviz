@@ -86,7 +86,7 @@ examples:
     source: examples/c/features/pick_marker.c
     validation: smoke+interaction
 
-  - id: visual_volume
+  - id: volume
     title: Volume
     stage: v0.4_required
     lane: visuals
@@ -119,7 +119,7 @@ examples:
       - holes
       - panzoom
 
-  - id: composite_graph_static
+  - id: composite_graph
     title: Graph Composite
     stage: v0.4_required
     lane: composites
@@ -177,7 +177,7 @@ examples:
       card: section
       status_label: experimental
 
-  - id: showcase_textured_planet
+  - id: textured_terrain_or_planet
     title: Textured Planets
     stage: v0.4_required
     lane: showcases
