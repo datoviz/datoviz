@@ -1657,6 +1657,7 @@ struct DvzAxis
     DvzTimestamp datetime_t1;
     char label[DVZ_SCENE_LABEL_SIZE];
     uint32_t tick_count;
+    DvzTimeInterval datetime_tick_interval;
     double tick_lmin;
     double tick_lmax;
     double tick_lstep;

@@ -21,12 +21,285 @@
 #include "_assertions.h"
 #include "_scene.h"
 #include "axis_internal.h"
+#include "core/units_internal.h"
 
 
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+#define AXIS_TIME_US_PER_MILLISECOND 1000LL
+#define AXIS_TIME_US_PER_SECOND      1000000LL
+#define AXIS_TIME_US_PER_MINUTE      (60LL * AXIS_TIME_US_PER_SECOND)
+#define AXIS_TIME_US_PER_HOUR        (60LL * AXIS_TIME_US_PER_MINUTE)
+#define AXIS_TIME_US_PER_DAY         (24LL * AXIS_TIME_US_PER_HOUR)
+
+
+typedef struct DvzAxisTimeStep
+{
+    DvzTimeInterval interval;
+    DvzTimestamp step_us;
+    int32_t calendar_months;
+    int32_t calendar_years;
+} DvzAxisTimeStep;
+
+
+static int64_t _axis_floor_div_i64(int64_t value, int64_t divisor)
+{
+    ASSERT(divisor != 0);
+    int64_t q = value / divisor;
+    int64_t r = value % divisor;
+    if (r != 0 && ((r < 0) != (divisor < 0)))
+        q--;
+    return q;
+}
+
+
+static DvzTimestamp _axis_timestamp_floor(DvzTimestamp timestamp, DvzTimestamp step_us)
+{
+    if (step_us <= 0)
+        return timestamp;
+    return (DvzTimestamp)(_axis_floor_div_i64(timestamp, step_us) * step_us);
+}
+
+
+static int64_t _axis_days_from_civil(int32_t year, uint32_t month, uint32_t day)
+{
+    year -= month <= 2u ? 1 : 0;
+    const int32_t era = (year >= 0 ? year : year - 399) / 400;
+    const uint32_t yoe = (uint32_t)(year - era * 400);
+    const uint32_t doy =
+        (153u * (month + (month > 2u ? (uint32_t)-3 : 9u)) + 2u) / 5u + day - 1u;
+    const uint32_t doe = yoe * 365u + yoe / 4u - yoe / 100u + doy;
+    return (int64_t)era * 146097LL + (int64_t)doe - 719468LL;
+}
+
+
+static void _axis_civil_from_days(int64_t days, int32_t* out_year, uint32_t* out_month)
+{
+    ANN(out_year);
+    ANN(out_month);
+    days += 719468LL;
+    const int64_t era = (days >= 0 ? days : days - 146096LL) / 146097LL;
+    const uint32_t doe = (uint32_t)(days - era * 146097LL);
+    const uint32_t yoe = (doe - doe / 1460u + doe / 36524u - doe / 146096u) / 365u;
+    int32_t year = (int32_t)yoe + (int32_t)era * 400;
+    const uint32_t doy = doe - (365u * yoe + yoe / 4u - yoe / 100u);
+    const uint32_t mp = (5u * doy + 2u) / 153u;
+    const uint32_t day = doy - (153u * mp + 2u) / 5u + 1u;
+    (void)day;
+    const uint32_t month = mp + (mp < 10u ? 3u : (uint32_t)-9);
+    year += month <= 2u ? 1 : 0;
+    *out_year = year;
+    *out_month = month;
+}
+
+
+static DvzTimestamp _axis_timestamp_month_floor(DvzTimestamp timestamp, int32_t months)
+{
+    if (months <= 0)
+        return timestamp;
+    int64_t days = _axis_floor_div_i64(timestamp, AXIS_TIME_US_PER_DAY);
+    int32_t year = 1970;
+    uint32_t month = 1;
+    _axis_civil_from_days(days, &year, &month);
+    int64_t month_index = (int64_t)year * 12LL + (int64_t)month - 1LL;
+    month_index = _axis_floor_div_i64(month_index, months) * (int64_t)months;
+    year = (int32_t)_axis_floor_div_i64(month_index, 12);
+    month = (uint32_t)(month_index - (int64_t)year * 12LL) + 1u;
+    return (DvzTimestamp)(_axis_days_from_civil(year, month, 1u) * AXIS_TIME_US_PER_DAY);
+}
+
+
+static DvzTimestamp _axis_timestamp_year_floor(DvzTimestamp timestamp, int32_t years)
+{
+    if (years <= 0)
+        return timestamp;
+    int64_t days = _axis_floor_div_i64(timestamp, AXIS_TIME_US_PER_DAY);
+    int32_t year = 1970;
+    uint32_t month = 1;
+    _axis_civil_from_days(days, &year, &month);
+    (void)month;
+    year = (int32_t)(_axis_floor_div_i64(year, years) * years);
+    return (DvzTimestamp)(_axis_days_from_civil(year, 1u, 1u) * AXIS_TIME_US_PER_DAY);
+}
+
+
+static DvzTimestamp _axis_timestamp_add_months(DvzTimestamp timestamp, int32_t months)
+{
+    int64_t days = _axis_floor_div_i64(timestamp, AXIS_TIME_US_PER_DAY);
+    int32_t year = 1970;
+    uint32_t month = 1;
+    _axis_civil_from_days(days, &year, &month);
+    int64_t month_index = (int64_t)year * 12LL + (int64_t)month - 1LL + (int64_t)months;
+    year = (int32_t)_axis_floor_div_i64(month_index, 12);
+    month = (uint32_t)(month_index - (int64_t)year * 12LL) + 1u;
+    return (DvzTimestamp)(_axis_days_from_civil(year, month, 1u) * AXIS_TIME_US_PER_DAY);
+}
+
+
+static DvzTimestamp _axis_timestamp_add_years(DvzTimestamp timestamp, int32_t years)
+{
+    int64_t days = _axis_floor_div_i64(timestamp, AXIS_TIME_US_PER_DAY);
+    int32_t year = 1970;
+    uint32_t month = 1;
+    _axis_civil_from_days(days, &year, &month);
+    (void)month;
+    return (DvzTimestamp)(_axis_days_from_civil(year + years, 1u, 1u) * AXIS_TIME_US_PER_DAY);
+}
+
+
+static DvzAxisTimeStep _axis_datetime_choose_step(double raw_step_us)
+{
+    static const DvzAxisTimeStep steps[] = {
+        {DVZ_TIME_INTERVAL_MICROSECOND, 1, 0, 0},
+        {DVZ_TIME_INTERVAL_MICROSECOND, 2, 0, 0},
+        {DVZ_TIME_INTERVAL_MICROSECOND, 5, 0, 0},
+        {DVZ_TIME_INTERVAL_MICROSECOND, 10, 0, 0},
+        {DVZ_TIME_INTERVAL_MICROSECOND, 20, 0, 0},
+        {DVZ_TIME_INTERVAL_MICROSECOND, 50, 0, 0},
+        {DVZ_TIME_INTERVAL_MICROSECOND, 100, 0, 0},
+        {DVZ_TIME_INTERVAL_MICROSECOND, 200, 0, 0},
+        {DVZ_TIME_INTERVAL_MICROSECOND, 500, 0, 0},
+        {DVZ_TIME_INTERVAL_MILLISECOND, 1 * AXIS_TIME_US_PER_MILLISECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_MILLISECOND, 2 * AXIS_TIME_US_PER_MILLISECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_MILLISECOND, 5 * AXIS_TIME_US_PER_MILLISECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_MILLISECOND, 10 * AXIS_TIME_US_PER_MILLISECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_MILLISECOND, 20 * AXIS_TIME_US_PER_MILLISECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_MILLISECOND, 50 * AXIS_TIME_US_PER_MILLISECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_MILLISECOND, 100 * AXIS_TIME_US_PER_MILLISECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_MILLISECOND, 200 * AXIS_TIME_US_PER_MILLISECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_MILLISECOND, 500 * AXIS_TIME_US_PER_MILLISECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_SECOND, 1 * AXIS_TIME_US_PER_SECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_SECOND, 2 * AXIS_TIME_US_PER_SECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_SECOND, 5 * AXIS_TIME_US_PER_SECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_SECOND, 10 * AXIS_TIME_US_PER_SECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_SECOND, 15 * AXIS_TIME_US_PER_SECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_SECOND, 30 * AXIS_TIME_US_PER_SECOND, 0, 0},
+        {DVZ_TIME_INTERVAL_MINUTE, 1 * AXIS_TIME_US_PER_MINUTE, 0, 0},
+        {DVZ_TIME_INTERVAL_MINUTE, 2 * AXIS_TIME_US_PER_MINUTE, 0, 0},
+        {DVZ_TIME_INTERVAL_MINUTE, 5 * AXIS_TIME_US_PER_MINUTE, 0, 0},
+        {DVZ_TIME_INTERVAL_MINUTE, 10 * AXIS_TIME_US_PER_MINUTE, 0, 0},
+        {DVZ_TIME_INTERVAL_MINUTE, 15 * AXIS_TIME_US_PER_MINUTE, 0, 0},
+        {DVZ_TIME_INTERVAL_MINUTE, 30 * AXIS_TIME_US_PER_MINUTE, 0, 0},
+        {DVZ_TIME_INTERVAL_HOUR, 1 * AXIS_TIME_US_PER_HOUR, 0, 0},
+        {DVZ_TIME_INTERVAL_HOUR, 2 * AXIS_TIME_US_PER_HOUR, 0, 0},
+        {DVZ_TIME_INTERVAL_HOUR, 3 * AXIS_TIME_US_PER_HOUR, 0, 0},
+        {DVZ_TIME_INTERVAL_HOUR, 6 * AXIS_TIME_US_PER_HOUR, 0, 0},
+        {DVZ_TIME_INTERVAL_HOUR, 12 * AXIS_TIME_US_PER_HOUR, 0, 0},
+        {DVZ_TIME_INTERVAL_DAY, 1 * AXIS_TIME_US_PER_DAY, 0, 0},
+        {DVZ_TIME_INTERVAL_DAY, 2 * AXIS_TIME_US_PER_DAY, 0, 0},
+        {DVZ_TIME_INTERVAL_DAY, 7 * AXIS_TIME_US_PER_DAY, 0, 0},
+        {DVZ_TIME_INTERVAL_DAY, 14 * AXIS_TIME_US_PER_DAY, 0, 0},
+        {DVZ_TIME_INTERVAL_MONTH, 0, 1, 0},
+        {DVZ_TIME_INTERVAL_MONTH, 0, 2, 0},
+        {DVZ_TIME_INTERVAL_MONTH, 0, 3, 0},
+        {DVZ_TIME_INTERVAL_MONTH, 0, 6, 0},
+        {DVZ_TIME_INTERVAL_YEAR, 0, 0, 1},
+        {DVZ_TIME_INTERVAL_YEAR, 0, 0, 2},
+        {DVZ_TIME_INTERVAL_YEAR, 0, 0, 5},
+        {DVZ_TIME_INTERVAL_YEAR, 0, 0, 10},
+    };
+    static const double approx[] = {
+        1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0,
+        1e3, 2e3, 5e3, 10e3, 20e3, 50e3, 100e3, 200e3, 500e3,
+        1e6, 2e6, 5e6, 10e6, 15e6, 30e6,
+        60e6, 120e6, 300e6, 600e6, 900e6, 1800e6,
+        3600e6, 7200e6, 10800e6, 21600e6, 43200e6,
+        86400e6, 172800e6, 604800e6, 1209600e6,
+        30.0 * 86400e6, 60.0 * 86400e6, 90.0 * 86400e6, 180.0 * 86400e6,
+        365.0 * 86400e6, 2.0 * 365.0 * 86400e6, 5.0 * 365.0 * 86400e6,
+        10.0 * 365.0 * 86400e6,
+    };
+    uint32_t count = sizeof(steps) / sizeof(steps[0]);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        if (raw_step_us <= approx[i])
+            return steps[i];
+    }
+    return steps[count - 1];
+}
+
+
+static DvzTimestamp _axis_datetime_step_floor(DvzTimestamp timestamp, DvzAxisTimeStep step)
+{
+    if (step.calendar_years > 0)
+        return _axis_timestamp_year_floor(timestamp, step.calendar_years);
+    if (step.calendar_months > 0)
+        return _axis_timestamp_month_floor(timestamp, step.calendar_months);
+    return _axis_timestamp_floor(timestamp, step.step_us);
+}
+
+
+static DvzTimestamp _axis_datetime_step_next(DvzTimestamp timestamp, DvzAxisTimeStep step)
+{
+    if (step.calendar_years > 0)
+        return _axis_timestamp_add_years(timestamp, step.calendar_years);
+    if (step.calendar_months > 0)
+        return _axis_timestamp_add_months(timestamp, step.calendar_months);
+    return timestamp + step.step_us;
+}
+
+
+static void _axis_compute_datetime_ticks(
+    DvzAxis* axis, double min, double max, uint32_t target)
+{
+    ANN(axis);
+    if (axis->datetime_format == NULL || !axis->datetime_range_set || !(max > min))
+        return;
+
+    DvzTimestamp a = _scene_datetime_data_to_timestamp(axis, min);
+    DvzTimestamp b = _scene_datetime_data_to_timestamp(axis, max);
+    DvzTimestamp lo = a <= b ? a : b;
+    DvzTimestamp hi = a <= b ? b : a;
+    if (hi <= lo)
+        return;
+
+    double raw_step_us = (double)(hi - lo) / (double)(target > 1 ? target - 1 : 1);
+    if (!isfinite(raw_step_us) || raw_step_us <= 0.0)
+        return;
+    DvzAxisTimeStep step = _axis_datetime_choose_step(raw_step_us);
+    axis->datetime_tick_interval = step.interval;
+
+    DvzTimestamp tick = _axis_datetime_step_floor(lo, step);
+    while (tick < lo)
+    {
+        DvzTimestamp next = _axis_datetime_step_next(tick, step);
+        if (next <= tick)
+            return;
+        tick = next;
+    }
+
+    axis->tick_count = 0;
+    DvzTimestamp previous = tick;
+    while (tick <= hi && axis->tick_count < DVZ_SCENE_MAX_AXIS_TICKS)
+    {
+        double data = _scene_datetime_timestamp_to_data(axis, tick);
+        if (isfinite(data))
+            axis->ticks[axis->tick_count++] = data;
+        DvzTimestamp next = _axis_datetime_step_next(tick, step);
+        if (next <= tick)
+            break;
+        previous = tick;
+        tick = next;
+    }
+
+    if (axis->tick_count >= 2)
+        axis->tick_lstep = fabs(axis->ticks[1] - axis->ticks[0]);
+    else if (axis->tick_count == 1)
+        axis->tick_lstep =
+            fabs(_scene_datetime_timestamp_to_data(axis, _axis_datetime_step_next(previous, step)) -
+                 axis->ticks[0]);
+    else
+        axis->tick_lstep = 0.0;
+    axis->tick_lmin = axis->tick_count > 0 ? axis->ticks[0] : min;
+    axis->tick_lmax = axis->tick_count > 0 ? axis->ticks[axis->tick_count - 1] : max;
+    axis->tick_covered_min = min;
+    axis->tick_covered_max = max;
+    axis->tick_cache_valid = false;
+}
+
 
 /**
  * Return a nice step size with the v0.3 1/2/5 ladder.
@@ -253,6 +526,12 @@ void _axis_compute_ticks(DvzAxis* axis)
 
     float pixel_span = 0.0f;
     uint32_t target = _axis_target_tick_count(axis, &pixel_span);
+    if (axis->datetime_format != NULL && axis->datetime_range_set)
+    {
+        _axis_compute_datetime_ticks(axis, min, max, target);
+        return;
+    }
+
     double current_density = axis->tick_lstep > 0.0 && isfinite(axis->tick_lstep)
                                  ? (max - min) / axis->tick_lstep + 1.0
                                  : 0.0;
@@ -293,5 +572,3 @@ void _axis_compute_ticks(DvzAxis* axis)
     axis->tick_cache_valid = true;
     _axis_fill_visible_ticks(axis, min, max, step);
 }
-
-

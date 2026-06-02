@@ -87,6 +87,13 @@ static void _axis_format_tick_label(
     ANN(out);
     if (out_size == 0)
         return;
+    if (axis->datetime_format != NULL && axis->datetime_range_set)
+    {
+        DvzTimestamp timestamp = _scene_datetime_data_to_timestamp(axis, value);
+        if (_scene_datetime_format(
+                axis->datetime_format, timestamp, axis->datetime_tick_interval, out, out_size))
+            return;
+    }
     if (axis->units != NULL)
     {
         DvzUnitFormatContext context = {

@@ -608,3 +608,57 @@ bool dvz_axis_set_units(DvzAxis* axis, DvzUnits* units)
     _axis_mark_dirty(axis);
     return true;
 }
+
+
+/**
+ * Attach an absolute datetime formatter to one panel-owned axis.
+ *
+ * @param axis the axis
+ * @param format datetime format, or NULL to restore numeric/unit formatting
+ * @return whether the axis was updated
+ */
+bool dvz_axis_set_datetime(DvzAxis* axis, DvzDateTimeFormat* format)
+{
+    if (axis == NULL)
+        return false;
+    if (format != NULL)
+    {
+        DvzScene* scene =
+            axis->panel != NULL && axis->panel->figure != NULL ? axis->panel->figure->scene : NULL;
+        if (format->scene != scene)
+            return false;
+    }
+    axis->datetime_format = format;
+    axis->tick_lstep = 0.0;
+    axis->tick_cache_valid = false;
+    _axis_mark_dirty(axis);
+    return true;
+}
+
+
+/**
+ * Map compact axis data coordinates to absolute UTC timestamps.
+ *
+ * @param axis the axis
+ * @param data0 first data coordinate
+ * @param data1 second data coordinate
+ * @param t0 timestamp corresponding to data0
+ * @param t1 timestamp corresponding to data1
+ * @return whether the mapping was updated
+ */
+bool dvz_axis_set_datetime_range(
+    DvzAxis* axis, double data0, double data1, DvzTimestamp t0, DvzTimestamp t1)
+{
+    if (axis == NULL || !isfinite(data0) || !isfinite(data1) ||
+        fabs(data1 - data0) <= AXIS_EPS || t0 == t1)
+        return false;
+    axis->datetime_data0 = data0;
+    axis->datetime_data1 = data1;
+    axis->datetime_t0 = t0;
+    axis->datetime_t1 = t1;
+    axis->datetime_range_set = true;
+    axis->tick_lstep = 0.0;
+    axis->tick_cache_valid = false;
+    _axis_mark_dirty(axis);
+    return true;
+}

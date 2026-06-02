@@ -605,6 +605,73 @@ static int test_axis_numeric_unit_labels(TstContext* suite, const TstCase* item)
 }
 
 
+static int test_axis_datetime_labels(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+    DvzDateTimeFormat* format =
+        dvz_datetime_format_builtin(scene, DVZ_DATETIME_FORMAT_CONCISE_UTC);
+    ANN(format);
+    const DvzTimestamp may_1_noon = (DvzTimestamp)1714564800000000LL;
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 3600.0) == 0);
+    AT(dvz_axis_set_datetime(axis, format));
+    AT(dvz_axis_set_datetime_range(
+        axis, 0.0, 3600.0, may_1_noon, may_1_noon + 3600LL * 1000000LL));
+    _scene_prepare_axis_visuals(figure);
+
+    uint32_t string_count = _visual_family_state(axis->text_visual)->text.string_count;
+    bool saw_time = false;
+    for (uint32_t i = 0; i < string_count; i++)
+    {
+        const char* string = _visual_family_state(axis->text_visual)->text.strings[i];
+        if (strcmp(string, "12:30") == 0)
+            saw_time = true;
+    }
+    AT(saw_time);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 14.0) == 0);
+    AT(dvz_axis_set_datetime_range(
+        axis, 0.0, 14.0, may_1_noon, may_1_noon + 14LL * 24LL * 3600LL * 1000000LL));
+    _scene_prepare_axis_visuals(figure);
+
+    string_count = _visual_family_state(axis->text_visual)->text.string_count;
+    bool saw_date = false;
+    for (uint32_t i = 0; i < string_count; i++)
+    {
+        const char* string = _visual_family_state(axis->text_visual)->text.strings[i];
+        if (strcmp(string, "May 05") == 0)
+            saw_date = true;
+    }
+    AT(saw_date);
+
+    AT(dvz_axis_set_datetime(axis, NULL));
+    _scene_prepare_axis_visuals(figure);
+    string_count = _visual_family_state(axis->text_visual)->text.string_count;
+    bool saw_numeric = false;
+    for (uint32_t i = 0; i < string_count; i++)
+    {
+        const char* string = _visual_family_state(axis->text_visual)->text.strings[i];
+        if (strcmp(string, "10") == 0)
+            saw_numeric = true;
+    }
+    AT(saw_numeric);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 static int test_axis_text_hidpi_scales_glyph_bounds(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -1807,6 +1874,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_tick_density_tracks_panel_size);
     TST_CASE(test_axis_text_labels);
     TST_CASE(test_axis_numeric_unit_labels);
+    TST_CASE(test_axis_datetime_labels);
     TST_CASE(test_axis_text_hidpi_scales_glyph_bounds);
     TST_CASE(test_axis_text_renderer_style);
     TST_CASE(test_axis_text_updates_after_domain_change);
