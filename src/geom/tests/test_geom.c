@@ -89,6 +89,14 @@ int test_geometry_descriptor_abi(TstContext* suite, const TstCase* tstitem)
     triangulation.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_triangulate_polygon(&polygon, &triangulation) == NULL);
 
+    DvzBezierTessellationDesc bezier = dvz_bezier_tessellation_desc();
+    bezier.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        dvz_tessellate_quadratic_bezier(
+            (dvec3){0.0, 0.0, 0.0}, (dvec3){1.0, 1.0, 0.0}, (dvec3){2.0, 0.0, 0.0},
+            &bezier) == NULL);
+
     return 0;
 }
 
@@ -656,6 +664,59 @@ int test_geometry_polygon_triangulation_invalid(TstContext* suite, const TstCase
 
 
 
+int test_geometry_bezier_tessellation(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    (void)tstitem;
+
+    DvzBezierTessellationDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzBezierTessellationDesc), .segment_count = 4};
+
+    DvzTessellatedPath* quadratic = dvz_tessellate_quadratic_bezier(
+        (dvec3){0.0, 0.0, 0.0}, (dvec3){1.0, 1.0, 0.0}, (dvec3){2.0, 0.0, 0.0}, &desc);
+    AT(quadratic != NULL);
+    AT(quadratic->point_count == 5);
+    AC(quadratic->points[0][0], 0.0, EPS);
+    AC(quadratic->points[0][1], 0.0, EPS);
+    AC(quadratic->points[2][0], 1.0, EPS);
+    AC(quadratic->points[2][1], 0.5, EPS);
+    AC(quadratic->points[4][0], 2.0, EPS);
+    AC(quadratic->points[4][1], 0.0, EPS);
+    dvz_tessellated_path_destroy(quadratic);
+
+    DvzTessellatedPath* cubic = dvz_tessellate_cubic_bezier(
+        (dvec3){0.0, 0.0, 0.0}, (dvec3){0.0, 1.0, 0.0}, (dvec3){1.0, 1.0, 0.0},
+        (dvec3){1.0, 0.0, 0.0}, &desc);
+    AT(cubic != NULL);
+    AT(cubic->point_count == 5);
+    AC(cubic->points[0][0], 0.0, EPS);
+    AC(cubic->points[0][1], 0.0, EPS);
+    AC(cubic->points[2][0], 0.5, EPS);
+    AC(cubic->points[2][1], 0.75, EPS);
+    AC(cubic->points[4][0], 1.0, EPS);
+    AC(cubic->points[4][1], 0.0, EPS);
+    dvz_tessellated_path_destroy(cubic);
+
+    desc.segment_count = 0;
+    DvzTessellatedPath* fallback = dvz_tessellate_quadratic_bezier(
+        (dvec3){0.0, 0.0, 0.0}, (dvec3){1.0, 1.0, 0.0}, (dvec3){2.0, 0.0, 0.0}, &desc);
+    AT(fallback != NULL);
+    AT(fallback->point_count == 33);
+    dvz_tessellated_path_destroy(fallback);
+
+    desc = dvz_bezier_tessellation_desc();
+    desc.tolerance = -1.0;
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        dvz_tessellate_cubic_bezier(
+            (dvec3){0.0, 0.0, 0.0}, (dvec3){0.0, 1.0, 0.0}, (dvec3){1.0, 1.0, 0.0},
+            (dvec3){1.0, 0.0, 0.0}, &desc) == NULL);
+
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -681,6 +742,7 @@ int test_geom(TstSuite* suite)
     TST_CASE(test_geometry_contours);
     TST_CASE(test_geometry_polygon_triangulation);
     TST_CASE(test_geometry_polygon_triangulation_invalid);
+    TST_CASE(test_geometry_bezier_tessellation);
 
     return 0;
 }

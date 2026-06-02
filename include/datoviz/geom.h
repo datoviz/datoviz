@@ -254,6 +254,14 @@ DVZ_EXPORT DvzTriangulationDesc dvz_triangulation_desc(void);
 
 
 /**
+ * Return a default Bezier tessellation descriptor.
+ *
+ * @return initialized Bezier tessellation descriptor
+ */
+DVZ_EXPORT DvzBezierTessellationDesc dvz_bezier_tessellation_desc(void);
+
+
+/**
  * Triangulate a polygon with optional holes into indexed XY mesh geometry.
  *
  * @param polygon borrowed polygon descriptor
@@ -262,5 +270,41 @@ DVZ_EXPORT DvzTriangulationDesc dvz_triangulation_desc(void);
  */
 DVZ_EXPORT DvzGeometry*
 dvz_triangulate_polygon(const DvzPolygonDesc* polygon, const DvzTriangulationDesc* desc);
+
+
+/**
+ * Tessellate a quadratic Bezier curve into an owned point path.
+ *
+ * @param p0 first endpoint
+ * @param p1 control point
+ * @param p2 second endpoint
+ * @param desc optional tessellation descriptor
+ * @return the tessellated path, or NULL on invalid input or allocation failure
+ */
+DVZ_EXPORT DvzTessellatedPath* dvz_tessellate_quadratic_bezier(
+    const dvec3 p0, const dvec3 p1, const dvec3 p2, const DvzBezierTessellationDesc* desc);
+
+
+/**
+ * Tessellate a cubic Bezier curve into an owned point path.
+ *
+ * @param p0 first endpoint
+ * @param p1 first control point
+ * @param p2 second control point
+ * @param p3 second endpoint
+ * @param desc optional tessellation descriptor
+ * @return the tessellated path, or NULL on invalid input or allocation failure
+ */
+DVZ_EXPORT DvzTessellatedPath* dvz_tessellate_cubic_bezier(
+    const dvec3 p0, const dvec3 p1, const dvec3 p2, const dvec3 p3,
+    const DvzBezierTessellationDesc* desc);
+
+
+/**
+ * Destroy a tessellated path.
+ *
+ * @param path tessellated path
+ */
+DVZ_EXPORT void dvz_tessellated_path_destroy(DvzTessellatedPath* path);
 
 EXTERN_C_OFF

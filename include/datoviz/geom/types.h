@@ -36,6 +36,8 @@ typedef struct DvzGeometrySurfaceGridDesc DvzGeometrySurfaceGridDesc;
 typedef struct DvzPolygonRing DvzPolygonRing;
 typedef struct DvzPolygonDesc DvzPolygonDesc;
 typedef struct DvzTriangulationDesc DvzTriangulationDesc;
+typedef struct DvzBezierTessellationDesc DvzBezierTessellationDesc;
+typedef struct DvzTessellatedPath DvzTessellatedPath;
 typedef struct DvzGeometryEdge DvzGeometryEdge;
 typedef struct DvzGeometryEdges DvzGeometryEdges;
 typedef struct DvzGeometryContourSegment DvzGeometryContourSegment;
@@ -163,6 +165,24 @@ struct DvzTriangulationDesc
     uint32_t struct_size;
     uint32_t flags;
     DvzTriangulationBackend backend; // triangulation backend, defaults to Earcut
+};
+
+
+
+struct DvzBezierTessellationDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    uint32_t segment_count; // number of line segments, defaults to 32
+    double tolerance;       // reserved for future adaptive tessellation, defaults to 0
+};
+
+
+
+struct DvzTessellatedPath
+{
+    uint32_t point_count; // number of sampled path points
+    dvec3* points;       // owned F64 3D path points
 };
 
 

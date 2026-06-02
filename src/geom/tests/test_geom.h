@@ -50,6 +50,8 @@ int test_geometry_polygon_triangulation(TstContext* suite, const TstCase* tstite
 
 int test_geometry_polygon_triangulation_invalid(TstContext* suite, const TstCase* tstitem);
 
+int test_geometry_bezier_tessellation(TstContext* suite, const TstCase* tstitem);
+
 
 
 /*************************************************************************************************/
