@@ -255,6 +255,56 @@ int dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, c
  * @param color RGBA fill color
  * @return 0 on success, -1 on error
  */
+/**
+ * Set the stable user id associated with a polygon.
+ *
+ * @param polygon the polygon
+ * @param id stable user id
+ * @return 0 on success, -1 on error
+ */
+int dvz_polygon_set_id(DvzPolygon* polygon, uint64_t id)
+{
+    if (polygon == NULL || polygon->scene == NULL)
+        return -1;
+    if (!_scene_visual_mutation_allowed(polygon->scene, "update polygon id"))
+        return -1;
+    polygon->user_id = id;
+    polygon->version++;
+    return 0;
+}
+
+
+
+/**
+ * Set polygon visibility.
+ *
+ * @param polygon the polygon
+ * @param visible whether the polygon should render
+ * @return 0 on success, -1 on error
+ */
+int dvz_polygon_set_visible(DvzPolygon* polygon, bool visible)
+{
+    if (polygon == NULL || polygon->scene == NULL)
+        return -1;
+    if (!_scene_visual_mutation_allowed(polygon->scene, "update polygon visibility"))
+        return -1;
+    if (polygon->visible == visible)
+        return 0;
+    polygon->visible = visible;
+    polygon->version++;
+    _polygon_mark_composites_dirty(polygon, true, true);
+    return 0;
+}
+
+
+
+/**
+ * Set the polygon fill color.
+ *
+ * @param polygon the polygon
+ * @param color RGBA fill color
+ * @return 0 on success, -1 on error
+ */
 int dvz_polygon_fill_color(DvzPolygon* polygon, const DvzColor color)
 {
     if (polygon == NULL || polygon->scene == NULL)
@@ -302,6 +352,93 @@ int dvz_polygon_stroke_width(DvzPolygon* polygon, float width)
     if (!_scene_visual_mutation_allowed(polygon->scene, "update polygon stroke width"))
         return -1;
     polygon->stroke_width = width;
+    polygon->version++;
+    _polygon_mark_composites_dirty(polygon, false, true);
+    return 0;
+}
+
+
+
+/**
+ * Return whether one stroke cap value is valid.
+ *
+ * @param cap stroke cap
+ * @return whether the cap is valid
+ */
+static bool _polygon_stroke_cap_valid(DvzSegmentCap cap)
+{
+    return cap == DVZ_SEGMENT_CAP_NONE || cap == DVZ_SEGMENT_CAP_ROUND ||
+           cap == DVZ_SEGMENT_CAP_TRIANGLE_IN || cap == DVZ_SEGMENT_CAP_TRIANGLE_OUT ||
+           cap == DVZ_SEGMENT_CAP_SQUARE || cap == DVZ_SEGMENT_CAP_BUTT;
+}
+
+
+
+/**
+ * Return whether one path join value is valid.
+ *
+ * @param join path join
+ * @return whether the join is valid
+ */
+static bool _polygon_stroke_join_valid(DvzPathJoin join)
+{
+    return join == DVZ_PATH_JOIN_MITER || join == DVZ_PATH_JOIN_ROUND ||
+           join == DVZ_PATH_JOIN_BEVEL;
+}
+
+
+
+/**
+ * Configure polygon stroke endpoint caps.
+ *
+ * @param polygon the polygon
+ * @param start_cap cap applied to each ring start
+ * @param end_cap cap applied to each ring end
+ * @return 0 on success, -1 on error
+ */
+int dvz_polygon_stroke_caps(DvzPolygon* polygon, DvzSegmentCap start_cap, DvzSegmentCap end_cap)
+{
+    if (
+        polygon == NULL || polygon->scene == NULL || !_polygon_stroke_cap_valid(start_cap) ||
+        !_polygon_stroke_cap_valid(end_cap))
+    {
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(polygon->scene, "update polygon stroke caps"))
+        return -1;
+    if (polygon->stroke_cap_start == start_cap && polygon->stroke_cap_end == end_cap)
+        return 0;
+    polygon->stroke_cap_start = start_cap;
+    polygon->stroke_cap_end = end_cap;
+    polygon->version++;
+    _polygon_mark_composites_dirty(polygon, false, true);
+    return 0;
+}
+
+
+
+/**
+ * Configure polygon stroke joins.
+ *
+ * @param polygon the polygon
+ * @param join join style
+ * @param miter_limit positive finite miter limit
+ * @return 0 on success, -1 on error
+ */
+int dvz_polygon_stroke_join(DvzPolygon* polygon, DvzPathJoin join, float miter_limit)
+{
+    if (
+        polygon == NULL || polygon->scene == NULL || !_polygon_stroke_join_valid(join) ||
+        !isfinite(miter_limit) || miter_limit <= 0.0f)
+    {
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(polygon->scene, "update polygon stroke join"))
+        return -1;
+    if (polygon->stroke_join == join && polygon->stroke_miter_limit == miter_limit)
+        return 0;
+    polygon->stroke_join = join;
+    polygon->stroke_miter_limit = miter_limit;
     polygon->version++;
     _polygon_mark_composites_dirty(polygon, false, true);
     return 0;

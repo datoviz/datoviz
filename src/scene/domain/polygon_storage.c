@@ -189,6 +189,7 @@ void _polygon_set_item_reset(DvzPolygonSetItem* item)
 void _polygon_set_item_default_style(DvzPolygonSetItem* item)
 {
     ANN(item);
+    item->visible = true;
     item->fill_color = dvz_color_rgb(255, 255, 255);
     item->stroke_color = dvz_color_rgb(0, 0, 0);
     item->stroke_width = 1.0f;
@@ -391,9 +392,14 @@ DvzPolygon* _scene_alloc_polygon(DvzScene* scene)
     dvz_memset(polygon, sizeof(DvzPolygon), 0, sizeof(DvzPolygon));
     polygon->scene = scene;
     polygon->active = true;
+    polygon->visible = true;
     polygon->fill_color = dvz_color_rgb(255, 255, 255);
     polygon->stroke_color = dvz_color_rgb(0, 0, 0);
     polygon->stroke_width = 1.0f;
+    polygon->stroke_cap_start = DVZ_SEGMENT_CAP_BUTT;
+    polygon->stroke_cap_end = DVZ_SEGMENT_CAP_BUTT;
+    polygon->stroke_join = DVZ_PATH_JOIN_ROUND;
+    polygon->stroke_miter_limit = 4.0f;
     polygon->version = 1;
     return polygon;
 }
@@ -415,6 +421,10 @@ DvzPolygonSet* _scene_alloc_polygon_set(DvzScene* scene)
     dvz_memset(set, sizeof(DvzPolygonSet), 0, sizeof(DvzPolygonSet));
     set->scene = scene;
     set->active = true;
+    set->stroke_cap_start = DVZ_SEGMENT_CAP_BUTT;
+    set->stroke_cap_end = DVZ_SEGMENT_CAP_BUTT;
+    set->stroke_join = DVZ_PATH_JOIN_ROUND;
+    set->stroke_miter_limit = 4.0f;
     set->version = 1;
     return set;
 }
@@ -494,4 +504,3 @@ int _polygon_set_item_set_geometry(DvzPolygonSetItem* item, const DvzPolygonDesc
     item->version++;
     return 0;
 }
-

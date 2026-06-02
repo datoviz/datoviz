@@ -152,9 +152,15 @@ struct DvzPolygon
     DvzPolygonStoredRing outer;
     DvzPolygonStoredRing* holes;
     uint32_t hole_count;
+    uint64_t user_id;
+    bool visible;
     DvzColor fill_color;
     DvzColor stroke_color;
     float stroke_width;
+    DvzSegmentCap stroke_cap_start;
+    DvzSegmentCap stroke_cap_end;
+    DvzPathJoin stroke_join;
+    float stroke_miter_limit;
     uint64_t version;
 };
 
@@ -166,6 +172,8 @@ struct DvzPolygonSetItem
     DvzPolygonStoredRing outer;
     DvzPolygonStoredRing* holes;
     uint32_t hole_count;
+    uint64_t user_id;
+    bool visible;
     DvzColor fill_color;
     DvzColor stroke_color;
     float stroke_width;
@@ -182,6 +190,10 @@ struct DvzPolygonSet
     DvzPolygonSetItem* polygons;
     uint32_t polygon_count;
     uint32_t polygon_capacity;
+    DvzSegmentCap stroke_cap_start;
+    DvzSegmentCap stroke_cap_end;
+    DvzPathJoin stroke_join;
+    float stroke_miter_limit;
     uint64_t version;
 };
 

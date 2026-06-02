@@ -163,7 +163,7 @@ static int _polygon_prepare_fill(DvzPolygon* polygon, DvzVisual* fill)
         _polygon_color_copy(&geometry->colors[i], polygon->fill_color);
 
     const int out = dvz_mesh_set_geometry(fill, geometry);
-    fill->visible = polygon->fill_color.a > 0;
+    fill->visible = polygon->visible && polygon->fill_color.a > 0;
     dvz_geometry_destroy(geometry);
     return out;
 }
@@ -270,7 +270,11 @@ static int _polygon_prepare_stroke(DvzPolygon* polygon, DvzVisual* stroke)
     int out = dvz_visual_set_data_many(stroke, updates, 3);
     if (out == 0)
         out = dvz_path_set_subpaths(stroke, subpath_count, lengths);
-    stroke->visible = polygon->stroke_color.a > 0 && polygon->stroke_width > 0.0f;
+    if (out == 0)
+        out = dvz_path_set_caps(stroke, polygon->stroke_cap_start, polygon->stroke_cap_end);
+    if (out == 0)
+        out = dvz_path_set_join(stroke, polygon->stroke_join, polygon->stroke_miter_limit);
+    stroke->visible = polygon->visible && polygon->stroke_color.a > 0 && polygon->stroke_width > 0.0f;
 
     dvz_free(positions);
     dvz_free(colors);
@@ -337,7 +341,7 @@ static int _polygon_set_prepare_fill(DvzPolygonSet* set, DvzVisual* fill)
     for (uint32_t i = 0; i < set->polygon_count; i++)
     {
         DvzPolygonSetItem* item = &set->polygons[i];
-        if (!item->active)
+        if (!item->active || !item->visible)
             continue;
 
         DvzPolygonRing outer = {0};
@@ -362,7 +366,11 @@ static int _polygon_set_prepare_fill(DvzPolygonSet* set, DvzVisual* fill)
     }
 
     if (geometry_count == 0)
-        goto error;
+    {
+        fill->visible = false;
+        dvz_free(geometries);
+        return 0;
+    }
 
     DvzGeometry* merged = NULL;
     if (geometry_count == 1)
@@ -435,11 +443,14 @@ static int _polygon_set_prepare_stroke(DvzPolygonSet* set, DvzVisual* stroke)
 {
     uint64_t total_points = 0;
     uint64_t total_subpaths = 0;
+    bool any_visible_stroke = false;
     for (uint32_t i = 0; i < set->polygon_count; i++)
     {
         const DvzPolygonSetItem* item = &set->polygons[i];
-        if (!item->active)
+        if (!item->active || !item->visible)
             continue;
+        any_visible_stroke =
+            any_visible_stroke || (item->stroke_width > 0.0f && item->stroke_color.a > 0);
 
         uint64_t next = 0;
         if (_dvz_add_u64_overflows(
@@ -466,7 +477,12 @@ static int _polygon_set_prepare_stroke(DvzPolygonSet* set, DvzVisual* stroke)
             total_subpaths = next;
         }
     }
-    if (total_points == 0 || total_points > UINT32_MAX || total_subpaths > UINT32_MAX)
+    if (total_points == 0)
+    {
+        stroke->visible = false;
+        return 0;
+    }
+    if (total_points > UINT32_MAX || total_subpaths > UINT32_MAX)
         return -1;
 
     const uint32_t point_count = (uint32_t)total_points;
@@ -498,7 +514,7 @@ static int _polygon_set_prepare_stroke(DvzPolygonSet* set, DvzVisual* stroke)
     for (uint32_t i = 0; i < set->polygon_count; i++)
     {
         const DvzPolygonSetItem* item = &set->polygons[i];
-        if (!item->active)
+        if (!item->active || !item->visible)
             continue;
 
         lengths[subpath++] = _polygon_stored_ring_count(&item->outer) + 1;
@@ -520,7 +536,11 @@ static int _polygon_set_prepare_stroke(DvzPolygonSet* set, DvzVisual* stroke)
     int out = dvz_visual_set_data_many(stroke, updates, 3);
     if (out == 0)
         out = dvz_path_set_subpaths(stroke, subpath_count, lengths);
-    stroke->visible = true;
+    if (out == 0)
+        out = dvz_path_set_caps(stroke, set->stroke_cap_start, set->stroke_cap_end);
+    if (out == 0)
+        out = dvz_path_set_join(stroke, set->stroke_join, set->stroke_miter_limit);
+    stroke->visible = any_visible_stroke;
 
     dvz_free(positions);
     dvz_free(colors);

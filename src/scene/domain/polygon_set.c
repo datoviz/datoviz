@@ -166,6 +166,62 @@ int dvz_polygon_set_region_geometry(
  * @param color RGBA fill color
  * @return 0 on success, -1 on error
  */
+/**
+ * Set one polygon region's stable user id.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param id stable user id
+ * @return 0 on success, -1 on error
+ */
+int dvz_polygon_set_region_id(DvzPolygonSet* set, uint32_t polygon_index, uint64_t id)
+{
+    if (set == NULL || set->scene == NULL || polygon_index >= set->polygon_count)
+        return -1;
+    if (!_scene_visual_mutation_allowed(set->scene, "update polygon set region id"))
+        return -1;
+    set->polygons[polygon_index].user_id = id;
+    set->polygons[polygon_index].version++;
+    set->version++;
+    return 0;
+}
+
+
+
+/**
+ * Set one polygon region's visibility.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param visible whether the region should render
+ * @return 0 on success, -1 on error
+ */
+int dvz_polygon_set_region_visible(DvzPolygonSet* set, uint32_t polygon_index, bool visible)
+{
+    if (set == NULL || set->scene == NULL || polygon_index >= set->polygon_count)
+        return -1;
+    if (!_scene_visual_mutation_allowed(set->scene, "update polygon set region visibility"))
+        return -1;
+    DvzPolygonSetItem* region = &set->polygons[polygon_index];
+    if (region->visible == visible)
+        return 0;
+    region->visible = visible;
+    region->version++;
+    set->version++;
+    _polygon_set_mark_composites_dirty(set, true, true);
+    return 0;
+}
+
+
+
+/**
+ * Set one polygon region's fill color.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param color RGBA fill color
+ * @return 0 on success, -1 on error
+ */
 int dvz_polygon_set_region_fill_color(
     DvzPolygonSet* set, uint32_t polygon_index, const DvzColor color)
 {
@@ -182,6 +238,39 @@ int dvz_polygon_set_region_fill_color(
     _polygon_set_mark_composites_dirty(set, true, false);
     return 0;
 }
+
+
+/**
+ * Set a contiguous range of polygon region fill colors.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param colors RGBA fill colors
+ * @return 0 on success, -1 on error
+ */
+int dvz_polygon_set_region_fill_colors(
+    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors)
+{
+    if (
+        set == NULL || set->scene == NULL || colors == NULL ||
+        first_polygon > set->polygon_count || polygon_count > set->polygon_count - first_polygon)
+    {
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(set->scene, "update polygon set fill colors"))
+        return -1;
+    for (uint32_t i = 0; i < polygon_count; i++)
+    {
+        DvzPolygonSetItem* region = &set->polygons[first_polygon + i];
+        _polygon_color_copy(&region->fill_color, colors[i]);
+        region->version++;
+    }
+    set->version++;
+    _polygon_set_mark_composites_dirty(set, true, false);
+    return 0;
+}
+
 
 
 /**
@@ -211,6 +300,39 @@ int dvz_polygon_set_region_stroke_color(
 
 
 /**
+ * Set a contiguous range of polygon region stroke colors.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param colors RGBA stroke colors
+ * @return 0 on success, -1 on error
+ */
+int dvz_polygon_set_region_stroke_colors(
+    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors)
+{
+    if (
+        set == NULL || set->scene == NULL || colors == NULL ||
+        first_polygon > set->polygon_count || polygon_count > set->polygon_count - first_polygon)
+    {
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(set->scene, "update polygon set stroke colors"))
+        return -1;
+    for (uint32_t i = 0; i < polygon_count; i++)
+    {
+        DvzPolygonSetItem* region = &set->polygons[first_polygon + i];
+        _polygon_color_copy(&region->stroke_color, colors[i]);
+        region->version++;
+    }
+    set->version++;
+    _polygon_set_mark_composites_dirty(set, false, true);
+    return 0;
+}
+
+
+
+/**
  * Set one polygon region's stroke width in pixels.
  *
  * @param set the polygon set
@@ -230,6 +352,132 @@ int dvz_polygon_set_region_stroke_width(DvzPolygonSet* set, uint32_t polygon_ind
         return -1;
     set->polygons[polygon_index].stroke_width = width;
     set->polygons[polygon_index].version++;
+    set->version++;
+    _polygon_set_mark_composites_dirty(set, false, true);
+    return 0;
+}
+
+
+
+/**
+ * Set a contiguous range of polygon region stroke widths.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param widths stroke widths in pixels
+ * @return 0 on success, -1 on error
+ */
+int dvz_polygon_set_region_stroke_widths(
+    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const float* widths)
+{
+    if (
+        set == NULL || set->scene == NULL || widths == NULL ||
+        first_polygon > set->polygon_count || polygon_count > set->polygon_count - first_polygon)
+    {
+        return -1;
+    }
+    for (uint32_t i = 0; i < polygon_count; i++)
+    {
+        if (!isfinite(widths[i]) || widths[i] < 0.0f)
+            return -1;
+    }
+    if (!_scene_visual_mutation_allowed(set->scene, "update polygon set stroke widths"))
+        return -1;
+    for (uint32_t i = 0; i < polygon_count; i++)
+    {
+        DvzPolygonSetItem* region = &set->polygons[first_polygon + i];
+        region->stroke_width = widths[i];
+        region->version++;
+    }
+    set->version++;
+    _polygon_set_mark_composites_dirty(set, false, true);
+    return 0;
+}
+
+
+
+/**
+ * Return whether one stroke cap value is valid.
+ *
+ * @param cap stroke cap
+ * @return whether the cap is valid
+ */
+static bool _polygon_set_stroke_cap_valid(DvzSegmentCap cap)
+{
+    return cap == DVZ_SEGMENT_CAP_NONE || cap == DVZ_SEGMENT_CAP_ROUND ||
+           cap == DVZ_SEGMENT_CAP_TRIANGLE_IN || cap == DVZ_SEGMENT_CAP_TRIANGLE_OUT ||
+           cap == DVZ_SEGMENT_CAP_SQUARE || cap == DVZ_SEGMENT_CAP_BUTT;
+}
+
+
+
+/**
+ * Return whether one path join value is valid.
+ *
+ * @param join path join
+ * @return whether the join is valid
+ */
+static bool _polygon_set_stroke_join_valid(DvzPathJoin join)
+{
+    return join == DVZ_PATH_JOIN_MITER || join == DVZ_PATH_JOIN_ROUND ||
+           join == DVZ_PATH_JOIN_BEVEL;
+}
+
+
+
+/**
+ * Configure polygon-set stroke endpoint caps.
+ *
+ * @param set the polygon set
+ * @param start_cap cap applied to each ring start
+ * @param end_cap cap applied to each ring end
+ * @return 0 on success, -1 on error
+ */
+int dvz_polygon_set_stroke_caps(
+    DvzPolygonSet* set, DvzSegmentCap start_cap, DvzSegmentCap end_cap)
+{
+    if (
+        set == NULL || set->scene == NULL || !_polygon_set_stroke_cap_valid(start_cap) ||
+        !_polygon_set_stroke_cap_valid(end_cap))
+    {
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(set->scene, "update polygon set stroke caps"))
+        return -1;
+    if (set->stroke_cap_start == start_cap && set->stroke_cap_end == end_cap)
+        return 0;
+    set->stroke_cap_start = start_cap;
+    set->stroke_cap_end = end_cap;
+    set->version++;
+    _polygon_set_mark_composites_dirty(set, false, true);
+    return 0;
+}
+
+
+
+/**
+ * Configure polygon-set stroke joins.
+ *
+ * @param set the polygon set
+ * @param join join style
+ * @param miter_limit positive finite miter limit
+ * @return 0 on success, -1 on error
+ */
+int dvz_polygon_set_stroke_join(DvzPolygonSet* set, DvzPathJoin join, float miter_limit)
+{
+    if (
+        set == NULL || set->scene == NULL || !_polygon_set_stroke_join_valid(join) ||
+        !isfinite(miter_limit) || miter_limit <= 0.0f)
+    {
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(set->scene, "update polygon set stroke join"))
+        return -1;
+    if (set->stroke_join == join && set->stroke_miter_limit == miter_limit)
+        return 0;
+    set->stroke_join = join;
+    set->stroke_miter_limit = miter_limit;
     set->version++;
     _polygon_set_mark_composites_dirty(set, false, true);
     return 0;

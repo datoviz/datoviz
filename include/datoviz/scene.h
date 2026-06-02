@@ -1966,6 +1966,26 @@ dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, const
 
 
 /**
+ * Set the stable user id associated with a polygon.
+ *
+ * @param polygon the polygon
+ * @param id stable user id
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_polygon_set_id(DvzPolygon* polygon, uint64_t id);
+
+
+/**
+ * Set polygon visibility.
+ *
+ * @param polygon the polygon
+ * @param visible whether the polygon should render
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_polygon_set_visible(DvzPolygon* polygon, bool visible);
+
+
+/**
  * Set the polygon fill color.
  *
  * @param polygon the polygon
@@ -1993,6 +2013,30 @@ DVZ_EXPORT int dvz_polygon_stroke_color(DvzPolygon* polygon, const DvzColor colo
  * @return 0 on success, -1 on invalid input
  */
 DVZ_EXPORT int dvz_polygon_stroke_width(DvzPolygon* polygon, float width);
+
+
+/**
+ * Configure polygon stroke endpoint caps.
+ *
+ * @param polygon the polygon
+ * @param start_cap cap applied to each ring start
+ * @param end_cap cap applied to each ring end
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_polygon_stroke_caps(DvzPolygon* polygon, DvzSegmentCap start_cap, DvzSegmentCap end_cap);
+
+
+/**
+ * Configure polygon stroke joins.
+ *
+ * @param polygon the polygon
+ * @param join join style
+ * @param miter_limit positive finite miter limit
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_polygon_stroke_join(DvzPolygon* polygon, DvzPathJoin join, float miter_limit);
 
 
 /**
@@ -2049,6 +2093,30 @@ DVZ_EXPORT int dvz_polygon_set_region_geometry(
 
 
 /**
+ * Set one polygon region's stable user id.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param id stable user id
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_polygon_set_region_id(DvzPolygonSet* set, uint32_t polygon_index, uint64_t id);
+
+
+/**
+ * Set one polygon region's visibility.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param visible whether the region should render
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_polygon_set_region_visible(DvzPolygonSet* set, uint32_t polygon_index, bool visible);
+
+
+/**
  * Set one polygon region's fill color.
  *
  * @param set the polygon set
@@ -2058,6 +2126,19 @@ DVZ_EXPORT int dvz_polygon_set_region_geometry(
  */
 DVZ_EXPORT int dvz_polygon_set_region_fill_color(
     DvzPolygonSet* set, uint32_t polygon_index, const DvzColor color);
+
+
+/**
+ * Set a contiguous range of polygon region fill colors.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param colors RGBA fill colors
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_polygon_set_region_fill_colors(
+    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors);
 
 
 /**
@@ -2073,6 +2154,19 @@ DVZ_EXPORT int dvz_polygon_set_region_stroke_color(
 
 
 /**
+ * Set a contiguous range of polygon region stroke colors.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param colors RGBA stroke colors
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_polygon_set_region_stroke_colors(
+    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors);
+
+
+/**
  * Set one polygon region's stroke width in pixels.
  *
  * @param set the polygon set
@@ -2082,6 +2176,43 @@ DVZ_EXPORT int dvz_polygon_set_region_stroke_color(
  */
 DVZ_EXPORT int
 dvz_polygon_set_region_stroke_width(DvzPolygonSet* set, uint32_t polygon_index, float width);
+
+
+/**
+ * Set a contiguous range of polygon region stroke widths.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param widths stroke widths in pixels
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_polygon_set_region_stroke_widths(
+    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const float* widths);
+
+
+/**
+ * Configure polygon-set stroke endpoint caps.
+ *
+ * @param set the polygon set
+ * @param start_cap cap applied to each ring start
+ * @param end_cap cap applied to each ring end
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_polygon_set_stroke_caps(DvzPolygonSet* set, DvzSegmentCap start_cap, DvzSegmentCap end_cap);
+
+
+/**
+ * Configure polygon-set stroke joins.
+ *
+ * @param set the polygon set
+ * @param join join style
+ * @param miter_limit positive finite miter limit
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_polygon_set_stroke_join(DvzPolygonSet* set, DvzPathJoin join, float miter_limit);
 
 
 /**
