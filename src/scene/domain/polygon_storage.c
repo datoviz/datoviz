@@ -314,9 +314,6 @@ void _polygon_mark_composites_dirty(DvzPolygon* polygon, bool fill_dirty, bool s
         {
             continue;
         }
-        composite->dirty = true;
-        composite->fill_dirty = composite->fill_dirty || fill_dirty;
-        composite->stroke_dirty = composite->stroke_dirty || stroke_dirty;
         for (uint32_t j = 0; j < composite->visual_count; j++)
         {
             DvzCompositeVisual* composite_visual = &composite->visuals[j];
@@ -327,6 +324,8 @@ void _polygon_mark_composites_dirty(DvzPolygon* polygon, bool fill_dirty, bool s
                                         DVZ_POLYGON_COMPOSITE_STROKE_ROLE) == 0;
             if (notify_fill || notify_stroke)
             {
+                composite->dirty = true;
+                composite_visual->dirty = true;
                 _scene_notify_visual_changed(composite_visual->visual);
             }
         }
@@ -357,9 +356,6 @@ void _polygon_set_mark_composites_dirty(
         {
             continue;
         }
-        composite->dirty = true;
-        composite->fill_dirty = composite->fill_dirty || fill_dirty;
-        composite->stroke_dirty = composite->stroke_dirty || stroke_dirty;
         for (uint32_t j = 0; j < composite->visual_count; j++)
         {
             DvzCompositeVisual* composite_visual = &composite->visuals[j];
@@ -370,6 +366,8 @@ void _polygon_set_mark_composites_dirty(
                                         DVZ_POLYGON_COMPOSITE_STROKE_ROLE) == 0;
             if (notify_fill || notify_stroke)
             {
+                composite->dirty = true;
+                composite_visual->dirty = true;
                 _scene_notify_visual_changed(composite_visual->visual);
             }
         }
@@ -496,5 +494,4 @@ int _polygon_set_item_set_geometry(DvzPolygonSetItem* item, const DvzPolygonDesc
     item->version++;
     return 0;
 }
-
 

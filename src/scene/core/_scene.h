@@ -192,6 +192,7 @@ struct DvzCompositeVisual
     char role[DVZ_COMPOSITE_ROLE_SIZE];
     DvzVisual* visual;
     int32_t z_offset;
+    bool dirty;
 };
 
 
@@ -203,8 +204,6 @@ struct DvzComposite
     uint32_t flags;
     bool active;
     bool dirty;
-    bool fill_dirty;
-    bool stroke_dirty;
     void* source;
     uint64_t source_version_seen;
     uint32_t visual_count;

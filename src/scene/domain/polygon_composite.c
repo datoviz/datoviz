@@ -58,8 +58,6 @@ static DvzComposite* _scene_alloc_composite(DvzScene* scene)
     composite->scene = scene;
     composite->active = true;
     composite->dirty = true;
-    composite->fill_dirty = true;
-    composite->stroke_dirty = true;
     return composite;
 }
 
@@ -87,8 +85,31 @@ static bool _composite_add_visual(
     dvz_strlcpy(slot->role, role, sizeof(slot->role));
     slot->visual = visual;
     slot->z_offset = z_offset;
+    slot->dirty = true;
     return true;
 }
+
+
+
+/**
+ * Return one generated visual role slot by name.
+ *
+ * @param composite the composite
+ * @param role role name
+ * @return the generated visual slot, or NULL when absent
+ */
+static DvzCompositeVisual* _composite_visual_slot(DvzComposite* composite, const char* role)
+{
+    if (composite == NULL || !composite->active || role == NULL)
+        return NULL;
+    for (uint32_t i = 0; i < composite->visual_count; i++)
+    {
+        if (strcmp(composite->visuals[i].role, role) == 0)
+            return &composite->visuals[i];
+    }
+    return NULL;
+}
+
 
 
 /**
@@ -530,19 +551,21 @@ static int _polygon_set_composite_prepare(DvzComposite* composite)
     if (!composite->dirty && composite->source_version_seen == set->version)
         return 0;
 
-    DvzVisual* fill = dvz_composite_visual(composite, DVZ_POLYGON_COMPOSITE_FILL_ROLE);
-    DvzVisual* stroke = dvz_composite_visual(composite, DVZ_POLYGON_COMPOSITE_STROKE_ROLE);
-    if (fill == NULL || stroke == NULL)
+    DvzCompositeVisual* fill_role =
+        _composite_visual_slot(composite, DVZ_POLYGON_COMPOSITE_FILL_ROLE);
+    DvzCompositeVisual* stroke_role =
+        _composite_visual_slot(composite, DVZ_POLYGON_COMPOSITE_STROKE_ROLE);
+    if (fill_role == NULL || stroke_role == NULL)
         return -1;
 
-    if (composite->fill_dirty && _polygon_set_prepare_fill(set, fill) != 0)
+    if (fill_role->dirty && _polygon_set_prepare_fill(set, fill_role->visual) != 0)
         return -1;
-    if (composite->stroke_dirty && _polygon_set_prepare_stroke(set, stroke) != 0)
+    if (stroke_role->dirty && _polygon_set_prepare_stroke(set, stroke_role->visual) != 0)
         return -1;
 
     composite->dirty = false;
-    composite->fill_dirty = false;
-    composite->stroke_dirty = false;
+    fill_role->dirty = false;
+    stroke_role->dirty = false;
     composite->source_version_seen = set->version;
     return 0;
 }
@@ -587,19 +610,21 @@ static int _polygon_composite_prepare(DvzComposite* composite)
     if (!composite->dirty && composite->source_version_seen == polygon->version)
         return 0;
 
-    DvzVisual* fill = dvz_composite_visual(composite, DVZ_POLYGON_COMPOSITE_FILL_ROLE);
-    DvzVisual* stroke = dvz_composite_visual(composite, DVZ_POLYGON_COMPOSITE_STROKE_ROLE);
-    if (fill == NULL || stroke == NULL)
+    DvzCompositeVisual* fill_role =
+        _composite_visual_slot(composite, DVZ_POLYGON_COMPOSITE_FILL_ROLE);
+    DvzCompositeVisual* stroke_role =
+        _composite_visual_slot(composite, DVZ_POLYGON_COMPOSITE_STROKE_ROLE);
+    if (fill_role == NULL || stroke_role == NULL)
         return -1;
 
-    if (composite->fill_dirty && _polygon_prepare_fill(polygon, fill) != 0)
+    if (fill_role->dirty && _polygon_prepare_fill(polygon, fill_role->visual) != 0)
         return -1;
-    if (composite->stroke_dirty && _polygon_prepare_stroke(polygon, stroke) != 0)
+    if (stroke_role->dirty && _polygon_prepare_stroke(polygon, stroke_role->visual) != 0)
         return -1;
 
     composite->dirty = false;
-    composite->fill_dirty = false;
-    composite->stroke_dirty = false;
+    fill_role->dirty = false;
+    stroke_role->dirty = false;
     composite->source_version_seen = polygon->version;
     return 0;
 }
@@ -764,14 +789,8 @@ DvzVisual* dvz_composite_visual_at(DvzComposite* composite, uint32_t index)
  */
 DvzVisual* dvz_composite_visual(DvzComposite* composite, const char* role)
 {
-    if (composite == NULL || !composite->active || role == NULL)
-        return NULL;
-    for (uint32_t i = 0; i < composite->visual_count; i++)
-    {
-        if (strcmp(composite->visuals[i].role, role) == 0)
-            return composite->visuals[i].visual;
-    }
-    return NULL;
+    DvzCompositeVisual* slot = _composite_visual_slot(composite, role);
+    return slot != NULL ? slot->visual : NULL;
 }
 
 
