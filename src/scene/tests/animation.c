@@ -14,6 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <string.h>
 
 #include "_assertions.h"
@@ -32,6 +33,7 @@
 
 typedef struct TimerTestState TimerTestState;
 typedef struct PhaseTestState PhaseTestState;
+typedef struct TrackTestState TrackTestState;
 
 struct TimerTestState
 {
@@ -48,6 +50,14 @@ struct PhaseTestState
     uint32_t calls;
     float last_value;
     float last_delta;
+};
+
+
+
+struct TrackTestState
+{
+    uint32_t calls;
+    vec3 last_value;
 };
 
 
@@ -94,6 +104,20 @@ static void _phase_test_callback(
     state->calls++;
     state->last_value = value;
     state->last_delta = delta;
+}
+
+
+
+static void _track_vec3_callback(
+    DvzAnimation* animation, double t, const void* value, void* user_data)
+{
+    (void)animation;
+    (void)t;
+    TrackTestState* state = (TrackTestState*)user_data;
+    ANN(state);
+    const float* v = (const float*)value;
+    state->calls++;
+    glm_vec3_copy((vec3){v[0], v[1], v[2]}, state->last_value);
 }
 
 
@@ -481,7 +505,81 @@ int test_scene_animation_active_query(TstContext* suite, const TstCase* item)
  * @param item test item
  * @return 0 on success
  */
-int test_scene_animation_arcball_spin(TstContext* suite, const TstCase* item)
+int test_scene_animation_tracks(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzTrack* constant = dvz_track_constant(&(DvzTrackConstantDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzTrackConstantDesc),
+        .type = DVZ_TRACK_VEC3,
+        .value = (float[3]){1.0f, 2.0f, 3.0f},
+    });
+    ANN(constant);
+    vec3 v = {0};
+    AT(dvz_track_eval(constant, 123.0, v));
+    AC(v[0], 1.0f, 1e-6f);
+    AC(v[1], 2.0f, 1e-6f);
+    AC(v[2], 3.0f, 1e-6f);
+
+    DvzTrack* linear = dvz_track_linear(&(DvzTrackLinearDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzTrackLinearDesc),
+        .type = DVZ_TRACK_FLOAT,
+        .start = (float[1]){0.0f},
+        .end = (float[1]){10.0f},
+        .duration = 2.0,
+    });
+    ANN(linear);
+    float f = 0.0f;
+    AT(dvz_track_eval(linear, 1.0, &f));
+    AC(f, 5.0f, 1e-6f);
+
+    double times[] = {0.0, 1.0, 2.0};
+    float values[] = {0.0f, 0.0f, 10.0f, 0.0f, 20.0f, 0.0f};
+    DvzTrack* keyframes = dvz_track_keyframes(&(DvzTrackKeyframesDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzTrackKeyframesDesc),
+        .type = DVZ_TRACK_VEC2,
+        .count = 3,
+        .times = times,
+        .values = values,
+        .interpolation = DVZ_TRACK_INTERP_LINEAR,
+    });
+    ANN(keyframes);
+    vec2 p = {0};
+    AT(dvz_track_eval(keyframes, 1.5, p));
+    AC(p[0], 15.0f, 1e-6f);
+    AC(p[1], 0.0f, 1e-6f);
+
+    DvzTrack* circle = dvz_track_circle3(&(DvzTrackCircle3Desc){
+        DVZ_STRUCT_INIT_FIELDS(DvzTrackCircle3Desc),
+        .center = {0.0f, 0.0f, 0.0f},
+        .normal = {0.0f, 0.0f, 1.0f},
+        .radius = 2.0f,
+    });
+    ANN(circle);
+    AT(dvz_track_eval(circle, 0.0, v));
+    AC(glm_vec3_norm(v), 2.0f, 1e-5f);
+
+    DvzTrack* rotation = dvz_track_rotation(&(DvzTrackRotationDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzTrackRotationDesc),
+        .axis = {0.0f, 0.0f, 1.0f},
+        .speed_rad_per_sec = (float)M_PI,
+    });
+    ANN(rotation);
+    versor q = GLM_QUAT_IDENTITY_INIT;
+    AT(dvz_track_eval(rotation, 1.0, q));
+    AC(fabsf(q[2]), 1.0f, 1e-5f);
+
+    dvz_track_destroy(rotation);
+    dvz_track_destroy(circle);
+    dvz_track_destroy(keyframes);
+    dvz_track_destroy(linear);
+    dvz_track_destroy(constant);
+    return 0;
+}
+
+
+int test_scene_animation_visual_transform(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -489,38 +587,130 @@ int test_scene_animation_arcball_spin(TstContext* suite, const TstCase* item)
     DvzScene* scene = dvz_scene();
     ANN(scene);
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
-    dvz_scene_set_fps(scene, 10.0);
+    dvz_scene_set_fps(scene, 1.0);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
 
-    DvzArcball* arcball = _dvz_arcball(800.0f, 600.0f, 0);
+    DvzTrack* rotation = dvz_track_rotation(&(DvzTrackRotationDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzTrackRotationDesc),
+        .axis = {0.0f, 0.0f, 1.0f},
+        .speed_rad_per_sec = (float)M_PI,
+    });
+    ANN(rotation);
+    DvzAnimation* animation = dvz_anim_visual_transform(
+        scene, visual,
+        &(DvzTransformMotionDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzTransformMotionDesc),
+            .rotation = rotation,
+            .order = DVZ_TRANSFORM_ORDER_TRS,
+        });
+    ANN(animation);
+    dvz_anim_start(animation, 0.0);
+    _dvz_scene_animations_step(scene, 0);
+    _dvz_scene_animations_step(scene, 0);
+
+    mat4 transform = GLM_MAT4_IDENTITY_INIT;
+    mat4 identity = GLM_MAT4_IDENTITY_INIT;
+    AT(dvz_visual_get_transform(visual, transform) == 0);
+    AT(memcmp(transform, identity, sizeof(mat4)) != 0);
+
+    dvz_track_destroy(rotation);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_animation_camera_motion(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_fps(scene, 1.0);
+    DvzCamera* camera = dvz_camera_create(NULL);
+    ANN(camera);
+
+    DvzTrack* eye = dvz_track_circle3(&(DvzTrackCircle3Desc){
+        DVZ_STRUCT_INIT_FIELDS(DvzTrackCircle3Desc),
+        .center = {0.0f, 0.0f, 0.0f},
+        .normal = {0.0f, 0.0f, 1.0f},
+        .radius = 3.0f,
+        .speed_rad_per_sec = 0.5f,
+    });
+    DvzTrack* target = dvz_track_constant(&(DvzTrackConstantDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzTrackConstantDesc),
+        .type = DVZ_TRACK_VEC3,
+        .value = (float[3]){0.0f, 0.0f, 0.0f},
+    });
+    ANN(eye);
+    ANN(target);
+
+    DvzAnimation* animation = dvz_anim_camera_motion(
+        scene, camera,
+        &(DvzCameraMotionDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzCameraMotionDesc),
+            .eye = eye,
+            .target = target,
+            .up_mode = DVZ_CAMERA_UP_WORLD,
+            .up = {0.0f, 0.0f, 1.0f},
+        });
+    ANN(animation);
+    dvz_anim_start(animation, 0.0);
+    _dvz_scene_animations_step(scene, 0);
+    _dvz_scene_animations_step(scene, 0);
+
+    vec3 actual_eye = {0}, actual_target = {0}, actual_up = {0};
+    dvz_camera_get_view(camera, actual_eye, actual_target, actual_up);
+    AC(glm_vec3_norm(actual_eye), 3.0f, 1e-5f);
+    AC(actual_target[0], 0.0f, 1e-6f);
+    AC(actual_target[1], 0.0f, 1e-6f);
+    AC(actual_target[2], 0.0f, 1e-6f);
+    AC(glm_vec3_norm(actual_up), 1.0f, 1e-5f);
+
+    dvz_track_destroy(target);
+    dvz_track_destroy(eye);
+    dvz_camera_destroy(camera);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_animation_interaction_stop(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_fps(scene, 1.0);
+    DvzController* controller = dvz_arcball(scene, NULL);
+    ANN(controller);
+    DvzArcball* arcball = dvz_controller_arcball(controller);
     ANN(arcball);
 
-    mat4 before = GLM_MAT4_IDENTITY_INIT;
-    dvz_arcball_model(arcball, before);
-
-    DvzAnimation* spin = dvz_anim_arcball_spin(
-        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, 1.0f,
-        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    ANN(spin);
-    dvz_anim_start(spin, 0.0);
+    DvzTrack* track = dvz_track_constant(&(DvzTrackConstantDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzTrackConstantDesc),
+        .type = DVZ_TRACK_VEC3,
+        .value = (float[3]){1.0f, 2.0f, 3.0f},
+    });
+    ANN(track);
+    TrackTestState state = {0};
+    DvzAnimation* animation = dvz_anim_track(scene, track, _track_vec3_callback, &state);
+    ANN(animation);
+    dvz_anim_set_interaction_policy(
+        animation, controller, DVZ_ANIM_INTERACTION_STOP, 0.0);
+    dvz_anim_start(animation, 0.0);
 
     _dvz_scene_animations_step(scene, 0);
-    _dvz_scene_animations_step(scene, 0);
-    mat4 after = GLM_MAT4_IDENTITY_INIT;
-    dvz_arcball_model(arcball, after);
-    AT(memcmp(before, after, sizeof(mat4)) != 0);
-
-    mat4 paused_before = GLM_MAT4_IDENTITY_INIT;
-    dvz_arcball_model(arcball, paused_before);
+    AT(state.calls == 1);
     arcball->interacting = true;
     _dvz_scene_animations_step(scene, 0);
-    mat4 paused_after = GLM_MAT4_IDENTITY_INIT;
-    dvz_arcball_model(arcball, paused_after);
-    AT(memcmp(paused_before, paused_after, sizeof(mat4)) == 0);
-
-    dvz_anim_stop(spin);
     AT(!dvz_scene_has_active_animations(scene));
 
-    dvz_arcball_destroy(arcball);
+    dvz_track_destroy(track);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -550,7 +740,10 @@ int test_scene_animation(TstSuite* suite)
     TST_CASE(test_scene_animation_phase_stop_restart);
     TST_CASE(test_scene_animation_destroy_reuses_slot);
     TST_CASE(test_scene_animation_active_query);
-    TST_CASE(test_scene_animation_arcball_spin);
+    TST_CASE(test_scene_animation_tracks);
+    TST_CASE(test_scene_animation_visual_transform);
+    TST_CASE(test_scene_animation_camera_motion);
+    TST_CASE(test_scene_animation_interaction_stop);
 
     return 0;
 }

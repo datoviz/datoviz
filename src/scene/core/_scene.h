@@ -761,7 +761,9 @@ typedef enum
     DVZ_ANIMATION_NONE = 0,
     DVZ_ANIMATION_TIMER,
     DVZ_ANIMATION_PHASE,
-    DVZ_ANIMATION_ARCBALL_SPIN,
+    DVZ_ANIMATION_TRACK,
+    DVZ_ANIMATION_VISUAL_TRANSFORM,
+    DVZ_ANIMATION_CAMERA_MOTION,
 } DvzAnimationType;
 
 
@@ -786,6 +788,7 @@ struct DvzAnimation
     DvzAnimationType type;
     bool active;
     double t_start;
+    float speed;
     double period_s;
     double last_fire_t;
     DvzAnimTimerCallback timer_callback;
@@ -795,10 +798,16 @@ struct DvzAnimation
     float phase_speed;
     float phase_wrap_min;
     float phase_wrap_max;
-    DvzArcball* arcball;
-    vec3 axis;
-    float speed_rad_per_sec;
-    uint32_t flags;
+    const DvzTrack* track;
+    DvzTrackApplyCallback track_callback;
+    DvzVisual* visual;
+    DvzCamera* camera;
+    DvzTransformMotionDesc transform_motion;
+    DvzCameraMotionDesc camera_motion;
+    DvzController* interaction_controller;
+    DvzAnimInteractionPolicy interaction_policy;
+    double interaction_idle_s;
+    double last_interaction_t;
 };
 
 

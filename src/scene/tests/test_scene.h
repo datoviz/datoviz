@@ -125,7 +125,13 @@ int test_scene_animation_destroy_reuses_slot(TstContext* suite, const TstCase* i
 
 int test_scene_animation_active_query(TstContext* suite, const TstCase* item);
 
-int test_scene_animation_arcball_spin(TstContext* suite, const TstCase* item);
+int test_scene_animation_tracks(TstContext* suite, const TstCase* item);
+
+int test_scene_animation_visual_transform(TstContext* suite, const TstCase* item);
+
+int test_scene_animation_camera_motion(TstContext* suite, const TstCase* item);
+
+int test_scene_animation_interaction_stop(TstContext* suite, const TstCase* item);
 
 int test_scene_frame_plan(TstSuite* suite);
 

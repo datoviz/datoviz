@@ -35,9 +35,62 @@ typedef enum
 
 typedef enum
 {
-    DVZ_ARCBALL_SPIN_FLAGS_NONE                 = 0x00,
-    DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION = 0x01,
-} DvzArcballSpinFlags;
+    DVZ_TRACK_FLOAT,
+    DVZ_TRACK_VEC2,
+    DVZ_TRACK_VEC3,
+    DVZ_TRACK_VEC4,
+    DVZ_TRACK_QUAT,
+} DvzTrackType;
+
+
+typedef enum
+{
+    DVZ_TRACK_REPEAT_NONE,
+    DVZ_TRACK_REPEAT_LOOP,
+    DVZ_TRACK_REPEAT_PINGPONG,
+} DvzTrackRepeat;
+
+
+typedef enum
+{
+    DVZ_TRACK_INTERP_STEP,
+    DVZ_TRACK_INTERP_LINEAR,
+    DVZ_TRACK_INTERP_CATMULL_ROM,
+    DVZ_TRACK_INTERP_CUBIC_HERMITE,
+    DVZ_TRACK_INTERP_SLERP,
+    DVZ_TRACK_INTERP_MONOTONE_CUBIC,
+} DvzTrackInterpolation;
+
+
+typedef enum
+{
+    DVZ_TRACK_TANGENT_AUTO,
+    DVZ_TRACK_TANGENT_FLAT,
+    DVZ_TRACK_TANGENT_USER,
+} DvzTrackTangentMode;
+
+
+typedef enum
+{
+    DVZ_TRANSFORM_ORDER_TRS,
+} DvzTransformOrder;
+
+
+typedef enum
+{
+    DVZ_CAMERA_UP_FIXED,
+    DVZ_CAMERA_UP_WORLD,
+    DVZ_CAMERA_UP_TRACK,
+} DvzCameraUpMode;
+
+
+typedef enum
+{
+    DVZ_ANIM_INTERACTION_CONTINUE,
+    DVZ_ANIM_INTERACTION_STOP,
+    DVZ_ANIM_INTERACTION_PAUSE,
+    DVZ_ANIM_INTERACTION_RESUME_AFTER_IDLE,
+} DvzAnimInteractionPolicy;
 
 
 
@@ -46,13 +99,16 @@ typedef enum
 /*************************************************************************************************/
 
 typedef struct DvzAnimation DvzAnimation;
-typedef struct DvzArcball DvzArcball;
+typedef struct DvzTrack DvzTrack;
 
 typedef void (*DvzAnimTimerCallback)(
     DvzAnimation* animation, double t, double dt, void* user_data);
 
 typedef void (*DvzAnimPhaseCallback)(
     DvzAnimation* animation, float value, float delta, void* user_data);
+
+typedef void (*DvzTrackApplyCallback)(
+    DvzAnimation* animation, double t, const void* value, void* user_data);
 
 
 
@@ -61,6 +117,14 @@ typedef void (*DvzAnimPhaseCallback)(
 /*************************************************************************************************/
 
 typedef struct DvzAnimPhaseDesc DvzAnimPhaseDesc;
+typedef struct DvzTrackConstantDesc DvzTrackConstantDesc;
+typedef struct DvzTrackLinearDesc DvzTrackLinearDesc;
+typedef struct DvzTrackKeyframesDesc DvzTrackKeyframesDesc;
+typedef struct DvzTrackCircle2Desc DvzTrackCircle2Desc;
+typedef struct DvzTrackCircle3Desc DvzTrackCircle3Desc;
+typedef struct DvzTrackRotationDesc DvzTrackRotationDesc;
+typedef struct DvzTransformMotionDesc DvzTransformMotionDesc;
+typedef struct DvzCameraMotionDesc DvzCameraMotionDesc;
 
 struct DvzAnimPhaseDesc
 {
@@ -72,6 +136,101 @@ struct DvzAnimPhaseDesc
     float wrap_max;
     DvzAnimPhaseCallback callback;
     void* user_data;
+};
+
+
+struct DvzTrackConstantDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzTrackType type;
+    const void* value;
+};
+
+
+struct DvzTrackLinearDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzTrackType type;
+    const void* start;
+    const void* end;
+    double duration;
+    DvzTrackRepeat repeat;
+};
+
+
+struct DvzTrackKeyframesDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzTrackType type;
+    uint32_t count;
+    const double* times;
+    const void* values;
+    DvzTrackRepeat repeat;
+    DvzTrackInterpolation interpolation;
+    DvzTrackTangentMode tangents;
+    float tension;
+    const void* in_tangents;
+    const void* out_tangents;
+};
+
+
+struct DvzTrackCircle2Desc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    vec2 center;
+    float radius;
+    float phase;
+    float speed_rad_per_sec;
+};
+
+
+struct DvzTrackCircle3Desc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    vec3 center;
+    vec3 normal;
+    float radius;
+    float phase;
+    float speed_rad_per_sec;
+};
+
+
+struct DvzTrackRotationDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    vec3 axis;
+    float phase;
+    float speed_rad_per_sec;
+};
+
+
+struct DvzTransformMotionDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    const DvzTrack* translation;
+    const DvzTrack* rotation;
+    const DvzTrack* scale;
+    vec3 pivot;
+    DvzTransformOrder order;
+};
+
+
+struct DvzCameraMotionDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    const DvzTrack* eye;
+    const DvzTrack* target;
+    DvzCameraUpMode up_mode;
+    vec3 up;
+    const DvzTrack* up_track;
 };
 
 
@@ -153,6 +312,143 @@ DVZ_EXPORT DvzAnimPhaseDesc dvz_anim_phase_desc(void);
 
 
 /**
+ * Return a default constant track descriptor.
+ *
+ * @return initialized descriptor
+ */
+DVZ_EXPORT DvzTrackConstantDesc dvz_track_constant_desc(void);
+
+
+/**
+ * Return a default linear track descriptor.
+ *
+ * @return initialized descriptor
+ */
+DVZ_EXPORT DvzTrackLinearDesc dvz_track_linear_desc(void);
+
+
+/**
+ * Return a default keyframe track descriptor.
+ *
+ * @return initialized descriptor
+ */
+DVZ_EXPORT DvzTrackKeyframesDesc dvz_track_keyframes_desc(void);
+
+
+/**
+ * Return a default 2D circle track descriptor.
+ *
+ * @return initialized descriptor
+ */
+DVZ_EXPORT DvzTrackCircle2Desc dvz_track_circle2_desc(void);
+
+
+/**
+ * Return a default 3D circle track descriptor.
+ *
+ * @return initialized descriptor
+ */
+DVZ_EXPORT DvzTrackCircle3Desc dvz_track_circle3_desc(void);
+
+
+/**
+ * Return a default rotation track descriptor.
+ *
+ * @return initialized descriptor
+ */
+DVZ_EXPORT DvzTrackRotationDesc dvz_track_rotation_desc(void);
+
+
+/**
+ * Return a default transform motion descriptor.
+ *
+ * @return initialized descriptor
+ */
+DVZ_EXPORT DvzTransformMotionDesc dvz_transform_motion_desc(void);
+
+
+/**
+ * Return a default camera motion descriptor.
+ *
+ * @return initialized descriptor
+ */
+DVZ_EXPORT DvzCameraMotionDesc dvz_camera_motion_desc(void);
+
+
+/**
+ * Create a constant typed track.
+ *
+ * @param desc descriptor
+ * @return track, or NULL on validation/allocation failure
+ */
+DVZ_EXPORT DvzTrack* dvz_track_constant(const DvzTrackConstantDesc* desc);
+
+
+/**
+ * Create a linear typed track.
+ *
+ * @param desc descriptor
+ * @return track, or NULL on validation/allocation failure
+ */
+DVZ_EXPORT DvzTrack* dvz_track_linear(const DvzTrackLinearDesc* desc);
+
+
+/**
+ * Create a keyframed typed track.
+ *
+ * @param desc descriptor
+ * @return track, or NULL on validation/allocation failure
+ */
+DVZ_EXPORT DvzTrack* dvz_track_keyframes(const DvzTrackKeyframesDesc* desc);
+
+
+/**
+ * Create a 2D circle track.
+ *
+ * @param desc descriptor
+ * @return track, or NULL on validation/allocation failure
+ */
+DVZ_EXPORT DvzTrack* dvz_track_circle2(const DvzTrackCircle2Desc* desc);
+
+
+/**
+ * Create a 3D circle track.
+ *
+ * @param desc descriptor
+ * @return track, or NULL on validation/allocation failure
+ */
+DVZ_EXPORT DvzTrack* dvz_track_circle3(const DvzTrackCircle3Desc* desc);
+
+
+/**
+ * Create a quaternion rotation track.
+ *
+ * @param desc descriptor
+ * @return track, or NULL on validation/allocation failure
+ */
+DVZ_EXPORT DvzTrack* dvz_track_rotation(const DvzTrackRotationDesc* desc);
+
+
+/**
+ * Evaluate a track at local time.
+ *
+ * @param track track
+ * @param t local time in seconds
+ * @param out output value with storage matching the track type
+ * @return whether evaluation succeeded
+ */
+DVZ_EXPORT bool dvz_track_eval(const DvzTrack* track, double t, void* out);
+
+
+/**
+ * Destroy a track.
+ *
+ * @param track track
+ */
+DVZ_EXPORT void dvz_track_destroy(DvzTrack* track);
+
+
+/**
  * Create a wrapped linear phase animation driven by the scene clock.
  *
  * @param scene owning scene
@@ -163,21 +459,63 @@ DVZ_EXPORT DvzAnimation* dvz_anim_phase(DvzScene* scene, const DvzAnimPhaseDesc*
 
 
 /**
- * Create an arcball spin animation driven by the scene clock.
+ * Create a generic track animation driven by the scene clock.
  *
  * @param scene owning scene
- * @param arcball target arcball controller
- * @param axis rotation axis
- * @param speed_rad_per_sec angular speed in radians per second
- * @param flags DvzArcballSpinFlags bitmask
+ * @param track borrowed track evaluated every frame while active
+ * @param callback callback receiving the evaluated value
+ * @param user_data opaque pointer forwarded to the callback
  * @return the animation handle, or NULL on failure
  */
-DVZ_EXPORT DvzAnimation* dvz_anim_arcball_spin(
-    DvzScene* scene, DvzArcball* arcball, vec3 axis, float speed_rad_per_sec, uint32_t flags);
+DVZ_EXPORT DvzAnimation* dvz_anim_track(
+    DvzScene* scene,
+    const DvzTrack* track,
+    DvzTrackApplyCallback callback,
+    void* user_data);
 
 
 /**
- * Set the scalar speed used by phase and arcball spin animations.
+ * Create a visual-local transform animation.
+ *
+ * @param scene owning scene
+ * @param visual visual whose retained local transform is updated
+ * @param desc transform motion descriptor
+ * @return the animation handle, or NULL on failure
+ */
+DVZ_EXPORT DvzAnimation* dvz_anim_visual_transform(
+    DvzScene* scene, DvzVisual* visual, const DvzTransformMotionDesc* desc);
+
+
+/**
+ * Create a camera motion animation.
+ *
+ * @param scene owning scene
+ * @param camera camera whose view is updated
+ * @param desc camera motion descriptor
+ * @return the animation handle, or NULL on failure
+ */
+DVZ_EXPORT DvzAnimation*
+dvz_anim_camera_motion(DvzScene* scene, DvzCamera* camera, const DvzCameraMotionDesc* desc);
+
+
+/**
+ * Set how an animation responds to an interactive controller.
+ *
+ * @param animation animation handle
+ * @param controller controller to observe, or NULL to clear policy
+ * @param policy interaction policy
+ * @param idle_s idle duration for resume-after-idle policies
+ */
+DVZ_EXPORT void dvz_anim_set_interaction_policy(
+    DvzAnimation* animation,
+    DvzController* controller,
+    DvzAnimInteractionPolicy policy,
+    double idle_s);
+
+
+/**
+ * Set the scalar speed used by phase animations, or the local-time multiplier used by track-backed
+ * animations.
  *
  * @param animation animation handle
  * @param speed scalar speed in units per second
