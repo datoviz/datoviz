@@ -187,9 +187,29 @@ int main(int argc, char** argv)
     ok = dvz_axis_set_grid(y_axis, true);
     EXAMPLE_CHECK(ok, "dvz_axis_set_grid() failed for Y");
 
-    DvzDateTimeFormat* datetime =
-        dvz_datetime_format_builtin(scene, DVZ_DATETIME_FORMAT_CONCISE_UTC);
-    EXAMPLE_CHECK(datetime != NULL, "dvz_datetime_format_builtin() failed");
+    DvzDateTimeFormat* datetime = dvz_datetime_format_create(scene);
+    EXAMPLE_CHECK(datetime != NULL, "dvz_datetime_format_create() failed");
+    rc = dvz_datetime_format_timezone(datetime, "UTC");
+    EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_timezone() failed");
+    rc = dvz_datetime_format_rule(
+        datetime, DVZ_TIME_INTERVAL_MICROSECOND, "%b %d %H:%M:%S.fff");
+    EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_rule(microsecond) failed");
+    rc = dvz_datetime_format_rule(
+        datetime, DVZ_TIME_INTERVAL_MILLISECOND, "%b %d %H:%M:%S.fff");
+    EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_rule(millisecond) failed");
+    rc = dvz_datetime_format_rule(
+        datetime, DVZ_TIME_INTERVAL_SECOND, "%b %d %H:%M:%S");
+    EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_rule(second) failed");
+    rc = dvz_datetime_format_rule(datetime, DVZ_TIME_INTERVAL_MINUTE, "%b %d %H:%M");
+    EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_rule(minute) failed");
+    rc = dvz_datetime_format_rule(datetime, DVZ_TIME_INTERVAL_HOUR, "%b %d %H:%M");
+    EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_rule(hour) failed");
+    rc = dvz_datetime_format_rule(datetime, DVZ_TIME_INTERVAL_DAY, "%b %d");
+    EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_rule(day) failed");
+    rc = dvz_datetime_format_rule(datetime, DVZ_TIME_INTERVAL_MONTH, "%Y-%m");
+    EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_rule(month) failed");
+    rc = dvz_datetime_format_rule(datetime, DVZ_TIME_INTERVAL_YEAR, "%Y");
+    EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_rule(year) failed");
     const DvzTimestamp may_1_utc = (DvzTimestamp)1714554000000000LL; /* 2024-05-01 09:00 UTC */
     ok = dvz_axis_set_datetime(x_axis, datetime);
     EXAMPLE_CHECK(ok, "dvz_axis_set_datetime() failed");
@@ -208,8 +228,12 @@ int main(int argc, char** argv)
     DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "datetime_axis");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
-    EXAMPLE_CHECK(panzoom != NULL, "failed to bind panzoom controller");
+    DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
+    EXAMPLE_CHECK(panzoom_controller != NULL, "dvz_panzoom() failed");
+    DvzPanzoom* panzoom = dvz_controller_panzoom(panzoom_controller);
+    EXAMPLE_CHECK(panzoom != NULL, "dvz_controller_panzoom() failed");
+    rc = dvz_view_bind_controller(win, panel, panzoom_controller, DVZ_DIM_MASK_X);
+    EXAMPLE_CHECK(rc == 0, "dvz_view_bind_controller() failed for X panzoom");
 
     int rc_capture = dvz_view_capture_from_env(win, "datetime_axis");
     EXAMPLE_CHECK(rc_capture == 0, "dvz_view_capture_from_env() failed");

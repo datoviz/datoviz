@@ -344,6 +344,12 @@ static void _datetime_format_fractional(
     if (out_size == 0)
         return;
     const char* marker = strstr(rule, "ffffff");
+    size_t precision = 6;
+    if (marker == NULL)
+    {
+        marker = strstr(rule, "fff");
+        precision = 3;
+    }
     if (marker == NULL)
     {
         if (strftime(out, out_size, rule, tm) == 0)
@@ -357,10 +363,13 @@ static void _datetime_format_fractional(
         prefix = sizeof(patched) - 1;
     memcpy(patched, rule, prefix);
     char fraction[16] = {0};
-    dvz_snprintf(fraction, sizeof(fraction), "%06d", usec);
+    if (precision == 3)
+        dvz_snprintf(fraction, sizeof(fraction), "%03d", usec / 1000);
+    else
+        dvz_snprintf(fraction, sizeof(fraction), "%06d", usec);
     dvz_strlcpy(patched + prefix, fraction, sizeof(patched) - prefix);
     dvz_strlcpy(
-        patched + strlen(patched), marker + 6, sizeof(patched) - strlen(patched));
+        patched + strlen(patched), marker + precision, sizeof(patched) - strlen(patched));
     if (strftime(out, out_size, patched, tm) == 0)
         out[0] = '\0';
 }

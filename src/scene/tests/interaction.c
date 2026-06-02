@@ -1365,6 +1365,14 @@ static int test_scene_units_formatting_core(TstContext* suite, const TstCase* it
     AT(strcmp(label, "12:34:56.123456") == 0);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_datetime_format_timezone(dt, "Europe/Paris") < 0);
 
+    DvzDateTimeFormat* custom_dt = dvz_datetime_format_create(scene);
+    ANN(custom_dt);
+    AT(dvz_datetime_format_rule(
+           custom_dt, DVZ_TIME_INTERVAL_MILLISECOND, "%b %d %H:%M:%S.fff") == 0);
+    AT(_scene_datetime_format(
+        custom_dt, ts, DVZ_TIME_INTERVAL_MILLISECOND, label, sizeof(label)));
+    AT(strcmp(label, "May 01 12:34:56.123") == 0);
+
     dvz_scene_destroy(scene);
     return 0;
 }
