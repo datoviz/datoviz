@@ -545,6 +545,36 @@ static void _scene_apply_controller_to_bound_panels(DvzController* controller)
 
 
 /**
+ * Apply an orbit-camera state to all bound panel cameras without resynchronizing from them.
+ *
+ * @param controller orbit-camera controller
+ */
+static void _scene_apply_orbit_camera_state_to_bound_panels(DvzController* controller)
+{
+    if (controller == NULL || controller->scene == NULL ||
+        controller->type != DVZ_CONTROLLER_TYPE_ORBIT_CAMERA || controller->orbit_camera == NULL)
+        return;
+
+    DvzOrbitCamera* orbit = controller->orbit_camera;
+    DvzScene* scene = controller->scene;
+    for (uint32_t fi = 0; fi < scene->figure_count; fi++)
+    {
+        DvzFigure* figure = &scene->figures[fi];
+        for (uint32_t pi = 0; pi < figure->panel_count; pi++)
+        {
+            DvzPanel* panel = &figure->panels[pi];
+            if (!_scene_panel_has_controller(panel, controller) || panel->camera == NULL)
+                continue;
+            _dvz_orbit_camera_attach_camera(orbit, panel->camera);
+            dvz_orbit_camera_apply_camera(orbit);
+        }
+    }
+    _dvz_orbit_camera_attach_camera(orbit, NULL);
+}
+
+
+
+/**
  * Convert a pointer event from figure coordinates to panel-local coordinates.
  *
  * @param ev input event
@@ -773,11 +803,14 @@ static bool _scene_panel_dispatch_pointer_controller(
         if (orbit == NULL || _scene_panel_ensure_camera(panel) == NULL)
             return false;
         dvz_orbit_camera_viewport(orbit, x, y, w, h);
-        dvz_orbit_camera_set_camera(orbit, panel->camera);
+        if (dvz_orbit_camera_is_interacting(orbit))
+            _dvz_orbit_camera_attach_camera(orbit, panel->camera);
+        else
+            _dvz_orbit_camera_sync_camera(orbit, panel->camera);
         consumed = dvz_orbit_camera_pointer(orbit, ev);
-        dvz_orbit_camera_set_camera(orbit, NULL);
+        _dvz_orbit_camera_attach_camera(orbit, NULL);
         if (consumed)
-            _scene_apply_controller_to_bound_panels(controller);
+            _scene_apply_orbit_camera_state_to_bound_panels(controller);
         break;
     }
     default:

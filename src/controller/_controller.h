@@ -45,6 +45,10 @@ DvzFly* _dvz_fly(const DvzFlyDesc* desc);
 
 DvzTurntable* _dvz_turntable(const DvzTurntableDesc* desc);
 
+void _dvz_orbit_camera_attach_camera(DvzOrbitCamera* orbit, DvzCamera* camera);
+
+void _dvz_orbit_camera_sync_camera(DvzOrbitCamera* orbit, DvzCamera* camera);
+
 void dvz_orbit_camera_connect(DvzOrbitCamera* orbit, DvzInputRouter* router);
 
 void dvz_orbit_camera_disconnect(DvzOrbitCamera* orbit, DvzInputRouter* router);

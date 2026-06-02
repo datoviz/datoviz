@@ -949,6 +949,232 @@ int test_orbit_camera_changes_view_not_model(TstContext* suite, const TstCase* i
 }
 
 
+int test_orbit_camera_drag_axes_match_upright_planet(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[0] = 0.0f;
+    camera_desc.eye[1] = -3.0f;
+    camera_desc.eye[2] = 0.0f;
+    camera_desc.up[1] = 0.0f;
+    camera_desc.up[2] = 1.0f;
+
+    DvzCamera* camera = dvz_camera_create(&camera_desc);
+    ANN(camera);
+    DvzOrbitCamera* orbit = dvz_orbit_camera_create(NULL);
+    ANN(orbit);
+    dvz_orbit_camera_viewport(orbit, 0.0f, 0.0f, 800.0f, 600.0f);
+    dvz_orbit_camera_set_camera(orbit, camera);
+
+    DvzPointerEvent horizontal = {
+        .type = DVZ_POINTER_EVENT_DRAG,
+        .button = DVZ_POINTER_BUTTON_LEFT,
+        .pos = {600.0f, 300.0f},
+        .content.d.press_pos = {400.0f, 300.0f},
+        .content.d.last_pos = {400.0f, 300.0f},
+        .content.d.shift = {200.0f, 0.0f},
+        .content.d.is_press_valid = true,
+    };
+    AT(dvz_orbit_camera_pointer(orbit, &horizontal));
+
+    vec3 eye = {0}, target = {0}, up = {0};
+    dvz_camera_get_view(camera, eye, target, up);
+    AT(eye[0] < -1e-3f);
+    AC(eye[2], 0.0f, 1e-5f);
+    AC(up[0], 0.0f, 1e-5f);
+    AC(up[1], 0.0f, 1e-5f);
+    AC(up[2], 1.0f, 1e-5f);
+    AC(target[0], 0.0f, 1e-6f);
+    AC(target[1], 0.0f, 1e-6f);
+    AC(target[2], 0.0f, 1e-6f);
+
+    dvz_camera_set_view(camera, camera_desc.eye, camera_desc.target, camera_desc.up);
+    dvz_orbit_camera_set_camera(orbit, camera);
+    DvzPointerEvent vertical = horizontal;
+    vertical.pos[0] = 400.0f;
+    vertical.pos[1] = 100.0f;
+    vertical.content.d.shift[0] = 0.0f;
+    vertical.content.d.shift[1] = -200.0f;
+    AT(dvz_orbit_camera_pointer(orbit, &vertical));
+
+    dvz_camera_get_view(camera, eye, target, up);
+    AT(eye[2] < -1e-3f);
+    AC(up[0], 0.0f, 1e-5f);
+
+    dvz_orbit_camera_destroy(orbit);
+    dvz_camera_destroy(camera);
+    return 0;
+}
+
+
+int test_orbit_camera_scene_drag_uses_stable_baseline(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[0] = 0.0f;
+    camera_desc.eye[1] = -3.0f;
+    camera_desc.eye[2] = 0.0f;
+    camera_desc.up[1] = 0.0f;
+    camera_desc.up[2] = 1.0f;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
+    ANN(camera);
+
+    DvzController* controller = dvz_orbit_camera(scene, NULL);
+    ANN(controller);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    AT(dvz_panel_connect_input(panel, router) == 0);
+
+    DvzInputEvent start = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_DRAG_START,
+                .button = DVZ_POINTER_BUTTON_LEFT,
+                .pos = {404.0f, 300.0f},
+                .content.d.press_pos = {400.0f, 300.0f},
+                .content.d.is_press_valid = true,
+            },
+    };
+    dvz_input_emit_event(router, &start);
+
+    DvzInputEvent drag = start;
+    drag.content.pointer.type = DVZ_POINTER_EVENT_DRAG;
+    drag.content.pointer.pos[0] = 500.0f;
+    drag.content.pointer.content.d.last_pos[0] = 404.0f;
+    drag.content.pointer.content.d.last_pos[1] = 300.0f;
+    drag.content.pointer.content.d.shift[0] = 100.0f;
+    drag.content.pointer.content.d.shift[1] = 0.0f;
+    dvz_input_emit_event(router, &drag);
+
+    drag.content.pointer.pos[0] = 600.0f;
+    drag.content.pointer.content.d.last_pos[0] = 500.0f;
+    drag.content.pointer.content.d.shift[0] = 200.0f;
+    dvz_input_emit_event(router, &drag);
+
+    vec3 actual_eye = {0}, actual_target = {0}, actual_up = {0};
+    dvz_camera_get_view(camera, actual_eye, actual_target, actual_up);
+
+    DvzCamera* expected_camera = dvz_camera_create(&camera_desc);
+    ANN(expected_camera);
+    DvzOrbitCamera* expected_orbit = dvz_orbit_camera_create(NULL);
+    ANN(expected_orbit);
+    dvz_orbit_camera_viewport(expected_orbit, 0.0f, 0.0f, 800.0f, 600.0f);
+    dvz_orbit_camera_set_camera(expected_orbit, expected_camera);
+    AT(dvz_orbit_camera_pointer(expected_orbit, &drag.content.pointer));
+
+    vec3 expected_eye = {0}, expected_target = {0}, expected_up = {0};
+    dvz_camera_get_view(expected_camera, expected_eye, expected_target, expected_up);
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        AC(actual_eye[i], expected_eye[i], 1e-5f);
+        AC(actual_target[i], expected_target[i], 1e-5f);
+        AC(actual_up[i], expected_up[i], 1e-5f);
+    }
+
+    dvz_orbit_camera_destroy(expected_orbit);
+    dvz_camera_destroy(expected_camera);
+    dvz_input_router_destroy(router);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_orbit_camera_double_click_restores_initial_view(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[0] = 0.0f;
+    camera_desc.eye[1] = -3.0f;
+    camera_desc.eye[2] = 0.0f;
+    camera_desc.up[1] = 0.0f;
+    camera_desc.up[2] = 1.0f;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
+    ANN(camera);
+
+    vec3 initial_eye = {0}, initial_target = {0}, initial_up = {0};
+    dvz_camera_get_view(camera, initial_eye, initial_target, initial_up);
+
+    DvzController* controller = dvz_orbit_camera(scene, NULL);
+    ANN(controller);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    AT(dvz_panel_connect_input(panel, router) == 0);
+
+    DvzInputEvent drag = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_DRAG,
+                .button = DVZ_POINTER_BUTTON_LEFT,
+                .pos = {400.0f, 100.0f},
+                .content.d.press_pos = {400.0f, 300.0f},
+                .content.d.last_pos = {400.0f, 300.0f},
+                .content.d.shift = {0.0f, -200.0f},
+                .content.d.is_press_valid = true,
+            },
+    };
+    dvz_input_emit_event(router, &drag);
+
+    DvzInputEvent stop = drag;
+    stop.content.pointer.type = DVZ_POINTER_EVENT_DRAG_STOP;
+    dvz_input_emit_event(router, &stop);
+
+    vec3 dragged_eye = {0}, dragged_target = {0}, dragged_up = {0};
+    dvz_camera_get_view(camera, dragged_eye, dragged_target, dragged_up);
+    AT(fabsf(dragged_eye[0] - initial_eye[0]) > 1e-3f ||
+       fabsf(dragged_eye[1] - initial_eye[1]) > 1e-3f ||
+       fabsf(dragged_eye[2] - initial_eye[2]) > 1e-3f);
+
+    DvzInputEvent reset = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_DOUBLE_CLICK,
+                .pos = {400.0f, 300.0f},
+            },
+    };
+    dvz_input_emit_event(router, &reset);
+
+    vec3 reset_eye = {0}, reset_target = {0}, reset_up = {0};
+    dvz_camera_get_view(camera, reset_eye, reset_target, reset_up);
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        AC(reset_eye[i], initial_eye[i], 1e-5f);
+        AC(reset_target[i], initial_target[i], 1e-5f);
+        AC(reset_up[i], initial_up[i], 1e-5f);
+    }
+
+    dvz_input_router_destroy(router);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_arcball_create_reset(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -1319,6 +1545,9 @@ int test_scene_panzoom_arcball(TstSuite* suite)
 
     TST_GROUP("arcball");
     TST_CASE(test_orbit_camera_changes_view_not_model);
+    TST_CASE(test_orbit_camera_drag_axes_match_upright_planet);
+    TST_CASE(test_orbit_camera_scene_drag_uses_stable_baseline);
+    TST_CASE(test_orbit_camera_double_click_restores_initial_view);
     TST_CASE(test_arcball_create_reset);
     TST_CASE(test_arcball_rotate_produces_nonidentity_model);
     TST_CASE(test_arcball_end_commits_rotation);

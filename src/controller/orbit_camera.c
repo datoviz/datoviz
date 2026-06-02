@@ -31,7 +31,7 @@
 
 #define DVZ_ORBIT_CAMERA_DEFAULT_WIDTH  800.0f
 #define DVZ_ORBIT_CAMERA_DEFAULT_HEIGHT 600.0f
-#define DVZ_ORBIT_CAMERA_ZOOM_COEF      0.0125f
+#define DVZ_ORBIT_CAMERA_ZOOM_COEF      0.05f
 #define DVZ_ORBIT_CAMERA_MIN_DISTANCE   0.01f
 #define DVZ_ORBIT_CAMERA_MAX_DISTANCE   100000.0f
 #define DVZ_ORBIT_CAMERA_DESC_KNOWN_FLAGS 0u
@@ -56,6 +56,10 @@ struct DvzOrbitCamera
     float distance;
     vec2 pan;
     vec2 pan_center;
+    vec3 initial_pivot;
+    mat4 initial_rotation;
+    float initial_distance;
+    vec2 initial_pan;
 
     DvzCamera* camera;
 };
@@ -77,43 +81,64 @@ static float _clampf(float value, float min_value, float max_value)
 
 
 
-static void _screen_to_arcball(vec2 p, versor q)
+static void _orbit_rotation_axis(const mat4 rotation, uint32_t column, vec3 out)
 {
-    float dist = glm_vec2_dot(p, p);
-    if (dist <= 1.0f)
-        glm_vec4_copy((vec4){p[0], p[1], sqrtf(1.0f - dist), 0.0f}, q);
-    else
+    ANN(out);
+    if (column >= 3)
     {
-        glm_vec2_normalize(p);
-        glm_vec4_copy((vec4){p[0], p[1], 0.0f, 0.0f}, q);
+        glm_vec3_zero(out);
+        return;
     }
+
+    for (uint32_t row = 0; row < 3; row++)
+        out[row] = rotation[column][row];
+    if (glm_vec3_norm(out) > 0.0f)
+        glm_vec3_normalize(out);
 }
 
 
 
-static void _orbit_drag_rotation(vec2 cur_pos, vec2 last_pos, versor out)
+static void _orbit_drag_rotation(
+    const DvzOrbitCamera* orbit, vec2 shift_px, float width, float height, versor out)
 {
-    versor cur_ball = {0}, prev_ball = {0};
-    _screen_to_arcball(cur_pos, cur_ball);
-    _screen_to_arcball(last_pos, prev_ball);
+    ANN(orbit);
+    ANN(out);
 
-    vec3 axis = {0};
-    glm_vec3_cross(prev_ball, cur_ball, axis);
-    float dot = _clampf(glm_vec3_dot(prev_ball, cur_ball), -1.0f, 1.0f);
-    out[0] = axis[0];
-    out[1] = axis[1];
-    out[2] = axis[2];
-    out[3] = 1.0f + dot;
-    if (out[3] <= 1e-6f && glm_vec3_norm(axis) <= 1e-6f)
+    if (width <= 0.0f || height <= 0.0f)
     {
-        glm_vec3_cross(prev_ball, (vec3){1.0f, 0.0f, 0.0f}, axis);
-        if (glm_vec3_norm(axis) <= 1e-6f)
-            glm_vec3_cross(prev_ball, (vec3){0.0f, 1.0f, 0.0f}, axis);
-        out[0] = axis[0];
-        out[1] = axis[1];
-        out[2] = axis[2];
-        out[3] = 0.0f;
+        glm_quat_identity(out);
+        return;
     }
+
+    vec3 up_axis = {0};
+    _orbit_rotation_axis(orbit->initial_rotation, 1, up_axis);
+    if (glm_vec3_norm(up_axis) <= 0.0f)
+        _orbit_rotation_axis(orbit->rotation, 1, up_axis);
+    if (glm_vec3_norm(up_axis) <= 0.0f)
+        glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, up_axis);
+    else
+        glm_vec3_normalize(up_axis);
+
+    vec3 right_axis = {0};
+    _orbit_rotation_axis(orbit->rotation, 0, right_axis);
+    if (glm_vec3_norm(right_axis) <= 0.0f)
+        glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, right_axis);
+
+    float yaw_angle = -(shift_px[0] / width) * GLM_PIf;
+    float pitch_angle = -(shift_px[1] / height) * GLM_PIf;
+
+    versor yaw = GLM_QUAT_IDENTITY_INIT;
+    glm_quatv(yaw, yaw_angle, up_axis);
+    glm_quat_rotatev(yaw, right_axis, right_axis);
+    if (glm_vec3_norm(right_axis) <= 0.0f)
+        glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, right_axis);
+    else
+        glm_vec3_normalize(right_axis);
+
+    versor pitch = GLM_QUAT_IDENTITY_INIT;
+    glm_quatv(pitch, pitch_angle, right_axis);
+
+    glm_quat_mul(pitch, yaw, out);
     glm_quat_normalize(out);
 }
 
@@ -176,6 +201,30 @@ static void _orbit_view(const DvzOrbitCamera* orbit, vec3 eye, vec3 target, vec3
         glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, up);
     else
         glm_vec3_normalize(up);
+}
+
+
+
+static void _orbit_store_initial(DvzOrbitCamera* orbit)
+{
+    ANN(orbit);
+    glm_vec3_copy(orbit->pivot, orbit->initial_pivot);
+    glm_mat4_copy(orbit->rotation, orbit->initial_rotation);
+    orbit->initial_distance = orbit->distance;
+    glm_vec2_copy(orbit->pan, orbit->initial_pan);
+}
+
+
+
+static void _orbit_reset_initial(DvzOrbitCamera* orbit)
+{
+    ANN(orbit);
+    glm_vec3_copy(orbit->initial_pivot, orbit->pivot);
+    glm_mat4_copy(orbit->initial_rotation, orbit->rotation);
+    orbit->distance = orbit->initial_distance;
+    glm_vec2_copy(orbit->initial_pan, orbit->pan);
+    glm_vec2_copy(orbit->initial_pan, orbit->pan_center);
+    glm_quat_identity(orbit->drag_rotation);
 }
 
 
@@ -291,6 +340,7 @@ DvzOrbitCamera* dvz_orbit_camera_create(const DvzOrbitCameraDesc* desc)
     glm_mat4_identity(orbit->rotation);
     glm_quat_identity(orbit->drag_rotation);
     orbit->distance = 3.0f;
+    _orbit_store_initial(orbit);
     return orbit;
 }
 
@@ -322,6 +372,7 @@ void dvz_orbit_camera_pivot(DvzOrbitCamera* orbit, vec3 pivot)
 {
     ANN(orbit);
     glm_vec3_copy(pivot, orbit->pivot);
+    glm_vec3_copy(pivot, orbit->initial_pivot);
     dvz_orbit_camera_apply_camera(orbit);
 }
 
@@ -358,7 +409,17 @@ int dvz_orbit_camera_get_view(const DvzOrbitCamera* orbit, vec3 eye, vec3 target
 void dvz_orbit_camera_set_camera(DvzOrbitCamera* orbit, DvzCamera* camera)
 {
     ANN(orbit);
-    orbit->camera = camera;
+    _dvz_orbit_camera_sync_camera(orbit, camera);
+    if (camera != NULL)
+        _orbit_store_initial(orbit);
+}
+
+
+
+void _dvz_orbit_camera_sync_camera(DvzOrbitCamera* orbit, DvzCamera* camera)
+{
+    ANN(orbit);
+    _dvz_orbit_camera_attach_camera(orbit, camera);
     if (camera != NULL)
     {
         vec3 eye = {0}, target = {0}, up = {0};
@@ -391,8 +452,17 @@ void dvz_orbit_camera_set_camera(DvzOrbitCamera* orbit, DvzCamera* camera)
                 orbit->rotation[2][row] = forward[row];
             }
         }
+        glm_quat_identity(orbit->drag_rotation);
     }
     dvz_orbit_camera_apply_camera(orbit);
+}
+
+
+
+void _dvz_orbit_camera_attach_camera(DvzOrbitCamera* orbit, DvzCamera* camera)
+{
+    ANN(orbit);
+    orbit->camera = camera;
 }
 
 
@@ -453,15 +523,11 @@ bool dvz_orbit_camera_pointer(DvzOrbitCamera* orbit, const DvzPointerEvent* ev)
     case DVZ_POINTER_EVENT_DRAG:
         if (ev->button == DVZ_POINTER_BUTTON_LEFT)
         {
-            vec2 cur_pos = {
-                -1.0f + 2.0f * ev->pos[0] / width,
-                +1.0f - 2.0f * ev->pos[1] / height,
+            vec2 shift = {
+                ev->pos[0] - ev->content.d.press_pos[0],
+                ev->pos[1] - ev->content.d.press_pos[1],
             };
-            vec2 last_pos = {
-                -1.0f + 2.0f * ev->content.d.press_pos[0] / width,
-                +1.0f - 2.0f * ev->content.d.press_pos[1] / height,
-            };
-            _orbit_drag_rotation(cur_pos, last_pos, orbit->drag_rotation);
+            _orbit_drag_rotation(orbit, shift, width, height, orbit->drag_rotation);
             orbit->interacting = true;
             dvz_orbit_camera_apply_camera(orbit);
             return true;
@@ -489,10 +555,7 @@ bool dvz_orbit_camera_pointer(DvzOrbitCamera* orbit, const DvzPointerEvent* ev)
     }
 
     case DVZ_POINTER_EVENT_DOUBLE_CLICK:
-        glm_mat4_identity(orbit->rotation);
-        glm_quat_identity(orbit->drag_rotation);
-        glm_vec2_zero(orbit->pan);
-        glm_vec2_zero(orbit->pan_center);
+        _orbit_reset_initial(orbit);
         orbit->interacting = false;
         dvz_orbit_camera_apply_camera(orbit);
         return true;
