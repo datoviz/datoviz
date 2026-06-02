@@ -66,10 +66,11 @@ Current baseline:
 4. `dvz_polygon_composite()` and `dvz_polygon_set_composite()` lower to `"fill"` and `"stroke"`.
 5. Fill currently uses `mesh`; stroke currently uses `path`.
 
-Required v0.4 polish:
+Implemented v0.4 polish:
 
-1. add stable ids: `dvz_polygon_set_region_id()` and optional `dvz_polygon_id()`;
-2. add region visibility and clear/removal helpers for polygon sets;
+1. add stable ids: `dvz_polygon_set_region_id()`, `dvz_polygon_set_region_ids()`, and
+   `dvz_polygon_id()`;
+2. add region visibility and bulk visibility helpers for polygon sets;
 3. add bulk setters for fill colors, stroke colors, and stroke widths;
 4. expose polygon stroke style helpers for caps, joins, and miter limit without requiring manual
    role-visual access;

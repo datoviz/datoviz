@@ -135,7 +135,7 @@ It stores ring data, per-polygon ids when needed, fill/stroke style, and dirty/v
 Common user-facing APIs should be flat and role/property based:
 
 ```c
-dvz_polygon_set_geometry(polygon, &polygon_desc);
+dvz_polygon_geometry(polygon, &polygon_desc);
 dvz_polygon_outer(polygon, count, xy);
 dvz_polygon_hole(polygon, hole_index, count, xy);
 dvz_polygon_fill_color(polygon, color);
@@ -143,7 +143,7 @@ dvz_polygon_stroke_color(polygon, color);
 dvz_polygon_stroke_width(polygon, width);
 ```
 
-`dvz_polygon_set_geometry()` is the coherent bulk setter and should be the robust path for replacing
+`dvz_polygon_geometry()` is the coherent bulk setter and should be the robust path for replacing
 outer/hole rings atomically. The `outer`/`hole` calls are convenience mutators over the same retained
 state.
 
@@ -164,8 +164,8 @@ as a generic object system. A composite may own:
 4. dirty flags for fill, stroke, and derived visual data;
 5. a borrowed pointer to its semantic source object and the source version it last lowered.
 
-Do not make a nested `DvzPolygonStyle` the primary API. Optional style convenience structs may be
-added later only if the flat setters remain available.
+Do not make `DvzPolygonStyle` the primary API. It remains an optional convenience descriptor; the
+flat setters must stay available.
 
 Generated visuals may be exposed by role for advanced use and tests, but ordinary users should not
 need to know that fill and stroke are separate visuals.

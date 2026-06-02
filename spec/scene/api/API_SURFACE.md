@@ -143,8 +143,8 @@ Examples:
 ```text
 dvz_polygon_fill_color()
 dvz_polygon_stroke_width()
-dvz_graph_nodes_size()
-dvz_graph_edges_color()
+dvz_graph_node_sizes()
+dvz_graph_edge_colors()
 ```
 
 Advanced APIs may expose generated visuals by stable role names, such as `"fill"`, `"stroke"`,

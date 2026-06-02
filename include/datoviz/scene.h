@@ -2139,13 +2139,21 @@ DVZ_EXPORT void dvz_polygon_destroy(DvzPolygon* polygon);
 
 
 /**
+ * Return the default polygon style descriptor.
+ *
+ * @return default polygon style
+ */
+DVZ_EXPORT DvzPolygonStyle dvz_polygon_style(void);
+
+
+/**
  * Replace all polygon rings from a borrowed descriptor.
  *
  * @param polygon the polygon
  * @param desc borrowed polygon descriptor
  * @return 0 on success, -1 on invalid input or allocation failure
  */
-DVZ_EXPORT int dvz_polygon_set_geometry(DvzPolygon* polygon, const DvzPolygonDesc* desc);
+DVZ_EXPORT int dvz_polygon_geometry(DvzPolygon* polygon, const DvzPolygonDesc* desc);
 
 
 /**
@@ -2182,7 +2190,7 @@ dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, const
  * @param id stable user id
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_polygon_set_id(DvzPolygon* polygon, uint64_t id);
+DVZ_EXPORT int dvz_polygon_id(DvzPolygon* polygon, uint64_t id);
 
 
 /**
@@ -2192,7 +2200,20 @@ DVZ_EXPORT int dvz_polygon_set_id(DvzPolygon* polygon, uint64_t id);
  * @param visible whether the polygon should render
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_polygon_set_visible(DvzPolygon* polygon, bool visible);
+DVZ_EXPORT int dvz_polygon_visible(DvzPolygon* polygon, bool visible);
+
+
+/**
+ * Apply polygon render style.
+ *
+ * Flat style setters remain the primary API for common updates. This descriptor is a convenience
+ * for applying defaults or several style fields atomically.
+ *
+ * @param polygon the polygon
+ * @param style polygon style descriptor
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_polygon_set_style(DvzPolygon* polygon, const DvzPolygonStyle* style);
 
 
 /**
@@ -2315,6 +2336,19 @@ dvz_polygon_set_region_id(DvzPolygonSet* set, uint32_t polygon_index, uint64_t i
 
 
 /**
+ * Set a contiguous range of polygon region stable user ids.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param ids borrowed stable user id array
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_polygon_set_region_ids(
+    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const uint64_t* ids);
+
+
+/**
  * Set one polygon region's visibility.
  *
  * @param set the polygon set
@@ -2324,6 +2358,19 @@ dvz_polygon_set_region_id(DvzPolygonSet* set, uint32_t polygon_index, uint64_t i
  */
 DVZ_EXPORT int
 dvz_polygon_set_region_visible(DvzPolygonSet* set, uint32_t polygon_index, bool visible);
+
+
+/**
+ * Set a contiguous range of polygon region visibilities.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param visible borrowed visibility array
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_polygon_set_region_visibilities(
+    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const bool* visible);
 
 
 /**

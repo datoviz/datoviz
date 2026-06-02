@@ -120,7 +120,7 @@ static bool _add_polygon(DvzScene* scene, DvzPanel* panel, PolygonExampleState* 
 
     const DvzPolygonRing holes[1] = {{.xy = POLYGON_HOLE, .count = 4}};
 
-    int rc = dvz_polygon_set_geometry(
+    int rc = dvz_polygon_geometry(
         polygon,
         &(DvzPolygonDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),

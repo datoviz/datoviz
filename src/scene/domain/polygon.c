@@ -29,6 +29,9 @@
 #include <string.h>
 
 
+#define DVZ_POLYGON_STYLE_KNOWN_FLAGS 0u
+
+
 /**
  * Release a retained polygon's copied ring data.
  *
@@ -98,13 +101,90 @@ void dvz_polygon_destroy(DvzPolygon* polygon)
 
 
 /**
+ * Return whether one stroke cap value is valid.
+ *
+ * @param cap stroke cap
+ * @return whether the cap is valid
+ */
+static bool _polygon_stroke_cap_valid(DvzSegmentCap cap)
+{
+    return cap == DVZ_SEGMENT_CAP_NONE || cap == DVZ_SEGMENT_CAP_ROUND ||
+           cap == DVZ_SEGMENT_CAP_TRIANGLE_IN || cap == DVZ_SEGMENT_CAP_TRIANGLE_OUT ||
+           cap == DVZ_SEGMENT_CAP_SQUARE || cap == DVZ_SEGMENT_CAP_BUTT;
+}
+
+
+
+/**
+ * Return whether one path join value is valid.
+ *
+ * @param join path join
+ * @return whether the join is valid
+ */
+static bool _polygon_stroke_join_valid(DvzPathJoin join)
+{
+    return join == DVZ_PATH_JOIN_MITER || join == DVZ_PATH_JOIN_ROUND ||
+           join == DVZ_PATH_JOIN_BEVEL;
+}
+
+
+
+static bool _polygon_style_valid(const DvzPolygonStyle* style)
+{
+    if (style == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(style, DvzPolygonStyle, DVZ_POLYGON_STYLE_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzPolygonStyle ABI prologue");
+        return false;
+    }
+    if (!isfinite(style->stroke_width) || style->stroke_width < 0.0f)
+        return false;
+    if (
+        !_polygon_stroke_cap_valid(style->stroke_start_cap) ||
+        !_polygon_stroke_cap_valid(style->stroke_end_cap))
+    {
+        return false;
+    }
+    if (!_polygon_stroke_join_valid(style->stroke_join))
+        return false;
+    if (!isfinite(style->stroke_miter_limit) || style->stroke_miter_limit <= 0.0f)
+        return false;
+    return true;
+}
+
+
+
+/**
+ * Return the default polygon style descriptor.
+ *
+ * @return default polygon style
+ */
+DvzPolygonStyle dvz_polygon_style(void)
+{
+    return (DvzPolygonStyle){
+        DVZ_STRUCT_INIT_FIELDS(DvzPolygonStyle),
+        .visible = true,
+        .fill_color = {255, 255, 255, 255},
+        .stroke_color = {0, 0, 0, 255},
+        .stroke_width = 1.0f,
+        .stroke_start_cap = DVZ_SEGMENT_CAP_BUTT,
+        .stroke_end_cap = DVZ_SEGMENT_CAP_BUTT,
+        .stroke_join = DVZ_PATH_JOIN_ROUND,
+        .stroke_miter_limit = 4.0f,
+    };
+}
+
+
+
+/**
  * Replace all polygon rings from a borrowed descriptor.
  *
  * @param polygon the polygon
  * @param desc borrowed polygon descriptor
  * @return 0 on success, -1 on invalid input or allocation failure
  */
-int dvz_polygon_set_geometry(DvzPolygon* polygon, const DvzPolygonDesc* desc)
+int dvz_polygon_geometry(DvzPolygon* polygon, const DvzPolygonDesc* desc)
 {
     if (polygon == NULL || polygon->scene == NULL || desc == NULL)
         return -1;
@@ -184,7 +264,7 @@ int dvz_polygon_outer(DvzPolygon* polygon, uint32_t count, const dvec2* xy)
         if (!_polygon_borrowed_desc(polygon, &(DvzPolygonRing){0}, &holes))
             return -1;
     }
-    const int out = dvz_polygon_set_geometry(
+    const int out = dvz_polygon_geometry(
         polygon,
         &(DvzPolygonDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
@@ -242,19 +322,12 @@ int dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, c
         .holes = holes,
         .hole_count = new_hole_count,
     };
-    const int out = dvz_polygon_set_geometry(polygon, &desc);
+    const int out = dvz_polygon_geometry(polygon, &desc);
     dvz_free(holes);
     return out;
 }
 
 
-/**
- * Set the polygon fill color.
- *
- * @param polygon the polygon
- * @param color RGBA fill color
- * @return 0 on success, -1 on error
- */
 /**
  * Set the stable user id associated with a polygon.
  *
@@ -262,7 +335,7 @@ int dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, c
  * @param id stable user id
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_id(DvzPolygon* polygon, uint64_t id)
+int dvz_polygon_id(DvzPolygon* polygon, uint64_t id)
 {
     if (polygon == NULL || polygon->scene == NULL)
         return -1;
@@ -282,7 +355,7 @@ int dvz_polygon_set_id(DvzPolygon* polygon, uint64_t id)
  * @param visible whether the polygon should render
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_visible(DvzPolygon* polygon, bool visible)
+int dvz_polygon_visible(DvzPolygon* polygon, bool visible)
 {
     if (polygon == NULL || polygon->scene == NULL)
         return -1;
@@ -291,6 +364,35 @@ int dvz_polygon_set_visible(DvzPolygon* polygon, bool visible)
     if (polygon->visible == visible)
         return 0;
     polygon->visible = visible;
+    polygon->version++;
+    _polygon_mark_composites_dirty(polygon, true, true);
+    return 0;
+}
+
+
+
+/**
+ * Apply polygon render style.
+ *
+ * @param polygon the polygon
+ * @param style polygon style descriptor
+ * @return 0 on success, -1 on error
+ */
+int dvz_polygon_set_style(DvzPolygon* polygon, const DvzPolygonStyle* style)
+{
+    if (polygon == NULL || polygon->scene == NULL || !_polygon_style_valid(style))
+        return -1;
+    if (!_scene_visual_mutation_allowed(polygon->scene, "update polygon style"))
+        return -1;
+
+    polygon->visible = style->visible;
+    _polygon_color_copy(&polygon->fill_color, style->fill_color);
+    _polygon_color_copy(&polygon->stroke_color, style->stroke_color);
+    polygon->stroke_width = style->stroke_width;
+    polygon->stroke_cap_start = style->stroke_start_cap;
+    polygon->stroke_cap_end = style->stroke_end_cap;
+    polygon->stroke_join = style->stroke_join;
+    polygon->stroke_miter_limit = style->stroke_miter_limit;
     polygon->version++;
     _polygon_mark_composites_dirty(polygon, true, true);
     return 0;
@@ -355,35 +457,6 @@ int dvz_polygon_stroke_width(DvzPolygon* polygon, float width)
     polygon->version++;
     _polygon_mark_composites_dirty(polygon, false, true);
     return 0;
-}
-
-
-
-/**
- * Return whether one stroke cap value is valid.
- *
- * @param cap stroke cap
- * @return whether the cap is valid
- */
-static bool _polygon_stroke_cap_valid(DvzSegmentCap cap)
-{
-    return cap == DVZ_SEGMENT_CAP_NONE || cap == DVZ_SEGMENT_CAP_ROUND ||
-           cap == DVZ_SEGMENT_CAP_TRIANGLE_IN || cap == DVZ_SEGMENT_CAP_TRIANGLE_OUT ||
-           cap == DVZ_SEGMENT_CAP_SQUARE || cap == DVZ_SEGMENT_CAP_BUTT;
-}
-
-
-
-/**
- * Return whether one path join value is valid.
- *
- * @param join path join
- * @return whether the join is valid
- */
-static bool _polygon_stroke_join_valid(DvzPathJoin join)
-{
-    return join == DVZ_PATH_JOIN_MITER || join == DVZ_PATH_JOIN_ROUND ||
-           join == DVZ_PATH_JOIN_BEVEL;
 }
 
 

@@ -447,6 +447,22 @@ struct DvzVectorStyle
 typedef struct DvzVectorStyle DvzVectorStyle;
 
 
+struct DvzPolygonStyle
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    bool visible;
+    DvzColor fill_color;
+    DvzColor stroke_color;
+    float stroke_width;
+    DvzSegmentCap stroke_start_cap;
+    DvzSegmentCap stroke_end_cap;
+    DvzPathJoin stroke_join;
+    float stroke_miter_limit;
+};
+typedef struct DvzPolygonStyle DvzPolygonStyle;
+
+
 struct DvzGraphEdgeStyle
 {
     uint32_t struct_size;

@@ -30,8 +30,8 @@ Examples:
 ```text
 dvz_polygon_fill_color()
 dvz_polygon_stroke_width()
-dvz_graph_nodes_size()
-dvz_graph_edges_color()
+dvz_graph_node_sizes()
+dvz_graph_edge_colors()
 ```
 
 Backend or third-party names should not appear in high-level user APIs unless the user is selecting
@@ -92,11 +92,11 @@ coordinated leaf visuals internally.
 Typed semantic object APIs remain the normal user path:
 
 ```text
-dvz_polygon_set_geometry()
+dvz_polygon_geometry()
 dvz_polygon_fill_color()
 dvz_polygon_set_region_fill_color()
-dvz_graph_nodes_size()
-dvz_graph_edges_color()
+dvz_graph_node_sizes()
+dvz_graph_edge_colors()
 ```
 
 Composites provide the generic panel attachment path:
@@ -192,14 +192,14 @@ Preferred:
 
 ```c
 dvz_polygon_stroke_width(polygon, 1.0f);
-dvz_graph_nodes_color(graph, color);
+dvz_graph_node_colors(graph, 0, node_count, colors);
 dvz_triangulate_polygon(source, &desc);
 ```
 
 Avoid as the primary API when it only wraps independent style properties:
 
 ```c
-dvz_polygon_style(polygon, &(DvzPolygonStyle){...});
+dvz_polygon_set_style(polygon, &(DvzPolygonStyle){...});
 ```
 
 The optional convenience form may still exist if the flat setters remain available and documented.

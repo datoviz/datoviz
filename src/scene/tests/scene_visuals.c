@@ -3560,7 +3560,7 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
         {1.0, 1.0},
         {0.0, 1.0},
     };
-    AT(dvz_polygon_set_geometry(
+    AT(dvz_polygon_geometry(
            polygon,
            &(DvzPolygonDesc){
                DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
@@ -3572,10 +3572,19 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     AT(dvz_polygon_fill_color(polygon, fill_color) == 0);
     AT(dvz_polygon_stroke_color(polygon, stroke_color) == 0);
     AT(dvz_polygon_stroke_width(polygon, 3.0f) == 0);
-    AT(dvz_polygon_set_id(polygon, 42) == 0);
+    AT(dvz_polygon_id(polygon, 42) == 0);
     AT(polygon->user_id == 42);
     AT(dvz_polygon_stroke_caps(polygon, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_TRIANGLE_OUT) == 0);
     AT(dvz_polygon_stroke_join(polygon, DVZ_PATH_JOIN_BEVEL, 3.0f) == 0);
+    DvzPolygonStyle style = dvz_polygon_style();
+    style.fill_color = fill_color;
+    style.stroke_color = stroke_color;
+    style.stroke_width = 3.0f;
+    style.stroke_start_cap = DVZ_SEGMENT_CAP_BUTT;
+    style.stroke_end_cap = DVZ_SEGMENT_CAP_TRIANGLE_OUT;
+    style.stroke_join = DVZ_PATH_JOIN_BEVEL;
+    style.stroke_miter_limit = 3.0f;
+    AT(dvz_polygon_set_style(polygon, &style) == 0);
 
     DvzComposite* composite = dvz_polygon_composite(polygon, 0);
     ANN(composite);
@@ -3674,11 +3683,11 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     AT(stroke_position_view.item_count == 10);
     AT(_visual_family_state(stroke)->path.subpath_count == 2);
 
-    AT(dvz_polygon_set_visible(polygon, false) == 0);
+    AT(dvz_polygon_visible(polygon, false) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(!fill->visible);
     AT(!stroke->visible);
-    AT(dvz_polygon_set_visible(polygon, true) == 0);
+    AT(dvz_polygon_visible(polygon, true) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(fill->visible);
     AT(stroke->visible);
@@ -3741,8 +3750,8 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     AT(dvz_polygon_set_region_fill_color(set, right_index, green) == 0);
     AT(dvz_polygon_set_region_stroke_width(set, left_index, 2.0f) == 0);
     AT(dvz_polygon_set_region_stroke_width(set, right_index, 4.0f) == 0);
-    AT(dvz_polygon_set_region_id(set, left_index, 101) == 0);
-    AT(dvz_polygon_set_region_id(set, right_index, 102) == 0);
+    const uint64_t ids[2] = {101, 102};
+    AT(dvz_polygon_set_region_ids(set, 0, 2, ids) == 0);
     AT(set->polygons[left_index].user_id == 101);
     AT(set->polygons[right_index].user_id == 102);
     AT(dvz_polygon_set_stroke_caps(set, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_TRIANGLE_OUT) == 0);
@@ -3840,7 +3849,8 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     AC(widths[0], bulk_widths[0], EPS);
     AC(widths[5], bulk_widths[1], EPS);
 
-    AT(dvz_polygon_set_region_visible(set, right_index, false) == 0);
+    const bool one_visible[2] = {true, false};
+    AT(dvz_polygon_set_region_visibilities(set, 0, 2, one_visible) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "position", &position_view) == 0);
     AT(position_view.item_count == 4);

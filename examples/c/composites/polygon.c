@@ -94,7 +94,7 @@ static bool _add_holed_polygon(DvzScene* scene, DvzPanel* panel)
     DvzPolygon* polygon = dvz_polygon(scene, 0);
     if (polygon == NULL)
         return false;
-    int rc = dvz_polygon_set_geometry(
+    int rc = dvz_polygon_geometry(
         polygon, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
                                    .outer = {.xy = outer, .count = 6}});
     if (rc != 0)
@@ -102,7 +102,7 @@ static bool _add_holed_polygon(DvzScene* scene, DvzPanel* panel)
     rc = dvz_polygon_hole(polygon, 0, 4, hole);
     if (rc != 0)
         return false;
-    rc = dvz_polygon_set_id(polygon, 10);
+    rc = dvz_polygon_id(polygon, 10);
     if (rc != 0)
         return false;
     rc = dvz_polygon_fill_color(polygon, (DvzColor){36, 151, 178, 210});
@@ -168,13 +168,8 @@ static bool _add_polygon_set(DvzScene* scene, DvzPanel* panel)
     if (a == UINT32_MAX || b == UINT32_MAX || c == UINT32_MAX)
         return false;
 
-    int rc = dvz_polygon_set_region_id(set, a, 21);
-    if (rc != 0)
-        return false;
-    rc = dvz_polygon_set_region_id(set, b, 22);
-    if (rc != 0)
-        return false;
-    rc = dvz_polygon_set_region_id(set, c, 23);
+    const uint64_t ids[3] = {21, 22, 23};
+    int rc = dvz_polygon_set_region_ids(set, 0, 3, ids);
     if (rc != 0)
         return false;
 
