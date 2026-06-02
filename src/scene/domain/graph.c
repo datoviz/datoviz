@@ -36,7 +36,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_GRAPH_EDGE_DESC_KNOWN_FLAGS 0u
+#define DVZ_GRAPH_EDGE_STYLE_KNOWN_FLAGS 0u
 
 
 
@@ -83,8 +83,25 @@ static void _graph_edge_default(DvzGraphEdgeRecord* edge)
 
 static bool _graph_edge_mode_valid(DvzGraphEdgeMode mode)
 {
-    return mode == DVZ_GRAPH_EDGE_SEGMENT || mode == DVZ_GRAPH_EDGE_PATH ||
-           mode == DVZ_GRAPH_EDGE_BEZIER;
+    return mode == DVZ_GRAPH_EDGE_MODE_SEGMENT || mode == DVZ_GRAPH_EDGE_MODE_PATH ||
+           mode == DVZ_GRAPH_EDGE_MODE_BEZIER;
+}
+
+
+
+static bool _graph_segment_cap_valid(DvzSegmentCap cap)
+{
+    return cap == DVZ_SEGMENT_CAP_NONE || cap == DVZ_SEGMENT_CAP_ROUND ||
+           cap == DVZ_SEGMENT_CAP_TRIANGLE_IN || cap == DVZ_SEGMENT_CAP_TRIANGLE_OUT ||
+           cap == DVZ_SEGMENT_CAP_SQUARE || cap == DVZ_SEGMENT_CAP_BUTT;
+}
+
+
+
+static bool _graph_path_join_valid(DvzPathJoin join)
+{
+    return join == DVZ_PATH_JOIN_MITER || join == DVZ_PATH_JOIN_ROUND ||
+           join == DVZ_PATH_JOIN_BEVEL;
 }
 
 
@@ -93,7 +110,7 @@ static bool _graph_tessellation_valid(const DvzBezierTessellationDesc* desc)
 {
     if (desc == NULL)
         return true;
-    if (!DVZ_STRUCT_VALID(desc, DvzBezierTessellationDesc, DVZ_GRAPH_EDGE_DESC_KNOWN_FLAGS))
+    if (!DVZ_STRUCT_VALID(desc, DvzBezierTessellationDesc, DVZ_GRAPH_EDGE_STYLE_KNOWN_FLAGS))
     {
         log_error("invalid DvzBezierTessellationDesc ABI prologue");
         return false;
@@ -108,6 +125,30 @@ static bool _graph_tessellation_valid(const DvzBezierTessellationDesc* desc)
         log_error("graph Bezier tessellation tolerance must be finite and non-negative");
         return false;
     }
+    return true;
+}
+
+
+
+static bool _graph_edge_style_valid(const DvzGraphEdgeStyle* style)
+{
+    if (style == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(style, DvzGraphEdgeStyle, DVZ_GRAPH_EDGE_STYLE_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGraphEdgeStyle ABI prologue");
+        return false;
+    }
+    if (!_graph_edge_mode_valid(style->mode))
+        return false;
+    if (!_graph_tessellation_valid(&style->tessellation))
+        return false;
+    if (!_graph_segment_cap_valid(style->start_cap) || !_graph_segment_cap_valid(style->end_cap))
+        return false;
+    if (!_graph_path_join_valid(style->join))
+        return false;
+    if (style->miter_limit <= 0 || !isfinite(style->miter_limit))
+        return false;
     return true;
 }
 
@@ -132,12 +173,13 @@ DvzGraph* _scene_alloc_graph(DvzScene* scene)
     dvz_memset(graph, sizeof(DvzGraph), 0, sizeof(DvzGraph));
     graph->scene = scene;
     graph->active = true;
-    graph->edge_mode = DVZ_GRAPH_EDGE_SEGMENT;
-    graph->tessellation = dvz_bezier_tessellation_desc();
-    graph->edge_cap_start = DVZ_SEGMENT_CAP_ROUND;
-    graph->edge_cap_end = DVZ_SEGMENT_CAP_ROUND;
-    graph->edge_join = DVZ_PATH_JOIN_ROUND;
-    graph->edge_miter_limit = 4.0f;
+    DvzGraphEdgeStyle style = dvz_graph_edge_style();
+    graph->edge_mode = style.mode;
+    graph->tessellation = style.tessellation;
+    graph->edge_cap_start = style.start_cap;
+    graph->edge_cap_end = style.end_cap;
+    graph->edge_join = style.join;
+    graph->edge_miter_limit = style.miter_limit;
     graph->version = 1;
     return graph;
 }
@@ -260,35 +302,46 @@ void dvz_graph_destroy(DvzGraph* graph)
 
 
 /**
- * Replace all graph nodes with user-provided positions.
+ * Return the default graph edge style descriptor.
+ *
+ * @return default graph edge style
+ */
+DvzGraphEdgeStyle dvz_graph_edge_style(void)
+{
+    return (DvzGraphEdgeStyle){
+        DVZ_STRUCT_INIT_FIELDS(DvzGraphEdgeStyle),
+        .mode = DVZ_GRAPH_EDGE_MODE_SEGMENT,
+        .tessellation = dvz_bezier_tessellation_desc(),
+        .start_cap = DVZ_SEGMENT_CAP_ROUND,
+        .end_cap = DVZ_SEGMENT_CAP_ROUND,
+        .join = DVZ_PATH_JOIN_ROUND,
+        .miter_limit = 4.0f,
+    };
+}
+
+
+
+/**
+ * Replace the graph node array and reset node style defaults.
  *
  * @param graph the graph
  * @param node_count number of nodes
- * @param positions borrowed node positions
  * @return 0 on success, -1 on error
  */
-int dvz_graph_set_nodes(DvzGraph* graph, uint32_t node_count, const dvec3* positions)
+int dvz_graph_node_count(DvzGraph* graph, uint32_t node_count)
 {
-    if (graph == NULL || graph->scene == NULL || node_count == 0 || positions == NULL)
+    if (graph == NULL || graph->scene == NULL || node_count == 0)
         return -1;
     if (!_scene_visual_mutation_allowed(graph->scene, "update graph nodes"))
         return -1;
     if (!_polygon_allocation_valid(node_count, sizeof(DvzGraphNode)))
         return -1;
-    for (uint32_t i = 0; i < node_count; i++)
-    {
-        if (!_graph_dvec3_finite(positions[i]))
-            return -1;
-    }
 
     DvzGraphNode* nodes = (DvzGraphNode*)dvz_calloc(node_count, sizeof(DvzGraphNode));
     if (nodes == NULL)
         return -1;
     for (uint32_t i = 0; i < node_count; i++)
-    {
         _graph_node_default(&nodes[i]);
-        memcpy(nodes[i].position, positions[i], sizeof(dvec3));
-    }
 
     dvz_free(graph->nodes);
     dvz_free(graph->edges);
@@ -312,7 +365,7 @@ int dvz_graph_set_nodes(DvzGraph* graph, uint32_t node_count, const dvec3* posit
  * @param positions borrowed node positions
  * @return 0 on success, -1 on error
  */
-int dvz_graph_set_node_positions(
+int dvz_graph_node_positions(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const dvec3* positions)
 {
     if (
@@ -338,18 +391,15 @@ int dvz_graph_set_node_positions(
 
 
 /**
- * Replace all graph edges.
+ * Replace the graph edge array and reset edge style defaults.
  *
  * @param graph the graph
  * @param edge_count number of edges
- * @param edges borrowed edge endpoint array
  * @return 0 on success, -1 on invalid endpoints or allocation failure
  */
-int dvz_graph_set_edges(DvzGraph* graph, uint32_t edge_count, const DvzGraphEdge* edges)
+int dvz_graph_edge_count(DvzGraph* graph, uint32_t edge_count)
 {
     if (graph == NULL || graph->scene == NULL || graph->node_count == 0)
-        return -1;
-    if (edge_count > 0 && edges == NULL)
         return -1;
     if (!_scene_visual_mutation_allowed(graph->scene, "update graph edges"))
         return -1;
@@ -363,22 +413,54 @@ int dvz_graph_set_edges(DvzGraph* graph, uint32_t edge_count, const DvzGraphEdge
         if (records == NULL)
             return -1;
     }
-
     for (uint32_t i = 0; i < edge_count; i++)
-    {
-        if (edges[i].source >= graph->node_count || edges[i].target >= graph->node_count)
-        {
-            dvz_free(records);
-            return -1;
-        }
         _graph_edge_default(&records[i]);
-        records[i].source = edges[i].source;
-        records[i].target = edges[i].target;
-    }
 
     dvz_free(graph->edges);
     graph->edges = records;
     graph->edge_count = edge_count;
+    graph->version++;
+    _graph_mark_composites_dirty(graph, false, true);
+    return 0;
+}
+
+
+
+/**
+ * Update graph edge endpoints.
+ *
+ * @param graph the graph
+ * @param first_edge first edge index
+ * @param edge_count number of edges
+ * @param endpoints borrowed packed endpoint array: source0, target0, source1, target1, ...
+ * @return 0 on success, -1 on invalid endpoints or allocation failure
+ */
+int dvz_graph_edges(
+    DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const uint32_t* endpoints)
+{
+    if (
+        graph == NULL || graph->scene == NULL || endpoints == NULL ||
+        !_graph_range_valid(graph->edge_count, first_edge, edge_count))
+    {
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(graph->scene, "update graph edge endpoints"))
+        return -1;
+
+    for (uint32_t i = 0; i < edge_count; i++)
+    {
+        const uint32_t source = endpoints[2 * i + 0];
+        const uint32_t target = endpoints[2 * i + 1];
+        if (source >= graph->node_count || target >= graph->node_count)
+            return -1;
+    }
+    for (uint32_t i = 0; i < edge_count; i++)
+    {
+        DvzGraphEdgeRecord* edge = &graph->edges[first_edge + i];
+        edge->source = endpoints[2 * i + 0];
+        edge->target = endpoints[2 * i + 1];
+        edge->has_controls = false;
+    }
     graph->version++;
     _graph_mark_composites_dirty(graph, false, true);
     return 0;
@@ -395,7 +477,7 @@ int dvz_graph_set_edges(DvzGraph* graph, uint32_t edge_count, const DvzGraphEdge
  * @param ids borrowed user-id array
  * @return 0 on success, -1 on error
  */
-int dvz_graph_set_node_ids(
+int dvz_graph_node_ids(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const uint64_t* ids)
 {
     if (
@@ -423,7 +505,7 @@ int dvz_graph_set_node_ids(
  * @param ids borrowed user-id array
  * @return 0 on success, -1 on error
  */
-int dvz_graph_set_edge_ids(
+int dvz_graph_edge_ids(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const uint64_t* ids)
 {
     if (
@@ -446,24 +528,24 @@ int dvz_graph_set_edge_ids(
  * Configure graph edge rendering.
  *
  * @param graph the graph
- * @param mode edge rendering mode
- * @param tessellation optional Bezier tessellation descriptor used in Bezier mode
+ * @param style edge style descriptor
  * @return 0 on success, -1 on error
  */
-int dvz_graph_set_edge_mode(
-    DvzGraph* graph, DvzGraphEdgeMode mode, const DvzBezierTessellationDesc* tessellation)
+int dvz_graph_set_edge_style(DvzGraph* graph, const DvzGraphEdgeStyle* style)
 {
-    if (graph == NULL || graph->scene == NULL || !_graph_edge_mode_valid(mode) ||
-        !_graph_tessellation_valid(tessellation))
+    if (graph == NULL || graph->scene == NULL || !_graph_edge_style_valid(style))
     {
         return -1;
     }
-    if (!_scene_visual_mutation_allowed(graph->scene, "update graph edge mode"))
+    if (!_scene_visual_mutation_allowed(graph->scene, "update graph edge style"))
         return -1;
 
-    graph->edge_mode = mode;
-    if (tessellation != NULL)
-        graph->tessellation = *tessellation;
+    graph->edge_mode = style->mode;
+    graph->tessellation = style->tessellation;
+    graph->edge_cap_start = style->start_cap;
+    graph->edge_cap_end = style->end_cap;
+    graph->edge_join = style->join;
+    graph->edge_miter_limit = style->miter_limit;
     graph->version++;
     _graph_mark_composites_dirty(graph, false, true);
     return 0;
@@ -481,7 +563,7 @@ int dvz_graph_set_edge_mode(
  * @param control1 borrowed second control point array
  * @return 0 on success, -1 on error
  */
-int dvz_graph_set_edge_controls(
+int dvz_graph_edge_controls(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const dvec3* control0,
     const dvec3* control1)
 {
@@ -512,7 +594,7 @@ int dvz_graph_set_edge_controls(
 
 
 
-int dvz_graph_set_node_colors(
+int dvz_graph_node_colors(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const DvzColor* colors)
 {
     if (
@@ -532,7 +614,7 @@ int dvz_graph_set_node_colors(
 
 
 
-int dvz_graph_set_node_sizes(
+int dvz_graph_node_sizes(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const float* sizes)
 {
     if (
@@ -557,7 +639,7 @@ int dvz_graph_set_node_sizes(
 
 
 
-int dvz_graph_set_edge_colors(
+int dvz_graph_edge_colors(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const DvzColor* colors)
 {
     if (
@@ -577,7 +659,7 @@ int dvz_graph_set_edge_colors(
 
 
 
-int dvz_graph_set_edge_widths(
+int dvz_graph_edge_widths(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const float* widths)
 {
     if (

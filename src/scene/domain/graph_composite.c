@@ -112,7 +112,7 @@ static void _graph_update_edge_roles(DvzComposite* composite, const DvzGraph* gr
     if (segment == NULL || path == NULL || graph == NULL)
         return;
 
-    const bool use_segment = graph->edge_mode == DVZ_GRAPH_EDGE_SEGMENT;
+    const bool use_segment = graph->edge_mode == DVZ_GRAPH_EDGE_MODE_SEGMENT;
     dvz_strlcpy(
         segment->role,
         use_segment ? DVZ_GRAPH_COMPOSITE_EDGES_ROLE : DVZ_GRAPH_COMPOSITE_SEGMENTS_INTERNAL_ROLE,
@@ -197,7 +197,7 @@ static int _graph_prepare_segments(DvzGraph* graph, DvzVisual* segments)
     if (graph == NULL || segments == NULL || segments->type != DVZ_VISUAL_TYPE_SEGMENT)
         return -1;
     segments->visible = false;
-    if (graph->edge_mode != DVZ_GRAPH_EDGE_SEGMENT || graph->edge_count == 0)
+    if (graph->edge_mode != DVZ_GRAPH_EDGE_MODE_SEGMENT || graph->edge_count == 0)
         return 0;
 
     const uint32_t count = graph->edge_count;
@@ -279,10 +279,10 @@ static int _graph_prepare_paths(DvzGraph* graph, DvzVisual* path)
     if (graph == NULL || path == NULL || path->type != DVZ_VISUAL_TYPE_PATH)
         return -1;
     path->visible = false;
-    if (graph->edge_mode == DVZ_GRAPH_EDGE_SEGMENT || graph->edge_count == 0)
+    if (graph->edge_mode == DVZ_GRAPH_EDGE_MODE_SEGMENT || graph->edge_count == 0)
         return 0;
 
-    const bool bezier = graph->edge_mode == DVZ_GRAPH_EDGE_BEZIER;
+    const bool bezier = graph->edge_mode == DVZ_GRAPH_EDGE_MODE_BEZIER;
     const uint32_t points_per_edge =
         bezier ? (graph->tessellation.segment_count == 0 ? 33 : graph->tessellation.segment_count + 1)
                : 2;
@@ -479,7 +479,7 @@ DvzComposite* dvz_graph_composite(DvzGraph* graph, uint32_t flags)
         return NULL;
     }
 
-    const bool use_segment = graph->edge_mode == DVZ_GRAPH_EDGE_SEGMENT;
+    const bool use_segment = graph->edge_mode == DVZ_GRAPH_EDGE_MODE_SEGMENT;
     if (
         !_composite_add_visual(
             composite,

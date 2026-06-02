@@ -128,16 +128,17 @@ Recommended first API shape:
 
 ```c
 DvzGraph* graph = dvz_graph(scene, 0);
-dvz_graph_set_topology(graph, node_count, edge_count, edge_src, edge_dst);
-dvz_graph_set_node_positions(graph, node_count, positions);
-dvz_graph_set_node_ids(graph, node_count, ids);
-dvz_graph_set_edge_ids(graph, edge_count, ids);
+dvz_graph_node_count(graph, node_count);
+dvz_graph_node_positions(graph, 0, node_count, positions);
+dvz_graph_edge_count(graph, edge_count);
+dvz_graph_edges(graph, 0, edge_count, endpoints); // packed source,target pairs
+dvz_graph_node_ids(graph, 0, node_count, node_ids);
+dvz_graph_edge_ids(graph, 0, edge_count, edge_ids);
 
-DvzGraphViewDesc view = dvz_graph_view_desc();
-view.node_mode = DVZ_GRAPH_NODE_MARKER;
-view.edge_mode = DVZ_GRAPH_EDGE_SEGMENT;
-view.layout_mode = DVZ_GRAPH_LAYOUT_USER;
-DvzComposite* composite = dvz_graph_composite(graph, &view);
+DvzGraphEdgeStyle edge_style = dvz_graph_edge_style();
+edge_style.mode = DVZ_GRAPH_EDGE_MODE_SEGMENT;
+dvz_graph_set_edge_style(graph, &edge_style);
+DvzComposite* composite = dvz_graph_composite(graph, 0);
 ```
 
 Initial role lowering:
@@ -208,6 +209,6 @@ release-proven.
 2. Polish polygon ids, bulk style setters, visibility, stroke style, semantic mapping, and tests.
 3. Add the polygon composite example and manifest/example-planning entries.
 4. Add Bezier tessellation helpers and tests.
-5. Add `DvzGraph`, `DvzGraphViewDesc`, graph composite roles, and user-layout rendering.
+5. Add `DvzGraph`, `DvzGraphEdgeStyle`, graph composite roles, and user-layout rendering.
 6. Add graph examples for static layout and edge modes.
 7. Add semantic graph picking/selection only after node/edge id mapping is stable.

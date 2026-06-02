@@ -3876,13 +3876,15 @@ int test_scene_graph_composite(TstContext* suite, const TstCase* item)
         {1.0, 0.0, 0.0},
         {0.5, 1.0, 0.0},
     };
-    AT(dvz_graph_set_nodes(graph, 3, positions) == 0);
-    const DvzGraphEdge edges[2] = {{.source = 0, .target = 1}, {.source = 1, .target = 2}};
-    AT(dvz_graph_set_edges(graph, 2, edges) == 0);
+    AT(dvz_graph_node_count(graph, 3) == 0);
+    AT(dvz_graph_node_positions(graph, 0, 3, positions) == 0);
+    const uint32_t edges[4] = {0, 1, 1, 2};
+    AT(dvz_graph_edge_count(graph, 2) == 0);
+    AT(dvz_graph_edges(graph, 0, 2, edges) == 0);
     const uint64_t node_ids[3] = {101, 102, 103};
     const uint64_t edge_ids[2] = {201, 202};
-    AT(dvz_graph_set_node_ids(graph, 0, 3, node_ids) == 0);
-    AT(dvz_graph_set_edge_ids(graph, 0, 2, edge_ids) == 0);
+    AT(dvz_graph_node_ids(graph, 0, 3, node_ids) == 0);
+    AT(dvz_graph_edge_ids(graph, 0, 2, edge_ids) == 0);
     AT(graph->nodes[0].user_id == 101);
     AT(graph->nodes[2].user_id == 103);
     AT(graph->edges[0].user_id == 201);
@@ -3895,10 +3897,10 @@ int test_scene_graph_composite(TstContext* suite, const TstCase* item)
     const float node_sizes[3] = {10.0f, 20.0f, 30.0f};
     const DvzColor edge_colors[2] = {{220, 220, 220, 255}, {255, 180, 80, 255}};
     const float edge_widths[2] = {2.0f, 4.0f};
-    AT(dvz_graph_set_node_colors(graph, 0, 3, node_colors) == 0);
-    AT(dvz_graph_set_node_sizes(graph, 0, 3, node_sizes) == 0);
-    AT(dvz_graph_set_edge_colors(graph, 0, 2, edge_colors) == 0);
-    AT(dvz_graph_set_edge_widths(graph, 0, 2, edge_widths) == 0);
+    AT(dvz_graph_node_colors(graph, 0, 3, node_colors) == 0);
+    AT(dvz_graph_node_sizes(graph, 0, 3, node_sizes) == 0);
+    AT(dvz_graph_edge_colors(graph, 0, 2, edge_colors) == 0);
+    AT(dvz_graph_edge_widths(graph, 0, 2, edge_widths) == 0);
 
     DvzComposite* composite = dvz_graph_composite(graph, 0);
     ANN(composite);
@@ -3948,9 +3950,10 @@ int test_scene_graph_composite(TstContext* suite, const TstCase* item)
     AC(widths[0], 2.0f, EPS);
     AC(widths[1], 4.0f, EPS);
 
-    DvzBezierTessellationDesc tess = {
-        DVZ_STRUCT_INIT_FIELDS(DvzBezierTessellationDesc), .segment_count = 4};
-    AT(dvz_graph_set_edge_mode(graph, DVZ_GRAPH_EDGE_BEZIER, &tess) == 0);
+    DvzGraphEdgeStyle edge_style = dvz_graph_edge_style();
+    edge_style.mode = DVZ_GRAPH_EDGE_MODE_BEZIER;
+    edge_style.tessellation.segment_count = 4;
+    AT(dvz_graph_set_edge_style(graph, &edge_style) == 0);
     _scene_prepare_composite_visuals(figure);
     DvzVisual* path_edges = dvz_composite_visual(composite, "edges");
     ANN(path_edges);
@@ -3965,7 +3968,7 @@ int test_scene_graph_composite(TstContext* suite, const TstCase* item)
     AT(_visual_family_state(path_edges)->path.subpath_lengths[1] == 5);
 
     const dvec3 moved[1] = {{2.0, 0.0, 0.0}};
-    AT(dvz_graph_set_node_positions(graph, 1, 1, moved) == 0);
+    AT(dvz_graph_node_positions(graph, 1, 1, moved) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(node_visual, "position", &node_position_view) == 0);
     node_positions = node_position_view.data;

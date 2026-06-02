@@ -110,18 +110,24 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
     dvec3 positions[NODE_COUNT] = {0};
     _make_positions(positions);
 
-    static const DvzGraphEdge edges[EDGE_COUNT] = {
-        {0, 1}, {1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 6}, {6, 7}, {7, 8}, {8, 9},
-        {9, 0}, {0, 5}, {1, 6}, {2, 7}, {3, 8}, {4, 9}, {0, 3}, {5, 8},
+    static const uint32_t edges[2 * EDGE_COUNT] = {
+        0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9,
+        9, 0, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9, 0, 3, 5, 8,
     };
 
     DvzGraph* graph = dvz_graph(scene, 0);
     if (graph == NULL)
         return false;
-    int rc = dvz_graph_set_nodes(graph, NODE_COUNT, (const dvec3*)positions);
+    int rc = dvz_graph_node_count(graph, NODE_COUNT);
     if (rc != 0)
         return false;
-    rc = dvz_graph_set_edges(graph, EDGE_COUNT, edges);
+    rc = dvz_graph_node_positions(graph, 0, NODE_COUNT, (const dvec3*)positions);
+    if (rc != 0)
+        return false;
+    rc = dvz_graph_edge_count(graph, EDGE_COUNT);
+    if (rc != 0)
+        return false;
+    rc = dvz_graph_edges(graph, 0, EDGE_COUNT, edges);
     if (rc != 0)
         return false;
     uint64_t node_ids[NODE_COUNT] = {0};
@@ -130,10 +136,10 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
         node_ids[i] = 1000 + i;
     for (uint32_t i = 0; i < EDGE_COUNT; i++)
         edge_ids[i] = 2000 + i;
-    rc = dvz_graph_set_node_ids(graph, 0, NODE_COUNT, node_ids);
+    rc = dvz_graph_node_ids(graph, 0, NODE_COUNT, node_ids);
     if (rc != 0)
         return false;
-    rc = dvz_graph_set_edge_ids(graph, 0, EDGE_COUNT, edge_ids);
+    rc = dvz_graph_edge_ids(graph, 0, EDGE_COUNT, edge_ids);
     if (rc != 0)
         return false;
 
@@ -145,10 +151,10 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
         node_colors[i] = hub ? (DvzColor){255, 198, 80, 255} : (DvzColor){46, 190, 210, 255};
         node_sizes[i] = hub ? 34.0f : 23.0f;
     }
-    rc = dvz_graph_set_node_colors(graph, 0, NODE_COUNT, node_colors);
+    rc = dvz_graph_node_colors(graph, 0, NODE_COUNT, node_colors);
     if (rc != 0)
         return false;
-    rc = dvz_graph_set_node_sizes(graph, 0, NODE_COUNT, node_sizes);
+    rc = dvz_graph_node_sizes(graph, 0, NODE_COUNT, node_sizes);
     if (rc != 0)
         return false;
 
@@ -160,17 +166,17 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
         edge_colors[i] = chord ? (DvzColor){231, 98, 82, 210} : (DvzColor){180, 215, 225, 155};
         edge_widths[i] = chord ? 3.5f : 2.0f;
     }
-    rc = dvz_graph_set_edge_colors(graph, 0, EDGE_COUNT, edge_colors);
+    rc = dvz_graph_edge_colors(graph, 0, EDGE_COUNT, edge_colors);
     if (rc != 0)
         return false;
-    rc = dvz_graph_set_edge_widths(graph, 0, EDGE_COUNT, edge_widths);
+    rc = dvz_graph_edge_widths(graph, 0, EDGE_COUNT, edge_widths);
     if (rc != 0)
         return false;
 
-    rc = dvz_graph_set_edge_mode(
-        graph, DVZ_GRAPH_EDGE_BEZIER,
-        &(DvzBezierTessellationDesc){
-            DVZ_STRUCT_INIT_FIELDS(DvzBezierTessellationDesc), .segment_count = 18});
+    DvzGraphEdgeStyle edge_style = dvz_graph_edge_style();
+    edge_style.mode = DVZ_GRAPH_EDGE_MODE_BEZIER;
+    edge_style.tessellation.segment_count = 18;
+    rc = dvz_graph_set_edge_style(graph, &edge_style);
     if (rc != 0)
         return false;
 

@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "datoviz/font.h"
+#include "datoviz/geom/types.h"
 #include "datoviz/math/types.h"
 #include "datoviz/scene/enums.h"
 
@@ -446,12 +447,18 @@ struct DvzVectorStyle
 typedef struct DvzVectorStyle DvzVectorStyle;
 
 
-struct DvzGraphEdge
+struct DvzGraphEdgeStyle
 {
-    uint32_t source; // source node index
-    uint32_t target; // target node index
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzGraphEdgeMode mode;
+    DvzBezierTessellationDesc tessellation;
+    DvzSegmentCap start_cap;
+    DvzSegmentCap end_cap;
+    DvzPathJoin join;
+    float miter_limit;
 };
-typedef struct DvzGraphEdge DvzGraphEdge;
+typedef struct DvzGraphEdgeStyle DvzGraphEdgeStyle;
 
 
 struct DvzSceneBufferDesc

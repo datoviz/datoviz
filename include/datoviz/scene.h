@@ -1913,7 +1913,7 @@ DVZ_EXPORT int dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geome
  *
  * A graph stores user-provided node positions and indexed edges. Layout algorithms are intentionally
  * external to the first public API slice and can update node positions through
- * `dvz_graph_set_node_positions()`.
+ * `dvz_graph_node_positions()`.
  *
  * @param scene the scene
  * @param flags reserved graph flags
@@ -1931,22 +1931,28 @@ DVZ_EXPORT void dvz_graph_destroy(DvzGraph* graph);
 
 
 /**
- * Replace all graph nodes with user-provided positions.
+ * Return the default graph edge style descriptor.
  *
- * Node style arrays are reset to defaults. Existing edges are discarded because their endpoints
- * may no longer be valid.
- *
- * @param graph the graph
- * @param node_count number of nodes
- * @param positions borrowed node positions
- * @return 0 on success, -1 on error
+ * @return default graph edge style
  */
-DVZ_EXPORT int
-dvz_graph_set_nodes(DvzGraph* graph, uint32_t node_count, const dvec3* positions);
+DVZ_EXPORT DvzGraphEdgeStyle dvz_graph_edge_style(void);
 
 
 /**
- * Replace the graph node positions without changing node styles or edges.
+ * Replace the graph node array and reset node style defaults.
+ *
+ * Existing edges are discarded because their endpoints may no longer be valid. Call
+ * `dvz_graph_node_positions()` after this function to set or update semantic node positions.
+ *
+ * @param graph the graph
+ * @param node_count number of nodes
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_graph_node_count(DvzGraph* graph, uint32_t node_count);
+
+
+/**
+ * Update graph node positions without changing node styles or edges.
  *
  * @param graph the graph
  * @param first_node first node index
@@ -1954,22 +1960,36 @@ dvz_graph_set_nodes(DvzGraph* graph, uint32_t node_count, const dvec3* positions
  * @param positions borrowed node positions
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_graph_set_node_positions(
+DVZ_EXPORT int dvz_graph_node_positions(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const dvec3* positions);
 
 
 /**
- * Replace all graph edges.
+ * Replace the graph edge array and reset edge style defaults.
+ *
+ * Edge endpoints are left at their default values until `dvz_graph_edges()` is called.
+ *
+ * @param graph the graph
+ * @param edge_count number of edges
+ * @return 0 on success, -1 on invalid endpoints or allocation failure
+ */
+DVZ_EXPORT int dvz_graph_edge_count(DvzGraph* graph, uint32_t edge_count);
+
+
+/**
+ * Update graph edge endpoints.
  *
  * Edge endpoints reference node indices in the current graph node array.
  *
  * @param graph the graph
+ * @param first_edge first edge index
  * @param edge_count number of edges
- * @param edges borrowed edge endpoint array
+ * @param endpoints borrowed packed endpoint array: source0, target0, source1, target1, ...
  * @return 0 on success, -1 on invalid endpoints or allocation failure
  */
 DVZ_EXPORT int
-dvz_graph_set_edges(DvzGraph* graph, uint32_t edge_count, const DvzGraphEdge* edges);
+dvz_graph_edges(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+                const uint32_t* endpoints);
 
 
 /**
@@ -1982,8 +2002,7 @@ dvz_graph_set_edges(DvzGraph* graph, uint32_t edge_count, const DvzGraphEdge* ed
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT int
-dvz_graph_set_node_ids(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
-                       const uint64_t* ids);
+dvz_graph_node_ids(DvzGraph* graph, uint32_t first_node, uint32_t node_count, const uint64_t* ids);
 
 
 /**
@@ -1996,24 +2015,22 @@ dvz_graph_set_node_ids(DvzGraph* graph, uint32_t first_node, uint32_t node_count
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT int
-dvz_graph_set_edge_ids(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
-                       const uint64_t* ids);
+dvz_graph_edge_ids(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+                   const uint64_t* ids);
 
 
 /**
  * Configure graph edge rendering.
  *
- * `DVZ_GRAPH_EDGE_SEGMENT` lowers edges to fast independent segment visuals. `DVZ_GRAPH_EDGE_PATH`
- * lowers straight edges to high-quality path strokes. `DVZ_GRAPH_EDGE_BEZIER` lowers edges to
- * tessellated cubic Bezier path strokes.
+ * `DVZ_GRAPH_EDGE_MODE_SEGMENT` lowers edges to fast independent segment visuals.
+ * `DVZ_GRAPH_EDGE_MODE_PATH` lowers straight edges to high-quality path strokes.
+ * `DVZ_GRAPH_EDGE_MODE_BEZIER` lowers edges to tessellated cubic Bezier path strokes.
  *
  * @param graph the graph
- * @param mode edge rendering mode
- * @param tessellation optional Bezier tessellation descriptor used in Bezier mode
+ * @param style edge style descriptor
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_graph_set_edge_mode(
-    DvzGraph* graph, DvzGraphEdgeMode mode, const DvzBezierTessellationDesc* tessellation);
+DVZ_EXPORT int dvz_graph_set_edge_style(DvzGraph* graph, const DvzGraphEdgeStyle* style);
 
 
 /**
@@ -2028,7 +2045,7 @@ DVZ_EXPORT int dvz_graph_set_edge_mode(
  * @param control1 borrowed second control point array
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_graph_set_edge_controls(
+DVZ_EXPORT int dvz_graph_edge_controls(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const dvec3* control0,
     const dvec3* control1);
 
@@ -2043,8 +2060,8 @@ DVZ_EXPORT int dvz_graph_set_edge_controls(
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT int
-dvz_graph_set_node_colors(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
-                          const DvzColor* colors);
+dvz_graph_node_colors(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
+                      const DvzColor* colors);
 
 
 /**
@@ -2057,8 +2074,8 @@ dvz_graph_set_node_colors(DvzGraph* graph, uint32_t first_node, uint32_t node_co
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT int
-dvz_graph_set_node_sizes(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
-                         const float* sizes);
+dvz_graph_node_sizes(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
+                     const float* sizes);
 
 
 /**
@@ -2071,8 +2088,8 @@ dvz_graph_set_node_sizes(DvzGraph* graph, uint32_t first_node, uint32_t node_cou
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT int
-dvz_graph_set_edge_colors(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
-                          const DvzColor* colors);
+dvz_graph_edge_colors(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+                      const DvzColor* colors);
 
 
 /**
@@ -2085,8 +2102,8 @@ dvz_graph_set_edge_colors(DvzGraph* graph, uint32_t first_edge, uint32_t edge_co
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT int
-dvz_graph_set_edge_widths(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
-                          const float* widths);
+dvz_graph_edge_widths(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+                      const float* widths);
 
 
 /**
