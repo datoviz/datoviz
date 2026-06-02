@@ -90,6 +90,22 @@ examples:
       - holes
       - panzoom
 
+  - id: composite_graph_static
+    title: Static Graph Composite
+    stage: v0.4_required
+    lane: composites
+    source: examples/c/composites/graph.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - composite
+      - graph
+      - marker-nodes
+      - bezier-edges
+      - panzoom
+
   - id: protein_arcball_viewer
     title: Protein
     stage: v0.4_required
