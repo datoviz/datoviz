@@ -12,7 +12,7 @@ source material.
 | `scale_bar` | `features/scalebar.c` | Feature proof. |
 | `image_probe` | `features/image_probe.c` | Feature proof. |
 | `marker_picking` | `features/pick_marker.c` | Feature proof. |
-| `protein_arcball_viewer` | `showcases/protein.c` | Gallery/showcase seed. |
+| `protein_arcball_viewer` | `scientific/protein.c` | Real RCSB PDB data example with provenance. |
 | `showcase_gpu_particle_smoke` | `showcases/gpu_particle_smoke.c` | Experimental compute showcase. |
 | `showcase_wind_field` | `showcases/wind_field.c` | Gallery/showcase seed. |
 
@@ -35,7 +35,7 @@ source material.
 | --- | --- |
 | `legacy/visuals/` | Former one-visual smoke examples. |
 | `legacy/techniques/` | Former technique/prototype examples. |
-| `legacy/showcase/` | Former singular showcase examples and prepare scripts, except `protein.c`. |
+| `legacy/showcase/` | Former singular showcase examples and prepare scripts, except promoted public examples. |
 | `legacy/tools/` | Low-level/export/debug tool examples no longer in the active tree. |
 | `legacy/regression/` | Former regression-style smoke example. |
 

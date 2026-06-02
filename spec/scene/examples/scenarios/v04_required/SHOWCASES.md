@@ -9,16 +9,6 @@ These are the examples that should carry the v0.4 public story after the small c
 stable.
 
 
-## `protein_arcball_viewer`
-
-Flagship current-stack 3D showcase. It should communicate shaded scientific 3D, interaction, and
-multi-pass rendering without waiting for full molecular tooling.
-
-Minimal target: prepared protein bundle, atoms as spheres, optional mesh/ribbon or bond fallback,
-arcball camera, material/lighting controls, SSAO/MSAA where available, and a bounded screenshot
-smoke. Defer full ball-and-stick chemistry, labels, picking, and molecular surfaces if needed.
-
-
 ## `showcase_wind_field`
 
 Primary 2D showcase. It should look like a real field visualization rather than an API fragment.

@@ -124,9 +124,21 @@ examples:
   - id: protein_arcball_viewer
     title: Protein
     stage: v0.4_required
-    lane: showcases
-    source: examples/c/showcases/protein.c
+    lane: scientific
+    source: examples/c/scientific/protein.c
     validation: smoke+screenshot+manual
+    dataset:
+      name: RCSB PDB protein structure
+      source: https://files.rcsb.org/download/{pdb_id}.pdb
+      license: RCSB PDB data usage policy applies.
+      default_pdb_id: 6M0J
+      fallback_pdb_id: 1UBQ
+      fallback_prepared_path: data/examples/proteins/1ubq/prepared
+      preprocessing: python tools/data/prepare_protein_arcball.py 1UBQ --regenerate
+    encoding:
+      position: atom coordinates normalized into scene space
+      color: element-style atom colors from the preparation bundle
+      size: atom radii scaled for sphere impostors
     gallery:
       card: section
       status_label: supported

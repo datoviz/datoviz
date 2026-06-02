@@ -14,7 +14,7 @@ find a scenario quickly; use [PLANNING.md](PLANNING.md) for staging decisions an
 | `volume` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
 | `scale_bar` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
 | `image_probe` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `protein_arcball_viewer` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
+| `protein_arcball_viewer` | `v0.4 required` | [scenarios/v04_required/SCIENTIFIC.md](scenarios/v04_required/SCIENTIFIC.md) |
 | `showcase_wind_field` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
 | `showcase_gpu_particle_smoke` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
 | `textured_terrain_or_planet` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |

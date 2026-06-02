@@ -9,3 +9,7 @@ Real-data public examples belong here. A scientific example must record:
 - whether generated media may be redistributed.
 
 Synthetic or generated domain-style examples belong in `../showcases/` instead.
+
+Current public scientific examples:
+
+- `protein.c`: RCSB PDB protein structure rendered as atom spheres.

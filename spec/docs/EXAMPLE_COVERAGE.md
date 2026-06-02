@@ -147,7 +147,7 @@ Current implementation seeds:
 | `visual.vector` | `examples/c/legacy/visuals/vector.c`, `examples/c/showcases/wind_field.c` | Required near-term because wind/flow examples should stop using ad hoc primitives. |
 | `visual.image` | `examples/c/legacy/visuals/image.c`, `examples/c/features/image_probe.c` | Extract a plain image baseline; leave probe/colorbar behavior in feature rows. |
 | `visual.mesh` | `examples/c/legacy/visuals/mesh.c`, `docs/gallery/visuals/mesh.md` | Salvage as lit/indexed mesh; textured mesh is a separate feature/showcase proof. |
-| `visual.sphere` | `examples/c/legacy/visuals/sphere.c`, `examples/c/showcases/protein.c` | Salvage impostor-sphere proof; molecule/protein remains showcase material. |
+| `visual.sphere` | `examples/c/legacy/visuals/sphere.c`, `examples/c/scientific/protein.c` | Salvage impostor-sphere proof; molecule/protein remains scientific material. |
 | `visual.volume` | `examples/c/legacy/visuals/volume.c`, `docs/gallery/visuals/volume.md` | Salvage volume setup; keep full brain/medical composition as showcase. |
 | `visual.text` | `examples/c/legacy/visuals/text.c`, `examples/c/lab/text_msdf_diagnostics.c` | Salvage only through the public text API; do not document raw glyph internals. |
 | `visual.labels` | `examples/c/legacy/showcase/labels.c` | Promote only if labels remain public; split probing into `feature.probe_labels`. |
@@ -262,7 +262,7 @@ Current feature seeds and migration notes:
 | `feature.probe_image` | `examples/c/features/image_probe.c` | Candidate image probe, sampled field, colorbar, and readout proof; split if it becomes too broad. |
 | `feature.pick_marker` | `examples/c/features/pick_marker.c` | Candidate picking/selection proof; do not use as the marker visual baseline. |
 | `feature.mesh_texture` | `examples/c/showcases/textured_planet.c`, `examples/c/legacy/visuals/textured_mesh.c` | Use as retained textured-mesh proof; keep planet/terrain polish in showcase. |
-| `feature.controller_arcball` | `examples/c/showcases/protein.c`, `examples/c/showcases/textured_planet.c` | Extract a minimal controller proof from showcase-level examples. |
+| `feature.controller_arcball` | `examples/c/scientific/protein.c`, `examples/c/showcases/textured_planet.c` | Extract a minimal controller proof from composed examples. |
 | `feature.controller_fly` | `examples/c/legacy/showcase/lidar.c` | Salvage only after dense point/EDL showcase scope is settled. |
 | `feature.timer_animation` | `docs/gallery/features/animation.md`, `docs/gallery/features/timer.md` | Replace old pages with one deterministic callback/animation example. |
 | `feature.video_export` | `docs/gallery/features/video.md` | Fold into experimental animation/video export if video remains public. |
