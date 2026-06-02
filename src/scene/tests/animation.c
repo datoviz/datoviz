@@ -57,6 +57,8 @@ struct PhaseTestState
 struct TrackTestState
 {
     uint32_t calls;
+    double last_t;
+    float last_float;
     vec3 last_value;
 };
 
@@ -112,12 +114,25 @@ static void _track_vec3_callback(
     DvzAnimation* animation, double t, const void* value, void* user_data)
 {
     (void)animation;
-    (void)t;
     TrackTestState* state = (TrackTestState*)user_data;
     ANN(state);
     const float* v = (const float*)value;
     state->calls++;
+    state->last_t = t;
     glm_vec3_copy((vec3){v[0], v[1], v[2]}, state->last_value);
+}
+
+
+
+static void _track_float_callback(
+    DvzAnimation* animation, double t, const void* value, void* user_data)
+{
+    (void)animation;
+    TrackTestState* state = (TrackTestState*)user_data;
+    ANN(state);
+    state->calls++;
+    state->last_t = t;
+    state->last_float = *(const float*)value;
 }
 
 
@@ -620,6 +635,48 @@ int test_scene_animation_visual_transform(TstContext* suite, const TstCase* item
 }
 
 
+int test_scene_animation_track_speed_continuity(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_fps(scene, 1.0);
+
+    DvzTrack* track = dvz_track_linear(&(DvzTrackLinearDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzTrackLinearDesc),
+        .type = DVZ_TRACK_FLOAT,
+        .start = (float[1]){0.0f},
+        .end = (float[1]){10.0f},
+        .duration = 10.0,
+    });
+    ANN(track);
+
+    TrackTestState state = {0};
+    DvzAnimation* animation = dvz_anim_track(scene, track, _track_float_callback, &state);
+    ANN(animation);
+    dvz_anim_start(animation, 0.0);
+
+    _dvz_scene_animations_step(scene, 0);
+    AC((float)state.last_t, 0.0f, 1e-6f);
+    AC(state.last_float, 0.0f, 1e-6f);
+    _dvz_scene_animations_step(scene, 0);
+    AC((float)state.last_t, 1.0f, 1e-6f);
+    AC(state.last_float, 1.0f, 1e-6f);
+
+    dvz_anim_set_speed(animation, 0.5f);
+    _dvz_scene_animations_step(scene, 0);
+    AC((float)state.last_t, 1.5f, 1e-6f);
+    AC(state.last_float, 1.5f, 1e-6f);
+
+    dvz_track_destroy(track);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_animation_camera_motion(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -742,6 +799,7 @@ int test_scene_animation(TstSuite* suite)
     TST_CASE(test_scene_animation_active_query);
     TST_CASE(test_scene_animation_tracks);
     TST_CASE(test_scene_animation_visual_transform);
+    TST_CASE(test_scene_animation_track_speed_continuity);
     TST_CASE(test_scene_animation_camera_motion);
     TST_CASE(test_scene_animation_interaction_stop);
 

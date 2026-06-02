@@ -461,13 +461,27 @@ static double _scene_clock_next_dt(DvzScene* scene, uint64_t wall_time_ns)
 
 
 
-static void _animation_track_step(DvzAnimation* animation, double t)
+static double _animation_local_time_step(DvzAnimation* animation, double t, double dt)
+{
+    ANN(animation);
+    double step_dt = dt;
+    if (t - step_dt < animation->t_start)
+        step_dt = t - animation->t_start;
+    if (step_dt < 0.0)
+        step_dt = 0.0;
+    animation->local_t += step_dt * (double)animation->speed;
+    return animation->local_t;
+}
+
+
+
+static void _animation_track_step(DvzAnimation* animation, double t, double dt)
 {
     ANN(animation);
     if (animation->track == NULL || animation->track_callback == NULL)
         return;
     float value[4] = {0};
-    double local_t = (t - animation->t_start) * (double)animation->speed;
+    double local_t = _animation_local_time_step(animation, t, dt);
     if (!dvz_track_eval(animation->track, local_t, value))
         return;
     animation->track_callback(animation, local_t, value, animation->user_data);
@@ -516,13 +530,13 @@ static void _transform_motion_matrix(const DvzTransformMotionDesc* desc, double 
 
 
 
-static void _animation_visual_transform_step(DvzAnimation* animation, double t)
+static void _animation_visual_transform_step(DvzAnimation* animation, double t, double dt)
 {
     ANN(animation);
     if (animation->visual == NULL)
         return;
     mat4 transform = GLM_MAT4_IDENTITY_INIT;
-    double local_t = (t - animation->t_start) * (double)animation->speed;
+    double local_t = _animation_local_time_step(animation, t, dt);
     _transform_motion_matrix(&animation->transform_motion, local_t, transform);
     (void)dvz_visual_set_transform(animation->visual, transform);
 }
@@ -555,14 +569,14 @@ static void _camera_world_up(vec3 eye, vec3 target, vec3 world_up, vec3 out)
 
 
 
-static void _animation_camera_motion_step(DvzAnimation* animation, double t)
+static void _animation_camera_motion_step(DvzAnimation* animation, double t, double dt)
 {
     ANN(animation);
     if (animation->camera == NULL || animation->camera_motion.eye == NULL ||
         animation->camera_motion.target == NULL)
         return;
 
-    double local_t = (t - animation->t_start) * (double)animation->speed;
+    double local_t = _animation_local_time_step(animation, t, dt);
     vec3 eye = {0}, target = {0}, up = {0};
     if (!dvz_track_eval(animation->camera_motion.eye, local_t, eye))
         return;
@@ -1323,6 +1337,7 @@ void dvz_anim_start(DvzAnimation* animation, double t_start)
     if (start <= 0.0)
         start = animation->scene->clock.t;
     animation->t_start = start;
+    animation->local_t = 0.0;
     animation->last_fire_t = animation->period_s > 0.0 ? start - animation->period_s : start;
     animation->active = true;
 }
@@ -1402,19 +1417,19 @@ void _dvz_scene_animations_step(DvzScene* scene, uint64_t wall_time_ns)
         case DVZ_ANIMATION_TRACK:
             if (_animation_should_advance(animation, t) &&
                 _animation_interaction_allows_step(animation, t))
-                _animation_track_step(animation, t);
+                _animation_track_step(animation, t, dt);
             break;
 
         case DVZ_ANIMATION_VISUAL_TRANSFORM:
             if (_animation_should_advance(animation, t) &&
                 _animation_interaction_allows_step(animation, t))
-                _animation_visual_transform_step(animation, t);
+                _animation_visual_transform_step(animation, t, dt);
             break;
 
         case DVZ_ANIMATION_CAMERA_MOTION:
             if (_animation_should_advance(animation, t) &&
                 _animation_interaction_allows_step(animation, t))
-                _animation_camera_motion_step(animation, t);
+                _animation_camera_motion_step(animation, t, dt);
             break;
 
         default:

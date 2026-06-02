@@ -788,6 +788,7 @@ struct DvzAnimation
     DvzAnimationType type;
     bool active;
     double t_start;
+    double local_t;
     float speed;
     double period_s;
     double last_fire_t;

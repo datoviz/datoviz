@@ -129,6 +129,8 @@ int test_scene_animation_tracks(TstContext* suite, const TstCase* item);
 
 int test_scene_animation_visual_transform(TstContext* suite, const TstCase* item);
 
+int test_scene_animation_track_speed_continuity(TstContext* suite, const TstCase* item);
+
 int test_scene_animation_camera_motion(TstContext* suite, const TstCase* item);
 
 int test_scene_animation_interaction_stop(TstContext* suite, const TstCase* item);
