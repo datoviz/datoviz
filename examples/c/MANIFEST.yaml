@@ -17,8 +17,7 @@ folders:
 
 defaults:
   palette: graphite_cyan
-  visual_capture: 1280x960
-  showcase_capture: 1600x1000
+  public_capture: 1600x1200
   seed: 12345
 
 examples:
@@ -91,7 +90,7 @@ examples:
       - panzoom
 
   - id: composite_graph_static
-    title: Static Graph Composite
+    title: Graph Composite
     stage: v0.4_required
     lane: composites
     source: examples/c/composites/graph.c
@@ -105,22 +104,6 @@ examples:
       - marker-nodes
       - bezier-edges
       - panzoom
-
-  - id: composite_graph_edge_modes
-    title: Graph Edge Modes
-    stage: v0.4_required
-    lane: composites
-    source: examples/c/composites/graph_edge_modes.c
-    validation: smoke+screenshot
-    gallery:
-      card: small
-      status_label: supported
-    features:
-      - composite
-      - graph
-      - segment-edges
-      - path-edges
-      - bezier-edges
 
   - id: protein_arcball_viewer
     title: Protein
