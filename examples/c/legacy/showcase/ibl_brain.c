@@ -85,7 +85,8 @@ typedef struct BwmExampleState
 {
     DvzVisual* point;
     DvzVisual* mesh;
-    DvzAnimation* spin;
+    DvzExampleVisualSpin point_spin;
+    DvzExampleVisualSpin mesh_spin;
     BwmDataset* dataset;
 
     BwmTechnique technique;
@@ -486,12 +487,18 @@ static void _apply_shell_depth_test(BwmExampleState* state)
 static void _apply_spin(BwmExampleState* state)
 {
     ANN(state);
-    if (state->spin == NULL)
+    if (state->point_spin.animation == NULL)
         return;
     if (state->spin_enabled)
-        dvz_anim_start(state->spin, 0.0);
+    {
+        example_visual_spin_start(&state->point_spin, 0.0);
+        example_visual_spin_start(&state->mesh_spin, 0.0);
+    }
     else
-        dvz_anim_stop(state->spin);
+    {
+        example_visual_spin_stop(&state->point_spin);
+        example_visual_spin_stop(&state->mesh_spin);
+    }
 }
 
 
@@ -716,10 +723,16 @@ int main(int argc, char** argv)
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
-    state.spin = dvz_anim_arcball_spin(
-        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, BWM_ROTATION_SPEED_RAD_PER_SEC,
-        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    EXAMPLE_CHECK(state.spin != NULL, "dvz_anim_arcball_spin() failed");
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, point, (vec3){0.0f, 1.0f, 0.0f}, BWM_ROTATION_SPEED_RAD_PER_SEC, NULL,
+            &state.point_spin),
+        "example_visual_spin(point) failed");
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, mesh, (vec3){0.0f, 1.0f, 0.0f}, BWM_ROTATION_SPEED_RAD_PER_SEC, NULL,
+            &state.mesh_spin),
+        "example_visual_spin(mesh) failed");
     _apply_spin(&state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
@@ -729,6 +742,8 @@ int main(int argc, char** argv)
 cleanup:
     if (app != NULL)
         dvz_app_destroy(app);
+    example_visual_spin_destroy(&state.mesh_spin);
+    example_visual_spin_destroy(&state.point_spin);
     if (scene != NULL)
         dvz_scene_destroy(scene);
     _destroy_bwm_dataset(&dataset);

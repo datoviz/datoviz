@@ -53,7 +53,7 @@ static const float TAU = 6.28318530718f;
 typedef struct DepthCueExampleState
 {
     DvzVisual* visual;
-    DvzAnimation* spin;
+    DvzExampleVisualSpin spin;
     float* sizes;
     uint32_t point_count;
     bool depth_cue_enabled;
@@ -140,12 +140,12 @@ static void _apply_point_size(DepthCueExampleState* state)
 static void _apply_spin(DepthCueExampleState* state)
 {
     ANN(state);
-    if (state->spin == NULL)
+    if (state->spin.animation == NULL)
         return;
     if (state->spin_enabled)
-        dvz_anim_start(state->spin, 0.0);
+        example_visual_spin_start(&state->spin, 0.0);
     else
-        dvz_anim_stop(state->spin);
+        example_visual_spin_stop(&state->spin);
 }
 
 
@@ -560,11 +560,11 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.38f, -0.18f, +0.30f});
 
-    DvzAnimation* spin = dvz_anim_arcball_spin(
-        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
-    gui_state.spin = spin;
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, visual, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC, NULL,
+            &gui_state.spin),
+        "example_visual_spin() failed");
     gui_state.spin_enabled = true;
     _apply_spin(&gui_state);
 
@@ -579,6 +579,7 @@ int main(int argc, char** argv)
 cleanup:
     if (app != NULL)
         dvz_app_destroy(app);
+    example_visual_spin_destroy(&gui_state.spin);
     dvz_free(sizes);
     dvz_free(colors);
     dvz_free(positions);

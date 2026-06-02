@@ -77,7 +77,7 @@ struct PointStressState
 {
     DvzPanel* panel;
     DvzVisual* visual;
-    DvzAnimation* spin;
+    DvzExampleVisualSpin spin;
     vec3* base_positions;
     vec3* positions;
     DvzColor* colors;
@@ -385,12 +385,12 @@ static void _apply_spin(PointStressState* state)
 {
     ANN(state);
 
-    if (state->spin == NULL)
+    if (state->spin.animation == NULL)
         return;
     if (state->spin_enabled)
-        dvz_anim_start(state->spin, 0.0);
+        example_visual_spin_start(&state->spin, 0.0);
     else
-        dvz_anim_stop(state->spin);
+        example_visual_spin_stop(&state->spin);
 }
 
 
@@ -669,14 +669,20 @@ int main(int argc, char** argv)
         dvz_view_glfw(app, figure, WIDTH, HEIGHT, "point");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
+    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
+    DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
+    EXAMPLE_CHECK(
+        dvz_view_bind_controller(win, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
+        "dvz_view_bind_controller() failed");
     dvz_arcball_set(arcball, (vec3){+0.42f, -0.10f, +0.18f});
 
-    state.spin = dvz_anim_arcball_spin(
-        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    EXAMPLE_CHECK(state.spin != NULL, "dvz_anim_arcball_spin() failed");
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, visual, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            arcball_controller, &state.spin),
+        "example_visual_spin() failed");
     _reset_controls(&state);
 
     DvzGuiConfig gui_config = dvz_gui_config();
@@ -693,6 +699,7 @@ int main(int argc, char** argv)
 cleanup:
     if (app != NULL)
         dvz_app_destroy(app);
+    example_visual_spin_destroy(&state.spin);
     dvz_free(state.diameters);
     dvz_free(state.colors);
     dvz_free(state.positions);

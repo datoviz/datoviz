@@ -269,9 +269,10 @@ static bool _configure_volume(DvzVisual* visual)
  *
  * @param scene scene owning the segment visual
  * @param panel panel receiving the visual
+ * @param out optional created visual output
  * @return true when the boundary was added
  */
-static bool _add_boundary_box(DvzScene* scene, DvzPanel* panel)
+static bool _add_boundary_box(DvzScene* scene, DvzPanel* panel, DvzVisual** out)
 {
     ANN(scene);
     ANN(panel);
@@ -332,7 +333,11 @@ static bool _add_boundary_box(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_visual_set_alpha_mode(box, DVZ_ALPHA_BLENDED) != 0)
         return false;
-    return dvz_panel_add_visual(panel, box, NULL) == 0;
+    if (dvz_panel_add_visual(panel, box, NULL) != 0)
+        return false;
+    if (out != NULL)
+        *out = box;
+    return true;
 }
 
 
@@ -360,6 +365,8 @@ int main(int argc, char** argv)
     uint8_t* data = NULL;
     DvzView* win = NULL;
     bool capture_started = false;
+    DvzExampleVisualSpin volume_spin = {0};
+    DvzExampleVisualSpin box_spin = {0};
 
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
@@ -418,7 +425,8 @@ int main(int argc, char** argv)
 
     int rc = dvz_panel_add_visual(panel, volume, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
-    ok = _add_boundary_box(scene, panel);
+    DvzVisual* box = NULL;
+    ok = _add_boundary_box(scene, panel, &box);
     EXAMPLE_CHECK(ok, "boundary box setup failed");
 
     app = dvz_app(scene);
@@ -427,18 +435,30 @@ int main(int argc, char** argv)
     win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_volume");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
+    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
+    DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
+    EXAMPLE_CHECK(
+        dvz_view_bind_controller(win, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
+        "dvz_view_bind_controller() failed");
     dvz_arcball_set(arcball, (vec3){+0.50f, -0.10f, +0.24f});
 
     dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
-    DvzAnimation* spin = dvz_anim_arcball_spin(
-        scene, arcball, (vec3){0.0f, 0.0f, 1.0f}, ROTATION_SPEED_RAD_PER_SEC,
-        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
-    dvz_anim_start(spin, 0.0);
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, volume, (vec3){0.0f, 0.0f, 1.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            arcball_controller, &volume_spin),
+        "example_visual_spin(volume) failed");
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, box, (vec3){0.0f, 0.0f, 1.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            arcball_controller, &box_spin),
+        "example_visual_spin(box) failed");
+    example_visual_spin_start(&volume_spin, 0.0);
+    example_visual_spin_start(&box_spin, 0.0);
 
     rc = dvz_view_capture_start(win, &capture);
     EXAMPLE_CHECK(rc == 0, "dvz_view_capture_start() failed");
@@ -456,6 +476,8 @@ cleanup:
         (void)dvz_view_capture_stop(win);
     if (app != NULL)
         dvz_app_destroy(app);
+    example_visual_spin_destroy(&box_spin);
+    example_visual_spin_destroy(&volume_spin);
     dvz_free(data);
     if (scene != NULL)
         dvz_scene_destroy(scene);

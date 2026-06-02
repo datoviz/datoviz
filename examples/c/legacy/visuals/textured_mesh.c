@@ -66,7 +66,7 @@
 typedef struct TexturedMeshState
 {
     DvzVisual* visual;
-    DvzAnimation* spin;
+    DvzExampleVisualSpin spin;
     bool auto_rotate;
     bool standard_material;
     float spin_speed;
@@ -296,11 +296,11 @@ static void _state_apply_material(TexturedMeshState* state)
 static void _state_apply_spin(TexturedMeshState* state)
 {
     ANN(state);
-    if (state->spin == NULL)
+    if (state->spin.animation == NULL)
         return;
 
     const float speed = state->auto_rotate ? state->spin_speed : 0.0f;
-    dvz_anim_set_speed(state->spin, speed);
+    example_visual_spin_set_speed(&state->spin, speed);
 }
 
 
@@ -487,12 +487,12 @@ int main(int argc, char** argv)
     rc = dvz_view_capture_start(win, &capture);
     EXAMPLE_CHECK(rc == 0, "dvz_view_capture_start() failed");
 
-    DvzAnimation* spin = dvz_anim_arcball_spin(
-        scene, arcball, (vec3){0.0f, 0.0f, 1.0f}, gui_state.spin_speed,
-        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
-    gui_state.spin = spin;
-    dvz_anim_start(spin, 0.0);
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, visual, (vec3){0.0f, 0.0f, 1.0f}, gui_state.spin_speed, NULL,
+            &gui_state.spin),
+        "example_visual_spin() failed");
+    example_visual_spin_start(&gui_state.spin, 0.0);
 
     dvz_app_run(app, frame_count);
     rc = dvz_view_capture_stop(win);
@@ -504,6 +504,7 @@ cleanup:
         dvz_geometry_destroy(sphere);
     if (app != NULL)
         dvz_app_destroy(app);
+    example_visual_spin_destroy(&gui_state.spin);
     if (scene != NULL)
         dvz_scene_destroy(scene);
     dvz_free(pixels);

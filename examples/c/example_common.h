@@ -21,6 +21,7 @@
 #include <stddef.h>
 
 #include "_compat.h"
+#include "datoviz/math/types.h"
 
 
 /*************************************************************************************************/
@@ -29,6 +30,22 @@
 
 typedef struct DvzGeometry DvzGeometry;
 typedef struct DvzVisual   DvzVisual;
+typedef struct DvzScene    DvzScene;
+typedef struct DvzController DvzController;
+typedef struct DvzAnimation  DvzAnimation;
+typedef struct DvzTrack      DvzTrack;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct DvzExampleVisualSpin
+{
+    DvzTrack* rotation;
+    DvzAnimation* animation;
+} DvzExampleVisualSpin;
 
 
 
@@ -71,3 +88,19 @@ uint32_t example_frame_count(int argc, char** argv);
 uint32_t example_frame_count_any(int argc, char** argv);
 
 bool example_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry);
+
+bool example_visual_spin(
+    DvzScene* scene,
+    DvzVisual* visual,
+    vec3 axis,
+    float speed_rad_per_sec,
+    DvzController* controller,
+    DvzExampleVisualSpin* out);
+
+void example_visual_spin_start(DvzExampleVisualSpin* spin, double t_start);
+
+void example_visual_spin_stop(DvzExampleVisualSpin* spin);
+
+void example_visual_spin_set_speed(DvzExampleVisualSpin* spin, float speed_rad_per_sec);
+
+void example_visual_spin_destroy(DvzExampleVisualSpin* spin);

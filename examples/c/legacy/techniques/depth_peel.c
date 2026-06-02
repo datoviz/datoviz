@@ -125,6 +125,7 @@ int main(int argc, char** argv)
     int ret = 1;
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
+    DvzExampleVisualSpin spin = {0};
 
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
@@ -236,11 +237,12 @@ int main(int argc, char** argv)
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
-    DvzAnimation* spin = dvz_anim_arcball_spin(
-        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
-    dvz_anim_start(spin, 0.0);
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, cube, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC, NULL,
+            &spin),
+        "example_visual_spin() failed");
+    example_visual_spin_start(&spin, 0.0);
 
     dvz_app_run(app, frame_count);
     ret = 0;
@@ -248,6 +250,7 @@ int main(int argc, char** argv)
 cleanup:
     if (app != NULL)
         dvz_app_destroy(app);
+    example_visual_spin_destroy(&spin);
     if (scene != NULL)
         dvz_scene_destroy(scene);
     return ret;

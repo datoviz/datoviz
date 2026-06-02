@@ -100,7 +100,8 @@ typedef struct ProteinExampleState
     DvzVisual* ribbon;
     DvzSceneBuffer* ribbon_index_buffer;
     DvzArcball* arcball;
-    DvzAnimation* spin;
+    DvzExampleVisualSpin sphere_spin;
+    DvzExampleVisualSpin ribbon_spin;
     ProteinBundle* bundle;
     DvzIndex* ribbon_indices_upload;
     uint32_t ribbon_index_upload_count;
@@ -927,19 +928,25 @@ static void _apply_msaa(ProteinExampleState* state)
 
 
 /**
- * Update the arcball spin animation from live controls.
+ * Update the protein spin animation from live controls.
  *
  * @param state example state
  */
 static void _apply_spin(ProteinExampleState* state)
 {
     ANN(state);
-    if (state->spin == NULL)
+    if (state->sphere_spin.animation == NULL)
         return;
     if (state->spin_enabled)
-        dvz_anim_start(state->spin, 0.0);
+    {
+        example_visual_spin_start(&state->sphere_spin, 0.0);
+        example_visual_spin_start(&state->ribbon_spin, 0.0);
+    }
     else
-        dvz_anim_stop(state->spin);
+    {
+        example_visual_spin_stop(&state->sphere_spin);
+        example_visual_spin_stop(&state->ribbon_spin);
+    }
 }
 
 
@@ -1147,6 +1154,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(figure != NULL && panel != NULL && spheres != NULL, "scene setup failed");
     DvzVisual* ribbon = NULL;
     DvzSceneBuffer* ribbon_index_buffer = NULL;
+    DvzExampleVisualSpin sphere_spin = {0};
+    DvzExampleVisualSpin ribbon_spin = {0};
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[2] = 3.35f;
@@ -1237,16 +1246,30 @@ int main(int argc, char** argv)
         dvz_view_glfw(app, figure, WIDTH, HEIGHT, "protein_viewer");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
+    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
+    DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
+    EXAMPLE_CHECK(
+        dvz_view_bind_controller(win, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
+        "dvz_view_bind_controller() failed");
     dvz_arcball_initial(arcball, (vec3){+0.70f, 0.0f, +0.30f});
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
-    DvzAnimation* spin = dvz_anim_arcball_spin(
-        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, spheres, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            arcball_controller, &sphere_spin),
+        "example_visual_spin(spheres) failed");
+    if (ribbon != NULL)
+    {
+        EXAMPLE_CHECK(
+            example_visual_spin(
+                scene, ribbon, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+                arcball_controller, &ribbon_spin),
+            "example_visual_spin(ribbon) failed");
+    }
 
     state = (ProteinExampleState){
         .panel = panel,
@@ -1254,7 +1277,8 @@ int main(int argc, char** argv)
         .ribbon = ribbon,
         .ribbon_index_buffer = ribbon_index_buffer,
         .arcball = arcball,
-        .spin = spin,
+        .sphere_spin = sphere_spin,
+        .ribbon_spin = ribbon_spin,
         .bundle = &bundle,
         .live_radii = scaled_radii,
         .ribbon_index_upload_count = bundle.ribbon_index_count,
@@ -1305,6 +1329,13 @@ int main(int argc, char** argv)
 cleanup:
     if (app != NULL)
         dvz_app_destroy(app);
+    example_visual_spin_destroy(&state.ribbon_spin);
+    example_visual_spin_destroy(&state.sphere_spin);
+    if (!state_initialized)
+    {
+        example_visual_spin_destroy(&ribbon_spin);
+        example_visual_spin_destroy(&sphere_spin);
+    }
     if (scene != NULL)
         dvz_scene_destroy(scene);
     if (state_initialized)

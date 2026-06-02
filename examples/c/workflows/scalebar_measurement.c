@@ -454,9 +454,10 @@ static bool _add_world_scalebar(DvzPanel* panel)
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
+ * @param out optional created visual output
  * @return true when the visual and camera were configured
  */
-static bool _add_3d_cloud(DvzScene* scene, DvzPanel* panel)
+static bool _add_3d_cloud(DvzScene* scene, DvzPanel* panel, DvzVisual** out)
 {
     ANN(scene);
     ANN(panel);
@@ -512,7 +513,11 @@ static bool _add_3d_cloud(DvzScene* scene, DvzPanel* panel)
     };
     if (dvz_visual_set_data_many(points, updates, 3) != 0)
         return false;
-    return dvz_panel_add_visual(panel, points, NULL) == 0;
+    if (dvz_panel_add_visual(panel, points, NULL) != 0)
+        return false;
+    if (out != NULL)
+        *out = points;
+    return true;
 }
 
 
@@ -533,6 +538,7 @@ int main(int argc, char** argv)
     int ret = 1;
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
+    DvzExampleVisualSpin specimen_spin = {0};
     uint8_t overview_pixels[OVERVIEW_WIDTH * OVERVIEW_HEIGHT * 4u] = {0};
     uint8_t detail_pixels[DETAIL_WIDTH * DETAIL_HEIGHT * 4u] = {0};
 
@@ -581,7 +587,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(ok, "_add_zoom_box() failed");
     ok = _add_detail_points(scene, detail);
     EXAMPLE_CHECK(ok, "_add_detail_points() failed");
-    ok = _add_3d_cloud(scene, specimen);
+    DvzVisual* specimen_cloud = NULL;
+    ok = _add_3d_cloud(scene, specimen, &specimen_cloud);
     EXAMPLE_CHECK(ok, "_add_3d_cloud() failed");
 
     DvzColor primary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
@@ -608,17 +615,23 @@ int main(int argc, char** argv)
     DvzPanzoom* detail_panzoom = dvz_view_panzoom(win, detail, NULL);
     EXAMPLE_CHECK(detail_panzoom != NULL, "failed to bind detail panzoom controller");
 
-    DvzArcball* arcball = dvz_view_arcball(win, specimen, NULL);
+    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
+    DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
     EXAMPLE_CHECK(arcball != NULL, "failed to bind arcball controller");
+    EXAMPLE_CHECK(
+        dvz_view_bind_controller(win, specimen, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
+        "dvz_view_bind_controller() failed");
     dvz_arcball_set(arcball, (vec3){+0.56f, -0.18f, +0.30f});
 
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
-    DvzAnimation* spin = dvz_anim_arcball_spin(
-        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
-    dvz_anim_start(spin, 0.0);
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, specimen_cloud, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            arcball_controller, &specimen_spin),
+        "example_visual_spin(specimen) failed");
+    example_visual_spin_start(&specimen_spin, 0.0);
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;
@@ -626,6 +639,7 @@ int main(int argc, char** argv)
 cleanup:
     if (app != NULL)
         dvz_app_destroy(app);
+    example_visual_spin_destroy(&specimen_spin);
     if (scene != NULL)
         dvz_scene_destroy(scene);
     return ret;

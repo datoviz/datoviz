@@ -739,6 +739,9 @@ int main(int argc, char** argv)
     float* scaled_radii = NULL;
     ExampleDebug debug = {0};
     ProteinDiagnostics diagnostics = {0};
+    DvzExampleVisualSpin sphere_spin = {0};
+    DvzExampleVisualSpin selection_spin = {0};
+    DvzExampleVisualSpin crosshair_spin = {0};
     ProteinAtoms atoms = {0};
     char default_path[1024] = {0};
     ProteinArgs args = _parse_args(argc, argv);
@@ -851,8 +854,13 @@ int main(int argc, char** argv)
     DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "protein");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
+    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
+    DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
+    EXAMPLE_CHECK(
+        dvz_view_bind_controller(win, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
+        "dvz_view_bind_controller() failed");
     dvz_arcball_initial(arcball, (vec3){+0.790430f, -0.651732f, +0.810104f});
 
     debug = example_debug(win, argc > 0 ? argv[0] : NULL, "protein");
@@ -874,14 +882,33 @@ int main(int argc, char** argv)
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
-    DvzAnimation* spin = dvz_anim_arcball_spin(
-        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, spheres, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            arcball_controller, &sphere_spin),
+        "example_visual_spin(spheres) failed");
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, selection, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            arcball_controller, &selection_spin),
+        "example_visual_spin(selection) failed");
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, crosshair, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            arcball_controller, &crosshair_spin),
+        "example_visual_spin(crosshair) failed");
     if (args.spin)
-        dvz_anim_start(spin, 0.0);
+    {
+        example_visual_spin_start(&sphere_spin, 0.0);
+        example_visual_spin_start(&selection_spin, 0.0);
+        example_visual_spin_start(&crosshair_spin, 0.0);
+    }
     else
-        dvz_anim_stop(spin);
+    {
+        example_visual_spin_stop(&sphere_spin);
+        example_visual_spin_stop(&selection_spin);
+        example_visual_spin_stop(&crosshair_spin);
+    }
 
     dvz_fprintf(stderr, "loaded %" PRIu32 " atoms from %s\n", atoms.count, atoms.path);
     dvz_app_run(app, example_frame_count_from_text(args.frame_arg));
@@ -891,6 +918,9 @@ cleanup:
     example_debug_uninstall(&debug);
     if (app != NULL)
         dvz_app_destroy(app);
+    example_visual_spin_destroy(&crosshair_spin);
+    example_visual_spin_destroy(&selection_spin);
+    example_visual_spin_destroy(&sphere_spin);
     if (scene != NULL)
         dvz_scene_destroy(scene);
     dvz_free(scaled_radii);

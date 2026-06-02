@@ -55,7 +55,7 @@ typedef struct SsaoExampleState
 {
     DvzPanel* panel;
     DvzVisual* sphere;
-    DvzAnimation* spin;
+    DvzExampleVisualSpin spin;
     float* base_sizes;
     float* live_sizes;
     uint32_t sphere_count;
@@ -339,12 +339,12 @@ static void _apply_material(SsaoExampleState* state)
 static void _apply_spin(SsaoExampleState* state)
 {
     ANN(state);
-    if (state->spin == NULL)
+    if (state->spin.animation == NULL)
         return;
     if (state->spin_enabled)
-        dvz_anim_start(state->spin, 0.0);
+        example_visual_spin_start(&state->spin, 0.0);
     else
-        dvz_anim_stop(state->spin);
+        example_visual_spin_stop(&state->spin);
 }
 
 
@@ -528,6 +528,7 @@ int main(int argc, char** argv)
     DvzColor* colors = NULL;
     float* base_sizes = NULL;
     float* live_sizes = NULL;
+    SsaoExampleState state = {0};
 
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
@@ -584,12 +585,14 @@ int main(int argc, char** argv)
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
-    DvzAnimation* spin = dvz_anim_arcball_spin(
-        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
+    DvzExampleVisualSpin spin = {0};
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, visual, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC, NULL,
+            &spin),
+        "example_visual_spin() failed");
 
-    SsaoExampleState state = {
+    state = (SsaoExampleState){
         .panel = panel,
         .sphere = visual,
         .spin = spin,
@@ -610,6 +613,7 @@ int main(int argc, char** argv)
 cleanup:
     if (app != NULL)
         dvz_app_destroy(app);
+    example_visual_spin_destroy(&state.spin);
     dvz_free(live_sizes);
     dvz_free(base_sizes);
     dvz_free(colors);

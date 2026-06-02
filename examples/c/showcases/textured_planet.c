@@ -104,7 +104,7 @@ typedef struct PlanetPreset
 typedef struct TexturedPlanetState
 {
     DvzVisual* visual;
-    DvzAnimation* spin;
+    DvzExampleVisualSpin spin;
     PlanetTexture textures[PLANET_COUNT];
     int planet_index;
     bool auto_rotate;
@@ -435,40 +435,6 @@ fail:
 
 
 /**
- * Rotate the planet mesh around its polar axis.
- *
- * The sky is ordinary world geometry and must not be touched here; user orbit-camera input moves
- * the camera, while this animation updates only the planet visual-local transform.
- *
- * @param animation animation handle
- * @param value current phase angle
- * @param delta phase delta
- * @param user_data example state
- */
-static void _planet_spin_step(
-    DvzAnimation* animation, float value, float delta, void* user_data)
-{
-    (void)animation;
-    (void)delta;
-    TexturedPlanetState* state = (TexturedPlanetState*)user_data;
-    if (state == NULL || state->visual == NULL)
-        return;
-
-    const float c = cosf(value);
-    const float s = sinf(value);
-    mat4 transform = {0};
-    transform[0][0] = c;
-    transform[0][1] = s;
-    transform[1][0] = -s;
-    transform[1][1] = c;
-    transform[2][2] = 1.0f;
-    transform[3][3] = 1.0f;
-    (void)dvz_visual_set_transform(state->visual, transform);
-}
-
-
-
-/**
  * Reset GUI-controlled animation parameters from the selected preset.
  *
  * @param state example state
@@ -494,11 +460,11 @@ static void _state_reset_controls(TexturedPlanetState* state)
 static void _state_apply_spin(TexturedPlanetState* state)
 {
     ANN(state);
-    if (state->spin == NULL)
+    if (state->spin.animation == NULL)
         return;
 
     const float speed = state->auto_rotate ? state->spin_speed : 0.0f;
-    dvz_anim_set_speed(state->spin, speed);
+    example_visual_spin_set_speed(&state->spin, speed);
 }
 
 
@@ -607,6 +573,8 @@ int main(int argc, char** argv)
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
     DvzGeometry* sphere = NULL;
+    DvzTrack* flyover_eye = NULL;
+    DvzTrack* flyover_target = NULL;
     TexturedPlanetState gui_state = {0};
     gui_state.planet_index = PLANET_EARTH;
     _state_reset_controls(&gui_state);
@@ -629,8 +597,8 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.72f;
     camera_desc.near = 0.05f;
     camera_desc.far = 100.0f;
-    bool ok = dvz_panel_set_camera(panel, &camera_desc);
-    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
+    DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
+    EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera() failed");
 
     DvzVisual* stars = _create_star_shell(scene);
     EXAMPLE_CHECK(stars != NULL, "failed to create star shell");
@@ -652,7 +620,7 @@ int main(int argc, char** argv)
     gui_state.visual = visual;
 
 
-    ok = example_mesh_geometry(visual, sphere);
+    bool ok = example_mesh_geometry(visual, sphere);
     EXAMPLE_CHECK(ok, "example_mesh_geometry() failed");
     dvz_geometry_destroy(sphere);
     sphere = NULL;
@@ -681,28 +649,56 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
     dvz_view_set_gui_callback(win, _textured_planet_gui, &gui_state);
 
-    DvzOrbitCamera* orbit = dvz_view_orbit_camera(win, panel, NULL);
+    DvzController* orbit_controller = dvz_orbit_camera(scene, NULL);
+    EXAMPLE_CHECK(orbit_controller != NULL, "dvz_orbit_camera() failed");
+    DvzOrbitCamera* orbit = dvz_controller_orbit_camera(orbit_controller);
     EXAMPLE_CHECK(orbit != NULL, "failed to create or bind orbit-camera controller");
+    EXAMPLE_CHECK(
+        dvz_view_bind_controller(win, panel, orbit_controller, DVZ_DIM_MASK_XYZ) == 0,
+        "dvz_view_bind_controller() failed");
 
     dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
+    EXAMPLE_CHECK(
+        example_visual_spin(
+            scene, visual, (vec3){0.0f, 0.0f, 1.0f}, gui_state.spin_speed, NULL,
+            &gui_state.spin),
+        "example_visual_spin(planet) failed");
+    example_visual_spin_start(&gui_state.spin, 0.0);
+
+    flyover_eye = dvz_track_circle3(&(DvzTrackCircle3Desc){
+        DVZ_STRUCT_INIT_FIELDS(DvzTrackCircle3Desc),
+        .center = {0.0f, 0.34f, 0.28f},
+        .normal = {0.38f, 0.20f, 0.90f},
+        .radius = 3.15f,
+        .phase = 1.35f,
+        .speed_rad_per_sec = -0.018f,
+    });
+    EXAMPLE_CHECK(flyover_eye != NULL, "dvz_track_circle3() failed");
+    flyover_target = dvz_track_constant(&(DvzTrackConstantDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzTrackConstantDesc),
+        .type = DVZ_TRACK_VEC3,
+        .value = (float[3]){0.0f, 0.0f, 0.0f},
+    });
+    EXAMPLE_CHECK(flyover_target != NULL, "dvz_track_constant() failed");
+
+    DvzAnimation* flyover = dvz_anim_camera_motion(
+        scene, camera,
+        &(DvzCameraMotionDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzCameraMotionDesc),
+            .eye = flyover_eye,
+            .target = flyover_target,
+            .up_mode = DVZ_CAMERA_UP_WORLD,
+            .up = {0.0f, 0.0f, 1.0f},
+        });
+    EXAMPLE_CHECK(flyover != NULL, "dvz_anim_camera_motion() failed");
+    dvz_anim_set_interaction_policy(
+        flyover, orbit_controller, DVZ_ANIM_INTERACTION_STOP, 0.0);
+    dvz_anim_start(flyover, 0.0);
+
     rc = dvz_view_capture_start(win, &capture);
     EXAMPLE_CHECK(rc == 0, "dvz_view_capture_start() failed");
-
-    DvzAnimation* spin = dvz_anim_phase(
-        scene, &(DvzAnimPhaseDesc){
-                   DVZ_STRUCT_INIT_FIELDS(DvzAnimPhaseDesc),
-                   .initial = 0.0f,
-                   .speed = gui_state.spin_speed,
-                   .wrap_min = 0.0f,
-                   .wrap_max = 2.0f * (float)M_PI,
-                   .callback = _planet_spin_step,
-                   .user_data = &gui_state,
-               });
-    EXAMPLE_CHECK(spin != NULL, "dvz_anim_phase() failed");
-    gui_state.spin = spin;
-    dvz_anim_start(spin, 0.0);
 
     dvz_app_run(app, frame_count);
     rc = dvz_view_capture_stop(win);
@@ -714,6 +710,9 @@ cleanup:
         dvz_geometry_destroy(sphere);
     if (app != NULL)
         dvz_app_destroy(app);
+    example_visual_spin_destroy(&gui_state.spin);
+    dvz_track_destroy(flyover_target);
+    dvz_track_destroy(flyover_eye);
     if (scene != NULL)
         dvz_scene_destroy(scene);
     for (uint32_t i = 0; i < PLANET_COUNT; i++)

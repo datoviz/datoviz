@@ -432,9 +432,9 @@ Aggressively replace v0.4-era callback-heavy examples once the track API lands.
    - Mars texture remains required, with no procedural Mars fallback.
 9. Sweep scene examples for `dvz_anim_phase()` callbacks that only implement scalar, rotation,
    translation, cursor, slice, or camera motion. Replace them with tracks and adapters.
-10. Remove `dvz_anim_arcball_spin()` from the public v0.4 surface after migrating current examples.
-    Object spin should be expressed as a rotation track applied through the visual transform
-    adapter, with interaction policy handled by `DvzAnimation`.
+10. Keep object spin expressed as a rotation track applied through the visual transform adapter,
+    with interaction policy handled by `DvzAnimation`. The old `dvz_anim_arcball_spin()` public API
+    has been removed from the v0.4 surface.
 
 
 ## Relationship To Other Specs
