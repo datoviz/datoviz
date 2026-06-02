@@ -12,6 +12,7 @@
  * Build:  just example-c features/scalebar
  * Run:    ./build/examples/c/features/scalebar
  * Smoke:  ./build/examples/c/features/scalebar 1
+ * PNG:    DVZ_CAPTURE=png ./build/examples/c/features/scalebar 1
  */
 
 
@@ -127,18 +128,18 @@ static bool _add_scalebar(DvzPanel* panel)
 {
     ANN(panel);
 
-    DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
+    DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
     DvzScaleBarDesc desc = {
         DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
         .dimension = DVZ_DIM_X,
         .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
         .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
-        .target_length_px = 180.0f,
-        .min_length_px = 120.0f,
-        .max_length_px = 240.0f,
-        .offset_px = {34.0f, 34.0f},
-        .tick_length_px = 9.0f,
-        .line_width_px = 2.0f,
+        .target_length_px = 220.0f,
+        .min_length_px = 160.0f,
+        .max_length_px = 300.0f,
+        .offset_px = {72.0f, 82.0f},
+        .tick_length_px = 18.0f,
+        .line_width_px = 4.0f,
         .unit = "m",
         .data_to_unit = 0.001,
         .label_style = {
@@ -206,7 +207,13 @@ int main(int argc, char** argv)
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to bind panzoom controller");
 
+    int rc_capture = dvz_view_capture_from_env(win, "scale_bar");
+    EXAMPLE_CHECK(rc_capture == 0, "dvz_view_capture_from_env() failed");
+
     dvz_app_run(app, example_frame_count(argc, argv));
+
+    rc_capture = dvz_view_capture_stop(win);
+    EXAMPLE_CHECK(rc_capture == 0, "dvz_view_capture_stop() failed");
     ret = 0;
 
 cleanup:
