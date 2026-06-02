@@ -399,7 +399,7 @@ static bool _create_planet_texture(
     }
 
     texture->field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,

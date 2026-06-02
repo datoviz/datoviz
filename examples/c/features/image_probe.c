@@ -296,7 +296,7 @@ static bool _add_probe_image(
         return false;
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -847,12 +847,11 @@ static void _queue_probe(ImageProbeState* state)
     if (state == NULL || !state->cursor_valid)
         return;
 
-    const int rc = dvz_panel_query(
-        state->panel, state->cursor_x, state->cursor_y,
-        &(DvzQueryRequest){
-            .request_id = PROBE_REQUEST_ID,
-            .target = DVZ_SCENE_TARGET_PIXEL,
-        });
+    DvzQueryRequest request = dvz_query_request();
+    request.request_id = PROBE_REQUEST_ID;
+    request.target = DVZ_SCENE_TARGET_PIXEL;
+
+    const int rc = dvz_panel_query(state->panel, state->cursor_x, state->cursor_y, &request);
     if (rc != 0)
         dvz_fprintf(stderr, "dvz_panel_query() failed\n");
 }

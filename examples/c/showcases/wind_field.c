@@ -449,7 +449,7 @@ static bool _add_wind_image(
         return false;
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,

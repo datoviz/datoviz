@@ -237,13 +237,12 @@ static void _marker_pick_frame(DvzView* win, void* user_data)
 
     if (state->cursor_valid)
     {
-        if (dvz_panel_query(
-                state->panel, state->cursor_x, state->cursor_y,
-                &(DvzQueryRequest){
-                    .request_id = QUERY_ID,
-                    .target = DVZ_SCENE_TARGET_ITEM,
-                    .hit_policy = DVZ_QUERY_HIT_FRONTMOST,
-                }) != 0)
+        DvzQueryRequest request = dvz_query_request();
+        request.request_id = QUERY_ID;
+        request.target = DVZ_SCENE_TARGET_ITEM;
+        request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
+
+        if (dvz_panel_query(state->panel, state->cursor_x, state->cursor_y, &request) != 0)
         {
             fprintf(stderr, "dvz_panel_query() failed\n");
         }
