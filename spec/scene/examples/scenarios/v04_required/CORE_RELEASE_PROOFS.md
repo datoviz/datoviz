@@ -81,16 +81,39 @@ Minimal target: one 2D panel and one 3D panel with scale bars whose labels updat
 formatted value or relevant style changes.
 
 
+## `colorbar`
+
+Focused proof for continuous scalar colorbars. It should show one scalar-colored field or visual and
+one readable colorbar with deterministic range labels.
+
+Current proof: `examples/c/features/colorbar.c`.
+
+Minimal target: one scalar source with an explicit range, one retained colorbar attached to the
+same scale, stable tick/range labels, and no probe callbacks or linked-panel state.
+
+
+## `annotation_readout`
+
+Focused proof for anchored annotation text or readout labels. It should make the anchor and the
+displayed text obvious without relying on image probing or linked panels.
+
+Current proof: `examples/c/features/annotation_readout.c`.
+
+Minimal target: one highlighted data target, one retained text/readout annotation placed relative to
+that target, and a deterministic smoke path that shows the label within the panel.
+
+
 ## `image_probe`
 
 Focused public image-query proof for scalar sampled fields. It keeps the source field scalar,
-renders through a custom LUT colormap and continuous colorbar, and shows a compact live scalar
-readout under the cursor.
+renders through a custom LUT colormap, and exposes a GPU-backed pixel query with a visible probe
+marker.
 
 Current proof: `examples/c/features/image_probe.c`.
 
-Minimal target: one scalar image field, shared scale/colormap/colorbar, GPU-backed pixel hit/miss
-query, crosshair marker, and live scalar readout aligned with the rendered plot area.
+Minimal target: one scalar image field, explicit scale/colormap setup, GPU-backed pixel hit/miss
+query, and a crosshair or marker aligned with the queried plot area. Colorbar and textual readout
+coverage stays in `colorbar` and `annotation_readout`.
 
 
 ## Blockers To Track In Planning

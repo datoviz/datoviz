@@ -81,7 +81,9 @@ The main remaining polish or feature gaps are:
 | `sphere_impostor` | `ready-now` | sphere visual, lighting/depth | Small 3D visual-polish proof. |
 | `volume` | `needs-rc1-proof` | 3D sampled field, slice/render, capture | Keeps volume rendering and export covered. |
 | `scale_bar` | `needs-rc1-proof` | retained scale bars, labels, panzoom/domain updates | Narrow RC1 fixture; richer layout can follow. |
-| `image_probe` | `ready-now` | scalar image probe, custom LUT colormap, colorbar, live readout | Focused public image-query proof lives in `examples/c/features/image_probe.c`; broader linked-panel pressure remains separate. |
+| `colorbar` | `ready-now` | scalar field, continuous colorbar, range labels | Standalone feature proof lives in `examples/c/features/colorbar.c`; probing stays separate. |
+| `annotation_readout` | `ready-now` | anchored text/readout, highlighted data target | Standalone feature proof lives in `examples/c/features/annotation_readout.c`; query behavior stays separate. |
+| `image_probe` | `ready-now` | scalar sampled image, pixel query, probe marker, stdout readback | Focused public image-query proof lives in `examples/c/features/image_probe.c`; colorbar/readout and broader linked-panel pressure remain separate. |
 | `protein_arcball_viewer` | `partial-now` | real PDB data, sphere impostors, materials, SSAO/MSAA, GUI, arcball | Flagship native C scientific example; defer labels/picking/molecular surface if needed. |
 | `showcase_wind_field` | `needs-rc1-proof` | image field, vector visual, paths, panzoom, colorbar | Best near-term 2D showcase; vector visual should replace primitive arrows. |
 | `showcase_gpu_particle_smoke` | `ready-now` | scene compute, shared storage/vertex buffers, blended points | Public experimental compute-to-graphics showcase lives in `examples/c/showcases/gpu_particle_smoke.c`. |
@@ -172,18 +174,20 @@ optional controls for tessellation quality, stroke width, join mode, and overlay
 2. `path_axes_2d`
 3. `linked_panels_axes_panzoom`
 4. `scale_bar`
-5. `image_probe`
-6. `linked_panels_probe_colorbar`
-7. `marker_picking`
-8. `volume`
-9. `protein_arcball_viewer`
-10. `showcase_wind_field`
-11. `showcase_gpu_particle_smoke`
-12. `textured_terrain_or_planet`
-13. `brain_volume_mesh`
-14. `dense_point_cloud_edl`
-15. `composite_polygon`
-16. `composite_graph`
+5. `colorbar`
+6. `annotation_readout`
+7. `image_probe`
+8. `linked_panels_probe_colorbar`
+9. `marker_picking`
+10. `volume`
+11. `protein_arcball_viewer`
+12. `showcase_wind_field`
+13. `showcase_gpu_particle_smoke`
+14. `textured_terrain_or_planet`
+15. `brain_volume_mesh`
+16. `dense_point_cloud_edl`
+17. `composite_polygon`
+18. `composite_graph`
 17. `webgpu_browser_subset`
 
 

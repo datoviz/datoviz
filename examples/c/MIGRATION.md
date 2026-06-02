@@ -8,8 +8,10 @@ source material.
 | Scenario ID | Source | Role |
 | --- | --- | --- |
 | `path_axes_2d` | `features/axes_2d.c` | Feature proof. |
-| `linked_panels_axes_panzoom` | `features/panel_linked_axes.c` | Feature proof. |
+| `linked_panels_axes_panzoom` | `workflows/panel_linked_axes.c` | Workflow proof. |
 | `scale_bar` | `features/scalebar.c` | Feature proof. |
+| `colorbar` | `features/colorbar.c` | Feature proof. |
+| `annotation_readout` | `features/annotation_readout.c` | Feature proof. |
 | `image_probe` | `features/image_probe.c` | Feature proof. |
 | `marker_picking` | `features/pick_marker.c` | Feature proof. |
 | `protein_arcball_viewer` | `scientific/protein.c` | Real RCSB PDB data example with provenance. |
