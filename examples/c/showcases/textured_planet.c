@@ -64,6 +64,10 @@
 #define STAR_COUNT 900
 #define STAR_RADIUS 48.0f
 
+#define SUN_DIR_X -0.80f
+#define SUN_DIR_Y -0.55f
+#define SUN_DIR_Z +0.22f
+
 
 
 /*************************************************************************************************/
@@ -393,13 +397,22 @@ static DvzVisual* _create_star_shell(DvzScene* scene)
     uint32_t rng = 0xD42024u;
     for (uint32_t i = 0; i < STAR_COUNT; i++)
     {
+        if (i == 0)
+        {
+            positions[i][0] = STAR_RADIUS * SUN_DIR_X;
+            positions[i][1] = STAR_RADIUS * SUN_DIR_Y;
+            positions[i][2] = STAR_RADIUS * SUN_DIR_Z;
+            colors[i] = (DvzColor){255, 244, 214, 255};
+            sizes[i] = 14.0f;
+            continue;
+        }
+
         const float z = 2.0f * _rand_f32(&rng) - 1.0f;
         const float phi = 2.0f * (float)M_PI * _rand_f32(&rng);
         const float r = sqrtf(fmaxf(0.0f, 1.0f - z * z));
         positions[i][0] = STAR_RADIUS * r * cosf(phi);
         positions[i][1] = STAR_RADIUS * r * sinf(phi);
         positions[i][2] = STAR_RADIUS * z;
-
         const float brightness = 0.45f + 0.55f * _rand_f32(&rng);
         colors[i].r = _u8(0.82 * brightness);
         colors[i].g = _u8(0.88 * brightness);
@@ -619,11 +632,21 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");
     gui_state.visual = visual;
 
-
     bool ok = example_mesh_geometry(visual, sphere);
     EXAMPLE_CHECK(ok, "example_mesh_geometry() failed");
     dvz_geometry_destroy(sphere);
     sphere = NULL;
+
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    material.light_direction[0] = SUN_DIR_X;
+    material.light_direction[1] = SUN_DIR_Y;
+    material.light_direction[2] = SUN_DIR_Z;
+    material.phong.ambient = 0.035f;
+    material.phong.diffuse = 1.05f;
+    material.phong.specular = 0.015f;
+    material.phong.shininess = 18.0f;
+    EXAMPLE_CHECK(
+        dvz_visual_set_material(visual, &material) == 0, "dvz_visual_set_material() failed");
 
     for (uint32_t i = 0; i < PLANET_COUNT; i++)
     {
