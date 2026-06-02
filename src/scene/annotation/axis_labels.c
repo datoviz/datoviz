@@ -157,7 +157,8 @@ static void _axis_format_tick_label(
 
 
 static bool _axis_label_plan_datetime(
-    const DvzAxis* axis, const double* ticks, uint32_t tick_count, DvzAxisLabelPlan* out)
+    const DvzAxis* axis, const double* ticks, uint32_t tick_count, double visible_min,
+    double visible_max, DvzAxisLabelPlan* out)
 {
     ANN(axis);
     ANN(ticks);
@@ -165,21 +166,6 @@ static bool _axis_label_plan_datetime(
     if (axis->datetime_format == NULL || !axis->datetime_range_set ||
         axis->datetime_tick_interval >= DVZ_TIME_INTERVAL_DAY || tick_count < 2)
         return false;
-
-    char context[DVZ_SCENE_LABEL_SIZE] = {0};
-    for (uint32_t i = 0; i < tick_count; i++)
-    {
-        char current[DVZ_SCENE_LABEL_SIZE] = {0};
-        DvzTimestamp timestamp = _scene_datetime_data_to_timestamp(axis, ticks[i]);
-        if (!_scene_datetime_format(
-                axis->datetime_format, timestamp, DVZ_TIME_INTERVAL_DAY, current,
-                sizeof(current)))
-            return false;
-        if (i == 0)
-            dvz_strlcpy(context, current, sizeof(context));
-        else if (strcmp(context, current) != 0)
-            return false;
-    }
 
     for (uint32_t i = 0; i < tick_count; i++)
     {
@@ -189,8 +175,29 @@ static bool _axis_label_plan_datetime(
                 out->tick_labels[i], sizeof(out->tick_labels[i])))
             return false;
     }
+
+    DvzTimestamp t0 = _scene_datetime_data_to_timestamp(axis, visible_min);
+    DvzTimestamp t1 = _scene_datetime_data_to_timestamp(axis, visible_max);
+    if (t1 < t0)
+    {
+        DvzTimestamp tmp = t0;
+        t0 = t1;
+        t1 = tmp;
+    }
+    char context0[DVZ_SCENE_LABEL_SIZE] = {0};
+    char context1[DVZ_SCENE_LABEL_SIZE] = {0};
+    if (!_scene_datetime_format(
+            axis->datetime_format, t0, DVZ_TIME_INTERVAL_DAY, context0, sizeof(context0)) ||
+        !_scene_datetime_format(
+            axis->datetime_format, t1, DVZ_TIME_INTERVAL_DAY, context1, sizeof(context1)))
+        return false;
+
     out->has_offset_label = true;
-    dvz_strlcpy(out->offset_label, context, sizeof(out->offset_label));
+    if (strcmp(context0, context1) == 0)
+        dvz_strlcpy(out->offset_label, context0, sizeof(out->offset_label));
+    else
+        dvz_snprintf(
+            out->offset_label, sizeof(out->offset_label), "%s - %s", context0, context1);
     return true;
 }
 
@@ -267,7 +274,7 @@ bool _axis_label_plan(
     if (tick_count == 0)
         return true;
 
-    if (_axis_label_plan_datetime(axis, ticks, tick_count, out))
+    if (_axis_label_plan_datetime(axis, ticks, tick_count, visible_min, visible_max, out))
         return true;
     if (_axis_label_plan_numeric_offset(axis, ticks, tick_count, visible_min, visible_max, out))
         return true;

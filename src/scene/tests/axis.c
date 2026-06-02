@@ -745,13 +745,17 @@ static int test_axis_datetime_labels(TstContext* suite, const TstCase* item)
 
     string_count = _visual_family_state(axis->text_visual)->text.string_count;
     bool saw_crossing_context = false;
+    bool saw_single_crossing_date = false;
     for (uint32_t i = 0; i < string_count; i++)
     {
         const char* string = _visual_family_state(axis->text_visual)->text.strings[i];
-        if (strcmp(string, "May 01") == 0 || strcmp(string, "May 02") == 0)
+        if (strcmp(string, "May 01 - May 02") == 0)
             saw_crossing_context = true;
+        if (strcmp(string, "May 01") == 0 || strcmp(string, "May 02") == 0)
+            saw_single_crossing_date = true;
     }
-    AT(!saw_crossing_context);
+    AT(saw_crossing_context);
+    AT(!saw_single_crossing_date);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 14.0) == 0);
     AT(dvz_axis_set_datetime_range(
