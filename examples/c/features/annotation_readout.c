@@ -139,6 +139,33 @@ static bool _add_points(
 
 
 /**
+ * Convert one data-space point to a panel-local pixel anchor.
+ *
+ * @param panel target panel
+ * @param x data X coordinate
+ * @param y data Y coordinate
+ * @param out_px output panel-local pixel anchor
+ * @return true when conversion succeeded
+ */
+static bool _data_to_panel_pixel(DvzPanel* panel, double x, double y, float out_px[2])
+{
+    ANN(panel);
+    ANN(out_px);
+
+    DvzRect plot = {0};
+    if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
+        return false;
+
+    const double tx = x / 10.0;
+    const double ty = (y + 1.0) / 2.0;
+    out_px[0] = plot.x + (float)tx * plot.width;
+    out_px[1] = plot.y + (1.0f - (float)ty) * plot.height;
+    return true;
+}
+
+
+
+/**
  * Add one retained label annotation at the highlighted data point.
  *
  * @param panel panel receiving the annotation
@@ -158,13 +185,18 @@ static DvzAnnotation* _add_readout(DvzPanel* panel, const vec3 position)
     style.color[2] = text.b;
     style.color[3] = 255u;
 
+    float anchor_px[2] = {0};
+    if (!_data_to_panel_pixel(panel, position[0], position[1], anchor_px))
+        return NULL;
+
     DvzTextPlacement placement = dvz_text_placement();
-    placement.mode = DVZ_TEXT_PLACEMENT_DATA;
-    placement.position[0] = position[0];
-    placement.position[1] = position[1];
+    placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    placement.anchor = DVZ_SCENE_ANCHOR_SCREEN;
+    placement.position[0] = anchor_px[0];
+    placement.position[1] = anchor_px[1];
     placement.position[2] = position[2];
-    placement.offset[0] = 16.0f;
-    placement.offset[1] = -18.0f;
+    placement.offset[0] = 20.0f;
+    placement.offset[1] = -20.0f;
     placement.text_anchor[0] = 0.0f;
     placement.text_anchor[1] = 0.5f;
     placement.has_text_anchor = true;
