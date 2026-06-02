@@ -712,11 +712,11 @@ static bool _set_panel_border(DvzPanel* panel)
     ANN(panel);
 
     DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
-    color.a = 150u;
+    color.a = 220u;
     DvzPanelBorderDesc border = dvz_panel_border_desc();
     border.color = color;
-    border.width_px = 1.5f;
-    border.inset_px = 0.75f;
+    border.width_px = 2.25f;
+    border.inset_px = 1.125f;
     return dvz_panel_set_border(panel, &border);
 }
 
