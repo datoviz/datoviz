@@ -11,9 +11,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
 
-DEFAULT_GROUPS = {"visuals", "techniques"}
-FILTER_GROUPS = DEFAULT_GROUPS | {"showcase"}
+
+DEFAULT_MANIFEST = "examples/c/MANIFEST.yaml"
 
 
 def repo_root() -> Path:
@@ -28,13 +29,56 @@ def parse_args() -> argparse.Namespace:
         "filter",
         nargs="?",
         default="",
-        help="optional regex/substr filter matched against group/name",
+        help="optional regex/substr filter matched against id, lane, title, source, or group/name",
     )
     parser.add_argument(
         "--ignore",
         action="append",
         default=[],
         help="regex/substr pattern to skip; may be repeated or comma-separated",
+    )
+    parser.add_argument(
+        "--lane",
+        action="append",
+        default=[],
+        help="manifest lane to run; may be repeated or comma-separated",
+    )
+    parser.add_argument(
+        "--stage",
+        action="append",
+        default=[],
+        help="manifest stage to run; may be repeated or comma-separated",
+    )
+    parser.add_argument(
+        "--include-lab",
+        action="store_true",
+        help="include manifest lab entries in the default public-example selection",
+    )
+    parser.add_argument(
+        "--manifest",
+        default=DEFAULT_MANIFEST,
+        help=f"C example manifest path, default: {DEFAULT_MANIFEST}",
+    )
+    parser.add_argument(
+        "--all-built",
+        action="store_true",
+        help="ignore the manifest and scan all built C example executables",
+    )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="fail when a matching manifest entry has no built executable",
+    )
+    parser.add_argument(
+        "--frames",
+        default="",
+        help="pass a frame-count argument to each example for bounded runs",
+    )
+    parser.add_argument(
+        "--example-arg",
+        action="append",
+        default=[],
+        help="extra argument passed to each example; may be repeated",
     )
     parser.add_argument(
         "--list",
@@ -71,6 +115,125 @@ def split_patterns(patterns: list[str]) -> list[str]:
     ]
 
 
+def load_manifest(path: Path) -> dict:
+    if not path.exists():
+        raise FileNotFoundError(f"C example manifest not found: {path}")
+    with path.open("r", encoding="utf8") as f:
+        return yaml.safe_load(f) or {}
+
+
+def manifest_public_folders(manifest: dict) -> set[str]:
+    folders = manifest.get("folders", {})
+    public = folders.get("public", [])
+    return {str(folder).rstrip("/") for folder in public}
+
+
+def manifest_entry_rel(root: Path, entry: dict) -> str:
+    source = entry.get("source")
+    if not source:
+        raise ValueError(f"manifest entry {entry.get('id', '<missing-id>')} has no source")
+
+    source_path = Path(str(source))
+    if source_path.is_absolute():
+        try:
+            source_path = source_path.relative_to(root)
+        except ValueError as exc:
+            raise ValueError(f"manifest source is outside the repo: {source}") from exc
+
+    try:
+        rel = source_path.relative_to("examples/c")
+    except ValueError as exc:
+        raise ValueError(f"manifest source is not under examples/c: {source}") from exc
+
+    if rel.suffix != ".c":
+        raise ValueError(f"manifest source is not a C file: {source}")
+    return rel.with_suffix("").as_posix()
+
+
+def manifest_entry_text(entry: dict, rel: str) -> str:
+    fields = [
+        str(entry.get("id", "")),
+        str(entry.get("title", "")),
+        str(entry.get("stage", "")),
+        str(entry.get("lane", "")),
+        str(entry.get("source", "")),
+        rel,
+    ]
+    return " ".join(fields)
+
+
+def source_is_public(source: str, public_folders: set[str]) -> bool:
+    normalized = source.rstrip("/")
+    return any(normalized.startswith(f"{folder}/") for folder in public_folders)
+
+
+def manifest_examples(
+    root: Path, examples_root: Path, args: argparse.Namespace, ignore_patterns: list[str]
+) -> tuple[list[tuple[str, Path]], list[str], list[str]]:
+    manifest = load_manifest(root / args.manifest)
+    public_folders = manifest_public_folders(manifest)
+    lane_filters = set(split_patterns(args.lane))
+    stage_filters = set(split_patterns(args.stage))
+
+    examples: list[tuple[str, Path]] = []
+    ignored: list[str] = []
+    missing: list[str] = []
+    seen: set[str] = set()
+
+    for entry in manifest.get("examples", []):
+        rel = manifest_entry_rel(root, entry)
+        source = str(entry.get("source", ""))
+        lane = str(entry.get("lane", ""))
+        stage = str(entry.get("stage", ""))
+
+        if lane_filters and lane not in lane_filters:
+            continue
+        if stage_filters and stage not in stage_filters:
+            continue
+        if not args.include_lab and not lane_filters and not stage_filters:
+            if stage == "lab" or not source_is_public(source, public_folders):
+                continue
+
+        text = manifest_entry_text(entry, rel)
+        if args.filter and not matches_filter(text, args.filter):
+            continue
+        if any(matches_filter(text, pattern) for pattern in ignore_patterns):
+            ignored.append(rel)
+            continue
+        if rel in seen:
+            continue
+        seen.add(rel)
+
+        exe = examples_root / rel
+        if is_executable(exe):
+            examples.append((rel, exe))
+        else:
+            missing.append(rel)
+
+    return examples, ignored, missing
+
+
+def built_examples(
+    examples_root: Path, args: argparse.Namespace, ignore_patterns: list[str]
+) -> tuple[list[tuple[str, Path]], list[str]]:
+    examples: list[tuple[str, Path]] = []
+    ignored: list[str] = []
+    if not examples_root.exists():
+        return examples, ignored
+
+    for exe in sorted(examples_root.glob("*/*")):
+        if not is_executable(exe):
+            continue
+        rel = exe.relative_to(examples_root).as_posix()
+        if args.filter and not matches_filter(rel, args.filter):
+            continue
+        if any(matches_filter(rel, pattern) for pattern in ignore_patterns):
+            ignored.append(rel)
+            continue
+        examples.append((rel, exe))
+    return examples, ignored
+
+
 def apply_runtime_env(root: Path, env: dict[str, str]) -> None:
     if platform.system() != "Darwin":
         return
@@ -98,28 +261,22 @@ def main() -> int:
 
     ignore_patterns = split_patterns(args.ignore)
 
-    examples: list[tuple[str, Path]] = []
-    ignored: list[str] = []
-    if examples_root.exists():
-        groups = FILTER_GROUPS if args.filter else DEFAULT_GROUPS
-        for exe in sorted(examples_root.glob("*/*")):
-            if not is_executable(exe):
-                continue
-            rel = exe.relative_to(examples_root).as_posix()
-            group = rel.split("/", 1)[0]
-            if group == "tools" and not args.filter.startswith("tools"):
-                continue
-            if group not in groups and group != "tools":
-                continue
-            if args.filter and not matches_filter(rel, args.filter):
-                continue
-            if any(matches_filter(rel, pattern) for pattern in ignore_patterns):
-                ignored.append(rel)
-                continue
-            examples.append((rel, exe))
+    if args.all_built:
+        examples, ignored = built_examples(examples_root, args, ignore_patterns)
+        missing: list[str] = []
+    else:
+        try:
+            examples, ignored, missing = manifest_examples(root, examples_root, args, ignore_patterns)
+        except (FileNotFoundError, ValueError, yaml.YAMLError) as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
 
     if not examples:
         print(f"No matching C examples found under {examples_root}", file=sys.stderr)
+        if missing:
+            print("\nMatching manifest entries without built executables:", file=sys.stderr)
+            for rel in missing:
+                print(f"  - {rel}", file=sys.stderr)
         return 1
 
     print("C examples to run sequentially:")
@@ -129,15 +286,30 @@ def main() -> int:
         print("\nIgnored examples:")
         for rel in ignored:
             print(f"  - {rel}")
+    if missing:
+        print("\nManifest entries without built executables:")
+        for rel in missing:
+            print(f"  - {rel}")
+        if args.strict:
+            return 1
     if args.list:
         return 0
-    print("\nClose each example window to continue to the next one.\n")
+
+    example_args = []
+    if args.frames:
+        example_args.append(args.frames)
+    example_args.extend(args.example_arg)
+
+    if example_args:
+        print(f"\nPassing example arguments: {' '.join(example_args)}\n")
+    else:
+        print("\nClose each example window to continue to the next one.\n")
 
     env = os.environ.copy()
     apply_runtime_env(root, env)
     for index, (rel, exe) in enumerate(examples, 1):
         print(f"[{index}/{len(examples)}] {rel}")
-        result = subprocess.run([str(exe)], cwd=root, env=env, check=False)
+        result = subprocess.run([str(exe), *example_args], cwd=root, env=env, check=False)
         if result.returncode != 0:
             print(f"Example failed: {rel} exited with {result.returncode}", file=sys.stderr)
             return result.returncode
