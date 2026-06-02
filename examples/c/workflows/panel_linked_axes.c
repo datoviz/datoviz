@@ -702,6 +702,27 @@ static bool _set_domains(DvzPanel* panel, double x0, double x1, double y0, doubl
 
 
 /**
+ * Add a subtle fixed border around one panel.
+ *
+ * @param panel target panel
+ * @return true when the border was configured
+ */
+static bool _set_panel_border(DvzPanel* panel)
+{
+    ANN(panel);
+
+    DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
+    color.a = 150u;
+    DvzPanelBorderDesc border = dvz_panel_border_desc();
+    border.color = color;
+    border.width_px = 1.5f;
+    border.inset_px = 0.75f;
+    return dvz_panel_set_border(panel, &border);
+}
+
+
+
+/**
  * Configure one panel's background and layout reserve.
  *
  * @param panel target panel
@@ -713,9 +734,10 @@ static bool _configure_panel(DvzPanel* panel, float bottom)
     ANN(panel);
 
     example_graphite_cyan_set_panel_background(panel);
-    return dvz_panel_set_layout_reserve(
+    bool ok = dvz_panel_set_layout_reserve(
         panel, &(DvzPanelLayoutReserve){.left = 0.20f, .right = 0.06f, .bottom = bottom,
                                         .top = 0.07f});
+    return ok && _set_panel_border(panel);
 }
 
 
@@ -771,6 +793,8 @@ int main(int argc, char** argv)
                                           .top = 0.06f});
     EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve(summary) failed");
     example_graphite_cyan_set_panel_background(summary);
+    ok = _set_panel_border(summary);
+    EXAMPLE_CHECK(ok, "_set_panel_border(summary) failed");
 
     ok = _set_domains(signal, 0.0, 12.0, -1.6, 1.6);
     EXAMPLE_CHECK(ok, "_set_domains(signal) failed");
