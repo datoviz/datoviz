@@ -86,6 +86,7 @@
 #define DVZ_SCENE_MAX_REQUEST_SCOPES 256
 #define DVZ_SCENE_MAX_ANIMATIONS 128
 #define DVZ_SCENE_MAX_AXIS_TICKS 64
+#define DVZ_SCENE_MAX_AXIS_TEXTS (DVZ_SCENE_MAX_AXIS_TICKS + 2)
 #define DVZ_SCENE_MAX_AXIS_MINOR_TICKS 8
 #define DVZ_SCENE_MAX_REQUEST_FRAME_SUBSCRIPTIONS 16
 #define DVZ_SCENE_MAX_CONTROLLERS 128
@@ -1669,12 +1670,12 @@ struct DvzAxis
     DvzVisual* grid_visual;
     DvzVisual* text_visual;
     uint32_t text_count;
-    char text_labels[DVZ_SCENE_MAX_AXIS_TICKS + 1][DVZ_SCENE_LABEL_SIZE];
-    float text_positions[DVZ_SCENE_MAX_AXIS_TICKS + 1][3];
-    float text_anchors[DVZ_SCENE_MAX_AXIS_TICKS + 1][2];
-    float text_sizes[DVZ_SCENE_MAX_AXIS_TICKS + 1];
-    uint8_t text_colors[DVZ_SCENE_MAX_AXIS_TICKS + 1][4];
-    float text_angles[DVZ_SCENE_MAX_AXIS_TICKS + 1];
+    char text_labels[DVZ_SCENE_MAX_AXIS_TEXTS][DVZ_SCENE_LABEL_SIZE];
+    float text_positions[DVZ_SCENE_MAX_AXIS_TEXTS][3];
+    float text_anchors[DVZ_SCENE_MAX_AXIS_TEXTS][2];
+    float text_sizes[DVZ_SCENE_MAX_AXIS_TEXTS];
+    uint8_t text_colors[DVZ_SCENE_MAX_AXIS_TEXTS][4];
+    float text_angles[DVZ_SCENE_MAX_AXIS_TEXTS];
 };
 
 

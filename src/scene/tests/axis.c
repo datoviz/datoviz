@@ -605,6 +605,99 @@ static int test_axis_numeric_unit_labels(TstContext* suite, const TstCase* item)
 }
 
 
+static int test_axis_numeric_offset_labels(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 1000000.0, 1000000.00001) == 0);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+    _scene_prepare_axis_visuals(figure);
+    ANN(axis->text_visual);
+
+    uint32_t string_count = _visual_family_state(axis->text_visual)->text.string_count;
+    bool saw_offset = false;
+    bool saw_residual = false;
+    bool saw_full_tick = false;
+    for (uint32_t i = 0; i < string_count; i++)
+    {
+        const char* string = _visual_family_state(axis->text_visual)->text.strings[i];
+        if (strcmp(string, "+1000000") == 0)
+            saw_offset = true;
+        if (strcmp(string, "0.000002") == 0)
+            saw_residual = true;
+        if (strcmp(string, "1000000") == 0)
+            saw_full_tick = true;
+    }
+    AT(saw_offset);
+    AT(saw_residual);
+    AT(!saw_full_tick);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    _scene_prepare_axis_visuals(figure);
+    string_count = _visual_family_state(axis->text_visual)->text.string_count;
+    bool saw_plain_offset = false;
+    for (uint32_t i = 0; i < string_count; i++)
+    {
+        const char* string = _visual_family_state(axis->text_visual)->text.strings[i];
+        if (string[0] == '+')
+            saw_plain_offset = true;
+    }
+    AT(!saw_plain_offset);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+static int test_axis_unit_offset_labels(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 1000000.0, 1000000.00001) == 0);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+    DvzUnits* length = dvz_units_builtin(scene, DVZ_UNIT_LADDER_METRIC_LENGTH, 1.0);
+    ANN(length);
+    AT(dvz_axis_set_units(axis, length));
+    _scene_prepare_axis_visuals(figure);
+    ANN(axis->text_visual);
+
+    uint32_t string_count = _visual_family_state(axis->text_visual)->text.string_count;
+    bool saw_offset = false;
+    bool saw_residual = false;
+    for (uint32_t i = 0; i < string_count; i++)
+    {
+        const char* string = _visual_family_state(axis->text_visual)->text.strings[i];
+        if (strcmp(string, "+1000 km") == 0)
+            saw_offset = true;
+        if (strcmp(string, "2 um") == 0)
+            saw_residual = true;
+    }
+    AT(saw_offset);
+    AT(saw_residual);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 static int test_axis_datetime_labels(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -632,13 +725,33 @@ static int test_axis_datetime_labels(TstContext* suite, const TstCase* item)
 
     uint32_t string_count = _visual_family_state(axis->text_visual)->text.string_count;
     bool saw_time = false;
+    bool saw_context = false;
     for (uint32_t i = 0; i < string_count; i++)
     {
         const char* string = _visual_family_state(axis->text_visual)->text.strings[i];
         if (strcmp(string, "12:30") == 0)
             saw_time = true;
+        if (strcmp(string, "May 01") == 0)
+            saw_context = true;
     }
     AT(saw_time);
+    AT(saw_context);
+
+    const DvzTimestamp may_1_23h = (DvzTimestamp)1714604400000000LL;
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 7200.0) == 0);
+    AT(dvz_axis_set_datetime_range(
+        axis, 0.0, 7200.0, may_1_23h, may_1_23h + 7200LL * 1000000LL));
+    _scene_prepare_axis_visuals(figure);
+
+    string_count = _visual_family_state(axis->text_visual)->text.string_count;
+    bool saw_crossing_context = false;
+    for (uint32_t i = 0; i < string_count; i++)
+    {
+        const char* string = _visual_family_state(axis->text_visual)->text.strings[i];
+        if (strcmp(string, "May 01") == 0 || strcmp(string, "May 02") == 0)
+            saw_crossing_context = true;
+    }
+    AT(!saw_crossing_context);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 14.0) == 0);
     AT(dvz_axis_set_datetime_range(
@@ -1874,6 +1987,8 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_tick_density_tracks_panel_size);
     TST_CASE(test_axis_text_labels);
     TST_CASE(test_axis_numeric_unit_labels);
+    TST_CASE(test_axis_numeric_offset_labels);
+    TST_CASE(test_axis_unit_offset_labels);
     TST_CASE(test_axis_datetime_labels);
     TST_CASE(test_axis_text_hidpi_scales_glyph_bounds);
     TST_CASE(test_axis_text_renderer_style);

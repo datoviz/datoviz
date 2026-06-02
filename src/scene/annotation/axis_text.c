@@ -24,7 +24,7 @@
 #include "_compat.h"
 #include "_scene.h"
 #include "axis_internal.h"
-#include "core/units_internal.h"
+#include "axis_labels_internal.h"
 #include "datoviz/scene.h"
 #include "annotation/text_visual_bridge.h"
 
@@ -47,65 +47,6 @@ static bool _axis_apply_text_renderer(DvzAxis* axis)
         return true;
     return _scene_adornment_text_visual_set_renderer(
                axis->text_visual, axis->style.text_renderer) == 0;
-}
-
-
-/**
- * Format one numeric tick value for the first rendered 2D axis label slice.
- *
- * @param value the tick value
- * @param step the major tick step
- * @param out output string buffer
- * @param out_size output string buffer size
- */
-static void _axis_format_tick(double value, double step, char* out, uint32_t out_size)
-{
-    ANN(out);
-    if (out_size == 0)
-        return;
-    if (isfinite(step) && step > 0.0 && fabs(value) < 0.5 * step * 1e-9)
-        value = 0.0;
-    dvz_snprintf(out, out_size, "%.6g", value);
-}
-
-
-/**
- * Format one axis tick label through the active axis formatter.
- *
- * @param axis the axis
- * @param value the tick value
- * @param visible_min visible data minimum
- * @param visible_max visible data maximum
- * @param out output string buffer
- * @param out_size output string buffer size
- */
-static void _axis_format_tick_label(
-    const DvzAxis* axis, double value, double visible_min, double visible_max, char* out,
-    uint32_t out_size)
-{
-    ANN(axis);
-    ANN(out);
-    if (out_size == 0)
-        return;
-    if (axis->datetime_format != NULL && axis->datetime_range_set)
-    {
-        DvzTimestamp timestamp = _scene_datetime_data_to_timestamp(axis, value);
-        if (_scene_datetime_format(
-                axis->datetime_format, timestamp, axis->datetime_tick_interval, out, out_size))
-            return;
-    }
-    if (axis->units != NULL)
-    {
-        DvzUnitFormatContext context = {
-            .mode = DVZ_UNIT_DISPLAY_AXIS_STABLE,
-            .has_axis_range = true,
-            .axis_data_min = visible_min,
-            .axis_data_max = visible_max,
-        };
-        if (_scene_units_format(axis->units, value, &context, out, out_size))
-            return;
-    }
-    _axis_format_tick(value, axis->tick_lstep, out, out_size);
 }
 
 
@@ -275,7 +216,7 @@ static void _axis_append_text_item(
     ANN(angles);
     ANN(label);
     ANN(color);
-    if (*count >= DVZ_SCENE_MAX_AXIS_TICKS + 1)
+    if (*count >= DVZ_SCENE_MAX_AXIS_TEXTS)
         return;
     uint32_t i = (*count)++;
     dvz_strlcpy(labels[i], label, DVZ_SCENE_LABEL_SIZE);
@@ -328,14 +269,17 @@ void _axis_update_text(
     }
 
     uint32_t count = 0;
-    char labels[DVZ_SCENE_MAX_AXIS_TICKS + 1][DVZ_SCENE_LABEL_SIZE] = {{0}};
-    const char* strings[DVZ_SCENE_MAX_AXIS_TICKS + 1] = {0};
-    float positions[DVZ_SCENE_MAX_AXIS_TICKS + 1][3] = {{0}};
-    float anchors[DVZ_SCENE_MAX_AXIS_TICKS + 1][2] = {{0}};
-    float sizes[DVZ_SCENE_MAX_AXIS_TICKS + 1] = {0};
-    uint8_t colors[DVZ_SCENE_MAX_AXIS_TICKS + 1][4] = {{0}};
-    float angles[DVZ_SCENE_MAX_AXIS_TICKS + 1] = {0};
+    char labels[DVZ_SCENE_MAX_AXIS_TEXTS][DVZ_SCENE_LABEL_SIZE] = {{0}};
+    const char* strings[DVZ_SCENE_MAX_AXIS_TEXTS] = {0};
+    float positions[DVZ_SCENE_MAX_AXIS_TEXTS][3] = {{0}};
+    float anchors[DVZ_SCENE_MAX_AXIS_TEXTS][2] = {{0}};
+    float sizes[DVZ_SCENE_MAX_AXIS_TEXTS] = {0};
+    uint8_t colors[DVZ_SCENE_MAX_AXIS_TEXTS][4] = {{0}};
+    float angles[DVZ_SCENE_MAX_AXIS_TEXTS] = {0};
 
+    uint32_t visible_tick_count = 0;
+    double tick_values[DVZ_SCENE_MAX_AXIS_TICKS] = {0};
+    float tick_positions[DVZ_SCENE_MAX_AXIS_TICKS] = {0};
     for (uint32_t i = 0; i < axis->tick_count; i++)
     {
         float plot_min = axis->dim == DVZ_DIM_X ? x0 : y0;
@@ -345,34 +289,75 @@ void _axis_update_text(
         if (p < plot_min - 0.0001f || p > plot_max + 0.0001f)
             continue;
 
-        char tick_label[DVZ_SCENE_LABEL_SIZE] = {0};
-        _axis_format_tick_label(
-            axis, axis->ticks[i], visible_min, visible_max, tick_label, sizeof(tick_label));
+        tick_values[visible_tick_count] = axis->ticks[i];
+        tick_positions[visible_tick_count++] = p;
+        if (visible_tick_count >= DVZ_SCENE_MAX_AXIS_TICKS)
+            break;
+    }
+
+    DvzAxisLabelPlan label_plan = {0};
+    if (!_axis_label_plan(axis, tick_values, visible_tick_count, visible_min, visible_max, &label_plan))
+    {
+        _axis_hide_text(axis);
+        return;
+    }
+
+    for (uint32_t i = 0; i < visible_tick_count; i++)
+    {
         float px = 0.0f;
         float py = 0.0f;
         if (axis->dim == DVZ_DIM_X)
         {
-            _axis_visual_to_pixels(axis, p, y0, &px, &py);
+            _axis_visual_to_pixels(axis, tick_positions[i], y0, &px, &py);
             py += axis->style.tick_gap_px > 0.0f && isfinite(axis->style.tick_gap_px) ?
                       axis->style.tick_gap_px :
                       AXIS_TEXT_TICK_GAP;
             _axis_append_text_item(
-                &count, labels, strings, positions, anchors, sizes, colors, angles, tick_label, px,
-                py, 0.5f, 0.0f,
+                &count, labels, strings, positions, anchors, sizes, colors, angles,
+                label_plan.tick_labels[i], px, py, 0.5f, 0.0f,
                 _axis_text_size(axis->style.tick_size_px, AXIS_TEXT_TICK_SIZE),
                 axis->style.major_tick_color, 0.0f);
         }
         else
         {
-            _axis_visual_to_pixels(axis, x0, p, &px, &py);
+            _axis_visual_to_pixels(axis, x0, tick_positions[i], &px, &py);
             px -= axis->style.tick_gap_px > 0.0f && isfinite(axis->style.tick_gap_px) ?
                       axis->style.tick_gap_px :
                       AXIS_TEXT_TICK_GAP;
             _axis_append_text_item(
-                &count, labels, strings, positions, anchors, sizes, colors, angles, tick_label, px,
-                py, 1.0f, 0.5f,
+                &count, labels, strings, positions, anchors, sizes, colors, angles,
+                label_plan.tick_labels[i], px, py, 1.0f, 0.5f,
                 _axis_text_size(axis->style.tick_size_px, AXIS_TEXT_TICK_SIZE),
                 axis->style.major_tick_color, 0.0f);
+        }
+    }
+
+    if (label_plan.has_offset_label)
+    {
+        float px = 0.0f;
+        float py = 0.0f;
+        float offset_size = _axis_text_size(axis->style.label_size_px, AXIS_TEXT_LABEL_SIZE);
+        if (axis->dim == DVZ_DIM_X)
+        {
+            _axis_visual_to_pixels(axis, x1, y0, &px, &py);
+            py += axis->style.label_gap_px > 0.0f && isfinite(axis->style.label_gap_px) ?
+                      axis->style.label_gap_px :
+                      AXIS_TEXT_LABEL_GAP;
+            _axis_append_text_item(
+                &count, labels, strings, positions, anchors, sizes, colors, angles,
+                label_plan.offset_label, px, py, 1.0f, 0.0f, offset_size,
+                axis->style.spine_color, 0.0f);
+        }
+        else
+        {
+            _axis_visual_to_pixels(axis, x0, y1, &px, &py);
+            px -= axis->style.label_gap_px > 0.0f && isfinite(axis->style.label_gap_px) ?
+                      axis->style.label_gap_px :
+                      AXIS_TEXT_LABEL_GAP;
+            _axis_append_text_item(
+                &count, labels, strings, positions, anchors, sizes, colors, angles,
+                label_plan.offset_label, px, py, 1.0f, 0.5f, offset_size,
+                axis->style.spine_color, AXIS_TEXT_Y_LABEL_ANGLE);
         }
     }
 
