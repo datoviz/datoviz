@@ -7,7 +7,7 @@
 /* scalebar - retained physical scale bars across overview, zoom, and 3D panels.
  *
  * Scenario: scale_bar
- * Style: features, graphite_cyan, 1280x960 capture target
+ * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/scalebar
  * Run:    ./build/examples/c/features/scalebar
@@ -36,8 +36,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH            1280u
-#define HEIGHT           960u
+#define WIDTH            1600u
+#define HEIGHT           1200u
 #define OVERVIEW_WIDTH   224u
 #define OVERVIEW_HEIGHT  160u
 #define DETAIL_WIDTH     180u

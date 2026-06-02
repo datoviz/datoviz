@@ -6,6 +6,8 @@
 
 /* protein - cinematic gallery protein rendered as clustered spheres.
  *
+ * Style: showcase, graphite_cyan, 1600x1200 capture target
+ *
  * Prepare: python tools/preprocess_protein.py 6M0J
  * Build:   cmake --build build --target protein
  * Run:     ./build/examples/c/showcases/protein
@@ -48,8 +50,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1280u
-#define HEIGHT 960u
+#define WIDTH  1600u
+#define HEIGHT 1200u
 
 #define DEFAULT_PDB_ID             "6m0j"
 #define DEFAULT_BUNDLE_PATH        "data/examples/proteins/1ubq/prepared"

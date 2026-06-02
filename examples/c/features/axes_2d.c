@@ -7,7 +7,7 @@
 /* axes_2d - deterministic path with retained 2D axes and tick labels.
  *
  * Scenario: path_axes_2d
- * Style: features, graphite_cyan, 1280x960 capture target
+ * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/axes_2d
  * Run:    ./build/examples/c/features/axes_2d
@@ -40,8 +40,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH      1280u
-#define HEIGHT     960u
+#define WIDTH      1600u
+#define HEIGHT     1200u
 #define PATH_COUNT 384u
 
 static const float TAU = 6.28318530718f;

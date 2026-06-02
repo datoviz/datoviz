@@ -7,7 +7,7 @@
 /* wind_field - synthetic weather-like scalar and vector field showcase.
  *
  * Scenario: showcase_wind_field
- * Style: showcase, graphite_cyan, 1600x1000 capture target
+ * Style: showcase, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c showcases/wind_field
  * Run:    ./build/examples/c/showcases/wind_field
@@ -39,7 +39,7 @@
 /*************************************************************************************************/
 
 #define WIDTH  1600u
-#define HEIGHT 1000u
+#define HEIGHT 1200u
 
 #define FIELD_WIDTH  384u
 #define FIELD_HEIGHT 240u
@@ -472,7 +472,9 @@ static bool _add_wind_image(
         return false;
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;
-    if (dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){.z_layer = 0}) != 0)
+    if (dvz_panel_add_visual(
+            panel, image,
+            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 0}) != 0)
         return false;
     *out_field = field;
     return true;
@@ -582,7 +584,9 @@ static bool _add_vectors(DvzScene* scene, DvzPanel* panel, DvzVisual** out_visua
         goto error;
     if (dvz_visual_set_depth_test(visual, false) != 0)
         goto error;
-    if (dvz_panel_add_visual(panel, visual, &(DvzVisualAttachDesc){.z_layer = 2}) != 0)
+    if (dvz_panel_add_visual(
+            panel, visual,
+            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2}) != 0)
         goto error;
 
     *out_visual = visual;
@@ -736,7 +740,9 @@ _add_streamlines(DvzScene* scene, DvzPanel* panel, DvzVisual** out_visual, float
         goto error;
     if (dvz_visual_set_depth_test(path, false) != 0)
         goto error;
-    if (dvz_panel_add_visual(panel, path, &(DvzVisualAttachDesc){.z_layer = 1}) != 0)
+    if (dvz_panel_add_visual(
+            panel, path,
+            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1}) != 0)
         goto error;
 
     *out_visual = path;
@@ -811,7 +817,9 @@ static bool _add_probe(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_visual_set_depth_test(ring, false) != 0)
         return false;
-    if (dvz_panel_add_visual(panel, ring, &(DvzVisualAttachDesc){.z_layer = 3}) != 0)
+    if (dvz_panel_add_visual(
+            panel, ring,
+            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 3}) != 0)
         return false;
 
     vec3 data_dot[1] = {{PROBE_X_KM, PROBE_Y_KM, 0.0f}};
@@ -833,7 +841,9 @@ static bool _add_probe(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_visual_set_depth_test(dot, false) != 0)
         return false;
-    if (dvz_panel_add_visual(panel, dot, &(DvzVisualAttachDesc){.z_layer = 4}) != 0)
+    if (dvz_panel_add_visual(
+            panel, dot,
+            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 4}) != 0)
         return false;
 
     WindSample sample = _wind_sample(PROBE_X_KM, PROBE_Y_KM, 0.0f);

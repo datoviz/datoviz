@@ -7,7 +7,7 @@
 /* gpu_particle_smoke - scene API compute-to-graphics particle smoke showcase.
  *
  * Scenario: showcase_gpu_particle_smoke
- * Style: dense transparent particle smoke, experimental scene compute, optional capture
+ * Style: showcase, graphite_cyan, 1600x1200 capture target, experimental scene compute
  *
  * Build:  just example-c showcases/gpu_particle_smoke
  * Run:    ./build/examples/c/showcases/gpu_particle_smoke
@@ -39,7 +39,7 @@
 /*************************************************************************************************/
 
 #define WIDTH                   1600u
-#define HEIGHT                  1000u
+#define HEIGHT                  1200u
 #define PARTICLE_COUNT          1048576u
 #define WORKGROUP_SIZE          128u
 #define COMPUTE_SOURCE_CAPACITY 8192u
@@ -354,6 +354,17 @@ _init_particles(vec3* positions, vec3* velocities, float* ages, DvzColor* colors
 }
 
 
+static DvzSceneBuffer*
+_scene_buffer(DvzScene* scene, uint32_t usage, uint32_t stride, uint64_t byte_size)
+{
+    DvzSceneBufferDesc desc = dvz_scene_buffer_desc();
+    desc.usage = usage;
+    desc.stride = stride;
+    desc.byte_size = byte_size;
+    return dvz_scene_buffer(scene, &desc);
+}
+
+
 static void _params_for_state(const ParticleState* state, float dt, vec4 params[3])
 {
     ANN(state);
@@ -481,42 +492,23 @@ int main(int argc, char** argv)
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
-    DvzSceneBuffer* position_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
-                   .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
-                   .stride = sizeof(vec3),
-                   .byte_size = (uint64_t)PARTICLE_COUNT * sizeof(vec3),
-               });
-    DvzSceneBuffer* velocity_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
-                   .usage = DVZ_SCENE_BUFFER_USAGE_STORAGE,
-                   .stride = sizeof(vec3),
-                   .byte_size = (uint64_t)PARTICLE_COUNT * sizeof(vec3),
-               });
-    DvzSceneBuffer* age_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
-                   .usage = DVZ_SCENE_BUFFER_USAGE_STORAGE,
-                   .stride = sizeof(float),
-                   .byte_size = (uint64_t)PARTICLE_COUNT * sizeof(float),
-               });
-    DvzSceneBuffer* color_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
-                   .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
-                   .stride = sizeof(DvzColor),
-                   .byte_size = (uint64_t)PARTICLE_COUNT * sizeof(DvzColor),
-               });
-    DvzSceneBuffer* size_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
-                   .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
-                   .stride = sizeof(float),
-                   .byte_size = (uint64_t)PARTICLE_COUNT * sizeof(float),
-               });
-    DvzSceneBuffer* param_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
-                   .usage = DVZ_SCENE_BUFFER_USAGE_STORAGE,
-                   .stride = sizeof(vec4),
-                   .byte_size = 3 * sizeof(vec4),
-               });
+    DvzSceneBuffer* position_buffer = _scene_buffer(
+        scene, DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec3),
+        (uint64_t)PARTICLE_COUNT * sizeof(vec3));
+    DvzSceneBuffer* velocity_buffer = _scene_buffer(
+        scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec3),
+        (uint64_t)PARTICLE_COUNT * sizeof(vec3));
+    DvzSceneBuffer* age_buffer = _scene_buffer(
+        scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(float),
+        (uint64_t)PARTICLE_COUNT * sizeof(float));
+    DvzSceneBuffer* color_buffer = _scene_buffer(
+        scene, DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(DvzColor),
+        (uint64_t)PARTICLE_COUNT * sizeof(DvzColor));
+    DvzSceneBuffer* size_buffer = _scene_buffer(
+        scene, DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(float),
+        (uint64_t)PARTICLE_COUNT * sizeof(float));
+    DvzSceneBuffer* param_buffer =
+        _scene_buffer(scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec4), 3 * sizeof(vec4));
     EXAMPLE_CHECK(
         position_buffer != NULL && velocity_buffer != NULL && age_buffer != NULL &&
             color_buffer != NULL && size_buffer != NULL && param_buffer != NULL,
@@ -565,13 +557,14 @@ int main(int argc, char** argv)
         _compute_shader_source(compute_glsl, sizeof(compute_glsl)),
         "compute shader source too long");
 
-    DvzSceneCompute* compute = dvz_scene_compute(
-        scene, &(DvzSceneComputeDesc){
-                   .label = "gpu_particle_smoke",
-                   .shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL,
-                   .shader_source = compute_glsl,
-                   .dispatch = {(PARTICLE_COUNT + WORKGROUP_SIZE - 1u) / WORKGROUP_SIZE, 1, 1},
-               });
+    DvzSceneComputeDesc compute_desc = dvz_scene_compute_desc();
+    compute_desc.label = "gpu_particle_smoke";
+    compute_desc.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    compute_desc.shader_source = compute_glsl;
+    compute_desc.dispatch[0] = (PARTICLE_COUNT + WORKGROUP_SIZE - 1u) / WORKGROUP_SIZE;
+    compute_desc.dispatch[1] = 1;
+    compute_desc.dispatch[2] = 1;
+    DvzSceneCompute* compute = dvz_scene_compute(scene, &compute_desc);
     EXAMPLE_CHECK(compute != NULL, "dvz_scene_compute() failed");
     EXAMPLE_CHECK(
         dvz_scene_compute_set_buffer(

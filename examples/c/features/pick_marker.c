@@ -6,6 +6,9 @@
 
 /* pick_marker - retained marker item picking and selection proof.
  *
+ * Scenario: marker_picking
+ * Style: features, graphite_cyan, 1600x1200 capture target
+ *
  * Opens a GLFW window showing mixed marker shapes. Move the cursor over the panel to query the
  * frontmost marker item. Hover and selection are rendered by the retained item-state API. Click a
  * marker to toggle persistent selection; click the background to clear it.
@@ -15,6 +18,7 @@
  *
  * Build:  just build
  * Run:    ./build/examples/c/features/pick_marker
+ * Smoke:  ./build/examples/c/features/pick_marker 1
  */
 
 #include <math.h>
@@ -35,8 +39,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH        1024
-#define HEIGHT       900
+#define WIDTH        1600
+#define HEIGHT       1200
 #define GRID_COLS    9
 #define GRID_ROWS    6
 #define MARKER_COUNT (GRID_COLS * GRID_ROWS + 5)

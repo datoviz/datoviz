@@ -7,7 +7,7 @@
 /* volume - deterministic gyroid scalar field rendered with the retained volume visual.
  *
  * Scenario: visual.volume
- * Style: visuals, graphite_cyan, 1280x960 capture target
+ * Style: visuals, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just volume
  * Run:    ./build/examples/c/visuals/volume
@@ -41,8 +41,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1280u
-#define HEIGHT       960u
+#define WIDTH       1600u
+#define HEIGHT      1200u
 #define FIELD_SIZE   128u
 #define BOX_SEGMENTS  12u
 

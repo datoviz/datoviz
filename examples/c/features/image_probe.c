@@ -7,7 +7,7 @@
 /* image_probe - polished image probe with colorbar and live readout.
  *
  * Scenario: image_probe
- * Style: features, graphite_cyan, 1280x960 capture target
+ * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/image_probe
  * Run:    ./build/examples/c/features/image_probe
@@ -39,8 +39,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH               1280u
-#define HEIGHT              960u
+#define WIDTH               1600u
+#define HEIGHT              1200u
 #define FIELD_WIDTH         256u
 #define FIELD_HEIGHT        192u
 #define PROBE_X             0.68f

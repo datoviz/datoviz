@@ -7,7 +7,7 @@
 /* panel_linked_axes - linked temporal panels with a spanning summary panel.
  *
  * Scenario: linked_panels_axes_panzoom
- * Style: features, graphite_cyan, 1280x960 capture target
+ * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/panel_linked_axes
  * Run:    ./build/examples/c/features/panel_linked_axes
@@ -36,8 +36,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH             1280u
-#define HEIGHT            960u
+#define WIDTH             1600u
+#define HEIGHT            1200u
 #define PATH_COUNT        360u
 #define EVENT_COUNT       96u
 #define EVENT_ROWS        8u
