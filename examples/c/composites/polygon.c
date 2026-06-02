@@ -7,7 +7,7 @@
 /* polygon - semantic polygon and polygon-set composites.
  *
  * Scenario: composite_polygon
- * Style: composites, graphite_cyan, 1280x960 capture target
+ * Style: composites, graphite_cyan, 1600x1200 capture target
  *
  * Build:  cmake --build build --target polygon
  * Run:    ./build/examples/c/composites/polygon
@@ -35,8 +35,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1280u
-#define HEIGHT  960u
+#define WIDTH  1600u
+#define HEIGHT 1200u
 
 
 

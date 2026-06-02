@@ -196,9 +196,7 @@ examples/c/composites/
 v0.4 targets:
 
 1. `composite_polygon`: `examples/c/composites/polygon.c`;
-2. `composite_graph_static`: `examples/c/composites/graph_static.c`;
-3. `composite_graph_edge_modes`: `examples/c/composites/graph_edge_modes.c` if Bezier/path edge
-   support lands cleanly.
+2. `composite_graph`: `examples/c/composites/graph.c`.
 
 Keep compute-driven graph layout in `examples/c/lab/` until the compute-to-render buffer contract is
 release-proven.

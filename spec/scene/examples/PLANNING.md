@@ -89,8 +89,7 @@ The main remaining polish or feature gaps are:
 | `brain_volume_mesh` | `partial-now` | volume, transparent mesh, GUI, arcball | Narrow Allen/IBL brain slice for v0.4; full atlas explorer is v0.5. |
 | `dense_point_cloud_edl` | `ready-now` | large points/pixels, EDL, fly/camera | Use LiDAR or synthetic dense cloud as performance/showcase proof. |
 | `composite_polygon` | `needs-rc1-proof` | semantic polygon/polygon-set, fill+stroke composite, holes, region styling | Public composite example target; polygon is not a visual family even if it appears near visual examples. |
-| `composite_graph_static` | `needs-rc1-proof` | semantic graph, user-provided layout, nodes+edges composite, stable ids | Required if graph API is promoted into v0.4. Keep layout user-supplied first. |
-| `composite_graph_edge_modes` | `partial-now` | primitive/segment/path edge modes, Bezier-tessellated curved paths | Add if Bezier and graph edge-mode APIs land cleanly before RC1. |
+| `composite_graph` | `needs-rc1-proof` | semantic graph, user-provided layout, nodes+edges composite, stable ids, Bezier edges | Required if graph API is promoted into v0.4. Keep layout user-supplied first; edge-mode comparisons belong in tests or lab examples. |
 
 
 ## v0.4 Experimental Set
@@ -184,9 +183,8 @@ optional controls for tessellation quality, stroke width, join mode, and overlay
 13. `brain_volume_mesh`
 14. `dense_point_cloud_edl`
 15. `composite_polygon`
-16. `composite_graph_static`
-17. `composite_graph_edge_modes`
-18. `webgpu_browser_subset`
+16. `composite_graph`
+17. `webgpu_browser_subset`
 
 
 ## Promotion Rule

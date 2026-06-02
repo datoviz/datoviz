@@ -21,8 +21,7 @@ find a scenario quickly; use [PLANNING.md](PLANNING.md) for staging decisions an
 | `brain_volume_mesh` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
 | `dense_point_cloud_edl` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
 | `composite_polygon` | `v0.4 required` | [scenarios/v04_required/COMPOSITES.md](scenarios/v04_required/COMPOSITES.md) |
-| `composite_graph_static` | `v0.4 required` | [scenarios/v04_required/COMPOSITES.md](scenarios/v04_required/COMPOSITES.md) |
-| `composite_graph_edge_modes` | `v0.4 required` | [scenarios/v04_required/COMPOSITES.md](scenarios/v04_required/COMPOSITES.md) |
+| `composite_graph` | `v0.4 required` | [scenarios/v04_required/COMPOSITES.md](scenarios/v04_required/COMPOSITES.md) |
 | `webgpu_browser_subset` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
 | `animation_video_export` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
 | `splat_cloud` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |

@@ -15,19 +15,12 @@ geographic datasets, polygon booleans, and PSLG/constrained triangulation out of
 example.
 
 
-## `composite_graph_static`
+## `composite_graph`
 
-Minimal target: a small deterministic graph with user-provided 2D layout, marker nodes, segment
-edges, stable node/edge ids, and optional selected-node styling.
+Minimal target: one deterministic clustered graph with user-provided 2D layout, marker nodes,
+Bezier path edges, stable node/edge ids, per-item styles, and explicit control points on selected
+inter-cluster edges.
 
 This should prove the public graph semantic object and graph composite without promising layout
-algorithms. Layout is uploaded by user code.
-
-
-## `composite_graph_edge_modes`
-
-Pressure target: the same graph rendered in multiple panels using raw primitive lines, high-quality
-segments, and path/Bezier curved edges.
-
-This is the main API pressure test for edge-mode selection, Bezier tessellation, and edge-id mapping.
-It may remain a lab or experimental example if Bezier/path edge support is not release-ready.
+algorithms. Layout is uploaded by user code. Edge-mode comparisons belong in tests or lab examples,
+not in the public composite gallery.
