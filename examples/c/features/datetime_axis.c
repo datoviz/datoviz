@@ -192,17 +192,16 @@ int main(int argc, char** argv)
     rc = dvz_datetime_format_timezone(datetime, "UTC");
     EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_timezone() failed");
     rc = dvz_datetime_format_rule(
-        datetime, DVZ_TIME_INTERVAL_MICROSECOND, "%b %d %H:%M:%S.fff");
+        datetime, DVZ_TIME_INTERVAL_MICROSECOND, "%H:%M:%S.fff");
     EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_rule(microsecond) failed");
     rc = dvz_datetime_format_rule(
-        datetime, DVZ_TIME_INTERVAL_MILLISECOND, "%b %d %H:%M:%S.fff");
+        datetime, DVZ_TIME_INTERVAL_MILLISECOND, "%H:%M:%S.fff");
     EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_rule(millisecond) failed");
-    rc = dvz_datetime_format_rule(
-        datetime, DVZ_TIME_INTERVAL_SECOND, "%b %d %H:%M:%S");
+    rc = dvz_datetime_format_rule(datetime, DVZ_TIME_INTERVAL_SECOND, "%H:%M:%S");
     EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_rule(second) failed");
-    rc = dvz_datetime_format_rule(datetime, DVZ_TIME_INTERVAL_MINUTE, "%b %d %H:%M");
+    rc = dvz_datetime_format_rule(datetime, DVZ_TIME_INTERVAL_MINUTE, "%H:%M");
     EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_rule(minute) failed");
-    rc = dvz_datetime_format_rule(datetime, DVZ_TIME_INTERVAL_HOUR, "%b %d %H:%M");
+    rc = dvz_datetime_format_rule(datetime, DVZ_TIME_INTERVAL_HOUR, "%H:%M");
     EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_rule(hour) failed");
     rc = dvz_datetime_format_rule(datetime, DVZ_TIME_INTERVAL_DAY, "%b %d");
     EXAMPLE_CHECK(rc == 0, "dvz_datetime_format_rule(day) failed");
