@@ -481,9 +481,33 @@ bool _scene_units_format(
 
 ## Open Decisions
 
-1. Timestamp resolution: nanoseconds versus microseconds.
-2. Whether time-zone support beyond UTC is required for v0.4.
-3. Duplicate custom ladder entry policy: replace or fail.
-4. Exact first builtin datetime format rules.
-5. Whether the retained-object `DvzScaleBar*` API lands in v0.4 or the first implementation bridges
-   through `DvzAnnotation*`.
+Preferred v0.4 decisions:
+
+1. Use **microseconds since Unix epoch UTC** for `DvzTimestamp`.
+   This is precise enough for absolute datetime axes and works cleanly across C, Python, WASM/JS,
+   serialization, and raw binding smoke tests. Nanosecond-resolution data should be plotted as
+   compact relative numeric coordinates with duration units unless a future API explicitly promotes
+   nanosecond timestamps.
+2. Ship **UTC-only timezone support** in v0.4.
+   Accept `"UTC"` and reject unsupported timezone strings with a clear diagnostic. IANA timezone and
+   local-time support should be deferred until the calendar implementation needs them.
+3. **Fail on duplicate custom ladder labels or factors**.
+   Returning `-1` with a diagnostic is easier to reason about than replacement because ladder
+   construction order cannot silently change the final mapping. Add an explicit update API later if
+   replacement becomes useful.
+4. Provide two builtin datetime formats:
+   - `DVZ_DATETIME_FORMAT_CONCISE_UTC`: scale-dependent axis labels,
+   - `DVZ_DATETIME_FORMAT_ISO_UTC`: stable UTC labels for tests, readouts, and exact diagnostics.
+5. Start `DVZ_DATETIME_FORMAT_CONCISE_UTC` with these scale-dependent rules:
+   - sub-second: `HH:MM:SS.ffffff`,
+   - second: `%H:%M:%S`,
+   - minute/hour: `%H:%M`,
+   - day: `%b %d`,
+   - month: `%Y-%m`,
+   - year: `%Y`.
+   Fractional seconds should be formatted by Datoviz because C `strftime()` does not standardize a
+   portable `%f` directive.
+6. Land the retained-object `DvzScaleBar*` API with the units work if implementation time permits.
+   Keep `dvz_annotation_scalebar()` as the descriptor bridge for ABI-oriented C callers, tests, and
+   generated bindings. If implementation time gets tight, the retained API may bridge internally to
+   `DvzAnnotation*`, but public teaching examples should use the retained setter path.
