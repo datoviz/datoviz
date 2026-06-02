@@ -31,12 +31,14 @@ non-v0.4-blocking roadmaps live in [`../future/`](../future/).
    still need final promotion into validation/adaptation specs.
 4. [SCIENTIFIC_COORDINATE_NORMALIZATION.md](SCIENTIFIC_COORDINATE_NORMALIZATION.md): shared
    normalization-frame and coordinate readback gaps still need final promotion.
-5. [POLYGON_PSLG_API_DESIGN.md](POLYGON_PSLG_API_DESIGN.md): polygon/PSLG API remains unsettled.
-6. [RENDER_CONTRACT_RESOLVER.md](RENDER_CONTRACT_RESOLVER.md): render-contract resolution remains
+5. [UNITS_AND_TIME_FORMAT_API.md](UNITS_AND_TIME_FORMAT_API.md): shared unit ladders, duration
+   formatting, datetime axes, and scale-bar/axis unit API.
+6. [POLYGON_PSLG_API_DESIGN.md](POLYGON_PSLG_API_DESIGN.md): polygon/PSLG API remains unsettled.
+7. [RENDER_CONTRACT_RESOLVER.md](RENDER_CONTRACT_RESOLVER.md): render-contract resolution remains
    an active API and planning question.
-7. [VISUAL_COMMAND_STREAM.md](VISUAL_COMMAND_STREAM.md): visual command stream remains active
+8. [VISUAL_COMMAND_STREAM.md](VISUAL_COMMAND_STREAM.md): visual command stream remains active
    design pressure.
-8. [VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md](VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md):
+9. [VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md](VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md):
    retained visual-local transform and arcball model/camera target semantics for the textured
    planet cleanup.
 
