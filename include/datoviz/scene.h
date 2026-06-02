@@ -1909,6 +1909,171 @@ DVZ_EXPORT int dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geome
 
 
 /**
+ * Create a scene-owned semantic graph object.
+ *
+ * A graph stores user-provided node positions and indexed edges. Layout algorithms are intentionally
+ * external to the first public API slice and can update node positions through
+ * `dvz_graph_set_node_positions()`.
+ *
+ * @param scene the scene
+ * @param flags reserved graph flags
+ * @return the graph, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzGraph* dvz_graph(DvzScene* scene, uint32_t flags);
+
+
+/**
+ * Destroy a scene-owned graph object.
+ *
+ * @param graph the graph
+ */
+DVZ_EXPORT void dvz_graph_destroy(DvzGraph* graph);
+
+
+/**
+ * Replace all graph nodes with user-provided positions.
+ *
+ * Node style arrays are reset to defaults. Existing edges are discarded because their endpoints
+ * may no longer be valid.
+ *
+ * @param graph the graph
+ * @param node_count number of nodes
+ * @param positions borrowed node positions
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_graph_set_nodes(DvzGraph* graph, uint32_t node_count, const dvec3* positions);
+
+
+/**
+ * Replace the graph node positions without changing node styles or edges.
+ *
+ * @param graph the graph
+ * @param first_node first node index
+ * @param node_count number of node positions to update
+ * @param positions borrowed node positions
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_graph_set_node_positions(
+    DvzGraph* graph, uint32_t first_node, uint32_t node_count, const dvec3* positions);
+
+
+/**
+ * Replace all graph edges.
+ *
+ * Edge endpoints reference node indices in the current graph node array.
+ *
+ * @param graph the graph
+ * @param edge_count number of edges
+ * @param edges borrowed edge endpoint array
+ * @return 0 on success, -1 on invalid endpoints or allocation failure
+ */
+DVZ_EXPORT int
+dvz_graph_set_edges(DvzGraph* graph, uint32_t edge_count, const DvzGraphEdge* edges);
+
+
+/**
+ * Configure graph edge rendering.
+ *
+ * `DVZ_GRAPH_EDGE_SEGMENT` lowers edges to fast independent segment visuals. `DVZ_GRAPH_EDGE_PATH`
+ * lowers straight edges to high-quality path strokes. `DVZ_GRAPH_EDGE_BEZIER` lowers edges to
+ * tessellated cubic Bezier path strokes.
+ *
+ * @param graph the graph
+ * @param mode edge rendering mode
+ * @param tessellation optional Bezier tessellation descriptor used in Bezier mode
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_graph_set_edge_mode(
+    DvzGraph* graph, DvzGraphEdgeMode mode, const DvzBezierTessellationDesc* tessellation);
+
+
+/**
+ * Configure explicit cubic Bezier control points for graph edges.
+ *
+ * If omitted, Bezier mode derives gentle XY control points from each edge's endpoints.
+ *
+ * @param graph the graph
+ * @param first_edge first edge index
+ * @param edge_count number of edge controls to update
+ * @param control0 borrowed first control point array
+ * @param control1 borrowed second control point array
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_graph_set_edge_controls(
+    DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const dvec3* control0,
+    const dvec3* control1);
+
+
+/**
+ * Set a range of graph node colors.
+ *
+ * @param graph the graph
+ * @param first_node first node index
+ * @param node_count number of nodes
+ * @param colors borrowed RGBA colors
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_graph_set_node_colors(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
+                          const DvzColor* colors);
+
+
+/**
+ * Set a range of graph node sizes in pixels.
+ *
+ * @param graph the graph
+ * @param first_node first node index
+ * @param node_count number of nodes
+ * @param sizes borrowed node sizes
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_graph_set_node_sizes(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
+                         const float* sizes);
+
+
+/**
+ * Set a range of graph edge colors.
+ *
+ * @param graph the graph
+ * @param first_edge first edge index
+ * @param edge_count number of edges
+ * @param colors borrowed RGBA colors
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_graph_set_edge_colors(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+                          const DvzColor* colors);
+
+
+/**
+ * Set a range of graph edge stroke widths in pixels.
+ *
+ * @param graph the graph
+ * @param first_edge first edge index
+ * @param edge_count number of edges
+ * @param widths borrowed edge widths
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_graph_set_edge_widths(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+                          const float* widths);
+
+
+/**
+ * Create a scene-owned composite render view for a graph.
+ *
+ * Graph composites expose `"edges"` and `"nodes"` roles.
+ *
+ * @param graph the source graph
+ * @param flags reserved composite flags
+ * @return the composite, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzComposite* dvz_graph_composite(DvzGraph* graph, uint32_t flags);
+
+
+/**
  * Create a scene-owned semantic polygon object.
  *
  * A polygon represents one filled region with one outer ring and optional hole rings.

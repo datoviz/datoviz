@@ -3857,6 +3857,126 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
 
 
 
+int test_scene_graph_composite(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzGraph* graph = dvz_graph(scene, 0);
+    ANN(graph);
+    const dvec3 positions[3] = {
+        {0.0, 0.0, 0.0},
+        {1.0, 0.0, 0.0},
+        {0.5, 1.0, 0.0},
+    };
+    AT(dvz_graph_set_nodes(graph, 3, positions) == 0);
+    const DvzGraphEdge edges[2] = {{.source = 0, .target = 1}, {.source = 1, .target = 2}};
+    AT(dvz_graph_set_edges(graph, 2, edges) == 0);
+    const DvzColor node_colors[3] = {
+        {255, 80, 80, 255},
+        {80, 255, 80, 255},
+        {80, 80, 255, 255},
+    };
+    const float node_sizes[3] = {10.0f, 20.0f, 30.0f};
+    const DvzColor edge_colors[2] = {{220, 220, 220, 255}, {255, 180, 80, 255}};
+    const float edge_widths[2] = {2.0f, 4.0f};
+    AT(dvz_graph_set_node_colors(graph, 0, 3, node_colors) == 0);
+    AT(dvz_graph_set_node_sizes(graph, 0, 3, node_sizes) == 0);
+    AT(dvz_graph_set_edge_colors(graph, 0, 2, edge_colors) == 0);
+    AT(dvz_graph_set_edge_widths(graph, 0, 2, edge_widths) == 0);
+
+    DvzComposite* composite = dvz_graph_composite(graph, 0);
+    ANN(composite);
+    AT(dvz_composite_visual_count(composite) == 3);
+    AT(dvz_panel_add_composite(
+           panel, composite,
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 7}) == 0);
+    AT(panel->visual_count == 3);
+    AT(dvz_panel_add_composite(panel, composite, NULL) == 0);
+    AT(panel->visual_count == 3);
+
+    DvzVisual* edge_visual = dvz_composite_visual(composite, "edges");
+    DvzVisual* node_visual = dvz_composite_visual(composite, "nodes");
+    ANN(edge_visual);
+    ANN(node_visual);
+    AT(edge_visual->type == DVZ_VISUAL_TYPE_SEGMENT);
+    AT(node_visual->type == DVZ_VISUAL_TYPE_MARKER);
+    AT(panel->visuals[0].z_layer == 7);
+    AT(panel->visuals[2].z_layer == 8);
+
+    DvzVisualDataView node_position_view = {0};
+    AT(dvz_visual_data(node_visual, "position", &node_position_view) == 0);
+    AT(node_position_view.item_count == 3);
+    const float* node_positions = node_position_view.data;
+    AC(node_positions[0], 0.0f, EPS);
+    AC(node_positions[3], 1.0f, EPS);
+
+    DvzVisualDataView node_size_view = {0};
+    AT(dvz_visual_data(node_visual, "diameter", &node_size_view) == 0);
+    AT(node_size_view.item_count == 3);
+    const float* sizes = node_size_view.data;
+    AC(sizes[0], 10.0f, EPS);
+    AC(sizes[2], 30.0f, EPS);
+
+    DvzVisualDataView edge_start_view = {0};
+    DvzVisualDataView edge_end_view = {0};
+    DvzVisualDataView edge_width_view = {0};
+    AT(dvz_visual_data(edge_visual, "position_start", &edge_start_view) == 0);
+    AT(dvz_visual_data(edge_visual, "position_end", &edge_end_view) == 0);
+    AT(dvz_visual_data(edge_visual, "stroke_width", &edge_width_view) == 0);
+    AT(edge_start_view.item_count == 2);
+    const float* starts = edge_start_view.data;
+    const float* ends = edge_end_view.data;
+    const float* widths = edge_width_view.data;
+    AC(starts[0], 0.0f, EPS);
+    AC(ends[0], 1.0f, EPS);
+    AC(widths[0], 2.0f, EPS);
+    AC(widths[1], 4.0f, EPS);
+
+    DvzBezierTessellationDesc tess = {
+        DVZ_STRUCT_INIT_FIELDS(DvzBezierTessellationDesc), .segment_count = 4};
+    AT(dvz_graph_set_edge_mode(graph, DVZ_GRAPH_EDGE_BEZIER, &tess) == 0);
+    _scene_prepare_composite_visuals(figure);
+    DvzVisual* path_edges = dvz_composite_visual(composite, "edges");
+    ANN(path_edges);
+    AT(path_edges->type == DVZ_VISUAL_TYPE_PATH);
+    AT(path_edges->visible);
+    AT(!edge_visual->visible);
+    DvzVisualDataView path_position_view = {0};
+    AT(dvz_visual_data(path_edges, "position", &path_position_view) == 0);
+    AT(path_position_view.item_count == 10);
+    AT(_visual_family_state(path_edges)->path.subpath_count == 2);
+    AT(_visual_family_state(path_edges)->path.subpath_lengths[0] == 5);
+    AT(_visual_family_state(path_edges)->path.subpath_lengths[1] == 5);
+
+    const dvec3 moved[1] = {{2.0, 0.0, 0.0}};
+    AT(dvz_graph_set_node_positions(graph, 1, 1, moved) == 0);
+    _scene_prepare_composite_visuals(figure);
+    AT(dvz_visual_data(node_visual, "position", &node_position_view) == 0);
+    node_positions = node_position_view.data;
+    AC(node_positions[3], 2.0f, EPS);
+    AT(dvz_visual_data(path_edges, "position", &path_position_view) == 0);
+    const float* path_positions = path_position_view.data;
+    AC(path_positions[12], 2.0f, EPS);
+
+    dvz_graph_destroy(graph);
+    AT(dvz_composite_visual_count(composite) == 0);
+    AT(!node_visual->visible);
+    AT(!path_edges->visible);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_additional_typed_data_uploads(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

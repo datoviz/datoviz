@@ -46,6 +46,7 @@
 #define DVZ_SCENE_MAX_COMPOSITES 128
 #define DVZ_SCENE_MAX_POLYGONS   64
 #define DVZ_SCENE_MAX_POLYGON_SETS 32
+#define DVZ_SCENE_MAX_GRAPHS     64
 #define DVZ_SCENE_MAX_FIELDS     128
 #define DVZ_SCENE_MAX_BUFFERS    128
 #define DVZ_SCENE_MAX_COMPUTES   64
@@ -128,12 +129,15 @@ typedef enum
     DVZ_COMPOSITE_TYPE_NONE,
     DVZ_COMPOSITE_TYPE_POLYGON,
     DVZ_COMPOSITE_TYPE_POLYGON_SET,
+    DVZ_COMPOSITE_TYPE_GRAPH,
 } DvzCompositeType;
 
 
 
 typedef struct DvzPolygonStoredRing DvzPolygonStoredRing;
 typedef struct DvzPolygonSetItem DvzPolygonSetItem;
+typedef struct DvzGraphNode DvzGraphNode;
+typedef struct DvzGraphEdgeRecord DvzGraphEdgeRecord;
 typedef struct DvzCompositeVisual DvzCompositeVisual;
 
 
@@ -194,6 +198,52 @@ struct DvzPolygonSet
     DvzSegmentCap stroke_cap_end;
     DvzPathJoin stroke_join;
     float stroke_miter_limit;
+    uint64_t version;
+};
+
+
+
+struct DvzGraphNode
+{
+    dvec3 position;
+    DvzColor color;
+    float size;
+    DvzMarkerShape shape;
+    float angle;
+    bool visible;
+};
+
+
+
+struct DvzGraphEdgeRecord
+{
+    uint32_t source;
+    uint32_t target;
+    dvec3 control0;
+    dvec3 control1;
+    bool has_controls;
+    DvzColor color;
+    float width;
+    bool visible;
+};
+
+
+
+struct DvzGraph
+{
+    DvzScene* scene;
+    uint32_t flags;
+    bool active;
+    DvzGraphNode* nodes;
+    uint32_t node_count;
+    DvzGraphEdgeRecord* edges;
+    uint32_t edge_count;
+    DvzGraphEdgeMode edge_mode;
+    DvzBezierTessellationDesc tessellation;
+    DvzSegmentCap edge_cap_start;
+    DvzSegmentCap edge_cap_end;
+    DvzPathJoin edge_join;
+    float edge_miter_limit;
     uint64_t version;
 };
 
@@ -1745,6 +1795,9 @@ struct DvzScene
 
     uint32_t polygon_set_count;
     DvzPolygonSet polygon_sets[DVZ_SCENE_MAX_POLYGON_SETS];
+
+    uint32_t graph_count;
+    DvzGraph graphs[DVZ_SCENE_MAX_GRAPHS];
 
     uint32_t composite_count;
     DvzComposite composites[DVZ_SCENE_MAX_COMPOSITES];

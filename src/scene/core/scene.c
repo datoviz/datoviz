@@ -42,6 +42,7 @@
 #include "domain/compute_internal.h"
 #include "domain/field_internal.h"
 #include "domain/polygon_internal.h"
+#include "domain/graph_internal.h"
 #include "query/internal.h"
 #include "text/text_internal.h"
 #include "datoviz/scene.h"
@@ -214,6 +215,8 @@ void dvz_scene_destroy(DvzScene* scene)
         _scene_polygon_set_reset(&scene->polygon_sets[i]);
     for (uint32_t i = 0; i < scene->polygon_count; i++)
         _scene_polygon_reset(&scene->polygons[i]);
+    for (uint32_t i = 0; i < scene->graph_count; i++)
+        _scene_graph_reset(&scene->graphs[i]);
     for (uint32_t i = 0; i < scene->visual_count; i++)
         _scene_visual_reset(&scene->visuals[i], true);
     for (uint32_t i = 0; i < scene->scale_count; i++)

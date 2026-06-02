@@ -60,6 +60,7 @@ typedef struct DvzSceneCompute      DvzSceneCompute;
 typedef struct DvzComposite         DvzComposite;
 typedef struct DvzPolygon           DvzPolygon;
 typedef struct DvzPolygonSet        DvzPolygonSet;
+typedef struct DvzGraph             DvzGraph;
 typedef struct DvzCamera            DvzCamera;
 typedef struct DvzController        DvzController;
 typedef struct DvzControllerLink    DvzControllerLink;
@@ -443,6 +444,14 @@ struct DvzVectorStyle
     float miter_limit;
 };
 typedef struct DvzVectorStyle DvzVectorStyle;
+
+
+struct DvzGraphEdge
+{
+    uint32_t source; // source node index
+    uint32_t target; // target node index
+};
+typedef struct DvzGraphEdge DvzGraphEdge;
 
 
 struct DvzSceneBufferDesc

@@ -20,6 +20,7 @@
 #include "core/scene_notify_internal.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
+#include "graph_internal.h"
 #include "polygon_internal.h"
 #include "_visual_internal.h"
 
@@ -605,6 +606,8 @@ static int _composite_prepare(DvzComposite* composite)
         return _polygon_composite_prepare(composite);
     if (composite->type == DVZ_COMPOSITE_TYPE_POLYGON_SET)
         return _polygon_set_composite_prepare(composite);
+    if (composite->type == DVZ_COMPOSITE_TYPE_GRAPH)
+        return _graph_composite_prepare(composite);
     return -1;
 }
 

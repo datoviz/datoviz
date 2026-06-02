@@ -233,6 +233,14 @@ typedef enum
 
 typedef enum
 {
+    DVZ_GRAPH_EDGE_SEGMENT = 0,
+    DVZ_GRAPH_EDGE_PATH = 1,
+    DVZ_GRAPH_EDGE_BEZIER = 2,
+} DvzGraphEdgeMode;
+
+
+typedef enum
+{
     DVZ_MARKER_SHAPE_DISC = 0,
     DVZ_MARKER_SHAPE_SQUARE,
     DVZ_MARKER_SHAPE_TRIANGLE,
