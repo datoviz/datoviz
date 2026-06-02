@@ -15,8 +15,9 @@ The examples system serves four separate user needs:
 
 1. teach one API feature with the smallest useful program;
 2. teach one visual family with the smallest useful scene;
-3. present a polished, curated public gallery with a consistent graphic direction;
-4. prove scientific relevance with real datasets, real encodings, and provenance.
+3. demonstrate a small multi-feature workflow without turning it into a gallery piece;
+4. present a polished, curated public gallery with a consistent graphic direction;
+5. prove scientific relevance with real datasets, real encodings, and provenance.
 
 These needs overlap, but they should not be collapsed into one bucket. A beautiful showcase does not
 replace a minimal copy-safe feature example. A real-data scientific example does not need to match
@@ -32,7 +33,8 @@ Use these logical source categories for new first-class examples:
 examples/
   features/
   visuals/
-  showcase/
+  workflows/
+  showcases/
   scientific/
 ```
 
@@ -48,7 +50,8 @@ search, and gallery tooling.
 | --- | --- | --- | --- |
 | `features` | one API feature | teach one capability quickly | usually synthetic |
 | `visuals` | one visual family | teach one visual type with minimal surrounding setup | usually synthetic |
-| `showcase` | one polished composition | provide curated visual impact and design consistency | synthetic or domain-flavored fake data allowed |
+| `workflows` | one small task pattern | show several supported features working together | usually synthetic |
+| `showcases` | one polished composition | provide curated visual impact and design consistency | synthetic or domain-flavored fake data allowed |
 | `scientific` | one real dataset story | prove relevance to scientific users | real data with provenance |
 
 Feature examples should stay minimal. They demonstrate a capability such as a colorbar, controller,
@@ -57,6 +60,10 @@ pick query, texture upload, linked panel, or partial update.
 Visual examples should stay minimal. They demonstrate a public visual family such as point, marker,
 path, image, mesh, sphere, volume, text, or labels. They may use a few supporting features, but only
 when needed to make the visual family intelligible.
+
+Workflow examples are small composed examples. They demonstrate task patterns such as linked
+panels, linked panzoom state, probe plus readout, or explanatory layouts. They may combine several
+supported features, but they should remain compact and synthetic unless promoted to `scientific`.
 
 Showcase examples are allowed to compose visuals, panels, styling, annotations, camera motion, and
 synthetic or procedural data. Their job is to make the project look coherent and modern. They must
@@ -102,7 +109,8 @@ Default gallery behavior:
 | --- | --- |
 | `features` | excluded |
 | `visuals` | excluded unless promoted |
-| `showcase` | included when visually mature |
+| `workflows` | excluded unless promoted |
+| `showcases` | included when visually mature |
 | `scientific` | included when visually mature and properly attributed |
 
 Promoted gallery entries should have strong screenshots or short loops, stable captures, clear

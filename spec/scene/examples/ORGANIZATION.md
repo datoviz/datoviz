@@ -55,12 +55,17 @@ ownership, plotting conveniences, notebooks, or ecosystem data loading, it belon
 - Visuals: one active visual family at a time, such as point, pixel, marker, primitive, segment,
   path, mesh, image, volume slice/rendering, sphere impostor, and text/annotation when active.
 - Features: reusable scene/app capabilities, such as partial update, mutability hints, visibility,
-  depth, controllers, sampled fields, colormaps, colorbar, picking, probing, selection, links,
-  pinned readout, video export, and DVZR.
+  depth, controllers, sampled fields, colormaps, colorbar, picking, probing, selection, pinned
+  readout, video export, and DVZR.
+- Workflows: compact composed task examples that combine supported features without becoming
+  gallery showcases, such as linked panels with axes, probe plus readout, or explanatory layouts.
 - Techniques and low-level runtime proofs: keep as tests, WebGPU fixtures, or `lab/` material until
   they become polished public teaching examples.
-- Showcases: polished scientific/domain demos for geo, physics, engineering, dashboards,
-  neuroscience, astronomy, medical, volume, and embeddings.
+- Showcases: polished domain demos for geo, physics, engineering, dashboards, neuroscience,
+  astronomy, medical, volume, and embeddings. Synthetic or generated data is allowed when the
+  example is honest about it.
+- Scientific: real-dataset examples with recorded source, license, citation or attribution,
+  preprocessing command, and encoding notes.
 - Regression/golden: owned by tests and fixture infrastructure, not by a public examples lane.
 - Stress/benchmark: keep in flat `examples/c/lab/` unless a dedicated benchmark suite is created.
 
@@ -93,7 +98,10 @@ examples/
   c/
     features/
     visuals/
+    workflows/
     showcases/
+    scientific/
+    composites/
     lab/
     legacy/
   python/

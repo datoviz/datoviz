@@ -8,10 +8,12 @@ material.
 
 | Folder | Purpose |
 | --- | --- |
-| `features/` | Public feature examples: axes, panels, scale bars, probing, picking, annotations, and composed reusable scene capabilities. |
+| `features/` | Public feature examples: one API capability or one feature family. |
 | `visuals/` | Future public one-visual examples. Old visual smoke tests currently live in `legacy/visuals/`. |
 | `composites/` | Public semantic composite examples such as polygons and graphs. |
-| `showcases/` | Public gallery-facing scientific examples. |
+| `workflows/` | Public compact multi-feature workflows with synthetic or generated data. |
+| `showcases/` | Public gallery-facing examples. Synthetic, generated, and domain-flavored fake data are allowed when stated clearly. |
+| `scientific/` | Public real-data scientific examples with source, license, attribution, preprocessing, and encoding notes. |
 | `lab/` | Non-public experiments, diagnostics, stress/perf demos, and development workbenches. Flat folder only. |
 | `legacy/` | Temporary archive of older examples that are not built by default. Promote or delete from here deliberately. |
 
