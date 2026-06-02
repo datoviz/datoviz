@@ -584,3 +584,27 @@ bool dvz_axis_set_plot_margins(
     _axis_mark_dirty(axis);
     return true;
 }
+
+
+/**
+ * Attach numeric units to one panel-owned axis.
+ *
+ * @param axis the axis
+ * @param units units object, or NULL to restore plain numeric formatting
+ * @return whether the axis was updated
+ */
+bool dvz_axis_set_units(DvzAxis* axis, DvzUnits* units)
+{
+    if (axis == NULL)
+        return false;
+    if (units != NULL)
+    {
+        DvzScene* scene =
+            axis->panel != NULL && axis->panel->figure != NULL ? axis->panel->figure->scene : NULL;
+        if (units->scene != scene || units->ladder == NULL)
+            return false;
+    }
+    axis->units = units;
+    _axis_mark_dirty(axis);
+    return true;
+}

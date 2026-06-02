@@ -142,6 +142,8 @@ static DvzUnits* _scalebar_descriptor_units(DvzAnnotation* annotation)
                         fabs(desc->data_to_unit) :
                         1.0;
     const char* unit = desc->unit != NULL ? desc->unit : "";
+    if (unit[0] == '\0')
+        return dvz_units_builtin(annotation->scene, DVZ_UNIT_LADDER_RAW, factor);
     if (strcmp(unit, "m") == 0)
         return dvz_units_builtin(annotation->scene, DVZ_UNIT_LADDER_METRIC_LENGTH, factor);
 

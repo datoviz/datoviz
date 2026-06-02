@@ -1325,6 +1325,11 @@ static int test_scene_units_formatting_core(TstContext* suite, const TstCase* it
     AT(_scene_units_format(duration, 2500.0, NULL, label, sizeof(label)));
     AT(strcmp(label, "2.5 s") == 0);
 
+    DvzUnits* raw = dvz_units_builtin(scene, DVZ_UNIT_LADDER_RAW, 1.0);
+    ANN(raw);
+    AT(_scene_units_format(raw, 42.0, NULL, label, sizeof(label)));
+    AT(strcmp(label, "42") == 0);
+
     DvzUnitLadder* genome = dvz_unit_ladder_create(scene, "bp");
     ANN(genome);
     AT(dvz_unit_ladder_add(genome, 1e6, "Mb") == 0);

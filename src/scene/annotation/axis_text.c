@@ -24,6 +24,7 @@
 #include "_compat.h"
 #include "_scene.h"
 #include "axis_internal.h"
+#include "core/units_internal.h"
 #include "datoviz/scene.h"
 #include "annotation/text_visual_bridge.h"
 
@@ -65,6 +66,39 @@ static void _axis_format_tick(double value, double step, char* out, uint32_t out
     if (isfinite(step) && step > 0.0 && fabs(value) < 0.5 * step * 1e-9)
         value = 0.0;
     dvz_snprintf(out, out_size, "%.6g", value);
+}
+
+
+/**
+ * Format one axis tick label through the active axis formatter.
+ *
+ * @param axis the axis
+ * @param value the tick value
+ * @param visible_min visible data minimum
+ * @param visible_max visible data maximum
+ * @param out output string buffer
+ * @param out_size output string buffer size
+ */
+static void _axis_format_tick_label(
+    const DvzAxis* axis, double value, double visible_min, double visible_max, char* out,
+    uint32_t out_size)
+{
+    ANN(axis);
+    ANN(out);
+    if (out_size == 0)
+        return;
+    if (axis->units != NULL)
+    {
+        DvzUnitFormatContext context = {
+            .mode = DVZ_UNIT_DISPLAY_AXIS_STABLE,
+            .has_axis_range = true,
+            .axis_data_min = visible_min,
+            .axis_data_max = visible_max,
+        };
+        if (_scene_units_format(axis->units, value, &context, out, out_size))
+            return;
+    }
+    _axis_format_tick(value, axis->tick_lstep, out, out_size);
 }
 
 
@@ -305,7 +339,8 @@ void _axis_update_text(
             continue;
 
         char tick_label[DVZ_SCENE_LABEL_SIZE] = {0};
-        _axis_format_tick(axis->ticks[i], axis->tick_lstep, tick_label, sizeof(tick_label));
+        _axis_format_tick_label(
+            axis, axis->ticks[i], visible_min, visible_max, tick_label, sizeof(tick_label));
         float px = 0.0f;
         float py = 0.0f;
         if (axis->dim == DVZ_DIM_X)

@@ -159,7 +159,9 @@ static void _unit_ladder_fill_builtin(DvzUnitLadder* ladder, DvzUnitLadderBuilti
     case DVZ_UNIT_LADDER_RAW:
     default:
         dvz_strlcpy(ladder->canonical_unit, "", sizeof(ladder->canonical_unit));
-        (void)_unit_ladder_add_entry(ladder, 1.0, "");
+        ladder->entries[0].factor = 1.0;
+        ladder->entries[0].label[0] = '\0';
+        ladder->entry_count = 1;
         break;
     }
 }

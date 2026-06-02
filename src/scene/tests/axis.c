@@ -553,6 +553,58 @@ static int test_axis_text_labels(TstContext* suite, const TstCase* item)
 }
 
 
+static int test_axis_numeric_unit_labels(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 5000.0) == 0);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+    DvzUnits* length = dvz_units_builtin(scene, DVZ_UNIT_LADDER_METRIC_LENGTH, 1e-6);
+    ANN(length);
+    AT(dvz_axis_set_units(axis, length));
+
+    _scene_prepare_axis_visuals(figure);
+    ANN(axis->text_visual);
+    uint32_t string_count = _visual_family_state(axis->text_visual)->text.string_count;
+    bool saw_mm = false;
+    bool saw_um = false;
+    for (uint32_t i = 0; i < string_count; i++)
+    {
+        const char* string = _visual_family_state(axis->text_visual)->text.strings[i];
+        if (strcmp(string, "1 mm") == 0)
+            saw_mm = true;
+        if (strstr(string, "um") != NULL)
+            saw_um = true;
+    }
+    AT(saw_mm);
+    AT(!saw_um);
+
+    AT(dvz_axis_set_units(axis, NULL));
+    _scene_prepare_axis_visuals(figure);
+    string_count = _visual_family_state(axis->text_visual)->text.string_count;
+    bool saw_plain = false;
+    for (uint32_t i = 0; i < string_count; i++)
+    {
+        const char* string = _visual_family_state(axis->text_visual)->text.strings[i];
+        if (strcmp(string, "1000") == 0)
+            saw_plain = true;
+    }
+    AT(saw_plain);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 static int test_axis_text_hidpi_scales_glyph_bounds(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -1754,6 +1806,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_minor_ticks);
     TST_CASE(test_axis_tick_density_tracks_panel_size);
     TST_CASE(test_axis_text_labels);
+    TST_CASE(test_axis_numeric_unit_labels);
     TST_CASE(test_axis_text_hidpi_scales_glyph_bounds);
     TST_CASE(test_axis_text_renderer_style);
     TST_CASE(test_axis_text_updates_after_domain_change);
