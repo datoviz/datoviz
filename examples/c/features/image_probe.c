@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* image_probe - polished image probe with colorbar and live readout.
+/* image_probe - scalar image pixel-query proof with a live probe marker.
  *
  * Scenario: image_probe
  * Style: features, graphite_cyan, 1600x1200 capture target
@@ -48,7 +48,6 @@
 #define PROBE_REQUEST_ID    1u
 #define PROBE_RING_SEGMENTS 28u
 #define PROBE_SEGMENTS      (PROBE_RING_SEGMENTS + 4u)
-#define PROBE_CARD_TEXT     "value --"
 #define COLORMAP_LUT_SIZE   256u
 
 static const float TAU = 6.28318530718f;
@@ -67,7 +66,6 @@ struct ImageProbeState
     DvzPanel* panel;
     DvzVisual* probe_segments;
     DvzVisual* probe_dot;
-    DvzOverlayCard* probe_card;
     bool cursor_valid;
     double cursor_x;
     double cursor_y;
@@ -653,81 +651,6 @@ static DvzScale* _add_probe_scale(DvzScene* scene)
 
 
 /**
- * Add the colorbar for the shared scale.
- *
- * @param panel panel receiving the colorbar
- * @param scale scale bound to the colorbar
- * @return created colorbar, or NULL on failure
- */
-static DvzColorbar* _add_probe_colorbar(DvzPanel* panel, DvzScale* scale)
-{
-    ANN(panel);
-    ANN(scale);
-
-    DvzColorbar* colorbar = dvz_colorbar(
-        panel, scale,
-        &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
-            .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
-            .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
-            .title = "intensity",
-            .reserve_px = 96.0f,
-            .ramp_width_px = 26.0f,
-            .plot_gap_px = 12.0f,
-            .tick_length_px = 6.0f,
-            .label_gap_px = 6.0f,
-        });
-    if (colorbar != NULL)
-        dvz_colorbar_set_format(
-            colorbar, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 2, .trim_trailing_zeros = true});
-    return colorbar;
-}
-
-
-
-/**
- * Create the compact live probe readout card.
- *
- * @param panel panel receiving the overlay
- * @return created overlay card, or NULL on failure
- */
-static DvzOverlayCard* _add_probe_card(DvzPanel* panel)
-{
-    ANN(panel);
-
-    DvzOverlay* overlay = dvz_overlay(panel, 0);
-    if (overlay == NULL)
-        return NULL;
-
-    DvzOverlayCardStyle style = dvz_overlay_card_style();
-    DvzColor panel_bg = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_PANEL_BG);
-    DvzColor text = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
-    style.background_color = dvz_color_rgba(panel_bg.r, panel_bg.g, panel_bg.b, 232);
-    style.text_color = text;
-    style.padding_px[0] = 10.0f;
-    style.padding_px[1] = 6.0f;
-    style.min_width_px = 104.0f;
-    style.height_px = 28.0f;
-    style.glyph_advance_px = 7.0f;
-    style.text_size_px = 13.0f;
-    style.text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
-    style.max_text_chars = 56u;
-
-    float anchor[2] = {(float)WIDTH * PROBE_X, (float)HEIGHT * (1.0f - PROBE_Y)};
-    (void)_probe_data_to_panel(panel, PROBE_X, PROBE_Y, anchor);
-
-    return dvz_overlay_card(
-        overlay,
-        &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
-            .text = PROBE_CARD_TEXT,
-            .placement = DVZ_OVERLAY_CARD_PLACEMENT_PIXEL,
-            .anchor_px = {anchor[0], anchor[1]},
-            .offset_px = {14.0f, 14.0f},
-            .style = &style,
-        });
-}
-
-
-/**
  * Resolve one scalar probe value from a query result.
  *
  * @param state image probe example state
@@ -752,40 +675,6 @@ _query_probe_value(ImageProbeState* state, const DvzQueryResult* query, double* 
     }
     *out_value = (double)_sample_field(x, y);
     return true;
-}
-
-
-
-/**
- * Update the compact live probe readout card from one query result.
- *
- * @param state image query example state
- * @param query query result to display
- */
-static void _update_probe_card(ImageProbeState* state, const DvzQueryResult* query)
-{
-    if (state == NULL || state->probe_card == NULL || query == NULL)
-        return;
-
-    float anchor[2] = {(float)query->panel_position[0], (float)query->panel_position[1]};
-    float offset[2] = {14.0f, 14.0f};
-    dvz_overlay_card_set_layout(state->probe_card, anchor, offset);
-
-    char text[128] = {0};
-    double value = 0.0;
-    if (_query_probe_value(state, query, &value))
-    {
-        int n = dvz_snprintf(text, sizeof(text), "value %.3f", value);
-        if (n <= 0 || (size_t)n >= sizeof(text))
-            return;
-    }
-    else
-    {
-        int n = dvz_snprintf(text, sizeof(text), "value --");
-        if (n <= 0 || (size_t)n >= sizeof(text))
-            return;
-    }
-    dvz_overlay_card_set_text(state->probe_card, text);
 }
 
 
@@ -883,18 +772,12 @@ _image_probe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void*
     state->cursor_x = event->pos[0];
     state->cursor_y = event->pos[1];
     _update_probe_marker_from_cursor(state);
-    if (state->probe_card != NULL)
-    {
-        float anchor[2] = {(float)state->cursor_x, (float)state->cursor_y};
-        float offset[2] = {14.0f, 14.0f};
-        dvz_overlay_card_set_layout(state->probe_card, anchor, offset);
-    }
 }
 
 
 
 /**
- * Poll image query results, update the live readout, and queue the next probe.
+ * Poll image query results and queue the next probe.
  *
  * @param win view whose frame just completed
  * @param user_data image probe example state
@@ -909,8 +792,6 @@ static void _image_probe_frame(DvzView* win, void* user_data)
     DvzQueryResult query = {0};
     while (dvz_scene_poll_query(state->scene, &query))
     {
-        _update_probe_card(state, &query);
-
         if (!_query_changed(state, &query))
             continue;
 
@@ -955,7 +836,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
 
     bool ok = dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.045f, .right = 0.030f, .bottom = 0.055f,
+        panel, &(DvzPanelLayoutReserve){.left = 0.045f, .right = 0.045f, .bottom = 0.055f,
                                         .top = 0.045f});
     EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve() failed");
     ok = _set_probe_domain(panel);
@@ -965,9 +846,6 @@ int main(int argc, char** argv)
 
     DvzScale* scale = _add_probe_scale(scene);
     EXAMPLE_CHECK(scale != NULL, "adding probe scale failed");
-
-    DvzColorbar* colorbar = _add_probe_colorbar(panel, scale);
-    EXAMPLE_CHECK(colorbar != NULL, "adding probe colorbar failed");
 
     float values[FIELD_WIDTH * FIELD_HEIGHT] = {0};
     _fill_probe_field(values);
@@ -979,9 +857,6 @@ int main(int argc, char** argv)
     DvzVisual* probe_dot = NULL;
     ok = _add_probe_marker(scene, panel, &probe_segments, &probe_dot);
     EXAMPLE_CHECK(ok, "adding probe marker failed");
-
-    DvzOverlayCard* probe_card = _add_probe_card(panel);
-    EXAMPLE_CHECK(probe_card != NULL, "adding probe readout card failed");
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
@@ -1000,7 +875,6 @@ int main(int argc, char** argv)
         .panel = panel,
         .probe_segments = probe_segments,
         .probe_dot = probe_dot,
-        .probe_card = probe_card,
         .cursor_valid = true,
         .cursor_x = initial_probe_px[0],
         .cursor_y = initial_probe_px[1],
