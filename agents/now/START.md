@@ -14,10 +14,11 @@ The active stack is:
 scene -> drp2 -> vklite/canvas/stream -> app
 ```
 
-Native scene, app/offscreen rendering, DRP2 command emission, raw `ctypes`, retained textured mesh,
-text, axes, colorbars, labels, scale bars, picking/query first slices, and the WebGPU fixture runner
-are active v0.4 surfaces. The WASM point/panzoom scene bridge is also active as the first
-experimental browser scene slice. Treat them as real implementation, not scaffolding.
+Native scene, app/offscreen rendering, DRP2 command emission, raw `ctypes`, the proposed
+array-aware Python facade, retained textured mesh, text, axes, colorbars, labels, scale bars,
+picking/query first slices, and the WebGPU fixture runner are active v0.4 surfaces. The WASM
+point/panzoom scene bridge is also active as the first experimental browser scene slice. Treat them
+as real implementation, not scaffolding.
 
 
 ## Start Work
@@ -28,7 +29,9 @@ experimental browser scene slice. Treat them as real implementation, not scaffol
 4. Use [../../spec/scene/README.md](../../spec/scene/README.md) before changing scene semantics.
 5. Use [../../spec/drp2/README.md](../../spec/drp2/README.md) before changing DRP2 commands,
    schemas, fixtures, or scene DRP2 emission.
-6. Use [TEST_REFACTORING.md](TEST_REFACTORING.md) for the next test-suite split checkpoint.
+6. Use [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md) before changing
+   the top-level Python package, raw-binding generation, or NumPy/array argument adaptation.
+7. Use [TEST_REFACTORING.md](TEST_REFACTORING.md) for the next test-suite split checkpoint.
 
 
 ## Guardrails

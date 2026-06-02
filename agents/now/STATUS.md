@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active RC preparation. Updated: 2026-05-30.
+Status: active RC preparation. Updated: 2026-06-03.
 
 Keep this file short. Durable behavior belongs in `spec/`; completed history belongs in git
 history, not in agent archives.
@@ -25,6 +25,11 @@ Closed first slices that should stay in validation: raw `ctypes`, retained textu
 axes/ticks, colorbars, labels/readouts, scale bars, app/offscreen rendering, broad item/sample query
 paths, scene visual-boundary checks, WebGPU fixture runner, and WASM point/panzoom scene smoke.
 
+New Python binding direction: keep `datoviz.raw` as the exact generated `ctypes` layer, and make
+top-level `import datoviz as dvz` the planned array-aware facade that preserves `dvz_*` names while
+accepting NumPy arrays for policy-declared data arguments. Source of truth:
+[../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md).
+
 
 ## Active Lanes
 
@@ -39,8 +44,8 @@ paths, scene visual-boundary checks, WebGPU fixture runner, and WASM point/panzo
    repeated-frame, or churn bugs.
 6. **Qt/PyQt provider:** optional Qt bridge shared library, dynamic Python loader, binding
    diagnostics, and hosted PyQt smoke proof.
-7. **Docs inventory:** public header inventory, ownership notes, raw `ctypes` scope, WebGPU/WASM
-   scope, known issues, and GSP/VisPy2 boundary.
+7. **Docs inventory:** public header inventory, ownership notes, raw `ctypes` scope, array-aware
+   Python facade scope, WebGPU/WASM scope, known issues, and GSP/VisPy2 boundary.
 
 When adding visible capability work, prefer gallery-proof improvements first, then vector visual
 polish, label query hardening, explanatory layout proof, and optional experimental splats only if
@@ -58,6 +63,7 @@ release-proof lanes remain on track.
 7. [SHADER_TRANSFORM_FUTURE_COMPAT.md](SHADER_TRANSFORM_FUTURE_COMPAT.md)
 8. [../../spec/scene/integration/OPTIONAL_PROVIDERS.md](../../spec/scene/integration/OPTIONAL_PROVIDERS.md)
 9. [../../spec/scene/integration/QT_HOST_BRIDGE.md](../../spec/scene/integration/QT_HOST_BRIDGE.md)
+10. [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md)
 
 
 ## Validation Defaults

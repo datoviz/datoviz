@@ -1,6 +1,6 @@
 # Datoviz v0.4 Documentation Plan
 
-Status: active documentation roadmap. Updated: 2026-05-30.
+Status: active documentation roadmap. Updated: 2026-06-03.
 
 Keep API, scene, DRP2, and documentation architecture contracts in `spec/`. Keep this file focused
 on release documentation gates.
@@ -15,7 +15,9 @@ on release documentation gates.
 5. Scene API and semantics: [../../spec/scene/](../../spec/scene/).
 6. DRP2 commands, schemas, fixtures, and runtime contracts: [../../spec/drp2/](../../spec/drp2/).
 7. Documentation IA, example coverage, and AI-friendly docs rules: [../../spec/docs/](../../spec/docs/).
-8. Release readiness, RC process, communication, and gallery outreach:
+8. Python binding import layers and array-aware facade:
+   [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md).
+9. Release readiness, RC process, communication, and gallery outreach:
    [../../spec/release/](../../spec/release/).
 
 The public `docs/` tree may be rebuilt in place for v0.4. Do not recreate the v0.3 Python-first
@@ -33,7 +35,8 @@ guide as current Datoviz documentation.
 6. RC and final release notes.
 7. Example/gallery index with screenshots or captured artifacts where appropriate.
 8. Generated C reference or complete API reference outline.
-9. Raw `ctypes` binding documentation.
+9. Python binding documentation covering top-level array-aware direct-engine use and exact
+   `datoviz.raw` `ctypes` use.
 10. WebGPU/WASM experimental-scope documentation.
 11. Compute+graphics experimental-scope documentation, including the portable DRP2 subset, native
     synchronization boundary, and optional CUDA SDK example status.
@@ -51,16 +54,18 @@ Required:
 2. public surface/status table;
 3. ownership and destroy-rule notes for public objects;
 4. callback, polling, and readback lifetime notes;
-5. raw `ctypes` scope;
+5. Python binding scope, including the planned top-level array-aware facade and exact
+   `datoviz.raw` layer;
 6. WebGPU/WASM experimental scope and known gaps;
 7. compute+graphics experimental scope and CUDA/CuPy boundary;
 8. clear statement that old high-level Pythonic Datoviz API migration is outside v0.4 Datoviz
    scope.
 
-The raw `ctypes` scope page may land before the generated API reference is complete. For RC1, it
-only needs to define import style, generated-binding status, ownership and callback lifetime rules,
-validation commands, and the boundary with GSP/VisPy2. Do not hand-maintain exhaustive C or raw
-binding symbol catalogs in prose.
+The Python binding scope page may land before the generated API reference is complete. For RC1, it
+needs to define the intended `import datoviz as dvz` array-aware facade, exact `datoviz.raw` import
+style, generated-binding status, ownership and callback lifetime rules, validation commands, and
+the boundary with GSP/VisPy2. Do not hand-maintain exhaustive C or raw binding symbol catalogs in
+prose.
 
 
 ## RC2 Gate
@@ -69,7 +74,7 @@ Required:
 
 1. documentation structure mostly final;
 2. generated C reference or complete outline;
-3. usable raw `ctypes` docs;
+3. usable Python binding docs for the top-level facade and raw `ctypes`;
 4. release examples with captured artifacts;
 5. render-conformance or fixture result linked;
 6. known issues updated from RC1 feedback.
@@ -88,7 +93,7 @@ Required:
 1. final feature table;
 2. final known issues and limitations;
 3. install/build and positioning notes published;
-4. raw `ctypes` and WebGPU/WASM scopes published;
+4. Python binding and WebGPU/WASM scopes published;
 5. website, gallery, and release announcement assets published.
 6. public dataset examples include source links, license/citation notes, prepared-data provenance,
    and any required permissions.
