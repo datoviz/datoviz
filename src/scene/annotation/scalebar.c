@@ -27,6 +27,7 @@
 #include "_scene.h"
 #include "core/format_state_internal.h"
 #include "core/scene_notify_internal.h"
+#include "core/units_internal.h"
 #include "core/panel_layout_internal.h"
 #include "datoviz/scene.h"
 #include "text_internal.h"
@@ -103,6 +104,59 @@ DvzScaleBarDesc dvz_scalebar_desc(void)
 static float _scalebar_positive_or_default(float value, float fallback)
 {
     return isfinite(value) && value > 0.0f ? value : fallback;
+}
+
+
+/**
+ * Return the data-to-canonical factor used by a scale bar.
+ *
+ * @param annotation scale-bar annotation
+ * @return finite positive conversion factor
+ */
+static double _scalebar_data_to_canonical(const DvzAnnotation* annotation)
+{
+    ANN(annotation);
+    if (annotation->scalebar_units_format != NULL &&
+        isfinite(annotation->scalebar_units_format->data_to_canonical) &&
+        annotation->scalebar_units_format->data_to_canonical > 0.0)
+        return fabs(annotation->scalebar_units_format->data_to_canonical);
+    const DvzScaleBarDesc* desc = &annotation->scalebar;
+    return desc->data_to_unit != 0.0 && isfinite(desc->data_to_unit) ?
+               fabs(desc->data_to_unit) :
+               1.0;
+}
+
+
+/**
+ * Create the compatibility units object implied by a scale-bar descriptor.
+ *
+ * @param annotation scale-bar annotation
+ * @return units object, or NULL on allocation failure
+ */
+static DvzUnits* _scalebar_descriptor_units(DvzAnnotation* annotation)
+{
+    ANN(annotation);
+    ANN(annotation->scene);
+    const DvzScaleBarDesc* desc = &annotation->scalebar;
+    double factor = desc->data_to_unit != 0.0 && isfinite(desc->data_to_unit) ?
+                        fabs(desc->data_to_unit) :
+                        1.0;
+    const char* unit = desc->unit != NULL ? desc->unit : "";
+    if (strcmp(unit, "m") == 0)
+        return dvz_units_builtin(annotation->scene, DVZ_UNIT_LADDER_METRIC_LENGTH, factor);
+
+    DvzUnitLadder* ladder = dvz_unit_ladder_create(annotation->scene, unit);
+    if (ladder == NULL)
+        return NULL;
+    if (dvz_unit_ladder_add(ladder, 1.0, unit) != 0)
+        return NULL;
+    DvzUnits* units = dvz_units_create(annotation->scene);
+    if (units == NULL)
+        return NULL;
+    if (dvz_units_data_to_canonical(units, factor) != 0 ||
+        dvz_units_ladder(units, ladder) != 0)
+        return NULL;
+    return units;
 }
 
 
@@ -537,10 +591,8 @@ static bool _scalebar_world_units_per_px(
     if (!isfinite(px_per_data_unit) || px_per_data_unit <= 0.0f)
         return false;
 
-    double data_to_unit = desc->data_to_unit != 0.0 && isfinite(desc->data_to_unit)
-                              ? fabs(desc->data_to_unit)
-                              : 1.0;
-    *out_units_per_px = data_to_unit / (double)px_per_data_unit;
+    double data_to_canonical = _scalebar_data_to_canonical(annotation);
+    *out_units_per_px = data_to_canonical / (double)px_per_data_unit;
     return isfinite(*out_units_per_px) && *out_units_per_px > 0.0;
 }
 
@@ -714,7 +766,18 @@ static bool _scalebar_prepare_overlay_visual(
     resolved.line_width[1] = resolved.line_width[0];
     resolved.line_width[2] = resolved.line_width[0];
 
-    _scene_format_si_value(length_units, desc->unit, resolved.label, sizeof(resolved.label));
+    DvzUnits* units = annotation->scalebar_units_format;
+    if (units != NULL && isfinite(units->data_to_canonical) && units->data_to_canonical > 0.0)
+    {
+        DvzUnitFormatContext context = {.mode = DVZ_UNIT_DISPLAY_AUTO};
+        double length_data = length_units / units->data_to_canonical;
+        (void)_scene_units_format(
+            units, length_data, &context, resolved.label, sizeof(resolved.label));
+    }
+    else
+    {
+        _scene_format_si_value(length_units, desc->unit, resolved.label, sizeof(resolved.label));
+    }
     resolved.label_size =
         _scalebar_positive_or_default(desc->label_style.size_px, DVZ_SCALEBAR_LABEL_SIZE_PX);
     resolved.renderer =
@@ -876,10 +939,8 @@ bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotation)
         return true;
     }
 
-    double data_to_unit = desc->data_to_unit != 0.0 && isfinite(desc->data_to_unit)
-                              ? fabs(desc->data_to_unit)
-                              : 1.0;
-    double units_per_px = fabs(visible_max - visible_min) * data_to_unit / (double)span_px;
+    double data_to_canonical = _scalebar_data_to_canonical(annotation);
+    double units_per_px = fabs(visible_max - visible_min) * data_to_canonical / (double)span_px;
     if (!isfinite(units_per_px) || units_per_px <= 0.0)
     {
         _scalebar_hide(annotation);
@@ -947,8 +1008,65 @@ DvzAnnotation* dvz_annotation_scalebar(DvzPanel* panel, const DvzScaleBarDesc* d
         annotation->scalebar.tick_length_px = DVZ_SCALEBAR_TICK_LENGTH_PX;
     if (annotation->scalebar.line_width_px <= 0.0f)
         annotation->scalebar.line_width_px = DVZ_SCALEBAR_LINE_WIDTH_PX;
+    annotation->scalebar_units_format = _scalebar_descriptor_units(annotation);
     annotation->dirty_flags = DVZ_TEXT_DIRTY_ALL;
     annotation->version = 1;
     _scene_notify_request_frame(panel->figure);
     return annotation;
+}
+
+
+DvzScaleBar* dvz_scalebar(DvzPanel* panel)
+{
+    DvzScaleBarDesc desc = dvz_scalebar_desc();
+    return dvz_annotation_scalebar(panel, &desc);
+}
+
+
+int dvz_scalebar_dimension(DvzScaleBar* scalebar, DvzDim dim)
+{
+    DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
+    if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR ||
+        (dim != DVZ_DIM_X && dim != DVZ_DIM_Y && dim != DVZ_DIM_Z))
+        return -1;
+    annotation->scalebar.dimension = dim;
+    annotation->dirty_flags = DVZ_TEXT_DIRTY_ALL;
+    annotation->version++;
+    _scene_notify_request_frame(annotation->panel != NULL ? annotation->panel->figure : NULL);
+    return 0;
+}
+
+
+int dvz_scalebar_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor)
+{
+    DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
+    if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR)
+        return -1;
+    annotation->scalebar.anchor = anchor == DVZ_SCENE_ANCHOR_NONE ?
+                                      DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT :
+                                      anchor;
+    annotation->dirty_flags = DVZ_TEXT_DIRTY_ALL;
+    annotation->version++;
+    _scene_notify_request_frame(annotation->panel != NULL ? annotation->panel->figure : NULL);
+    return 0;
+}
+
+
+int dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units)
+{
+    DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
+    if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR || units == NULL ||
+        units->scene != annotation->scene || units->ladder == NULL)
+        return -1;
+    annotation->scalebar_units_format = units;
+    annotation->dirty_flags = DVZ_TEXT_DIRTY_ALL;
+    annotation->version++;
+    _scene_notify_request_frame(annotation->panel != NULL ? annotation->panel->figure : NULL);
+    return 0;
+}
+
+
+int dvz_scalebar_set_duration(DvzScaleBar* scalebar, DvzUnits* duration_units)
+{
+    return dvz_scalebar_set_units(scalebar, duration_units);
 }

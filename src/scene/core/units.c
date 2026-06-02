@@ -21,6 +21,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
@@ -58,7 +59,9 @@ static void _unit_format_compact(double value, char* out, size_t out_size)
         dvz_snprintf(out, out_size, "%.0f", rounded);
         return;
     }
-    if (fabs(value) >= 10.0)
+    if (fabs(value) > 0.0 && fabs(value) < 0.01)
+        dvz_snprintf(out, out_size, "%.6g", value);
+    else if (fabs(value) >= 10.0)
         dvz_snprintf(out, out_size, "%.1f", value);
     else
         dvz_snprintf(out, out_size, "%.2f", value);

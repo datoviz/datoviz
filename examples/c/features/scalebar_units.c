@@ -122,12 +122,18 @@ static bool _add_signal(DvzScene* scene, DvzPanel* panel)
 /**
  * Add one scale bar whose panel X data units are milliseconds.
  *
+ * @param scene scene owning unit objects
  * @param panel panel receiving the annotation
  * @return true when the scale bar was added
  */
-static bool _add_time_scalebar(DvzPanel* panel)
+static bool _add_time_scalebar(DvzScene* scene, DvzPanel* panel)
 {
+    ANN(scene);
     ANN(panel);
+
+    DvzUnits* duration_units = dvz_units_builtin(scene, DVZ_UNIT_LADDER_DURATION, 0.001);
+    if (duration_units == NULL)
+        return false;
 
     DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
     DvzScaleBarDesc desc = {
@@ -141,8 +147,6 @@ static bool _add_time_scalebar(DvzPanel* panel)
         .offset_px = {72.0f, 82.0f},
         .tick_length_px = 18.0f,
         .line_width_px = 4.0f,
-        .unit = "ms",
-        .data_to_unit = 1.0,
         .label_style = {
         DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
             .size_px = 17.0f,
@@ -153,7 +157,7 @@ static bool _add_time_scalebar(DvzPanel* panel)
     _copy_color(desc.label_style.color, color, 255u);
 
     DvzAnnotation* scalebar = dvz_annotation_scalebar(panel, &desc);
-    return scalebar != NULL;
+    return scalebar != NULL && dvz_scalebar_set_units((DvzScaleBar*)scalebar, duration_units) == 0;
 }
 
 
@@ -196,7 +200,7 @@ int main(int argc, char** argv)
 
     ok = _add_signal(scene, panel);
     EXAMPLE_CHECK(ok, "_add_signal() failed");
-    ok = _add_time_scalebar(panel);
+    ok = _add_time_scalebar(scene, panel);
     EXAMPLE_CHECK(ok, "_add_time_scalebar() failed");
 
     app = dvz_app(scene);

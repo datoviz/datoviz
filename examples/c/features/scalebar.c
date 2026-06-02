@@ -121,12 +121,18 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
 /**
  * Add one retained 2D scale bar in panel data coordinates.
  *
+ * @param scene scene owning unit objects
  * @param panel panel receiving the annotation
  * @return true when the scale bar was added
  */
-static bool _add_scalebar(DvzPanel* panel)
+static bool _add_scalebar(DvzScene* scene, DvzPanel* panel)
 {
+    ANN(scene);
     ANN(panel);
+
+    DvzUnits* length_units = dvz_units_builtin(scene, DVZ_UNIT_LADDER_METRIC_LENGTH, 0.001);
+    if (length_units == NULL)
+        return false;
 
     DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
     DvzScaleBarDesc desc = {
@@ -140,8 +146,6 @@ static bool _add_scalebar(DvzPanel* panel)
         .offset_px = {72.0f, 82.0f},
         .tick_length_px = 18.0f,
         .line_width_px = 4.0f,
-        .unit = "m",
-        .data_to_unit = 0.001,
         .label_style = {
         DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
             .size_px = 17.0f,
@@ -152,7 +156,7 @@ static bool _add_scalebar(DvzPanel* panel)
     _copy_color(desc.label_style.color, color, 255u);
 
     DvzAnnotation* scalebar = dvz_annotation_scalebar(panel, &desc);
-    return scalebar != NULL;
+    return scalebar != NULL && dvz_scalebar_set_units((DvzScaleBar*)scalebar, length_units) == 0;
 }
 
 
@@ -195,7 +199,7 @@ int main(int argc, char** argv)
 
     ok = _add_points(scene, panel);
     EXAMPLE_CHECK(ok, "_add_points() failed");
-    ok = _add_scalebar(panel);
+    ok = _add_scalebar(scene, panel);
     EXAMPLE_CHECK(ok, "_add_scalebar() failed");
 
     app = dvz_app(scene);

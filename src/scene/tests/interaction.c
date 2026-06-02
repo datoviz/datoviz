@@ -1355,7 +1355,7 @@ static int test_scene_units_formatting_core(TstContext* suite, const TstCase* it
     DvzDateTimeFormat* dt =
         dvz_datetime_format_builtin(scene, DVZ_DATETIME_FORMAT_CONCISE_UTC);
     ANN(dt);
-    DvzTimestamp ts = (DvzTimestamp)1714552496123456LL; /* 2024-05-01 12:34:56.123456 UTC */
+    DvzTimestamp ts = (DvzTimestamp)1714566896123456LL; /* 2024-05-01 12:34:56.123456 UTC */
     AT(_scene_datetime_format(dt, ts, DVZ_TIME_INTERVAL_MICROSECOND, label, sizeof(label)));
     AT(strcmp(label, "12:34:56.123456") == 0);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_datetime_format_timezone(dt, "Europe/Paris") < 0);
@@ -1495,6 +1495,42 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
     return 0;
 }
 
+
+
+/**
+ * Check retained scale-bar unit objects and duration labels.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_scene_scalebar_duration_units(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 400, 200, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 250.0) == 0);
+
+    DvzUnits* duration = dvz_units_builtin(scene, DVZ_UNIT_LADDER_DURATION, 1e-3);
+    ANN(duration);
+    DvzScaleBar* scalebar = dvz_scalebar(panel);
+    ANN(scalebar);
+    AT(dvz_scalebar_set_units(scalebar, duration) == 0);
+
+    _scene_prepare_text_visuals(figure);
+    DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
+    AT(strcmp(annotation->text, "50 ms") == 0);
+    AT(strstr(annotation->text, "cs") == NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
 
 
 /**
@@ -3457,6 +3493,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_scalebar_formatting);
     TST_CASE(test_scene_units_formatting_core);
     TST_CASE(test_scene_scalebar_2d_realization);
+    TST_CASE(test_scene_scalebar_duration_units);
     TST_CASE(test_scene_scalebar_update_churn);
     TST_CASE(test_scene_scalebar_3d_world_reference);
     TST_CASE(test_scene_scalebar_3d_view_plane_reference);
