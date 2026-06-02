@@ -31,14 +31,15 @@ or plotting objects in Datoviz.
 The intended namespace split is:
 
 ```text
+datoviz
+  Top-level direct-engine Python API. Planned to preserve dvz_* names while accepting NumPy arrays
+  for policy-declared data arguments.
+
 datoviz.raw
   Generated ctypes binding. Exact dvz_*, Dvz*, and DVZ_* names.
 
 datoviz.host
   Thin Python-hosted integration helpers for callbacks, asyncio, and frame waking.
-
-datoviz
-  Curated package namespace. It may re-export selected host helpers, but not the whole raw API.
 ```
 
 This keeps raw Datoviz raw while still allowing ergonomic Python integration:
@@ -252,11 +253,13 @@ The host layer must not provide:
 
 1. Python scene, visual, figure, panel, or plotting objects;
 2. prefixless aliases for raw C symbols;
-3. NumPy-first data upload APIs;
+3. array-aware data upload APIs;
 4. high-level scientific visualization workflows;
 5. compatibility with the v0.3 Python object model.
 
-Those belong above Datoviz, currently in GSP/VisPy2 or application-specific code.
+Array-aware data adaptation belongs in the top-level facade described in
+[ARRAY_FACADE.md](ARRAY_FACADE.md). High-level scientific workflows belong above Datoviz, currently
+in GSP/VisPy2 or application-specific code.
 
 Documentation and examples should mark this clearly so generated Python code does not assume
 `datoviz.figure()`, `datoviz.scatter()`, or similar convenience APIs exist unless a future supported

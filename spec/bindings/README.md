@@ -73,6 +73,7 @@ tools/bindings/
 spec/bindings/
   README.md               # this binding architecture and policy
   ctypes.yml              # machine-readable binding policy, later
+  ARRAY_FACADE.md         # array-aware top-level Python facade plan
   API_JSON_SCHEMA.md      # JSON schema notes, later
 
 build/bindings/
@@ -81,9 +82,10 @@ build/bindings/
   ctypes_report.json      # optional validation report
 
 datoviz/
-  __init__.py             # documented package entry point
+  __init__.py             # documented array-aware package entry point
   raw.py                  # explicit public raw API module
   _ctypes.py              # generated implementation, do not edit by hand
+  _array_facade.py        # generated array-aware facade, later
 ```
 
 The old v0.3-style names `parse_headers.py`, `build_ctypes.py`, and `headers.json` are not part of
@@ -174,15 +176,16 @@ from ._ctypes import *  # noqa
 `datoviz/_ctypes.py` is generated and private. It should not be documented as the preferred import
 path and should not be edited by hand.
 
-The intended roles are:
+The raw-binding roles are:
 
 1. `datoviz.raw`: stable explicit raw binding module;
-2. `datoviz.__init__`: curated package entry point, not a blanket raw re-export;
+2. `datoviz.__init__`: documented package entry point;
 3. `datoviz._ctypes`: generated implementation detail.
 
-The top-level package may expose selected helper APIs for hosted Python integration, but it should
-not promise that `import datoviz as dvz` is the raw binding. This prevents raw C symbols and Python
-helper objects from competing for one namespace.
+The top-level package should not promise that `import datoviz as dvz` is the exact raw binding.
+Instead, the intended top-level direction is an array-aware facade that preserves `dvz_*` names while
+accepting NumPy arrays for policy-declared data arguments. See
+[ARRAY_FACADE.md](ARRAY_FACADE.md).
 
 
 ## Naming Policy
@@ -212,8 +215,8 @@ Keeping exact names is preferred because:
 4. Many C names only make sense with their namespace intact, such as `dvz_grid_panel`,
    `dvz_panel_axis`, and `dvz_axis_style`.
 
-Prefixless aliases may be considered later as a separate convenience layer, but they are not the raw
-binding and should not drive generation policy.
+Prefixless aliases are not part of either the raw binding or the proposed array-aware facade. They
+should not drive generation policy.
 
 
 ## Type Mapping Policy
