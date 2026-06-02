@@ -40,7 +40,7 @@
 
 #define WIDTH                   1600u
 #define HEIGHT                  1200u
-#define PARTICLE_COUNT          1048576u
+#define PARTICLE_COUNT          262144u
 #define WORKGROUP_SIZE          128u
 #define COMPUTE_SOURCE_CAPACITY 8192u
 #define SIM_SPEED               0.65f
@@ -51,15 +51,12 @@
 #define SMOKE_ALPHA_YOUNG_BOOST 0.18f
 #define SMOKE_SIZE_MIN          1.25f
 #define SMOKE_SIZE_MAX          3.75f
-#define SMOKE_VIOLET_MIX        0.20f
 #define SMOKE_SOURCE_WIDTH      0.18f
 #define SMOKE_SOURCE_HEIGHT     0.13f
 #define SMOKE_TOP_FADE_START    0.90f
 
 #define MOUSE_HOVER_RADIUS   0.24f
-#define MOUSE_DRAG_STRENGTH  1.8f
 #define MOUSE_HOVER_SWIRL    1.35f
-#define MOUSE_DRAG_FOLLOW    0.9f
 #define MOUSE_VELOCITY_LIMIT 3.0f
 #define MOUSE_VELOCITY_DECAY 0.08f
 #define MOUSE_FORCE_SCALE    8.0f
@@ -79,9 +76,7 @@ typedef struct ParticleState
     DvzSceneBuffer* params;
     float sim_time;
     bool mouse_valid;
-    bool mouse_down;
     vec2 mouse_pos;
-    vec2 mouse_prev;
     vec2 mouse_velocity;
     uint64_t mouse_timestamp;
 } ParticleState;
@@ -102,8 +97,6 @@ static const char* COMPUTE_GLSL_COMMON =
     "layout(std430, set = 0, binding = 1) buffer Positions { float x[]; } positions;\n"
     "layout(std430, set = 0, binding = 2) buffer Velocities { float v[]; } velocities;\n"
     "layout(std430, set = 0, binding = 3) buffer Ages { float age[]; } ages;\n"
-    "layout(std430, set = 0, binding = 4) buffer Colors { uint rgba[]; } colors;\n"
-    "layout(std430, set = 0, binding = 5) buffer Sizes { float size[]; } sizes;\n"
     "uint hash_u32(uint x) {\n"
     "    x ^= x >> 16;\n"
     "    x *= 0x7feb352du;\n"
@@ -135,21 +128,7 @@ static const char* COMPUTE_GLSL_COMMON =
     "    vec2 focus = vec2(-0.12 * p.x, -0.04 * p.y);\n"
     "    return 0.18 * curl + rise + focus;\n"
     "}\n"
-    "uint pack_rgba(vec4 color) {\n"
-    "    uvec4 c = uvec4(clamp(color, 0.0, 1.0) * 255.0 + 0.5);\n"
-    "    return c.r | (c.g << 8u) | (c.b << 16u) | (c.a << 24u);\n"
-    "}\n"
-    "vec3 palette(float u, float lane) {\n"
-    "    vec3 amber = vec3(1.00, 0.62, 0.24);\n"
-    "    vec3 rose = vec3(1.00, 0.44, 0.50);\n"
-    "    vec3 pearl = vec3(0.96, 0.90, 0.70);\n"
-    "    vec3 cyan = vec3(0.24, 0.80, 0.96);\n"
-    "    vec3 violet = vec3(0.54, 0.42, 0.92);\n"
-    "    vec3 a = mix(amber, rose, smoothstep(0.00, 0.34, u));\n"
-    "    vec3 b = mix(pearl, cyan, smoothstep(0.28, 0.78, u));\n"
-    "    vec3 c = mix(a, b, smoothstep(0.18, 0.70, u));\n"
-    "    return mix(c, violet, SMOKE_VIOLET_MIX * lane * smoothstep(0.58, 1.0, u));\n"
-    "}\n";
+    "\n";
 
 static const char* COMPUTE_GLSL_MAIN =
     "void main() {\n"
@@ -162,9 +141,7 @@ static const char* COMPUTE_GLSL_MAIN =
     "    vec2 mouse = params.sim1.xy;\n"
     "    vec2 mouse_v = params.sim1.zw;\n"
     "    float mouse_radius = params.sim2.x;\n"
-    "    float drag_strength = params.sim2.y;\n"
     "    float hover_swirl = params.sim2.z;\n"
-    "    float drag_follow = params.sim2.w;\n"
     "    uint j = 3u * i;\n"
     "    vec2 x = vec2(positions.x[j + 0u], positions.x[j + 1u]);\n"
     "    vec2 v = vec2(velocities.v[j + 0u], velocities.v[j + 1u]);\n"
@@ -180,11 +157,8 @@ static const char* COMPUTE_GLSL_MAIN =
     "        float influence = 1.0 - smoothstep(0.0, mouse_radius, dist);\n"
     "        vec2 dir = d / max(dist, 0.001);\n"
     "        vec2 tangent = vec2(-dir.y, dir.x);\n"
-    "        float drag = step(1.5, mouse_active);\n"
     "        float mouse_dt = clamp(dt * MOUSE_FORCE_SCALE, 0.0, 0.16);\n"
-    "        vec2 follow = drag_follow * mouse_v - 0.28 * dir;\n"
-    "        v += mouse_dt * influence * hover_swirl * tangent;\n"
-    "        v += mouse_dt * influence * drag * drag_strength * follow;\n"
+    "        v += mouse_dt * influence * hover_swirl * (tangent + 0.25 * mouse_v);\n"
     "        float speed = length(v);\n"
     "        if (speed > MOUSE_SPEED_LIMIT) v *= MOUSE_SPEED_LIMIT / speed;\n"
     "    }\n"
@@ -195,16 +169,6 @@ static const char* COMPUTE_GLSL_MAIN =
     "        v = vec2(0.03 * sin(float(i) * 0.11), 0.42 + 0.10 * hash01(i + uint(t * 97.0)));\n"
     "        age = 0.0;\n"
     "    }\n"
-    "    float height = smoothstep(-1.05, 1.05, x.y);\n"
-    "    float life = clamp(age / SMOKE_LIFETIME, 0.0, 1.0);\n"
-    "    float lane = hash01(i * 747796405u + 2891336453u);\n"
-    "    vec3 rgb = palette(max(height, life * 0.72), lane);\n"
-    "    float alpha = (SMOKE_ALPHA_BASE + SMOKE_ALPHA_YOUNG_BOOST * (1.0 - life)) *\n"
-    "                  smoothstep(0.0, 0.16, age);\n"
-    "    alpha *= 1.0 - smoothstep(SMOKE_TOP_FADE_START, 1.0, height);\n"
-    "    alpha *= 0.75 + 0.25 * lane;\n"
-    "    float point_size = mix(SMOKE_SIZE_MIN, SMOKE_SIZE_MAX, smoothstep(0.0, 1.0, life));\n"
-    "    point_size *= 0.82 + 0.36 * lane;\n"
     "    positions.x[j + 0u] = x.x;\n"
     "    positions.x[j + 1u] = x.y;\n"
     "    positions.x[j + 2u] = 0.0;\n"
@@ -212,8 +176,6 @@ static const char* COMPUTE_GLSL_MAIN =
     "    velocities.v[j + 1u] = v.y;\n"
     "    velocities.v[j + 2u] = 0.0;\n"
     "    ages.age[i] = age;\n"
-    "    colors.rgba[i] = pack_rgba(vec4(rgb, alpha));\n"
-    "    sizes.size[i] = point_size;\n"
     "}\n";
 
 
@@ -240,20 +202,12 @@ static bool _compute_shader_source(char* out, size_t size)
         out, size,
         "#version 450\n"
         "#define SMOKE_LIFETIME %.8g\n"
-        "#define SMOKE_ALPHA_BASE %.8g\n"
-        "#define SMOKE_ALPHA_YOUNG_BOOST %.8g\n"
-        "#define SMOKE_SIZE_MIN %.8g\n"
-        "#define SMOKE_SIZE_MAX %.8g\n"
-        "#define SMOKE_VIOLET_MIX %.8g\n"
         "#define SMOKE_SOURCE_WIDTH %.8g\n"
         "#define SMOKE_SOURCE_HEIGHT %.8g\n"
-        "#define SMOKE_TOP_FADE_START %.8g\n"
         "#define MOUSE_FORCE_SCALE %.8g\n"
         "#define MOUSE_SPEED_LIMIT %.8g\n"
         "%s%s",
-        (double)SMOKE_LIFETIME, (double)SMOKE_ALPHA_BASE, (double)SMOKE_ALPHA_YOUNG_BOOST,
-        (double)SMOKE_SIZE_MIN, (double)SMOKE_SIZE_MAX, (double)SMOKE_VIOLET_MIX,
-        (double)SMOKE_SOURCE_WIDTH, (double)SMOKE_SOURCE_HEIGHT, (double)SMOKE_TOP_FADE_START,
+        (double)SMOKE_LIFETIME, (double)SMOKE_SOURCE_WIDTH, (double)SMOKE_SOURCE_HEIGHT,
         (double)MOUSE_FORCE_SCALE, (double)MOUSE_SPEED_LIMIT, COMPUTE_GLSL_COMMON,
         COMPUTE_GLSL_MAIN);
     return n >= 0 && (size_t)n < size;
@@ -280,13 +234,6 @@ static float _clampf(float x, float lo, float hi)
 }
 
 
-static void _copy_vec2(const vec2 src, vec2 dst)
-{
-    dst[0] = src[0];
-    dst[1] = src[1];
-}
-
-
 static float _vec2_norm(const vec2 v)
 {
     return sqrtf(v[0] * v[0] + v[1] * v[1]);
@@ -305,23 +252,50 @@ static void _limit_vec2(vec2 v, float max_norm)
 }
 
 
-static void _window_to_sim(float x, float y, vec2 out)
+static void _window_to_sim(float x, float y, uint32_t width, uint32_t height, vec2 out)
 {
-    const float u = _clamp01(x / (float)WIDTH);
-    const float v = _clamp01(y / (float)HEIGHT);
+    if (width == 0)
+        width = WIDTH;
+    if (height == 0)
+        height = HEIGHT;
+
+    const float u = _clamp01(x / (float)width);
+    const float v = _clamp01(y / (float)height);
     out[0] = 2.0f * u - 1.0f;
     out[1] = 1.0f - 2.0f * v;
 }
 
 
-static DvzColor _particle_color(float radius, float phase)
+static float _smoothstepf(float edge0, float edge1, float x)
 {
-    const float t = _clamp01((radius - 0.18f) / 0.78f);
-    const uint8_t r = (uint8_t)(115.0f + 65.0f * t + 18.0f * sinf(phase));
-    const uint8_t g = (uint8_t)(150.0f + 70.0f * (1.0f - 0.30f * t));
-    const uint8_t b = (uint8_t)(185.0f + 45.0f * sinf(0.6f + phase));
-    const uint8_t a = (uint8_t)(34.0f + 26.0f * (1.0f - t));
-    return dvz_color_rgba(r, g, b, a);
+    const float t = _clamp01((x - edge0) / (edge1 - edge0));
+    return t * t * (3.0f - 2.0f * t);
+}
+
+
+static uint8_t _mix_u8(uint8_t a, uint8_t b, float t)
+{
+    const float u = _clamp01(t);
+    return (uint8_t)((1.0f - u) * (float)a + u * (float)b + 0.5f);
+}
+
+
+static DvzColor _particle_color(float life, float lane)
+{
+    const float warm = 1.0f - _smoothstepf(0.10f, 0.72f, life);
+    const float cool = _smoothstepf(0.18f, 0.95f, life);
+    uint8_t r = _mix_u8(246, 92, cool);
+    uint8_t g = _mix_u8(126, 188, cool);
+    uint8_t b = _mix_u8(54, 218, cool);
+    r = _mix_u8(r, 246, 0.18f * warm);
+    g = _mix_u8(g, 222, 0.12f * warm);
+    b = _mix_u8(b, 196, 0.10f + 0.12f * lane);
+
+    float alpha = SMOKE_ALPHA_BASE + SMOKE_ALPHA_YOUNG_BOOST * (1.0f - life);
+    alpha *= _smoothstepf(0.00f, 0.08f, life);
+    alpha *= 1.0f - _smoothstepf(SMOKE_TOP_FADE_START, 1.0f, life);
+    alpha *= 0.55f + 0.25f * lane;
+    return dvz_color_rgba(r, g, b, (uint8_t)(255.0f * _clamp01(alpha) + 0.5f));
 }
 
 
@@ -336,20 +310,26 @@ _init_particles(vec3* positions, vec3* velocities, float* ages, DvzColor* colors
 
     for (uint32_t i = 0; i < PARTICLE_COUNT; i++)
     {
-        const float a = TAU * _hash01(i * 3u + 1u);
-        const float r = sqrtf(_hash01(i * 3u + 2u));
-        const float jitter = _hash01(i * 3u + 3u);
-        const float x = 0.16f * r * cosf(a) + 0.06f * sinf(0.013f * (float)i);
-        const float y = -1.03f + 0.80f * r * r + 0.06f * sinf(a);
+        const float a = TAU * _hash01(i * 7u + 1u);
+        const float r = sqrtf(_hash01(i * 7u + 2u));
+        const float lane = _hash01(i * 7u + 3u);
+        const float life = _hash01(i * 7u + 4u);
+        const float vertical = powf(life, 0.78f);
+        const float width = 0.045f + 0.26f * vertical;
+        const float plume = 0.12f * sinf(4.2f * vertical + 0.00011f * (float)i);
+        const float x = plume + width * r * cosf(a);
+        const float y = -1.04f + 1.72f * vertical + 0.045f * r * sinf(a);
         positions[i][0] = x;
         positions[i][1] = y;
         positions[i][2] = 0.0f;
-        velocities[i][0] = 0.04f * cosf(a);
-        velocities[i][1] = 0.35f + 0.18f * jitter;
+        velocities[i][0] = 0.04f * cosf(a) - 0.03f * x;
+        velocities[i][1] = 0.34f + 0.16f * lane;
         velocities[i][2] = 0.0f;
-        ages[i] = SMOKE_LIFETIME * _hash01(i * 5u + 4u);
-        colors[i] = _particle_color(r, a);
-        sizes[i] = 0.75f + 1.10f * jitter;
+        ages[i] = SMOKE_LIFETIME * life;
+        colors[i] = _particle_color(life, lane);
+        sizes[i] =
+            (SMOKE_SIZE_MIN + (SMOKE_SIZE_MAX - SMOKE_SIZE_MIN) * _smoothstepf(0.0f, 1.0f, life)) *
+            (0.74f + 0.28f * lane);
     }
 }
 
@@ -369,7 +349,7 @@ static void _params_for_state(const ParticleState* state, float dt, vec4 params[
 {
     ANN(state);
     ANN(params);
-    const float active = state->mouse_valid ? (state->mouse_down ? 2.0f : 1.0f) : 0.0f;
+    const float active = state->mouse_valid ? 1.0f : 0.0f;
 
     params[0][0] = state->sim_time;
     params[0][1] = dt;
@@ -382,9 +362,9 @@ static void _params_for_state(const ParticleState* state, float dt, vec4 params[
     params[1][3] = state->mouse_velocity[1];
 
     params[2][0] = MOUSE_HOVER_RADIUS;
-    params[2][1] = MOUSE_DRAG_STRENGTH;
+    params[2][1] = 0.0f;
     params[2][2] = MOUSE_HOVER_SWIRL;
-    params[2][3] = MOUSE_DRAG_FOLLOW;
+    params[2][3] = 0.0f;
 }
 
 
@@ -397,8 +377,18 @@ static void _particle_pointer(DvzInputRouter* router, const DvzPointerEvent* eve
     if (event->type == DVZ_POINTER_EVENT_WHEEL || event->type == DVZ_POINTER_EVENT_NONE)
         return;
 
+    uint32_t width = WIDTH;
+    uint32_t height = HEIGHT;
+    DvzInputResizeEvent resize = {0};
+    if (dvz_input_router_last_resize(router, &resize) && resize.window_width > 0 &&
+        resize.window_height > 0)
+    {
+        width = resize.window_width;
+        height = resize.window_height;
+    }
+
     vec2 pos = {0};
-    _window_to_sim(event->pos[0], event->pos[1], pos);
+    _window_to_sim(event->pos[0], event->pos[1], width, height, pos);
 
     vec2 raw_velocity = {0};
     if (state->mouse_valid && event->timestamp_ns > state->mouse_timestamp)
@@ -418,18 +408,10 @@ static void _particle_pointer(DvzInputRouter* router, const DvzPointerEvent* eve
         state->mouse_velocity[1] = 0.0f;
     }
 
-    if (state->mouse_valid)
-        _copy_vec2(state->mouse_pos, state->mouse_prev);
-    else
-        _copy_vec2(pos, state->mouse_prev);
-    _copy_vec2(pos, state->mouse_pos);
+    state->mouse_pos[0] = pos[0];
+    state->mouse_pos[1] = pos[1];
     state->mouse_valid = true;
     state->mouse_timestamp = event->timestamp_ns;
-
-    if (event->type == DVZ_POINTER_EVENT_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
-        state->mouse_down = true;
-    if (event->type == DVZ_POINTER_EVENT_RELEASE && event->button == DVZ_POINTER_BUTTON_LEFT)
-        state->mouse_down = false;
 }
 
 
@@ -502,10 +484,10 @@ int main(int argc, char** argv)
         scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(float),
         (uint64_t)PARTICLE_COUNT * sizeof(float));
     DvzSceneBuffer* color_buffer = _scene_buffer(
-        scene, DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(DvzColor),
+        scene, DVZ_SCENE_BUFFER_USAGE_VERTEX, sizeof(DvzColor),
         (uint64_t)PARTICLE_COUNT * sizeof(DvzColor));
     DvzSceneBuffer* size_buffer = _scene_buffer(
-        scene, DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(float),
+        scene, DVZ_SCENE_BUFFER_USAGE_VERTEX, sizeof(float),
         (uint64_t)PARTICLE_COUNT * sizeof(float));
     DvzSceneBuffer* param_buffer =
         _scene_buffer(scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec4), 3 * sizeof(vec4));
@@ -585,16 +567,6 @@ int main(int argc, char** argv)
             compute, 3, age_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0,
             (uint64_t)PARTICLE_COUNT * sizeof(float)),
         "bind compute ages failed");
-    EXAMPLE_CHECK(
-        dvz_scene_compute_set_buffer(
-            compute, 4, color_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0,
-            (uint64_t)PARTICLE_COUNT * sizeof(DvzColor)),
-        "bind compute colors failed");
-    EXAMPLE_CHECK(
-        dvz_scene_compute_set_buffer(
-            compute, 5, size_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0,
-            (uint64_t)PARTICLE_COUNT * sizeof(float)),
-        "bind compute sizes failed");
     EXAMPLE_CHECK(dvz_figure_add_compute(figure, compute), "attach compute pass failed");
 
     app = dvz_app(scene);
