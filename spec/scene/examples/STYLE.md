@@ -141,7 +141,8 @@ To reinforce Datoviz's interactive identity, define states explicitly:
 
 Baseline rules for captures:
 
-1. Keep a consistent aspect ratio per category (e.g., 16:10 for showcase, 4:3 for visuals).
+1. Use `1600x1200` (`4:3`) as the canonical public example canvas and gallery screenshot size
+   unless the scene has an intrinsic wide, tall, or square composition.
 2. Ensure subject occupies 60-85% of frame area.
 3. Keep margin breathing room around axes and annotations.
 4. Avoid clipped legends/labels.
@@ -151,8 +152,11 @@ Extended screenshot rules:
 
 1. Treat every gallery screenshot as a documentation artifact, not an incidental frame.
 2. Use a consistent capture shape:
-   - showcase: prefer 16:10 or 16:9, for example `1600x1000` or `1600x900`;
-   - visual-family baselines: prefer `1280x960` or another fixed comparison size;
+   - public gallery examples: default to `1600x1200`;
+   - features, visuals, composites, showcases, and scientific examples: default to `1600x1200`;
+   - lab, diagnostics, and backend probes: free size when the chosen size serves the fixture;
+   - intrinsically wide dashboards, timelines, panoramic/geospatial scenes, square images, or tall
+     mobile-first scenes may opt into a documented exception;
    - thumbnails: crop from the canonical image rather than rendering a separate composition unless
      the crop fails.
 3. Use dark neutral backgrounds by default, with light-background variants only for
@@ -169,7 +173,7 @@ Extended screenshot rules:
 9. Verify every selected gallery image is nonblank and readable at thumbnail size.
 
 
-## 9.1) Video rules
+## 9.1) Video and social export rules
 
 Short videos should demonstrate interaction, scale, or rendering quality without becoming demos of
 manual camera operation.
@@ -190,6 +194,37 @@ manual camera operation.
    - show a bounded high-density signal or CPU fluid/particle update loop.
 8. If video export is backend-dependent, the gallery should show the result but the docs should
    state the backend requirement clearly.
+9. Record videos from the same canonical `1600x1200` canvas by default. Do not change an example's
+   source canvas solely to match a social platform crop.
+10. Keep important visual content inside a central safe area so the canonical frame can produce
+    social derivatives without hiding axes, colorbars, labels, or the main subject.
+11. Generate social media variants from the canonical render or from a consciously reframed
+    capture:
+    - `4:5`, for example `1200x1500` or `1080x1350`, for LinkedIn and Instagram feed posts;
+    - `9:16`, for example `1080x1920`, for Instagram Reels, Stories, Shorts, and other vertical
+      full-screen placements;
+    - `16:9`, for example `1920x1080` or `1600x900`, for X landscape posts, YouTube/Vimeo,
+      website hero bands, conference slides, and release/demo reels.
+12. Use `16:9` only when the distribution target or the scene composition is landscape-first.
+    Examples include wide dashboards, multi-panel time-series workbenches, panoramic or geospatial
+    scenes, and edited release videos. Otherwise keep the example canvas at `1600x1200` and create a
+    `16:9` derivative for sharing.
+
+Current external platform guidance used for this policy:
+
+- LinkedIn video ads support `4:5`, `9:16`, `16:9`, and `1:1` formats, with `16:9` capped at
+  `1920x1080` and vertical formats capped at `1080x1350` or `1080x1920`.
+- X video uploads allow broad aspect ratios and up to `1920x1200` or `1200x1900`, so the canonical
+  `1600x1200` capture is acceptable and `16:9` remains a safe landscape derivative.
+- Instagram Reels accept a broad range but are designed around vertical full-screen media; Meta
+  guidance recommends `4:5` for Feed and `9:16` for Stories/Reels when optimizing mobile reach.
+
+Reference links:
+
+- LinkedIn video specifications: <https://business.linkedin.com/marketing-solutions/success/ads-guide/video-ads?ss=1>
+- X video upload limits: <https://help.x.com/ca/using-x/x-videos>
+- Instagram Reels size and aspect ratios: <https://www.facebook.com/help/1038071743007909>
+- Meta vertical creative guidance: <https://www.facebook.com/business/ads/automation/tailored-campaigns>
 
 ## 10) Category-specific styling presets
 
@@ -231,8 +266,8 @@ To unblock contributions immediately, decide the following now:
    - selected = amber,
    - error/conflict = rose.
 5. **Screenshot format**:
-   - baseline visuals: 1280x960,
-   - showcase: 1600x1000,
+   - canonical public examples: 1600x1200,
+   - derived social assets: 4:5, 9:16, or 16:9 as needed,
    - PNG with deterministic seed and fixed camera when possible.
 
 ## 13) Contributor checklist (pass/fail)
