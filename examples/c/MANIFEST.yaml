@@ -44,6 +44,13 @@ examples:
     source: examples/c/features/scalebar.c
     validation: smoke+screenshot
 
+  - id: scalebar_units
+    title: Scale Bar Units
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/scalebar_units.c
+    validation: smoke+screenshot
+
   - id: scalebar_measurement_workflow
     title: Scale Bar Measurement Workflow
     stage: v0.4_required

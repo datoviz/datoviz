@@ -81,6 +81,10 @@ Minimal target: one 2D panel with a simple reference visual and one scale bar wh
 only when the formatted value or relevant style changes. The composed overview/detail/3D measurement
 workflow lives in `examples/c/workflows/scalebar_measurement.c`.
 
+Unit-string target: one time-series panel whose X data units are milliseconds and whose scale bar
+uses `.unit = "ms"` with `.data_to_unit = 1.0`, proving that scale bars are not restricted to
+spatial axes or meter-based labels.
+
 
 ## `colorbar`
 

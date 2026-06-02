@@ -10,6 +10,7 @@ source material.
 | `path_axes_2d` | `features/axes_2d.c` | Feature proof. |
 | `linked_panels_axes_panzoom` | `workflows/panel_linked_axes.c` | Workflow proof. |
 | `scale_bar` | `features/scalebar.c` | Minimal feature proof. |
+| `scalebar_units` | `features/scalebar_units.c` | Unit-conversion feature proof. |
 | `scalebar_measurement_workflow` | `workflows/scalebar_measurement.c` | Workflow proof. |
 | `colorbar` | `features/colorbar.c` | Feature proof. |
 | `annotation_readout` | `features/annotation_readout.c` | Feature proof. |
