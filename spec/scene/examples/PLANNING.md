@@ -88,6 +88,9 @@ The main remaining polish or feature gaps are:
 | `textured_terrain_or_planet` | `ready-now` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof lives in `examples/c/showcases/textured_planet.c`: Earth/Mars UV sphere with real sampled textures and procedural fallbacks. Mars DEM terrain analysis remains v0.5/later. |
 | `brain_volume_mesh` | `partial-now` | volume, transparent mesh, GUI, arcball | Narrow Allen/IBL brain slice for v0.4; full atlas explorer is v0.5. |
 | `dense_point_cloud_edl` | `ready-now` | large points/pixels, EDL, fly/camera | Use LiDAR or synthetic dense cloud as performance/showcase proof. |
+| `composite_polygon` | `needs-rc1-proof` | semantic polygon/polygon-set, fill+stroke composite, holes, region styling | Public composite example target; polygon is not a visual family even if it appears near visual examples. |
+| `composite_graph_static` | `needs-rc1-proof` | semantic graph, user-provided layout, nodes+edges composite, stable ids | Required if graph API is promoted into v0.4. Keep layout user-supplied first. |
+| `composite_graph_edge_modes` | `partial-now` | primitive/segment/path edge modes, Bezier-tessellated curved paths | Add if Bezier and graph edge-mode APIs land cleanly before RC1. |
 
 
 ## v0.4 Experimental Set
@@ -180,7 +183,10 @@ optional controls for tessellation quality, stroke width, join mode, and overlay
 12. `textured_terrain_or_planet`
 13. `brain_volume_mesh`
 14. `dense_point_cloud_edl`
-15. `webgpu_browser_subset`
+15. `composite_polygon`
+16. `composite_graph_static`
+17. `composite_graph_edge_modes`
+18. `webgpu_browser_subset`
 
 
 ## Promotion Rule

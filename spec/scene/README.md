@@ -61,8 +61,9 @@ The scene spec is split by kind of authority:
 13. [implementation](implementation/README.md): concise notes for active implementation wiring.
 14. [proposals](proposals/README.md): active, promoted, future, and historical proposal notes.
 15. [decisions](decisions/README.md): historical ADR-style decision records.
-16. [examples](examples/README.md): worked examples and API-shape pressure tests.
-17. [ROADMAP.md](ROADMAP.md): compact backlog distilled from former agent queues.
+16. [composites](composites/README.md): semantic objects that lower to coordinated visuals.
+17. [examples](examples/README.md): worked examples and API-shape pressure tests.
+18. [ROADMAP.md](ROADMAP.md): compact backlog distilled from former agent queues.
 
 
 ## Guiding Principles
