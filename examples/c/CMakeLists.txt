@@ -115,6 +115,7 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(features panel_linked_axes features/panel_linked_axes.c)
     dvz_add_example(features scalebar features/scalebar.c)
     dvz_add_example(features colorbar features/colorbar.c)
+    dvz_add_example(features annotation_readout features/annotation_readout.c)
     dvz_add_example(features image_probe features/image_probe.c)
     dvz_add_example(features pick_marker features/pick_marker.c)
 
