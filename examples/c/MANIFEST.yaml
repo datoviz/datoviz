@@ -65,12 +65,54 @@ examples:
     source: examples/c/features/colorbar.c
     validation: smoke+screenshot
 
+  - id: colormap_scale
+    title: Scalar Color Scale
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/colormap_scale.c
+    validation: smoke+screenshot
+
   - id: annotation_readout
     title: Annotation Readout
     stage: v0.4_required
     lane: features
     source: examples/c/features/annotation_readout.c
     validation: smoke+screenshot
+
+  - id: update_partial
+    title: Partial Data Update
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/update_partial.c
+    validation: smoke+screenshot
+
+  - id: depth_test
+    title: Depth Test Toggle
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/depth_test.c
+    validation: smoke+screenshot
+
+  - id: alpha_blending
+    title: Alpha Blending
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/alpha_blending.c
+    validation: smoke+screenshot
+
+  - id: panel_background
+    title: Panel Background
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/panel_background.c
+    validation: smoke+screenshot
+
+  - id: controller_panzoom
+    title: Panzoom Attachment
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/panzoom_attachment.c
+    validation: smoke+interaction
 
   - id: image_probe
     title: Image Probe
