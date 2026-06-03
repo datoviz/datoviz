@@ -574,8 +574,11 @@ dvz_legend_set_highlights(DvzLegend* legend, const DvzCategoryId* ids, uint32_t 
 /**
  * Bind a scene-owned scale to a named visual slot.
  *
- * Image and volume visuals accept the `"colormap"` slot with a continuous scale. Labels visuals
- * accept the `"labels"` slot with a categorical scale.
+ * Visual scale slots are semantic attribute names. Point and pixel visuals accept the `"color"`
+ * slot with a continuous scale when their `"color"` attribute format is
+ * `DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32`. Image and volume visuals use `"color"` for continuous
+ * sampled fields. Labels visuals and label-volume render modes use `"labels"` with a categorical
+ * scale.
  *
  * @param visual the visual
  * @param slot_name the semantic slot name

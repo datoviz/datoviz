@@ -14,23 +14,27 @@ Family specs only document deviations, restrictions, or extensions specific to t
 
 | Property | Value |
 |---|---|
-| Type | `rgba_u8` (direct) or `scalar_f32` (mapped) — see `color_mode` |
+| Type | `rgba_u8` (direct) or `scalar_f32` (mapped) — see color attribute format |
 | Accepted sources | `CONSTANT`, `PER_ITEM`, `PER_GROUP` (unless family restricts) |
 | Typical mutability | `dynamic` or `streaming` |
 
-### Color Modes
+### Color Attribute Formats
 
-**`rgba` mode** (default): the user supplies 4-byte RGBA directly.
+**`rgba_u8` format** (default): the user supplies 4-byte RGBA directly.
 Right when color is pre-computed externally or when colors are heterogeneous and do not correspond
 to a continuous scale.
 
-**`scalar` mode**: the user supplies a single `float32`.
+**`scalar_f32` format**: the user supplies a single `float32`.
 The scene maps it through an associated `Scale` object (see `semantics/SCALES.md`).
 Enables dynamic colormap changes without re-uploading item data, and memory-efficient encoding
 when color encodes a single continuous quantity.
 
-`color_mode` is a variant axis set at visual creation time. It cannot change without recreating
-the visual.
+The color attribute format is set with `dvz_visual_set_attr_format(visual, "color", format)` before
+attaching dense data or an external buffer. It cannot change while a color payload is attached.
+
+Scalar color attributes bind their continuous scale with
+`dvz_visual_set_scale(visual, "color", scale)`. The scale slot is the semantic attribute name, not
+a visual-family implementation name.
 
 ### Fallback
 

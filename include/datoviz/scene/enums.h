@@ -426,6 +426,14 @@ typedef enum
 } DvzItemStateVisualFlag;
 
 
+typedef enum
+{
+    DVZ_VISUAL_ATTR_FORMAT_DEFAULT = 0,
+    DVZ_VISUAL_ATTR_FORMAT_RGBA_U8,
+    DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32,
+} DvzVisualAttrFormat;
+
+
 
 typedef enum
 {

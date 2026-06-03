@@ -1268,14 +1268,48 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
 
 
 /**
+ * Declare the storage format for a visual attribute.
+ *
+ * The format changes the payload type accepted by `dvz_visual_set_data()` for that attribute.
+ * It must be set before dense data or an external buffer is attached. Missing attributes use the
+ * family default format; point and pixel `"color"` default to `DVZ_VISUAL_ATTR_FORMAT_RGBA_U8`.
+ *
+ * `DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32` is currently defined for point and pixel `"color"` and
+ * requires a continuous scale bound to the semantic `"color"` slot.
+ *
+ * @param visual the visual
+ * @param attr_name attribute name
+ * @param format requested attribute storage format
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_visual_set_attr_format(
+    DvzVisual* visual, const char* attr_name, DvzVisualAttrFormat format);
+
+
+/**
+ * Return the effective storage format for a visual attribute.
+ *
+ * Missing attributes return the family default format.
+ *
+ * @param visual the visual
+ * @param attr_name attribute name
+ * @return the effective attribute storage format
+ */
+DVZ_EXPORT DvzVisualAttrFormat
+dvz_visual_attr_format(const DvzVisual* visual, const char* attr_name);
+
+
+/**
  * Write attribute data to a visual.
  *
  * First-slice visual families currently accept:
- * point: `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels),
+ * point: `"position"` (vec3f), `"color"` (RGBA8 or scalar float with a color scale),
+ *        `"diameter"` (float pixels),
  *        optional `"item_state"` (uint32_t DvzItemStateKind bitfield)
  * splat: `"position"` (vec3f), `"color"` (RGBA8), `"sigma"` (vec2f pixels),
  *        `"angle"` (float radians)
- * pixel: `"position"` (vec3f), `"color"` (RGBA8), `"pixel_size"` (float pixels),
+ * pixel: `"position"` (vec3f), `"color"` (RGBA8 or scalar float with a color scale),
+ *        `"pixel_size"` (float pixels),
  *        optional `"item_state"` (uint32_t DvzItemStateKind bitfield)
  * marker: `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels),
  *         `"angle"` (float radians), `"shape"` (uint32_t DvzMarkerShape),
