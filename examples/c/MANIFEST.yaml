@@ -593,6 +593,26 @@ examples:
       card: section
       status_label: experimental
 
+  - id: brain_volume_mesh
+    title: Allen Mouse Brain
+    stage: v0.4_required
+    lane: showcases
+    source: examples/c/showcases/brain_volume_mesh.c
+    validation: smoke+screenshot
+    dataset:
+      name: Allen mouse brain RGBA volume
+      source: data/volumes/allen_mouse_brain_rgba.npy.gz
+      license: repository data submodule terms
+    gallery:
+      card: section
+      status_label: prototype
+    features:
+      - volume
+      - volume-slice
+      - volume-occlusion
+      - arcball
+      - capture
+
   - id: point_cloud
     title: Point Cloud
     stage: v0.4_required
