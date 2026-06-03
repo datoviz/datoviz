@@ -21,6 +21,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -38,10 +39,15 @@
 
 #define WIDTH            1600u
 #define HEIGHT           1200u
-#define GLYPH_COUNT      9u
-#define VERTEX_PER_GLYPH 6u
-#define VERTEX_COUNT     (GLYPH_COUNT * VERTEX_PER_GLYPH)
-#define ATLAS_SIZE       4u
+#define GLYPH_COUNT       9u
+#define VERTEX_PER_GLYPH  6u
+#define VERTEX_COUNT      (GLYPH_COUNT * VERTEX_PER_GLYPH)
+#define ATLAS_GRID        3u
+#define ATLAS_CELL_SIZE   64u
+#define ATLAS_PADDING_PX  6.0f
+#define ATLAS_SIZE        (ATLAS_GRID * ATLAS_CELL_SIZE)
+
+static const float SDF_EDGE_PX = 3.5f;
 
 
 
@@ -50,7 +56,68 @@
 /*************************************************************************************************/
 
 /**
- * Fill a tiny RGBA atlas texture.
+ * Return the signed distance to a centered rectangle.
+ *
+ * @param x normalized x in [-1, +1]
+ * @param y normalized y in [-1, +1]
+ * @param half_width rectangle half-width
+ * @param half_height rectangle half-height
+ * @return signed distance in normalized cell units
+ */
+static float _sd_box(float x, float y, float half_width, float half_height)
+{
+    const float dx = fabsf(x) - half_width;
+    const float dy = fabsf(y) - half_height;
+    const float outside_x = fmaxf(dx, 0.0f);
+    const float outside_y = fmaxf(dy, 0.0f);
+    const float outside = sqrtf(outside_x * outside_x + outside_y * outside_y);
+    const float inside = fminf(fmaxf(dx, dy), 0.0f);
+    return outside + inside;
+}
+
+
+
+/**
+ * Return the signed distance to a simple atlas glyph.
+ *
+ * @param glyph glyph index
+ * @param x normalized x in [-1, +1]
+ * @param y normalized y in [-1, +1]
+ * @return signed distance in normalized cell units, negative inside
+ */
+static float _sd_glyph(uint32_t glyph, float x, float y)
+{
+    switch (glyph % GLYPH_COUNT)
+    {
+    case 0:
+        return sqrtf(x * x + y * y) - 0.58f;
+    case 1:
+        return _sd_box(x, y, 0.48f, 0.48f);
+    case 2:
+        return fmaxf(fabsf(x) - 0.12f, fabsf(y) - 0.62f);
+    case 3:
+        return fmaxf(fabsf(x) + fabsf(y) - 0.72f, -_sd_box(x, y, 0.18f, 0.18f));
+    case 4:
+        return fminf(_sd_box(x, y, 0.58f, 0.11f), _sd_box(x, y, 0.11f, 0.58f));
+    case 5:
+        return fabsf(sqrtf(x * x + y * y) - 0.50f) - 0.12f;
+    case 6:
+        return fminf(_sd_box(x + 0.22f, y, 0.10f, 0.58f), _sd_box(x - 0.22f, y, 0.10f, 0.58f));
+    case 7:
+        return fminf(
+            _sd_box(x, y + 0.22f, 0.58f, 0.10f),
+            _sd_box(x, y - 0.22f, 0.58f, 0.10f));
+    default:
+        return fminf(
+            _sd_box(x + y, x - y, 0.13f, 0.74f),
+            _sd_box(x - y, x + y, 0.13f, 0.74f));
+    }
+}
+
+
+
+/**
+ * Fill a compact RGBA atlas texture with MSDF-compatible single-channel SDF glyphs.
  *
  * @param pixels output tightly packed RGBA8 pixels
  */
@@ -62,12 +129,25 @@ static void _fill_atlas(uint8_t pixels[ATLAS_SIZE * ATLAS_SIZE * 4])
     {
         for (uint32_t x = 0; x < ATLAS_SIZE; x++)
         {
+            const uint32_t cell_x = x / ATLAS_CELL_SIZE;
+            const uint32_t cell_y = y / ATLAS_CELL_SIZE;
+            const uint32_t glyph = cell_y * ATLAS_GRID + cell_x;
+            const float local_x =
+                (float)(x % ATLAS_CELL_SIZE) + 0.5f - 0.5f * (float)ATLAS_CELL_SIZE;
+            const float local_y =
+                (float)(y % ATLAS_CELL_SIZE) + 0.5f - 0.5f * (float)ATLAS_CELL_SIZE;
+            const float scale = 2.0f / ((float)ATLAS_CELL_SIZE - 2.0f * ATLAS_PADDING_PX);
+            const float nx = local_x * scale;
+            const float ny = local_y * scale;
+            const float dist_norm = _sd_glyph(glyph, nx, ny);
+            const float dist_px = dist_norm / scale;
+            const float sdf = fminf(fmaxf(0.5f - dist_px / SDF_EDGE_PX, 0.0f), 1.0f);
+            const uint8_t value = (uint8_t)(255.0f * sdf + 0.5f);
             const uint32_t i = 4u * (y * ATLAS_SIZE + x);
-            const bool edge = x == 0u || y == 0u || x + 1u == ATLAS_SIZE || y + 1u == ATLAS_SIZE;
-            pixels[i + 0] = 255u;
-            pixels[i + 1] = 255u;
-            pixels[i + 2] = 255u;
-            pixels[i + 3] = edge ? 190u : 255u;
+            pixels[i + 0] = value;
+            pixels[i + 1] = value;
+            pixels[i + 2] = value;
+            pixels[i + 3] = value;
         }
     }
 }
@@ -137,7 +217,6 @@ static void _fill_glyphs(
     ANN(colors);
     ANN(angles);
 
-    const vec4 uv = {0.0f, 0.0f, 1.0f, 1.0f};
     const ExampleStyleColorRole roles[GLYPH_COUNT] = {
         EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY, EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
         EXAMPLE_STYLE_COLOR_TEXT,           EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
@@ -156,6 +235,11 @@ static void _fill_glyphs(
         const float half = 0.5f * size;
         const vec3 position = {px, py, 0.0f};
         const vec4 rect = {-half, -half, +half, +half};
+        const float u0 = (float)col / (float)ATLAS_GRID;
+        const float v0 = (float)row / (float)ATLAS_GRID;
+        const float u1 = (float)(col + 1u) / (float)ATLAS_GRID;
+        const float v1 = (float)(row + 1u) / (float)ATLAS_GRID;
+        const vec4 uv = {u0, v0, u1, v1};
         DvzColor color = example_graphite_cyan_color(roles[i]);
         color.a = 238u;
         _set_glyph(
@@ -205,6 +289,8 @@ _add_glyphs(DvzScene* scene, DvzPanel* panel, uint8_t pixels[ATLAS_SIZE * ATLAS_
         return false;
     if (dvz_visual_set_depth_test(glyph, false) != 0)
         return false;
+    if (dvz_visual_set_alpha_mode(glyph, DVZ_ALPHA_BLENDED) != 0)
+        return false;
     return dvz_panel_add_visual(panel, glyph, NULL) == 0;
 }
 
@@ -230,7 +316,6 @@ int main(int argc, char** argv)
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
     DvzView* win = NULL;
-    bool capture_started = false;
     uint8_t pixels[ATLAS_SIZE * ATLAS_SIZE * 4] = {0};
     _fill_atlas(pixels);
 
@@ -252,18 +337,12 @@ int main(int argc, char** argv)
     win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_glyph");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    EXAMPLE_CHECK(dvz_view_capture_start(win, &capture) == 0, "dvz_view_capture_start() failed");
-    capture_started = true;
-
-    dvz_app_run(app, frame_count);
-
-    EXAMPLE_CHECK(dvz_view_capture_stop(win) == 0, "dvz_view_capture_stop() failed");
-    capture_started = false;
+    EXAMPLE_CHECK(
+        example_run_with_capture(app, win, frame_count, &capture),
+        "example_run_with_capture() failed");
     ret = 0;
 
 cleanup:
-    if (capture_started && win != NULL)
-        (void)dvz_view_capture_stop(win);
     if (app != NULL)
         dvz_app_destroy(app);
     if (scene != NULL)
