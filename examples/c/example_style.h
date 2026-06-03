@@ -65,6 +65,10 @@ typedef struct ExampleAxisStyleOptions
 
 DvzColor example_graphite_cyan_color(ExampleStyleColorRole role);
 
+DvzColormap* example_graphite_cyan_colormap(DvzScene* scene);
+
+DvzScale* example_graphite_cyan_color_scale(DvzScene* scene, double min, double max);
+
 void example_graphite_cyan_panel_background(float out_rgba[4]);
 
 void example_graphite_cyan_set_panel_background(DvzPanel* panel);

@@ -97,6 +97,54 @@ DvzColor example_graphite_cyan_color(ExampleStyleColorRole role)
 
 
 /**
+ * Create the shared graphite-cyan example colormap.
+ *
+ * @param scene target scene
+ * @return scene-owned colormap, or NULL on error
+ */
+DvzColormap* example_graphite_cyan_colormap(DvzScene* scene)
+{
+    ANN(scene);
+    DvzColor colors[] = {
+        dvz_color_rgb(29, 43, 54),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
+    };
+    return dvz_colormap_custom(scene, "graphite_cyan", colors, DVZ_ARRAY_COUNT(colors));
+}
+
+
+
+/**
+ * Create a continuous color scale using the shared graphite-cyan colormap.
+ *
+ * @param scene target scene
+ * @param min scalar domain minimum
+ * @param max scalar domain maximum
+ * @return scene-owned scale, or NULL on error
+ */
+DvzScale* example_graphite_cyan_color_scale(DvzScene* scene, double min, double max)
+{
+    ANN(scene);
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
+                   .kind = DVZ_SCALE_CONTINUOUS,
+                   .label = "value",
+               });
+    if (scale == NULL)
+        return NULL;
+    DvzColormap* colormap = example_graphite_cyan_colormap(scene);
+    if (colormap == NULL)
+        return NULL;
+    dvz_scale_set_domain(scale, min, max);
+    dvz_scale_set_colormap(scale, colormap);
+    return scale;
+}
+
+
+
+/**
  * Return the graphite-cyan panel background color as normalized RGBA.
  *
  * @param out_rgba output normalized RGBA color
