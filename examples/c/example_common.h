@@ -22,6 +22,7 @@
 
 #include "_compat.h"
 #include "datoviz/math/types.h"
+#include "example_style.h"
 
 
 /*************************************************************************************************/
@@ -31,6 +32,7 @@
 typedef struct DvzGeometry DvzGeometry;
 typedef struct DvzVisual   DvzVisual;
 typedef struct DvzScene    DvzScene;
+typedef struct DvzPanel    DvzPanel;
 typedef struct DvzApp      DvzApp;
 typedef struct DvzView     DvzView;
 typedef struct DvzController DvzController;
@@ -94,6 +96,12 @@ bool example_run_with_capture(
     DvzApp* app, DvzView* view, uint32_t frame_count, const DvzAppCaptureConfig* capture);
 
 bool example_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry);
+
+DvzVisual* example_graphite_cyan_cube_mesh(
+    DvzScene* scene,
+    double size,
+    const ExampleStyleColorRole face_roles[6],
+    DvzGeometry** out_geometry);
 
 bool example_visual_spin(
     DvzScene* scene,

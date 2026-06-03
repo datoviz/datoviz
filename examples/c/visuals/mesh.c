@@ -55,36 +55,18 @@
  */
 static bool _add_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geometry)
 {
-    DvzVisual* visual = dvz_mesh(scene, 0);
-    if (visual == NULL)
-        return false;
-
-    const DvzColor face_colors[DVZ_GEOM_CUBE_FACE_COUNT] = {
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ERROR),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
+    const ExampleStyleColorRole face_roles[6] = {
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_WARNING,
+        EXAMPLE_STYLE_COLOR_ERROR,
+        EXAMPLE_STYLE_COLOR_TEXT,
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
     };
 
-    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
-        DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
-        .size = 1.18,
-        .face_colors = face_colors,
-        .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT,
-    });
-    if (cube == NULL)
+    DvzVisual* visual = example_graphite_cyan_cube_mesh(scene, 1.18, face_roles, out_geometry);
+    if (visual == NULL)
         return false;
-    if (out_geometry != NULL)
-        *out_geometry = cube;
-
-    if (!example_mesh_geometry(visual, cube))
-        return false;
-
-    dvz_geometry_destroy(cube);
-    if (out_geometry != NULL)
-        *out_geometry = NULL;
 
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
 }

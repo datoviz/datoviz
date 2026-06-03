@@ -17,7 +17,7 @@
 #include "example_common.h"
 
 #include "datoviz/app.h"
-#include "datoviz/geom/types.h"
+#include "datoviz/geom.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
 
@@ -291,6 +291,55 @@ bool example_run_with_capture(
 bool example_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry)
 {
     return dvz_mesh_set_geometry(visual, geometry) == 0;
+}
+
+
+/**
+ * Create a mesh visual backed by one graphite-cyan colored cube geometry.
+ *
+ * @param scene scene owning the visual
+ * @param size cube edge length
+ * @param face_roles six graphite-cyan face color roles
+ * @param out_geometry geometry handle for cleanup on failure before upload completes
+ * @return uploaded mesh visual, or NULL on error
+ */
+DvzVisual* example_graphite_cyan_cube_mesh(
+    DvzScene* scene,
+    double size,
+    const ExampleStyleColorRole face_roles[6],
+    DvzGeometry** out_geometry)
+{
+    if (out_geometry != NULL)
+        *out_geometry = NULL;
+    if (scene == NULL || face_roles == NULL)
+        return NULL;
+
+    DvzVisual* visual = dvz_mesh(scene, 0);
+    if (visual == NULL)
+        return NULL;
+
+    DvzColor face_colors[DVZ_GEOM_CUBE_FACE_COUNT] = {0};
+    for (uint32_t i = 0; i < DVZ_GEOM_CUBE_FACE_COUNT; i++)
+        face_colors[i] = example_graphite_cyan_color(face_roles[i]);
+
+    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
+        .size = size,
+        .face_colors = face_colors,
+        .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT,
+    });
+    if (cube == NULL)
+        return NULL;
+    if (out_geometry != NULL)
+        *out_geometry = cube;
+
+    if (!example_mesh_geometry(visual, cube))
+        return NULL;
+
+    dvz_geometry_destroy(cube);
+    if (out_geometry != NULL)
+        *out_geometry = NULL;
+    return visual;
 }
 
 
