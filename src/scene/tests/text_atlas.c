@@ -206,6 +206,64 @@ int test_scene_text_msdf_shader_uses_rgb_distance(TstContext* suite, const TstCa
 }
 
 
+/**
+ * Verify default Roboto ASCII MSDF atlases use embedded cached payloads.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_default_msdf_uses_embedded_atlas(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+#if defined(DVZ_HAS_ZLIB) && DVZ_HAS_ZLIB
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzFontDesc desc = dvz_font_desc();
+    desc.family = "Roboto";
+    desc.style = "Regular";
+    DvzFont* font = dvz_font(scene, &desc);
+    ANN(font);
+    AT(font->ttf_bytes == NULL);
+    AT(font->ttf_size == 0);
+
+    DvzTextAtlasSpec small_spec =
+        _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, 38.0f);
+    AT(_scene_text_atlas_ensure_string(font, &small_spec, "MSDF atlas renderer"));
+    AT(font->ttf_bytes == NULL);
+    AT(font->ttf_size == 0);
+    DvzTextAtlas* small = _scene_text_atlas_get(font, &small_spec);
+    ANN(small);
+    ANN(small->field);
+    AT(small->backend == DVZ_TEXT_ATLAS_BACKEND_MSDF);
+    AT(small->encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
+    AT(small->glyph_count >= 95);
+    ANN(_scene_text_atlas_glyph(small, 'A'));
+
+    DvzTextAtlasSpec large_spec =
+        _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, 84.0f);
+    AT(_scene_text_atlas_ensure_string(font, &large_spec, "Retained text"));
+    AT(font->ttf_bytes == NULL);
+    AT(font->ttf_size == 0);
+    DvzTextAtlas* large = _scene_text_atlas_get(font, &large_spec);
+    ANN(large);
+    ANN(large->field);
+    AT(large->backend == DVZ_TEXT_ATLAS_BACKEND_MSDF);
+    AT(large->encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
+    AT(large->glyph_count >= 95);
+    ANN(_scene_text_atlas_glyph(large, 'R'));
+
+    dvz_scene_destroy(scene);
+#else
+    tst_skip(suite, "zlib unavailable");
+#endif
+    return 0;
+}
+
+
 
 /**
  * Verify font-backed UTF-8 text renders through scene DRP2 runtime readback.
@@ -344,6 +402,7 @@ int test_scene_text_atlas(TstSuite* suite)
     TST_GROUP("text-atlas");
 
     TST_CASE(test_scene_text_msdf_shader_uses_rgb_distance);
+    TST_CASE(test_scene_text_default_msdf_uses_embedded_atlas);
     TST_SCENE_TEXT_ATLAS_GPU_CASE(test_scene_text_atlas_utf8_runtime_readback);
 
     return 0;
