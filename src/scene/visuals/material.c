@@ -47,19 +47,23 @@ void _material_params_default(DvzSceneMaterialParams* params)
 {
     ANN(params);
     dvz_memset(params, sizeof(DvzSceneMaterialParams), 0, sizeof(DvzSceneMaterialParams));
-    params->light_direction[2] = 1.0f;
-    params->params[0] = 0.2f;
-    params->params[1] = 0.8f;
-    params->params[2] = 0.25f;
-    params->params[3] = 32.0f;
+    params->light_direction[0] = -0.45f;
+    params->light_direction[1] = -0.35f;
+    params->light_direction[2] = 0.82f;
+    params->params[0] = 0.24f;
+    params->params[1] = 0.82f;
+    params->params[2] = 0.24f;
+    params->params[3] = 26.0f;
     params->model[0] = (float)DVZ_MATERIAL_MODEL_PHONG;
     params->model[1] = 1.0f;
     params->base_color_factor[0] = 1.0f;
     params->base_color_factor[1] = 1.0f;
     params->base_color_factor[2] = 1.0f;
     params->base_color_factor[3] = 1.0f;
-    params->standard_params[0] = 0.5f;
-    params->standard_params[1] = 0.5f;
+    params->standard_params[0] = 0.62f;
+    params->standard_params[1] = 0.34f;
+    params->standard_params[3] = 0.10f;
+    params->emissive_rim[3] = 0.10f;
     params->depth_cue[1] = 1.0f;
     params->depth_cue[2] = 1.0f;
     params->depth_cue_extra[2] = 3.0f;
@@ -80,9 +84,9 @@ DvzMaterialDesc dvz_material_desc(void)
         .alpha_mode = DVZ_ALPHA_OPAQUE,
         .opacity = 1.0f,
         .base_color_factor = {1.0f, 1.0f, 1.0f, 1.0f},
-        .light_direction = {0.0f, 0.0f, 1.0f},
-        .phong = {.ambient = 0.2f, .diffuse = 0.8f, .specular = 0.25f, .shininess = 32.0f},
-        .standard = {.roughness = 0.5f, .specular = 0.5f},
+        .light_direction = {-0.45f, -0.35f, 0.82f},
+        .phong = {.ambient = 0.24f, .diffuse = 0.82f, .specular = 0.24f, .shininess = 26.0f},
+        .standard = {.roughness = 0.62f, .specular = 0.34f, .rim_strength = 0.10f},
     };
     return desc;
 }

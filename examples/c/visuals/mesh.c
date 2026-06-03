@@ -86,17 +86,6 @@ static bool _add_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geomet
     if (out_geometry != NULL)
         *out_geometry = NULL;
 
-    DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = 0.35f;
-    material.light_direction[1] = 0.58f;
-    material.light_direction[2] = 0.73f;
-    material.phong.ambient = 0.24f;
-    material.phong.diffuse = 0.82f;
-    material.phong.specular = 0.24f;
-    material.phong.shininess = 26.0f;
-    if (dvz_visual_set_material(visual, &material) != 0)
-        return false;
-
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
 }
 
@@ -123,7 +112,6 @@ int main(int argc, char** argv)
     DvzApp* app = NULL;
     DvzView* win = NULL;
     DvzGeometry* geometry = NULL;
-    bool capture_started = false;
 
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
@@ -163,20 +151,12 @@ int main(int argc, char** argv)
         "dvz_view_bind_controller() failed");
     dvz_arcball_set(arcball, (vec3){+0.60f, -0.10f, +0.28f});
 
-    int rc = dvz_view_capture_start(win, &capture);
-    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_start() failed");
-    capture_started = true;
-
-    dvz_app_run(app, frame_count);
-
-    rc = dvz_view_capture_stop(win);
-    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_stop() failed");
-    capture_started = false;
+    EXAMPLE_CHECK(
+        example_run_with_capture(app, win, frame_count, &capture),
+        "example_run_with_capture() failed");
     ret = 0;
 
 cleanup:
-    if (capture_started && win != NULL)
-        (void)dvz_view_capture_stop(win);
     if (geometry != NULL)
         dvz_geometry_destroy(geometry);
     if (app != NULL)

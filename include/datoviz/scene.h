@@ -1665,8 +1665,8 @@ DVZ_EXPORT bool dvz_visual_set_attr_buffer(
  * Return default visual material options.
  *
  * The default material is the fast Phong model with opaque alpha, full opacity, a white base-color
- * factor, light direction `(0, 0, 1)`, ambient `0.2`, diffuse `0.8`, specular `0.25`, and
- * shininess `32`.
+ * factor, light direction `(-0.45, -0.35, 0.82)`, ambient `0.24`, diffuse `0.82`, specular
+ * `0.24`, and shininess `26`.
  *
  * @return default material descriptor
  */
@@ -1688,8 +1688,8 @@ DVZ_EXPORT DvzMaterialDesc dvz_phong_material_desc(void);
  * Return default standard visual material options.
  *
  * The descriptor uses `DVZ_MATERIAL_MODEL_STANDARD` with opaque alpha, full opacity, a white
- * base-color factor, light direction `(0, 0, 1)`, roughness `0.5`, specular `0.5`, metallic `0`,
- * no emissive contribution, and no rim contribution.
+ * base-color factor, light direction `(-0.45, -0.35, 0.82)`, roughness `0.62`, specular `0.34`,
+ * metallic `0`, no emissive contribution, and rim contribution `0.10`.
  *
  * @return default standard material descriptor
  */

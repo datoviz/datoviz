@@ -151,7 +151,6 @@ int main(int argc, char** argv)
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
     DvzView* win = NULL;
-    bool capture_started = false;
 
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
@@ -171,18 +170,12 @@ int main(int argc, char** argv)
     win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_text");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    EXAMPLE_CHECK(dvz_view_capture_start(win, &capture) == 0, "dvz_view_capture_start() failed");
-    capture_started = true;
-
-    dvz_app_run(app, frame_count);
-
-    EXAMPLE_CHECK(dvz_view_capture_stop(win) == 0, "dvz_view_capture_stop() failed");
-    capture_started = false;
+    EXAMPLE_CHECK(
+        example_run_with_capture(app, win, frame_count, &capture),
+        "example_run_with_capture() failed");
     ret = 0;
 
 cleanup:
-    if (capture_started && win != NULL)
-        (void)dvz_view_capture_stop(win);
     if (app != NULL)
         dvz_app_destroy(app);
     if (scene != NULL)

@@ -104,7 +104,7 @@ static void _fill_pixels(
             positions[i][2] = 0.0f;
 
             values[i] = value;
-            sizes[i] = 14.0f;
+            sizes[i] = 1.0f + 4.0f * value;
         }
     }
 }

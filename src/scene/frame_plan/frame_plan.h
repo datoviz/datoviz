@@ -35,6 +35,7 @@
 #define DVZ_FRAME_PLAN_ASCII_SHOW_READBACKS 0x08u
 #define DVZ_FRAME_PLAN_ASCII_ASCII_ONLY 0x10u
 #define DVZ_FRAME_PLAN_ASCII_MAX_WIDTH_120 0x20u
+#define DVZ_SCENE_LABELS_LOOKUP_CAPACITY 65u
 
 
 
@@ -334,6 +335,8 @@ typedef struct DvzFramePlanVisualMeta
     bool has_volume_occlusion;
     DvzVolumeOcclusionDesc volume_occlusion;
     DvzLabelsState labels_state;
+    uint32_t labels_lookup_count;
+    uint32_t labels_lookup[DVZ_SCENE_LABELS_LOOKUP_CAPACITY][4];
     DvzVolumeState volume_state;
     uint32_t glyph_atlas_encoding;
     float glyph_distance_range_px;

@@ -40,8 +40,8 @@
 
 #define WIDTH        1600u
 #define HEIGHT       1200u
-#define FIELD_WIDTH  128u
-#define FIELD_HEIGHT 96u
+#define FIELD_WIDTH  512u
+#define FIELD_HEIGHT 384u
 #define LABEL_COUNT  6u
 
 static const float TAU = 6.28318530718f;
@@ -124,44 +124,23 @@ static DvzScale* _add_labels_scale(DvzScene* scene)
     if (scale == NULL)
         return NULL;
 
-    DvzScaleCategory categories[LABEL_COUNT] = {
-        {
-            .category_id = 3,
-            .order = 0,
-            .label = "region 3",
-            .color = {76, 201, 240, 210},
-        },
-        {
-            .category_id = 8,
-            .order = 1,
-            .label = "region 8",
-            .color = {128, 255, 219, 210},
-        },
-        {
-            .category_id = 13,
-            .order = 2,
-            .label = "region 13",
-            .color = {255, 183, 3, 210},
-        },
-        {
-            .category_id = 21,
-            .order = 3,
-            .label = "region 21",
-            .color = {239, 71, 111, 210},
-        },
-        {
-            .category_id = 34,
-            .order = 4,
-            .label = "region 34",
-            .color = {201, 209, 217, 210},
-        },
-        {
-            .category_id = 55,
-            .order = 5,
-            .label = "region 55",
-            .color = {47, 141, 196, 210},
-        },
+    const ExampleStyleColorRole roles[LABEL_COUNT] = {
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_WARNING,
+        EXAMPLE_STYLE_COLOR_ERROR,
+        EXAMPLE_STYLE_COLOR_TEXT,
+        EXAMPLE_STYLE_COLOR_MINOR_TICK,
     };
+    DvzScaleCategory categories[LABEL_COUNT] = {0};
+    for (uint32_t i = 0; i < LABEL_COUNT; i++)
+    {
+        categories[i].category_id = LABEL_IDS[i];
+        categories[i].order = i;
+        categories[i].label = "region";
+        categories[i].color = example_graphite_cyan_color(roles[i]);
+        categories[i].color.a = 220;
+    }
     return dvz_scale_set_categories(scale, categories, LABEL_COUNT) ? scale : NULL;
 }
 
@@ -234,6 +213,8 @@ static bool _add_labels(
     }
     if (dvz_visual_set_depth_test(visual, false) != 0)
         return false;
+    if (dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED) != 0)
+        return false;
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
 }
 
@@ -256,7 +237,6 @@ int main(int argc, char** argv)
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
     DvzView* win = NULL;
-    bool capture_started = false;
     int32_t* labels = NULL;
     const uint32_t frame_count = example_frame_count_any(argc, argv);
     DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("visual_labels");
@@ -288,20 +268,12 @@ int main(int argc, char** argv)
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
-    int rc = dvz_view_capture_start(win, &capture);
-    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_start() failed");
-    capture_started = true;
-
-    dvz_app_run(app, frame_count);
-
-    rc = dvz_view_capture_stop(win);
-    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_stop() failed");
-    capture_started = false;
+    EXAMPLE_CHECK(
+        example_run_with_capture(app, win, frame_count, &capture),
+        "example_run_with_capture() failed");
     ret = 0;
 
 cleanup:
-    if (capture_started && win != NULL)
-        (void)dvz_view_capture_stop(win);
     if (app != NULL)
         dvz_app_destroy(app);
     dvz_free(labels);

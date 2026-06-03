@@ -59,6 +59,14 @@ bool _scene_labels_visual_desc_from_metadata(
     out->kind = desc_kind;
     out->labels_visual_index = meta->visual_index;
     out->labels_state = meta->labels_state;
+    out->labels_lookup_count = meta->labels_lookup_count;
+    for (uint32_t i = 0; i < meta->labels_lookup_count; i++)
+    {
+        out->labels_lookup[i][0] = meta->labels_lookup[i][0];
+        out->labels_lookup[i][1] = meta->labels_lookup[i][1];
+        out->labels_lookup[i][2] = meta->labels_lookup[i][2];
+        out->labels_lookup[i][3] = meta->labels_lookup[i][3];
+    }
     out->vbuf_ids[out->vbuf_count++] = uv_id;
     out->image_texture_id = tex_id;
     uint64_t pos_buf = out->vbuf_ids[0];

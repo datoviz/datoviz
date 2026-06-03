@@ -8807,9 +8807,11 @@ int test_scene_visual_internal_material_state(TstContext* suite, const TstCase* 
     AT(volume->material.kind == DVZ_MATERIAL_KIND_VOLUME);
     AT(mesh->material.alpha_mode == DVZ_ALPHA_OPAQUE);
     AT(mesh->material.opacity == 1.0f);
-    AT(mesh->material.light_direction[2] == 1.0f);
-    AT(mesh->material.ambient == 0.2f);
-    AT(mesh->material.diffuse == 0.8f);
+    AT(mesh->material.light_direction[0] == -0.45f);
+    AT(mesh->material.light_direction[1] == -0.35f);
+    AT(mesh->material.light_direction[2] == 0.82f);
+    AT(mesh->material.ambient == 0.24f);
+    AT(mesh->material.diffuse == 0.82f);
     AT(!mesh->material.depth_cue_enabled);
     AT(mesh->material.depth_cue_mode == DVZ_DEPTH_CUE_NONE);
     AT(mesh->material.depth_cue_metric == DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH);
@@ -8927,18 +8929,21 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT(defaults.opacity == 1.0f);
     AT(defaults.base_color_factor[0] == 1.0f);
     AT(defaults.base_color_factor[3] == 1.0f);
-    AT(defaults.light_direction[2] == 1.0f);
-    AT(defaults.phong.ambient == 0.2f);
-    AT(defaults.phong.diffuse == 0.8f);
-    AT(defaults.phong.specular == 0.25f);
-    AT(defaults.phong.shininess == 32.0f);
-    AT(defaults.standard.roughness == 0.5f);
-    AT(defaults.standard.specular == 0.5f);
+    AT(defaults.light_direction[0] == -0.45f);
+    AT(defaults.light_direction[1] == -0.35f);
+    AT(defaults.light_direction[2] == 0.82f);
+    AT(defaults.phong.ambient == 0.24f);
+    AT(defaults.phong.diffuse == 0.82f);
+    AT(defaults.phong.specular == 0.24f);
+    AT(defaults.phong.shininess == 26.0f);
+    AT(defaults.standard.roughness == 0.62f);
+    AT(defaults.standard.specular == 0.34f);
+    AT(defaults.standard.rim_strength == 0.10f);
     DvzMaterialDesc phong_defaults = dvz_phong_material_desc();
     AT(phong_defaults.model == DVZ_MATERIAL_MODEL_PHONG);
     DvzMaterialDesc standard_defaults = dvz_standard_material_desc();
     AT(standard_defaults.model == DVZ_MATERIAL_MODEL_STANDARD);
-    AT(standard_defaults.standard.roughness == 0.5f);
+    AT(standard_defaults.standard.roughness == 0.62f);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -9028,8 +9033,8 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT(mesh->alpha_mode == DVZ_ALPHA_OPAQUE);
     AT(mesh->material.depth_cue_enabled);
     AT(_visual_family_state(mesh)->material_params.depth_cue[2] == 0.4f);
-    AT(_visual_family_state(mesh)->material_params.params[0] == 0.2f);
-    AT(_visual_family_state(mesh)->material_params.params[1] == 0.8f);
+    AT(_visual_family_state(mesh)->material_params.params[0] == 0.24f);
+    AT(_visual_family_state(mesh)->material_params.params[1] == 0.82f);
 
     AT(_test_set_phong_material(
            sphere, (float[3]){0.0f, 1.0f, 0.0f}, 0.3f, 0.6f, 0.2f, 16.0f) == 0);

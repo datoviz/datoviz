@@ -1682,6 +1682,28 @@ int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const Ts
     AT(dvz_visual_set_field(labels, "field", field));
     AT(_visual_family_state(labels)->field == field);
 
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
+    vec2 extents[1] = {{1.0f, 1.0f}};
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 1},
+        {.attr_name = "extent", .data = extents, .item_count = 1},
+    };
+    AT(dvz_visual_set_data_many(labels, updates, 2) == 0);
+    AT(dvz_panel_add_visual(panel, labels, NULL) == 0);
+    DvzFramePlanVisualMeta metadata = {0};
+    AT(_scene_visual_frame_plan_metadata(figure, labels, 0, &metadata));
+    AT(metadata.has_labels);
+    AT(metadata.labels_lookup_count == 3);
+    AT(metadata.labels_lookup[0][0] == 2);
+    AT(metadata.labels_lookup[1][0] == 42);
+    AT(metadata.labels_lookup[1][1] == 0xb400ff00u);
+    AT(metadata.labels_lookup[2][0] == (uint32_t)(int32_t)-1);
+    AT(metadata.labels_lookup[2][1] == 0x78808080u);
+
     DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(continuous);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(labels, "labels", continuous) != 0);

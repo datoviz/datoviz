@@ -73,6 +73,7 @@ struct DvzSceneLabelsUniform
     float floats[4]; /* opacity, boundary width in texels, reserved, reserved */
     float boundary_color[4];
     uint32_t hidden_ids[DVZ_SCENE_LABELS_HIDDEN_VEC4_COUNT][4];
+    uint32_t label_lookup[DVZ_SCENE_LABELS_LOOKUP_CAPACITY][4];
 };
 
 struct DvzSceneVolumeUniform

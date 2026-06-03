@@ -13,6 +13,7 @@ layout(set = 1, binding = 2) uniform LabelsParams
     vec4 floats;
     vec4 boundary_color;
     uvec4 hidden_ids[64];
+    uvec4 label_lookup[65];
 } labels;
 
 layout(location = 0) in vec2 fragUV;
@@ -33,6 +34,19 @@ uint hashLabel(uint x)
 
 vec4 labelColor(uint id)
 {
+    uint count = min(labels.label_lookup[0].x, 64u);
+    for (uint i = 1u; i <= count; i++)
+    {
+        if (labels.label_lookup[i].x == id)
+        {
+            uint rgba = labels.label_lookup[i].y;
+            return vec4(
+                float((rgba >> 0) & 0xffu),
+                float((rgba >> 8) & 0xffu),
+                float((rgba >> 16) & 0xffu),
+                float((rgba >> 24) & 0xffu)) / 255.0;
+        }
+    }
     uint h = hashLabel(id ^ labels.params.y);
     vec3 rgb = vec3(
         float((h >> 0) & 0xffu),

@@ -20,6 +20,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_visual_pipeline_internal.h"
+#include "colorizer.h"
 #include "sample_profile.h"
 
 
@@ -112,6 +113,27 @@ bool _scene_labels_visual_fill_metadata(
 
     metadata->has_labels = true;
     metadata->labels_state = _visual_family_state(visual)->labels;
+    DvzSceneColorizer colorizer = {0};
+    uint32_t lookup_count = 0;
+    bool signed_labels = lowering->desc_kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT;
+    if (_scene_colorizer_from_scale(
+            _visual_family_state(visual)->scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer) &&
+        _scene_colorizer_label_lookup_extent(&colorizer, &lookup_count) &&
+        lookup_count <= DVZ_SCENE_LABELS_LOOKUP_CAPACITY)
+    {
+        DvzSceneLabelLookupEntry entries[DVZ_SCENE_LABELS_LOOKUP_CAPACITY] = {0};
+        if (_scene_colorizer_build_label_lookup(&colorizer, signed_labels, entries, lookup_count))
+        {
+            metadata->labels_lookup_count = lookup_count;
+            for (uint32_t i = 0; i < lookup_count; i++)
+            {
+                metadata->labels_lookup[i][0] = entries[i].key;
+                metadata->labels_lookup[i][1] = entries[i].rgba;
+                metadata->labels_lookup[i][2] = entries[i].metadata_index;
+                metadata->labels_lookup[i][3] = entries[i].flags;
+            }
+        }
+    }
     bool generated_quads = _scene_visual_has_dense_attr(visual, "extent") ||
                            _scene_visual_has_dense_attr(visual, "extent_px");
     if (!generated_quads)
@@ -154,5 +176,13 @@ bool _scene_labels_visual_bind_desc(
     out->labels_texture_id = visual->image_texture_id;
     out->labels_visual_index = visual->labels_visual_index;
     out->labels_state = visual->labels_state;
+    out->labels_lookup_count = visual->labels_lookup_count;
+    for (uint32_t i = 0; i < visual->labels_lookup_count; i++)
+    {
+        out->labels_lookup[i][0] = visual->labels_lookup[i][0];
+        out->labels_lookup[i][1] = visual->labels_lookup[i][1];
+        out->labels_lookup[i][2] = visual->labels_lookup[i][2];
+        out->labels_lookup[i][3] = visual->labels_lookup[i][3];
+    }
     return true;
 }

@@ -589,6 +589,16 @@ bool _resolve_labels_bind_group(
     if (slot == NULL)
         return false;
     _labels_uniform_from_state(&bind->labels_state, slot);
+    uint32_t lookup_count = bind->labels_lookup_count;
+    if (lookup_count > DVZ_SCENE_LABELS_LOOKUP_CAPACITY)
+        lookup_count = DVZ_SCENE_LABELS_LOOKUP_CAPACITY;
+    for (uint32_t i = 0; i < lookup_count; i++)
+    {
+        slot->label_lookup[i][0] = bind->labels_lookup[i][0];
+        slot->label_lookup[i][1] = bind->labels_lookup[i][1];
+        slot->label_lookup[i][2] = bind->labels_lookup[i][2];
+        slot->label_lookup[i][3] = bind->labels_lookup[i][3];
+    }
     if (!dvz_drp2_stream_write_buffer_bytes(
             stream, params_buf_id, 0, sizeof(DvzSceneLabelsUniform), slot))
         return false;

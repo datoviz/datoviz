@@ -11,6 +11,7 @@ struct LabelsParams {
     floats: vec4f,
     boundary_color: vec4f,
     hidden_ids: array<vec4u, 64>,
+    label_lookup: array<vec4u, 65>,
 }
 
 @group(1) @binding(2) var<uniform> labels: LabelsParams;
@@ -29,6 +30,17 @@ fn hashLabel(value: u32) -> u32 {
 }
 
 fn labelColor(bits: u32) -> vec4f {
+    let count = min(labels.label_lookup[0].x, 64u);
+    for (var i = 1u; i <= count; i = i + 1u) {
+        if labels.label_lookup[i].x == bits {
+            let rgba = labels.label_lookup[i].y;
+            return vec4f(
+                f32((rgba >> 0u) & 0xffu),
+                f32((rgba >> 8u) & 0xffu),
+                f32((rgba >> 16u) & 0xffu),
+                f32((rgba >> 24u) & 0xffu)) / 255.0;
+        }
+    }
     let h = hashLabel(bits ^ labels.params.y);
     let rgb = vec3f(
         f32((h >> 0u) & 0xffu),

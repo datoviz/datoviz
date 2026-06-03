@@ -86,6 +86,8 @@ typedef struct DvzSceneVisualDesc
     bool image_nearest_sampler;
     uint32_t labels_visual_index;
     DvzLabelsState labels_state;
+    uint32_t labels_lookup_count;
+    uint32_t labels_lookup[DVZ_SCENE_LABELS_LOOKUP_CAPACITY][4];
     uint32_t glyph_atlas_encoding;
     float glyph_distance_range_px;
     uint64_t volume_texture_id;
@@ -209,6 +211,8 @@ typedef struct DvzSceneVisualBindDesc
     uint64_t labels_texture_id;
     uint32_t labels_visual_index;
     DvzLabelsState labels_state;
+    uint32_t labels_lookup_count;
+    uint32_t labels_lookup[DVZ_SCENE_LABELS_LOOKUP_CAPACITY][4];
     bool uses_glyph_set1;
     uint64_t glyph_texture_id;
     uint32_t glyph_atlas_encoding;
