@@ -16,6 +16,7 @@
 [submodule "external/cimgui"]
 	path = external/cimgui
 	url = https://github.com/datoviz/cimgui.git
+	branch = datoviz-1.91.9bdock-slider-range2
 [submodule "external/msdf-atlas-gen"]
 	path = external/msdf-atlas-gen
 	url = https://github.com/Chlumsky/msdf-atlas-gen.git
