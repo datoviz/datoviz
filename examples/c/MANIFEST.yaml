@@ -86,6 +86,116 @@ examples:
     source: examples/c/features/pick_marker.c
     validation: smoke+interaction
 
+  - id: point_2d
+    title: Point
+    stage: v0.4_required
+    lane: visuals
+    source: examples/c/visuals/point.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - point
+      - panzoom
+      - capture
+
+  - id: visual_pixel
+    title: Pixel
+    stage: v0.4_required
+    lane: visuals
+    source: examples/c/visuals/pixel.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - pixel
+      - panzoom
+      - capture
+
+  - id: visual_marker
+    title: Marker
+    stage: v0.4_required
+    lane: visuals
+    source: examples/c/visuals/marker.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - marker
+      - panzoom
+      - capture
+
+  - id: visual_primitive
+    title: Primitive
+    stage: v0.4_required
+    lane: visuals
+    source: examples/c/visuals/primitive.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - primitive
+      - capture
+
+  - id: visual_segment
+    title: Segment
+    stage: v0.4_required
+    lane: visuals
+    source: examples/c/visuals/segment.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - segment
+      - panzoom
+      - capture
+
+  - id: visual_path
+    title: Path
+    stage: v0.4_required
+    lane: visuals
+    source: examples/c/visuals/path.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - path
+      - capture
+
+  - id: visual_image
+    title: Image
+    stage: v0.4_required
+    lane: visuals
+    source: examples/c/visuals/image.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - image
+      - sampled-field
+      - capture
+
+  - id: sphere_impostor
+    title: Sphere
+    stage: v0.4_required
+    lane: visuals
+    source: examples/c/visuals/sphere.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - sphere
+      - arcball
+      - capture
+
   - id: volume
     title: Volume
     stage: v0.4_required

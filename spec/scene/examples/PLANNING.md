@@ -59,9 +59,8 @@ The main remaining polish, promotion, or feature gaps are:
 
 1. release capture proof for the existing text, axes, colorbar, annotation/readout, scale-bar, and
    retained textured-mesh public examples;
-2. promotion or rewrite of the missing required public C examples: `point_2d`,
-   `linked_panels_probe_colorbar`, `sphere_impostor`, `brain_volume_mesh`, and
-   `dense_point_cloud_edl`;
+2. promotion or rewrite of the missing required public C examples:
+   `linked_panels_probe_colorbar`, `brain_volume_mesh`, and `dense_point_cloud_edl`;
 3. vector visuals so wind, flow, and track examples stop relying on primitive triangles;
 4. richer picking/probe payloads for marker exact hit tests, mesh regions, paths, labels, text, and
    volume ray hits;
@@ -75,12 +74,12 @@ The main remaining polish, promotion, or feature gaps are:
 
 | Scenario | Readiness | Required slice | Decision |
 | --- | --- | --- | --- |
-| `point_2d` | `needs-rc1-proof` | retained scene, point visual, panzoom/offscreen | Still missing from the public C manifest. Keep as the smallest retained-scene smoke; use legacy point examples or `examples/c/lab/point_stress.c` only as source material. |
+| `point_2d` | `ready-now` | retained scene, point visual, panzoom/offscreen | Public proof lives in `examples/c/visuals/point.c`. Keep as the smallest retained-scene point visual smoke; `examples/c/lab/point_stress.c` remains non-public stress material. |
 | `path_axes_2d` | `ready-now` | path, rendered text, 2D axes/ticks | Public proof lives in `examples/c/features/axes_2d.c`. |
 | `linked_panels_axes_panzoom` | `ready-now` | grid/layout, linked panzoom, axes | Public proof lives in `examples/c/workflows/panel_linked_axes.c`. |
 | `linked_panels_probe_colorbar` | `needs-rc1-proof` | image probe, colorbar, annotation/readout, linked state | Still missing as a composed public C example. Current public proofs cover the parts separately in `image_probe`, `colorbar`, and `annotation_readout`. |
 | `marker_picking` | `ready-now` | marker visual, item pick, selection highlight | Public proof lives in `examples/c/features/pick_marker.c`. |
-| `sphere_impostor` | `needs-rc1-proof` | sphere visual, lighting/depth | Still missing from the public C manifest. Use legacy sphere/protein material as source, but keep this as a small visual proof. |
+| `sphere_impostor` | `ready-now` | sphere visual, lighting/depth | Public proof lives in `examples/c/visuals/sphere.c`; molecule/protein semantics stay in the scientific protein example. |
 | `volume` | `ready-now` | 3D sampled field, slice/render, capture | Public proof lives in `examples/c/visuals/volume.c`. |
 | `scale_bar` | `ready-now` | retained scale bar, label, panzoom/domain updates | Minimal feature proof lives in `examples/c/features/scalebar.c`; unit conversion proof lives in `examples/c/features/scalebar_units.c`; richer overview/detail/3D measurement composition lives in `examples/c/workflows/scalebar_measurement.c`. |
 | `scalebar_units` | `ready-now` | retained scale bar, non-spatial unit conversion | Public proof lives in `examples/c/features/scalebar_units.c`. |
