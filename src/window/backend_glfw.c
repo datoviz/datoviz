@@ -23,6 +23,8 @@
 #include "window_internal.h"
 
 
+#include <math.h>
+#include <stdlib.h>
 #include <volk.h>
 
 
@@ -147,6 +149,152 @@ static void _glfw_apply_window_hints(void)
     glfwWindowHintString(GLFW_X11_CLASS_NAME, "datoviz");
     glfwWindowHintString(GLFW_X11_INSTANCE_NAME, "datoviz");
 #endif
+}
+
+
+
+/**
+ * Parse the optional display-scale override from the environment.
+ *
+ * @return positive display scale override, or zero when unset or invalid
+ */
+static float _glfw_display_scale_override(void)
+{
+    const char* value = getenv("DVZ_DISPLAY_SCALE");
+    if (value == NULL || value[0] == '\0')
+        return 0.0f;
+    char* end = NULL;
+    float scale = strtof(value, &end);
+    if (end == value || !isfinite(scale) || scale <= 0.0f)
+    {
+        log_warn("ignoring invalid DVZ_DISPLAY_SCALE=%s", value);
+        return 0.0f;
+    }
+    return scale;
+}
+
+
+
+/**
+ * Return the monitor that best overlaps the current GLFW window.
+ *
+ * @param handle GLFW window handle
+ * @return best monitor, or primary monitor when no overlap can be resolved
+ */
+static GLFWmonitor* _glfw_window_monitor(GLFWwindow* handle)
+{
+    ANN(handle);
+    int wx = 0;
+    int wy = 0;
+    int ww = 0;
+    int wh = 0;
+    glfwGetWindowPos(handle, &wx, &wy);
+    glfwGetWindowSize(handle, &ww, &wh);
+
+    int monitor_count = 0;
+    GLFWmonitor** monitors = glfwGetMonitors(&monitor_count);
+    if (monitors == NULL || monitor_count <= 0)
+        return glfwGetPrimaryMonitor();
+
+    GLFWmonitor* best = NULL;
+    int best_area = -1;
+    for (int i = 0; i < monitor_count; i++)
+    {
+        int mx = 0;
+        int my = 0;
+        int mw = 0;
+        int mh = 0;
+        glfwGetMonitorWorkarea(monitors[i], &mx, &my, &mw, &mh);
+        int left = wx > mx ? wx : mx;
+        int top = wy > my ? wy : my;
+        int right = wx + ww < mx + mw ? wx + ww : mx + mw;
+        int bottom = wy + wh < my + mh ? wy + wh : my + mh;
+        int area = 0;
+        if (right > left && bottom > top)
+            area = (right - left) * (bottom - top);
+        if (area > best_area)
+        {
+            best = monitors[i];
+            best_area = area;
+        }
+    }
+    return best != NULL ? best : glfwGetPrimaryMonitor();
+}
+
+
+
+/**
+ * Fill monitor scale and raw-DPI inputs for the monitor hosting a GLFW window.
+ *
+ * @param handle GLFW window handle
+ * @param inputs scale inputs to update
+ */
+static void _glfw_fill_monitor_scale_inputs(GLFWwindow* handle, DvzWindowScaleInputs* inputs)
+{
+    ANN(handle);
+    ANN(inputs);
+    GLFWmonitor* monitor = _glfw_window_monitor(handle);
+    if (monitor == NULL)
+        return;
+
+    float monitor_scale_x = 1.0f;
+    float monitor_scale_y = 1.0f;
+    glfwGetMonitorContentScale(monitor, &monitor_scale_x, &monitor_scale_y);
+    inputs->monitor_scale_x = monitor_scale_x;
+    inputs->monitor_scale_y = monitor_scale_y;
+
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    if (mode != NULL && mode->width > 0 && mode->height > 0)
+    {
+        inputs->monitor_pixel_width = (uint32_t)mode->width;
+        inputs->monitor_pixel_height = (uint32_t)mode->height;
+    }
+
+    int width_mm = 0;
+    int height_mm = 0;
+    glfwGetMonitorPhysicalSize(monitor, &width_mm, &height_mm);
+    if (width_mm > 0)
+        inputs->monitor_width_mm = (uint32_t)width_mm;
+    if (height_mm > 0)
+        inputs->monitor_height_mm = (uint32_t)height_mm;
+}
+
+
+
+/**
+ * Resolve an effective content scale for a GLFW window.
+ *
+ * @param handle GLFW window handle
+ * @param raw_scale_x GLFW-reported window content scale in X
+ * @param raw_scale_y GLFW-reported window content scale in Y
+ * @param out_x resolved horizontal scale
+ * @param out_y resolved vertical scale
+ */
+static void _glfw_effective_content_scale(
+    GLFWwindow* handle, float raw_scale_x, float raw_scale_y, float* out_x, float* out_y)
+{
+    ANN(handle);
+    ANN(out_x);
+    ANN(out_y);
+
+    int fb_width = 0;
+    int fb_height = 0;
+    glfwGetFramebufferSize(handle, &fb_width, &fb_height);
+    int win_width = 0;
+    int win_height = 0;
+    glfwGetWindowSize(handle, &win_width, &win_height);
+
+    DvzWindowScaleInputs inputs = {
+        .window_scale_x = raw_scale_x,
+        .window_scale_y = raw_scale_y,
+        .framebuffer_width = fb_width > 0 ? (uint32_t)fb_width : 0,
+        .framebuffer_height = fb_height > 0 ? (uint32_t)fb_height : 0,
+        .window_width = win_width > 0 ? (uint32_t)win_width : 0,
+        .window_height = win_height > 0 ? (uint32_t)win_height : 0,
+        .override_scale = _glfw_display_scale_override(),
+    };
+    _glfw_fill_monitor_scale_inputs(handle, &inputs);
+    _dvz_window_effective_content_scale(&inputs, out_x, out_y);
 }
 
 
@@ -287,6 +435,7 @@ static void _glfw_framebuffer_callback(GLFWwindow* handle, int width, int height
     float scale_x = 1.f;
     float scale_y = 1.f;
     glfwGetWindowContentScale(handle, &scale_x, &scale_y);
+    _glfw_effective_content_scale(handle, scale_x, scale_y, &scale_x, &scale_y);
     dvz_window_backend_emit_resize(
         window, (uint32_t)width, (uint32_t)height, (uint32_t)win_width, (uint32_t)win_height,
         scale_x, scale_y);
@@ -299,6 +448,7 @@ static void _glfw_scale_callback(GLFWwindow* handle, float scale_x, float scale_
     DvzWindow* window = _glfw_window(handle);
     if (window == NULL)
         return;
+    _glfw_effective_content_scale(handle, scale_x, scale_y, &scale_x, &scale_y);
     dvz_window_backend_emit_scale(window, scale_x, scale_y);
 }
 
@@ -420,6 +570,7 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
     float scale_x = 1.f;
     float scale_y = 1.f;
     glfwGetWindowContentScale(handle, &scale_x, &scale_y);
+    _glfw_effective_content_scale(handle, scale_x, scale_y, &scale_x, &scale_y);
     dvz_window_backend_emit_resize(
         window, (uint32_t)fb_width, (uint32_t)fb_height, (uint32_t)win_width, (uint32_t)win_height,
         scale_x, scale_y);
