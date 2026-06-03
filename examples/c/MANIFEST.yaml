@@ -23,11 +23,25 @@ defaults:
   seed: 12345
 
 examples:
-  - id: path_axes_2d
-    title: Path With 2D Axes
+  - id: feature_scene_basic
+    title: Basic Scene
     stage: v0.4_required
     lane: features
-    source: examples/c/features/axes_2d.c
+    source: examples/c/features/scene_basic.c
+    validation: smoke+screenshot
+
+  - id: feature_panel_single
+    title: Single Panel
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/panel_single.c
+    validation: smoke+screenshot
+
+  - id: feature_panel_grid
+    title: Panel Grid
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/panel_grid.c
     validation: smoke+screenshot
 
   - id: feature_panel_multi
@@ -43,6 +57,13 @@ examples:
     lane: features
     source: examples/c/features/panel_linked.c
     validation: smoke+interaction+screenshot
+
+  - id: path_axes_2d
+    title: Path With 2D Axes
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/axes_2d.c
+    validation: smoke+screenshot
 
   - id: feature_axis_labels
     title: Axis Labels

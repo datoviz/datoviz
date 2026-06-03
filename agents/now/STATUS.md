@@ -19,7 +19,7 @@ Blockers:
 | Qt/PyQt hosted path | Native Qt hosting has an optional example path; PyQt needs a native Qt bridge because current PyQt6 wheels do not expose `QVulkanInstance::setVkInstance()` or `vkInstance()`. | Implement the optional `datoviz_qtbridge` provider from `spec/scene/integration/QT_HOST_BRIDGE.md` and prove the PyQt hosted example. |
 | v0.3 visible parity audit | Missing. | Table each visible capability as fixed, deferred, or external/GSP. |
 | Public API/status cleanup | Missing. | Mark public surfaces as supported, experimental, advanced/unstable, deferred, or external/GSP. |
-| Release example proof | Partial. | Compact native + WebGPU proof set with validation notes and captured artifacts where needed. |
+| Release example proof | Partial. | Compact native + WebGPU proof set, plus one short public `examples/c/features/` example per v0.4 feature. |
 
 Closed first slices that should stay in validation: raw `ctypes`, retained textured mesh, text, 2D
 axes/ticks, colorbars, labels/readouts, scale bars, app/offscreen rendering, broad item/sample query
@@ -35,7 +35,8 @@ accepting NumPy arrays for policy-declared data arguments. Source of truth:
 
 1. **Release closure:** feature/status table, visible parity audit, API disposition, known gaps.
 2. **Example proof:** C examples and fixture smokes for the declared release surface, especially
-   retained textured mesh and composed annotation/layout examples.
+   one short feature example per public v0.4 feature, retained textured mesh, and composed
+   annotation/layout examples.
 3. **WebGPU/WASM:** supported subset docs, diagnostics, portable target hardening,
    browser/runner smoke, and next visual-family expansion.
 4. **Compute+graphics:** minimal DRP2 sync objects/barriers, native compute-to-render proof,

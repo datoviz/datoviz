@@ -60,6 +60,7 @@ Recommended implementation states:
 | State | Meaning |
 | --- | --- |
 | `planned` | Desired v0.4 example shape is specified, but source may not exist yet. |
+| `v0.4-required-planned` | Must be implemented as a short public C example for v0.4 release coverage. |
 | `candidate` | A source file exists or legacy source can be salvaged, but docs/capture may need rewrite. |
 | `ready-now` | Current source can be polished without waiting for release blockers. |
 | `needs-rc1-proof` | Feature exists, but needs a runnable example, capture, fixture, or validation pass. |
@@ -186,64 +187,66 @@ interaction or readback results?"
 
 ## Feature Examples
 
-Required or high-priority feature examples are grouped by what the user should learn. A feature
-example may use a simple point, image, path, or mesh visual as scaffolding, but the feature must be
-the visible point of the example.
+Required or high-priority feature examples are grouped by what the user should learn. For v0.4
+release, every public feature should have one short C example under `examples/c/features/`. Rows
+marked `v0.4-required-planned` are release TODOs, not optional v0.5 backlog. A feature example may
+use a simple point, image, path, or mesh visual as scaffolding, but the feature must be the visible
+point of the example.
 
 ### Scene, Layout, And Data Flow
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
-| `feature.scene_basic` | `examples/c/features/scene_basic.c` | `planned` | One panel with one tiny visual rendered successfully. | Teaches app, scene, figure, panel, visual creation, render/run, and cleanup. Avoid every optional feature. |
-| `feature.panel_single` | `examples/c/features/panel_single.c` | `planned` | One figure with a single framed panel and one simple visual. | Teaches panel ownership and viewport basics. Do not duplicate `scene_basic` beyond panel-specific calls. |
-| `feature.panel_grid` | `examples/c/features/panel_grid.c` | `planned` | A small 2x2 grid where each panel has a simple distinct visual or background. | Teaches grid layout and panel addressing. Avoid linked interactions. |
-| `feature.panel_multi` | `examples/c/features/panel_multi.c` | `planned` | Multiple panels with independent views, showing that each panel clips and transforms correctly. | Teaches multi-panel rendering and panel-local controllers. Avoid synchronization. |
-| `feature.panel_linked` | `examples/c/features/panel_linked.c` | `planned` | Two or more panels where pan/zoom or camera state is visibly linked. | Teaches shared controller or linked state. Avoid colorbar/probe complexity. |
+| `feature.scene_basic` | `examples/c/features/scene_basic.c` | `candidate` | One panel with one tiny visual rendered successfully. | Teaches app, scene, figure, panel, visual creation, render/run, and cleanup. Avoid every optional feature. |
+| `feature.panel_single` | `examples/c/features/panel_single.c` | `candidate` | One figure with a single framed panel and one simple visual. | Teaches panel ownership and viewport basics. Do not duplicate `scene_basic` beyond panel-specific calls. |
+| `feature.panel_grid` | `examples/c/features/panel_grid.c` | `candidate` | A small 2x2 grid where each panel has a simple distinct visual or background. | Teaches grid layout and panel addressing. Avoid linked interactions. |
+| `feature.panel_multi` | `examples/c/features/panel_multi.c` | `v0.4-required-planned` | Multiple panels with independent views, showing that each panel clips and transforms correctly. | Teaches multi-panel rendering and panel-local controllers. Avoid synchronization. |
+| `feature.panel_linked` | `examples/c/features/panel_linked.c` | `v0.4-required-planned` | Two or more panels where pan/zoom or camera state is visibly linked. | Teaches shared controller or linked state. Avoid colorbar/probe complexity. |
 | `feature.panel_background` | `examples/c/features/panel_background.c` | `candidate` | One fixed panel background with a simple foreground visual. | Teaches panel-level background styling. Keep overlay/card placement in `feature.overlay_card`. |
-| `feature.update_visual_data` | `examples/c/features/update_visual_data.c` | `planned` | A visual changes position, color, or size over a few deterministic frames. | Teaches retained data replacement or update API. Avoid streaming performance claims. |
+| `feature.update_visual_data` | `examples/c/features/update_visual_data.c` | `candidate` | A visual changes position, color, or size over a few deterministic frames. | Teaches retained data replacement or update API. Avoid streaming performance claims. |
 | `feature.update_partial` | `examples/c/features/update_partial.c` | `candidate` | Only a highlighted subset of a larger visual changes while the rest remains stable. | Teaches partial uploads and item ranges. Avoid using it as a large-data benchmark. |
-| `feature.visibility` | `examples/c/features/visibility.c` | `planned` | A small scene where one visual can be hidden and shown deterministically. | Teaches retained visual visibility state. Avoid GUI controls unless the feature is specifically GUI. |
+| `feature.visibility` | `examples/c/features/visibility.c` | `candidate` | A small scene where one visual can be hidden and shown deterministically. | Teaches retained visual visibility state. Avoid GUI controls unless the feature is specifically GUI. |
 
 ### Fields, Scales, And Adornments
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
-| `feature.sampled_field_2d` | `examples/c/features/sampled_field_2d.c` | `planned` | A 2D scalar field rendered through a plain image or pixel visual. | Teaches sampled-field resource shape and mapping. Put colorbar in `feature.colorbar`. |
-| `feature.sampled_field_3d` | `examples/c/features/sampled_field_3d.c` | `planned` | A small 3D field rendered as a volume or slice with deterministic range. | Teaches 3D sampled-field resource setup. Avoid full volume interaction UI. |
+| `feature.sampled_field_2d` | `examples/c/features/sampled_field_2d.c` | `v0.4-required-planned` | A 2D scalar field rendered through a plain image or pixel visual. | Teaches sampled-field resource shape and mapping. Put colorbar in `feature.colorbar`. |
+| `feature.sampled_field_3d` | `examples/c/features/sampled_field_3d.c` | `v0.4-required-planned` | A small 3D field rendered as a volume or slice with deterministic range. | Teaches 3D sampled-field resource setup. Avoid full volume interaction UI. |
 | `feature.colormap_scale` | `examples/c/features/colormap_scale.c` | `candidate` | One scalar-colored visual with a perceptually uniform colormap and clear min/max effect. | Teaches scalar-to-color mapping. Do not add a colorbar unless this row is merged with `feature.colorbar`. |
 | `feature.colorbar` | `examples/c/features/colorbar.c` | `candidate` | One scalar-colored visual plus a readable continuous colorbar with range labels. | Teaches colorbar attachment and scale semantics. Avoid probe callbacks. |
 | `feature.legend_categorical` | `examples/c/features/legend_categorical.c` | `conditional` | A small categorical visual with a compact legend mapping colors or shapes to labels. | Include only if categorical legends are public. Avoid statistical or plotting-layer semantics. |
 | `feature.axes_2d` | `examples/c/features/axes_2d.c` | `candidate` | A simple 2D scatter or path with ticks, labels, and data-space bounds visible. | Teaches axis creation, bounds, and coordinate mapping. Avoid colorbar, selection, and linked panels. |
-| `feature.axis_labels` | `examples/c/features/axis_labels.c` | `planned` | Axes with explicit title or axis labels, using enough margin to prove layout. | Teaches label placement around axes. Avoid long text layout stress tests. |
+| `feature.axis_labels` | `examples/c/features/axis_labels.c` | `v0.4-required-planned` | Axes with explicit title or axis labels, using enough margin to prove layout. | Teaches label placement around axes. Avoid long text layout stress tests. |
 | `feature.scalebar` | `examples/c/features/scalebar.c` | `candidate` | One 2D panel with a small reference visual and one retained scale bar. | Teaches scale-bar attachment, units, anchor, and domain-aware sizing. Keep composed 2D/3D measurement layouts in workflows. |
 | `feature.scalebar_units` | `examples/c/features/scalebar_units.c` | `candidate` | One time-series panel whose X data units are milliseconds and whose scale bar uses a custom `ms` unit string. | Teaches practical unit labeling through `unit` and `data_to_unit` without custom formatter callbacks. Avoid multiple panels or broad domain-specific unit systems. |
 | `feature.annotation_label` | `examples/c/features/annotation_readout.c` | `candidate` | A point, region, or mesh feature annotated by a short anchored label or readout. | Teaches anchored annotation placement. Avoid rich text blocks and overlay cards. |
-| `feature.text_block` | `examples/c/features/text_block.c` | `planned` | A compact text block or multiline note with stable screen placement. | Teaches text layout as an adornment. Do not expose internal glyph implementation. |
-| `feature.overlay_card` | `examples/c/features/overlay_card.c` | `planned` | A small screen-space overlay card with text and optional swatch/readout over a scene. | Teaches overlay placement and composition. Avoid dashboard UI scope. |
+| `feature.text_block` | `examples/c/features/text_block.c` | `v0.4-required-planned` | A compact text block or multiline note with stable screen placement. | Teaches text layout as an adornment. Do not expose internal glyph implementation. |
+| `feature.overlay_card` | `examples/c/features/overlay_card.c` | `v0.4-required-planned` | A small screen-space overlay card with text and optional swatch/readout over a scene. | Teaches overlay placement and composition. Avoid dashboard UI scope. |
 
 ### Controllers And Interaction
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
 | `feature.controller_panzoom` | `examples/c/features/panzoom_attachment.c` | `candidate` | A 2D point, path, or image scene where pan and zoom visibly preserve data-space meaning. | Teaches panzoom attachment and bounds. Avoid axes unless validating bounds is impossible without them. |
-| `feature.controller_arcball` | `examples/c/features/controller_arcball.c` | `planned` | A centered 3D mesh or sphere group where rotation is visually meaningful. | Teaches arcball attachment. Keep lighting/materials minimal. |
-| `feature.controller_fly` | `examples/c/features/controller_fly.c` | `planned` | A sparse 3D scene or point cloud where camera translation is visible. | Teaches fly navigation. Avoid dense LiDAR showcase styling. |
-| `feature.controller_turntable` | `examples/c/features/controller_turntable.c` | `planned` | A 3D object rotating around a stable up axis. | Teaches constrained turntable navigation. Do not duplicate arcball behavior. |
-| `feature.pick_point` | `examples/c/features/pick_point.c` | `planned` | Sparse points with a visible selected or hovered point and printed or displayed item id. | Teaches callback, query result, and stable item index. Avoid dense performance scenes. |
+| `feature.controller_arcball` | `examples/c/features/controller_arcball.c` | `v0.4-required-planned` | A centered 3D mesh or sphere group where rotation is visually meaningful. | Teaches arcball attachment. Keep lighting/materials minimal. |
+| `feature.controller_fly` | `examples/c/features/controller_fly.c` | `v0.4-required-planned` | A sparse 3D scene or point cloud where camera translation is visible. | Teaches fly navigation. Avoid dense LiDAR showcase styling. |
+| `feature.controller_turntable` | `examples/c/features/controller_turntable.c` | `v0.4-required-planned` | A 3D object rotating around a stable up axis. | Teaches constrained turntable navigation. Do not duplicate arcball behavior. |
+| `feature.pick_point` | `examples/c/features/pick_point.c` | `v0.4-required-planned` | Sparse points with a visible selected or hovered point and printed or displayed item id. | Teaches callback, query result, and stable item index. Avoid dense performance scenes. |
 | `feature.pick_marker` | `examples/c/features/pick_marker.c` | `candidate` | Distinct markers where a picked item changes outline, color, or selection state. | Teaches marker picking and item identity. Do not use as the marker visual baseline. |
-| `feature.pick_hover` | `examples/c/features/pick_hover.c` | `planned` | Hover feedback follows pointer movement and clears on background miss. | Teaches latest-request-wins hover behavior and miss handling. Avoid persistent selection policy. |
+| `feature.pick_hover` | `examples/c/features/pick_hover.c` | `v0.4-required-planned` | Hover feedback follows pointer movement and clears on background miss. | Teaches latest-request-wins hover behavior and miss handling. Avoid persistent selection policy. |
 | `feature.probe_image` | `examples/c/features/image_probe.c` | `candidate` | Image field with a cursor or pinned marker showing data coordinates and sampled value. | Teaches image probing and pixel-query readback. Keep colorbars and textual readout annotations in separate feature examples. |
-| `feature.probe_labels` | `examples/c/features/probe_labels.c` | `planned` | Label field or labeled regions where hovering reports stable label ids and names. | Teaches label probing. Avoid segmentation editor scope. |
-| `feature.selection` | `examples/c/features/selection.c` | `planned` | A small visual where selected items remain highlighted after a click or scripted selection. | Teaches selection model and visual feedback. Avoid multi-visual selection linking. |
+| `feature.probe_labels` | `examples/c/features/probe_labels.c` | `v0.4-required-planned` | Label field or labeled regions where hovering reports stable label ids and names. | Teaches label probing. Avoid segmentation editor scope. |
+| `feature.selection` | `examples/c/features/selection.c` | `v0.4-required-planned` | A small visual where selected items remain highlighted after a click or scripted selection. | Teaches selection model and visual feedback. Avoid multi-visual selection linking. |
 | `feature.panel_linked_probe` | `examples/c/features/panel_linked_probe.c` | `needs-rc1-proof` | Two linked panels, one scalar image, one context/detail view, with colorbar and readout synchronized. | Teaches composed explanatory layout. This is not a minimal image, colorbar, or panel example. |
 
 ### Materials And Appearance
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
-| `feature.material_mesh` | `examples/c/features/material_mesh.c` | `planned` | One mesh rendered with a neutral material where normals and shading are clear. | Teaches mesh material parameters. Avoid texture sampling. |
-| `feature.mesh_texture` | `examples/c/features/mesh_texture.c` | `needs-rc1-proof` | A textured mesh with UVs and visible texture orientation, ideally with a simple checker or planet texture. | Teaches mesh-bound texture resources and UVs. Do not turn into a terrain/planet showcase. |
-| `feature.lighting` | `examples/c/features/lighting.c` | `planned` | A simple 3D object where changing light direction or intensity is visibly meaningful. | Teaches light setup. Avoid material matrix demos. |
+| `feature.material_mesh` | `examples/c/features/material_mesh.c` | `v0.4-required-planned` | One mesh rendered with a neutral material where normals and shading are clear. | Teaches mesh material parameters. Avoid texture sampling. |
+| `feature.mesh_texture` | `examples/c/features/mesh_texture.c` | `v0.4-required-planned` | A textured mesh with UVs and visible texture orientation, ideally with a simple checker or planet texture. | Teaches mesh-bound texture resources and UVs. Do not turn into a terrain/planet showcase. |
+| `feature.lighting` | `examples/c/features/lighting.c` | `v0.4-required-planned` | A simple 3D object where changing light direction or intensity is visibly meaningful. | Teaches light setup. Avoid material matrix demos. |
 | `feature.depth_test` | `examples/c/features/depth_test.c` | `candidate` | Side-by-side overlapping marks show depth testing enabled and disabled. | Teaches `dvz_visual_set_depth_test()` only. Keep depth cueing and occlusion as separate techniques. |
 | `feature.alpha_blending` | `examples/c/features/alpha_blending.c` | `candidate` | Overlapping translucent primitives blend source-over against the panel background. | Teaches per-vertex alpha with `DVZ_ALPHA_BLENDED`. Keep WBOIT and depth peeling separate. |
 
@@ -251,7 +254,7 @@ the visible point of the example.
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
-| `feature.timer_animation` | `examples/c/features/timer_animation.c` | `planned` | A simple animated visual driven by a timer or frame callback. | Teaches app callbacks and animation loop. Avoid video export. |
+| `feature.timer_animation` | `examples/c/features/timer_animation.c` | `v0.4-required-planned` | A simple animated visual driven by a timer or frame callback. | Teaches app callbacks and animation loop. Avoid video export. |
 | `feature.video_export` | `examples/c/features/video_export.c` | `conditional` | A deterministic short animation captured as a video artifact. | Include only if video export is in the public v0.4 surface. Keep backend requirements explicit. |
 
 The query, pick, probe, and selection examples should be treated as normal first-class examples once
