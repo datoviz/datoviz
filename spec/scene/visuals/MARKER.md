@@ -72,7 +72,7 @@ family spec is revised.
 | `club` | club suit | `spade` | spade suit | `heart` | heart suit |
 | `arrow` | directional | `ellipse` | ellipse | `hbar` | horizontal bar |
 | `vbar` | vertical bar | `ring` | thick ring | `pin` | map pin |
-| `tag` | label shape | `rounded_rect` | rounded rectangle | | |
+| `tag` | label shape | `rounded_rect` | rounded rectangle | `target` | ring plus crosshair |
 
 Shape is visual-wide by default in the target `code` mode.
 Per-item shape is supported via the `shape` attribute (see Per-Item Attributes).
@@ -367,6 +367,19 @@ and emits a diagnostic. `color_mode = scalar` and `size_mode = scalar` follow st
 v0.4 adds: `size_space`, `shift`, `color_mode = scalar`, `size_mode = scalar`.
 `mtsdf` merged into `msdf` unless implementation evidence separates them.
 
+v0.3 marker prior art to preserve:
+
+1. render modes were `code`, `bitmap`, `sdf`, `msdf`, and `mtsdf`;
+2. code shapes included `disc`, `asterisk`, `chevron`, `clover`, `club`, `cross`, `diamond`,
+   `arrow`, `ellipse`, `hbar`, `heart`, `infinity`, `pin`, `ring`, `spade`, `square`, `tag`,
+   `triangle`, `vbar`, and `rounded_rect`;
+3. bitmap markers sampled an RGBA texture while combining the per-item marker alpha;
+4. SDF markers sampled a single-channel distance texture and used `tex_scale` for distance scaling;
+5. MSDF markers accepted SVG path strings through `dvz_msdf_from_svg()` before upload to the marker
+   texture;
+6. marker SDF/MSDF custom-symbol import should return in v0.4 as a first-class marker mode, not as
+   a separate visual family or as an ad hoc example-only bitmap path.
+
 
 ## Follow-Up Pressure
 
@@ -376,3 +389,8 @@ v0.4 adds: `size_space`, `shift`, `color_mode = scalar`, `size_mode = scalar`.
    descriptor refresh, and bitmap-aware picking.
 3. Shared SDF/MSDF decode helpers with text should wait until atlas entries carry distance-field
    metadata needed for scale-correct antialiasing.
+4. Add native `target`/crosshair code-SDF shape for cursor probes and measurement reticles. It must
+   render as one marker item with stable screen-space `diameter`, not as multiple layered marker
+   sprites.
+5. Restore SVG path import for custom SDF/MSDF marker symbols, equivalent in capability to the v0.3
+   `dvz_msdf_from_svg()` marker test path.
