@@ -51,49 +51,18 @@ static const float TAU = 6.28318530718f;
 /*************************************************************************************************/
 
 /**
- * Clamp a float to the unit interval.
- *
- * @param value input value
- * @return clamped value
- */
-static float _clamp01(float value)
-{
-    if (value < 0.0f)
-        return 0.0f;
-    if (value > 1.0f)
-        return 1.0f;
-    return value;
-}
-
-
-
-/**
- * Convert a normalized scalar to an 8-bit channel.
- *
- * @param value normalized value
- * @return clamped 8-bit channel
- */
-static uint8_t _u8(float value) { return (uint8_t)(255.0f * _clamp01(value) + 0.5f); }
-
-
-
-/**
  * Fill one deterministic compact point cloud.
  *
  * @param positions output point positions
- * @param colors output point colors
+ * @param values output point scalar values
  * @param diameters output point diameters in pixels
  */
 static void _fill_points(
-    vec3 positions[POINT_COUNT], DvzColor colors[POINT_COUNT], float diameters[POINT_COUNT])
+    vec3 positions[POINT_COUNT], float values[POINT_COUNT], float diameters[POINT_COUNT])
 {
     ANN(positions);
-    ANN(colors);
+    ANN(values);
     ANN(diameters);
-
-    const DvzColor cyan = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
-    const DvzColor mint = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
-    const DvzColor warm = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
 
     for (uint32_t i = 0; i < POINT_COUNT; i++)
     {
@@ -110,11 +79,7 @@ static void _fill_points(
 
         const float band = 0.5f + 0.5f * sinf(TAU * (t + 0.08f * arm));
         const float mix = 0.25f + 0.75f * sqrtf(local);
-        colors[i] = dvz_color_rgba(
-            _u8(((1.0f - mix) * cyan.r + mix * mint.r) / 255.0f + 0.12f * band * warm.r / 255.0f),
-            _u8(((1.0f - mix) * cyan.g + mix * mint.g) / 255.0f),
-            _u8(((1.0f - mix) * cyan.b + mix * mint.b) / 255.0f - 0.10f * band * cyan.b / 255.0f),
-            246);
+        values[i] = fminf(1.0f, 0.12f + 0.76f * mix + 0.12f * band);
 
         diameters[i] = 4.0f + 3.0f * band + 1.2f * (1.0f - local);
     }
@@ -127,22 +92,22 @@ static void _fill_points(
  *
  * @param visual point visual
  * @param positions point positions
- * @param colors point colors
+ * @param values point scalar values
  * @param diameters point diameters
  * @return true when all uploads succeed
  */
 static bool _upload_points(
-    DvzVisual* visual, vec3 positions[POINT_COUNT], DvzColor colors[POINT_COUNT],
+    DvzVisual* visual, vec3 positions[POINT_COUNT], float values[POINT_COUNT],
     float diameters[POINT_COUNT])
 {
     ANN(visual);
     ANN(positions);
-    ANN(colors);
+    ANN(values);
     ANN(diameters);
 
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
-        {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
+        {.attr_name = "color", .data = values, .item_count = POINT_COUNT},
         {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
     };
     return dvz_visual_set_data_many(visual, updates, 3) == 0;
@@ -169,18 +134,18 @@ int main(int argc, char** argv)
     DvzView* win = NULL;
     bool capture_started = false;
     vec3* positions = NULL;
-    DvzColor* colors = NULL;
+    float* values = NULL;
     float* diameters = NULL;
     const uint32_t frame_count = example_frame_count_any(argc, argv);
     DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("visual_point");
 
     positions = (vec3*)dvz_calloc(POINT_COUNT, sizeof(*positions));
-    colors = (DvzColor*)dvz_calloc(POINT_COUNT, sizeof(*colors));
+    values = (float*)dvz_calloc(POINT_COUNT, sizeof(*values));
     diameters = (float*)dvz_calloc(POINT_COUNT, sizeof(*diameters));
     EXAMPLE_CHECK(
-        positions != NULL && colors != NULL && diameters != NULL, "point allocation failed");
+        positions != NULL && values != NULL && diameters != NULL, "point allocation failed");
 
-    _fill_points(positions, colors, diameters);
+    _fill_points(positions, values, diameters);
 
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
@@ -192,22 +157,31 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzVisual* visual = dvz_point(scene, 0);
-    EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");
+    DvzVisual* point = dvz_point(scene, 0);
+    EXAMPLE_CHECK(point != NULL, "dvz_point() failed");
 
-    bool ok = _upload_points(visual, positions, colors, diameters);
+    int rc = dvz_visual_set_attr_format(point, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_attr_format() failed");
+
+    DvzScale* scale = example_graphite_cyan_color_scale(scene, 0.0, 1.0);
+    EXAMPLE_CHECK(scale != NULL, "example_graphite_cyan_color_scale() failed");
+
+    rc = dvz_visual_set_scale(point, "color", scale);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_scale() failed");
+
+    bool ok = _upload_points(point, positions, values, diameters);
     EXAMPLE_CHECK(ok, "point data upload failed");
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
     style.stroke_width = 0.0f;
-    int rc = dvz_point_set_style(visual, &style);
+    rc = dvz_point_set_style(point, &style);
     EXAMPLE_CHECK(rc == 0, "dvz_point_set_style() failed");
 
-    rc = dvz_visual_set_depth_test(visual, false);
+    rc = dvz_visual_set_depth_test(point, false);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_depth_test() failed");
 
-    rc = dvz_panel_add_visual(panel, visual, NULL);
+    rc = dvz_panel_add_visual(panel, point, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
     app = dvz_app(scene);
@@ -236,7 +210,7 @@ cleanup:
     if (app != NULL)
         dvz_app_destroy(app);
     dvz_free(diameters);
-    dvz_free(colors);
+    dvz_free(values);
     dvz_free(positions);
     if (scene != NULL)
         dvz_scene_destroy(scene);

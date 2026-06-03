@@ -50,23 +50,6 @@ static const float TAU = 6.28318530718f;
 /*************************************************************************************************/
 
 /**
- * Return one clamped 8-bit channel from a normalized scalar.
- *
- * @param value normalized input value
- * @return 8-bit channel
- */
-static uint8_t _u8(float value)
-{
-    if (value < 0.0f)
-        value = 0.0f;
-    if (value > 1.0f)
-        value = 1.0f;
-    return (uint8_t)(255.0f * value + 0.5f);
-}
-
-
-
-/**
  * Fill a deterministic compact sphere cluster.
  *
  * @param positions output sphere centers
@@ -80,10 +63,12 @@ static void _fill_spheres(
     ANN(radii);
     ANN(colors);
 
-    DvzColor cyan = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
-    DvzColor mint = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
-    DvzColor warm = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
-    DvzColor rose = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ERROR);
+    const ExampleStyleColorRole palette[] = {
+        EXAMPLE_STYLE_COLOR_WARNING,
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_ERROR,
+    };
 
     for (uint32_t i = 0; i < SPHERE_COUNT; i++)
     {
@@ -98,17 +83,8 @@ static void _fill_spheres(
         positions[i][2] = ring * sinf(angle) + 0.26f * layer;
         radii[i] = 0.075f + 0.070f * (1.0f - fabsf(layer)) + 0.028f * wobble;
 
-        if (i % 4u == 0u)
-            colors[i] = dvz_color_rgba(warm.r, warm.g, warm.b, 255);
-        else if (i % 4u == 1u)
-            colors[i] = dvz_color_rgba(cyan.r, cyan.g, cyan.b, 255);
-        else if (i % 4u == 2u)
-            colors[i] = dvz_color_rgba(mint.r, mint.g, mint.b, 255);
-        else
-            colors[i] = dvz_color_rgba(
-                _u8((float)rose.r / 255.0f + 0.10f * t),
-                _u8((float)rose.g / 255.0f + 0.16f * (1.0f - t)),
-                _u8((float)rose.b / 255.0f + 0.08f * wobble), 255);
+        const ExampleStyleColorRole role = palette[i % DVZ_ARRAY_COUNT(palette)];
+        colors[i] = example_graphite_cyan_color(role);
     }
 }
 

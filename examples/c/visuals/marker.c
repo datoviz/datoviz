@@ -73,57 +73,66 @@ static uint32_t _marker_shape(uint32_t index)
 
 
 /**
- * Blend two color channels.
- *
- * @param a first channel
- * @param b second channel
- * @param t blend factor in [0, 1]
- * @return blended channel
- */
-static uint8_t _mix_channel(uint8_t a, uint8_t b, float t)
-{
-    return (uint8_t)((1.0f - t) * (float)a + t * (float)b + 0.5f);
-}
-
-
-
-/**
- * Return one graphite/cyan fill color.
+ * Return one graphite/cyan fill color role.
  *
  * @param row marker row index
  * @param col marker column index
- * @return marker fill color
+ * @return marker fill color role
  */
-static DvzColor _marker_fill(uint32_t row, uint32_t col)
+static ExampleStyleColorRole _marker_fill_role(uint32_t row, uint32_t col)
 {
-    DvzColor primary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
-    DvzColor secondary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
-    DvzColor text = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
-    const float t = MARKER_COLS > 1u ? (float)col / (float)(MARKER_COLS - 1u) : 0.0f;
-    DvzColor a = row == 0u ? text : primary;
-    DvzColor b = row == 2u ? secondary : primary;
-    return dvz_color_rgba(
-        _mix_channel(a.r, b.r, t), _mix_channel(a.g, b.g, t), _mix_channel(a.b, b.b, t), 238);
+    static const ExampleStyleColorRole roles[][MARKER_COLS] = {
+        {
+            EXAMPLE_STYLE_COLOR_TEXT,
+            EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+            EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+            EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+            EXAMPLE_STYLE_COLOR_TEXT,
+            EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        },
+        {
+            EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+            EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+            EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+            EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+            EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+            EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        },
+        {
+            EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+            EXAMPLE_STYLE_COLOR_WARNING,
+            EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+            EXAMPLE_STYLE_COLOR_WARNING,
+            EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+            EXAMPLE_STYLE_COLOR_ERROR,
+        },
+    };
+    const uint32_t row_count = DVZ_ARRAY_COUNT(roles);
+    return roles[row % row_count][col % MARKER_COLS];
 }
 
 
 
 /**
- * Add one marker row with a visual-level stroke color.
+ * Add one marker row with a visual-level stroke color role.
  *
  * @param scene scene owning the marker visual
  * @param panel panel receiving the marker visual
  * @param row marker row index
  * @param y row y coordinate
- * @param edge_color outline color for the row
+ * @param edge_role outline color role for the row
  * @return true when the row was added
  */
 static bool
-_add_marker_row(DvzScene* scene, DvzPanel* panel, uint32_t row, float y, DvzColor edge_color)
+_add_marker_row(
+    DvzScene* scene, DvzPanel* panel, uint32_t row, float y, ExampleStyleColorRole edge_role)
 {
     DvzVisual* visual = dvz_marker(scene, 0);
     if (visual == NULL)
         return false;
+
+    DvzColor edge_color = example_graphite_cyan_color(edge_role);
+    edge_color.a = 245;
 
     DvzMarkerStyle style = dvz_marker_style();
     style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
@@ -144,7 +153,8 @@ _add_marker_row(DvzScene* scene, DvzPanel* panel, uint32_t row, float y, DvzColo
         positions[col][0] = -0.78f + 1.56f * t;
         positions[col][1] = y;
         positions[col][2] = 0.0f;
-        colors[col] = _marker_fill(row, col);
+        colors[col] = example_graphite_cyan_color(_marker_fill_role(row, col));
+        colors[col].a = 238;
         diameters[col] = 42.0f + 8.0f * (float)((row + col) % 3u);
         angles[col] = 0.18f * (float)(row + col);
         shapes[col] = _marker_shape(col);
@@ -196,21 +206,22 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzColor primary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
-    DvzColor secondary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
-    DvzColor warning = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
-    EXAMPLE_CHECK(
-        _add_marker_row(
-            scene, panel, 0u, +0.46f, dvz_color_rgba(primary.r, primary.g, primary.b, 245)),
-        "top marker row setup failed");
-    EXAMPLE_CHECK(
-        _add_marker_row(
-            scene, panel, 1u, 0.0f, dvz_color_rgba(secondary.r, secondary.g, secondary.b, 245)),
-        "middle marker row setup failed");
-    EXAMPLE_CHECK(
-        _add_marker_row(
-            scene, panel, 2u, -0.46f, dvz_color_rgba(warning.r, warning.g, warning.b, 245)),
-        "bottom marker row setup failed");
+    const float row_y[] = {+0.46f, 0.0f, -0.46f};
+    const ExampleStyleColorRole edge_roles[] = {
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_WARNING,
+    };
+    const char* row_errors[] = {
+        "top marker row setup failed",
+        "middle marker row setup failed",
+        "bottom marker row setup failed",
+    };
+    for (uint32_t row = 0; row < DVZ_ARRAY_COUNT(row_y); row++)
+    {
+        EXAMPLE_CHECK(
+            _add_marker_row(scene, panel, row, row_y[row], edge_roles[row]), row_errors[row]);
+    }
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
