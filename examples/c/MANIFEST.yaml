@@ -215,6 +215,20 @@ examples:
     source: examples/c/features/update_partial.c
     validation: smoke+screenshot
 
+  - id: feature_update_visual_data
+    title: Visual Data Update
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/update_visual_data.c
+    validation: smoke+screenshot
+
+  - id: feature_visibility
+    title: Visual Visibility
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/visibility.c
+    validation: smoke+screenshot
+
   - id: depth_test
     title: Depth Test Toggle
     stage: v0.4_required
