@@ -25,6 +25,72 @@ Documentation should make these choices explicit:
 6. run the documented validation command for the example or subsystem.
 
 
+## User-Facing AI Support Pack
+
+The v0.4 documentation set should include a small AI/developer support pack for users who ask
+assistants to write Datoviz code. The pack is a routing and recipe layer, not a new source of truth
+for API behavior.
+
+Recommended public layout:
+
+```text
+docs/ai/
+  datoviz-c.md
+  datoviz-ctypes.md
+  api-status.md
+  ownership-and-lifetimes.md
+  examples.md
+  SKILL.md
+```
+
+The pack should cover two supported user workflows:
+
+1. C-first Datoviz development through the public headers, scene/app examples, and documented
+   build/run commands;
+2. low-level Python use through the exact generated `datoviz.raw` `ctypes` layer, with explicit
+   NumPy buffer, dtype, contiguity, and lifetime rules.
+
+The pack should also state the main routing boundaries:
+
+1. Datoviz v0.4 owns the C engine, scene/app path, raw/generated Python binding surface,
+   offscreen/raster capture, and experimental backend slices;
+2. high-level object-oriented Python plotting belongs to VisPy2/GSP;
+3. raw `ctypes` is not a plotting API;
+4. old v0.3 Pythonic examples are not current Datoviz v0.4 guidance.
+
+`docs/ai/SKILL.md` should be short and portable. It should tell coding agents where to start, which
+examples to copy, what not to invent, and which validation command to run. It should link to the
+canonical docs and specs instead of repeating symbol catalogs or behavior contracts.
+
+The skill should instruct agents to:
+
+1. prefer public `include/datoviz/` headers and current `examples/c/` files for C code;
+2. prefer `datoviz.raw` for exact low-level Python bindings;
+3. keep NumPy arrays alive while C code may read from them;
+4. check dtype, shape, alignment, and contiguity before passing array memory through `ctypes`;
+5. preserve documented ownership, callback, readback, and destroy-order rules;
+6. avoid invented helpers such as `plot()`, `scatter()`, or `imshow()` unless they belong to
+   VisPy2/GSP documentation;
+7. include the narrowest documented build, run, or smoke command with generated examples.
+
+`docs/ai/examples.md` should be recipe-oriented rather than exhaustive. The first recipe set should
+cover:
+
+1. create a scene/app canvas;
+2. add points;
+3. add an image;
+4. add a mesh or textured mesh;
+5. render offscreen and capture a raster image;
+6. load `datoviz.raw` and check ABI/layout;
+7. pass a NumPy array safely through raw `ctypes`;
+8. clean up objects in the documented order.
+
+If the public website publishes an `llms.txt` or similar LLM-readable index, it should point to this
+support pack, the feature/status page, the public C API reference, raw binding docs, examples, known
+issues, and release notes. Treat that index as a curated navigation aid, not as a replacement for
+normal docs, sitemaps, or reference generation.
+
+
 ## Agent-Default API Path
 
 For normal user requests, documentation should steer assistants toward the native scene/app layer:
