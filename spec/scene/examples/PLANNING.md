@@ -10,7 +10,8 @@ This file replaces the previous split between north-star, release-staging, prior
 reports. Use it as the planning entry point. Keep detailed scenario shape in `scenarios/`, compact
 fixture coverage in [FIXTURES.md](FIXTURES.md), cross-repository placement in
 [ORGANIZATION.md](ORGANIZATION.md), scenario ID lookup in [CATALOG.md](CATALOG.md), and shared
-cache/API policy in [POLICIES.md](POLICIES.md).
+cache/API policy in [POLICIES.md](POLICIES.md). Python documentation tabs generated from C examples
+are governed by [../../bindings/EXAMPLE_PYTHON_GENERATION.md](../../bindings/EXAMPLE_PYTHON_GENERATION.md).
 
 
 ## Gallery Thesis

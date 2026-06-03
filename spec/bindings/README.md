@@ -74,6 +74,7 @@ spec/bindings/
   README.md               # this binding architecture and policy
   ctypes.yml              # machine-readable binding policy, later
   ARRAY_FACADE.md         # array-aware top-level Python facade plan
+  EXAMPLE_PYTHON_GENERATION.md  # C example -> Python facade documentation plan
   API_JSON_SCHEMA.md      # JSON schema notes, later
 
 build/bindings/

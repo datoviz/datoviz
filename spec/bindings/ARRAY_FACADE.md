@@ -34,6 +34,10 @@ import datoviz.raw as raw
 site that needs exact `ctypes` behavior. The top-level facade is the normal Python entry point for
 direct Datoviz engine use.
 
+Generated Python documentation examples should target this top-level facade, not raw `ctypes`, when
+they are derived from canonical C examples. See
+[EXAMPLE_PYTHON_GENERATION.md](EXAMPLE_PYTHON_GENERATION.md).
+
 
 ## Rationale
 
@@ -242,3 +246,7 @@ Public docs should stop presenting Python support as only raw `ctypes`. The accu
 
 Raw examples may remain for ABI and low-level integration proof. User-facing Python examples should
 prefer the top-level array-aware facade once it exists.
+
+Mechanically generated Python tabs for C examples should use the facade and policy described here;
+the example-generation policy is recorded in
+[EXAMPLE_PYTHON_GENERATION.md](EXAMPLE_PYTHON_GENERATION.md).
