@@ -51,6 +51,48 @@ examples:
     source: examples/c/features/axis_labels.c
     validation: smoke+screenshot
 
+  - id: feature_sampled_field_2d
+    title: 2D Sampled Field
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/sampled_field_2d.c
+    validation: smoke+screenshot
+
+  - id: feature_sampled_field_3d
+    title: 3D Sampled Field
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/sampled_field_3d.c
+    validation: smoke+screenshot
+
+  - id: feature_text_block
+    title: Text Block
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/text_block.c
+    validation: smoke+screenshot
+
+  - id: feature_overlay_card
+    title: Overlay Card
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/overlay_card.c
+    validation: smoke+screenshot
+
+  - id: feature_controller_arcball
+    title: Arcball Controller
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/controller_arcball.c
+    validation: smoke+interaction+screenshot
+
+  - id: feature_mesh_texture
+    title: Textured Mesh
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/mesh_texture.c
+    validation: smoke+interaction+screenshot
+
   - id: linked_panels_axes_panzoom
     title: Linked Panels With Axes
     stage: v0.4_required
