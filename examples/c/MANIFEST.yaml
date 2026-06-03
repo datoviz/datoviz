@@ -224,6 +224,21 @@ examples:
       - sampled-field
       - capture
 
+  - id: visual_mesh
+    title: Mesh
+    stage: v0.4_required
+    lane: visuals
+    source: examples/c/visuals/mesh.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - mesh
+      - indexed-geometry
+      - arcball
+      - capture
+
   - id: sphere_impostor
     title: Sphere
     stage: v0.4_required
@@ -236,6 +251,62 @@ examples:
     features:
       - sphere
       - arcball
+      - capture
+
+  - id: visual_splat
+    title: Splat
+    stage: v0.4_experimental
+    lane: visuals
+    source: examples/c/visuals/splat.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: experimental
+    features:
+      - splat
+      - panzoom
+      - capture
+
+  - id: visual_text
+    title: Text
+    stage: v0.4_required
+    lane: visuals
+    source: examples/c/visuals/text.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - text
+      - capture
+
+  - id: visual_glyph
+    title: Glyph
+    stage: v0.4_experimental
+    lane: visuals
+    source: examples/c/visuals/glyph.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: experimental
+    features:
+      - glyph
+      - sampled-field
+      - capture
+
+  - id: visual_labels
+    title: Labels
+    stage: v0.4_required
+    lane: visuals
+    source: examples/c/visuals/labels.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - labels
+      - categorical-scale
+      - panzoom
       - capture
 
   - id: volume
