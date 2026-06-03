@@ -197,6 +197,21 @@ examples:
       - panzoom
       - capture
 
+  - id: visual_vector
+    title: Vector
+    stage: v0.4_required
+    lane: visuals
+    source: examples/c/visuals/vector.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - vector
+      - path
+      - panzoom
+      - capture
+
   - id: visual_path
     title: Path
     stage: v0.4_required

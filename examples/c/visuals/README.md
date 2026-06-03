@@ -9,6 +9,7 @@ polished, scenario-indexed, and ready for the v0.4 public suite.
 - `marker.c`: retained marker shape, fill, stroke, size, and angle.
 - `primitive.c`: retained primitive triangle topologies.
 - `segment.c`: independent retained line segments.
+- `vector.c`: retained straight and curved vectors.
 - `path.c`: retained continuous polylines and subpaths.
 - `image.c`: retained sampled-field image upload.
 - `mesh.c`: retained lit indexed mesh.
