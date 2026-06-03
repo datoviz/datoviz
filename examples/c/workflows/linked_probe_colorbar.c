@@ -337,8 +337,23 @@ _figure_to_data(DvzPanel* panel, double figure_x, double figure_y, float* out_x,
     if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
         return false;
 
-    const double x = (figure_x - (double)plot.x) / (double)plot.width;
-    const double y = 1.0 - (figure_y - (double)plot.y) / (double)plot.height;
+    const double tx = (figure_x - (double)plot.x) / (double)plot.width;
+    const double ty = 1.0 - (figure_y - (double)plot.y) / (double)plot.height;
+    if (tx < 0.0 || tx > 1.0 || ty < 0.0 || ty > 1.0)
+        return false;
+
+    double x0 = 0.0;
+    double x1 = 0.0;
+    double y0 = 0.0;
+    double y1 = 0.0;
+    if (!dvz_panel_visible_domain(panel, DVZ_DIM_X, &x0, &x1) ||
+        !dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y0, &y1))
+    {
+        return false;
+    }
+
+    const double x = x0 + tx * (x1 - x0);
+    const double y = y0 + ty * (y1 - y0);
     if (x < 0.0 || x > 1.0 || y < 0.0 || y > 1.0)
         return false;
 
@@ -367,8 +382,21 @@ static bool _data_to_figure(DvzPanel* panel, float x, float y, float out[2])
     if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
         return false;
 
-    out[0] = plot.x + x * plot.width;
-    out[1] = plot.y + (1.0f - y) * plot.height;
+    double x0 = 0.0;
+    double x1 = 0.0;
+    double y0 = 0.0;
+    double y1 = 0.0;
+    if (!dvz_panel_visible_domain(panel, DVZ_DIM_X, &x0, &x1) ||
+        !dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y0, &y1) || fabs(x1 - x0) < 1e-12 ||
+        fabs(y1 - y0) < 1e-12)
+    {
+        return false;
+    }
+
+    const double tx = ((double)x - x0) / (x1 - x0);
+    const double ty = ((double)y - y0) / (y1 - y0);
+    out[0] = plot.x + (float)(tx * (double)plot.width);
+    out[1] = plot.y + (1.0f - (float)ty) * plot.height;
     return true;
 }
 
@@ -400,7 +428,7 @@ static bool _fill_probe_marker(
     if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
         return false;
 
-    const DvzColor cyan = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
+    const DvzColor marker_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
     const float gap_x = 6.0f / plot.width;
     const float gap_y = 6.0f / plot.height;
     const float arm_x = 20.0f / plot.width;
@@ -426,9 +454,9 @@ static bool _fill_probe_marker(
         ends[i][0] = cross_ends[i][0];
         ends[i][1] = cross_ends[i][1];
         ends[i][2] = cross_ends[i][2];
-        colors[i] = cyan;
+        colors[i] = marker_color;
         colors[i].a = 245u;
-        widths[i] = 1.8f;
+        widths[i] = 2.4f;
     }
 
     const float rx = 12.0f / plot.width;
@@ -444,9 +472,9 @@ static bool _fill_probe_marker(
         ends[k][0] = x + rx * cosf(a1);
         ends[k][1] = y + ry * sinf(a1);
         ends[k][2] = 0.03f;
-        colors[k] = cyan;
+        colors[k] = marker_color;
         colors[k].a = 225u;
-        widths[k] = 1.7f;
+        widths[k] = 2.2f;
     }
     return true;
 }
@@ -564,9 +592,9 @@ static bool _add_probe_marker(DvzScene* scene, DvzPanel* panel, ProbeMarker* out
     rc = dvz_panel_data_to_visual_positions(panel, (const float*)dot_data, (float*)dot_visual, 1);
     if (rc != 0)
         return false;
-    DvzColor dot_color[1] = {example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY)};
+    DvzColor dot_color[1] = {example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING)};
     dot_color[0].a = 245u;
-    float dot_diameter[1] = {6.0f};
+    float dot_diameter[1] = {8.0f};
     DvzVisualDataUpdate dot_updates[] = {
         {.attr_name = "position", .data = dot_visual, .item_count = 1},
         {.attr_name = "color", .data = dot_color, .item_count = 1},
@@ -637,7 +665,7 @@ static DvzText* _add_readout(DvzPanel* panel)
 
     DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
     DvzTextStyle style = dvz_text_style();
-    style.size_px = 17.0f;
+    style.size_px = 21.0f;
     style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.color[0] = color.r;
     style.color[1] = color.g;
@@ -650,7 +678,7 @@ static DvzText* _add_readout(DvzPanel* panel)
     placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
     placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
     placement.position[0] = 96.0f;
-    placement.position[1] = 34.0f;
+    placement.position[1] = 38.0f;
     placement.position[2] = 0.0f;
     placement.text_anchor[0] = 0.0f;
     placement.text_anchor[1] = 0.5f;
@@ -682,7 +710,7 @@ static bool _add_panel_label(DvzPanel* panel, const char* label, ExampleStyleCol
         return false;
     DvzColor color = example_graphite_cyan_color(role);
     DvzTextStyle style = dvz_text_style();
-    style.size_px = 19.0f;
+    style.size_px = 24.0f;
     style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.color[0] = color.r;
     style.color[1] = color.g;
@@ -695,7 +723,7 @@ static bool _add_panel_label(DvzPanel* panel, const char* label, ExampleStyleCol
     placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
     placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
     placement.position[0] = 96.0f;
-    placement.position[1] = 64.0f;
+    placement.position[1] = 74.0f;
     placement.position[2] = 0.0f;
     placement.text_anchor[0] = 0.0f;
     placement.text_anchor[1] = 0.5f;
@@ -1026,11 +1054,11 @@ int main(int argc, char** argv)
 
     ok = dvz_panel_set_layout_reserve(
         source, &(DvzPanelLayoutReserve){.left = 0.11f, .right = 0.04f, .bottom = 0.10f,
-                                        .top = 0.08f});
+                                        .top = 0.10f});
     EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve(source) failed");
     ok = dvz_panel_set_layout_reserve(
         derived_panel, &(DvzPanelLayoutReserve){.left = 0.11f, .right = 0.16f, .bottom = 0.10f,
-                                               .top = 0.08f});
+                                               .top = 0.10f});
     EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve(derived) failed");
 
     ok = _set_image_domain(source);
