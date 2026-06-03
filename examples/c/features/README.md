@@ -22,4 +22,4 @@ controllers, sampled fields, picking, probing, selection, and retained updates.
 - `panel_background.c`: panel background styling behind a simple foreground visual.
 - `panzoom_attachment.c`: one panzoom controller attached to a 2D panel.
 - `panel_multi.c`: multiple independent panels with panel-local panzoom controllers.
-- `panel_linked.c`: two panels with one-way linked X panzoom state.
+- `panel_linked.c`: two panels with bidirectional linked X panzoom state.

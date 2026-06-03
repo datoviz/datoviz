@@ -48,7 +48,7 @@
 /*************************************************************************************************/
 
 /**
- * Fill a procedural checker texture with a directional stripe.
+ * Fill a procedural checker texture.
  *
  * @param pixels output RGBA8 texture
  */
@@ -60,12 +60,12 @@ static void _fill_texture(uint8_t pixels[TEXTURE_WIDTH * TEXTURE_HEIGHT * 4])
         {
             const uint32_t i = 4u * (y * TEXTURE_WIDTH + x);
             const bool checker = ((x / 16u) + (y / 16u)) % 2u == 0u;
-            const bool meridian = x >= TEXTURE_WIDTH / 2u - 2u && x <= TEXTURE_WIDTH / 2u + 2u;
-            if (meridian)
+            const bool equator = y >= TEXTURE_HEIGHT / 2u - 1u && y <= TEXTURE_HEIGHT / 2u + 1u;
+            if (equator)
             {
-                pixels[i + 0u] = 255u;
-                pixels[i + 1u] = 183u;
-                pixels[i + 2u] = 3u;
+                pixels[i + 0u] = 128u;
+                pixels[i + 1u] = 255u;
+                pixels[i + 2u] = 219u;
             }
             else if (checker)
             {

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_linked - two panels with one-way linked X panzoom state.
+/* panel_linked - two panels with bidirectional linked X panzoom state.
  *
  * Scenario: feature.panel_linked
  * Style: features, graphite_cyan, 1600x1200 capture target
@@ -183,33 +183,36 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(_add_line_panel(scene, top, 0.03f, 188u), "top panel visual setup failed");
     EXAMPLE_CHECK(_add_line_panel(scene, bottom, 0.24f, 164u), "bottom panel visual setup failed");
 
-    DvzController* source_x = dvz_panzoom(scene, NULL);
-    DvzController* target_x = dvz_panzoom(scene, NULL);
+    DvzController* top_x = dvz_panzoom(scene, NULL);
+    DvzController* bottom_x = dvz_panzoom(scene, NULL);
     DvzController* top_y = dvz_panzoom(scene, NULL);
     DvzController* bottom_y = dvz_panzoom(scene, NULL);
     EXAMPLE_CHECK(
-        source_x != NULL && target_x != NULL && top_y != NULL && bottom_y != NULL,
+        top_x != NULL && bottom_x != NULL && top_y != NULL && bottom_y != NULL,
         "dvz_panzoom() failed");
 
-    DvzPanzoom* source_panzoom = dvz_controller_panzoom(source_x);
-    DvzPanzoom* target_panzoom = dvz_controller_panzoom(target_x);
+    DvzPanzoom* top_x_panzoom = dvz_controller_panzoom(top_x);
+    DvzPanzoom* bottom_x_panzoom = dvz_controller_panzoom(bottom_x);
     DvzPanzoom* top_y_panzoom = dvz_controller_panzoom(top_y);
     DvzPanzoom* bottom_y_panzoom = dvz_controller_panzoom(bottom_y);
     EXAMPLE_CHECK(
-        source_panzoom != NULL && target_panzoom != NULL && top_y_panzoom != NULL &&
+        top_x_panzoom != NULL && bottom_x_panzoom != NULL && top_y_panzoom != NULL &&
             bottom_y_panzoom != NULL,
         "dvz_controller_panzoom() failed");
 
-    dvz_panzoom_zoom(source_panzoom, (vec2){1.80f, 1.0f});
-    dvz_panzoom_pan(source_panzoom, (vec2){+0.22f, 0.0f});
+    dvz_panzoom_zoom(top_x_panzoom, (vec2){1.80f, 1.0f});
+    dvz_panzoom_pan(top_x_panzoom, (vec2){+0.22f, 0.0f});
     dvz_panzoom_zoom(top_y_panzoom, (vec2){1.0f, 1.15f});
     dvz_panzoom_zoom(bottom_y_panzoom, (vec2){1.0f, 1.45f});
 
-    DvzControllerLink* link = dvz_controller_link(
-        scene, source_x, target_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
-    EXAMPLE_CHECK(link != NULL, "dvz_controller_link() failed");
+    DvzControllerLink* link_top_to_bottom = dvz_controller_link(
+        scene, top_x, bottom_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
+    DvzControllerLink* link_bottom_to_top = dvz_controller_link(
+        scene, bottom_x, top_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
     EXAMPLE_CHECK(
-        fabsf(target_panzoom->zoom[0] - source_panzoom->zoom[0]) < 1e-6f,
+        link_top_to_bottom != NULL && link_bottom_to_top != NULL, "dvz_controller_link() failed");
+    EXAMPLE_CHECK(
+        fabsf(bottom_x_panzoom->zoom[0] - top_x_panzoom->zoom[0]) < 1e-6f,
         "linked X zoom mismatch");
 
     app = dvz_app(scene);
@@ -219,13 +222,13 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
     EXAMPLE_CHECK(
-        dvz_view_bind_controller(win, top, source_x, DVZ_DIM_MASK_X) == 0,
+        dvz_view_bind_controller(win, top, top_x, DVZ_DIM_MASK_X) == 0,
         "top X controller binding failed");
     EXAMPLE_CHECK(
         dvz_view_bind_controller(win, top, top_y, DVZ_DIM_MASK_Y) == 0,
         "top Y controller binding failed");
     EXAMPLE_CHECK(
-        dvz_view_bind_controller(win, bottom, target_x, DVZ_DIM_MASK_X) == 0,
+        dvz_view_bind_controller(win, bottom, bottom_x, DVZ_DIM_MASK_X) == 0,
         "bottom X controller binding failed");
     EXAMPLE_CHECK(
         dvz_view_bind_controller(win, bottom, bottom_y, DVZ_DIM_MASK_Y) == 0,

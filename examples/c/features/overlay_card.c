@@ -37,81 +37,9 @@
 
 #define WIDTH       1600u
 #define HEIGHT      1200u
-#define POINT_COLS  18u
-#define POINT_ROWS  12u
-#define POINT_COUNT (POINT_COLS * POINT_ROWS)
-
-
-
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Fill a deterministic point backdrop.
- *
- * @param positions output point positions
- * @param colors output point colors
- * @param diameters output point diameters
- */
-static void _fill_points(
-    vec3 positions[POINT_COUNT], DvzColor colors[POINT_COUNT], float diameters[POINT_COUNT])
-{
-    for (uint32_t row = 0; row < POINT_ROWS; row++)
-    {
-        for (uint32_t col = 0; col < POINT_COLS; col++)
-        {
-            const uint32_t i = row * POINT_COLS + col;
-            positions[i][0] = -0.82f + 1.64f * (float)col / (float)(POINT_COLS - 1u);
-            positions[i][1] = -0.58f + 1.16f * (float)row / (float)(POINT_ROWS - 1u);
-            positions[i][2] = 0.0f;
-
-            colors[i] = (row + col) % 3u == 0u
-                            ? example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY)
-                            : example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
-            colors[i].a = 180u;
-            diameters[i] = 8.0f + (float)((row * 5u + col * 3u) % 11u);
-        }
-    }
-}
-
-
-
-/**
- * Add the simple scene content behind the overlay.
- *
- * @param scene scene owning the visual
- * @param panel target panel
- * @return true on success
- */
-static bool _add_backdrop(DvzScene* scene, DvzPanel* panel)
-{
-    vec3 positions[POINT_COUNT] = {{0}};
-    DvzColor colors[POINT_COUNT] = {{0}};
-    float diameters[POINT_COUNT] = {0};
-    _fill_points(positions, colors, diameters);
-
-    DvzVisual* points = dvz_point(scene, 0);
-    if (points == NULL)
-        return false;
-
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
-        {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
-    };
-    if (dvz_visual_set_data_many(points, updates, 3) != 0)
-        return false;
-
-    DvzPointStyleDesc style = dvz_point_style_desc();
-    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
-    if (dvz_point_set_style(points, &style) != 0)
-        return false;
-    if (dvz_visual_set_depth_test(points, false) != 0)
-        return false;
-    return dvz_panel_add_visual(panel, points, NULL) == 0;
-}
 
 
 
@@ -184,7 +112,6 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
-    EXAMPLE_CHECK(_add_backdrop(scene, panel), "backdrop setup failed");
     EXAMPLE_CHECK(_add_overlay_card(panel), "overlay card setup failed");
 
     app = dvz_app(scene);
