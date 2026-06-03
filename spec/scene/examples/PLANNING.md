@@ -1,7 +1,7 @@
 # Scene Example Planning
 
 > **Status:** active planning
-> **Updated on:** 2026-06-02
+> **Updated on:** 2026-06-03
 > **Scope:** worked example specs, release staging, gallery priorities, and current support gaps
 > **Purpose:** keep one source of truth for which examples matter, when they matter, and what still
 > blocks them.
@@ -58,17 +58,18 @@ annotations, scale bars, and first GPU-backed point/marker/image/labels/volume r
 
 The main remaining polish, promotion, or feature gaps are:
 
-1. release capture proof for the existing text, axes, colorbar, annotation/readout, scale-bar, and
+1. short public feature examples for every public v0.4 scene/app feature, not only gallery-facing
+   showcases;
+2. release capture proof for the existing text, axes, colorbar, annotation/readout, scale-bar, and
    retained textured-mesh public examples;
-2. promotion or rewrite of the missing required public C examples:
-   `brain_volume_mesh` and `dense_point_cloud_edl`;
-3. vector visuals so wind, flow, and track examples stop relying on primitive triangles;
-4. richer picking/probe payloads for marker exact hit tests, mesh regions, paths, labels, text, and
+3. promotion or rewrite of the missing required public C `brain_volume_mesh` example;
+4. vector visuals so wind, flow, and track examples stop relying on primitive triangles;
+5. richer picking/probe payloads for marker exact hit tests, mesh regions, paths, labels, text, and
    volume ray hits;
-5. large-data policies for ring buffers, visible ranges, LOD, sparse updates, and long live loops;
-6. scene-level custom material/compute resources for Mandelbrot, Gray-Scott, particles, and custom
+6. large-data policies for ring buffers, visible ranges, LOD, sparse updates, and long live loops;
+7. scene-level custom material/compute resources for Mandelbrot, Gray-Scott, particles, and custom
    postprocess work;
-7. deterministic gallery capture conventions, asset/cache helpers, and raw binding smoke coverage.
+8. deterministic gallery capture conventions, asset/cache helpers, and raw binding smoke coverage.
 
 
 ## v0.4 Required Set
@@ -92,10 +93,41 @@ The main remaining polish, promotion, or feature gaps are:
 | `showcase_wind_field` | `partial-now` | image field, vector visual, paths, panzoom, colorbar | Public proof lives in `examples/c/showcases/wind_field.c` using primitive-arrow substitution until the vector visual is promoted. |
 | `showcase_gpu_particle_smoke` | `ready-now` | scene compute, shared storage/vertex buffers, blended points | Public experimental compute-to-graphics showcase lives in `examples/c/showcases/gpu_particle_smoke.c`. |
 | `textured_terrain_or_planet` | `ready-now` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof lives in `examples/c/showcases/textured_planet.c`: Earth/Mars UV sphere with real sampled textures and procedural fallbacks. Mars DEM terrain analysis remains v0.5/later. |
-| `brain_volume_mesh` | `needs-rc1-proof` | volume, transparent mesh, GUI, arcball | Still missing from the public C manifest. Legacy Allen/IBL brain examples are source material; full atlas explorer is v0.5. |
-| `dense_point_cloud_edl` | `needs-rc1-proof` | large points/pixels, EDL, fly/camera | Still missing from the public C manifest. Use LiDAR or synthetic dense cloud as performance/showcase proof. |
+| `brain_volume_mesh` | `needs-rc1-proof` | volume, transparent mesh or slice composition, arcball | Still missing from the public C manifest. Legacy Allen/IBL brain examples are source material; full atlas explorer is v0.5. |
+| `point_cloud` | `ready-now` | large RGB pixel cloud, direct colors, GUI-tunable EDL, fly camera, capture | Public proof lives in `examples/c/showcases/point_cloud.c`, with required RESEPI raw-LAZ preprocessing through `tools/data/prepare_point_cloud.py`; no synthetic or bundled-NPZ fallback is provided. |
 | `composite_polygon` | `ready-now` | semantic polygon/polygon-set, fill+stroke composite, holes, region styling | Public proof lives in `examples/c/composites/polygon.c`; polygon is not a visual family even if it appears near visual examples. |
 | `composite_graph` | `ready-now` | semantic graph, user-provided layout, nodes+edges composite, stable ids, Bezier edges | Public proof lives in `examples/c/composites/graph.c`. Keep layout user-supplied first; edge-mode comparisons belong in tests or lab examples. |
+
+
+## v0.4 Short Feature Coverage Queue
+
+Every public v0.4 feature should have one short C example in `examples/c/features/`, even when a
+showcase or workflow already composes the same feature. These are copy-safe API proofs first and
+gallery material second. Keep each file narrow: one feature, deterministic data, no unrelated GUI or
+domain polish, and smoke/screenshot validation once runnable.
+
+Implemented first batch: `feature.scene_basic`, `feature.panel_single`, `feature.panel_grid`,
+`feature.panel_multi`, `feature.panel_linked`, `feature.sampled_field_2d`,
+`feature.sampled_field_3d`, `feature.axis_labels`, `feature.text_block`,
+`feature.overlay_card`, `feature.controller_arcball`, `feature.mesh_texture`,
+`feature.update_visual_data`, and `feature.visibility`. Remaining highest-priority missing feature
+examples:
+
+| Feature | Source | Required slice |
+| --- | --- | --- |
+| `feature.controller_fly` | `examples/c/features/controller_fly.c` | sparse 3D scene proving fly-camera translation |
+| `feature.controller_turntable` | `examples/c/features/controller_turntable.c` | constrained up-axis 3D controller proof |
+| `feature.pick_point` | `examples/c/features/pick_point.c` | point item identity, callback/readback, and visible selection |
+| `feature.pick_hover` | `examples/c/features/pick_hover.c` | hover feedback with latest-request-wins and background-miss clearing |
+| `feature.probe_labels` | `examples/c/features/probe_labels.c` | label-id probe/readout on a categorical label field |
+| `feature.selection` | `examples/c/features/selection.c` | persistent selected-item highlight on a small visual |
+| `feature.material_mesh` | `examples/c/features/material_mesh.c` | neutral mesh material parameters with readable normals/shading |
+| `feature.lighting` | `examples/c/features/lighting.c` | simple 3D lighting direction/intensity proof |
+| `feature.timer_animation` | `examples/c/features/timer_animation.c` | deterministic timer/frame-callback animation |
+
+Conditional: add `examples/c/features/legend_categorical.c` only if categorical legends remain a
+public v0.4 surface. Keep `video_export.c` conditional unless video export is explicitly included in
+the public v0.4 API.
 
 
 ## v0.4 Experimental Set
@@ -145,13 +177,14 @@ The main remaining polish, promotion, or feature gaps are:
 
 ## Feature Priority
 
-1. Text, axes, annotations, legends, colorbars, and scale bars.
-2. Retained textured-mesh proof capture.
-3. Vector visual.
-4. Large point/pixel/path partial-update policy.
-5. Selection and picking beyond points/images.
-6. Scene-level custom material and compute resources.
-7. Textured sphere/cubemap asset lane.
+1. One short public feature example per public v0.4 feature.
+2. Text, axes, annotations, legends, colorbars, and scale bars.
+3. Retained textured-mesh proof capture.
+4. Vector visual.
+5. Large point/pixel/path partial-update policy.
+6. Selection and picking beyond points/images.
+7. Scene-level custom material and compute resources.
+8. Textured sphere/cubemap asset lane.
 
 
 ## Near-Term Gallery And Example Pressure
@@ -193,9 +226,12 @@ optional controls for tessellation quality, stroke width, join mode, and overlay
 16. `textured_terrain_or_planet`
 17. `composite_polygon`
 18. `composite_graph`
-19. `brain_volume_mesh`
-20. `dense_point_cloud_edl`
-21. `webgpu_browser_subset`
+19. `point_cloud`
+20. `brain_volume_mesh`
+21. `feature_controller_arcball`
+22. `feature_mesh_texture`
+23. Remaining `v0.4 Short Feature Coverage Queue`
+24. `webgpu_browser_subset`
 
 
 ## Promotion Rule

@@ -7,9 +7,9 @@ As of 2026-06-03, the public C manifest has runnable `v0.4 required` entries for
 `point_2d`, `path_axes_2d`, `linked_panels_axes_panzoom`, `scale_bar`, `scalebar_units`,
 `scalebar_measurement_workflow`, `colorbar`, `annotation_readout`, `image_probe`,
 `marker_picking`, `sphere_impostor`, `volume`, `composite_polygon`, `composite_graph`,
-`protein_arcball_viewer`, `showcase_wind_field`, `showcase_gpu_particle_smoke`, and
-`textured_terrain_or_planet`, and `linked_panels_probe_colorbar`. The remaining required scenarios
-without a public C manifest entry are `brain_volume_mesh` and `dense_point_cloud_edl`.
+`protein_arcball_viewer`, `showcase_wind_field`, `showcase_gpu_particle_smoke`,
+`textured_terrain_or_planet`, `point_cloud`, and `linked_panels_probe_colorbar`. The remaining
+required scenario without a public C manifest entry is `brain_volume_mesh`.
 
 | Scenario ID | Stage | Bundle |
 | --- | --- | --- |
@@ -30,8 +30,8 @@ without a public C manifest entry are `brain_volume_mesh` and `dense_point_cloud
 | `showcase_wind_field` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
 | `showcase_gpu_particle_smoke` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
 | `textured_terrain_or_planet` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
+| `point_cloud` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
 | `brain_volume_mesh` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
-| `dense_point_cloud_edl` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
 | `composite_polygon` | `v0.4 required` | [scenarios/v04_required/COMPOSITES.md](scenarios/v04_required/COMPOSITES.md) |
 | `composite_graph` | `v0.4 required` | [scenarios/v04_required/COMPOSITES.md](scenarios/v04_required/COMPOSITES.md) |
 | `webgpu_browser_subset` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |

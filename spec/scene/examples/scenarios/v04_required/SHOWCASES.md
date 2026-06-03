@@ -52,10 +52,13 @@ linked 2D/3D view, opacity controls if available, and screenshot proof. Defer fu
 atlas trees, and linked 2D explorer behavior to v0.5.
 
 
-## `dense_point_cloud_edl`
+## `point_cloud`
 
-Scale/performance showcase for large point clouds with depth cues.
+Scale/performance showcase for large RGB point clouds with a direct pixel path and lightweight
+depth enhancement.
 
-Minimal target: LiDAR or deterministic dense 3D point cloud, EDL/depth cueing, fly or turntable
-camera, bounded live loop, and a capture that makes point-cloud readability visible. LOD and
-out-of-core policies can follow.
+Current v0.4 implementation target: `examples/c/showcases/point_cloud.c`, a dense point-cloud
+showcase using the pixel visual, real per-point RGB colors, GUI-tunable EDL, fly-camera
+interaction, bounded live loop, and required RESEPI raw-LAZ preprocessing into cache-local prepared
+data. It avoids automatic rotation. There is no synthetic or bundled-NPZ fallback; the example fails
+with a prep command when real prepared data is missing. LOD and out-of-core policies can follow.
