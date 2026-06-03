@@ -14,7 +14,9 @@ scene concepts into C and language bindings.
 3. [API_IMPLEMENTATION_READINESS.md](API_IMPLEMENTATION_READINESS.md): implementation-readiness
    checklist for the next public API pass.
 4. [IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md): C object mapping and binding architecture.
-5. [WASM_PORTABILITY.md](WASM_PORTABILITY.md): public scene API constraints for future
+5. [OBJECT_LIFECYCLE.md](OBJECT_LIFECYCLE.md): missing destroy APIs and retained-object lifecycle
+   policy.
+6. [WASM_PORTABILITY.md](WASM_PORTABILITY.md): public scene API constraints for future
    WASM/WebGPU builds and generated bindings.
 
 
