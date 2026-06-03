@@ -124,6 +124,9 @@ static bool _upload_path(
  */
 int main(int argc, char** argv)
 {
+    const uint32_t frame_count = example_frame_count(argc, argv);
+    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("datetime_axis");
+
     int ret = 1;
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
@@ -234,13 +237,9 @@ int main(int argc, char** argv)
     rc = dvz_view_bind_controller(win, panel, panzoom_controller, DVZ_DIM_MASK_X);
     EXAMPLE_CHECK(rc == 0, "dvz_view_bind_controller() failed for X panzoom");
 
-    int rc_capture = dvz_view_capture_from_env(win, "datetime_axis");
-    EXAMPLE_CHECK(rc_capture == 0, "dvz_view_capture_from_env() failed");
-
-    dvz_app_run(app, example_frame_count(argc, argv));
-
-    rc_capture = dvz_view_capture_stop(win);
-    EXAMPLE_CHECK(rc_capture == 0, "dvz_view_capture_stop() failed");
+    EXAMPLE_CHECK(
+        example_run_with_capture(app, win, frame_count, &capture),
+        "example_run_with_capture() failed");
     ret = 0;
 
 cleanup:

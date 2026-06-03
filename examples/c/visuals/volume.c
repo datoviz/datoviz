@@ -364,7 +364,6 @@ int main(int argc, char** argv)
     DvzApp* app = NULL;
     uint8_t* data = NULL;
     DvzView* win = NULL;
-    bool capture_started = false;
     DvzExampleVisualSpin volume_spin = {0};
     DvzExampleVisualSpin box_spin = {0};
 
@@ -460,20 +459,12 @@ int main(int argc, char** argv)
     example_visual_spin_start(&volume_spin, 0.0);
     example_visual_spin_start(&box_spin, 0.0);
 
-    rc = dvz_view_capture_start(win, &capture);
-    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_start() failed");
-    capture_started = true;
-
-    dvz_app_run(app, frame_count);
-
-    rc = dvz_view_capture_stop(win);
-    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_stop() failed");
-    capture_started = false;
+    EXAMPLE_CHECK(
+        example_run_with_capture(app, win, frame_count, &capture),
+        "example_run_with_capture() failed");
     ret = 0;
 
 cleanup:
-    if (capture_started && win != NULL)
-        (void)dvz_view_capture_stop(win);
     if (app != NULL)
         dvz_app_destroy(app);
     example_visual_spin_destroy(&box_spin);
