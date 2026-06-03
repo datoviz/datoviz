@@ -31,9 +31,12 @@
 typedef struct DvzGeometry DvzGeometry;
 typedef struct DvzVisual   DvzVisual;
 typedef struct DvzScene    DvzScene;
+typedef struct DvzApp      DvzApp;
+typedef struct DvzView     DvzView;
 typedef struct DvzController DvzController;
 typedef struct DvzAnimation  DvzAnimation;
 typedef struct DvzTrack      DvzTrack;
+typedef struct DvzAppCaptureConfig DvzAppCaptureConfig;
 
 
 
@@ -86,6 +89,9 @@ uint32_t example_frame_count_from_text(const char* text);
 uint32_t example_frame_count(int argc, char** argv);
 
 uint32_t example_frame_count_any(int argc, char** argv);
+
+bool example_run_with_capture(
+    DvzApp* app, DvzView* view, uint32_t frame_count, const DvzAppCaptureConfig* capture);
 
 bool example_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry);
 

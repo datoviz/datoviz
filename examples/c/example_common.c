@@ -16,6 +16,7 @@
 
 #include "example_common.h"
 
+#include "datoviz/app.h"
 #include "datoviz/geom/types.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
@@ -254,6 +255,28 @@ uint32_t example_frame_count_any(int argc, char** argv)
             return out;
     }
     return 0;
+}
+
+
+/**
+ * Run an app view with the configured capture lifecycle.
+ *
+ * @param app app to run
+ * @param view view receiving capture commands
+ * @param frame_count requested frame count, or 0 for interactive
+ * @param capture capture configuration
+ * @return true when capture start/stop succeeded
+ */
+bool example_run_with_capture(
+    DvzApp* app, DvzView* view, uint32_t frame_count, const DvzAppCaptureConfig* capture)
+{
+    if (app == NULL || view == NULL)
+        return false;
+
+    if (dvz_view_capture_start(view, capture) != 0)
+        return false;
+    dvz_app_run(app, frame_count);
+    return dvz_view_capture_stop(view) == 0;
 }
 
 

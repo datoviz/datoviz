@@ -175,7 +175,6 @@ int main(int argc, char** argv)
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
     DvzView* win = NULL;
-    bool capture_started = false;
     vec3 positions[SAMPLE_COUNT] = {{0}};
     DvzColor colors[SAMPLE_COUNT] = {{0}};
     float widths[SAMPLE_COUNT] = {0};
@@ -204,20 +203,12 @@ int main(int argc, char** argv)
     win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_path");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    int rc = dvz_view_capture_start(win, &capture);
-    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_start() failed");
-    capture_started = true;
-
-    dvz_app_run(app, frame_count);
-
-    rc = dvz_view_capture_stop(win);
-    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_stop() failed");
-    capture_started = false;
+    EXAMPLE_CHECK(
+        example_run_with_capture(app, win, frame_count, &capture),
+        "example_run_with_capture() failed");
     ret = 0;
 
 cleanup:
-    if (capture_started && win != NULL)
-        (void)dvz_view_capture_stop(win);
     if (app != NULL)
         dvz_app_destroy(app);
     if (scene != NULL)
