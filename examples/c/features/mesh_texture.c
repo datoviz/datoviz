@@ -53,6 +53,9 @@ static const float TAU = 6.28318530718f;
 /**
  * Fill a high-resolution procedural texture whose U coordinate wraps cleanly.
  *
+ * UV-sphere poles collapse all longitudes to a single vertex. Fade longitude-dependent detail near
+ * the poles so interpolation does not produce radial wedges there.
+ *
  * @param pixels output RGBA8 texture
  */
 static void _fill_texture(uint8_t pixels[TEXTURE_WIDTH * TEXTURE_HEIGHT * 4])
@@ -63,10 +66,12 @@ static void _fill_texture(uint8_t pixels[TEXTURE_WIDTH * TEXTURE_HEIGHT * 4])
         {
             const float u = (float)x / (float)TEXTURE_WIDTH;
             const float v = (float)y / (float)(TEXTURE_HEIGHT - 1u);
-            const float lon = 0.5f + 0.5f * sinf(TAU * 8.0f * u);
-            const float lat = 0.5f + 0.5f * cosf(TAU * 6.0f * v);
-            const float wave = 0.5f + 0.5f * sinf(TAU * (3.0f * u + 1.5f * v));
-            const float value = 0.18f + 0.62f * lon * lat + 0.20f * wave;
+            const float pole_fade = powf(sinf((float)M_PI * v), 1.75f);
+            const float lon = pole_fade * sinf(TAU * 8.0f * u);
+            const float wave = pole_fade * sinf(TAU * (3.0f * u + 1.5f * v));
+            const float lat = 0.5f + 0.5f * cosf(TAU * 4.0f * v);
+            const float polar_tint = 1.0f - 0.32f * pole_fade;
+            const float value = polar_tint * (0.48f + 0.28f * lat + 0.16f * lon + 0.08f * wave);
             const uint32_t i = 4u * (y * TEXTURE_WIDTH + x);
             pixels[i + 0u] = (uint8_t)(18.0f + 58.0f * value);
             pixels[i + 1u] = (uint8_t)(58.0f + 170.0f * value);
@@ -124,8 +129,8 @@ static bool _add_textured_mesh(
     DvzGeometry* sphere = dvz_geom_sphere(&(DvzGeometrySphereDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
         .radius = 0.82,
-        .sectors = 48,
-        .rings = 24,
+        .sectors = 128,
+        .rings = 64,
         .color = {255, 255, 255, 255},
     });
     if (sphere == NULL)
