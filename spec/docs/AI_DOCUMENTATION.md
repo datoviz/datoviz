@@ -29,26 +29,45 @@ Documentation should make these choices explicit:
 
 The v0.4 documentation set should include a small AI/developer support pack for users who ask
 assistants to write Datoviz code. The pack is a routing and recipe layer, not a new source of truth
-for API behavior.
+for API behavior. Its job is to make assistants choose the correct Datoviz layer, copy current
+examples, preserve ownership rules, and run the right validation command.
 
 Recommended public layout:
 
 ```text
 docs/ai/
-  datoviz-c.md
-  datoviz-ctypes.md
-  api-status.md
-  ownership-and-lifetimes.md
+  README.md
+  c.md
+  ctypes.md
   examples.md
-  SKILL.md
+  ownership-and-lifetimes.md
+  status-and-boundaries.md
+  datoviz-skill/
+    SKILL.md
 ```
 
-The pack should cover two supported user workflows:
+The pack should cover two user workflows:
 
 1. C-first Datoviz development through the public headers, scene/app examples, and documented
    build/run commands;
 2. low-level Python use through the exact generated `datoviz.raw` `ctypes` layer, with explicit
    NumPy buffer, dtype, contiguity, and lifetime rules.
+
+Do not make this pack the home of exhaustive API reference. It should link to generated C reference
+pages, generated raw-binding reference pages, feature/status tables, examples, known issues, and
+source specs.
+
+Suggested deliverables:
+
+| Artifact | Purpose |
+| --- | --- |
+| `docs/ai/README.md` | Short entry point for users and agents. |
+| `docs/ai/c.md` | C-first prompting and copy-safe C example workflow. |
+| `docs/ai/ctypes.md` | Raw `ctypes` prompting, ABI checks, and NumPy memory rules. |
+| `docs/ai/examples.md` | Small recipe index that points to runnable examples. |
+| `docs/ai/ownership-and-lifetimes.md` | User-facing ownership, callback, readback, and cleanup rules. |
+| `docs/ai/status-and-boundaries.md` | Layer routing, feature status, and Datoviz/GSP boundaries. |
+| `docs/ai/datoviz-skill/SKILL.md` | Portable skill source that users can copy or package for their agent. |
 
 The pack should also state the main routing boundaries:
 
@@ -58,9 +77,11 @@ The pack should also state the main routing boundaries:
 3. raw `ctypes` is not a plotting API;
 4. old v0.3 Pythonic examples are not current Datoviz v0.4 guidance.
 
-`docs/ai/SKILL.md` should be short and portable. It should tell coding agents where to start, which
+The skill artifact should be short and portable. It should tell coding agents where to start, which
 examples to copy, what not to invent, and which validation command to run. It should link to the
-canonical docs and specs instead of repeating symbol catalogs or behavior contracts.
+canonical docs and specs instead of repeating symbol catalogs or behavior contracts. If a tool
+expects a specific directory layout, package or mirror this source into that layout instead of
+forking the instructions.
 
 The skill should instruct agents to:
 
@@ -88,7 +109,8 @@ cover:
 If the public website publishes an `llms.txt` or similar LLM-readable index, it should point to this
 support pack, the feature/status page, the public C API reference, raw binding docs, examples, known
 issues, and release notes. Treat that index as a curated navigation aid, not as a replacement for
-normal docs, sitemaps, or reference generation.
+normal docs, sitemaps, or reference generation. Keep the index generated or checklist-reviewed
+during release preparation so it does not outlive moved pages.
 
 
 ## Agent-Default API Path
@@ -290,9 +312,14 @@ reference/objects-and-lifetimes.md
 `contributors/ai-agents.md` should be concise and operational. It should explain how to gather
 context, choose the right examples, avoid known anti-patterns, and validate changes.
 
+The planned user-facing AI support pack should add an `ai/` section to the public navigation when
+the C examples, raw binding docs, and feature/status pages are ready enough to link from it. Until
+then, keep this section as a spec reminder rather than publishing placeholder pages.
+
 Canonical AI-facing contracts are split as follows:
 
-1. this file owns documentation policy and AI-facing page design;
+1. this file owns documentation policy, AI-facing page design, and the user-facing AI support-pack
+   plan;
 2. `../scene/api/API_SURFACE.md` owns the scene/app default API path;
 3. `../scene/examples/` owns copy-safe example policy and scenario metadata;
 4. `../scene/validation/DIAGNOSTICS.md` owns agent-repairable diagnostic shape;
