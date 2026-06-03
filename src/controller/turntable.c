@@ -148,17 +148,67 @@ static float _turntable_clamp_distance(const DvzTurntable* turntable, float dist
 
 
 /**
- * Compute a front direction from yaw and pitch.
+ * Compute stable horizontal axes from an up vector.
  *
+ * @param up normalized up vector
+ * @param out_axis0 first horizontal axis
+ * @param out_axis1 second horizontal axis
+ */
+static void _turntable_horizontal_axes(vec3 up, vec3 out_axis0, vec3 out_axis1)
+{
+    ANN(out_axis0);
+    ANN(out_axis1);
+    vec3 stable_up = {up[0], up[1], up[2]};
+    if (!_vec3_valid(stable_up))
+        glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, stable_up);
+    glm_vec3_normalize(stable_up);
+
+    if (fabsf(stable_up[2]) > 0.9f)
+    {
+        glm_vec3_cross((vec3){0.0f, 1.0f, 0.0f}, stable_up, out_axis0);
+        if (!_vec3_valid(out_axis0))
+            glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, out_axis0);
+        else
+            glm_vec3_normalize(out_axis0);
+        glm_vec3_cross(out_axis0, stable_up, out_axis1);
+    }
+    else
+    {
+        glm_vec3_cross((vec3){0.0f, 0.0f, 1.0f}, stable_up, out_axis0);
+        if (!_vec3_valid(out_axis0))
+            glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, out_axis0);
+        else
+            glm_vec3_scale(out_axis0, -1.0f, out_axis0);
+        glm_vec3_normalize(out_axis0);
+        glm_vec3_cross(out_axis0, stable_up, out_axis1);
+    }
+    glm_vec3_normalize(out_axis1);
+}
+
+
+
+/**
+ * Compute a front direction from yaw, pitch, and up vector.
+ *
+ * @param up normalized up vector
  * @param yaw yaw angle
  * @param pitch pitch angle
  * @param out_front output front vector
  */
-static void _turntable_front(float yaw, float pitch, vec3 out_front)
+static void _turntable_front(vec3 up, float yaw, float pitch, vec3 out_front)
 {
     ANN(out_front);
-    glm_vec3_copy(
-        (vec3){cosf(yaw) * cosf(pitch), sinf(pitch), sinf(yaw) * cosf(pitch)}, out_front);
+    vec3 axis0 = {0};
+    vec3 axis1 = {0};
+    _turntable_horizontal_axes(up, axis0, axis1);
+
+    vec3 horizontal = {0};
+    vec3 tmp = {0};
+    glm_vec3_scale(axis0, cosf(yaw) * cosf(pitch), horizontal);
+    glm_vec3_scale(axis1, sinf(yaw) * cosf(pitch), tmp);
+    glm_vec3_add(horizontal, tmp, horizontal);
+    glm_vec3_scale(up, sinf(pitch), tmp);
+    glm_vec3_add(horizontal, tmp, out_front);
     glm_vec3_normalize(out_front);
 }
 
@@ -176,12 +226,11 @@ static void _turntable_basis(
     const DvzTurntable* turntable, vec3 out_front, vec3 out_right, vec3 out_up)
 {
     ANN(turntable);
-    _turntable_front(turntable->yaw, turntable->pitch, out_front);
-
     vec3 stable_up = {turntable->up[0], turntable->up[1], turntable->up[2]};
     if (!_vec3_valid(stable_up))
         glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, stable_up);
     glm_vec3_normalize(stable_up);
+    _turntable_front(stable_up, turntable->yaw, turntable->pitch, out_front);
 
     glm_vec3_cross(out_front, stable_up, out_right);
     if (!_vec3_valid(out_right))
@@ -207,7 +256,7 @@ static void _turntable_update_eye(DvzTurntable* turntable)
 {
     ANN(turntable);
     vec3 front = {0};
-    _turntable_front(turntable->yaw, turntable->pitch, front);
+    _turntable_front(turntable->up, turntable->yaw, turntable->pitch, front);
     vec3 offset = {0};
     glm_vec3_scale(front, -turntable->distance, offset);
     glm_vec3_add(turntable->pivot, offset, turntable->eye);
@@ -229,9 +278,21 @@ static void _turntable_update_angles_from_eye(DvzTurntable* turntable)
     if (distance <= 0.0f)
         return;
     glm_vec3_scale(dir, 1.0f / distance, dir);
+    vec3 stable_up = {turntable->up[0], turntable->up[1], turntable->up[2]};
+    if (!_vec3_valid(stable_up))
+        glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, stable_up);
+    glm_vec3_normalize(stable_up);
+    vec3 axis0 = {0};
+    vec3 axis1 = {0};
+    _turntable_horizontal_axes(stable_up, axis0, axis1);
+    float sin_pitch = _clampf(glm_vec3_dot(dir, stable_up), -1.0f, +1.0f);
+    vec3 horizontal = {0};
+    vec3 tmp = {0};
+    glm_vec3_scale(stable_up, sin_pitch, tmp);
+    glm_vec3_sub(dir, tmp, horizontal);
     turntable->distance = _turntable_clamp_distance(turntable, distance);
-    turntable->pitch = _turntable_clamp_pitch(turntable, asinf(_clampf(dir[1], -1.0f, +1.0f)));
-    turntable->yaw = atan2f(dir[2], dir[0]);
+    turntable->pitch = _turntable_clamp_pitch(turntable, asinf(sin_pitch));
+    turntable->yaw = atan2f(glm_vec3_dot(horizontal, axis1), glm_vec3_dot(horizontal, axis0));
     if ((turntable->flags & DVZ_TURNTABLE_FLAGS_WRAP_YAW) != 0)
         turntable->yaw = _turntable_wrap_angle(turntable->yaw);
 }

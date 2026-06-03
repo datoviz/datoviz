@@ -68,6 +68,36 @@ int test_turntable_orbit_preserves_distance(TstContext* suite, const TstCase* it
 
 
 
+int test_turntable_z_up_orbit_uses_xy_plane(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzTurntableDesc desc = dvz_turntable_desc();
+    desc.up[0] = 0.0f;
+    desc.up[1] = 0.0f;
+    desc.up[2] = 1.0f;
+    desc.yaw = 0.0f;
+    desc.pitch = 0.0f;
+    desc.distance = 3.0f;
+    DvzTurntable* turntable = _dvz_turntable(&desc);
+    ANN(turntable);
+    AC(turntable->eye[0], -3.0f, 1e-5f);
+    AC(turntable->eye[1], 0.0f, 1e-5f);
+    AC(turntable->eye[2], 0.0f, 1e-5f);
+
+    dvz_turntable_orbit(turntable, GLM_PI_2f, 0.0f);
+    AC(turntable->distance, 3.0f, 1e-5f);
+    AC(turntable->eye[0], 0.0f, 1e-4f);
+    AC(turntable->eye[1], 3.0f, 1e-5f);
+    AC(turntable->eye[2], 0.0f, 1e-5f);
+
+    dvz_turntable_destroy(turntable);
+    return 0;
+}
+
+
+
 int test_turntable_pivot_preserves_eye(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -257,6 +287,7 @@ int test_scene_turntable(TstSuite* suite)
     TST_GROUP("turntable");
     TST_CASE(test_turntable_create_default);
     TST_CASE(test_turntable_orbit_preserves_distance);
+    TST_CASE(test_turntable_z_up_orbit_uses_xy_plane);
     TST_CASE(test_turntable_pivot_preserves_eye);
     TST_CASE(test_turntable_pan_moves_pivot_and_eye);
     TST_CASE(test_panel_turntable_getter);

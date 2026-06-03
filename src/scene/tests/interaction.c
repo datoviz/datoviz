@@ -85,19 +85,21 @@ static const DvzVisualAttr* _interaction_visual_attr(const DvzVisual* visual, co
 
 
 /**
- * Return whether one stream pipeline has a specific vertex attribute.
+ * Return whether one stream pipeline with a specific label prefix has a vertex attribute.
  *
  * @param stream the command stream
- * @param label the pipeline debug label
+ * @param label_prefix the pipeline debug label prefix
  * @param format the expected VkFormat
  * @param location the expected shader location
  * @return whether the attribute was found
  */
 static bool _interaction_stream_has_pipeline_attr(
-    const DvzDrp2CommandStream* stream, const char* label, uint32_t format, uint32_t location)
+    const DvzDrp2CommandStream* stream, const char* label_prefix, uint32_t format,
+    uint32_t location)
 {
     ANN(stream);
-    ANN(label);
+    ANN(label_prefix);
+    size_t label_prefix_len = strlen(label_prefix);
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
@@ -105,7 +107,9 @@ static bool _interaction_stream_has_pipeline_attr(
             continue;
         const char* pipeline_label =
             dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
-        if (pipeline_label == NULL || strcmp(pipeline_label, label) != 0)
+        if (
+            pipeline_label == NULL ||
+            strncmp(pipeline_label, label_prefix, label_prefix_len) != 0)
             continue;
         for (uint32_t a = 0; a < cmd->u.create_render_pipeline.attr_count; a++)
         {
@@ -790,11 +794,11 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
     AT(_interaction_stream_has_pipeline_attr(
-        stream, "_pipe_point_item_stateg_depth", VK_FORMAT_R32_UINT, 5));
+        stream, "_pipe_point_item_stateg", VK_FORMAT_R32_UINT, 5));
     AT(_interaction_stream_has_pipeline_attr(
-        stream, "_pipe_pixel_item_stateg_depth", VK_FORMAT_R32_UINT, 5));
+        stream, "_pipe_pixel_item_stateg", VK_FORMAT_R32_UINT, 5));
     AT(_interaction_stream_has_pipeline_attr(
-        stream, "_pipe_marker_item_stateg_depth", VK_FORMAT_R32_UINT, 5));
+        stream, "_pipe_marker_item_stateg", VK_FORMAT_R32_UINT, 5));
     AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneItemStateStyleParams)) == 3);
     AT(_interaction_stream_item_state_style_bind_group_count(stream) == 3);
     dvz_drp2_stream_destroy(stream);

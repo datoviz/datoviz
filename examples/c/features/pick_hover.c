@@ -86,9 +86,8 @@ static void _hover_pointer(DvzInputRouter* router, const DvzPointerEvent* event,
     if (state == NULL || event == NULL || event->type != DVZ_POINTER_EVENT_MOVE)
         return;
 
-    state->cursor_valid = true;
-    state->cursor_x = event->pos[0];
-    state->cursor_y = event->pos[1];
+    state->cursor_valid =
+        example_panel_pointer_position(state->panel, event, &state->cursor_x, &state->cursor_y);
 }
 
 

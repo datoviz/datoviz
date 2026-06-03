@@ -93,6 +93,8 @@ int test_turntable_create_default(TstContext* suite, const TstCase* item);
 
 int test_turntable_orbit_preserves_distance(TstContext* suite, const TstCase* item);
 
+int test_turntable_z_up_orbit_uses_xy_plane(TstContext* suite, const TstCase* item);
+
 int test_turntable_pivot_preserves_eye(TstContext* suite, const TstCase* item);
 
 int test_turntable_pan_moves_pivot_and_eye(TstContext* suite, const TstCase* item);

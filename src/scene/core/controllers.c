@@ -780,15 +780,19 @@ static bool _scene_panel_dispatch_pointer_controller(
     case DVZ_CONTROLLER_TYPE_TURNTABLE:
     {
         DvzTurntable* turntable = controller->turntable;
-        if (turntable == NULL || _scene_panel_ensure_camera(panel) == NULL)
+        if (
+            turntable == NULL || _scene_panel_ensure_camera(panel) == NULL ||
+            !_scene_panel_pointer_targets(panel, ev, turntable->interacting))
             return false;
         vec2 old_origin = {turntable->viewport_origin[0], turntable->viewport_origin[1]};
         vec2 old_size = {turntable->viewport_size[0], turntable->viewport_size[1]};
         bool old_has_viewport = turntable->has_viewport;
         DvzCamera* old_camera = turntable->camera;
-        dvz_turntable_viewport(turntable, x, y, w, h);
+        DvzPointerEvent local = {0};
+        _scene_panel_local_pointer(ev, x, y, &local);
+        dvz_turntable_viewport(turntable, 0.0f, 0.0f, w, h);
         dvz_turntable_set_camera(turntable, panel->camera);
-        consumed = dvz_turntable_pointer(turntable, ev);
+        consumed = dvz_turntable_pointer(turntable, &local);
         glm_vec2_copy(old_origin, turntable->viewport_origin);
         glm_vec2_copy(old_size, turntable->viewport_size);
         turntable->has_viewport = old_has_viewport;

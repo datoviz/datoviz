@@ -35,6 +35,7 @@ typedef struct DvzScene    DvzScene;
 typedef struct DvzPanel    DvzPanel;
 typedef struct DvzApp      DvzApp;
 typedef struct DvzView     DvzView;
+typedef struct DvzPointerEvent DvzPointerEvent;
 typedef struct DvzController DvzController;
 typedef struct DvzAnimation  DvzAnimation;
 typedef struct DvzTrack      DvzTrack;
@@ -96,6 +97,9 @@ bool example_run_with_capture(
     DvzApp* app, DvzView* view, uint32_t frame_count, const DvzAppCaptureConfig* capture);
 
 bool example_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry);
+
+bool example_panel_pointer_position(
+    const DvzPanel* panel, const DvzPointerEvent* event, double* out_x, double* out_y);
 
 DvzVisual* example_graphite_cyan_cube_mesh(
     DvzScene* scene,

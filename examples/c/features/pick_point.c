@@ -141,11 +141,12 @@ static void _point_pick_pointer(DvzInputRouter* router, const DvzPointerEvent* e
     if (event->type != DVZ_POINTER_EVENT_MOVE && event->type != DVZ_POINTER_EVENT_PRESS)
         return;
 
-    state->cursor_valid = true;
-    state->cursor_x = event->pos[0];
-    state->cursor_y = event->pos[1];
+    state->cursor_valid =
+        example_panel_pointer_position(state->panel, event, &state->cursor_x, &state->cursor_y);
     if (event->type == DVZ_POINTER_EVENT_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
     {
+        if (!state->cursor_valid)
+            return;
         if (state->has_hover_query)
             _toggle_point_selection(state, &state->latest_hover_query);
         else

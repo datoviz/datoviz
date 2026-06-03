@@ -90,11 +90,14 @@ static void _selection_pointer(
     if (event->type != DVZ_POINTER_EVENT_MOVE && event->type != DVZ_POINTER_EVENT_PRESS)
         return;
 
-    state->cursor_valid = true;
-    state->cursor_x = event->pos[0];
-    state->cursor_y = event->pos[1];
-    if (event->type == DVZ_POINTER_EVENT_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
+    state->cursor_valid =
+        example_panel_pointer_position(state->panel, event, &state->cursor_x, &state->cursor_y);
+    if (
+        state->cursor_valid && event->type == DVZ_POINTER_EVENT_PRESS &&
+        event->button == DVZ_POINTER_BUTTON_LEFT)
+    {
         state->click_pending = true;
+    }
 }
 
 
