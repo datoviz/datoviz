@@ -334,12 +334,10 @@ int main(int argc, char** argv)
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
-    debug = example_debug(win, argc > 0 ? argv[0] : NULL, "composite_graph");
+    EXAMPLE_CHECK(
+        example_debug_setup(&debug, win, argc, argv, "composite_graph"),
+        "example_debug_setup() failed");
     example_debug_panzoom(&debug, "composite_graph", panzoom);
-    if (example_debug_requested(argc, argv))
-    {
-        EXAMPLE_CHECK(example_debug_install(&debug, argc, argv), "example_debug_install() failed");
-    }
 
     dvz_app_run(app, example_frame_count_any(argc, argv));
     ret = 0;

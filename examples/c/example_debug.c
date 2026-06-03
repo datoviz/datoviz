@@ -226,7 +226,15 @@ static void _debug_dump(const ExampleDebug* debug)
             _debug_dump_panzoom(debug->panzooms[i].name, debug->panzooms[i].panzoom);
     }
     for (uint32_t i = 0; i < debug->camera_count; i++)
-        _debug_dump_camera(debug->cameras[i].name, &debug->cameras[i].camera);
+    {
+        DvzCameraDesc camera = debug->cameras[i].camera;
+        if (debug->cameras[i].camera_ref != NULL)
+        {
+            dvz_camera_get_view(
+                debug->cameras[i].camera_ref, camera.eye, camera.target, camera.up);
+        }
+        _debug_dump_camera(debug->cameras[i].name, &camera);
+    }
     dvz_fprintf(stderr, "\n");
 }
 
@@ -397,6 +405,31 @@ ExampleDebug example_debug(DvzView* view, const char* exe, const char* basename)
 
 
 /**
+ * Initialize example debug state and install keyboard shortcuts when requested.
+ *
+ * @param debug debug state
+ * @param view app view
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @param basename screenshot filename prefix
+ * @return true when setup completed or debug was not requested
+ */
+bool example_debug_setup(
+    ExampleDebug* debug, DvzView* view, int argc, char** argv, const char* basename)
+{
+    if (debug == NULL)
+        return false;
+
+    *debug = example_debug(view, argc > 0 && argv != NULL ? argv[0] : NULL, basename);
+    if (!example_debug_requested(argc, argv))
+        return true;
+
+    return example_debug_install(debug, argc, argv);
+}
+
+
+
+/**
  * Register an arcball controller for dump and reset shortcuts.
  *
  * @param debug debug state
@@ -443,6 +476,29 @@ void example_debug_camera(ExampleDebug* debug, const char* name, const DvzCamera
         return;
     debug->cameras[debug->camera_count++] =
         (ExampleDebugCamera){.name = name, .camera = *camera_desc};
+}
+
+
+
+/**
+ * Register a live camera for dump shortcuts.
+ *
+ * The descriptor supplies stable projection fields while the live camera supplies the current
+ * view transform at dump time.
+ *
+ * @param debug debug state
+ * @param name camera label
+ * @param camera live camera
+ * @param camera_desc camera descriptor defaults
+ */
+void example_debug_camera_ref(
+    ExampleDebug* debug, const char* name, DvzCamera* camera, const DvzCameraDesc* camera_desc)
+{
+    if (debug == NULL || camera == NULL || camera_desc == NULL ||
+        debug->camera_count >= EXAMPLE_DEBUG_MAX_CAMERAS)
+        return;
+    debug->cameras[debug->camera_count++] =
+        (ExampleDebugCamera){.name = name, .camera_ref = camera, .camera = *camera_desc};
 }
 
 

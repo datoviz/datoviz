@@ -863,13 +863,11 @@ int main(int argc, char** argv)
         "dvz_view_bind_controller() failed");
     dvz_arcball_initial(arcball, (vec3){+0.790430f, -0.651732f, +0.810104f});
 
-    debug = example_debug(win, argc > 0 ? argv[0] : NULL, "protein");
+    EXAMPLE_CHECK(
+        example_debug_setup(&debug, win, argc, argv, "protein"),
+        "example_debug_setup() failed");
     example_debug_arcball(&debug, "protein", arcball);
     example_debug_camera(&debug, "protein", &camera_desc);
-    if (example_debug_requested(argc, argv))
-    {
-        EXAMPLE_CHECK(example_debug_install(&debug, argc, argv), "example_debug_install() failed");
-    }
     if (example_debug_gui_requested())
     {
         diagnostics = _protein_diagnostics(panel, &msaa_desc, &ssao_desc);

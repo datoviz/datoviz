@@ -58,6 +58,7 @@ typedef struct ExampleDebugPanzoom
 typedef struct ExampleDebugCamera
 {
     const char* name;
+    DvzCamera* camera_ref;
     DvzCameraDesc camera;
 } ExampleDebugCamera;
 
@@ -95,12 +96,18 @@ bool example_debug_gui_requested(void);
 
 ExampleDebug example_debug(DvzView* view, const char* exe, const char* basename);
 
+bool example_debug_setup(
+    ExampleDebug* debug, DvzView* view, int argc, char** argv, const char* basename);
+
 void example_debug_arcball(ExampleDebug* debug, const char* name, DvzArcball* arcball);
 
 void example_debug_panzoom(ExampleDebug* debug, const char* name, DvzPanzoom* panzoom);
 
 void example_debug_camera(
     ExampleDebug* debug, const char* name, const DvzCameraDesc* camera_desc);
+
+void example_debug_camera_ref(
+    ExampleDebug* debug, const char* name, DvzCamera* camera, const DvzCameraDesc* camera_desc);
 
 bool example_debug_install(ExampleDebug* debug, int argc, char** argv);
 
