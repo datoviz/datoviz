@@ -37,6 +37,23 @@ examples:
     source: examples/c/workflows/panel_linked_axes.c
     validation: smoke+interaction
 
+  - id: linked_panels_probe_colorbar
+    title: Linked Probe With Colorbar
+    stage: v0.4_required
+    lane: workflows
+    source: examples/c/workflows/linked_probe_colorbar.c
+    validation: smoke+readback+interaction+screenshot
+    gallery:
+      card: section
+      status_label: supported
+    features:
+      - image
+      - sampled-field
+      - pixel-query
+      - linked-panzoom
+      - colorbar
+      - readout
+
   - id: scale_bar
     title: Scale Bar
     stage: v0.4_required

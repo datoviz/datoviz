@@ -6,4 +6,5 @@ belong here. Workflows are smaller than showcases and do not need real data prov
 Current public workflow examples:
 
 - `panel_linked_axes.c`
+- `linked_probe_colorbar.c`
 - `scalebar_measurement.c`

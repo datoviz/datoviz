@@ -8,8 +8,8 @@ As of 2026-06-03, the public C manifest has runnable `v0.4 required` entries for
 `scalebar_measurement_workflow`, `colorbar`, `annotation_readout`, `image_probe`,
 `marker_picking`, `sphere_impostor`, `volume`, `composite_polygon`, `composite_graph`,
 `protein_arcball_viewer`, `showcase_wind_field`, `showcase_gpu_particle_smoke`, and
-`textured_terrain_or_planet`. The remaining required scenarios without a public C manifest entry
-are `linked_panels_probe_colorbar`, `brain_volume_mesh`, and `dense_point_cloud_edl`.
+`textured_terrain_or_planet`, and `linked_panels_probe_colorbar`. The remaining required scenarios
+without a public C manifest entry are `brain_volume_mesh` and `dense_point_cloud_edl`.
 
 | Scenario ID | Stage | Bundle |
 | --- | --- | --- |

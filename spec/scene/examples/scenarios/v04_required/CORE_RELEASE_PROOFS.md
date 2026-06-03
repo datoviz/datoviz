@@ -42,8 +42,9 @@ axes that update without rebuilding unrelated resources.
 Main 2D explanatory-object pressure test. It combines shared sampled fields, image probe requests,
 crosshair/readout state, colorbar, and linked panels.
 
-Minimal target: two image panels backed by the same field or compatible fields, one probe result
-that updates a retained readout, and one continuous colorbar with stable scale identity.
+Current public C target: `examples/c/workflows/linked_probe_colorbar.c`, with two linked image
+panels backed by compatible fields, mirrored probe markers, one probe result that updates a retained
+readout, and one continuous colorbar with stable scale identity.
 
 
 ## `marker_picking`
