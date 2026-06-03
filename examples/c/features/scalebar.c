@@ -47,24 +47,6 @@
 /*************************************************************************************************/
 
 /**
- * Copy one Datoviz color into an RGBA8 descriptor field.
- *
- * @param out output RGBA8 array
- * @param color source color
- * @param alpha alpha channel override
- */
-static void _copy_color(uint8_t out[4], DvzColor color, uint8_t alpha)
-{
-    ANN(out);
-    out[0] = color.r;
-    out[1] = color.g;
-    out[2] = color.b;
-    out[3] = alpha;
-}
-
-
-
-/**
  * Add a small ruler-like point visual in data coordinates.
  *
  * @param scene scene owning the visual
@@ -146,14 +128,14 @@ static bool _add_scalebar(DvzScene* scene, DvzPanel* panel)
         .offset_px = {72.0f, 82.0f},
         .tick_length_px = 18.0f,
         .line_width_px = 4.0f,
+        .line_color = {color.r, color.g, color.b, 255u},
         .label_style = {
         DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
             .size_px = 17.0f,
             .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+            .color = {color.r, color.g, color.b, 255u},
         },
     };
-    _copy_color(desc.line_color, color, 255u);
-    _copy_color(desc.label_style.color, color, 255u);
 
     DvzAnnotation* scalebar = dvz_annotation_scalebar(panel, &desc);
     return scalebar != NULL && dvz_scalebar_set_units((DvzScaleBar*)scalebar, length_units) == 0;
@@ -174,6 +156,9 @@ static bool _add_scalebar(DvzScene* scene, DvzPanel* panel)
  */
 int main(int argc, char** argv)
 {
+    const uint32_t frame_count = example_frame_count(argc, argv);
+    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_scalebar");
+
     int ret = 1;
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
@@ -211,13 +196,9 @@ int main(int argc, char** argv)
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to bind panzoom controller");
 
-    int rc_capture = dvz_view_capture_from_env(win, "scale_bar");
-    EXAMPLE_CHECK(rc_capture == 0, "dvz_view_capture_from_env() failed");
-
-    dvz_app_run(app, example_frame_count(argc, argv));
-
-    rc_capture = dvz_view_capture_stop(win);
-    EXAMPLE_CHECK(rc_capture == 0, "dvz_view_capture_stop() failed");
+    EXAMPLE_CHECK(
+        example_run_with_capture(app, win, frame_count, &capture),
+        "example_run_with_capture() failed");
     ret = 0;
 
 cleanup:

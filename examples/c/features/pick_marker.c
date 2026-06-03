@@ -104,38 +104,21 @@ static uint32_t _marker_shape(uint32_t index)
 
 
 /**
- * Linearly blend two 8-bit channels.
- *
- * @param a first channel
- * @param b second channel
- * @param t blend factor in [0, 1]
- * @return blended channel
- */
-static uint8_t _mix_channel(uint8_t a, uint8_t b, float t)
-{
-    return (uint8_t)((1.0f - t) * (float)a + t * (float)b + 0.5f);
-}
-
-
-
-/**
  * Return one deterministic marker color from the shared graphite-cyan palette.
  *
  * @param index marker index
- * @param count total marker count
  * @return marker color
  */
-static DvzColor _marker_palette_color(uint32_t index, uint32_t count)
+static DvzColor _marker_palette_color(uint32_t index)
 {
-    DvzColor primary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
-    DvzColor secondary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
-    DvzColor text = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
-    float t = count > 1 ? (float)(index % count) / (float)(count - 1) : 0.0f;
-    DvzColor a = index % 3u == 0 ? text : primary;
-    DvzColor b = index % 3u == 1 ? secondary : primary;
-    return dvz_color_rgba(
-        _mix_channel(a.r, b.r, t), _mix_channel(a.g, b.g, t),
-        _mix_channel(a.b, b.b, t), 245);
+    const ExampleStyleColorRole roles[] = {
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_TEXT,
+    };
+    DvzColor color = example_graphite_cyan_color(roles[index % DVZ_ARRAY_COUNT(roles)]);
+    color.a = 245u;
+    return color;
 }
 
 
@@ -261,6 +244,9 @@ static void _marker_pick_frame(DvzView* win, void* user_data)
 
 int main(int argc, char** argv)
 {
+    const uint32_t frame_count = example_frame_count(argc, argv);
+    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_pick_marker");
+
     int ret = 1;
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
@@ -339,7 +325,7 @@ int main(int argc, char** argv)
             positions[index][0] = -0.88f + 1.76f * ((float)col / (float)(GRID_COLS - 1));
             positions[index][1] = -0.72f + 1.44f * ((float)row / (float)(GRID_ROWS - 1));
             positions[index][2] = 0.0f;
-            colors[index] = _marker_palette_color(index, GRID_COLS * GRID_ROWS);
+            colors[index] = _marker_palette_color(index);
             diameters[index] = BASE_SIZE;
             angles[index] = ((float)(index % 12u) / 12.0f) * 2.0f * PI_F;
             shapes[index] = _marker_shape(index);
@@ -382,7 +368,9 @@ int main(int argc, char** argv)
     dvz_input_subscribe_pointer(router, _marker_pick_pointer, &state);
     dvz_view_set_frame_callback(win, _marker_pick_frame, &state);
 
-    dvz_app_run(app, example_frame_count(argc, argv));
+    EXAMPLE_CHECK(
+        example_run_with_capture(app, win, frame_count, &capture),
+        "example_run_with_capture() failed");
     ret = 0;
 
 cleanup:

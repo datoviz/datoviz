@@ -48,7 +48,6 @@
 #define PROBE_REQUEST_ID    1u
 #define PROBE_RING_SEGMENTS 28u
 #define PROBE_SEGMENTS      (PROBE_RING_SEGMENTS + 4u)
-#define COLORMAP_LUT_SIZE   256u
 
 static const float TAU = 6.28318530718f;
 
@@ -98,19 +97,6 @@ static float _clamp01(float value)
 
 
 /**
- * Convert a normalized float channel to an 8-bit channel.
- *
- * @param value normalized channel value
- * @return clamped 8-bit channel
- */
-static uint8_t _u8(float value)
-{
-    return (uint8_t)(255.0f * _clamp01(value) + 0.5f);
-}
-
-
-
-/**
  * Return a deterministic synthetic microscopy-like scalar sample.
  *
  * @param x normalized X coordinate
@@ -151,58 +137,6 @@ static float _sample_field(float x, float y)
     value += 0.42f * expf(-(hot_dx * hot_dx + mirror_dy * mirror_dy) / (2.0f * 0.024f * 0.024f));
 
     return _clamp01(value);
-}
-
-
-
-/**
- * Map one scalar sample to the graphite/cyan/amber release palette.
- *
- * @param value normalized scalar value
- * @return output RGBA8 color
- */
-static DvzColor _probe_colormap(float value)
-{
-    const float v = _clamp01(value);
-    float r = 0.07f;
-    float g = 0.10f;
-    float b = 0.14f;
-
-    if (v < 0.58f)
-    {
-        const float t = v / 0.58f;
-        r = 0.07f + 0.18f * t;
-        g = 0.10f + 0.56f * t;
-        b = 0.14f + 0.66f * t;
-    }
-    else
-    {
-        const float t = (v - 0.58f) / 0.42f;
-        r = 0.25f + 0.75f * t;
-        g = 0.66f + 0.06f * t;
-        b = 0.80f - 0.78f * t;
-    }
-
-    return dvz_color_rgba(_u8(r), _u8(g), _u8(b), 255u);
-}
-
-
-
-/**
- * Fill the custom colormap LUT.
- *
- * @param colors output RGBA8 LUT
- */
-static void _fill_probe_colormap(DvzColor colors[COLORMAP_LUT_SIZE])
-{
-    ANN(colors);
-
-    for (uint32_t i = 0; i < COLORMAP_LUT_SIZE; i++)
-    {
-        const float t =
-            COLORMAP_LUT_SIZE > 1u ? (float)i / (float)(COLORMAP_LUT_SIZE - 1u) : 0.0f;
-        colors[i] = _probe_colormap(t);
-    }
 }
 
 
@@ -638,10 +572,7 @@ static DvzScale* _add_probe_scale(DvzScene* scene)
     dvz_scale_set_domain(scale, 0.0, 1.0);
     dvz_scale_set_view_range(scale, 0.0, 1.0);
 
-    DvzColor colors[COLORMAP_LUT_SIZE] = {0};
-    _fill_probe_colormap(colors);
-    DvzColormap* colormap =
-        dvz_colormap_custom(scene, "graphite_cyan_amber", colors, COLORMAP_LUT_SIZE);
+    DvzColormap* colormap = example_graphite_cyan_colormap(scene);
     if (colormap == NULL)
         return NULL;
     dvz_scale_set_colormap(scale, colormap);
@@ -822,6 +753,9 @@ static void _image_probe_frame(DvzView* win, void* user_data)
 
 int main(int argc, char** argv)
 {
+    const uint32_t frame_count = example_frame_count(argc, argv);
+    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_image_probe");
+
     int ret = 1;
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
@@ -882,7 +816,9 @@ int main(int argc, char** argv)
     dvz_input_subscribe_pointer(router, _image_probe_pointer, &state);
     dvz_view_set_frame_callback(win, _image_probe_frame, &state);
 
-    dvz_app_run(app, example_frame_count(argc, argv));
+    EXAMPLE_CHECK(
+        example_run_with_capture(app, win, frame_count, &capture),
+        "example_run_with_capture() failed");
     ret = 0;
 
 cleanup:

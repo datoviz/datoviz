@@ -230,6 +230,9 @@ static DvzAnnotation* _add_readout(DvzPanel* panel, const vec3 position)
  */
 int main(int argc, char** argv)
 {
+    const uint32_t frame_count = example_frame_count_any(argc, argv);
+    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_annotation_readout");
+
     int ret = 1;
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
@@ -270,7 +273,9 @@ int main(int argc, char** argv)
     DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "annotation_readout");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    dvz_app_run(app, example_frame_count_any(argc, argv));
+    EXAMPLE_CHECK(
+        example_run_with_capture(app, win, frame_count, &capture),
+        "example_run_with_capture() failed");
     ret = 0;
 
 cleanup:
