@@ -77,6 +77,9 @@ typedef struct LinkedProbeState
     bool cursor_valid;
     double cursor_x;
     double cursor_y;
+    bool probe_valid;
+    float probe_x;
+    float probe_y;
     double last_raw;
     double last_derived;
     bool last_hit;
@@ -428,11 +431,24 @@ static bool _fill_probe_marker(
     if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
         return false;
 
+    double x0 = 0.0;
+    double x1 = 0.0;
+    double y0 = 0.0;
+    double y1 = 0.0;
+    if (!dvz_panel_visible_domain(panel, DVZ_DIM_X, &x0, &x1) ||
+        !dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y0, &y1) || fabs(x1 - x0) < 1e-12 ||
+        fabs(y1 - y0) < 1e-12)
+    {
+        return false;
+    }
+
     const DvzColor marker_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
-    const float gap_x = 6.0f / plot.width;
-    const float gap_y = 6.0f / plot.height;
-    const float arm_x = 20.0f / plot.width;
-    const float arm_y = 20.0f / plot.height;
+    const float data_per_px_x = (float)(fabs(x1 - x0) / (double)plot.width);
+    const float data_per_px_y = (float)(fabs(y1 - y0) / (double)plot.height);
+    const float gap_x = 6.0f * data_per_px_x;
+    const float gap_y = 6.0f * data_per_px_y;
+    const float arm_x = 20.0f * data_per_px_x;
+    const float arm_y = 20.0f * data_per_px_y;
     const vec3 cross_starts[4] = {
         {x - arm_x, y, 0.03f},
         {x + gap_x, y, 0.03f},
@@ -459,8 +475,8 @@ static bool _fill_probe_marker(
         widths[i] = 2.4f;
     }
 
-    const float rx = 12.0f / plot.width;
-    const float ry = 12.0f / plot.height;
+    const float rx = 12.0f * data_per_px_x;
+    const float ry = 12.0f * data_per_px_y;
     for (uint32_t i = 0; i < PROBE_RING_SEGMENTS; i++)
     {
         const uint32_t k = i + 4u;
@@ -927,6 +943,10 @@ static void _set_probe(LinkedProbeState* state, float x, float y)
     if (state == NULL)
         return;
 
+    state->probe_valid = true;
+    state->probe_x = x;
+    state->probe_y = y;
+
     (void)_update_probe_marker(&state->source_marker, x, y);
     (void)_update_probe_marker(&state->derived_marker, x, y);
 
@@ -1002,6 +1022,11 @@ static void _linked_probe_frame(DvzView* win, void* user_data)
         }
     }
 
+    if (state->probe_valid)
+    {
+        (void)_update_probe_marker(&state->source_marker, state->probe_x, state->probe_y);
+        (void)_update_probe_marker(&state->derived_marker, state->probe_x, state->probe_y);
+    }
     _queue_probe(state);
 }
 
