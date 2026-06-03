@@ -105,8 +105,8 @@ Implemented:
    styling via `dvz_point_set_style()`, GLSL native point-coordinate rendering, WGSL instanced
    quads, and GPU circular picking.
 3. `marker`: public `dvz_marker()`, code-SDF shapes `disc`, `square`, `triangle`, `diamond`,
-   `cross`, and `ring`, public `position`/`color`/`diameter`/`angle`/`shape`, marker style API, GLSL
-   marker rendering, WGSL point-like lowering, and GPU bounding-box picking.
+   `cross`, `ring`, and `target`, public `position`/`color`/`diameter`/`angle`/`shape`, marker
+   style API, GLSL marker rendering, WGSL point-like lowering, and GPU bounding-box picking.
 4. `segment`: public `dvz_segment()`, `position_start`/`position_end` endpoint attributes,
    constant/per-item `stroke_width`, RGBA color, analytic GLSL stroke quads, non-arrow caps, cap
    validation/API, and GPU item picking.

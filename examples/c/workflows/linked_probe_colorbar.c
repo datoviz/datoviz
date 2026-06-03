@@ -47,8 +47,6 @@
 #define PROBE_X             0.68f
 #define PROBE_Y             0.56f
 #define PROBE_REQUEST_ID    11u
-#define PROBE_RING_SEGMENTS 28u
-#define PROBE_SEGMENTS      (PROBE_RING_SEGMENTS + 4u)
 
 static const float TAU = 6.28318530718f;
 
@@ -61,8 +59,7 @@ static const float TAU = 6.28318530718f;
 typedef struct ProbeMarker
 {
     DvzPanel* panel;
-    DvzVisual* segments;
-    DvzVisual* dot;
+    DvzVisual* visual;
 } ProbeMarker;
 
 
@@ -77,9 +74,6 @@ typedef struct LinkedProbeState
     bool cursor_valid;
     double cursor_x;
     double cursor_y;
-    bool probe_valid;
-    float probe_x;
-    float probe_y;
     double last_raw;
     double last_derived;
     bool last_hit;
@@ -406,98 +400,6 @@ static bool _data_to_figure(DvzPanel* panel, float x, float y, float out[2])
 
 
 /**
- * Fill one crosshair marker in data coordinates.
- *
- * @param panel target panel
- * @param x normalized data X
- * @param y normalized data Y
- * @param starts output segment starts
- * @param ends output segment ends
- * @param colors output segment colors
- * @param widths output segment widths
- * @return true when marker geometry was filled
- */
-static bool _fill_probe_marker(
-    DvzPanel* panel, float x, float y, vec3 starts[PROBE_SEGMENTS], vec3 ends[PROBE_SEGMENTS],
-    DvzColor colors[PROBE_SEGMENTS], float widths[PROBE_SEGMENTS])
-{
-    ANN(panel);
-    ANN(starts);
-    ANN(ends);
-    ANN(colors);
-    ANN(widths);
-
-    DvzRect plot = {0};
-    if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
-        return false;
-
-    double x0 = 0.0;
-    double x1 = 0.0;
-    double y0 = 0.0;
-    double y1 = 0.0;
-    if (!dvz_panel_visible_domain(panel, DVZ_DIM_X, &x0, &x1) ||
-        !dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y0, &y1) || fabs(x1 - x0) < 1e-12 ||
-        fabs(y1 - y0) < 1e-12)
-    {
-        return false;
-    }
-
-    const DvzColor marker_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
-    const float data_per_px_x = (float)(fabs(x1 - x0) / (double)plot.width);
-    const float data_per_px_y = (float)(fabs(y1 - y0) / (double)plot.height);
-    const float gap_x = 6.0f * data_per_px_x;
-    const float gap_y = 6.0f * data_per_px_y;
-    const float arm_x = 20.0f * data_per_px_x;
-    const float arm_y = 20.0f * data_per_px_y;
-    const vec3 cross_starts[4] = {
-        {x - arm_x, y, 0.03f},
-        {x + gap_x, y, 0.03f},
-        {x, y - arm_y, 0.03f},
-        {x, y + gap_y, 0.03f},
-    };
-    const vec3 cross_ends[4] = {
-        {x - gap_x, y, 0.03f},
-        {x + arm_x, y, 0.03f},
-        {x, y - gap_y, 0.03f},
-        {x, y + arm_y, 0.03f},
-    };
-
-    for (uint32_t i = 0; i < 4u; i++)
-    {
-        starts[i][0] = cross_starts[i][0];
-        starts[i][1] = cross_starts[i][1];
-        starts[i][2] = cross_starts[i][2];
-        ends[i][0] = cross_ends[i][0];
-        ends[i][1] = cross_ends[i][1];
-        ends[i][2] = cross_ends[i][2];
-        colors[i] = marker_color;
-        colors[i].a = 245u;
-        widths[i] = 2.4f;
-    }
-
-    const float rx = 12.0f * data_per_px_x;
-    const float ry = 12.0f * data_per_px_y;
-    for (uint32_t i = 0; i < PROBE_RING_SEGMENTS; i++)
-    {
-        const uint32_t k = i + 4u;
-        const float a0 = TAU * (float)i / (float)PROBE_RING_SEGMENTS;
-        const float a1 = TAU * (float)(i + 1u) / (float)PROBE_RING_SEGMENTS;
-        starts[k][0] = x + rx * cosf(a0);
-        starts[k][1] = y + ry * sinf(a0);
-        starts[k][2] = 0.03f;
-        ends[k][0] = x + rx * cosf(a1);
-        ends[k][1] = y + ry * sinf(a1);
-        ends[k][2] = 0.03f;
-        colors[k] = marker_color;
-        colors[k].a = 225u;
-        widths[k] = 2.2f;
-    }
-    return true;
-}
-
-
-
-/**
  * Move one marker to a normalized data position.
  *
  * @param marker marker to update
@@ -507,44 +409,16 @@ static bool _fill_probe_marker(
  */
 static bool _update_probe_marker(ProbeMarker* marker, float x, float y)
 {
-    if (marker == NULL || marker->panel == NULL || marker->segments == NULL ||
-        marker->dot == NULL)
-    {
-        return false;
-    }
-
-    vec3 starts[PROBE_SEGMENTS] = {{0}};
-    vec3 ends[PROBE_SEGMENTS] = {{0}};
-    vec3 visual_starts[PROBE_SEGMENTS] = {{0}};
-    vec3 visual_ends[PROBE_SEGMENTS] = {{0}};
-    DvzColor colors[PROBE_SEGMENTS] = {{0}};
-    float widths[PROBE_SEGMENTS] = {0};
-    if (!_fill_probe_marker(marker->panel, x, y, starts, ends, colors, widths))
+    if (marker == NULL || marker->panel == NULL || marker->visual == NULL)
         return false;
 
-    int rc = dvz_panel_data_to_visual_positions(
-        marker->panel, (const float*)starts, (float*)visual_starts, PROBE_SEGMENTS);
+    vec3 marker_data[1] = {{x, y, 0.04f}};
+    vec3 marker_visual[1] = {{0}};
+    const int rc = dvz_panel_data_to_visual_positions(
+        marker->panel, (const float*)marker_data, (float*)marker_visual, 1);
     if (rc != 0)
         return false;
-    rc = dvz_panel_data_to_visual_positions(
-        marker->panel, (const float*)ends, (float*)visual_ends, PROBE_SEGMENTS);
-    if (rc != 0)
-        return false;
-
-    DvzVisualDataUpdate segment_updates[] = {
-        {.attr_name = "position_start", .data = visual_starts, .item_count = PROBE_SEGMENTS},
-        {.attr_name = "position_end", .data = visual_ends, .item_count = PROBE_SEGMENTS},
-    };
-    if (dvz_visual_set_data_many(marker->segments, segment_updates, 2) != 0)
-        return false;
-
-    vec3 dot_data[1] = {{x, y, 0.04f}};
-    vec3 dot_visual[1] = {{0}};
-    rc = dvz_panel_data_to_visual_positions(
-        marker->panel, (const float*)dot_data, (float*)dot_visual, 1);
-    if (rc != 0)
-        return false;
-    return dvz_visual_set_data(marker->dot, "position", dot_visual, 1) == 0;
+    return dvz_visual_set_data(marker->visual, "position", marker_visual, 1) == 0;
 }
 
 
@@ -564,68 +438,37 @@ static bool _add_probe_marker(DvzScene* scene, DvzPanel* panel, ProbeMarker* out
     ANN(out);
 
     ProbeMarker marker = {.panel = panel};
-    vec3 starts[PROBE_SEGMENTS] = {{0}};
-    vec3 ends[PROBE_SEGMENTS] = {{0}};
-    vec3 visual_starts[PROBE_SEGMENTS] = {{0}};
-    vec3 visual_ends[PROBE_SEGMENTS] = {{0}};
-    DvzColor colors[PROBE_SEGMENTS] = {{0}};
-    float widths[PROBE_SEGMENTS] = {0};
-    if (!_fill_probe_marker(panel, PROBE_X, PROBE_Y, starts, ends, colors, widths))
+    marker.visual = dvz_marker(scene, 0);
+    if (marker.visual == NULL)
         return false;
-
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)starts, (float*)visual_starts, PROBE_SEGMENTS);
+    vec3 marker_data[1] = {{PROBE_X, PROBE_Y, 0.04f}};
+    vec3 marker_visual[1] = {{0}};
+    int rc =
+        dvz_panel_data_to_visual_positions(panel, (const float*)marker_data, (float*)marker_visual, 1);
     if (rc != 0)
         return false;
-    rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)ends, (float*)visual_ends, PROBE_SEGMENTS);
-    if (rc != 0)
-        return false;
-
-    marker.segments = dvz_segment(scene, 0);
-    if (marker.segments == NULL)
-        return false;
+    DvzColor marker_color[1] = {example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING)};
+    marker_color[0].a = 245u;
+    float marker_diameter[1] = {34.0f};
+    float marker_angle[1] = {0.0f};
+    uint32_t marker_shape[1] = {DVZ_MARKER_SHAPE_TARGET};
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position_start", .data = visual_starts, .item_count = PROBE_SEGMENTS},
-        {.attr_name = "position_end", .data = visual_ends, .item_count = PROBE_SEGMENTS},
-        {.attr_name = "color", .data = colors, .item_count = PROBE_SEGMENTS},
-        {.attr_name = "stroke_width", .data = widths, .item_count = PROBE_SEGMENTS},
+        {.attr_name = "position", .data = marker_visual, .item_count = 1},
+        {.attr_name = "color", .data = marker_color, .item_count = 1},
+        {.attr_name = "diameter", .data = marker_diameter, .item_count = 1},
+        {.attr_name = "angle", .data = marker_angle, .item_count = 1},
+        {.attr_name = "shape", .data = marker_shape, .item_count = 1},
     };
-    if (dvz_visual_set_data_many(marker.segments, updates, 4) != 0)
+    if (dvz_visual_set_data_many(marker.visual, updates, 5) != 0)
         return false;
-    if (dvz_segment_set_caps(marker.segments, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) != 0)
+    DvzMarkerStyle marker_style = dvz_marker_style();
+    marker_style.aspect = DVZ_SHAPE_ASPECT_FILLED;
+    marker_style.stroke_width = 0.0f;
+    if (dvz_marker_set_style(marker.visual, &marker_style) != 0)
         return false;
-    if (dvz_visual_set_depth_test(marker.segments, false) != 0)
+    if (dvz_visual_set_depth_test(marker.visual, false) != 0)
         return false;
-    if (dvz_panel_add_visual(panel, marker.segments, NULL) != 0)
-        return false;
-
-    marker.dot = dvz_point(scene, 0);
-    if (marker.dot == NULL)
-        return false;
-    vec3 dot_data[1] = {{PROBE_X, PROBE_Y, 0.04f}};
-    vec3 dot_visual[1] = {{0}};
-    rc = dvz_panel_data_to_visual_positions(panel, (const float*)dot_data, (float*)dot_visual, 1);
-    if (rc != 0)
-        return false;
-    DvzColor dot_color[1] = {example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING)};
-    dot_color[0].a = 245u;
-    float dot_diameter[1] = {8.0f};
-    DvzVisualDataUpdate dot_updates[] = {
-        {.attr_name = "position", .data = dot_visual, .item_count = 1},
-        {.attr_name = "color", .data = dot_color, .item_count = 1},
-        {.attr_name = "diameter", .data = dot_diameter, .item_count = 1},
-    };
-    if (dvz_visual_set_data_many(marker.dot, dot_updates, 3) != 0)
-        return false;
-    DvzPointStyleDesc point_style = dvz_point_style_desc();
-    point_style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    point_style.stroke_width = 0.0f;
-    if (dvz_point_set_style(marker.dot, &point_style) != 0)
-        return false;
-    if (dvz_visual_set_depth_test(marker.dot, false) != 0)
-        return false;
-    if (dvz_panel_add_visual(panel, marker.dot, NULL) != 0)
+    if (dvz_panel_add_visual(panel, marker.visual, NULL) != 0)
         return false;
 
     *out = marker;
@@ -943,10 +786,6 @@ static void _set_probe(LinkedProbeState* state, float x, float y)
     if (state == NULL)
         return;
 
-    state->probe_valid = true;
-    state->probe_x = x;
-    state->probe_y = y;
-
     (void)_update_probe_marker(&state->source_marker, x, y);
     (void)_update_probe_marker(&state->derived_marker, x, y);
 
@@ -1022,11 +861,6 @@ static void _linked_probe_frame(DvzView* win, void* user_data)
         }
     }
 
-    if (state->probe_valid)
-    {
-        (void)_update_probe_marker(&state->source_marker, state->probe_x, state->probe_y);
-        (void)_update_probe_marker(&state->derived_marker, state->probe_x, state->probe_y);
-    }
     _queue_probe(state);
 }
 

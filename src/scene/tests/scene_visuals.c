@@ -1132,24 +1132,31 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     AT(visual != NULL);
     AT(visual->type == DVZ_VISUAL_TYPE_MARKER);
 
-    vec3 positions[3] = {
-        {-0.35f, 0.0f, 0.0f},
-        {+0.00f, 0.0f, 0.0f},
-        {+0.35f, 0.0f, 0.0f},
+    vec3 positions[4] = {
+        {-0.45f, 0.0f, 0.0f},
+        {-0.15f, 0.0f, 0.0f},
+        {+0.15f, 0.0f, 0.0f},
+        {+0.45f, 0.0f, 0.0f},
     };
-    DvzColor colors[3] = {{255, 80, 40, 255}, {80, 255, 120, 255}, {80, 120, 255, 255}};
-    float sizes[3] = {18.0f, 22.0f, 26.0f};
-    float angles[3] = {0.0f, 0.25f, 0.5f};
-    uint32_t shapes[3] = {
+    DvzColor colors[4] = {
+        {255, 80, 40, 255},
+        {80, 255, 120, 255},
+        {80, 120, 255, 255},
+        {255, 210, 64, 255},
+    };
+    float sizes[4] = {18.0f, 22.0f, 26.0f, 30.0f};
+    float angles[4] = {0.0f, 0.25f, 0.5f, 0.0f};
+    uint32_t shapes[4] = {
         DVZ_MARKER_SHAPE_DISC,
         DVZ_MARKER_SHAPE_DIAMOND,
         DVZ_MARKER_SHAPE_RING,
+        DVZ_MARKER_SHAPE_TARGET,
     };
-    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
-    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
-    AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
-    AT(dvz_visual_set_data(visual, "angle", angles, 3) == 0);
-    AT(dvz_visual_set_data(visual, "shape", shapes, 3) == 0);
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 4) == 0);
+    AT(dvz_visual_set_data(visual, "angle", angles, 4) == 0);
+    AT(dvz_visual_set_data(visual, "shape", shapes, 4) == 0);
     AT(visual->attr_count == 5);
     AT(dvz_marker_set_style(
            visual,
@@ -1207,7 +1214,7 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
         else if (command->type == DVZ_DRP2_COMMAND_DRAW)
         {
             found_draw = true;
-            AT(command->u.draw.vertex_count == 3);
+            AT(command->u.draw.vertex_count == 4);
             AT(command->u.draw.instance_count == 1);
         }
     }

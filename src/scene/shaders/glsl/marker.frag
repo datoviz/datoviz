@@ -43,6 +43,15 @@ float markerDistance(vec2 p, uint shape)
         return min(sdBox(p, vec2(0.28, 1.0)), sdBox(p, vec2(1.0, 0.28)));
     if (shape == 5u)
         return abs(length(p) - 0.62) - 0.18;
+    if (shape == 6u)
+    {
+        float ring = abs(length(p) - 0.48) - 0.08;
+        float h = sdBox(p, vec2(1.0, 0.045));
+        float v = sdBox(p, vec2(0.045, 1.0));
+        float inner = length(p) - 0.24;
+        float crosshair = max(min(h, v), -inner);
+        return min(ring, crosshair);
+    }
     return length(p) - 1.0;
 }
 

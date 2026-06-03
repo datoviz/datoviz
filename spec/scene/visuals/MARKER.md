@@ -21,7 +21,8 @@ The implemented path supports:
 2. dense `position`, `color`, public `diameter`, `angle`, and `shape` attributes, where
    `diameter` aliases the current internal `size` slot;
 3. `shape` values stored as `uint32_t` `DvzMarkerShape` values;
-4. built-in code-SDF shapes `disc`, `square`, `triangle`, `diamond`, `cross`, and `ring`;
+4. built-in code-SDF shapes `disc`, `square`, `triangle`, `diamond`, `cross`, `ring`, and
+   `target`;
 5. `dvz_marker_style()` and `dvz_marker_set_style()` with `edge_color`, `stroke_width`, and
    exclusive `filled`/`stroke`/`outline` aspect semantics;
 6. GLSL/Vulkan native point-list lowering with marker SDF coverage;
@@ -95,9 +96,9 @@ family spec is revised.
 Shape is visual-wide by default in the target `code` mode.
 Per-item shape is supported via the `shape` attribute (see Per-Item Attributes).
 
-Status on 2026-05-17: the active first slice implements the subset `disc`, `square`, `triangle`,
-`diamond`, `cross`, and `ring`, and uses a dense per-item `shape` attribute instead of a visual-wide
-shape parameter.
+Status on 2026-06-03: the active slice implements the subset `disc`, `square`, `triangle`,
+`diamond`, `cross`, `ring`, and `target`, and uses a dense per-item `shape` attribute instead of a
+visual-wide shape parameter.
 
 
 ## Per-Item Attributes
