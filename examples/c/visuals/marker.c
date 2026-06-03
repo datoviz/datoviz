@@ -169,6 +169,8 @@ _add_marker_row(
     };
     if (dvz_visual_set_data_many(visual, updates, 5) != 0)
         return false;
+    if (dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED) != 0)
+        return false;
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
 }
 
