@@ -104,8 +104,8 @@ The main remaining polish, promotion, or feature gaps are:
 | --- | --- | --- |
 | `webgpu_browser_subset` | DRP2 WebGPU subset, WGSL, browser runtime | Point, primitive, image, and basic mesh only; visible experimental status. |
 | `animation_video_export` | frame callbacks, deterministic capture/video | Keep simple; defer transition/camera-path helper polish. |
-| `datetime_axis` | UTC datetime tick formatting, data-to-timestamp axis mapping, duration scale bar | Planned feature proof lives in `examples/c/features/datetime_axis.c` once the datetime API lands; not a v0.4 release blocker. |
-| `splat_cloud` | retained splat visual, blend/depth policy, deterministic capture | Include only if the visual lands cleanly; not a release blocker. |
+| `datetime_axis` | UTC datetime tick formatting, data-to-timestamp axis mapping, duration scale bar | Experimental feature proof lives in `examples/c/features/datetime_axis.c`; not a v0.4 release blocker. |
+| `splat_cloud` | retained splat visual, blend/depth policy, deterministic capture | Experimental visual proof lives in `examples/c/visuals/splat.c`; not a release blocker. |
 | `cpu_fluid_or_particles` | dynamic image/point/path updates, panzoom, colorbar | CPU-side stretch only; GPU compute remains later. |
 | `dense_streaming_2d` | path/pixel updates, axes/text, linked x panzoom | Pick one DAQ/physiology example if time allows. |
 | `spatial_omics` | large point/pixel, basic selection, color mapping | Useful stress/example lane; napari integration remains external. |

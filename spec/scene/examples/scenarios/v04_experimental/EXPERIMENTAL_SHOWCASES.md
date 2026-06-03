@@ -23,11 +23,18 @@ bounded export. Defer camera-path authoring helpers and rich transition APIs unl
 example needs them.
 
 
+## `datetime_axis`
+
+Experimental datetime-axis proof over compact numeric data coordinates and UTC tick labels. The
+current public C entry is `examples/c/features/datetime_axis.c`; keep it visibly experimental until
+datetime coordinate and formatting policy is stable.
+
+
 ## `splat_cloud`
 
-Optional dense translucent point-cloud showcase if a retained splat visual lands cleanly. The first
-slice needs center/radius/color/opacity attributes, a documented blend/depth policy, deterministic
-fixture coverage, and one capture. Full Gaussian-splat asset pipelines remain later.
+Optional dense translucent point-cloud showcase over the retained splat visual. The current public C
+entry is `examples/c/visuals/splat.c`; keep it experimental until blend/depth policy and fixture
+coverage are stable. Full Gaussian-splat asset pipelines remain later.
 
 
 ## `cpu_fluid_or_particles`

@@ -3,14 +3,13 @@
 This catalog maps scenario IDs to their owning bundle after the examples reorganization. Use it to
 find a scenario quickly; use [PLANNING.md](PLANNING.md) for staging decisions and readiness.
 
-As of 2026-06-02, the public C manifest has runnable `v0.4 required` entries for
-`path_axes_2d`, `linked_panels_axes_panzoom`, `scale_bar`, `scalebar_units`,
+As of 2026-06-03, the public C manifest has runnable `v0.4 required` entries for
+`point_2d`, `path_axes_2d`, `linked_panels_axes_panzoom`, `scale_bar`, `scalebar_units`,
 `scalebar_measurement_workflow`, `colorbar`, `annotation_readout`, `image_probe`,
-`marker_picking`, `volume`, `composite_polygon`, `composite_graph`, `protein_arcball_viewer`,
-`showcase_wind_field`, `showcase_gpu_particle_smoke`, and `textured_terrain_or_planet`.
-The remaining required scenarios without a public C manifest entry are `point_2d`,
-`linked_panels_probe_colorbar`, `sphere_impostor`, `brain_volume_mesh`, and
-`dense_point_cloud_edl`.
+`marker_picking`, `sphere_impostor`, `volume`, `composite_polygon`, `composite_graph`,
+`protein_arcball_viewer`, `showcase_wind_field`, `showcase_gpu_particle_smoke`, and
+`textured_terrain_or_planet`. The remaining required scenarios without a public C manifest entry
+are `linked_panels_probe_colorbar`, `brain_volume_mesh`, and `dense_point_cloud_edl`.
 
 | Scenario ID | Stage | Bundle |
 | --- | --- | --- |
@@ -37,6 +36,7 @@ The remaining required scenarios without a public C manifest entry are `point_2d
 | `composite_graph` | `v0.4 required` | [scenarios/v04_required/COMPOSITES.md](scenarios/v04_required/COMPOSITES.md) |
 | `webgpu_browser_subset` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
 | `animation_video_export` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
+| `datetime_axis` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
 | `splat_cloud` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
 | `cpu_fluid_or_particles` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
 | `dense_streaming_2d` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
