@@ -516,6 +516,30 @@ examples:
       card: section
       status_label: experimental
 
+  - id: point_cloud
+    title: Point Cloud
+    stage: v0.4_required
+    lane: showcases
+    source: examples/c/showcases/point_cloud.c
+    validation: smoke+screenshot
+    dataset:
+      name: RESEPI GENM2X colorized benchmark point cloud
+      source: https://lidarpayload.com/sample-data/
+      license: Public RESEPI sample data; usage follows the source site's terms
+      preprocessing: python tools/data/prepare_point_cloud.py
+      cache_prepared_path: .cache/datoviz/examples/point_cloud/prepared
+    gallery:
+      card: section
+      status_label: supported
+    features:
+      - pixel
+      - dense-point-cloud
+      - direct-color
+      - eye-dome-lighting
+      - gui
+      - fly
+      - capture
+
   - id: textured_terrain_or_planet
     title: Textured Planets
     stage: v0.4_required

@@ -164,6 +164,7 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(composites graph composites/graph.c)
 
     dvz_add_example(showcases gpu_particle_smoke showcases/gpu_particle_smoke.c)
+    dvz_add_example(showcases point_cloud showcases/point_cloud.c)
     dvz_add_example(showcases textured_planet showcases/textured_planet.c)
     dvz_add_example(showcases wind_field showcases/wind_field.c)
 

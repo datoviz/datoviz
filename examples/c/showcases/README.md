@@ -7,5 +7,6 @@ are allowed when stated clearly. Real-dataset examples with provenance belong in
 Current public showcase seeds:
 
 - `gpu_particle_smoke.c`
+- `point_cloud.c`
 - `textured_planet.c`
 - `wind_field.c`
