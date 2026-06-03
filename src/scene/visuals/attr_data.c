@@ -226,6 +226,9 @@ int dvz_visual_set_data(
     uint32_t item_size = 0;
     if (!_attr_supported(visual->type, attr_name, &item_size))
         return -1;
+    item_size = _visual_attr_item_size(visual, attr_name);
+    if (item_size == 0)
+        return -1;
     if (!_visual_attr_count_consistent(visual, attr_name, item_count))
         return -1;
     if (
@@ -470,6 +473,12 @@ int dvz_visual_set_data_many(
             dvz_free(prepared);
             return -1;
         }
+        item_size = _visual_attr_item_size(visual, update->attr_name);
+        if (item_size == 0)
+        {
+            dvz_free(prepared);
+            return -1;
+        }
 
         if (i == 0)
             batch_item_count = update->item_count;
@@ -649,6 +658,9 @@ int dvz_visual_set_data_range(
 
     uint32_t item_size = 0;
     if (!_attr_supported(visual->type, attr_name, &item_size))
+        return -1;
+    item_size = _visual_attr_item_size(visual, attr_name);
+    if (item_size == 0)
         return -1;
 
     DvzVisualAttr* attr = _attr_get_or_create(visual, attr_name, item_size);

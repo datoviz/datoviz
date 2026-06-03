@@ -144,6 +144,8 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_blended_mesh_occlusion_contracts);
     TST_CASE(test_scene_visual_attr_source_and_mutability_metadata);
     TST_CASE(test_scene_visual_data_view);
+    TST_CASE(test_scene_visual_scalar_color_attr_format);
+    TST_CASE(test_scene_scalar_color_emits_rgba_upload);
     TST_CASE(test_scene_visual_bounds_point_and_range_update);
     TST_CASE(test_scene_visual_bounds_family_reducers);
     TST_CASE(test_scene_visual_bounds_mesh_instance_transform);

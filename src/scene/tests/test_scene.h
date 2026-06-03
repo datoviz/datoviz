@@ -742,6 +742,10 @@ int test_scene_visual_attr_source_and_mutability_metadata(TstContext* suite, con
 
 int test_scene_visual_data_view(TstContext* suite, const TstCase* item);
 
+int test_scene_visual_scalar_color_attr_format(TstContext* suite, const TstCase* item);
+
+int test_scene_scalar_color_emits_rgba_upload(TstContext* suite, const TstCase* item);
+
 int test_scene_visual_bounds_point_and_range_update(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_bounds_family_reducers(TstContext* suite, const TstCase* item);

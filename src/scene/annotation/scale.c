@@ -30,6 +30,7 @@
 #include "domain/field_internal.h"
 #include "sample_profile.h"
 #include "scale_internal.h"
+#include "visuals/_visual_internal.h"
 
 
 
@@ -117,6 +118,25 @@ void _scene_mark_scale_dirty(DvzScale* scale)
         {
             _scene_texture_bump_version(visual);
             _scene_notify_visual_changed(visual);
+        }
+        if (
+            strcmp(_visual_family_state(visual)->scale_slot, "color") == 0 &&
+            (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL))
+        {
+            int attr_idx = _attr_index(visual, "color");
+            if (attr_idx >= 0)
+            {
+                DvzVisualAttr* attr = &visual->attrs[attr_idx];
+                if (
+                    attr->format == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32 && attr->data != NULL &&
+                    attr->item_count > 0)
+                {
+                    attr->dirty_first_item = 0;
+                    attr->dirty_item_count = attr->item_count;
+                    _visual_bump_version(&attr->version);
+                    _scene_notify_visual_changed(visual);
+                }
+            }
         }
     }
     for (uint32_t i = 0; i < scene->colorbar_count; i++)

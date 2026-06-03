@@ -1474,6 +1474,7 @@ struct DvzVisualAttr
     uint64_t buffer_byte_offset;
     uint64_t item_count;
     uint32_t item_size;         /* bytes per item */
+    DvzVisualAttrFormat format;
     DvzVisualAttrSource source;
     DvzVisualAttrMutability mutability;
     uint64_t dirty_first_item;  /* first dirty item index */

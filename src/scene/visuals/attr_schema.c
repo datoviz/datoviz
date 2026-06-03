@@ -74,6 +74,93 @@ uint32_t _attr_item_size(DvzVisualType type, const char* name)
 
 
 /**
+ * Return the default retained storage format for one visual attribute.
+ *
+ * @param type the visual type
+ * @param name the attribute name
+ * @return the default format
+ */
+DvzVisualAttrFormat _attr_default_format(DvzVisualType type, const char* name)
+{
+    ANN(name);
+    name = _attr_storage_name(type, name);
+    if (strcmp(name, "color") == 0 && _attr_item_size(type, name) == sizeof(DvzColor))
+        return DVZ_VISUAL_ATTR_FORMAT_RGBA_U8;
+    return DVZ_VISUAL_ATTR_FORMAT_DEFAULT;
+}
+
+
+
+/**
+ * Return whether one retained attribute format is supported.
+ *
+ * @param type the visual type
+ * @param name the attribute name
+ * @param format the requested format
+ * @return whether the format is supported
+ */
+bool _attr_format_supported(DvzVisualType type, const char* name, DvzVisualAttrFormat format)
+{
+    ANN(name);
+    name = _attr_storage_name(type, name);
+    if (format == DVZ_VISUAL_ATTR_FORMAT_DEFAULT)
+        return _attr_item_size(type, name) != 0;
+    if (format == DVZ_VISUAL_ATTR_FORMAT_RGBA_U8)
+        return strcmp(name, "color") == 0 && _attr_item_size(type, name) == sizeof(DvzColor);
+    if (format == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32)
+    {
+        return strcmp(name, "color") == 0 &&
+               (type == DVZ_VISUAL_TYPE_POINT || type == DVZ_VISUAL_TYPE_PIXEL);
+    }
+    return false;
+}
+
+
+
+/**
+ * Return the byte size of one attribute item in a requested format.
+ *
+ * @param type the visual type
+ * @param name the attribute name
+ * @param format the requested format
+ * @return item byte size, or zero when unsupported
+ */
+uint32_t _attr_item_size_for_format(
+    DvzVisualType type, const char* name, DvzVisualAttrFormat format)
+{
+    ANN(name);
+    if (format == DVZ_VISUAL_ATTR_FORMAT_DEFAULT)
+        format = _attr_default_format(type, name);
+    if (!_attr_format_supported(type, name, format))
+        return 0;
+    if (format == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32)
+        return sizeof(float);
+    return _attr_item_size(type, name);
+}
+
+
+
+/**
+ * Return the effective byte size of one visual attribute item.
+ *
+ * @param visual the visual
+ * @param name the attribute name
+ * @return item byte size, or zero when unsupported
+ */
+uint32_t _visual_attr_item_size(const DvzVisual* visual, const char* name)
+{
+    ANN(visual);
+    ANN(name);
+    name = _attr_storage_name(visual->type, name);
+    int idx = _attr_index(visual, name);
+    DvzVisualAttrFormat format = idx >= 0 ? visual->attrs[idx].format :
+                                            _attr_default_format(visual->type, name);
+    return _attr_item_size_for_format(visual->type, name, format);
+}
+
+
+
+/**
  * Validate that one attribute is supported by a visual family.
  *
  * @param type the visual type
@@ -193,6 +280,7 @@ DvzVisualAttr* _attr_get_or_create(DvzVisual* visual, const char* name, uint32_t
     DvzVisualAttr* attr = &visual->attrs[visual->attr_count++];
     dvz_strlcpy(attr->name, name, sizeof(attr->name));
     attr->item_size = item_size;
+    attr->format = _attr_default_format(visual->type, name);
     attr->source = DVZ_VISUAL_ATTR_SOURCE_PER_ITEM;
     attr->mutability = DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC;
     return attr;

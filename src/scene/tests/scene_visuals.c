@@ -2873,6 +2873,169 @@ int test_scene_visual_data_view(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Verify scalar color attribute format metadata and retained dense views.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_scalar_color_attr_format(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
+
+    AT(dvz_visual_attr_format(point, "color") == DVZ_VISUAL_ATTR_FORMAT_RGBA_U8);
+    AT(dvz_visual_attr_format(point, "position") == DVZ_VISUAL_ATTR_FORMAT_DEFAULT);
+    AT(dvz_visual_set_attr_format(
+           point, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32) == 0);
+    AT(dvz_visual_attr_format(point, "color") == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32);
+
+    vec3 positions[2] = {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}};
+    float scalars[2] = {0.25f, 0.75f};
+    float sizes[2] = {6.0f, 12.0f};
+    AT(dvz_visual_set_data(point, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(point, "color", scalars, 2) == 0);
+    AT(dvz_visual_set_data(point, "diameter", sizes, 2) == 0);
+
+    DvzVisualDataView view = {0};
+    AT(dvz_visual_data(point, "color", &view) == 0);
+    AT(view.item_count == 2);
+    AT(view.item_size == sizeof(float));
+    const float* retained = view.data;
+    AT(retained[0] == 0.25f);
+    AT(retained[1] == 0.75f);
+
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        dvz_visual_set_attr_format(point, "color", DVZ_VISUAL_ATTR_FORMAT_RGBA_U8) == -1);
+    AT(_captured_log_contains(suite, "format cannot change after payload attachment"));
+
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        dvz_visual_set_attr_format(mesh, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32) == -1);
+    AT(_captured_log_contains(suite, "does not support format"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify scalar point/pixel color data emits the RGBA buffer expected by current pipelines.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_scalar_color_emits_rgba_upload(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* pixel = dvz_pixel(scene, 0);
+    ANN(pixel);
+
+    const uint32_t N = 4;
+    vec3 positions[4] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {-0.5f, 0.5f, 0.0f},
+        {0.5f, 0.5f, 0.0f},
+    };
+    float values[4] = {0.0f, 0.25f, 0.75f, 1.0f};
+    float sizes[4] = {4.0f, 4.0f, 4.0f, 4.0f};
+
+    AT(dvz_visual_set_attr_format(pixel, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32) == 0);
+    AT(dvz_visual_set_data(pixel, "position", positions, N) == 0);
+    AT(dvz_visual_set_data(pixel, "color", values, N) == 0);
+    AT(dvz_visual_set_data(pixel, "pixel_size", sizes, N) == 0);
+
+    DvzVisualDataView view = {0};
+    AT(dvz_visual_data(pixel, "color", &view) == 0);
+    AT(view.item_size == sizeof(float));
+
+    DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_GRAY);
+    ANN(colormap);
+    DvzScale* scale =
+        dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
+                            .kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    dvz_scale_set_colormap(scale, colormap);
+    AT(dvz_visual_set_scale(pixel, "color", scale) == 0);
+    AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool found_color_upload = false;
+    DvzColor expected_first = {0};
+    DvzColor expected_last = {0};
+    AT(dvz_colormap_sample(colormap, 0.0, &expected_first));
+    AT(dvz_colormap_sample(colormap, 1.0, &expected_last));
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_WRITE_BUFFER)
+            continue;
+        const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
+        if (label == NULL || strstr(label, "color") == NULL)
+            continue;
+        found_color_upload = true;
+        AT(cmd->u.write_buffer.offset == 0);
+        AT(cmd->u.write_buffer.size == N * sizeof(DvzColor));
+        ANN(cmd->u.write_buffer.data_raw);
+        const DvzColor* uploaded = (const DvzColor*)cmd->u.write_buffer.data_raw;
+        AT(uploaded[0].r == expected_first.r);
+        AT(uploaded[0].g == expected_first.g);
+        AT(uploaded[0].b == expected_first.b);
+        AT(uploaded[0].a == expected_first.a);
+        AT(uploaded[N - 1].r == expected_last.r);
+        AT(uploaded[N - 1].g == expected_last.g);
+        AT(uploaded[N - 1].b == expected_last.b);
+        AT(uploaded[N - 1].a == expected_last.a);
+        break;
+    }
+    AT(found_color_upload);
+    dvz_drp2_stream_destroy(stream);
+
+    int attr_idx = _attr_index(pixel, "color");
+    AT(attr_idx >= 0);
+    AT(pixel->attrs[attr_idx].dirty_item_count == 0);
+    dvz_scale_set_domain(scale, 0.0, 2.0);
+    AT(pixel->attrs[attr_idx].dirty_first_item == 0);
+    AT(pixel->attrs[attr_idx].dirty_item_count == N);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Verify retained visual-space bounds for point data and range mutations.
  *
  * @param suite the active test suite

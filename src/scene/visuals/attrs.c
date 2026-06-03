@@ -171,6 +171,87 @@ DvzVisualAttrMutability dvz_visual_attr_mutability(const DvzVisual* visual, cons
 
 
 /**
+ * Declare the retained storage format for one visual attribute.
+ *
+ * @param visual the visual
+ * @param attr_name the attribute name
+ * @param format the storage format
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_attr_format(
+    DvzVisual* visual, const char* attr_name, DvzVisualAttrFormat format)
+{
+    ANN(visual);
+    ANN(attr_name);
+    attr_name = _attr_storage_name(visual->type, attr_name);
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual metadata"))
+        return -1;
+    if (
+        format < DVZ_VISUAL_ATTR_FORMAT_DEFAULT ||
+        format > DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32)
+    {
+        log_error("invalid visual attribute format %d", (int)format);
+        return -1;
+    }
+
+    uint32_t default_item_size = 0;
+    if (!_attr_supported(visual->type, attr_name, &default_item_size))
+        return -1;
+    if (format == DVZ_VISUAL_ATTR_FORMAT_DEFAULT)
+        format = _attr_default_format(visual->type, attr_name);
+    if (!_attr_format_supported(visual->type, attr_name, format))
+    {
+        log_error(
+            "%s visual attribute '%s' does not support format %d",
+            _visual_type_name(visual->type), attr_name, (int)format);
+        return -1;
+    }
+
+    const uint32_t item_size = _attr_item_size_for_format(visual->type, attr_name, format);
+    if (item_size == 0)
+        return -1;
+
+    DvzVisualAttr* attr = _attr_get_or_create(visual, attr_name, item_size);
+    if (attr == NULL)
+    {
+        log_error("visual attribute '%s' could not be registered", attr_name);
+        return -1;
+    }
+    if (attr->data != NULL || attr->buffer != NULL || attr->item_count > 0)
+    {
+        log_error("visual attribute '%s' format cannot change after payload attachment", attr_name);
+        return -1;
+    }
+
+    attr->format = format;
+    attr->item_size = item_size;
+    _scene_notify_visual_changed(visual);
+    return 0;
+}
+
+
+
+/**
+ * Return the effective retained storage format for one visual attribute.
+ *
+ * @param visual the visual
+ * @param attr_name the attribute name
+ * @return the storage format
+ */
+DvzVisualAttrFormat dvz_visual_attr_format(const DvzVisual* visual, const char* attr_name)
+{
+    ANN(visual);
+    ANN(attr_name);
+    attr_name = _attr_storage_name(visual->type, attr_name);
+    int idx = _attr_index(visual, attr_name);
+    if (idx < 0)
+        return _attr_default_format(visual->type, attr_name);
+    return visual->attrs[idx].format;
+}
+
+
+
+/**
  * Bind a scene buffer as one per-item visual attribute.
  *
  * @param visual the visual
@@ -198,6 +279,9 @@ bool dvz_visual_set_attr_buffer(
     uint32_t item_size = 0;
     if (!_attr_supported(visual->type, attr_name, &item_size))
         return false;
+    item_size = _visual_attr_item_size(visual, attr_name);
+    if (item_size == 0)
+        return false;
     if (!_attr_source_supported(visual->type, attr_name, DVZ_VISUAL_ATTR_SOURCE_PER_ITEM))
         return false;
 
@@ -221,6 +305,11 @@ bool dvz_visual_set_attr_buffer(
     if (item_count == 0)
     {
         log_error("visual attribute buffer '%s' requires item_count > 0", attr_name);
+        return false;
+    }
+    if (attr->format == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32)
+    {
+        log_error("scalar visual attribute buffers are not supported in this CPU-colorized slice");
         return false;
     }
     if ((buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_VERTEX) == 0)
@@ -293,10 +382,39 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
         log_error("cannot bind a scale from a different scene");
         return -1;
     }
-    if (visual->ops == NULL || !visual->ops->supports_scale)
+    bool point_pixel_scalar_color =
+        strcmp(slot_name, "color") == 0 &&
+        (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL) &&
+        dvz_visual_attr_format(visual, "color") == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32;
+    if (visual->ops == NULL || (!visual->ops->supports_scale && !point_pixel_scalar_color))
     {
-        log_error("dvz_visual_set_scale is only supported for image, volume, and labels visuals");
+        log_error("dvz_visual_set_scale is not supported for this visual and slot");
         return -1;
+    }
+    if (point_pixel_scalar_color)
+    {
+        if (scale != NULL && scale->kind != DVZ_SCALE_CONTINUOUS)
+        {
+            log_error("scalar color visual attributes require a continuous scale");
+            return -1;
+        }
+        if (!_scene_visual_mutation_allowed(visual->scene, "bind scale"))
+            return -1;
+        _scene_release_visual_scale(visual);
+        if (scale != NULL)
+            _visual_binding_assign(visual, DVZ_VISUAL_BINDING_SCALE, slot_name, scale, false);
+        DvzVisualAttr* attr = NULL;
+        int attr_idx = _attr_index(visual, "color");
+        if (attr_idx >= 0)
+            attr = &visual->attrs[attr_idx];
+        if (attr != NULL && attr->data != NULL && attr->item_count > 0)
+        {
+            attr->dirty_first_item = 0;
+            attr->dirty_item_count = attr->item_count;
+            _visual_bump_version(&attr->version);
+        }
+        _scene_notify_visual_changed(visual);
+        return 0;
     }
     DvzSceneSampleProfile bound_profile = {0};
     bool has_bound_profile =

@@ -37,6 +37,12 @@ const char* _attr_storage_name(DvzVisualType type, const char* name);
 bool _attr_is_instance_attribute(const char* name);
 uint32_t _attr_item_size(DvzVisualType type, const char* name);
 bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item_size);
+DvzVisualAttrFormat _attr_default_format(DvzVisualType type, const char* name);
+bool _attr_format_supported(
+    DvzVisualType type, const char* name, DvzVisualAttrFormat format);
+uint32_t _attr_item_size_for_format(
+    DvzVisualType type, const char* name, DvzVisualAttrFormat format);
+uint32_t _visual_attr_item_size(const DvzVisual* visual, const char* name);
 bool _attr_source_supported(DvzVisualType type, const char* name, DvzVisualAttrSource source);
 bool _visual_data_update_contains_attr(
     DvzVisualType type, const DvzVisualDataUpdate* updates, uint32_t update_count,

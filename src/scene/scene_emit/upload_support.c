@@ -13,6 +13,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -27,6 +28,7 @@
 #include "core/panel_layout_internal.h"
 #include "domain/buffer_internal.h"
 #include "scene_emit/visual_lowering.h"
+#include "datoviz/scene/scale.h"
 #include "datoviz/drp2/runtime.h"
 
 
@@ -337,6 +339,148 @@ bool _scene_visual_attrs_dirty(const DvzVisual* visual)
 
 
 /**
+ * Return whether an attribute is a retained scalar color that needs CPU colorization.
+ *
+ * @param visual the visual
+ * @param attr the retained attribute
+ * @return whether the attribute needs derived RGBA upload
+ */
+static bool _scene_attr_needs_scalar_color_upload(
+    const DvzVisual* visual, const DvzVisualAttr* attr)
+{
+    ANN(visual);
+    ANN(attr);
+    return strcmp(attr->name, "color") == 0 &&
+           attr->format == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32 &&
+           (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL);
+}
+
+
+
+/**
+ * Resolve the color scale domain for one scalar attribute.
+ *
+ * @param scale optional retained scale
+ * @param scalars retained scalar payload
+ * @param count scalar count
+ * @param out_min output domain minimum
+ * @param out_max output domain maximum
+ */
+static void _scene_scalar_color_domain(
+    const DvzScale* scale, const float* scalars, uint64_t count, double* out_min, double* out_max)
+{
+    ANN(scalars);
+    ANN(out_min);
+    ANN(out_max);
+    if (scale != NULL && scale->has_domain)
+    {
+        *out_min = scale->domain_min;
+        *out_max = scale->domain_max;
+        return;
+    }
+
+    double min_value = INFINITY;
+    double max_value = -INFINITY;
+    for (uint64_t i = 0; i < count; i++)
+    {
+        const double value = (double)scalars[i];
+        if (!isfinite(value))
+            continue;
+        if (value < min_value)
+            min_value = value;
+        if (value > max_value)
+            max_value = value;
+    }
+    if (!isfinite(min_value) || !isfinite(max_value))
+    {
+        min_value = 0.0;
+        max_value = 1.0;
+    }
+    *out_min = min_value;
+    *out_max = max_value;
+}
+
+
+
+/**
+ * Emit a derived RGBA upload for one scalar color attribute.
+ *
+ * @param figure the figure
+ * @param plan destination frame plan
+ * @param visual the visual
+ * @param visual_index the scene visual index
+ * @param attr scalar color attribute
+ * @return whether an upload was emitted
+ */
+static bool _scene_emit_scalar_color_upload(
+    const DvzFigure* figure, DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
+    const DvzVisualAttr* attr)
+{
+    ANN(figure);
+    ANN(plan);
+    ANN(visual);
+    ANN(attr);
+    if (attr->dirty_item_count == 0 || attr->data == NULL || attr->item_count == 0)
+        return false;
+
+    char resource_id[128];
+    if (!_scene_visual_attr_resource_key(
+            figure, visual, visual_index, attr->name, resource_id, sizeof(resource_id)))
+    {
+        return false;
+    }
+
+    uint64_t byte_size = 0;
+    if (_dvz_mul_u64_overflows(attr->dirty_item_count, sizeof(DvzColor), &byte_size) ||
+        byte_size > SIZE_MAX)
+    {
+        return false;
+    }
+
+    DvzColor* colors = (DvzColor*)dvz_malloc((DvzSize)byte_size);
+    if (colors == NULL)
+        return false;
+
+    const DvzScale* scale = _visual_family_state(visual)->scale;
+    const DvzColormap* colormap = scale != NULL ? scale->colormap : NULL;
+    const float* scalars = (const float*)attr->data;
+    double domain_min = 0.0;
+    double domain_max = 1.0;
+    _scene_scalar_color_domain(scale, scalars, attr->item_count, &domain_min, &domain_max);
+    const double span = domain_max - domain_min;
+
+    for (uint64_t i = 0; i < attr->dirty_item_count; i++)
+    {
+        const uint64_t item_idx = attr->dirty_first_item + i;
+        const double value = (double)scalars[item_idx];
+        if (!isfinite(value))
+        {
+            colors[i] = dvz_color_rgba(0, 0, 0, 0);
+            continue;
+        }
+        const double t = span != 0.0 ? (value - domain_min) / span : 0.5;
+        dvz_colormap_sample(colormap, t, &colors[i]);
+    }
+
+    const uint64_t byte_offset = attr->dirty_first_item * sizeof(DvzColor);
+    if (!dvz_frame_plan_upload_bytes(
+            plan, resource_id, byte_offset, byte_size, attr->name, colors))
+    {
+        dvz_free(colors);
+        return false;
+    }
+    _scene_attach_upload_metadata(
+        plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR,
+        DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX, attr->item_count);
+    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+    node->u.upload.owned_data = colors;
+    node->u.upload.item_stride = sizeof(DvzColor);
+    return true;
+}
+
+
+
+/**
  * Emit material-parameter upload for one visual when registry policy and dirty state require it.
  *
  * @param figure the figure
@@ -414,6 +558,11 @@ void _scene_emit_visual_dense_attr_uploads(
         }
         if (attr->dirty_item_count == 0 || attr->data == NULL || attr->item_count == 0)
             continue;
+        if (_scene_attr_needs_scalar_color_upload(visual, attr))
+        {
+            _scene_emit_scalar_color_upload(figure, plan, visual, visual_index, attr);
+            continue;
+        }
         char resource_id[128];
         if (!_scene_visual_attr_resource_key(
                 figure, visual, visual_index, attr->name, resource_id, sizeof(resource_id)))
