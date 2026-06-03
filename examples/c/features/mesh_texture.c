@@ -21,6 +21,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -38,8 +39,10 @@
 
 #define WIDTH          1600u
 #define HEIGHT         1200u
-#define TEXTURE_WIDTH  128u
-#define TEXTURE_HEIGHT 64u
+#define TEXTURE_WIDTH  1024u
+#define TEXTURE_HEIGHT 512u
+
+static const float TAU = 6.28318530718f;
 
 
 
@@ -48,7 +51,7 @@
 /*************************************************************************************************/
 
 /**
- * Fill a procedural checker texture.
+ * Fill a high-resolution procedural texture whose U coordinate wraps cleanly.
  *
  * @param pixels output RGBA8 texture
  */
@@ -58,27 +61,16 @@ static void _fill_texture(uint8_t pixels[TEXTURE_WIDTH * TEXTURE_HEIGHT * 4])
     {
         for (uint32_t x = 0; x < TEXTURE_WIDTH; x++)
         {
+            const float u = (float)x / (float)TEXTURE_WIDTH;
+            const float v = (float)y / (float)(TEXTURE_HEIGHT - 1u);
+            const float lon = 0.5f + 0.5f * sinf(TAU * 8.0f * u);
+            const float lat = 0.5f + 0.5f * cosf(TAU * 6.0f * v);
+            const float wave = 0.5f + 0.5f * sinf(TAU * (3.0f * u + 1.5f * v));
+            const float value = 0.18f + 0.62f * lon * lat + 0.20f * wave;
             const uint32_t i = 4u * (y * TEXTURE_WIDTH + x);
-            const bool checker = ((x / 16u) + (y / 16u)) % 2u == 0u;
-            const bool equator = y >= TEXTURE_HEIGHT / 2u - 1u && y <= TEXTURE_HEIGHT / 2u + 1u;
-            if (equator)
-            {
-                pixels[i + 0u] = 128u;
-                pixels[i + 1u] = 255u;
-                pixels[i + 2u] = 219u;
-            }
-            else if (checker)
-            {
-                pixels[i + 0u] = 76u;
-                pixels[i + 1u] = 201u;
-                pixels[i + 2u] = 240u;
-            }
-            else
-            {
-                pixels[i + 0u] = 18u;
-                pixels[i + 1u] = 58u;
-                pixels[i + 2u] = 96u;
-            }
+            pixels[i + 0u] = (uint8_t)(18.0f + 58.0f * value);
+            pixels[i + 1u] = (uint8_t)(58.0f + 170.0f * value);
+            pixels[i + 2u] = (uint8_t)(96.0f + 144.0f * value);
             pixels[i + 3u] = 255u;
         }
     }
