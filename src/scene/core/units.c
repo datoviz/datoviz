@@ -517,9 +517,9 @@ DvzDateTimeFormat* dvz_datetime_format_create(DvzScene* scene)
 }
 
 
-int dvz_datetime_format_timezone(DvzDateTimeFormat* format, const char* timezone)
+int dvz_datetime_format_timezone(DvzDateTimeFormat* format, const char* timezone_name)
 {
-    if (format == NULL || timezone == NULL || strcmp(timezone, "UTC") != 0)
+    if (format == NULL || timezone_name == NULL || strcmp(timezone_name, "UTC") != 0)
     {
         log_error("datetime axes support only UTC in v0.4");
         return -1;

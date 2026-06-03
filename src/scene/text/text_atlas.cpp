@@ -114,7 +114,14 @@ struct DvzTextAtlasBuildSet
     uint32_t count;
 };
 
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverlength-strings"
+#endif
 #include "text_default_msdf_atlas.inc"
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 
 static bool _text_atlas_codepoint_renderable(uint32_t codepoint);

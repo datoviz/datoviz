@@ -241,7 +241,8 @@ int test_scene_text_default_msdf_uses_embedded_atlas(TstContext* suite, const Ts
     AT(small->backend == DVZ_TEXT_ATLAS_BACKEND_MSDF);
     AT(small->encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
     AT(small->glyph_count >= 95);
-    ANN(_scene_text_atlas_glyph(small, 'A'));
+    DvzTextAtlasGlyph* small_glyph = _scene_text_atlas_glyph(small, 'A');
+    ANN(small_glyph);
 
     DvzTextAtlasSpec large_spec =
         _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, 84.0f);
@@ -254,7 +255,8 @@ int test_scene_text_default_msdf_uses_embedded_atlas(TstContext* suite, const Ts
     AT(large->backend == DVZ_TEXT_ATLAS_BACKEND_MSDF);
     AT(large->encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
     AT(large->glyph_count >= 95);
-    ANN(_scene_text_atlas_glyph(large, 'R'));
+    DvzTextAtlasGlyph* large_glyph = _scene_text_atlas_glyph(large, 'R');
+    ANN(large_glyph);
 
     dvz_scene_destroy(scene);
 #else
