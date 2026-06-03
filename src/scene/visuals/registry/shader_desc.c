@@ -517,7 +517,7 @@ static const char* _shader_depth_peel_fragment_spirv_key(DvzSceneBuiltinShader s
  * @param scene_occlusion_uses_set2 whether scene occlusion occupies bind set 2
  * @param shader shader descriptor to update
  * @param out_fragment_glsl_variant owned GLSL variant, when one is generated
- * @param out_segment_coverage_blend whether stroke coverage blending should be configured
+ * @param out_segment_coverage_blend whether analytic coverage blending should be configured
  * @return whether the shader descriptor was updated successfully
  */
 bool _scene_visual_shader_desc_apply_pass_policy(
@@ -542,7 +542,7 @@ bool _scene_visual_shader_desc_apply_pass_policy(
     *out_segment_coverage_blend =
         !picking &&
         !_scene_alpha_mode_is_blended(alpha_mode) && !wboit_accumulation && !depth_peel_pass &&
-        _scene_visual_desc_is_stroke(visual->kind);
+        (_scene_visual_desc_is_stroke(visual->kind) || point_like);
 
     if (_scene_alpha_mode_is_blended(alpha_mode) &&
         !_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_blend"))

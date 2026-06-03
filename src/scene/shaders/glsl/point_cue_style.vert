@@ -15,7 +15,7 @@ void main()
     vec4 world = mvp.model * vec4(inPos, 1.0);
     vec4 tr = transform(inPos);
     gl_Position = tr;
-    gl_PointSize = inSize;
+    gl_PointSize = max(inSize + 4.0, 1.0);
     fragColor = inColor;
     fragCue = vec3(
         tr.z / max(abs(tr.w), 1e-6),

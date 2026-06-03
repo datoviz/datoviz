@@ -7,10 +7,12 @@ layout(location = 1) in vec4 inColor;
 layout(location = 2) in float inSize;
 
 layout(location = 0) out vec4 fragColor;
+layout(location = 1) out float fragSize;
 
 void main()
 {
     gl_Position = transform(inPos);
-    gl_PointSize = inSize;
+    gl_PointSize = max(inSize + 4.0, 1.0);
     fragColor = inColor;
+    fragSize = inSize;
 }

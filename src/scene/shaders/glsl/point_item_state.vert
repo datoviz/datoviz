@@ -19,7 +19,7 @@ void main()
     vec4 tr = mvp.proj * view;
     float size = applyItemStateScale(inSize, inItemState);
     gl_Position = tr;
-    gl_PointSize = size;
+    gl_PointSize = max(size + 4.0, 1.0);
     fragColor = applyItemStateColor(inColor, inItemState);
     fragCue = vec3(tr.z / max(abs(tr.w), 1e-6), length(view.xyz), length(world.xyz));
     fragSize = size;

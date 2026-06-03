@@ -7,13 +7,27 @@ layout(location = 1) in vec3 fragCue;
 layout(location = 2) in float fragSize;
 layout(location = 0) out vec4 outColor;
 
+float pointDiscDistance()
+{
+    float size = max(fragSize, 0.0);
+    float spriteSize = max(size + 4.0, 1.0);
+    vec2 p = gl_PointCoord.xy - vec2(0.5);
+    return length(p * spriteSize) - 0.5 * size;
+}
+
+float pointDiscCoverage(float dist)
+{
+    if (dist <= 0.0)
+        return 1.0;
+    return exp(-dist * dist);
+}
+
 void main()
 {
-    vec2 uv = gl_PointCoord * 2.0 - 1.0;
-    float dist = length(uv);
-    float aa = max(fwidth(dist), 1e-6);
-    float outer = 1.0 - smoothstep(1.0 - aa, 1.0 + aa, dist);
-    if (outer <= 0.0)
+    float dist = pointDiscDistance();
+    float aa = 1.0;
+    float outer = pointDiscCoverage(dist);
+    if (outer < 0.05)
         discard;
 
     float lineWidth = max(material.params.x, 0.0);
@@ -21,12 +35,11 @@ void main()
     bool filled = aspect == 0 || aspect == 2;
     bool stroke = aspect == 1 || aspect == 2;
     float strokeWidth = stroke ? max(lineWidth, 1.0) : 0.0;
-    float innerRadius = max(1.0 - 2.0 * strokeWidth / max(fragSize, 1.0), 0.0);
-    float edgeMix = stroke ? smoothstep(innerRadius - aa, innerRadius + aa, dist) : 0.0;
+    float edgeMix = stroke ? smoothstep(-aa, aa, dist + strokeWidth) : 0.0;
     float fillMask = filled ? 1.0 - edgeMix : 0.0;
     float strokeMask = stroke ? edgeMix : 0.0;
     float coverage = outer * max(fillMask, strokeMask);
-    if (coverage <= 0.0)
+    if (coverage < 0.05)
         discard;
 
     vec4 edgeColor = material.baseColorFactor;

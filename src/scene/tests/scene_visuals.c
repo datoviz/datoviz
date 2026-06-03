@@ -1075,7 +1075,8 @@ int test_scene_point_style_emits_glsl_and_wgsl(TstContext* suite, const TstCase*
     DvzDrp2CommandStream* glsl_stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(glsl_stream);
-    AT(_stream_has_render_pipeline_label(glsl_stream, "_pipe_point_styleg_depth"));
+    AT(_stream_has_render_pipeline_label(
+        glsl_stream, "_pipe_point_styleg_coverage_blend_depth"));
 
     bool found_material_bg = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(glsl_stream); i++)
@@ -1098,7 +1099,8 @@ int test_scene_point_style_emits_glsl_and_wgsl(TstContext* suite, const TstCase*
     DvzDrp2CommandStream* wgsl_stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(wgsl_stream);
-    AT(_stream_has_render_pipeline_label(wgsl_stream, "_pipe_point_stylew_depth"));
+    AT(_stream_has_render_pipeline_label(
+        wgsl_stream, "_pipe_point_stylew_coverage_blend_depth"));
     char* json = dvz_drp2_stream_json(wgsl_stream, "scene_point_style_wgsl_from_c");
     ANN(json);
     AT(strstr(json, "\"format\": \"wgsl\"") != NULL);
