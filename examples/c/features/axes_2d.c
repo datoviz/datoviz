@@ -66,6 +66,12 @@ static void _fill_curve(vec3* positions, DvzColor* colors, float* widths, uint32
     ANN(colors);
     ANN(widths);
 
+    const ExampleStyleColorRole roles[] = {
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_WARNING,
+    };
+
     const float inv_count = count > 1 ? 1.0f / (float)(count - 1u) : 1.0f;
     for (uint32_t i = 0; i < count; i++)
     {
@@ -79,10 +85,10 @@ static void _fill_curve(vec3* positions, DvzColor* colors, float* widths, uint32
         positions[i][1] = y;
         positions[i][2] = 0.0f;
 
-        const uint8_t r = (uint8_t)(70.0f + 55.0f * t);
-        const uint8_t g = (uint8_t)(196.0f + 38.0f * t);
-        const uint8_t b = (uint8_t)(214.0f + 34.0f * (1.0f - t));
-        colors[i] = dvz_color_rgba(r, g, b, 255);
+        uint32_t role_index = (uint32_t)(t * (float)DVZ_ARRAY_COUNT(roles));
+        if (role_index >= DVZ_ARRAY_COUNT(roles))
+            role_index = DVZ_ARRAY_COUNT(roles) - 1u;
+        colors[i] = example_graphite_cyan_color(roles[role_index]);
         widths[i] = 4.0f;
     }
 }

@@ -134,7 +134,7 @@ static DvzScale* _add_scale(DvzScene* scene)
     dvz_scale_set_domain(scale, 0.0, 1.0);
     dvz_scale_set_view_range(scale, 0.0, 1.0);
 
-    DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
+    DvzColormap* colormap = example_graphite_cyan_colormap(scene);
     if (colormap == NULL)
         return NULL;
     dvz_scale_set_colormap(scale, colormap);
