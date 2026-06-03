@@ -5157,7 +5157,7 @@ int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstContext* su
     AT(stream != NULL);
 
     tst_log_capture_begin(suite);
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(image, "colormap", scale) == -1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(image, "color", scale) == -1);
     AT(_captured_log_contains(suite, "destroy the stream first"));
 
     dvz_drp2_stream_destroy(stream);

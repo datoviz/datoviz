@@ -241,7 +241,7 @@ static void _apply_volume_controls(VolumeGlfwState* state)
         step_count = 1;
     (void)dvz_volume_set_step_count(state->volume, step_count);
     (void)dvz_visual_set_scale(
-        state->volume, "colormap", state->transfer ? state->transfer_scale : NULL);
+        state->volume, "color", state->transfer ? state->transfer_scale : NULL);
 
     if (!state->clipping && !state->clip_plane)
     {

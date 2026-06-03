@@ -164,11 +164,11 @@ Conceptually:
 
 ```c
 dvz_visual_set_field(visual, "field", field);      // bind a DvzSampledField* to a named slot
-dvz_visual_set_scale(visual, "colormap", scale);   // bind a DvzScale* to a named slot
+dvz_visual_set_scale(visual, "color", scale);   // bind a DvzScale* to a named slot
 ```
 
 Resource roles are identified by the slot name string from the per-family spec (e.g. `"field"`,
-`"colormap"`). There is no numeric role enum or public parameter-block struct.
+`"color"`). There is no numeric role enum or public parameter-block struct.
 Item and indexed-geometry resources are managed internally through `dvz_visual_set_data`.
 
 
@@ -211,7 +211,7 @@ Conceptually:
 ```c
 // Typed constructors are preferred
 DvzScale* scale = dvz_scale_color(scene, "viridis", 0.0, 1.0);
-dvz_visual_set_scale(visual, "colormap", scale);
+dvz_visual_set_scale(visual, "color", scale);
 
 // Updates without re-uploading data
 dvz_scale_set_domain(scale, new_min, new_max);

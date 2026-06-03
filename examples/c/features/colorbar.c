@@ -186,7 +186,7 @@ _add_scalar_image(DvzScene* scene, DvzPanel* panel, DvzScale* scale, float* valu
         return false;
     if (dvz_visual_set_data(image, "texcoords", texcoords, 4) != 0)
         return false;
-    if (dvz_visual_set_scale(image, "colormap", scale) != 0)
+    if (dvz_visual_set_scale(image, "color", scale) != 0)
         return false;
 
     DvzSampledField* field = dvz_sampled_field(

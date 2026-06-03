@@ -365,7 +365,7 @@ bool dvz_visual_set_attr_buffer(
 /**
  * Bind a scene-owned scale to a named visual slot.
  *
- * Image and volume visuals accept the `"colormap"` slot. Labels visuals, and label-volume
+ * Image and volume visuals accept the `"color"` slot. Labels visuals, and label-volume
  * render modes, accept the `"labels"` slot.
  *
  * @param visual the visual
@@ -425,7 +425,7 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
     const bool labels =
         visual->ops->categorical_scale ||
         (has_bound_profile && _scene_sample_profile_is_integer_label(&bound_profile));
-    const char* expected_slot = labels ? "labels" : "colormap";
+    const char* expected_slot = labels ? "labels" : "color";
     if (strcmp(slot_name, expected_slot) != 0)
     {
         log_error("unsupported visual scale slot '%s' (expected '%s')", slot_name, expected_slot);

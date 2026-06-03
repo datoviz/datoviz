@@ -652,7 +652,7 @@ int main(int argc, char** argv)
     rc = dvz_visual_set_data(image, "texcoords", texcoords, 4);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(texcoords) failed");
 
-    rc = dvz_visual_set_scale(image, "colormap", scale);
+    rc = dvz_visual_set_scale(image, "color", scale);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_scale(colormap) failed");
 
     DvzSampledField* field = dvz_sampled_field(

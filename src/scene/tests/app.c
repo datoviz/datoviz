@@ -3041,7 +3041,7 @@ int test_app_offscreen_colorbar_has_visible_ramp_and_labels(TstContext* suite, c
     AT(rc == 0);
     rc = dvz_visual_set_data(image, "texcoords", texcoords, 4);
     AT(rc == 0);
-    rc = dvz_visual_set_scale(image, "colormap", scale);
+    rc = dvz_visual_set_scale(image, "color", scale);
     AT(rc == 0);
 
     DvzSampledField* field = dvz_sampled_field(
@@ -3592,7 +3592,7 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
     };
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_scale(image, "colormap", scale) == 0);
+    AT(dvz_visual_set_scale(image, "color", scale) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
@@ -4912,13 +4912,13 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
     ANN(image1);
     AT(dvz_visual_set_data(image0, "position", left_positions, 4) == 0);
     AT(dvz_visual_set_data(image0, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_scale(image0, "colormap", scale0) == 0);
+    AT(dvz_visual_set_scale(image0, "color", scale0) == 0);
     AT(dvz_visual_set_field(image0, "field", field));
     AT(dvz_panel_add_visual(panel, image0, NULL) == 0);
 
     AT(dvz_visual_set_data(image1, "position", right_positions, 4) == 0);
     AT(dvz_visual_set_data(image1, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_scale(image1, "colormap", scale1) == 0);
+    AT(dvz_visual_set_scale(image1, "color", scale1) == 0);
     AT(dvz_visual_set_field(image1, "field", field));
     AT(dvz_panel_add_visual(panel, image1, NULL) == 0);
 

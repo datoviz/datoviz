@@ -1583,9 +1583,9 @@ int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCas
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
 
-    AT(dvz_visual_set_scale(image, "colormap", scale) == 0);
+    AT(dvz_visual_set_scale(image, "color", scale) == 0);
     AT(_visual_family_state(image)->scale == scale);
-    AT(strcmp(_visual_family_state(image)->scale_slot, "colormap") == 0);
+    AT(strcmp(_visual_family_state(image)->scale_slot, "color") == 0);
 
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
@@ -1631,7 +1631,7 @@ int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCas
 
     char* json = dvz_scene_json(scene);
     ANN(json);
-    AT(strstr(json, "\"scale\":{\"id\":\"s0\",\"slot\":\"colormap\"}") != NULL);
+    AT(strstr(json, "\"scale\":{\"id\":\"s0\",\"slot\":\"color\"}") != NULL);
     AT(strstr(json, "\"field\":{\"id\":\"f0\",\"slot\":\"field\"}") != NULL);
     AT(strstr(json, "\"fields\":[{\"id\":\"f0\"") != NULL);
     dvz_scene_json_destroy(json);
@@ -1685,7 +1685,7 @@ int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const Ts
     DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(continuous);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(labels, "labels", continuous) != 0);
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(labels, "colormap", scale) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(labels, "color", scale) != 0);
 
     DvzSampledField* scalar = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
@@ -1788,7 +1788,7 @@ int test_scene_visual_scale_rejects_cross_scene_scale(TstContext* suite, const T
     DvzVisual* image = dvz_image(scene0, 0);
     ANN(image);
 
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(image, "colormap", foreign_scale) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(image, "color", foreign_scale) != 0);
     AT(_captured_log_contains(suite, "different scene"));
 
     dvz_scene_destroy(scene1);
@@ -1849,7 +1849,7 @@ int test_scene_image_scalar_texture_uses_bound_scale(TstContext* suite, const Ts
 
     DvzVisual* visual = dvz_image(scene, 0);
     ANN(visual);
-    AT(dvz_visual_set_scale(visual, "colormap", scale) == 0);
+    AT(dvz_visual_set_scale(visual, "color", scale) == 0);
 
     vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
@@ -1921,7 +1921,7 @@ int test_scene_image_r16_float_field_uses_bound_scale(TstContext* suite, const T
     };
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_scale(image, "colormap", scale) == 0);
+    AT(dvz_visual_set_scale(image, "color", scale) == 0);
 
     uint16_t values[16];
     for (uint32_t i = 0; i < 16; i++)
@@ -1996,7 +1996,7 @@ int test_scene_image_r16_snorm_field_uses_bound_scale(TstContext* suite, const T
     };
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_scale(image, "colormap", scale) == 0);
+    AT(dvz_visual_set_scale(image, "color", scale) == 0);
 
     int16_t values[16];
     for (uint32_t i = 0; i < 16; i++)
@@ -2637,9 +2637,9 @@ int test_scene_volume_retained_controls(TstContext* suite, const TstCase* item)
     };
     dvz_colormap_set_stops(colormap, stops, 2);
     dvz_scale_set_colormap(scale, colormap);
-    AT(dvz_visual_set_scale(volume, "colormap", scale) == 0);
+    AT(dvz_visual_set_scale(volume, "color", scale) == 0);
     AT(_visual_family_state(volume)->scale == scale);
-    AT(strcmp(_visual_family_state(volume)->scale_slot, "colormap") == 0);
+    AT(strcmp(_visual_family_state(volume)->scale_slot, "color") == 0);
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
@@ -2714,7 +2714,7 @@ int test_scene_volume_visual_metadata_lowering(TstContext* suite, const TstCase*
     };
     dvz_colormap_set_stops(volume_colormap, volume_stops, 2);
     dvz_scale_set_colormap(scale, volume_colormap);
-    AT(dvz_visual_set_scale(volume, "colormap", scale) == 0);
+    AT(dvz_visual_set_scale(volume, "color", scale) == 0);
     AT(dvz_volume_set_opacity(volume, 0.5f) == 0);
     AT(dvz_volume_set_sampling(volume, DVZ_VOLUME_SAMPLING_NEAREST) == 0);
     double clip_min[3] = {0.1, 0.2, 0.3};
@@ -3453,7 +3453,7 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
     };
     dvz_colormap_set_stops(colormap, stops, 2);
     dvz_scale_set_colormap(scale, colormap);
-    AT(dvz_visual_set_scale(volume, "colormap", scale) == 0);
+    AT(dvz_visual_set_scale(volume, "color", scale) == 0);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
 
@@ -3847,7 +3847,7 @@ int test_scene_image_field_partial_update_emits_texture_subregion(TstContext* su
     };
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_scale(image, "colormap", scale) == 0);
+    AT(dvz_visual_set_scale(image, "color", scale) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
@@ -4099,13 +4099,13 @@ int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, co
     ANN(image1);
     AT(dvz_visual_set_data(image0, "position", positions0, 4) == 0);
     AT(dvz_visual_set_data(image0, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_scale(image0, "colormap", scale0) == 0);
+    AT(dvz_visual_set_scale(image0, "color", scale0) == 0);
     AT(dvz_visual_set_field(image0, "field", field));
     AT(dvz_panel_add_visual(panel, image0, NULL) == 0);
 
     AT(dvz_visual_set_data(image1, "position", positions1, 4) == 0);
     AT(dvz_visual_set_data(image1, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_scale(image1, "colormap", scale1) == 0);
+    AT(dvz_visual_set_scale(image1, "color", scale1) == 0);
     AT(dvz_visual_set_field(image1, "field", field));
     AT(dvz_panel_add_visual(panel, image1, NULL) == 0);
 

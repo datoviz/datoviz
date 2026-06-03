@@ -229,7 +229,7 @@ static bool _attach_transfer(DvzScene* scene, DvzVisual* visual)
     };
     if (dvz_volume_set_alpha_stops(visual, alpha, 7) != 0)
         return false;
-    return dvz_visual_set_scale(visual, "colormap", scale) == 0;
+    return dvz_visual_set_scale(visual, "color", scale) == 0;
 }
 
 
