@@ -30,6 +30,27 @@ examples:
     source: examples/c/features/axes_2d.c
     validation: smoke+screenshot
 
+  - id: feature_panel_multi
+    title: Multiple Panels
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/panel_multi.c
+    validation: smoke+interaction+screenshot
+
+  - id: feature_panel_linked
+    title: Linked Panels
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/panel_linked.c
+    validation: smoke+interaction+screenshot
+
+  - id: feature_axis_labels
+    title: Axis Labels
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/axis_labels.c
+    validation: smoke+screenshot
+
   - id: linked_panels_axes_panzoom
     title: Linked Panels With Axes
     stage: v0.4_required
