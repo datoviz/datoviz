@@ -39,7 +39,23 @@ a visual-family implementation name.
 ### Fallback
 
 If the runtime cannot support GPU-side palette lookup, the scene falls back to CPU-side colormap
-application at upload time and emits a capability adaptation diagnostic.
+application at upload time.
+
+The active point/pixel slice currently uses this fallback path. Retained point/pixel visuals may
+store `scalar_f32` color values, but the point-like shaders still consume an `rgba_u8` vertex color
+attribute. During scene lowering, dirty scalar color ranges are mapped through the bound continuous
+scale on the CPU and emitted as derived RGBA uploads. Scale domain or colormap changes mark the
+retained scalar color attribute dirty so the derived RGBA buffer is refreshed without changing user
+data.
+
+This is a compatibility layer for the current point-like pipelines, not the long-term fast path.
+The intended optimization path is:
+
+1. keep scalar color as the retained public contract;
+2. realize shared scale/colormap transfer resources in the scene layer;
+3. add shader variants that consume scalar vertex attributes and sample a 1D colormap resource;
+4. reuse the same scale-backed color machinery for mesh, path, sphere, and other scalar-colored
+   visual families.
 
 
 ## `size` Attribute

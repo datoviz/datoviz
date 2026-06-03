@@ -150,6 +150,8 @@ Low-regret preparation:
 1. keep `DvzSampledField` common across images, slices, labels, and volumes;
 2. make scale/colormap realization a shared transfer resource rather than visual-private CPU-expanded
    texture data;
+   this also covers the current point/pixel scalar-color fallback, where retained scalar color is
+   CPU-expanded to RGBA until shader-side scalar lookup lands;
 3. keep query results spatial and typed, including world/data coordinates and sampled values;
 4. leave room for panel-level renderer or technique selection;
 5. keep frame-plan outputs explicit: color, depth or hit distance, ids, values, and auxiliary
