@@ -115,12 +115,12 @@ static bool _add_spheres(DvzScene* scene, DvzPanel* panel)
 
     DvzMaterialDesc material = dvz_material_desc();
     material.model = DVZ_MATERIAL_MODEL_STANDARD;
-    material.light_direction[0] = 0.30f;
-    material.light_direction[1] = 0.62f;
-    material.light_direction[2] = 0.72f;
-    material.standard.roughness = 0.42f;
-    material.standard.specular = 0.58f;
-    material.standard.rim_strength = 0.14f;
+    material.light_direction[0] = 0.45f;
+    material.light_direction[1] = -0.35f;
+    material.light_direction[2] = 0.82f;
+    material.standard.roughness = 0.62f;
+    material.standard.specular = 0.34f;
+    material.standard.rim_strength = 0.10f;
     if (dvz_visual_set_material(visual, &material) != 0)
         return false;
 

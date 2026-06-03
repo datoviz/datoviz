@@ -75,6 +75,8 @@ static void _fill_paths(
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
     };
     const float lanes[PATH_COUNT] = {+0.42f, 0.0f, -0.42f};
+    const float width_base[PATH_COUNT] = {2.0f, 7.0f, 16.0f};
+    const float width_amp[PATH_COUNT] = {0.8f, 2.2f, 6.0f};
 
     for (uint32_t path = 0; path < PATH_COUNT; path++)
     {
@@ -100,7 +102,8 @@ static void _fill_paths(
 
             colors[k] = palette[path];
             colors[k].a = (uint8_t)(210u + 18u * path);
-            widths[k] = 4.5f + 0.65f * sinf(TAU * t + phase);
+            const float width_wave = 0.5f + 0.5f * sinf(TAU * t + phase);
+            widths[k] = width_base[path] + width_amp[path] * width_wave;
         }
     }
 }

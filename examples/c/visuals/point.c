@@ -81,7 +81,7 @@ static void _fill_points(
         const float mix = 0.25f + 0.75f * sqrtf(local);
         values[i] = fminf(1.0f, 0.12f + 0.76f * mix + 0.12f * band);
 
-        diameters[i] = 4.0f + 3.0f * band + 1.2f * (1.0f - local);
+        diameters[i] = 10.0f + 11.0f * band + 5.0f * (1.0f - local);
     }
 }
 
@@ -180,6 +180,9 @@ int main(int argc, char** argv)
 
     rc = dvz_visual_set_depth_test(point, false);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_depth_test() failed");
+
+    rc = dvz_visual_set_alpha_mode(point, DVZ_ALPHA_BLENDED);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_alpha_mode() failed");
 
     rc = dvz_panel_add_visual(panel, point, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
