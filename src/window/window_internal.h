@@ -41,6 +41,7 @@
 
 typedef struct DvzWindowBackendSlot DvzWindowBackendSlot;
 typedef struct DvzWindowWrapBackendState DvzWindowWrapBackendState;
+typedef struct DvzWindowScaleInputs DvzWindowScaleInputs;
 
 
 
@@ -61,6 +62,25 @@ struct DvzWindowWrapBackendState
 {
     uint32_t extension_count;
     char** extensions;
+};
+
+
+
+struct DvzWindowScaleInputs
+{
+    float window_scale_x;
+    float window_scale_y;
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    uint32_t window_width;
+    uint32_t window_height;
+    float monitor_scale_x;
+    float monitor_scale_y;
+    uint32_t monitor_pixel_width;
+    uint32_t monitor_pixel_height;
+    uint32_t monitor_width_mm;
+    uint32_t monitor_height_mm;
+    float override_scale;
 };
 
 
@@ -96,3 +116,8 @@ struct DvzWindowHost
     uint32_t backend_capacity;
     DvzWindowWrapBackendState wrap_state;
 };
+
+
+
+void _dvz_window_effective_content_scale(
+    const DvzWindowScaleInputs* inputs, float* out_x, float* out_y);

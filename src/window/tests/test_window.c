@@ -19,6 +19,7 @@
 #include "datoviz/common.h"
 #include "datoviz/window.h"
 #include "testing.h"
+#include "../window_internal.h"
 
 
 
@@ -172,6 +173,119 @@ int test_window_wait_hooks_headless(TstContext* suite, const TstCase* item)
 
 
 
+/**
+ * Verify the effective scale policy uses the explicit override first.
+ */
+int test_window_effective_scale_override(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzWindowScaleInputs inputs = {
+        .window_scale_x = 1.0f,
+        .window_scale_y = 1.0f,
+        .framebuffer_width = 3200,
+        .framebuffer_height = 1800,
+        .window_width = 1600,
+        .window_height = 900,
+        .monitor_scale_x = 2.0f,
+        .monitor_scale_y = 2.0f,
+        .override_scale = 1.5f,
+    };
+    float sx = 0.0f;
+    float sy = 0.0f;
+    _dvz_window_effective_content_scale(&inputs, &sx, &sy);
+    AC(sx, 1.5f, 1e-6f);
+    AC(sy, 1.5f, 1e-6f);
+    return 0;
+}
+
+
+
+/**
+ * Verify framebuffer/window ratio fixes a stale unit content scale.
+ */
+int test_window_effective_scale_framebuffer_ratio(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzWindowScaleInputs inputs = {
+        .window_scale_x = 1.0f,
+        .window_scale_y = 1.0f,
+        .framebuffer_width = 2400,
+        .framebuffer_height = 1350,
+        .window_width = 1600,
+        .window_height = 900,
+    };
+    float sx = 0.0f;
+    float sy = 0.0f;
+    _dvz_window_effective_content_scale(&inputs, &sx, &sy);
+    AC(sx, 1.5f, 1e-6f);
+    AC(sy, 1.5f, 1e-6f);
+    return 0;
+}
+
+
+
+/**
+ * Verify monitor content scale is used when window scale and framebuffer ratio are unavailable.
+ */
+int test_window_effective_scale_monitor(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzWindowScaleInputs inputs = {
+        .window_scale_x = 1.0f,
+        .window_scale_y = 1.0f,
+        .monitor_scale_x = 2.0f,
+        .monitor_scale_y = 2.0f,
+    };
+    float sx = 0.0f;
+    float sy = 0.0f;
+    _dvz_window_effective_content_scale(&inputs, &sx, &sy);
+    AC(sx, 2.0f, 1e-6f);
+    AC(sy, 2.0f, 1e-6f);
+    return 0;
+}
+
+
+
+/**
+ * Verify raw DPI is a bounded fallback and ordinary low DPI remains unscaled.
+ */
+int test_window_effective_scale_raw_dpi(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzWindowScaleInputs inputs = {
+        .window_scale_x = 1.0f,
+        .window_scale_y = 1.0f,
+        .monitor_pixel_width = 3024,
+        .monitor_pixel_height = 1964,
+        .monitor_width_mm = 302,
+        .monitor_height_mm = 196,
+    };
+    float sx = 0.0f;
+    float sy = 0.0f;
+    _dvz_window_effective_content_scale(&inputs, &sx, &sy);
+    AC(sx, 2.649f, 1e-3f);
+    AC(sy, 2.651f, 1e-3f);
+
+    inputs.monitor_pixel_width = 1920;
+    inputs.monitor_pixel_height = 1080;
+    inputs.monitor_width_mm = 509;
+    inputs.monitor_height_mm = 286;
+    _dvz_window_effective_content_scale(&inputs, &sx, &sy);
+    AC(sx, 1.0f, 1e-6f);
+    AC(sy, 1.0f, 1e-6f);
+    return 0;
+}
+
+
+
 #ifndef DVZ_HAS_GLFW
 #define DVZ_HAS_GLFW 0
 #endif
@@ -233,6 +347,10 @@ int test_window(TstSuite* suite)
     TST_CASE(test_window_resize_events);
     TST_CASE(test_window_frame_requests);
     TST_CASE(test_window_wait_hooks_headless);
+    TST_CASE(test_window_effective_scale_override);
+    TST_CASE(test_window_effective_scale_framebuffer_ratio);
+    TST_CASE(test_window_effective_scale_monitor);
+    TST_CASE(test_window_effective_scale_raw_dpi);
     TST_CASE(test_window_fallback);
     TST_CASE(test_window_wrap_create);
     TST_CASE(test_window_wrap_attach_detach);

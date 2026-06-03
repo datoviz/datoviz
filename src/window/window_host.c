@@ -14,6 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <string.h>
 
 #include "_alloc.h"
@@ -34,6 +35,9 @@
 #define DVZ_WINDOW_INSTANCE_INIT_CAP 4
 #define DVZ_WINDOW_CONFIG_KNOWN_FLAGS 0u
 #define DVZ_WINDOW_EXTERNAL_SURFACE_INFO_KNOWN_FLAGS 0u
+#define DVZ_WINDOW_BASE_DPI 96.0f
+#define DVZ_WINDOW_MIN_RAW_DPI_SCALE 1.25f
+#define DVZ_WINDOW_MAX_EFFECTIVE_SCALE 4.0f
 
 
 
@@ -62,6 +66,8 @@ static void _window_wrap_state_clear(DvzWindowHost* host);
 static bool _window_backend_slot_has_window(
     const DvzWindowHost* host, const DvzWindowBackendSlot* slot);
 static void _window_host_clear_frame_pending(DvzWindowHost* host);
+static float _window_scale_candidate(float value);
+static float _window_raw_dpi_scale(uint32_t pixels, uint32_t mm);
 
 
 
@@ -216,6 +222,104 @@ static void _window_host_clear_frame_pending(DvzWindowHost* host)
     {
         host->windows[i]->frame_pending = false;
     }
+}
+
+
+
+/**
+ * Return a bounded scale candidate, or one when unusable.
+ *
+ * @param value scale candidate
+ * @return bounded scale candidate no smaller than one
+ */
+static float _window_scale_candidate(float value)
+{
+    if (!isfinite(value) || value <= 1.0f)
+        return 1.0f;
+    if (value > DVZ_WINDOW_MAX_EFFECTIVE_SCALE)
+        return DVZ_WINDOW_MAX_EFFECTIVE_SCALE;
+    return value;
+}
+
+
+
+/**
+ * Estimate display scale from raw monitor DPI.
+ *
+ * @param pixels monitor dimension in physical pixels
+ * @param mm monitor physical dimension in millimeters
+ * @return bounded raw-DPI scale, or one when unavailable or low-DPI
+ */
+static float _window_raw_dpi_scale(uint32_t pixels, uint32_t mm)
+{
+    if (pixels == 0 || mm == 0)
+        return 1.0f;
+    float inches = (float)mm / 25.4f;
+    if (!isfinite(inches) || inches <= 0.0f)
+        return 1.0f;
+    float scale = ((float)pixels / inches) / DVZ_WINDOW_BASE_DPI;
+    if (!isfinite(scale) || scale < DVZ_WINDOW_MIN_RAW_DPI_SCALE)
+        return 1.0f;
+    return _window_scale_candidate(scale);
+}
+
+
+
+/**
+ * Resolve an effective content scale from backend, framebuffer, monitor, and DPI signals.
+ *
+ * @param inputs scale signal bundle
+ * @param out_x resolved horizontal content scale
+ * @param out_y resolved vertical content scale
+ */
+void _dvz_window_effective_content_scale(
+    const DvzWindowScaleInputs* inputs, float* out_x, float* out_y)
+{
+    ANN(inputs);
+    ANN(out_x);
+    ANN(out_y);
+
+    float sx = _window_scale_candidate(inputs->override_scale);
+    float sy = sx;
+    if (sx <= 1.0f)
+    {
+        sx = _window_scale_candidate(inputs->window_scale_x);
+        sy = _window_scale_candidate(inputs->window_scale_y);
+
+        if (inputs->window_width > 0 && inputs->framebuffer_width > 0)
+        {
+            float ratio = (float)inputs->framebuffer_width / (float)inputs->window_width;
+            float candidate = _window_scale_candidate(ratio);
+            if (candidate > sx)
+                sx = candidate;
+        }
+        if (inputs->window_height > 0 && inputs->framebuffer_height > 0)
+        {
+            float ratio = (float)inputs->framebuffer_height / (float)inputs->window_height;
+            float candidate = _window_scale_candidate(ratio);
+            if (candidate > sy)
+                sy = candidate;
+        }
+
+        float candidate = _window_scale_candidate(inputs->monitor_scale_x);
+        if (candidate > sx)
+            sx = candidate;
+        candidate = _window_scale_candidate(inputs->monitor_scale_y);
+        if (candidate > sy)
+            sy = candidate;
+
+        candidate =
+            _window_raw_dpi_scale(inputs->monitor_pixel_width, inputs->monitor_width_mm);
+        if (candidate > sx)
+            sx = candidate;
+        candidate =
+            _window_raw_dpi_scale(inputs->monitor_pixel_height, inputs->monitor_height_mm);
+        if (candidate > sy)
+            sy = candidate;
+    }
+
+    *out_x = sx;
+    *out_y = sy;
 }
 
 

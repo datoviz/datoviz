@@ -34,6 +34,14 @@ int test_window_frame_requests(TstContext* suite, const TstCase* item);
 
 int test_window_wait_hooks_headless(TstContext* suite, const TstCase* item);
 
+int test_window_effective_scale_override(TstContext* suite, const TstCase* item);
+
+int test_window_effective_scale_framebuffer_ratio(TstContext* suite, const TstCase* item);
+
+int test_window_effective_scale_monitor(TstContext* suite, const TstCase* item);
+
+int test_window_effective_scale_raw_dpi(TstContext* suite, const TstCase* item);
+
 int test_window_fallback(TstContext* suite, const TstCase* item);
 
 int test_window_wrap_create(TstContext* suite, const TstCase* item);
