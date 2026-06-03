@@ -229,25 +229,28 @@ Style naming:
 
 Deferred:
 
-1. Bitmap marker mode.
-2. Atlas-backed markers.
-3. SDF/MSDF marker modes.
-4. Shared marker/glyph atlas infrastructure.
+1. `DvzSymbolSet` and marker `symbol` attribute.
+2. Bitmap symbol source.
+3. SDF/MSDF symbol sources and SVG-path import.
+4. Shared symbol/glyph atlas infrastructure.
 5. Scalar color/diameter modes.
 6. Data-space marker sizing.
 
-Marker render-mode rules:
+Symbol-backed marker rules:
 
-1. Bitmap, SDF, and MSDF are marker render modes, not separate public visual families.
+1. Bitmap, SDF, and MSDF are symbol backing encodings, not separate public visual families.
 2. One marker item remains one screen-facing symbol anchored at a data/world position.
-3. Bitmap mode samples an RGBA or alpha texture and applies marker color as tint/alpha according to
+3. Users should select symbols and symbol sources; `code`, `bitmap`, `sdf`, and `msdf` are runtime
+   encodings, diagnostics, or advanced preferences rather than the primary marker API.
+4. Bitmap symbols sample an RGBA or alpha texture and apply marker color as tint/alpha according to
    the selected policy.
-4. Atlas-backed marker modes use per-symbol UV rectangles and nominal bounds; the per-item `shape`
-   or future `symbol` attribute selects the entry.
-5. SDF/MSDF marker modes consume shared atlas entries and shared decode helpers; marker must not
+5. Atlas-backed symbols use per-symbol UV rectangles and nominal bounds; the per-item `symbol`
+   attribute selects the entry. The installed `shape` attribute remains the built-in code-SDF
+   compatibility path until `symbol` lands.
+6. SDF/MSDF symbol encodings consume shared atlas entries and shared decode helpers; marker must not
    own a custom font or glyph pipeline.
 
-Marker/glyph sharing boundary:
+Symbol/glyph sharing boundary:
 
 1. Shared internals may include atlas texture creation/upload, atlas entry metadata, UV rectangle
    lookup, SDF/MSDF decode helpers, sampler setup, DRP2 texture/bind-group emission, dirty-state

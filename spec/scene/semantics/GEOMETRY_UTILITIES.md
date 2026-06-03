@@ -163,12 +163,13 @@ back transparently.
 
 ## SDF And MSDF
 
-The SDF/MSDF pipeline uses msdfgen and msdf-atlas-gen for resolution-independent marker shapes,
-annotation decorations, and text glyphs.
+The SDF/MSDF pipeline uses msdfgen and msdf-atlas-gen for resolution-independent symbols,
+annotation decorations, and text glyphs. Public symbol semantics are tracked in
+[SYMBOLS.md](SYMBOLS.md); this file owns low-level generation utility direction.
 
 | Path | Contract |
 |---|---|
-| SVG path -> MSDF/SDF | `dvz_msdf_from_svg` / `dvz_sdf_from_svg` return float textures; `dvz_marker_tex_scale` matches texture width |
+| SVG path -> MSDF/SDF | `dvz_msdf_from_svg` / `dvz_sdf_from_svg` or v0.4 symbol-set import returns distance-field symbol entries; legacy marker `tex_scale` maps to per-symbol distance-field metadata |
 | font handle | `DvzFont` is typeface/metrics identity; atlas storage is separate and shareable |
 | default font | `dvz_font_default(scene)` returns the built-in typeface |
 | custom font | `dvz_font_load(scene, ttf_bytes, ttf_size)` |
@@ -180,10 +181,10 @@ Lazy auto-grow is the default glyph atlas policy. New codepoints mark compatible
 dirty; atlas regeneration or patching is deferred to the next frame boundary, never mid-render.
 Static atlas policy may reject undeclared codepoints instead.
 
-`marker` in `DVZ_MARKER_MODE_MSDF` may index a shared atlas per item using a shape-index attribute,
-allowing multiple custom marker shapes in one visual. Annotation shapes such as boxes, bubbles, and
-arrows may use the same SDF infrastructure. GPU-side SDF generation via jump flooding is future
-compute work.
+`marker` should consume a `DvzSymbolSet` and select entries with a per-item `symbol` attribute.
+Those entries may be backed by code-SDF, bitmap, SDF, or MSDF encodings. Annotation shapes such as
+boxes, bubbles, and arrows may use the same SDF infrastructure. GPU-side SDF generation via jump
+flooding is future compute work.
 
 
 ## Resource Mapping

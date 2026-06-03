@@ -7,8 +7,8 @@ It refines `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.
 `../semantics/VISUAL_CONTRACT.md`.
 
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
-Landed naming, marker render-mode, and marker/glyph atlas-sharing decisions are tracked in
-`IMPLEMENTATION_DECISIONS.md`.
+Reusable symbol-set semantics are in [../semantics/SYMBOLS.md](../semantics/SYMBOLS.md).
+Landed naming and marker implementation decisions are tracked in `IMPLEMENTATION_DECISIONS.md`.
 
 
 ## Current Implementation Status
@@ -28,9 +28,10 @@ The implemented path supports:
 7. WGSL/WebGPU instanced-quad lowering through the point-like lowering policy;
 8. GPU-backed marker picking using the marker sprite bounding box.
 
-The following sections describe the target marker contract. Bitmap, SDF, MSDF, atlas-backed custom
-symbols, scalar color/diameter modes, `shift`, aspect-ratio/magnitude helpers, data-space sizing, and
-exact SDF-mask picking are planned capabilities unless explicitly marked as implemented above.
+The following sections describe the target marker contract. Reusable symbol sets, bitmap/SDF/MSDF
+symbol sources, SVG-path import, scalar color/diameter modes, `shift`, aspect-ratio/magnitude
+helpers, data-space sizing, and exact SDF-mask picking are planned capabilities unless explicitly
+marked as implemented above.
 
 
 ## Semantic Purpose
@@ -43,19 +44,36 @@ Right for categorical scatter plots needing symbolic differentiation, directiona
 flow-field glyphs, and styled annotations.
 
 
-## Render Mode
+## Symbol And Encoding Model
 
-Primary variant axis. Determines how the mark shape is produced and which resources are required.
+Long-term marker APIs should select symbols, not rendering modes. A marker item names a symbol from a
+bound symbol set; the runtime chooses or is configured with an encoding for that symbol.
 
-| Mode | Description | Texture required |
+Target marker data:
+
+| Attribute | Meaning |
+|---|---|
+| `position` | Anchor point in visual space. |
+| `diameter` | Screen-space symbol extent by default. |
+| `angle` | Screen-space rotation around the anchor. |
+| `color` | Fill/tint color. |
+| `symbol` | `uint32_t` `DvzSymbolId` selecting an entry in a bound `DvzSymbolSet`. |
+
+The current first slice uses `shape` instead of `symbol`; this should become either an alias for
+built-in symbol ids or a compatibility spelling for code-SDF built-ins.
+
+Encodings remain implementation capabilities:
+
+| Encoding | Description | Public source that may use it |
 |---|---|---|
-| `code` | shape from built-in shader SDF | no |
-| `bitmap` | shape from RGBA raster texture | yes (RGBA u8) |
-| `sdf` | shape from single-channel SDF texture | yes (float) |
-| `msdf` | shape from multi-channel SDF texture | yes (RGBA float) |
+| `code` | Built-in shader SDF. | Built-in symbols. |
+| `bitmap` | RGBA or alpha raster texture. | Bitmap symbols. |
+| `sdf` | Single-channel distance texture. | Imported/generated SDF symbols. |
+| `msdf` | Multi-channel distance texture. | SVG path and imported MSDF symbols. |
 
-`code` is the default. `msdf` is preferred over `sdf` and `bitmap` for custom shapes.
-Set at visual creation time.
+`code`, `bitmap`, `sdf`, and `msdf` should not be the primary marker API. They are symbol backing
+encodings, diagnostics, and optional advanced preferences. See
+[../semantics/SYMBOLS.md](../semantics/SYMBOLS.md).
 
 
 ## Built-In Shapes (`code` mode)
@@ -131,7 +149,24 @@ Standard `vec2` — see `SHARED_ATTRIBUTES.md`.
 
 Per-item shape selector. Each item renders with the requested built-in code-SDF shape.
 
-The target contract may later add a visual-wide default shape and grouped/atlas symbol sources.
+The target contract should replace or complement this with a `symbol` attribute selecting
+`DvzSymbolId` values from a bound `DvzSymbolSet`. Until that lands, `shape` remains the installed
+path for built-in code-SDF markers.
+
+
+### `symbol`
+
+| Property | Value |
+|---|---|
+| Type | `uint32` — `DvzSymbolId` scoped to the bound `DvzSymbolSet` |
+| Accepted sources | `PER_ITEM`, target `CONSTANT` and `PER_GROUP` |
+| Typical mutability | `dynamic` |
+| Optional | target yes; defaults to the marker visual's default symbol |
+| Applies to | built-in, bitmap, SDF, and MSDF symbol sources |
+
+Per-item symbol selector. This is the long-term generalized form of `shape`.
+
+Status on 2026-06-03: not implemented. Use `shape` for current built-in code-SDF markers.
 
 
 ### `edge_color` (per-item)
@@ -272,7 +307,7 @@ diagnose the unsupported size-space mode.
 | Type | `float32` |
 | Default | `1.0` |
 | Mutability | `dynamic` |
-| Applies to | `msdf`, `sdf`, `bitmap` modes |
+| Applies to | `msdf`, `sdf`, `bitmap` symbol encodings |
 
 Reference size at which the texture was generated (typically the texture width in pixels).
 Tells the shader how to scale SDF distances correctly at different item sizes.
@@ -284,7 +319,7 @@ Tells the shader how to scale SDF distances correctly at different item sizes.
 |---|---|
 | Type | `SampledField` scene resource |
 | Mutability | `dynamic` |
-| Applies to | `bitmap`, `sdf`, `msdf` modes |
+| Applies to | `bitmap`, `sdf`, `msdf` symbol encodings |
 
 Must match the declared render mode format.
 
@@ -296,7 +331,7 @@ Must match the declared render mode format.
 | `position` | required | NaN/Inf item skipped and not pickable | no |
 | `color`, `edge_color` | fill white, edge transparent | scalar NaN uses scale missing color | yes |
 | `diameter`, `magnitude` | family-defined screen size, scale `1` | scalar NaN uses fallback size | yes |
-| `angle`, `aspect`, `shape` | defaults described above | invalid value is validation error | yes |
+| `angle`, `aspect`, `shape`/`symbol` | defaults described above | invalid value is validation error | yes |
 | `shift` | `(0, 0)` | NaN component treated as zero shift | yes |
 
 
@@ -304,20 +339,14 @@ Must match the declared render mode format.
 
 | Axis | Values | Default |
 |---|---|---|
-| `render_mode` | `code`, `bitmap`, `sdf`, `msdf` | `code` |
+| `symbol_source` | built-in, bitmap, sdf, msdf, svg path | built-in |
+| `encoding_preference` | auto, code, bitmap, sdf, msdf | auto |
 | `color_mode` | `rgba`, `scalar` | `rgba` |
 | `size_mode` | `direct`, `scalar` | `direct` |
 
-All set at visual creation time by combining flag constants with bitwise OR and passing to
-`dvz_marker(scene, flags)`:
-
-| Group | Flag constants |
-|---|---|
-| render mode | `DVZ_MARKER_CODE` (default), `DVZ_MARKER_BITMAP`, `DVZ_MARKER_SDF`, `DVZ_MARKER_MSDF` |
-| color mode | `DVZ_COLOR_RGBA` (default), `DVZ_COLOR_SCALAR` |
-| size mode | `DVZ_SIZE_DIRECT` (default), `DVZ_SIZE_SCALAR` |
-
-Example: `dvz_marker(scene, DVZ_MARKER_MSDF | DVZ_COLOR_SCALAR)`.
+The installed v0.4 marker constructor does not yet expose symbol sets or source variants. When they
+land, source selection should happen on `DvzSymbolSet`; marker visual flags should remain focused on
+marker attribute modes such as scalar color and scalar size.
 
 
 ## Transform Model, Stage Participation, Picking
@@ -338,7 +367,8 @@ and emits a diagnostic. `color_mode = scalar` and `size_mode = scalar` follow st
 | No shape or edge needed | `point` |
 | Fixed square pixel mark | `pixel` |
 | Connected lines | `segment` or `path` |
-| Text or atlas-backed custom symbols | `glyph` |
+| Text | `glyph` |
+| Centered atlas-backed icons/symbols | `marker` with `DvzSymbolSet` |
 
 
 ## Minimum Cases This Spec Must Support
@@ -348,7 +378,7 @@ and emits a diagnostic. `color_mode = scalar` and `size_mode = scalar` follow st
 3. categorical scatter with 5 shapes — 5 marker visuals,
 4. directional arrows — `angle` `PER_ITEM`,
 5. outlined markers — `aspect = outline`,
-6. custom MSDF symbol — `render_mode = msdf` with texture,
+6. custom MSDF symbol — SVG path or MSDF source in `DvzSymbolSet`,
 7. bubble chart with shaped markers — `size_mode = scalar` with sqrt scale,
 8. quiver plot — `shape = arrow`, `angle` `PER_ITEM`, `magnitude` `PER_ITEM`.
 
@@ -357,12 +387,12 @@ and emits a diagnostic. `color_mode = scalar` and `size_mode = scalar` follow st
 
 | v0.3 | v0.4 |
 |---|---|
-| `dvz_marker_mode` | `render_mode` axis |
+| `dvz_marker_mode` | symbol encoding preference or compatibility backend knob |
 | `dvz_marker_aspect` | `aspect` parameter |
-| `dvz_marker_shape` | `shape` parameter |
+| `dvz_marker_shape` | built-in `symbol` id or compatibility `shape` parameter |
 | `dvz_marker_position/size/color/angle` | `position`/`diameter`/`color`/`angle`, extended sources and modes |
 | `dvz_marker_edgecolor/linewidth` | `edge_color` and `stroke_width` style fields |
-| `dvz_marker_texture/tex_scale` | unchanged |
+| `dvz_marker_texture/tex_scale` | symbol source texture plus distance-field metadata |
 
 v0.4 adds: `size_space`, `shift`, `color_mode = scalar`, `size_mode = scalar`.
 `mtsdf` merged into `msdf` unless implementation evidence separates them.
@@ -377,7 +407,7 @@ v0.3 marker prior art to preserve:
 4. SDF markers sampled a single-channel distance texture and used `tex_scale` for distance scaling;
 5. MSDF markers accepted SVG path strings through `dvz_msdf_from_svg()` before upload to the marker
    texture;
-6. marker SDF/MSDF custom-symbol import should return in v0.4 as a first-class marker mode, not as
+6. marker SDF/MSDF custom-symbol import should return in v0.4 through reusable symbol sets, not as
    a separate visual family or as an ad hoc example-only bitmap path.
 
 
@@ -394,3 +424,5 @@ v0.3 marker prior art to preserve:
    sprites.
 5. Restore SVG path import for custom SDF/MSDF marker symbols, equivalent in capability to the v0.3
    `dvz_msdf_from_svg()` marker test path.
+6. Add `DvzSymbolSet` and `symbol` attribute support so marker can use built-in, bitmap, SDF, and
+   MSDF symbols without exposing `code`/`bitmap`/`sdf`/`msdf` as the primary marker API.
