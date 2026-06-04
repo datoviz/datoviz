@@ -228,10 +228,10 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_marker_visual_draw_desc, _scene_marker_visual_desc_from_metadata),
      .renderable_kind = DVZ_RENDERABLE_POINT_LIKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_MARKER,
      .attrs = MARKER_ATTRS, .attr_count = DVZ_ARRAY_COUNT(MARKER_ATTRS),
-     .expected_attrs = "position, color, diameter, item_state, angle, shape",
+     .expected_attrs = "position, color, diameter, item_state, angle, shape/symbol",
      .attr_alias_public = "diameter", .attr_alias_storage = "size",
      .init_state = _scene_visual_init_point_style, .upload_material_params = true,
-     .sync_point_style_material = true},
+     .sync_point_style_material = true, .validate_attr = _scene_marker_visual_validate_attr},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_SEGMENT, "segment", _scene_segment_visual_lowering,
          _scene_segment_visual_bounds, _scene_segment_visual_bind_desc,

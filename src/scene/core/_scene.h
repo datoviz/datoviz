@@ -66,6 +66,7 @@
 #define DVZ_SCENE_MAX_OVERLAY_CARDS 128
 #define DVZ_SCENE_MAX_FONTS 64
 #define DVZ_SCENE_MAX_TEXTS 128
+#define DVZ_SCENE_MAX_SYMBOL_SETS 64
 #define DVZ_SCENE_MAX_ANNOTATIONS 128
 #define DVZ_SCENE_MAX_PANEL_COLORBARS 16
 #define DVZ_SCENE_MAX_PANEL_LEGENDS 16
@@ -325,6 +326,7 @@ typedef struct DvzLinkChannel DvzLinkChannel;
 typedef struct DvzPinnedReadout DvzPinnedReadout;
 typedef struct DvzFont DvzFont;
 typedef struct DvzText DvzText;
+typedef struct DvzSymbolSet DvzSymbolSet;
 typedef struct DvzAnnotation DvzAnnotation;
 typedef struct DvzAxis DvzAxis;
 typedef struct DvzAnimation DvzAnimation;
@@ -1092,6 +1094,16 @@ struct DvzText
 };
 
 
+struct DvzSymbolSet
+{
+    DvzScene* scene;
+    uint32_t flags;
+    bool active;
+    uint32_t builtin_count;
+    bool builtins[DVZ_MARKER_SHAPE_ROUNDED_RECT + 1];
+};
+
+
 typedef struct DvzScaleBarRealization DvzScaleBarRealization;
 
 struct DvzScaleBarRealization
@@ -1507,6 +1519,7 @@ struct DvzVisualFamilyState
     char             scale_slot[32];
     DvzSceneMaterialParams material_params;
     bool                   material_params_dirty;
+    DvzSymbolSet*          symbol_set;
     DvzSceneItemStateStyleParams item_state_style_params;
     bool                         item_state_style_params_dirty;
     DvzSegmentState        segment;
@@ -1934,6 +1947,9 @@ struct DvzScene
 
     uint32_t text_count;
     DvzText texts[DVZ_SCENE_MAX_TEXTS];
+
+    uint32_t symbol_set_count;
+    DvzSymbolSet symbol_sets[DVZ_SCENE_MAX_SYMBOL_SETS];
 
     uint32_t annotation_count;
     DvzAnnotation annotations[DVZ_SCENE_MAX_ANNOTATIONS];

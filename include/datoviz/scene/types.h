@@ -81,6 +81,7 @@ typedef struct DvzColorbar          DvzColorbar;
 typedef struct DvzLegend            DvzLegend;
 typedef struct DvzFont              DvzFont;
 typedef struct DvzText              DvzText;
+typedef struct DvzSymbolSet         DvzSymbolSet;
 typedef struct DvzAnnotation        DvzAnnotation;
 typedef struct DvzAnnotation        DvzScaleBar;
 typedef struct DvzAxis              DvzAxis;
@@ -92,6 +93,9 @@ typedef struct DvzOrbitCamera       DvzOrbitCamera;
 
 typedef int64_t DvzCategoryId;
 typedef int64_t DvzTimestamp; /* microseconds since Unix epoch UTC */
+typedef uint32_t DvzSymbolId;
+
+#define DVZ_SYMBOL_ID_INVALID UINT32_MAX
 
 
 

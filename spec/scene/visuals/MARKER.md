@@ -150,9 +150,9 @@ Standard `vec2` — see `SHARED_ATTRIBUTES.md`.
 
 Per-item shape selector. Each item renders with the requested built-in code-SDF shape.
 
-The target contract should replace or complement this with a `symbol` attribute selecting
-`DvzSymbolId` values from a bound `DvzSymbolSet`. Until that lands, `shape` remains the installed
-path for built-in code-SDF markers.
+The built-in symbol-set slice complements this with a `symbol` attribute selecting `DvzSymbolId`
+values from a bound `DvzSymbolSet`. In the current code-SDF path, `shape` and `symbol` share the
+same retained storage slot for built-in ids.
 
 
 ### `symbol`
@@ -167,8 +167,9 @@ path for built-in code-SDF markers.
 
 Per-item symbol selector. This is the long-term generalized form of `shape`.
 
-Status on 2026-06-04: v0.4 parity work. Use `shape` for current built-in code-SDF markers until the
-symbol-set binding lands.
+Status on 2026-06-04: built-in symbol-set binding is active for code-SDF markers. `symbol` lowers
+through the same retained slot as `shape`; bitmap/SDF/MSDF-backed symbol ids land in later parity
+slices.
 
 
 ### `edge_color` (per-item)

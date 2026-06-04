@@ -1782,6 +1782,58 @@ DVZ_EXPORT int dvz_point_set_style(DvzVisual* visual, const DvzPointStyleDesc* d
 
 
 /**
+ * Create a scene-owned reusable symbol set.
+ *
+ * The first v0.4 slice supports built-in code-SDF symbols. Bitmap, SDF, MSDF, and SVG-path sources
+ * are added through the same object model in later parity slices.
+ *
+ * @param scene the scene
+ * @param flags reserved flags
+ * @return the symbol set, or NULL on error
+ */
+DVZ_EXPORT DvzSymbolSet* dvz_symbol_set(DvzScene* scene, uint32_t flags);
+
+
+/**
+ * Register or return a built-in symbol id in one symbol set.
+ *
+ * Built-in symbol ids are stable within the set and currently match the corresponding
+ * `DvzMarkerShape` values so marker `shape` and `symbol` data can share one retained path.
+ *
+ * @param symbols the symbol set
+ * @param builtin the built-in symbol
+ * @return the symbol id, or DVZ_SYMBOL_ID_INVALID on error
+ */
+DVZ_EXPORT DvzSymbolId dvz_symbol_builtin(DvzSymbolSet* symbols, DvzSymbolBuiltin builtin);
+
+
+/**
+ * Bind a reusable symbol set to a marker visual.
+ *
+ * The current built-in slice treats marker `"symbol"` data as an alias for the code-SDF `"shape"`
+ * attribute. Later texture-backed symbol sources lower through the same binding.
+ *
+ * @param visual the marker visual
+ * @param symbols the symbol set, or NULL to clear the binding
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_marker_set_symbols(DvzVisual* visual, DvzSymbolSet* symbols);
+
+
+/**
+ * Set every existing marker item to one built-in symbol.
+ *
+ * This convenience writes the marker's dense `"shape"`/`"symbol"` attribute and requires an
+ * existing dense item count, usually from `"position"`.
+ *
+ * @param visual the marker visual
+ * @param builtin the built-in symbol
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_marker_set_symbol(DvzVisual* visual, DvzSymbolBuiltin builtin);
+
+
+/**
  * Return default marker styling.
  *
  * The default marker style renders filled markers with no stroke. The `color` visual attribute
@@ -1860,9 +1912,9 @@ DVZ_EXPORT DvzVisual* dvz_pixel(DvzScene* scene, uint32_t flags);
  * Create a marker visual.
  *
  * Renders screen-space code-SDF marker sprites with dense `position` (vec3), `color` (RGBA8),
- * `diameter` (float in pixels), `angle` (float radians), and `shape` (uint32_t
- * DvzMarkerShape) attributes. Optional `item_state` (uint32_t DvzItemStateKind bitfield)
- * supports retained hover and selection styling.
+ * `diameter` (float in pixels), `angle` (float radians), and `shape`/`symbol` (uint32_t built-in
+ * symbol id) attributes. Optional `item_state` (uint32_t DvzItemStateKind bitfield) supports
+ * retained hover and selection styling.
  * Built-in code-SDF shapes include the v0.3 marker vocabulary plus target.
  *
  * @param scene the scene

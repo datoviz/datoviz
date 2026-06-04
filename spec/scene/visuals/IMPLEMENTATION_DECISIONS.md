@@ -211,13 +211,15 @@ Implemented first slice:
 4. Built-in shapes cover the v0.3 marker vocabulary plus `target`.
 5. Use v0.3 marker GLSL SDF code as design prior art and port selectively into the v0.4 shader
    registry and runtime path.
-6. Attributes: `position`, `color`, `diameter`, `angle`, and `shape`.
-7. `color` and `diameter` support constant, per-item, and grouped sources; `angle` and `shape` are
-   dense per-item in the active descriptor.
+6. Attributes: `position`, `color`, `diameter`, `angle`, and `shape`/`symbol`.
+7. `color` and `diameter` support constant, per-item, and grouped sources; `angle` and
+   `shape`/`symbol` are dense per-item in the active descriptor.
 8. The `shape` attribute uses `uint32_t`, not `uint8_t`, for alignment and future symbol/atlas
    consistency.
-9. GPU-backed marker picking is in place.
-10. Picking currently uses the marker sprite bounding box. Exact code-SDF shape-mask picking remains
+9. `DvzSymbolSet` and built-in marker `symbol` ids are in place; `symbol` currently aliases the
+   retained `shape` slot for code-SDF built-ins.
+10. GPU-backed marker picking is in place.
+11. Picking currently uses the marker sprite bounding box. Exact code-SDF shape-mask picking remains
     deferred.
 
 Style naming:
@@ -229,12 +231,11 @@ Style naming:
 
 Deferred:
 
-1. `DvzSymbolSet` and marker `symbol` attribute.
-2. Bitmap symbol source.
-3. SDF/MSDF symbol sources and SVG-path import.
-4. Shared symbol/glyph atlas infrastructure.
-5. Scalar color/diameter modes.
-6. Data-space marker sizing.
+1. Bitmap symbol source.
+2. SDF/MSDF symbol sources and SVG-path import.
+3. Shared symbol/glyph atlas infrastructure.
+4. Scalar color/diameter modes.
+5. Data-space marker sizing.
 
 Symbol-backed marker rules:
 

@@ -1134,6 +1134,11 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     AT(visual != NULL);
     AT(visual->type == DVZ_VISUAL_TYPE_MARKER);
     AT(DVZ_MARKER_SHAPE_ROUNDED_RECT == 20);
+    AT((uint32_t)DVZ_SYMBOL_ROUNDED_RECT == (uint32_t)DVZ_MARKER_SHAPE_ROUNDED_RECT);
+
+    DvzSymbolSet* symbol_set = dvz_symbol_set(scene, 0);
+    AT(symbol_set != NULL);
+    AT(dvz_marker_set_symbols(visual, symbol_set) == 0);
 
     vec3 positions[5] = {
         {-0.50f, 0.0f, 0.0f},
@@ -1151,19 +1156,39 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     };
     float sizes[5] = {18.0f, 22.0f, 26.0f, 30.0f, 34.0f};
     float angles[5] = {0.0f, 0.25f, 0.5f, 0.0f, 0.75f};
-    uint32_t shapes[5] = {
-        DVZ_MARKER_SHAPE_DISC,
-        DVZ_MARKER_SHAPE_DIAMOND,
-        DVZ_MARKER_SHAPE_ARROW,
-        DVZ_MARKER_SHAPE_HEART,
-        DVZ_MARKER_SHAPE_ROUNDED_RECT,
+    DvzSymbolId symbols[5] = {
+        dvz_symbol_builtin(symbol_set, DVZ_SYMBOL_DISC),
+        dvz_symbol_builtin(symbol_set, DVZ_SYMBOL_DIAMOND),
+        dvz_symbol_builtin(symbol_set, DVZ_SYMBOL_ARROW),
+        dvz_symbol_builtin(symbol_set, DVZ_SYMBOL_HEART),
+        dvz_symbol_builtin(symbol_set, DVZ_SYMBOL_ROUNDED_RECT),
     };
+    for (uint32_t i = 0; i < 5; i++)
+        AT(symbols[i] != DVZ_SYMBOL_ID_INVALID);
     AT(dvz_visual_set_data(visual, "position", positions, 5) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 5) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, 5) == 0);
     AT(dvz_visual_set_data(visual, "angle", angles, 5) == 0);
-    AT(dvz_visual_set_data(visual, "shape", shapes, 5) == 0);
+    AT(dvz_visual_set_data(visual, "symbol", symbols, 5) == 0);
     AT(visual->attr_count == 5);
+    const int shape_idx = _attr_index(visual, "shape");
+    AT(shape_idx >= 0);
+    const uint32_t* stored_symbols = (const uint32_t*)visual->attrs[shape_idx].data;
+    ANN(stored_symbols);
+    AT(stored_symbols[2] == DVZ_SYMBOL_ARROW);
+    uint32_t unavailable_symbols[5] = {
+        DVZ_SYMBOL_RING,
+        DVZ_SYMBOL_RING,
+        DVZ_SYMBOL_RING,
+        DVZ_SYMBOL_RING,
+        DVZ_SYMBOL_RING,
+    };
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_data(visual, "symbol", unavailable_symbols, 5) == -1);
+    AT(dvz_marker_set_symbol(visual, DVZ_SYMBOL_RING) == 0);
+    stored_symbols = (const uint32_t*)visual->attrs[shape_idx].data;
+    ANN(stored_symbols);
+    AT(stored_symbols[0] == DVZ_SYMBOL_RING);
     AT(dvz_marker_set_style(
            visual,
            &(DvzMarkerStyle){DVZ_STRUCT_INIT_FIELDS(DvzMarkerStyle),
@@ -1173,7 +1198,7 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
            }) == 0);
     tst_log_capture_begin(suite);
     AT_EXPECTED_ERROR_STRICT(
-        suite, dvz_visual_set_data(visual, "shape", shapes, 2) == -1);
+        suite, dvz_visual_set_data(visual, "symbol", symbols, 2) == -1);
     AT(_captured_log_contains(suite, "item_count"));
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 

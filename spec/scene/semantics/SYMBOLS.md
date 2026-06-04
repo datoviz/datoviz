@@ -18,7 +18,7 @@ boundary:
 |---|---|---|
 | Built-in code-SDF symbols | supported | Includes the v0.3 shape vocabulary plus `target`. |
 | `shape` marker attribute | supported | Compatibility spelling for built-in symbol ids. |
-| `DvzSymbolSet` and `symbol` attribute | supported | New resource boundary for built-in and texture-backed sources. |
+| `DvzSymbolSet` and `symbol` attribute | supported for built-ins | Texture-backed sources use the same boundary in later slices. |
 | Bitmap symbols | supported | Lower through internal symbol atlas storage. |
 | SDF symbols | supported | Single-channel distance-field source. |
 | MSDF symbols | supported or advanced/unstable | Required for SVG-quality custom symbols; diagnostics must state limits. |
