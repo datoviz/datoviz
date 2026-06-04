@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare the repository protein point cloud as a Datoviz example-data bundle."""
+"""Prepare a local protein point cloud as a Datoviz example-data bundle."""
 
 from __future__ import annotations
 
@@ -13,8 +13,8 @@ from common import artifact, command_argv, ensure_bundle, relpath, write_manifes
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_SOURCE = ROOT / "data" / "misc" / "molecule" / "mol.npz"
-DEFAULT_PDB_DIR = ROOT / "data" / "misc" / "molecule"
+DEFAULT_PDB_DIR = ROOT / ".cache" / "datoviz" / "examples" / "proteins" / "6qzp" / "source"
+DEFAULT_SOURCE = DEFAULT_PDB_DIR / "mol.npz"
 EXAMPLE_ID = "proteins/6qzp"
 
 
@@ -112,7 +112,10 @@ def prepare(source: Path, pdb_dir: Path, force: bool) -> None:
             "Wrote contiguous `.npy` arrays in `prepared/` without coordinate, color, or size conversion.",
             "Recorded the PDB bundle files as upstream provenance; they are not duplicated here.",
         ],
-        license_lines=["Reuse follows the repository data provenance for `data/misc/molecule`."],
+        license_lines=[
+            "Reuse follows the local source provenance; review redistribution before committing "
+            "prepared artifacts to the data submodule."
+        ],
     )
     print(f"wrote {relpath(bundle_root, ROOT)} ({position.shape[0]} atoms)")
 

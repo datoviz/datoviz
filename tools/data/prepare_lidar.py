@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare the repository LIDAR point cloud as a Datoviz example-data bundle."""
+"""Prepare a local LIDAR point cloud as a Datoviz example-data bundle."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from common import artifact, command_argv, ensure_bundle, relpath, write_manifes
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_SOURCE = ROOT / "data" / "misc" / "lidar.npz"
+DEFAULT_SOURCE = ROOT / ".cache" / "datoviz" / "examples" / "lidar" / "source" / "lidar.npz"
 EXAMPLE_ID = "lidar"
 
 
@@ -103,7 +103,10 @@ def prepare(source: Path, force: bool) -> None:
             "Loaded the source NPZ with NumPy.",
             "Wrote contiguous `.npy` arrays in `prepared/` without coordinate or color conversion.",
         ],
-        license_lines=["Reuse follows the repository data provenance for `data/misc/lidar.npz`."],
+        license_lines=[
+            "Reuse follows the local source provenance; review redistribution before committing "
+            "prepared artifacts to the data submodule."
+        ],
     )
     print(f"wrote {relpath(bundle_root, ROOT)} ({pos.shape[0]} points)")
 
