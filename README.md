@@ -11,8 +11,6 @@
 
 Up to **10,000x faster than matplotlib**, it delivers highly efficient **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
 
-[![](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)
-
 Built from the ground up with performance in mind, Datoviz is written primarily in **C** and **C++**, leveraging the [**Khronos Vulkan graphics API**](https://www.vulkan.org/). For v0.4, it focuses on the C API and low-level Python bindings via `ctypes`; the higher-level Python object-oriented and plotting APIs are expected to live in the VisPy2/GSP stack.
 
 Written by one of the original creators of [VisPy](https://vispy.org), a GPU-based Python scientific visualization library, Datoviz aims to serve as the default backend for the upcoming **VisPy 2.0**.
@@ -56,11 +54,7 @@ Use **Matplotlib** for polished static plots and PDF/SVG/vector export, **Datovi
 
 #### Preliminary performance benchmark
 
-The figure below shows a preliminary [**performance benchmark**](https://github.com/datoviz/datoviz/blob/main/examples/benchmarks/benchmark_mpl.py) comparing Datoviz and Matplotlib on an interactive 2D scatter plot, with increasing numbers of points and a simulated zoom interaction (on a high-end Linux desktop PC):
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/datoviz/data/master/screenshots/benchmark.png" alt="Datoviz vs Matplotlib benchmark" width="800">
-</p>
+A preliminary [**performance benchmark**](https://github.com/datoviz/datoviz/blob/main/examples/benchmarks/benchmark_mpl.py) compares Datoviz and Matplotlib on an interactive 2D scatter plot, with increasing numbers of points and a simulated zoom interaction on a high-end Linux desktop PC.
 
 In this benchmark, **Datoviz outperforms Matplotlib by a factor of up to 10,000×**, maintaining interactive framerates even with millions of points. Matplotlib, in contrast, becomes sluggish or fails entirely as the dataset size increases.
 
@@ -189,9 +183,6 @@ panel.add(visual)
 app.run()
 app.destroy()
 ```
-
-![](https://raw.githubusercontent.com/datoviz/data/main/gallery/quickstart.png)
-
 
 ## 📚 Documentation
 

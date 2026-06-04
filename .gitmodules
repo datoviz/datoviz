@@ -1,6 +1,7 @@
 [submodule "data"]
 	path = data
 	url = https://github.com/datoviz/data
+	branch = v0.4-dev
 [submodule "external/cglm"]
 	path = external/cglm
 	url = https://github.com/recp/cglm.git

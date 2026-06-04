@@ -10,7 +10,7 @@ EXAMPLES_DIR = Path('examples')
 GALLERY_DIR = Path('docs/gallery')
 DATA_DIR = Path('data')
 CATEGORIES = ['showcase', 'visuals', 'features']
-GITHUB_IMG_BASE = 'https://raw.githubusercontent.com/datoviz/data/main/gallery'
+GITHUB_IMG_BASE = 'https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery'
 
 INTRO = {
     'gallery': """The Datoviz gallery shows what the library can do through concrete examples.
