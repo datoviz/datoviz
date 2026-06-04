@@ -22,7 +22,7 @@ boundary:
 | Bitmap symbols | supported for homogeneous bitmap marker visuals | RGBA8 payload is copied into scene-owned symbol atlas pages and lowered to an atlas texture plus per-item UV rectangles. |
 | SDF symbols | supported for homogeneous SDF marker visuals | Single-channel distance-field source metadata is retained and rendered through distance-range shader params. |
 | MSDF symbols | supported for homogeneous MSDF marker visuals | RGB distance-field source metadata is retained and rendered through the shared distance marker shader. |
-| SVG path import | supported or advanced/unstable | Prefer a convenience import API over exposing parser internals. |
+| SVG path import | supported when msdfgen SVG support is available | `dvz_symbol_svg_path()` generates an MSDF symbol from path data and reports `DVZ_SYMBOL_ID_INVALID` when SVG support is unavailable. |
 | `mtsdf` | advanced/unstable or deferred | Preserve only if the implementation cost is small after MSDF lands. |
 | Exact symbol-mask picking | supported for code-SDF, target for texture-backed sources | Texture-backed markers render through alpha/distance coverage, but exact query semantics still need explicit coverage. |
 

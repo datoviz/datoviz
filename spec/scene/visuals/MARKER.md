@@ -351,7 +351,8 @@ Must match the declared render mode format.
 
 The installed v0.4 marker constructor keeps source selection on `DvzSymbolSet`; marker visual flags
 should remain focused on marker attribute modes such as scalar color and scalar size. Built-in and
-homogeneous bitmap/SDF/MSDF symbols render today. SVG path import and richer fallback policy remain
+homogeneous bitmap/SDF/MSDF symbols render today. SVG path import is available through
+`dvz_symbol_svg_path()` when msdfgen SVG support is compiled in. Richer fallback policy remains
 separate parity work.
 
 
@@ -424,7 +425,5 @@ v0.3 marker prior art to preserve:
 2. Bitmap marker mode still needs item-state styling composition and exact alpha-aware picking.
 3. Shared SDF/MSDF decode helpers with text should be consolidated after SVG import starts
    generating symbol distance fields.
-4. Restore SVG path import for custom SDF/MSDF marker symbols, equivalent in capability to the v0.3
-   `dvz_msdf_from_svg()` marker test path.
-5. Add fallback or split-visual policy for mixed built-in/texture-backed symbol arrays without
+4. Add fallback or split-visual policy for mixed built-in/texture-backed symbol arrays without
    exposing `code`/`bitmap`/`sdf`/`msdf` as the primary marker API.

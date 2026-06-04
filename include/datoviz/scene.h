@@ -1822,9 +1822,8 @@ DVZ_EXPORT DvzSymbolImageDesc dvz_symbol_image_desc(void);
 /**
  * Register an RGBA bitmap symbol source in one symbol set.
  *
- * The payload is copied into scene-owned storage. Texture-backed marker rendering is not active in
- * the current point-sprite marker pipeline; using the returned id as marker `"symbol"` data reports
- * a validation error until the atlas-backed marker variant lands.
+ * The payload is copied into scene-owned storage. Homogeneous bitmap marker symbol arrays render
+ * through a scene-owned atlas texture.
  *
  * @param symbols the symbol set
  * @param name optional diagnostic name
@@ -1878,11 +1877,30 @@ DVZ_EXPORT DvzSymbolId dvz_symbol_msdf(
 
 
 /**
+ * Generate and register an MSDF symbol source from an SVG path string.
+ *
+ * The generated payload is copied into scene-owned storage through `dvz_symbol_msdf()`.
+ * `desc->distance_range_px` controls the generated distance-field pixel range when nonzero. This
+ * function returns `DVZ_SYMBOL_ID_INVALID` if Datoviz was built without msdfgen SVG support.
+ *
+ * @param symbols the symbol set
+ * @param name optional diagnostic name
+ * @param svg_path SVG path data string
+ * @param width generated atlas source width in pixels
+ * @param height generated atlas source height in pixels
+ * @param desc optional image source options
+ * @return the symbol id, or DVZ_SYMBOL_ID_INVALID on error
+ */
+DVZ_EXPORT DvzSymbolId dvz_symbol_svg_path(
+    DvzSymbolSet* symbols, const char* name, const char* svg_path, uint32_t width, uint32_t height,
+    const DvzSymbolImageDesc* desc);
+
+
+/**
  * Bind a reusable symbol set to a marker visual.
  *
- * The current marker shader accepts built-in code-SDF ids. Texture-backed symbol sources are owned
- * by the set but remain rejected by marker `"symbol"` validation until the atlas-backed marker
- * pipeline variant lands.
+ * Marker visuals accept built-in code-SDF ids and homogeneous bitmap/SDF/MSDF symbol arrays. Mixed
+ * built-in/texture-backed or mixed-encoding arrays are rejected for now.
  *
  * @param visual the marker visual
  * @param symbols the symbol set, or NULL to clear the binding

@@ -1428,6 +1428,20 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     AT(found_msdf_texture);
     AT(found_msdf_texture_upload);
 
+#if defined(DVZ_HAS_MSDF_SVG) && DVZ_HAS_MSDF_SVG
+    const char* star_path =
+        "M50,10 L61.8,35.5 L90,42 L69,61 L75,90 L50,75 L25,90 L31,61 L10,42 L38.2,35.5 Z";
+    const DvzSymbolId svg_symbol =
+        dvz_symbol_svg_path(symbol_set, "svg-star", star_path, 32, 32, &symbol_desc);
+    AT(svg_symbol != DVZ_SYMBOL_ID_INVALID);
+    AT(symbol_set->source_count == 4);
+    AT(symbol_set->sources[symbol_set->source_count - 1].kind == DVZ_SYMBOL_SOURCE_MSDF);
+    AT(symbol_set->sources[symbol_set->source_count - 1].width == 32);
+    AT(symbol_set->sources[symbol_set->source_count - 1].height == 32);
+    AT(symbol_set->sources[symbol_set->source_count - 1].channels == 3);
+    AC(symbol_set->sources[symbol_set->source_count - 1].distance_range_px, 4.0, 1e-6);
+#endif
+
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
