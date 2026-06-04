@@ -61,5 +61,15 @@ bool _scene_marker_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out)
 {
-    return _scene_point_like_visual_bind_desc(visual, controller_mode, out);
+    if (!_scene_point_like_visual_bind_desc(visual, controller_mode, out))
+        return false;
+    if (visual->image_texture_id != 0)
+    {
+        out->uses_material_set1 = false;
+        out->material_buffer_id = 0;
+        out->uses_image_set1 = true;
+        out->image_texture_id = visual->image_texture_id;
+        out->image_nearest_sampler = visual->image_nearest_sampler;
+    }
+    return true;
 }

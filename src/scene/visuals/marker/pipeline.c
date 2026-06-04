@@ -67,9 +67,14 @@ bool _scene_marker_visual_pipeline_desc(
     }
 
     uint32_t attr_count = picking ? 2 : 5;
+    bool bitmap_marker = visual->image_texture_id != 0 && !picking;
     if (visual->has_item_state && !picking)
         attr_count++;
+    if (bitmap_marker)
+        attr_count++;
     out->vertex_buffer_count = visual->has_item_state ? 6 : 5;
+    if (bitmap_marker)
+        out->vertex_buffer_count++;
     out->binding_count = out->vertex_buffer_count;
     out->attr_count = attr_count;
 
@@ -80,14 +85,23 @@ bool _scene_marker_visual_pipeline_desc(
     _scene_visual_pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32_SFLOAT, sizeof(float));
     _scene_visual_pipeline_attr(out, 3, 3, 3, VK_FORMAT_R32_SFLOAT, sizeof(float));
     _scene_visual_pipeline_attr(out, 4, 4, 4, VK_FORMAT_R32_UINT, sizeof(uint32_t));
+    uint32_t next_attr = 5;
     if (visual->has_item_state && !picking)
-        _scene_visual_pipeline_attr(out, 5, 5, 5, VK_FORMAT_R32_UINT, sizeof(uint32_t));
+        _scene_visual_pipeline_attr(
+            out, next_attr++, 5, 5, VK_FORMAT_R32_UINT, sizeof(uint32_t));
+    if (bitmap_marker)
+    {
+        uint32_t binding = visual->has_item_state ? 6 : 5;
+        _scene_visual_pipeline_attr(
+            out, next_attr++, binding, 6, VK_FORMAT_R32G32B32A32_SFLOAT, 4 * sizeof(float));
+    }
     for (uint32_t i = 0; i < out->binding_count; i++)
         out->step_modes[i] = lowering.vertex_step_mode;
 
     out->needs_common_layout = caps.uses_common_set;
-    out->needs_material_layout = caps.needs_material_layout && !picking;
+    out->needs_material_layout = caps.needs_material_layout && !picking && !bitmap_marker;
     out->needs_item_state_style_layout = visual->has_item_state && !picking;
+    out->needs_image_layout = bitmap_marker;
     _scene_visual_pipeline_apply_standard_depth_state(
         &caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op, out);
     return true;

@@ -172,6 +172,55 @@ static void _scene_emit_image_like_texture_upload(
 
 
 /**
+ * Emit a marker bitmap-symbol atlas texture upload.
+ *
+ * @param figure the parent figure
+ * @param plan the destination frame plan
+ * @param visual the marker visual
+ * @param visual_index the scene visual index
+ */
+static void _scene_emit_marker_symbol_texture_upload(
+    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+{
+    ANN(figure);
+    ANN(plan);
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_MARKER)
+        return;
+    DvzVisualFamilyState* state = _visual_family_state(visual);
+    if (state->symbol_source_kind != DVZ_SYMBOL_SOURCE_BITMAP || state->symbol_set == NULL)
+        return;
+    DvzSymbolAtlasPage* page = &state->symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_BITMAP];
+    if (!page->active || !page->dirty || page->data == NULL || page->byte_size == 0)
+        return;
+
+    char tex_resource_id[128];
+    if (!_scene_visual_texture_resource_key(
+            figure, visual, visual_index, tex_resource_id, sizeof(tex_resource_id)))
+        return;
+    if (!dvz_frame_plan_upload_bytes(
+            plan, tex_resource_id, 0, page->byte_size, "marker_symbol_atlas", page->data) ||
+        !dvz_frame_plan_upload_metadata(
+            plan,
+            &(DvzFramePlanUploadMeta){
+                .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
+                .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+                .visual_index = visual_index,
+                .buffer_index = UINT32_MAX,
+            }) ||
+        !dvz_frame_plan_upload_set_texture_format(plan, VK_FORMAT_R8G8B8A8_UNORM, 4) ||
+        !dvz_frame_plan_upload_set_texture_extent(plan, page->width, page->height) ||
+        !dvz_frame_plan_upload_set_texture_allocation_extent(plan, page->width, page->height) ||
+        !dvz_frame_plan_upload_set_texture_region(plan, 0, 0))
+    {
+        log_error("marker symbol atlas texture upload failed");
+        return;
+    }
+    page->dirty = false;
+}
+
+
+/**
  * Emit dirty 3D source texture uploads for a volume visual.
  *
  * @param plan the destination frame plan
@@ -336,6 +385,7 @@ void _scene_emit_visual_family_texture_uploads(
     ANN(plan);
     ANN(visual);
     _scene_emit_image_like_texture_upload(figure, plan, visual, visual_index);
+    _scene_emit_marker_symbol_texture_upload(figure, plan, visual, visual_index);
     _scene_emit_volume_source_texture_upload(figure, plan, visual, visual_index);
     _scene_emit_volume_transfer_texture_upload(plan, visual, visual_index);
     _scene_emit_volume_label_lookup_upload(plan, visual, visual_index);

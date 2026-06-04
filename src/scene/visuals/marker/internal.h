@@ -50,3 +50,6 @@ bool _scene_marker_visual_draw_desc(
 
 bool _scene_marker_visual_validate_attr(
     const DvzVisual* visual, const char* attr_name, const void* data, uint32_t item_count);
+
+bool _scene_marker_visual_after_attr_set(
+    DvzVisual* visual, const char* attr_name, uint32_t item_count);

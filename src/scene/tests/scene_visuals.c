@@ -1240,6 +1240,34 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     AT(_captured_log_contains(suite, "item_count"));
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
+    DvzVisual* bitmap_visual = dvz_marker(scene, 0);
+    AT(bitmap_visual != NULL);
+    AT(dvz_marker_set_symbols(bitmap_visual, symbol_set) == 0);
+    vec3 bitmap_positions[2] = {{-0.30f, -0.35f, 0.0f}, {+0.30f, -0.35f, 0.0f}};
+    DvzColor bitmap_colors[2] = {{255, 255, 255, 255}, {128, 255, 255, 200}};
+    float bitmap_sizes[2] = {20.0f, 28.0f};
+    float bitmap_angles[2] = {0.0f, 0.5f};
+    DvzSymbolId bitmap_symbols[2] = {bitmap_symbol, bitmap_symbol};
+    AT(dvz_visual_set_data(bitmap_visual, "position", bitmap_positions, 2) == 0);
+    AT(dvz_visual_set_data(bitmap_visual, "color", bitmap_colors, 2) == 0);
+    AT(dvz_visual_set_data(bitmap_visual, "size", bitmap_sizes, 2) == 0);
+    AT(dvz_visual_set_data(bitmap_visual, "angle", bitmap_angles, 2) == 0);
+    AT(dvz_visual_set_data(bitmap_visual, "symbol", bitmap_symbols, 2) == 0);
+    const int tex_rect_idx = _attr_index(bitmap_visual, "tex_rect");
+    AT(tex_rect_idx >= 0);
+    const float* stored_tex_rects = (const float*)bitmap_visual->attrs[tex_rect_idx].data;
+    ANN(stored_tex_rects);
+    AT(bitmap_visual->attrs[tex_rect_idx].item_count == 2);
+    AC(stored_tex_rects[0], 0.0, 1e-6);
+    AC(stored_tex_rects[1], 0.0, 1e-6);
+    AC(stored_tex_rects[2], 1.0, 1e-6);
+    AC(stored_tex_rects[3], 1.0, 1e-6);
+    AC(stored_tex_rects[4], 0.0, 1e-6);
+    AC(stored_tex_rects[5], 0.0, 1e-6);
+    AC(stored_tex_rects[6], 1.0, 1e-6);
+    AC(stored_tex_rects[7], 1.0, 1e-6);
+    AT(dvz_panel_add_visual(panel, bitmap_visual, NULL) == 0);
+
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
@@ -1249,11 +1277,18 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
     AT(_stream_has_render_pipeline_label(stream, "_pipe_markerg_coverage_blend_depth"));
+    AT(_stream_has_render_pipeline_label(
+        stream, "_pipe_marker_bitmapg_coverage_blend_depth"));
 
     bool found_pipeline = false;
+    bool found_bitmap_pipeline = false;
     bool found_material_bg = false;
+    bool found_set1_bg = false;
     bool found_draw = false;
-    bool found_vertex_slots[5] = {false};
+    bool found_bitmap_draw = false;
+    bool found_texture = false;
+    bool found_texture_upload = false;
+    bool found_vertex_slots[6] = {false};
     uint32_t set_vertex_buffer_count = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
@@ -1268,31 +1303,64 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
             AT(command->u.create_render_pipeline.attr_locations[4] == 4);
             AT(command->u.create_render_pipeline.attr_formats[4] == VK_FORMAT_R32_UINT);
         }
+        else if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE &&
+                 command->u.create_render_pipeline.binding_count == 6)
+        {
+            found_bitmap_pipeline = true;
+            AT(command->u.create_render_pipeline.attr_count == 6);
+            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+            AT(command->u.create_render_pipeline.attr_locations[5] == 6);
+            AT(command->u.create_render_pipeline.attr_formats[5] ==
+               VK_FORMAT_R32G32B32A32_SFLOAT);
+            AT(command->u.create_render_pipeline.bind_group_layout_count == 2);
+        }
         else if (command->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
         {
             found_material_bg = found_material_bg || command->u.set_bind_group.slot == 1;
+            found_set1_bg = found_set1_bg || command->u.set_bind_group.slot == 1;
         }
         else if (command->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
         {
             set_vertex_buffer_count++;
             AT(command->u.set_vertex_buffer.buffer_id != 0);
             AT(command->u.set_vertex_buffer.offset == 0);
-            AT(command->u.set_vertex_buffer.slot < 5);
+            AT(command->u.set_vertex_buffer.slot < 6);
             found_vertex_slots[command->u.set_vertex_buffer.slot] = true;
         }
         else if (command->type == DVZ_DRP2_COMMAND_DRAW)
         {
-            found_draw = true;
-            AT(command->u.draw.vertex_count == 5);
+            found_draw = found_draw || command->u.draw.vertex_count == 5;
+            found_bitmap_draw = found_bitmap_draw || command->u.draw.vertex_count == 2;
             AT(command->u.draw.instance_count == 1);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            found_texture =
+                found_texture || (command->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
+                                  command->u.create_texture.width == 2 &&
+                                  command->u.create_texture.height == 2 &&
+                                  command->u.create_texture.depth == 1);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+        {
+            found_texture_upload =
+                found_texture_upload || (command->u.write_texture.width == 2 &&
+                                         command->u.write_texture.height == 2 &&
+                                         command->u.write_texture.depth == 1 &&
+                                         command->u.write_texture.bytes_per_row == 2 * 4);
         }
     }
     AT(found_pipeline);
+    AT(found_bitmap_pipeline);
     AT(found_material_bg);
-    AT(set_vertex_buffer_count == 5);
-    for (uint32_t slot = 0; slot < 5; slot++)
+    AT(found_set1_bg);
+    AT(set_vertex_buffer_count == 11);
+    for (uint32_t slot = 0; slot < 6; slot++)
         AT(found_vertex_slots[slot]);
     AT(found_draw);
+    AT(found_bitmap_draw);
+    AT(found_texture);
+    AT(found_texture_upload);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);

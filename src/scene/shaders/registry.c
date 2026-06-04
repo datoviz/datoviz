@@ -136,6 +136,8 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "pixel_query_u32_frag" : "pixel_pick_vert";
     case DVZ_SCENE_BUILTIN_SHADER_MARKER:
         return fragment ? "marker_frag" : "marker_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_MARKER_BITMAP:
+        return fragment ? "marker_bitmap_frag" : "marker_bitmap_vert";
     case DVZ_SCENE_BUILTIN_SHADER_MARKER_ITEM_STATE:
         return fragment ? "marker_item_state_frag" : "marker_item_state_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SEGMENT:

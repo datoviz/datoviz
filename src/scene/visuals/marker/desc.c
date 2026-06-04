@@ -16,6 +16,7 @@
 #include "marker/internal.h"
 
 #include "point/internal.h"
+#include "_visual_pipeline_internal.h"
 
 
 
@@ -36,7 +37,30 @@ bool _scene_marker_visual_desc_from_metadata(
     DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out,
     const char** error)
 {
-    return _scene_point_like_visual_desc_from_metadata(
-        emitter, meta, DVZ_SCENE_VISUAL_DESC_MARKER, DVZ_SCENE_POINT_LIKE_MARKER, true, out,
-        error);
+    if (!_scene_point_like_visual_desc_from_metadata(
+            emitter, meta, DVZ_SCENE_VISUAL_DESC_MARKER, DVZ_SCENE_POINT_LIKE_MARKER, true, out,
+            error))
+        return false;
+
+    uint64_t tex_rect_id = _scene_visual_desc_resource(emitter, meta->tex_rect_id);
+    uint64_t tex_id = _scene_visual_desc_resource(emitter, meta->texture_id);
+    if (tex_rect_id != 0)
+    {
+        if (out->has_item_state)
+        {
+            if (error != NULL)
+                *error = "bitmap marker symbols do not yet support item_state styling";
+            return false;
+        }
+        if (tex_id == 0)
+        {
+            if (error != NULL)
+                *error = "typed marker metadata missing symbol atlas texture resource";
+            return false;
+        }
+        out->vbuf_ids[out->vbuf_count++] = tex_rect_id;
+        out->image_texture_id = tex_id;
+        out->image_nearest_sampler = true;
+    }
+    return true;
 }

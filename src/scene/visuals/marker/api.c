@@ -88,6 +88,58 @@ static const DvzSymbolSource* _symbol_set_source(const DvzSymbolSet* symbols, Dv
 
 
 /**
+ * Classify one marker symbol payload for the active marker render path.
+ *
+ * @param symbol_set the bound symbol set, or NULL for built-ins only
+ * @param symbols per-item symbol ids
+ * @param item_count number of symbol ids
+ * @param out_kind output symbol source kind
+ * @return whether the payload is accepted
+ */
+static bool _marker_symbol_payload_kind(
+    const DvzSymbolSet* symbol_set, const uint32_t* symbols, uint32_t item_count,
+    DvzSymbolSourceKind* out_kind)
+{
+    ANN(symbols);
+    ANN(out_kind);
+    *out_kind = DVZ_SYMBOL_SOURCE_NONE;
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        if (_symbol_set_has_renderable_marker_id(symbol_set, symbols[i]))
+        {
+            if (*out_kind != DVZ_SYMBOL_SOURCE_NONE)
+            {
+                log_error("marker symbol payload cannot mix built-in and texture-backed symbols");
+                return false;
+            }
+            continue;
+        }
+
+        const DvzSymbolSource* source = _symbol_set_source(symbol_set, symbols[i]);
+        if (source == NULL)
+        {
+            log_error("marker symbol id %u is not available in the bound symbol set", symbols[i]);
+            return false;
+        }
+        if (source->kind != DVZ_SYMBOL_SOURCE_BITMAP)
+        {
+            log_error(
+                "marker %s symbol id %u requires a distance-field marker shader variant",
+                source->kind == DVZ_SYMBOL_SOURCE_SDF ? "SDF" : "MSDF", symbols[i]);
+            return false;
+        }
+        if (*out_kind != DVZ_SYMBOL_SOURCE_NONE && *out_kind != source->kind)
+        {
+            log_error("marker symbol payload cannot mix texture-backed symbol encodings");
+            return false;
+        }
+        *out_kind = source->kind;
+    }
+    return true;
+}
+
+
+/**
  * Return the channel count used by one image-backed symbol source kind.
  *
  * @param kind source kind
@@ -188,6 +240,53 @@ static bool _symbol_set_rebuild_atlas_page(DvzSymbolSet* symbols, DvzSymbolSourc
     page->byte_size = byte_size;
     page->data = atlas;
     return true;
+}
+
+
+/**
+ * Update generated per-item marker atlas UV rectangles.
+ *
+ * @param visual the marker visual
+ * @param symbols per-item symbol ids
+ * @param item_count number of symbol ids
+ * @return whether generated state was updated
+ */
+static bool _marker_update_symbol_tex_rects(
+    DvzVisual* visual, const uint32_t* symbols, uint32_t item_count)
+{
+    ANN(visual);
+    ANN(symbols);
+    DvzSymbolSourceKind kind = DVZ_SYMBOL_SOURCE_NONE;
+    DvzSymbolSet* symbol_set = _visual_family_state(visual)->symbol_set;
+    if (!_marker_symbol_payload_kind(symbol_set, symbols, item_count, &kind))
+        return false;
+
+    _visual_family_state(visual)->symbol_source_kind = kind;
+    if (kind == DVZ_SYMBOL_SOURCE_NONE)
+        return true;
+
+    float* rects = (float*)dvz_calloc(item_count, 4 * sizeof(float));
+    if (rects == NULL)
+    {
+        log_error("marker symbol tex_rect allocation failed");
+        return false;
+    }
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        const DvzSymbolSource* source = _symbol_set_source(symbol_set, symbols[i]);
+        if (source == NULL)
+        {
+            dvz_free(rects);
+            return false;
+        }
+        rects[4 * i + 0] = source->atlas_uv[0];
+        rects[4 * i + 1] = source->atlas_uv[1];
+        rects[4 * i + 2] = source->atlas_uv[2];
+        rects[4 * i + 3] = source->atlas_uv[3];
+    }
+    int ret = dvz_visual_set_data(visual, "tex_rect", rects, item_count);
+    dvz_free(rects);
+    return ret == 0;
 }
 
 
@@ -456,6 +555,18 @@ int dvz_marker_set_symbols(DvzVisual* visual, DvzSymbolSet* symbols)
         return -1;
 
     _visual_family_state(visual)->symbol_set = symbols;
+    _visual_family_state(visual)->symbol_source_kind = DVZ_SYMBOL_SOURCE_NONE;
+    const int shape_idx = _attr_index(visual, "shape");
+    if (shape_idx >= 0 && visual->attrs[shape_idx].data != NULL &&
+        visual->attrs[shape_idx].item_count > 0)
+    {
+        if (!_marker_update_symbol_tex_rects(
+                visual, (const uint32_t*)visual->attrs[shape_idx].data,
+                (uint32_t)visual->attrs[shape_idx].item_count))
+        {
+            return -1;
+        }
+    }
     _scene_notify_visual_changed(visual);
     return 0;
 }
@@ -582,24 +693,37 @@ bool _scene_marker_visual_validate_attr(
 
     const uint32_t* symbols = (const uint32_t*)data;
     const DvzSymbolSet* symbol_set = _visual_family_state(visual)->symbol_set;
-    for (uint32_t i = 0; i < item_count; i++)
+    DvzSymbolSourceKind kind = DVZ_SYMBOL_SOURCE_NONE;
+    return _marker_symbol_payload_kind(symbol_set, symbols, item_count, &kind);
+}
+
+
+/**
+ * Update marker-generated attrs after dense payload changes.
+ *
+ * @param visual the visual
+ * @param attr_name changed storage attribute name
+ * @param item_count number of changed items
+ * @return whether generated attrs were updated
+ */
+bool _scene_marker_visual_after_attr_set(
+    DvzVisual* visual, const char* attr_name, uint32_t item_count)
+{
+    ANN(visual);
+    ANN(attr_name);
+    (void)item_count;
+    if (strcmp(attr_name, "shape") != 0)
+        return true;
+
+    const int shape_idx = _attr_index(visual, "shape");
+    if (shape_idx < 0 || visual->attrs[shape_idx].data == NULL)
+        return true;
+    if (visual->attrs[shape_idx].item_count > UINT32_MAX)
     {
-        if (!_symbol_set_has_renderable_marker_id(symbol_set, symbols[i]))
-        {
-            const DvzSymbolSource* source = _symbol_set_source(symbol_set, symbols[i]);
-            if (source != NULL)
-            {
-                log_error(
-                    "marker texture-backed symbol id %u requires the atlas-backed marker pipeline",
-                    symbols[i]);
-            }
-            else
-            {
-                log_error(
-                    "marker symbol id %u is not available in the bound symbol set", symbols[i]);
-            }
-            return false;
-        }
+        log_error("marker symbol count exceeds generated tex_rect capacity");
+        return false;
     }
-    return true;
+    return _marker_update_symbol_tex_rects(
+        visual, (const uint32_t*)visual->attrs[shape_idx].data,
+        (uint32_t)visual->attrs[shape_idx].item_count);
 }

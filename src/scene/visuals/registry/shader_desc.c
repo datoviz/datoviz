@@ -539,10 +539,15 @@ bool _scene_visual_shader_desc_apply_pass_policy(
     bool point_like = visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
                       visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
                       visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER;
+    bool styled_point =
+        visual->kind == DVZ_SCENE_VISUAL_DESC_POINT && visual->point_style_enabled;
+    bool analytic_coverage =
+        _scene_visual_desc_is_stroke(visual->kind) || styled_point ||
+        visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER;
     *out_segment_coverage_blend =
         !picking &&
         !_scene_alpha_mode_is_blended(alpha_mode) && !wboit_accumulation && !depth_peel_pass &&
-        (_scene_visual_desc_is_stroke(visual->kind) || point_like);
+        analytic_coverage;
 
     if (_scene_alpha_mode_is_blended(alpha_mode) &&
         !_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_blend"))

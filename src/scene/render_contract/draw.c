@@ -385,9 +385,9 @@ bool _scene_draw_contract_from_visual(
         return false;
     bool forward_depth_compare = visual->depth_compare_op == VK_COMPARE_OP_LESS ||
                                  visual->depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL;
-    bool point_like = caps.kind == DVZ_SCENE_VISUAL_DESC_POINT ||
-                      caps.kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
-                      caps.kind == DVZ_SCENE_VISUAL_DESC_MARKER;
+    bool styled_point =
+        caps.kind == DVZ_SCENE_VISUAL_DESC_POINT && visual->material.point_style_enabled;
+    bool marker = caps.kind == DVZ_SCENE_VISUAL_DESC_MARKER;
 
     DvzSceneDrawFacts facts = {
         .visual_type = (uint32_t)visual->type,
@@ -400,7 +400,7 @@ bool _scene_draw_contract_from_visual(
         .volume_occluded = _scene_visual_lowering_volume_occluded(visual),
         .scene_occluded = visual->scene_occluded,
         .scene_occluder = visual->scene_occluder,
-        .uses_segment_pipeline = _scene_visual_desc_is_stroke(caps.kind) || point_like,
+        .uses_segment_pipeline = _scene_visual_desc_is_stroke(caps.kind) || styled_point || marker,
         .uses_common_set = caps.uses_common_set,
         .uses_material_set = caps.uses_material_set,
         .uses_image_set = caps.uses_image_set,

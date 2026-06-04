@@ -64,6 +64,8 @@ DvzFramePlanResourceRole _scene_attr_frame_plan_role(const char* attr_name)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_SHAPE;
     if (strcmp(attr_name, "line_width") == 0)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH;
+    if (strcmp(attr_name, "tex_rect") == 0)
+        return DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS;
     if (strcmp(attr_name, "texcoords") == 0)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS;
     if (strcmp(attr_name, "normal") == 0)

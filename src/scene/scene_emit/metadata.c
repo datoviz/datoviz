@@ -144,6 +144,10 @@ bool _scene_visual_frame_plan_metadata(
             sizeof(metadata->line_width_id)))
         return false;
     if (!_scene_attr_resource_key(
+            figure, visual, visual_index, "tex_rect", metadata->tex_rect_id,
+            sizeof(metadata->tex_rect_id)))
+        return false;
+    if (!_scene_attr_resource_key(
             figure, visual, visual_index, "texcoords", metadata->texcoords_id,
             sizeof(metadata->texcoords_id)))
         return false;

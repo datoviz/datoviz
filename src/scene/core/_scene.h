@@ -1556,6 +1556,7 @@ struct DvzVisualFamilyState
     DvzSceneMaterialParams material_params;
     bool                   material_params_dirty;
     DvzSymbolSet*          symbol_set;
+    DvzSymbolSourceKind    symbol_source_kind;
     DvzSceneItemStateStyleParams item_state_style_params;
     bool                         item_state_style_params_dirty;
     DvzSegmentState        segment;
