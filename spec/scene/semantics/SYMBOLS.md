@@ -18,10 +18,10 @@ boundary:
 |---|---|---|
 | Built-in code-SDF symbols | supported | Includes the v0.3 shape vocabulary plus `target`. |
 | `shape` marker attribute | supported | Compatibility spelling for built-in symbol ids. |
-| `DvzSymbolSet` and `symbol` attribute | supported for built-ins | Texture-backed sources use the same boundary in later slices. |
-| Bitmap symbols | supported | Lower through internal symbol atlas storage. |
-| SDF symbols | supported | Single-channel distance-field source. |
-| MSDF symbols | supported or advanced/unstable | Required for SVG-quality custom symbols; diagnostics must state limits. |
+| `DvzSymbolSet` and `symbol` attribute | supported for built-ins | Texture-backed sources are registered on the same boundary. |
+| Bitmap symbols | API/storage installed, render pending | RGBA8 payload copied into scene-owned symbol records. |
+| SDF symbols | API/storage installed, render pending | Single-channel distance-field source metadata retained. |
+| MSDF symbols | API/storage installed, render pending | RGB distance-field source metadata retained; shader lowering pending. |
 | SVG path import | supported or advanced/unstable | Prefer a convenience import API over exposing parser internals. |
 | `mtsdf` | advanced/unstable or deferred | Preserve only if the implementation cost is small after MSDF lands. |
 | Exact symbol-mask picking | supported for code-SDF, target for texture-backed sources | Bounding-box picking may remain the explicit fallback with diagnostics. |

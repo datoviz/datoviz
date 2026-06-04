@@ -225,6 +225,14 @@ void dvz_scene_destroy(DvzScene* scene)
         dvz_colormap_destroy(&scene->colormaps[i]);
     for (uint32_t i = 0; i < scene->font_count; i++)
         _scene_font_release(&scene->fonts[i]);
+    for (uint32_t i = 0; i < scene->symbol_set_count; i++)
+    {
+        for (uint32_t j = 0; j < scene->symbol_sets[i].source_count; j++)
+        {
+            dvz_free(scene->symbol_sets[i].sources[j].data);
+            scene->symbol_sets[i].sources[j].data = NULL;
+        }
+    }
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_FIELDS; i++)
         _scene_field_reset(&scene->fields[i]);
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_BUFFERS; i++)

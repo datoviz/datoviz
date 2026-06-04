@@ -640,6 +640,16 @@ struct DvzMarkerStyle
 typedef struct DvzMarkerStyle DvzMarkerStyle;
 
 
+struct DvzSymbolImageDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    uint32_t row_stride;
+    float distance_range_px;
+};
+typedef struct DvzSymbolImageDesc DvzSymbolImageDesc;
+
+
 struct DvzVolumeAlphaStop
 {
     double position;

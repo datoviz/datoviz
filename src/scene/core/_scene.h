@@ -99,6 +99,7 @@
 #define DVZ_SCENE_TEXT_BLOCK_SOURCE_SIZE 1024
 #define DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE   1024
 #define DVZ_SCENE_TEXT_BLOCK_MAX_RUNS    64
+#define DVZ_SCENE_MAX_SYMBOLS_PER_SET 256
 #define DVZ_COMPOSITE_MAX_VISUALS 8
 #define DVZ_COMPOSITE_ROLE_SIZE   32
 
@@ -1094,6 +1095,21 @@ struct DvzText
 };
 
 
+typedef struct DvzSymbolSource
+{
+    bool active;
+    DvzSymbolSourceKind kind;
+    char name[DVZ_SCENE_LABEL_SIZE];
+    uint32_t width;
+    uint32_t height;
+    uint32_t channels;
+    uint32_t row_stride;
+    float distance_range_px;
+    uint64_t byte_size;
+    uint8_t* data;
+} DvzSymbolSource;
+
+
 struct DvzSymbolSet
 {
     DvzScene* scene;
@@ -1101,6 +1117,8 @@ struct DvzSymbolSet
     bool active;
     uint32_t builtin_count;
     bool builtins[DVZ_MARKER_SHAPE_ROUNDED_RECT + 1];
+    uint32_t source_count;
+    DvzSymbolSource sources[DVZ_SCENE_MAX_SYMBOLS_PER_SET];
 };
 
 

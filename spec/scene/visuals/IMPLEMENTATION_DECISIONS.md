@@ -106,7 +106,8 @@ Implemented:
    quads, and GPU circular picking.
 3. `marker`: public `dvz_marker()`, v0.3-parity built-in code-SDF shape vocabulary plus
    `target`, public `position`/`color`/`diameter`/`angle`/`shape`, marker style API, GLSL marker
-   rendering, WGSL point-like lowering, and GPU bounding-box picking.
+   rendering, WGSL point-like lowering, symbol-set binding, bitmap/SDF/MSDF source storage, and GPU
+   bounding-box picking.
 4. `segment`: public `dvz_segment()`, `position_start`/`position_end` endpoint attributes,
    constant/per-item `stroke_width`, RGBA color, analytic GLSL stroke quads, non-arrow caps, cap
    validation/API, and GPU item picking.
@@ -218,8 +219,10 @@ Implemented first slice:
    consistency.
 9. `DvzSymbolSet` and built-in marker `symbol` ids are in place; `symbol` currently aliases the
    retained `shape` slot for code-SDF built-ins.
-10. GPU-backed marker picking is in place.
-11. Picking currently uses the marker sprite bounding box. Exact code-SDF shape-mask picking remains
+10. Bitmap, SDF, and MSDF symbol source APIs retain copied payloads and metadata in `DvzSymbolSet`;
+    marker rendering still rejects those ids until the atlas-backed marker pipeline lands.
+11. GPU-backed marker picking is in place.
+12. Picking currently uses the marker sprite bounding box. Exact code-SDF shape-mask picking remains
     deferred.
 
 Style naming:
@@ -231,8 +234,8 @@ Style naming:
 
 Deferred:
 
-1. Bitmap symbol source.
-2. SDF/MSDF symbol sources and SVG-path import.
+1. Atlas-backed marker rendering for bitmap/SDF/MSDF symbol sources.
+2. SVG-path import.
 3. Shared symbol/glyph atlas infrastructure.
 4. Scalar color/diameter modes.
 5. Data-space marker sizing.

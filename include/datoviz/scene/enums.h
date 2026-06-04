@@ -293,6 +293,16 @@ typedef enum
 
 typedef enum
 {
+    DVZ_SYMBOL_SOURCE_NONE = 0,
+    DVZ_SYMBOL_SOURCE_BUILTIN,
+    DVZ_SYMBOL_SOURCE_BITMAP,
+    DVZ_SYMBOL_SOURCE_SDF,
+    DVZ_SYMBOL_SOURCE_MSDF,
+} DvzSymbolSourceKind;
+
+
+typedef enum
+{
     DVZ_SHAPE_ASPECT_FILLED  = 0,
     DVZ_SHAPE_ASPECT_STROKE  = 1,
     DVZ_SHAPE_ASPECT_OUTLINE = 2,

@@ -1784,8 +1784,9 @@ DVZ_EXPORT int dvz_point_set_style(DvzVisual* visual, const DvzPointStyleDesc* d
 /**
  * Create a scene-owned reusable symbol set.
  *
- * The first v0.4 slice supports built-in code-SDF symbols. Bitmap, SDF, MSDF, and SVG-path sources
- * are added through the same object model in later parity slices.
+ * Built-in code-SDF symbols are marker-renderable today. Bitmap, SDF, and MSDF source payloads are
+ * retained by the same object model; SVG-path import and atlas-backed marker rendering are later
+ * parity slices.
  *
  * @param scene the scene
  * @param flags reserved flags
@@ -1808,10 +1809,80 @@ DVZ_EXPORT DvzSymbolId dvz_symbol_builtin(DvzSymbolSet* symbols, DvzSymbolBuilti
 
 
 /**
+ * Return default image-backed symbol source options.
+ *
+ * The default row stride is tightly packed. `distance_range_px` is used by SDF/MSDF sources and is
+ * ignored for bitmap sources.
+ *
+ * @return default symbol image descriptor
+ */
+DVZ_EXPORT DvzSymbolImageDesc dvz_symbol_image_desc(void);
+
+
+/**
+ * Register an RGBA bitmap symbol source in one symbol set.
+ *
+ * The payload is copied into scene-owned storage. Texture-backed marker rendering is not active in
+ * the current point-sprite marker pipeline; using the returned id as marker `"symbol"` data reports
+ * a validation error until the atlas-backed marker variant lands.
+ *
+ * @param symbols the symbol set
+ * @param name optional diagnostic name
+ * @param rgba RGBA8 payload
+ * @param width source width in pixels
+ * @param height source height in pixels
+ * @param desc optional image source options
+ * @return the symbol id, or DVZ_SYMBOL_ID_INVALID on error
+ */
+DVZ_EXPORT DvzSymbolId dvz_symbol_bitmap(
+    DvzSymbolSet* symbols, const char* name, const void* rgba, uint32_t width, uint32_t height,
+    const DvzSymbolImageDesc* desc);
+
+
+/**
+ * Register a single-channel SDF symbol source in one symbol set.
+ *
+ * The payload is copied into scene-owned storage. `desc->distance_range_px` describes the encoded
+ * distance-field range in source pixels when nonzero.
+ *
+ * @param symbols the symbol set
+ * @param name optional diagnostic name
+ * @param sdf R8 SDF payload
+ * @param width source width in pixels
+ * @param height source height in pixels
+ * @param desc optional image source options
+ * @return the symbol id, or DVZ_SYMBOL_ID_INVALID on error
+ */
+DVZ_EXPORT DvzSymbolId dvz_symbol_sdf(
+    DvzSymbolSet* symbols, const char* name, const void* sdf, uint32_t width, uint32_t height,
+    const DvzSymbolImageDesc* desc);
+
+
+/**
+ * Register an RGB MSDF symbol source in one symbol set.
+ *
+ * The payload is copied into scene-owned storage. `desc->distance_range_px` describes the encoded
+ * distance-field range in source pixels when nonzero.
+ *
+ * @param symbols the symbol set
+ * @param name optional diagnostic name
+ * @param msdf RGB8 MSDF payload
+ * @param width source width in pixels
+ * @param height source height in pixels
+ * @param desc optional image source options
+ * @return the symbol id, or DVZ_SYMBOL_ID_INVALID on error
+ */
+DVZ_EXPORT DvzSymbolId dvz_symbol_msdf(
+    DvzSymbolSet* symbols, const char* name, const void* msdf, uint32_t width, uint32_t height,
+    const DvzSymbolImageDesc* desc);
+
+
+/**
  * Bind a reusable symbol set to a marker visual.
  *
- * The current built-in slice treats marker `"symbol"` data as an alias for the code-SDF `"shape"`
- * attribute. Later texture-backed symbol sources lower through the same binding.
+ * The current marker shader accepts built-in code-SDF ids. Texture-backed symbol sources are owned
+ * by the set but remain rejected by marker `"symbol"` validation until the atlas-backed marker
+ * pipeline variant lands.
  *
  * @param visual the marker visual
  * @param symbols the symbol set, or NULL to clear the binding

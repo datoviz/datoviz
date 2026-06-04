@@ -1139,6 +1139,28 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     DvzSymbolSet* symbol_set = dvz_symbol_set(scene, 0);
     AT(symbol_set != NULL);
     AT(dvz_marker_set_symbols(visual, symbol_set) == 0);
+    uint8_t bitmap_rgba[2 * 2 * 4] = {
+        255, 0, 0, 255,
+        0, 255, 0, 255,
+        0, 0, 255, 255,
+        255, 255, 255, 255,
+    };
+    uint8_t sdf[2 * 2] = {0, 96, 160, 255};
+    uint8_t msdf[2 * 2 * 3] = {
+        0, 0, 0,
+        96, 96, 96,
+        160, 160, 160,
+        255, 255, 255,
+    };
+    DvzSymbolImageDesc symbol_desc = dvz_symbol_image_desc();
+    symbol_desc.distance_range_px = 4.0f;
+    const DvzSymbolId bitmap_symbol =
+        dvz_symbol_bitmap(symbol_set, "bitmap", bitmap_rgba, 2, 2, NULL);
+    const DvzSymbolId sdf_symbol = dvz_symbol_sdf(symbol_set, "sdf", sdf, 2, 2, &symbol_desc);
+    const DvzSymbolId msdf_symbol = dvz_symbol_msdf(symbol_set, "msdf", msdf, 2, 2, &symbol_desc);
+    AT(bitmap_symbol != DVZ_SYMBOL_ID_INVALID);
+    AT(sdf_symbol == bitmap_symbol + 1);
+    AT(msdf_symbol == sdf_symbol + 1);
 
     vec3 positions[5] = {
         {-0.50f, 0.0f, 0.0f},
@@ -1185,6 +1207,9 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     };
     AT_EXPECTED_ERROR_STRICT(
         suite, dvz_visual_set_data(visual, "symbol", unavailable_symbols, 5) == -1);
+    unavailable_symbols[0] = bitmap_symbol;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_data(visual, "symbol", unavailable_symbols, 5) == -1);
     AT(dvz_marker_set_symbol(visual, DVZ_SYMBOL_RING) == 0);
     stored_symbols = (const uint32_t*)visual->attrs[shape_idx].data;
     ANN(stored_symbols);
@@ -1210,7 +1235,7 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
-    AT(_stream_has_render_pipeline_label(stream, "_pipe_markerg_depth"));
+    AT(_stream_has_render_pipeline_label(stream, "_pipe_markerg_coverage_blend_depth"));
 
     bool found_pipeline = false;
     bool found_material_bg = false;
