@@ -1320,6 +1320,8 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
 
     bool found_pipeline = false;
     bool found_bitmap_pipeline = false;
+    bool found_bitmap_image_layout = false;
+    bool found_distance_glyph_layout = false;
     bool found_material_bg = false;
     bool found_set1_bg = false;
     bool found_draw = false;
@@ -1348,6 +1350,12 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE &&
                  command->u.create_render_pipeline.binding_count == 6)
         {
+            const char* pipeline_label =
+                dvz_drp2_stream_label(stream, command->u.create_render_pipeline.id);
+            ANN(pipeline_label);
+            const char* set1_label = dvz_drp2_stream_label(
+                stream, command->u.create_render_pipeline.bind_group_layout_ids[1]);
+            ANN(set1_label);
             found_bitmap_pipeline = true;
             AT(command->u.create_render_pipeline.attr_count == 6);
             AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
@@ -1355,6 +1363,16 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
             AT(command->u.create_render_pipeline.attr_formats[5] ==
                VK_FORMAT_R32G32B32A32_SFLOAT);
             AT(command->u.create_render_pipeline.bind_group_layout_count == 2);
+            if (strstr(pipeline_label, "_pipe_marker_bitmapg") == pipeline_label)
+            {
+                AT(strcmp(set1_label, "_bgl_img") == 0);
+                found_bitmap_image_layout = true;
+            }
+            else if (strstr(pipeline_label, "_pipe_marker_distanceg") == pipeline_label)
+            {
+                AT(strcmp(set1_label, "_bgl_glyph") == 0);
+                found_distance_glyph_layout = true;
+            }
         }
         else if (command->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
         {
@@ -1414,6 +1432,8 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     }
     AT(found_pipeline);
     AT(found_bitmap_pipeline);
+    AT(found_bitmap_image_layout);
+    AT(found_distance_glyph_layout);
     AT(found_material_bg);
     AT(found_set1_bg);
     AT(set_vertex_buffer_count == 23);

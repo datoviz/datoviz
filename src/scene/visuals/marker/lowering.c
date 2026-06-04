@@ -18,6 +18,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "registry/registry.h"
 
 
 
@@ -43,7 +44,53 @@ bool _scene_marker_visual_lowering(const DvzVisual* visual, DvzVisualLowering* o
     out->desc_kind = DVZ_SCENE_VISUAL_DESC_MARKER;
     out->point_like_kind = DVZ_SCENE_POINT_LIKE_MARKER;
     out->has_point_like_kind = true;
-    out->needs_material_params = true;
+    out->needs_material_params =
+        _visual_family_state(visual)->symbol_source_kind == DVZ_SYMBOL_SOURCE_NONE ||
+        _visual_family_state(visual)->symbol_source_kind == DVZ_SYMBOL_SOURCE_BUILTIN;
+    return true;
+}
+
+
+
+/**
+ * Resolve marker pass capabilities.
+ *
+ * Built-in marker symbols use the point-like material set for SDF style parameters. Texture-backed
+ * marker symbols use set 1 for either bitmap image sampling or distance-field glyph sampling.
+ *
+ * @param visual the retained visual
+ * @param attach panel attachment
+ * @param lowering resolved visual lowering facts
+ * @param out output pass capabilities
+ * @return whether capabilities were resolved
+ */
+bool _scene_marker_visual_pass_caps(
+    const DvzVisual* visual, const DvzPanelAttach* attach, const DvzVisualLowering* lowering,
+    DvzSceneVisualPassCaps* out)
+{
+    ANN(visual);
+    ANN(attach);
+    ANN(lowering);
+    ANN(out);
+
+    if (!_scene_visual_default_pass_caps(visual, attach, lowering, out))
+        return false;
+
+    const DvzSymbolSourceKind kind = _visual_family_state(visual)->symbol_source_kind;
+    if (kind == DVZ_SYMBOL_SOURCE_BITMAP)
+    {
+        out->needs_material_layout = false;
+        out->uses_material_set = false;
+        out->uses_image_set = true;
+        out->uses_glyph_set = false;
+    }
+    else if (kind == DVZ_SYMBOL_SOURCE_SDF || kind == DVZ_SYMBOL_SOURCE_MSDF)
+    {
+        out->needs_material_layout = false;
+        out->uses_material_set = false;
+        out->uses_image_set = true;
+        out->uses_glyph_set = true;
+    }
     return true;
 }
 

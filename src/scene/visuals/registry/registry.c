@@ -39,11 +39,17 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VISUAL_OPS(_type, _name, _lowering, _bounds, _bind, _pipeline, _shader, _draw, _desc)    \
+#define VISUAL_OPS_WITH_PASS(                                                                      \
+    _type, _name, _lowering, _bounds, _pass, _bind, _pipeline, _shader, _draw, _desc)             \
     .type = (_type), .name = (_name), .resolve_lowering = (_lowering),                          \
-     .resolve_bounds = (_bounds), .resolve_pass_caps = _scene_visual_default_pass_caps,          \
+     .resolve_bounds = (_bounds), .resolve_pass_caps = (_pass),                                  \
      .resolve_bind_desc = (_bind), .resolve_pipeline_desc = (_pipeline),                         \
      .resolve_shader_desc = (_shader), .resolve_draw_desc = (_draw), .resolve_desc = (_desc)
+
+#define VISUAL_OPS(_type, _name, _lowering, _bounds, _bind, _pipeline, _shader, _draw, _desc)    \
+    VISUAL_OPS_WITH_PASS(                                                                         \
+        _type, _name, _lowering, _bounds, _scene_visual_default_pass_caps, _bind, _pipeline,      \
+        _shader, _draw, _desc)
 
 typedef struct
 {
@@ -222,11 +228,12 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .expected_attrs = "position, color, pixel_size, item_state",
      .attr_alias_public = "pixel_size", .attr_alias_storage = "size",
      .upload_material_params = true, .supports_depth_cue = true},
-    {VISUAL_OPS(
+    {VISUAL_OPS_WITH_PASS(
          DVZ_VISUAL_TYPE_MARKER, "marker", _scene_marker_visual_lowering,
-         _scene_visual_default_bounds, _scene_marker_visual_bind_desc,
-         _scene_marker_visual_pipeline_desc, _scene_marker_visual_shader_desc,
-         _scene_marker_visual_draw_desc, _scene_marker_visual_desc_from_metadata),
+         _scene_visual_default_bounds, _scene_marker_visual_pass_caps,
+         _scene_marker_visual_bind_desc, _scene_marker_visual_pipeline_desc,
+         _scene_marker_visual_shader_desc, _scene_marker_visual_draw_desc,
+         _scene_marker_visual_desc_from_metadata),
      .renderable_kind = DVZ_RENDERABLE_POINT_LIKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_MARKER,
      .attrs = MARKER_ATTRS, .attr_count = DVZ_ARRAY_COUNT(MARKER_ATTRS),
      .expected_attrs = "position, color, diameter, item_state, angle, shape/symbol, tex_rect",
