@@ -21,9 +21,10 @@ transparency, clipping, transforms, or geometry utilities.
 10. [TRANSPARENCY.md](TRANSPARENCY.md): alpha modes and transparency planning.
 11. [EFFECTS.md](EFFECTS.md): screen-space outline, edge enhancement, bloom, and effect ordering.
 12. [TEXT.md](TEXT.md): text content, placement, resources, and DPI behavior.
-13. [CLIPPING.md](CLIPPING.md): clip modes and data-area clipping.
-14. [NONLINEAR_TRANSFORMS.md](NONLINEAR_TRANSFORMS.md): non-linear coordinate transforms.
-15. [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md): CPU-side geometry utility layer.
+13. [SYMBOLS.md](SYMBOLS.md): reusable marker/annotation/vector-head symbol resources.
+14. [CLIPPING.md](CLIPPING.md): clip modes and data-area clipping.
+15. [NONLINEAR_TRANSFORMS.md](NONLINEAR_TRANSFORMS.md): non-linear coordinate transforms.
+16. [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md): CPU-side geometry utility layer.
 
 
 ## Active Proposal Inputs

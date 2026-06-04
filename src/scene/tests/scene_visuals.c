@@ -1133,32 +1133,36 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     DvzVisual* visual = dvz_marker(scene, 0);
     AT(visual != NULL);
     AT(visual->type == DVZ_VISUAL_TYPE_MARKER);
+    AT(DVZ_MARKER_SHAPE_ROUNDED_RECT == 20);
 
-    vec3 positions[4] = {
-        {-0.45f, 0.0f, 0.0f},
-        {-0.15f, 0.0f, 0.0f},
-        {+0.15f, 0.0f, 0.0f},
-        {+0.45f, 0.0f, 0.0f},
+    vec3 positions[5] = {
+        {-0.50f, 0.0f, 0.0f},
+        {-0.25f, 0.0f, 0.0f},
+        {0.00f, 0.0f, 0.0f},
+        {+0.25f, 0.0f, 0.0f},
+        {+0.50f, 0.0f, 0.0f},
     };
-    DvzColor colors[4] = {
+    DvzColor colors[5] = {
         {255, 80, 40, 255},
         {80, 255, 120, 255},
         {80, 120, 255, 255},
         {255, 210, 64, 255},
+        {210, 96, 255, 255},
     };
-    float sizes[4] = {18.0f, 22.0f, 26.0f, 30.0f};
-    float angles[4] = {0.0f, 0.25f, 0.5f, 0.0f};
-    uint32_t shapes[4] = {
+    float sizes[5] = {18.0f, 22.0f, 26.0f, 30.0f, 34.0f};
+    float angles[5] = {0.0f, 0.25f, 0.5f, 0.0f, 0.75f};
+    uint32_t shapes[5] = {
         DVZ_MARKER_SHAPE_DISC,
         DVZ_MARKER_SHAPE_DIAMOND,
-        DVZ_MARKER_SHAPE_RING,
-        DVZ_MARKER_SHAPE_TARGET,
+        DVZ_MARKER_SHAPE_ARROW,
+        DVZ_MARKER_SHAPE_HEART,
+        DVZ_MARKER_SHAPE_ROUNDED_RECT,
     };
-    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
-    AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
-    AT(dvz_visual_set_data(visual, "size", sizes, 4) == 0);
-    AT(dvz_visual_set_data(visual, "angle", angles, 4) == 0);
-    AT(dvz_visual_set_data(visual, "shape", shapes, 4) == 0);
+    AT(dvz_visual_set_data(visual, "position", positions, 5) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 5) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 5) == 0);
+    AT(dvz_visual_set_data(visual, "angle", angles, 5) == 0);
+    AT(dvz_visual_set_data(visual, "shape", shapes, 5) == 0);
     AT(visual->attr_count == 5);
     AT(dvz_marker_set_style(
            visual,
@@ -1216,7 +1220,7 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
         else if (command->type == DVZ_DRP2_COMMAND_DRAW)
         {
             found_draw = true;
-            AT(command->u.draw.vertex_count == 4);
+            AT(command->u.draw.vertex_count == 5);
             AT(command->u.draw.instance_count == 1);
         }
     }

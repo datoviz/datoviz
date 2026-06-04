@@ -1852,7 +1852,7 @@ DVZ_EXPORT DvzVisual* dvz_pixel(DvzScene* scene, uint32_t flags);
  * `diameter` (float in pixels), `angle` (float radians), and `shape` (uint32_t
  * DvzMarkerShape) attributes. Optional `item_state` (uint32_t DvzItemStateKind bitfield)
  * supports retained hover and selection styling.
- * First-slice shapes are disc, square, triangle, diamond, cross, ring, and target.
+ * Built-in code-SDF shapes include the v0.3 marker vocabulary plus target.
  *
  * @param scene the scene
  * @param flags variant flags

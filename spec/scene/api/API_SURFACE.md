@@ -100,6 +100,11 @@ Treat these installed declarations as draft contracts until implemented in `src/
 5. shared legend/colorbar layout and richer legend composition beyond the first categorical legend
    slice.
 
+The v0.4 marker-symbol parity additions are active public API work but not installed declarations
+yet: `DvzSymbolSet`, `DvzSymbolId`, built-in symbol creation, bitmap/SDF/MSDF symbol creation, SVG
+path import, marker symbol-set binding, and the per-item `symbol` attribute. Until those declarations
+land, marker `shape` remains the compatibility path for built-in code-SDF symbols.
+
 Colorbars, legends, text, labels, and scale bars are retained semantic objects. Text/glyph
 rendering, label annotation rendering, scale-bar rendering, continuous colorbar rendering,
 categorical legend rendering, and integer label rendering exist as first slices; remaining work

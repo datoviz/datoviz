@@ -104,9 +104,9 @@ Implemented:
 2. `point`: public `position`/`color`/`diameter`, antialiased circular coverage, edge/stroke
    styling via `dvz_point_set_style()`, GLSL native point-coordinate rendering, WGSL instanced
    quads, and GPU circular picking.
-3. `marker`: public `dvz_marker()`, code-SDF shapes `disc`, `square`, `triangle`, `diamond`,
-   `cross`, `ring`, and `target`, public `position`/`color`/`diameter`/`angle`/`shape`, marker
-   style API, GLSL marker rendering, WGSL point-like lowering, and GPU bounding-box picking.
+3. `marker`: public `dvz_marker()`, v0.3-parity built-in code-SDF shape vocabulary plus
+   `target`, public `position`/`color`/`diameter`/`angle`/`shape`, marker style API, GLSL marker
+   rendering, WGSL point-like lowering, and GPU bounding-box picking.
 4. `segment`: public `dvz_segment()`, `position_start`/`position_end` endpoint attributes,
    constant/per-item `stroke_width`, RGBA color, analytic GLSL stroke quads, non-arrow caps, cap
    validation/API, and GPU item picking.
@@ -208,7 +208,7 @@ Implemented first slice:
 1. `marker` is implemented as code-SDF only.
 2. Public marker enums and `dvz_marker()` are in place.
 3. `DvzMarkerStyle` and `dvz_marker_set_style()` are in place.
-4. Initial built-in shapes are `disc`, `square`, `triangle`, `diamond`, `cross`, and `ring`.
+4. Built-in shapes cover the v0.3 marker vocabulary plus `target`.
 5. Use v0.3 marker GLSL SDF code as design prior art and port selectively into the v0.4 shader
    registry and runtime path.
 6. Attributes: `position`, `color`, `diameter`, `angle`, and `shape`.

@@ -1,11 +1,30 @@
 # Symbol Resources
 
-This document defines the long-term `symbol` resource model for reusable centered graphical
-symbols. It is a semantic resource design, not an installed v0.4 API.
+This document defines the v0.4 parity target for reusable centered graphical symbols. The complete
+object model is not installed yet; it is now release scope because v0.3 marker parity requires
+built-in symbols, texture-backed marker symbols, and SVG/MSDF import capability.
 
 Symbols are intentionally separate from the `marker` visual family. A marker visual is one consumer
 that places symbols at data, screen, or world positions. Legends, annotations, vector heads, and
 dashboard cursors may also consume symbols later.
+
+
+## v0.4 Parity Status
+
+The v0.4 release should restore the visible v0.3 marker-symbol capability while improving the public
+boundary:
+
+| Capability | v0.4 target status | Notes |
+|---|---|---|
+| Built-in code-SDF symbols | supported | Includes the v0.3 shape vocabulary plus `target`. |
+| `shape` marker attribute | supported | Compatibility spelling for built-in symbol ids. |
+| `DvzSymbolSet` and `symbol` attribute | supported | New resource boundary for built-in and texture-backed sources. |
+| Bitmap symbols | supported | Lower through internal symbol atlas storage. |
+| SDF symbols | supported | Single-channel distance-field source. |
+| MSDF symbols | supported or advanced/unstable | Required for SVG-quality custom symbols; diagnostics must state limits. |
+| SVG path import | supported or advanced/unstable | Prefer a convenience import API over exposing parser internals. |
+| `mtsdf` | advanced/unstable or deferred | Preserve only if the implementation cost is small after MSDF lands. |
+| Exact symbol-mask picking | supported for code-SDF, target for texture-backed sources | Bounding-box picking may remain the explicit fallback with diagnostics. |
 
 
 ## Purpose

@@ -13,7 +13,8 @@ Landed naming and marker implementation decisions are tracked in `IMPLEMENTATION
 
 ## Current Implementation Status
 
-Status on 2026-05-17: the active v0.4 runtime implements the first code-SDF marker slice.
+Status on 2026-06-04: the active v0.4 target is full v0.3 built-in code-SDF marker
+parity, followed by the `DvzSymbolSet` resource layer for texture-backed and imported symbols.
 
 The implemented path supports:
 
@@ -21,8 +22,7 @@ The implemented path supports:
 2. dense `position`, `color`, public `diameter`, `angle`, and `shape` attributes, where
    `diameter` aliases the current internal `size` slot;
 3. `shape` values stored as `uint32_t` `DvzMarkerShape` values;
-4. built-in code-SDF shapes `disc`, `square`, `triangle`, `diamond`, `cross`, `ring`, and
-   `target`;
+4. built-in code-SDF shapes for the v0.3 marker vocabulary plus `target`;
 5. `dvz_marker_style()` and `dvz_marker_set_style()` with `edge_color`, `stroke_width`, and
    exclusive `filled`/`stroke`/`outline` aspect semantics;
 6. GLSL/Vulkan native point-list lowering with marker SDF coverage;
@@ -30,9 +30,9 @@ The implemented path supports:
 8. GPU-backed marker picking using the marker sprite bounding box.
 
 The following sections describe the target marker contract. Reusable symbol sets, bitmap/SDF/MSDF
-symbol sources, SVG-path import, scalar color/diameter modes, `shift`, aspect-ratio/magnitude
-helpers, data-space sizing, and exact SDF-mask picking are planned capabilities unless explicitly
-marked as implemented above.
+symbol sources, SVG-path import, and exact SDF-mask picking are v0.4 parity work. Scalar
+color/diameter modes, `shift`, aspect-ratio/magnitude helpers, and data-space sizing remain planned
+capabilities unless explicitly marked as implemented above.
 
 
 ## Semantic Purpose
@@ -96,9 +96,9 @@ family spec is revised.
 Shape is visual-wide by default in the target `code` mode.
 Per-item shape is supported via the `shape` attribute (see Per-Item Attributes).
 
-Status on 2026-06-03: the active slice implements the subset `disc`, `square`, `triangle`,
-`diamond`, `cross`, `ring`, and `target`, and uses a dense per-item `shape` attribute instead of a
-visual-wide shape parameter.
+Status on 2026-06-04: v0.4 parity requires this full built-in vocabulary. The installed path uses a
+dense per-item `shape` attribute instead of a visual-wide shape parameter; `shape` becomes the
+compatibility spelling for built-in symbol ids when `DvzSymbolSet` lands.
 
 
 ## Per-Item Attributes
@@ -167,7 +167,8 @@ path for built-in code-SDF markers.
 
 Per-item symbol selector. This is the long-term generalized form of `shape`.
 
-Status on 2026-06-03: not implemented. Use `shape` for current built-in code-SDF markers.
+Status on 2026-06-04: v0.4 parity work. Use `shape` for current built-in code-SDF markers until the
+symbol-set binding lands.
 
 
 ### `edge_color` (per-item)

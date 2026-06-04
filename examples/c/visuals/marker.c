@@ -37,7 +37,7 @@
 
 #define WIDTH       1600u
 #define HEIGHT      1200u
-#define MARKER_COLS 6u
+#define MARKER_COLS 7u
 
 
 
@@ -53,7 +53,7 @@
  */
 static uint32_t _marker_shape(uint32_t index)
 {
-    switch (index % MARKER_COLS)
+    switch (index)
     {
     case 1:
         return DVZ_MARKER_SHAPE_SQUARE;
@@ -65,6 +65,36 @@ static uint32_t _marker_shape(uint32_t index)
         return DVZ_MARKER_SHAPE_CROSS;
     case 5:
         return DVZ_MARKER_SHAPE_RING;
+    case 6:
+        return DVZ_MARKER_SHAPE_TARGET;
+    case 7:
+        return DVZ_MARKER_SHAPE_ASTERISK;
+    case 8:
+        return DVZ_MARKER_SHAPE_CHEVRON;
+    case 9:
+        return DVZ_MARKER_SHAPE_CLOVER;
+    case 10:
+        return DVZ_MARKER_SHAPE_CLUB;
+    case 11:
+        return DVZ_MARKER_SHAPE_ARROW;
+    case 12:
+        return DVZ_MARKER_SHAPE_ELLIPSE;
+    case 13:
+        return DVZ_MARKER_SHAPE_HBAR;
+    case 14:
+        return DVZ_MARKER_SHAPE_HEART;
+    case 15:
+        return DVZ_MARKER_SHAPE_INFINITY;
+    case 16:
+        return DVZ_MARKER_SHAPE_PIN;
+    case 17:
+        return DVZ_MARKER_SHAPE_SPADE;
+    case 18:
+        return DVZ_MARKER_SHAPE_TAG;
+    case 19:
+        return DVZ_MARKER_SHAPE_VBAR;
+    case 20:
+        return DVZ_MARKER_SHAPE_ROUNDED_RECT;
     default:
         return DVZ_MARKER_SHAPE_DISC;
     }
@@ -89,6 +119,7 @@ static ExampleStyleColorRole _marker_fill_role(uint32_t row, uint32_t col)
             EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
             EXAMPLE_STYLE_COLOR_TEXT,
             EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+            EXAMPLE_STYLE_COLOR_WARNING,
         },
         {
             EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
@@ -97,6 +128,7 @@ static ExampleStyleColorRole _marker_fill_role(uint32_t row, uint32_t col)
             EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
             EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
             EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+            EXAMPLE_STYLE_COLOR_TEXT,
         },
         {
             EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
@@ -105,6 +137,7 @@ static ExampleStyleColorRole _marker_fill_role(uint32_t row, uint32_t col)
             EXAMPLE_STYLE_COLOR_WARNING,
             EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
             EXAMPLE_STYLE_COLOR_ERROR,
+            EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
         },
     };
     const uint32_t row_count = DVZ_ARRAY_COUNT(roles);
@@ -157,7 +190,7 @@ _add_marker_row(
         colors[col].a = 238;
         diameters[col] = 42.0f + 8.0f * (float)((row + col) % 3u);
         angles[col] = 0.18f * (float)(row + col);
-        shapes[col] = _marker_shape(col);
+        shapes[col] = _marker_shape(row * MARKER_COLS + col);
     }
 
     DvzVisualDataUpdate updates[] = {
