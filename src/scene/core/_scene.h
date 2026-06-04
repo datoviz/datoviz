@@ -824,6 +824,7 @@ void _scene_figure_mark_screen_space_dirty(DvzFigure* figure);
 void _panel_mark_layout_changed(DvzPanel* panel);
 bool _panel_desc_valid(DvzPanelDesc desc);
 bool _scene_panel_set_desc_internal(DvzPanel* panel, DvzPanelDesc desc);
+bool _scene_grid_detach_panel(DvzGrid* grid, DvzPanel* panel);
 void _scene_controller_destroy(DvzController* controller);
 bool _scene_panel_sync_fly_pivot_marker(DvzPanel* panel);
 bool _scene_panel_refresh_border(DvzPanel* panel);

@@ -198,12 +198,27 @@ static bool _grid_resolve_axis(
 DvzGrid* dvz_figure_grid(DvzFigure* figure, uint32_t rows, uint32_t cols)
 {
     if (figure == NULL || rows == 0 || cols == 0 || rows > DVZ_SCENE_MAX_GRID_ROWS ||
-        cols > DVZ_SCENE_MAX_GRID_COLS || figure->grid_count >= DVZ_SCENE_MAX_GRIDS)
+        cols > DVZ_SCENE_MAX_GRID_COLS)
     {
         return NULL;
     }
 
-    DvzGrid* grid = &figure->grids[figure->grid_count++];
+    DvzGrid* grid = NULL;
+    for (uint32_t i = 0; i < figure->grid_count; i++)
+    {
+        if (figure->grids[i].figure == NULL)
+        {
+            grid = &figure->grids[i];
+            break;
+        }
+    }
+    if (grid == NULL)
+    {
+        if (figure->grid_count >= DVZ_SCENE_MAX_GRIDS)
+            return NULL;
+        grid = &figure->grids[figure->grid_count++];
+    }
+
     dvz_memset(grid, sizeof(DvzGrid), 0, sizeof(DvzGrid));
     grid->figure = figure;
     grid->rows = rows;
@@ -214,6 +229,32 @@ DvzGrid* dvz_figure_grid(DvzFigure* figure, uint32_t rows, uint32_t cols)
         grid->col_sizes[col] = _grid_track_default();
     grid->dirty = true;
     return grid;
+}
+
+
+/**
+ * Destroy a retained figure-owned grid layout object.
+ *
+ * @param grid the grid
+ */
+void dvz_grid_destroy(DvzGrid* grid)
+{
+    if (grid == NULL || grid->figure == NULL)
+        return;
+
+    DvzFigure* figure = grid->figure;
+    for (uint32_t pi = 0; pi < grid->panel_count; pi++)
+    {
+        DvzPanel* panel = grid->panels[pi].panel;
+        if (panel != NULL && panel->grid == grid)
+        {
+            panel->grid = NULL;
+            panel->grid_cell = (DvzGridCell){0};
+        }
+    }
+
+    dvz_memset(grid, sizeof(DvzGrid), 0, sizeof(DvzGrid));
+    _scene_notify_request_frame(figure);
 }
 
 
@@ -452,6 +493,49 @@ static bool _scene_grid_attach_panel(DvzGrid* grid, DvzPanel* panel, DvzGridCell
 }
 
 
+/**
+ * Detach one panel from a retained grid attachment list.
+ *
+ * @param grid the grid
+ * @param panel the panel
+ * @return whether an attachment was removed
+ */
+bool _scene_grid_detach_panel(DvzGrid* grid, DvzPanel* panel)
+{
+    if (grid == NULL || panel == NULL)
+        return false;
+
+    bool removed = false;
+    uint32_t dst = 0;
+    for (uint32_t src = 0; src < grid->panel_count; src++)
+    {
+        DvzGridPanel attachment = grid->panels[src];
+        if (attachment.panel == panel)
+        {
+            removed = true;
+            continue;
+        }
+        if (dst != src)
+            grid->panels[dst] = attachment;
+        dst++;
+    }
+    for (uint32_t i = dst; i < grid->panel_count; i++)
+        grid->panels[i] = (DvzGridPanel){0};
+    grid->panel_count = dst;
+
+    if (panel->grid == grid)
+    {
+        panel->grid = NULL;
+        panel->grid_cell = (DvzGridCell){0};
+        removed = true;
+    }
+
+    if (removed)
+        _scene_grid_mark_dirty(grid);
+    return removed;
+}
+
+
 
 
 /**
@@ -545,5 +629,4 @@ DvzPanel* dvz_grid_panel(DvzGrid* grid, uint32_t row, uint32_t col)
 {
     return dvz_grid_panel_span(grid, row, col, 1, 1);
 }
-
 

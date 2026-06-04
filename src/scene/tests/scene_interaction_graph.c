@@ -16,12 +16,30 @@
 
 #include "scene_graph_utils.h"
 #include "_visual_internal.h"
+#include "core/scene_notify_internal.h"
 
 
 
 /*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
+
+typedef struct GridDestroyRequestProbe
+{
+    uint32_t calls;
+    DvzFigure* last_figure;
+} GridDestroyRequestProbe;
+
+
+static void _grid_destroy_request_frame_callback(DvzFigure* figure, void* user_data)
+{
+    GridDestroyRequestProbe* probe = (GridDestroyRequestProbe*)user_data;
+    ANN(probe);
+    probe->calls++;
+    probe->last_figure = figure;
+}
+
+
 
 static DvzVisual* _local_transform_audit_visual(DvzScene* scene, DvzVisualType type)
 {
@@ -397,6 +415,134 @@ int test_scene_grid_panel_tracks_figure_resize(TstContext* suite, const TstCase*
 
     AT(!dvz_panel_set_desc(colorbar, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 0.0f,
                                                     .height = 1.0f}));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_grid_destroy_detaches_panels_and_reuses_slot(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    dvz_grid_destroy(NULL);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
+    ANN(figure);
+    DvzGrid* grid = dvz_figure_grid(figure, 1, 2);
+    ANN(grid);
+    DvzPanel* left = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* right = dvz_grid_panel(grid, 0, 1);
+    ANN(left);
+    ANN(right);
+    AT(left->grid == grid);
+    AT(right->grid == grid);
+    AT(grid->panel_count == 2);
+
+    GridDestroyRequestProbe probe = {0};
+    AT(_scene_add_request_frame_callback(scene, _grid_destroy_request_frame_callback, &probe));
+
+    dvz_grid_destroy(grid);
+    AT(probe.calls == 1);
+    AT(probe.last_figure == figure);
+    AT(left->grid == NULL);
+    AT(right->grid == NULL);
+    AT(grid->figure == NULL);
+
+    dvz_grid_destroy(grid);
+    AT(probe.calls == 1);
+
+    DvzGrid* reused = dvz_figure_grid(figure, 2, 1);
+    AT(reused == grid);
+    AT(reused->figure == figure);
+    AT(reused->rows == 2);
+    AT(reused->cols == 1);
+    AT(reused->panel_count == 0);
+
+    _scene_remove_request_frame_callback(scene, _grid_destroy_request_frame_callback, &probe);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_grid_destroy_detached_panel_still_emits(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
+    ANN(figure);
+    DvzGrid* grid = dvz_figure_grid(figure, 1, 1);
+    ANN(grid);
+    DvzPanel* panel = dvz_grid_panel(grid, 0, 0);
+    ANN(panel);
+
+    vec3 pos = {0.0f, 0.0f, 0.0f};
+    DvzColor color = {255, 255, 255, 255};
+    float size = 5.0f;
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+    AT(dvz_visual_set_data(visual, "position", pos, 1) == 0);
+    AT(dvz_visual_set_data(visual, "color", &color, 1) == 0);
+    AT(dvz_visual_set_data(visual, "size", &size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    dvz_grid_destroy(grid);
+    AT(panel->grid == NULL);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 200;
+    cfg.target_height = 100;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    dvz_drp2_stream_destroy(stream);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_panel_destroy_removes_grid_attachment(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
+    ANN(figure);
+    DvzGrid* grid = dvz_figure_grid(figure, 1, 2);
+    ANN(grid);
+    DvzPanel* left = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* right = dvz_grid_panel(grid, 0, 1);
+    ANN(left);
+    ANN(right);
+    AT(grid->panel_count == 2);
+
+    dvz_panel_destroy(left);
+    AT(left->grid == NULL);
+    AT(grid->panel_count == 1);
+    AT(grid->panels[0].panel == right);
+
+    dvz_figure_resize(figure, 400, 100);
+    AT(right->figure == figure);
+    AT(right->grid == grid);
 
     dvz_scene_destroy(scene);
     return 0;

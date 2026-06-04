@@ -652,6 +652,8 @@ void dvz_panel_destroy(DvzPanel* panel)
 {
     if (panel == NULL)
         return;
+    if (panel->grid != NULL)
+        (void)_scene_grid_detach_panel(panel->grid, panel);
     (void)dvz_panel_connect_input(panel, NULL);
     panel->panzoom = NULL;
     panel->arcball = NULL;

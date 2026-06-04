@@ -480,6 +480,12 @@ int test_scene_grid_panel_recomputes_before_emit(TstContext* suite, const TstCas
 
 int test_scene_grid_panel_tracks_figure_resize(TstContext* suite, const TstCase* item);
 
+int test_scene_grid_destroy_detaches_panels_and_reuses_slot(TstContext* suite, const TstCase* item);
+
+int test_scene_grid_destroy_detached_panel_still_emits(TstContext* suite, const TstCase* item);
+
+int test_scene_panel_destroy_removes_grid_attachment(TstContext* suite, const TstCase* item);
+
 int test_scene_rejects_cross_scene_visual(TstContext* suite, const TstCase* item);
 
 int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item);

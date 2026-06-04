@@ -177,6 +177,17 @@ DVZ_EXPORT DvzGrid* dvz_figure_grid(DvzFigure* figure, uint32_t rows, uint32_t c
 
 
 /**
+ * Destroy a retained figure-owned grid layout object.
+ *
+ * Grid-owned panels are detached from the grid and remain valid as free-placement panels at their
+ * last resolved descriptors.
+ *
+ * @param grid the grid
+ */
+DVZ_EXPORT void dvz_grid_destroy(DvzGrid* grid);
+
+
+/**
  * Set fixed logical-pixel margins around one grid.
  *
  * @param grid the grid

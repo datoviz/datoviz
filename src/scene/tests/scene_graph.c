@@ -80,6 +80,9 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_grid_resolve_rejects_invalid_inputs);
     TST_CASE(test_scene_grid_panel_recomputes_before_emit);
     TST_CASE(test_scene_grid_panel_tracks_figure_resize);
+    TST_CASE(test_scene_grid_destroy_detaches_panels_and_reuses_slot);
+    TST_CASE(test_scene_grid_destroy_detached_panel_still_emits);
+    TST_CASE(test_scene_panel_destroy_removes_grid_attachment);
     TST_CASE(test_scene_z_layer_orders_emit);
     TST_CASE(test_scene_background_color_creates_fixed_quad);
     TST_CASE(test_scene_background_descriptor_gradient_and_image);
