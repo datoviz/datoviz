@@ -1,7 +1,7 @@
 Execution Status:
 
 - Status: active v0.4 experimental-slice plan
-- Updated on: 2026-05-31
+- Updated on: 2026-06-04
 - Purpose: define the minimal compute-to-graphics and native CUDA interop work that may ship in
   v0.4 without turning Datoviz into a general custom-shader or CUDA framework
 - Scope: C-first native runtime, DRP2 compute/synchronization, WebGPU parity for the portable
@@ -9,20 +9,26 @@ Execution Status:
 
 # Compute And Graphics Interop
 
-The v0.4 release should include a small but real compute-to-render path. The target is not a broad
-user shader API. The target is one gallery-quality scientific example where GPU compute produces a
+The v0.4 release includes a small but real compute-to-render path. The target is not a broad user
+shader API. The target is one gallery-quality scientific example where GPU compute produces a
 buffer or texture that graphics consumes directly, with no CPU readback in the frame loop.
 
 
 ## v0.4 Target
 
-Required experimental slice:
+Active experimental slice:
 
-1. DRP2 can express compute work that writes GPU resources consumed by a later render pass.
-2. The native vklite runtime executes the compute-to-render path with explicit synchronization.
+1. DRP2 expresses compute work that writes GPU resources consumed by a later render pass.
+2. Minimal `ResourceBarrier` synchronization is schema-backed, fixture-covered, and mapped by the
+   runtime command emitter.
 3. The WebGPU fixture runner accepts the same portable command semantics for the supported subset.
 4. A C gallery example demonstrates GPU-only compute plus graphics.
 5. Documentation marks the feature as `experimental`.
+
+Remaining release proof:
+
+1. record native Vulkan execution evidence in a shell where Vulkan instance creation succeeds;
+2. capture a release artifact from `examples/c/showcases/gpu_particle_smoke.c`.
 
 Optional native advanced slice:
 
@@ -150,14 +156,18 @@ Secondary examples, after the particle path works:
 
 ## Implementation Order
 
-1. Update release status and public feature classification.
-2. Promote minimal DRP2 synchronization semantics.
-3. Add native vklite barrier execution and focused GPU tests.
-4. Add or update WebGPU fixture-runner parity for the portable compute-to-render subset.
-5. Add the narrow scene `DvzSceneCompute` API and lowering required by the particle example.
-6. Keep `examples/c/showcases/gpu_particle_smoke.c` as the live GLFW gallery proof.
-7. Add optional CUDA SDK example if the native external-memory path remains low-risk.
-8. Publish documentation for support level, unsupported variants, and validation commands.
+1. Update release status and public feature classification. Done for the RC slice.
+2. Promote minimal DRP2 synchronization semantics. Done for storage-write to vertex/copy-read.
+3. Add native vklite barrier execution and focused GPU tests. Implemented; needs fresh native GPU
+   evidence in a Vulkan-capable environment.
+4. Add or update WebGPU fixture-runner parity for the portable compute-to-render subset. Done for
+   the committed fixture subset.
+5. Add the narrow scene `DvzSceneCompute` API and lowering required by the particle example. Done.
+6. Keep `examples/c/showcases/gpu_particle_smoke.c` as the live GLFW gallery proof. Done; capture
+   artifact still needed.
+7. Add optional CUDA SDK example if the native external-memory path remains low-risk. Optional.
+8. Publish documentation for support level, unsupported variants, and validation commands. Done in
+   `docs/reference/compute-graphics.md`.
 
 
 ## Acceptance Criteria

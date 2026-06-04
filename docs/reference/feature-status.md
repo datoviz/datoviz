@@ -11,7 +11,7 @@ Draft v0.4 public status table. Status labels use the meanings from
 | CPU-side user projection before upload | supported pattern | Users may pre-project nonlinear/geographic data on the CPU, then upload ordinary Cartesian positions. |
 | Scene-managed nonlinear coordinate transforms | deferred | No v0.4 scene API for panel/domain projections or geographic transforms. |
 | Custom visual/render shaders | deferred | Future work should arrive through custom visual families, not built-in shader replacement. |
-| Scene compute shaders | advanced/unstable | Narrow compute-to-render interop path; not the general custom render-shader API. |
+| Scene compute shaders | experimental | Narrow compute-to-render interop path with DRP2 `ResourceBarrier`, WebGPU fixture coverage, and `examples/c/showcases/gpu_particle_smoke.c`; not the general custom render-shader API. |
 | Built-in shader replacement and hot reload | deferred | Built-in visual shader ABI is internal in v0.4. |
 | Raw `ctypes` | experimental | Low-level binding path only. |
 | WebGPU/WASM | experimental | Browser subset is documented and release-proofed for point, primitive, RGBA8 image, basic mesh, panzoom, one 3D mesh/arcball scene, and the committed DRP2 fixture slice. Not Vulkan parity. |

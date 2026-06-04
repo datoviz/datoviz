@@ -4,3 +4,7 @@ Reference pages provide exact facts: status labels, signatures, constraints, lif
 support, and links to minimal examples.
 
 This section is a draft scaffold for the v0.4 release documentation.
+
+- [Feature status](feature-status.md)
+- [WebGPU subset](webgpu-subset.md)
+- [Compute and graphics](compute-graphics.md)
