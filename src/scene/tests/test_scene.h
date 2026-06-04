@@ -491,6 +491,8 @@ int test_scene_grid_destroy_detached_panel_still_emits(TstContext* suite, const 
 
 int test_scene_panel_destroy_removes_grid_attachment(TstContext* suite, const TstCase* item);
 
+int test_scene_figure_destroy_cascades_and_reuses_slot(TstContext* suite, const TstCase* item);
+
 int test_scene_rejects_cross_scene_visual(TstContext* suite, const TstCase* item);
 
 int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item);

@@ -267,9 +267,23 @@ void dvz_scene_destroy(DvzScene* scene)
 DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, uint32_t flags)
 {
     ANN(scene);
-    if (scene->figure_count >= DVZ_SCENE_MAX_FIGURES)
-        return NULL;
-    DvzFigure* fig = &scene->figures[scene->figure_count++];
+    DvzFigure* fig = NULL;
+    for (uint32_t i = 0; i < scene->figure_count; i++)
+    {
+        if (scene->figures[i].scene == NULL)
+        {
+            fig = &scene->figures[i];
+            break;
+        }
+    }
+    if (fig == NULL)
+    {
+        if (scene->figure_count >= DVZ_SCENE_MAX_FIGURES)
+            return NULL;
+        fig = &scene->figures[scene->figure_count++];
+    }
+
+    dvz_memset(fig, sizeof(DvzFigure), 0, sizeof(DvzFigure));
     fig->scene  = scene;
     fig->width  = width;
     fig->height = height;
@@ -295,6 +309,46 @@ DvzScene* dvz_figure_scene(DvzFigure* figure)
     if (figure == NULL)
         return NULL;
     return figure->scene;
+}
+
+
+/**
+ * Reset one panel slot.
+ *
+ * @param panel the panel
+ * @param detach_grid whether to remove the panel from its owning grid attachment list
+ */
+static void _scene_panel_reset(DvzPanel* panel, bool detach_grid)
+{
+    if (panel == NULL)
+        return;
+    if (detach_grid && panel->grid != NULL)
+        (void)_scene_grid_detach_panel(panel->grid, panel);
+    (void)dvz_panel_connect_input(panel, NULL);
+    panel->panzoom = NULL;
+    panel->arcball = NULL;
+    panel->fly = NULL;
+    for (uint32_t i = 0; i < 3; i++)
+        panel->controllers[i] = NULL;
+    panel->turntable = NULL;
+    panel->grid = NULL;
+    panel->grid_cell = (DvzGridCell){0};
+    if (panel->camera != NULL)
+    {
+        dvz_camera_destroy(panel->camera);
+        panel->camera = NULL;
+    }
+    panel->figure       = NULL;
+    panel->visual_count = 0;
+    panel->bounds_visual = NULL;
+    panel->bounds_occluded_visual = NULL;
+    panel->bounds_visible = false;
+    panel->colorbar_count = 0;
+    panel->legend_count = 0;
+    panel->interaction = NULL;
+    panel->item_interaction = NULL;
+    panel->pinned_readout_count = 0;
+    dvz_memset(&panel->hover, sizeof(DvzHoverState), 0, sizeof(DvzHoverState));
 }
 
 
@@ -354,11 +408,20 @@ void dvz_figure_size(const DvzFigure* figure, uint32_t* out_width, uint32_t* out
 
 void dvz_figure_destroy(DvzFigure* figure)
 {
-    if (figure == NULL)
+    if (figure == NULL || figure->scene == NULL)
+        return;
+    if (!_scene_visual_mutation_allowed(figure->scene, "destroy figure"))
         return;
     _scene_figure_frame_plan_trace_reset(figure);
-    /* Mark slot as empty */
-    figure->scene = NULL;
+    for (uint32_t i = 0; i < figure->panel_count; i++)
+        _scene_panel_reset(&figure->panels[i], false);
+    dvz_memset(figure->panels, sizeof(figure->panels), 0, sizeof(figure->panels));
+    dvz_memset(figure->grids, sizeof(figure->grids), 0, sizeof(figure->grids));
+    dvz_memset(figure->computes, sizeof(figure->computes), 0, sizeof(figure->computes));
+    figure->panel_count = 0;
+    figure->grid_count = 0;
+    figure->compute_count = 0;
+    dvz_memset(figure, sizeof(DvzFigure), 0, sizeof(DvzFigure));
 }
 
 
@@ -650,33 +713,5 @@ int dvz_panel_set_volume_occluder(
 
 void dvz_panel_destroy(DvzPanel* panel)
 {
-    if (panel == NULL)
-        return;
-    if (panel->grid != NULL)
-        (void)_scene_grid_detach_panel(panel->grid, panel);
-    (void)dvz_panel_connect_input(panel, NULL);
-    panel->panzoom = NULL;
-    panel->arcball = NULL;
-    panel->fly = NULL;
-    for (uint32_t i = 0; i < 3; i++)
-        panel->controllers[i] = NULL;
-    panel->turntable = NULL;
-    panel->grid = NULL;
-    panel->grid_cell = (DvzGridCell){0};
-    if (panel->camera != NULL)
-    {
-        dvz_camera_destroy(panel->camera);
-        panel->camera = NULL;
-    }
-    panel->figure       = NULL;
-    panel->visual_count = 0;
-    panel->bounds_visual = NULL;
-    panel->bounds_occluded_visual = NULL;
-    panel->bounds_visible = false;
-    panel->colorbar_count = 0;
-    panel->legend_count = 0;
-    panel->interaction = NULL;
-    panel->item_interaction = NULL;
-    panel->pinned_readout_count = 0;
-    dvz_memset(&panel->hover, sizeof(DvzHoverState), 0, sizeof(DvzHoverState));
+    _scene_panel_reset(panel, true);
 }

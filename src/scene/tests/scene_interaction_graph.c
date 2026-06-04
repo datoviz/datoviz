@@ -549,6 +549,82 @@ int test_scene_panel_destroy_removes_grid_attachment(TstContext* suite, const Ts
 }
 
 
+int test_scene_figure_destroy_cascades_and_reuses_slot(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    dvz_figure_destroy(NULL);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
+    ANN(figure);
+    DvzGrid* grid = dvz_figure_grid(figure, 1, 1);
+    ANN(grid);
+    DvzPanel* panel = dvz_grid_panel(grid, 0, 0);
+    ANN(panel);
+
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzController* controller = dvz_panzoom(scene, NULL);
+    ANN(controller);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) == 0);
+
+    static const char* shader =
+        "#version 450\n"
+        "layout(local_size_x = 1) in;\n"
+        "void main() {}\n";
+    DvzSceneCompute* compute = dvz_scene_compute(
+        scene, &(DvzSceneComputeDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneComputeDesc),
+                   .label = "figure_destroy_compute",
+                   .shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL,
+                   .shader_source = shader,
+                   .dispatch = {1, 1, 1},
+               });
+    ANN(compute);
+    AT(dvz_figure_add_compute(figure, compute));
+    AT(figure->compute_count == 1);
+
+    GridDestroyRequestProbe probe = {0};
+    AT(_scene_add_request_frame_callback(scene, _grid_destroy_request_frame_callback, &probe));
+
+    dvz_figure_destroy(figure);
+    AT(probe.calls == 0);
+    AT(dvz_figure_scene(figure) == NULL);
+    AT(panel->figure == NULL);
+    AT(grid->figure == NULL);
+    AT(dvz_controller_type(controller) == DVZ_CONTROLLER_TYPE_PANZOOM);
+    AT(compute->scene == scene);
+
+    dvz_figure_destroy(figure);
+    AT(probe.calls == 0);
+
+    DvzFigure* reused = dvz_figure(scene, 300, 150, 0);
+    AT(reused == figure);
+    AT(reused->panel_count == 0);
+    AT(reused->grid_count == 0);
+    AT(reused->compute_count == 0);
+    uint32_t width = 0;
+    uint32_t height = 0;
+    dvz_figure_size(reused, &width, &height);
+    AT(width == 300);
+    AT(height == 150);
+
+    DvzPanel* reused_panel = dvz_panel_full(reused);
+    ANN(reused_panel);
+    AT(dvz_panel_add_visual(reused_panel, visual, NULL) == 0);
+    AT(dvz_panel_bind_controller(reused_panel, controller, DVZ_DIM_MASK_XY) == 0);
+    AT(dvz_figure_add_compute(reused, compute));
+
+    _scene_remove_request_frame_callback(scene, _grid_destroy_request_frame_callback, &probe);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item)
 {
