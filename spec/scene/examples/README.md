@@ -27,6 +27,7 @@ back into the current scenario bundles or [PLANNING.md](PLANNING.md) before rely
 | [FIXTURES.md](FIXTURES.md) | Compact one-feature fixtures and generated DRP2/WebGPU/runtime validation ideas. |
 | [ORGANIZATION.md](ORGANIZATION.md) | Cross-repository ownership, example lanes, scenario IDs, and metadata conventions. |
 | [POLICIES.md](POLICIES.md) | Shared API caveats, data/cache rules, FramePlan/DRP2 references, and metadata block rules. |
+| [PORTABLE_SCENARIO_RUNNER.md](PORTABLE_SCENARIO_RUNNER.md) | Write-once C scenario architecture for native Vulkan and WASM/WebGPU example hosts. |
 | [STYLE.md](STYLE.md) | Gallery visual identity, screenshots, videos, typography, and accessibility guidance. |
 | [EXECUTION.md](EXECUTION.md) | One-at-a-time migration loop, old-example handling, metadata, and validation workflow. |
 | [TECHNIQUES.md](TECHNIQUES.md) | Cross-cutting rendering-technique notes that apply to multiple scenarios. |
