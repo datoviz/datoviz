@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active RC preparation. Updated: 2026-06-03.
+Status: active RC preparation. Updated: 2026-06-04.
 
 Keep this file short. Durable behavior belongs in `spec/`; completed history belongs in git
 history, not in agent archives.
@@ -14,7 +14,7 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits WGSL DRP2 JSON for point, primitive, RGBA8 image, basic mesh, panzoom, and a 3D mesh/arcball proof. | Publish the experimental subset, record fresh browser evidence, harden diagnostic ABI behavior, and remove remaining demo shortcuts. |
+| WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits split DRP2 packets for point, primitive, RGBA8 image, basic mesh, panzoom, and a 3D mesh/arcball proof. Fresh 2026-06-04 browserless and headless-browser proof is recorded in `examples/webgpu/COMPAT.md` and `docs/reference/webgpu-subset.md`. | Harden diagnostic ABI behavior and remove remaining demo shortcuts without expanding the RC subset. |
 | Compute+graphics experimental path | DRP2, FramePlan, vklite, and WebGPU already have partial compute support and compute-to-render fixtures. | Promote minimal DRP2 synchronization, prove native execution, mirror portable WebGPU behavior, and prepare a C particle-advection gallery example. |
 | Qt/PyQt hosted path | Native Qt hosting has an optional example path; PyQt needs a native Qt bridge because current PyQt6 wheels do not expose `QVulkanInstance::setVkInstance()` or `vkInstance()`. | Implement the optional `datoviz_qtbridge` provider from `spec/scene/integration/QT_HOST_BRIDGE.md` and prove the PyQt hosted example. |
 | v0.3 visible parity audit | Missing. | Table each visible capability as fixed, deferred, or external/GSP. |

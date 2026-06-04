@@ -103,6 +103,11 @@ Current status as of this note:
   load through `examples/webgpu/examples.html`, and `just webgpu-browser-smoke` renders both demos,
   exercises retained packet lifecycles, checks pagehide destruction, and reports `2` dashboard WASM
   scene checks passing.
+- recorded local release proof on 2026-06-04: `just webgpu-fixture-preflight` passed `39` strict
+  positive/WebGPU stream rows; `just webgpu-runner-smoke` passed `37` positive fixtures, `2`
+  WebGPU streams, and `82` negative parity fixtures; `just wasm-scene-smoke` emitted, preflighted,
+  and replayed the 2D and 3D WASM scene streams; `just webgpu-browser-smoke` rendered both WASM
+  demos, exercised interaction, and reported dashboard WASM scene checks `2 pass, 0 fail`.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

@@ -5,7 +5,7 @@ Status: experimental v0.4 browser subset.
 Datoviz v0.4 includes an experimental browser path:
 
 ```text
-C/WASM scene state -> scene frame plan -> WGSL DRP2 stream -> browser WebGPU runtime -> canvas
+C/WASM scene state -> scene frame plan -> WGSL DRP2 packets -> browser WebGPU runtime -> canvas
 ```
 
 This is a portability proof for the v0.4 scene and DRP2 contract. It is not native Vulkan feature
@@ -58,6 +58,25 @@ The browser WebGPU runner executes the committed fixture subset of:
 - object destruction and use-after-destroy validation for the active command subset.
 
 Active command coverage is recorded in `examples/webgpu/COMPAT.md`.
+
+## Parity Contract
+
+The v0.4 browser path has parity with Vulkan only at the shared contract boundary:
+
+| Surface | Browser status |
+| --- | --- |
+| DRP2 validation and lifecycle semantics | committed positive fixture subset and semantic negatives are checked by the WebGPU runner |
+| Setup/update/frame resource model | active through split binary packets and retained browser runtime state |
+| WGSL shader modules | supported and required for portable browser execution |
+| Vulkan-specific modules and presentation | unsupported in WASM; native-only |
+| Scene visual parity | limited to point, primitive, RGBA8 image, and basic mesh demos |
+| Controller parity | limited to panzoom and one 3D arcball proof |
+| Compute-to-render parity | experimental; fixture coverage exists, gallery-level behavior remains a separate release lane |
+| Query/picking/readback scene parity | deferred for live WASM scenes |
+
+Any future feature promoted into the browser subset must update the scene emitter, DRP2 schema or
+fixture coverage when needed, WebGPU execution, capability reporting, diagnostics, and this page in
+the same change set.
 
 ## Unsupported Or Deferred
 
@@ -154,6 +173,16 @@ Expected manual results for the current subset:
 `just webgpu-browser-smoke` automates the two WASM example checks through the split-packet
 runtime path and the dashboard WASM Scene Smoke rows with headless Chrome when Chrome/Chromium is
 available locally. It writes transient PNG evidence under `build/webgpu-browser-smoke/`.
+
+Last local release proof recorded on 2026-06-04:
+
+- `just webgpu-fixture-preflight`: `39` passed, `0` failed;
+- `just webgpu-runner-smoke`: `37` positive fixtures, `2` WebGPU streams, and `82` semantic
+  negative fixtures passed;
+- `just wasm-scene-smoke`: 2D and 3D WASM scene streams emitted, preflighted, and replayed by the
+  JS runner smoke;
+- `just webgpu-browser-smoke`: 2D and 3D WASM pages rendered, browser interaction was exercised,
+  and dashboard WASM scene checks reported `2 pass, 0 fail`.
 
 Headless Chrome/Dawn can skip WebGPU render checks before the scene contract is exercised because
 of external instance loss, including `A valid external Instance reference no longer exists` or
