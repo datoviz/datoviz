@@ -1172,8 +1172,9 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_SDF].data[2] == 160);
     AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].width == 2);
     AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].height == 2);
-    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].channels == 3);
-    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].data[9] == 255);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].channels == 4);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].data[8] == 160);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].data[15] == 255);
 
     vec3 positions[5] = {
         {-0.50f, 0.0f, 0.0f},
@@ -1406,7 +1407,7 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
                                       command->u.create_texture.height == 2 &&
                                       command->u.create_texture.depth == 1);
             found_msdf_texture =
-                found_msdf_texture || (command->u.create_texture.format == VK_FORMAT_R8G8B8_UNORM &&
+                found_msdf_texture || (command->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
                                        command->u.create_texture.width == 2 &&
                                        command->u.create_texture.height == 2 &&
                                        command->u.create_texture.depth == 1);
@@ -1427,7 +1428,7 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
                 found_msdf_texture_upload || (command->u.write_texture.width == 2 &&
                                               command->u.write_texture.height == 2 &&
                                               command->u.write_texture.depth == 1 &&
-                                              command->u.write_texture.bytes_per_row == 2 * 3);
+                                              command->u.write_texture.bytes_per_row == 2 * 4);
         }
     }
     AT(found_pipeline);

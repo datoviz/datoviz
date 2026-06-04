@@ -180,6 +180,20 @@ static uint32_t _symbol_source_channels(DvzSymbolSourceKind kind)
 
 
 /**
+ * Return the channel count used by one image-backed symbol atlas page.
+ *
+ * @param kind source kind
+ * @return atlas channel count, or zero for non-image sources
+ */
+static uint32_t _symbol_atlas_channels(DvzSymbolSourceKind kind)
+{
+    if (kind == DVZ_SYMBOL_SOURCE_MSDF)
+        return 4;
+    return _symbol_source_channels(kind);
+}
+
+
+/**
  * Rebuild one same-encoding symbol atlas page.
  *
  * @param symbols the symbol set
@@ -189,8 +203,9 @@ static uint32_t _symbol_source_channels(DvzSymbolSourceKind kind)
 static bool _symbol_set_rebuild_atlas_page(DvzSymbolSet* symbols, DvzSymbolSourceKind kind)
 {
     ANN(symbols);
-    const uint32_t channels = _symbol_source_channels(kind);
-    if (channels == 0 || (uint32_t)kind > DVZ_SYMBOL_SOURCE_MSDF)
+    const uint32_t source_channels = _symbol_source_channels(kind);
+    const uint32_t atlas_channels = _symbol_atlas_channels(kind);
+    if (source_channels == 0 || atlas_channels == 0 || (uint32_t)kind > DVZ_SYMBOL_SOURCE_MSDF)
         return false;
 
     uint32_t width = 0;
@@ -218,7 +233,7 @@ static bool _symbol_set_rebuild_atlas_page(DvzSymbolSet* symbols, DvzSymbolSourc
     if (entry_count == 0)
         return true;
 
-    const uint64_t row_stride = (uint64_t)width * channels;
+    const uint64_t row_stride = (uint64_t)width * atlas_channels;
     const uint64_t byte_size = row_stride * height;
     if (row_stride > UINT32_MAX || byte_size == 0 || byte_size > (uint64_t)SIZE_MAX)
         return false;
@@ -235,9 +250,31 @@ static bool _symbol_set_rebuild_atlas_page(DvzSymbolSet* symbols, DvzSymbolSourc
         for (uint32_t y = 0; y < source->height; y++)
         {
             const uint64_t src_offset = (uint64_t)y * source->row_stride;
-            const uint64_t dst_offset = ((uint64_t)y * width + x) * channels;
-            const uint64_t row_bytes = (uint64_t)source->width * channels;
-            dvz_memcpy(atlas + dst_offset, (DvzSize)row_bytes, source->data + src_offset, (DvzSize)row_bytes);
+            const uint64_t dst_offset = ((uint64_t)y * width + x) * atlas_channels;
+            if (source_channels == atlas_channels)
+            {
+                const uint64_t row_bytes = (uint64_t)source->width * atlas_channels;
+                dvz_memcpy(
+                    atlas + dst_offset, (DvzSize)row_bytes, source->data + src_offset,
+                    (DvzSize)row_bytes);
+            }
+            else if (kind == DVZ_SYMBOL_SOURCE_MSDF && source_channels == 3 && atlas_channels == 4)
+            {
+                for (uint32_t px = 0; px < source->width; px++)
+                {
+                    const uint8_t* src = source->data + src_offset + 3u * px;
+                    uint8_t* dst = atlas + dst_offset + 4u * px;
+                    dst[0] = src[0];
+                    dst[1] = src[1];
+                    dst[2] = src[2];
+                    dst[3] = 255u;
+                }
+            }
+            else
+            {
+                dvz_free(atlas);
+                return false;
+            }
         }
         source->atlas_x = x;
         source->atlas_y = 0;
@@ -253,7 +290,7 @@ static bool _symbol_set_rebuild_atlas_page(DvzSymbolSet* symbols, DvzSymbolSourc
     page->kind = kind;
     page->width = width;
     page->height = height;
-    page->channels = channels;
+    page->channels = atlas_channels;
     page->row_stride = (uint32_t)row_stride;
     page->byte_size = byte_size;
     page->data = atlas;

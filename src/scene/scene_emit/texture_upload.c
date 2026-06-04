@@ -194,17 +194,20 @@ static void _scene_emit_marker_symbol_texture_upload(
     if (!page->active || page->data == NULL || page->byte_size == 0)
         return;
 
-    uint32_t texture_format = VK_FORMAT_R8G8B8A8_UNORM;
-    uint32_t bytes_per_texel = 4;
-    if (state->symbol_source_kind == DVZ_SYMBOL_SOURCE_SDF)
+    uint32_t texture_format = 0;
+    uint32_t bytes_per_texel = page->channels;
+    if (page->channels == 1)
     {
         texture_format = VK_FORMAT_R8_UNORM;
-        bytes_per_texel = 1;
     }
-    else if (state->symbol_source_kind == DVZ_SYMBOL_SOURCE_MSDF)
+    else if (page->channels == 4)
     {
-        texture_format = VK_FORMAT_R8G8B8_UNORM;
-        bytes_per_texel = 3;
+        texture_format = VK_FORMAT_R8G8B8A8_UNORM;
+    }
+    else
+    {
+        log_error("unsupported marker symbol atlas channel count");
+        return;
     }
 
     char tex_resource_id[128];
