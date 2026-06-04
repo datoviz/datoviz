@@ -7,34 +7,46 @@ low-level integration, smoke tests, backend work, and automation that needs exac
 `libdatoviz`.
 
 It is not the v0.3 Python plotting API, not a compatibility layer, and not the recommended
-Pythonic scientific visualization surface. High-level plotting and object-oriented Python workflows
-belong above Datoviz, currently in the GSP/VisPy2 layer.
+direct-engine Python import. High-level plotting and object-oriented Python workflows belong above
+Datoviz, currently in the GSP/VisPy2 layer.
 
 
 ## Import Surface
 
-Use the explicit raw module:
+For normal direct-engine Python use, prefer the array-aware top-level facade:
 
 ```python
-import datoviz.raw as dvz
+import datoviz as dvz
+```
+
+The facade preserves C names and accepts NumPy arrays for policy-declared data arguments:
+
+```python
+dvz.dvz_visual_set_data(points, "position", positions)
+```
+
+Use the explicit raw module when exact `ctypes` behavior is required:
+
+```python
+import datoviz.raw as raw
 ```
 
 The raw module preserves C names:
 
 ```python
-scene = dvz.dvz_scene()
-dvz.dvz_scene_destroy(scene)
+scene = raw.dvz_scene()
+raw.dvz_scene_destroy(scene)
 ```
 
 Do not treat these as part of the raw-binding contract:
 
 ```python
-import datoviz as dvz
 scene = dvz.scene()
 ```
 
 `datoviz.raw` is the public raw binding module. `datoviz._ctypes` is generated implementation
-detail and should not be imported directly in examples or documentation.
+detail and should not be imported directly in examples or documentation. `datoviz._array_facade` is
+also generated implementation detail; use `import datoviz as dvz` instead.
 
 
 ## Generated Pipeline
@@ -42,10 +54,13 @@ detail and should not be imported directly in examples or documentation.
 The binding is generated from public C API metadata:
 
 ```text
-public C headers -> build/bindings/datoviz_api.json -> datoviz/_ctypes.py -> datoviz.raw
+public C headers -> build/bindings/datoviz_api.json
+               -> datoviz/_ctypes.py -> datoviz.raw
+               -> datoviz/_array_facade.py -> datoviz
 ```
 
-`datoviz/_ctypes.py` is generated output. Do not edit it by hand. Regenerate it with:
+`datoviz/_ctypes.py` and `datoviz/_array_facade.py` are generated output. Do not edit them by hand.
+Regenerate them with:
 
 ```sh
 just ctypes
@@ -60,8 +75,9 @@ The extraction and generation tools live under `tools/bindings/`. Binding policy
 This page defines the raw-binding scope, import style, ownership expectations, and validation
 commands. It is not the exhaustive symbol catalog.
 
-Exhaustive C and raw-binding symbol references should be generated from parsed public headers rather
-than maintained by hand. The first source of truth for that generated outline is expected to be:
+Exhaustive C, facade, and raw-binding symbol references should be generated from parsed public
+headers rather than maintained by hand. The first source of truth for that generated outline is
+expected to be:
 
 ```text
 build/bindings/datoviz_api.json
@@ -70,6 +86,20 @@ build/bindings/datoviz_api.json
 The generated reference should cover public C symbols, headers, structs, enums, constants, callback
 typedefs, and raw-binding availability. Any skipped or opaque symbol should be explained from
 source-controlled binding policy where possible.
+
+
+## Facade Versus Raw
+
+The top-level facade and raw module intentionally share C-shaped names:
+
+| Need | Import |
+| --- | --- |
+| Pass NumPy arrays to declared data uploads | `import datoviz as dvz` |
+| Match exact `ctypes` signatures, pointers, and counts | `import datoviz.raw as raw` |
+| Debug generated FFI implementation internals | `datoviz._ctypes`, rarely and not in docs examples |
+
+The facade only adapts policy-declared pointer/count, pointer/byte-size, and string relationships.
+Unannotated calls remain raw-shaped passthroughs.
 
 
 ## Naming And Types

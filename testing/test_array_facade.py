@@ -37,14 +37,6 @@ def _raw_function(argtypes, restype=ctypes.c_int):
 @pytest.fixture()
 def fake_facade(monkeypatch):
     raw = types.ModuleType('datoviz.raw')
-    raw.__all__ = [
-        'DvzVisual',
-        'dvz_passthrough',
-        'dvz_scene_buffer_set_data',
-        'dvz_visual_set_data',
-        'dvz_visual_set_data_range',
-        'dvz_visual_set_index_data',
-    ]
     raw.DvzVisual = type('DvzVisual', (), {})
     raw.dvz_passthrough = _raw_function([ctypes.c_int, ctypes.c_int])
     raw.dvz_scene_buffer_set_data = _raw_function(

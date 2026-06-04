@@ -118,24 +118,42 @@ skipped_functions:
     unions, or other layouts that are intentionally not emitted until their ABI policy is explicit.
     Keep this list synchronized with datoviz._ctypes._SKIPPED_FUNCTIONS.
   expected:
+    - dvz_annotation_desc
     - dvz_attachment_clear
+    - dvz_camera_motion_desc
     - dvz_cmd_rendering_default
     - dvz_cond
+    - dvz_depth_cue_desc
     - dvz_deq_dequeue_return
     - dvz_deq_peek_first
     - dvz_deq_peek_last
     - dvz_device_config
+    - dvz_field_geometry
     - dvz_frame_plan_emit_config
+    - dvz_geometry_cube_desc
+    - dvz_geometry_plane_desc
+    - dvz_geometry_sphere_desc
+    - dvz_geometry_surface_grid_desc
     - dvz_gpu_ctx_config
+    - dvz_label_desc
     - dvz_material_desc
     - dvz_mutex
     - dvz_orbit_camera_desc
+    - dvz_overlay_card_desc
     - dvz_overlay_card_style
     - dvz_panel_background_desc
-    - dvz_panel_border_desc
     - dvz_phong_material_desc
+    - dvz_polygon_desc
+    - dvz_scalebar_desc
     - dvz_standard_material_desc
     - dvz_surface_capabilities
     - dvz_surface_extent
     - dvz_surface_preferred_format
     - dvz_swapchain_extent
+    - dvz_text_placement
+    - dvz_track_circle2_desc
+    - dvz_track_circle3_desc
+    - dvz_track_rotation_desc
+    - dvz_transform_motion_desc
+    - dvz_visual_transform_desc
+    - dvz_window_external_surface_info

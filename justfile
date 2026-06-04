@@ -1055,11 +1055,16 @@ ctypes-check: api-json ctypes-abi
     @python tools/bindings/generate_ctypes.py --check
     @python tools/bindings/generate_array_facade.py --check
     @python tools/bindings/validate_ctypes_policy.py
+    @python tools/bindings/validate_array_facade.py
     @PYTHONPATH=. python tools/bindings/validate_ctypes_abi.py
 #
 
 ctypes-smoke:
     @PYTHONPATH=. python tools/bindings/ctypes_smoke.py
+#
+
+ctypes-facade-smoke:
+    @PYTHONPATH=. python tools/bindings/array_facade_smoke.py
 #
 
 ctypes-python-smoke:
@@ -1081,7 +1086,7 @@ ctypes-wheel-smoke: build ctypes
 ctypes-package-smoke: ctypes-editable-smoke ctypes-wheel-smoke
 #
 
-bindings: build ctypes ctypes-check ctypes-smoke ctypes-python-smoke ctypes-render-smoke ctypes-package-smoke
+bindings: build ctypes ctypes-check ctypes-smoke ctypes-facade-smoke ctypes-python-smoke ctypes-render-smoke ctypes-package-smoke
 #
 
 pytest:

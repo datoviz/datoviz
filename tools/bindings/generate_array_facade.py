@@ -272,7 +272,7 @@ def generate(api: dict, policy: dict) -> str:
     lines.append('_ARRAY_FACADE_FUNCTIONS = ')
     lines.append(repr(sorted(policy)))
     lines.append('\n\n')
-    lines.append('for _name in getattr(_raw, "__all__", []):\n')
+    lines.append('for _name in getattr(_raw, "__all__", dir(_raw)):\n')
     lines.append('    if _name not in globals():\n')
     lines.append('        globals()[_name] = getattr(_raw, _name)\n')
     lines.append('\n')
