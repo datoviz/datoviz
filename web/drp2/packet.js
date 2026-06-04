@@ -557,7 +557,11 @@ export function decodeDrp2PacketSet(packetSet) {
   for (const key of ["setup", "update", "frame"]) {
     const span = packetSet[key];
     if (span?.packet !== undefined && span.packet.byteLength > 0) {
-      phases[key] = decodeDrp2Packet(span.packet, span.arena ?? new Uint8Array());
+      const packet = decodeDrp2Packet(span.packet, span.arena ?? new Uint8Array());
+      if (packet.kind !== key) {
+        throw new Error(`DRP2 packet phase ${key} contains ${packet.kind} packet`);
+      }
+      phases[key] = packet;
     }
   }
   return phases;

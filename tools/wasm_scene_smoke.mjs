@@ -256,6 +256,8 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(!renderIncremental.includes("emitDebugJson"), "renderIncremental uses debug JSON");
   requireOk(!renderInitial.includes("_dvz_wasm_api_emit("), "renderInitial uses JSON ABI");
   requireOk(!renderIncremental.includes("_dvz_wasm_api_emit("), "renderIncremental uses JSON ABI");
+  requireOk(source.includes("_dvz_wasm_api_packet_status"), "browser wrapper ignores packet status");
+  requireOk(source.includes(".slice()"), "browser wrapper retains borrowed WASM packet views");
 }
 
 function expectNoLegacyDirectAbi(Module) {

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { readFile } from 'node:fs/promises';
-import { decodeDrp2Packet } from '../web/drp2/packet.js';
+import { decodeDrp2Packet, decodeDrp2PacketSet } from '../web/drp2/packet.js';
 
 const fakeCanvas = {
   width: 640,
@@ -663,6 +663,13 @@ async function smokePacketSessionValidation(Drp2WebGpuRuntime) {
       new Uint8Array(10),
     ),
     'payload span',
+  );
+  expectThrows(
+    () => decodeDrp2PacketSet({
+      setup: { packet: emptyPacket(3, 1, 1) },
+      frame: { packet: emptyPacket(3, 1, 1) },
+    }),
+    'phase setup contains frame packet',
   );
 
   const runtime = new Drp2WebGpuRuntime(device, context, 'bgra8unorm', { canvas: fakeCanvas });

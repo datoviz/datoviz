@@ -100,7 +100,8 @@ function hasPacketApi(Module) {
     typeof Module._dvz_wasm_api_packet_ptr === "function" &&
     typeof Module._dvz_wasm_api_packet_size === "function" &&
     typeof Module._dvz_wasm_api_packet_arena_ptr === "function" &&
-    typeof Module._dvz_wasm_api_packet_arena_size === "function"
+    typeof Module._dvz_wasm_api_packet_arena_size === "function" &&
+    typeof Module._dvz_wasm_api_packet_status === "function"
   );
 }
 
@@ -421,14 +422,22 @@ export class DatovizWasmScene {
     if (status !== 0) {
       throw new Error(this._diagnosticMessage(`dvz_wasm_api_emit_packets failed with ${status}`));
     }
+    const packetStatus = this.Module._dvz_wasm_api_packet_status(this.scene);
+    if (packetStatus !== 0) {
+      throw new Error(this._diagnosticMessage(`dvz_wasm_api_packet_status returned ${packetStatus}`));
+    }
     const span = (kind) => {
       const packetPtr = this.Module._dvz_wasm_api_packet_ptr(this.scene, kind);
       const packetSize = this.Module._dvz_wasm_api_packet_size(this.scene, kind);
       const arenaPtr = this.Module._dvz_wasm_api_packet_arena_ptr(this.scene, kind);
       const arenaSize = this.Module._dvz_wasm_api_packet_arena_size(this.scene, kind);
       return {
-        packet: packetPtr !== 0 ? this.Module.HEAPU8.subarray(packetPtr, packetPtr + packetSize) : new Uint8Array(),
-        arena: arenaPtr !== 0 ? this.Module.HEAPU8.subarray(arenaPtr, arenaPtr + arenaSize) : new Uint8Array(),
+        packet: packetPtr !== 0
+          ? this.Module.HEAPU8.subarray(packetPtr, packetPtr + packetSize).slice()
+          : new Uint8Array(),
+        arena: arenaPtr !== 0
+          ? this.Module.HEAPU8.subarray(arenaPtr, arenaPtr + arenaSize).slice()
+          : new Uint8Array(),
       };
     };
     return {
