@@ -19,6 +19,7 @@
 #include "_assertions.h"
 #include "_controllers.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
 #include "datoviz/scene/arcball.h"
@@ -31,6 +32,23 @@
 /*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
+
+typedef struct ControllerDestroyRequestProbe
+{
+    uint32_t calls;
+    DvzFigure* last_figure;
+} ControllerDestroyRequestProbe;
+
+
+static void _controller_destroy_request_frame_callback(DvzFigure* figure, void* user_data)
+{
+    ControllerDestroyRequestProbe* probe = (ControllerDestroyRequestProbe*)user_data;
+    ANN(probe);
+    probe->calls++;
+    probe->last_figure = figure;
+}
+
+
 
 /**
  * Project normalized device coordinates onto the test arcball sphere.
@@ -827,6 +845,121 @@ int test_controller_link_destroy_stops_arcball_propagation(
 
 
 /**
+ * Ensure destroying a controller detaches panels, destroys links, and reuses slots.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_controller_destroy_detaches_panels_links_and_reuses_slot(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    dvz_controller_destroy(NULL);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    ANN(left);
+    ANN(right);
+
+    DvzController* source = dvz_arcball(scene, NULL);
+    DvzController* target = dvz_arcball(scene, NULL);
+    ANN(source);
+    ANN(target);
+    DvzArcball* source_arcball = dvz_controller_arcball(source);
+    ANN(source_arcball);
+    AT(dvz_panel_bind_controller(left, source, DVZ_DIM_MASK_XYZ) == 0);
+    AT(dvz_panel_bind_controller(right, source, DVZ_DIM_MASK_XYZ) == 0);
+
+    DvzControllerLink* link = dvz_controller_link(
+        scene, source, target, DVZ_CONTROLLER_LINK_ROTATION, DVZ_CONTROLLER_LINK_ONE_WAY);
+    ANN(link);
+    AT(link->active);
+
+    ControllerDestroyRequestProbe probe = {0};
+    AT(_scene_add_request_frame_callback(
+        scene, _controller_destroy_request_frame_callback, &probe));
+
+    dvz_controller_destroy(source);
+    AT(probe.calls == 1);
+    AT(probe.last_figure == figure);
+    AT(dvz_controller_type(source) == DVZ_CONTROLLER_TYPE_NONE);
+    AT(dvz_controller_arcball(source) == NULL);
+    AT(!link->active);
+    for (uint32_t dim = 0; dim < 3; dim++)
+    {
+        AT(left->controllers[dim] == NULL);
+        AT(right->controllers[dim] == NULL);
+    }
+    AT(left->arcball == NULL);
+    AT(right->arcball == NULL);
+
+    dvz_controller_destroy(source);
+    AT(probe.calls == 1);
+
+    DvzController* reused = dvz_arcball(scene, NULL);
+    AT(reused == source);
+    AT(dvz_controller_type(reused) == DVZ_CONTROLLER_TYPE_ARCBALL);
+    DvzControllerLink* reused_link = dvz_controller_link(
+        scene, reused, target, DVZ_CONTROLLER_LINK_ROTATION, DVZ_CONTROLLER_LINK_ONE_WAY);
+    AT(reused_link == link);
+
+    _scene_remove_request_frame_callback(scene, _controller_destroy_request_frame_callback, &probe);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure destroying one partial panzoom binding leaves other dimensions intact.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_controller_destroy_preserves_other_panel_bindings(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzController* x_controller = dvz_panzoom(scene, NULL);
+    DvzController* y_controller = dvz_panzoom(scene, NULL);
+    ANN(x_controller);
+    ANN(y_controller);
+    DvzPanzoom* y_panzoom = dvz_controller_panzoom(y_controller);
+    ANN(y_panzoom);
+    AT(dvz_panel_bind_controller(panel, x_controller, DVZ_DIM_MASK_X) == 0);
+    AT(dvz_panel_bind_controller(panel, y_controller, DVZ_DIM_MASK_Y) == 0);
+    AT(panel->controllers[DVZ_DIM_X] == x_controller);
+    AT(panel->controllers[DVZ_DIM_Y] == y_controller);
+    AT(panel->panzoom == y_panzoom);
+
+    dvz_controller_destroy(x_controller);
+    AT(panel->controllers[DVZ_DIM_X] == NULL);
+    AT(panel->controllers[DVZ_DIM_Y] == y_controller);
+    AT(panel->panzoom == y_panzoom);
+    AT(dvz_controller_type(y_controller) == DVZ_CONTROLLER_TYPE_PANZOOM);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure panel camera and arcball compose into view/projection and model matrices.
  *
  * @param suite the test suite
@@ -1563,6 +1696,8 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_controller_link_panzoom_extent_x_only);
     TST_CASE(test_controller_link_validation);
     TST_CASE(test_controller_link_destroy_stops_arcball_propagation);
+    TST_CASE(test_controller_destroy_detaches_panels_links_and_reuses_slot);
+    TST_CASE(test_controller_destroy_preserves_other_panel_bindings);
 
     TST_CASE(test_scene_camera_arcball_mvp_composition);
     return 0;

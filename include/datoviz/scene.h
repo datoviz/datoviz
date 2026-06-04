@@ -292,6 +292,17 @@ DVZ_EXPORT DvzControllerType dvz_controller_type(const DvzController* controller
 
 
 /**
+ * Destroy a scene-owned controller.
+ *
+ * Panels borrowing the controller are detached. Controller payload accessors return borrowed
+ * handles and must not be destroyed separately.
+ *
+ * @param controller the controller
+ */
+DVZ_EXPORT void dvz_controller_destroy(DvzController* controller);
+
+
+/**
  * Create a scene-owned controller state link.
  *
  * Links propagate selected semantic state components from a source controller to a distinct target

@@ -221,6 +221,11 @@ int test_controller_link_validation(TstContext* suite, const TstCase* item);
 int test_controller_link_destroy_stops_arcball_propagation(
     TstContext* suite, const TstCase* item);
 
+int test_controller_destroy_detaches_panels_links_and_reuses_slot(
+    TstContext* suite, const TstCase* item);
+
+int test_controller_destroy_preserves_other_panel_bindings(TstContext* suite, const TstCase* item);
+
 int test_scene_capabilities_diagnostics(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_static_render(TstContext* suite, const TstCase* item);

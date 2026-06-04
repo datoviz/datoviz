@@ -272,6 +272,65 @@ static void _scene_notify_controller_figures(const DvzController* controller)
 }
 
 
+/**
+ * Detach one controller from all panel bindings and notify affected figures.
+ *
+ * @param controller the controller
+ */
+static void _scene_controller_detach_from_panels(DvzController* controller)
+{
+    if (controller == NULL || controller->scene == NULL)
+        return;
+
+    DvzScene* scene = controller->scene;
+    DvzFigure* affected[DVZ_SCENE_MAX_FIGURES] = {0};
+    uint32_t affected_count = 0;
+    for (uint32_t fi = 0; fi < scene->figure_count; fi++)
+    {
+        DvzFigure* figure = &scene->figures[fi];
+        if (figure->scene != scene)
+            continue;
+
+        bool figure_affected = false;
+        for (uint32_t pi = 0; pi < figure->panel_count; pi++)
+        {
+            DvzPanel* panel = &figure->panels[pi];
+            if (panel->figure != figure)
+                continue;
+
+            bool panel_affected = false;
+            for (uint32_t dim = 0; dim < 3; dim++)
+            {
+                if (panel->controllers[dim] == controller)
+                {
+                    panel->controllers[dim] = NULL;
+                    panel_affected = true;
+                }
+            }
+            if (!panel_affected)
+                continue;
+
+            if (panel->panzoom == controller->panzoom)
+                panel->panzoom = NULL;
+            if (panel->arcball == controller->arcball)
+                panel->arcball = NULL;
+            if (panel->fly == controller->fly)
+                panel->fly = NULL;
+            if (panel->turntable == controller->turntable)
+                panel->turntable = NULL;
+            if (panel->orbit_camera == controller->orbit_camera)
+                panel->orbit_camera = NULL;
+            figure_affected = true;
+        }
+        if (figure_affected && affected_count < DVZ_SCENE_MAX_FIGURES)
+            affected[affected_count++] = figure;
+    }
+
+    for (uint32_t i = 0; i < affected_count; i++)
+        _scene_notify_request_frame(affected[i]);
+}
+
+
 
 /**
  * Return whether one controller link endpoint is usable.
@@ -946,10 +1005,23 @@ static void _scene_panel_input_callback(
 static DvzController* _scene_controller(DvzScene* scene, DvzControllerType type)
 {
     ANN(scene);
-    if (scene->controller_count >= DVZ_SCENE_MAX_CONTROLLERS)
-        return NULL;
+    DvzController* controller = NULL;
+    for (uint32_t i = 0; i < scene->controller_count; i++)
+    {
+        if (!scene->controllers[i].active)
+        {
+            controller = &scene->controllers[i];
+            break;
+        }
+    }
+    if (controller == NULL)
+    {
+        if (scene->controller_count >= DVZ_SCENE_MAX_CONTROLLERS)
+            return NULL;
+        controller = &scene->controllers[scene->controller_count++];
+    }
 
-    DvzController* controller = &scene->controllers[scene->controller_count++];
+    dvz_memset(controller, sizeof(DvzController), 0, sizeof(DvzController));
     controller->scene = scene;
     controller->type = type;
     controller->active = true;
@@ -979,7 +1051,6 @@ DvzController* dvz_panzoom(DvzScene* scene, const DvzPanzoomDesc* desc)
     if (controller->panzoom == NULL)
     {
         _scene_controller_destroy(controller);
-        scene->controller_count--;
         return NULL;
     }
     return controller;
@@ -1008,7 +1079,6 @@ DvzController* dvz_arcball(DvzScene* scene, const DvzArcballDesc* desc)
     if (controller->arcball == NULL)
     {
         _scene_controller_destroy(controller);
-        scene->controller_count--;
         return NULL;
     }
     return controller;
@@ -1040,7 +1110,6 @@ DvzController* dvz_orbit_camera(DvzScene* scene, const DvzOrbitCameraDesc* desc)
     if (controller->orbit_camera == NULL)
     {
         _scene_controller_destroy(controller);
-        scene->controller_count--;
         return NULL;
     }
     return controller;
@@ -1058,7 +1127,6 @@ DvzController* dvz_fly(DvzScene* scene, const DvzFlyDesc* desc)
     if (controller->fly == NULL)
     {
         _scene_controller_destroy(controller);
-        scene->controller_count--;
         return NULL;
     }
     return controller;
@@ -1083,7 +1151,6 @@ DvzController* dvz_turntable(DvzScene* scene, const DvzTurntableDesc* desc)
     if (controller->turntable == NULL)
     {
         _scene_controller_destroy(controller);
-        scene->controller_count--;
         return NULL;
     }
     return controller;
@@ -1102,6 +1169,20 @@ DvzControllerType dvz_controller_type(const DvzController* controller)
     if (controller == NULL || !controller->active)
         return DVZ_CONTROLLER_TYPE_NONE;
     return controller->type;
+}
+
+
+/**
+ * Destroy a scene-owned controller.
+ *
+ * @param controller the controller
+ */
+void dvz_controller_destroy(DvzController* controller)
+{
+    if (controller == NULL || !controller->active)
+        return;
+    _scene_controller_detach_from_panels(controller);
+    _scene_controller_destroy(controller);
 }
 
 
@@ -1127,10 +1208,24 @@ DvzControllerLink* dvz_controller_link(
         return NULL;
     if (!_scene_controller_link_components_valid(source, target, components))
         return NULL;
-    if (scene->controller_link_count >= DVZ_SCENE_MAX_CONTROLLER_LINKS)
-        return NULL;
 
-    DvzControllerLink* link = &scene->controller_links[scene->controller_link_count++];
+    DvzControllerLink* link = NULL;
+    for (uint32_t i = 0; i < scene->controller_link_count; i++)
+    {
+        if (!scene->controller_links[i].active)
+        {
+            link = &scene->controller_links[i];
+            break;
+        }
+    }
+    if (link == NULL)
+    {
+        if (scene->controller_link_count >= DVZ_SCENE_MAX_CONTROLLER_LINKS)
+            return NULL;
+        link = &scene->controller_links[scene->controller_link_count++];
+    }
+
+    dvz_memset(link, sizeof(DvzControllerLink), 0, sizeof(DvzControllerLink));
     link->scene = scene;
     link->source = source;
     link->target = target;
