@@ -1,6 +1,6 @@
 # Array-Aware Python Facade
 
-Status: proposed v0.4 Python binding direction.
+Status: active v0.4 Python binding direction; first generated facade slice landed.
 
 This note records the intended Python API layer above the exact generated `ctypes` binding. The goal
 is to make Datoviz usable from Python with normal NumPy arrays while preserving the C-shaped

@@ -1044,6 +1044,7 @@ api-json:
 
 ctypes: api-json
     @python tools/bindings/generate_ctypes.py
+    @python tools/bindings/generate_array_facade.py
 #
 
 ctypes-abi: api-json
@@ -1052,6 +1053,7 @@ ctypes-abi: api-json
 
 ctypes-check: api-json ctypes-abi
     @python tools/bindings/generate_ctypes.py --check
+    @python tools/bindings/generate_array_facade.py --check
     @python tools/bindings/validate_ctypes_policy.py
     @PYTHONPATH=. python tools/bindings/validate_ctypes_abi.py
 #
@@ -1061,7 +1063,7 @@ ctypes-smoke:
 #
 
 ctypes-python-smoke:
-    @PYTHONPATH=. pytest -q testing/test_python_async_helpers.py testing/test_ctypes_raw_smoke.py
+    @PYTHONPATH=. pytest -q testing/test_python_async_helpers.py testing/test_ctypes_raw_smoke.py testing/test_array_facade.py
 #
 
 ctypes-render-smoke:

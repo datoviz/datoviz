@@ -86,7 +86,7 @@ datoviz/
   __init__.py             # documented array-aware package entry point
   raw.py                  # explicit public raw API module
   _ctypes.py              # generated implementation, do not edit by hand
-  _array_facade.py        # generated array-aware facade, later
+  _array_facade.py        # generated array-aware facade
 ```
 
 The old v0.3-style names `parse_headers.py`, `build_ctypes.py`, and `headers.json` are not part of
@@ -101,6 +101,7 @@ The binding workflow should be exposed through narrow commands:
 ```text
 just api-json        # generate build/bindings/datoviz_api.json
 just ctypes          # generate datoviz/_ctypes.py from JSON
+                    # and datoviz/_array_facade.py from JSON plus policy
 just ctypes-abi      # generate build/bindings/ctypes_abi.json
 just ctypes-check    # validate generated ctypes against C ABI facts
 just ctypes-smoke    # import/load/create-destroy smoke
