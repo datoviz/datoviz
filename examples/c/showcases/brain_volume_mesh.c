@@ -12,7 +12,7 @@
  * Build:   just example-c brain_volume_mesh
  * Run:     ./build/examples/c/showcases/brain_volume_mesh [frames] [--downsample=2]
  * PNG:     DVZ_CAPTURE=png ./build/examples/c/showcases/brain_volume_mesh 60 --downsample=2
- * Data:    data/volumes/allen_mouse_brain_rgba.npy.gz
+ * Data:    data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz
  */
 
 
@@ -47,7 +47,7 @@
 #define WIDTH  1600
 #define HEIGHT 1200
 
-#define DEFAULT_DATA_PATH "data/volumes/allen_mouse_brain_rgba.npy.gz"
+#define DEFAULT_DATA_PATH "data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz"
 #define DEFAULT_VOLUME_FILE "allen_mouse_brain_rgba.npy.gz"
 #define DEFAULT_AXIS          DVZ_VOLUME_AXIS_Y
 #define DEFAULT_SLICE_POS     0.5f

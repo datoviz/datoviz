@@ -33,7 +33,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define EARTH_TEXTURE_PATH "data/textures/world.200412.3x5400x2700.jpg"
+#define EARTH_TEXTURE_PATH "data/assets/textures/world.200412.3x5400x2700.jpg"
 
 
 

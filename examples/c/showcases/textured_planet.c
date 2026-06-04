@@ -51,9 +51,9 @@
 
 #define TEXTURE_WIDTH  1024
 #define TEXTURE_HEIGHT 512
-#define EARTH_TEXTURE_PATH          "data/textures/world.200412.3x5400x2700.jpg"
-#define EARTH_TEXTURE_FALLBACK_PATH "data/textures/earth.jpg"
-#define MARS_TEXTURE_PATH           "data/textures/mars_viking_mdim21.jpg"
+#define EARTH_TEXTURE_PATH          "data/assets/textures/world.200412.3x5400x2700.jpg"
+#define EARTH_TEXTURE_FALLBACK_PATH "data/assets/textures/earth.jpg"
+#define MARS_TEXTURE_PATH           "data/assets/textures/mars_viking_mdim21.jpg"
 
 #define SPHERE_RADIUS 0.92
 #define SPHERE_SECTORS 96

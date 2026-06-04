@@ -601,7 +601,7 @@ examples:
     validation: smoke+screenshot
     dataset:
       name: Allen mouse brain RGBA volume
-      source: data/volumes/allen_mouse_brain_rgba.npy.gz
+      source: data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz
       license: repository data submodule terms
     gallery:
       card: section

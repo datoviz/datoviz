@@ -443,35 +443,35 @@ static const char* _text_block_known_font_path(const char* family, const char* s
     if (strcmp(family, "Roboto") == 0)
     {
         if (strcmp(style, "Regular") == 0)
-            return "data/fonts/Roboto-Regular.ttf";
+            return "data/assets/fonts/Roboto-Regular.ttf";
         if (strcmp(style, "Bold") == 0)
-            return "data/fonts/Roboto-Bold.ttf";
+            return "data/assets/fonts/Roboto-Bold.ttf";
         if (strcmp(style, "Italic") == 0)
-            return "data/fonts/Roboto-Italic.ttf";
+            return "data/assets/fonts/Roboto-Italic.ttf";
         if (strcmp(style, "Bold Italic") == 0)
-            return "data/fonts/Roboto-BoldItalic.ttf";
+            return "data/assets/fonts/Roboto-BoldItalic.ttf";
         if (strcmp(style, "Medium") == 0)
-            return "data/fonts/Roboto-Medium.ttf";
+            return "data/assets/fonts/Roboto-Medium.ttf";
         if (strcmp(style, "Medium Italic") == 0)
-            return "data/fonts/Roboto-MediumItalic.ttf";
+            return "data/assets/fonts/Roboto-MediumItalic.ttf";
         if (strcmp(style, "Light") == 0)
-            return "data/fonts/Roboto-Light.ttf";
+            return "data/assets/fonts/Roboto-Light.ttf";
         if (strcmp(style, "Light Italic") == 0)
-            return "data/fonts/Roboto-LightItalic.ttf";
+            return "data/assets/fonts/Roboto-LightItalic.ttf";
         if (strcmp(style, "Black") == 0)
-            return "data/fonts/Roboto-Black.ttf";
+            return "data/assets/fonts/Roboto-Black.ttf";
         if (strcmp(style, "Black Italic") == 0)
-            return "data/fonts/Roboto-BlackItalic.ttf";
+            return "data/assets/fonts/Roboto-BlackItalic.ttf";
     }
     if (strcmp(family, "Roboto Mono") == 0 || strcmp(family, "RobotoMono") == 0)
     {
         if (strcmp(style, "Regular") == 0 || strcmp(style, "Medium") == 0)
-            return "data/fonts/RobotoMono-Medium.ttf";
+            return "data/assets/fonts/RobotoMono-Medium.ttf";
     }
     if (strcmp(family, "Inconsolata") == 0 && strcmp(style, "Regular") == 0)
-        return "data/fonts/Inconsolata-Regular.ttf";
+        return "data/assets/fonts/Inconsolata-Regular.ttf";
     if (strcmp(family, "Droid Sans") == 0 && strcmp(style, "Regular") == 0)
-        return "data/fonts/DroidSans.ttf";
+        return "data/assets/fonts/DroidSans.ttf";
     return NULL;
 }
 

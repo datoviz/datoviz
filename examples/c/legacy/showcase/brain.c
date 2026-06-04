@@ -8,8 +8,8 @@
  *
  * Build:   just example-c showcase/brain
  * Run:     ./build/examples/c/showcase/brain [frames] [--downsample=2]
- * Data:    data/volumes/allen_mouse_brain_rgba.npy.gz
- * Meshes:  data/allen_ibl_assets, prepared with tools/prepare_allen_ibl_assets.py
+ * Data:    data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz
+ * Meshes:  data/examples/allen_ibl/prepared
  */
 
 
@@ -44,9 +44,9 @@
 #define WIDTH  900
 #define HEIGHT 650
 
-#define DEFAULT_DATA_PATH "data/volumes/allen_mouse_brain_rgba.npy.gz"
+#define DEFAULT_DATA_PATH "data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz"
 #define DEFAULT_VOLUME_FILE "allen_mouse_brain_rgba.npy.gz"
-#define DEFAULT_IBL_ASSET_DIR "data/allen_ibl_assets"
+#define DEFAULT_IBL_ASSET_DIR "data/examples/allen_ibl/prepared"
 #define DEFAULT_AXIS          DVZ_VOLUME_AXIS_Y
 #define DEFAULT_SLICE_POS     0.5f
 #define DEFAULT_SLICE_OPACITY 1.0f
@@ -1794,7 +1794,7 @@ int main(int argc, char** argv)
         dvz_fprintf(
             stderr,
             "Allen/IBL atlas mesh assets not found or invalid in %s\n"
-            "prepare them with: python tools/prepare_allen_ibl_assets.py\n",
+            "prepare them with: python tools/data/prepare_existing_allen_ibl.py\n",
             DEFAULT_IBL_ASSET_DIR);
         goto cleanup;
     }
