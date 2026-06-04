@@ -100,6 +100,7 @@ target_compile_definitions(datoviz_scene PUBLIC DVZ_HAS_WGSL_SHADERS=${DVZ_HAS_W
 target_compile_definitions(datoviz_scene PUBLIC DVZ_HAS_EMBEDDED_FONTS=${DVZ_HAS_EMBEDDED_FONTS})
 target_compile_definitions(datoviz_scene PUBLIC DVZ_HAS_FREETYPE=${DVZ_HAS_FREETYPE})
 target_compile_definitions(datoviz_scene PUBLIC DVZ_HAS_MSDF_ATLAS=${DVZ_HAS_MSDF_ATLAS})
+target_compile_definitions(datoviz_scene PUBLIC DVZ_HAS_MSDF_SVG=${DVZ_HAS_MSDF_SVG})
 if(TARGET datoviz_geom)
     target_link_libraries(datoviz_scene PUBLIC datoviz_geom)
 endif()
