@@ -8,6 +8,10 @@ Execution Status:
   browser WASM/WebGPU hosts
 - Scope: example structure, host boundaries, helper API shape, and promotion rules
 
+Full visual and feature parity sequencing lives in
+[../integration/WASM_WEBGPU_PARITY_PLAN.md](../integration/WASM_WEBGPU_PARITY_PLAN.md). This file
+only defines the example/scenario architecture used by that parity program.
+
 
 ## Problem
 

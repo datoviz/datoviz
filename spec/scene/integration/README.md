@@ -23,8 +23,10 @@ threads, high-DPI windows, or custom user-provided visual families.
    real-time Datoviz visualization.
 9. [WEBGPU_WASM.md](WEBGPU_WASM.md): experimental browser WebGPU and WASM scene integration
     contract.
-10. [future](future/README.md): Android, iOS, and touch pressure notes.
-11. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
+10. [WASM_WEBGPU_PARITY_PLAN.md](WASM_WEBGPU_PARITY_PLAN.md): implementation plan for broad
+    native Vulkan and WASM/WebGPU scene parity.
+11. [future](future/README.md): Android, iOS, and touch pressure notes.
+12. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
 
 
 ## Active Proposal Inputs
