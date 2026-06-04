@@ -479,8 +479,8 @@ set(DVZ_HAS_EMBEDDED_FONTS 0)
 set(DVZ_FONTS_C "")
 if(DVZ_BUILD_SCENE)
     set(FONT_SOURCES
-        "${PROJECT_SOURCE_DIR}/data/fonts/Roboto-Regular.ttf"
-        "${PROJECT_SOURCE_DIR}/data/fonts/RobotoMono-Medium.ttf"
+        "${PROJECT_SOURCE_DIR}/data/assets/fonts/Roboto-Regular.ttf"
+        "${PROJECT_SOURCE_DIR}/data/assets/fonts/RobotoMono-Medium.ttf"
     )
     set(FONTS_C "${CMAKE_BINARY_DIR}/_fonts.c")
     string(REPLACE ";" "\\;" _font_list_escaped "${FONT_SOURCES}")
