@@ -6,9 +6,18 @@ import ctypes
 import importlib
 import sys
 import types
+from pathlib import Path
 
 import numpy as np
 import pytest
+
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+
+pytestmark = pytest.mark.skipif(
+    not (ROOT_DIR / 'datoviz' / '_array_facade.py').exists(),
+    reason='array facade has not been generated',
+)
 
 
 def _raw_function(argtypes, restype=ctypes.c_int):
