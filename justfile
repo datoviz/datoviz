@@ -1524,17 +1524,21 @@ api: symbols ctypes doc tryimport # after every API update
 
 [linux]
 swiftshader +args:
-    @VK_ICD_FILENAMES="data/swiftshader/linux/vk_swiftshader_icd.json" {{args}}
+    @icd="${VK_ICD_FILENAMES:-/usr/local/share/vulkan/icd.d/swiftshader_icd.json}"; \
+    if [ ! -f "$icd" ]; then echo "SwiftShader ICD not found; set VK_ICD_FILENAMES or install SwiftShader outside data/." >&2; exit 1; fi; \
+    VK_ICD_FILENAMES="$icd" {{args}}
 #
 
 [macos]
 swiftshader +args:
-    @VK_ICD_FILENAMES="data/swiftshader/macos/vk_swiftshader_icd.json" {{args}}
+    @icd="${VK_ICD_FILENAMES:-$HOME/.cache/datoviz/swiftshader/macos/vk_swiftshader_icd.json}"; \
+    if [ ! -f "$icd" ]; then echo "SwiftShader ICD not found; set VK_ICD_FILENAMES or install SwiftShader outside data/." >&2; exit 1; fi; \
+    VK_ICD_FILENAMES="$icd" {{args}}
 #
 
 [windows]
 swiftshader +args:
-    VK_ICD_FILENAMES=data/swiftshader/windows/vk_swiftshader_icd.json \
+    VK_ICD_FILENAMES=%VK_ICD_FILENAMES% \
     VK_LOADER_DEBUG=all \
     {{args}}
 #
