@@ -1161,6 +1161,19 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     AT(bitmap_symbol != DVZ_SYMBOL_ID_INVALID);
     AT(sdf_symbol == bitmap_symbol + 1);
     AT(msdf_symbol == sdf_symbol + 1);
+    AT(symbol_set->source_count == 3);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_BITMAP].width == 2);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_BITMAP].height == 2);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_BITMAP].channels == 4);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_BITMAP].data[0] == 255);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_SDF].width == 2);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_SDF].height == 2);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_SDF].channels == 1);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_SDF].data[2] == 160);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].width == 2);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].height == 2);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].channels == 3);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].data[9] == 255);
 
     vec3 positions[5] = {
         {-0.50f, 0.0f, 0.0f},

@@ -88,6 +88,110 @@ static const DvzSymbolSource* _symbol_set_source(const DvzSymbolSet* symbols, Dv
 
 
 /**
+ * Return the channel count used by one image-backed symbol source kind.
+ *
+ * @param kind source kind
+ * @return channel count, or zero for non-image sources
+ */
+static uint32_t _symbol_source_channels(DvzSymbolSourceKind kind)
+{
+    switch (kind)
+    {
+    case DVZ_SYMBOL_SOURCE_BITMAP:
+        return 4;
+    case DVZ_SYMBOL_SOURCE_SDF:
+        return 1;
+    case DVZ_SYMBOL_SOURCE_MSDF:
+        return 3;
+    default:
+        return 0;
+    }
+}
+
+
+/**
+ * Rebuild one same-encoding symbol atlas page.
+ *
+ * @param symbols the symbol set
+ * @param kind source kind
+ * @return whether the page was rebuilt
+ */
+static bool _symbol_set_rebuild_atlas_page(DvzSymbolSet* symbols, DvzSymbolSourceKind kind)
+{
+    ANN(symbols);
+    const uint32_t channels = _symbol_source_channels(kind);
+    if (channels == 0 || (uint32_t)kind > DVZ_SYMBOL_SOURCE_MSDF)
+        return false;
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint32_t entry_count = 0;
+    for (uint32_t i = 0; i < symbols->source_count; i++)
+    {
+        DvzSymbolSource* source = &symbols->sources[i];
+        if (!source->active || source->kind != kind)
+            continue;
+        if (UINT32_MAX - width < source->width)
+            return false;
+        width += source->width;
+        height = MAX(height, source->height);
+        entry_count++;
+    }
+
+    DvzSymbolAtlasPage* page = &symbols->atlas_pages[kind];
+    if (page->data != NULL)
+    {
+        dvz_free(page->data);
+        page->data = NULL;
+    }
+    dvz_memset(page, sizeof(DvzSymbolAtlasPage), 0, sizeof(DvzSymbolAtlasPage));
+    if (entry_count == 0)
+        return true;
+
+    const uint64_t row_stride = (uint64_t)width * channels;
+    const uint64_t byte_size = row_stride * height;
+    if (row_stride > UINT32_MAX || byte_size == 0 || byte_size > (uint64_t)SIZE_MAX)
+        return false;
+    uint8_t* atlas = (uint8_t*)dvz_calloc((DvzSize)byte_size, 1);
+    if (atlas == NULL)
+        return false;
+
+    uint32_t x = 0;
+    for (uint32_t i = 0; i < symbols->source_count; i++)
+    {
+        DvzSymbolSource* source = &symbols->sources[i];
+        if (!source->active || source->kind != kind)
+            continue;
+        for (uint32_t y = 0; y < source->height; y++)
+        {
+            const uint64_t src_offset = (uint64_t)y * source->row_stride;
+            const uint64_t dst_offset = ((uint64_t)y * width + x) * channels;
+            const uint64_t row_bytes = (uint64_t)source->width * channels;
+            dvz_memcpy(atlas + dst_offset, (DvzSize)row_bytes, source->data + src_offset, (DvzSize)row_bytes);
+        }
+        source->atlas_x = x;
+        source->atlas_y = 0;
+        source->atlas_uv[0] = (float)x / (float)width;
+        source->atlas_uv[1] = 0.0f;
+        source->atlas_uv[2] = (float)(x + source->width) / (float)width;
+        source->atlas_uv[3] = (float)source->height / (float)height;
+        x += source->width;
+    }
+
+    page->active = true;
+    page->dirty = true;
+    page->kind = kind;
+    page->width = width;
+    page->height = height;
+    page->channels = channels;
+    page->row_stride = (uint32_t)row_stride;
+    page->byte_size = byte_size;
+    page->data = atlas;
+    return true;
+}
+
+
+/**
  * Register a copied image-backed symbol source.
  *
  * @param symbols the symbol set
@@ -143,6 +247,14 @@ static DvzSymbolId _symbol_image_source(
     source->distance_range_px = image_desc.distance_range_px;
     source->byte_size = byte_size;
     source->data = copy;
+    if (!_symbol_set_rebuild_atlas_page(symbols, kind))
+    {
+        source->active = false;
+        dvz_free(source->data);
+        source->data = NULL;
+        symbols->source_count--;
+        return DVZ_SYMBOL_ID_INVALID;
+    }
     return DVZ_SYMBOL_CUSTOM_ID_BASE + idx;
 }
 

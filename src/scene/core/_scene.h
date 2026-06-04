@@ -1107,7 +1107,24 @@ typedef struct DvzSymbolSource
     float distance_range_px;
     uint64_t byte_size;
     uint8_t* data;
+    uint32_t atlas_x;
+    uint32_t atlas_y;
+    float atlas_uv[4];
 } DvzSymbolSource;
+
+
+typedef struct DvzSymbolAtlasPage
+{
+    bool active;
+    bool dirty;
+    DvzSymbolSourceKind kind;
+    uint32_t width;
+    uint32_t height;
+    uint32_t channels;
+    uint32_t row_stride;
+    uint64_t byte_size;
+    uint8_t* data;
+} DvzSymbolAtlasPage;
 
 
 struct DvzSymbolSet
@@ -1119,6 +1136,7 @@ struct DvzSymbolSet
     bool builtins[DVZ_MARKER_SHAPE_ROUNDED_RECT + 1];
     uint32_t source_count;
     DvzSymbolSource sources[DVZ_SCENE_MAX_SYMBOLS_PER_SET];
+    DvzSymbolAtlasPage atlas_pages[DVZ_SYMBOL_SOURCE_MSDF + 1];
 };
 
 

@@ -219,8 +219,9 @@ Implemented first slice:
    consistency.
 9. `DvzSymbolSet` and built-in marker `symbol` ids are in place; `symbol` currently aliases the
    retained `shape` slot for code-SDF built-ins.
-10. Bitmap, SDF, and MSDF symbol source APIs retain copied payloads and metadata in `DvzSymbolSet`;
-    marker rendering still rejects those ids until the atlas-backed marker pipeline lands.
+10. Bitmap, SDF, and MSDF symbol source APIs retain copied payloads and per-encoding atlas pages in
+    `DvzSymbolSet`; marker rendering still rejects those ids until the atlas-backed marker pipeline
+    lands.
 11. GPU-backed marker picking is in place.
 12. Picking currently uses the marker sprite bounding box. Exact code-SDF shape-mask picking remains
     deferred.
@@ -234,7 +235,7 @@ Style naming:
 
 Deferred:
 
-1. Atlas-backed marker rendering for bitmap/SDF/MSDF symbol sources.
+1. DRP2 texture upload and atlas-backed marker rendering for bitmap/SDF/MSDF symbol sources.
 2. SVG-path import.
 3. Shared symbol/glyph atlas infrastructure.
 4. Scalar color/diameter modes.

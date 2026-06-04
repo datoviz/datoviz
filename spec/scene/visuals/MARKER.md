@@ -169,8 +169,8 @@ Per-item symbol selector. This is the long-term generalized form of `shape`.
 
 Status on 2026-06-04: built-in symbol-set binding is active for code-SDF markers. `symbol` lowers
 through the same retained slot as `shape`. Bitmap/SDF/MSDF symbol source APIs copy payloads into
-`DvzSymbolSet`, but marker validation rejects those ids until the atlas-backed marker shader path
-lands.
+per-encoding `DvzSymbolSet` atlas pages, but marker validation rejects those ids until the
+atlas-backed marker shader path lands.
 
 
 ### `edge_color` (per-item)
@@ -350,7 +350,8 @@ Must match the declared render mode format.
 
 The installed v0.4 marker constructor keeps source selection on `DvzSymbolSet`; marker visual flags
 should remain focused on marker attribute modes such as scalar color and scalar size. Built-in
-symbols render today, while bitmap/SDF/MSDF source ids wait for atlas-backed marker lowering.
+symbols render today, while bitmap/SDF/MSDF atlas pages wait for DRP2 texture upload and
+atlas-backed marker lowering.
 
 
 ## Transform Model, Stage Participation, Picking

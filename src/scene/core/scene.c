@@ -232,6 +232,11 @@ void dvz_scene_destroy(DvzScene* scene)
             dvz_free(scene->symbol_sets[i].sources[j].data);
             scene->symbol_sets[i].sources[j].data = NULL;
         }
+        for (uint32_t j = 0; j <= DVZ_SYMBOL_SOURCE_MSDF; j++)
+        {
+            dvz_free(scene->symbol_sets[i].atlas_pages[j].data);
+            scene->symbol_sets[i].atlas_pages[j].data = NULL;
+        }
     }
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_FIELDS; i++)
         _scene_field_reset(&scene->fields[i]);
