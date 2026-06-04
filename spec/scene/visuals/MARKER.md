@@ -168,9 +168,11 @@ same retained storage slot for built-in ids.
 Per-item symbol selector. This is the long-term generalized form of `shape`.
 
 Status on 2026-06-04: built-in symbol-set binding is active for code-SDF markers. `symbol` lowers
-through the same retained slot as `shape`. Bitmap/SDF/MSDF symbol source APIs copy payloads into
+through the same retained slot as `shape`. Homogeneous bitmap symbol arrays render through generated
+`tex_rect` data and a per-visual RGBA atlas texture. SDF/MSDF symbol source APIs copy payloads into
 per-encoding `DvzSymbolSet` atlas pages, but marker validation rejects those ids until the
-atlas-backed marker shader path lands.
+distance-field marker shader variants land. Mixed built-in/texture-backed arrays are also rejected
+for now.
 
 
 ### `edge_color` (per-item)
@@ -349,9 +351,9 @@ Must match the declared render mode format.
 | `size_mode` | `direct`, `scalar` | `direct` |
 
 The installed v0.4 marker constructor keeps source selection on `DvzSymbolSet`; marker visual flags
-should remain focused on marker attribute modes such as scalar color and scalar size. Built-in
-symbols render today, while bitmap/SDF/MSDF atlas pages wait for DRP2 texture upload and
-atlas-backed marker lowering.
+should remain focused on marker attribute modes such as scalar color and scalar size. Built-in and
+homogeneous bitmap symbols render today. SDF/MSDF atlas pages wait for distance-field marker shader
+variants and scale-correct decode metadata.
 
 
 ## Transform Model, Stage Participation, Picking
@@ -418,16 +420,12 @@ v0.3 marker prior art to preserve:
 
 ## Follow-Up Pressure
 
-1. Exact marker picking should test the active SDF mask, not the sprite rectangle. Transparent
-   corners and holes in ring/cross shapes must miss.
-2. Bitmap marker mode waits for one-texture-per-visual resources, alpha discard, tinting,
-   descriptor refresh, and bitmap-aware picking.
+1. Exact marker picking should test the active SDF or bitmap-alpha mask, not the sprite rectangle.
+   Transparent corners and holes in ring/cross shapes must miss.
+2. Bitmap marker mode still needs item-state styling composition and exact alpha-aware picking.
 3. Shared SDF/MSDF decode helpers with text should wait until atlas entries carry distance-field
    metadata needed for scale-correct antialiasing.
-4. Add native `target`/crosshair code-SDF shape for cursor probes and measurement reticles. It must
-   render as one marker item with stable screen-space `diameter`, not as multiple layered marker
-   sprites.
-5. Restore SVG path import for custom SDF/MSDF marker symbols, equivalent in capability to the v0.3
+4. Restore SVG path import for custom SDF/MSDF marker symbols, equivalent in capability to the v0.3
    `dvz_msdf_from_svg()` marker test path.
-6. Add `DvzSymbolSet` and `symbol` attribute support so marker can use built-in, bitmap, SDF, and
-   MSDF symbols without exposing `code`/`bitmap`/`sdf`/`msdf` as the primary marker API.
+5. Add SDF/MSDF marker shader variants so marker can use all installed symbol sources without
+   exposing `code`/`bitmap`/`sdf`/`msdf` as the primary marker API.

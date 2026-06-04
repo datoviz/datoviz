@@ -18,13 +18,13 @@ boundary:
 |---|---|---|
 | Built-in code-SDF symbols | supported | Includes the v0.3 shape vocabulary plus `target`. |
 | `shape` marker attribute | supported | Compatibility spelling for built-in symbol ids. |
-| `DvzSymbolSet` and `symbol` attribute | supported for built-ins | Texture-backed sources are registered on the same boundary. |
-| Bitmap symbols | API/atlas storage installed, render pending | RGBA8 payload copied into scene-owned symbol atlas pages. |
+| `DvzSymbolSet` and `symbol` attribute | supported for built-ins and bitmap markers | Texture-backed SDF/MSDF sources are registered on the same boundary. |
+| Bitmap symbols | supported for homogeneous bitmap marker visuals | RGBA8 payload is copied into scene-owned symbol atlas pages and lowered to an atlas texture plus per-item UV rectangles. |
 | SDF symbols | API/atlas storage installed, render pending | Single-channel distance-field source metadata retained. |
 | MSDF symbols | API/atlas storage installed, render pending | RGB distance-field source metadata retained; shader lowering pending. |
 | SVG path import | supported or advanced/unstable | Prefer a convenience import API over exposing parser internals. |
 | `mtsdf` | advanced/unstable or deferred | Preserve only if the implementation cost is small after MSDF lands. |
-| Exact symbol-mask picking | supported for code-SDF, target for texture-backed sources | Bounding-box picking may remain the explicit fallback with diagnostics. |
+| Exact symbol-mask picking | supported for code-SDF, target for texture-backed sources | Bitmap markers currently render through alpha discard, but exact query semantics still need explicit coverage. |
 
 
 ## Purpose
@@ -183,7 +183,8 @@ The marker visual should evolve in stages:
 4. keep `shape` as compatibility vocabulary or as an alias for built-in symbol ids;
 5. implement symbol sources for bitmap, SDF, MSDF, and SVG path import;
 6. move texture-backed marker logic behind symbol-set binding instead of exposing marker render
-   modes as the primary API;
+   modes as the primary API; bitmap atlas-backed lowering is the first installed texture-backed
+   path;
 7. add exact symbol-mask picking for marker items;
 8. add diagnostics and fallback policy for unsupported symbol sources or encodings.
 
