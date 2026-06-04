@@ -148,6 +148,7 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(features probe_labels features/probe_labels.c)
     dvz_add_example(features selection features/selection.c)
     dvz_add_example(features timer_animation features/timer_animation.c)
+    dvz_add_example(features marker_symbols features/marker_symbols.c)
 
     dvz_add_example(workflows panel_linked_axes workflows/panel_linked_axes.c)
     dvz_add_example(workflows linked_probe_colorbar workflows/linked_probe_colorbar.c)

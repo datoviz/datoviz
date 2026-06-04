@@ -35,6 +35,7 @@ controllers, sampled fields, picking, probing, selection, and retained updates.
 - `panel_multi.c`: multiple independent panels with panel-local panzoom controllers.
 - `panel_linked.c`: two panels with bidirectional linked X panzoom state.
 - `timer_animation.c`: deterministic timer/frame-callback animation.
+- `marker_symbols.c`: marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 - `update_visual_data.c`: retained point visual with full data replacement.
 - `visibility.c`: retained visual visibility toggled before rendering.
 

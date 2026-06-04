@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* marker - retained marker visual with deterministic shape, fill, stroke, and size variation.
+/* marker - retained marker visual with deterministic symbol, fill, stroke, and size variation.
  *
  * Scenario: visual.marker
  * Style: visuals, graphite_cyan, 1600x1200 capture target
@@ -46,57 +46,57 @@
 /*************************************************************************************************/
 
 /**
- * Return the marker shape for one display column.
+ * Return the marker symbol for one display column.
  *
  * @param index marker column index
- * @return marker shape enum value
+ * @return marker symbol enum value
  */
-static uint32_t _marker_shape(uint32_t index)
+static uint32_t _marker_symbol(uint32_t index)
 {
     switch (index)
     {
     case 1:
-        return DVZ_MARKER_SHAPE_SQUARE;
+        return DVZ_SYMBOL_SQUARE;
     case 2:
-        return DVZ_MARKER_SHAPE_TRIANGLE;
+        return DVZ_SYMBOL_TRIANGLE;
     case 3:
-        return DVZ_MARKER_SHAPE_DIAMOND;
+        return DVZ_SYMBOL_DIAMOND;
     case 4:
-        return DVZ_MARKER_SHAPE_CROSS;
+        return DVZ_SYMBOL_CROSS;
     case 5:
-        return DVZ_MARKER_SHAPE_RING;
+        return DVZ_SYMBOL_RING;
     case 6:
-        return DVZ_MARKER_SHAPE_TARGET;
+        return DVZ_SYMBOL_TARGET;
     case 7:
-        return DVZ_MARKER_SHAPE_ASTERISK;
+        return DVZ_SYMBOL_ASTERISK;
     case 8:
-        return DVZ_MARKER_SHAPE_CHEVRON;
+        return DVZ_SYMBOL_CHEVRON;
     case 9:
-        return DVZ_MARKER_SHAPE_CLOVER;
+        return DVZ_SYMBOL_CLOVER;
     case 10:
-        return DVZ_MARKER_SHAPE_CLUB;
+        return DVZ_SYMBOL_CLUB;
     case 11:
-        return DVZ_MARKER_SHAPE_ARROW;
+        return DVZ_SYMBOL_ARROW;
     case 12:
-        return DVZ_MARKER_SHAPE_ELLIPSE;
+        return DVZ_SYMBOL_ELLIPSE;
     case 13:
-        return DVZ_MARKER_SHAPE_HBAR;
+        return DVZ_SYMBOL_HBAR;
     case 14:
-        return DVZ_MARKER_SHAPE_HEART;
+        return DVZ_SYMBOL_HEART;
     case 15:
-        return DVZ_MARKER_SHAPE_INFINITY;
+        return DVZ_SYMBOL_INFINITY;
     case 16:
-        return DVZ_MARKER_SHAPE_PIN;
+        return DVZ_SYMBOL_PIN;
     case 17:
-        return DVZ_MARKER_SHAPE_SPADE;
+        return DVZ_SYMBOL_SPADE;
     case 18:
-        return DVZ_MARKER_SHAPE_TAG;
+        return DVZ_SYMBOL_TAG;
     case 19:
-        return DVZ_MARKER_SHAPE_VBAR;
+        return DVZ_SYMBOL_VBAR;
     case 20:
-        return DVZ_MARKER_SHAPE_ROUNDED_RECT;
+        return DVZ_SYMBOL_ROUNDED_RECT;
     default:
-        return DVZ_MARKER_SHAPE_DISC;
+        return DVZ_SYMBOL_DISC;
     }
 }
 
@@ -178,7 +178,7 @@ _add_marker_row(
     DvzColor colors[MARKER_COLS] = {{0}};
     float diameters[MARKER_COLS] = {0};
     float angles[MARKER_COLS] = {0};
-    uint32_t shapes[MARKER_COLS] = {0};
+    uint32_t symbols[MARKER_COLS] = {0};
 
     for (uint32_t col = 0; col < MARKER_COLS; col++)
     {
@@ -190,7 +190,7 @@ _add_marker_row(
         colors[col].a = 238;
         diameters[col] = 42.0f + 8.0f * (float)((row + col) % 3u);
         angles[col] = 0.18f * (float)(row + col);
-        shapes[col] = _marker_shape(row * MARKER_COLS + col);
+        symbols[col] = _marker_symbol(row * MARKER_COLS + col);
     }
 
     DvzVisualDataUpdate updates[] = {
@@ -198,7 +198,7 @@ _add_marker_row(
         {.attr_name = "color", .data = colors, .item_count = MARKER_COLS},
         {.attr_name = "diameter", .data = diameters, .item_count = MARKER_COLS},
         {.attr_name = "angle", .data = angles, .item_count = MARKER_COLS},
-        {.attr_name = "shape", .data = shapes, .item_count = MARKER_COLS},
+        {.attr_name = "symbol", .data = symbols, .item_count = MARKER_COLS},
     };
     if (dvz_visual_set_data_many(visual, updates, 5) != 0)
         return false;

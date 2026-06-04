@@ -306,6 +306,22 @@ examples:
     source: examples/c/features/timer_animation.c
     validation: smoke+screenshot
 
+  - id: feature_marker_symbols
+    title: Marker Symbols
+    stage: v0.4_required
+    lane: features
+    source: examples/c/features/marker_symbols.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: supported
+    features:
+      - marker
+      - symbol-set
+      - bitmap-symbol
+      - distance-field-symbol
+      - svg-path-symbol
+
   - id: point_2d
     title: Point
     stage: v0.4_required
