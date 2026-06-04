@@ -60,7 +60,11 @@ bool _scene_marker_visual_desc_from_metadata(
         }
         out->vbuf_ids[out->vbuf_count++] = tex_rect_id;
         out->image_texture_id = tex_id;
-        out->image_nearest_sampler = true;
+        out->glyph_atlas_encoding = meta->glyph_atlas_encoding;
+        out->glyph_distance_range_px =
+            meta->glyph_distance_range_px > 0.0f ? meta->glyph_distance_range_px : 4.0f;
+        out->image_nearest_sampler =
+            meta->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
     }
     return true;
 }

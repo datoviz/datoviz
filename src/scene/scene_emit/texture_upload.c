@@ -188,11 +188,24 @@ static void _scene_emit_marker_symbol_texture_upload(
     if (visual->type != DVZ_VISUAL_TYPE_MARKER)
         return;
     DvzVisualFamilyState* state = _visual_family_state(visual);
-    if (state->symbol_source_kind != DVZ_SYMBOL_SOURCE_BITMAP || state->symbol_set == NULL)
+    if (state->symbol_source_kind == DVZ_SYMBOL_SOURCE_NONE || state->symbol_set == NULL)
         return;
-    DvzSymbolAtlasPage* page = &state->symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_BITMAP];
-    if (!page->active || !page->dirty || page->data == NULL || page->byte_size == 0)
+    DvzSymbolAtlasPage* page = &state->symbol_set->atlas_pages[state->symbol_source_kind];
+    if (!page->active || page->data == NULL || page->byte_size == 0)
         return;
+
+    uint32_t texture_format = VK_FORMAT_R8G8B8A8_UNORM;
+    uint32_t bytes_per_texel = 4;
+    if (state->symbol_source_kind == DVZ_SYMBOL_SOURCE_SDF)
+    {
+        texture_format = VK_FORMAT_R8_UNORM;
+        bytes_per_texel = 1;
+    }
+    else if (state->symbol_source_kind == DVZ_SYMBOL_SOURCE_MSDF)
+    {
+        texture_format = VK_FORMAT_R8G8B8_UNORM;
+        bytes_per_texel = 3;
+    }
 
     char tex_resource_id[128];
     if (!_scene_visual_texture_resource_key(
@@ -208,7 +221,7 @@ static void _scene_emit_marker_symbol_texture_upload(
                 .visual_index = visual_index,
                 .buffer_index = UINT32_MAX,
             }) ||
-        !dvz_frame_plan_upload_set_texture_format(plan, VK_FORMAT_R8G8B8A8_UNORM, 4) ||
+        !dvz_frame_plan_upload_set_texture_format(plan, texture_format, bytes_per_texel) ||
         !dvz_frame_plan_upload_set_texture_extent(plan, page->width, page->height) ||
         !dvz_frame_plan_upload_set_texture_allocation_extent(plan, page->width, page->height) ||
         !dvz_frame_plan_upload_set_texture_region(plan, 0, 0))
@@ -216,7 +229,6 @@ static void _scene_emit_marker_symbol_texture_upload(
         log_error("marker symbol atlas texture upload failed");
         return;
     }
-    page->dirty = false;
 }
 
 

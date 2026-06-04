@@ -102,10 +102,10 @@ Treat these installed declarations as draft contracts until implemented in `src/
 
 The built-in marker-symbol parity declarations are installed: `DvzSymbolSet`, `DvzSymbolId`,
 built-in symbol creation, marker symbol-set binding, and the per-item `symbol` attribute. Bitmap,
-SDF, and MSDF source APIs copy payloads into scene-owned symbol records; homogeneous bitmap marker
-symbols render through a scene-owned atlas texture, while SDF/MSDF marker decode and SVG path import
-remain active v0.4 parity work. Marker `shape` remains the compatibility path for built-in code-SDF
-symbols.
+SDF, and MSDF source APIs copy payloads into scene-owned symbol records; homogeneous texture-backed
+marker symbols render through scene-owned atlas textures, while SVG path import and mixed-encoding
+fallback policy remain active v0.4 parity work. Marker `shape` remains the compatibility path for
+built-in code-SDF symbols.
 
 Colorbars, legends, text, labels, and scale bars are retained semantic objects. Text/glyph
 rendering, label annotation rendering, scale-bar rendering, continuous colorbar rendering,

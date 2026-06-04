@@ -98,11 +98,13 @@ static const DvzSymbolSource* _symbol_set_source(const DvzSymbolSet* symbols, Dv
  */
 static bool _marker_symbol_payload_kind(
     const DvzSymbolSet* symbol_set, const uint32_t* symbols, uint32_t item_count,
-    DvzSymbolSourceKind* out_kind)
+    DvzSymbolSourceKind* out_kind, float* out_distance_range_px)
 {
     ANN(symbols);
     ANN(out_kind);
     *out_kind = DVZ_SYMBOL_SOURCE_NONE;
+    if (out_distance_range_px != NULL)
+        *out_distance_range_px = 0.0f;
     for (uint32_t i = 0; i < item_count; i++)
     {
         if (_symbol_set_has_renderable_marker_id(symbol_set, symbols[i]))
@@ -121,11 +123,12 @@ static bool _marker_symbol_payload_kind(
             log_error("marker symbol id %u is not available in the bound symbol set", symbols[i]);
             return false;
         }
-        if (source->kind != DVZ_SYMBOL_SOURCE_BITMAP)
+        if (source->kind != DVZ_SYMBOL_SOURCE_BITMAP && source->kind != DVZ_SYMBOL_SOURCE_SDF &&
+            source->kind != DVZ_SYMBOL_SOURCE_MSDF)
         {
             log_error(
-                "marker %s symbol id %u requires a distance-field marker shader variant",
-                source->kind == DVZ_SYMBOL_SOURCE_SDF ? "SDF" : "MSDF", symbols[i]);
+                "marker symbol id %u uses unsupported source kind %u", symbols[i],
+                (uint32_t)source->kind);
             return false;
         }
         if (*out_kind != DVZ_SYMBOL_SOURCE_NONE && *out_kind != source->kind)
@@ -134,6 +137,21 @@ static bool _marker_symbol_payload_kind(
             return false;
         }
         *out_kind = source->kind;
+        if (source->kind == DVZ_SYMBOL_SOURCE_SDF || source->kind == DVZ_SYMBOL_SOURCE_MSDF)
+        {
+            float range = source->distance_range_px > 0.0f ? source->distance_range_px : 4.0f;
+            if (out_distance_range_px != NULL)
+            {
+                if (*out_distance_range_px > 0.0f &&
+                    fabsf(*out_distance_range_px - range) > 0.001f)
+                {
+                    log_error(
+                        "marker distance-field symbols in one visual must share a distance range");
+                    return false;
+                }
+                *out_distance_range_px = range;
+            }
+        }
     }
     return true;
 }
@@ -257,11 +275,24 @@ static bool _marker_update_symbol_tex_rects(
     ANN(visual);
     ANN(symbols);
     DvzSymbolSourceKind kind = DVZ_SYMBOL_SOURCE_NONE;
+    float distance_range_px = 0.0f;
     DvzSymbolSet* symbol_set = _visual_family_state(visual)->symbol_set;
-    if (!_marker_symbol_payload_kind(symbol_set, symbols, item_count, &kind))
+    if (!_marker_symbol_payload_kind(symbol_set, symbols, item_count, &kind, &distance_range_px))
         return false;
 
     _visual_family_state(visual)->symbol_source_kind = kind;
+    _visual_family_state(visual)->glyph_atlas_encoding = DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
+    _visual_family_state(visual)->glyph_distance_range_px = 0.0f;
+    if (kind == DVZ_SYMBOL_SOURCE_SDF)
+    {
+        _visual_family_state(visual)->glyph_atlas_encoding = DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA;
+        _visual_family_state(visual)->glyph_distance_range_px = distance_range_px;
+    }
+    else if (kind == DVZ_SYMBOL_SOURCE_MSDF)
+    {
+        _visual_family_state(visual)->glyph_atlas_encoding = DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB;
+        _visual_family_state(visual)->glyph_distance_range_px = distance_range_px;
+    }
     if (kind == DVZ_SYMBOL_SOURCE_NONE)
         return true;
 
@@ -556,6 +587,8 @@ int dvz_marker_set_symbols(DvzVisual* visual, DvzSymbolSet* symbols)
 
     _visual_family_state(visual)->symbol_set = symbols;
     _visual_family_state(visual)->symbol_source_kind = DVZ_SYMBOL_SOURCE_NONE;
+    _visual_family_state(visual)->glyph_atlas_encoding = DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
+    _visual_family_state(visual)->glyph_distance_range_px = 0.0f;
     const int shape_idx = _attr_index(visual, "shape");
     if (shape_idx >= 0 && visual->attrs[shape_idx].data != NULL &&
         visual->attrs[shape_idx].item_count > 0)
@@ -694,7 +727,7 @@ bool _scene_marker_visual_validate_attr(
     const uint32_t* symbols = (const uint32_t*)data;
     const DvzSymbolSet* symbol_set = _visual_family_state(visual)->symbol_set;
     DvzSymbolSourceKind kind = DVZ_SYMBOL_SOURCE_NONE;
-    return _marker_symbol_payload_kind(symbol_set, symbols, item_count, &kind);
+    return _marker_symbol_payload_kind(symbol_set, symbols, item_count, &kind, NULL);
 }
 
 

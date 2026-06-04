@@ -1268,6 +1268,42 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     AC(stored_tex_rects[7], 1.0, 1e-6);
     AT(dvz_panel_add_visual(panel, bitmap_visual, NULL) == 0);
 
+    DvzVisual* sdf_visual = dvz_marker(scene, 0);
+    AT(sdf_visual != NULL);
+    AT(dvz_marker_set_symbols(sdf_visual, symbol_set) == 0);
+    vec3 sdf_positions[2] = {{-0.30f, +0.35f, 0.0f}, {+0.30f, +0.35f, 0.0f}};
+    DvzColor sdf_colors[2] = {{255, 255, 255, 255}, {255, 128, 255, 200}};
+    float sdf_sizes[2] = {20.0f, 28.0f};
+    float sdf_angles[2] = {0.0f, 0.25f};
+    DvzSymbolId sdf_symbols[2] = {sdf_symbol, sdf_symbol};
+    AT(dvz_visual_set_data(sdf_visual, "position", sdf_positions, 2) == 0);
+    AT(dvz_visual_set_data(sdf_visual, "color", sdf_colors, 2) == 0);
+    AT(dvz_visual_set_data(sdf_visual, "size", sdf_sizes, 2) == 0);
+    AT(dvz_visual_set_data(sdf_visual, "angle", sdf_angles, 2) == 0);
+    AT(dvz_visual_set_data(sdf_visual, "symbol", sdf_symbols, 2) == 0);
+    AT(_visual_family_state(sdf_visual)->symbol_source_kind == DVZ_SYMBOL_SOURCE_SDF);
+    AT(_visual_family_state(sdf_visual)->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA);
+    AC(_visual_family_state(sdf_visual)->glyph_distance_range_px, 4.0, 1e-6);
+    AT(dvz_panel_add_visual(panel, sdf_visual, NULL) == 0);
+
+    DvzVisual* msdf_visual = dvz_marker(scene, 0);
+    AT(msdf_visual != NULL);
+    AT(dvz_marker_set_symbols(msdf_visual, symbol_set) == 0);
+    vec3 msdf_positions[2] = {{-0.30f, +0.10f, 0.0f}, {+0.30f, +0.10f, 0.0f}};
+    DvzColor msdf_colors[2] = {{255, 255, 255, 255}, {255, 255, 128, 200}};
+    float msdf_sizes[2] = {20.0f, 28.0f};
+    float msdf_angles[2] = {0.0f, 0.75f};
+    DvzSymbolId msdf_symbols[2] = {msdf_symbol, msdf_symbol};
+    AT(dvz_visual_set_data(msdf_visual, "position", msdf_positions, 2) == 0);
+    AT(dvz_visual_set_data(msdf_visual, "color", msdf_colors, 2) == 0);
+    AT(dvz_visual_set_data(msdf_visual, "size", msdf_sizes, 2) == 0);
+    AT(dvz_visual_set_data(msdf_visual, "angle", msdf_angles, 2) == 0);
+    AT(dvz_visual_set_data(msdf_visual, "symbol", msdf_symbols, 2) == 0);
+    AT(_visual_family_state(msdf_visual)->symbol_source_kind == DVZ_SYMBOL_SOURCE_MSDF);
+    AT(_visual_family_state(msdf_visual)->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
+    AC(_visual_family_state(msdf_visual)->glyph_distance_range_px, 4.0, 1e-6);
+    AT(dvz_panel_add_visual(panel, msdf_visual, NULL) == 0);
+
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
@@ -1279,6 +1315,8 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     AT(_stream_has_render_pipeline_label(stream, "_pipe_markerg_coverage_blend_depth"));
     AT(_stream_has_render_pipeline_label(
         stream, "_pipe_marker_bitmapg_coverage_blend_depth"));
+    AT(_stream_has_render_pipeline_label(
+        stream, "_pipe_marker_distanceg_coverage_blend_depth"));
 
     bool found_pipeline = false;
     bool found_bitmap_pipeline = false;
@@ -1288,6 +1326,10 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     bool found_bitmap_draw = false;
     bool found_texture = false;
     bool found_texture_upload = false;
+    bool found_sdf_texture = false;
+    bool found_sdf_texture_upload = false;
+    bool found_msdf_texture = false;
+    bool found_msdf_texture_upload = false;
     bool found_vertex_slots[6] = {false};
     uint32_t set_vertex_buffer_count = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
@@ -1340,6 +1382,16 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
                                   command->u.create_texture.width == 2 &&
                                   command->u.create_texture.height == 2 &&
                                   command->u.create_texture.depth == 1);
+            found_sdf_texture =
+                found_sdf_texture || (command->u.create_texture.format == VK_FORMAT_R8_UNORM &&
+                                      command->u.create_texture.width == 2 &&
+                                      command->u.create_texture.height == 2 &&
+                                      command->u.create_texture.depth == 1);
+            found_msdf_texture =
+                found_msdf_texture || (command->u.create_texture.format == VK_FORMAT_R8G8B8_UNORM &&
+                                       command->u.create_texture.width == 2 &&
+                                       command->u.create_texture.height == 2 &&
+                                       command->u.create_texture.depth == 1);
         }
         else if (command->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
         {
@@ -1348,19 +1400,33 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
                                          command->u.write_texture.height == 2 &&
                                          command->u.write_texture.depth == 1 &&
                                          command->u.write_texture.bytes_per_row == 2 * 4);
+            found_sdf_texture_upload =
+                found_sdf_texture_upload || (command->u.write_texture.width == 2 &&
+                                             command->u.write_texture.height == 2 &&
+                                             command->u.write_texture.depth == 1 &&
+                                             command->u.write_texture.bytes_per_row == 2);
+            found_msdf_texture_upload =
+                found_msdf_texture_upload || (command->u.write_texture.width == 2 &&
+                                              command->u.write_texture.height == 2 &&
+                                              command->u.write_texture.depth == 1 &&
+                                              command->u.write_texture.bytes_per_row == 2 * 3);
         }
     }
     AT(found_pipeline);
     AT(found_bitmap_pipeline);
     AT(found_material_bg);
     AT(found_set1_bg);
-    AT(set_vertex_buffer_count == 11);
+    AT(set_vertex_buffer_count == 23);
     for (uint32_t slot = 0; slot < 6; slot++)
         AT(found_vertex_slots[slot]);
     AT(found_draw);
     AT(found_bitmap_draw);
     AT(found_texture);
     AT(found_texture_upload);
+    AT(found_sdf_texture);
+    AT(found_sdf_texture_upload);
+    AT(found_msdf_texture);
+    AT(found_msdf_texture_upload);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);

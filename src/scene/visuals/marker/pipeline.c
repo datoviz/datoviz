@@ -67,13 +67,17 @@ bool _scene_marker_visual_pipeline_desc(
     }
 
     uint32_t attr_count = picking ? 2 : 5;
-    bool bitmap_marker = visual->image_texture_id != 0 && !picking;
+    bool atlas_marker = visual->image_texture_id != 0 && !picking;
+    bool distance_marker =
+        atlas_marker &&
+        (visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA ||
+         visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
     if (visual->has_item_state && !picking)
         attr_count++;
-    if (bitmap_marker)
+    if (atlas_marker)
         attr_count++;
     out->vertex_buffer_count = visual->has_item_state ? 6 : 5;
-    if (bitmap_marker)
+    if (atlas_marker)
         out->vertex_buffer_count++;
     out->binding_count = out->vertex_buffer_count;
     out->attr_count = attr_count;
@@ -89,7 +93,7 @@ bool _scene_marker_visual_pipeline_desc(
     if (visual->has_item_state && !picking)
         _scene_visual_pipeline_attr(
             out, next_attr++, 5, 5, VK_FORMAT_R32_UINT, sizeof(uint32_t));
-    if (bitmap_marker)
+    if (atlas_marker)
     {
         uint32_t binding = visual->has_item_state ? 6 : 5;
         _scene_visual_pipeline_attr(
@@ -99,9 +103,10 @@ bool _scene_marker_visual_pipeline_desc(
         out->step_modes[i] = lowering.vertex_step_mode;
 
     out->needs_common_layout = caps.uses_common_set;
-    out->needs_material_layout = caps.needs_material_layout && !picking && !bitmap_marker;
+    out->needs_material_layout = caps.needs_material_layout && !picking && !atlas_marker;
     out->needs_item_state_style_layout = visual->has_item_state && !picking;
-    out->needs_image_layout = bitmap_marker;
+    out->needs_image_layout = atlas_marker && !distance_marker;
+    out->needs_glyph_layout = distance_marker;
     _scene_visual_pipeline_apply_standard_depth_state(
         &caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op, out);
     return true;

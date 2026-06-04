@@ -45,6 +45,23 @@ bool _scene_marker_visual_shader_desc(
     ANN(out);
     if (visual->image_texture_id != 0 && !picking && !wboit_accumulation)
     {
+        if (visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA ||
+            visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB)
+        {
+            dvz_snprintf(
+                out->vertex_key, sizeof(out->vertex_key), "_vs_marker_distance%s", format_tag);
+            dvz_snprintf(
+                out->fragment_key, sizeof(out->fragment_key), "_fs_marker_distance%s",
+                format_tag);
+            dvz_snprintf(
+                out->pipeline_key, sizeof(out->pipeline_key), "_pipe_marker_distance%s",
+                format_tag);
+            _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_MARKER_DISTANCE);
+            _scene_shader_desc_set_identity(out, "scene.marker", "distance");
+            out->vertex_spirv_key = "marker_bitmap_vert";
+            out->fragment_spirv_key = "marker_distance_frag";
+            return true;
+        }
         dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_marker_bitmap%s", format_tag);
         dvz_snprintf(
             out->fragment_key, sizeof(out->fragment_key), "_fs_marker_bitmap%s", format_tag);

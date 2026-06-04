@@ -18,13 +18,13 @@ boundary:
 |---|---|---|
 | Built-in code-SDF symbols | supported | Includes the v0.3 shape vocabulary plus `target`. |
 | `shape` marker attribute | supported | Compatibility spelling for built-in symbol ids. |
-| `DvzSymbolSet` and `symbol` attribute | supported for built-ins and bitmap markers | Texture-backed SDF/MSDF sources are registered on the same boundary. |
+| `DvzSymbolSet` and `symbol` attribute | supported for built-ins and homogeneous texture-backed markers | Mixed built-in/texture-backed and mixed-encoding arrays are rejected for now. |
 | Bitmap symbols | supported for homogeneous bitmap marker visuals | RGBA8 payload is copied into scene-owned symbol atlas pages and lowered to an atlas texture plus per-item UV rectangles. |
-| SDF symbols | API/atlas storage installed, render pending | Single-channel distance-field source metadata retained. |
-| MSDF symbols | API/atlas storage installed, render pending | RGB distance-field source metadata retained; shader lowering pending. |
+| SDF symbols | supported for homogeneous SDF marker visuals | Single-channel distance-field source metadata is retained and rendered through distance-range shader params. |
+| MSDF symbols | supported for homogeneous MSDF marker visuals | RGB distance-field source metadata is retained and rendered through the shared distance marker shader. |
 | SVG path import | supported or advanced/unstable | Prefer a convenience import API over exposing parser internals. |
 | `mtsdf` | advanced/unstable or deferred | Preserve only if the implementation cost is small after MSDF lands. |
-| Exact symbol-mask picking | supported for code-SDF, target for texture-backed sources | Bitmap markers currently render through alpha discard, but exact query semantics still need explicit coverage. |
+| Exact symbol-mask picking | supported for code-SDF, target for texture-backed sources | Texture-backed markers render through alpha/distance coverage, but exact query semantics still need explicit coverage. |
 
 
 ## Purpose

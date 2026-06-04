@@ -168,11 +168,10 @@ same retained storage slot for built-in ids.
 Per-item symbol selector. This is the long-term generalized form of `shape`.
 
 Status on 2026-06-04: built-in symbol-set binding is active for code-SDF markers. `symbol` lowers
-through the same retained slot as `shape`. Homogeneous bitmap symbol arrays render through generated
-`tex_rect` data and a per-visual RGBA atlas texture. SDF/MSDF symbol source APIs copy payloads into
-per-encoding `DvzSymbolSet` atlas pages, but marker validation rejects those ids until the
-distance-field marker shader variants land. Mixed built-in/texture-backed arrays are also rejected
-for now.
+through the same retained slot as `shape`. Homogeneous bitmap, SDF, and MSDF symbol arrays render
+through generated `tex_rect` data and per-visual atlas textures. SDF/MSDF visuals use distance-range
+shader params derived from the symbol source metadata. Mixed built-in/texture-backed arrays and
+mixed encodings are rejected for now.
 
 
 ### `edge_color` (per-item)
@@ -352,8 +351,8 @@ Must match the declared render mode format.
 
 The installed v0.4 marker constructor keeps source selection on `DvzSymbolSet`; marker visual flags
 should remain focused on marker attribute modes such as scalar color and scalar size. Built-in and
-homogeneous bitmap symbols render today. SDF/MSDF atlas pages wait for distance-field marker shader
-variants and scale-correct decode metadata.
+homogeneous bitmap/SDF/MSDF symbols render today. SVG path import and richer fallback policy remain
+separate parity work.
 
 
 ## Transform Model, Stage Participation, Picking
@@ -423,9 +422,9 @@ v0.3 marker prior art to preserve:
 1. Exact marker picking should test the active SDF or bitmap-alpha mask, not the sprite rectangle.
    Transparent corners and holes in ring/cross shapes must miss.
 2. Bitmap marker mode still needs item-state styling composition and exact alpha-aware picking.
-3. Shared SDF/MSDF decode helpers with text should wait until atlas entries carry distance-field
-   metadata needed for scale-correct antialiasing.
+3. Shared SDF/MSDF decode helpers with text should be consolidated after SVG import starts
+   generating symbol distance fields.
 4. Restore SVG path import for custom SDF/MSDF marker symbols, equivalent in capability to the v0.3
    `dvz_msdf_from_svg()` marker test path.
-5. Add SDF/MSDF marker shader variants so marker can use all installed symbol sources without
+5. Add fallback or split-visual policy for mixed built-in/texture-backed symbol arrays without
    exposing `code`/`bitmap`/`sdf`/`msdf` as the primary marker API.

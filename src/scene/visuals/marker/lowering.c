@@ -67,9 +67,21 @@ bool _scene_marker_visual_bind_desc(
     {
         out->uses_material_set1 = false;
         out->material_buffer_id = 0;
-        out->uses_image_set1 = true;
-        out->image_texture_id = visual->image_texture_id;
-        out->image_nearest_sampler = visual->image_nearest_sampler;
+        if (visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA ||
+            visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB)
+        {
+            out->uses_glyph_set1 = true;
+            out->glyph_texture_id = visual->image_texture_id;
+            out->glyph_atlas_encoding = visual->glyph_atlas_encoding;
+            out->glyph_distance_range_px =
+                visual->glyph_distance_range_px > 0.0f ? visual->glyph_distance_range_px : 4.0f;
+        }
+        else
+        {
+            out->uses_image_set1 = true;
+            out->image_texture_id = visual->image_texture_id;
+            out->image_nearest_sampler = visual->image_nearest_sampler;
+        }
     }
     return true;
 }
