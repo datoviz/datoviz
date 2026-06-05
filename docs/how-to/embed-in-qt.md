@@ -7,8 +7,8 @@ window and event loop. Datoviz owns the rendering stack and renders into a Qt-cr
 surface when Qt schedules an update.
 
 The durable design note is
-[`spec/scene/integration/QT_HOSTING.md`](../../spec/scene/integration/QT_HOSTING.md). The runnable
-native examples live under `examples/qt/`.
+[`spec/scene/integration/QT_HOSTING.md`](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/integration/QT_HOSTING.md).
+The runnable native examples live under `examples/qt/`.
 
 
 ## Build And Run
