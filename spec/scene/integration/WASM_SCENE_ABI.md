@@ -98,7 +98,7 @@ void dvz_wasm_api_scene_destroy(uint32_t scene);
 
 The demo-specific `src/wasm/scene_bridge.c` path has been retired. The generic ABI now covers:
 
-1. 2D point + primitive + image + mesh + panzoom;
+1. 2D point + pixel + primitive + image + mesh + panzoom;
 2. 3D mesh + arcball.
 
 The browser pages and `just wasm-scene-smoke` use the generic `dvz_wasm_api_*` object ABI.

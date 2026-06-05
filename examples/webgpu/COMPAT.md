@@ -108,6 +108,12 @@ Current status as of this note:
   WebGPU streams, and `82` negative parity fixtures; `just wasm-scene-smoke` emitted, preflighted,
   and replayed the 2D and 3D WASM scene streams; `just webgpu-browser-smoke` rendered both WASM
   demos, exercised interaction, and reported dashboard WASM scene checks `2 pass, 0 fail`.
+- recorded local pixel-promotion proof on 2026-06-05: `just webgpu-fixture-preflight` passed `39`
+  strict positive/WebGPU stream rows; `just webgpu-runner-smoke` passed `37` positive fixtures, `2`
+  WebGPU streams, and `82` negative parity fixtures; `just wasm-scene-smoke` emitted, preflighted,
+  and replayed the 2D point/pixel/primitive/image/mesh + panzoom stream and the 3D mesh/arcball
+  stream; `just webgpu-browser-smoke` rendered both WASM demos, exercised interaction, and reported
+  dashboard WASM scene checks `2 pass, 0 fail`.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

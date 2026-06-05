@@ -255,6 +255,27 @@ function addWasm2DPoints(scene, panel) {
 
 
 
+function addWasm2DPixels(scene, panel) {
+  const pixels = scene.visual("pixel");
+  pixels.setF32("position", new Float32Array([
+    -0.72, 0.18, 0.02,
+    -0.52, 0.42, 0.02,
+    -0.32, 0.18, 0.02,
+    -0.12, 0.42, 0.02,
+  ]), 4);
+  pixels.setRGBA8("color", new Uint8Array([
+    60, 190, 245, 255,
+    120, 225, 170, 255,
+    245, 175, 85, 255,
+    210, 105, 220, 255,
+  ]), 4);
+  pixels.setF32("pixel_size", new Float32Array([8, 10, 9, 11]), 4);
+  scene.addVisual(panel, pixels);
+  return pixels;
+}
+
+
+
 function addWasmImage(scene, panel) {
   const image = scene.visual("image");
   image.setF32("position", new Float32Array([
@@ -318,6 +339,7 @@ async function runWasm2DSceneSmoke(row) {
   try {
     const panel = scene.panelFull();
     const points = addWasm2DPoints(scene, panel);
+    const pixels = addWasm2DPixels(scene, panel);
     const image = addWasmImage(scene, panel);
 
     const initial = await scene.renderInitial();
@@ -328,6 +350,7 @@ async function runWasm2DSceneSmoke(row) {
       80, 210, 195, 255,
       225, 100, 170, 255,
     ]), 3);
+    pixels.setF32("pixel_size", new Float32Array([10, 8, 11, 9]), 4);
     const update = await scene.renderIncremental();
     assertPositiveCommandCount(update, `${row.name} update`);
 

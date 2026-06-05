@@ -84,7 +84,7 @@ window, stream, video, native app, GUI, CUDA, native DVZR tools, and shaderc/dlo
 Closed first-slice milestone:
 
 1. `src/wasm/scene_api.c` exports a generic handle-based scene/figure/panel/visual/controller API.
-2. The browser scene slices create point, primitive, image, mesh, panzoom, camera, and arcball
+2. The browser scene slices create point, pixel, primitive, image, mesh, panzoom, camera, and arcball
    objects through the generic ABI.
 3. Scene emission can request WGSL, target the external browser canvas format, return DRP2 JSON,
    and feed the browser WebGPU runtime.
@@ -312,7 +312,7 @@ The first milestone is deliberately small and is now represented by the committe
 bridge:
 
 1. build a WASM module containing portable scene and DRP2 stream emission;
-2. from browser JavaScript, create one scene, one figure, one panel, and point, primitive
+2. from browser JavaScript, create one scene, one figure, one panel, and point, pixel, primitive
    triangle-list, RGBA8 image, and basic mesh visuals;
 3. request WGSL scene emission with an external browser canvas color target;
 4. submit the emitted DRP2 stream to the WebGPU runtime;
@@ -321,10 +321,10 @@ bridge:
 The current first slice uses the generic `src/wasm/scene_api.c` object ABI for visuals,
 controllers, resize/pointer/wheel routing, and emitted split DRP2 packets.
 
-Current evidence as of 2026-06-01:
+Current evidence as of 2026-06-05:
 
 1. `just wasm-scene-smoke` builds the Emscripten scene ABI, emits
-   `build-wasm-scene/wasm/wasm_api_scene_point_primitive_image_mesh_panzoom.json` and
+   `build-wasm-scene/wasm/wasm_api_scene_point_pixel_primitive_image_mesh_panzoom.json` and
    `build-wasm-scene/wasm/wasm_api_scene_mesh3d_arcball.json`, and passes WebGPU fixture preflight.
 2. The browser demo entry point is `examples/webgpu/examples.html`, with `demo=wasm-2d` and
    `demo=wasm-3d` query parameters selecting the release-visible WASM demos.
@@ -344,16 +344,17 @@ Current evidence as of 2026-06-01:
 8. Manual local browser proof after the unified examples host split confirms both release-visible
    demos render and interact through `examples/webgpu/examples.html`.
 
-The supported browser-scene subset now covers point, primitive triangle-list, RGBA8 image, basic
-mesh, panzoom, and a first 3D mesh + arcball scene. The browser wrapper passes normalized WebGPU
+The supported browser-scene subset now covers point, pixel, primitive triangle-list, RGBA8 image,
+basic mesh, panzoom, and a first 3D mesh + arcball scene. The browser wrapper passes normalized WebGPU
 limits into the WASM scene emitter before figure creation, and the old direct browser-side panzoom
 uniform mutation path has been retired from the release-visible demos. Retained browser runtime
 stress now tracks browser-owned frame resources and retires submitted references after explicit
 queue completion in retained sessions. Automated browser smoke now also checks pagehide scene
 destruction, packet-runtime use, and the fixture dashboard's WASM Scene Smoke rows for 2D point
-updates, 2D image texture resize reloads, and 3D mesh retained updates. The browser wrapper now uses
-split binary DRP2 setup/update/frame packets and payload arenas for WASM scene rendering. JSON and
-payload-ref JSON remain available for fixture/debug export, not as the browser scene runtime path.
+and pixel updates, 2D image texture resize reloads, and 3D mesh retained updates. The browser
+wrapper now uses split binary DRP2 setup/update/frame packets and payload arenas for WASM scene
+rendering. JSON and payload-ref JSON remain available for fixture/debug export, not as the browser
+scene runtime path.
 The next release-proofing gaps are broader visual/technique parity and continued browser-runtime
 hardening.
 

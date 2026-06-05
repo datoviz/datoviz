@@ -14,5 +14,5 @@ Draft v0.4 public status table. Status labels use the meanings from
 | Scene compute shaders | experimental | Narrow compute-to-render interop path with DRP2 `ResourceBarrier`, WebGPU fixture coverage, and `examples/c/showcases/gpu_particle_smoke.c`; not the general custom render-shader API. |
 | Built-in shader replacement and hot reload | deferred | Built-in visual shader ABI is internal in v0.4. |
 | Raw `ctypes` | experimental | Low-level binding path only. |
-| WebGPU/WASM | experimental | Browser subset is documented and release-proofed for point, primitive, RGBA8 image, basic mesh, panzoom, one 3D mesh/arcball scene, and the committed DRP2 fixture slice. Not Vulkan parity. |
+| WebGPU/WASM | experimental | Browser subset is documented and release-proofed for point, pixel, primitive, RGBA8 image, basic mesh, panzoom, one 3D mesh/arcball scene, and the committed DRP2 fixture slice. Not Vulkan parity. |
 | Old Datoviz Python plotting API | external/GSP | Not part of v0.4 Datoviz docs. |

@@ -41,6 +41,7 @@
 
 #define DVZ_WASM_API_MAX_WRAPPERS 256
 #define DVZ_WASM_VISUAL_POINT 1
+#define DVZ_WASM_VISUAL_PIXEL 2
 #define DVZ_WASM_VISUAL_IMAGE 6
 #define DVZ_WASM_VISUAL_MESH 7
 #define DVZ_WASM_VISUAL_PRIMITIVE 9
@@ -362,6 +363,9 @@ uint32_t dvz_wasm_api_visual(uint32_t scene_handle, uint32_t visual_type, uint32
     {
     case DVZ_WASM_VISUAL_POINT:
         visual->visual = dvz_point(scene->scene, flags);
+        break;
+    case DVZ_WASM_VISUAL_PIXEL:
+        visual->visual = dvz_pixel(scene->scene, flags);
         break;
     case DVZ_WASM_VISUAL_PRIMITIVE:
         visual->visual = dvz_primitive(scene->scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);

@@ -20,6 +20,7 @@ const DVZ_POINTER_BUTTON_RIGHT = 3;
 
 export const DvzWasmVisual = Object.freeze({
   point: 1,
+  pixel: 2,
   image: 6,
   mesh: 7,
   primitive: 9,

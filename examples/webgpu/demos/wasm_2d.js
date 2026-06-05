@@ -4,6 +4,7 @@ export const demo = {
   build(scene) {
     const panel = scene.panelFull();
     addPoints(scene, panel);
+    addPixels(scene, panel);
     addPrimitive(scene, panel);
     addImage(scene, panel);
     addMesh(scene, panel);
@@ -35,6 +36,36 @@ function addPoints(scene, panel) {
   points.setRGBA8("color", colors, count);
   points.setF32("diameter", diameters, count);
   scene.addVisual(panel, points);
+}
+
+function addPixels(scene, panel) {
+  const columns = 10;
+  const rows = 8;
+  const count = columns * rows;
+  const positions = new Float32Array(count * 3);
+  const colors = new Uint8Array(count * 4);
+  const sizes = new Float32Array(count);
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < columns; x++) {
+      const i = y * columns + x;
+      const u = x / Math.max(1, columns - 1);
+      const v = y / Math.max(1, rows - 1);
+      positions[3 * i + 0] = -0.86 + 0.54 * u;
+      positions[3 * i + 1] = 0.34 + 0.48 * v;
+      positions[3 * i + 2] = 0.02;
+      colors[4 * i + 0] = Math.round(45 + 180 * u);
+      colors[4 * i + 1] = Math.round(110 + 120 * v);
+      colors[4 * i + 2] = Math.round(245 - 85 * u);
+      colors[4 * i + 3] = 235;
+      sizes[i] = 5 + 4 * (0.5 + 0.5 * Math.sin((x + y) * 0.9));
+    }
+  }
+
+  const pixels = scene.visual("pixel");
+  pixels.setF32("position", positions, count);
+  pixels.setRGBA8("color", colors, count);
+  pixels.setF32("pixel_size", sizes, count);
+  scene.addVisual(panel, pixels);
 }
 
 function addPrimitive(scene, panel) {
