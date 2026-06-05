@@ -19,7 +19,7 @@ endif()
 # the short <name> filename under build/examples/c/<group>/.
 function(dvz_add_example group name source)
     set(target "example_c_${group}_${name}")
-    add_executable(${target} ${source} example_common.c example_style.c)
+    add_executable(${target} ${source} example_common.c example_style.c runner/scenario_runner.c)
 
     if(TARGET datoviz_gui)
         target_sources(${target} PRIVATE example_gui_controls.c)
