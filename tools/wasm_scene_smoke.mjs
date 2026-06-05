@@ -30,6 +30,12 @@ const DVZ_WASM_VISUAL_MESH = 7;
 const DVZ_WASM_VISUAL_PRIMITIVE = 9;
 const DVZ_WASM_VISUAL_SPHERE = 10;
 const DVZ_MATERIAL_MODEL_STANDARD = 2;
+const DVZ_SEGMENT_CAP_ROUND = 1;
+const DVZ_SEGMENT_CAP_TRIANGLE_OUT = 3;
+const DVZ_SEGMENT_CAP_SQUARE = 4;
+const DVZ_SEGMENT_CAP_BUTT = 5;
+const DVZ_PATH_JOIN_MITER = 0;
+const DVZ_PATH_JOIN_BEVEL = 2;
 const DVZ_DRP2_PACKET_SETUP = 1;
 const DVZ_DRP2_PACKET_UPDATE = 2;
 const DVZ_DRP2_PACKET_FRAME = 3;
@@ -265,6 +271,9 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(source.includes("_dvz_wasm_api_packet_status"), "browser wrapper ignores packet status");
   requireOk(source.includes("_dvz_wasm_api_visual_set_u32"), "browser wrapper cannot upload u32 attrs");
   requireOk(source.includes("_dvz_wasm_api_visual_set_material"), "browser wrapper cannot set materials");
+  requireOk(source.includes("_dvz_wasm_api_visual_set_segment_caps"), "browser wrapper cannot set segment caps");
+  requireOk(source.includes("_dvz_wasm_api_visual_set_path_caps"), "browser wrapper cannot set path caps");
+  requireOk(source.includes("_dvz_wasm_api_visual_set_path_join"), "browser wrapper cannot set path joins");
   requireOk(source.includes(".slice()"), "browser wrapper retains borrowed WASM packet views");
 }
 
@@ -782,6 +791,18 @@ function setStandardMaterial(Module, visual, label, roughness = 0.42, metallic =
   );
 }
 
+function setSegmentCaps(Module, visual, startCap, endCap, label) {
+  expectStatus(Module._dvz_wasm_api_visual_set_segment_caps(visual, startCap, endCap), 0, label);
+}
+
+function setPathCaps(Module, visual, startCap, endCap, label) {
+  expectStatus(Module._dvz_wasm_api_visual_set_path_caps(visual, startCap, endCap), 0, label);
+}
+
+function setPathJoin(Module, visual, join, miterLimit, label) {
+  expectStatus(Module._dvz_wasm_api_visual_set_path_join(visual, join, miterLimit), 0, label);
+}
+
 function setCapabilities(
   Module,
   scene,
@@ -884,6 +905,19 @@ try {
       "unsupported material visual",
     );
     expectDiagnostics(Module, diagnosticScene, "WASM visual material update failed", "point material rejection");
+    expectStatus(
+      Module._dvz_wasm_api_visual_set_segment_caps(
+        pointForDiagnostics, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_SQUARE),
+      -1,
+      "unsupported segment cap visual",
+    );
+    expectDiagnostics(Module, diagnosticScene, "WASM segment cap update failed", "point segment cap rejection");
+    expectStatus(
+      Module._dvz_wasm_api_visual_set_path_join(pointForDiagnostics, DVZ_PATH_JOIN_BEVEL, 4.0),
+      -1,
+      "unsupported path join visual",
+    );
+    expectDiagnostics(Module, diagnosticScene, "WASM path join update failed", "point path join rejection");
 
     const badAttrNamePtr = allocCString(Module, "not_an_attr");
     const onePositionPtr = allocArray(Module, new Float32Array([0, 0, 0]));
@@ -1050,12 +1084,17 @@ try {
     setF32(Module, segment, positionEndNamePtr, ptrs[12], segmentEnds.length / 3, "api segment end");
     setRGBA8(Module, segment, colorNamePtr, ptrs[13], segmentColors.length / 4, "api segment color");
     setF32(Module, segment, strokeWidthNamePtr, ptrs[14], segmentWidths.length, "api segment width");
+    setSegmentCaps(
+      Module, segment, DVZ_SEGMENT_CAP_SQUARE, DVZ_SEGMENT_CAP_TRIANGLE_OUT,
+      "api segment caps");
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, segment), 0, "api add segment");
 
     const path = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_PATH, 0);
     setF32(Module, path, positionNamePtr, ptrs[15], pathPositions.length / 3, "api path position");
     setRGBA8(Module, path, colorNamePtr, ptrs[16], pathColors.length / 4, "api path color");
     setF32(Module, path, strokeWidthNamePtr, ptrs[17], pathWidths.length, "api path width");
+    setPathCaps(Module, path, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_SQUARE, "api path caps");
+    setPathJoin(Module, path, DVZ_PATH_JOIN_MITER, 2.5, "api path join");
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, path), 0, "api add path");
 
     const primitive = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_PRIMITIVE, 0);
@@ -1103,6 +1142,16 @@ try {
     const materialUpdate = emitStream(Module, scene, figure, "generic 2D material update");
     expect2DUpdateStreamShape(materialUpdate.stream, "generic 2D material update");
     expectWriteCommands(materialUpdate.stream, "generic 2D material update");
+    setSegmentCaps(
+      Module, segment, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_BUTT,
+      "api segment cap update");
+    setPathCaps(
+      Module, path, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_TRIANGLE_OUT,
+      "api path cap update");
+    setPathJoin(Module, path, DVZ_PATH_JOIN_BEVEL, 4.0, "api path join update");
+    const strokeStyleUpdate = emitStream(Module, scene, figure, "generic 2D stroke style update");
+    expect2DUpdateStreamShape(strokeStyleUpdate.stream, "generic 2D stroke style update");
+    expectWriteCommands(strokeStyleUpdate.stream, "generic 2D stroke style update");
     const grownPositionPtr = allocArray(Module, new Float32Array([...positions, -0.1, 0.75, 0]));
     try {
       expectStatus(

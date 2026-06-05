@@ -70,8 +70,8 @@ The current browser path proves:
 2. point visual;
 3. pixel visual;
 4. basic built-in marker visual;
-5. basic segment visual;
-6. basic path visual;
+5. segment visual with visual-wide cap controls;
+6. path visual with visual-wide cap and join controls;
 7. primitive triangle-list visual;
 8. RGBA8 image visual;
 9. basic, textured, and material-controlled mesh visual;
@@ -182,7 +182,7 @@ that family until earlier rows are stable.
 | mesh | basic/textured/lit mesh paths | basic, textured, and material-controlled mesh current | current | keep texture-sampling and material-update evidence; broaden only with additional shader/material models |
 | pixel | retained pixel visual | dense 2D pixel visual | current | keep fixture/browser evidence and promote buffer-backed attrs with point |
 | marker | retained marker visual | built-in marker subset current; glyph/atlas subset next | current/next | keep built-in marker evidence; settle atlas variants and picking diagnostics |
-| segment/path/stroke | retained path and stroke-shaped paths | basic segment and basic path current; broader stroke/vector parity next | current/next | keep basic segment/path evidence; settle cap/subpath/vector policy and browser proof |
+| segment/path/stroke | retained path and stroke-shaped paths | segment/path cap-join controls current; broader subpath/vector parity next | current/next | keep cap/join evidence; settle subpath/vector policy and browser proof |
 | text/glyph | retained text and glyph visuals | MSDF or bitmap text subset | later | font/atlas packaging, WGSL text shaders, shaping limits |
 | labels | label field and readback paths | label rendering and label probe subset | later | texture/label formats, query/readback, diagnostics |
 | sphere | sphere impostor visual | basic sphere impostor current; raycast/depth/material parity next | current/next | keep WGSL/browser evidence; promote native-depth and material variants with parity proof |
@@ -262,12 +262,11 @@ frame-time evidence is available.
 Promote visuals in this order:
 
 1. buffer-backed point and pixel;
-2. path/stroke joins and caps;
-3. text/glyph;
-4. labels;
-5. axes/colorbars/legends/scale bars/annotations;
-6. sphere native-depth/material variants and reduced volume;
-7. experimental splat and advanced techniques.
+2. text/glyph;
+3. labels;
+4. axes/colorbars/legends/scale bars/annotations;
+5. sphere native-depth/material variants and reduced volume;
+6. experimental splat and advanced techniques.
 
 Each promotion must satisfy the promotion rule above.
 

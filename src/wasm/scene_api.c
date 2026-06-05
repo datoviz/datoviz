@@ -667,6 +667,58 @@ int dvz_wasm_api_visual_set_material(
 
 
 
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_visual_set_segment_caps(
+    uint32_t visual_handle, uint32_t start_cap, uint32_t end_cap)
+{
+    DvzWasmApiVisual* visual = _visual(visual_handle);
+    if (visual == NULL || visual->owner == NULL || visual->visual == NULL)
+        return _fail(
+            visual != NULL ? visual->owner : NULL, "invalid WASM segment cap visual handle");
+
+    _clear_payload(visual->owner);
+    if (dvz_segment_set_caps(
+            visual->visual, (DvzSegmentCap)start_cap, (DvzSegmentCap)end_cap) != 0)
+    {
+        return _fail(visual->owner, "WASM segment cap update failed");
+    }
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_visual_set_path_caps(
+    uint32_t visual_handle, uint32_t start_cap, uint32_t end_cap)
+{
+    DvzWasmApiVisual* visual = _visual(visual_handle);
+    if (visual == NULL || visual->owner == NULL || visual->visual == NULL)
+        return _fail(visual != NULL ? visual->owner : NULL, "invalid WASM path cap visual handle");
+
+    _clear_payload(visual->owner);
+    if (dvz_path_set_caps(visual->visual, (DvzSegmentCap)start_cap, (DvzSegmentCap)end_cap) != 0)
+        return _fail(visual->owner, "WASM path cap update failed");
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_visual_set_path_join(
+    uint32_t visual_handle, uint32_t join, float miter_limit)
+{
+    DvzWasmApiVisual* visual = _visual(visual_handle);
+    if (visual == NULL || visual->owner == NULL || visual->visual == NULL)
+        return _fail(visual != NULL ? visual->owner : NULL, "invalid WASM path join visual handle");
+
+    _clear_payload(visual->owner);
+    if (dvz_path_set_join(visual->visual, (DvzPathJoin)join, miter_limit) != 0)
+        return _fail(visual->owner, "WASM path join update failed");
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Input                                                                                        */
 /*************************************************************************************************/

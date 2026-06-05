@@ -130,6 +130,7 @@ function addSegments(scene, panel) {
   segments.setF32("position_end", ends, count);
   segments.setRGBA8("color", colors, count);
   segments.setF32("stroke_width", widths, count);
+  segments.setSegmentCaps("square", "triangle-out");
   scene.addVisual(panel, segments);
 }
 
@@ -155,6 +156,8 @@ function addPath(scene, panel) {
   path.setF32("position", positions, count);
   path.setRGBA8("color", colors, count);
   path.setF32("stroke_width", widths, count);
+  path.setPathCaps("round", "square");
+  path.setPathJoin("miter", 2.5);
   scene.addVisual(panel, path);
 }
 

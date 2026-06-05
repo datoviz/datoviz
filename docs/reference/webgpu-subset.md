@@ -22,8 +22,8 @@ Supported visual and interaction families:
 - point visuals;
 - pixel visuals;
 - basic built-in marker visuals;
-- basic segment visuals;
-- basic path visuals;
+- segment visuals with visual-wide cap controls;
+- path visuals with visual-wide cap and join controls;
 - primitive triangle-list visuals;
 - RGBA8 2D image visuals;
 - basic, textured, and material-controlled mesh visuals;
@@ -33,7 +33,7 @@ Supported visual and interaction families:
 
 Supported browser pages:
 
-- `examples/webgpu/examples.html?demo=wasm-2d`: point + pixel + marker + segment + path +
+- `examples/webgpu/examples.html?demo=wasm-2d`: point + pixel + marker + styled segment/path +
   primitive + image + mesh + panzoom;
 - `examples/webgpu/examples.html?demo=wasm-3d`: basic sphere + textured 3D mesh + camera +
   arcball;
@@ -76,7 +76,7 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Setup/update/frame resource model | active through split binary packets and retained browser runtime state |
 | WGSL shader modules | supported and required for portable browser execution |
 | Vulkan-specific modules and presentation | unsupported in WASM; native-only |
-| Scene visual parity | limited to point, pixel, basic marker, basic segment, basic path, primitive, RGBA8 image, basic/textured/material mesh, and basic sphere demos |
+| Scene visual parity | limited to point, pixel, basic marker, segment/path cap-join controls, primitive, RGBA8 image, basic/textured/material mesh, and basic sphere demos |
 | Controller parity | limited to panzoom and one 3D arcball proof |
 | Compute-to-render parity | experimental; fixture coverage exists, gallery-level behavior remains a separate release lane |
 | Query/picking/readback scene parity | deferred for live WASM scenes |
@@ -93,7 +93,7 @@ The browser path intentionally does not support:
 - GLSL/SPIR-V browser shader translation;
 - native scene/app parity;
 - custom shader APIs;
-- text, labels, axes, colorbars, scale bars, picking, readback, volume, path cap/subpath controls,
+- text, labels, axes, colorbars, scale bars, picking, readback, volume, path subpath controls,
   broad stroke/vector parity, sphere raycast/depth/material parity, and advanced technique parity
   in the WASM scene demos;
 - zero-copy payload transport;
@@ -204,6 +204,21 @@ Mesh material promotion proof recorded on 2026-06-05:
 - `just wasm-scene-smoke`: WASM material setters applied standard material parameters to 2D and 3D
   mesh visuals, rejected unsupported point material updates, and emitted retained material update
   streams;
+- `just webgpu-browser-smoke`: 2D and 3D WASM pages rendered, browser interaction was exercised,
+  and dashboard WASM scene checks reported `2 pass, 0 fail`.
+
+Path/stroke cap-join promotion proof recorded on 2026-06-05:
+
+- `node --check tools/wasm_scene_smoke.mjs`: passed;
+- `node --check web/wasm/scene.js`: passed;
+- `node --check examples/webgpu/demos/wasm_2d.js`: passed;
+- `just test test_scene_segment_caps`: passed;
+- `just webgpu-fixture-preflight`: `39` passed, `0` failed;
+- `just webgpu-runner-smoke`: `37` positive fixtures, `2` WebGPU streams, and `82` semantic
+  negative fixtures passed;
+- `just wasm-scene-smoke`: WASM segment cap, path cap, and path join setters emitted initial and
+  retained update streams, rejected unsupported point style updates, and replayed the generated
+  2D/3D streams through the JS WebGPU runner smoke;
 - `just webgpu-browser-smoke`: 2D and 3D WASM pages rendered, browser interaction was exercised,
   and dashboard WASM scene checks reported `2 pass, 0 fail`.
 

@@ -20,6 +20,15 @@ const DVZ_POINTER_BUTTON_RIGHT = 3;
 const DVZ_MATERIAL_MODEL_UNLIT = 0;
 const DVZ_MATERIAL_MODEL_PHONG = 1;
 const DVZ_MATERIAL_MODEL_STANDARD = 2;
+const DVZ_SEGMENT_CAP_NONE = 0;
+const DVZ_SEGMENT_CAP_ROUND = 1;
+const DVZ_SEGMENT_CAP_TRIANGLE_IN = 2;
+const DVZ_SEGMENT_CAP_TRIANGLE_OUT = 3;
+const DVZ_SEGMENT_CAP_SQUARE = 4;
+const DVZ_SEGMENT_CAP_BUTT = 5;
+const DVZ_PATH_JOIN_MITER = 0;
+const DVZ_PATH_JOIN_ROUND = 1;
+const DVZ_PATH_JOIN_BEVEL = 2;
 
 export const DvzWasmVisual = Object.freeze({
   point: 1,
@@ -85,6 +94,51 @@ function materialModelCode(model) {
       return DVZ_MATERIAL_MODEL_STANDARD;
     default:
       throw new Error(`unsupported material model ${model}`);
+  }
+}
+
+function segmentCapCode(cap) {
+  switch (cap) {
+    case "none":
+    case DVZ_SEGMENT_CAP_NONE:
+      return DVZ_SEGMENT_CAP_NONE;
+    case "round":
+    case undefined:
+    case DVZ_SEGMENT_CAP_ROUND:
+      return DVZ_SEGMENT_CAP_ROUND;
+    case "triangle-in":
+    case "triangleIn":
+    case DVZ_SEGMENT_CAP_TRIANGLE_IN:
+      return DVZ_SEGMENT_CAP_TRIANGLE_IN;
+    case "triangle-out":
+    case "triangleOut":
+    case DVZ_SEGMENT_CAP_TRIANGLE_OUT:
+      return DVZ_SEGMENT_CAP_TRIANGLE_OUT;
+    case "square":
+    case DVZ_SEGMENT_CAP_SQUARE:
+      return DVZ_SEGMENT_CAP_SQUARE;
+    case "butt":
+    case DVZ_SEGMENT_CAP_BUTT:
+      return DVZ_SEGMENT_CAP_BUTT;
+    default:
+      throw new Error(`unsupported segment cap ${cap}`);
+  }
+}
+
+function pathJoinCode(join) {
+  switch (join) {
+    case "miter":
+    case DVZ_PATH_JOIN_MITER:
+      return DVZ_PATH_JOIN_MITER;
+    case "round":
+    case undefined:
+    case DVZ_PATH_JOIN_ROUND:
+      return DVZ_PATH_JOIN_ROUND;
+    case "bevel":
+    case DVZ_PATH_JOIN_BEVEL:
+      return DVZ_PATH_JOIN_BEVEL;
+    default:
+      throw new Error(`unsupported path join ${join}`);
   }
 }
 
@@ -591,6 +645,39 @@ export class DatovizWasmVisualHandle {
     );
     if (status !== 0) {
       throw new Error(this._diagnosticMessage(`dvz_wasm_api_visual_set_material failed with ${status}`));
+    }
+  }
+
+  setSegmentCaps(startCap, endCap = startCap) {
+    const status = this.Module._dvz_wasm_api_visual_set_segment_caps(
+      this.handle,
+      segmentCapCode(startCap),
+      segmentCapCode(endCap),
+    );
+    if (status !== 0) {
+      throw new Error(this._diagnosticMessage(`dvz_wasm_api_visual_set_segment_caps failed with ${status}`));
+    }
+  }
+
+  setPathCaps(startCap, endCap = startCap) {
+    const status = this.Module._dvz_wasm_api_visual_set_path_caps(
+      this.handle,
+      segmentCapCode(startCap),
+      segmentCapCode(endCap),
+    );
+    if (status !== 0) {
+      throw new Error(this._diagnosticMessage(`dvz_wasm_api_visual_set_path_caps failed with ${status}`));
+    }
+  }
+
+  setPathJoin(join, miterLimit = 4) {
+    const status = this.Module._dvz_wasm_api_visual_set_path_join(
+      this.handle,
+      pathJoinCode(join),
+      miterLimit,
+    );
+    if (status !== 0) {
+      throw new Error(this._diagnosticMessage(`dvz_wasm_api_visual_set_path_join failed with ${status}`));
     }
   }
 }

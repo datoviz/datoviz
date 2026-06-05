@@ -53,6 +53,9 @@ int dvz_wasm_api_visual_set_f32(uint32_t visual, const char* attr, const float* 
 int dvz_wasm_api_visual_set_rgba8(uint32_t visual, const char* attr, const uint8_t* data, uint32_t item_count);
 int dvz_wasm_api_visual_set_texture_rgba8(uint32_t visual, const uint8_t* rgba, uint32_t width, uint32_t height);
 int dvz_wasm_api_visual_set_material(uint32_t visual, uint32_t model, ...material scalars...);
+int dvz_wasm_api_visual_set_segment_caps(uint32_t visual, uint32_t start_cap, uint32_t end_cap);
+int dvz_wasm_api_visual_set_path_caps(uint32_t visual, uint32_t start_cap, uint32_t end_cap);
+int dvz_wasm_api_visual_set_path_join(uint32_t visual, uint32_t join, float miter_limit);
 uint32_t dvz_wasm_api_controller(uint32_t scene, uint32_t controller_type);
 int dvz_wasm_api_panel_bind_controller(uint32_t panel, uint32_t controller, uint32_t dims);
 int dvz_wasm_api_emit(uint32_t scene, uint32_t figure);
@@ -99,7 +102,7 @@ void dvz_wasm_api_scene_destroy(uint32_t scene);
 
 The demo-specific `src/wasm/scene_bridge.c` path has been retired. The generic ABI now covers:
 
-1. 2D point + pixel + marker + segment + path + primitive + image + mesh + panzoom;
+1. 2D point + pixel + marker + styled segment/path + primitive + image + mesh + panzoom;
 2. 3D sphere + textured material mesh + arcball.
 
 The browser pages and `just wasm-scene-smoke` use the generic `dvz_wasm_api_*` object ABI.
@@ -107,7 +110,8 @@ The browser pages and `just wasm-scene-smoke` use the generic `dvz_wasm_api_*` o
 ## Migration Plan
 
 1. Done: add the generic ABI with scene/figure/panel/point support and a smoke test.
-2. Done: add segment, path, primitive, image, basic/textured/material mesh, basic sphere, panzoom, camera, and arcball coverage through generic calls.
+2. Done: add segment/path cap-join controls, primitive, image, basic/textured/material mesh, basic
+   sphere, panzoom, camera, and arcball coverage through generic calls.
 3. Done: add a small JS wrapper over the ABI.
 4. Done: move the browser demos to the JS wrapper and retire the demo-specific bridge.
 5. Done: replace JSON hot-path transport with split binary DRP2 packets and payload arenas.

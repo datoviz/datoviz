@@ -149,6 +149,15 @@ Current status as of this note:
   rejected unsupported point material updates, and replayed retained material update streams; `just
   webgpu-browser-smoke` rendered both WASM demos, exercised interaction, and reported dashboard
   WASM scene checks `2 pass, 0 fail`.
+- recorded local path/stroke cap-join promotion proof on 2026-06-05: `node --check
+  tools/wasm_scene_smoke.mjs`, `node --check web/wasm/scene.js`, and `node --check
+  examples/webgpu/demos/wasm_2d.js` passed; `just test test_scene_segment_caps` passed; `just
+  webgpu-fixture-preflight` passed `39` strict positive/WebGPU stream rows; `just
+  webgpu-runner-smoke` passed `37` positive fixtures, `2` WebGPU streams, and `82` negative parity
+  fixtures; `just wasm-scene-smoke` applied segment cap, path cap, and path join setters, rejected
+  unsupported point style updates, and replayed retained style update streams through the JS WebGPU
+  runner smoke; `just webgpu-browser-smoke` rendered both WASM demos, exercised interaction, and
+  reported dashboard WASM scene checks `2 pass, 0 fail`.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
