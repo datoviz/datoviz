@@ -126,6 +126,13 @@ Current status as of this note:
   preflighted, and replayed the 2D point/pixel/marker/segment/primitive/image/mesh + panzoom stream
   and the 3D textured mesh/arcball stream; `just webgpu-browser-smoke` rendered both WASM demos,
   exercised interaction, and reported dashboard WASM scene checks `2 pass, 0 fail`.
+- recorded local sphere-promotion proof on 2026-06-05: `python3 tools/check_scene_shader_abi.py`
+  and `just test test_scene_sphere_mode` passed; `just webgpu-fixture-preflight` passed `39`
+  strict positive/WebGPU stream rows; `just webgpu-runner-smoke` passed `37` positive fixtures,
+  `2` WebGPU streams, and `82` negative parity fixtures; `just wasm-scene-smoke` emitted,
+  preflighted, and replayed the 2D point/pixel/marker/segment/primitive/image/mesh + panzoom stream
+  and the 3D sphere/textured mesh/arcball stream; `just webgpu-browser-smoke` rendered both WASM
+  demos, exercised interaction, and reported dashboard WASM scene checks `2 pass, 0 fail`.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

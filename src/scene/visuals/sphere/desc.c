@@ -55,6 +55,7 @@ bool _scene_sphere_visual_desc_from_metadata(
     }
 
     out->kind = DVZ_SCENE_VISUAL_DESC_SPHERE;
+    out->point_like_kind = DVZ_SCENE_POINT_LIKE_SPHERE;
     out->vbuf_ids[out->vbuf_count++] = color_id;
     out->vbuf_ids[out->vbuf_count++] = size_id;
     out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;

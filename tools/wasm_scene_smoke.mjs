@@ -9,7 +9,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs");
 const browserWrapperPath = resolve(root, "web/wasm/scene.js");
 const output2dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_point_pixel_marker_segment_primitive_image_mesh_panzoom.json");
-const output3dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_textured_mesh3d_arcball.json");
+const output3dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_sphere_textured_mesh3d_arcball.json");
 
 const DVZ_POINTER_EVENT_PRESS = 1;
 const DVZ_POINTER_EVENT_RELEASE = 0;
@@ -27,6 +27,7 @@ const DVZ_WASM_VISUAL_SEGMENT = 4;
 const DVZ_WASM_VISUAL_IMAGE = 6;
 const DVZ_WASM_VISUAL_MESH = 7;
 const DVZ_WASM_VISUAL_PRIMITIVE = 9;
+const DVZ_WASM_VISUAL_SPHERE = 10;
 const DVZ_DRP2_PACKET_SETUP = 1;
 const DVZ_DRP2_PACKET_UPDATE = 2;
 const DVZ_DRP2_PACKET_FRAME = 3;
@@ -617,7 +618,26 @@ function expect2DUpdateStreamShape(stream, label, pointInstances = 5) {
 
 function expect3DSceneStreamShape(stream, label) {
   expectCommonSceneStreamShape(stream, label);
+  expectDraw(stream, 6, 3, `${label} sphere`);
   expectDraw(stream, 36, 1, `${label} mesh`);
+  const spherePipeline = expectPipeline(
+    stream,
+    `${label} sphere`,
+    (pipeline) =>
+      pipeline.builtin_pipeline === "scene.sphere" &&
+      pipeline.vertex_buffer_slots === 3 &&
+      pipeline.topology === "triangle-list",
+  );
+  requireOk(
+    JSON.stringify(pipelineAttributeFormats(spherePipeline)) ===
+      JSON.stringify([
+        { stepMode: "instance", formats: ["float32x3"] },
+        { stepMode: "instance", formats: ["unorm8x4"] },
+        { stepMode: "instance", formats: ["float32"] },
+      ]),
+    `${label} sphere: unexpected vertex attributes`,
+  );
+  expectDepthPipeline(spherePipeline, `${label} sphere`);
   const meshPipeline = expectPipeline(
     stream,
     `${label} mesh`,
@@ -650,14 +670,15 @@ function expect3DSceneStreamShape(stream, label) {
     `${label} mesh: missing texture upload`,
   );
   requireOk(
-    commandsOf(stream, "CreateRenderPipeline").length === 1,
-    `${label}: expected one 3D textured mesh pipeline`,
+    commandsOf(stream, "CreateRenderPipeline").length === 2,
+    `${label}: expected sphere and textured mesh pipelines`,
   );
 }
 
 function expect3DUpdateStreamShape(stream, label) {
   expectFrameCommandShape(stream, label);
   expectNoSetupCommands(stream, label);
+  expectDraw(stream, 6, 3, `${label} sphere`);
   expectDraw(stream, 36, 1, `${label} mesh`);
 }
 
@@ -763,6 +784,7 @@ const positionStartNamePtr = allocCString(Module, "position_start");
 const positionEndNamePtr = allocCString(Module, "position_end");
 const strokeWidthNamePtr = allocCString(Module, "stroke_width");
 const normalNamePtr = allocCString(Module, "normal");
+const radiusNamePtr = allocCString(Module, "radius");
 const texcoordsNamePtr = allocCString(Module, "texcoords");
 
 try {
@@ -1085,12 +1107,25 @@ try {
   const cubeTextureWidth = 16;
   const cubeTextureHeight = 16;
   const cubeTexture = makeCheckerTexture(cubeTextureWidth, cubeTextureHeight);
+  const spherePositions = new Float32Array([
+    -0.72, -0.38, 0.32,
+    0.74, -0.34, -0.18,
+    0.0, 0.72, 0.18,
+  ]);
+  const sphereColors = new Uint8Array([
+    245, 120, 90, 255,
+    80, 210, 195, 255,
+    245, 215, 90, 255,
+  ]);
+  const sphereRadii = new Float32Array([0.18, 0.16, 0.14]);
   const scene3d = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
   requireOk(scene3d !== 0, "dvz_wasm_api_scene 3D failed");
   const cubePtrs = [
     allocArray(Module, cube.positions), allocArray(Module, cube.colors),
     allocArray(Module, cube.normals), allocArray(Module, cube.texcoords),
     allocArray(Module, cubeTexture),
+    allocArray(Module, spherePositions), allocArray(Module, sphereColors),
+    allocArray(Module, sphereRadii),
   ];
   try {
     expectStatus(Module._dvz_wasm_api_set_canvas_format(scene3d, DVZ_FORMAT_R8G8B8A8_UNORM), 0, "api 3D canvas format");
@@ -1098,6 +1133,11 @@ try {
     const panel3d = Module._dvz_wasm_api_panel_full(figure3d);
     requireOk(figure3d !== 0 && panel3d !== 0, "api 3D figure/panel failed");
     expectStatus(Module._dvz_wasm_api_panel_set_camera(panel3d, 0, 0, 3, 0, 0, 0, Math.PI / 4, 0.1, 100), 0, "api 3D camera");
+    const sphere3d = Module._dvz_wasm_api_visual(scene3d, DVZ_WASM_VISUAL_SPHERE, 0);
+    setF32(Module, sphere3d, positionNamePtr, cubePtrs[5], spherePositions.length / 3, "api 3D sphere position");
+    setRGBA8(Module, sphere3d, colorNamePtr, cubePtrs[6], sphereColors.length / 4, "api 3D sphere color");
+    setF32(Module, sphere3d, radiusNamePtr, cubePtrs[7], sphereRadii.length, "api 3D sphere radius");
+    expectStatus(Module._dvz_wasm_api_panel_add_visual(panel3d, sphere3d), 0, "api 3D add sphere");
     const mesh3d = Module._dvz_wasm_api_visual(scene3d, DVZ_WASM_VISUAL_MESH, 0);
     setF32(Module, mesh3d, positionNamePtr, cubePtrs[0], cube.positions.length / 3, "api 3D mesh position");
     setRGBA8(Module, mesh3d, colorNamePtr, cubePtrs[1], cube.colors.length / 4, "api 3D mesh color");
@@ -1143,5 +1183,6 @@ try {
   Module._free(positionEndNamePtr);
   Module._free(strokeWidthNamePtr);
   Module._free(normalNamePtr);
+  Module._free(radiusNamePtr);
   Module._free(texcoordsNamePtr);
 }

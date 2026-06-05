@@ -28,6 +28,7 @@ SUPPORTED_WGSL_SHADER_PAIRS = [
     "primitive_lit",
     "image",
     "mesh_textured",
+    "sphere",
 ]
 
 COMMON_GLSL_VERTEX_SHADERS = [
@@ -62,6 +63,7 @@ COMMON_WGSL_VERTEX_SHADERS = [
     "primitive_lit.vert.wgsl",
     "image.vert.wgsl",
     "mesh_textured.vert.wgsl",
+    "sphere.vert.wgsl",
 ]
 
 

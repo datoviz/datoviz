@@ -26,6 +26,7 @@ export const DvzWasmVisual = Object.freeze({
   image: 6,
   mesh: 7,
   primitive: 9,
+  sphere: 10,
 });
 
 function requireOk(condition, message) {

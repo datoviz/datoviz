@@ -41,6 +41,8 @@ bool _scene_sphere_visual_lowering(const DvzVisual* visual, DvzVisualLowering* o
     out->draw_position_attr = "position";
     out->renderable_kind = DVZ_RENDERABLE_POINT_LIKE;
     out->desc_kind = DVZ_SCENE_VISUAL_DESC_SPHERE;
+    out->point_like_kind = DVZ_SCENE_POINT_LIKE_SPHERE;
+    out->has_point_like_kind = true;
     out->needs_material_params = true;
     return true;
 }

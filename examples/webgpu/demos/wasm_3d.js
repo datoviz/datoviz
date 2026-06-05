@@ -4,6 +4,7 @@ export const demo = {
   build(scene) {
     const panel = scene.panelFull();
     scene.setCamera(panel);
+    addSpheres(scene, panel);
     addCube(scene, panel);
     scene.attachArcball(panel);
   },
@@ -66,4 +67,21 @@ function addCube(scene, panel) {
   mesh.setF32("texcoords", cube.texcoords, cube.count);
   mesh.setTextureRGBA8(makeCheckerTexture(16, 16), 16, 16);
   scene.addVisual(panel, mesh);
+}
+
+function addSpheres(scene, panel) {
+  const count = 3;
+  const spheres = scene.visual("sphere");
+  spheres.setF32("position", new Float32Array([
+    -0.72, -0.38, 0.32,
+    0.74, -0.34, -0.18,
+    0.0, 0.72, 0.18,
+  ]), count);
+  spheres.setRGBA8("color", new Uint8Array([
+    245, 120, 90, 255,
+    80, 210, 195, 255,
+    245, 215, 90, 255,
+  ]), count);
+  spheres.setF32("radius", new Float32Array([0.18, 0.16, 0.14]), count);
+  scene.addVisual(panel, spheres);
 }

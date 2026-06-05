@@ -52,7 +52,12 @@ bool _scene_sphere_visual_pipeline_desc(
     if (!_scene_visual_pass_caps_from_desc(visual, alpha_mode, controller_mode, &caps))
         return false;
 
-    out->topology = visual->topology;
+    DvzScenePointLikeLoweringDesc lowering = {0};
+    if (!_scene_point_like_lowering_desc(
+            visual->point_like_kind, shader_format, visual->vertex_count, &lowering))
+        return false;
+
+    out->topology = lowering.topology;
     out->has_depth_state = pass_needs_depth;
     out->needs_scene_occlusion_layout = visual->scene_occluded;
     if (pass_needs_depth)
@@ -68,6 +73,8 @@ bool _scene_sphere_visual_pipeline_desc(
     _scene_visual_pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
     _scene_visual_pipeline_attr(out, 1, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
     _scene_visual_pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32_SFLOAT, sizeof(float));
+    for (uint32_t i = 0; i < out->binding_count; i++)
+        out->step_modes[i] = lowering.vertex_step_mode;
 
     out->needs_common_layout = caps.uses_common_set;
     out->needs_material_layout = caps.needs_material_layout && !picking;
