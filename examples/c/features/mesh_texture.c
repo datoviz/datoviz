@@ -10,9 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/mesh_texture
- * Run:    ./build/examples/c/features/mesh_texture
- * Smoke:  ./build/examples/c/features/mesh_texture 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/features/mesh_texture 1
+ * Run:    ./build/examples/c/features/mesh_texture --live
+ * Smoke:  ./build/examples/c/features/mesh_texture --png
  */
 
 
@@ -24,12 +23,13 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
-#include "datoviz/app.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -43,6 +43,17 @@
 #define TEXTURE_HEIGHT 512u
 
 static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct MeshTextureState
+{
+    DvzGeometry* geometry;
+} MeshTextureState;
 
 
 
@@ -165,38 +176,40 @@ static bool _add_textured_mesh(
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the textured-mesh feature example.
+ * Initialize the textured-mesh feature scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_mesh_texture");
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    DvzGeometry* geometry = NULL;
+    MeshTextureState* state = (MeshTextureState*)calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
+
     uint8_t pixels[TEXTURE_WIDTH * TEXTURE_HEIGHT * 4] = {0};
 
     _fill_texture(pixels);
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
     example_graphite_cyan_set_panel_background(panel);
 
     DvzCameraDesc camera = dvz_camera_desc();
@@ -208,39 +221,81 @@ int main(int argc, char** argv)
     camera.fov_y = 0.68f;
     camera.near = 0.05f;
     camera.far = 100.0f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera), "dvz_panel_set_camera() failed");
+    if (!dvz_panel_set_camera(panel, &camera))
+        return false;
 
-    DvzSampledField* texture = _add_texture(scene, pixels);
-    EXAMPLE_CHECK(texture != NULL, "texture field setup failed");
-    EXAMPLE_CHECK(
-        _add_textured_mesh(scene, panel, texture, &geometry), "textured mesh setup failed");
+    DvzSampledField* texture = _add_texture(ctx->scene, pixels);
+    if (texture == NULL)
+        return false;
+    if (!_add_textured_mesh(ctx->scene, panel, texture, &state->geometry))
+        return false;
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "mesh_texture");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzController* controller = dvz_arcball(scene, NULL);
-    EXAMPLE_CHECK(controller != NULL, "dvz_arcball() failed");
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    if (controller == NULL)
+        return false;
     DvzArcball* arcball = dvz_controller_arcball(controller);
-    EXAMPLE_CHECK(arcball != NULL, "dvz_controller_arcball() failed");
-    EXAMPLE_CHECK(
-        dvz_view_bind_controller(win, panel, controller, DVZ_DIM_MASK_XYZ) == 0,
-        "dvz_view_bind_controller() failed");
+    if (arcball == NULL)
+        return false;
+    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return false;
     dvz_arcball_set(arcball, (vec3){+0.50f, -0.18f, +0.26f});
+    return true;
+}
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
 
-cleanup:
-    if (geometry != NULL)
-        dvz_geometry_destroy(geometry);
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+/**
+ * Destroy the textured-mesh feature scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    MeshTextureState* state = (MeshTextureState*)user;
+    if (state == NULL)
+        return;
+    if (state->geometry != NULL)
+        dvz_geometry_destroy(state->geometry);
+    free(state);
+}
+
+
+
+/**
+ * Return the textured-mesh scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _mesh_texture_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_mesh_texture",
+        .title = "mesh_texture",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the textured-mesh feature example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _mesh_texture_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
