@@ -3,13 +3,13 @@
 This catalog maps scenario IDs to their owning bundle after the examples reorganization. Use it to
 find a scenario quickly; use [PLANNING.md](PLANNING.md) for staging decisions and readiness.
 
-As of 2026-06-03, the public C manifest has runnable `v0.4 required` entries for
+As of 2026-06-05, the public C manifest has runnable `v0.4 required` entries for
 `point_2d`, `path_axes_2d`, `linked_panels_axes_panzoom`, `scale_bar`, `scalebar_units`,
 `scalebar_measurement_workflow`, `colorbar`, `annotation_readout`, `image_probe`,
 `marker_picking`, `sphere_impostor`, `volume`, `composite_polygon`, `composite_graph`,
 `protein_arcball_viewer`, `showcase_wind_field`, `showcase_gpu_particle_smoke`,
-`textured_terrain_or_planet`, `point_cloud`, and `linked_panels_probe_colorbar`. The remaining
-required scenario without a public C manifest entry is `brain_volume_mesh`.
+`textured_terrain_or_planet`, `brain_volume_mesh`, `point_cloud`, `us_state_choropleth`, and
+`linked_panels_probe_colorbar`.
 
 | Scenario ID | Stage | Bundle |
 | --- | --- | --- |
@@ -27,6 +27,7 @@ required scenario without a public C manifest entry is `brain_volume_mesh`.
 | `annotation_readout` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
 | `image_probe` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
 | `protein_arcball_viewer` | `v0.4 required` | [scenarios/v04_required/SCIENTIFIC.md](scenarios/v04_required/SCIENTIFIC.md) |
+| `us_state_choropleth` | `v0.4 required` | [scenarios/v04_required/SCIENTIFIC.md](scenarios/v04_required/SCIENTIFIC.md) |
 | `showcase_wind_field` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
 | `showcase_gpu_particle_smoke` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
 | `textured_terrain_or_planet` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |

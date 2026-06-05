@@ -13,9 +13,10 @@ stable.
 
 Primary 2D showcase. It should look like a real field visualization rather than an API fragment.
 
-Minimal target: synthetic climate-like scalar field, arrow field built from primitives until a
-vector visual lands, optional streamlines as paths, panzoom, colorbar, and deterministic animation
-or capture. Document the primitive-arrow substitution so first-class vector visuals remain visible.
+Current v0.4 implementation target: `examples/c/showcases/wind_field.c`, a synthetic
+weather-like scalar field with retained `dvz_vector()` arrows, streamline paths, panzoom,
+colorbar-style scale context, deterministic animation, and screenshot/video capture hooks. Broader
+projection, coastline, and real weather-data policy remain v0.5/later.
 
 
 ## `showcase_gpu_particle_smoke`
@@ -45,11 +46,13 @@ probes, and GIS cache policy remain outside this v0.4 slice.
 
 ## `brain_volume_mesh`
 
-Narrow neuroscience showcase over the current volume, mesh, transparency, and controller stack.
+Narrow neuroscience showcase over the current volume, transparency, occlusion, and controller stack.
 
-Minimal target: volume slice or MIP with a selected transparent atlas mesh overlay, arcball or
-linked 2D/3D view, opacity controls if available, and screenshot proof. Defer full region picking,
-atlas trees, and linked 2D explorer behavior to v0.5.
+Current v0.4 implementation target: `examples/c/showcases/brain_volume_mesh.c`, a prepared
+Allen/IBL RGBA volume with composite volume rendering, an occluded slice, arcball camera, and
+deterministic capture hooks. The cache-local `brain_volume_mesh.bin` atlas-mesh preparation is
+source material for a later mesh-overlay polish pass. Defer full region picking, atlas trees, and
+linked 2D explorer behavior to v0.5.
 
 
 ## `point_cloud`

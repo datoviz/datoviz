@@ -30,3 +30,25 @@ Source and provenance requirements:
 5. RCSB PDB data usage policy applies.
 
 Defer full ball-and-stick chemistry, labels, picking, and molecular surfaces if needed.
+
+
+## `us_state_choropleth`
+
+Current-stack geospatial/scientific example for many-region polygon-set rendering, scalar
+colormaps, and publication data provenance.
+
+Current v0.4 implementation target: `examples/c/scientific/choropleth.c`, a contiguous U.S. state
+population-density choropleth rendered from prepared flat polygon-set arrays. The example uses
+Census cartographic state boundaries and Vintage 2025 resident population estimates, with a
+cache-local prepared-data fallback and an optional promoted bundle under
+`data/examples/us_state_choropleth/prepared`.
+
+Source and provenance requirements:
+
+1. state boundaries come from
+   `https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip`;
+2. population estimates come from
+   `https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx`;
+3. U.S. Census Bureau public data terms apply; cite the Census Bureau as source;
+4. `tools/data/prepare_us_state_choropleth.py` records manifest/provenance for the prepared bundle;
+5. capture proof still needs a Vulkan-capable visual smoke run before RC publication.

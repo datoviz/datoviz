@@ -62,8 +62,8 @@ The main remaining polish, promotion, or feature gaps are:
    showcases;
 2. release capture proof for the existing text, axes, colorbar, annotation/readout, scale-bar, and
    retained textured-mesh public examples;
-3. promotion or rewrite of the missing required public C `brain_volume_mesh` example;
-4. vector visuals so wind, flow, and track examples stop relying on primitive triangles;
+3. gallery capture proof and public docs for the current C showcase/scientific set;
+4. broader vector pressure beyond the first public `dvz_vector()` examples;
 5. richer picking/probe payloads for marker exact hit tests, mesh regions, paths, labels, text, and
    volume ray hits;
 6. large-data policies for ring buffers, visible ranges, LOD, sparse updates, and long live loops;
@@ -90,10 +90,10 @@ The main remaining polish, promotion, or feature gaps are:
 | `annotation_readout` | `ready-now` | anchored text/readout, highlighted data target | Standalone feature proof lives in `examples/c/features/annotation_readout.c`; query behavior stays separate. |
 | `image_probe` | `ready-now` | scalar sampled image, pixel query, probe marker, stdout readback | Focused public image-query proof lives in `examples/c/features/image_probe.c`; colorbar/readout and broader linked-panel pressure remain separate. |
 | `protein_arcball_viewer` | `ready-now` | real PDB data, sphere impostors, materials, SSAO/MSAA, GUI, arcball | Public proof lives in `examples/c/scientific/protein.c`; defer labels/picking/molecular surface if needed. |
-| `showcase_wind_field` | `partial-now` | image field, vector visual, paths, panzoom, colorbar | Public proof lives in `examples/c/showcases/wind_field.c` using primitive-arrow substitution until the vector visual is promoted. |
+| `showcase_wind_field` | `ready-now` | image field, vector visual, paths, panzoom, colorbar | Public proof lives in `examples/c/showcases/wind_field.c` using the retained `dvz_vector()` visual plus streamlines. |
 | `showcase_gpu_particle_smoke` | `ready-now` | scene compute, shared storage/vertex buffers, blended points | Public experimental compute-to-graphics showcase lives in `examples/c/showcases/gpu_particle_smoke.c`. |
 | `textured_terrain_or_planet` | `ready-now` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof lives in `examples/c/showcases/textured_planet.c`: Earth/Mars UV sphere with real sampled textures and procedural fallbacks. Mars DEM terrain analysis remains v0.5/later. |
-| `brain_volume_mesh` | `needs-rc1-proof` | volume, transparent mesh or slice composition, arcball | Still missing from the public C manifest. Legacy Allen/IBL brain examples are source material; full atlas explorer is v0.5. |
+| `brain_volume_mesh` | `ready-now` | volume, occluded slice composition, arcball | Public proof lives in `examples/c/showcases/brain_volume_mesh.c` over the prepared Allen/IBL RGBA volume. The newer atlas-mesh bundle remains source material for a later mesh-overlay polish pass; full atlas explorer is v0.5. |
 | `point_cloud` | `ready-now` | large RGB pixel cloud, direct colors, GUI-tunable EDL, fly camera, capture | Public proof lives in `examples/c/showcases/point_cloud.c`, with required RESEPI raw-LAZ preprocessing through `tools/data/prepare_point_cloud.py`; no synthetic or bundled-NPZ fallback is provided. |
 | `composite_polygon` | `ready-now` | semantic polygon/polygon-set, fill+stroke composite, holes, region styling | Public proof lives in `examples/c/composites/polygon.c`; polygon is not a visual family even if it appears near visual examples. |
 | `composite_graph` | `ready-now` | semantic graph, user-provided layout, nodes+edges composite, stable ids, Bezier edges | Public proof lives in `examples/c/composites/graph.c`. Keep layout user-supplied first; edge-mode comparisons belong in tests or lab examples. |
@@ -197,7 +197,7 @@ Recommended release-proof order:
 
 1. gallery proof pass for protein, LiDAR, brain, labels, textured mesh or terrain/planet, colorbar
    and legend paths, and capture validation;
-2. vector visual polish with a wind-field showcase;
+2. vector visual polish beyond the current visual/vector and wind-field proofs;
 3. label probe hardening under transforms, larger fields, latest-request-wins hover, signed ids,
    high unsigned ids, and background misses;
 4. explanatory layout proof combining axes, continuous colorbar, categorical legend, scale bar, and

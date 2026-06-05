@@ -116,7 +116,7 @@ not the old gallery page that may currently occupy a similar slot.
 | `visual.primitive` | `examples/c/visuals/primitive.c` | `ready-now` | A few simple primitives arranged so topology differences are obvious, with distinct colors. | Teaches topology-parametric primitive data. Avoid shape builders, polygons, and mesh indexing. |
 | `visual.segment` | `examples/c/visuals/segment.c` | `ready-now` | Independent line segments with varying color and width, visibly not connected into a continuous path. | Teaches endpoint-pair data and per-segment styling. Avoid path joins, axes, and vector arrowheads. |
 | `visual.path` | `examples/c/visuals/path.c` | `ready-now` | Continuous deterministic signals with clear stroke styling. | Teaches ordered path data, path breaks, width, and color. Avoid axes unless implementing `feature.axes_2d`. |
-| `visual.vector` | `examples/c/visuals/vector.c` | `planned` | A small quiver or flow field where direction, length, and optional arrowheads are readable. | Teaches vector anchors, vector values, scale, and color. Avoid wind-field showcase polish and animation. |
+| `visual.vector` | `examples/c/visuals/vector.c` | `ready-now` | A small quiver or flow field where direction, length, and optional arrowheads are readable. | Teaches vector anchors, vector values, scale, and color. Avoid wind-field showcase polish and animation. |
 | `visual.image` | `examples/c/visuals/image.c` | `ready-now` | A scalar 2D field filling most of the panel, with enough structure to see orientation and sampling. | Teaches image or 2D sampled-field upload. Put colorbar and probing in feature examples. |
 | `visual.mesh` | `examples/c/visuals/mesh.c` | `ready-now` | A simple indexed 3D surface with readable shape, normals or flat colors, and a stable camera pose. | Teaches vertices, indices, mesh creation, and basic 3D viewing. Put texture in `feature.mesh_texture`. |
 | `visual.sphere` | `examples/c/visuals/sphere.c` | `ready-now` | A small 3D cluster of impostor spheres with depth, radius, and color variation visible. | Teaches sphere centers, radii, colors, and depth behavior. Avoid molecule-showcase semantics. |
@@ -140,21 +140,21 @@ Current implementation seeds:
 
 | ID | Useful existing source or page | Migration note |
 | --- | --- | --- |
-| `visual.point` | `examples/c/legacy/visuals/point.c`, `docs/gallery/visuals/point.md` | Salvage the visual idea; rewrite as C-first `point_2d` retained-scene smoke. |
-| `visual.pixel` | `examples/c/legacy/visuals/pixel.c`, `docs/gallery/visuals/pixel.md` | Salvage dense grid/raster idea; keep image upload and probing elsewhere. |
-| `visual.marker` | `examples/c/features/pick_marker.c`, `docs/gallery/visuals/marker.md` | Use `pick_marker.c` only as API evidence; write a non-picking marker baseline. |
-| `visual.primitive` | `examples/c/legacy/visuals/primitive.c`, `docs/gallery/visuals/basic.md` | Replace the old `basic` page with `primitive`; there is no v0.4 `basic` visual family. |
-| `visual.segment` | `examples/c/legacy/visuals/segment.c`, `docs/gallery/visuals/segment.md` | Salvage endpoint/stroke examples; keep paths and vectors separate. |
-| `visual.path` | `examples/c/legacy/visuals/path.c`, `docs/gallery/visuals/path.md` | Salvage curve/signal composition; axes belong in `feature.axes_2d`. |
-| `visual.vector` | `examples/c/legacy/visuals/vector.c`, `examples/c/showcases/wind_field.c` | Required near-term because wind/flow examples should stop using ad hoc primitives. |
-| `visual.image` | `examples/c/legacy/visuals/image.c`, `examples/c/features/image_probe.c` | Extract a plain image baseline; leave probing in `image_probe` and colorbar/readout behavior in their own feature rows. |
-| `visual.mesh` | `examples/c/legacy/visuals/mesh.c`, `docs/gallery/visuals/mesh.md` | Salvage as lit/indexed mesh; textured mesh is a separate feature/showcase proof. |
-| `visual.sphere` | `examples/c/legacy/visuals/sphere.c`, `examples/c/scientific/protein.c` | Salvage impostor-sphere proof; molecule/protein remains scientific material. |
-| `visual.volume` | `examples/c/legacy/visuals/volume.c`, `docs/gallery/visuals/volume.md` | Salvage volume setup; keep full brain/medical composition as showcase. |
-| `visual.text` | `examples/c/legacy/visuals/text.c`, `examples/c/lab/text_msdf_diagnostics.c` | Salvage only through the public text API; do not document raw glyph internals. |
-| `visual.labels` | `examples/c/legacy/showcase/labels.c` | Promote only if labels remain public; split probing into `feature.probe_labels`. |
-| `visual.splat` | `examples/c/legacy/showcase/gothic_splat.c` | Experimental v0.4 visual; publish with explicit experimental labeling and no full asset-pipeline promise. |
-| `composite.polygon` | `examples/c/legacy/visuals/polygon.c`, `docs/gallery/features/polygon.md` | Polygon is in v0.4 release scope as a semantic composite; rebuild the old feature page as a C-first composite page. |
+| `visual.point` | `examples/c/visuals/point.c`, `docs/gallery/visuals/point.md` | Current C example is the source of truth; salvage only screenshot/composition ideas from old docs. |
+| `visual.pixel` | `examples/c/visuals/pixel.c`, `docs/gallery/visuals/pixel.md` | Current C example is the source of truth; keep image upload and probing elsewhere. |
+| `visual.marker` | `examples/c/visuals/marker.c`, `examples/c/features/pick_marker.c` | Current marker baseline is separate from picking. Use `pick_marker.c` only as feature evidence. |
+| `visual.primitive` | `examples/c/visuals/primitive.c`, `docs/gallery/visuals/basic.md` | Replace the old `basic` page with `primitive`; there is no v0.4 `basic` visual family. |
+| `visual.segment` | `examples/c/visuals/segment.c`, `docs/gallery/visuals/segment.md` | Current C example is the source of truth; keep paths and vectors separate. |
+| `visual.path` | `examples/c/visuals/path.c`, `docs/gallery/visuals/path.md` | Current C example is the source of truth; axes belong in `feature.axes_2d`. |
+| `visual.vector` | `examples/c/visuals/vector.c`, `examples/c/showcases/wind_field.c` | Current C examples cover straight/curved vectors and a composed wind-field proof. |
+| `visual.image` | `examples/c/visuals/image.c`, `examples/c/features/image_probe.c` | Current image baseline is separate from probing and colorbar/readout behavior. |
+| `visual.mesh` | `examples/c/visuals/mesh.c`, `docs/gallery/visuals/mesh.md` | Current C example is the source of truth; textured mesh is a separate feature/showcase proof. |
+| `visual.sphere` | `examples/c/visuals/sphere.c`, `examples/c/scientific/protein.c` | Current sphere baseline is separate from molecule/protein scientific material. |
+| `visual.volume` | `examples/c/visuals/volume.c`, `examples/c/showcases/brain_volume_mesh.c` | Current volume baseline is separate from full brain/medical composition. |
+| `visual.text` | `examples/c/visuals/text.c`, `examples/c/lab/text_msdf_diagnostics.c` | Current text baseline uses the public text API; do not document raw glyph internals. |
+| `visual.labels` | `examples/c/visuals/labels.c`, `examples/c/features/probe_labels.c` | Current labels baseline is separate from label probing. |
+| `visual.splat` | `examples/c/visuals/splat.c`, `examples/c/legacy/showcase/gothic_splat.c` | Experimental v0.4 visual; publish with explicit experimental labeling and no full asset-pipeline promise. |
+| `composite.polygon` | `examples/c/composites/polygon.c`, `docs/gallery/features/polygon.md` | Polygon is in v0.4 release scope as a semantic composite; rebuild the old feature page as a C-first composite page. |
 
 
 ## AI-Assisted Coverage Matrix
@@ -189,73 +189,73 @@ interaction or readback results?"
 
 Required or high-priority feature examples are grouped by what the user should learn. For v0.4
 release, every public feature should have one short C example under `examples/c/features/`. Rows
-marked `v0.4-required-planned` are release TODOs, not optional v0.5 backlog. A feature example may
-use a simple point, image, path, or mesh visual as scaffolding, but the feature must be the visible
-point of the example.
+marked `ready-now` have current C sources and still need normal capture/docs publication before the
+gallery is final. A feature example may use a simple point, image, path, or mesh visual as
+scaffolding, but the feature must be the visible point of the example.
 
 ### Scene, Layout, And Data Flow
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
-| `feature.scene_basic` | `examples/c/features/scene_basic.c` | `candidate` | One panel with one tiny visual rendered successfully. | Teaches app, scene, figure, panel, visual creation, render/run, and cleanup. Avoid every optional feature. |
-| `feature.panel_single` | `examples/c/features/panel_single.c` | `candidate` | One figure with a single framed panel and one simple visual. | Teaches panel ownership and viewport basics. Do not duplicate `scene_basic` beyond panel-specific calls. |
-| `feature.panel_grid` | `examples/c/features/panel_grid.c` | `candidate` | A small 2x2 grid where each panel has a simple distinct visual or background. | Teaches grid layout and panel addressing. Avoid linked interactions. |
-| `feature.panel_multi` | `examples/c/features/panel_multi.c` | `v0.4-required-planned` | Multiple panels with independent views, showing that each panel clips and transforms correctly. | Teaches multi-panel rendering and panel-local controllers. Avoid synchronization. |
-| `feature.panel_linked` | `examples/c/features/panel_linked.c` | `v0.4-required-planned` | Two or more panels where pan/zoom or camera state is visibly linked. | Teaches shared controller or linked state. Avoid colorbar/probe complexity. |
-| `feature.panel_background` | `examples/c/features/panel_background.c` | `candidate` | One fixed panel background with a simple foreground visual. | Teaches panel-level background styling. Keep overlay/card placement in `feature.overlay_card`. |
-| `feature.update_visual_data` | `examples/c/features/update_visual_data.c` | `candidate` | A visual changes position, color, or size over a few deterministic frames. | Teaches retained data replacement or update API. Avoid streaming performance claims. |
-| `feature.update_partial` | `examples/c/features/update_partial.c` | `candidate` | Only a highlighted subset of a larger visual changes while the rest remains stable. | Teaches partial uploads and item ranges. Avoid using it as a large-data benchmark. |
-| `feature.visibility` | `examples/c/features/visibility.c` | `candidate` | A small scene where one visual can be hidden and shown deterministically. | Teaches retained visual visibility state. Avoid GUI controls unless the feature is specifically GUI. |
+| `feature.scene_basic` | `examples/c/features/scene_basic.c` | `ready-now` | One panel with one tiny visual rendered successfully. | Teaches app, scene, figure, panel, visual creation, render/run, and cleanup. Avoid every optional feature. |
+| `feature.panel_single` | `examples/c/features/panel_single.c` | `ready-now` | One figure with a single framed panel and one simple visual. | Teaches panel ownership and viewport basics. Do not duplicate `scene_basic` beyond panel-specific calls. |
+| `feature.panel_grid` | `examples/c/features/panel_grid.c` | `ready-now` | A small 2x2 grid where each panel has a simple distinct visual or background. | Teaches grid layout and panel addressing. Avoid linked interactions. |
+| `feature.panel_multi` | `examples/c/features/panel_multi.c` | `ready-now` | Multiple panels with independent views, showing that each panel clips and transforms correctly. | Teaches multi-panel rendering and panel-local controllers. Avoid synchronization. |
+| `feature.panel_linked` | `examples/c/features/panel_linked.c` | `ready-now` | Two or more panels where pan/zoom or camera state is visibly linked. | Teaches shared controller or linked state. Avoid colorbar/probe complexity. |
+| `feature.panel_background` | `examples/c/features/panel_background.c` | `ready-now` | One fixed panel background with a simple foreground visual. | Teaches panel-level background styling. Keep overlay/card placement in `feature.overlay_card`. |
+| `feature.update_visual_data` | `examples/c/features/update_visual_data.c` | `ready-now` | A visual changes position, color, or size over a few deterministic frames. | Teaches retained data replacement or update API. Avoid streaming performance claims. |
+| `feature.update_partial` | `examples/c/features/update_partial.c` | `ready-now` | Only a highlighted subset of a larger visual changes while the rest remains stable. | Teaches partial uploads and item ranges. Avoid using it as a large-data benchmark. |
+| `feature.visibility` | `examples/c/features/visibility.c` | `ready-now` | A small scene where one visual can be hidden and shown deterministically. | Teaches retained visual visibility state. Avoid GUI controls unless the feature is specifically GUI. |
 
 ### Fields, Scales, And Adornments
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
-| `feature.sampled_field_2d` | `examples/c/features/sampled_field_2d.c` | `v0.4-required-planned` | A 2D scalar field rendered through a plain image or pixel visual. | Teaches sampled-field resource shape and mapping. Put colorbar in `feature.colorbar`. |
-| `feature.sampled_field_3d` | `examples/c/features/sampled_field_3d.c` | `v0.4-required-planned` | A small 3D field rendered as a volume or slice with deterministic range. | Teaches 3D sampled-field resource setup. Avoid full volume interaction UI. |
-| `feature.colormap_scale` | `examples/c/features/colormap_scale.c` | `candidate` | One scalar-colored visual with a perceptually uniform colormap and clear min/max effect. | Teaches scalar-to-color mapping. Do not add a colorbar unless this row is merged with `feature.colorbar`. |
-| `feature.colorbar` | `examples/c/features/colorbar.c` | `candidate` | One scalar-colored visual plus a readable continuous colorbar with range labels. | Teaches colorbar attachment and scale semantics. Avoid probe callbacks. |
-| `feature.legend_categorical` | `examples/c/features/legend_categorical.c` | `conditional` | A small categorical visual with a compact legend mapping colors or shapes to labels. | Include only if categorical legends are public. Avoid statistical or plotting-layer semantics. |
-| `feature.axes_2d` | `examples/c/features/axes_2d.c` | `candidate` | A simple 2D scatter or path with ticks, labels, and data-space bounds visible. | Teaches axis creation, bounds, and coordinate mapping. Avoid colorbar, selection, and linked panels. |
-| `feature.axis_labels` | `examples/c/features/axis_labels.c` | `v0.4-required-planned` | Axes with explicit title or axis labels, using enough margin to prove layout. | Teaches label placement around axes. Avoid long text layout stress tests. |
-| `feature.scalebar` | `examples/c/features/scalebar.c` | `candidate` | One 2D panel with a small reference visual and one retained scale bar. | Teaches scale-bar attachment, units, anchor, and domain-aware sizing. Keep composed 2D/3D measurement layouts in workflows. |
-| `feature.scalebar_units` | `examples/c/features/scalebar_units.c` | `candidate` | One time-series panel whose X data units are milliseconds and whose scale bar uses a custom `ms` unit string. | Teaches practical unit labeling through `unit` and `data_to_unit` without custom formatter callbacks. Avoid multiple panels or broad domain-specific unit systems. |
-| `feature.annotation_label` | `examples/c/features/annotation_readout.c` | `candidate` | A point, region, or mesh feature annotated by a short anchored label or readout. | Teaches anchored annotation placement. Avoid rich text blocks and overlay cards. |
-| `feature.text_block` | `examples/c/features/text_block.c` | `v0.4-required-planned` | A compact text block or multiline note with stable screen placement. | Teaches text layout as an adornment. Do not expose internal glyph implementation. |
-| `feature.overlay_card` | `examples/c/features/overlay_card.c` | `v0.4-required-planned` | A small screen-space overlay card with text and optional swatch/readout over a scene. | Teaches overlay placement and composition. Avoid dashboard UI scope. |
+| `feature.sampled_field_2d` | `examples/c/features/sampled_field_2d.c` | `ready-now` | A 2D scalar field rendered through a plain image or pixel visual. | Teaches sampled-field resource shape and mapping. Put colorbar in `feature.colorbar`. |
+| `feature.sampled_field_3d` | `examples/c/features/sampled_field_3d.c` | `ready-now` | A small 3D field rendered as a volume or slice with deterministic range. | Teaches 3D sampled-field resource setup. Avoid full volume interaction UI. |
+| `feature.colormap_scale` | `examples/c/features/colormap_scale.c` | `ready-now` | One scalar-colored visual with a perceptually uniform colormap and clear min/max effect. | Teaches scalar-to-color mapping. Do not add a colorbar unless this row is merged with `feature.colorbar`. |
+| `feature.colorbar` | `examples/c/features/colorbar.c` | `ready-now` | One scalar-colored visual plus a readable continuous colorbar with range labels. | Teaches colorbar attachment and scale semantics. Avoid probe callbacks. |
+| `feature.legend_categorical` | `examples/c/features/legend_categorical.c` | `experimental` | A small categorical visual with a compact legend mapping colors or shapes to labels. | Include only if categorical legends are public. Avoid statistical or plotting-layer semantics. |
+| `feature.axes_2d` | `examples/c/features/axes_2d.c` | `ready-now` | A simple 2D scatter or path with ticks, labels, and data-space bounds visible. | Teaches axis creation, bounds, and coordinate mapping. Avoid colorbar, selection, and linked panels. |
+| `feature.axis_labels` | `examples/c/features/axis_labels.c` | `ready-now` | Axes with explicit title or axis labels, using enough margin to prove layout. | Teaches label placement around axes. Avoid long text layout stress tests. |
+| `feature.scalebar` | `examples/c/features/scalebar.c` | `ready-now` | One 2D panel with a small reference visual and one retained scale bar. | Teaches scale-bar attachment, units, anchor, and domain-aware sizing. Keep composed 2D/3D measurement layouts in workflows. |
+| `feature.scalebar_units` | `examples/c/features/scalebar_units.c` | `ready-now` | One time-series panel whose X data units are milliseconds and whose scale bar uses a custom `ms` unit string. | Teaches practical unit labeling through `unit` and `data_to_unit` without custom formatter callbacks. Avoid multiple panels or broad domain-specific unit systems. |
+| `feature.annotation_label` | `examples/c/features/annotation_readout.c` | `ready-now` | A point, region, or mesh feature annotated by a short anchored label or readout. | Teaches anchored annotation placement. Avoid rich text blocks and overlay cards. |
+| `feature.text_block` | `examples/c/features/text_block.c` | `ready-now` | A compact text block or multiline note with stable screen placement. | Teaches text layout as an adornment. Do not expose internal glyph implementation. |
+| `feature.overlay_card` | `examples/c/features/overlay_card.c` | `ready-now` | A small screen-space overlay card with text and optional swatch/readout over a scene. | Teaches overlay placement and composition. Avoid dashboard UI scope. |
 
 ### Controllers And Interaction
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
-| `feature.controller_panzoom` | `examples/c/features/panzoom_attachment.c` | `candidate` | A 2D point, path, or image scene where pan and zoom visibly preserve data-space meaning. | Teaches panzoom attachment and bounds. Avoid axes unless validating bounds is impossible without them. |
-| `feature.controller_arcball` | `examples/c/features/controller_arcball.c` | `v0.4-required-planned` | A centered 3D mesh or sphere group where rotation is visually meaningful. | Teaches arcball attachment. Keep lighting/materials minimal. |
-| `feature.controller_fly` | `examples/c/features/controller_fly.c` | `v0.4-required-planned` | A sparse 3D scene or point cloud where camera translation is visible. | Teaches fly navigation. Avoid dense LiDAR showcase styling. |
-| `feature.controller_turntable` | `examples/c/features/controller_turntable.c` | `v0.4-required-planned` | A 3D object rotating around a stable up axis. | Teaches constrained turntable navigation. Do not duplicate arcball behavior. |
-| `feature.pick_point` | `examples/c/features/pick_point.c` | `v0.4-required-planned` | Sparse points with a visible selected or hovered point and printed or displayed item id. | Teaches callback, query result, and stable item index. Avoid dense performance scenes. |
-| `feature.pick_marker` | `examples/c/features/pick_marker.c` | `candidate` | Distinct markers where a picked item changes outline, color, or selection state. | Teaches marker picking and item identity. Do not use as the marker visual baseline. |
-| `feature.pick_hover` | `examples/c/features/pick_hover.c` | `v0.4-required-planned` | Hover feedback follows pointer movement and clears on background miss. | Teaches latest-request-wins hover behavior and miss handling. Avoid persistent selection policy. |
-| `feature.probe_image` | `examples/c/features/image_probe.c` | `candidate` | Image field with a cursor or pinned marker showing data coordinates and sampled value. | Teaches image probing and pixel-query readback. Keep colorbars and textual readout annotations in separate feature examples. |
-| `feature.probe_labels` | `examples/c/features/probe_labels.c` | `v0.4-required-planned` | Label field or labeled regions where hovering reports stable label ids and names. | Teaches label probing. Avoid segmentation editor scope. |
-| `feature.selection` | `examples/c/features/selection.c` | `v0.4-required-planned` | A small visual where selected items remain highlighted after a click or scripted selection. | Teaches selection model and visual feedback. Avoid multi-visual selection linking. |
-| `feature.panel_linked_probe` | `examples/c/features/panel_linked_probe.c` | `needs-rc1-proof` | Two linked panels, one scalar image, one context/detail view, with colorbar and readout synchronized. | Teaches composed explanatory layout. This is not a minimal image, colorbar, or panel example. |
+| `feature.controller_panzoom` | `examples/c/features/panzoom_attachment.c` | `ready-now` | A 2D point, path, or image scene where pan and zoom visibly preserve data-space meaning. | Teaches panzoom attachment and bounds. Avoid axes unless validating bounds is impossible without them. |
+| `feature.controller_arcball` | `examples/c/features/controller_arcball.c` | `ready-now` | A centered 3D mesh or sphere group where rotation is visually meaningful. | Teaches arcball attachment. Keep lighting/materials minimal. |
+| `feature.controller_fly` | `examples/c/features/controller_fly.c` | `ready-now` | A sparse 3D scene or point cloud where camera translation is visible. | Teaches fly navigation. Avoid dense LiDAR showcase styling. |
+| `feature.controller_turntable` | `examples/c/features/controller_turntable.c` | `ready-now` | A 3D object rotating around a stable up axis. | Teaches constrained turntable navigation. Do not duplicate arcball behavior. |
+| `feature.pick_point` | `examples/c/features/pick_point.c` | `ready-now` | Sparse points with a visible selected or hovered point and printed or displayed item id. | Teaches callback, query result, and stable item index. Avoid dense performance scenes. |
+| `feature.pick_marker` | `examples/c/features/pick_marker.c` | `ready-now` | Distinct markers where a picked item changes outline, color, or selection state. | Teaches marker picking and item identity. Do not use as the marker visual baseline. |
+| `feature.pick_hover` | `examples/c/features/pick_hover.c` | `ready-now` | Hover feedback follows pointer movement and clears on background miss. | Teaches latest-request-wins hover behavior and miss handling. Avoid persistent selection policy. |
+| `feature.probe_image` | `examples/c/features/image_probe.c` | `ready-now` | Image field with a cursor or pinned marker showing data coordinates and sampled value. | Teaches image probing and pixel-query readback. Keep colorbars and textual readout annotations in separate feature examples. |
+| `feature.probe_labels` | `examples/c/features/probe_labels.c` | `ready-now` | Label field or labeled regions where hovering reports stable label ids and names. | Teaches label probing. Avoid segmentation editor scope. |
+| `feature.selection` | `examples/c/features/selection.c` | `ready-now` | A small visual where selected items remain highlighted after a click or scripted selection. | Teaches selection model and visual feedback. Avoid multi-visual selection linking. |
+| `workflow.linked_probe_colorbar` | `examples/c/workflows/linked_probe_colorbar.c` | `ready-now` | Two linked panels, one scalar image, one context/detail view, with colorbar and readout synchronized. | Teaches composed explanatory layout. This is not a minimal image, colorbar, or panel example. |
 
 ### Materials And Appearance
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
-| `feature.material_mesh` | `examples/c/features/material_mesh.c` | `v0.4-required-planned` | One mesh rendered with a neutral material where normals and shading are clear. | Teaches mesh material parameters. Avoid texture sampling. |
-| `feature.mesh_texture` | `examples/c/features/mesh_texture.c` | `v0.4-required-planned` | A textured mesh with UVs and visible texture orientation, ideally with a simple checker or planet texture. | Teaches mesh-bound texture resources and UVs. Do not turn into a terrain/planet showcase. |
-| `feature.lighting` | `examples/c/features/lighting.c` | `v0.4-required-planned` | A simple 3D object where changing light direction or intensity is visibly meaningful. | Teaches light setup. Avoid material matrix demos. |
-| `feature.depth_test` | `examples/c/features/depth_test.c` | `candidate` | Side-by-side overlapping marks show depth testing enabled and disabled. | Teaches `dvz_visual_set_depth_test()` only. Keep depth cueing and occlusion as separate techniques. |
-| `feature.alpha_blending` | `examples/c/features/alpha_blending.c` | `candidate` | Overlapping translucent primitives blend source-over against the panel background. | Teaches per-vertex alpha with `DVZ_ALPHA_BLENDED`. Keep WBOIT and depth peeling separate. |
+| `feature.material_mesh` | `examples/c/features/material_mesh.c` | `ready-now` | One mesh rendered with a neutral material where normals and shading are clear. | Teaches mesh material parameters. Avoid texture sampling. |
+| `feature.mesh_texture` | `examples/c/features/mesh_texture.c` | `ready-now` | A textured mesh with UVs and visible texture orientation, ideally with a simple checker or planet texture. | Teaches mesh-bound texture resources and UVs. Do not turn into a terrain/planet showcase. |
+| `feature.lighting` | `examples/c/features/lighting.c` | `ready-now` | A simple 3D object where changing light direction or intensity is visibly meaningful. | Teaches light setup. Avoid material matrix demos. |
+| `feature.depth_test` | `examples/c/features/depth_test.c` | `ready-now` | Side-by-side overlapping marks show depth testing enabled and disabled. | Teaches `dvz_visual_set_depth_test()` only. Keep depth cueing and occlusion as separate techniques. |
+| `feature.alpha_blending` | `examples/c/features/alpha_blending.c` | `ready-now` | Overlapping translucent primitives blend source-over against the panel background. | Teaches per-vertex alpha with `DVZ_ALPHA_BLENDED`. Keep WBOIT and depth peeling separate. |
 
 ### Animation And Media
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
-| `feature.timer_animation` | `examples/c/features/timer_animation.c` | `v0.4-required-planned` | A simple animated visual driven by a timer or frame callback. | Teaches app callbacks and animation loop. Avoid video export. |
-| `feature.video_export` | `examples/c/features/video_export.c` | `conditional` | A deterministic short animation captured as a video artifact. | Include only if video export is in the public v0.4 surface. Keep backend requirements explicit. |
+| `feature.timer_animation` | `examples/c/features/timer_animation.c` | `ready-now` | A simple animated visual driven by a timer or frame callback. | Teaches app callbacks and animation loop. Avoid video export. |
+| `feature.video_export` | `examples/c/features/video_export.c` | `experimental` | A deterministic short animation captured as a video artifact. | Include only if video export is in the public v0.4 surface. Keep backend requirements explicit. |
 
 The query, pick, probe, and selection examples should be treated as normal first-class examples once
 the current API overhaul lands.
@@ -265,20 +265,20 @@ Current feature seeds and migration notes:
 | ID | Useful existing source or page | Migration note |
 | --- | --- | --- |
 | `feature.axes_2d` | `examples/c/features/axes_2d.c`, `docs/gallery/features/axes.md` | Replace old docs with C-first `path_axes_2d` or scatter/axes proof. |
-| `feature.panel_linked` | `examples/c/workflows/panel_linked_axes.c`, `docs/gallery/features/panel.md` | Current proof is a workflow because it combines linked panels, panzoom, and axes; extract a smaller feature-only panel-linking example later. |
-| `feature.scalebar` | `examples/c/features/scalebar.c`, `examples/c/features/scalebar_units.c`, `examples/c/workflows/scalebar_measurement.c`, `examples/c/lab/scalebar_2d_3d.c` | Candidate public feature proof is intentionally minimal; `scalebar_units.c` shows a non-spatial time-unit label, richer overview/detail/3D measurement composition lives in the workflow lane, and the 2D/3D comparison stays in lab. |
-| `feature.colorbar` | `examples/c/features/colorbar.c` | Candidate standalone scalar scale/colorbar proof; do not add probing or linked panels. |
-| `feature.annotation_label` | `examples/c/features/annotation_readout.c` | Candidate standalone anchored text/readout proof; keep data query behavior elsewhere. |
-| `feature.probe_image` | `examples/c/features/image_probe.c` | Candidate focused image probe using a sampled scalar field and pixel query; colorbar and annotation/readout are split into separate examples. |
-| `feature.pick_marker` | `examples/c/features/pick_marker.c` | Candidate picking/selection proof; do not use as the marker visual baseline. |
-| `feature.mesh_texture` | `examples/c/showcases/textured_planet.c`, `examples/c/legacy/visuals/textured_mesh.c` | Use as retained textured-mesh proof; keep planet/terrain polish in showcase. |
-| `feature.controller_arcball` | `examples/c/scientific/protein.c`, `examples/c/showcases/textured_planet.c` | Extract a minimal controller proof from composed examples. |
-| `feature.controller_fly` | `examples/c/legacy/showcase/lidar.c` | Salvage only after dense point/EDL showcase scope is settled. |
-| `feature.timer_animation` | `docs/gallery/features/animation.md`, `docs/gallery/features/timer.md` | Replace old pages with one deterministic callback/animation example. |
-| `feature.video_export` | `docs/gallery/features/video.md` | Fold into experimental animation/video export if video remains public. |
-| `feature.lighting` | `docs/gallery/features/light.md`, `docs/gallery/features/mesh_light.md` | Salvage snippets; prefer a smaller mesh/sphere lighting proof. |
-| `feature.visibility` | `docs/gallery/features/hide.md`, `docs/gallery/features/fixed.md` | Keep as API/reference material unless a public visibility example is useful. |
-| `feature.annotation_label` | `examples/c/legacy/techniques/overlay_card.c`, `examples/c/legacy/techniques/rich_text_block.c` | Split annotation, text block, and overlay card into separate feature rows. |
+| `feature.panel_linked` | `examples/c/features/panel_linked.c`, `examples/c/workflows/panel_linked_axes.c` | Minimal linked-panel proof is separate from the axes workflow. |
+| `feature.scalebar` | `examples/c/features/scalebar.c`, `examples/c/features/scalebar_units.c`, `examples/c/workflows/scalebar_measurement.c` | Minimal feature proofs stay separate from the richer measurement workflow; the older 2D/3D comparison stays in lab. |
+| `feature.colorbar` | `examples/c/features/colorbar.c` | Standalone scalar scale/colorbar proof; do not add probing or linked panels. |
+| `feature.annotation_label` | `examples/c/features/annotation_readout.c` | Standalone anchored text/readout proof; keep data query behavior elsewhere. |
+| `feature.probe_image` | `examples/c/features/image_probe.c` | Focused image probe using a sampled scalar field and pixel query; colorbar and annotation/readout are split into separate examples. |
+| `feature.pick_marker` | `examples/c/features/pick_marker.c` | Picking/selection proof; do not use as the marker visual baseline. |
+| `feature.mesh_texture` | `examples/c/features/mesh_texture.c`, `examples/c/showcases/textured_planet.c` | Minimal textured-mesh proof is separate from the planet showcase. |
+| `feature.controller_arcball` | `examples/c/features/controller_arcball.c`, `examples/c/scientific/protein.c` | Minimal controller proof is separate from composed scientific/showcase examples. |
+| `feature.controller_fly` | `examples/c/features/controller_fly.c`, `examples/c/showcases/point_cloud.c` | Minimal fly-controller proof is separate from the dense point-cloud showcase. |
+| `feature.timer_animation` | `examples/c/features/timer_animation.c` | Current C example replaces old animation/timer gallery pages. |
+| `feature.video_export` | `examples/c/features/video_export.c` | Experimental scenario-runner video proof replaces the old video gallery page. |
+| `feature.lighting` | `examples/c/features/lighting.c` | Current C example replaces old light/mesh-light snippets for v0.4 docs. |
+| `feature.visibility` | `examples/c/features/visibility.c` | Current C example replaces old hide/fixed gallery pages for v0.4 docs. |
+| `feature.overlay_card` | `examples/c/features/overlay_card.c` | Current C example is separate from annotation and text-block proofs. |
 | `runtime.capture_png` | `examples/c/lab/record_dvzr.c`, `examples/c/lab/replay_dvzr.c` | Useful runtime evidence, but PNG capture should be its own small public example. |
 | `portability.webgpu_subset` | `examples/c/legacy/tools/export_point_wgsl.c`, `examples/c/legacy/tools/export_image_wgsl.c`, `examples/c/legacy/tools/export_primitive_wgsl.c` | Use as fixture/export evidence; public WebGPU page needs explicit experimental status. |
 
@@ -332,17 +332,21 @@ rendering technique:
 Showcases are allowed to be attractive, composed, and domain-flavored. They should not be minimal
 or exhaustive.
 
-Candidate showcases:
+Current showcase and scientific gallery-facing examples:
 
 | Showcase | Demonstrates |
 | --- | --- |
-| LiDAR | large point cloud, colormap, controller, performance |
-| Brain image and labels | image, labels, probing, colorbar |
-| Molecule or protein | mesh/sphere, material, lighting |
-| Volume slice | volume, sampled field, slicing, probe |
-| Multi-panel dashboard | panels, linked views, axes, colorbars |
-| Mesh technique demo | mesh plus SSAO, EDL, or MSAA |
-| Annotation/readout demo | picking, overlay cards, label annotations |
+| `examples/c/showcases/point_cloud.c` | large RGB point cloud, fly controller, EDL, performance |
+| `examples/c/scientific/protein.c` | real PDB atom spheres, arcball, materials, postprocess diagnostics |
+| `examples/c/showcases/brain_volume_mesh.c` | Allen/IBL RGBA volume, occluded slice, arcball |
+| `examples/c/showcases/wind_field.c` | scalar field, retained vectors, streamlines, animation |
+| `examples/c/showcases/textured_planet.c` | textured mesh, sampled textures, lighting, arcball, video capture |
+| `examples/c/showcases/gpu_particle_smoke.c` | experimental scene compute feeding point rendering |
+| `examples/c/scientific/choropleth.c` | real Census polygon-set choropleth, scalar color scale, panzoom |
+
+Additional composed gallery candidates such as brain image/labels, multi-panel dashboards, mesh
+technique demos, and annotation/readout demos remain useful, but they are not missing required C
+showcase sources for the current v0.4 set.
 
 Showcase pages should declare `agent_copy_safe: false` unless they are intentionally written as a
 small public starting point. They may link to multiple minimal examples for the individual
