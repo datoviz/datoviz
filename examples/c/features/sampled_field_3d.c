@@ -10,9 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/sampled_field_3d
- * Run:    ./build/examples/c/features/sampled_field_3d
- * Smoke:  ./build/examples/c/features/sampled_field_3d 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/features/sampled_field_3d 1
+ * Run:    ./build/examples/c/features/sampled_field_3d --live
+ * Smoke:  ./build/examples/c/features/sampled_field_3d --png
  */
 
 
@@ -25,10 +24,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "datoviz/app.h"
+#include "_alloc.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -39,6 +38,17 @@
 #define WIDTH      1600u
 #define HEIGHT     1200u
 #define FIELD_SIZE 40u
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct SampledField3DState
+{
+    uint8_t data[FIELD_SIZE * FIELD_SIZE * FIELD_SIZE];
+} SampledField3DState;
 
 
 
@@ -134,37 +144,35 @@ static bool _attach_transfer(DvzScene* scene, DvzVisual* volume)
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the 3D sampled-field feature example.
+ * Initialize the 3D sampled-field scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_sampled_field_3d");
+    if (ctx == NULL || out_user == NULL)
+        return false;
 
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    uint8_t data[FIELD_SIZE * FIELD_SIZE * FIELD_SIZE] = {0};
+    SampledField3DState* state =
+        (SampledField3DState*)dvz_calloc(1, sizeof(SampledField3DState));
+    if (state == NULL)
+        return false;
 
-    _fill_volume(data);
+    _fill_volume(state->data);
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        goto error;
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        goto error;
     example_graphite_cyan_set_panel_background(panel);
 
     DvzCameraDesc camera = dvz_camera_desc();
@@ -172,48 +180,97 @@ int main(int argc, char** argv)
     camera.eye[1] = -2.85f;
     camera.eye[2] = 1.35f;
     camera.fov_y = 0.68f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera), "dvz_panel_set_camera() failed");
+    if (dvz_panel_set_camera(panel, &camera) == NULL)
+        goto error;
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
-                   .dim = DVZ_FIELD_DIM_3D,
-                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
-                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
-                   .width = FIELD_SIZE,
-                   .height = FIELD_SIZE,
-                   .depth = FIELD_SIZE});
-    EXAMPLE_CHECK(field != NULL, "dvz_sampled_field() failed");
-    EXAMPLE_CHECK(
-        dvz_sampled_field_set_data(
+        ctx->scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+                        .dim = DVZ_FIELD_DIM_3D,
+                        .format = DVZ_FIELD_FORMAT_R8_UNORM,
+                        .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                        .width = FIELD_SIZE,
+                        .height = FIELD_SIZE,
+                        .depth = FIELD_SIZE});
+    if (field == NULL)
+        goto error;
+    if (!dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                       .data = data,
+                       .data = state->data,
                        .bytes_per_row = FIELD_SIZE,
-                       .rows_per_image = FIELD_SIZE}),
-        "dvz_sampled_field_set_data() failed");
+                       .rows_per_image = FIELD_SIZE}))
+        goto error;
 
-    DvzVisual* volume = dvz_volume(scene, 0);
-    EXAMPLE_CHECK(volume != NULL, "dvz_volume() failed");
-    EXAMPLE_CHECK(dvz_visual_set_field(volume, "field", field), "dvz_visual_set_field() failed");
-    EXAMPLE_CHECK(_attach_transfer(scene, volume), "volume transfer setup failed");
-    EXAMPLE_CHECK(dvz_volume_set_opacity(volume, 0.82f) == 0, "dvz_volume_set_opacity() failed");
-    EXAMPLE_CHECK(dvz_volume_set_step_count(volume, 96u) == 0, "dvz_volume_set_step_count() failed");
-    EXAMPLE_CHECK(dvz_panel_add_visual(panel, volume, NULL) == 0, "dvz_panel_add_visual() failed");
+    DvzVisual* volume = dvz_volume(ctx->scene, 0);
+    if (volume == NULL)
+        goto error;
+    if (!dvz_visual_set_field(volume, "field", field))
+        goto error;
+    if (!_attach_transfer(ctx->scene, volume))
+        goto error;
+    if (dvz_volume_set_opacity(volume, 0.82f) != 0)
+        goto error;
+    if (dvz_volume_set_step_count(volume, 96u) != 0)
+        goto error;
+    if (dvz_panel_add_visual(panel, volume, NULL) != 0)
+        goto error;
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
+    *out_user = state;
+    return true;
 
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "sampled_field_3d");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+error:
+    dvz_free(state);
+    return false;
+}
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+/**
+ * Destroy the 3D sampled-field scenario.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
+}
+
+
+
+/**
+ * Return the sampled-field 3D scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _sampled_field_3d_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_sampled_field_3d",
+        .title = "sampled_field_3d",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the 3D sampled-field feature example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _sampled_field_3d_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
