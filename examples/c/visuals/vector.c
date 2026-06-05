@@ -10,9 +10,8 @@
  * Style: visuals, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c visuals/vector
- * Run:    ./build/examples/c/visuals/vector
- * Smoke:  ./build/examples/c/visuals/vector 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/visuals/vector 1
+ * Run:    ./build/examples/c/visuals/vector --live
+ * Smoke:  ./build/examples/c/visuals/vector --png
  */
 
 
@@ -26,10 +25,9 @@
 #include <stdint.h>
 
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -268,24 +266,22 @@ static bool _add_curved_vectors(
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the retained vector visual example.
+ * Initialize the retained vector visual scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("visual_vector");
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
     vec3 straight_positions[FIELD_COUNT] = {{0}};
     vec3 straight_vectors[FIELD_COUNT] = {{0}};
@@ -299,42 +295,60 @@ int main(int argc, char** argv)
     _fill_straight_vectors(straight_positions, straight_vectors, straight_colors, straight_widths);
     _fill_curved_vectors(curve_positions, curve_colors, curve_widths, subpaths);
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    EXAMPLE_CHECK(
-        _add_straight_vectors(
-            scene, panel, straight_positions, straight_vectors, straight_colors, straight_widths),
-        "adding straight vector visual failed");
-    EXAMPLE_CHECK(
-        _add_curved_vectors(scene, panel, curve_positions, curve_colors, curve_widths, subpaths),
-        "adding curved vector visual failed");
+    if (!_add_straight_vectors(
+            ctx->scene, panel, straight_positions, straight_vectors, straight_colors,
+            straight_widths))
+        return false;
+    if (!_add_curved_vectors(ctx->scene, panel, curve_positions, curve_colors, curve_widths, subpaths))
+        return false;
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    return panzoom != NULL;
+}
 
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_vector");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
-    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
+/**
+ * Return the vector visual scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _vector_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "visual_vector",
+        .title = "visual_vector",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the retained vector visual example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _vector_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

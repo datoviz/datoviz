@@ -10,9 +10,8 @@
  * Style: visuals, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c visuals/segment
- * Run:    ./build/examples/c/visuals/segment
- * Smoke:  ./build/examples/c/visuals/segment 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/visuals/segment 1
+ * Run:    ./build/examples/c/visuals/segment --live
+ * Smoke:  ./build/examples/c/visuals/segment --png
  */
 
 
@@ -25,10 +24,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -123,25 +121,22 @@ static void _fill_segments(
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the retained segment visual example.
+ * Initialize the retained segment visual scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("visual_segment");
-
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
     vec3 starts[SEGMENT_COUNT] = {{0}};
     vec3 ends[SEGMENT_COUNT] = {{0}};
@@ -149,18 +144,18 @@ int main(int argc, char** argv)
     float widths[SEGMENT_COUNT] = {0};
     _fill_segments(starts, ends, colors, widths);
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzVisual* visual = dvz_segment(scene, 0);
-    EXAMPLE_CHECK(visual != NULL, "dvz_segment() failed");
+    DvzVisual* visual = dvz_segment(ctx->scene, 0);
+    if (visual == NULL)
+        return false;
 
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position_start", .data = starts, .item_count = SEGMENT_COUNT},
@@ -168,30 +163,51 @@ int main(int argc, char** argv)
         {.attr_name = "color", .data = colors, .item_count = SEGMENT_COUNT},
         {.attr_name = "stroke_width", .data = widths, .item_count = SEGMENT_COUNT},
     };
-    EXAMPLE_CHECK(dvz_visual_set_data_many(visual, updates, 4) == 0, "segment data upload failed");
-    EXAMPLE_CHECK(
-        dvz_segment_set_caps(visual, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) == 0,
-        "dvz_segment_set_caps() failed");
-    EXAMPLE_CHECK(dvz_panel_add_visual(panel, visual, NULL) == 0, "dvz_panel_add_visual() failed");
+    if (dvz_visual_set_data_many(visual, updates, 4) != 0)
+        return false;
+    if (dvz_segment_set_caps(visual, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) != 0)
+        return false;
+    if (dvz_panel_add_visual(panel, visual, NULL) != 0)
+        return false;
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    return panzoom != NULL;
+}
 
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_segment");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
-    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
+/**
+ * Return the segment visual scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _segment_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "visual_segment",
+        .title = "visual_segment",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the retained segment visual example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _segment_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

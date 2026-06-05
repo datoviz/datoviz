@@ -10,9 +10,8 @@
  * Style: visuals, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c visuals/labels
- * Run:    ./build/examples/c/visuals/labels
- * Smoke:  ./build/examples/c/visuals/labels 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/visuals/labels 1
+ * Run:    ./build/examples/c/visuals/labels --live
+ * Smoke:  ./build/examples/c/visuals/labels --png
  */
 
 
@@ -27,10 +26,9 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -47,6 +45,17 @@
 static const float TAU = 6.28318530718f;
 
 static const DvzCategoryId LABEL_IDS[LABEL_COUNT] = {3, 8, 13, 21, 34, 55};
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct LabelsVisualState
+{
+    int32_t* labels;
+} LabelsVisualState;
 
 
 
@@ -220,12 +229,118 @@ static bool _add_labels(
 
 
 
+/**
+ * Free the retained label field.
+ *
+ * @param state labels visual state
+ */
+static void _free_state(LabelsVisualState* state)
+{
+    if (state == NULL)
+        return;
+    dvz_free(state->labels);
+    dvz_free(state);
+}
+
+
+
+/*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Initialize the retained labels visual scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
+
+    LabelsVisualState* state = (LabelsVisualState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+
+    state->labels = (int32_t*)dvz_calloc(FIELD_WIDTH * FIELD_HEIGHT, sizeof(*state->labels));
+    if (state->labels == NULL)
+        goto error;
+    _fill_labels(state->labels);
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        goto error;
+
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        goto error;
+    example_graphite_cyan_set_panel_background(panel);
+
+    DvzScale* labels_scale = _add_labels_scale(ctx->scene);
+    if (labels_scale == NULL)
+        goto error;
+    if (!_add_labels(ctx->scene, panel, labels_scale, state->labels))
+        goto error;
+
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    if (panzoom == NULL)
+        goto error;
+
+    if (out_user != NULL)
+        *out_user = state;
+    return true;
+
+error:
+    _free_state(state);
+    return false;
+}
+
+
+
+/**
+ * Destroy the retained labels visual scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    _free_state((LabelsVisualState*)user);
+}
+
+
+
+/**
+ * Return the labels visual scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _labels_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "visual_labels",
+        .title = "visual_labels",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 /**
- * Run the retained labels visual example.
+ * Run the retained labels visual example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -233,51 +348,6 @@ static bool _add_labels(
  */
 int main(int argc, char** argv)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    int32_t* labels = NULL;
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("visual_labels");
-
-    labels = (int32_t*)dvz_calloc(FIELD_WIDTH * FIELD_HEIGHT, sizeof(*labels));
-    EXAMPLE_CHECK(labels != NULL, "labels allocation failed");
-    _fill_labels(labels);
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    example_graphite_cyan_set_panel_background(panel);
-
-    DvzScale* labels_scale = _add_labels_scale(scene);
-    EXAMPLE_CHECK(labels_scale != NULL, "labels scale setup failed");
-    EXAMPLE_CHECK(_add_labels(scene, panel, labels_scale, labels), "labels visual setup failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_labels");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
-    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
-
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    dvz_free(labels);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    DvzScenarioSpec spec = _labels_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
