@@ -9,7 +9,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs");
 const browserWrapperPath = resolve(root, "web/wasm/scene.js");
 const output2dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_point_pixel_marker_segment_primitive_image_mesh_panzoom.json");
-const output3dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_mesh3d_arcball.json");
+const output3dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_textured_mesh3d_arcball.json");
 
 const DVZ_POINTER_EVENT_PRESS = 1;
 const DVZ_POINTER_EVENT_RELEASE = 0;
@@ -622,8 +622,8 @@ function expect3DSceneStreamShape(stream, label) {
     stream,
     `${label} mesh`,
     (pipeline) =>
-      pipeline.builtin_pipeline === "scene.primitive" &&
-      pipeline.vertex_buffer_slots === 3 &&
+      pipeline.builtin_pipeline === "scene.mesh" &&
+      pipeline.vertex_buffer_slots === 4 &&
       pipeline.topology === "triangle-list",
   );
   requireOk(
@@ -632,13 +632,26 @@ function expect3DSceneStreamShape(stream, label) {
         { stepMode: "vertex", formats: ["float32x3"] },
         { stepMode: "vertex", formats: ["unorm8x4"] },
         { stepMode: "vertex", formats: ["float32x3"] },
+        { stepMode: "vertex", formats: ["float32x2"] },
       ]),
     `${label} mesh: unexpected vertex attributes`,
   );
   expectDepthPipeline(meshPipeline, `${label} mesh`);
   requireOk(
+    commandsOf(stream, "CreateBindGroup").some((command) =>
+      command.entries?.some((entry) => entry.binding_type === "sampled_texture") &&
+      command.entries?.some((entry) => entry.binding_type === "sampler")),
+    `${label} mesh: missing sampled texture bind group`,
+  );
+  requireOk(
+    commandsOf(stream, "WriteTexture").some(
+      (command) => command.size?.width === 16 && command.size?.height === 16,
+    ),
+    `${label} mesh: missing texture upload`,
+  );
+  requireOk(
     commandsOf(stream, "CreateRenderPipeline").length === 1,
-    `${label}: expected one 3D mesh pipeline`,
+    `${label}: expected one 3D textured mesh pipeline`,
   );
 }
 
@@ -661,14 +674,38 @@ function makeCubeMesh(size) {
   const positions = [];
   const colors = [];
   const normals = [];
+  const texcoords = [];
+  const faceUv = [[0, 0], [1, 0], [0, 1], [1, 0], [1, 1], [0, 1]];
   for (const face of faces) {
-    for (const vertex of face.v) {
+    for (let i = 0; i < face.v.length; i++) {
+      const vertex = face.v[i];
       positions.push(...vertex);
-      colors.push(...face.c);
+      colors.push(255, 255, 255, 255);
       normals.push(...face.n);
+      texcoords.push(...faceUv[i]);
     }
   }
-  return { positions: new Float32Array(positions), colors: new Uint8Array(colors), normals: new Float32Array(normals) };
+  return {
+    positions: new Float32Array(positions),
+    colors: new Uint8Array(colors),
+    normals: new Float32Array(normals),
+    texcoords: new Float32Array(texcoords),
+  };
+}
+
+function makeCheckerTexture(width, height) {
+  const pixels = new Uint8Array(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      const checker = ((x >> 2) ^ (y >> 2)) & 1;
+      pixels[i + 0] = checker ? 65 : 245;
+      pixels[i + 1] = checker ? 180 : 115;
+      pixels[i + 2] = checker ? 230 : 80;
+      pixels[i + 3] = 255;
+    }
+  }
+  return pixels;
 }
 
 function setF32(Module, visual, attrPtr, dataPtr, count, label) {
@@ -1045,9 +1082,16 @@ try {
   }
 
   const cube = makeCubeMesh(1.25);
+  const cubeTextureWidth = 16;
+  const cubeTextureHeight = 16;
+  const cubeTexture = makeCheckerTexture(cubeTextureWidth, cubeTextureHeight);
   const scene3d = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
   requireOk(scene3d !== 0, "dvz_wasm_api_scene 3D failed");
-  const cubePtrs = [allocArray(Module, cube.positions), allocArray(Module, cube.colors), allocArray(Module, cube.normals)];
+  const cubePtrs = [
+    allocArray(Module, cube.positions), allocArray(Module, cube.colors),
+    allocArray(Module, cube.normals), allocArray(Module, cube.texcoords),
+    allocArray(Module, cubeTexture),
+  ];
   try {
     expectStatus(Module._dvz_wasm_api_set_canvas_format(scene3d, DVZ_FORMAT_R8G8B8A8_UNORM), 0, "api 3D canvas format");
     const figure3d = Module._dvz_wasm_api_figure(scene3d, smokeSize, smokeSize);
@@ -1058,6 +1102,13 @@ try {
     setF32(Module, mesh3d, positionNamePtr, cubePtrs[0], cube.positions.length / 3, "api 3D mesh position");
     setRGBA8(Module, mesh3d, colorNamePtr, cubePtrs[1], cube.colors.length / 4, "api 3D mesh color");
     setF32(Module, mesh3d, normalNamePtr, cubePtrs[2], cube.normals.length / 3, "api 3D mesh normal");
+    setF32(Module, mesh3d, texcoordsNamePtr, cubePtrs[3], cube.texcoords.length / 2, "api 3D mesh texcoords");
+    expectStatus(
+      Module._dvz_wasm_api_visual_set_texture_rgba8(
+        mesh3d, cubePtrs[4], cubeTextureWidth, cubeTextureHeight),
+      0,
+      "api 3D mesh texture",
+    );
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel3d, mesh3d), 0, "api 3D add mesh");
     const arcball = Module._dvz_wasm_api_controller(scene3d, DVZ_CONTROLLER_TYPE_ARCBALL);
     expectStatus(Module._dvz_wasm_api_panel_bind_controller(panel3d, arcball, DVZ_DIM_MASK_XYZ), 0, "api bind arcball");

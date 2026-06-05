@@ -35,11 +35,11 @@ This keeps portability work from forking scene semantics.
 
 ## Current Browser Shape
 
-The first scene subset proves point, pixel, marker, basic segment, primitive, RGBA8 image, basic
-mesh, panzoom, and a basic 3D mesh with arcball through the generic WASM scene ABI. The browser
-pages call the same handle-based `dvz_wasm_api_*` object API and feed emitted split DRP2 setup,
-update, and frame packets into the browser WebGPU runtime. JSON emission remains a debug and
-fixture-export view.
+The first scene subset proves point, pixel, marker, basic segment, primitive, RGBA8 image,
+basic/textured mesh, panzoom, and a textured 3D mesh with arcball through the generic WASM scene
+ABI. The browser pages call the same handle-based `dvz_wasm_api_*` object API and feed emitted
+split DRP2 setup, update, and frame packets into the browser WebGPU runtime. JSON emission remains a
+debug and fixture-export view.
 
 The pure browser WebGPU runner has broader DRP2 fixture coverage than the live WASM demos. It
 validates resource lifetimes, capability failures, dynamic offsets, render and compute passes,
@@ -56,7 +56,7 @@ not mean that every native scene, app, or visual feature renders in the browser.
 | Scene semantics | supported for declared v0.4 scene/app surface | shared for the experimental WASM scene subset |
 | Runtime transport | DRP2 streams into vklite/canvas/stream/app | split binary DRP2 setup/update/frame packets into WebGPU |
 | Shader input | native runtime may use internal GLSL/SPIR-V/WGSL paths | WGSL only |
-| Visual families | broader retained v0.4 visual surface | point, pixel, basic marker, basic segment, primitive, RGBA8 image, and basic mesh demos |
+| Visual families | broader retained v0.4 visual surface | point, pixel, basic marker, basic segment, primitive, RGBA8 image, and basic/textured mesh demos |
 | Interaction | native controllers through app/window paths | panzoom and one arcball scene through WASM ABI input |
 | DRP2 command execution | native runtime under active hardening | committed positive fixture slice, WebGPU attachment streams, and semantic negative parity |
 | Compute | experimental compute-to-render lane | fixture-level compute and ResourceBarrier validation; gallery-level parity still experimental |

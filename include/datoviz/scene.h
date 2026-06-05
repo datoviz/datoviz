@@ -3178,13 +3178,13 @@ DVZ_EXPORT const DvzVolumeState* dvz_volume_state(const DvzVisual* visual);
 
 
 /**
- * Attach a 2D RGBA8 texture to an image or glyph visual.
+ * Attach a 2D RGBA8 texture to an image, glyph, or mesh visual.
  *
  * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
- * binds it to the visual's `"field"` slot. Prefer `dvz_sampled_field()` plus
- * `dvz_visual_set_field()` in new code.
+ * binds it to the visual's `"field"` slot for image/glyph visuals or `"texture"` slot for mesh
+ * visuals. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
  *
- * @param visual the visual (must be of type IMAGE or GLYPH)
+ * @param visual the visual (must be of type IMAGE, GLYPH, or MESH)
  * @param rgba RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes)
  * @param width the texture width in pixels
  * @param height the texture height in pixels

@@ -22,19 +22,39 @@ function makeCubeMesh(size) {
   const positions = [];
   const colors = [];
   const normals = [];
+  const texcoords = [];
+  const faceUv = [[0, 0], [1, 0], [0, 1], [1, 0], [1, 1], [0, 1]];
   for (const face of faces) {
-    for (const vertex of face.v) {
+    for (let i = 0; i < face.v.length; i++) {
+      const vertex = face.v[i];
       positions.push(...vertex);
-      colors.push(...face.c);
+      colors.push(255, 255, 255, 255);
       normals.push(...face.n);
+      texcoords.push(...faceUv[i]);
     }
   }
   return {
     positions: new Float32Array(positions),
     colors: new Uint8Array(colors),
     normals: new Float32Array(normals),
+    texcoords: new Float32Array(texcoords),
     count: positions.length / 3,
   };
+}
+
+function makeCheckerTexture(width, height) {
+  const pixels = new Uint8Array(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      const checker = ((x >> 2) ^ (y >> 2)) & 1;
+      pixels[i + 0] = checker ? 65 : 245;
+      pixels[i + 1] = checker ? 180 : 115;
+      pixels[i + 2] = checker ? 230 : 80;
+      pixels[i + 3] = 255;
+    }
+  }
+  return pixels;
 }
 
 function addCube(scene, panel) {
@@ -43,5 +63,7 @@ function addCube(scene, panel) {
   mesh.setF32("position", cube.positions, cube.count);
   mesh.setRGBA8("color", cube.colors, cube.count);
   mesh.setF32("normal", cube.normals, cube.count);
+  mesh.setF32("texcoords", cube.texcoords, cube.count);
+  mesh.setTextureRGBA8(makeCheckerTexture(16, 16), 16, 16);
   scene.addVisual(panel, mesh);
 }

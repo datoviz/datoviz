@@ -35,9 +35,9 @@
 /*************************************************************************************************/
 
 /**
- * Ensure one image-like visual owns a compatible sampled field.
+ * Ensure one texture-backed visual owns a compatible sampled field.
  *
- * @param visual the image or glyph visual
+ * @param visual the visual
  * @param format the field format
  * @param semantic the field semantic
  * @param width the field width
@@ -201,7 +201,7 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
 
 
 /**
- * Attach an RGBA8 2D texture to an image or glyph visual.
+ * Attach an RGBA8 2D texture to an image, glyph, or mesh visual.
  *
  * @param visual the visual
  * @param rgba the RGBA8 pixel data
@@ -213,9 +213,12 @@ int dvz_visual_set_texture(
     DvzVisual* visual, const void* rgba, uint32_t width, uint32_t height)
 {
     ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH)
+    bool is_mesh = visual->type == DVZ_VISUAL_TYPE_MESH;
+    if (
+        visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH &&
+        !is_mesh)
     {
-        log_error("dvz_visual_set_texture is only supported for image and glyph visuals");
+        log_error("dvz_visual_set_texture is only supported for image, glyph, and mesh visuals");
         return -1;
     }
     if (rgba == NULL || width == 0 || height == 0)
@@ -223,7 +226,7 @@ int dvz_visual_set_texture(
         log_error("dvz_visual_set_texture: NULL data or zero extent (%ux%u)", width, height);
         return -1;
     }
-    if (!_scene_visual_mutation_allowed(visual->scene, "set image texture"))
+    if (!_scene_visual_mutation_allowed(visual->scene, "set RGBA8 texture"))
         return -1;
     DvzSampledField* field = _scene_ensure_owned_image_field(
         visual, DVZ_FIELD_FORMAT_RGBA8_UNORM, DVZ_FIELD_SEMANTIC_COLOR, width, height);
@@ -236,9 +239,10 @@ int dvz_visual_set_texture(
                        .rows_per_image = height,
                    }))
         return -1;
-    if (!dvz_visual_set_field(visual, "field", field))
+    const char* slot_name = is_mesh ? "texture" : "field";
+    if (!dvz_visual_set_field(visual, slot_name, field))
         return -1;
-    _visual_binding_assign(visual, DVZ_VISUAL_BINDING_FIELD, "field", field, true);
+    _visual_binding_assign(visual, DVZ_VISUAL_BINDING_FIELD, slot_name, field, true);
     return 0;
 }
 

@@ -313,7 +313,7 @@ bridge:
 
 1. build a WASM module containing portable scene and DRP2 stream emission;
 2. from browser JavaScript, create one scene, one figure, one panel, and point, pixel, marker,
-   basic segment, primitive triangle-list, RGBA8 image, and basic mesh visuals;
+   basic segment, primitive triangle-list, RGBA8 image, and basic/textured mesh visuals;
 3. request WGSL scene emission with an external browser canvas color target;
 4. submit the emitted DRP2 stream to the WebGPU runtime;
 5. render points using the portable WebGPU lowering selected by scene emission.
@@ -325,7 +325,8 @@ Current evidence as of 2026-06-05:
 
 1. `just wasm-scene-smoke` builds the Emscripten scene ABI, emits
    `build-wasm-scene/wasm/wasm_api_scene_point_pixel_marker_segment_primitive_image_mesh_panzoom.json` and
-   `build-wasm-scene/wasm/wasm_api_scene_mesh3d_arcball.json`, and passes WebGPU fixture preflight.
+   `build-wasm-scene/wasm/wasm_api_scene_textured_mesh3d_arcball.json`, and passes WebGPU fixture
+   preflight.
 2. The browser demo entry point is `examples/webgpu/examples.html`, with `demo=wasm-2d` and
    `demo=wasm-3d` query parameters selecting the release-visible WASM demos.
 3. Manual local browser proof confirms the point scene renders and panzoom interaction works through
@@ -339,13 +340,14 @@ Current evidence as of 2026-06-05:
 6. Reloading the same live demo after the mesh slice confirms point + primitive + RGBA8 image +
    basic mesh rendering, pan/zoom, and resize with no visible browser/WebGPU runtime errors.
 7. Loading `http://localhost:8765/examples/webgpu/examples.html?demo=wasm-3d` confirms the 3D cube
-   renders, arcball drag rotates it, wheel zoom works, resize works, and no visible browser/WebGPU
-   runtime errors occur.
+   renders with an RGBA8 sampled texture, arcball drag rotates it, wheel zoom works, resize works,
+   and no visible browser/WebGPU runtime errors occur.
 8. Manual local browser proof after the unified examples host split confirms both release-visible
    demos render and interact through `examples/webgpu/examples.html`.
 
 The supported browser-scene subset now covers point, pixel, basic marker, basic segment, primitive
-triangle-list, RGBA8 image, basic mesh, panzoom, and a first 3D mesh + arcball scene. The browser
+triangle-list, RGBA8 image, basic/textured mesh, panzoom, and a first 3D textured mesh + arcball
+scene. The browser
 wrapper passes normalized WebGPU limits into the WASM scene emitter before figure creation, and the old direct browser-side panzoom
 uniform mutation path has been retired from the release-visible demos. Retained browser runtime
 stress now tracks browser-owned frame resources and retires submitted references after explicit

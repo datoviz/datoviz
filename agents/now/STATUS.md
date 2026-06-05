@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active RC preparation. Updated: 2026-06-04.
+Status: active RC preparation. Updated: 2026-06-05.
 
 Keep this file short. Durable behavior belongs in `spec/`; completed history belongs in git
 history, not in agent archives.
@@ -14,7 +14,7 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits split DRP2 packets for point, pixel, basic marker, basic segment, primitive, RGBA8 image, basic mesh, panzoom, and a 3D mesh/arcball proof. Fresh 2026-06-05 browserless and headless-browser proof is recorded in `examples/webgpu/COMPAT.md` and `docs/reference/webgpu-subset.md`. | Harden diagnostic ABI behavior and remove remaining demo shortcuts without expanding the RC subset. |
+| WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits split DRP2 packets for point, pixel, basic marker, basic segment, primitive, RGBA8 image, basic/textured mesh, panzoom, and a 3D textured mesh/arcball proof. Fresh 2026-06-05 browserless and headless-browser proof is recorded in `examples/webgpu/COMPAT.md` and `docs/reference/webgpu-subset.md`. | Harden diagnostic ABI behavior and remove remaining demo shortcuts without expanding the RC subset. |
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04; native GPU execution skipped in this shell because Vulkan instance creation failed. | Record native Vulkan execution evidence in a Vulkan-capable environment and capture a release artifact from `examples/c/showcases/gpu_particle_smoke.c`. |
 | Qt/PyQt hosted path | Native Qt hosting has an optional example path; PyQt needs a native Qt bridge because current PyQt6 wheels do not expose `QVulkanInstance::setVkInstance()` or `vkInstance()`. | Implement the optional `datoviz_qtbridge` provider from `spec/scene/integration/QT_HOST_BRIDGE.md` and prove the PyQt hosted example. |
 | v0.3 visible parity audit | Missing. | Table each visible capability as fixed, deferred, or external/GSP. |

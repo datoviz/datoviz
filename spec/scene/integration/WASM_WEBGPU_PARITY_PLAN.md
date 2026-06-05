@@ -73,7 +73,7 @@ The current browser path proves:
 5. basic segment visual;
 6. primitive triangle-list visual;
 7. RGBA8 image visual;
-8. basic mesh visual;
+8. basic and textured mesh visual;
 9. 2D panzoom input;
 10. one 3D mesh scene with camera and arcball input;
 11. WebGPU runner execution for the committed DRP2 fixture subset;
@@ -177,7 +177,7 @@ that family until earlier rows are stable.
 | point | retained scene visual | point visual, buffer-backed attrs, particles | current/next | expose scene buffers and buffer-backed attrs; prove compute-written positions |
 | primitive | retained triangle-list visual | triangle-list visual | current | keep fixture/browser evidence and diagnostics |
 | image | retained RGBA/scalar image paths | RGBA8 image first, scalar/colormap later | current | add scalar/colormap variants after query/colorbar path is stable |
-| mesh | basic/textured/lit mesh paths | basic mesh first, textured mesh next | current/next | promote texture sampling and material subset with WGSL proof |
+| mesh | basic/textured/lit mesh paths | basic and textured mesh current; lit/material variants next | current/next | keep texture-sampling evidence; promote lit/material subset with WGSL proof |
 | pixel | retained pixel visual | dense 2D pixel visual | current | keep fixture/browser evidence and promote buffer-backed attrs with point |
 | marker | retained marker visual | built-in marker subset current; glyph/atlas subset next | current/next | keep built-in marker evidence; settle atlas variants and picking diagnostics |
 | segment/path/stroke | retained path and stroke-shaped paths | basic segment current; portable path/stroke subset next | current/next | keep basic segment evidence; settle joins/caps policy and path browser proof |
@@ -261,7 +261,7 @@ Promote visuals in this order:
 
 1. buffer-backed point and pixel;
 2. path/stroke joins and caps;
-3. textured mesh;
+3. lit/material mesh variants;
 4. text/glyph;
 5. labels;
 6. axes/colorbars/legends/scale bars/annotations;
