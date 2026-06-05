@@ -313,8 +313,8 @@ bridge:
 
 1. build a WASM module containing portable scene and DRP2 stream emission;
 2. from browser JavaScript, create one scene, one figure, one panel, and point, pixel, marker,
-   basic segment, basic path, primitive triangle-list, RGBA8 image, basic/textured mesh, and basic
-   sphere visuals;
+   basic segment, basic path, primitive triangle-list, RGBA8 image, basic/textured/material mesh,
+   and basic sphere visuals;
 3. request WGSL scene emission with an external browser canvas color target;
 4. submit the emitted DRP2 stream to the WebGPU runtime;
 5. render points using the portable WebGPU lowering selected by scene emission.
@@ -348,8 +348,8 @@ Current evidence as of 2026-06-05:
    demos render and interact through `examples/webgpu/examples.html`.
 
 The supported browser-scene subset now covers point, pixel, basic marker, basic segment, basic
-path, primitive triangle-list, RGBA8 image, basic/textured mesh, basic sphere, panzoom, and a first
-3D sphere + textured mesh + arcball scene. The browser wrapper passes normalized WebGPU limits into the WASM
+path, primitive triangle-list, RGBA8 image, basic/textured/material mesh, basic sphere, panzoom, and
+a first 3D sphere + textured mesh + arcball scene. The browser wrapper passes normalized WebGPU limits into the WASM
 scene emitter before figure creation, and the old direct browser-side panzoom uniform mutation path
 has been retired from the release-visible demos. Retained browser runtime stress now tracks
 browser-owned frame resources and retires submitted references after explicit queue completion in

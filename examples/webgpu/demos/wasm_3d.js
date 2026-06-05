@@ -66,6 +66,11 @@ function addCube(scene, panel) {
   mesh.setF32("normal", cube.normals, cube.count);
   mesh.setF32("texcoords", cube.texcoords, cube.count);
   mesh.setTextureRGBA8(makeCheckerTexture(16, 16), 16, 16);
+  mesh.setMaterial({
+    model: "standard",
+    lightDirection: [-0.45, -0.38, 0.8],
+    standard: { roughness: 0.42, specular: 0.52, metallic: 0.04, rimStrength: 0.16 },
+  });
   scene.addVisual(panel, mesh);
 }
 

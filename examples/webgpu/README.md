@@ -35,8 +35,8 @@ just wasm-scene-smoke
 http://localhost:8765/examples/webgpu/examples.html?demo=wasm-2d
 ```
 
-The 3D WASM proof uses the same generic ABI wrapper with basic sphere impostors, a textured mesh,
-scene-owned camera, and arcball controller:
+The 3D WASM proof uses the same generic ABI wrapper with basic sphere impostors, a textured
+material-controlled mesh, scene-owned camera, and arcball controller:
 
 ```text
 http://localhost:8765/examples/webgpu/examples.html?demo=wasm-3d

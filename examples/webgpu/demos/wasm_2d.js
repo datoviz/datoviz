@@ -238,5 +238,11 @@ function addMesh(scene, panel) {
   mesh.setF32("position", positions, positions.length / 3);
   mesh.setRGBA8("color", colors, colors.length / 4);
   mesh.setF32("normal", normals, normals.length / 3);
+  mesh.setMaterial({
+    model: "standard",
+    baseColorFactor: [1.08, 0.96, 1.0, 1],
+    lightDirection: [-0.35, -0.55, 0.76],
+    standard: { roughness: 0.38, specular: 0.55, metallic: 0.08, rimStrength: 0.18 },
+  });
   scene.addVisual(panel, mesh);
 }

@@ -29,6 +29,7 @@ const DVZ_WASM_VISUAL_IMAGE = 6;
 const DVZ_WASM_VISUAL_MESH = 7;
 const DVZ_WASM_VISUAL_PRIMITIVE = 9;
 const DVZ_WASM_VISUAL_SPHERE = 10;
+const DVZ_MATERIAL_MODEL_STANDARD = 2;
 const DVZ_DRP2_PACKET_SETUP = 1;
 const DVZ_DRP2_PACKET_UPDATE = 2;
 const DVZ_DRP2_PACKET_FRAME = 3;
@@ -263,6 +264,7 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(!renderIncremental.includes("_dvz_wasm_api_emit("), "renderIncremental uses JSON ABI");
   requireOk(source.includes("_dvz_wasm_api_packet_status"), "browser wrapper ignores packet status");
   requireOk(source.includes("_dvz_wasm_api_visual_set_u32"), "browser wrapper cannot upload u32 attrs");
+  requireOk(source.includes("_dvz_wasm_api_visual_set_material"), "browser wrapper cannot set materials");
   requireOk(source.includes(".slice()"), "browser wrapper retains borrowed WASM packet views");
 }
 
@@ -763,6 +765,23 @@ function setU32(Module, visual, attrPtr, dataPtr, count, label) {
   expectStatus(Module._dvz_wasm_api_visual_set_u32(visual, attrPtr, dataPtr, count), 0, label);
 }
 
+function setStandardMaterial(Module, visual, label, roughness = 0.42, metallic = 0.04) {
+  expectStatus(
+    Module._dvz_wasm_api_visual_set_material(
+      visual,
+      DVZ_MATERIAL_MODEL_STANDARD,
+      1.0,
+      1.05, 0.96, 1.0, 1.0,
+      -0.45, -0.38, 0.8,
+      0.24, 0.82, 0.24, 26.0,
+      roughness, 0.52, metallic,
+      0.0, 0.0, 0.0, 0.16,
+    ),
+    0,
+    label,
+  );
+}
+
 function setCapabilities(
   Module,
   scene,
@@ -850,6 +869,21 @@ try {
     const pointForDiagnostics = Module._dvz_wasm_api_visual(diagnosticScene, DVZ_WASM_VISUAL_POINT, 0);
     requireOk(pointForDiagnostics !== 0, "diagnostic point creation failed");
     expectNoDiagnostics(Module, diagnosticScene, "successful visual creation clears diagnostics");
+    expectStatus(
+      Module._dvz_wasm_api_visual_set_material(
+        pointForDiagnostics,
+        DVZ_MATERIAL_MODEL_STANDARD,
+        1.0,
+        1.0, 1.0, 1.0, 1.0,
+        -0.45, -0.35, 0.82,
+        0.24, 0.82, 0.24, 26.0,
+        0.62, 0.34, 0.0,
+        0.0, 0.0, 0.0, 0.1,
+      ),
+      -1,
+      "unsupported material visual",
+    );
+    expectDiagnostics(Module, diagnosticScene, "WASM visual material update failed", "point material rejection");
 
     const badAttrNamePtr = allocCString(Module, "not_an_attr");
     const onePositionPtr = allocArray(Module, new Float32Array([0, 0, 0]));
@@ -1039,6 +1073,7 @@ try {
     setF32(Module, mesh, positionNamePtr, ptrs[23], meshPositions.length / 3, "api mesh position");
     setRGBA8(Module, mesh, colorNamePtr, ptrs[24], meshColors.length / 4, "api mesh color");
     setF32(Module, mesh, normalNamePtr, ptrs[25], meshNormals.length / 3, "api mesh normal");
+    setStandardMaterial(Module, mesh, "api mesh standard material");
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, mesh), 0, "api add mesh");
 
     const panzoom = Module._dvz_wasm_api_controller(scene, DVZ_CONTROLLER_TYPE_PANZOOM);
@@ -1064,6 +1099,10 @@ try {
     } finally {
       Module._free(updatedColorsPtr);
     }
+    setStandardMaterial(Module, mesh, "api mesh material update", 0.22, 0.16);
+    const materialUpdate = emitStream(Module, scene, figure, "generic 2D material update");
+    expect2DUpdateStreamShape(materialUpdate.stream, "generic 2D material update");
+    expectWriteCommands(materialUpdate.stream, "generic 2D material update");
     const grownPositionPtr = allocArray(Module, new Float32Array([...positions, -0.1, 0.75, 0]));
     try {
       expectStatus(
@@ -1102,11 +1141,12 @@ try {
       expectDraw(visualReload.stream, 6, 6, "generic 2D visual reload pixel");
       expectDraw(visualReload.stream, 6, 4, "generic 2D visual reload marker");
       expectDrawIndexed(visualReload.stream, 18, 1, "generic 2D visual reload segment");
+      expectDrawIndexed(visualReload.stream, 24, 1, "generic 2D visual reload path");
       expectDraw(visualReload.stream, 3, 1, "generic 2D visual reload primitive");
       expectDraw(visualReload.stream, 4, 1, "generic 2D visual reload image");
       expectDraw(visualReload.stream, 6, 1, "generic 2D visual reload mesh");
       expectStatus(
-        Module._dvz_wasm_api_visual_set_texture_rgba8(image, ptrs[19], imageWidth, imageHeight),
+        Module._dvz_wasm_api_visual_set_texture_rgba8(image, ptrs[22], imageWidth, imageHeight),
         0,
         "api image texture restore for split packet",
       );
@@ -1194,6 +1234,7 @@ try {
       0,
       "api 3D mesh texture",
     );
+    setStandardMaterial(Module, mesh3d, "api 3D mesh standard material", 0.42, 0.04);
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel3d, mesh3d), 0, "api 3D add mesh");
     const arcball = Module._dvz_wasm_api_controller(scene3d, DVZ_CONTROLLER_TYPE_ARCBALL);
     expectStatus(Module._dvz_wasm_api_panel_bind_controller(panel3d, arcball, DVZ_DIM_MASK_XYZ), 0, "api bind arcball");

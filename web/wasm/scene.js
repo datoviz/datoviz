@@ -17,6 +17,9 @@ const DVZ_POINTER_BUTTON_NONE = 0;
 const DVZ_POINTER_BUTTON_LEFT = 1;
 const DVZ_POINTER_BUTTON_MIDDLE = 2;
 const DVZ_POINTER_BUTTON_RIGHT = 3;
+const DVZ_MATERIAL_MODEL_UNLIT = 0;
+const DVZ_MATERIAL_MODEL_PHONG = 1;
+const DVZ_MATERIAL_MODEL_STANDARD = 2;
 
 export const DvzWasmVisual = Object.freeze({
   point: 1,
@@ -66,6 +69,23 @@ function browserCapabilityArgs(capabilities = {}) {
     ),
     maxSampleCount: Math.max(1, ...sampleCounts),
   };
+}
+
+function materialModelCode(model) {
+  switch (model) {
+    case "unlit":
+    case DVZ_MATERIAL_MODEL_UNLIT:
+      return DVZ_MATERIAL_MODEL_UNLIT;
+    case "phong":
+    case undefined:
+    case DVZ_MATERIAL_MODEL_PHONG:
+      return DVZ_MATERIAL_MODEL_PHONG;
+    case "standard":
+    case DVZ_MATERIAL_MODEL_STANDARD:
+      return DVZ_MATERIAL_MODEL_STANDARD;
+    default:
+      throw new Error(`unsupported material model ${model}`);
+  }
 }
 
 function wasmModuleUrl() {
@@ -536,6 +556,41 @@ export class DatovizWasmVisualHandle {
       }
     } finally {
       this.Module._free(dataPtr);
+    }
+  }
+
+  setMaterial(options = {}) {
+    const model = materialModelCode(options.model);
+    const base = options.baseColorFactor ?? [1, 1, 1, 1];
+    const light = options.lightDirection ?? [-0.45, -0.35, 0.82];
+    const phong = options.phong ?? {};
+    const standard = options.standard ?? {};
+    const emissive = standard.emissive ?? [0, 0, 0];
+    const status = this.Module._dvz_wasm_api_visual_set_material(
+      this.handle,
+      model,
+      options.opacity ?? 1,
+      base[0] ?? 1,
+      base[1] ?? 1,
+      base[2] ?? 1,
+      base[3] ?? 1,
+      light[0] ?? -0.45,
+      light[1] ?? -0.35,
+      light[2] ?? 0.82,
+      phong.ambient ?? 0.24,
+      phong.diffuse ?? 0.82,
+      phong.specular ?? 0.24,
+      phong.shininess ?? 26,
+      standard.roughness ?? 0.62,
+      standard.specular ?? 0.34,
+      standard.metallic ?? 0,
+      emissive[0] ?? 0,
+      emissive[1] ?? 0,
+      emissive[2] ?? 0,
+      standard.rimStrength ?? 0.1,
+    );
+    if (status !== 0) {
+      throw new Error(this._diagnosticMessage(`dvz_wasm_api_visual_set_material failed with ${status}`));
     }
   }
 }

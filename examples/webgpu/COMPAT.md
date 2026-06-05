@@ -141,6 +141,14 @@ Current status as of this note:
   panzoom stream and the 3D sphere/textured mesh/arcball stream; `just webgpu-browser-smoke`
   rendered both WASM demos, exercised interaction, and reported dashboard WASM scene checks
   `2 pass, 0 fail`.
+- recorded local mesh-material promotion proof on 2026-06-05: `just test
+  test_scene_visual_material_setter` and `just test test_scene_visual_internal_material_state`
+  passed; `just webgpu-fixture-preflight` passed `39` strict positive/WebGPU stream rows; `just
+  webgpu-runner-smoke` passed `37` positive fixtures, `2` WebGPU streams, and `82` negative parity
+  fixtures; `just wasm-scene-smoke` applied standard material parameters to 2D and 3D mesh visuals,
+  rejected unsupported point material updates, and replayed retained material update streams; `just
+  webgpu-browser-smoke` rendered both WASM demos, exercised interaction, and reported dashboard
+  WASM scene checks `2 pass, 0 fail`.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

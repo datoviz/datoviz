@@ -624,6 +624,49 @@ int dvz_wasm_api_visual_set_texture_rgba8(
 
 
 
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_visual_set_material(
+    uint32_t visual_handle, uint32_t model, float opacity, float base_r, float base_g,
+    float base_b, float base_a, float light_x, float light_y, float light_z, float ambient,
+    float diffuse, float specular, float shininess, float roughness, float standard_specular,
+    float metallic, float emissive_r, float emissive_g, float emissive_b, float rim_strength)
+{
+    DvzWasmApiVisual* visual = _visual(visual_handle);
+    if (visual == NULL || visual->owner == NULL || visual->visual == NULL)
+        return _fail(visual != NULL ? visual->owner : NULL, "invalid WASM material visual handle");
+
+    _clear_payload(visual->owner);
+    DvzMaterialDesc material = model == DVZ_MATERIAL_MODEL_STANDARD ? dvz_standard_material_desc()
+                               : model == DVZ_MATERIAL_MODEL_PHONG ? dvz_phong_material_desc()
+                                                                   : dvz_material_desc();
+    material.model = (DvzMaterialModel)model;
+    material.alpha_mode = DVZ_ALPHA_OPAQUE;
+    material.opacity = opacity;
+    material.base_color_factor[0] = base_r;
+    material.base_color_factor[1] = base_g;
+    material.base_color_factor[2] = base_b;
+    material.base_color_factor[3] = base_a;
+    material.light_direction[0] = light_x;
+    material.light_direction[1] = light_y;
+    material.light_direction[2] = light_z;
+    material.phong.ambient = ambient;
+    material.phong.diffuse = diffuse;
+    material.phong.specular = specular;
+    material.phong.shininess = shininess;
+    material.standard.roughness = roughness;
+    material.standard.specular = standard_specular;
+    material.standard.metallic = metallic;
+    material.standard.emissive[0] = emissive_r;
+    material.standard.emissive[1] = emissive_g;
+    material.standard.emissive[2] = emissive_b;
+    material.standard.rim_strength = rim_strength;
+    if (dvz_visual_set_material(visual->visual, &material) != 0)
+        return _fail(visual->owner, "WASM visual material update failed");
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Input                                                                                        */
 /*************************************************************************************************/

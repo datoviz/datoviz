@@ -26,7 +26,7 @@ Supported visual and interaction families:
 - basic path visuals;
 - primitive triangle-list visuals;
 - RGBA8 2D image visuals;
-- basic and textured mesh visuals;
+- basic, textured, and material-controlled mesh visuals;
 - basic sphere visuals;
 - 2D panzoom controller input;
 - one basic 3D sphere + textured mesh scene with camera and arcball controller input.
@@ -76,7 +76,7 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Setup/update/frame resource model | active through split binary packets and retained browser runtime state |
 | WGSL shader modules | supported and required for portable browser execution |
 | Vulkan-specific modules and presentation | unsupported in WASM; native-only |
-| Scene visual parity | limited to point, pixel, basic marker, basic segment, basic path, primitive, RGBA8 image, basic/textured mesh, and basic sphere demos |
+| Scene visual parity | limited to point, pixel, basic marker, basic segment, basic path, primitive, RGBA8 image, basic/textured/material mesh, and basic sphere demos |
 | Controller parity | limited to panzoom and one 3D arcball proof |
 | Compute-to-render parity | experimental; fixture coverage exists, gallery-level behavior remains a separate release lane |
 | Query/picking/readback scene parity | deferred for live WASM scenes |
@@ -191,6 +191,19 @@ Last local release proof recorded on 2026-06-04:
   negative fixtures passed;
 - `just wasm-scene-smoke`: 2D and 3D WASM scene streams emitted, preflighted, and replayed by the
   JS runner smoke;
+- `just webgpu-browser-smoke`: 2D and 3D WASM pages rendered, browser interaction was exercised,
+  and dashboard WASM scene checks reported `2 pass, 0 fail`.
+
+Mesh material promotion proof recorded on 2026-06-05:
+
+- `just test test_scene_visual_material_setter`: passed;
+- `just test test_scene_visual_internal_material_state`: passed;
+- `just webgpu-fixture-preflight`: `39` passed, `0` failed;
+- `just webgpu-runner-smoke`: `37` positive fixtures, `2` WebGPU streams, and `82` semantic
+  negative fixtures passed;
+- `just wasm-scene-smoke`: WASM material setters applied standard material parameters to 2D and 3D
+  mesh visuals, rejected unsupported point material updates, and emitted retained material update
+  streams;
 - `just webgpu-browser-smoke`: 2D and 3D WASM pages rendered, browser interaction was exercised,
   and dashboard WASM scene checks reported `2 pass, 0 fail`.
 
