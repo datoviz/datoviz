@@ -42,6 +42,7 @@
 #define DVZ_WASM_API_MAX_WRAPPERS 256
 #define DVZ_WASM_VISUAL_POINT 1
 #define DVZ_WASM_VISUAL_PIXEL 2
+#define DVZ_WASM_VISUAL_MARKER 3
 #define DVZ_WASM_VISUAL_IMAGE 6
 #define DVZ_WASM_VISUAL_MESH 7
 #define DVZ_WASM_VISUAL_PRIMITIVE 9
@@ -367,6 +368,9 @@ uint32_t dvz_wasm_api_visual(uint32_t scene_handle, uint32_t visual_type, uint32
     case DVZ_WASM_VISUAL_PIXEL:
         visual->visual = dvz_pixel(scene->scene, flags);
         break;
+    case DVZ_WASM_VISUAL_MARKER:
+        visual->visual = dvz_marker(scene->scene, flags);
+        break;
     case DVZ_WASM_VISUAL_PRIMITIVE:
         visual->visual = dvz_primitive(scene->scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
         break;
@@ -557,6 +561,25 @@ int dvz_wasm_api_visual_set_rgba8(
     _clear_payload(visual->owner);
     if (dvz_visual_set_data(visual->visual, attr, data, item_count) != 0)
         return _fail_upload(visual->owner, "rgba8", attr, item_count);
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_visual_set_u32(
+    uint32_t visual_handle, const char* attr, const uint32_t* data, uint32_t item_count)
+{
+    DvzWasmApiVisual* visual = _visual(visual_handle);
+    if (
+        visual == NULL || visual->owner == NULL || visual->visual == NULL || attr == NULL ||
+        data == NULL || item_count == 0)
+    {
+        return _fail(visual != NULL ? visual->owner : NULL, "invalid WASM u32 visual upload");
+    }
+    _clear_payload(visual->owner);
+    if (dvz_visual_set_data(visual->visual, attr, data, item_count) != 0)
+        return _fail_upload(visual->owner, "u32", attr, item_count);
     return 0;
 }
 

@@ -5,6 +5,7 @@ export const demo = {
     const panel = scene.panelFull();
     addPoints(scene, panel);
     addPixels(scene, panel);
+    addMarkers(scene, panel);
     addPrimitive(scene, panel);
     addImage(scene, panel);
     addMesh(scene, panel);
@@ -66,6 +67,35 @@ function addPixels(scene, panel) {
   pixels.setRGBA8("color", colors, count);
   pixels.setF32("pixel_size", sizes, count);
   scene.addVisual(panel, pixels);
+}
+
+function addMarkers(scene, panel) {
+  const count = 7;
+  const positions = new Float32Array(count * 3);
+  const colors = new Uint8Array(count * 4);
+  const diameters = new Float32Array(count);
+  const angles = new Float32Array(count);
+  const symbols = new Uint32Array([0, 1, 2, 3, 4, 5, 6]);
+  for (let i = 0; i < count; i++) {
+    const t = i / Math.max(1, count - 1);
+    positions[3 * i + 0] = -0.82 + 0.58 * t;
+    positions[3 * i + 1] = -0.1 + 0.12 * Math.sin(i * 1.7);
+    positions[3 * i + 2] = 0.04;
+    colors[4 * i + 0] = Math.round(245 - 120 * t);
+    colors[4 * i + 1] = Math.round(110 + 130 * t);
+    colors[4 * i + 2] = Math.round(95 + 125 * (1.0 - t));
+    colors[4 * i + 3] = 230;
+    diameters[i] = 10 + 4 * (i % 3);
+    angles[i] = 0.18 * i;
+  }
+
+  const markers = scene.visual("marker");
+  markers.setF32("position", positions, count);
+  markers.setRGBA8("color", colors, count);
+  markers.setF32("diameter", diameters, count);
+  markers.setF32("angle", angles, count);
+  markers.setU32("symbol", symbols, count);
+  scene.addVisual(panel, markers);
 }
 
 function addPrimitive(scene, panel) {

@@ -146,6 +146,8 @@ static const char* _vertex_format_name(uint32_t format)
         return "unorm8x4";
     case VK_FORMAT_R8_UINT:
         return "uint8";
+    case VK_FORMAT_R32_UINT:
+        return "uint32";
     default:
         return NULL;
     }

@@ -176,7 +176,7 @@ that family until earlier rows are stable.
 | image | retained RGBA/scalar image paths | RGBA8 image first, scalar/colormap later | current | add scalar/colormap variants after query/colorbar path is stable |
 | mesh | basic/textured/lit mesh paths | basic mesh first, textured mesh next | current/next | promote texture sampling and material subset with WGSL proof |
 | pixel | retained pixel visual | dense 2D pixel visual | current | keep fixture/browser evidence and promote buffer-backed attrs with point |
-| marker | retained marker visual | marker glyph/atlas subset | next | settle marker shader variants, atlas assets, picking diagnostics |
+| marker | retained marker visual | built-in marker subset current; glyph/atlas subset next | current/next | keep built-in marker evidence; settle atlas variants and picking diagnostics |
 | segment/path/stroke | retained path and stroke-shaped paths | portable line/path subset | next | WGSL stroke/path shaders, joins/caps policy, browser proof |
 | text/glyph | retained text and glyph visuals | MSDF or bitmap text subset | later | font/atlas packaging, WGSL text shaders, shaping limits |
 | labels | label field and readback paths | label rendering and label probe subset | later | texture/label formats, query/readback, diagnostics |

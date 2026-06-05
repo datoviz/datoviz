@@ -21,6 +21,7 @@ const DVZ_POINTER_BUTTON_RIGHT = 3;
 export const DvzWasmVisual = Object.freeze({
   point: 1,
   pixel: 2,
+  marker: 3,
   image: 6,
   mesh: 7,
   primitive: 9,
@@ -502,6 +503,20 @@ export class DatovizWasmVisualHandle {
       const status = this.Module._dvz_wasm_api_visual_set_rgba8(this.handle, attrPtr, dataPtr, itemCount);
       if (status !== 0) {
         throw new Error(this._diagnosticMessage(`dvz_wasm_api_visual_set_rgba8(${attr}) failed with ${status}`));
+      }
+    } finally {
+      this.Module._free(attrPtr);
+      this.Module._free(dataPtr);
+    }
+  }
+
+  setU32(attr, values, itemCount) {
+    const attrPtr = allocCString(this.Module, attr);
+    const dataPtr = allocArray(this.Module, values);
+    try {
+      const status = this.Module._dvz_wasm_api_visual_set_u32(this.handle, attrPtr, dataPtr, itemCount);
+      if (status !== 0) {
+        throw new Error(this._diagnosticMessage(`dvz_wasm_api_visual_set_u32(${attr}) failed with ${status}`));
       }
     } finally {
       this.Module._free(attrPtr);

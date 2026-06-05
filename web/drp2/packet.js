@@ -116,7 +116,7 @@ function textureFormat(format) {
 function vertexFormat(format) {
   return new Map([
     [100, "float32"], [103, "float32x2"], [106, "float32x3"],
-    [109, "float32x4"], [37, "unorm8x4"], [13, "uint8"],
+    [109, "float32x4"], [37, "unorm8x4"], [13, "uint8"], [98, "uint32"],
   ]).get(format) ?? null;
 }
 
