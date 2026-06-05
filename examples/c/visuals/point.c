@@ -10,9 +10,8 @@
  * Style: visuals, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c visuals/point
- * Run:    ./build/examples/c/visuals/point
- * Smoke:  ./build/examples/c/visuals/point 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/visuals/point 1
+ * Run:    ./build/examples/c/visuals/point --live
+ * Smoke:  ./build/examples/c/visuals/point --png
  */
 
 
@@ -27,10 +26,9 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -43,6 +41,19 @@
 #define POINT_COUNT 960u
 
 static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct PointVisualState
+{
+    vec3* positions;
+    float* values;
+    float* diameters;
+} PointVisualState;
 
 
 
@@ -115,12 +126,155 @@ static bool _upload_points(
 
 
 
+/**
+ * Free the retained point buffers.
+ *
+ * @param state point visual state
+ */
+static void _free_state(PointVisualState* state)
+{
+    if (state == NULL)
+        return;
+    dvz_free(state->diameters);
+    dvz_free(state->values);
+    dvz_free(state->positions);
+    dvz_free(state);
+}
+
+
+
+/*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Initialize the retained 2D point visual scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
+
+    PointVisualState* state = (PointVisualState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+
+    state->positions = (vec3*)dvz_calloc(POINT_COUNT, sizeof(*state->positions));
+    state->values = (float*)dvz_calloc(POINT_COUNT, sizeof(*state->values));
+    state->diameters = (float*)dvz_calloc(POINT_COUNT, sizeof(*state->diameters));
+    if (state->positions == NULL || state->values == NULL || state->diameters == NULL)
+        goto error;
+
+    _fill_points(state->positions, state->values, state->diameters);
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        goto error;
+
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        goto error;
+    example_graphite_cyan_set_panel_background(panel);
+
+    DvzVisual* point = dvz_point(ctx->scene, 0);
+    if (point == NULL)
+        goto error;
+
+    int rc = dvz_visual_set_attr_format(point, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32);
+    if (rc != 0)
+        goto error;
+
+    DvzScale* scale = example_graphite_cyan_color_scale(ctx->scene, 0.0, 1.0);
+    if (scale == NULL)
+        goto error;
+
+    rc = dvz_visual_set_scale(point, "color", scale);
+    if (rc != 0)
+        goto error;
+
+    if (!_upload_points(point, state->positions, state->values, state->diameters))
+        goto error;
+
+    DvzPointStyleDesc style = dvz_point_style_desc();
+    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
+    style.stroke_width = 0.0f;
+    rc = dvz_point_set_style(point, &style);
+    if (rc != 0)
+        goto error;
+
+    rc = dvz_visual_set_depth_test(point, false);
+    if (rc != 0)
+        goto error;
+
+    rc = dvz_visual_set_alpha_mode(point, DVZ_ALPHA_BLENDED);
+    if (rc != 0)
+        goto error;
+
+    rc = dvz_panel_add_visual(panel, point, NULL);
+    if (rc != 0)
+        goto error;
+
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    if (panzoom == NULL)
+        goto error;
+
+    if (out_user != NULL)
+        *out_user = state;
+    return true;
+
+error:
+    _free_state(state);
+    return false;
+}
+
+
+
+/**
+ * Destroy the retained 2D point visual scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    _free_state((PointVisualState*)user);
+}
+
+
+
+/**
+ * Return the point visual scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _point_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "visual_point",
+        .title = "visual_point",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 /**
- * Run the retained 2D point visual example.
+ * Run the retained 2D point visual example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -128,85 +282,6 @@ static bool _upload_points(
  */
 int main(int argc, char** argv)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    vec3* positions = NULL;
-    float* values = NULL;
-    float* diameters = NULL;
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("visual_point");
-
-    positions = (vec3*)dvz_calloc(POINT_COUNT, sizeof(*positions));
-    values = (float*)dvz_calloc(POINT_COUNT, sizeof(*values));
-    diameters = (float*)dvz_calloc(POINT_COUNT, sizeof(*diameters));
-    EXAMPLE_CHECK(
-        positions != NULL && values != NULL && diameters != NULL, "point allocation failed");
-
-    _fill_points(positions, values, diameters);
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    example_graphite_cyan_set_panel_background(panel);
-
-    DvzVisual* point = dvz_point(scene, 0);
-    EXAMPLE_CHECK(point != NULL, "dvz_point() failed");
-
-    int rc = dvz_visual_set_attr_format(point, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_attr_format() failed");
-
-    DvzScale* scale = example_graphite_cyan_color_scale(scene, 0.0, 1.0);
-    EXAMPLE_CHECK(scale != NULL, "example_graphite_cyan_color_scale() failed");
-
-    rc = dvz_visual_set_scale(point, "color", scale);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_scale() failed");
-
-    bool ok = _upload_points(point, positions, values, diameters);
-    EXAMPLE_CHECK(ok, "point data upload failed");
-
-    DvzPointStyleDesc style = dvz_point_style_desc();
-    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
-    rc = dvz_point_set_style(point, &style);
-    EXAMPLE_CHECK(rc == 0, "dvz_point_set_style() failed");
-
-    rc = dvz_visual_set_depth_test(point, false);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_depth_test() failed");
-
-    rc = dvz_visual_set_alpha_mode(point, DVZ_ALPHA_BLENDED);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_alpha_mode() failed");
-
-    rc = dvz_panel_add_visual(panel, point, NULL);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_point");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
-    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
-
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    dvz_free(diameters);
-    dvz_free(values);
-    dvz_free(positions);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    DvzScenarioSpec spec = _point_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
