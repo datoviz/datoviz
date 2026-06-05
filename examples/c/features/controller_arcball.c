@@ -10,9 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/controller_arcball
- * Run:    ./build/examples/c/features/controller_arcball
- * Smoke:  ./build/examples/c/features/controller_arcball 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/features/controller_arcball 1
+ * Run:    ./build/examples/c/features/controller_arcball --live
+ * Smoke:  ./build/examples/c/features/controller_arcball --png
  */
 
 
@@ -23,12 +22,13 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
-#include "datoviz/app.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -38,6 +38,17 @@
 
 #define WIDTH  1600u
 #define HEIGHT 1200u
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct ControllerArcballState
+{
+    DvzGeometry* geometry;
+} ControllerArcballState;
 
 
 
@@ -84,35 +95,36 @@ static bool _add_arcball_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry** ou
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the arcball-controller feature example.
+ * Initialize the arcball-controller feature scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_controller_arcball");
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    DvzGeometry* geometry = NULL;
+    ControllerArcballState* state = (ControllerArcballState*)calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
     example_graphite_cyan_set_panel_background(panel);
 
     DvzCameraDesc camera = dvz_camera_desc();
@@ -124,35 +136,77 @@ int main(int argc, char** argv)
     camera.fov_y = 0.68f;
     camera.near = 0.05f;
     camera.far = 100.0f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera), "dvz_panel_set_camera() failed");
-    EXAMPLE_CHECK(_add_arcball_mesh(scene, panel, &geometry), "arcball mesh setup failed");
+    if (!dvz_panel_set_camera(panel, &camera))
+        return false;
+    if (!_add_arcball_mesh(ctx->scene, panel, &state->geometry))
+        return false;
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "controller_arcball");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzController* controller = dvz_arcball(scene, NULL);
-    EXAMPLE_CHECK(controller != NULL, "dvz_arcball() failed");
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    if (controller == NULL)
+        return false;
     DvzArcball* arcball = dvz_controller_arcball(controller);
-    EXAMPLE_CHECK(arcball != NULL, "dvz_controller_arcball() failed");
-    EXAMPLE_CHECK(
-        dvz_view_bind_controller(win, panel, controller, DVZ_DIM_MASK_XYZ) == 0,
-        "dvz_view_bind_controller() failed");
+    if (arcball == NULL)
+        return false;
+    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return false;
     dvz_arcball_set(arcball, (vec3){+0.58f, -0.16f, +0.32f});
+    return true;
+}
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
 
-cleanup:
-    if (geometry != NULL)
-        dvz_geometry_destroy(geometry);
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+/**
+ * Destroy the arcball-controller feature scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    ControllerArcballState* state = (ControllerArcballState*)user;
+    if (state == NULL)
+        return;
+    if (state->geometry != NULL)
+        dvz_geometry_destroy(state->geometry);
+    free(state);
+}
+
+
+
+/**
+ * Return the arcball-controller scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _controller_arcball_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_controller_arcball",
+        .title = "controller_arcball",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the arcball-controller feature example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _controller_arcball_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

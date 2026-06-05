@@ -10,9 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/controller_fly
- * Run:    ./build/examples/c/features/controller_fly
- * Smoke:  ./build/examples/c/features/controller_fly 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/features/controller_fly 1
+ * Run:    ./build/examples/c/features/controller_fly --live
+ * Smoke:  ./build/examples/c/features/controller_fly --png
  */
 
 
@@ -23,12 +22,13 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
-#include "datoviz/app.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -38,6 +38,17 @@
 
 #define WIDTH  1600u
 #define HEIGHT 1200u
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct ControllerFlyState
+{
+    DvzGeometry* geometry;
+} ControllerFlyState;
 
 
 
@@ -84,43 +95,39 @@ static bool _add_fly_cube(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_ge
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the fly-controller feature example.
+ * Initialize the fly-controller feature scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_controller_fly");
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    DvzGeometry* geometry = NULL;
+    ControllerFlyState* state = (ControllerFlyState*)calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
     example_graphite_cyan_set_panel_background(panel);
-    EXAMPLE_CHECK(_add_fly_cube(scene, panel, &geometry), "fly cube setup failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "controller_fly");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    if (!_add_fly_cube(ctx->scene, panel, &state->geometry))
+        return false;
 
     DvzFlyDesc desc = dvz_fly_desc();
     desc.mode = DVZ_FLY_MODE_PLANE;
@@ -135,23 +142,74 @@ int main(int argc, char** argv)
     desc.up[2] = 1.0f;
     desc.speed = 0.70f;
 
-    DvzFly* fly = dvz_view_fly(win, panel, &desc);
-    EXAMPLE_CHECK(fly != NULL, "failed to create or bind fly controller");
+    DvzController* controller = dvz_fly(ctx->scene, &desc);
+    if (controller == NULL)
+        return false;
+    DvzFly* fly = dvz_controller_fly(controller);
+    if (fly == NULL)
+        return false;
+    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return false;
     dvz_fly_move_forward(fly, +0.34f);
     dvz_fly_move_right(fly, +0.18f);
     dvz_fly_move_up(fly, +0.08f);
+    return true;
+}
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
 
-cleanup:
-    if (geometry != NULL)
-        dvz_geometry_destroy(geometry);
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+/**
+ * Destroy the fly-controller feature scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    ControllerFlyState* state = (ControllerFlyState*)user;
+    if (state == NULL)
+        return;
+    if (state->geometry != NULL)
+        dvz_geometry_destroy(state->geometry);
+    free(state);
+}
+
+
+
+/**
+ * Return the fly-controller scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _controller_fly_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_controller_fly",
+        .title = "controller_fly",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the fly-controller feature example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _controller_fly_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
