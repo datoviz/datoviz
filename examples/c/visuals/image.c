@@ -10,9 +10,8 @@
  * Style: visuals, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c visuals/image
- * Run:    ./build/examples/c/visuals/image
- * Smoke:  ./build/examples/c/visuals/image 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/visuals/image 1
+ * Run:    ./build/examples/c/visuals/image --live
+ * Smoke:  ./build/examples/c/visuals/image --png
  */
 
 
@@ -24,14 +23,12 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -45,6 +42,17 @@
 #define FIELD_HEIGHT 240u
 
 static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct ImageVisualState
+{
+    float* values;
+} ImageVisualState;
 
 
 
@@ -238,11 +246,109 @@ static bool _add_image(DvzScene* scene, DvzPanel* panel, DvzScale* scale, float*
 
 
 /*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Initialize the retained image visual scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
+
+    ImageVisualState* state = (ImageVisualState*)dvz_malloc(sizeof(*state));
+    if (state == NULL)
+        return false;
+    state->values = NULL;
+
+    state->values = (float*)dvz_malloc(FIELD_WIDTH * FIELD_HEIGHT * sizeof(*state->values));
+    if (state->values == NULL)
+    {
+        dvz_free(state);
+        return false;
+    }
+    _fill_field(state->values);
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        goto error;
+
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        goto error;
+    example_graphite_cyan_set_panel_background(panel);
+
+    DvzScale* scale = _add_image_scale(ctx->scene);
+    if (scale == NULL)
+        goto error;
+
+    if (!_add_image(ctx->scene, panel, scale, state->values))
+        goto error;
+
+    if (out_user != NULL)
+        *out_user = state;
+    return true;
+
+error:
+    dvz_free(state->values);
+    dvz_free(state);
+    return false;
+}
+
+
+
+/**
+ * Destroy the retained image visual scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+
+    ImageVisualState* state = (ImageVisualState*)user;
+    if (state == NULL)
+        return;
+    dvz_free(state->values);
+    dvz_free(state);
+}
+
+
+
+/**
+ * Return the image visual scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _image_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "visual_image",
+        .title = "visual_image",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 /**
- * Run the retained image visual example.
+ * Run the retained image visual example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -250,52 +356,6 @@ static bool _add_image(DvzScene* scene, DvzPanel* panel, DvzScale* scale, float*
  */
 int main(int argc, char** argv)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    float* values = NULL;
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("visual_image");
-
-    values = (float*)dvz_malloc(FIELD_WIDTH * FIELD_HEIGHT * sizeof(*values));
-    EXAMPLE_CHECK(values != NULL, "field allocation failed");
-    _fill_field(values);
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    example_graphite_cyan_set_panel_background(panel);
-
-    DvzScale* scale = _add_image_scale(scene);
-    EXAMPLE_CHECK(scale != NULL, "adding image scale failed");
-
-    bool ok = _add_image(scene, panel, scale, values);
-    EXAMPLE_CHECK(ok, "adding image visual failed");
-    dvz_free(values);
-    values = NULL;
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_image");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    dvz_free(values);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    DvzScenarioSpec spec = _image_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
