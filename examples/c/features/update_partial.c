@@ -10,8 +10,9 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/update_partial
- * Run:    ./build/examples/c/features/update_partial
- * Smoke:  ./build/examples/c/features/update_partial 1
+ * Run:    ./build/examples/c/features/update_partial --live
+ * Smoke:  ./build/examples/c/features/update_partial --png
+ * Video:  ./build/examples/c/features/update_partial --offscreen-record 120
  */
 
 
@@ -20,12 +21,13 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
 #include <stdint.h>
 
-#include "datoviz/app.h"
+#include "_alloc.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -40,21 +42,31 @@
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct UpdatePartialState
+{
+    DvzVisual* point;
+    bool updated;
+} UpdatePartialState;
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
 /*************************************************************************************************/
 
 /**
- * Run a minimal partial point-data update example.
+ * Upload the initial point arrays.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param visual point visual
+ * @return true when the upload succeeds
  */
-int main(int argc, char** argv)
+static bool _upload_initial_points(DvzVisual* visual)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
+    if (visual == NULL)
+        return false;
 
     vec3 positions[POINT_COUNT] = {
         {-0.72f, -0.30f, 0.0f}, {-0.44f, -0.30f, 0.0f}, {-0.16f, -0.30f, 0.0f},
@@ -70,60 +82,160 @@ int main(int argc, char** argv)
     };
     float diameters[POINT_COUNT] = {32.0f, 36.0f, 42.0f, 42.0f, 36.0f, 32.0f};
 
-    vec3 moved_positions[2] = {
-        {-0.16f, +0.34f, 0.0f},
-        {+0.16f, +0.34f, 0.0f},
-    };
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    example_graphite_cyan_set_panel_background(panel);
-
-    DvzVisual* point = dvz_point(scene, 0);
-    EXAMPLE_CHECK(point != NULL, "dvz_point() failed");
-
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
         {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
     };
-    int rc = dvz_visual_set_data_many(point, updates, 3);
-    EXAMPLE_CHECK(rc == 0, "initial point data upload failed");
+    return dvz_visual_set_data_many(visual, updates, 3) == 0;
+}
 
-    rc = dvz_visual_set_data_range(point, "position", moved_positions, 2, 2);
-    EXAMPLE_CHECK(rc == 0, "partial point position update failed");
+
+
+/**
+ * Move the middle two points with a retained data-range update.
+ *
+ * @param visual point visual
+ * @return true when the update succeeds
+ */
+static bool _upload_partial_positions(DvzVisual* visual)
+{
+    if (visual == NULL)
+        return false;
+
+    vec3 moved_positions[2] = {
+        {-0.16f, +0.34f, 0.0f},
+        {+0.16f, +0.34f, 0.0f},
+    };
+
+    return dvz_visual_set_data_range(visual, "position", moved_positions, 2, 2) == 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Initialize the partial point-data update scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL || out_user == NULL)
+        return false;
+
+    UpdatePartialState* state = (UpdatePartialState*)dvz_calloc(1, sizeof(UpdatePartialState));
+    if (state == NULL)
+        return false;
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        goto error;
+
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        goto error;
+    example_graphite_cyan_set_panel_background(panel);
+
+    state->point = dvz_point(ctx->scene, 0);
+    if (state->point == NULL)
+        goto error;
+    if (!_upload_initial_points(state->point))
+        goto error;
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
     style.stroke_width = 0.0f;
-    rc = dvz_point_set_style(point, &style);
-    EXAMPLE_CHECK(rc == 0, "dvz_point_set_style() failed");
+    if (dvz_point_set_style(state->point, &style) != 0)
+        goto error;
 
-    rc = dvz_visual_set_depth_test(point, false);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_depth_test() failed");
+    if (dvz_visual_set_depth_test(state->point, false) != 0)
+        goto error;
 
-    rc = dvz_panel_add_visual(panel, point, NULL);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
+    if (dvz_panel_add_visual(panel, state->point, NULL) != 0)
+        goto error;
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
+    *out_user = state;
+    return true;
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "update_partial");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+error:
+    dvz_free(state);
+    return false;
+}
 
-    dvz_app_run(app, example_frame_count_any(argc, argv));
-    ret = 0;
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+/**
+ * Apply the retained range update once after one second of scenario time.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    if (ctx == NULL || user == NULL)
+        return;
+
+    UpdatePartialState* state = (UpdatePartialState*)user;
+    if (!state->updated && ctx->time >= 1.0)
+        state->updated = _upload_partial_positions(state->point);
+}
+
+
+
+/**
+ * Destroy the partial point-data update scenario.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
+}
+
+
+
+/**
+ * Return the partial update scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _update_partial_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_update_partial",
+        .title = "update_partial",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .frame = _scenario_frame,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run a minimal partial point-data update example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _update_partial_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
