@@ -4,14 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* visibility - retained visual visibility toggled before rendering.
+/* visibility - retained visual visibility toggled on a runner frame.
  *
  * Scenario: feature.visibility
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/visibility
- * Run:    ./build/examples/c/features/visibility
- * Smoke:  ./build/examples/c/features/visibility 1
+ * Run:    ./build/examples/c/features/visibility --live
+ * Smoke:  ./build/examples/c/features/visibility --png
+ * Video:  ./build/examples/c/features/visibility --offscreen-record 120
  */
 
 
@@ -23,10 +24,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "datoviz/app.h"
+#include "_alloc.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -37,6 +38,18 @@
 #define WIDTH       1600u
 #define HEIGHT      1200u
 #define POINT_COUNT 1u
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct VisibilityState
+{
+    DvzVisual* hidden_point;
+    bool revealed;
+} VisibilityState;
 
 
 
@@ -52,10 +65,12 @@
  * @param x point X position
  * @param color point color
  * @param visible whether the visual should render
+ * @param out_visual created visual output
  * @return true when the visual was added
  */
 static bool _add_point_visual(
-    DvzScene* scene, DvzPanel* panel, float x, DvzColor color, bool visible)
+    DvzScene* scene, DvzPanel* panel, float x, DvzColor color, bool visible,
+    DvzVisual** out_visual)
 {
     const vec3 positions[POINT_COUNT] = {{x, 0.0f, 0.0f}};
     const DvzColor colors[POINT_COUNT] = {color};
@@ -82,7 +97,120 @@ static bool _add_point_visual(
         return false;
 
     dvz_visual_set_visible(point, visible);
-    return dvz_panel_add_visual(panel, point, NULL) == 0;
+    if (dvz_panel_add_visual(panel, point, NULL) != 0)
+        return false;
+
+    if (out_visual != NULL)
+        *out_visual = point;
+    return true;
+}
+
+
+
+/*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Initialize the retained visual visibility scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL || out_user == NULL)
+        return false;
+
+    VisibilityState* state = (VisibilityState*)dvz_calloc(1, sizeof(VisibilityState));
+    if (state == NULL)
+        return false;
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        goto error;
+
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        goto error;
+    example_graphite_cyan_set_panel_background(panel);
+
+    if (!_add_point_visual(
+            ctx->scene, panel, -0.42f,
+            example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY), true, NULL))
+        goto error;
+    if (!_add_point_visual(
+            ctx->scene, panel, 0.0f, example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ERROR), false,
+            &state->hidden_point))
+        goto error;
+    if (!_add_point_visual(
+            ctx->scene, panel, +0.42f,
+            example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY), true, NULL))
+        goto error;
+
+    *out_user = state;
+    return true;
+
+error:
+    dvz_free(state);
+    return false;
+}
+
+
+
+/**
+ * Reveal the initially hidden middle point once after one second.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    if (ctx == NULL || user == NULL)
+        return;
+
+    VisibilityState* state = (VisibilityState*)user;
+    if (!state->revealed && ctx->time >= 1.0)
+    {
+        dvz_visual_set_visible(state->hidden_point, true);
+        state->revealed = true;
+    }
+}
+
+
+
+/**
+ * Destroy the retained visual visibility scenario.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
+}
+
+
+
+/**
+ * Return the visibility scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _visibility_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_visibility",
+        .title = "visibility",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .frame = _scenario_frame,
+        .destroy = _scenario_destroy,
+    };
 }
 
 
@@ -92,7 +220,7 @@ static bool _add_point_visual(
 /*************************************************************************************************/
 
 /**
- * Run the retained visual visibility feature example.
+ * Run the retained visual visibility feature example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -100,48 +228,6 @@ static bool _add_point_visual(
  */
 int main(int argc, char** argv)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    example_graphite_cyan_set_panel_background(panel);
-
-    EXAMPLE_CHECK(
-        _add_point_visual(
-            scene, panel, -0.42f, example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
-            true),
-        "left visible visual setup failed");
-    EXAMPLE_CHECK(
-        _add_point_visual(
-            scene, panel, 0.0f, example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ERROR), false),
-        "hidden visual setup failed");
-    EXAMPLE_CHECK(
-        _add_point_visual(
-            scene, panel, +0.42f, example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
-            true),
-        "right visible visual setup failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visibility");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    dvz_app_run(app, example_frame_count_any(argc, argv));
-    ret = 0;
-
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    DvzScenarioSpec spec = _visibility_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
