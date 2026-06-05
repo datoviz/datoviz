@@ -10,8 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/panel_grid
- * Run:    ./build/examples/c/features/panel_grid
- * Smoke:  ./build/examples/c/features/panel_grid 1
+ * Run:    ./build/examples/c/features/panel_grid --live
+ * Smoke:  ./build/examples/c/features/panel_grid --png
  */
 
 
@@ -23,10 +23,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -95,36 +94,37 @@ static bool _add_panel_points(DvzScene* scene, DvzPanel* panel, DvzColor accent)
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the grid layout feature example.
+ * Initialize the grid layout scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzGrid* grid = dvz_figure_grid(figure, 2, 2);
-    EXAMPLE_CHECK(grid != NULL, "dvz_figure_grid() failed");
-    EXAMPLE_CHECK(
-        dvz_grid_set_margins(
-            grid, &(DvzPanelReserve){
-                      .left_px = 90.0f, .right_px = 90.0f, .top_px = 80.0f, .bottom_px = 80.0f}),
-        "dvz_grid_set_margins() failed");
-    EXAMPLE_CHECK(dvz_grid_set_gutter(grid, 36.0f, 36.0f), "dvz_grid_set_gutter() failed");
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 2, 2);
+    if (grid == NULL)
+        return false;
+    if (!dvz_grid_set_margins(
+            grid,
+            &(DvzPanelReserve){
+                .left_px = 90.0f, .right_px = 90.0f, .top_px = 80.0f, .bottom_px = 80.0f}))
+        return false;
+    if (!dvz_grid_set_gutter(grid, 36.0f, 36.0f))
+        return false;
 
     DvzPanel* panels[PANEL_COUNT] = {
         dvz_grid_panel(grid, 0, 0),
@@ -141,30 +141,57 @@ int main(int argc, char** argv)
 
     for (uint32_t i = 0; i < PANEL_COUNT; i++)
     {
-        EXAMPLE_CHECK(panels[i] != NULL, "dvz_grid_panel() failed");
+        if (panels[i] == NULL)
+            return false;
         example_graphite_cyan_set_panel_background(panels[i]);
 
         DvzPanelBorderDesc border = dvz_panel_border_desc();
         border.color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
         border.width_px = 1.5f;
-        EXAMPLE_CHECK(dvz_panel_set_border(panels[i], &border), "dvz_panel_set_border() failed");
+        if (!dvz_panel_set_border(panels[i], &border))
+            return false;
 
-        EXAMPLE_CHECK(_add_panel_points(scene, panels[i], accents[i]), "panel point setup failed");
+        if (!_add_panel_points(ctx->scene, panels[i], accents[i]))
+            return false;
     }
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
+    return true;
+}
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "panel_grid");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    dvz_app_run(app, example_frame_count_any(argc, argv));
-    ret = 0;
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+/**
+ * Return the panel-grid scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _panel_grid_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_panel_grid",
+        .title = "panel_grid",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the grid layout feature example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _panel_grid_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
