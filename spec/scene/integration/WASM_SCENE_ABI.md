@@ -48,9 +48,13 @@ uint32_t dvz_wasm_api_scene(uint32_t width, uint32_t height);
 uint32_t dvz_wasm_api_figure(uint32_t scene, uint32_t width, uint32_t height);
 uint32_t dvz_wasm_api_panel_full(uint32_t figure);
 uint32_t dvz_wasm_api_visual(uint32_t scene, uint32_t visual_type, uint32_t flags);
+uint32_t dvz_wasm_api_buffer(uint32_t scene, uint32_t usage, uint32_t stride, uint32_t byte_size);
+int dvz_wasm_api_buffer_set_data(uint32_t buffer, const void* data, uint32_t byte_size);
 int dvz_wasm_api_panel_add_visual(uint32_t panel, uint32_t visual);
 int dvz_wasm_api_visual_set_f32(uint32_t visual, const char* attr, const float* data, uint32_t item_count);
 int dvz_wasm_api_visual_set_rgba8(uint32_t visual, const char* attr, const uint8_t* data, uint32_t item_count);
+int dvz_wasm_api_visual_set_attr_buffer(
+    uint32_t visual, const char* attr, uint32_t buffer, uint32_t byte_offset, uint32_t item_count);
 int dvz_wasm_api_visual_set_texture_rgba8(uint32_t visual, const uint8_t* rgba, uint32_t width, uint32_t height);
 int dvz_wasm_api_visual_set_material(uint32_t visual, uint32_t model, ...material scalars...);
 int dvz_wasm_api_visual_set_segment_caps(uint32_t visual, uint32_t start_cap, uint32_t end_cap);
@@ -81,6 +85,8 @@ void dvz_wasm_api_scene_destroy(uint32_t scene);
 3. JS may free the temporary WASM allocation immediately after a successful upload.
 4. Attribute names are UTF-8 C strings for the first slice; a later ABI may replace them with
    generated numeric attribute ids.
+5. Buffer-backed attributes use scene-owned buffers with 32-bit WASM byte sizes and offsets in this
+   experimental browser ABI.
 5. Texture uploads start with tightly packed RGBA8 2D data only.
 
 ## Packet, Payload, And Diagnostics Lifetime
@@ -102,7 +108,8 @@ void dvz_wasm_api_scene_destroy(uint32_t scene);
 
 The demo-specific `src/wasm/scene_bridge.c` path has been retired. The generic ABI now covers:
 
-1. 2D point + pixel + marker + styled segment/path + primitive + image + mesh + panzoom;
+1. 2D buffer-backed point/pixel positions + marker + styled segment/path + primitive + image +
+   mesh + panzoom;
 2. 3D sphere + textured material mesh + arcball.
 
 The browser pages and `just wasm-scene-smoke` use the generic `dvz_wasm_api_*` object ABI.
@@ -110,8 +117,9 @@ The browser pages and `just wasm-scene-smoke` use the generic `dvz_wasm_api_*` o
 ## Migration Plan
 
 1. Done: add the generic ABI with scene/figure/panel/point support and a smoke test.
-2. Done: add segment/path cap-join controls, primitive, image, basic/textured/material mesh, basic
-   sphere, panzoom, camera, and arcball coverage through generic calls.
+2. Done: add scene buffers, buffer-backed point/pixel positions, segment/path cap-join controls,
+   primitive, image, basic/textured/material mesh, basic sphere, panzoom, camera, and arcball
+   coverage through generic calls.
 3. Done: add a small JS wrapper over the ABI.
 4. Done: move the browser demos to the JS wrapper and retire the demo-specific bridge.
 5. Done: replace JSON hot-path transport with split binary DRP2 packets and payload arenas.

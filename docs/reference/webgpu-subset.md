@@ -19,8 +19,8 @@ The reusable browser wrapper and session code lives under `web/wasm/`; files und
 
 Supported visual and interaction families:
 
-- point visuals;
-- pixel visuals;
+- point visuals with dense and buffer-backed positions;
+- pixel visuals with dense and buffer-backed positions;
 - basic built-in marker visuals;
 - segment visuals with visual-wide cap controls;
 - path visuals with visual-wide cap and join controls;
@@ -76,7 +76,7 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Setup/update/frame resource model | active through split binary packets and retained browser runtime state |
 | WGSL shader modules | supported and required for portable browser execution |
 | Vulkan-specific modules and presentation | unsupported in WASM; native-only |
-| Scene visual parity | limited to point, pixel, basic marker, segment/path cap-join controls, primitive, RGBA8 image, basic/textured/material mesh, and basic sphere demos |
+| Scene visual parity | limited to point/pixel dense and buffer-backed positions, basic marker, segment/path cap-join controls, primitive, RGBA8 image, basic/textured/material mesh, and basic sphere demos |
 | Controller parity | limited to panzoom and one 3D arcball proof |
 | Compute-to-render parity | experimental; fixture coverage exists, gallery-level behavior remains a separate release lane |
 | Query/picking/readback scene parity | deferred for live WASM scenes |
@@ -219,6 +219,22 @@ Path/stroke cap-join promotion proof recorded on 2026-06-05:
 - `just wasm-scene-smoke`: WASM segment cap, path cap, and path join setters emitted initial and
   retained update streams, rejected unsupported point style updates, and replayed the generated
   2D/3D streams through the JS WebGPU runner smoke;
+- `just webgpu-browser-smoke`: 2D and 3D WASM pages rendered, browser interaction was exercised,
+  and dashboard WASM scene checks reported `2 pass, 0 fail`.
+
+Buffer-backed point/pixel promotion proof recorded on 2026-06-05:
+
+- `node --check tools/wasm_scene_smoke.mjs`: passed;
+- `node --check web/wasm/scene.js`: passed;
+- `node --check examples/webgpu/demos/wasm_2d.js`: passed;
+- `just test test_scene_point_external_position_buffer_emits_no_upload`: passed;
+- `just test test_scene_point_storage_position_buffer_emits_usage`: passed;
+- `just webgpu-fixture-preflight`: `39` passed, `0` failed;
+- `just webgpu-runner-smoke`: `37` positive fixtures, `2` WebGPU streams, and `82` semantic
+  negative fixtures passed;
+- `just wasm-scene-smoke`: WASM scene buffers backed point and pixel positions, rejected invalid
+  buffer descriptors and unsupported attr-buffer binds, emitted retained buffer update streams, and
+  replayed the generated 2D/3D streams through the JS WebGPU runner smoke;
 - `just webgpu-browser-smoke`: 2D and 3D WASM pages rendered, browser interaction was exercised,
   and dashboard WASM scene checks reported `2 pass, 0 fail`.
 

@@ -79,6 +79,12 @@ typedef struct
 typedef struct
 {
     DvzWasmApiScene* owner;
+    DvzSceneBuffer* buffer;
+} DvzWasmApiBuffer;
+
+typedef struct
+{
+    DvzWasmApiScene* owner;
     DvzController* controller;
 } DvzWasmApiController;
 
@@ -124,6 +130,10 @@ static DvzWasmApiPanel* _panel(uint32_t handle) { return (DvzWasmApiPanel*)(uint
 
 
 static DvzWasmApiVisual* _visual(uint32_t handle) { return (DvzWasmApiVisual*)(uintptr_t)handle; }
+
+
+
+static DvzWasmApiBuffer* _buffer(uint32_t handle) { return (DvzWasmApiBuffer*)(uintptr_t)handle; }
 
 
 
@@ -408,6 +418,63 @@ uint32_t dvz_wasm_api_visual(uint32_t scene_handle, uint32_t visual_type, uint32
 
 
 EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_buffer(
+    uint32_t scene_handle, uint32_t usage, uint32_t stride, uint32_t byte_size)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    if (scene == NULL || scene->scene == NULL)
+        return 0;
+    if (usage == 0 || stride == 0)
+        return _fail_handle(scene, "invalid WASM scene buffer descriptor");
+    _clear_payload(scene);
+
+    DvzWasmApiBuffer* buffer = (DvzWasmApiBuffer*)calloc(1, sizeof(DvzWasmApiBuffer));
+    if (buffer == NULL)
+        return _fail_handle(scene, "WASM scene buffer wrapper allocation failed");
+    buffer->owner = scene;
+    DvzSceneBufferDesc desc = dvz_scene_buffer_desc();
+    desc.usage = usage;
+    desc.stride = stride;
+    desc.byte_size = byte_size;
+    buffer->buffer = dvz_scene_buffer(scene->scene, &desc);
+    if (buffer->buffer == NULL || !_remember(scene, buffer))
+    {
+        free(buffer);
+        return _fail_handle(scene, "WASM scene buffer creation failed");
+    }
+    return _handle(buffer);
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_buffer_set_data(
+    uint32_t buffer_handle, const void* data, uint32_t byte_size)
+{
+    DvzWasmApiBuffer* buffer = _buffer(buffer_handle);
+    if (
+        buffer == NULL || buffer->owner == NULL || buffer->buffer == NULL || data == NULL ||
+        byte_size == 0)
+    {
+        return _fail(buffer != NULL ? buffer->owner : NULL, "invalid WASM scene buffer upload");
+    }
+    _clear_payload(buffer->owner);
+    if (!dvz_scene_buffer_set_data(buffer->buffer, data, byte_size))
+    {
+        char diagnostic[DVZ_SCENE_DIAGNOSTIC_SIZE];
+        int ret = snprintf(
+            diagnostic, sizeof(diagnostic), "WASM scene buffer upload failed: byte_size=%u",
+            byte_size);
+        if (ret < 0 || (size_t)ret >= sizeof(diagnostic))
+            return _fail(buffer->owner, "WASM scene buffer upload failed");
+        return _fail(buffer->owner, diagnostic);
+    }
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
 uint32_t dvz_wasm_api_controller(uint32_t scene_handle, uint32_t controller_type)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
@@ -592,6 +659,39 @@ int dvz_wasm_api_visual_set_u32(
     _clear_payload(visual->owner);
     if (dvz_visual_set_data(visual->visual, attr, data, item_count) != 0)
         return _fail_upload(visual->owner, "u32", attr, item_count);
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_visual_set_attr_buffer(
+    uint32_t visual_handle, const char* attr, uint32_t buffer_handle, uint32_t byte_offset,
+    uint32_t item_count)
+{
+    DvzWasmApiVisual* visual = _visual(visual_handle);
+    DvzWasmApiBuffer* buffer = _buffer(buffer_handle);
+    if (
+        visual == NULL || visual->owner == NULL || visual->visual == NULL || attr == NULL ||
+        buffer == NULL || buffer->owner == NULL || buffer->buffer == NULL ||
+        buffer->owner != visual->owner || item_count == 0)
+    {
+        return _fail(
+            visual != NULL ? visual->owner : NULL, "invalid WASM visual attribute buffer bind");
+    }
+    _clear_payload(visual->owner);
+    if (!dvz_visual_set_attr_buffer(
+            visual->visual, attr, buffer->buffer, byte_offset, item_count))
+    {
+        char diagnostic[DVZ_SCENE_DIAGNOSTIC_SIZE];
+        int ret = snprintf(
+            diagnostic, sizeof(diagnostic),
+            "WASM visual attribute buffer bind failed: attr=%s item_count=%u",
+            attr != NULL ? attr : "<null>", item_count);
+        if (ret < 0 || (size_t)ret >= sizeof(diagnostic))
+            return _fail(visual->owner, "WASM visual attribute buffer bind failed");
+        return _fail(visual->owner, diagnostic);
+    }
     return 0;
 }
 

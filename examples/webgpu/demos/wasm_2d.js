@@ -35,7 +35,9 @@ function addPoints(scene, panel) {
   }
 
   const points = scene.visual("point");
-  points.setF32("position", positions, count);
+  const positionBuffer = scene.buffer({ usage: "vertex", stride: 12, byteSize: positions.byteLength });
+  positionBuffer.setData(positions);
+  points.setAttrBuffer("position", positionBuffer, count);
   points.setRGBA8("color", colors, count);
   points.setF32("diameter", diameters, count);
   scene.addVisual(panel, points);
@@ -65,7 +67,9 @@ function addPixels(scene, panel) {
   }
 
   const pixels = scene.visual("pixel");
-  pixels.setF32("position", positions, count);
+  const positionBuffer = scene.buffer({ usage: "vertex", stride: 12, byteSize: positions.byteLength });
+  positionBuffer.setData(positions);
+  pixels.setAttrBuffer("position", positionBuffer, count);
   pixels.setRGBA8("color", colors, count);
   pixels.setF32("pixel_size", sizes, count);
   scene.addVisual(panel, pixels);

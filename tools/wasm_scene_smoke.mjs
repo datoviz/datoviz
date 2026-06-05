@@ -36,6 +36,7 @@ const DVZ_SEGMENT_CAP_SQUARE = 4;
 const DVZ_SEGMENT_CAP_BUTT = 5;
 const DVZ_PATH_JOIN_MITER = 0;
 const DVZ_PATH_JOIN_BEVEL = 2;
+const DVZ_SCENE_BUFFER_USAGE_VERTEX = 1;
 const DVZ_DRP2_PACKET_SETUP = 1;
 const DVZ_DRP2_PACKET_UPDATE = 2;
 const DVZ_DRP2_PACKET_FRAME = 3;
@@ -269,6 +270,9 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(!renderInitial.includes("_dvz_wasm_api_emit("), "renderInitial uses JSON ABI");
   requireOk(!renderIncremental.includes("_dvz_wasm_api_emit("), "renderIncremental uses JSON ABI");
   requireOk(source.includes("_dvz_wasm_api_packet_status"), "browser wrapper ignores packet status");
+  requireOk(source.includes("_dvz_wasm_api_buffer"), "browser wrapper cannot create scene buffers");
+  requireOk(source.includes("_dvz_wasm_api_buffer_set_data"), "browser wrapper cannot upload scene buffers");
+  requireOk(source.includes("_dvz_wasm_api_visual_set_attr_buffer"), "browser wrapper cannot bind attr buffers");
   requireOk(source.includes("_dvz_wasm_api_visual_set_u32"), "browser wrapper cannot upload u32 attrs");
   requireOk(source.includes("_dvz_wasm_api_visual_set_material"), "browser wrapper cannot set materials");
   requireOk(source.includes("_dvz_wasm_api_visual_set_segment_caps"), "browser wrapper cannot set segment caps");
@@ -774,6 +778,24 @@ function setU32(Module, visual, attrPtr, dataPtr, count, label) {
   expectStatus(Module._dvz_wasm_api_visual_set_u32(visual, attrPtr, dataPtr, count), 0, label);
 }
 
+function createBuffer(Module, scene, usage, stride, byteSize, label) {
+  const buffer = Module._dvz_wasm_api_buffer(scene, usage, stride, byteSize);
+  requireOk(buffer !== 0, `${label}: scene buffer creation failed`);
+  return buffer;
+}
+
+function setBufferData(Module, buffer, dataPtr, byteSize, label) {
+  expectStatus(Module._dvz_wasm_api_buffer_set_data(buffer, dataPtr, byteSize), 0, label);
+}
+
+function setAttrBuffer(Module, visual, attrPtr, buffer, byteOffset, count, label) {
+  expectStatus(
+    Module._dvz_wasm_api_visual_set_attr_buffer(visual, attrPtr, buffer, byteOffset, count),
+    0,
+    label,
+  );
+}
+
 function setStandardMaterial(Module, visual, label, roughness = 0.42, metallic = 0.04) {
   expectStatus(
     Module._dvz_wasm_api_visual_set_material(
@@ -886,6 +908,10 @@ try {
     const badVisual = Module._dvz_wasm_api_visual(diagnosticScene, 9999, 0);
     requireOk(badVisual === 0, "unsupported visual type unexpectedly succeeded");
     expectDiagnostics(Module, diagnosticScene, "unsupported WASM visual type", "unsupported visual");
+    const badBuffer = Module._dvz_wasm_api_buffer(diagnosticScene, 0, 12, 12);
+    requireOk(badBuffer === 0, "invalid scene buffer descriptor unexpectedly succeeded");
+    expectDiagnostics(
+      Module, diagnosticScene, "invalid WASM scene buffer descriptor", "invalid scene buffer");
 
     const pointForDiagnostics = Module._dvz_wasm_api_visual(diagnosticScene, DVZ_WASM_VISUAL_POINT, 0);
     requireOk(pointForDiagnostics !== 0, "diagnostic point creation failed");
@@ -922,6 +948,18 @@ try {
     const badAttrNamePtr = allocCString(Module, "not_an_attr");
     const onePositionPtr = allocArray(Module, new Float32Array([0, 0, 0]));
     try {
+      const diagnosticBuffer =
+        createBuffer(Module, diagnosticScene, DVZ_SCENE_BUFFER_USAGE_VERTEX, 12, 12, "diagnostic position buffer");
+      setBufferData(Module, diagnosticBuffer, onePositionPtr, 12, "diagnostic position buffer upload");
+      expectStatus(
+        Module._dvz_wasm_api_visual_set_attr_buffer(
+          pointForDiagnostics, badAttrNamePtr, diagnosticBuffer, 0, 1),
+        -1,
+        "invalid visual attribute buffer",
+      );
+      expectDiagnostics(
+        Module, diagnosticScene, "WASM visual attribute buffer bind failed",
+        "invalid attr buffer");
       expectStatus(
         Module._dvz_wasm_api_visual_set_f32(pointForDiagnostics, badAttrNamePtr, onePositionPtr, 1),
         -1,
@@ -1060,13 +1098,29 @@ try {
     requireOk(figure !== 0 && panel !== 0, "api 2D figure/panel failed");
 
     const point = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_POINT, 0);
-    setF32(Module, point, positionNamePtr, ptrs[0], positions.length / 3, "api point position");
+    const pointPositionBuffer = createBuffer(
+      Module, scene, DVZ_SCENE_BUFFER_USAGE_VERTEX, 12, positions.byteLength,
+      "api point position buffer");
+    setBufferData(
+      Module, pointPositionBuffer, ptrs[0], positions.byteLength,
+      "api point position buffer upload");
+    setAttrBuffer(
+      Module, point, positionNamePtr, pointPositionBuffer, 0, positions.length / 3,
+      "api point position buffer bind");
     setRGBA8(Module, point, colorNamePtr, ptrs[1], colors.length / 4, "api point color");
     setF32(Module, point, diameterNamePtr, ptrs[2], sizes.length, "api point diameter");
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, point), 0, "api add point");
 
     const pixel = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_PIXEL, 0);
-    setF32(Module, pixel, positionNamePtr, ptrs[3], pixelPositions.length / 3, "api pixel position");
+    const pixelPositionBuffer = createBuffer(
+      Module, scene, DVZ_SCENE_BUFFER_USAGE_VERTEX, 12, pixelPositions.byteLength,
+      "api pixel position buffer");
+    setBufferData(
+      Module, pixelPositionBuffer, ptrs[3], pixelPositions.byteLength,
+      "api pixel position buffer upload");
+    setAttrBuffer(
+      Module, pixel, positionNamePtr, pixelPositionBuffer, 0, pixelPositions.length / 3,
+      "api pixel position buffer bind");
     setRGBA8(Module, pixel, colorNamePtr, ptrs[4], pixelColors.length / 4, "api pixel color");
     setF32(Module, pixel, pixelSizeNamePtr, ptrs[5], pixelSizes.length, "api pixel size");
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, pixel), 0, "api add pixel");
@@ -1142,6 +1196,20 @@ try {
     const materialUpdate = emitStream(Module, scene, figure, "generic 2D material update");
     expect2DUpdateStreamShape(materialUpdate.stream, "generic 2D material update");
     expectWriteCommands(materialUpdate.stream, "generic 2D material update");
+    const updatedPointPositions = new Float32Array(positions);
+    updatedPointPositions[0] += 0.08;
+    updatedPointPositions[1] += 0.04;
+    const updatedPointPositionsPtr = allocArray(Module, updatedPointPositions);
+    try {
+      setBufferData(
+        Module, pointPositionBuffer, updatedPointPositionsPtr, updatedPointPositions.byteLength,
+        "api point position buffer update");
+      const bufferUpdate = emitStream(Module, scene, figure, "generic 2D buffer update");
+      expect2DUpdateStreamShape(bufferUpdate.stream, "generic 2D buffer update");
+      expectWriteCommands(bufferUpdate.stream, "generic 2D buffer update");
+    } finally {
+      Module._free(updatedPointPositionsPtr);
+    }
     setSegmentCaps(
       Module, segment, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_BUTT,
       "api segment cap update");

@@ -29,6 +29,10 @@ const DVZ_SEGMENT_CAP_BUTT = 5;
 const DVZ_PATH_JOIN_MITER = 0;
 const DVZ_PATH_JOIN_ROUND = 1;
 const DVZ_PATH_JOIN_BEVEL = 2;
+const DVZ_SCENE_BUFFER_USAGE_VERTEX = 1;
+const DVZ_SCENE_BUFFER_USAGE_INDEX = 2;
+const DVZ_SCENE_BUFFER_USAGE_UNIFORM = 4;
+const DVZ_SCENE_BUFFER_USAGE_STORAGE = 8;
 
 export const DvzWasmVisual = Object.freeze({
   point: 1,
@@ -140,6 +144,35 @@ function pathJoinCode(join) {
     default:
       throw new Error(`unsupported path join ${join}`);
   }
+}
+
+function sceneBufferUsageCode(usage = "vertex") {
+  if (Number.isFinite(usage)) {
+    return Math.floor(usage);
+  }
+  const parts = Array.isArray(usage)
+    ? usage
+    : String(usage).split(/[|,+\s]+/).filter((part) => part.length > 0);
+  let code = 0;
+  for (const part of parts) {
+    switch (part) {
+      case "vertex":
+        code |= DVZ_SCENE_BUFFER_USAGE_VERTEX;
+        break;
+      case "index":
+        code |= DVZ_SCENE_BUFFER_USAGE_INDEX;
+        break;
+      case "uniform":
+        code |= DVZ_SCENE_BUFFER_USAGE_UNIFORM;
+        break;
+      case "storage":
+        code |= DVZ_SCENE_BUFFER_USAGE_STORAGE;
+        break;
+      default:
+        throw new Error(`unsupported scene buffer usage ${part}`);
+    }
+  }
+  return code;
 }
 
 function wasmModuleUrl() {
@@ -263,6 +296,17 @@ export class DatovizWasmScene {
     const visual = this.Module._dvz_wasm_api_visual(this.scene, visualType, flags);
     this._requireHandle(visual, `dvz_wasm_api_visual(${type}) failed`);
     return new DatovizWasmVisualHandle(this.Module, this.scene, visual);
+  }
+
+  buffer(options = {}) {
+    this._requireAlive();
+    const usage = sceneBufferUsageCode(options.usage ?? "vertex");
+    const stride = positiveInteger(options.stride, 0);
+    const byteSize = positiveInteger(options.byteSize ?? options.byte_size, 0);
+    requireOk(stride > 0, "WASM scene buffer stride must be positive");
+    const buffer = this.Module._dvz_wasm_api_buffer(this.scene, usage, stride, byteSize);
+    this._requireHandle(buffer, "dvz_wasm_api_buffer failed");
+    return new DatovizWasmBufferHandle(this.Module, this.scene, buffer);
   }
 
   addVisual(panel, visual) {
@@ -548,6 +592,30 @@ export class DatovizWasmScene {
   }
 }
 
+export class DatovizWasmBufferHandle {
+  constructor(Module, scene, handle) {
+    this.Module = Module;
+    this.scene = scene;
+    this.handle = handle;
+  }
+
+  _diagnosticMessage(prefix) {
+    return diagnosticMessage(this.Module, this.scene, prefix);
+  }
+
+  setData(values) {
+    const dataPtr = allocArray(this.Module, values);
+    try {
+      const status = this.Module._dvz_wasm_api_buffer_set_data(this.handle, dataPtr, values.byteLength);
+      if (status !== 0) {
+        throw new Error(this._diagnosticMessage(`dvz_wasm_api_buffer_set_data failed with ${status}`));
+      }
+    } finally {
+      this.Module._free(dataPtr);
+    }
+  }
+}
+
 export class DatovizWasmVisualHandle {
   constructor(Module, scene, handle) {
     this.Module = Module;
@@ -598,6 +666,25 @@ export class DatovizWasmVisualHandle {
     } finally {
       this.Module._free(attrPtr);
       this.Module._free(dataPtr);
+    }
+  }
+
+  setAttrBuffer(attr, buffer, itemCount, byteOffset = 0) {
+    requireOk(buffer instanceof DatovizWasmBufferHandle, "setAttrBuffer() requires a WASM buffer handle");
+    const attrPtr = allocCString(this.Module, attr);
+    try {
+      const status = this.Module._dvz_wasm_api_visual_set_attr_buffer(
+        this.handle,
+        attrPtr,
+        buffer.handle,
+        byteOffset,
+        itemCount,
+      );
+      if (status !== 0) {
+        throw new Error(this._diagnosticMessage(`dvz_wasm_api_visual_set_attr_buffer(${attr}) failed with ${status}`));
+      }
+    } finally {
+      this.Module._free(attrPtr);
     }
   }
 

@@ -24,7 +24,7 @@ http://localhost:8765/examples/webgpu/fixtures.html
 The WASM examples build the generic scene ABI with Emscripten, route pointer input through compiled
 controllers, and execute emitted DRP2 packets with the browser WebGPU runtime. Reusable browser
 bridge/session code lives under `web/wasm/`; `examples/webgpu/demos/` contains content-only demo
-modules. The 2D proof renders point, pixel, marker, styled segment/path, primitive, image, and mesh
+modules. The 2D proof renders buffer-backed point/pixel positions, marker, styled segment/path, primitive, image, and mesh
 visuals with panzoom.
 
 ```bash

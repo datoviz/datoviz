@@ -176,11 +176,11 @@ that family until earlier rows are stable.
 
 | Family | Native Vulkan status | WASM/WebGPU target | Status | Required work |
 | --- | --- | --- | --- | --- |
-| point | retained scene visual | point visual, buffer-backed attrs, particles | current/next | expose scene buffers and buffer-backed attrs; prove compute-written positions |
+| point | retained scene visual | point visual with buffer-backed attrs current; particles next | current/next | keep buffer-backed attr evidence; prove compute-written positions |
 | primitive | retained triangle-list visual | triangle-list visual | current | keep fixture/browser evidence and diagnostics |
 | image | retained RGBA/scalar image paths | RGBA8 image first, scalar/colormap later | current | add scalar/colormap variants after query/colorbar path is stable |
 | mesh | basic/textured/lit mesh paths | basic, textured, and material-controlled mesh current | current | keep texture-sampling and material-update evidence; broaden only with additional shader/material models |
-| pixel | retained pixel visual | dense 2D pixel visual | current | keep fixture/browser evidence and promote buffer-backed attrs with point |
+| pixel | retained pixel visual | dense and buffer-backed 2D pixel visual | current | keep fixture/browser evidence |
 | marker | retained marker visual | built-in marker subset current; glyph/atlas subset next | current/next | keep built-in marker evidence; settle atlas variants and picking diagnostics |
 | segment/path/stroke | retained path and stroke-shaped paths | segment/path cap-join controls current; broader subpath/vector parity next | current/next | keep cap/join evidence; settle subpath/vector policy and browser proof |
 | text/glyph | retained text and glyph visuals | MSDF or bitmap text subset | later | font/atlas packaging, WGSL text shaders, shaping limits |
@@ -261,12 +261,11 @@ frame-time evidence is available.
 
 Promote visuals in this order:
 
-1. buffer-backed point and pixel;
-2. text/glyph;
-3. labels;
-4. axes/colorbars/legends/scale bars/annotations;
-5. sphere native-depth/material variants and reduced volume;
-6. experimental splat and advanced techniques.
+1. text/glyph;
+2. labels;
+3. axes/colorbars/legends/scale bars/annotations;
+4. sphere native-depth/material variants and reduced volume;
+5. experimental splat and advanced techniques.
 
 Each promotion must satisfy the promotion rule above.
 
