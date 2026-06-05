@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* scene_basic - smallest retained scene/app setup with one point visual.
+/* scene_basic - smallest runner-backed retained scene with one point visual.
  *
  * Scenario: feature.scene_basic
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/scene_basic
- * Run:    ./build/examples/c/features/scene_basic
- * Smoke:  ./build/examples/c/features/scene_basic 1
+ * Run:    ./build/examples/c/features/scene_basic --live
+ * Smoke:  ./build/examples/c/features/scene_basic --png
  */
 
 
@@ -20,12 +20,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
 #include <stdint.h>
 
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -40,21 +40,22 @@
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the smallest retained scene/app feature example.
+ * Initialize the smallest retained scene scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
     const vec3 positions[POINT_COUNT] = {
         {-0.45f, -0.25f, 0.0f},
@@ -68,52 +69,71 @@ int main(int argc, char** argv)
     };
     const float diameters[POINT_COUNT] = {42.0f, 58.0f, 42.0f};
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzVisual* point = dvz_point(scene, 0);
-    EXAMPLE_CHECK(point != NULL, "dvz_point() failed");
+    DvzVisual* point = dvz_point(ctx->scene, 0);
+    if (point == NULL)
+        return false;
 
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
         {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
     };
-    int rc = dvz_visual_set_data_many(point, updates, 3);
-    EXAMPLE_CHECK(rc == 0, "point data upload failed");
+    if (dvz_visual_set_data_many(point, updates, 3) != 0)
+        return false;
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
     style.stroke_width = 0.0f;
-    rc = dvz_point_set_style(point, &style);
-    EXAMPLE_CHECK(rc == 0, "dvz_point_set_style() failed");
+    if (dvz_point_set_style(point, &style) != 0)
+        return false;
+    if (dvz_visual_set_depth_test(point, false) != 0)
+        return false;
+    return dvz_panel_add_visual(panel, point, NULL) == 0;
+}
 
-    rc = dvz_visual_set_depth_test(point, false);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_depth_test() failed");
 
-    rc = dvz_panel_add_visual(panel, point, NULL);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
+/**
+ * Return the scene-basic scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _scene_basic_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_scene_basic",
+        .title = "scene_basic",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "scene_basic");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    dvz_app_run(app, example_frame_count_any(argc, argv));
-    ret = 0;
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the smallest retained scene feature example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _scene_basic_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

@@ -106,7 +106,8 @@ showcase or workflow already composes the same feature. These are copy-safe API 
 gallery material second. Keep each file narrow: one feature, deterministic data, no unrelated GUI or
 domain polish, and smoke/screenshot validation once runnable.
 
-Implemented first batch: `feature.scene_basic`, `feature.panel_single`, `feature.panel_grid`,
+Implemented first batch: `feature.scene_basic` (now a static scenario-runner proof),
+`feature.panel_single`, `feature.panel_grid`,
 `feature.panel_multi`, `feature.panel_linked`, `feature.sampled_field_2d`,
 `feature.sampled_field_3d`, `feature.axis_labels`, `feature.text_block`,
 `feature.overlay_card`, `feature.controller_arcball`, `feature.mesh_texture`,

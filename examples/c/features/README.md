@@ -29,7 +29,7 @@ controllers, sampled fields, picking, probing, selection, and retained updates.
 - `pick_hover.c`: latest-request-wins hover feedback with background-miss clearing.
 - `probe_labels.c`: label-id probe/readout on a categorical label field.
 - `selection.c`: persistent selected-item highlight on a small visual.
-- `scene_basic.c`: smallest retained scene/app setup with one point visual.
+- `scene_basic.c`: smallest runner-backed retained scene with one point visual.
 - `panel_single.c`: one explicit panel rectangle with one visual and panel chrome.
 - `panel_grid.c`: four grid-owned panels with clipped panel-local content.
 - `panel_multi.c`: multiple independent panels with panel-local panzoom controllers.
