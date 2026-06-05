@@ -6,12 +6,12 @@
 
 /* colorbar - deterministic scalar image with one retained continuous colorbar.
  *
- * Scenario: colorbar
+ * Scenario: feature.colorbar
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/colorbar
- * Run:    ./build/examples/c/features/colorbar
- * Smoke:  ./build/examples/c/features/colorbar 1
+ * Run:    ./build/examples/c/features/colorbar --live
+ * Smoke:  ./build/examples/c/features/colorbar --png
  */
 
 
@@ -24,11 +24,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -42,6 +42,17 @@
 #define FIELD_HEIGHT 144u
 
 static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct ColorbarState
+{
+    float values[FIELD_WIDTH * FIELD_HEIGHT];
+} ColorbarState;
 
 
 
@@ -219,49 +230,55 @@ _add_scalar_image(DvzScene* scene, DvzPanel* panel, DvzScale* scale, float* valu
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the deterministic retained colorbar feature proof.
+ * Initialize the deterministic retained colorbar scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    float values[FIELD_WIDTH * FIELD_HEIGHT] = {0};
+    if (ctx == NULL || out_user == NULL)
+        return false;
 
-    _fill_field(values);
+    ColorbarState* state = (ColorbarState*)dvz_calloc(1, sizeof(ColorbarState));
+    if (state == NULL)
+        return false;
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    _fill_field(state->values);
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        goto error;
 
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        goto error;
     example_graphite_cyan_set_panel_background(panel);
 
     bool ok = dvz_panel_set_layout_reserve(
         panel, &(DvzPanelLayoutReserve){.left = 0.045f, .right = 0.040f, .bottom = 0.055f,
                                         .top = 0.045f});
-    EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve() failed");
+    if (!ok)
+        goto error;
     int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 1.0);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(x) failed");
+    if (rc != 0)
+        goto error;
     rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, 1.0);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(y) failed");
+    if (rc != 0)
+        goto error;
 
-    DvzScale* scale = _add_scale(scene);
-    EXAMPLE_CHECK(scale != NULL, "adding colorbar scale failed");
+    DvzScale* scale = _add_scale(ctx->scene);
+    if (scale == NULL)
+        goto error;
 
-    ok = _add_scalar_image(scene, panel, scale, values);
-    EXAMPLE_CHECK(ok, "adding scalar image failed");
+    ok = _add_scalar_image(ctx->scene, panel, scale, state->values);
+    if (!ok)
+        goto error;
 
     DvzColorbar* colorbar = dvz_colorbar(
         panel, scale,
@@ -275,25 +292,70 @@ int main(int argc, char** argv)
             .tick_length_px = 6.0f,
             .label_gap_px = 7.0f,
         });
-    EXAMPLE_CHECK(colorbar != NULL, "dvz_colorbar() failed");
+    if (colorbar == NULL)
+        goto error;
     dvz_colorbar_set_format(
         colorbar, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
                       .precision = 2,
                       .trim_trailing_zeros = true});
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
+    *out_user = state;
+    return true;
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "colorbar");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+error:
+    dvz_free(state);
+    return false;
+}
 
-    dvz_app_run(app, example_frame_count_any(argc, argv));
-    ret = 0;
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+/**
+ * Destroy the deterministic retained colorbar scenario.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
+}
+
+
+
+/**
+ * Return the colorbar scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _colorbar_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_colorbar",
+        .title = "colorbar",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the deterministic retained colorbar feature proof through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _colorbar_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
