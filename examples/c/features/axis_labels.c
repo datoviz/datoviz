@@ -10,9 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/axis_labels
- * Run:    ./build/examples/c/features/axis_labels
- * Smoke:  ./build/examples/c/features/axis_labels 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/features/axis_labels 1
+ * Run:    ./build/examples/c/features/axis_labels --live
+ * Smoke:  ./build/examples/c/features/axis_labels --png
  */
 
 
@@ -25,10 +24,9 @@
 #include <stdint.h>
 
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -104,54 +102,58 @@ static bool _add_plot_guides(DvzScene* scene, DvzPanel* panel)
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the axis label placement feature example.
+ * Initialize the axis label placement scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("axis_labels");
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
     example_graphite_cyan_set_panel_background(panel);
 
     bool ok = dvz_panel_set_layout_reserve(
         panel, &(DvzPanelLayoutReserve){.left = 0.18f, .right = 0.08f, .bottom = 0.19f,
                                         .top = 0.08f});
-    EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve() failed");
+    if (!ok)
+        return false;
 
-    EXAMPLE_CHECK(dvz_panel_set_domain(panel, DVZ_DIM_X, -40.0, 120.0) == 0, "set X domain failed");
-    EXAMPLE_CHECK(dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.5, 2.5) == 0, "set Y domain failed");
-    EXAMPLE_CHECK(_add_plot_guides(scene, panel), "plot guide setup failed");
+    if (dvz_panel_set_domain(panel, DVZ_DIM_X, -40.0, 120.0) != 0)
+        return false;
+    if (dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.5, 2.5) != 0)
+        return false;
+    if (!_add_plot_guides(ctx->scene, panel))
+        return false;
 
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
-    EXAMPLE_CHECK(x_axis != NULL && y_axis != NULL, "dvz_panel_axis() failed");
+    if (x_axis == NULL || y_axis == NULL)
+        return false;
 
     DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
     ticks.target_count = 5;
     ticks.min_pixel_spacing = 150.0f;
     ticks.minor_per_interval = 2;
-    EXAMPLE_CHECK(dvz_axis_set_tick_policy(x_axis, &ticks), "X tick policy failed");
-    EXAMPLE_CHECK(dvz_axis_set_tick_policy(y_axis, &ticks), "Y tick policy failed");
+    if (!dvz_axis_set_tick_policy(x_axis, &ticks))
+        return false;
+    if (!dvz_axis_set_tick_policy(y_axis, &ticks))
+        return false;
 
     ExampleAxisStyleOptions style = example_graphite_cyan_axis_options();
     style.tick_size_px = 14.0f;
@@ -160,33 +162,61 @@ int main(int argc, char** argv)
     style.x_label_gap_px = 48.0f;
     style.y_label_gap_px = 70.0f;
     style.grid_alpha = 130u;
-    EXAMPLE_CHECK(
-        example_graphite_cyan_apply_axis_style(x_axis, false, &style), "X axis style failed");
-    EXAMPLE_CHECK(
-        example_graphite_cyan_apply_axis_style(y_axis, true, &style), "Y axis style failed");
+    if (!example_graphite_cyan_apply_axis_style(x_axis, false, &style))
+        return false;
+    if (!example_graphite_cyan_apply_axis_style(y_axis, true, &style))
+        return false;
 
-    EXAMPLE_CHECK(dvz_axis_set_plot_margins(x_axis, 0.30f, 0.22f, 0.34f, 0.26f), "X margins failed");
-    EXAMPLE_CHECK(dvz_axis_set_plot_margins(y_axis, 0.30f, 0.22f, 0.34f, 0.26f), "Y margins failed");
-    EXAMPLE_CHECK(dvz_axis_set_grid(x_axis, true), "X grid failed");
-    EXAMPLE_CHECK(dvz_axis_set_grid(y_axis, true), "Y grid failed");
-    EXAMPLE_CHECK(dvz_axis_set_label(x_axis, "sample offset (ms)"), "X axis label failed");
-    EXAMPLE_CHECK(dvz_axis_set_label(y_axis, "normalized response"), "Y axis label failed");
+    if (!dvz_axis_set_plot_margins(x_axis, 0.30f, 0.22f, 0.34f, 0.26f))
+        return false;
+    if (!dvz_axis_set_plot_margins(y_axis, 0.30f, 0.22f, 0.34f, 0.26f))
+        return false;
+    if (!dvz_axis_set_grid(x_axis, true))
+        return false;
+    if (!dvz_axis_set_grid(y_axis, true))
+        return false;
+    if (!dvz_axis_set_label(x_axis, "sample offset (ms)"))
+        return false;
+    if (!dvz_axis_set_label(y_axis, "normalized response"))
+        return false;
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
+    return true;
+}
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "axis_labels");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+/**
+ * Return the axis-labels scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _axis_labels_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_axis_labels",
+        .title = "axis_labels",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the axis label placement feature example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _axis_labels_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
