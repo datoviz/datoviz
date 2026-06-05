@@ -1,186 +1,454 @@
 #!/usr/bin/env python3
+"""Generate the v0.4 public example gallery from the C example manifest."""
+
+from __future__ import annotations
+
+import argparse
 import re
-from operator import itemgetter
+import shutil
+from dataclasses import dataclass
 from pathlib import Path
 from textwrap import dedent
 
 import yaml
 
-EXAMPLES_DIR = Path('examples')
-GALLERY_DIR = Path('docs/gallery')
-DATA_DIR = Path('data')
-CATEGORIES = ['showcase', 'visuals', 'features']
-GITHUB_IMG_BASE = 'https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery'
 
-INTRO = {
-    'gallery': """The Datoviz gallery shows what the library can do through concrete examples.
-It is divided into three sections.
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_MANIFEST = ROOT / "examples/c/MANIFEST.yaml"
+DEFAULT_DOCS_DIR = ROOT / "docs/examples"
+DEFAULT_IMAGE_DIR = ROOT / "docs/images/gallery"
+SOURCE_BASE_URL = "https://github.com/datoviz/datoviz/blob/v0.4-dev"
+PUBLIC_LANES = ("visuals", "features", "workflows", "composites", "showcases", "scientific")
+STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
 
-* The [**showcase**](#showcase) section features polished demos based on real-world data.
-* The [**visuals**](#visuals) section shows one example per visual type.
-* The [**features**](#features) section focuses on specific API features.
-
-""",
-    'showcase': """This section highlights polished demos built on real-world datasets.
-
-""",
-    'visuals': """Each example in this section focuses on a single visual type.
-
-""",
-    'features': """This section isolates individual features of the Datoviz API.
-Each example is designed to demonstrate a specific capability.
-
-!!! warning
-
-    Some examples use GUI elements that are not yet supported in automatic screenshots.
-    As a result, certain screenshots may appear blank. This limitation will be addressed in a
-    future release.
-
-""",
+PAGE_CONFIG = {
+    "visual-gallery.md": {
+        "title": "Visual Gallery",
+        "lanes": ("visuals", "composites"),
+        "intro": """\
+            This page indexes the current C examples for visual families and semantic composites.
+            Visual examples are intentionally small: each one demonstrates one retained rendering
+            family or one reusable composite boundary.
+        """,
+    },
+    "feature-gallery.md": {
+        "title": "Feature Gallery",
+        "lanes": ("features", "workflows"),
+        "intro": """\
+            This page indexes focused C examples for public scene, layout, adornment, interaction,
+            update, and appearance features. Workflow examples compose several focused features
+            without replacing the minimal examples.
+        """,
+    },
+    "showcases.md": {
+        "title": "Showcases",
+        "lanes": ("showcases", "scientific"),
+        "intro": """\
+            Showcases are composed examples for release proof and public website media. They may
+            use prepared data, animation, postprocess settings, or domain-specific context. Each
+            item still needs a deterministic screenshot before final publication.
+        """,
+    },
 }
 
+TECHNIQUE_IDS = (
+    "depth_test",
+    "alpha_blending",
+    "feature_lighting",
+    "feature_material_mesh",
+    "feature_mesh_texture",
+    "point_cloud",
+    "protein_arcball_viewer",
+    "showcase_gpu_particle_smoke",
+)
 
-def extract_metadata(script_path):
-    content = script_path.read_text(encoding='utf-8')
 
-    # Match top-level docstring
-    match = re.match(r'\s*[ru]?["\']{3}(.*?["\']{3})', content, re.DOTALL)
-    if not match:
-        raise ValueError(f'No docstring found in {script_path}')
-    docstring = match.group(1).strip().rstrip('\'"')
+@dataclass(frozen=True)
+class Example:
+    id: str
+    title: str
+    lane: str
+    stage: str
+    source: str
+    validation: str
+    status: str
+    features: tuple[str, ...]
+    summary: str
+    dataset: dict
+    encoding: dict
 
-    # Extract title: first line starting with #
-    lines = docstring.splitlines()
-    title_line = (
-        next((line for line in lines if line.strip().startswith('#')), '').lstrip('#').strip()
-    )
+    @property
+    def source_path(self) -> Path:
+        return ROOT / self.source
 
-    # Extract YAML block
-    yaml_match = re.search(r'^---(.*?)---', docstring, re.DOTALL | re.MULTILINE)
-    yaml_raw = yaml_match.group(1).strip() if yaml_match else ''
-    metadata = yaml.safe_load(yaml_raw) if yaml_raw else {}
-    tags = metadata.get('tags', [])
-    dependencies = metadata.get('dependencies', [])
+    @property
+    def rel_executable(self) -> str:
+        rel = Path(self.source).relative_to("examples/c")
+        return rel.with_suffix("").as_posix()
 
-    # Extract description: all lines between title and YAML block
-    title_index = next(i for i, line in enumerate(lines) if line.strip().startswith('#'))
-    description_lines = []
-    for i in range(title_index + 1, len(lines)):
-        if lines[i].strip().startswith('---'):
-            break
-        description_lines.append(lines[i].rstrip())
-    description = '\n'.join(description_lines).strip()
+    @property
+    def page_path(self) -> str:
+        return f"gallery/{self.lane}/{self.id}.md"
 
-    # Remove docstring from the rest of the code
-    code_body = re.sub(
-        r'^\s*[ru]?["\']{3}.*?["\']{3}', '', content, count=1, flags=re.DOTALL
-    ).lstrip()
+    @property
+    def image_path(self) -> Path:
+        return DEFAULT_IMAGE_DIR / self.lane / f"{self.id}.png"
 
-    in_gallery = True
-    if 'in_gallery: false' in content:
-        in_gallery = False
+    @property
+    def image_ref(self) -> str:
+        return f"../images/gallery/{self.lane}/{self.id}.png"
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
+    parser.add_argument("--docs-dir", type=Path, default=DEFAULT_DOCS_DIR)
+    parser.add_argument("--image-dir", type=Path, default=DEFAULT_IMAGE_DIR)
+    return parser.parse_args()
+
+
+def load_manifest(path: Path) -> dict:
+    with path.open("r", encoding="utf8") as f:
+        manifest = yaml.safe_load(f) or {}
+    if not isinstance(manifest.get("examples"), list):
+        raise ValueError(f"{path} does not contain an examples list")
+    return manifest
+
+
+def status_from_entry(entry: dict) -> str:
+    gallery = entry.get("gallery") or {}
+    if gallery.get("status_label"):
+        return str(gallery["status_label"])
+    stage = str(entry.get("stage", ""))
+    if "experimental" in stage:
+        return "experimental"
+    if "deferred" in stage:
+        return "deferred"
+    return "supported"
+
+
+def normalize_summary(text: str) -> str:
+    text = re.sub(r"\s+", " ", text).strip()
+    if not text:
+        return "Current C-first Datoviz example."
+    return text
+
+
+def extract_c_summary(path: Path) -> str:
+    if not path.exists():
+        return ""
+    content = path.read_text(encoding="utf8", errors="replace")
+    for match in re.finditer(r"/\*(.*?)\*/", content, flags=re.DOTALL):
+        block = match.group(1)
+        if "Copyright" in block or "SPDX-License" in block:
+            continue
+        lines = [re.sub(r"^\s*\*\s?", "", line).strip() for line in block.splitlines()]
+        lines = [line for line in lines if line]
+        if not lines:
+            continue
+        first = lines[0]
+        if " - " in first:
+            return normalize_summary(first.split(" - ", 1)[1])
+        return normalize_summary(first)
+    return ""
+
+
+def collect_examples(manifest: dict) -> list[Example]:
+    examples: list[Example] = []
+    for entry in manifest["examples"]:
+        lane = str(entry.get("lane", ""))
+        stage = str(entry.get("stage", ""))
+        source = str(entry.get("source", ""))
+        if lane not in PUBLIC_LANES or stage == "lab" or not source:
+            continue
+        example = Example(
+            id=str(entry["id"]),
+            title=str(entry.get("title", entry["id"])),
+            lane=lane,
+            stage=stage,
+            source=source,
+            validation=str(entry.get("validation", "")),
+            status=status_from_entry(entry),
+            features=tuple(str(feature) for feature in entry.get("features", [])),
+            summary=extract_c_summary(ROOT / source),
+            dataset=entry.get("dataset") or {},
+            encoding=entry.get("encoding") or {},
+        )
+        examples.append(example)
+    return examples
+
+
+def status_counts(examples: list[Example]) -> str:
+    counts: dict[str, int] = {}
+    for example in examples:
+        counts[example.status] = counts.get(example.status, 0) + 1
+    ordered = [status for status in STATUS_ORDER if status in counts]
+    ordered.extend(sorted(status for status in counts if status not in ordered))
+    return ", ".join(f"{counts[status]} {status}" for status in ordered)
+
+
+def lane_title(lane: str) -> str:
     return {
-        'title': title_line,
-        'description': description,
-        'tags': tags,
-        'dependencies': dependencies,
-        'code': dedent(code_body).rstrip(),
-        'in_gallery': in_gallery,
-    }
+        "visuals": "Visuals",
+        "features": "Features",
+        "workflows": "Workflows",
+        "composites": "Composites",
+        "showcases": "Showcases",
+        "scientific": "Scientific",
+    }.get(lane, lane.capitalize())
 
 
-def example_image_exists(category, name):
-    return (DATA_DIR / f'gallery/{category}/{name}.png').exists()
+def source_url(example: Example) -> str:
+    return f"{SOURCE_BASE_URL}/{example.source}"
 
 
-def get_screenshot_url(category, name):
-    if example_image_exists(category, name):
-        return f'{GITHUB_IMG_BASE}/{category}/{name}.png'
-    else:
-        return f'{GITHUB_IMG_BASE}/empty.png'
+def media_block(example: Example, image_dir: Path, depth: int = 0) -> str:
+    rel_prefix = "../" * depth
+    image = image_dir / example.lane / f"{example.id}.png"
+    if image.exists():
+        return f"![{example.title}]({rel_prefix}../images/gallery/{example.lane}/{example.id}.png)"
+    return "_Media pending._"
 
 
-def generate_example_page(category, script_path, output_path):
-    name = script_path.stem
-    meta = extract_metadata(script_path)
-    if example_image_exists(category, name):
-        screenshot_image = f'![Screenshot]({get_screenshot_url(category, name)})'
-    else:
-        screenshot_image = ''
-    back_link = f'[← Back to gallery](../index.md#{category})'
+def render_card(example: Example, docs_dir: Path, image_dir: Path) -> str:
+    page = Path(example.page_path)
+    href = page.as_posix()
+    media = media_block(example, image_dir)
+    features = ", ".join(f"`{feature}`" for feature in example.features[:5])
+    if len(example.features) > 5:
+        features += ", ..."
+    feature_line = f"<br><span>{features}</span>" if features else ""
+    return f"""\
+<div class="card" markdown="1">
 
-    if meta['dependencies']:
-        dependencies = f'**Extra Python dependencies**: {", ".join(meta["dependencies"])}'
-    else:
-        dependencies = ''
+### [{example.title}]({href})
 
-    code = meta['code'].replace('\n', '\n    ')
-    md = f"""
-# {meta['title']}
+{media}
 
-{meta['description']}
+`{example.status}` `{example.lane}`{feature_line}
 
-**Tags**: {', '.join(meta['tags'])}
+{example.summary}
 
-{dependencies}
-
-{screenshot_image}
-
-=== "Python code"
-
-    ```python
-    {code}
-    ```
-
-{back_link}
-"""
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(md.strip() + '\n', encoding='utf-8')
-
-
-def generate_index(pages):
-    lines = [
-        '# Gallery\n',
-        '<!-- WARNING: this file is auto-generated, edit tools/build_gallery.py instead -->\n',
-    ]
-    lines.extend(INTRO['gallery'].splitlines())
-    for category in CATEGORIES:
-        lines.append(f'## {category.capitalize()}\n')
-        lines.extend(INTRO[category].splitlines())
-        lines.append('<div class="grid cards" markdown="1">\n')
-        for name, title in sorted(pages.get(category, []), key=itemgetter(1)):
-            screenshot_url = get_screenshot_url(category, name)
-            page_url = f'{category}/{name}/'
-            lines.append(f"""\
-<div class="card">
-  <a href="{page_url}">
-    <img src="{screenshot_url}" alt="{title}" />
-    <div class="card-title">{title}</div>
-  </a>
 </div>
-""")
-        lines.append('</div>\n')
-    return '\n'.join(lines)
+"""
 
 
-def main():
-    all_pages = {}
-    for category in CATEGORIES:
-        example_dir = EXAMPLES_DIR / category
-        output_dir = GALLERY_DIR / category
-        for script_path in sorted(example_dir.glob('*.py')):
-            name = script_path.stem
-            output_path = output_dir / f'{name}.md'
-            metadata = extract_metadata(script_path)
-            # Skip examples not in the gallery
-            if not metadata['in_gallery']:
-                continue
-            generate_example_page(category, script_path, output_path)
-            all_pages.setdefault(category, []).append((name, metadata['title']))
-    index_path = GALLERY_DIR / 'index.md'
-    index_md = generate_index(all_pages)
-    index_path.write_text(index_md, encoding='utf-8')
+def write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text.rstrip() + "\n", encoding="utf8")
 
 
-if __name__ == '__main__':
-    main()
+def generated_header(title: str) -> list[str]:
+    return [
+        f"# {title}",
+        "",
+        "<!-- WARNING: generated by tools/build_gallery.py from examples/c/MANIFEST.yaml -->",
+        "",
+    ]
+
+
+def render_lane_section(
+    examples: list[Example], lane: str, docs_dir: Path, image_dir: Path
+) -> list[str]:
+    lane_examples = [example for example in examples if example.lane == lane]
+    if not lane_examples:
+        return []
+    lines = [f"## {lane_title(lane)}", ""]
+    lines.append('<div class="grid cards" markdown="1">')
+    lines.append("")
+    for example in sorted(lane_examples, key=lambda item: item.title.lower()):
+        lines.append(render_card(example, docs_dir, image_dir))
+    lines.append("</div>")
+    lines.append("")
+    return lines
+
+
+def render_gallery_page(
+    filename: str, config: dict, examples: list[Example], docs_dir: Path, image_dir: Path
+) -> None:
+    page_examples = [example for example in examples if example.lane in config["lanes"]]
+    lines = generated_header(config["title"])
+    lines.extend(dedent(config["intro"]).strip().splitlines())
+    lines.extend(["", f"Coverage: {len(page_examples)} examples ({status_counts(page_examples)}).", ""])
+    for lane in config["lanes"]:
+        lines.extend(render_lane_section(page_examples, lane, docs_dir, image_dir))
+    write_text(docs_dir / filename, "\n".join(lines))
+
+
+def render_index(examples: list[Example], docs_dir: Path) -> None:
+    by_lane = {lane: [example for example in examples if example.lane == lane] for lane in PUBLIC_LANES}
+    lines = generated_header("Examples")
+    lines.extend(
+        dedent(
+            """\
+            Examples are executable release proof for v0.4. The public gallery is generated from
+            `examples/c/MANIFEST.yaml` and points at the C sources that exercise the current
+            scene -> DRP2 -> runtime path.
+
+            Static screenshots are required before final website publication. This generated index
+            keeps media status explicit while capture artifacts are prepared separately.
+            """
+        )
+        .strip()
+        .splitlines()
+    )
+    lines.extend(["", "## Gallery Sections", ""])
+    lines.extend(
+        [
+            "| Section | Examples | Status |",
+            "| --- | ---: | --- |",
+            f"| [Visual gallery](visual-gallery.md) | {len(by_lane['visuals']) + len(by_lane['composites'])} | {status_counts(by_lane['visuals'] + by_lane['composites'])} |",
+            f"| [Feature gallery](feature-gallery.md) | {len(by_lane['features']) + len(by_lane['workflows'])} | {status_counts(by_lane['features'] + by_lane['workflows'])} |",
+            f"| [Showcases](showcases.md) | {len(by_lane['showcases']) + len(by_lane['scientific'])} | {status_counts(by_lane['showcases'] + by_lane['scientific'])} |",
+            f"| [Techniques](techniques.md) | {len([e for e in examples if e.id in TECHNIQUE_IDS])} | Rendering and compute behavior coverage |",
+            f"| [Validation gallery](validation-gallery.md) | {len(examples)} | Release evidence checklist |",
+        ]
+    )
+    lines.extend(["", "## Source Lanes", ""])
+    lines.extend(["| Lane | Source directory | Examples |", "| --- | --- | ---: |"])
+    for lane in PUBLIC_LANES:
+        lines.append(f"| {lane_title(lane)} | `examples/c/{lane}/` | {len(by_lane[lane])} |")
+    write_text(docs_dir / "index.md", "\n".join(lines))
+
+
+def render_techniques(examples: list[Example], docs_dir: Path) -> None:
+    selected = [example for example in examples if example.id in TECHNIQUE_IDS]
+    lines = generated_header("Techniques")
+    lines.extend(
+        dedent(
+            """\
+            Technique coverage is currently represented by focused feature examples and selected
+            showcases. Dedicated `examples/c/techniques/` sources remain future work until those
+            behaviors are promoted into the v0.4 public surface.
+            """
+        )
+        .strip()
+        .splitlines()
+    )
+    lines.extend(["", "| Technique coverage | Source | Status |", "| --- | --- | --- |"])
+    for example in selected:
+        lines.append(
+            f"| [{example.title}]({example.page_path}) | "
+            f"[`{example.source}`]({source_url(example)}) | `{example.status}` |"
+        )
+    write_text(docs_dir / "techniques.md", "\n".join(lines))
+
+
+def render_validation(examples: list[Example], docs_dir: Path) -> None:
+    screenshot_examples = [example for example in examples if "screenshot" in example.validation]
+    video_examples = [
+        example
+        for example in examples
+        if "video" in example.validation or "animation" in example.id or "gpu_particle" in example.id
+    ]
+    lines = generated_header("Validation Gallery")
+    lines.extend(
+        dedent(
+            """\
+            This page tracks release evidence for gallery publication. It intentionally separates
+            executable source coverage from media artifacts, because screenshots and clips are
+            generated in Vulkan-capable environments and should not be committed accidentally.
+            """
+        )
+        .strip()
+        .splitlines()
+    )
+    lines.extend(
+        [
+            "",
+            "## Evidence Counts",
+            "",
+            f"- Public C examples in manifest: {len(examples)}",
+            f"- Examples declaring screenshot validation: {len(screenshot_examples)}",
+            f"- Examples that should have video or motion evidence: {len(video_examples)}",
+            "",
+            "## Commands",
+            "",
+            "```sh",
+            "just build",
+            "just gallery",
+            "python3 tools/run_c_examples.py --list",
+            "git diff --check",
+            "```",
+            "",
+            "Screenshot and video capture should be run separately from documentation generation. Do not stage",
+            "`data/gallery`, `docs/images/gallery`, or other generated media without explicit approval.",
+            "",
+            "## Screenshot Queue",
+            "",
+            "| Example | Source | Status | Validation |",
+            "| --- | --- | --- | --- |",
+        ]
+    )
+    for example in screenshot_examples:
+        lines.append(
+            f"| [{example.title}]({example.page_path}) | "
+            f"[`{example.source}`]({source_url(example)}) | `{example.status}` | "
+            f"`{example.validation}` |"
+        )
+    write_text(docs_dir / "validation-gallery.md", "\n".join(lines))
+
+
+def render_example_page(example: Example, docs_dir: Path, image_dir: Path) -> None:
+    lines = generated_header(example.title)
+    lines.extend([example.summary, ""])
+    lines.extend(
+        [
+            f"- ID: `{example.id}`",
+            f"- Lane: `{example.lane}`",
+            f"- Status: `{example.status}`",
+            f"- Source: [`{example.source}`]({source_url(example)})",
+            f"- Build: `just example-c {example.rel_executable}`",
+            f"- Smoke: `./build/examples/c/{example.rel_executable} --png`",
+            f"- Validation: `{example.validation}`",
+            "",
+        ]
+    )
+    if example.features:
+        lines.extend(["## Features", ""])
+        lines.append(", ".join(f"`{feature}`" for feature in example.features))
+        lines.append("")
+    if example.dataset:
+        lines.extend(["## Dataset", "", "| Field | Value |", "| --- | --- |"])
+        for key, value in example.dataset.items():
+            lines.append(f"| `{key}` | {value} |")
+        lines.append("")
+    if example.encoding:
+        lines.extend(["## Encoding", "", "| Field | Value |", "| --- | --- |"])
+        for key, value in example.encoding.items():
+            lines.append(f"| `{key}` | {value} |")
+        lines.append("")
+    lines.extend(["## Media", "", media_block(example, image_dir, depth=2), ""])
+    lines.extend(
+        [
+            "Static screenshots are required before final website publication. Generated media is",
+            "prepared separately from this page and should not be staged without explicit approval.",
+        ]
+    )
+    write_text(docs_dir / example.page_path, "\n".join(lines))
+
+
+def clean_generated_pages(docs_dir: Path) -> None:
+    generated = docs_dir / "gallery"
+    if generated.exists():
+        shutil.rmtree(generated)
+
+
+def main() -> int:
+    args = parse_args()
+    manifest = load_manifest(args.manifest)
+    examples = collect_examples(manifest)
+    clean_generated_pages(args.docs_dir)
+    render_index(examples, args.docs_dir)
+    for filename, config in PAGE_CONFIG.items():
+        render_gallery_page(filename, config, examples, args.docs_dir, args.image_dir)
+    render_techniques(examples, args.docs_dir)
+    render_validation(examples, args.docs_dir)
+    for example in examples:
+        render_example_page(example, args.docs_dir, args.image_dir)
+    print(f"Generated {len(examples)} C gallery entries under {args.docs_dir}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

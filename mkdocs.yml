@@ -200,6 +200,7 @@ not_in_nav: |
   architecture/*
   blog/*
   discussions/*
+  examples/gallery/*
   gallery/*
   guide/*
   tasks/*
