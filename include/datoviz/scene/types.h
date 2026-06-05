@@ -360,6 +360,33 @@ struct DvzDataDomain
 typedef struct DvzDataDomain DvzDataDomain;
 
 
+typedef enum
+{
+    DVZ_PANEL_DOMAIN_FIT_NONE = 0,
+    DVZ_PANEL_DOMAIN_FIT_CONTAIN,
+} DvzPanelDomainFitMode;
+
+
+typedef enum
+{
+    DVZ_PANEL_DOMAIN_ASPECT_FREE = 0,
+    DVZ_PANEL_DOMAIN_ASPECT_EQUAL,
+} DvzPanelDomainAspectMode;
+
+
+struct DvzPanelDomainFit
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzPanelDomainFitMode fit;
+    DvzPanelDomainAspectMode aspect;
+    DvzDataDomain x;
+    DvzDataDomain y;
+    double padding;
+};
+typedef struct DvzPanelDomainFit DvzPanelDomainFit;
+
+
 struct DvzAxisTickPolicy
 {
     uint32_t struct_size;

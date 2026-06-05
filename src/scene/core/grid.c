@@ -465,6 +465,7 @@ bool _scene_panel_set_desc_internal(DvzPanel* panel, DvzPanelDesc desc)
     }
     (void)_scene_panel_refresh_border(panel);
     _panel_mark_layout_changed(panel);
+    (void)_scene_panel_apply_domain_fit(panel);
     return true;
 }
 
@@ -629,4 +630,3 @@ DvzPanel* dvz_grid_panel(DvzGrid* grid, uint32_t row, uint32_t col)
 {
     return dvz_grid_panel_span(grid, row, col, 1, 1);
 }
-

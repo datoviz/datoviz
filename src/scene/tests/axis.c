@@ -1330,6 +1330,74 @@ int test_panel_visible_domain(TstContext* suite, const TstCase* item)
 }
 
 
+static int test_panel_domain_fit(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzPanelDomainFit fit = dvz_panel_domain_fit();
+    AT(fit.struct_size == DVZ_STRUCT_SIZE(DvzPanelDomainFit));
+    AT(fit.fit == DVZ_PANEL_DOMAIN_FIT_CONTAIN);
+    AT(fit.aspect == DVZ_PANEL_DOMAIN_ASPECT_FREE);
+    fit.x = (DvzDataDomain){.min = 0.0, .max = 2.0};
+    fit.y = (DvzDataDomain){.min = 0.0, .max = 1.0};
+    fit.padding = 0.10;
+    AT(dvz_panel_set_domain_fit(panel, &fit) == 0);
+
+    double min = 0.0;
+    double max = 0.0;
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
+    AT(fabs(min + 0.20) < 1e-9);
+    AT(fabs(max - 2.20) < 1e-9);
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
+    AT(fabs(min + 0.20) < 1e-9);
+    AT(fabs(max - 1.20) < 1e-9);
+
+    fit.padding = 0.0;
+    fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
+    AT(dvz_panel_set_domain_fit(panel, &fit) == 0);
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
+    AT(fabs(min - 0.0) < 1e-9);
+    AT(fabs(max - 2.0) < 1e-9);
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
+    AT(fabs(min + 0.25) < 1e-9);
+    AT(fabs(max - 1.25) < 1e-9);
+
+    AT(dvz_panel_set_layout_reserve(panel, &(DvzPanelLayoutReserve){.right = 0.50f}));
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
+    AT(fabs(min + 0.50) < 1e-9);
+    AT(fabs(max - 1.50) < 1e-9);
+
+    dvz_figure_resize(figure, 1200, 600);
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
+    AT(fabs(min + (1.0 / 6.0)) < 1e-9);
+    AT(fabs(max - (7.0 / 6.0)) < 1e-9);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 10.0, 20.0) == 0);
+    AT(dvz_panel_set_layout_reserve(panel, NULL));
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
+    AT(fabs(min - 10.0) < 1e-9);
+    AT(fabs(max - 20.0) < 1e-9);
+
+    AT(dvz_panel_set_domain_fit(panel, &fit) == 0);
+    dvz_panel_clear_domain_fit(panel);
+    AT(dvz_panel_set_layout_reserve(panel, &(DvzPanelLayoutReserve){.right = 0.50f}));
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
+    AT(fabs(min - 0.0) < 1e-9);
+    AT(fabs(max - 1.0) < 1e-9);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_axis_panzoom_visible_domain(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -1973,6 +2041,14 @@ int test_axis_descriptor_abi_rejects_invalid_structs(TstContext* suite, const Ts
     style.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_style(axis, &style));
 
+    DvzPanelDomainFit fit = dvz_panel_domain_fit();
+    fit.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_domain_fit(panel, &fit) != 0);
+
+    fit = dvz_panel_domain_fit();
+    fit.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_domain_fit(panel, &fit) != 0);
+
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -2003,6 +2079,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_plot_margins);
     TST_CASE(test_axis_layout_reserve);
     TST_CASE(test_panel_visible_domain);
+    TST_CASE(test_panel_domain_fit);
     TST_CASE(test_axis_panzoom_visible_domain);
     TST_CASE(test_axis_panzoom_layout_aligns_grid_to_plot);
     TST_CASE(test_axis_raw_visual_panzoom_alignment);

@@ -831,6 +831,7 @@ bool _scene_grid_detach_panel(DvzGrid* grid, DvzPanel* panel);
 void _scene_controller_destroy(DvzController* controller);
 bool _scene_panel_sync_fly_pivot_marker(DvzPanel* panel);
 bool _scene_panel_refresh_border(DvzPanel* panel);
+int _scene_panel_apply_domain_fit(DvzPanel* panel);
 
 bool _dvz_figure_fly_update(DvzFigure* figure, double dt);
 
@@ -1777,6 +1778,8 @@ struct DvzPanel
     DvzPanelReserve legend_reserve;
     DvzPanelReserve reserve;
     DvzPanelReserve padding;
+    bool domain_fit_enabled;
+    DvzPanelDomainFit domain_fit;
 
     DvzPanzoom* panzoom; /* optional pan/zoom controller (owned) */
     DvzArcball* arcball; /* optional arcball controller (owned) */

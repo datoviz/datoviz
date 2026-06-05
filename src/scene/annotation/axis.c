@@ -35,6 +35,7 @@
 
 #define DVZ_AXIS_TICK_POLICY_KNOWN_FLAGS 0u
 #define DVZ_AXIS_STYLE_KNOWN_FLAGS 0u
+#define DVZ_PANEL_DOMAIN_FIT_KNOWN_FLAGS 0u
 
 
 static bool _axis_tick_policy_validate(const DvzAxisTickPolicy* policy)
@@ -59,6 +60,33 @@ static bool _axis_style_validate(const DvzAxisStyle* style)
         log_error("invalid axis style ABI");
         return false;
     }
+    return true;
+}
+
+
+static bool _panel_domain_fit_validate(const DvzPanelDomainFit* fit)
+{
+    if (fit == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(fit, DvzPanelDomainFit, DVZ_PANEL_DOMAIN_FIT_KNOWN_FLAGS))
+    {
+        log_error("invalid panel domain-fit ABI");
+        return false;
+    }
+    if (fit->fit == DVZ_PANEL_DOMAIN_FIT_NONE)
+        return true;
+    if (fit->fit != DVZ_PANEL_DOMAIN_FIT_CONTAIN)
+        return false;
+    if (fit->aspect != DVZ_PANEL_DOMAIN_ASPECT_FREE &&
+        fit->aspect != DVZ_PANEL_DOMAIN_ASPECT_EQUAL)
+        return false;
+    if (!isfinite(fit->x.min) || !isfinite(fit->x.max) || !isfinite(fit->y.min) ||
+        !isfinite(fit->y.max) || !isfinite(fit->padding))
+        return false;
+    if (!(fit->x.max > fit->x.min) || !(fit->y.max > fit->y.min))
+        return false;
+    if (fit->padding < 0.0)
+        return false;
     return true;
 }
 
@@ -277,6 +305,25 @@ float _axis_data_to_visual(
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+static int _panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max, bool clear_fit)
+{
+    DvzAxis* axis = _panel_axis_slot(panel, dim);
+    if (axis == NULL || !isfinite(min) || !isfinite(max) || !(max > min))
+        return -1;
+    if (clear_fit)
+        panel->domain_fit_enabled = false;
+    _axis_init(axis, panel, dim);
+    axis->domain = (DvzDataDomain){.min = min, .max = max};
+    axis->domain_set = true;
+    axis->tick_lstep = 0.0;
+    axis->tick_cache_valid = false;
+    axis->dirty = true;
+    axis->version++;
+    _scene_notify_request_frame(panel->figure);
+    return 0;
+}
+
+
 /**
  * Set a panel data domain for one axis dimension.
  *
@@ -288,18 +335,129 @@ float _axis_data_to_visual(
  */
 int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max)
 {
-    DvzAxis* axis = _panel_axis_slot(panel, dim);
-    if (axis == NULL || !isfinite(min) || !isfinite(max) || !(max > min))
+    return _panel_set_domain(panel, dim, min, max, true);
+}
+
+
+/**
+ * Return the default panel domain-fit descriptor.
+ *
+ * @return domain-fit descriptor
+ */
+DvzPanelDomainFit dvz_panel_domain_fit(void)
+{
+    return (DvzPanelDomainFit){
+        DVZ_STRUCT_INIT_FIELDS(DvzPanelDomainFit),
+        .fit = DVZ_PANEL_DOMAIN_FIT_CONTAIN,
+        .aspect = DVZ_PANEL_DOMAIN_ASPECT_FREE,
+        .x = {.min = -1.0, .max = +1.0},
+        .y = {.min = -1.0, .max = +1.0},
+        .padding = 0.0,
+    };
+}
+
+
+/**
+ * Apply one panel's stored 2D domain-fit policy.
+ *
+ * @param panel the panel
+ * @return 0 on success, -1 on validation error
+ */
+int _scene_panel_apply_domain_fit(DvzPanel* panel)
+{
+    if (panel == NULL || !panel->domain_fit_enabled)
+        return 0;
+    DvzPanelDomainFit fit = panel->domain_fit;
+    if (!_panel_domain_fit_validate(&fit) || fit.fit == DVZ_PANEL_DOMAIN_FIT_NONE)
         return -1;
-    _axis_init(axis, panel, dim);
-    axis->domain = (DvzDataDomain){.min = min, .max = max};
-    axis->domain_set = true;
-    axis->tick_lstep = 0.0;
-    axis->tick_cache_valid = false;
-    axis->dirty = true;
-    axis->version++;
-    _scene_notify_request_frame(panel->figure);
+
+    double xmin = fit.x.min;
+    double xmax = fit.x.max;
+    double ymin = fit.y.min;
+    double ymax = fit.y.max;
+    double x_span = xmax - xmin;
+    double y_span = ymax - ymin;
+    double pad = fit.padding * fmax(x_span, y_span);
+    xmin -= pad;
+    xmax += pad;
+    ymin -= pad;
+    ymax += pad;
+    x_span = xmax - xmin;
+    y_span = ymax - ymin;
+
+    if (fit.aspect == DVZ_PANEL_DOMAIN_ASPECT_EQUAL)
+    {
+        DvzRect plot = {0};
+        if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
+            return -1;
+        double plot_aspect = (double)plot.width / (double)plot.height;
+        double data_aspect = x_span / y_span;
+        if (!isfinite(plot_aspect) || !(plot_aspect > 0.0) || !isfinite(data_aspect) ||
+            !(data_aspect > 0.0))
+            return -1;
+        if (data_aspect < plot_aspect)
+        {
+            double target_span = y_span * plot_aspect;
+            double center = 0.5 * (xmin + xmax);
+            xmin = center - 0.5 * target_span;
+            xmax = center + 0.5 * target_span;
+        }
+        else if (data_aspect > plot_aspect)
+        {
+            double target_span = x_span / plot_aspect;
+            double center = 0.5 * (ymin + ymax);
+            ymin = center - 0.5 * target_span;
+            ymax = center + 0.5 * target_span;
+        }
+    }
+
+    if (_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax, false) != 0)
+        return -1;
+    if (_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax, false) != 0)
+        return -1;
     return 0;
+}
+
+
+/**
+ * Set a panel 2D domain-fit policy.
+ *
+ * @param panel the panel
+ * @param fit domain-fit descriptor; NULL clears the fit policy
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_panel_set_domain_fit(DvzPanel* panel, const DvzPanelDomainFit* fit)
+{
+    if (panel == NULL)
+        return -1;
+    if (fit == NULL)
+    {
+        panel->domain_fit_enabled = false;
+        return 0;
+    }
+    if (!_panel_domain_fit_validate(fit))
+        return -1;
+    if (fit->fit == DVZ_PANEL_DOMAIN_FIT_NONE)
+    {
+        panel->domain_fit_enabled = false;
+        return 0;
+    }
+    panel->domain_fit = *fit;
+    panel->domain_fit_enabled = true;
+    return _scene_panel_apply_domain_fit(panel);
+}
+
+
+/**
+ * Clear a panel domain-fit policy without changing the current axis domains.
+ *
+ * @param panel the panel
+ */
+void dvz_panel_clear_domain_fit(DvzPanel* panel)
+{
+    if (panel == NULL)
+        return;
+    panel->domain_fit_enabled = false;
 }
 
 

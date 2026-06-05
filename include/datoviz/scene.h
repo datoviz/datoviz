@@ -901,6 +901,37 @@ DVZ_EXPORT int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, dou
 
 
 /**
+ * Return the default panel domain-fit descriptor.
+ *
+ * @return domain-fit descriptor
+ */
+DVZ_EXPORT DvzPanelDomainFit dvz_panel_domain_fit(void);
+
+
+/**
+ * Set a panel 2D domain-fit policy.
+ *
+ * The fit policy owns both X and Y axis domains and is re-applied when the panel plot rectangle
+ * changes. DVZ_PANEL_DOMAIN_ASPECT_EQUAL expands one domain so one X data unit and one Y data
+ * unit occupy the same number of plot pixels. Padding is a non-negative fraction of the larger
+ * source domain span, applied before aspect fitting.
+ *
+ * @param panel the panel
+ * @param fit domain-fit descriptor; NULL clears the fit policy
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_panel_set_domain_fit(DvzPanel* panel, const DvzPanelDomainFit* fit);
+
+
+/**
+ * Clear a panel domain-fit policy without changing the current axis domains.
+ *
+ * @param panel the panel
+ */
+DVZ_EXPORT void dvz_panel_clear_domain_fit(DvzPanel* panel);
+
+
+/**
  * Return the current visible data domain for one panel dimension.
  *
  * The panel's domain is combined with the current panzoom extent. When no explicit domain has
