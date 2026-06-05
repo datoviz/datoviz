@@ -37,7 +37,6 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "datoviz/app.h"
-#include "datoviz/input.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_debug.h"
@@ -115,20 +114,6 @@ typedef struct ChoroplethBundle
     ChoroplethRing* rings;
     dvec2* points;
 } ChoroplethBundle;
-
-
-typedef struct ChoroplethRuntime
-{
-    DvzView* view;
-    DvzFigure* figure;
-    DvzPanel* panel;
-    DvzPolygonSet* polygon_set;
-    const ChoroplethBundle* bundle;
-    dvec2* visual_points;
-    uint32_t last_width;
-    uint32_t last_height;
-} ChoroplethRuntime;
-
 
 
 /*************************************************************************************************/
@@ -485,135 +470,6 @@ static bool _configure_panel(DvzPanel* panel, const ChoroplethBundle* bundle)
 
 
 /**
- * Return the map domain-fit descriptor used for the choropleth source coordinates.
- *
- * @param bundle loaded map bundle
- * @return domain-fit descriptor
- */
-static DvzPanelDomainFit _choropleth_domain_fit(const ChoroplethBundle* bundle)
-{
-    ANN(bundle);
-    DvzPanelDomainFit fit = dvz_panel_domain_fit();
-    fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
-    fit.x = (DvzDataDomain){.min = bundle->xmin, .max = bundle->xmax};
-    fit.y = (DvzDataDomain){.min = bundle->ymin, .max = bundle->ymax};
-    fit.padding = 0.035;
-    return fit;
-}
-
-
-/**
- * Rebuild visual-space source coordinates from the current panel domain fit.
- *
- * @param runtime choropleth runtime state
- * @return whether points were updated
- */
-static bool _choropleth_update_visual_points(ChoroplethRuntime* runtime)
-{
-    ANN(runtime);
-    ANN(runtime->panel);
-    ANN(runtime->bundle);
-    ANN(runtime->visual_points);
-
-    const ChoroplethBundle* bundle = runtime->bundle;
-    DvzPanelDomainFit fit = _choropleth_domain_fit(bundle);
-    if (dvz_panel_set_domain_fit(runtime->panel, &fit) != 0)
-        return false;
-
-    for (uint32_t i = 0; i < bundle->point_count; i++)
-    {
-        float data[3] = {
-            (float)bundle->points[i][0],
-            (float)bundle->points[i][1],
-            0.0f,
-        };
-        float visual[3] = {0};
-        if (dvz_panel_data_to_visual_positions(runtime->panel, data, visual, 1) != 0)
-            return false;
-        runtime->visual_points[i][0] = visual[0];
-        runtime->visual_points[i][1] = visual[1];
-    }
-    return true;
-}
-
-
-/**
- * Replace retained polygon geometry from the current visual-space source coordinates.
- *
- * @param runtime choropleth runtime state
- * @return whether geometry was updated
- */
-static bool _choropleth_update_geometry(ChoroplethRuntime* runtime)
-{
-    ANN(runtime);
-    ANN(runtime->polygon_set);
-    ANN(runtime->bundle);
-    ANN(runtime->visual_points);
-
-    if (!_choropleth_update_visual_points(runtime))
-        return false;
-
-    const ChoroplethBundle* bundle = runtime->bundle;
-    for (uint32_t i = 0; i < bundle->ring_count; i++)
-    {
-        const ChoroplethRing* ring = &bundle->rings[i];
-        DvzPolygonDesc desc = {
-            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
-            .outer = {
-                .xy = &runtime->visual_points[ring->point_first],
-                .count = ring->point_count,
-            },
-        };
-        if (dvz_polygon_set_region_geometry(runtime->polygon_set, i, &desc) != 0)
-            return false;
-    }
-    return true;
-}
-
-
-/**
- * Update choropleth visual-space geometry after a view resize.
- *
- * @param router input router
- * @param event resize event
- * @param user_data ChoroplethRuntime pointer
- */
-static void _choropleth_resize(
-    DvzInputRouter* router, const DvzInputResizeEvent* event, void* user_data)
-{
-    (void)router;
-    ChoroplethRuntime* runtime = (ChoroplethRuntime*)user_data;
-    if (event == NULL || runtime == NULL || runtime->figure == NULL)
-        return;
-
-    uint32_t width = event->window_width;
-    uint32_t height = event->window_height;
-    if ((width == 0 || height == 0) && event->framebuffer_width > 0 &&
-        event->framebuffer_height > 0)
-    {
-        float sx = event->content_scale_x > 0.0f ? event->content_scale_x : 1.0f;
-        float sy = event->content_scale_y > 0.0f ? event->content_scale_y : 1.0f;
-        width = (uint32_t)((float)event->framebuffer_width / sx + 0.5f);
-        height = (uint32_t)((float)event->framebuffer_height / sy + 0.5f);
-    }
-    if (width == 0 || height == 0 ||
-        (width == runtime->last_width && height == runtime->last_height))
-    {
-        return;
-    }
-
-    dvz_figure_resize(runtime->figure, width, height);
-    if (_choropleth_update_geometry(runtime))
-    {
-        runtime->last_width = width;
-        runtime->last_height = height;
-        dvz_view_request_frame(runtime->view);
-    }
-}
-
-
-
-/**
  * Add screen-space text.
  *
  * @param panel target panel
@@ -705,23 +561,14 @@ static DvzScale* _add_scale(DvzScene* scene, const ChoroplethBundle* bundle)
  * @return whether setup succeeded
  */
 static bool _add_choropleth_polygons(
-    DvzScene* scene, DvzPanel* panel, const ChoroplethBundle* bundle, ChoroplethRuntime* runtime)
+    DvzScene* scene, DvzPanel* panel, const ChoroplethBundle* bundle)
 {
     ANN(scene);
     ANN(panel);
     ANN(bundle);
-    ANN(runtime);
 
     DvzPolygonSet* set = dvz_polygon_set(scene, 0);
     if (set == NULL)
-        return false;
-    runtime->panel = panel;
-    runtime->polygon_set = set;
-    runtime->bundle = bundle;
-    runtime->visual_points = (dvec2*)dvz_calloc(bundle->point_count, sizeof(dvec2));
-    if (runtime->visual_points == NULL)
-        return false;
-    if (!_choropleth_update_visual_points(runtime))
         return false;
 
     DvzColor* fill = (DvzColor*)dvz_calloc(bundle->ring_count, sizeof(DvzColor));
@@ -745,8 +592,7 @@ static bool _add_choropleth_polygons(
         const ChoroplethRegion* region = &bundle->regions[ring->region_index];
         const uint32_t index = dvz_polygon_set_add(
             set, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
-                   .outer = {.xy = &runtime->visual_points[ring->point_first],
-                             .count = ring->point_count}});
+                   .outer = {.xy = &bundle->points[ring->point_first], .count = ring->point_count}});
         if (index == UINT32_MAX || index != i)
         {
             ok = false;
@@ -776,7 +622,8 @@ static bool _add_choropleth_polygons(
              dvz_panel_add_composite(
                  panel, composite,
                  &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
-                                        .z_layer = 0}) == 0;
+                                        .z_layer = 0,
+                                        .coord_space = DVZ_COORD_DATA}) == 0;
     }
 
     dvz_free(ids);
@@ -859,7 +706,6 @@ int main(int argc, char** argv)
     DvzApp* app = NULL;
     ExampleDebug debug = {0};
     ChoroplethBundle bundle = {0};
-    ChoroplethRuntime runtime = {0};
 
     char default_bundle[1024] = {0};
     const char* bundle_path = _bundle_arg(argc, argv);
@@ -884,28 +730,20 @@ int main(int argc, char** argv)
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
     EXAMPLE_CHECK(_configure_panel(panel, &bundle), "panel configuration failed");
-    runtime.figure = figure;
 
     DvzScale* scale = _add_scale(scene, &bundle);
     EXAMPLE_CHECK(scale != NULL, "scale setup failed");
-    EXAMPLE_CHECK(
-        _add_choropleth_polygons(scene, panel, &bundle, &runtime), "polygon-set setup failed");
+    EXAMPLE_CHECK(_add_choropleth_polygons(scene, panel, &bundle), "polygon-set setup failed");
     EXAMPLE_CHECK(_add_annotations(panel, scale), "annotation setup failed");
-    EXAMPLE_CHECK(_choropleth_update_geometry(&runtime), "polygon-set domain fit failed");
-    dvz_figure_size(figure, &runtime.last_width, &runtime.last_height);
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "choropleth");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-    runtime.view = win;
 
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
-    DvzInputRouter* router = dvz_view_input(win);
-    EXAMPLE_CHECK(router != NULL, "failed to access view input router");
-    dvz_input_subscribe_resize(router, _choropleth_resize, &runtime);
 
     EXAMPLE_CHECK(
         example_debug_setup(&debug, win, argc, argv, "choropleth"),
@@ -925,7 +763,6 @@ cleanup:
         dvz_app_destroy(app);
     if (scene != NULL)
         dvz_scene_destroy(scene);
-    dvz_free(runtime.visual_points);
     _choropleth_bundle_destroy(&bundle);
     return ret;
 }
