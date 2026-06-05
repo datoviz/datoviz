@@ -19,11 +19,12 @@ Blockers:
 | Qt/PyQt hosted path | Native Qt hosting has an optional example path; PyQt needs a native Qt bridge because current PyQt6 wheels do not expose `QVulkanInstance::setVkInstance()` or `vkInstance()`. | Implement the optional `datoviz_qtbridge` provider from `spec/scene/integration/QT_HOST_BRIDGE.md` and prove the PyQt hosted example. |
 | v0.3 visible parity audit | Missing. | Table each visible capability as fixed, deferred, or external/GSP. |
 | Public API/status cleanup | Missing. | Mark public surfaces as supported, experimental, advanced/unstable, deferred, or external/GSP. |
-| Release example proof | Partial. | Compact native + WebGPU proof set, plus one short public `examples/c/features/` example per v0.4 feature. |
+| Release example proof | Partial. Retained DATA-coordinate attachments and the choropleth migration away from resize-time geometry rebuild landed on 2026-06-05. CPU/build proof passed; native choropleth visual smoke is blocked in this shell by Vulkan instance creation failure. | Compact native + WebGPU proof set, plus one short public `examples/c/features/` example per v0.4 feature. Capture choropleth resize/equal-aspect visual proof in a Vulkan-capable environment. |
 
-Closed first slices that should stay in validation: raw `ctypes`, retained textured mesh, text, 2D
-axes/ticks, colorbars, labels/readouts, scale bars, app/offscreen rendering, broad item/sample query
-paths, scene visual-boundary checks, WebGPU fixture runner, and WASM point/panzoom scene smoke.
+Closed first slices that should stay in validation: raw `ctypes`, retained textured mesh, retained
+DATA-coordinate visual attachments, text, 2D axes/ticks, colorbars, labels/readouts, scale bars,
+app/offscreen rendering, broad item/sample query paths, scene visual-boundary checks, WebGPU fixture
+runner, and WASM point/panzoom scene smoke.
 
 New Python binding direction: keep `datoviz.raw` as the exact generated `ctypes` layer, and make
 top-level `import datoviz as dvz` the planned array-aware facade that preserves `dvz_*` names while
