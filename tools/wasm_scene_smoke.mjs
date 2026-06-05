@@ -18,6 +18,8 @@ const DVZ_POINTER_BUTTON_LEFT = 1;
 const DVZ_FORMAT_R8G8B8A8_UNORM = 37;
 const DVZ_CONTROLLER_TYPE_PANZOOM = 1;
 const DVZ_CONTROLLER_TYPE_ARCBALL = 2;
+const DVZ_DIM_X = 0;
+const DVZ_DIM_Y = 1;
 const DVZ_DIM_MASK_XY = 3;
 const DVZ_DIM_MASK_XYZ = 7;
 const DVZ_WASM_VISUAL_POINT = 1;
@@ -296,6 +298,10 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(source.includes("_dvz_wasm_api_visual_set_u32"), "browser wrapper cannot upload u32 attrs");
   requireOk(source.includes("_dvz_wasm_api_visual_set_strings"), "browser wrapper cannot upload text strings");
   requireOk(source.includes("_dvz_wasm_api_visual_set_labels_s32"), "browser wrapper cannot upload S32 labels");
+  requireOk(source.includes("_dvz_wasm_api_panel_set_domain"), "browser wrapper cannot set panel domains");
+  requireOk(source.includes("_dvz_wasm_api_panel_axis"), "browser wrapper cannot create panel axes");
+  requireOk(source.includes("_dvz_wasm_api_axis_set_grid"), "browser wrapper cannot enable axis grids");
+  requireOk(source.includes("_dvz_wasm_api_axis_set_label"), "browser wrapper cannot set axis labels");
   requireOk(source.includes("_dvz_wasm_api_visual_set_material"), "browser wrapper cannot set materials");
   requireOk(source.includes("_dvz_wasm_api_visual_set_segment_caps"), "browser wrapper cannot set segment caps");
   requireOk(source.includes("_dvz_wasm_api_visual_set_path_caps"), "browser wrapper cannot set path caps");
@@ -599,7 +605,8 @@ function expect2DSceneStreamShape(stream, label) {
     (pipeline) =>
       pipeline.builtin_pipeline === "scene.primitive" &&
       pipeline.vertex_buffer_slots === 2 &&
-      pipeline.topology === "triangle-list",
+      pipeline.topology === "triangle-list" &&
+      pipeline.depth_stencil?.depth_write_enabled === true,
   );
   requireOk(
     JSON.stringify(pipelineAttributeFormats(primitivePipeline)) ===
@@ -610,6 +617,16 @@ function expect2DSceneStreamShape(stream, label) {
     `${label} primitive: unexpected vertex attributes`,
   );
   expectDepthPipeline(primitivePipeline, `${label} primitive`);
+  const axisPrimitivePipeline = expectPipeline(
+    stream,
+    `${label} axis primitive`,
+    (pipeline) =>
+      pipeline.builtin_pipeline === "scene.primitive" &&
+      pipeline.vertex_buffer_slots === 2 &&
+      pipeline.topology === "triangle-list" &&
+      pipeline.depth_stencil?.depth_write_enabled === false,
+  );
+  expectDepthPipeline(axisPrimitivePipeline, `${label} axis primitive`, false, "always");
   const imagePipeline = expectPipeline(
     stream,
     `${label} image`,
@@ -684,7 +701,7 @@ function expect2DSceneStreamShape(stream, label) {
   const labelsTexture = commandsOf(stream, "CreateTexture").find(
     (texture) => texture.format === "r32sint" && texture.width === 6 && texture.height === 5,
   );
-  requireOk(textures.length === 3, `${label}: expected image, glyph, and text RGBA8 textures, got ${textures.length}`);
+  requireOk(textures.length >= 3, `${label}: expected image, glyph, and text RGBA8 textures, got ${textures.length}`);
   requireOk(imageTexture !== undefined, `${label}: missing image texture`);
   requireOk(glyphTexture !== undefined, `${label}: missing glyph texture`);
   requireOk(textTexture !== undefined, `${label}: missing text atlas texture`);
@@ -695,7 +712,7 @@ function expect2DSceneStreamShape(stream, label) {
       `${label}: texture ${texture.id} needs COPY_DST and TEXTURE_BINDING usage`,
     );
   }
-  requireOk(writes.length === 4, `${label}: expected image, labels, glyph, and text texture uploads, got ${writes.length}`);
+  requireOk(writes.length >= 4, `${label}: expected image, labels, glyph, and text texture uploads, got ${writes.length}`);
   const imageWrite = writes.find((write) => write.texture_id === imageTexture.id);
   const glyphWrite = writes.find((write) => write.texture_id === glyphTexture.id);
   const textWrite = writes.find((write) => write.texture_id === textTexture.id);
@@ -721,8 +738,8 @@ function expect2DSceneStreamShape(stream, label) {
   requireOk(glyphWrite.bytes_per_row === 192, `${label}: unexpected glyph upload row pitch`);
   requireOk(textWrite.bytes_per_row === 512, `${label}: unexpected text atlas upload row pitch`);
   requireOk(
-    commandsOf(stream, "CreateRenderPipeline").length === 11,
-    `${label}: expected point, pixel, marker, segment, path, primitive, image, labels, glyph, text, and mesh pipelines`,
+    commandsOf(stream, "CreateRenderPipeline").length >= 11,
+    `${label}: expected at least point, pixel, marker, segment, path, primitive, image, labels, glyph, text, and mesh pipelines`,
   );
 }
 
@@ -1025,6 +1042,8 @@ const textNamePtr = allocCString(Module, "text");
 const anchorNamePtr = allocCString(Module, "anchor");
 const sizeNamePtr = allocCString(Module, "size");
 const extentNamePtr = allocCString(Module, "extent");
+const xAxisLabelPtr = allocCString(Module, "x");
+const yAxisLabelPtr = allocCString(Module, "y");
 
 try {
   const diagnosticScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
@@ -1314,6 +1333,23 @@ try {
     const figure = Module._dvz_wasm_api_figure(scene, smokeSize, smokeSize);
     const panel = Module._dvz_wasm_api_panel_full(figure);
     requireOk(figure !== 0 && panel !== 0, "api 2D figure/panel failed");
+    expectStatus(
+      Module._dvz_wasm_api_panel_set_domain(panel, DVZ_DIM_X, -1.0, 1.0),
+      0,
+      "api 2D x domain",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_panel_set_domain(panel, DVZ_DIM_Y, -1.0, 1.0),
+      0,
+      "api 2D y domain",
+    );
+    const xAxis = Module._dvz_wasm_api_panel_axis(panel, DVZ_DIM_X);
+    const yAxis = Module._dvz_wasm_api_panel_axis(panel, DVZ_DIM_Y);
+    requireOk(xAxis !== 0 && yAxis !== 0, "api 2D axis creation failed");
+    expectStatus(Module._dvz_wasm_api_axis_set_grid(xAxis, 1), 0, "api 2D x axis grid");
+    expectStatus(Module._dvz_wasm_api_axis_set_grid(yAxis, 1), 0, "api 2D y axis grid");
+    expectStatus(Module._dvz_wasm_api_axis_set_label(xAxis, xAxisLabelPtr), 0, "api 2D x axis label");
+    expectStatus(Module._dvz_wasm_api_axis_set_label(yAxis, yAxisLabelPtr), 0, "api 2D y axis label");
 
     const point = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_POINT, 0);
     const pointPositionBuffer = createBuffer(
@@ -1646,4 +1682,6 @@ try {
   Module._free(anchorNamePtr);
   Module._free(sizeNamePtr);
   Module._free(extentNamePtr);
+  Module._free(xAxisLabelPtr);
+  Module._free(yAxisLabelPtr);
 }

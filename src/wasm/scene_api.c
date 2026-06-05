@@ -99,6 +99,12 @@ typedef struct
     DvzController* controller;
 } DvzWasmApiController;
 
+typedef struct
+{
+    DvzWasmApiScene* owner;
+    DvzAxis* axis;
+} DvzWasmApiAxis;
+
 struct DvzWasmApiScene
 {
     DvzScene* scene;
@@ -152,6 +158,10 @@ static DvzWasmApiController* _controller(uint32_t handle)
 {
     return (DvzWasmApiController*)(uintptr_t)handle;
 }
+
+
+
+static DvzWasmApiAxis* _axis(uint32_t handle) { return (DvzWasmApiAxis*)(uintptr_t)handle; }
 
 
 
@@ -604,6 +614,110 @@ int dvz_wasm_api_panel_set_camera(
     desc.far = far;
     if (dvz_panel_set_camera(panel->panel, &desc) == NULL)
         return _fail(panel->owner, "WASM panel camera setup failed");
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_panel_set_domain(
+    uint32_t panel_handle, uint32_t dim, double min, double max)
+{
+    DvzWasmApiPanel* panel = _panel(panel_handle);
+    if (panel == NULL || panel->owner == NULL || panel->panel == NULL)
+        return _fail(panel != NULL ? panel->owner : NULL, "invalid WASM panel handle");
+    if (dim != DVZ_DIM_X && dim != DVZ_DIM_Y)
+        return _fail(panel->owner, "unsupported WASM panel domain dimension");
+    _clear_payload(panel->owner);
+    if (dvz_panel_set_domain(panel->panel, (DvzDim)dim, min, max) != 0)
+        return _fail(panel->owner, "WASM panel domain setup failed");
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_panel_axis(uint32_t panel_handle, uint32_t dim)
+{
+    DvzWasmApiPanel* panel = _panel(panel_handle);
+    if (panel == NULL || panel->owner == NULL || panel->panel == NULL)
+        return _fail_handle(panel != NULL ? panel->owner : NULL, "invalid WASM panel handle");
+    if (dim != DVZ_DIM_X && dim != DVZ_DIM_Y)
+        return _fail_handle(panel->owner, "unsupported WASM panel axis dimension");
+    _clear_payload(panel->owner);
+    DvzWasmApiAxis* axis = (DvzWasmApiAxis*)calloc(1, sizeof(DvzWasmApiAxis));
+    if (axis == NULL)
+        return _fail_handle(panel->owner, "WASM axis wrapper allocation failed");
+    axis->owner = panel->owner;
+    axis->axis = dvz_panel_axis(panel->panel, (DvzDim)dim);
+    if (axis->axis != NULL)
+    {
+        DvzAxisStyle style = dvz_axis_style();
+        style.text_renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
+        (void)dvz_axis_set_style(axis->axis, &style);
+    }
+    if (axis->axis == NULL || !_remember(panel->owner, axis))
+    {
+        free(axis);
+        return _fail_handle(panel->owner, "WASM panel axis creation failed");
+    }
+    return _handle(axis);
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_axis_set_visible(uint32_t axis_handle, uint32_t visible)
+{
+    DvzWasmApiAxis* axis = _axis(axis_handle);
+    if (axis == NULL || axis->owner == NULL || axis->axis == NULL)
+        return _fail(axis != NULL ? axis->owner : NULL, "invalid WASM axis handle");
+    _clear_payload(axis->owner);
+    if (!dvz_axis_set_visible(axis->axis, visible != 0))
+        return _fail(axis->owner, "WASM axis visibility update failed");
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_axis_set_grid(uint32_t axis_handle, uint32_t visible)
+{
+    DvzWasmApiAxis* axis = _axis(axis_handle);
+    if (axis == NULL || axis->owner == NULL || axis->axis == NULL)
+        return _fail(axis != NULL ? axis->owner : NULL, "invalid WASM axis handle");
+    _clear_payload(axis->owner);
+    if (!dvz_axis_set_grid(axis->axis, visible != 0))
+        return _fail(axis->owner, "WASM axis grid update failed");
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_axis_set_label(uint32_t axis_handle, const char* label)
+{
+    DvzWasmApiAxis* axis = _axis(axis_handle);
+    if (axis == NULL || axis->owner == NULL || axis->axis == NULL || label == NULL)
+        return _fail(axis != NULL ? axis->owner : NULL, "invalid WASM axis label");
+    _clear_payload(axis->owner);
+    if (!dvz_axis_set_label(axis->axis, label))
+        return _fail(axis->owner, "WASM axis label update failed");
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_axis_set_plot_margins(
+    uint32_t axis_handle, float left, float right, float bottom, float top)
+{
+    DvzWasmApiAxis* axis = _axis(axis_handle);
+    if (axis == NULL || axis->owner == NULL || axis->axis == NULL)
+        return _fail(axis != NULL ? axis->owner : NULL, "invalid WASM axis handle");
+    _clear_payload(axis->owner);
+    if (!dvz_axis_set_plot_margins(axis->axis, left, right, bottom, top))
+        return _fail(axis->owner, "WASM axis plot margins update failed");
     return 0;
 }
 

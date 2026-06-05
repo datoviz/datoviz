@@ -6,6 +6,8 @@ import {
 
 const DVZ_FORMAT_R8G8B8A8_UNORM = 37;
 const DVZ_FORMAT_B8G8R8A8_UNORM = 44;
+const DVZ_DIM_X = 0;
+const DVZ_DIM_Y = 1;
 const DVZ_DIM_MASK_XY = 3;
 const DVZ_DIM_MASK_XYZ = 7;
 const DVZ_CONTROLLER_TYPE_PANZOOM = 1;
@@ -63,6 +65,21 @@ function canvasFormatCode(format) {
       return DVZ_FORMAT_B8G8R8A8_UNORM;
     default:
       throw new Error(`unsupported browser canvas format ${format}`);
+  }
+}
+
+function dimCode(dim) {
+  switch (dim) {
+    case "x":
+    case "X":
+    case DVZ_DIM_X:
+      return DVZ_DIM_X;
+    case "y":
+    case "Y":
+    case DVZ_DIM_Y:
+      return DVZ_DIM_Y;
+    default:
+      throw new Error(`unsupported scene dimension ${dim}`);
   }
 }
 
@@ -385,6 +402,21 @@ export class DatovizWasmScene {
     );
   }
 
+  setDomain(panel, dim, min, max) {
+    this._requireAlive();
+    this._requireStatus(
+      this.Module._dvz_wasm_api_panel_set_domain(panel, dimCode(dim), min, max),
+      "dvz_wasm_api_panel_set_domain failed",
+    );
+  }
+
+  axis(panel, dim) {
+    this._requireAlive();
+    const axis = this.Module._dvz_wasm_api_panel_axis(panel, dimCode(dim));
+    this._requireHandle(axis, "dvz_wasm_api_panel_axis failed");
+    return new DatovizWasmAxisHandle(this.Module, this.scene, axis);
+  }
+
   resize() {
     this._requireAlive();
     resizeWebGpuCanvas(this.canvas, this.gpu.device, this.gpu.context, this.gpu.format);
@@ -631,6 +663,57 @@ export class DatovizWasmBufferHandle {
       }
     } finally {
       this.Module._free(dataPtr);
+    }
+  }
+}
+
+export class DatovizWasmAxisHandle {
+  constructor(Module, scene, handle) {
+    this.Module = Module;
+    this.scene = scene;
+    this.handle = handle;
+  }
+
+  _diagnosticMessage(prefix) {
+    return diagnosticMessage(this.Module, this.scene, prefix);
+  }
+
+  setVisible(visible) {
+    const status = this.Module._dvz_wasm_api_axis_set_visible(this.handle, visible ? 1 : 0);
+    if (status !== 0) {
+      throw new Error(this._diagnosticMessage(`dvz_wasm_api_axis_set_visible failed with ${status}`));
+    }
+  }
+
+  setGrid(visible) {
+    const status = this.Module._dvz_wasm_api_axis_set_grid(this.handle, visible ? 1 : 0);
+    if (status !== 0) {
+      throw new Error(this._diagnosticMessage(`dvz_wasm_api_axis_set_grid failed with ${status}`));
+    }
+  }
+
+  setLabel(label) {
+    const labelPtr = allocCString(this.Module, label);
+    try {
+      const status = this.Module._dvz_wasm_api_axis_set_label(this.handle, labelPtr);
+      if (status !== 0) {
+        throw new Error(this._diagnosticMessage(`dvz_wasm_api_axis_set_label failed with ${status}`));
+      }
+    } finally {
+      this.Module._free(labelPtr);
+    }
+  }
+
+  setPlotMargins(left, right, bottom, top) {
+    const status = this.Module._dvz_wasm_api_axis_set_plot_margins(
+      this.handle,
+      left,
+      right,
+      bottom,
+      top,
+    );
+    if (status !== 0) {
+      throw new Error(this._diagnosticMessage(`dvz_wasm_api_axis_set_plot_margins failed with ${status}`));
     }
   }
 }

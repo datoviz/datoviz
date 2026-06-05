@@ -3,6 +3,7 @@ export const demo = {
   label: "WASM 2D scene",
   build(scene) {
     const panel = scene.panelFull();
+    addAxes(scene, panel);
     addPoints(scene, panel);
     addPixels(scene, panel);
     addMarkers(scene, panel);
@@ -17,6 +18,19 @@ export const demo = {
     scene.attachPanzoom(panel);
   },
 };
+
+function addAxes(scene, panel) {
+  scene.setDomain(panel, "x", -1.0, 1.0);
+  scene.setDomain(panel, "y", -1.0, 1.0);
+
+  const xAxis = scene.axis(panel, "x");
+  xAxis.setGrid(true);
+  xAxis.setLabel("x");
+
+  const yAxis = scene.axis(panel, "y");
+  yAxis.setGrid(true);
+  yAxis.setLabel("y");
+}
 
 function addPoints(scene, panel) {
   const count = 96;

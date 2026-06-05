@@ -26,6 +26,7 @@ Supported visual and interaction families:
 - path visuals with visual-wide cap and join controls;
 - primitive triangle-list visuals;
 - RGBA8 2D image visuals;
+- basic retained 2D axes with ticks, grid lines, and bitmap text labels;
 - basic signed 2D categorical labels visuals;
 - low-level atlas-backed glyph visuals;
 - semantic bitmap text visuals lowered through glyph atlas draws;
@@ -36,8 +37,8 @@ Supported visual and interaction families:
 
 Supported browser pages:
 
-- `examples/webgpu/examples.html?demo=wasm-2d`: point + pixel + marker + styled segment/path +
-  primitive + image + labels + glyph + text + mesh + panzoom;
+- `examples/webgpu/examples.html?demo=wasm-2d`: basic axes + point + pixel + marker + styled
+  segment/path + primitive + image + labels + glyph + text + mesh + panzoom;
 - `examples/webgpu/examples.html?demo=wasm-3d`: basic sphere + textured 3D mesh + camera +
   arcball;
 - `examples/webgpu/fixtures.html`: DRP2 fixture dashboard for the pure browser WebGPU runner,
@@ -79,7 +80,7 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Setup/update/frame resource model | active through split binary packets and retained browser runtime state |
 | WGSL shader modules | supported and required for portable browser execution |
 | Vulkan-specific modules and presentation | unsupported in WASM; native-only |
-| Scene visual parity | limited to point/pixel dense and buffer-backed positions, basic marker, segment/path cap-join controls, primitive, RGBA8 image, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, and basic sphere demos |
+| Scene visual parity | limited to point/pixel dense and buffer-backed positions, basic marker, segment/path cap-join controls, primitive, RGBA8 image, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, and basic sphere demos |
 | Controller parity | limited to panzoom and one 3D arcball proof |
 | Compute-to-render parity | experimental; fixture coverage exists, gallery-level behavior remains a separate release lane |
 | Query/picking/readback scene parity | deferred for live WASM scenes |
@@ -96,7 +97,7 @@ The browser path intentionally does not support:
 - GLSL/SPIR-V browser shader translation;
 - native scene/app parity;
 - custom shader APIs;
-- axes, colorbars, scale bars, picking, readback, volume, unsigned/rich labels, path subpath controls,
+- colorbars, scale bars, picking, readback, volume, unsigned/rich labels, path subpath controls,
   broad stroke/vector parity, sphere raycast/depth/material parity, and advanced technique parity
   in the WASM scene demos;
 - zero-copy payload transport;
@@ -178,8 +179,8 @@ Expected manual results for the current subset:
 - fixture dashboard: all committed rows pass, no unsupported rows, no failures;
 - fixture dashboard WASM Scene Smoke section: 2D point/pixel/marker/segment update, 2D image texture
   resize reload, and 3D sphere/textured mesh update rows pass;
-- 2D WASM example: point, pixel, marker, segment, path, primitive, image, labels, glyph, text, and mesh content render;
-  pan/zoom and resize work;
+- 2D WASM example: basic axes plus point, pixel, marker, segment, path, primitive, image, labels,
+  glyph, text, and mesh content render; pan/zoom and resize work;
 - 3D WASM example: sphere impostors and a textured cube render; arcball drag, wheel zoom, and
   resize work.
 
@@ -280,6 +281,17 @@ Labels promotion proof recorded on 2026-06-05:
   lookup uniform, split packets, and browser-runner replay for the retained 2D scene;
 - `just webgpu-browser-smoke`: 2D and 3D WASM pages rendered, browser interaction was exercised,
   and dashboard WASM scene checks reported `2 pass, 0 fail`.
+
+Axes promotion proof recorded on 2026-06-05:
+
+- `node --check tools/wasm_scene_smoke.mjs`: passed;
+- `node --check web/wasm/scene.js`: passed;
+- `node --check examples/webgpu/demos/wasm_2d.js`: passed;
+- `direnv exec . just test test_axis_domain_and_ticks`: passed;
+- `direnv exec . just test test_axis_text_labels`: passed;
+- `direnv exec . just test test_axis_panzoom_visible_domain`: passed;
+- `just wasm-scene-smoke`: WASM panel domains and retained X/Y axes emitted primitive tick/grid
+  visuals plus bitmap tick/axis labels through split packets and browser-runner replay.
 
 Path promotion proof recorded on 2026-06-05:
 

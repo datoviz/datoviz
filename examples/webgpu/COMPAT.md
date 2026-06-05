@@ -193,6 +193,13 @@ Current status as of this note:
   passed; `just webgpu-fixture-preflight`, `just webgpu-runner-smoke`, `just wasm-scene-smoke`,
   and `just webgpu-browser-smoke` passed with the 2D WASM stream rendering signed categorical
   labels through an `r32sint` texture.
+- recorded local axes-promotion proof on 2026-06-05: `node --check
+  tools/wasm_scene_smoke.mjs`, `node --check web/wasm/scene.js`, and `node --check
+  examples/webgpu/demos/wasm_2d.js` passed; `direnv exec . just test
+  test_axis_domain_and_ticks`, `direnv exec . just test test_axis_text_labels`, and `direnv exec
+  . just test test_axis_panzoom_visible_domain` passed; `just wasm-scene-smoke` emitted,
+  preflighted, and replayed the 2D WASM stream with retained X/Y axes, grid lines, and bitmap
+  tick/axis labels.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

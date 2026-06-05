@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "axis_internal.h"
@@ -320,12 +321,23 @@ void _axis_update_visual(DvzAxis* axis)
     if (axis->visual == NULL || axis->grid_visual == NULL)
         return;
 
+    const uint32_t max_vertices = 6 * DVZ_SCENE_MAX_AXIS_LINES;
     uint32_t fixed_vertex_count = 0;
-    float fixed_positions[6 * DVZ_SCENE_MAX_AXIS_LINES][3] = {{0}};
-    uint8_t fixed_colors[6 * DVZ_SCENE_MAX_AXIS_LINES][4] = {{0}};
+    float (*fixed_positions)[3] = (float(*)[3])dvz_calloc(max_vertices, sizeof(float[3]));
+    uint8_t (*fixed_colors)[4] = (uint8_t(*)[4])dvz_calloc(max_vertices, sizeof(uint8_t[4]));
     uint32_t grid_vertex_count = 0;
-    float grid_positions[6 * DVZ_SCENE_MAX_AXIS_LINES][3] = {{0}};
-    uint8_t grid_colors[6 * DVZ_SCENE_MAX_AXIS_LINES][4] = {{0}};
+    float (*grid_positions)[3] = (float(*)[3])dvz_calloc(max_vertices, sizeof(float[3]));
+    uint8_t (*grid_colors)[4] = (uint8_t(*)[4])dvz_calloc(max_vertices, sizeof(uint8_t[4]));
+    if (
+        fixed_positions == NULL || fixed_colors == NULL || grid_positions == NULL ||
+        grid_colors == NULL)
+    {
+        axis->visual->visible = false;
+        axis->grid_visual->visible = false;
+        _axis_hide_text(axis);
+        goto cleanup;
+    }
+
     const float z = 0.0f;
     float x0 = -1.0f;
     float x1 = +1.0f;
@@ -353,7 +365,7 @@ void _axis_update_visual(DvzAxis* axis)
         axis->visual->visible = false;
         axis->grid_visual->visible = false;
         _axis_hide_text(axis);
-        return;
+        goto cleanup;
     }
     _axis_compute_ticks(axis);
 
@@ -467,6 +479,12 @@ void _axis_update_visual(DvzAxis* axis)
     else
         _axis_update_text(axis, x0, x1, y0, y1, visible_min, visible_max);
     axis->dirty = false;
+
+cleanup:
+    dvz_free(fixed_positions);
+    dvz_free(fixed_colors);
+    dvz_free(grid_positions);
+    dvz_free(grid_colors);
 }
 
 
