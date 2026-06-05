@@ -10,8 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/image_probe
- * Run:    ./build/examples/c/features/image_probe
- * Smoke:  ./build/examples/c/features/image_probe 120
+ * Run:    ./build/examples/c/features/image_probe --live
+ * Smoke:  ./build/examples/c/features/image_probe --png
  */
 
 
@@ -25,13 +25,13 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "datoviz/app.h"
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -65,6 +65,7 @@ struct ImageProbeState
     DvzPanel* panel;
     DvzVisual* probe_segments;
     DvzVisual* probe_dot;
+    float* values;
     bool cursor_valid;
     double cursor_x;
     double cursor_y;
@@ -748,83 +749,163 @@ static void _image_probe_frame(DvzView* win, void* user_data)
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
-int main(int argc, char** argv)
+/**
+ * Initialize the scalar image probe feature scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_image_probe");
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
+    ImageProbeState* state = (ImageProbeState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    state->values = (float*)dvz_calloc(FIELD_WIDTH * FIELD_HEIGHT, sizeof(*state->values));
+    if (state->values == NULL)
+        return false;
+    _fill_probe_field(state->values);
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
 
     bool ok = dvz_panel_set_layout_reserve(
         panel, &(DvzPanelLayoutReserve){.left = 0.045f, .right = 0.045f, .bottom = 0.055f,
                                         .top = 0.045f});
-    EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve() failed");
+    if (!ok)
+        return false;
     ok = _set_probe_domain(panel);
-    EXAMPLE_CHECK(ok, "setting image probe domain failed");
+    if (!ok)
+        return false;
 
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzScale* scale = _add_probe_scale(scene);
-    EXAMPLE_CHECK(scale != NULL, "adding probe scale failed");
+    DvzScale* scale = _add_probe_scale(ctx->scene);
+    if (scale == NULL)
+        return false;
 
-    float values[FIELD_WIDTH * FIELD_HEIGHT] = {0};
-    _fill_probe_field(values);
-
-    ok = _add_probe_image(scene, panel, scale, values);
-    EXAMPLE_CHECK(ok, "adding probe image failed");
+    ok = _add_probe_image(ctx->scene, panel, scale, state->values);
+    if (!ok)
+        return false;
 
     DvzVisual* probe_segments = NULL;
     DvzVisual* probe_dot = NULL;
-    ok = _add_probe_marker(scene, panel, &probe_segments, &probe_dot);
-    EXAMPLE_CHECK(ok, "adding probe marker failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "image_probe");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzInputRouter* router = dvz_view_input(win);
-    EXAMPLE_CHECK(router != NULL, "dvz_view_input() failed");
+    ok = _add_probe_marker(ctx->scene, panel, &probe_segments, &probe_dot);
+    if (!ok)
+        return false;
 
     float initial_probe_px[2] = {(float)WIDTH * PROBE_X, (float)HEIGHT * (1.0f - PROBE_Y)};
     (void)_probe_data_to_panel(panel, PROBE_X, PROBE_Y, initial_probe_px);
 
-    ImageProbeState state = {
-        .scene = scene,
-        .panel = panel,
-        .probe_segments = probe_segments,
-        .probe_dot = probe_dot,
-        .cursor_valid = true,
-        .cursor_x = initial_probe_px[0],
-        .cursor_y = initial_probe_px[1],
+    state->scene = ctx->scene;
+    state->panel = panel;
+    state->probe_segments = probe_segments;
+    state->probe_dot = probe_dot;
+    state->cursor_valid = true;
+    state->cursor_x = initial_probe_px[0];
+    state->cursor_y = initial_probe_px[1];
+    return true;
+}
+
+
+
+/**
+ * Attach native GLFW callbacks for the scalar image probe feature scenario.
+ *
+ * @param ctx scenario context
+ * @param app native app
+ * @param view native view
+ * @param user scenario state
+ * @return true on success
+ */
+static bool _scenario_native_view(
+    DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)ctx;
+    (void)app;
+    ImageProbeState* state = (ImageProbeState*)user;
+    if (state == NULL || view == NULL)
+        return false;
+
+    DvzInputRouter* router = dvz_view_input(view);
+    if (router == NULL)
+        return true;
+
+    dvz_input_subscribe_pointer(router, _image_probe_pointer, state);
+    dvz_view_set_frame_callback(view, _image_probe_frame, state);
+    return true;
+}
+
+
+
+/**
+ * Destroy the scalar image probe feature scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    ImageProbeState* state = (ImageProbeState*)user;
+    if (state == NULL)
+        return;
+    dvz_free(state->values);
+    dvz_free(state);
+}
+
+
+
+/**
+ * Return the scalar image probe scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _image_probe_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_image_probe",
+        .title = "image_probe",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .native_view = _scenario_native_view,
+        .destroy = _scenario_destroy,
     };
-    dvz_input_subscribe_pointer(router, _image_probe_pointer, &state);
-    dvz_view_set_frame_callback(win, _image_probe_frame, &state);
+}
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the scalar image probe feature example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _image_probe_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
