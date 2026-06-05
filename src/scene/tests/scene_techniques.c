@@ -1129,6 +1129,104 @@ int test_scene_msaa_blended_overlay_runtime_lowering(TstContext* suite, const Ts
 }
 
 
+
+/**
+ * Verify the protein-style MSAA + SSAO + blended overlay graph leaves overlays last.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_msaa_ssao_blended_overlay_runtime_lowering(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    AT(dvz_panel_set_msaa(
+        panel,
+        &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc),
+                       .enabled = true,
+                       .sample_count = 4,
+                       .alpha_to_coverage = true}));
+    AT(_scene_technique_state_set_ssao(
+        &panel->techniques,
+        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc),
+                            .radius = 1.0f,
+                            .strength = 2.5f,
+                            .bias = 0.02f,
+                            .sample_count = 16,
+                            .blur_enabled = true}));
+
+    DvzVisual* sphere = dvz_sphere(scene, 0);
+    AT(sphere != NULL);
+    vec3 sphere_positions[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor sphere_colors[1] = {{255, 128, 64, 255}};
+    float sphere_sizes[1] = {0.35f};
+    AT(dvz_visual_set_data(sphere, "position", sphere_positions, 1) == 0);
+    AT(dvz_visual_set_data(sphere, "color", sphere_colors, 1) == 0);
+    AT(dvz_visual_set_data(sphere, "size", sphere_sizes, 1) == 0);
+    AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
+
+    DvzVisual* overlay = dvz_point(scene, 0);
+    AT(overlay != NULL);
+    vec3 overlay_positions[2] = {{-0.25f, 0.0f, 0.2f}, {0.25f, 0.0f, 0.2f}};
+    DvzColor overlay_colors[2] = {{0, 255, 255, 160}, {0, 255, 255, 160}};
+    float overlay_sizes[2] = {8.0f, 8.0f};
+    AT(dvz_visual_set_data(overlay, "position", overlay_positions, 2) == 0);
+    AT(dvz_visual_set_data(overlay, "color", overlay_colors, 2) == 0);
+    AT(dvz_visual_set_data(overlay, "size", overlay_sizes, 2) == 0);
+    AT(dvz_visual_set_depth_test(overlay, false) == 0);
+    AT(dvz_visual_set_alpha_mode(overlay, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_panel_add_visual(panel, overlay, NULL) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.msaa.ssao.blended", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    AT(dvz_frame_plan_graph_validate(plan, NULL));
+
+    bool saw_ssao_composite = false;
+    bool saw_blended_after_ssao = false;
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
+    {
+        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
+        ANN(pass);
+        if (strcmp(pass->work_label, "ssao_composite") == 0)
+            saw_ssao_composite = true;
+        if (saw_ssao_composite && strcmp(pass->work_label, "transparent_blend") == 0)
+            saw_blended_after_ssao = true;
+    }
+    AT(saw_ssao_composite);
+    AT(saw_blended_after_ssao);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.supports_color_blending = true;
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 /**
  * Verify runtime MSAA emission is lowered to device sample-count capabilities.
  *

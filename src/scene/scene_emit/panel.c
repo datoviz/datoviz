@@ -1132,6 +1132,7 @@ bool _scene_emit_panel_render_ex(
         graph_ok = false;
     }
 
+    bool emit_blended_after_ssao = false;
     if (transparent_node != invalid_node)
     {
         if (volume_occlusion_node != invalid_node &&
@@ -1210,9 +1211,29 @@ bool _scene_emit_panel_render_ex(
             graph_ok = false;
         }
         bool blended_depth_producer = opaque_needs_depth || transparent_needs_depth;
-        if (!_scene_technique_emit_blended_frame_graph(
-                plan, panel_id, true, blended_depth_producer, blended_depth_producer,
-                blended_count, blended_needs_depth, blended_writes_depth, msaa_state))
+        if (ssao_enabled && gbuffer_node != invalid_node && gbuffer.producer_count > 0)
+        {
+            bool any_blended_needs_depth = false;
+            for (uint32_t i = 0; i < blended_count; i++)
+                any_blended_needs_depth = any_blended_needs_depth || blended_needs_depth[i];
+            const DvzSceneMsaaTechniqueState* pre_ssao_msaa =
+                any_blended_needs_depth ? NULL : msaa_state;
+            if (!_scene_technique_emit_blended_frame_graph(
+                    plan, panel_id, true, blended_depth_producer, blended_depth_producer, 0, NULL,
+                    NULL, pre_ssao_msaa))
+            {
+                _scene_emit_graph_report(
+                    report, "failed to emit blended FramePlan graph for panel %s", panel_id);
+                graph_ok = false;
+            }
+            else
+            {
+                emit_blended_after_ssao = true;
+            }
+        }
+        else if (!_scene_technique_emit_blended_frame_graph(
+                     plan, panel_id, true, blended_depth_producer, blended_depth_producer,
+                     blended_count, blended_needs_depth, blended_writes_depth, msaa_state))
         {
             _scene_emit_graph_report(
                 report, "failed to emit blended FramePlan graph for panel %s", panel_id);
@@ -1315,6 +1336,18 @@ bool _scene_emit_panel_render_ex(
         {
             _scene_emit_graph_report(
                 report, "failed to emit SSAO FramePlan graph for panel %s", panel_id);
+            graph_ok = false;
+        }
+    }
+    if (emit_blended_after_ssao)
+    {
+        bool blended_depth_producer = opaque_needs_depth || transparent_needs_depth;
+        if (!_scene_technique_emit_blended_frame_graph(
+                plan, panel_id, false, false, blended_depth_producer, blended_count,
+                blended_needs_depth, blended_writes_depth, NULL))
+        {
+            _scene_emit_graph_report(
+                report, "failed to emit blended FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
     }
