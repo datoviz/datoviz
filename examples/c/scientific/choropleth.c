@@ -461,14 +461,12 @@ static bool _configure_panel(DvzPanel* panel, const ChoroplethBundle* bundle)
     if (!ok)
         return false;
 
-    const double w = bundle->xmax - bundle->xmin;
-    const double h = bundle->ymax - bundle->ymin;
-    const double pad = 0.035 * (w > h ? w : h);
-    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, bundle->xmin - pad, bundle->xmax + pad);
-    if (rc != 0)
-        return false;
-    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, bundle->ymin - pad, bundle->ymax + pad);
-    return rc == 0;
+    DvzPanelDomainFit fit = dvz_panel_domain_fit();
+    fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
+    fit.x = (DvzDataDomain){.min = bundle->xmin, .max = bundle->xmax};
+    fit.y = (DvzDataDomain){.min = bundle->ymin, .max = bundle->ymax};
+    fit.padding = 0.035;
+    return dvz_panel_set_domain_fit(panel, &fit) == 0;
 }
 
 
