@@ -10,9 +10,8 @@
  * Style: visuals, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c visuals/glyph
- * Run:    ./build/examples/c/visuals/glyph
- * Smoke:  ./build/examples/c/visuals/glyph 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/visuals/glyph 1
+ * Run:    ./build/examples/c/visuals/glyph --live
+ * Smoke:  ./build/examples/c/visuals/glyph --png
  */
 
 
@@ -25,11 +24,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -48,6 +47,17 @@
 #define ATLAS_SIZE        (ATLAS_GRID * ATLAS_CELL_SIZE)
 
 static const float SDF_EDGE_PX = 3.5f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct GlyphVisualState
+{
+    uint8_t* pixels;
+} GlyphVisualState;
 
 
 
@@ -121,7 +131,7 @@ static float _sd_glyph(uint32_t glyph, float x, float y)
  *
  * @param pixels output tightly packed RGBA8 pixels
  */
-static void _fill_atlas(uint8_t pixels[ATLAS_SIZE * ATLAS_SIZE * 4])
+static void _fill_atlas(uint8_t* pixels)
 {
     ANN(pixels);
 
@@ -258,8 +268,7 @@ static void _fill_glyphs(
  * @param pixels atlas pixels
  * @return true when the visual was added
  */
-static bool
-_add_glyphs(DvzScene* scene, DvzPanel* panel, uint8_t pixels[ATLAS_SIZE * ATLAS_SIZE * 4])
+static bool _add_glyphs(DvzScene* scene, DvzPanel* panel, uint8_t* pixels)
 {
     ANN(scene);
     ANN(panel);
@@ -297,11 +306,105 @@ _add_glyphs(DvzScene* scene, DvzPanel* panel, uint8_t pixels[ATLAS_SIZE * ATLAS_
 
 
 /*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Initialize the raw glyph visual scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
+
+    GlyphVisualState* state = (GlyphVisualState*)dvz_malloc(sizeof(*state));
+    if (state == NULL)
+        return false;
+    state->pixels = NULL;
+
+    state->pixels = (uint8_t*)dvz_malloc(ATLAS_SIZE * ATLAS_SIZE * 4u);
+    if (state->pixels == NULL)
+    {
+        dvz_free(state);
+        return false;
+    }
+    _fill_atlas(state->pixels);
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        goto error;
+
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        goto error;
+    example_graphite_cyan_set_panel_background(panel);
+
+    if (!_add_glyphs(ctx->scene, panel, state->pixels))
+        goto error;
+
+    if (out_user != NULL)
+        *out_user = state;
+    return true;
+
+error:
+    dvz_free(state->pixels);
+    dvz_free(state);
+    return false;
+}
+
+
+
+/**
+ * Destroy the raw glyph visual scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+
+    GlyphVisualState* state = (GlyphVisualState*)user;
+    if (state == NULL)
+        return;
+    dvz_free(state->pixels);
+    dvz_free(state);
+}
+
+
+
+/**
+ * Return the raw glyph visual scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _glyph_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "visual_glyph",
+        .title = "visual_glyph",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 /**
- * Run the raw glyph visual example.
+ * Run the raw glyph visual example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -309,43 +412,6 @@ _add_glyphs(DvzScene* scene, DvzPanel* panel, uint8_t pixels[ATLAS_SIZE * ATLAS_
  */
 int main(int argc, char** argv)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("visual_glyph");
-
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    uint8_t pixels[ATLAS_SIZE * ATLAS_SIZE * 4] = {0};
-    _fill_atlas(pixels);
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    example_graphite_cyan_set_panel_background(panel);
-
-    EXAMPLE_CHECK(_add_glyphs(scene, panel, pixels), "glyph visual setup failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_glyph");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    DvzScenarioSpec spec = _glyph_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
