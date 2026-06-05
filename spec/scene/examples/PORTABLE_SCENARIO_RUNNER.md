@@ -289,6 +289,86 @@ public `dvz_app_run_paced()` helper just for video export. If finite paced runs 
 applications outside examples, promote a broader app run-policy descriptor instead.
 
 
+## Interaction And Controller Bridge
+
+Scenarios must not receive `DvzView*`, GLFW handles, browser event objects, or host-specific input
+objects. Those objects belong to the runner. This keeps the same scenario source usable by a native
+GLFW runner, an offscreen runner, and a browser/WASM runner.
+
+Interactive examples need more than builtin controller names. They need a bridge with three
+separate concepts:
+
+1. normalized host events: pointer, wheel, keyboard, resize, focus, and frame notifications;
+2. runner-owned tools: panzoom, arcball, fly, turntable, picking/query dispatch, cursor policy, and
+   platform key/button translation;
+3. scenario callbacks: portable event handlers that mutate scene objects, retained visual data, or
+   scenario state.
+
+A scenario should request controller behavior without constructing it directly:
+
+```c
+typedef enum DvzScenarioControllerKind
+{
+    DVZ_SCENARIO_CONTROLLER_PANZOOM,
+    DVZ_SCENARIO_CONTROLLER_ARCBALL,
+    DVZ_SCENARIO_CONTROLLER_FLY,
+    DVZ_SCENARIO_CONTROLLER_TURNTABLE,
+} DvzScenarioControllerKind;
+
+typedef struct DvzScenarioControllerRequest
+{
+    DvzPanel* panel;
+    DvzScenarioControllerKind kind;
+    vec2 initial_pan;
+    vec2 initial_zoom;
+} DvzScenarioControllerRequest;
+```
+
+The native runner can translate a panzoom request into `dvz_view_panzoom(view, panel, ...)`. A
+browser runner can translate the same request into DOM pointer/wheel handlers and equivalent
+controller state updates. The scenario only sees the panel, the request handle, and portable state.
+
+Callbacks should receive panel-relative, normalized payloads:
+
+```c
+typedef enum DvzScenarioEventKind
+{
+    DVZ_SCENARIO_EVENT_POINTER,
+    DVZ_SCENARIO_EVENT_WHEEL,
+    DVZ_SCENARIO_EVENT_KEY,
+    DVZ_SCENARIO_EVENT_RESIZE,
+    DVZ_SCENARIO_EVENT_CONTROLLER_CHANGED,
+    DVZ_SCENARIO_EVENT_PICK_RESULT,
+} DvzScenarioEventKind;
+
+typedef struct DvzScenarioPointerEvent
+{
+    DvzPanel* panel;
+    float x_px;
+    float y_px;
+    double x_data;
+    double y_data;
+    uint32_t button;
+    uint32_t modifiers;
+    double timestamp_ms;
+} DvzScenarioPointerEvent;
+
+typedef void (*DvzScenarioEventFn)(
+    DvzScenarioContext* ctx,
+    const DvzScenarioEvent* event,
+    void* user);
+```
+
+Picking and query readback should stay asynchronous and runner-owned. Scenario code can request a
+pick against a panel and receive a later `DVZ_SCENARIO_EVENT_PICK_RESULT` callback. Native runners
+can fulfill this through GPU readback and app-loop completion. Browser runners can fulfill it
+through WebGPU readback promises or report unsupported requirements deterministically.
+
+Examples that should wait for this bridge include `panel_multi.c`, `panzoom_attachment.c`,
+controller examples, picking examples, hover/probe examples, and selection examples. Migrating them
+before the bridge would either leak `DvzView*` into scenarios or silently drop important behavior.
+
+
 ## Native Runner Flow
 
 The native runner owns the app/view/capture lifecycle:
@@ -568,7 +648,7 @@ Example manifests should distinguish `portable-scenario`, `native-only`, `browse
 
 Convert simple examples whose behavior is mostly scene construction or retained data updates:
 
-1. static/layout examples: `panel_single.c`, `panel_grid.c`, `panel_multi.c`;
+1. static/layout examples: `panel_single.c`, `panel_grid.c`, simple explicit-panel layouts;
 2. retained-data examples: `update_visual_data.c`, `update_partial.c`, `visibility.c`;
 3. visual-state examples: `alpha_blending.c`, `depth_test.c`, `panel_background.c`;
 4. simple feature proofs: `marker_symbols.c`, `colorbar.c`, `colormap_scale.c`.
@@ -576,14 +656,16 @@ Convert simple examples whose behavior is mostly scene construction or retained 
 This phase should keep the runner API intentionally boring. Do not add interaction abstractions or
 public Datoviz APIs just to finish this group.
 
-### Phase 3: Runner Input And Resize
+### Phase 3: Interaction, Controllers, And Resize
 
-Add portable runner bridges for resize, pointer, wheel, keyboard modifiers, and request-frame
-signals. Then migrate one representative interaction example before broad conversion:
+Add portable runner bridges for resize, pointer, wheel, keyboard modifiers, controller requests,
+asynchronous picking/query results, and request-frame signals. Then migrate representative
+interaction examples before broad conversion:
 
-1. `panzoom_attachment.c` for normalized wheel/pointer input and controller wiring;
-2. one picking example, preferably `pick_point.c`, for readback/callback behavior;
-3. one persistent state example, preferably `selection.c`.
+1. `panel_multi.c` for runner-owned panzoom requests on multiple panels;
+2. `panzoom_attachment.c` for normalized wheel/pointer input and controller wiring;
+3. one picking example, preferably `pick_point.c`, for readback/callback behavior;
+4. one persistent state example, preferably `selection.c`.
 
 Only after these examples pass should the runner input API be treated as stable enough for broader
 feature migration.
