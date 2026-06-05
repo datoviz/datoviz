@@ -189,6 +189,14 @@ typedef enum DvzRunnerPresentation
     DVZ_RUNNER_PRESENT_BROWSER,
 } DvzRunnerPresentation;
 
+typedef enum DvzRunnerCaptureKind
+{
+    DVZ_RUNNER_CAPTURE_NONE,
+    DVZ_RUNNER_CAPTURE_VIDEO,
+    DVZ_RUNNER_CAPTURE_PNG,
+    DVZ_RUNNER_CAPTURE_DVZR,
+} DvzRunnerCaptureKind;
+
 typedef struct DvzRunnerConfig
 {
     DvzRunnerPresentation presentation;
@@ -198,10 +206,11 @@ typedef struct DvzRunnerConfig
     uint32_t frame_count; // 0 = interactive
     double fps;
 
-    bool capture_enabled;
+    DvzRunnerCaptureKind capture_kind;
     DvzAppCaptureConfig capture; // native runner only
 
     bool print_progress;
+    bool pace_wall_time;
 } DvzRunnerConfig;
 ```
 
@@ -226,16 +235,19 @@ Mode presets are runner policy:
   presentation = GLFW
   frame_count = 0
   capture = none
+  pace_wall_time = app scheduler/fps cap
 
 --live-record 120
   presentation = GLFW
   frame_count = 120
   capture = video
+  pace_wall_time = true
 
 --offscreen-record 120
   presentation = OFFSCREEN
   frame_count = 120
   capture = video
+  pace_wall_time = false
 
 --png
   presentation = OFFSCREEN unless overridden
@@ -251,6 +263,30 @@ Mode presets are runner policy:
 These presets should still allow environment overrides such as `DVZ_CAPTURE_DIR`,
 `DVZ_CAPTURE_BASENAME`, `DVZ_CAPTURE_FPS`, `DVZ_CAPTURE_VIDEO_BACKEND`, and
 `DVZ_CAPTURE_VIDEO_MODE`.
+
+
+## Timing Policy
+
+Scenario time, presentation pacing, and recording sampling are separate concerns.
+
+The scenario receives logical frame time from the runner. For deterministic examples this should be
+the scene clock at `config->fps`, not direct wall-clock deltas from the host event loop. That keeps
+native, offscreen, capture, and browser hosts able to drive the same scenario callback contract.
+
+Presentation pacing is host policy. Interactive GLFW runs should use the app scheduler and FPS cap
+so visible motion matches the scenario's requested frame rate. Finite GLFW modes such as
+`--live-record N` should be paced to wall time, because users are inspecting the live desktop window
+while capture runs.
+
+Recording sampling is output policy. `--offscreen-record N` should stay offline and unpaced: it
+renders exactly `N` frames at the requested capture FPS and may finish faster than real time. The
+encoded video duration comes from sample timing, not wall-clock export duration. `--live-record N`
+records the same logical scenario frame stream while also pacing presentation, so it is useful for
+diagnosing mismatches between what the user sees and what capture writes.
+
+This timing policy should remain runner-local until it is proven across more examples. Do not add a
+public `dvz_app_run_paced()` helper just for video export. If finite paced runs become useful for
+applications outside examples, promote a broader app run-policy descriptor instead.
 
 
 ## Native Runner Flow
@@ -275,7 +311,10 @@ int dvz_scenario_run_native(
     if (!spec->init(&ctx, &user) || ctx.figure == NULL)
         return -1;
 
-    DvzApp* app = dvz_app(scene);
+    DvzAppConfig app_config = dvz_app_config();
+    if (config->presentation == DVZ_RUNNER_PRESENT_GLFW)
+        app_config.fps_cap = config->fps;
+    DvzApp* app = dvz_app_with_config(scene, &app_config);
 
     DvzView* view = NULL;
     if (config->presentation == DVZ_RUNNER_PRESENT_GLFW)
@@ -287,13 +326,23 @@ int dvz_scenario_run_native(
     install_input_bridge(view, spec, &ctx, user);
     install_progress_bridge(view, config);
 
-    if (config->capture_enabled)
-        dvz_view_capture_start(view, &config->capture);
+    DvzView* capture_view = view;
+    if (config->presentation == DVZ_RUNNER_PRESENT_GLFW &&
+        config->capture_kind == DVZ_RUNNER_CAPTURE_VIDEO)
+    {
+        capture_view = dvz_view_offscreen(app, ctx.figure, ctx.width, ctx.height);
+    }
 
-    dvz_app_run(app, config->frame_count);
+    if (config->capture_kind != DVZ_RUNNER_CAPTURE_NONE)
+        dvz_view_capture_start(capture_view, &config->capture);
 
-    if (config->capture_enabled)
-        dvz_view_capture_stop(view);
+    if (config->pace_wall_time)
+        run_paced(app, config->frame_count, config->fps);
+    else
+        dvz_app_run(app, config->frame_count);
+
+    if (config->capture_kind != DVZ_RUNNER_CAPTURE_NONE)
+        dvz_view_capture_stop(capture_view);
 
     if (spec->destroy != NULL)
         spec->destroy(&ctx, user);
@@ -327,9 +376,11 @@ Browser runner outputs:
 3. possibly `MediaRecorder` video later.
 
 Scenarios should never branch on “am I recording?” unless the scenario is specifically a capture
-diagnostic. Recording must sample the same scenario frame stream as live display. A native
-`--live-record` mode is therefore required in the first implementation because it compares the
-visible GLFW path and encoded video path directly.
+diagnostic. Recording must sample the same logical scenario frame stream as live display. A native
+`--live-record` mode is therefore required in the first implementation because it shows a visible
+GLFW preview while recording a synchronized capture view. The first native implementation may record
+an offscreen view during live preview to avoid platform-specific GLFW framebuffer capture issues,
+but the scenario callback stream must remain shared.
 
 
 ## Conceptual Scenario Example
@@ -503,21 +554,63 @@ Example manifests should distinguish `portable-scenario`, `native-only`, `browse
 
 ## Implementation Plan
 
+### Phase 1: Native Runner Proof
+
 1. Add example-support scenario types and the native runner in `examples/c/runner/`.
 2. Support `--live`, `--live-record N`, `--offscreen-record N`, `--png`, and `--dvzr N`.
-3. Refactor `video_export.c` as the first runner-backed feature example because it proves live,
-   live-record, offscreen-record, path reporting, progress, and capture failure handling.
+3. Refactor `video_export.c` first because it proves live, live-record, offscreen-record, path
+   reporting, progress, capture failure handling, and the distinction between presentation pacing
+   and deterministic recording.
 4. Refactor `timer_animation.c` next because it proves frame-time portability.
-5. Refactor one static example such as `scene_basic.c` or one simple retained-data example such as
-   `update_visual_data.c`.
-6. Add the generic WASM scenario host beside the existing WASM scene ABI.
-7. Expose missing WASM scene APIs needed by portable scenarios: scene buffers,
+5. Refactor `scene_basic.c` or another static example to prove scenarios without frame callbacks.
+
+### Phase 2: Low-Risk Feature Migration
+
+Convert simple examples whose behavior is mostly scene construction or retained data updates:
+
+1. static/layout examples: `panel_single.c`, `panel_grid.c`, `panel_multi.c`;
+2. retained-data examples: `update_visual_data.c`, `update_partial.c`, `visibility.c`;
+3. visual-state examples: `alpha_blending.c`, `depth_test.c`, `panel_background.c`;
+4. simple feature proofs: `marker_symbols.c`, `colorbar.c`, `colormap_scale.c`.
+
+This phase should keep the runner API intentionally boring. Do not add interaction abstractions or
+public Datoviz APIs just to finish this group.
+
+### Phase 3: Runner Input And Resize
+
+Add portable runner bridges for resize, pointer, wheel, keyboard modifiers, and request-frame
+signals. Then migrate one representative interaction example before broad conversion:
+
+1. `panzoom_attachment.c` for normalized wheel/pointer input and controller wiring;
+2. one picking example, preferably `pick_point.c`, for readback/callback behavior;
+3. one persistent state example, preferably `selection.c`.
+
+Only after these examples pass should the runner input API be treated as stable enough for broader
+feature migration.
+
+### Phase 4: WASM Scenario Host
+
+1. Add the generic WASM scenario host beside the existing WASM scene ABI.
+2. Expose missing WASM scene APIs needed by portable scenarios: scene buffers,
    buffer-backed visual attributes, scene compute, compute buffer binding, dispatch updates,
    frame/time updates, and diagnostics.
-8. Refactor `gpu_particle_smoke.c` into a shared scenario plus native host once the runner supports
-   compute requirements.
-9. Promote any stable helper pieces into public Datoviz API only after several examples prove that
-   they are not example-runner policy.
+3. Compile migrated static/data scenarios to WASM first.
+4. Add browser evidence for one static scenario and one animated scenario.
+5. Ensure unsupported requirements produce deterministic diagnostics rather than partial browser
+   rewrites.
+
+### Phase 5: Compute And Showcase Migration
+
+Refactor `gpu_particle_smoke.c` into a shared scenario plus native host once the runner supports
+compute requirements. This is the first high-value proof that the same C scenario can drive native
+Vulkan and WASM/WebGPU evidence for a compute-to-render workflow.
+
+### Promotion Gate
+
+Promote helper pieces into public Datoviz API only after several examples prove they are general
+runtime concepts rather than example-runner policy. In particular, do not promote a narrow
+`dvz_app_run_paced()` helper just for video export. If finite paced loops are needed outside the
+runner, promote a more general run-policy descriptor such as `DvzAppRunConfig`.
 
 
 ## Acceptance Criteria

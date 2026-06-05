@@ -101,6 +101,7 @@ typedef struct DvzRunnerConfig
 
     DvzAppCaptureConfig capture;
     bool print_progress;
+    bool pace_wall_time;
 } DvzRunnerConfig;
 
 

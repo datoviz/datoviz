@@ -15,6 +15,7 @@
 #include "runner/scenario_runner.h"
 
 #include "_compat.h"
+#include "_time_utils.h"
 #include "datoviz/scene.h"
 
 #include <stdio.h>
@@ -30,6 +31,7 @@
 #define RUNNER_DEFAULT_FRAMES 120u
 #define RUNNER_PATH_SIZE      1024u
 #define RUNNER_PROGRESS_WIDTH 32u
+#define RUNNER_NS_PER_SEC     1000000000ull
 
 
 
@@ -183,14 +185,56 @@ static void _progress_frame(DvzView* view, void* user_data)
 
 
 
+static void _run_paced(DvzApp* app, uint32_t frame_count, double fps)
+{
+    ANN(app);
+    if (frame_count == 0)
+    {
+        dvz_app_run(app, 0);
+        return;
+    }
+    if (fps <= 0)
+    {
+        dvz_app_run(app, frame_count);
+        return;
+    }
+
+    const uint64_t period_ns = (uint64_t)((double)RUNNER_NS_PER_SEC / fps);
+    uint64_t next_ns = dvz_time_monotonic_ns();
+    for (uint32_t frame = 0; frame < frame_count; frame++)
+    {
+        const uint64_t now = dvz_time_monotonic_ns();
+        if (next_ns > now)
+        {
+            const uint64_t sleep_ns = next_ns - now;
+            const uint64_t sleep_us = sleep_ns / 1000u;
+            if (sleep_us > 0)
+            {
+                const int bounded_us =
+                    sleep_us > (uint64_t)INT32_MAX ? INT32_MAX : (int)sleep_us;
+                dvz_sleep_us(bounded_us);
+            }
+        }
+
+        dvz_app_run(app, 1);
+
+        const uint64_t after = dvz_time_monotonic_ns();
+        next_ns += period_ns;
+        if (next_ns + period_ns < after)
+            next_ns = after + period_ns;
+    }
+}
+
+
+
 static void _print_usage(const DvzScenarioSpec* spec)
 {
     const char* exe = spec != NULL && spec->id != NULL ? spec->id : "scenario";
     fprintf(stdout, "usage: %s [mode] [frames]\n", exe);
     fprintf(stdout, "modes:\n");
-    fprintf(stdout, "  --live                 show a GLFW window (default)\n");
-    fprintf(stdout, "  --live-record N        show a GLFW window and record video\n");
-    fprintf(stdout, "  --offscreen-record N   record video from a hidden offscreen view\n");
+    fprintf(stdout, "  --live                 show a paced GLFW window (default)\n");
+    fprintf(stdout, "  --live-record N        show GLFW and record paced offscreen video\n");
+    fprintf(stdout, "  --offscreen-record N   record unpaced offscreen video\n");
     fprintf(stdout, "  --png                  write one offscreen PNG\n");
     fprintf(stdout, "  --dvzr N               record a DVZR stream offscreen\n");
 }
@@ -213,6 +257,7 @@ DvzRunnerConfig dvz_runner_config(const DvzScenarioSpec* spec)
         .fps = spec != NULL && spec->fps > 0 ? spec->fps : 60.0,
         .capture = dvz_app_capture_config_from_env(basename),
         .print_progress = true,
+        .pace_wall_time = false,
     };
     config.capture.flags = DVZ_APP_CAPTURE_NONE;
     return config;
@@ -312,7 +357,10 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         dvz_anim_start(timer, 0.0);
     }
 
-    app = dvz_app(scene);
+    DvzAppConfig app_config = dvz_app_config();
+    if (resolved.presentation == DVZ_RUNNER_PRESENT_GLFW)
+        app_config.fps_cap = resolved.fps;
+    app = dvz_app_with_config(scene, &app_config);
     if (app == NULL)
     {
         fprintf(stderr, "scenario_runner: dvz_app() failed\n");
@@ -376,7 +424,10 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
 
     if (resolved.frame_count > 0 && resolved.print_progress)
         _print_progress(0, resolved.frame_count);
-    dvz_app_run(app, resolved.frame_count);
+    if (resolved.pace_wall_time)
+        _run_paced(app, resolved.frame_count, resolved.fps);
+    else
+        dvz_app_run(app, resolved.frame_count);
     if (resolved.frame_count > 0 && resolved.print_progress)
         fprintf(stdout, "\n");
 
@@ -434,6 +485,7 @@ int dvz_scenario_run_native_cli(const DvzScenarioSpec* spec, int argc, char** ar
             config.presentation = DVZ_RUNNER_PRESENT_GLFW;
             config.capture_kind = DVZ_RUNNER_CAPTURE_VIDEO;
             config.frame_count = _frames_after(argc, argv, i, RUNNER_DEFAULT_FRAMES);
+            config.pace_wall_time = true;
         }
         else if (strcmp(arg, "--offscreen-record") == 0)
         {
@@ -466,6 +518,9 @@ int dvz_scenario_run_native_cli(const DvzScenarioSpec* spec, int argc, char** ar
             }
         }
     }
+
+    if (config.presentation == DVZ_RUNNER_PRESENT_GLFW && config.frame_count > 0)
+        config.pace_wall_time = true;
 
     return dvz_scenario_run_native(spec, &config);
 }
