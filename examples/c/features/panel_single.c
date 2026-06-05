@@ -10,8 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/panel_single
- * Run:    ./build/examples/c/features/panel_single
- * Smoke:  ./build/examples/c/features/panel_single 1
+ * Run:    ./build/examples/c/features/panel_single --live
+ * Smoke:  ./build/examples/c/features/panel_single --png
  */
 
 
@@ -20,12 +20,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
 #include <stdint.h>
 
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -40,21 +40,22 @@
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the single-panel ownership and viewport feature example.
+ * Initialize the single-panel ownership and viewport scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
     const vec3 positions[POINT_COUNT] = {
         {-0.56f, -0.18f, 0.0f}, {-0.28f, +0.20f, 0.0f}, {+0.00f, -0.06f, 0.0f},
@@ -69,58 +70,85 @@ int main(int argc, char** argv)
     };
     const float diameters[POINT_COUNT] = {28.0f, 38.0f, 52.0f, 38.0f, 28.0f};
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
     DvzPanel* panel =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0.14f, .y = 0.16f, .width = 0.72f, .height = 0.68f});
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
+        dvz_panel(ctx->figure, (DvzPanelDesc){
+                                   .x = 0.14f,
+                                   .y = 0.16f,
+                                   .width = 0.72f,
+                                   .height = 0.68f,
+                               });
+    if (panel == NULL)
+        return false;
     example_graphite_cyan_set_panel_background(panel);
 
     DvzPanelBorderDesc border = dvz_panel_border_desc();
     border.color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
     border.width_px = 2.0f;
-    EXAMPLE_CHECK(dvz_panel_set_border(panel, &border), "dvz_panel_set_border() failed");
+    if (!dvz_panel_set_border(panel, &border))
+        return false;
 
-    DvzVisual* point = dvz_point(scene, 0);
-    EXAMPLE_CHECK(point != NULL, "dvz_point() failed");
+    DvzVisual* point = dvz_point(ctx->scene, 0);
+    if (point == NULL)
+        return false;
 
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
         {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
     };
-    int rc = dvz_visual_set_data_many(point, updates, 3);
-    EXAMPLE_CHECK(rc == 0, "point data upload failed");
+    if (dvz_visual_set_data_many(point, updates, 3) != 0)
+        return false;
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
     style.stroke_width = 0.0f;
-    rc = dvz_point_set_style(point, &style);
-    EXAMPLE_CHECK(rc == 0, "dvz_point_set_style() failed");
+    if (dvz_point_set_style(point, &style) != 0)
+        return false;
 
-    rc = dvz_visual_set_depth_test(point, false);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_depth_test() failed");
+    if (dvz_visual_set_depth_test(point, false) != 0)
+        return false;
 
-    rc = dvz_panel_add_visual(panel, point, NULL);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
+    return dvz_panel_add_visual(panel, point, NULL) == 0;
+}
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "panel_single");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    dvz_app_run(app, example_frame_count_any(argc, argv));
-    ret = 0;
+/**
+ * Return the single-panel scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _panel_single_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_panel_single",
+        .title = "panel_single",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the single-panel ownership and viewport feature example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _panel_single_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
