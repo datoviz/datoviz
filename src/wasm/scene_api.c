@@ -51,6 +51,7 @@
 #define DVZ_WASM_VISUAL_PRIMITIVE 9
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
+#define DVZ_WASM_VISUAL_LABELS 12
 
 
 
@@ -418,6 +419,9 @@ uint32_t dvz_wasm_api_visual(uint32_t scene_handle, uint32_t visual_type, uint32
     case DVZ_WASM_VISUAL_TEXT:
         visual->visual = _scene_text_visual(scene->scene, flags);
         break;
+    case DVZ_WASM_VISUAL_LABELS:
+        visual->visual = dvz_labels(scene->scene, flags);
+        break;
     default:
         free(visual);
         return _fail_handle(scene, "unsupported WASM visual type");
@@ -768,6 +772,73 @@ int dvz_wasm_api_visual_set_texture_rgba8(
             return _fail(visual->owner, "WASM RGBA8 texture upload failed");
         return _fail(visual->owner, diagnostic);
     }
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_visual_set_labels_s32(
+    uint32_t visual_handle, const int32_t* values, uint32_t width, uint32_t height,
+    const int32_t* category_ids, const uint8_t* colors_rgba, uint32_t category_count)
+{
+    DvzWasmApiVisual* visual = _visual(visual_handle);
+    if (
+        visual == NULL || visual->owner == NULL || visual->owner->scene == NULL ||
+        visual->visual == NULL || values == NULL || category_ids == NULL || colors_rgba == NULL ||
+        width == 0 || height == 0 || category_count == 0)
+    {
+        return _fail(visual != NULL ? visual->owner : NULL, "invalid WASM S32 labels upload");
+    }
+    if (dvz_labels_state(visual->visual) == NULL)
+        return _fail(visual->owner, "WASM S32 labels upload requires a labels visual");
+    _clear_payload(visual->owner);
+
+    DvzSampledFieldDesc field_desc = dvz_sampled_field_desc();
+    field_desc.dim = DVZ_FIELD_DIM_2D;
+    field_desc.format = DVZ_FIELD_FORMAT_R32_SINT;
+    field_desc.semantic = DVZ_FIELD_SEMANTIC_LABEL;
+    field_desc.width = width;
+    field_desc.height = height;
+    field_desc.depth = 1;
+
+    DvzSampledField* field = dvz_sampled_field(visual->owner->scene, &field_desc);
+    if (field == NULL)
+        return _fail(visual->owner, "WASM S32 labels field creation failed");
+
+    DvzFieldDataView view = {DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView)};
+    view.data = values;
+    view.bytes_per_row = (uint64_t)width * sizeof(int32_t);
+    view.rows_per_image = height;
+    if (!dvz_sampled_field_set_data(field, &view))
+        return _fail(visual->owner, "WASM S32 labels field upload failed");
+    if (!dvz_visual_set_field(visual->visual, "field", field))
+        return _fail(visual->owner, "WASM S32 labels field bind failed");
+
+    DvzScale* scale = dvz_scale(
+        visual->owner->scene,
+        &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
+    if (scale == NULL)
+        return _fail(visual->owner, "WASM S32 labels scale creation failed");
+
+    DvzScaleCategory* categories =
+        (DvzScaleCategory*)calloc(category_count, sizeof(DvzScaleCategory));
+    if (categories == NULL)
+        return _fail(visual->owner, "WASM S32 labels category allocation failed");
+    for (uint32_t i = 0; i < category_count; i++)
+    {
+        categories[i].category_id = category_ids[i];
+        categories[i].order = i;
+        categories[i].color = dvz_color_rgba(
+            colors_rgba[4 * i + 0], colors_rgba[4 * i + 1], colors_rgba[4 * i + 2],
+            colors_rgba[4 * i + 3]);
+    }
+    bool ok = dvz_scale_set_categories(scale, categories, category_count);
+    free(categories);
+    if (!ok)
+        return _fail(visual->owner, "WASM S32 labels categories failed");
+    if (dvz_visual_set_scale(visual->visual, "labels", scale) != 0)
+        return _fail(visual->owner, "WASM S32 labels scale bind failed");
     return 0;
 }
 

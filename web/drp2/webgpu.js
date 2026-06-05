@@ -330,6 +330,7 @@ function mapTextureFormat(format) {
   switch (format) {
     case "r16float":
     case "r32uint":
+    case "r32sint":
     case "rg32uint":
     case "rgba8unorm":
     case "bgra8unorm":
@@ -357,6 +358,7 @@ function textureFormatBytes(format) {
     case "r16float":
       return 2;
     case "r32uint":
+    case "r32sint":
     case "rgba8unorm":
     case "bgra8unorm":
     case "depth32float":
@@ -512,7 +514,7 @@ function colorTargetFormat(canvasFormat, target) {
 function validateColorTargetState(format, target) {
   if (
     target.blend !== undefined &&
-    (format === "r32uint" || format === "rg32uint" || format === "depth32float")
+    (format === "r32uint" || format === "r32sint" || format === "rg32uint" || format === "depth32float")
   ) {
     throw new Error(`color target format ${format} does not support blending`);
   }
@@ -728,7 +730,7 @@ function makeBindGroupLayoutEntry(entry, storageAccess = "read_write", options =
       return {
         binding,
         visibility: shaderStageVisibility(entry.visibility, ["FRAGMENT"]),
-        texture: { sampleType: "float" },
+        texture: { sampleType: options.textureSampleType ?? "float" },
       };
     case "sampler":
       return {
@@ -777,12 +779,64 @@ function shaderStorageAccess(shader, binding) {
 
 
 
+function shaderTextureSampleType(shader, binding) {
+  const escaped = String(binding).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(
+    `@binding\\(${escaped}\\)[\\s\\S]*?var\\s+\\w+\\s*:\\s*texture_(?:2d|3d|cube|2d_array)<\\s*(i32|u32|f32)\\s*>`,
+  );
+  const match = pattern.exec(shader.code);
+  switch (match?.[1]) {
+    case "i32":
+      return "sint";
+    case "u32":
+      return "uint";
+    default:
+      return "float";
+  }
+}
+
+
+
+function textureSampleTypeForFormat(format) {
+  if (typeof format === "string" && format.includes("sint")) {
+    return "sint";
+  }
+  if (typeof format === "string" && format.includes("uint")) {
+    return "uint";
+  }
+  return "float";
+}
+
+
+
 function specializeBindGroupLayout(device, layoutRecord, shader, options = {}) {
   const entries = layoutRecord.entries.map((entry) => {
     const access = entry.binding_type === "storage_buffer"
       ? (entry.access ?? shaderStorageAccess(shader, entry.binding))
       : "read_write";
-    return makeBindGroupLayoutEntry(entry, access, options);
+    const textureSampleType = entry.binding_type === "sampled_texture"
+      ? shaderTextureSampleType(shader, entry.binding)
+      : undefined;
+    return makeBindGroupLayoutEntry(entry, access, { ...options, textureSampleType });
+  });
+  return {
+    entries: layoutRecord.entries,
+    layout: device.createBindGroupLayout({ entries }),
+  };
+}
+
+
+
+function specializeBindGroupLayoutForResources(device, layoutRecord, command, state, options = {}) {
+  const entries = layoutRecord.entries.map((entry) => {
+    const bindEntry = command.entries?.find((item) => item.binding === entry.binding);
+    let textureSampleType = undefined;
+    if (entry.binding_type === "sampled_texture" && bindEntry !== undefined) {
+      const kind = bindEntry.resource_kind === "texture_view" ? "texture_view" : "texture";
+      const record = requireLiveRecord(state, bindEntry.resource_id, kind);
+      textureSampleType = textureSampleTypeForFormat(record.format);
+    }
+    return makeBindGroupLayoutEntry(entry, "read_write", { ...options, textureSampleType });
   });
   return {
     entries: layoutRecord.entries,
@@ -1334,7 +1388,12 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, 
   const pipelineDepthStencilFormat = depthStencilFormat(command);
   const bindGroupLayoutIds = command.bind_group_layout_ids ?? [];
   const pipelineBindGroupLayouts = bindGroupLayoutIds.map((id) =>
-    required(bindGroupLayouts.get(id), `unknown bind-group layout ${id}`),
+    specializeBindGroupLayout(
+      device,
+      required(bindGroupLayouts.get(id), `unknown bind-group layout ${id}`),
+      fragmentShader,
+      options,
+    ),
   );
   const layout = pipelineBindGroupLayouts.length > 0
     ? device.createPipelineLayout({
@@ -2515,7 +2574,13 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
             entries,
             bindGroup: makeBindGroup(
               device,
-              bindGroupLayout,
+              specializeBindGroupLayoutForResources(
+                device,
+                bindGroupLayout,
+                { ...command, entries },
+                state,
+                options,
+              ),
               command,
               buffers,
               textures,

@@ -184,6 +184,15 @@ Current status as of this note:
   web/drp2/webgpu.js` passed; `just wasm-scene-smoke` emitted, preflighted, packetized, and
   replayed the 2D point/pixel/marker/segment/path/primitive/image/glyph/text/mesh + panzoom stream
   and the 3D sphere/textured mesh/arcball stream through the JS WebGPU runner smoke.
+- recorded local labels-promotion proof on 2026-06-05: `node --check
+  tools/wasm_scene_smoke.mjs`, `node --check web/wasm/scene.js`, `node --check
+  examples/webgpu/demos/wasm_2d.js`, `node --check web/drp2/context.js`, and `node --check
+  web/drp2/webgpu.js` passed; `direnv exec . just test
+  test_scene_labels_visual_binds_categorical_scale`, `direnv exec . just test
+  test_scene_labels_state_setters`, and `direnv exec . just test test_scene_labels_emit_wgsl`
+  passed; `just webgpu-fixture-preflight`, `just webgpu-runner-smoke`, `just wasm-scene-smoke`,
+  and `just webgpu-browser-smoke` passed with the 2D WASM stream rendering signed categorical
+  labels through an `r32sint` texture.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

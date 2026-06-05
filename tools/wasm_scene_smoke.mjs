@@ -31,6 +31,7 @@ const DVZ_WASM_VISUAL_GLYPH = 8;
 const DVZ_WASM_VISUAL_PRIMITIVE = 9;
 const DVZ_WASM_VISUAL_SPHERE = 10;
 const DVZ_WASM_VISUAL_TEXT = 11;
+const DVZ_WASM_VISUAL_LABELS = 12;
 const DVZ_MATERIAL_MODEL_STANDARD = 2;
 const DVZ_SEGMENT_CAP_ROUND = 1;
 const DVZ_SEGMENT_CAP_TRIANGLE_OUT = 3;
@@ -294,6 +295,7 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(source.includes("_dvz_wasm_api_visual_set_attr_buffer"), "browser wrapper cannot bind attr buffers");
   requireOk(source.includes("_dvz_wasm_api_visual_set_u32"), "browser wrapper cannot upload u32 attrs");
   requireOk(source.includes("_dvz_wasm_api_visual_set_strings"), "browser wrapper cannot upload text strings");
+  requireOk(source.includes("_dvz_wasm_api_visual_set_labels_s32"), "browser wrapper cannot upload S32 labels");
   requireOk(source.includes("_dvz_wasm_api_visual_set_material"), "browser wrapper cannot set materials");
   requireOk(source.includes("_dvz_wasm_api_visual_set_segment_caps"), "browser wrapper cannot set segment caps");
   requireOk(source.includes("_dvz_wasm_api_visual_set_path_caps"), "browser wrapper cannot set path caps");
@@ -502,6 +504,7 @@ function expect2DSceneStreamShape(stream, label) {
   expectDrawIndexed(stream, 24, 1, `${label} path`);
   expectDraw(stream, 3, 1, `${label} primitive`);
   expectDraw(stream, 4, 1, `${label} image`);
+  expectDraw(stream, 6, 1, `${label} labels`);
   expectDraw(stream, 18, 1, `${label} glyph`);
   expectDraw(stream, 24, 1, `${label} text`);
   expectDraw(stream, 6, 1, `${label} mesh`);
@@ -640,6 +643,21 @@ function expect2DSceneStreamShape(stream, label) {
     `${label} glyph: unexpected vertex attributes`,
   );
   expectDepthPipeline(glyphPipeline, `${label} glyph`, false, "always");
+  const labelsPipeline = expectPipeline(
+    stream,
+    `${label} labels`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.labels",
+  );
+  requireOk(labelsPipeline.topology === "triangle-list", `${label} labels: unexpected topology`);
+  requireOk(
+    JSON.stringify(pipelineAttributeFormats(labelsPipeline)) ===
+      JSON.stringify([
+        { stepMode: "vertex", formats: ["float32x3"] },
+        { stepMode: "vertex", formats: ["float32x2"] },
+      ]),
+    `${label} labels: unexpected vertex attributes`,
+  );
+  requireOk(labelsPipeline.depth_stencil === undefined, `${label} labels: unexpected depth state`);
   const meshPipeline = expectPipeline(
     stream,
     `${label} mesh`,
@@ -663,20 +681,25 @@ function expect2DSceneStreamShape(stream, label) {
   const imageTexture = textures.find((texture) => texture.width === 8 && texture.height === 8);
   const glyphTexture = textures.find((texture) => texture.width === 48 && texture.height === 16);
   const textTexture = textures.find((texture) => texture.width === 128 && texture.height === 60);
+  const labelsTexture = commandsOf(stream, "CreateTexture").find(
+    (texture) => texture.format === "r32sint" && texture.width === 6 && texture.height === 5,
+  );
   requireOk(textures.length === 3, `${label}: expected image, glyph, and text RGBA8 textures, got ${textures.length}`);
   requireOk(imageTexture !== undefined, `${label}: missing image texture`);
   requireOk(glyphTexture !== undefined, `${label}: missing glyph texture`);
   requireOk(textTexture !== undefined, `${label}: missing text atlas texture`);
+  requireOk(labelsTexture !== undefined, `${label}: missing S32 labels texture`);
   for (const texture of [imageTexture, glyphTexture, textTexture]) {
     requireOk(
       texture.usage.includes("COPY_DST") && texture.usage.includes("TEXTURE_BINDING"),
       `${label}: texture ${texture.id} needs COPY_DST and TEXTURE_BINDING usage`,
     );
   }
-  requireOk(writes.length === 3, `${label}: expected image, glyph, and text texture uploads, got ${writes.length}`);
+  requireOk(writes.length === 4, `${label}: expected image, labels, glyph, and text texture uploads, got ${writes.length}`);
   const imageWrite = writes.find((write) => write.texture_id === imageTexture.id);
   const glyphWrite = writes.find((write) => write.texture_id === glyphTexture.id);
   const textWrite = writes.find((write) => write.texture_id === textTexture.id);
+  const labelsWrite = writes.find((write) => write.texture_id === labelsTexture.id);
   requireOk(
     imageWrite?.size?.width === 8 && imageWrite?.size?.height === 8,
     `${label}: image texture upload does not match texture resource`,
@@ -689,12 +712,17 @@ function expect2DSceneStreamShape(stream, label) {
     textWrite?.size?.width === 128 && textWrite?.size?.height === 60,
     `${label}: text atlas upload does not match texture resource`,
   );
+  requireOk(
+    labelsWrite?.size?.width === 6 && labelsWrite?.size?.height === 5,
+    `${label}: labels texture upload does not match texture resource`,
+  );
   requireOk(imageWrite.bytes_per_row === 32, `${label}: unexpected image upload row pitch`);
+  requireOk(labelsWrite.bytes_per_row === 24, `${label}: unexpected labels upload row pitch`);
   requireOk(glyphWrite.bytes_per_row === 192, `${label}: unexpected glyph upload row pitch`);
   requireOk(textWrite.bytes_per_row === 512, `${label}: unexpected text atlas upload row pitch`);
   requireOk(
-    commandsOf(stream, "CreateRenderPipeline").length === 10,
-    `${label}: expected point, pixel, marker, segment, path, primitive, image, glyph, text, and mesh pipelines`,
+    commandsOf(stream, "CreateRenderPipeline").length === 11,
+    `${label}: expected point, pixel, marker, segment, path, primitive, image, labels, glyph, text, and mesh pipelines`,
   );
 }
 
@@ -715,6 +743,7 @@ function expect2DUpdateStreamShape(
   expectDrawIndexed(stream, 24, 1, `${label} path`);
   expectDraw(stream, 3, 1, `${label} primitive`);
   expectDraw(stream, 4, 1, `${label} image`);
+  expectDraw(stream, 6, 1, `${label} labels`);
   expectDraw(stream, 18, 1, `${label} glyph`);
   expectDraw(stream, 24, 1, `${label} text`);
   expectDraw(stream, 6, 1, `${label} mesh`);
@@ -918,6 +947,32 @@ function setPathJoin(Module, visual, join, miterLimit, label) {
   expectStatus(Module._dvz_wasm_api_visual_set_path_join(visual, join, miterLimit), 0, label);
 }
 
+function setLabelsS32(
+  Module,
+  visual,
+  valuesPtr,
+  width,
+  height,
+  categoryIdsPtr,
+  colorsPtr,
+  categoryCount,
+  label,
+) {
+  expectStatus(
+    Module._dvz_wasm_api_visual_set_labels_s32(
+      visual,
+      valuesPtr,
+      width,
+      height,
+      categoryIdsPtr,
+      colorsPtr,
+      categoryCount,
+    ),
+    0,
+    label,
+  );
+}
+
 function setCapabilities(
   Module,
   scene,
@@ -969,6 +1024,7 @@ const boundsNamePtr = allocCString(Module, "bounds");
 const textNamePtr = allocCString(Module, "text");
 const anchorNamePtr = allocCString(Module, "anchor");
 const sizeNamePtr = allocCString(Module, "size");
+const extentNamePtr = allocCString(Module, "extent");
 
 try {
   const diagnosticScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
@@ -1169,6 +1225,24 @@ try {
   }
   const imagePositions = new Float32Array([0.18, -0.78, 0.05, 0.18, -0.12, 0.05, 0.86, -0.78, 0.05, 0.86, -0.12, 0.05]);
   const imageTexcoords = new Float32Array([0, 0, 0, 1, 1, 0, 1, 1]);
+  const labelsWidth = 6;
+  const labelsHeight = 5;
+  const labelsValues = new Int32Array([
+    1, 1, 2, 2, 3, 3,
+    1, 1, 2, 2, 3, 3,
+    4, 4, 0, 0, 3, 3,
+    4, 4, 1, 1, 2, 2,
+    4, 4, 1, 1, 2, 2,
+  ]);
+  const labelsCategoryIds = new Int32Array([1, 2, 3, 4]);
+  const labelsCategoryColors = new Uint8Array([
+    245, 94, 92, 220,
+    83, 203, 168, 220,
+    86, 156, 244, 220,
+    246, 207, 95, 180,
+  ]);
+  const labelsPosition = new Float32Array([0.52, -0.45, 0.09]);
+  const labelsExtent = new Float32Array([0.58, 0.42]);
   const glyphWidth = 48;
   const glyphHeight = 16;
   const glyphPixels = makeGlyphAtlas(glyphWidth, glyphHeight);
@@ -1231,6 +1305,9 @@ try {
     allocArray(Module, textPositions), allocArray(Module, textAnchors),
     allocArray(Module, textSizes), allocArray(Module, textColors), allocArray(Module, textAngles),
     allocArray(Module, meshPositions), allocArray(Module, meshColors), allocArray(Module, meshNormals),
+    allocArray(Module, labelsValues), allocArray(Module, labelsCategoryIds),
+    allocArray(Module, labelsCategoryColors), allocArray(Module, labelsPosition),
+    allocArray(Module, labelsExtent),
   ];
   try {
     expectStatus(Module._dvz_wasm_api_set_canvas_format(scene, DVZ_FORMAT_R8G8B8A8_UNORM), 0, "api 2D canvas format");
@@ -1302,6 +1379,14 @@ try {
     setF32(Module, image, texcoordsNamePtr, ptrs[21], imageTexcoords.length / 2, "api image texcoords");
     expectStatus(Module._dvz_wasm_api_visual_set_texture_rgba8(image, ptrs[22], imageWidth, imageHeight), 0, "api image texture");
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, image), 0, "api add image");
+
+    const labels = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_LABELS, 0);
+    setF32(Module, labels, positionNamePtr, ptrs[40], labelsPosition.length / 3, "api labels position");
+    setF32(Module, labels, extentNamePtr, ptrs[41], labelsExtent.length / 2, "api labels extent");
+    setLabelsS32(
+      Module, labels, ptrs[37], labelsWidth, labelsHeight, ptrs[38], ptrs[39],
+      labelsCategoryIds.length, "api labels s32");
+    expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, labels), 0, "api add labels");
 
     const glyph = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_GLYPH, 0);
     setF32(Module, glyph, positionNamePtr, ptrs[23], glyphPositionData.length / 3, "api glyph position");
@@ -1425,6 +1510,7 @@ try {
       expectDrawIndexed(visualReload.stream, 24, 1, "generic 2D visual reload path");
       expectDraw(visualReload.stream, 3, 1, "generic 2D visual reload primitive");
       expectDraw(visualReload.stream, 4, 1, "generic 2D visual reload image");
+      expectDraw(visualReload.stream, 6, 1, "generic 2D visual reload labels");
       expectDraw(visualReload.stream, 18, 1, "generic 2D visual reload glyph");
       expectDraw(visualReload.stream, 24, 1, "generic 2D visual reload text");
       expectDraw(visualReload.stream, 6, 1, "generic 2D visual reload mesh");
@@ -1559,4 +1645,5 @@ try {
   Module._free(textNamePtr);
   Module._free(anchorNamePtr);
   Module._free(sizeNamePtr);
+  Module._free(extentNamePtr);
 }

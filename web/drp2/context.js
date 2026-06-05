@@ -4,6 +4,7 @@ function supportedTextureFormats(canvasFormat) {
   const formats = [
     "r16float",
     "r32uint",
+    "r32sint",
     "rg32uint",
     "rgba8unorm",
     "bgra8unorm",

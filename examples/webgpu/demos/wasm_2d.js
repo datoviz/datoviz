@@ -10,6 +10,7 @@ export const demo = {
     addPath(scene, panel);
     addPrimitive(scene, panel);
     addImage(scene, panel);
+    addLabels(scene, panel);
     addGlyphs(scene, panel);
     addText(scene, panel);
     addMesh(scene, panel);
@@ -216,6 +217,39 @@ function addImage(scene, panel) {
   image.setF32("texcoords", texcoords, texcoords.length / 2);
   image.setTextureRGBA8(pixels, width, height);
   scene.addVisual(panel, image);
+}
+
+function addLabels(scene, panel) {
+  const labels = scene.visual("labels");
+  const width = 12;
+  const height = 10;
+  const values = new Int32Array(width * height);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const dx = x - width * 0.5;
+      const dy = y - height * 0.5;
+      const i = y * width + x;
+      if (dx * dx + dy * dy < 8) {
+        values[i] = 1;
+      } else if (x > 6 && y > 2 && y < 8) {
+        values[i] = 2;
+      } else if (x > 2 && x < 7 && y > 5) {
+        values[i] = 3;
+      } else {
+        values[i] = 4;
+      }
+    }
+  }
+
+  labels.setF32("position", new Float32Array([0.52, -0.45, 0.09]), 1);
+  labels.setF32("extent", new Float32Array([0.58, 0.42]), 1);
+  labels.setLabelsS32(values, width, height, [
+    { id: 1, color: [245, 94, 92, 210] },
+    { id: 2, color: [83, 203, 168, 210] },
+    { id: 3, color: [86, 156, 244, 210] },
+    { id: 4, color: [246, 207, 95, 170] },
+  ]);
+  scene.addVisual(panel, labels);
 }
 
 function makeGlyphAtlas(width, height) {

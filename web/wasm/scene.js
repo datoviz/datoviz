@@ -46,6 +46,7 @@ export const DvzWasmVisual = Object.freeze({
   primitive: 9,
   sphere: 10,
   text: 11,
+  labels: 12,
 });
 
 function requireOk(condition, message) {
@@ -737,6 +738,49 @@ export class DatovizWasmVisualHandle {
       }
     } finally {
       this.Module._free(dataPtr);
+    }
+  }
+
+  setLabelsS32(values, width, height, categories) {
+    requireOk(values instanceof Int32Array, "setLabelsS32() values must be an Int32Array");
+    requireOk(Number.isInteger(width) && width > 0, "setLabelsS32() width must be positive");
+    requireOk(Number.isInteger(height) && height > 0, "setLabelsS32() height must be positive");
+    requireOk(values.length === width * height, "setLabelsS32() values length must match width*height");
+    requireOk(Array.isArray(categories) && categories.length > 0, "setLabelsS32() requires categories");
+
+    const categoryIds = new Int32Array(categories.length);
+    const colors = new Uint8Array(categories.length * 4);
+    for (let i = 0; i < categories.length; i++) {
+      const category = categories[i] ?? {};
+      requireOk(Number.isInteger(category.id), `setLabelsS32() category ${i} needs an integer id`);
+      const color = category.color ?? category.rgba;
+      requireOk(Array.isArray(color) && color.length >= 4, `setLabelsS32() category ${i} needs RGBA color`);
+      categoryIds[i] = category.id;
+      for (let c = 0; c < 4; c++) {
+        colors[4 * i + c] = Math.max(0, Math.min(255, Math.round(color[c])));
+      }
+    }
+
+    const valuesPtr = allocArray(this.Module, values);
+    const idsPtr = allocArray(this.Module, categoryIds);
+    const colorsPtr = allocArray(this.Module, colors);
+    try {
+      const status = this.Module._dvz_wasm_api_visual_set_labels_s32(
+        this.handle,
+        valuesPtr,
+        width,
+        height,
+        idsPtr,
+        colorsPtr,
+        categories.length,
+      );
+      if (status !== 0) {
+        throw new Error(this._diagnosticMessage(`dvz_wasm_api_visual_set_labels_s32 failed with ${status}`));
+      }
+    } finally {
+      this.Module._free(valuesPtr);
+      this.Module._free(idsPtr);
+      this.Module._free(colorsPtr);
     }
   }
 
