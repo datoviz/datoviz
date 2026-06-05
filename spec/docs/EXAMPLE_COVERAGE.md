@@ -70,6 +70,19 @@ Recommended implementation states:
 | `external/GSP` | Belongs primarily outside Datoviz C examples. |
 
 
+Recommended gallery capabilities:
+
+| Capability | Meaning |
+| --- | --- |
+| `static-media` | The example has a stable PNG and/or video artifact for docs and release notes. |
+| `wasm-supported` | The example is expected to compile and run through the portable WASM/WebGPU path. |
+| `gallery-live` | The example is curated for public live embedding in the website gallery. |
+
+Treat `wasm-supported` as a validation target, not a publishing promise. Most portable examples may
+eventually build to WASM, while `gallery-live` should remain a smaller curated subset backed by
+fallback static media and honest unsupported-feature diagnostics.
+
+
 ## Documentation Pairing
 
 Every public visual or feature needs at least one minimal executable example. The prose around that
