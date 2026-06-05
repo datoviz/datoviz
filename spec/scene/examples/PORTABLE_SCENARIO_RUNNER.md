@@ -3,76 +3,140 @@
 Execution Status:
 
 - Status: proposed example architecture for v0.4/v0.5 portability work
-- Updated on: 2026-06-04
-- Purpose: make scene examples write-once C scenarios that can run through native Vulkan hosts or
-  browser WASM/WebGPU hosts
-- Scope: example structure, host boundaries, helper API shape, and promotion rules
+- Updated on: 2026-06-05
+- Purpose: make most scene examples compile as portable C scenarios and run through native,
+  offscreen, capture, and browser hosts
+- Scope: scenario/runner boundaries, native runner modes, WASM host expectations, capture
+  ownership, migration sequence, and promotion rules
 
 Full visual and feature parity sequencing lives in
 [../integration/WASM_WEBGPU_PARITY_PLAN.md](../integration/WASM_WEBGPU_PARITY_PLAN.md). This file
-only defines the example/scenario architecture used by that parity program.
+defines the example architecture used by that parity program.
 
 
 ## Problem
 
-Most current C examples mix two concerns:
+Most current C examples mix two responsibilities:
 
-1. portable scene logic: data creation, retained visuals, scene buffers, compute, controllers, and
-   per-frame updates;
-2. native host logic: `dvz_app()`, `dvz_view_glfw()`, app callbacks, capture, window input, and
-   native runtime setup.
+1. portable scene logic: scene, figures, panels, visuals, retained data, scene buffers, compute,
+   controllers, and per-frame updates;
+2. host/runtime logic: `dvz_app()`, `dvz_view_glfw()`, offscreen views, frame loops, capture,
+   progress output, command-line modes, native window input, and browser lifecycle glue.
 
-That shape is clear for native users, but it prevents examples from compiling directly into the
-browser path. A browser host has different presentation and lifecycle machinery:
+That shape is readable for small native examples, but it blocks direct reuse in WASM/WebGPU. A
+browser host has different presentation and scheduling machinery:
 
 ```text
-DOM canvas -> requestAnimationFrame -> browser input -> C/WASM scene -> DRP2 packets -> WebGPU
+DOM canvas -> requestAnimationFrame -> browser input -> portable C scenario ->
+scene/DRP2 packets -> WebGPU runtime
 ```
 
 The goal is not to rewrite examples in JavaScript. The goal is to split examples so the scenario
-logic remains ordinary C and only the host changes.
+logic remains ordinary C and only the runner changes.
 
 
-## Target Shape
+## Architecture
 
-Scene-level examples should be portable by default:
+The unit of portable example code is a **scenario**. The user-facing executable, browser page, test,
+or capture job is a **runner**.
 
 ```text
 portable C scenario
-  -> native example host: app/window/capture/Vulkan
-  -> WASM example host: browser lifecycle/input/DRP2 packets/WebGPU
+  -> native GLFW runner
+  -> native offscreen runner
+  -> native capture runner
+  -> browser/WASM runner
+  -> CI/evidence runner
 ```
 
-The portable scenario owns:
+The scenario owns:
 
-1. scene, figure, panel, visual, scene-buffer, and scene-compute construction;
-2. data initialization and retained updates;
-3. abstract frame, resize, pointer, wheel, and destroy callbacks;
-4. capability requirements and shader-source selection;
-5. diagnostics for unsupported requirements.
+1. scene-level construction;
+2. figures, panels, visuals, cameras, controllers, retained buffers, and scene compute;
+3. data initialization and retained updates;
+4. abstract frame, resize, pointer, wheel, keyboard, and destroy callbacks;
+5. capability requirements and shader-source selection;
+6. diagnostics for unsupported scenario requirements.
 
-The host owns:
+The runner owns:
 
-1. native window or browser canvas creation;
-2. frame scheduling;
-3. input normalization;
-4. capture or browser evidence;
-5. backend capability discovery;
-6. runtime-specific execution.
+1. app, native window, offscreen target, or browser canvas creation;
+2. frame scheduling and event-loop integration;
+3. input normalization before passing portable events to the scenario;
+4. capture, video, PNG, DVZR, browser screenshots, and evidence artifacts;
+5. native/backend capability discovery;
+6. CLI parsing and mode presets;
+7. progress/status output;
+8. runtime-specific teardown.
 
-Scenario code must not directly call GLFW, native app, Vulkan, WebGPU, or browser APIs unless the
-example is explicitly about that host/backend.
+Scenario code must not directly call GLFW, native app, Vulkan, WebGPU, browser APIs, or capture
+APIs unless the example is explicitly about that host/backend. Native-only host examples remain
+allowed, but they are exceptions, not the default pattern for feature, visual, workflow, showcase,
+and scientific examples.
 
 
-## Helper API Sketch
+## Scenario API Sketch
 
-The helper should be small and boring. It exists to remove host boilerplate from examples, not to
-hide the scene API.
+The first implementation should live in example-support code, not public `include/datoviz/`, until
+several examples prove the shape.
 
 ```c
-typedef struct DvzExampleContext DvzExampleContext;
+typedef struct DvzScenarioContext DvzScenarioContext;
+typedef struct DvzScenarioSpec DvzScenarioSpec;
 
-typedef struct DvzExamplePointerEvent
+typedef bool (*DvzScenarioInitFn)(DvzScenarioContext* ctx, void** out_user);
+typedef void (*DvzScenarioFrameFn)(DvzScenarioContext* ctx, void* user);
+typedef void (*DvzScenarioResizeFn)(
+    DvzScenarioContext* ctx, uint32_t width, uint32_t height, void* user);
+typedef void (*DvzScenarioPointerFn)(
+    DvzScenarioContext* ctx, const DvzScenarioPointerEvent* event, void* user);
+typedef void (*DvzScenarioWheelFn)(
+    DvzScenarioContext* ctx, const DvzScenarioWheelEvent* event, void* user);
+typedef void (*DvzScenarioDestroyFn)(DvzScenarioContext* ctx, void* user);
+
+struct DvzScenarioSpec
+{
+    const char* id;
+    const char* title;
+    uint32_t width;
+    uint32_t height;
+    double fps;
+    uint64_t requirements;
+
+    DvzScenarioInitFn init;
+    DvzScenarioFrameFn frame;
+    DvzScenarioResizeFn resize;
+    DvzScenarioPointerFn pointer;
+    DvzScenarioWheelFn wheel;
+    DvzScenarioDestroyFn destroy;
+};
+```
+
+The context exposes portable scene state and frame timing. It deliberately omits `DvzApp`,
+`DvzView`, GLFW handles, Vulkan handles, and capture objects.
+
+```c
+struct DvzScenarioContext
+{
+    DvzScene* scene;
+    DvzFigure* figure;
+
+    uint32_t width;
+    uint32_t height;
+
+    double time;
+    double dt;
+    uint64_t frame_index;
+
+    DvzSceneShaderFormat shader_format;
+    const DvzCapabilitySnapshot* capabilities;
+};
+```
+
+Portable event payloads should be normalized by the runner:
+
+```c
+typedef struct DvzScenarioPointerEvent
 {
     float x;
     float y;
@@ -80,206 +144,306 @@ typedef struct DvzExamplePointerEvent
     uint32_t button;
     uint32_t modifiers;
     double timestamp_ms;
-} DvzExamplePointerEvent;
+} DvzScenarioPointerEvent;
 
-typedef bool (*DvzExampleInitFn)(DvzExampleContext* ctx, void** out_user);
-typedef void (*DvzExampleFrameFn)(DvzExampleContext* ctx, void* user);
-typedef void (*DvzExampleResizeFn)(DvzExampleContext* ctx, uint32_t width, uint32_t height, void* user);
-typedef void (*DvzExamplePointerFn)(
-    DvzExampleContext* ctx, const DvzExamplePointerEvent* event, void* user);
-typedef void (*DvzExampleDestroyFn)(DvzExampleContext* ctx, void* user);
-
-typedef struct DvzExampleSpec
+typedef struct DvzScenarioWheelEvent
 {
-    const char* id;
-    const char* title;
-    uint32_t width;
-    uint32_t height;
-    uint64_t requirements;
-    DvzExampleInitFn init;
-    DvzExampleFrameFn frame;
-    DvzExampleResizeFn resize;
-    DvzExamplePointerFn pointer;
-    DvzExampleDestroyFn destroy;
-} DvzExampleSpec;
+    float x;
+    float y;
+    float dx;
+    float dy;
+    uint32_t modifiers;
+    double timestamp_ms;
+} DvzScenarioWheelEvent;
 ```
 
-The context should expose portable scene state and capabilities:
-
-```c
-struct DvzExampleContext
-{
-    DvzScene* scene;
-    uint32_t width;
-    uint32_t height;
-    double time;
-    float dt;
-    uint64_t frame_index;
-    DvzSceneShaderFormat shader_format;
-    const DvzCapabilitySnapshot* capabilities;
-};
-```
-
-Example requirements should be explicit so unsupported browser runs fail before partial rendering:
+Requirements should be explicit so unsupported browser runs fail before partial rendering:
 
 ```c
 enum
 {
-    DVZ_EXAMPLE_REQ_POINT_VISUAL = 1ull << 0,
-    DVZ_EXAMPLE_REQ_MESH_VISUAL = 1ull << 1,
-    DVZ_EXAMPLE_REQ_IMAGE_VISUAL = 1ull << 2,
-    DVZ_EXAMPLE_REQ_SCENE_BUFFERS = 1ull << 3,
-    DVZ_EXAMPLE_REQ_STORAGE_BUFFERS = 1ull << 4,
-    DVZ_EXAMPLE_REQ_SCENE_COMPUTE = 1ull << 5,
-    DVZ_EXAMPLE_REQ_QUERY_READBACK = 1ull << 6,
+    DVZ_SCENARIO_REQ_POINT_VISUAL = 1ull << 0,
+    DVZ_SCENARIO_REQ_MARKER_VISUAL = 1ull << 1,
+    DVZ_SCENARIO_REQ_MESH_VISUAL = 1ull << 2,
+    DVZ_SCENARIO_REQ_IMAGE_VISUAL = 1ull << 3,
+    DVZ_SCENARIO_REQ_TEXT_VISUAL = 1ull << 4,
+    DVZ_SCENARIO_REQ_SCENE_BUFFERS = 1ull << 5,
+    DVZ_SCENARIO_REQ_STORAGE_BUFFERS = 1ull << 6,
+    DVZ_SCENARIO_REQ_SCENE_COMPUTE = 1ull << 7,
+    DVZ_SCENARIO_REQ_QUERY_READBACK = 1ull << 8,
+    DVZ_SCENARIO_REQ_NATIVE_CAPTURE = 1ull << 9,
 };
 ```
 
 
-## Conceptual Scenario Example
+## Runner API Sketch
 
-The GPU particle smoke example should become a shared C scenario:
+The runner is the host abstraction. It converts user-facing modes into native or browser runtime
+behavior.
+
+```c
+typedef enum DvzRunnerPresentation
+{
+    DVZ_RUNNER_PRESENT_GLFW,
+    DVZ_RUNNER_PRESENT_OFFSCREEN,
+    DVZ_RUNNER_PRESENT_BROWSER,
+} DvzRunnerPresentation;
+
+typedef struct DvzRunnerConfig
+{
+    DvzRunnerPresentation presentation;
+
+    uint32_t width;
+    uint32_t height;
+    uint32_t frame_count; // 0 = interactive
+    double fps;
+
+    bool capture_enabled;
+    DvzAppCaptureConfig capture; // native runner only
+
+    bool print_progress;
+} DvzRunnerConfig;
+```
+
+The native entry point should be small:
+
+```c
+int dvz_scenario_run_native(
+    const DvzScenarioSpec* spec, const DvzRunnerConfig* config);
+```
+
+Command-line parsing should be reusable runner code, not repeated in each example:
+
+```c
+int dvz_scenario_run_native_cli(
+    const DvzScenarioSpec* spec, int argc, char** argv);
+```
+
+Mode presets are runner policy:
+
+```text
+--live
+  presentation = GLFW
+  frame_count = 0
+  capture = none
+
+--live-record 120
+  presentation = GLFW
+  frame_count = 120
+  capture = video
+
+--offscreen-record 120
+  presentation = OFFSCREEN
+  frame_count = 120
+  capture = video
+
+--png
+  presentation = OFFSCREEN unless overridden
+  frame_count = 1
+  capture = png
+
+--dvzr 120
+  presentation = OFFSCREEN unless overridden
+  frame_count = 120
+  capture = dvzr
+```
+
+These presets should still allow environment overrides such as `DVZ_CAPTURE_DIR`,
+`DVZ_CAPTURE_BASENAME`, `DVZ_CAPTURE_FPS`, `DVZ_CAPTURE_VIDEO_BACKEND`, and
+`DVZ_CAPTURE_VIDEO_MODE`.
+
+
+## Native Runner Flow
+
+The native runner owns the app/view/capture lifecycle:
+
+```c
+int dvz_scenario_run_native(
+    const DvzScenarioSpec* spec, const DvzRunnerConfig* config)
+{
+    DvzScene* scene = dvz_scene();
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_fps(scene, config->fps > 0 ? config->fps : spec->fps);
+
+    DvzScenarioContext ctx = {
+        .scene = scene,
+        .width = config->width != 0 ? config->width : spec->width,
+        .height = config->height != 0 ? config->height : spec->height,
+    };
+
+    void* user = NULL;
+    if (!spec->init(&ctx, &user) || ctx.figure == NULL)
+        return -1;
+
+    DvzApp* app = dvz_app(scene);
+
+    DvzView* view = NULL;
+    if (config->presentation == DVZ_RUNNER_PRESENT_GLFW)
+        view = dvz_view_glfw(app, ctx.figure, ctx.width, ctx.height, spec->title);
+    else
+        view = dvz_view_offscreen(app, ctx.figure, ctx.width, ctx.height);
+
+    install_frame_bridge(scene, spec, &ctx, user);
+    install_input_bridge(view, spec, &ctx, user);
+    install_progress_bridge(view, config);
+
+    if (config->capture_enabled)
+        dvz_view_capture_start(view, &config->capture);
+
+    dvz_app_run(app, config->frame_count);
+
+    if (config->capture_enabled)
+        dvz_view_capture_stop(view);
+
+    if (spec->destroy != NULL)
+        spec->destroy(&ctx, user);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+```
+
+The frame bridge updates `ctx.time`, `ctx.dt`, and `ctx.frame_index`, then calls
+`spec->frame(&ctx, user)`. The native implementation can use scene timer animations internally, but
+the scenario should see the same logical frame callback on native and browser hosts.
+
+
+## Capture And Evidence
+
+Capture is host output, not scenario behavior.
+
+Native runner outputs:
+
+1. video MP4;
+2. PNG;
+3. DVZR;
+4. combinations such as video plus DVZR.
+
+Browser runner outputs:
+
+1. canvas snapshots;
+2. browser screenshots or headless-browser evidence;
+3. possibly `MediaRecorder` video later.
+
+Scenarios should never branch on “am I recording?” unless the scenario is specifically a capture
+diagnostic. Recording must sample the same scenario frame stream as live display. A native
+`--live-record` mode is therefore required in the first implementation because it compares the
+visible GLFW path and encoded video path directly.
+
+
+## Conceptual Scenario Example
 
 ```c
 typedef struct
 {
-    DvzFigure* figure;
-    DvzPanel* panel;
-    DvzSceneBuffer* params;
-    DvzSceneBuffer* positions;
-    DvzSceneBuffer* velocities;
-    DvzSceneCompute* compute;
-    float sim_time;
-    vec2 mouse;
-    bool mouse_valid;
-} ParticleSmoke;
+    DvzVisual* point;
+    vec3 positions[64];
+    DvzColor colors[64];
+    float sizes[64];
+} PointWave;
 
-static bool particle_init(DvzExampleContext* ctx, void** out_user)
+static bool point_wave_init(DvzScenarioContext* ctx, void** out_user)
 {
-    ParticleSmoke* smoke = dvz_calloc(1, sizeof(ParticleSmoke));
+    PointWave* wave = dvz_calloc(1, sizeof(PointWave));
 
-    smoke->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
-    smoke->panel = dvz_panel_full(smoke->figure);
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
 
-    smoke->positions = make_scene_buffer(
-        ctx->scene, DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
-        sizeof(vec3), PARTICLE_COUNT * sizeof(vec3));
-    smoke->velocities = make_scene_buffer(
-        ctx->scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec3),
-        PARTICLE_COUNT * sizeof(vec3));
-    smoke->params = make_scene_buffer(
-        ctx->scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec4), 3 * sizeof(vec4));
+    wave->point = dvz_point(ctx->scene, 0);
+    fill_initial_points(wave);
+    upload_points(wave);
+    dvz_panel_add_visual(panel, wave->point, NULL);
 
-    upload_initial_particles(smoke);
-
-    DvzVisual* points = dvz_point(ctx->scene, 0);
-    dvz_visual_set_attr_buffer(points, "position", smoke->positions, 0, PARTICLE_COUNT);
-    dvz_visual_set_attr_buffer(points, "color", make_color_buffer(ctx), 0, PARTICLE_COUNT);
-    dvz_visual_set_attr_buffer(points, "diameter", make_size_buffer(ctx), 0, PARTICLE_COUNT);
-    dvz_panel_add_visual(smoke->panel, points, NULL);
-
-    DvzSceneComputeDesc desc = dvz_scene_compute_desc();
-    desc.label = "particle_smoke";
-    desc.shader_format = ctx->shader_format;
-    desc.shader_source = particle_shader_source(ctx->shader_format);
-    desc.dispatch[0] = (PARTICLE_COUNT + 127) / 128;
-    desc.dispatch[1] = 1;
-    desc.dispatch[2] = 1;
-
-    smoke->compute = dvz_scene_compute(ctx->scene, &desc);
-    dvz_scene_compute_set_buffer(
-        smoke->compute, 0, smoke->params, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, PARAM_BYTES);
-    dvz_scene_compute_set_buffer(
-        smoke->compute, 1, smoke->positions, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0,
-        POSITION_BYTES);
-    dvz_scene_compute_set_buffer(
-        smoke->compute, 2, smoke->velocities, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0,
-        VELOCITY_BYTES);
-    dvz_figure_add_compute(smoke->figure, smoke->compute);
-
-    *out_user = smoke;
+    *out_user = wave;
     return true;
 }
 
-static void particle_frame(DvzExampleContext* ctx, void* user)
+static void point_wave_frame(DvzScenarioContext* ctx, void* user)
 {
-    ParticleSmoke* smoke = user;
-    smoke->sim_time += ctx->dt;
-
-    vec4 params[3] = {0};
-    fill_particle_params(smoke, ctx, params);
-    dvz_scene_buffer_set_data(smoke->params, params, sizeof(params));
-    dvz_example_request_frame(ctx);
+    PointWave* wave = user;
+    fill_points_at_time(wave, ctx->time);
+    upload_points(wave);
 }
 
-static void particle_pointer(
-    DvzExampleContext* ctx, const DvzExamplePointerEvent* event, void* user)
-{
-    ParticleSmoke* smoke = user;
-    smoke->mouse[0] = 2.0f * event->x / (float)ctx->width - 1.0f;
-    smoke->mouse[1] = 1.0f - 2.0f * event->y / (float)ctx->height;
-    smoke->mouse_valid = true;
-}
-
-static void particle_destroy(DvzExampleContext* ctx, void* user)
+static void point_wave_destroy(DvzScenarioContext* ctx, void* user)
 {
     (void)ctx;
     dvz_free(user);
 }
 
-DvzExampleSpec particle_smoke_spec(void)
+DvzScenarioSpec point_wave_scenario(void)
 {
-    return (DvzExampleSpec){
-        .id = "gpu_particle_smoke",
-        .title = "GPU particle smoke",
+    return (DvzScenarioSpec){
+        .id = "point_wave",
+        .title = "Point wave",
         .width = 1600,
         .height = 1200,
-        .requirements = DVZ_EXAMPLE_REQ_POINT_VISUAL | DVZ_EXAMPLE_REQ_SCENE_BUFFERS |
-                        DVZ_EXAMPLE_REQ_STORAGE_BUFFERS | DVZ_EXAMPLE_REQ_SCENE_COMPUTE,
-        .init = particle_init,
-        .frame = particle_frame,
-        .pointer = particle_pointer,
-        .destroy = particle_destroy,
+        .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL,
+        .init = point_wave_init,
+        .frame = point_wave_frame,
+        .destroy = point_wave_destroy,
     };
 }
 ```
 
-The native executable should be only host glue:
+The native executable is host glue:
 
 ```c
 int main(int argc, char** argv)
 {
-    return dvz_example_run_native(particle_smoke_spec(), argc, argv);
+    return dvz_scenario_run_native_cli(&point_wave_scenario(), argc, argv);
 }
 ```
 
-The WASM host should instantiate the same spec, then expose generic browser calls:
+The browser host instantiates the same spec and supplies browser frame/input calls:
 
 ```c
 EMSCRIPTEN_KEEPALIVE
-uint32_t dvz_wasm_example_create_particle_smoke(uint32_t width, uint32_t height)
+uint32_t dvz_wasm_scenario_create_point_wave(uint32_t width, uint32_t height)
 {
-    return dvz_wasm_example_create(particle_smoke_spec(), width, height);
+    return dvz_wasm_scenario_create(point_wave_scenario(), width, height);
 }
 ```
 
-The browser JavaScript remains loader and event glue:
 
-```js
-const session = await WasmExampleSession.create(canvas, { example: "gpu_particle_smoke" });
+## File Layout
 
-function frame(now) {
-  session.frame(now);
-  requestAnimationFrame(frame);
-}
-requestAnimationFrame(frame);
+The first slice can stay under `examples/c`:
+
+```text
+examples/c/runner/
+  scenario_runner.h
+  scenario_runner.c
+  scenario_cli.c
+
+examples/c/features/
+  video_export.c       # first runner-backed native executable
+  timer_animation.c    # candidate scenario migration
+  scene_basic.c        # candidate static scenario migration
+```
+
+If scenarios become shared by native and WASM builds, split portable scenario sources from native
+entry points:
+
+```text
+examples/scenarios/
+  features/video_export_scenario.c
+  features/timer_animation_scenario.c
+
+examples/c/features/
+  video_export.c       # native main only
+
+examples/wasm/
+  scenario_host.c
 ```
 
 
-## Raw Pattern Example
+## Raw Native Pattern
 
 The repository should still keep one small raw scene/app example for users who need to see the
-underlying native pattern without helper indirection:
+underlying native API without runner indirection:
 
 ```c
 DvzScene* scene = dvz_scene();
@@ -296,15 +460,16 @@ DvzApp* app = dvz_app(scene);
 DvzView* view = dvz_view_glfw(app, figure, 800, 600, "raw scene");
 dvz_app_run(app, 0);
 dvz_app_destroy(app);
+dvz_scene_destroy(scene);
 ```
 
-This raw example is documentation for the native host API. It should not be the template for most
-gallery, feature, or scientific examples.
+This raw example documents the native host API. It should not be the template for most gallery,
+feature, workflow, showcase, or scientific examples.
 
 
 ## Shader Policy
 
-Portable examples should prefer WGSL when possible. If a native path still needs GLSL/SPIR-V, the
+Portable scenarios should prefer WGSL when possible. If a native path still needs GLSL/SPIR-V, the
 scenario should provide both shader sources and select through `ctx->shader_format` or capability
 policy.
 
@@ -314,40 +479,54 @@ scenario duplication is not acceptable for scene behavior.
 
 ## Promotion Rules
 
-1. All scene, visual, showcase, scientific, workflow, and feature examples should use the portable
-   scenario shape by default.
-2. Native-only examples are exceptions for examples whose subject is native integration itself:
-   Vulkan/vklite ownership, GLFW hosting, Qt/PyQt hosting, native video encoders, CUDA/Vulkan
-   external-memory interop, native GUI diagnostics, or platform packaging.
-3. Browser-only examples are exceptions for examples whose subject is browser integration itself.
-4. If WebGPU lacks a scenario requirement, the WASM host must report an unsupported-feature
-   diagnostic instead of needing a JavaScript rewrite.
-5. A scenario is browser-supported only when the same C scenario builds for WASM, emits DRP2
-   packets, passes browserless smoke, and has browser evidence.
-6. Example manifests should distinguish `portable-scenario`, `native-only`, `browser-only`, and
-   `unsupported-on-webgpu` status.
+Feature, visual, workflow, showcase, and scientific examples should use the portable scenario shape
+by default once the runner is in place.
+
+A scenario is portable when:
+
+1. scene logic compiles without app/window/capture headers;
+2. it exposes a `DvzScenarioSpec`;
+3. native runner can run it live;
+4. native runner can run it offscreen;
+5. native runner can produce capture evidence when required;
+6. WASM runner can instantiate it or report unsupported requirements deterministically.
+
+Native-only examples are exceptions for examples whose subject is native integration itself:
+Vulkan/vklite ownership, GLFW hosting, Qt/PyQt hosting, native video encoders, CUDA/Vulkan
+external-memory interop, native GUI diagnostics, or platform packaging.
+
+Browser-only examples are exceptions for examples whose subject is browser integration itself.
+
+Example manifests should distinguish `portable-scenario`, `native-only`, `browser-only`, and
+`unsupported-on-webgpu` status.
 
 
 ## Implementation Plan
 
-1. Add the helper types and native runner in a small example-support module.
-2. Add the generic WASM example host beside the existing WASM scene ABI.
-3. Expose missing WASM scene APIs needed by portable scenarios: scene buffers, buffer-backed visual
-   attributes, scene compute, compute buffer binding, dispatch updates, frame/time updates, and
-   diagnostics.
-4. Refactor `examples/c/showcases/gpu_particle_smoke.c` into shared scenario plus native host.
-5. Add a WebGPU/WASM particle smoke demo that loads the shared C scenario, not a JavaScript rewrite.
-6. Keep one minimal raw native scene/app example as the explicit underlying API pattern.
-7. Convert remaining scene-level examples incrementally, starting with feature examples and
-   compute/interaction showcases.
+1. Add example-support scenario types and the native runner in `examples/c/runner/`.
+2. Support `--live`, `--live-record N`, `--offscreen-record N`, `--png`, and `--dvzr N`.
+3. Refactor `video_export.c` as the first runner-backed feature example because it proves live,
+   live-record, offscreen-record, path reporting, progress, and capture failure handling.
+4. Refactor `timer_animation.c` next because it proves frame-time portability.
+5. Refactor one static example such as `scene_basic.c` or one simple retained-data example such as
+   `update_visual_data.c`.
+6. Add the generic WASM scenario host beside the existing WASM scene ABI.
+7. Expose missing WASM scene APIs needed by portable scenarios: scene buffers,
+   buffer-backed visual attributes, scene compute, compute buffer binding, dispatch updates,
+   frame/time updates, and diagnostics.
+8. Refactor `gpu_particle_smoke.c` into a shared scenario plus native host once the runner supports
+   compute requirements.
+9. Promote any stable helper pieces into public Datoviz API only after several examples prove that
+   they are not example-runner policy.
 
 
 ## Acceptance Criteria
 
-The helper architecture is successful when:
+The architecture is successful when:
 
-1. `gpu_particle_smoke` uses one C scenario for native and WASM/WebGPU;
-2. browser particle smoke uses the same C scene-buffer and scene-compute setup as native;
-3. unsupported WebGPU requirements produce deterministic diagnostics;
-4. native examples still remain easy to read because host boilerplate is isolated;
-5. new scene-level examples can be added once and registered for both hosts.
+1. `video_export` uses one scenario for live, live-record, and offscreen-record modes;
+2. `timer_animation` uses the same frame callback contract on native and WASM-capable hosts;
+3. `gpu_particle_smoke` can be migrated to one C scenario for native and WASM/WebGPU;
+4. unsupported WebGPU requirements produce deterministic diagnostics;
+5. native examples remain easy to read because host boilerplate is isolated;
+6. new scene-level examples can be added once and registered for multiple hosts.
