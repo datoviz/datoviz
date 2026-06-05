@@ -217,7 +217,7 @@ static DvzScenarioSpec _timer_animation_scenario(void)
         .title = "timer_animation",
         .width = WIDTH,
         .height = HEIGHT,
-        .fps = 12.0,
+        .fps = 60.0,
         .init = _scenario_init,
         .frame = _scenario_frame,
         .destroy = _scenario_destroy,
