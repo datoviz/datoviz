@@ -8,7 +8,6 @@ deterministic retained 2D point visual baseline.
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/point.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/point.c)
-- Python source: [`examples/python/raw/offscreen_point.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/raw/offscreen_point.py)
 - Build: `just example-c visuals/point`
 - Smoke: `./build/examples/c/visuals/point --png`
 - Validation: `smoke+screenshot`
@@ -30,10 +29,4 @@ prepared separately from this page and should not be staged without explicit app
 
     ```c
     --8<-- "examples/c/visuals/point.c"
-    ```
-
-=== "Python"
-
-    ```python
-    --8<-- "examples/python/raw/offscreen_point.py"
     ```

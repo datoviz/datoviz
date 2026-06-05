@@ -20,10 +20,7 @@ DEFAULT_IMAGE_DIR = ROOT / "docs/images/gallery"
 SOURCE_BASE_URL = "https://github.com/datoviz/datoviz/blob/v0.4-dev"
 PUBLIC_LANES = ("visuals", "features", "workflows", "composites", "showcases", "scientific")
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
-PYTHON_SOURCE_BY_ID = {
-    "point_2d": "examples/python/raw/offscreen_point.py",
-    "showcase_gpu_particle_smoke": "examples/python/features/cupy_particles.py",
-}
+PYTHON_SOURCE_BY_ID = {}
 
 PAGE_CONFIG = {
     "visual-gallery.md": {

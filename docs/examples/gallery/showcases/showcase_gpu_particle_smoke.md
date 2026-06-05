@@ -8,7 +8,6 @@ scene API compute-to-graphics particle smoke showcase.
 - Lane: `showcases`
 - Status: `experimental`
 - Source: [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c)
-- Python source: [`examples/python/features/cupy_particles.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/features/cupy_particles.py)
 - Build: `just example-c showcases/gpu_particle_smoke`
 - Smoke: `./build/examples/c/showcases/gpu_particle_smoke --png`
 - Validation: `smoke+screenshot`
@@ -26,10 +25,4 @@ prepared separately from this page and should not be staged without explicit app
 
     ```c
     --8<-- "examples/c/showcases/gpu_particle_smoke.c"
-    ```
-
-=== "Python"
-
-    ```python
-    --8<-- "examples/python/features/cupy_particles.py"
     ```
