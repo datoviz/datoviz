@@ -10,9 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/sampled_field_2d
- * Run:    ./build/examples/c/features/sampled_field_2d
- * Smoke:  ./build/examples/c/features/sampled_field_2d 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/features/sampled_field_2d 1
+ * Run:    ./build/examples/c/features/sampled_field_2d --live
+ * Smoke:  ./build/examples/c/features/sampled_field_2d --png
  */
 
 
@@ -25,10 +24,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "datoviz/app.h"
+#include "_alloc.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -42,6 +41,17 @@
 #define FIELD_HEIGHT 72u
 
 static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct SampledField2DState
+{
+    float values[FIELD_WIDTH * FIELD_HEIGHT];
+} SampledField2DState;
 
 
 
@@ -165,11 +175,93 @@ static bool _add_field_image(
 
 
 /*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Initialize the 2D sampled-field scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL || out_user == NULL)
+        return false;
+
+    SampledField2DState* state =
+        (SampledField2DState*)dvz_calloc(1, sizeof(SampledField2DState));
+    if (state == NULL)
+        return false;
+
+    _fill_field(state->values);
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        goto error;
+
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        goto error;
+    example_graphite_cyan_set_panel_background(panel);
+
+    DvzScale* scale = _add_scale(ctx->scene);
+    if (scale == NULL)
+        goto error;
+    if (!_add_field_image(ctx->scene, panel, scale, state->values))
+        goto error;
+
+    *out_user = state;
+    return true;
+
+error:
+    dvz_free(state);
+    return false;
+}
+
+
+
+/**
+ * Destroy the 2D sampled-field scenario.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
+}
+
+
+
+/**
+ * Return the sampled-field 2D scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _sampled_field_2d_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_sampled_field_2d",
+        .title = "sampled_field_2d",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 /**
- * Run the 2D sampled-field feature example.
+ * Run the 2D sampled-field feature example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -177,46 +269,6 @@ static bool _add_field_image(
  */
 int main(int argc, char** argv)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_sampled_field_2d");
-
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    float values[FIELD_WIDTH * FIELD_HEIGHT] = {0};
-
-    _fill_field(values);
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    example_graphite_cyan_set_panel_background(panel);
-
-    DvzScale* scale = _add_scale(scene);
-    EXAMPLE_CHECK(scale != NULL, "scale setup failed");
-    EXAMPLE_CHECK(_add_field_image(scene, panel, scale, values), "sampled-field image setup failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "sampled_field_2d");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    DvzScenarioSpec spec = _sampled_field_2d_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
