@@ -611,6 +611,7 @@ examples:
       fallback_prepared_path: .cache/datoviz/examples/us_state_choropleth/prepared
       promoted_prepared_path: data/examples/us_state_choropleth/prepared
       preprocessing: python tools/data/prepare_us_state_choropleth.py
+      prepared_layout: flat typed arrays plus metadata.tsv
     encoding:
       position: Census boundary rings projected with a spherical Albers equal-area transform and normalized into scene space
       color: log10 of Vintage 2025 resident population per Census ALAND square kilometer

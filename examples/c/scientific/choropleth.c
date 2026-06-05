@@ -10,15 +10,15 @@
  * Style: scientific, polygon-set, 1600x1200 capture target
  *
  * Data:    U.S. Census Bureau 2024 cartographic state boundaries and Vintage 2025 resident
- *          population estimates, prepared into flat C-readable polygon rings.
+ *          population estimates, prepared into flat polygon-set arrays.
  * Source:  https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip
  *          https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx
  * Terms:   U.S. Census Bureau public data; cite the Census Bureau as source.
  * Prepare: python tools/data/prepare_us_state_choropleth.py
  * Promote: python tools/data/prepare_us_state_choropleth.py --output data/examples/us_state_choropleth
  * Build:   cmake --build build --target choropleth
- * Run:     ./build/examples/c/scientific/choropleth
- * Smoke:   ./build/examples/c/scientific/choropleth 1
+ * Run:     ./build/examples/c/scientific/choropleth --live
+ * Smoke:   ./build/examples/c/scientific/choropleth --png
  */
 
 
@@ -27,20 +27,19 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <ctype.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "datoviz/app.h"
+#include "datoviz/fileio/fileio.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
-#include "example_debug.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -51,19 +50,23 @@
 #define WIDTH  1600u
 #define HEIGHT 1200u
 
-#define CHOROPLETH_MAGIC       "DVZCHOR"
-#define CHOROPLETH_VERSION     1u
-#define REGION_NAME_LENGTH     64u
-#define DEFAULT_DATA_BUNDLE    "data/examples/us_state_choropleth/prepared"
-#define DEFAULT_CACHE_BUNDLE   ".cache/datoviz/examples/us_state_choropleth/prepared"
-#define CHOROPLETH_BINARY_NAME "us_state_choropleth.bin"
+#define DEFAULT_DATA_BUNDLE  "data/examples/us_state_choropleth/prepared"
+#define DEFAULT_CACHE_BUNDLE ".cache/datoviz/examples/us_state_choropleth/prepared"
+
+#define METADATA_NAME    "metadata.tsv"
+#define POINTS_NAME      "points_xy_f64.bin"
+#define RINGS_NAME       "rings_u32.bin"
+#define RING_FILL_NAME   "ring_fill_rgba8.bin"
+#define RING_STROKE_NAME "ring_stroke_rgba8.bin"
+#define RING_WIDTH_NAME  "ring_width_f32.bin"
+#define RING_ID_NAME     "ring_id_u64.bin"
 
 static const DvzColor CHOROPLETH_RAMP[5] = {
-    {26, 35, 46, 255},
-    {33, 99, 126, 255},
-    {50, 160, 147, 255},
-    {237, 191, 94, 255},
-    {221, 96, 73, 255},
+    {26, 35, 46, 235},
+    {33, 99, 126, 235},
+    {50, 160, 147, 235},
+    {237, 191, 94, 235},
+    {221, 96, 73, 235},
 };
 
 
@@ -71,22 +74,6 @@ static const DvzColor CHOROPLETH_RAMP[5] = {
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
-
-typedef struct ChoroplethRegion
-{
-    uint32_t geoid;
-    uint32_t ring_first;
-    uint32_t ring_count;
-    uint32_t point_count;
-    double value;
-    double population;
-    double area_km2;
-    double centroid_x;
-    double centroid_y;
-    char name[REGION_NAME_LENGTH + 1u];
-    DvzColor color;
-} ChoroplethRegion;
-
 
 typedef struct ChoroplethRing
 {
@@ -110,14 +97,24 @@ typedef struct ChoroplethBundle
     double value_max;
     double density_min;
     double density_max;
-    ChoroplethRegion* regions;
     ChoroplethRing* rings;
     dvec2* points;
+    DvzColor* fill;
+    DvzColor* stroke;
+    float* widths;
+    uint64_t* ids;
 } ChoroplethBundle;
 
 
+typedef struct ChoroplethState
+{
+    ChoroplethBundle bundle;
+} ChoroplethState;
+
+
+
 /*************************************************************************************************/
-/*  Binary helpers                                                                               */
+/*  Bundle loading                                                                               */
 /*************************************************************************************************/
 
 /**
@@ -159,81 +156,6 @@ static bool _file_readable(const char* path)
 
 
 /**
- * Read one unsigned 32-bit value from a binary file.
- *
- * @param fp opened file
- * @param out output value
- * @return whether the value was read
- */
-static bool _read_u32(FILE* fp, uint32_t* out)
-{
-    ANN(fp);
-    ANN(out);
-    return fread(out, sizeof(uint32_t), 1, fp) == 1;
-}
-
-
-
-/**
- * Read one double value from a binary file.
- *
- * @param fp opened file
- * @param out output value
- * @return whether the value was read
- */
-static bool _read_f64(FILE* fp, double* out)
-{
-    ANN(fp);
-    ANN(out);
-    return fread(out, sizeof(double), 1, fp) == 1;
-}
-
-
-
-/**
- * Read one fixed-width UTF-8 name field.
- *
- * @param fp opened file
- * @param out output buffer
- * @param out_size output buffer size
- * @return whether the field was read
- */
-static bool _read_name(FILE* fp, char* out, size_t out_size)
-{
-    ANN(fp);
-    ANN(out);
-    if (out_size == 0)
-        return false;
-    char raw[REGION_NAME_LENGTH] = {0};
-    if (fread(raw, 1, sizeof(raw), fp) != sizeof(raw))
-        return false;
-    dvz_memset(out, out_size, 0, out_size);
-    size_t n = strnlen(raw, sizeof(raw));
-    if (n >= out_size)
-        n = out_size - 1;
-    dvz_memcpy(out, out_size, raw, n);
-    return true;
-}
-
-
-
-/**
- * Read one RGBA8 color.
- *
- * @param fp opened file
- * @param out output color
- * @return whether the color was read
- */
-static bool _read_color(FILE* fp, DvzColor* out)
-{
-    ANN(fp);
-    ANN(out);
-    return fread(out, sizeof(DvzColor), 1, fp) == 1;
-}
-
-
-
-/**
  * Destroy a loaded choropleth bundle.
  *
  * @param bundle bundle to clear
@@ -242,58 +164,211 @@ static void _choropleth_bundle_destroy(ChoroplethBundle* bundle)
 {
     if (bundle == NULL)
         return;
+    dvz_free(bundle->ids);
+    dvz_free(bundle->widths);
+    dvz_free(bundle->stroke);
+    dvz_free(bundle->fill);
     dvz_free(bundle->points);
     dvz_free(bundle->rings);
-    dvz_free(bundle->regions);
     dvz_memset(bundle, sizeof(ChoroplethBundle), 0, sizeof(ChoroplethBundle));
 }
 
 
 
 /**
- * Read and validate the binary bundle header.
+ * Read one typed binary array with an exact expected byte size.
  *
- * @param fp opened file
- * @param out output bundle metadata
- * @return whether the header is valid
+ * @param dir prepared bundle directory
+ * @param name array file name
+ * @param count expected item count
+ * @param item_size expected item byte size
+ * @param out output pointer
+ * @return whether loading succeeded
  */
-static bool _read_header(FILE* fp, ChoroplethBundle* out)
+static bool _load_array(
+    const char* dir, const char* name, uint32_t count, DvzSize item_size, void** out)
 {
-    ANN(fp);
+    ANN(dir);
+    ANN(name);
     ANN(out);
 
-    char magic[8] = {0};
-    if (fread(magic, 1, sizeof(magic), fp) != sizeof(magic))
-        return false;
-    if (strncmp(magic, CHOROPLETH_MAGIC, strlen(CHOROPLETH_MAGIC)) != 0)
+    char path[1024] = {0};
+    if (!_join_path(dir, name, path, sizeof(path)))
         return false;
 
-    uint32_t version = 0;
-    uint32_t reserved = 0;
-    if (!_read_u32(fp, &version) || version != CHOROPLETH_VERSION)
-        return false;
-    if (!_read_u32(fp, &out->region_count) || !_read_u32(fp, &out->ring_count) ||
-        !_read_u32(fp, &out->point_count) || !_read_u32(fp, &reserved))
+    DvzSize size = 0;
+    void* data = dvz_read_file(path, &size);
+    const DvzSize expected = (DvzSize)count * item_size;
+    if (data == NULL || size != expected)
     {
+        dvz_free(data);
         return false;
     }
 
-    if (!_read_f64(fp, &out->xmin) || !_read_f64(fp, &out->xmax) ||
-        !_read_f64(fp, &out->ymin) || !_read_f64(fp, &out->ymax) ||
-        !_read_f64(fp, &out->value_min) || !_read_f64(fp, &out->value_max) ||
-        !_read_f64(fp, &out->density_min) || !_read_f64(fp, &out->density_max))
-    {
-        return false;
-    }
-
-    return out->region_count > 0 && out->ring_count > 0 && out->point_count > 0 &&
-           out->value_min < out->value_max && out->xmin < out->xmax && out->ymin < out->ymax;
+    *out = data;
+    return true;
 }
 
 
 
 /**
- * Load a prepared choropleth bundle from disk.
+ * Parse an unsigned integer metadata field.
+ *
+ * @param text field text
+ * @param out output value
+ * @return whether parsing succeeded
+ */
+static bool _parse_u32(const char* text, uint32_t* out)
+{
+    ANN(text);
+    ANN(out);
+    char* end = NULL;
+    unsigned long value = strtoul(text, &end, 10);
+    if (end == text || (end != NULL && *end != '\0') || value > UINT32_MAX)
+        return false;
+    *out = (uint32_t)value;
+    return true;
+}
+
+
+
+/**
+ * Parse a floating-point metadata field.
+ *
+ * @param text field text
+ * @param out output value
+ * @return whether parsing succeeded
+ */
+static bool _parse_f64(const char* text, double* out)
+{
+    ANN(text);
+    ANN(out);
+    char* end = NULL;
+    double value = strtod(text, &end);
+    if (end == text || (end != NULL && *end != '\0'))
+        return false;
+    *out = value;
+    return true;
+}
+
+
+
+/**
+ * Apply one metadata key/value pair to a choropleth bundle.
+ *
+ * @param bundle target bundle
+ * @param key metadata key
+ * @param value metadata value
+ * @return whether the key was known and the value valid
+ */
+static bool _metadata_apply(ChoroplethBundle* bundle, const char* key, const char* value)
+{
+    ANN(bundle);
+    ANN(key);
+    ANN(value);
+
+    if (strcmp(key, "region_count") == 0)
+        return _parse_u32(value, &bundle->region_count);
+    if (strcmp(key, "ring_count") == 0)
+        return _parse_u32(value, &bundle->ring_count);
+    if (strcmp(key, "point_count") == 0)
+        return _parse_u32(value, &bundle->point_count);
+    if (strcmp(key, "xmin") == 0)
+        return _parse_f64(value, &bundle->xmin);
+    if (strcmp(key, "xmax") == 0)
+        return _parse_f64(value, &bundle->xmax);
+    if (strcmp(key, "ymin") == 0)
+        return _parse_f64(value, &bundle->ymin);
+    if (strcmp(key, "ymax") == 0)
+        return _parse_f64(value, &bundle->ymax);
+    if (strcmp(key, "value_min") == 0)
+        return _parse_f64(value, &bundle->value_min);
+    if (strcmp(key, "value_max") == 0)
+        return _parse_f64(value, &bundle->value_max);
+    if (strcmp(key, "density_min") == 0)
+        return _parse_f64(value, &bundle->density_min);
+    if (strcmp(key, "density_max") == 0)
+        return _parse_f64(value, &bundle->density_max);
+    return false;
+}
+
+
+
+/**
+ * Load bundle metadata from a tiny key/value TSV sidecar.
+ *
+ * @param dir prepared bundle directory
+ * @param out output bundle
+ * @return whether loading succeeded
+ */
+static bool _load_metadata(const char* dir, ChoroplethBundle* out)
+{
+    ANN(dir);
+    ANN(out);
+
+    char path[1024] = {0};
+    if (!_join_path(dir, METADATA_NAME, path, sizeof(path)))
+        return false;
+
+    FILE* fp = fopen(path, "r");
+    if (fp == NULL)
+        return false;
+
+    bool ok = true;
+    char line[256] = {0};
+    while (fgets(line, sizeof(line), fp) != NULL)
+    {
+        char key[96] = {0};
+        char value[128] = {0};
+        if (sscanf(line, "%95[^\t]\t%127s", key, value) != 2)
+        {
+            ok = false;
+            break;
+        }
+        if (!_metadata_apply(out, key, value))
+        {
+            ok = false;
+            break;
+        }
+    }
+    if (ferror(fp) != 0)
+        ok = false;
+    fclose(fp);
+
+    return ok && out->region_count > 0 && out->ring_count > 0 && out->point_count > 0 &&
+           out->xmin < out->xmax && out->ymin < out->ymax && out->value_min < out->value_max;
+}
+
+
+
+/**
+ * Validate loaded ring spans against the point and region arrays.
+ *
+ * @param bundle loaded bundle
+ * @return whether all ring spans are valid
+ */
+static bool _validate_rings(const ChoroplethBundle* bundle)
+{
+    ANN(bundle);
+    ANN(bundle->rings);
+    for (uint32_t i = 0; i < bundle->ring_count; i++)
+    {
+        const ChoroplethRing* ring = &bundle->rings[i];
+        if (ring->region_index >= bundle->region_count || ring->point_count < 3)
+            return false;
+        if (ring->point_first > bundle->point_count ||
+            ring->point_count > bundle->point_count - ring->point_first)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+
+/**
+ * Load a prepared choropleth typed-array bundle from disk.
  *
  * @param dir prepared bundle directory
  * @param out loaded bundle
@@ -305,65 +380,35 @@ static bool _choropleth_bundle_load(const char* dir, ChoroplethBundle* out)
     ANN(out);
 
     dvz_memset(out, sizeof(ChoroplethBundle), 0, sizeof(ChoroplethBundle));
-    if (!_join_path(dir, CHOROPLETH_BINARY_NAME, out->path, sizeof(out->path)))
+    if (dvz_snprintf(out->path, sizeof(out->path), "%s", dir) <= 0)
         return false;
-
-    FILE* fp = fopen(out->path, "rb");
-    if (fp == NULL)
-        return false;
-
-    bool ok = _read_header(fp, out);
-    if (!ok)
-        goto cleanup;
-
-    out->regions = (ChoroplethRegion*)dvz_calloc(out->region_count, sizeof(ChoroplethRegion));
-    out->rings = (ChoroplethRing*)dvz_calloc(out->ring_count, sizeof(ChoroplethRing));
-    out->points = (dvec2*)dvz_calloc(out->point_count, sizeof(dvec2));
-    if (out->regions == NULL || out->rings == NULL || out->points == NULL)
+    if (!_load_metadata(dir, out))
+        goto fail;
+    if (!_load_array(
+            dir, RINGS_NAME, out->ring_count, sizeof(ChoroplethRing), (void**)&out->rings))
     {
-        ok = false;
-        goto cleanup;
+        goto fail;
     }
-
-    for (uint32_t i = 0; i < out->region_count; i++)
+    if (!_load_array(dir, POINTS_NAME, out->point_count, sizeof(dvec2), (void**)&out->points))
+        goto fail;
+    if (!_load_array(dir, RING_FILL_NAME, out->ring_count, sizeof(DvzColor), (void**)&out->fill))
+        goto fail;
+    if (!_load_array(
+            dir, RING_STROKE_NAME, out->ring_count, sizeof(DvzColor), (void**)&out->stroke))
     {
-        ChoroplethRegion* region = &out->regions[i];
-        ok = _read_u32(fp, &region->geoid) && _read_u32(fp, &region->ring_first) &&
-             _read_u32(fp, &region->ring_count) && _read_u32(fp, &region->point_count) &&
-             _read_f64(fp, &region->value) && _read_f64(fp, &region->population) &&
-             _read_f64(fp, &region->area_km2) && _read_f64(fp, &region->centroid_x) &&
-             _read_f64(fp, &region->centroid_y) &&
-             _read_name(fp, region->name, sizeof(region->name)) &&
-             _read_color(fp, &region->color);
-        if (!ok)
-            goto cleanup;
+        goto fail;
     }
+    if (!_load_array(dir, RING_WIDTH_NAME, out->ring_count, sizeof(float), (void**)&out->widths))
+        goto fail;
+    if (!_load_array(dir, RING_ID_NAME, out->ring_count, sizeof(uint64_t), (void**)&out->ids))
+        goto fail;
+    if (!_validate_rings(out))
+        goto fail;
+    return true;
 
-    for (uint32_t i = 0; i < out->ring_count; i++)
-    {
-        ChoroplethRing* ring = &out->rings[i];
-        ok = _read_u32(fp, &ring->region_index) && _read_u32(fp, &ring->point_first) &&
-             _read_u32(fp, &ring->point_count);
-        if (!ok || ring->region_index >= out->region_count ||
-            ring->point_first + ring->point_count > out->point_count || ring->point_count < 3)
-        {
-            ok = false;
-            goto cleanup;
-        }
-    }
-
-    for (uint32_t i = 0; i < out->point_count; i++)
-    {
-        ok = _read_f64(fp, &out->points[i][0]) && _read_f64(fp, &out->points[i][1]);
-        if (!ok)
-            goto cleanup;
-    }
-
-cleanup:
-    fclose(fp);
-    if (!ok)
-        _choropleth_bundle_destroy(out);
-    return ok;
+fail:
+    _choropleth_bundle_destroy(out);
+    return false;
 }
 
 
@@ -378,15 +423,14 @@ cleanup:
 static bool _default_bundle_path(char* out, size_t out_size)
 {
     ANN(out);
-    char binary_path[1200] = {0};
-    if (_join_path(DEFAULT_DATA_BUNDLE, CHOROPLETH_BINARY_NAME, binary_path, sizeof(binary_path)) &&
-        _file_readable(binary_path))
+    char metadata_path[1200] = {0};
+    if (_join_path(DEFAULT_DATA_BUNDLE, METADATA_NAME, metadata_path, sizeof(metadata_path)) &&
+        _file_readable(metadata_path))
     {
         return dvz_snprintf(out, out_size, "%s", DEFAULT_DATA_BUNDLE) > 0;
     }
-    if (_join_path(
-            DEFAULT_CACHE_BUNDLE, CHOROPLETH_BINARY_NAME, binary_path, sizeof(binary_path)) &&
-        _file_readable(binary_path))
+    if (_join_path(DEFAULT_CACHE_BUNDLE, METADATA_NAME, metadata_path, sizeof(metadata_path)) &&
+        _file_readable(metadata_path))
     {
         return dvz_snprintf(out, out_size, "%s", DEFAULT_CACHE_BUNDLE) > 0;
     }
@@ -396,43 +440,12 @@ static bool _default_bundle_path(char* out, size_t out_size)
 
 
 /**
- * Return whether text is a non-empty unsigned integer.
- *
- * @param text candidate text
- * @return true when text contains only digits
+ * Print instructions when no prepared bundle is available.
  */
-static bool _is_uint_text(const char* text)
+static void _print_missing_data(void)
 {
-    if (text == NULL || text[0] == '\0')
-        return false;
-    for (size_t i = 0; text[i] != '\0'; i++)
-    {
-        if (!isdigit((unsigned char)text[i]))
-            return false;
-    }
-    return true;
-}
-
-
-
-/**
- * Return the explicit bundle path argument, if any.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return bundle path or NULL
- */
-static const char* _bundle_arg(int argc, char** argv)
-{
-    for (int i = 1; i < argc; i++)
-    {
-        if (argv[i] == NULL || argv[i][0] == '-')
-            continue;
-        if (_is_uint_text(argv[i]))
-            continue;
-        return argv[i];
-    }
-    return NULL;
+    dvz_fprintf(stderr, "choropleth: missing prepared bundle\n");
+    dvz_fprintf(stderr, "  python tools/data/prepare_us_state_choropleth.py\n");
 }
 
 
@@ -467,6 +480,7 @@ static bool _configure_panel(DvzPanel* panel, const ChoroplethBundle* bundle)
     fit.padding = 0.035;
     return dvz_panel_set_domain_fit(panel, &fit) == 0;
 }
+
 
 
 /**
@@ -571,25 +585,10 @@ static bool _add_choropleth_polygons(
     if (set == NULL)
         return false;
 
-    DvzColor* fill = (DvzColor*)dvz_calloc(bundle->ring_count, sizeof(DvzColor));
-    DvzColor* stroke = (DvzColor*)dvz_calloc(bundle->ring_count, sizeof(DvzColor));
-    float* widths = (float*)dvz_calloc(bundle->ring_count, sizeof(float));
-    uint64_t* ids = (uint64_t*)dvz_calloc(bundle->ring_count, sizeof(uint64_t));
-    if (fill == NULL || stroke == NULL || widths == NULL || ids == NULL)
-    {
-        dvz_free(ids);
-        dvz_free(widths);
-        dvz_free(stroke);
-        dvz_free(fill);
-        return false;
-    }
-
     bool ok = true;
-    const DvzColor stroke_color = {14, 24, 31, 230};
     for (uint32_t i = 0; i < bundle->ring_count; i++)
     {
         const ChoroplethRing* ring = &bundle->rings[i];
-        const ChoroplethRegion* region = &bundle->regions[ring->region_index];
         const uint32_t index = dvz_polygon_set_add(
             set, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
                    .outer = {.xy = &bundle->points[ring->point_first], .count = ring->point_count}});
@@ -598,19 +597,15 @@ static bool _add_choropleth_polygons(
             ok = false;
             break;
         }
-        fill[i] = region->color;
-        stroke[i] = stroke_color;
-        widths[i] = 1.35f;
-        ids[i] = region->geoid;
     }
 
-    if (ok && dvz_polygon_set_region_ids(set, 0, bundle->ring_count, ids) != 0)
+    if (ok && dvz_polygon_set_region_ids(set, 0, bundle->ring_count, bundle->ids) != 0)
         ok = false;
-    if (ok && dvz_polygon_set_region_fill_colors(set, 0, bundle->ring_count, fill) != 0)
+    if (ok && dvz_polygon_set_region_fill_colors(set, 0, bundle->ring_count, bundle->fill) != 0)
         ok = false;
-    if (ok && dvz_polygon_set_region_stroke_colors(set, 0, bundle->ring_count, stroke) != 0)
+    if (ok && dvz_polygon_set_region_stroke_colors(set, 0, bundle->ring_count, bundle->stroke) != 0)
         ok = false;
-    if (ok && dvz_polygon_set_region_stroke_widths(set, 0, bundle->ring_count, widths) != 0)
+    if (ok && dvz_polygon_set_region_stroke_widths(set, 0, bundle->ring_count, bundle->widths) != 0)
         ok = false;
     if (ok && dvz_polygon_set_stroke_join(set, DVZ_PATH_JOIN_ROUND, 3.0f) != 0)
         ok = false;
@@ -626,10 +621,6 @@ static bool _add_choropleth_polygons(
                                         .coord_space = DVZ_COORD_DATA}) == 0;
     }
 
-    dvz_free(ids);
-    dvz_free(widths);
-    dvz_free(stroke);
-    dvz_free(fill);
     return ok;
 }
 
@@ -683,86 +674,129 @@ static bool _add_annotations(DvzPanel* panel, DvzScale* scale)
 
 
 
+/*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
+
 /**
- * Print instructions when no prepared bundle is available.
+ * Initialize the choropleth scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-static void _print_missing_data(void)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    dvz_fprintf(stderr, "choropleth: missing prepared bundle\n");
-    dvz_fprintf(stderr, "  python tools/data/prepare_us_state_choropleth.py\n");
-    dvz_fprintf(stderr, "or pass a prepared bundle directory explicitly\n");
+    if (ctx == NULL || out_user == NULL)
+        return false;
+    *out_user = NULL;
+
+    ChoroplethState* state = (ChoroplethState*)dvz_calloc(1, sizeof(ChoroplethState));
+    if (state == NULL)
+        return false;
+
+    char bundle_path[1024] = {0};
+    if (!_default_bundle_path(bundle_path, sizeof(bundle_path)))
+    {
+        _print_missing_data();
+        dvz_free(state);
+        return false;
+    }
+    if (!_choropleth_bundle_load(bundle_path, &state->bundle))
+    {
+        dvz_fprintf(stderr, "choropleth: failed to load prepared bundle %s\n", bundle_path);
+        dvz_free(state);
+        return false;
+    }
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        goto fail;
+
+    DvzPanel* panel = dvz_panel(ctx->figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    if (panel == NULL)
+        goto fail;
+    if (!_configure_panel(panel, &state->bundle))
+        goto fail;
+
+    DvzScale* scale = _add_scale(ctx->scene, &state->bundle);
+    if (scale == NULL)
+        goto fail;
+    if (!_add_choropleth_polygons(ctx->scene, panel, &state->bundle))
+        goto fail;
+    if (!_add_annotations(panel, scale))
+        goto fail;
+
+    if (dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY) == NULL)
+        goto fail;
+
+    dvz_fprintf(
+        stderr, "choropleth: %u regions, %u rings, %u points from %s\n",
+        state->bundle.region_count, state->bundle.ring_count, state->bundle.point_count,
+        state->bundle.path);
+
+    *out_user = state;
+    return true;
+
+fail:
+    _choropleth_bundle_destroy(&state->bundle);
+    dvz_free(state);
+    return false;
+}
+
+
+
+/**
+ * Destroy choropleth scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    ChoroplethState* state = (ChoroplethState*)user;
+    if (state == NULL)
+        return;
+    _choropleth_bundle_destroy(&state->bundle);
+    dvz_free(state);
+}
+
+
+
+/**
+ * Return the choropleth scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _choropleth_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "us_state_choropleth",
+        .title = "us_state_choropleth",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
 }
 
 
 
 /*************************************************************************************************/
-/*  Main                                                                                         */
+/*  Functions                                                                                    */
 /*************************************************************************************************/
 
+/**
+ * Run the U.S. state choropleth through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
 int main(int argc, char** argv)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    ExampleDebug debug = {0};
-    ChoroplethBundle bundle = {0};
-
-    char default_bundle[1024] = {0};
-    const char* bundle_path = _bundle_arg(argc, argv);
-    if (bundle_path == NULL)
-    {
-        if (!_default_bundle_path(default_bundle, sizeof(default_bundle)))
-        {
-            _print_missing_data();
-            goto cleanup;
-        }
-        bundle_path = default_bundle;
-    }
-    EXAMPLE_CHECK(
-        _choropleth_bundle_load(bundle_path, &bundle), "failed to load choropleth bundle");
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
-    EXAMPLE_CHECK(_configure_panel(panel, &bundle), "panel configuration failed");
-
-    DvzScale* scale = _add_scale(scene, &bundle);
-    EXAMPLE_CHECK(scale != NULL, "scale setup failed");
-    EXAMPLE_CHECK(_add_choropleth_polygons(scene, panel, &bundle), "polygon-set setup failed");
-    EXAMPLE_CHECK(_add_annotations(panel, scale), "annotation setup failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "choropleth");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
-    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
-
-    EXAMPLE_CHECK(
-        example_debug_setup(&debug, win, argc, argv, "choropleth"),
-        "example_debug_setup() failed");
-    example_debug_panzoom(&debug, "choropleth", panzoom);
-
-    dvz_fprintf(
-        stderr, "choropleth: %u regions, %u rings, %u points from %s\n", bundle.region_count,
-        bundle.ring_count, bundle.point_count, bundle.path);
-
-    dvz_app_run(app, example_frame_count_any(argc, argv));
-    ret = 0;
-
-cleanup:
-    example_debug_uninstall(&debug);
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    _choropleth_bundle_destroy(&bundle);
-    return ret;
+    DvzScenarioSpec spec = _choropleth_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

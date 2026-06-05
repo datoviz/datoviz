@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare a C-readable U.S. state choropleth bundle from public Census data."""
+"""Prepare flat C-readable U.S. state choropleth arrays from public Census data."""
 
 from __future__ import annotations
 
@@ -35,9 +35,6 @@ POPULATION_XLSX_URL = (
 
 # Contiguous states only: keeps the first gallery target readable without inset logic.
 EXCLUDED_STATEFP = {"02", "11", "15", "60", "66", "69", "72", "78"}
-
-MAGIC = b"DVZCHOR\0"
-VERSION = 1
 
 RAMP = (
     (26, 35, 46, 235),
@@ -285,72 +282,86 @@ def _write_bundle(records: list[dict[str, Any]], bundle_root: Path) -> None:
 
     ring_records: list[tuple[int, int, int]] = []
     point_records: list[tuple[float, float]] = []
+    ring_fill_records: list[tuple[int, int, int, int]] = []
+    ring_stroke_records: list[tuple[int, int, int, int]] = []
+    ring_width_records: list[float] = []
+    ring_id_records: list[int] = []
     region_records: list[dict[str, Any]] = []
+    stroke_color = (14, 24, 31, 230)
     for region_index, rec in enumerate(records):
         ring_first = len(ring_records)
         point_count = 0
+        t = (rec["density_log10"] - value_min) / (value_max - value_min)
+        color = _ramp_color(t)
         for ring in rec["rings"]:
             point_first = len(point_records)
             point_records.extend(ring)
             ring_records.append((region_index, point_first, len(ring)))
+            ring_fill_records.append(color)
+            ring_stroke_records.append(stroke_color)
+            ring_width_records.append(1.35)
+            ring_id_records.append(int(rec["statefp"]))
             point_count += len(ring)
-        t = (rec["density_log10"] - value_min) / (value_max - value_min)
         region_records.append(
             {
                 **rec,
                 "ring_first": ring_first,
                 "ring_count": len(rec["rings"]),
                 "point_count": point_count,
-                "color": _ramp_color(t),
+                "color": color,
             }
         )
 
     xs = [p[0] for p in point_records]
     ys = [p[1] for p in point_records]
-    binary_path = prepared / "us_state_choropleth.bin"
-    with binary_path.open("wb") as f:
-        f.write(
-            struct.pack(
-                "<8sIIIII8d",
-                MAGIC,
-                VERSION,
-                len(region_records),
-                len(ring_records),
-                len(point_records),
-                0,
-                min(xs),
-                max(xs),
-                min(ys),
-                max(ys),
-                value_min,
-                value_max,
-                min(rec["density_people_km2"] for rec in records),
-                max(rec["density_people_km2"] for rec in records),
-            )
-        )
-        for rec in region_records:
-            name = rec["name"].encode("utf-8")[:63]
-            name = name + b"\0" * (64 - len(name))
-            f.write(
-                struct.pack(
-                    "<IIIIddddd64s4B",
-                    int(rec["statefp"]),
-                    rec["ring_first"],
-                    rec["ring_count"],
-                    rec["point_count"],
-                    rec["density_log10"],
-                    float(rec["population"]),
-                    rec["area_km2"],
-                    rec["centroid"][0],
-                    rec["centroid"][1],
-                    name,
-                    *rec["color"],
-                )
-            )
-        for region_index, point_first, point_count in ring_records:
-            f.write(struct.pack("<III", region_index, point_first, point_count))
+
+    metadata_path = prepared / "metadata.tsv"
+    metadata = {
+        "region_count": len(region_records),
+        "ring_count": len(ring_records),
+        "point_count": len(point_records),
+        "xmin": min(xs),
+        "xmax": max(xs),
+        "ymin": min(ys),
+        "ymax": max(ys),
+        "value_min": value_min,
+        "value_max": value_max,
+        "density_min": min(rec["density_people_km2"] for rec in records),
+        "density_max": max(rec["density_people_km2"] for rec in records),
+    }
+    with metadata_path.open("w", encoding="utf-8") as f:
+        for key, value in metadata.items():
+            f.write(f"{key}\t{value}\n")
+
+    points_path = prepared / "points_xy_f64.bin"
+    with points_path.open("wb") as f:
         for x, y in point_records:
             f.write(struct.pack("<dd", x, y))
+
+    rings_path = prepared / "rings_u32.bin"
+    with rings_path.open("wb") as f:
+        for region_index, point_first, point_count in ring_records:
+            f.write(struct.pack("<III", region_index, point_first, point_count))
+
+    fill_path = prepared / "ring_fill_rgba8.bin"
+    with fill_path.open("wb") as f:
+        for color in ring_fill_records:
+            f.write(struct.pack("<4B", *color))
+
+    stroke_path = prepared / "ring_stroke_rgba8.bin"
+    with stroke_path.open("wb") as f:
+        for color in ring_stroke_records:
+            f.write(struct.pack("<4B", *color))
+
+    width_path = prepared / "ring_width_f32.bin"
+    with width_path.open("wb") as f:
+        for width in ring_width_records:
+            f.write(struct.pack("<f", width))
+
+    id_path = prepared / "ring_id_u64.bin"
+    with id_path.open("wb") as f:
+        for region_id in ring_id_records:
+            f.write(struct.pack("<Q", region_id))
 
     with (prepared / "regions.tsv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, delimiter="\t")
@@ -382,14 +393,20 @@ def _write_bundle(records: list[dict[str, Any]], bundle_root: Path) -> None:
 
     artifacts = [
         artifact(
-            binary_path,
+            metadata_path,
             bundle_root,
-            "choropleth_binary",
-            "binary",
+            "choropleth_metadata",
+            "tsv",
             region_count=len(region_records),
             ring_count=len(ring_records),
             point_count=len(point_records),
         ),
+        artifact(points_path, bundle_root, "points_xy", "binary_f64", columns=2),
+        artifact(rings_path, bundle_root, "rings", "binary_u32", columns=3),
+        artifact(fill_path, bundle_root, "ring_fill", "binary_rgba8", columns=4),
+        artifact(stroke_path, bundle_root, "ring_stroke", "binary_rgba8", columns=4),
+        artifact(width_path, bundle_root, "ring_width", "binary_f32"),
+        artifact(id_path, bundle_root, "ring_id", "binary_u64"),
         artifact(prepared / "regions.tsv", bundle_root, "region_metadata", "tsv"),
     ]
     status = "committed" if bundle_root.is_relative_to(REPO_ROOT / "data") else "cache"
@@ -419,6 +436,7 @@ def _write_bundle(records: list[dict[str, Any]], bundle_root: Path) -> None:
             "point_count": len(point_records),
             "value": "log10(population_2025 / land_area_km2)",
             "excluded_statefp": sorted(EXCLUDED_STATEFP),
+            "prepared_layout": "flat typed arrays: metadata.tsv, points_xy_f64.bin, rings_u32.bin, ring style arrays",
         },
     )
     write_provenance(
@@ -434,6 +452,7 @@ def _write_bundle(records: list[dict[str, Any]], bundle_root: Path) -> None:
             "Normalized projected coordinates into scene space and encoded each shapefile ring as one polygon-set region.",
             "Computed population density from 2025 resident population estimates divided by Census `ALAND` square meters.",
             "Stored `log10(people per km2)` as the displayed scalar value.",
+            "Wrote flat typed arrays in `prepared/` so the C example only loads render-ready polygon-set data.",
         ],
         license_lines=[
             "U.S. Census Bureau public data may be reused; cite the Census Bureau as the source of original data.",
