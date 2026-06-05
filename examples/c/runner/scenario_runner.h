@@ -28,6 +28,8 @@
 
 typedef struct DvzScene DvzScene;
 typedef struct DvzFigure DvzFigure;
+typedef struct DvzPanel DvzPanel;
+typedef struct DvzController DvzController;
 typedef struct DvzScenarioContext DvzScenarioContext;
 
 typedef bool (*DvzScenarioInitFn)(DvzScenarioContext* ctx, void** out_user);
@@ -58,8 +60,24 @@ typedef enum DvzRunnerCaptureKind
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_SCENARIO_MAX_CONTROLLER_BINDINGS 32u
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+typedef struct DvzScenarioControllerBinding
+{
+    DvzPanel* panel;
+    DvzController* controller;
+    DvzDimMask dims;
+} DvzScenarioControllerBinding;
+
 
 struct DvzScenarioContext
 {
@@ -72,6 +90,9 @@ struct DvzScenarioContext
     double time;
     double dt;
     uint64_t frame_index;
+
+    DvzScenarioControllerBinding controller_bindings[DVZ_SCENARIO_MAX_CONTROLLER_BINDINGS];
+    uint32_t controller_binding_count;
 };
 
 
@@ -115,6 +136,34 @@ DvzRunnerConfig dvz_runner_config(const DvzScenarioSpec* spec);
 bool dvz_runner_capture_path(
     const DvzAppCaptureConfig* capture, DvzRunnerCaptureKind kind, char* out, size_t out_size,
     bool display);
+
+/**
+ * Bind a scene-owned controller to a scenario panel and register it for runner input connection.
+ *
+ * The scene/controller binding is applied immediately. Native live runners connect registered
+ * panels to the view input router after creating the GLFW view; offscreen runners keep the scene
+ * binding but do not attach input.
+ *
+ * @param ctx scenario context
+ * @param panel target panel
+ * @param controller scene-owned controller
+ * @param dims controlled dimensions
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_scenario_bind_controller(
+    DvzScenarioContext* ctx, DvzPanel* panel, DvzController* controller, DvzDimMask dims);
+
+/**
+ * Create, bind, and register a scene-owned panzoom controller for a scenario panel.
+ *
+ * @param ctx scenario context
+ * @param panel target panel
+ * @param desc panzoom descriptor, or NULL for defaults
+ * @param dims controlled dimensions, typically DVZ_DIM_MASK_XY
+ * @return borrowed panzoom payload, or NULL on validation error
+ */
+DvzPanzoom* dvz_scenario_panzoom(
+    DvzScenarioContext* ctx, DvzPanel* panel, const DvzPanzoomDesc* desc, DvzDimMask dims);
 
 int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* config);
 

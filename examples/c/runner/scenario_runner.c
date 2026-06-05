@@ -227,6 +227,30 @@ static void _run_paced(DvzApp* app, uint32_t frame_count, double fps)
 
 
 
+static int _connect_controller_bindings(DvzScenarioContext* ctx, DvzView* view)
+{
+    if (ctx == NULL || view == NULL)
+        return -1;
+    if (ctx->controller_binding_count == 0)
+        return 0;
+
+    DvzInputRouter* router = dvz_view_input(view);
+    if (router == NULL)
+        return -1;
+
+    for (uint32_t i = 0; i < ctx->controller_binding_count; i++)
+    {
+        DvzPanel* panel = ctx->controller_bindings[i].panel;
+        if (panel == NULL)
+            return -1;
+        if (dvz_panel_connect_input(panel, router) != 0)
+            return -1;
+    }
+    return 0;
+}
+
+
+
 static void _print_usage(const DvzScenarioSpec* spec)
 {
     const char* exe = spec != NULL && spec->id != NULL ? spec->id : "scenario";
@@ -291,6 +315,51 @@ bool dvz_runner_capture_path(
         rc = dvz_snprintf(out, out_size, "%s/%s%s", directory, basename, extension);
 
     return rc >= 0 && (size_t)rc < out_size;
+}
+
+
+
+int dvz_scenario_bind_controller(
+    DvzScenarioContext* ctx, DvzPanel* panel, DvzController* controller, DvzDimMask dims)
+{
+    if (ctx == NULL || panel == NULL || controller == NULL)
+        return -1;
+
+    for (uint32_t i = 0; i < ctx->controller_binding_count; i++)
+    {
+        DvzScenarioControllerBinding* binding = &ctx->controller_bindings[i];
+        if (binding->panel == panel && binding->controller == controller && binding->dims == dims)
+            return dvz_panel_bind_controller(panel, controller, dims);
+    }
+
+    if (ctx->controller_binding_count >= DVZ_SCENARIO_MAX_CONTROLLER_BINDINGS)
+        return -1;
+    if (dvz_panel_bind_controller(panel, controller, dims) != 0)
+        return -1;
+
+    DvzScenarioControllerBinding* binding =
+        &ctx->controller_bindings[ctx->controller_binding_count++];
+    binding->panel = panel;
+    binding->controller = controller;
+    binding->dims = dims;
+    return 0;
+}
+
+
+
+DvzPanzoom* dvz_scenario_panzoom(
+    DvzScenarioContext* ctx, DvzPanel* panel, const DvzPanzoomDesc* desc, DvzDimMask dims)
+{
+    if (ctx == NULL || ctx->scene == NULL || panel == NULL)
+        return NULL;
+
+    DvzController* controller = dvz_panzoom(ctx->scene, desc);
+    DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
+    if (panzoom == NULL)
+        return NULL;
+    if (dvz_scenario_bind_controller(ctx, panel, controller, dims) != 0)
+        return NULL;
+    return panzoom;
 }
 
 
@@ -379,6 +448,13 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     if (view == NULL)
     {
         fprintf(stderr, "scenario_runner: view creation failed\n");
+        goto cleanup;
+    }
+
+    if (resolved.presentation == DVZ_RUNNER_PRESENT_GLFW &&
+        _connect_controller_bindings(&ctx, view) != 0)
+    {
+        fprintf(stderr, "scenario_runner: controller input connection failed\n");
         goto cleanup;
     }
 
