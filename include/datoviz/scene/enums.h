@@ -124,6 +124,14 @@ typedef enum
 } DvzVisualTransformSpace;
 
 
+/* Coordinate interpretation for retained visual positions when attached to a panel. */
+typedef enum
+{
+    DVZ_COORD_VISUAL = 0, /* default: positions are already in panel visual coordinates */
+    DVZ_COORD_DATA   = 1, /* positions are panel data/domain coordinates */
+} DvzVisualCoordSpace;
+
+
 typedef enum
 {
     DVZ_VISUAL_SHADER_NONE = 0,

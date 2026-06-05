@@ -114,11 +114,12 @@ DataSpace -> coord_transform -> Cartesian DataSpace -> domain normalization -> V
 Zero-initialized params use defaults. Panel domains always refer to the post-transform Cartesian
 space. Polar axes, graticules, map tiling/LOD, and geographic tick formatting are deferred.
 
-The installed v0.4 public ABI is intentionally limited to already-supported attachment fields:
-`struct_size`, `flags`, `z_layer`, and `controller_mode`. Future coordinate-space,
-domain-override, or transform descriptor fields should be appended to `DvzVisualAttachDesc` or
-introduced through a new growable descriptor with the same `struct_size`/`flags` prologue. v0.4
-must reject unknown attachment flags rather than accepting a no-op projection request.
+The installed v0.4 public ABI supports `coord_space=DVZ_COORD_VISUAL` and
+`coord_space=DVZ_COORD_DATA` in `DvzVisualAttachDesc`. Future pixel-space, domain-override, or
+nonlinear transform descriptor fields should be appended to `DvzVisualAttachDesc` or introduced
+through a new growable descriptor with the same `struct_size`/`flags` prologue. v0.4 must reject
+unknown attachment flags or unsupported coordinate-space values rather than accepting no-op
+projection requests.
 
 
 ## Aspect Ratio
@@ -141,7 +142,7 @@ attachment contract may also declare coordinate interpretation and optional doma
 
 | Field | Rule |
 |---|---|
-| `coord_space` | future field: `DVZ_COORD_DATA`, `DVZ_COORD_NDC`, or `DVZ_COORD_PIXEL` |
+| `coord_space` | `DVZ_COORD_VISUAL` or `DVZ_COORD_DATA`; pixel space is future work |
 | `coord_transform` / `transform_params` | future field: optional pre-normalization transform |
 | `controller_mode` | `DVZ_CONTROLLER_APPLY` or `DVZ_CONTROLLER_FIXED` |
 | `domain_x/y/z` | future field: `NULL` uses panel domain; non-`NULL` overrides that dimension |
@@ -151,13 +152,12 @@ Coordinate-space meanings:
 
 | Value | Meaning |
 |---|---|
-| `DVZ_COORD_DATA` | normalize through panel or per-visual domain |
-| `DVZ_COORD_NDC` | already normalized to `[-1, 1]` |
-| `DVZ_COORD_PIXEL` | panel pixel coordinates converted using current panel size |
+| `DVZ_COORD_VISUAL` | already in panel visual coordinates; current compatibility default |
+| `DVZ_COORD_DATA` | normalize through panel domains before controller transforms |
 
 `coord_space` and `controller_mode` are independent. Typical combinations include
-`DATA+APPLY` for data visuals, `NDC+FIXED` for static overlays, and `PIXEL+FIXED` for legends,
-scale bars, or panel-corner annotations.
+`DATA+APPLY` for data visuals and `VISUAL+FIXED` for static overlays. Future `PIXEL+FIXED`
+attachments may cover legends, scale bars, or panel-corner annotations.
 
 
 ## Dual-Axis And Mixed-Space Overlays

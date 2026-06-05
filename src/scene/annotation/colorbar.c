@@ -560,6 +560,7 @@ static bool _colorbar_attach_visual(DvzColorbar* colorbar, DvzVisual* visual, in
             continue;
         existing->z_layer = attach.z_layer;
         existing->controller_mode = attach.controller_mode;
+        existing->coord_space = attach.coord_space;
         return true;
     }
     return dvz_panel_add_visual(colorbar->panel, visual, &attach) == 0;

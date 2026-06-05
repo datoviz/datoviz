@@ -312,6 +312,7 @@ typedef struct DvzScene   DvzScene;
 typedef struct DvzFigure  DvzFigure;
 typedef struct DvzGrid    DvzGrid;
 typedef struct DvzPanel   DvzPanel;
+typedef struct DvzPanelAttach DvzPanelAttach;
 typedef struct DvzVisual  DvzVisual;
 typedef struct DvzVisualFamilyOps DvzVisualFamilyOps;
 typedef struct DvzSampledField DvzSampledField;
@@ -818,6 +819,10 @@ struct DvzAnimation
 
 /*************************************************************************************************/
 void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out);
+bool _scene_panel_data_model(const DvzPanel* panel, mat4 out);
+bool _scene_panel_attachment_mvp(
+    const DvzPanel* panel, const DvzVisual* visual, const DvzPanelAttach* attach,
+    const DvzMVP* apply_mvp, DvzMVP* out);
 bool _scene_panel_panzoom_extent(const DvzPanel* panel, float out[4]);
 void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, float* out_height);
 bool _panel_padding_valid(const DvzPanel* panel, const DvzPanelReserve* padding);
@@ -1750,13 +1755,14 @@ struct DvzAxis
 
 /* Per-visual attachment state on a panel. Stored alongside the visual pointer in the
  * panel's visuals array so the converter can sort by z_layer and choose APPLY vs FIXED MVP. */
-typedef struct DvzPanelAttach
+struct DvzPanelAttach
 {
     DvzVisual*        visual;          /* weak ref — owned by scene */
     int32_t           z_layer;         /* signed; default 0 */
     DvzControllerMode controller_mode; /* default APPLY */
+    DvzVisualCoordSpace coord_space;   /* default VISUAL */
     uint32_t          insertion_index; /* used as stable tie-breaker when z_layer ties */
-} DvzPanelAttach;
+};
 
 
 

@@ -302,6 +302,7 @@ static bool _legend_attach_visual(DvzLegend* legend, DvzVisual* visual, int32_t 
             continue;
         existing->z_layer = attach.z_layer;
         existing->controller_mode = attach.controller_mode;
+        existing->coord_space = attach.coord_space;
         return true;
     }
     return dvz_panel_add_visual(legend->panel, visual, &attach) == 0;

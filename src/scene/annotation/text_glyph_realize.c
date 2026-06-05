@@ -127,9 +127,11 @@ static bool _text_sync_glyph_visual_attach(
         if (attach->visual != glyph_visual)
             continue;
         bool changed =
-            attach->z_layer != desc->z_layer || attach->controller_mode != desc->controller_mode;
+            attach->z_layer != desc->z_layer || attach->controller_mode != desc->controller_mode ||
+            attach->coord_space != desc->coord_space;
         attach->z_layer = desc->z_layer;
         attach->controller_mode = desc->controller_mode;
+        attach->coord_space = desc->coord_space;
         if (changed)
             _scene_notify_request_frame(panel->figure);
         return true;
@@ -758,6 +760,7 @@ bool _text_visual_prepare(
     DvzVisualAttachDesc glyph_attach = dvz_visual_attach_desc();
     glyph_attach.z_layer = attach->z_layer;
     glyph_attach.controller_mode = attach->controller_mode;
+    glyph_attach.coord_space = attach->coord_space;
     bool realized_cache_valid =
         _visual_family_state(visual)->text.glyph_visual != NULL &&
         _visual_family_state(_visual_family_state(visual)->text.glyph_visual)->field != NULL &&

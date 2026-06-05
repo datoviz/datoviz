@@ -352,11 +352,8 @@ static bool _bounds_project_screen(
     ANN(out);
 
     DvzMVP mvp = {0};
-    glm_mat4_identity(mvp.model);
-    glm_mat4_identity(mvp.view);
-    glm_mat4_identity(mvp.proj);
-    if (attach->controller_mode != DVZ_CONTROLLER_FIXED)
-        _scene_panel_apply_mvp(panel, &mvp);
+    if (!_scene_panel_attachment_mvp(panel, attach->visual, attach, NULL, &mvp))
+        return false;
 
     for (uint32_t x = 0; x < 2; x++)
     {

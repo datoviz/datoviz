@@ -15,11 +15,13 @@
 
 #include <math.h>
 #include <stdbool.h>
+#include <float.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_controllers.h"
 #include "_scene.h"
+#include "annotation/axis_internal.h"
 #include "datoviz/math/_cglm.h"
 
 
@@ -163,6 +165,140 @@ void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out)
             _dvz_arcball_clear_view(panel->arcball);
         dvz_arcball_mvp(panel->arcball, out);
     }
+}
+
+
+/**
+ * Resolve the affine data-domain transform for one panel dimension.
+ *
+ * @param panel the panel
+ * @param dim axis dimension
+ * @param out_scale output scale
+ * @param out_translate output translation
+ * @return whether the dimension transform was resolved
+ */
+static bool _scene_panel_data_axis_transform(
+    const DvzPanel* panel, DvzDim dim, float* out_scale, float* out_translate)
+{
+    ANN(panel);
+    ANN(out_scale);
+    ANN(out_translate);
+    *out_scale = 1.0f;
+    *out_translate = 0.0f;
+    if (dim > DVZ_DIM_Y)
+        return true;
+
+    const DvzAxis* axis = &panel->axes[dim];
+    if (axis->panel == NULL || !axis->domain_set)
+        return true;
+
+    const double span = axis->domain.max - axis->domain.min;
+    if (!isfinite(span) || fabs(span) < DBL_EPSILON)
+        return false;
+
+    float visual_min = -1.0f;
+    float visual_max = +1.0f;
+    _axis_plot_interval(axis, &visual_min, &visual_max);
+
+    const double scale = ((double)visual_max - (double)visual_min) / span;
+    const double translate = (double)visual_min - scale * axis->domain.min;
+    if (
+        !isfinite(scale) || !isfinite(translate) || fabs(scale) > (double)FLT_MAX ||
+        fabs(translate) > (double)FLT_MAX)
+    {
+        return false;
+    }
+    *out_scale = (float)scale;
+    *out_translate = (float)translate;
+    return true;
+}
+
+
+/**
+ * Build the affine DATA-space to VISUAL-space model matrix for one panel.
+ *
+ * @param panel the panel
+ * @param out destination matrix
+ * @return whether the transform was resolved
+ */
+bool _scene_panel_data_model(const DvzPanel* panel, mat4 out)
+{
+    ANN(panel);
+    ANN(out);
+    glm_mat4_identity(out);
+
+    float sx = 1.0f, tx = 0.0f;
+    float sy = 1.0f, ty = 0.0f;
+    if (
+        !_scene_panel_data_axis_transform(panel, DVZ_DIM_X, &sx, &tx) ||
+        !_scene_panel_data_axis_transform(panel, DVZ_DIM_Y, &sy, &ty))
+    {
+        return false;
+    }
+
+    out[0][0] = sx;
+    out[1][1] = sy;
+    out[3][0] = tx;
+    out[3][1] = ty;
+    return true;
+}
+
+
+/**
+ * Compose the effective MVP for one visual attachment.
+ *
+ * @param panel the panel owning the attachment
+ * @param visual the visual
+ * @param attach the panel attachment
+ * @param apply_mvp optional precomputed panel APPLY MVP
+ * @param out destination MVP
+ * @return whether the MVP was resolved
+ */
+bool _scene_panel_attachment_mvp(
+    const DvzPanel* panel, const DvzVisual* visual, const DvzPanelAttach* attach,
+    const DvzMVP* apply_mvp, DvzMVP* out)
+{
+    ANN(panel);
+    ANN(visual);
+    ANN(attach);
+    ANN(out);
+
+    if (apply_mvp != NULL)
+        *out = *apply_mvp;
+    else
+        _scene_panel_apply_mvp(panel, out);
+
+    if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
+    {
+        glm_mat4_identity(out->model);
+        glm_mat4_identity(out->view);
+        glm_mat4_identity(out->proj);
+        out->flags = 0;
+    }
+
+    if (attach->coord_space == DVZ_COORD_DATA)
+    {
+        mat4 data = GLM_MAT4_IDENTITY_INIT;
+        mat4 composed = GLM_MAT4_IDENTITY_INIT;
+        if (!_scene_panel_data_model(panel, data))
+            return false;
+        glm_mat4_mul(out->model, data, composed);
+        glm_mat4_copy(composed, out->model);
+    }
+
+    if (visual->has_local_transform)
+    {
+        mat4 local = GLM_MAT4_IDENTITY_INIT;
+        mat4 composed = GLM_MAT4_IDENTITY_INIT;
+        for (uint32_t col = 0; col < 4; col++)
+        {
+            for (uint32_t row = 0; row < 4; row++)
+                local[col][row] = visual->local_transform[col][row];
+        }
+        glm_mat4_mul(out->model, local, composed);
+        glm_mat4_copy(composed, out->model);
+    }
+    return true;
 }
 
 
@@ -402,4 +538,3 @@ DvzPanelDesc _scene_panel_plot_desc(const DvzPanel* panel)
                       (1.0f - top - bottom) * panel->desc.height,
     };
 }
-

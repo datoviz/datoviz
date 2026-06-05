@@ -62,6 +62,11 @@ static bool _visual_attach_desc_validate(const DvzVisualAttachDesc* desc)
         log_error("invalid DvzVisualAttachDesc ABI prologue");
         return false;
     }
+    if (desc->coord_space != DVZ_COORD_VISUAL && desc->coord_space != DVZ_COORD_DATA)
+    {
+        log_error("invalid visual coordinate space");
+        return false;
+    }
     return true;
 }
 
@@ -243,6 +248,7 @@ DvzVisualAttachDesc dvz_visual_attach_desc(void)
         DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
         .z_layer = 0,
         .controller_mode = DVZ_CONTROLLER_APPLY,
+        .coord_space = DVZ_COORD_VISUAL,
     };
     return desc;
 }
@@ -885,6 +891,7 @@ int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual, const DvzVisualAtta
     slot->visual = visual;
     slot->z_layer = desc ? desc->z_layer : 0;
     slot->controller_mode = desc ? desc->controller_mode : DVZ_CONTROLLER_APPLY;
+    slot->coord_space = desc ? desc->coord_space : DVZ_COORD_VISUAL;
     slot->insertion_index = panel->visual_count;
     panel->visual_count++;
     _scene_notify_request_frame(panel->figure);

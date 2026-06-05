@@ -135,6 +135,30 @@ static bool _panel_has_visual(const DvzPanel* panel, const DvzVisual* visual)
 
 
 /**
+ * Return whether a composite attachment descriptor is valid.
+ *
+ * @param desc optional attachment descriptor
+ * @return whether the descriptor can be applied
+ */
+static bool _composite_attach_desc_valid(const DvzVisualAttachDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzVisualAttachDesc, 0u))
+    {
+        log_error("invalid DvzVisualAttachDesc ABI prologue");
+        return false;
+    }
+    if (desc->coord_space != DVZ_COORD_VISUAL && desc->coord_space != DVZ_COORD_DATA)
+    {
+        log_error("invalid visual coordinate space");
+        return false;
+    }
+    return true;
+}
+
+
+/**
  * Upload the polygon fill role visual.
  *
  * @param polygon source polygon
@@ -834,6 +858,8 @@ int dvz_panel_add_composite(
     {
         return -1;
     }
+    if (!_composite_attach_desc_valid(desc))
+        return -1;
     if (_composite_prepare(composite) != 0)
         return -1;
 
@@ -859,6 +885,7 @@ int dvz_panel_add_composite(
         slot->visual = visual;
         slot->z_layer = (desc != NULL ? desc->z_layer : 0) + composite->visuals[i].z_offset;
         slot->controller_mode = desc != NULL ? desc->controller_mode : DVZ_CONTROLLER_APPLY;
+        slot->coord_space = desc != NULL ? desc->coord_space : DVZ_COORD_VISUAL;
         slot->insertion_index = panel->visual_count;
         panel->visual_count++;
     }

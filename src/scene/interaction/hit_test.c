@@ -149,17 +149,22 @@ void _scene_request_visual_mvp(
     ANN(panel);
     ANN(request_ndc);
     ANN(out);
-    _scene_request_apply_mvp(panel, request_ndc, out);
-    if (visual != NULL && visual->has_local_transform)
+    const DvzPanelAttach* attach = NULL;
+    if (visual != NULL)
     {
-        mat4 local = GLM_MAT4_IDENTITY_INIT;
-        mat4 composed = GLM_MAT4_IDENTITY_INIT;
-        for (uint32_t col = 0; col < 4; col++)
+        for (uint32_t i = 0; i < panel->visual_count; i++)
         {
-            for (uint32_t row = 0; row < 4; row++)
-                local[col][row] = visual->local_transform[col][row];
+            if (panel->visuals[i].visual == visual)
+            {
+                attach = &panel->visuals[i];
+                break;
+            }
         }
-        glm_mat4_mul(out->model, local, composed);
-        glm_mat4_copy(composed, out->model);
     }
+    if (attach == NULL || !_scene_panel_attachment_mvp(panel, visual, attach, NULL, out))
+        _scene_panel_apply_mvp(panel, out);
+
+    vec2 target_ndc = {0.0f, 0.0f};
+    vec2 delta = {request_ndc[0] - target_ndc[0], -request_ndc[1] - target_ndc[1]};
+    _scene_center_apply_mvp(out, delta);
 }

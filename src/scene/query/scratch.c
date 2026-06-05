@@ -146,18 +146,21 @@ void _dvz_scene_query_apply_render_state(
     if (render == NULL)
         return;
 
-    DvzMVP mvp = {0};
-    _scene_panel_apply_mvp(panel, &mvp);
-    if (visual != NULL && visual->has_local_transform)
+    const DvzPanelAttach* attach = NULL;
+    if (visual != NULL)
     {
-        mat4 local = GLM_MAT4_IDENTITY_INIT;
-        mat4 composed = GLM_MAT4_IDENTITY_INIT;
-        for (uint32_t col = 0; col < 4; col++)
-            for (uint32_t row = 0; row < 4; row++)
-                local[col][row] = visual->local_transform[col][row];
-        glm_mat4_mul(mvp.model, local, composed);
-        glm_mat4_copy(composed, mvp.model);
+        for (uint32_t i = 0; i < panel->visual_count; i++)
+        {
+            if (panel->visuals[i].visual == visual)
+            {
+                attach = &panel->visuals[i];
+                break;
+            }
+        }
     }
+    DvzMVP mvp = {0};
+    if (attach == NULL || !_scene_panel_attachment_mvp(panel, visual, attach, NULL, &mvp))
+        _scene_panel_apply_mvp(panel, &mvp);
     vec2 target_ndc = {
         -1.0f + 1.0f / (float)target_width,
         1.0f - 1.0f / (float)target_height,

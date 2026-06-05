@@ -504,6 +504,9 @@ int test_scene_visual_local_transform_bounds_and_clear(TstContext* suite, const 
 int test_scene_visual_local_transform_emits_per_visual_mvp(
     TstContext* suite, const TstCase* item);
 
+int test_scene_visual_data_coord_space_tracks_domain_fit_resize(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_mesh_local_transform_without_instances(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_local_transform_family_audit(TstContext* suite, const TstCase* item);

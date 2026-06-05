@@ -1084,6 +1084,66 @@ int test_scene_visual_local_transform_emits_per_visual_mvp(TstContext* suite, co
 }
 
 
+int test_scene_visual_data_coord_space_tracks_domain_fit_resize(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 100, 100, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+
+    DvzPanelDomainFit fit = dvz_panel_domain_fit();
+    fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
+    fit.x = (DvzDataDomain){.min = 0.0, .max = 10.0};
+    fit.y = (DvzDataDomain){.min = 0.0, .max = 5.0};
+    AT(dvz_panel_set_domain_fit(panel, &fit) == 0);
+
+    vec3 pos[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor col[1] = {{255, 255, 255, 255}};
+    float size[1] = {4.0f};
+    DvzVisual* point = dvz_point(scene, 0);
+    AT(dvz_visual_set_data(point, "position", pos, 1) == 0);
+    AT(dvz_visual_set_data(point, "color", col, 1) == 0);
+    AT(dvz_visual_set_data(point, "size", size, 1) == 0);
+
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_COORD_DATA;
+    AT(dvz_panel_add_visual(panel, point, &attach) == 0);
+
+    DvzFramePlan* square = dvz_frame_plan("visual.data.coord.square", 0);
+    ANN(square);
+    AT(_scene_emit_panel_render(figure, 0, square, "figure_0"));
+    const DvzFramePlanNode* square_render = dvz_frame_plan_node_get(square, 0);
+    ANN(square_render);
+    AT(square_render->u.render.visual_count == 1);
+    AT(square_render->u.render.visual_has_mvp[0]);
+    AC(square_render->u.render.visual_mvp[0].model[0][0], 0.2f, 1e-6);
+    AC(square_render->u.render.visual_mvp[0].model[1][1], 0.2f, 1e-6);
+    AC(square_render->u.render.visual_mvp[0].model[3][0], -1.0f, 1e-6);
+    AC(square_render->u.render.visual_mvp[0].model[3][1], -0.5f, 1e-6);
+
+    dvz_figure_resize(figure, 200, 100);
+    DvzFramePlan* wide = dvz_frame_plan("visual.data.coord.wide", 0);
+    ANN(wide);
+    AT(_scene_emit_panel_render(figure, 0, wide, "figure_0"));
+    const DvzFramePlanNode* wide_render = dvz_frame_plan_node_get(wide, 0);
+    ANN(wide_render);
+    AT(wide_render->u.render.visual_count == 1);
+    AT(wide_render->u.render.visual_has_mvp[0]);
+    AC(wide_render->u.render.visual_mvp[0].model[0][0], 0.2f, 1e-6);
+    AC(wide_render->u.render.visual_mvp[0].model[1][1], 0.4f, 1e-6);
+    AC(wide_render->u.render.visual_mvp[0].model[3][0], -1.0f, 1e-6);
+    AC(wide_render->u.render.visual_mvp[0].model[3][1], -1.0f, 1e-6);
+
+    dvz_frame_plan_destroy(wide);
+    dvz_frame_plan_destroy(square);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_mesh_local_transform_without_instances(TstContext* suite, const TstCase* item)
 {
     (void)suite;
