@@ -125,9 +125,10 @@ examples:
 | `feature.lighting` | `examples/c/features/lighting.c` | simple 3D lighting direction/intensity proof |
 | `feature.timer_animation` | `examples/c/features/timer_animation.c` | deterministic timer/frame-callback animation |
 
-Conditional: add `examples/c/features/legend_categorical.c` only if categorical legends remain a
-public v0.4 surface. Keep `video_export.c` conditional unless video export is explicitly included in
-the public v0.4 API.
+Tentative examples now exist for `examples/c/features/legend_categorical.c` and
+`examples/c/features/video_export.c`. `video_export.c` is the first native scenario-runner proof for
+live, live-record, and offscreen-record modes. Keep both experimental/conditional until categorical
+legends, video capture, and runner-backed examples are explicitly included in the public v0.4 API.
 
 
 ## v0.4 Experimental Set

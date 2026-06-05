@@ -259,6 +259,7 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
     DvzView* view = NULL;
+    DvzView* capture_view = NULL;
     DvzAnimation* timer = NULL;
     bool capture_started = false;
     void* user = NULL;
@@ -333,10 +334,23 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         goto cleanup;
     }
 
+    capture_view = view;
+    if (resolved.presentation == DVZ_RUNNER_PRESENT_GLFW &&
+        resolved.capture_kind == DVZ_RUNNER_CAPTURE_VIDEO)
+    {
+        capture_view = dvz_view_offscreen(app, ctx.figure, ctx.width, ctx.height);
+        if (capture_view == NULL)
+        {
+            fprintf(stderr, "scenario_runner: offscreen capture view creation failed\n");
+            goto cleanup;
+        }
+        fprintf(stdout, "scenario_runner: showing GLFW view and recording offscreen view\n");
+    }
+
     if (resolved.frame_count > 0 && resolved.print_progress)
     {
         progress.frame_count = resolved.frame_count;
-        dvz_view_set_frame_callback(view, _progress_frame, &progress);
+        dvz_view_set_frame_callback(capture_view, _progress_frame, &progress);
     }
 
     if (resolved.capture_kind != DVZ_RUNNER_CAPTURE_NONE)
@@ -351,7 +365,7 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         fprintf(stdout, "scenario_runner: %s output path: %s\n",
                 _capture_label(resolved.capture_kind), path);
 
-        if (dvz_view_capture_start(view, &resolved.capture) != 0)
+        if (dvz_view_capture_start(capture_view, &resolved.capture) != 0)
         {
             fprintf(stderr, "scenario_runner: failed to start %s capture: %s\n",
                     _capture_label(resolved.capture_kind), path);
@@ -368,7 +382,7 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
 
     if (capture_started)
     {
-        if (dvz_view_capture_stop(view) != 0)
+        if (dvz_view_capture_stop(capture_view) != 0)
         {
             fprintf(stderr, "scenario_runner: failed to stop capture\n");
             capture_started = false;
@@ -379,8 +393,8 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     ret = 0;
 
 cleanup:
-    if (capture_started && view != NULL)
-        (void)dvz_view_capture_stop(view);
+    if (capture_started && capture_view != NULL)
+        (void)dvz_view_capture_stop(capture_view);
     if (timer != NULL)
         dvz_anim_stop(timer);
     if (spec != NULL && spec->destroy != NULL)

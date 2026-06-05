@@ -322,6 +322,36 @@ examples:
       - distance-field-symbol
       - svg-path-symbol
 
+  - id: feature_legend_categorical
+    title: Categorical Legend
+    stage: v0.4_experimental
+    lane: features
+    source: examples/c/features/legend_categorical.c
+    validation: smoke+screenshot
+    gallery:
+      card: small
+      status_label: experimental
+    features:
+      - categorical-scale
+      - legend
+      - marker
+      - capture
+
+  - id: feature_video_export
+    title: Video Export
+    stage: v0.4_experimental
+    lane: features
+    source: examples/c/features/video_export.c
+    validation: smoke+optional-video
+    gallery:
+      card: small
+      status_label: experimental
+    features:
+      - app-capture
+      - scenario-runner
+      - video
+      - animation
+
   - id: point_2d
     title: Point
     stage: v0.4_required

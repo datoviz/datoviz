@@ -38,6 +38,8 @@ controllers, sampled fields, picking, probing, selection, and retained updates.
 - `marker_symbols.c`: marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 - `update_visual_data.c`: retained point visual with full data replacement.
 - `visibility.c`: retained visual visibility toggled before rendering.
+- `legend_categorical.c`: tentative retained categorical legend attached to a panel.
+- `video_export.c`: tentative runner-backed live, live-record, and offscreen-record modes.
 
-Conditional: add `legend_categorical.c` only if categorical legends stay public for v0.4, and add
-`video_export.c` only if video export is included in the public v0.4 surface.
+Tentative: keep `legend_categorical.c` and `video_export.c` experimental until categorical legends
+and video capture are explicitly promoted into the public v0.4 surface.
