@@ -6,6 +6,7 @@ export const demo = {
     addPoints(scene, panel);
     addPixels(scene, panel);
     addMarkers(scene, panel);
+    addSegments(scene, panel);
     addPrimitive(scene, panel);
     addImage(scene, panel);
     addMesh(scene, panel);
@@ -96,6 +97,39 @@ function addMarkers(scene, panel) {
   markers.setF32("angle", angles, count);
   markers.setU32("symbol", symbols, count);
   scene.addVisual(panel, markers);
+}
+
+function addSegments(scene, panel) {
+  const count = 5;
+  const starts = new Float32Array([
+    -0.88, -0.34, 0.08,
+    -0.66, -0.58, 0.08,
+    -0.42, -0.42, 0.08,
+    -0.18, -0.58, 0.08,
+    -0.02, -0.34, 0.08,
+  ]);
+  const ends = new Float32Array([
+    -0.68, -0.58, 0.08,
+    -0.44, -0.32, 0.08,
+    -0.18, -0.56, 0.08,
+    -0.02, -0.28, 0.08,
+    -0.34, -0.18, 0.08,
+  ]);
+  const colors = new Uint8Array([
+    80, 205, 245, 225,
+    245, 165, 75, 225,
+    125, 220, 155, 225,
+    230, 100, 185, 225,
+    235, 220, 95, 225,
+  ]);
+  const widths = new Float32Array([3, 5, 7, 4, 6]);
+
+  const segments = scene.visual("segment");
+  segments.setF32("position_start", starts, count);
+  segments.setF32("position_end", ends, count);
+  segments.setRGBA8("color", colors, count);
+  segments.setF32("stroke_width", widths, count);
+  scene.addVisual(panel, segments);
 }
 
 function addPrimitive(scene, panel) {

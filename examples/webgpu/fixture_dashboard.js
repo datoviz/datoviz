@@ -298,6 +298,29 @@ function addWasm2DMarkers(scene, panel) {
 }
 
 
+function addWasm2DSegments(scene, panel) {
+  const segments = scene.visual("segment");
+  segments.setF32("position_start", new Float32Array([
+    -0.76, -0.68, 0.08,
+    -0.46, -0.68, 0.08,
+    -0.16, -0.68, 0.08,
+  ]), 3);
+  segments.setF32("position_end", new Float32Array([
+    -0.58, -0.34, 0.08,
+    -0.28, -0.46, 0.08,
+    -0.02, -0.28, 0.08,
+  ]), 3);
+  segments.setRGBA8("color", new Uint8Array([
+    80, 205, 245, 230,
+    245, 165, 75, 230,
+    135, 225, 150, 230,
+  ]), 3);
+  segments.setF32("stroke_width", new Float32Array([4, 7, 5]), 3);
+  scene.addVisual(panel, segments);
+  return segments;
+}
+
+
 
 function addWasmImage(scene, panel) {
   const image = scene.visual("image");
@@ -364,6 +387,7 @@ async function runWasm2DSceneSmoke(row) {
     const points = addWasm2DPoints(scene, panel);
     const pixels = addWasm2DPixels(scene, panel);
     const markers = addWasm2DMarkers(scene, panel);
+    const segments = addWasm2DSegments(scene, panel);
     const image = addWasmImage(scene, panel);
 
     const initial = await scene.renderInitial();
@@ -376,6 +400,7 @@ async function runWasm2DSceneSmoke(row) {
     ]), 3);
     pixels.setF32("pixel_size", new Float32Array([10, 8, 11, 9]), 4);
     markers.setU32("symbol", new Uint32Array([3, 2, 1, 0]), 4);
+    segments.setF32("stroke_width", new Float32Array([6, 4, 8]), 3);
     const update = await scene.renderIncremental();
     assertPositiveCommandCount(update, `${row.name} update`);
 

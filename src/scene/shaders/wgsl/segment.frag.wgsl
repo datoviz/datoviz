@@ -1,0 +1,90 @@
+#include "scene_material.wgsl"
+
+struct FragmentIn {
+    @location(0) color: vec4f,
+    @location(1) coord: vec2f,
+    @location(2) length_px: f32,
+    @location(3) line_width: f32,
+}
+
+fn stroke_alpha(distance: f32, line_width: f32) -> f32 {
+    let aa = 1.0;
+    let half_width = max(line_width, 0.0) * 0.5;
+    return 1.0 - smoothstep(half_width - aa, half_width + aa, abs(distance));
+}
+
+fn stroke_outer_half_width(line_width: f32) -> f32 {
+    return max(line_width, 0.0) * 0.5 + 1.5;
+}
+
+fn stroke_triangle_head_length(line_width: f32) -> f32 {
+    return max(max(line_width, 0.0) * 3.0, stroke_outer_half_width(line_width));
+}
+
+fn stroke_triangle_head_half_width(line_width: f32) -> f32 {
+    return max(max(line_width, 0.0) * 1.5, stroke_outer_half_width(line_width));
+}
+
+fn stroke_cap_distance(cap: i32, dx: f32, dy: f32, line_width: f32) -> f32 {
+    let aa = 1.0;
+    let half_width = max(line_width, 0.0) * 0.5;
+    let t = max(half_width - aa, 0.0);
+    let x = abs(dx);
+    let y = abs(dy);
+
+    if (cap == 0) {
+        return 1e6;
+    }
+    if (cap == 1) {
+        return length(vec2f(x, y));
+    }
+    if (cap == 2) {
+        return max(y, t + x - y);
+    }
+    if (cap == 4) {
+        return max(x, y);
+    }
+    return max(x + t, y);
+}
+
+fn stroke_triangle_out_alpha(dx: f32, dy: f32, line_width: f32) -> f32 {
+    let aa = 1.0;
+    let x = max(dx, 0.0);
+    let y = abs(dy);
+    let length_px = stroke_triangle_head_length(line_width);
+    let half_width = stroke_triangle_head_half_width(line_width);
+    let scale = min(length_px, half_width);
+    let edge_distance = (x / max(length_px, 1e-6) + y / max(half_width, 1e-6) - 1.0) * scale;
+    let tip_distance = x - length_px;
+    let distance = max(edge_distance, tip_distance);
+    return 1.0 - smoothstep(-aa, aa, distance);
+}
+
+fn stroke_cap_alpha(cap: i32, dx: f32, dy: f32, line_width: f32) -> f32 {
+    if (cap == 3) {
+        return stroke_triangle_out_alpha(dx, dy, line_width);
+    }
+    return stroke_alpha(stroke_cap_distance(cap, dx, dy, line_width), line_width);
+}
+
+@fragment
+fn main(input: FragmentIn) -> @location(0) vec4f {
+    var alpha = stroke_alpha(input.coord.y, input.line_width);
+    if (input.coord.x < 0.0) {
+        alpha = stroke_cap_alpha(
+            i32(material.params.x + 0.5), -input.coord.x, input.coord.y, input.line_width);
+    } else if (input.coord.x > input.length_px) {
+        alpha = stroke_cap_alpha(
+            i32(material.params.y + 0.5), input.coord.x - input.length_px, input.coord.y,
+            input.line_width);
+    }
+
+    if (alpha <= 0.0) {
+        discard;
+    }
+    let color = vec4f(input.color.rgb, input.color.a * alpha);
+    if (color.a <= 0.0) {
+        discard;
+    }
+    return color;
+}

@@ -22,6 +22,7 @@ export const DvzWasmVisual = Object.freeze({
   point: 1,
   pixel: 2,
   marker: 3,
+  segment: 4,
   image: 6,
   mesh: 7,
   primitive: 9,

@@ -68,15 +68,18 @@ The current browser path proves:
 
 1. C/WASM scene state emitting split DRP2 setup/update/frame packets;
 2. point visual;
-3. primitive triangle-list visual;
-4. RGBA8 image visual;
-5. basic mesh visual;
-6. 2D panzoom input;
-7. one 3D mesh scene with camera and arcball input;
-8. WebGPU runner execution for the committed DRP2 fixture subset;
-9. semantic negative-fixture parity in the WebGPU runner;
-10. compute and `ResourceBarrier` at DRP2 fixture level;
-11. browser evidence through `examples/webgpu/examples.html` and `examples/webgpu/fixtures.html`.
+3. pixel visual;
+4. basic built-in marker visual;
+5. basic segment visual;
+6. primitive triangle-list visual;
+7. RGBA8 image visual;
+8. basic mesh visual;
+9. 2D panzoom input;
+10. one 3D mesh scene with camera and arcball input;
+11. WebGPU runner execution for the committed DRP2 fixture subset;
+12. semantic negative-fixture parity in the WebGPU runner;
+13. compute and `ResourceBarrier` at DRP2 fixture level;
+14. browser evidence through `examples/webgpu/examples.html` and `examples/webgpu/fixtures.html`.
 
 This is an experimental subset, not native Vulkan feature parity.
 
@@ -177,7 +180,7 @@ that family until earlier rows are stable.
 | mesh | basic/textured/lit mesh paths | basic mesh first, textured mesh next | current/next | promote texture sampling and material subset with WGSL proof |
 | pixel | retained pixel visual | dense 2D pixel visual | current | keep fixture/browser evidence and promote buffer-backed attrs with point |
 | marker | retained marker visual | built-in marker subset current; glyph/atlas subset next | current/next | keep built-in marker evidence; settle atlas variants and picking diagnostics |
-| segment/path/stroke | retained path and stroke-shaped paths | portable line/path subset | next | WGSL stroke/path shaders, joins/caps policy, browser proof |
+| segment/path/stroke | retained path and stroke-shaped paths | basic segment current; portable path/stroke subset next | current/next | keep basic segment evidence; settle joins/caps policy and path browser proof |
 | text/glyph | retained text and glyph visuals | MSDF or bitmap text subset | later | font/atlas packaging, WGSL text shaders, shaping limits |
 | labels | label field and readback paths | label rendering and label probe subset | later | texture/label formats, query/readback, diagnostics |
 | sphere | sphere impostor visual | basic sphere impostor | later | WGSL impostor shader, depth/material subset |
@@ -257,14 +260,13 @@ frame-time evidence is available.
 Promote visuals in this order:
 
 1. buffer-backed point and pixel;
-2. marker;
-3. segment/path/stroke;
-4. textured mesh;
-5. text/glyph;
-6. labels;
-7. axes/colorbars/legends/scale bars/annotations;
-8. sphere and reduced volume;
-9. experimental splat and advanced techniques.
+2. path/stroke joins and caps;
+3. textured mesh;
+4. text/glyph;
+5. labels;
+6. axes/colorbars/legends/scale bars/annotations;
+7. sphere and reduced volume;
+8. experimental splat and advanced techniques.
 
 Each promotion must satisfy the promotion rule above.
 
