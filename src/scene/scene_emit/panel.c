@@ -1162,7 +1162,7 @@ bool _scene_emit_panel_render_ex(
         if (blended_count > 0 && !_scene_technique_emit_blended_frame_graph(
                                      plan, panel_id, false, opaque_needs_depth,
                                      opaque_needs_depth || transparent_needs_depth, blended_count,
-                                     blended_needs_depth, blended_writes_depth))
+                                     blended_needs_depth, blended_writes_depth, NULL))
         {
             _scene_emit_graph_report(
                 report, "failed to emit blended FramePlan graph for panel %s", panel_id);
@@ -1212,7 +1212,7 @@ bool _scene_emit_panel_render_ex(
         bool blended_depth_producer = opaque_needs_depth || transparent_needs_depth;
         if (!_scene_technique_emit_blended_frame_graph(
                 plan, panel_id, true, blended_depth_producer, blended_depth_producer,
-                blended_count, blended_needs_depth, blended_writes_depth))
+                blended_count, blended_needs_depth, blended_writes_depth, msaa_state))
         {
             _scene_emit_graph_report(
                 report, "failed to emit blended FramePlan graph for panel %s", panel_id);

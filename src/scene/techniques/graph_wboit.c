@@ -191,12 +191,13 @@ bool _scene_technique_emit_wboit_frame_graph(
  * @param pass_count number of source-over passes
  * @param pass_needs_depth source-over pass depth attachment flags
  * @param pass_writes_depth source-over pass depth-write flags
+ * @param msaa optional MSAA state for the opaque prepass
  * @return whether graph descriptors were emitted
  */
 bool _scene_technique_emit_blended_frame_graph(
     DvzFramePlan* plan, const char* panel_id, bool emit_opaque_pass, bool opaque_needs_depth,
     bool prior_depth_written, uint32_t pass_count, const bool* pass_needs_depth,
-    const bool* pass_writes_depth)
+    const bool* pass_writes_depth, const DvzSceneMsaaTechniqueState* msaa)
 {
     ANN(plan);
     ANN(panel_id);
@@ -207,8 +208,10 @@ bool _scene_technique_emit_blended_frame_graph(
     }
 
     char depth_id[DVZ_SCENE_LABEL_SIZE];
+    char msaa_color_id[DVZ_SCENE_LABEL_SIZE];
     char opaque_pass_id[DVZ_SCENE_LABEL_SIZE];
     dvz_snprintf(depth_id, sizeof(depth_id), "%s.depth", panel_id);
+    dvz_snprintf(msaa_color_id, sizeof(msaa_color_id), "%s.msaa.color", panel_id);
     dvz_snprintf(opaque_pass_id, sizeof(opaque_pass_id), "%s.opaque", panel_id);
 
     DvzFrameGraphResource rt = {0};
@@ -224,6 +227,29 @@ bool _scene_technique_emit_blended_frame_graph(
     bool depth_required = opaque_needs_depth;
     for (uint32_t i = 0; i < pass_count; i++)
         depth_required = depth_required || pass_needs_depth[i];
+    bool blended_needs_depth = false;
+    for (uint32_t i = 0; i < pass_count; i++)
+        blended_needs_depth = blended_needs_depth || pass_needs_depth[i];
+
+    uint32_t sample_count =
+        msaa != NULL && msaa->enabled && msaa->sample_count > 1 ? msaa->sample_count : 1;
+    /* Later blended passes remain single-sample; do not create an MSAA depth attachment they would
+     * need to attach or sample before a depth-resolve path exists. */
+    bool multisample_opaque = emit_opaque_pass && sample_count > 1 && !blended_needs_depth;
+    if (multisample_opaque)
+    {
+        DvzFrameGraphResource msaa_color = {0};
+        dvz_strlcpy(msaa_color.id, msaa_color_id, sizeof(msaa_color.id));
+        msaa_color.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+        msaa_color.format = VK_FORMAT_R8G8B8A8_UNORM;
+        msaa_color.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+        msaa_color.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
+        msaa_color.sample_count = sample_count;
+        msaa_color.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+        if (!_scene_frame_graph_resource_once(plan, &msaa_color))
+            return false;
+    }
+
     if (depth_required)
     {
         DvzFrameGraphResource depth = {0};
@@ -233,6 +259,7 @@ bool _scene_technique_emit_blended_frame_graph(
         depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT |
                             DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+        depth.sample_count = multisample_opaque ? sample_count : 1;
         depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
         if (!_scene_frame_graph_resource_once(plan, &depth))
             return false;
@@ -248,12 +275,18 @@ bool _scene_technique_emit_blended_frame_graph(
         dvz_strlcpy(opaque.panel_id, panel_id, sizeof(opaque.panel_id));
         dvz_strlcpy(opaque.work_label, "opaque", sizeof(opaque.work_label));
         opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+        opaque.alpha_to_coverage = multisample_opaque && msaa != NULL && msaa->alpha_to_coverage;
         bool color_written = _scene_frame_graph_color_written(plan, "rt");
         _scene_frame_graph_color_attachment(
-            &color, "rt",
-            color_written ? DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD
-                          : DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
-            !color_written);
+            &color, multisample_opaque ? msaa_color_id : "rt",
+            !multisample_opaque && color_written ? DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD
+                                                 : DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+            multisample_opaque || !color_written);
+        if (multisample_opaque)
+        {
+            dvz_strlcpy(color.resolve_resource_id, "rt", sizeof(color.resolve_resource_id));
+            color.resolve_mode = VK_RESOLVE_MODE_AVERAGE_BIT;
+        }
         if (!dvz_frame_graph_pass_color_attachment(&opaque, &color))
             return false;
         if (opaque_needs_depth)
