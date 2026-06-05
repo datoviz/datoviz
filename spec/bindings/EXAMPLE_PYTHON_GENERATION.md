@@ -24,8 +24,13 @@ where `Python` means the top-level array-aware facade:
 import datoviz as dvz
 ```
 
-Raw `ctypes` examples remain useful for ABI validation, debugging, and advanced FFI documentation,
-but they should not be the default user-facing Python tab once the facade exists.
+The facade is implemented over the generated raw `ctypes` binding, so generated Python examples
+still exercise the same low-level C ABI path while avoiding raw pointer/count boilerplate in
+user-facing documentation.
+
+Gallery and example pages should expose only these two public language tabs: `C` and `Python`.
+Raw `ctypes` snippets may appear in binding internals, ABI validation, debugging, or advanced FFI
+reference pages, but they are not a separate gallery/example path.
 
 
 ## Source Of Truth
@@ -61,6 +66,10 @@ The generator should fail with a specific diagnostic when it cannot translate a 
 It should not silently invent pointer ownership, array shape, callback lifetime, or vectorization
 semantics.
 
+The generator should treat the array-aware facade as the only user-facing Python target. It may use
+raw binding metadata and raw binding validation internally, but generated example code should import
+`datoviz as dvz` unless the output is explicitly for a binding-internals page.
+
 
 ## Sidecar Hints
 
@@ -72,6 +81,7 @@ Example shape:
 ```yaml
 python:
   status: generated
+  docs_tab: true
 
 arrays:
   positions:
@@ -101,7 +111,13 @@ Sidecars may also mark an example as intentionally manual:
 python:
   status: manual
   reason: "interactive GUI callback and mutable runtime state"
+  docs_tab: false
 ```
+
+Sidecars may provide conversion hints, array shapes, vectorization policy, validation commands, and
+documentation-tab eligibility. They must not become declarative rewrites of the example. If a
+sidecar contains enough information to render without reading the C source, it is too large and
+should instead be treated as a separately authored manual Python example.
 
 
 ## Loop Handling
@@ -175,14 +191,20 @@ User-facing docs should prefer:
 C | Python
 ```
 
-Advanced binding docs may use:
+For gallery and example pages, these are the only allowed public language tabs. The `Python` tab is
+the generated array-aware facade example and should import:
 
-```text
-C | Python facade | Python raw ctypes
+```python
+import datoviz as dvz
 ```
 
-The raw `ctypes` tab should be reserved for low-level binding documentation, ABI examples, and
-debugging. It should not become the primary Python story for scientific users.
+Raw `ctypes` code is an implementation layer below that facade. It should not appear as a third
+gallery/example tab. Low-level binding documentation may still show `datoviz.raw` snippets when the
+page is specifically about ABI validation, debugging, or advanced FFI usage.
+
+Gallery pages should include the `Python` tab only when the generated Python file exists and passes
+its configured validation. If generation is `manual`, `unsupported`, `failed`, or not yet attempted,
+the page remains C-only and records the Python status in metadata instead of fabricating a snippet.
 
 
 ## Validation
@@ -196,6 +218,7 @@ The first implementation slice should validate:
 5. faithful Python-loop fallback for unsupported vectorization;
 6. docs-tab generation from the C and generated Python outputs;
 7. per-example status reporting: `generated`, `generated-with-hints`, `manual`, or `unsupported`.
+8. gallery/example page checks that reject language tabs other than `C` and `Python`.
 
 Where practical, dataset helpers should compare generated NumPy arrays against C-produced reference
 data or fixture snapshots. For graphics examples, the normal C and Python smoke commands should
