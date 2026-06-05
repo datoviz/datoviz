@@ -10,9 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/axes_2d
- * Run:    ./build/examples/c/features/axes_2d
- * Smoke:  ./build/examples/c/features/axes_2d 1
- * Options: --debug, [frame-count]
+ * Run:    ./build/examples/c/features/axes_2d --live
+ * Smoke:  ./build/examples/c/features/axes_2d --png
  */
 
 
@@ -24,15 +23,12 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include "_assertions.h"
 #include "_compat.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
-#include "example_debug.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -128,22 +124,23 @@ static bool _upload_path(
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the deterministic 2D axes and path feature proof.
+ * Initialize the deterministic 2D axes and path feature scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    ExampleDebug debug = {0};
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
+
     vec3 data_positions[PATH_COUNT] = {{0}};
     vec3 visual_positions[PATH_COUNT] = {{0}};
     DvzColor colors[PATH_COUNT] = {{0}};
@@ -151,86 +148,117 @@ int main(int argc, char** argv)
 
     _fill_curve(data_positions, colors, widths, PATH_COUNT);
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
     example_graphite_cyan_set_panel_background(panel);
 
     bool ok = dvz_panel_set_layout_reserve(
         panel, &(DvzPanelLayoutReserve){.left = 0.16f, .right = 0.05f, .bottom = 0.15f,
                                         .top = 0.05f});
-    EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve() failed");
+    if (!ok)
+        return false;
 
-    dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0);
-    dvz_panel_set_domain(panel, DVZ_DIM_Y, -2.0, 2.0);
+    if (dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) != 0)
+        return false;
+    if (dvz_panel_set_domain(panel, DVZ_DIM_Y, -2.0, 2.0) != 0)
+        return false;
 
     int rc = dvz_panel_data_to_visual_positions(
         panel, (const float*)data_positions, (float*)visual_positions, PATH_COUNT);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_data_to_visual_positions() failed");
+    if (rc != 0)
+        return false;
 
-    DvzVisual* path = dvz_path(scene, 0);
-    EXAMPLE_CHECK(path != NULL, "dvz_path() failed");
+    DvzVisual* path = dvz_path(ctx->scene, 0);
+    if (path == NULL)
+        return false;
 
     ok = _upload_path(path, visual_positions, colors, widths, PATH_COUNT);
-    EXAMPLE_CHECK(ok, "path data upload failed");
+    if (!ok)
+        return false;
 
     rc = dvz_panel_add_visual(panel, path, NULL);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
+    if (rc != 0)
+        return false;
 
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
-    EXAMPLE_CHECK(x_axis != NULL && y_axis != NULL, "dvz_panel_axis() failed");
+    if (x_axis == NULL || y_axis == NULL)
+        return false;
 
     DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
     ticks.target_count = 6;
     ticks.min_pixel_spacing = 110.0f;
     ticks.minor_per_interval = 3;
     ok = dvz_axis_set_tick_policy(x_axis, &ticks);
-    EXAMPLE_CHECK(ok, "dvz_axis_set_tick_policy() failed for X");
+    if (!ok)
+        return false;
     ok = dvz_axis_set_tick_policy(y_axis, &ticks);
-    EXAMPLE_CHECK(ok, "dvz_axis_set_tick_policy() failed for Y");
+    if (!ok)
+        return false;
 
     ok = example_graphite_cyan_apply_axis_style(x_axis, false, NULL);
-    EXAMPLE_CHECK(ok, "dvz_axis_set_style() failed for X");
+    if (!ok)
+        return false;
     ok = example_graphite_cyan_apply_axis_style(y_axis, true, NULL);
-    EXAMPLE_CHECK(ok, "dvz_axis_set_style() failed for Y");
+    if (!ok)
+        return false;
 
     ok = dvz_axis_set_grid(x_axis, true);
-    EXAMPLE_CHECK(ok, "dvz_axis_set_grid() failed for X");
+    if (!ok)
+        return false;
     ok = dvz_axis_set_grid(y_axis, true);
-    EXAMPLE_CHECK(ok, "dvz_axis_set_grid() failed for Y");
+    if (!ok)
+        return false;
     ok = dvz_axis_set_label(x_axis, "time (s)");
-    EXAMPLE_CHECK(ok, "dvz_axis_set_label() failed for X");
+    if (!ok)
+        return false;
     ok = dvz_axis_set_label(y_axis, "signal");
-    EXAMPLE_CHECK(ok, "dvz_axis_set_label() failed for Y");
+    if (!ok)
+        return false;
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    return panzoom != NULL;
+}
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "path_axes_2d");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
-    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
-    EXAMPLE_CHECK(
-        example_debug_setup(&debug, win, argc, argv, "axes_2d"),
-        "example_debug_setup() failed");
-    example_debug_panzoom(&debug, "axes_2d", panzoom);
+/**
+ * Return the deterministic 2D axes and path scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _axes_2d_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "path_axes_2d",
+        .title = "path_axes_2d",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
 
-    dvz_app_run(app, example_frame_count_any(argc, argv));
-    ret = 0;
 
-cleanup:
-    example_debug_uninstall(&debug);
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the deterministic 2D axes and path feature proof through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _axes_2d_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
