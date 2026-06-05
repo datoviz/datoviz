@@ -4167,13 +4167,22 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
 
     DvzComposite* composite = dvz_polygon_set_composite(set, 0);
     ANN(composite);
-    AT(dvz_panel_add_composite(panel, composite, NULL) == 0);
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.z_layer = 3;
+    attach.coord_space = DVZ_COORD_DATA;
+    AT(dvz_panel_add_composite(panel, composite, &attach) == 0);
     AT(panel->visual_count == 2);
 
     DvzVisual* fill = dvz_composite_visual(composite, "fill");
     DvzVisual* stroke = dvz_composite_visual(composite, "stroke");
     ANN(fill);
     ANN(stroke);
+    AT(panel->visuals[0].visual == fill);
+    AT(panel->visuals[0].z_layer == 3);
+    AT(panel->visuals[0].coord_space == DVZ_COORD_DATA);
+    AT(panel->visuals[1].visual == stroke);
+    AT(panel->visuals[1].z_layer == 4);
+    AT(panel->visuals[1].coord_space == DVZ_COORD_DATA);
 
     DvzVisualDataView position_view = {0};
     AT(dvz_visual_data(fill, "position", &position_view) == 0);
