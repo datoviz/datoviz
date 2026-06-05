@@ -44,6 +44,7 @@
 #define DVZ_WASM_VISUAL_PIXEL 2
 #define DVZ_WASM_VISUAL_MARKER 3
 #define DVZ_WASM_VISUAL_SEGMENT 4
+#define DVZ_WASM_VISUAL_PATH 5
 #define DVZ_WASM_VISUAL_IMAGE 6
 #define DVZ_WASM_VISUAL_MESH 7
 #define DVZ_WASM_VISUAL_PRIMITIVE 9
@@ -375,6 +376,9 @@ uint32_t dvz_wasm_api_visual(uint32_t scene_handle, uint32_t visual_type, uint32
         break;
     case DVZ_WASM_VISUAL_SEGMENT:
         visual->visual = dvz_segment(scene->scene, flags);
+        break;
+    case DVZ_WASM_VISUAL_PATH:
+        visual->visual = dvz_path(scene->scene, flags);
         break;
     case DVZ_WASM_VISUAL_PRIMITIVE:
         visual->visual = dvz_primitive(scene->scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);

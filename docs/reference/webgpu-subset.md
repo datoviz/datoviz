@@ -23,6 +23,7 @@ Supported visual and interaction families:
 - pixel visuals;
 - basic built-in marker visuals;
 - basic segment visuals;
+- basic path visuals;
 - primitive triangle-list visuals;
 - RGBA8 2D image visuals;
 - basic and textured mesh visuals;
@@ -32,8 +33,8 @@ Supported visual and interaction families:
 
 Supported browser pages:
 
-- `examples/webgpu/examples.html?demo=wasm-2d`: point + pixel + marker + segment + primitive +
-  image + mesh + panzoom;
+- `examples/webgpu/examples.html?demo=wasm-2d`: point + pixel + marker + segment + path +
+  primitive + image + mesh + panzoom;
 - `examples/webgpu/examples.html?demo=wasm-3d`: basic sphere + textured 3D mesh + camera +
   arcball;
 - `examples/webgpu/fixtures.html`: DRP2 fixture dashboard for the pure browser WebGPU runner,
@@ -75,7 +76,7 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Setup/update/frame resource model | active through split binary packets and retained browser runtime state |
 | WGSL shader modules | supported and required for portable browser execution |
 | Vulkan-specific modules and presentation | unsupported in WASM; native-only |
-| Scene visual parity | limited to point, pixel, basic marker, basic segment, primitive, RGBA8 image, basic/textured mesh, and basic sphere demos |
+| Scene visual parity | limited to point, pixel, basic marker, basic segment, basic path, primitive, RGBA8 image, basic/textured mesh, and basic sphere demos |
 | Controller parity | limited to panzoom and one 3D arcball proof |
 | Compute-to-render parity | experimental; fixture coverage exists, gallery-level behavior remains a separate release lane |
 | Query/picking/readback scene parity | deferred for live WASM scenes |
@@ -92,9 +93,9 @@ The browser path intentionally does not support:
 - GLSL/SPIR-V browser shader translation;
 - native scene/app parity;
 - custom shader APIs;
-- text, labels, axes, colorbars, scale bars, picking, readback, volume, path joins/caps,
-  broad stroke parity, sphere raycast/depth/material parity, and advanced technique parity in the
-  WASM scene demos;
+- text, labels, axes, colorbars, scale bars, picking, readback, volume, path cap/subpath controls,
+  broad stroke/vector parity, sphere raycast/depth/material parity, and advanced technique parity
+  in the WASM scene demos;
 - zero-copy payload transport;
 - stable public JS/TS bindings for the WASM scene ABI.
 
@@ -174,7 +175,7 @@ Expected manual results for the current subset:
 - fixture dashboard: all committed rows pass, no unsupported rows, no failures;
 - fixture dashboard WASM Scene Smoke section: 2D point/pixel/marker/segment update, 2D image texture
   resize reload, and 3D sphere/textured mesh update rows pass;
-- 2D WASM example: point, pixel, marker, segment, primitive, image, and mesh content render;
+- 2D WASM example: point, pixel, marker, segment, path, primitive, image, and mesh content render;
   pan/zoom and resize work;
 - 3D WASM example: sphere impostors and a textured cube render; arcball drag, wheel zoom, and
   resize work.
@@ -190,6 +191,19 @@ Last local release proof recorded on 2026-06-04:
   negative fixtures passed;
 - `just wasm-scene-smoke`: 2D and 3D WASM scene streams emitted, preflighted, and replayed by the
   JS runner smoke;
+- `just webgpu-browser-smoke`: 2D and 3D WASM pages rendered, browser interaction was exercised,
+  and dashboard WASM scene checks reported `2 pass, 0 fail`.
+
+Path promotion proof recorded on 2026-06-05:
+
+- `python3 tools/check_scene_shader_abi.py`: passed;
+- `just test test_scene_path_line_width_emit_glsl`: passed;
+- `just webgpu-fixture-preflight`: `39` passed, `0` failed;
+- `just webgpu-runner-smoke`: `37` positive fixtures, `2` WebGPU streams, and `82` semantic
+  negative fixtures passed;
+- `just wasm-scene-smoke`: 2D point/pixel/marker/segment/path/primitive/image/mesh + panzoom and
+  3D sphere/textured mesh/arcball WASM scene streams emitted, preflighted, and replayed by the JS
+  runner smoke;
 - `just webgpu-browser-smoke`: 2D and 3D WASM pages rendered, browser interaction was exercised,
   and dashboard WASM scene checks reported `2 pass, 0 fail`.
 

@@ -84,8 +84,8 @@ window, stream, video, native app, GUI, CUDA, native DVZR tools, and shaderc/dlo
 Closed first-slice milestone:
 
 1. `src/wasm/scene_api.c` exports a generic handle-based scene/figure/panel/visual/controller API.
-2. The browser scene slices create point, pixel, marker, segment, primitive, image, mesh, sphere,
-   panzoom, camera, and arcball objects through the generic ABI.
+2. The browser scene slices create point, pixel, marker, segment, path, primitive, image, mesh,
+   sphere, panzoom, camera, and arcball objects through the generic ABI.
 3. Scene emission can request WGSL, target the external browser canvas format, return DRP2 JSON,
    and feed the browser WebGPU runtime.
 4. `just wasm-scene-smoke` builds the Emscripten target, emits 2D and 3D generic ABI streams, and
@@ -313,8 +313,8 @@ bridge:
 
 1. build a WASM module containing portable scene and DRP2 stream emission;
 2. from browser JavaScript, create one scene, one figure, one panel, and point, pixel, marker,
-   basic segment, primitive triangle-list, RGBA8 image, basic/textured mesh, and basic sphere
-   visuals;
+   basic segment, basic path, primitive triangle-list, RGBA8 image, basic/textured mesh, and basic
+   sphere visuals;
 3. request WGSL scene emission with an external browser canvas color target;
 4. submit the emitted DRP2 stream to the WebGPU runtime;
 5. render points using the portable WebGPU lowering selected by scene emission.
@@ -325,7 +325,7 @@ controllers, resize/pointer/wheel routing, and emitted split DRP2 packets.
 Current evidence as of 2026-06-05:
 
 1. `just wasm-scene-smoke` builds the Emscripten scene ABI, emits
-   `build-wasm-scene/wasm/wasm_api_scene_point_pixel_marker_segment_primitive_image_mesh_panzoom.json` and
+   `build-wasm-scene/wasm/wasm_api_scene_point_pixel_marker_segment_path_primitive_image_mesh_panzoom.json` and
    `build-wasm-scene/wasm/wasm_api_scene_sphere_textured_mesh3d_arcball.json`, and passes WebGPU
    fixture preflight.
 2. The browser demo entry point is `examples/webgpu/examples.html`, with `demo=wasm-2d` and
@@ -347,9 +347,9 @@ Current evidence as of 2026-06-05:
 8. Manual local browser proof after the unified examples host split confirms both release-visible
    demos render and interact through `examples/webgpu/examples.html`.
 
-The supported browser-scene subset now covers point, pixel, basic marker, basic segment, primitive
-triangle-list, RGBA8 image, basic/textured mesh, basic sphere, panzoom, and a first 3D sphere +
-textured mesh + arcball scene. The browser wrapper passes normalized WebGPU limits into the WASM
+The supported browser-scene subset now covers point, pixel, basic marker, basic segment, basic
+path, primitive triangle-list, RGBA8 image, basic/textured mesh, basic sphere, panzoom, and a first
+3D sphere + textured mesh + arcball scene. The browser wrapper passes normalized WebGPU limits into the WASM
 scene emitter before figure creation, and the old direct browser-side panzoom uniform mutation path
 has been retired from the release-visible demos. Retained browser runtime stress now tracks
 browser-owned frame resources and retires submitted references after explicit queue completion in

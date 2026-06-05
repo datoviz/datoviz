@@ -71,16 +71,17 @@ The current browser path proves:
 3. pixel visual;
 4. basic built-in marker visual;
 5. basic segment visual;
-6. primitive triangle-list visual;
-7. RGBA8 image visual;
-8. basic and textured mesh visual;
-9. basic sphere visual;
-10. 2D panzoom input;
-11. one 3D sphere + textured mesh scene with camera and arcball input;
-12. WebGPU runner execution for the committed DRP2 fixture subset;
-13. semantic negative-fixture parity in the WebGPU runner;
-14. compute and `ResourceBarrier` at DRP2 fixture level;
-15. browser evidence through `examples/webgpu/examples.html` and `examples/webgpu/fixtures.html`.
+6. basic path visual;
+7. primitive triangle-list visual;
+8. RGBA8 image visual;
+9. basic and textured mesh visual;
+10. basic sphere visual;
+11. 2D panzoom input;
+12. one 3D sphere + textured mesh scene with camera and arcball input;
+13. WebGPU runner execution for the committed DRP2 fixture subset;
+14. semantic negative-fixture parity in the WebGPU runner;
+15. compute and `ResourceBarrier` at DRP2 fixture level;
+16. browser evidence through `examples/webgpu/examples.html` and `examples/webgpu/fixtures.html`.
 
 This is an experimental subset, not native Vulkan feature parity.
 
@@ -181,7 +182,7 @@ that family until earlier rows are stable.
 | mesh | basic/textured/lit mesh paths | basic and textured mesh current; lit/material variants next | current/next | keep texture-sampling evidence; promote lit/material subset with WGSL proof |
 | pixel | retained pixel visual | dense 2D pixel visual | current | keep fixture/browser evidence and promote buffer-backed attrs with point |
 | marker | retained marker visual | built-in marker subset current; glyph/atlas subset next | current/next | keep built-in marker evidence; settle atlas variants and picking diagnostics |
-| segment/path/stroke | retained path and stroke-shaped paths | basic segment current; portable path/stroke subset next | current/next | keep basic segment evidence; settle joins/caps policy and path browser proof |
+| segment/path/stroke | retained path and stroke-shaped paths | basic segment and basic path current; broader stroke/vector parity next | current/next | keep basic segment/path evidence; settle cap/subpath/vector policy and browser proof |
 | text/glyph | retained text and glyph visuals | MSDF or bitmap text subset | later | font/atlas packaging, WGSL text shaders, shaping limits |
 | labels | label field and readback paths | label rendering and label probe subset | later | texture/label formats, query/readback, diagnostics |
 | sphere | sphere impostor visual | basic sphere impostor current; raycast/depth/material parity next | current/next | keep WGSL/browser evidence; promote native-depth and material variants with parity proof |

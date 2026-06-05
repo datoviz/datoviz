@@ -8,7 +8,7 @@ import { decodeDrp2Packet } from "../web/drp2/packet.js";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs");
 const browserWrapperPath = resolve(root, "web/wasm/scene.js");
-const output2dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_point_pixel_marker_segment_primitive_image_mesh_panzoom.json");
+const output2dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_point_pixel_marker_segment_path_primitive_image_mesh_panzoom.json");
 const output3dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_sphere_textured_mesh3d_arcball.json");
 
 const DVZ_POINTER_EVENT_PRESS = 1;
@@ -24,6 +24,7 @@ const DVZ_WASM_VISUAL_POINT = 1;
 const DVZ_WASM_VISUAL_PIXEL = 2;
 const DVZ_WASM_VISUAL_MARKER = 3;
 const DVZ_WASM_VISUAL_SEGMENT = 4;
+const DVZ_WASM_VISUAL_PATH = 5;
 const DVZ_WASM_VISUAL_IMAGE = 6;
 const DVZ_WASM_VISUAL_MESH = 7;
 const DVZ_WASM_VISUAL_PRIMITIVE = 9;
@@ -463,6 +464,7 @@ function expect2DSceneStreamShape(stream, label) {
   expectDraw(stream, 6, 6, `${label} pixel`);
   expectDraw(stream, 6, 4, `${label} marker`);
   expectDrawIndexed(stream, 18, 1, `${label} segment`);
+  expectDrawIndexed(stream, 24, 1, `${label} path`);
   expectDraw(stream, 3, 1, `${label} primitive`);
   expectDraw(stream, 4, 1, `${label} image`);
   expectDraw(stream, 6, 1, `${label} mesh`);
@@ -532,6 +534,25 @@ function expect2DSceneStreamShape(stream, label) {
       ]),
     `${label} segment: unexpected vertex attributes`,
   );
+  const pathPipeline = expectPipeline(
+    stream,
+    `${label} path`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.path",
+  );
+  requireOk(pathPipeline.topology === "triangle-list", `${label} path: unexpected topology`);
+  requireOk(
+    JSON.stringify(pipelineAttributeFormats(pathPipeline)) ===
+      JSON.stringify([
+        { stepMode: "vertex", formats: ["float32x3"] },
+        { stepMode: "vertex", formats: ["float32x3"] },
+        { stepMode: "vertex", formats: ["float32x3"] },
+        { stepMode: "vertex", formats: ["unorm8x4"] },
+        { stepMode: "vertex", formats: ["float32"] },
+        { stepMode: "vertex", formats: ["uint32"] },
+        { stepMode: "vertex", formats: ["float32"] },
+      ]),
+    `${label} path: unexpected vertex attributes`,
+  );
   const primitivePipeline = expectPipeline(
     stream,
     `${label} primitive`,
@@ -599,8 +620,8 @@ function expect2DSceneStreamShape(stream, label) {
   );
   requireOk(writes[0].bytes_per_row === 32, `${label}: unexpected image upload row pitch`);
   requireOk(
-    commandsOf(stream, "CreateRenderPipeline").length === 7,
-    `${label}: expected point, pixel, marker, segment, primitive, image, and mesh pipelines`,
+    commandsOf(stream, "CreateRenderPipeline").length === 8,
+    `${label}: expected point, pixel, marker, segment, path, primitive, image, and mesh pipelines`,
   );
 }
 
@@ -611,6 +632,7 @@ function expect2DUpdateStreamShape(stream, label, pointInstances = 5) {
   expectDraw(stream, 6, 6, `${label} pixel`);
   expectDraw(stream, 6, 4, `${label} marker`);
   expectDrawIndexed(stream, 18, 1, `${label} segment`);
+  expectDrawIndexed(stream, 24, 1, `${label} path`);
   expectDraw(stream, 3, 1, `${label} primitive`);
   expectDraw(stream, 4, 1, `${label} image`);
   expectDraw(stream, 6, 1, `${label} mesh`);
@@ -911,6 +933,21 @@ try {
   const segmentEnds = new Float32Array([-0.58, -0.38, 0.08, -0.28, -0.50, 0.08, -0.02, -0.30, 0.08]);
   const segmentColors = new Uint8Array([80, 205, 245, 230, 245, 165, 75, 230, 135, 225, 150, 230]);
   const segmentWidths = new Float32Array([4, 7, 5]);
+  const pathPositions = new Float32Array([
+    -0.84, 0.12, 0.12,
+    -0.66, 0.32, 0.12,
+    -0.42, 0.18, 0.12,
+    -0.22, 0.46, 0.12,
+    -0.02, 0.22, 0.12,
+  ]);
+  const pathColors = new Uint8Array([
+    70, 235, 180, 230,
+    100, 210, 245, 230,
+    170, 150, 245, 230,
+    245, 125, 175, 230,
+    245, 180, 90, 230,
+  ]);
+  const pathWidths = new Float32Array([5, 7, 6, 8, 5]);
   const primitivePositions = new Float32Array([-0.85, -0.7, 0.15, -0.15, -0.7, 0.15, -0.5, 0.1, 0.15]);
   const primitiveColors = new Uint8Array([255, 120, 90, 220, 255, 180, 90, 220, 255, 90, 150, 220]);
   const imageWidth = 8;
@@ -942,6 +979,8 @@ try {
     allocArray(Module, markerSymbols),
     allocArray(Module, segmentStarts), allocArray(Module, segmentEnds),
     allocArray(Module, segmentColors), allocArray(Module, segmentWidths),
+    allocArray(Module, pathPositions), allocArray(Module, pathColors),
+    allocArray(Module, pathWidths),
     allocArray(Module, primitivePositions), allocArray(Module, primitiveColors),
     allocArray(Module, imagePositions), allocArray(Module, imageTexcoords), allocArray(Module, imagePixels),
     allocArray(Module, meshPositions), allocArray(Module, meshColors), allocArray(Module, meshNormals),
@@ -979,21 +1018,27 @@ try {
     setF32(Module, segment, strokeWidthNamePtr, ptrs[14], segmentWidths.length, "api segment width");
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, segment), 0, "api add segment");
 
+    const path = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_PATH, 0);
+    setF32(Module, path, positionNamePtr, ptrs[15], pathPositions.length / 3, "api path position");
+    setRGBA8(Module, path, colorNamePtr, ptrs[16], pathColors.length / 4, "api path color");
+    setF32(Module, path, strokeWidthNamePtr, ptrs[17], pathWidths.length, "api path width");
+    expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, path), 0, "api add path");
+
     const primitive = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_PRIMITIVE, 0);
-    setF32(Module, primitive, positionNamePtr, ptrs[15], primitivePositions.length / 3, "api primitive position");
-    setRGBA8(Module, primitive, colorNamePtr, ptrs[16], primitiveColors.length / 4, "api primitive color");
+    setF32(Module, primitive, positionNamePtr, ptrs[18], primitivePositions.length / 3, "api primitive position");
+    setRGBA8(Module, primitive, colorNamePtr, ptrs[19], primitiveColors.length / 4, "api primitive color");
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, primitive), 0, "api add primitive");
 
     const image = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_IMAGE, 0);
-    setF32(Module, image, positionNamePtr, ptrs[17], imagePositions.length / 3, "api image position");
-    setF32(Module, image, texcoordsNamePtr, ptrs[18], imageTexcoords.length / 2, "api image texcoords");
-    expectStatus(Module._dvz_wasm_api_visual_set_texture_rgba8(image, ptrs[19], imageWidth, imageHeight), 0, "api image texture");
+    setF32(Module, image, positionNamePtr, ptrs[20], imagePositions.length / 3, "api image position");
+    setF32(Module, image, texcoordsNamePtr, ptrs[21], imageTexcoords.length / 2, "api image texcoords");
+    expectStatus(Module._dvz_wasm_api_visual_set_texture_rgba8(image, ptrs[22], imageWidth, imageHeight), 0, "api image texture");
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, image), 0, "api add image");
 
     const mesh = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_MESH, 0);
-    setF32(Module, mesh, positionNamePtr, ptrs[20], meshPositions.length / 3, "api mesh position");
-    setRGBA8(Module, mesh, colorNamePtr, ptrs[21], meshColors.length / 4, "api mesh color");
-    setF32(Module, mesh, normalNamePtr, ptrs[22], meshNormals.length / 3, "api mesh normal");
+    setF32(Module, mesh, positionNamePtr, ptrs[23], meshPositions.length / 3, "api mesh position");
+    setRGBA8(Module, mesh, colorNamePtr, ptrs[24], meshColors.length / 4, "api mesh color");
+    setF32(Module, mesh, normalNamePtr, ptrs[25], meshNormals.length / 3, "api mesh normal");
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, mesh), 0, "api add mesh");
 
     const panzoom = Module._dvz_wasm_api_controller(scene, DVZ_CONTROLLER_TYPE_PANZOOM);

@@ -7,6 +7,7 @@ export const demo = {
     addPixels(scene, panel);
     addMarkers(scene, panel);
     addSegments(scene, panel);
+    addPath(scene, panel);
     addPrimitive(scene, panel);
     addImage(scene, panel);
     addMesh(scene, panel);
@@ -130,6 +131,31 @@ function addSegments(scene, panel) {
   segments.setRGBA8("color", colors, count);
   segments.setF32("stroke_width", widths, count);
   scene.addVisual(panel, segments);
+}
+
+function addPath(scene, panel) {
+  const count = 5;
+  const positions = new Float32Array([
+    -0.84, 0.12, 0.12,
+    -0.66, 0.32, 0.12,
+    -0.42, 0.18, 0.12,
+    -0.22, 0.46, 0.12,
+    -0.02, 0.22, 0.12,
+  ]);
+  const colors = new Uint8Array([
+    70, 235, 180, 230,
+    100, 210, 245, 230,
+    170, 150, 245, 230,
+    245, 125, 175, 230,
+    245, 180, 90, 230,
+  ]);
+  const widths = new Float32Array([5, 7, 6, 8, 5]);
+
+  const path = scene.visual("path");
+  path.setF32("position", positions, count);
+  path.setRGBA8("color", colors, count);
+  path.setF32("stroke_width", widths, count);
+  scene.addVisual(panel, path);
 }
 
 function addPrimitive(scene, panel) {
