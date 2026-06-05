@@ -20,6 +20,10 @@ DEFAULT_IMAGE_DIR = ROOT / "docs/images/gallery"
 SOURCE_BASE_URL = "https://github.com/datoviz/datoviz/blob/v0.4-dev"
 PUBLIC_LANES = ("visuals", "features", "workflows", "composites", "showcases", "scientific")
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
+PYTHON_SOURCE_BY_ID = {
+    "point_2d": "examples/python/raw/offscreen_point.py",
+    "showcase_gpu_particle_smoke": "examples/python/features/cupy_particles.py",
+}
 
 PAGE_CONFIG = {
     "visual-gallery.md": {
@@ -76,6 +80,7 @@ class Example:
     summary: str
     dataset: dict
     encoding: dict
+    python_source: str | None
 
     @property
     def source_path(self) -> Path:
@@ -97,6 +102,12 @@ class Example:
     @property
     def image_ref(self) -> str:
         return f"../images/gallery/{self.lane}/{self.id}.png"
+
+    @property
+    def python_source_path(self) -> Path | None:
+        if self.python_source is None:
+            return None
+        return ROOT / self.python_source
 
 
 def parse_args() -> argparse.Namespace:
@@ -173,6 +184,7 @@ def collect_examples(manifest: dict) -> list[Example]:
             summary=extract_c_summary(ROOT / source),
             dataset=entry.get("dataset") or {},
             encoding=entry.get("encoding") or {},
+            python_source=PYTHON_SOURCE_BY_ID.get(str(entry["id"])),
         )
         examples.append(example)
     return examples
@@ -208,6 +220,20 @@ def media_block(example: Example, image_dir: Path, depth: int = 0) -> str:
     if image.exists():
         return f"![{example.title}]({rel_prefix}../images/gallery/{example.lane}/{example.id}.png)"
     return "_Media pending._"
+
+
+def render_source_tabs(example: Example) -> list[str]:
+    lines = ["## Source", ""]
+    lines.extend(['=== "C"', "", "    ```c"])
+    lines.append(f'    --8<-- "{example.source}"')
+    lines.extend(["    ```", ""])
+
+    if example.python_source is not None and example.python_source_path is not None:
+        lines.extend(['=== "Python"', "", "    ```python"])
+        lines.append(f'    --8<-- "{example.python_source}"')
+        lines.extend(["    ```", ""])
+
+    return lines
 
 
 def render_card(example: Example, docs_dir: Path, image_dir: Path) -> str:
@@ -392,18 +418,25 @@ def render_validation(examples: list[Example], docs_dir: Path) -> None:
 def render_example_page(example: Example, docs_dir: Path, image_dir: Path) -> None:
     lines = generated_header(example.title)
     lines.extend([example.summary, ""])
-    lines.extend(
+    metadata = [
+        f"- ID: `{example.id}`",
+        f"- Lane: `{example.lane}`",
+        f"- Status: `{example.status}`",
+        f"- Source: [`{example.source}`]({source_url(example)})",
+    ]
+    if example.python_source is not None:
+        metadata.append(
+            f"- Python source: [`{example.python_source}`]({SOURCE_BASE_URL}/{example.python_source})",
+        )
+    metadata.extend(
         [
-            f"- ID: `{example.id}`",
-            f"- Lane: `{example.lane}`",
-            f"- Status: `{example.status}`",
-            f"- Source: [`{example.source}`]({source_url(example)})",
             f"- Build: `just example-c {example.rel_executable}`",
             f"- Smoke: `./build/examples/c/{example.rel_executable} --png`",
             f"- Validation: `{example.validation}`",
-            "",
         ]
     )
+    lines.extend(metadata)
+    lines.append("")
     if example.features:
         lines.extend(["## Features", ""])
         lines.append(", ".join(f"`{feature}`" for feature in example.features))
@@ -423,8 +456,10 @@ def render_example_page(example: Example, docs_dir: Path, image_dir: Path) -> No
         [
             "Static screenshots are required before final website publication. Generated media is",
             "prepared separately from this page and should not be staged without explicit approval.",
+            "",
         ]
     )
+    lines.extend(render_source_tabs(example))
     write_text(docs_dir / example.page_path, "\n".join(lines))
 
 

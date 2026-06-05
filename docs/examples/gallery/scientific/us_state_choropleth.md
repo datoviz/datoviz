@@ -43,3 +43,11 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Source
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/scientific/choropleth.c"
+    ```
