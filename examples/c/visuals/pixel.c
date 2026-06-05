@@ -10,9 +10,8 @@
  * Style: visuals, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c visuals/pixel
- * Run:    ./build/examples/c/visuals/pixel
- * Smoke:  ./build/examples/c/visuals/pixel 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/visuals/pixel 1
+ * Run:    ./build/examples/c/visuals/pixel --live
+ * Smoke:  ./build/examples/c/visuals/pixel --png
  */
 
 
@@ -27,10 +26,9 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -45,6 +43,19 @@
 #define PIXEL_COUNT (GRID_WIDTH * GRID_HEIGHT)
 
 static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct PixelVisualState
+{
+    vec3* positions;
+    float* values;
+    float* sizes;
+} PixelVisualState;
 
 
 
@@ -111,12 +122,150 @@ static void _fill_pixels(
 
 
 
+/**
+ * Free the retained pixel buffers.
+ *
+ * @param state pixel visual state
+ */
+static void _free_state(PixelVisualState* state)
+{
+    if (state == NULL)
+        return;
+    dvz_free(state->sizes);
+    dvz_free(state->values);
+    dvz_free(state->positions);
+    dvz_free(state);
+}
+
+
+
+/*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Initialize the retained pixel visual scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
+
+    PixelVisualState* state = (PixelVisualState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+
+    state->positions = (vec3*)dvz_calloc(PIXEL_COUNT, sizeof(*state->positions));
+    state->values = (float*)dvz_calloc(PIXEL_COUNT, sizeof(*state->values));
+    state->sizes = (float*)dvz_calloc(PIXEL_COUNT, sizeof(*state->sizes));
+    if (state->positions == NULL || state->values == NULL || state->sizes == NULL)
+        goto error;
+
+    _fill_pixels(state->positions, state->values, state->sizes);
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        goto error;
+
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        goto error;
+    example_graphite_cyan_set_panel_background(panel);
+
+    DvzVisual* visual = dvz_pixel(ctx->scene, 0);
+    if (visual == NULL)
+        goto error;
+
+    int rc = dvz_visual_set_attr_format(visual, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32);
+    if (rc != 0)
+        goto error;
+
+    DvzScale* color_scale = example_graphite_cyan_color_scale(ctx->scene, 0.0, 1.0);
+    if (color_scale == NULL)
+        goto error;
+
+    rc = dvz_visual_set_scale(visual, "color", color_scale);
+    if (rc != 0)
+        goto error;
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = state->positions, .item_count = PIXEL_COUNT},
+        {.attr_name = "color", .data = state->values, .item_count = PIXEL_COUNT},
+        {.attr_name = "pixel_size", .data = state->sizes, .item_count = PIXEL_COUNT},
+    };
+    rc = dvz_visual_set_data_many(visual, updates, 3);
+    if (rc != 0)
+        goto error;
+
+    rc = dvz_visual_set_depth_test(visual, false);
+    if (rc != 0)
+        goto error;
+
+    rc = dvz_panel_add_visual(panel, visual, NULL);
+    if (rc != 0)
+        goto error;
+
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    if (panzoom == NULL)
+        goto error;
+
+    if (out_user != NULL)
+        *out_user = state;
+    return true;
+
+error:
+    _free_state(state);
+    return false;
+}
+
+
+
+/**
+ * Destroy the retained pixel visual scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    _free_state((PixelVisualState*)user);
+}
+
+
+
+/**
+ * Return the pixel visual scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _pixel_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "visual_pixel",
+        .title = "visual_pixel",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 /**
- * Run the retained pixel visual example.
+ * Run the retained pixel visual example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -124,80 +273,6 @@ static void _fill_pixels(
  */
 int main(int argc, char** argv)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    vec3* positions = NULL;
-    float* values = NULL;
-    float* sizes = NULL;
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("visual_pixel");
-
-    positions = (vec3*)dvz_calloc(PIXEL_COUNT, sizeof(*positions));
-    values = (float*)dvz_calloc(PIXEL_COUNT, sizeof(*values));
-    sizes = (float*)dvz_calloc(PIXEL_COUNT, sizeof(*sizes));
-    EXAMPLE_CHECK(positions != NULL && values != NULL && sizes != NULL, "pixel allocation failed");
-
-    _fill_pixels(positions, values, sizes);
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    example_graphite_cyan_set_panel_background(panel);
-
-    DvzVisual* visual = dvz_pixel(scene, 0);
-    EXAMPLE_CHECK(visual != NULL, "dvz_pixel() failed");
-
-    int rc = dvz_visual_set_attr_format(visual, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_attr_format() failed");
-
-    DvzScale* color_scale = example_graphite_cyan_color_scale(scene, 0.0, 1.0);
-    EXAMPLE_CHECK(color_scale != NULL, "example_graphite_cyan_color_scale() failed");
-
-    rc = dvz_visual_set_scale(visual, "color", color_scale);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_scale() failed");
-
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = PIXEL_COUNT},
-        {.attr_name = "color", .data = values, .item_count = PIXEL_COUNT},
-        {.attr_name = "pixel_size", .data = sizes, .item_count = PIXEL_COUNT},
-    };
-    rc = dvz_visual_set_data_many(visual, updates, 3);
-    EXAMPLE_CHECK(rc == 0, "pixel data upload failed");
-
-    rc = dvz_visual_set_depth_test(visual, false);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_depth_test() failed");
-
-    rc = dvz_panel_add_visual(panel, visual, NULL);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_pixel");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
-    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
-
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    dvz_free(sizes);
-    dvz_free(values);
-    dvz_free(positions);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    DvzScenarioSpec spec = _pixel_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
