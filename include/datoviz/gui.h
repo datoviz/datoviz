@@ -72,6 +72,7 @@ typedef struct DvzGuiConfig
     uint32_t struct_size;
     uint32_t flags;
     uint32_t gui_flags;
+    /* ImGui .ini path, or NULL to disable persisted GUI window state. */
     const char* ini_path;
     DvzFontDefaults font_defaults;
 } DvzGuiConfig;

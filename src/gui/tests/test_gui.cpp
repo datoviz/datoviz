@@ -231,6 +231,7 @@ static int test_gui_config_font_defaults(TstContext* suite, const TstCase* item)
     AT(config.flags == 0);
     AT((config.gui_flags & DVZ_GUI_FLAGS_DOCKING) != 0);
     AT((config.gui_flags & DVZ_GUI_FLAGS_DOCKSPACE) != 0);
+    AT(config.ini_path == NULL);
     AT(strcmp(config.font_defaults.sans.family, defaults.sans.family) == 0);
     AT(strcmp(config.font_defaults.sans.style, defaults.sans.style) == 0);
     AT(strcmp(config.font_defaults.mono.family, defaults.mono.family) == 0);

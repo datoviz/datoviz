@@ -1152,7 +1152,7 @@ int test_scene_msaa_ssao_blended_overlay_runtime_lowering(TstContext* suite, con
         panel,
         &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc),
                        .enabled = true,
-                       .sample_count = 4,
+                       .sample_count = 16,
                        .alpha_to_coverage = true}));
     AT(_scene_technique_state_set_ssao(
         &panel->techniques,
@@ -1163,24 +1163,28 @@ int test_scene_msaa_ssao_blended_overlay_runtime_lowering(TstContext* suite, con
                             .sample_count = 16,
                             .blur_enabled = true}));
 
-    DvzVisual* sphere = dvz_sphere(scene, 0);
+    DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     AT(sphere != NULL);
+    AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
     vec3 sphere_positions[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor sphere_colors[1] = {{255, 128, 64, 255}};
-    float sphere_sizes[1] = {0.35f};
+    float sphere_radii[1] = {0.35f};
     AT(dvz_visual_set_data(sphere, "position", sphere_positions, 1) == 0);
     AT(dvz_visual_set_data(sphere, "color", sphere_colors, 1) == 0);
-    AT(dvz_visual_set_data(sphere, "size", sphere_sizes, 1) == 0);
+    AT(dvz_visual_set_data(sphere, "radius", sphere_radii, 1) == 0);
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
 
-    DvzVisual* overlay = dvz_point(scene, 0);
+    DvzVisual* overlay = dvz_segment(scene, 0);
     AT(overlay != NULL);
-    vec3 overlay_positions[2] = {{-0.25f, 0.0f, 0.2f}, {0.25f, 0.0f, 0.2f}};
+    vec3 overlay_starts[2] = {{-0.35f, 0.0f, 0.2f}, {0.0f, -0.35f, 0.2f}};
+    vec3 overlay_ends[2] = {{+0.35f, 0.0f, 0.2f}, {0.0f, +0.35f, 0.2f}};
     DvzColor overlay_colors[2] = {{0, 255, 255, 160}, {0, 255, 255, 160}};
-    float overlay_sizes[2] = {8.0f, 8.0f};
-    AT(dvz_visual_set_data(overlay, "position", overlay_positions, 2) == 0);
+    float overlay_widths[2] = {8.0f, 8.0f};
+    AT(dvz_visual_set_data(overlay, "position_start", overlay_starts, 2) == 0);
+    AT(dvz_visual_set_data(overlay, "position_end", overlay_ends, 2) == 0);
     AT(dvz_visual_set_data(overlay, "color", overlay_colors, 2) == 0);
-    AT(dvz_visual_set_data(overlay, "size", overlay_sizes, 2) == 0);
+    AT(dvz_visual_set_data(overlay, "stroke_width", overlay_widths, 2) == 0);
+    AT(dvz_segment_set_caps(overlay, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) == 0);
     AT(dvz_visual_set_depth_test(overlay, false) == 0);
     AT(dvz_visual_set_alpha_mode(overlay, DVZ_ALPHA_BLENDED) == 0);
     AT(dvz_panel_add_visual(panel, overlay, NULL) == 0);

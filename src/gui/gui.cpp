@@ -1192,8 +1192,7 @@ DvzGui* _dvz_gui_create(
     _gui_set_current(gui);
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    if (gui->config.ini_path != NULL)
-        io.IniFilename = gui->config.ini_path;
+    io.IniFilename = gui->config.ini_path;
     _gui_load_fonts(gui);
     ImGui::StyleColorsDark();
 

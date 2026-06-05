@@ -2971,6 +2971,18 @@ static void _app_canvas_config_apply_present_mode_env(DvzCanvasConfig* ccfg)
 
 
 
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+static void _app_render_gui_frame(DvzView* win, const DvzStreamFrame* frame)
+{
+    ANN(win);
+    ANN(frame);
+    if (win->gui != NULL)
+        _dvz_gui_render_frame(win->gui, frame);
+}
+#endif
+
+
+
 static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data)
 {
     (void)canvas;
@@ -3007,6 +3019,9 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     if (!dvz_drp2_runtime_attach_frame_target(app->runtime, win->target_id, frame))
     {
         log_error("_app_draw failed to attach canvas frame target");
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+        _app_render_gui_frame(win, frame);
+#endif
         return;
     }
 
@@ -3044,6 +3059,9 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         uint32_t n = dvz_diagnostic_report_count(&report);
         for (uint32_t i = 0; i < n; i++)
             log_error("_app_draw emit failed: %s", dvz_diagnostic_report_get(&report, i));
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+        _app_render_gui_frame(win, frame);
+#endif
         return;
     }
 
@@ -3063,8 +3081,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     dvz_drp2_stream_destroy(stream);
 
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
-    if (win->gui != NULL)
-        _dvz_gui_render_frame(win->gui, frame);
+    _app_render_gui_frame(win, frame);
 #endif
 
     if (win->frame_callback != NULL && _app_frame_callback_allowed(win))
