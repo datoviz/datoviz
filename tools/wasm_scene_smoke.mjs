@@ -27,6 +27,7 @@ const DVZ_WASM_VISUAL_SEGMENT = 4;
 const DVZ_WASM_VISUAL_PATH = 5;
 const DVZ_WASM_VISUAL_IMAGE = 6;
 const DVZ_WASM_VISUAL_MESH = 7;
+const DVZ_WASM_VISUAL_GLYPH = 8;
 const DVZ_WASM_VISUAL_PRIMITIVE = 9;
 const DVZ_WASM_VISUAL_SPHERE = 10;
 const DVZ_MATERIAL_MODEL_STANDARD = 2;
@@ -482,6 +483,7 @@ function expect2DSceneStreamShape(stream, label) {
   expectDrawIndexed(stream, 24, 1, `${label} path`);
   expectDraw(stream, 3, 1, `${label} primitive`);
   expectDraw(stream, 4, 1, `${label} image`);
+  expectDraw(stream, 18, 1, `${label} glyph`);
   expectDraw(stream, 6, 1, `${label} mesh`);
   const pointPipeline = expectPipeline(
     stream,
@@ -600,6 +602,24 @@ function expect2DSceneStreamShape(stream, label) {
     `${label} image: unexpected vertex attributes`,
   );
   expectDepthPipeline(imagePipeline, `${label} image`, false, "always");
+  const glyphPipeline = expectPipeline(
+    stream,
+    `${label} glyph`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  requireOk(glyphPipeline.topology === "triangle-list", `${label} glyph: unexpected topology`);
+  requireOk(
+    JSON.stringify(pipelineAttributeFormats(glyphPipeline)) ===
+      JSON.stringify([
+        { stepMode: "vertex", formats: ["float32x3"] },
+        { stepMode: "vertex", formats: ["float32x4"] },
+        { stepMode: "vertex", formats: ["float32x4"] },
+        { stepMode: "vertex", formats: ["unorm8x4"] },
+        { stepMode: "vertex", formats: ["float32"] },
+      ]),
+    `${label} glyph: unexpected vertex attributes`,
+  );
+  expectDepthPipeline(glyphPipeline, `${label} glyph`, false, "always");
   const meshPipeline = expectPipeline(
     stream,
     `${label} mesh`,
@@ -620,23 +640,33 @@ function expect2DSceneStreamShape(stream, label) {
   expectDepthPipeline(meshPipeline, `${label} mesh`);
   const textures = commandsOf(stream, "CreateTexture").filter((command) => command.format === "rgba8unorm");
   const writes = commandsOf(stream, "WriteTexture");
-  requireOk(textures.length === 1, `${label}: expected one RGBA8 image texture, got ${textures.length}`);
-  requireOk(textures[0].width === 8 && textures[0].height === 8, `${label}: unexpected image texture size`);
+  const imageTexture = textures.find((texture) => texture.width === 8 && texture.height === 8);
+  const glyphTexture = textures.find((texture) => texture.width === 48 && texture.height === 16);
+  requireOk(textures.length === 2, `${label}: expected image and glyph RGBA8 textures, got ${textures.length}`);
+  requireOk(imageTexture !== undefined, `${label}: missing image texture`);
+  requireOk(glyphTexture !== undefined, `${label}: missing glyph texture`);
+  for (const texture of [imageTexture, glyphTexture]) {
+    requireOk(
+      texture.usage.includes("COPY_DST") && texture.usage.includes("TEXTURE_BINDING"),
+      `${label}: texture ${texture.id} needs COPY_DST and TEXTURE_BINDING usage`,
+    );
+  }
+  requireOk(writes.length === 2, `${label}: expected image and glyph texture uploads, got ${writes.length}`);
+  const imageWrite = writes.find((write) => write.texture_id === imageTexture.id);
+  const glyphWrite = writes.find((write) => write.texture_id === glyphTexture.id);
   requireOk(
-    textures[0].usage.includes("COPY_DST") && textures[0].usage.includes("TEXTURE_BINDING"),
-    `${label}: image texture needs COPY_DST and TEXTURE_BINDING usage`,
-  );
-  requireOk(writes.length === 1, `${label}: expected one image texture upload, got ${writes.length}`);
-  requireOk(
-    writes[0].texture_id === textures[0].id &&
-      writes[0].size?.width === 8 &&
-      writes[0].size?.height === 8,
+    imageWrite?.size?.width === 8 && imageWrite?.size?.height === 8,
     `${label}: image texture upload does not match texture resource`,
   );
-  requireOk(writes[0].bytes_per_row === 32, `${label}: unexpected image upload row pitch`);
   requireOk(
-    commandsOf(stream, "CreateRenderPipeline").length === 8,
-    `${label}: expected point, pixel, marker, segment, path, primitive, image, and mesh pipelines`,
+    glyphWrite?.size?.width === 48 && glyphWrite?.size?.height === 16,
+    `${label}: glyph texture upload does not match texture resource`,
+  );
+  requireOk(imageWrite.bytes_per_row === 32, `${label}: unexpected image upload row pitch`);
+  requireOk(glyphWrite.bytes_per_row === 192, `${label}: unexpected glyph upload row pitch`);
+  requireOk(
+    commandsOf(stream, "CreateRenderPipeline").length === 9,
+    `${label}: expected point, pixel, marker, segment, path, primitive, image, glyph, and mesh pipelines`,
   );
 }
 
@@ -650,6 +680,7 @@ function expect2DUpdateStreamShape(stream, label, pointInstances = 5) {
   expectDrawIndexed(stream, 24, 1, `${label} path`);
   expectDraw(stream, 3, 1, `${label} primitive`);
   expectDraw(stream, 4, 1, `${label} image`);
+  expectDraw(stream, 18, 1, `${label} glyph`);
   expectDraw(stream, 6, 1, `${label} mesh`);
 }
 
@@ -766,6 +797,32 @@ function makeCheckerTexture(width, height) {
   return pixels;
 }
 
+function makeGlyphAtlas(width, height) {
+  const pixels = new Uint8Array(width * height * 4);
+  const cell = Math.floor(width / 3);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const letter = Math.min(2, Math.floor(x / cell));
+      const lx = x - letter * cell;
+      const top = y <= 2;
+      const bottom = y >= height - 3;
+      const left = lx <= 2;
+      const right = lx >= cell - 4;
+      const fill =
+        (letter === 0 && (left || top || bottom || (right && y > 2 && y < height - 3))) ||
+        (letter === 1 && y >= height / 2 && Math.abs(lx - cell / 2) <= Math.max(1, y - height / 2)) ||
+        (letter === 2 && (top || bottom || Math.abs(lx - (cell - 1 - y)) <= 1));
+      if (!fill) continue;
+      const i = (y * width + x) * 4;
+      pixels[i + 0] = 255;
+      pixels[i + 1] = 255;
+      pixels[i + 2] = 255;
+      pixels[i + 3] = 255;
+    }
+  }
+  return pixels;
+}
+
 function setF32(Module, visual, attrPtr, dataPtr, count, label) {
   expectStatus(Module._dvz_wasm_api_visual_set_f32(visual, attrPtr, dataPtr, count), 0, label);
 }
@@ -870,6 +927,7 @@ const strokeWidthNamePtr = allocCString(Module, "stroke_width");
 const normalNamePtr = allocCString(Module, "normal");
 const radiusNamePtr = allocCString(Module, "radius");
 const texcoordsNamePtr = allocCString(Module, "texcoords");
+const boundsNamePtr = allocCString(Module, "bounds");
 
 try {
   const diagnosticScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
@@ -1071,6 +1129,38 @@ try {
   }
   const imagePositions = new Float32Array([0.18, -0.78, 0.05, 0.18, -0.12, 0.05, 0.86, -0.78, 0.05, 0.86, -0.12, 0.05]);
   const imageTexcoords = new Float32Array([0, 0, 0, 1, 1, 0, 1, 1]);
+  const glyphWidth = 48;
+  const glyphHeight = 16;
+  const glyphPixels = makeGlyphAtlas(glyphWidth, glyphHeight);
+  const glyphAnchors = [
+    [-0.70, 0.78, 0.18],
+    [-0.50, 0.78, 0.18],
+    [-0.30, 0.78, 0.18],
+  ];
+  const glyphUvBounds = [
+    [0, 0, 1 / 3, 1],
+    [1 / 3, 0, 2 / 3, 1],
+    [2 / 3, 0, 1, 1],
+  ];
+  const glyphPositions = [];
+  const glyphBounds = [];
+  const glyphTexcoords = [];
+  const glyphColors = [];
+  const glyphAngles = [];
+  for (let i = 0; i < glyphAnchors.length; i++) {
+    for (let j = 0; j < 6; j++) {
+      glyphPositions.push(...glyphAnchors[i]);
+      glyphBounds.push(-18, -14, 18, 14);
+      glyphTexcoords.push(...glyphUvBounds[i]);
+      glyphColors.push(250, 250, 255, 245);
+      glyphAngles.push(0.0);
+    }
+  }
+  const glyphPositionData = new Float32Array(glyphPositions);
+  const glyphBoundsData = new Float32Array(glyphBounds);
+  const glyphTexcoordsData = new Float32Array(glyphTexcoords);
+  const glyphColorData = new Uint8Array(glyphColors);
+  const glyphAngleData = new Float32Array(glyphAngles);
   const meshPositions = new Float32Array([0.18, 0.18, 0.22, 0.86, 0.18, 0.22, 0.18, 0.78, 0.22, 0.86, 0.18, 0.22, 0.86, 0.78, 0.22, 0.18, 0.78, 0.22]);
   const meshColors = new Uint8Array([90, 170, 255, 240, 85, 230, 190, 240, 160, 120, 255, 240, 85, 230, 190, 240, 255, 135, 210, 240, 160, 120, 255, 240]);
   const meshNormals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
@@ -1089,6 +1179,9 @@ try {
     allocArray(Module, pathWidths),
     allocArray(Module, primitivePositions), allocArray(Module, primitiveColors),
     allocArray(Module, imagePositions), allocArray(Module, imageTexcoords), allocArray(Module, imagePixels),
+    allocArray(Module, glyphPositionData), allocArray(Module, glyphBoundsData),
+    allocArray(Module, glyphTexcoordsData), allocArray(Module, glyphColorData),
+    allocArray(Module, glyphAngleData), allocArray(Module, glyphPixels),
     allocArray(Module, meshPositions), allocArray(Module, meshColors), allocArray(Module, meshNormals),
   ];
   try {
@@ -1162,10 +1255,19 @@ try {
     expectStatus(Module._dvz_wasm_api_visual_set_texture_rgba8(image, ptrs[22], imageWidth, imageHeight), 0, "api image texture");
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, image), 0, "api add image");
 
+    const glyph = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_GLYPH, 0);
+    setF32(Module, glyph, positionNamePtr, ptrs[23], glyphPositionData.length / 3, "api glyph position");
+    setF32(Module, glyph, boundsNamePtr, ptrs[24], glyphBoundsData.length / 4, "api glyph bounds");
+    setF32(Module, glyph, texcoordsNamePtr, ptrs[25], glyphTexcoordsData.length / 4, "api glyph texcoords");
+    setRGBA8(Module, glyph, colorNamePtr, ptrs[26], glyphColorData.length / 4, "api glyph color");
+    setF32(Module, glyph, angleNamePtr, ptrs[27], glyphAngleData.length, "api glyph angle");
+    expectStatus(Module._dvz_wasm_api_visual_set_texture_rgba8(glyph, ptrs[28], glyphWidth, glyphHeight), 0, "api glyph texture");
+    expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, glyph), 0, "api add glyph");
+
     const mesh = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_MESH, 0);
-    setF32(Module, mesh, positionNamePtr, ptrs[23], meshPositions.length / 3, "api mesh position");
-    setRGBA8(Module, mesh, colorNamePtr, ptrs[24], meshColors.length / 4, "api mesh color");
-    setF32(Module, mesh, normalNamePtr, ptrs[25], meshNormals.length / 3, "api mesh normal");
+    setF32(Module, mesh, positionNamePtr, ptrs[29], meshPositions.length / 3, "api mesh position");
+    setRGBA8(Module, mesh, colorNamePtr, ptrs[30], meshColors.length / 4, "api mesh color");
+    setF32(Module, mesh, normalNamePtr, ptrs[31], meshNormals.length / 3, "api mesh normal");
     setStandardMaterial(Module, mesh, "api mesh standard material");
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, mesh), 0, "api add mesh");
 
@@ -1261,6 +1363,7 @@ try {
       expectDrawIndexed(visualReload.stream, 24, 1, "generic 2D visual reload path");
       expectDraw(visualReload.stream, 3, 1, "generic 2D visual reload primitive");
       expectDraw(visualReload.stream, 4, 1, "generic 2D visual reload image");
+      expectDraw(visualReload.stream, 18, 1, "generic 2D visual reload glyph");
       expectDraw(visualReload.stream, 6, 1, "generic 2D visual reload mesh");
       expectStatus(
         Module._dvz_wasm_api_visual_set_texture_rgba8(image, ptrs[22], imageWidth, imageHeight),
@@ -1388,4 +1491,5 @@ try {
   Module._free(normalNamePtr);
   Module._free(radiusNamePtr);
   Module._free(texcoordsNamePtr);
+  Module._free(boundsNamePtr);
 }

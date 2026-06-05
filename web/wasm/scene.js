@@ -42,6 +42,7 @@ export const DvzWasmVisual = Object.freeze({
   path: 5,
   image: 6,
   mesh: 7,
+  glyph: 8,
   primitive: 9,
   sphere: 10,
 });

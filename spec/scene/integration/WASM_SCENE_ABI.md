@@ -109,7 +109,7 @@ void dvz_wasm_api_scene_destroy(uint32_t scene);
 The demo-specific `src/wasm/scene_bridge.c` path has been retired. The generic ABI now covers:
 
 1. 2D buffer-backed point/pixel positions + marker + styled segment/path + primitive + image +
-   mesh + panzoom;
+   low-level atlas glyph + mesh + panzoom;
 2. 3D sphere + textured material mesh + arcball.
 
 The browser pages and `just wasm-scene-smoke` use the generic `dvz_wasm_api_*` object ABI.
@@ -118,7 +118,7 @@ The browser pages and `just wasm-scene-smoke` use the generic `dvz_wasm_api_*` o
 
 1. Done: add the generic ABI with scene/figure/panel/point support and a smoke test.
 2. Done: add scene buffers, buffer-backed point/pixel positions, segment/path cap-join controls,
-   primitive, image, basic/textured/material mesh, basic sphere, panzoom, camera, and arcball
+   primitive, image, low-level atlas glyph, basic/textured/material mesh, basic sphere, panzoom, camera, and arcball
    coverage through generic calls.
 3. Done: add a small JS wrapper over the ABI.
 4. Done: move the browser demos to the JS wrapper and retire the demo-specific bridge.

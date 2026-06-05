@@ -169,6 +169,15 @@ Current status as of this note:
   unsupported attr-buffer binds, and replayed retained buffer update streams through the JS WebGPU
   runner smoke; `just webgpu-browser-smoke` rendered both WASM demos, exercised interaction, and
   reported dashboard WASM scene checks `2 pass, 0 fail`.
+- recorded local glyph-promotion proof on 2026-06-05: `node --check tools/wasm_scene_smoke.mjs`,
+  `node --check web/wasm/scene.js`, and `node --check examples/webgpu/demos/wasm_2d.js` passed;
+  `just test test_scene_glyph_emit_glsl` passed; `just webgpu-fixture-preflight` passed `39`
+  strict positive/WebGPU stream rows; `just webgpu-runner-smoke` passed `37` positive fixtures,
+  `2` WebGPU streams, and `82` negative parity fixtures; `just wasm-scene-smoke` emitted,
+  preflighted, and replayed the 2D point/pixel/marker/segment/path/primitive/image/glyph/mesh +
+  panzoom stream and the 3D sphere/textured mesh/arcball stream; `just webgpu-browser-smoke`
+  rendered both WASM demos, exercised interaction, and reported dashboard WASM scene checks
+  `2 pass, 0 fail`.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

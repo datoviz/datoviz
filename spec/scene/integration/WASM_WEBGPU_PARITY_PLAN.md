@@ -74,14 +74,15 @@ The current browser path proves:
 6. path visual with visual-wide cap and join controls;
 7. primitive triangle-list visual;
 8. RGBA8 image visual;
-9. basic, textured, and material-controlled mesh visual;
-10. basic sphere visual;
-11. 2D panzoom input;
-12. one 3D sphere + textured mesh scene with camera and arcball input;
-13. WebGPU runner execution for the committed DRP2 fixture subset;
-14. semantic negative-fixture parity in the WebGPU runner;
-15. compute and `ResourceBarrier` at DRP2 fixture level;
-16. browser evidence through `examples/webgpu/examples.html` and `examples/webgpu/fixtures.html`.
+9. low-level atlas-backed glyph visual;
+10. basic, textured, and material-controlled mesh visual;
+11. basic sphere visual;
+12. 2D panzoom input;
+13. one 3D sphere + textured mesh scene with camera and arcball input;
+14. WebGPU runner execution for the committed DRP2 fixture subset;
+15. semantic negative-fixture parity in the WebGPU runner;
+16. compute and `ResourceBarrier` at DRP2 fixture level;
+17. browser evidence through `examples/webgpu/examples.html` and `examples/webgpu/fixtures.html`.
 
 This is an experimental subset, not native Vulkan feature parity.
 
@@ -183,7 +184,7 @@ that family until earlier rows are stable.
 | pixel | retained pixel visual | dense and buffer-backed 2D pixel visual | current | keep fixture/browser evidence |
 | marker | retained marker visual | built-in marker subset current; glyph/atlas subset next | current/next | keep built-in marker evidence; settle atlas variants and picking diagnostics |
 | segment/path/stroke | retained path and stroke-shaped paths | segment/path cap-join controls current; broader subpath/vector parity next | current/next | keep cap/join evidence; settle subpath/vector policy and browser proof |
-| text/glyph | retained text and glyph visuals | MSDF or bitmap text subset | later | font/atlas packaging, WGSL text shaders, shaping limits |
+| text/glyph | retained text and glyph visuals | low-level atlas glyph current; semantic text subset next | current/next | font/atlas packaging, WASM semantic text ABI, shaping limits |
 | labels | label field and readback paths | label rendering and label probe subset | later | texture/label formats, query/readback, diagnostics |
 | sphere | sphere impostor visual | basic sphere impostor current; raycast/depth/material parity next | current/next | keep WGSL/browser evidence; promote native-depth and material variants with parity proof |
 | volume | volume visual and query paths | reduced volume/slice subset | later | 3D texture limits, sampling shaders, memory diagnostics |
@@ -261,7 +262,7 @@ frame-time evidence is available.
 
 Promote visuals in this order:
 
-1. text/glyph;
+1. semantic text strings over the current low-level atlas glyph visual;
 2. labels;
 3. axes/colorbars/legends/scale bars/annotations;
 4. sphere native-depth/material variants and reduced volume;

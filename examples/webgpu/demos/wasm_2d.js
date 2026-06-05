@@ -10,6 +10,7 @@ export const demo = {
     addPath(scene, panel);
     addPrimitive(scene, panel);
     addImage(scene, panel);
+    addGlyphs(scene, panel);
     addMesh(scene, panel);
     scene.attachPanzoom(panel);
   },
@@ -214,6 +215,70 @@ function addImage(scene, panel) {
   image.setF32("texcoords", texcoords, texcoords.length / 2);
   image.setTextureRGBA8(pixels, width, height);
   scene.addVisual(panel, image);
+}
+
+function makeGlyphAtlas(width, height) {
+  const pixels = new Uint8Array(width * height * 4);
+  const cell = Math.floor(width / 3);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const letter = Math.min(2, Math.floor(x / cell));
+      const lx = x - letter * cell;
+      const top = y <= 3;
+      const bottom = y >= height - 4;
+      const left = lx <= 3;
+      const right = lx >= cell - 5;
+      const fill =
+        (letter === 0 && (left || top || bottom || (right && y > 3 && y < height - 4))) ||
+        (letter === 1 && y >= height / 2 && Math.abs(lx - cell / 2) <= Math.max(2, y - height / 2)) ||
+        (letter === 2 && (top || bottom || Math.abs(lx - (cell - 1 - y)) <= 2));
+      if (!fill) continue;
+      const i = (y * width + x) * 4;
+      pixels[i + 0] = 255;
+      pixels[i + 1] = 255;
+      pixels[i + 2] = 255;
+      pixels[i + 3] = 255;
+    }
+  }
+  return pixels;
+}
+
+function addGlyphs(scene, panel) {
+  const glyph = scene.visual("glyph");
+  const width = 96;
+  const height = 32;
+  const anchors = [
+    [-0.72, 0.76, 0.18],
+    [-0.50, 0.76, 0.18],
+    [-0.28, 0.76, 0.18],
+  ];
+  const uvBounds = [
+    [0, 0, 1 / 3, 1],
+    [1 / 3, 0, 2 / 3, 1],
+    [2 / 3, 0, 1, 1],
+  ];
+  const positions = [];
+  const bounds = [];
+  const texcoords = [];
+  const colors = [];
+  const angles = [];
+  for (let i = 0; i < anchors.length; i++) {
+    for (let j = 0; j < 6; j++) {
+      positions.push(...anchors[i]);
+      bounds.push(-22, -17, 22, 17);
+      texcoords.push(...uvBounds[i]);
+      colors.push(250, 250, 255, 245);
+      angles.push(0);
+    }
+  }
+
+  glyph.setF32("position", new Float32Array(positions), positions.length / 3);
+  glyph.setF32("bounds", new Float32Array(bounds), bounds.length / 4);
+  glyph.setF32("texcoords", new Float32Array(texcoords), texcoords.length / 4);
+  glyph.setRGBA8("color", new Uint8Array(colors), colors.length / 4);
+  glyph.setF32("angle", new Float32Array(angles), angles.length);
+  glyph.setTextureRGBA8(makeGlyphAtlas(width, height), width, height);
+  scene.addVisual(panel, glyph);
 }
 
 function addMesh(scene, panel) {

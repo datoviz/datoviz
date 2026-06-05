@@ -47,6 +47,7 @@
 #define DVZ_WASM_VISUAL_PATH 5
 #define DVZ_WASM_VISUAL_IMAGE 6
 #define DVZ_WASM_VISUAL_MESH 7
+#define DVZ_WASM_VISUAL_GLYPH 8
 #define DVZ_WASM_VISUAL_PRIMITIVE 9
 #define DVZ_WASM_VISUAL_SPHERE 10
 
@@ -398,6 +399,9 @@ uint32_t dvz_wasm_api_visual(uint32_t scene_handle, uint32_t visual_type, uint32
         break;
     case DVZ_WASM_VISUAL_MESH:
         visual->visual = dvz_mesh(scene->scene, flags);
+        break;
+    case DVZ_WASM_VISUAL_GLYPH:
+        visual->visual = dvz_glyph(scene->scene, flags);
         break;
     case DVZ_WASM_VISUAL_SPHERE:
         visual->visual = dvz_sphere(scene->scene, flags);

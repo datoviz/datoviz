@@ -85,7 +85,8 @@ Closed first-slice milestone:
 
 1. `src/wasm/scene_api.c` exports a generic handle-based scene/figure/panel/visual/buffer/controller API.
 2. The browser scene slices create buffer-backed point/pixel positions, marker, styled segment/path,
-   primitive, image, mesh, sphere, panzoom, camera, and arcball objects through the generic ABI.
+   primitive, image, low-level atlas glyph, mesh, sphere, panzoom, camera, and arcball objects
+   through the generic ABI.
 3. Scene emission can request WGSL, target the external browser canvas format, return DRP2 JSON,
    and feed the browser WebGPU runtime.
 4. `just wasm-scene-smoke` builds the Emscripten target, emits 2D and 3D generic ABI streams, and
@@ -313,8 +314,8 @@ bridge:
 
 1. build a WASM module containing portable scene and DRP2 stream emission;
 2. from browser JavaScript, create one scene, one figure, one panel, and buffer-backed point/pixel
-   positions, marker, styled segment/path, primitive triangle-list, RGBA8 image,
-   basic/textured/material mesh, and basic sphere visuals;
+   positions, marker, styled segment/path, primitive triangle-list, RGBA8 image, low-level
+   atlas glyph, basic/textured/material mesh, and basic sphere visuals;
 3. request WGSL scene emission with an external browser canvas color target;
 4. submit the emitted DRP2 stream to the WebGPU runtime;
 5. render points using the portable WebGPU lowering selected by scene emission.
@@ -348,8 +349,9 @@ Current evidence as of 2026-06-05:
    demos render and interact through `examples/webgpu/examples.html`.
 
 The supported browser-scene subset now covers buffer-backed point/pixel positions, basic marker,
-segment/path cap-join controls, primitive triangle-list, RGBA8 image, basic/textured/material mesh,
-basic sphere, panzoom, and a first 3D sphere + textured mesh + arcball scene. The browser wrapper passes normalized
+segment/path cap-join controls, primitive triangle-list, RGBA8 image, low-level atlas glyph,
+basic/textured/material mesh, basic sphere, panzoom, and a first 3D sphere + textured mesh +
+arcball scene. The browser wrapper passes normalized
 WebGPU limits into the WASM scene emitter before figure creation, and the old direct browser-side
 panzoom uniform mutation path has been retired from the release-visible demos. Retained browser runtime stress now tracks
 browser-owned frame resources and retires submitted references after explicit queue completion in
