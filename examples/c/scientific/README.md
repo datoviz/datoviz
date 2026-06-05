@@ -12,4 +12,6 @@ Synthetic or generated domain-style examples belong in `../showcases/` instead.
 
 Current public scientific examples:
 
+- `choropleth.c`: contiguous U.S. state population-density choropleth from Census boundaries and
+  population estimates.
 - `protein.c`: RCSB PDB protein structure rendered as atom spheres.

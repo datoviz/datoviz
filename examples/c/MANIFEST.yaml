@@ -597,6 +597,35 @@ examples:
       - bezier-edges
       - panzoom
 
+  - id: us_state_choropleth
+    title: U.S. State Choropleth
+    stage: v0.4_required
+    lane: scientific
+    source: examples/c/scientific/choropleth.c
+    validation: smoke+screenshot+manual
+    dataset:
+      name: Contiguous U.S. state population density
+      boundary_source: https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip
+      population_source: https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx
+      license: U.S. Census Bureau public data; cite the Census Bureau as source.
+      fallback_prepared_path: .cache/datoviz/examples/us_state_choropleth/prepared
+      promoted_prepared_path: data/examples/us_state_choropleth/prepared
+      preprocessing: python tools/data/prepare_us_state_choropleth.py
+    encoding:
+      position: Census boundary rings projected with a spherical Albers equal-area transform and normalized into scene space
+      color: log10 of Vintage 2025 resident population per Census ALAND square kilometer
+      topology: each shapefile ring is rendered as one polygon-set region; interior holes are not preserved
+    gallery:
+      card: section
+      status_label: supported
+    features:
+      - composite
+      - polygon-set
+      - choropleth
+      - colorbar
+      - panzoom
+      - capture
+
   - id: protein_arcball_viewer
     title: Protein
     stage: v0.4_required
