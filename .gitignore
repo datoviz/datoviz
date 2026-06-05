@@ -110,3 +110,5 @@ uv.lock
 wheel
 .cache
 vcpkg_installed
+*.mp4
+*.mkv
