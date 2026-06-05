@@ -10,9 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/marker_symbols
- * Run:    ./build/examples/c/features/marker_symbols
- * Smoke:  ./build/examples/c/features/marker_symbols 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/features/marker_symbols 1
+ * Run:    ./build/examples/c/features/marker_symbols --live
+ * Smoke:  ./build/examples/c/features/marker_symbols --png
  */
 
 
@@ -25,10 +24,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -404,38 +402,35 @@ static bool _add_symbol_row(
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the marker-symbol feature example.
+ * Initialize the marker-symbol feature scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_marker_symbols");
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzSymbolSet* symbol_set = dvz_symbol_set(scene, 0);
-    EXAMPLE_CHECK(symbol_set != NULL, "dvz_symbol_set() failed");
+    DvzSymbolSet* symbol_set = dvz_symbol_set(ctx->scene, 0);
+    if (symbol_set == NULL)
+        return false;
 
     DvzSymbolId builtin_ids[ROW_SYMBOLS] = {0};
     DvzSymbolId bitmap_ids[ROW_SYMBOLS] = {0};
@@ -443,11 +438,16 @@ int main(int argc, char** argv)
     DvzSymbolId msdf_ids[ROW_SYMBOLS] = {0};
     DvzSymbolId svg_ids[ROW_SYMBOLS] = {0};
 
-    EXAMPLE_CHECK(_register_builtin_symbols(symbol_set, builtin_ids), "built-in symbol setup failed");
-    EXAMPLE_CHECK(_register_bitmap_symbols(symbol_set, bitmap_ids), "bitmap symbol setup failed");
-    EXAMPLE_CHECK(_register_sdf_symbols(symbol_set, sdf_ids), "SDF symbol setup failed");
-    EXAMPLE_CHECK(_register_msdf_symbols(symbol_set, msdf_ids), "MSDF symbol setup failed");
-    EXAMPLE_CHECK(_register_svg_symbols(symbol_set, svg_ids), "SVG/MSDF symbol setup failed");
+    if (!_register_builtin_symbols(symbol_set, builtin_ids))
+        return false;
+    if (!_register_bitmap_symbols(symbol_set, bitmap_ids))
+        return false;
+    if (!_register_sdf_symbols(symbol_set, sdf_ids))
+        return false;
+    if (!_register_msdf_symbols(symbol_set, msdf_ids))
+        return false;
+    if (!_register_svg_symbols(symbol_set, svg_ids))
+        return false;
 
     const float row_y[ROW_COUNT] = {+0.66f, +0.33f, 0.0f, -0.33f, -0.66f};
     const ExampleStyleColorRole row_roles[ROW_COUNT] = {
@@ -460,29 +460,49 @@ int main(int argc, char** argv)
     const DvzSymbolId* row_ids[ROW_COUNT] = {builtin_ids, bitmap_ids, sdf_ids, msdf_ids, svg_ids};
     for (uint32_t row = 0; row < ROW_COUNT; row++)
     {
-        EXAMPLE_CHECK(
-            _add_symbol_row(scene, panel, symbol_set, row_ids[row], row, row_y[row], row_roles[row]),
-            "marker symbol row setup failed");
+        if (!_add_symbol_row(
+                ctx->scene, panel, symbol_set, row_ids[row], row, row_y[row], row_roles[row]))
+            return false;
     }
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    return panzoom != NULL;
+}
 
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "feature_marker_symbols");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
-    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
+/**
+ * Return the marker-symbol scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _marker_symbols_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_marker_symbols",
+        .title = "feature_marker_symbols",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the marker-symbol feature example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _marker_symbols_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

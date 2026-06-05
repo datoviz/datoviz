@@ -10,9 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/panel_multi
- * Run:    ./build/examples/c/features/panel_multi
- * Smoke:  ./build/examples/c/features/panel_multi 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/features/panel_multi 1
+ * Run:    ./build/examples/c/features/panel_multi --live
+ * Smoke:  ./build/examples/c/features/panel_multi --png
  */
 
 
@@ -26,10 +25,9 @@
 #include <stdint.h>
 
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -185,37 +183,33 @@ static bool _add_path_panel(DvzScene* scene, DvzPanel* panel)
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the multiple-independent-panel feature example.
+ * Initialize the multiple-independent-panel feature scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_panel_multi");
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* left =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0.08f, .y = 0.16f, .width = 0.40f, .height = 0.68f});
-    DvzPanel* right =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0.52f, .y = 0.16f, .width = 0.40f, .height = 0.68f});
-    EXAMPLE_CHECK(left != NULL && right != NULL, "dvz_panel() failed");
+    DvzPanel* left = dvz_panel(
+        ctx->figure, (DvzPanelDesc){.x = 0.08f, .y = 0.16f, .width = 0.40f, .height = 0.68f});
+    DvzPanel* right = dvz_panel(
+        ctx->figure, (DvzPanelDesc){.x = 0.52f, .y = 0.16f, .width = 0.40f, .height = 0.68f});
+    if (left == NULL || right == NULL)
+        return false;
 
     DvzPanel* panels[2] = {left, right};
     for (uint32_t i = 0; i < 2u; i++)
@@ -224,37 +218,62 @@ int main(int argc, char** argv)
         DvzPanelBorderDesc border = dvz_panel_border_desc();
         border.color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
         border.width_px = 1.5f;
-        EXAMPLE_CHECK(dvz_panel_set_border(panels[i], &border), "dvz_panel_set_border() failed");
-        EXAMPLE_CHECK(_set_unit_domain(panels[i]), "panel domain setup failed");
+        if (!dvz_panel_set_border(panels[i], &border))
+            return false;
+        if (!_set_unit_domain(panels[i]))
+            return false;
     }
 
-    EXAMPLE_CHECK(_add_point_panel(scene, left), "left panel visual setup failed");
-    EXAMPLE_CHECK(_add_path_panel(scene, right), "right panel visual setup failed");
+    if (!_add_point_panel(ctx->scene, left))
+        return false;
+    if (!_add_path_panel(ctx->scene, right))
+        return false;
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "panel_multi");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzPanzoom* left_panzoom = dvz_view_panzoom(win, left, NULL);
-    DvzPanzoom* right_panzoom = dvz_view_panzoom(win, right, NULL);
-    EXAMPLE_CHECK(
-        left_panzoom != NULL && right_panzoom != NULL, "failed to create panel panzooms");
+    DvzPanzoom* left_panzoom = dvz_scenario_panzoom(ctx, left, NULL, DVZ_DIM_MASK_XY);
+    DvzPanzoom* right_panzoom = dvz_scenario_panzoom(ctx, right, NULL, DVZ_DIM_MASK_XY);
+    if (left_panzoom == NULL || right_panzoom == NULL)
+        return false;
     dvz_panzoom_zoom(left_panzoom, (vec2){1.20f, 1.20f});
     dvz_panzoom_pan(left_panzoom, (vec2){-0.12f, +0.08f});
     dvz_panzoom_zoom(right_panzoom, (vec2){1.65f, 1.10f});
     dvz_panzoom_pan(right_panzoom, (vec2){+0.18f, -0.04f});
+    return true;
+}
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+/**
+ * Return the multiple-independent-panel scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _panel_multi_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_panel_multi",
+        .title = "panel_multi",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the multiple-independent-panel feature example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _panel_multi_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
