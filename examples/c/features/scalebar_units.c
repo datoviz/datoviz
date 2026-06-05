@@ -10,9 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/scalebar_units
- * Run:    ./build/examples/c/features/scalebar_units
- * Smoke:  ./build/examples/c/features/scalebar_units 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/features/scalebar_units 1
+ * Run:    ./build/examples/c/features/scalebar_units --live
+ * Smoke:  ./build/examples/c/features/scalebar_units --png
  */
 
 
@@ -26,10 +25,9 @@
 #include <stdint.h>
 
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -145,11 +143,77 @@ static bool _add_time_scalebar(DvzScene* scene, DvzPanel* panel)
 
 
 /*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Initialize the retained scale-bar custom-unit scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
+
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
+    example_graphite_cyan_set_panel_background(panel);
+
+    if (!dvz_panel_set_layout_reserve(
+        panel, &(DvzPanelLayoutReserve){.left = 0.08f, .right = 0.08f, .bottom = 0.12f,
+                                        .top = 0.08f}))
+        return false;
+    if (dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 250.0) != 0)
+        return false;
+    if (dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, 1.0) != 0)
+        return false;
+
+    if (!_add_signal(ctx->scene, panel))
+        return false;
+    if (!_add_time_scalebar(ctx->scene, panel))
+        return false;
+
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    return panzoom != NULL;
+}
+
+
+
+/**
+ * Return the scale-bar custom-unit scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _scalebar_units_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_scalebar_units",
+        .title = "scalebar_units",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 /**
- * Run the retained scale-bar custom-unit proof.
+ * Run the retained scale-bar custom-unit proof through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -157,55 +221,6 @@ static bool _add_time_scalebar(DvzScene* scene, DvzPanel* panel)
  */
 int main(int argc, char** argv)
 {
-    const uint32_t frame_count = example_frame_count(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_scalebar_units");
-
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    example_graphite_cyan_set_panel_background(panel);
-
-    bool ok = dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.08f, .right = 0.08f, .bottom = 0.12f,
-                                        .top = 0.08f});
-    EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve() failed");
-    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 250.0);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(x) failed");
-    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, 1.0);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(y) failed");
-
-    ok = _add_signal(scene, panel);
-    EXAMPLE_CHECK(ok, "_add_signal() failed");
-    ok = _add_time_scalebar(scene, panel);
-    EXAMPLE_CHECK(ok, "_add_time_scalebar() failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "scalebar_units");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
-    EXAMPLE_CHECK(panzoom != NULL, "failed to bind panzoom controller");
-
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    DvzScenarioSpec spec = _scalebar_units_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
