@@ -34,6 +34,8 @@ typedef struct DvzScenarioContext DvzScenarioContext;
 
 typedef bool (*DvzScenarioInitFn)(DvzScenarioContext* ctx, void** out_user);
 typedef void (*DvzScenarioFrameFn)(DvzScenarioContext* ctx, void* user);
+typedef bool (*DvzScenarioNativeViewFn)(
+    DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user);
 typedef void (*DvzScenarioDestroyFn)(DvzScenarioContext* ctx, void* user);
 
 
@@ -106,6 +108,7 @@ typedef struct DvzScenarioSpec
 
     DvzScenarioInitFn init;
     DvzScenarioFrameFn frame;
+    DvzScenarioNativeViewFn native_view;
     DvzScenarioDestroyFn destroy;
 } DvzScenarioSpec;
 

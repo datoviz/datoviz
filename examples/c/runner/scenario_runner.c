@@ -458,6 +458,12 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         goto cleanup;
     }
 
+    if (spec->native_view != NULL && !spec->native_view(&ctx, app, view, user))
+    {
+        fprintf(stderr, "scenario_runner: native view setup failed\n");
+        goto cleanup;
+    }
+
     capture_view = view;
     if (resolved.presentation == DVZ_RUNNER_PRESENT_GLFW &&
         resolved.capture_kind == DVZ_RUNNER_CAPTURE_VIDEO)
