@@ -14,8 +14,8 @@
  * persistent selection; clicking the background clears it.
  *
  * Build:  just example-c features/pick_point
- * Run:    ./build/examples/c/features/pick_point
- * Smoke:  ./build/examples/c/features/pick_point 1
+ * Run:    ./build/examples/c/features/pick_point --live
+ * Smoke:  ./build/examples/c/features/pick_point --png
  */
 
 
@@ -28,12 +28,13 @@
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "datoviz/app.h"
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -211,83 +212,87 @@ static void _point_pick_frame(DvzView* win, void* user_data)
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the retained point picking feature example.
+ * Initialize the retained point picking feature scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_pick_point");
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
+    PointPickState* state = (PointPickState*)calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzVisual* visual = dvz_point(scene, 0);
-    EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");
+    DvzVisual* visual = dvz_point(ctx->scene, 0);
+    if (visual == NULL)
+        return false;
     dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM);
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
     style.stroke_width = 0.0f;
-    EXAMPLE_CHECK(dvz_point_set_style(visual, &style) == 0, "dvz_point_set_style() failed");
-    EXAMPLE_CHECK(dvz_visual_set_depth_test(visual, false) == 0, "dvz_visual_set_depth_test() failed");
+    if (dvz_point_set_style(visual, &style) != 0)
+        return false;
+    if (dvz_visual_set_depth_test(visual, false) != 0)
+        return false;
 
     DvzSelection* selection = dvz_selection(
-        scene,
+        ctx->scene,
         &(DvzSelectionDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
             .mode = DVZ_SELECT_TOGGLE,
             .target = DVZ_SCENE_TARGET_ITEM,
         });
-    EXAMPLE_CHECK(selection != NULL, "dvz_selection() failed");
+    if (selection == NULL)
+        return false;
     DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
     selection_style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
     selection_style.selected.tint = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
     selection_style.selected.tint_mix = 1.0f;
     selection_style.unselected.visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
-    EXAMPLE_CHECK(
-        dvz_selection_set_visual_style(selection, &selection_style) == 0,
-        "dvz_selection_set_visual_style() failed");
+    if (dvz_selection_set_visual_style(selection, &selection_style) != 0)
+        return false;
 
     DvzHover* hover = dvz_hover(
-        scene,
+        ctx->scene,
         &(DvzHoverDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzHoverDesc),
             .target = DVZ_SCENE_TARGET_ITEM,
             .hit_policy = DVZ_QUERY_HIT_FRONTMOST,
         });
-    EXAMPLE_CHECK(hover != NULL, "dvz_hover() failed");
+    if (hover == NULL)
+        return false;
     DvzItemStateVisualStyle hover_style = dvz_item_state_visual_style();
     hover_style.visual_flags = DVZ_ITEM_STATE_VISUAL_SCALE;
     hover_style.scale = HOVER_SIZE / BASE_SIZE;
-    EXAMPLE_CHECK(
-        dvz_hover_set_visual_style(hover, &hover_style) == 0,
-        "dvz_hover_set_visual_style() failed");
+    if (dvz_hover_set_visual_style(hover, &hover_style) != 0)
+        return false;
 
-    PointPickState state = {
-        .scene = scene,
-        .panel = panel,
-        .selection = selection,
-        .hover = hover,
-    };
+    state->scene = ctx->scene;
+    state->panel = panel;
+    state->selection = selection;
+    state->hover = hover;
 
     vec3 positions[POINT_COUNT] = {0};
     DvzColor colors[POINT_COUNT] = {0};
@@ -310,32 +315,94 @@ int main(int argc, char** argv)
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
         {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
     };
-    EXAMPLE_CHECK(dvz_visual_set_data_many(visual, updates, 3) == 0, "point data upload failed");
-    EXAMPLE_CHECK(dvz_panel_add_visual(panel, visual, NULL) == 0, "dvz_panel_add_visual() failed");
+    if (dvz_visual_set_data_many(visual, updates, 3) != 0)
+        return false;
+    if (dvz_panel_add_visual(panel, visual, NULL) != 0)
+        return false;
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    return panzoom != NULL;
+}
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "pick_point");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzInputRouter* router = dvz_view_input(win);
-    EXAMPLE_CHECK(router != NULL, "dvz_view_input() failed");
 
-    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
-    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
-    dvz_input_subscribe_pointer(router, _point_pick_pointer, &state);
-    dvz_view_set_frame_callback(win, _point_pick_frame, &state);
+/**
+ * Attach native GLFW callbacks for the retained point picking feature scenario.
+ *
+ * @param ctx scenario context
+ * @param app native app
+ * @param view native view
+ * @param user scenario state
+ * @return true on success
+ */
+static bool _scenario_native_view(
+    DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)ctx;
+    (void)app;
+    PointPickState* state = (PointPickState*)user;
+    if (state == NULL || view == NULL)
+        return false;
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
+    DvzInputRouter* router = dvz_view_input(view);
+    if (router == NULL)
+        return true;
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    dvz_input_subscribe_pointer(router, _point_pick_pointer, state);
+    dvz_view_set_frame_callback(view, _point_pick_frame, state);
+    return true;
+}
+
+
+
+/**
+ * Destroy the retained point picking feature scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    free(user);
+}
+
+
+
+/**
+ * Return the retained point picking scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _pick_point_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_pick_point",
+        .title = "pick_point",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .native_view = _scenario_native_view,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the retained point picking feature example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _pick_point_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
