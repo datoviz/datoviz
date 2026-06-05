@@ -85,7 +85,8 @@ Closed first-slice milestone:
 
 1. `src/wasm/scene_api.c` exports a generic handle-based scene/figure/panel/visual/buffer/controller API.
 2. The browser scene slices create buffer-backed point/pixel positions, marker, styled segment/path,
-   primitive, image, low-level atlas glyph, mesh, sphere, panzoom, camera, and arcball objects
+   primitive, image, low-level atlas glyph, semantic bitmap text, mesh, sphere, panzoom, camera,
+   and arcball objects
    through the generic ABI.
 3. Scene emission can request WGSL, target the external browser canvas format, return DRP2 JSON,
    and feed the browser WebGPU runtime.
@@ -315,7 +316,7 @@ bridge:
 1. build a WASM module containing portable scene and DRP2 stream emission;
 2. from browser JavaScript, create one scene, one figure, one panel, and buffer-backed point/pixel
    positions, marker, styled segment/path, primitive triangle-list, RGBA8 image, low-level
-   atlas glyph, basic/textured/material mesh, and basic sphere visuals;
+   atlas glyph, semantic bitmap text, basic/textured/material mesh, and basic sphere visuals;
 3. request WGSL scene emission with an external browser canvas color target;
 4. submit the emitted DRP2 stream to the WebGPU runtime;
 5. render points using the portable WebGPU lowering selected by scene emission.
@@ -350,8 +351,8 @@ Current evidence as of 2026-06-05:
 
 The supported browser-scene subset now covers buffer-backed point/pixel positions, basic marker,
 segment/path cap-join controls, primitive triangle-list, RGBA8 image, low-level atlas glyph,
-basic/textured/material mesh, basic sphere, panzoom, and a first 3D sphere + textured mesh +
-arcball scene. The browser wrapper passes normalized
+semantic bitmap text, basic/textured/material mesh, basic sphere, panzoom, and a first 3D sphere +
+textured mesh + arcball scene. The browser wrapper passes normalized
 WebGPU limits into the WASM scene emitter before figure creation, and the old direct browser-side
 panzoom uniform mutation path has been retired from the release-visible demos. Retained browser runtime stress now tracks
 browser-owned frame resources and retires submitted references after explicit queue completion in
@@ -393,8 +394,8 @@ The `src/wasm/scene_api.c` API is an unstable experimental ABI for the browser e
 10. the supported browser canvas formats are `rgba8unorm` and `bgra8unorm`, mapped to
    `DVZ_FORMAT_R8G8B8A8_UNORM` and `DVZ_FORMAT_B8G8R8A8_UNORM`;
 11. `dvz_wasm_api_set_capabilities()` accepts browser-normalized texture dimension, bind-group,
-   vertex-buffer, buffer-size, texture-copy alignment, and sample-count limits used by scene
-   emission;
+   vertex-buffer, buffer-size, texture-copy alignment, sample-count limits, and color-blending
+   support used by scene emission;
 12. resize arguments are framebuffer pixel width/height plus device scale; the bridge derives logical
    window size for the scene input router;
 13. pointer and wheel positions are CSS-pixel canvas coordinates plus content scale, so high-DPI

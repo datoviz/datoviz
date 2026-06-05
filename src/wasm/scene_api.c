@@ -50,6 +50,15 @@
 #define DVZ_WASM_VISUAL_GLYPH 8
 #define DVZ_WASM_VISUAL_PRIMITIVE 9
 #define DVZ_WASM_VISUAL_SPHERE 10
+#define DVZ_WASM_VISUAL_TEXT 11
+
+
+
+/*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags);
 
 
 
@@ -406,6 +415,9 @@ uint32_t dvz_wasm_api_visual(uint32_t scene_handle, uint32_t visual_type, uint32
     case DVZ_WASM_VISUAL_SPHERE:
         visual->visual = dvz_sphere(scene->scene, flags);
         break;
+    case DVZ_WASM_VISUAL_TEXT:
+        visual->visual = _scene_text_visual(scene->scene, flags);
+        break;
     default:
         free(visual);
         return _fail_handle(scene, "unsupported WASM visual type");
@@ -669,6 +681,39 @@ int dvz_wasm_api_visual_set_u32(
 
 
 EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_visual_set_strings(
+    uint32_t visual_handle, const char* attr, const char* const* strings, uint32_t item_count)
+{
+    DvzWasmApiVisual* visual = _visual(visual_handle);
+    if (
+        visual == NULL || visual->owner == NULL || visual->visual == NULL || attr == NULL ||
+        strings == NULL || item_count == 0)
+    {
+        return _fail(visual != NULL ? visual->owner : NULL, "invalid WASM string visual upload");
+    }
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        if (strings[i] == NULL)
+            return _fail(visual->owner, "invalid WASM string visual upload");
+    }
+    _clear_payload(visual->owner);
+    if (dvz_visual_set_strings(visual->visual, attr, strings, item_count) != 0)
+    {
+        char diagnostic[DVZ_SCENE_DIAGNOSTIC_SIZE];
+        int ret = snprintf(
+            diagnostic, sizeof(diagnostic),
+            "WASM string visual upload failed: attr=%s item_count=%u",
+            attr != NULL ? attr : "<null>", item_count);
+        if (ret < 0 || (size_t)ret >= sizeof(diagnostic))
+            return _fail(visual->owner, "WASM string visual upload failed");
+        return _fail(visual->owner, diagnostic);
+    }
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
 int dvz_wasm_api_visual_set_attr_buffer(
     uint32_t visual_handle, const char* attr, uint32_t buffer_handle, uint32_t byte_offset,
     uint32_t item_count)
@@ -908,7 +953,8 @@ EMSCRIPTEN_KEEPALIVE
 int dvz_wasm_api_set_capabilities(
     uint32_t scene_handle, uint32_t max_texture_dimension_2d, uint32_t max_bind_groups,
     uint32_t max_vertex_buffers, uint32_t max_buffer_size,
-    uint32_t min_texture_copy_bytes_per_row_alignment, uint32_t max_sample_count)
+    uint32_t min_texture_copy_bytes_per_row_alignment, uint32_t max_sample_count,
+    uint32_t supports_color_blending)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
     if (scene == NULL)
@@ -929,6 +975,7 @@ int dvz_wasm_api_set_capabilities(
     scene->caps.max_depth_sample_count = max_sample_count;
     scene->caps.min_texture_copy_bytes_per_row_alignment =
         min_texture_copy_bytes_per_row_alignment;
+    scene->caps.supports_color_blending = supports_color_blending != 0;
     return 0;
 }
 

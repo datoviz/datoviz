@@ -372,6 +372,28 @@ function textureFormatBytes(format) {
 
 
 function mapBlendFactor(factor) {
+  if (Number.isInteger(factor)) {
+    const factors = [
+      "zero",
+      "one",
+      "src",
+      "one-minus-src",
+      "dst",
+      "one-minus-dst",
+      "src-alpha",
+      "one-minus-src-alpha",
+      "dst-alpha",
+      "one-minus-dst-alpha",
+      "constant",
+      "one-minus-constant",
+      "constant",
+      "one-minus-constant",
+      "src-alpha-saturated",
+    ];
+    if (factor >= 0 && factor < factors.length) {
+      return factors[factor];
+    }
+  }
   switch (factor) {
     case "zero":
     case "one":
@@ -395,6 +417,12 @@ function mapBlendFactor(factor) {
 
 
 function mapBlendOperation(operation) {
+  if (Number.isInteger(operation)) {
+    const operations = ["add", "subtract", "reverse-subtract", "min", "max"];
+    if (operation >= 0 && operation < operations.length) {
+      return operations[operation];
+    }
+  }
   switch (operation) {
     case "add":
     case "subtract":
@@ -1556,7 +1584,10 @@ function objectLabel(kind) {
 
 
 function registerObject(state, map, id, object, kind, metadata = {}) {
-  if (state.objects.has(id)) {
+  const existing = state.objects.get(id);
+  if (existing !== undefined && existing.destroyed) {
+    state.objects.delete(id);
+  } else if (existing !== undefined) {
     throw new Error(`duplicate or reused object id ${id}`);
   }
   const record = {

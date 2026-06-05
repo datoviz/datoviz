@@ -27,6 +27,7 @@ Supported visual and interaction families:
 - primitive triangle-list visuals;
 - RGBA8 2D image visuals;
 - low-level atlas-backed glyph visuals;
+- semantic bitmap text visuals lowered through glyph atlas draws;
 - basic, textured, and material-controlled mesh visuals;
 - basic sphere visuals;
 - 2D panzoom controller input;
@@ -35,7 +36,7 @@ Supported visual and interaction families:
 Supported browser pages:
 
 - `examples/webgpu/examples.html?demo=wasm-2d`: point + pixel + marker + styled segment/path +
-  primitive + image + glyph + mesh + panzoom;
+  primitive + image + glyph + text + mesh + panzoom;
 - `examples/webgpu/examples.html?demo=wasm-3d`: basic sphere + textured 3D mesh + camera +
   arcball;
 - `examples/webgpu/fixtures.html`: DRP2 fixture dashboard for the pure browser WebGPU runner,
@@ -77,7 +78,7 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Setup/update/frame resource model | active through split binary packets and retained browser runtime state |
 | WGSL shader modules | supported and required for portable browser execution |
 | Vulkan-specific modules and presentation | unsupported in WASM; native-only |
-| Scene visual parity | limited to point/pixel dense and buffer-backed positions, basic marker, segment/path cap-join controls, primitive, RGBA8 image, low-level atlas glyph, basic/textured/material mesh, and basic sphere demos |
+| Scene visual parity | limited to point/pixel dense and buffer-backed positions, basic marker, segment/path cap-join controls, primitive, RGBA8 image, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, and basic sphere demos |
 | Controller parity | limited to panzoom and one 3D arcball proof |
 | Compute-to-render parity | experimental; fixture coverage exists, gallery-level behavior remains a separate release lane |
 | Query/picking/readback scene parity | deferred for live WASM scenes |
@@ -94,7 +95,7 @@ The browser path intentionally does not support:
 - GLSL/SPIR-V browser shader translation;
 - native scene/app parity;
 - custom shader APIs;
-- semantic text, labels, axes, colorbars, scale bars, picking, readback, volume, path subpath controls,
+- labels, axes, colorbars, scale bars, picking, readback, volume, path subpath controls,
   broad stroke/vector parity, sphere raycast/depth/material parity, and advanced technique parity
   in the WASM scene demos;
 - zero-copy payload transport;
@@ -130,8 +131,8 @@ Payload and diagnostics lifetime:
   borrowed UTF-8 JSON for debug and fixture export only;
 - JSON is not used as the browser render path;
 - `dvz_wasm_api_set_capabilities()` passes normalized browser limits for texture dimension, bind
-  groups, vertex buffers, buffer size, texture-copy row alignment, and sample count into scene
-  emission;
+  groups, vertex buffers, buffer size, texture-copy row alignment, sample count, and color-blending
+  support into scene emission;
 - `dvz_wasm_api_diagnostic()` returns borrowed strings with the same lifetime as the current
   diagnostic report;
 - successful emits should leave diagnostics empty;
@@ -176,7 +177,7 @@ Expected manual results for the current subset:
 - fixture dashboard: all committed rows pass, no unsupported rows, no failures;
 - fixture dashboard WASM Scene Smoke section: 2D point/pixel/marker/segment update, 2D image texture
   resize reload, and 3D sphere/textured mesh update rows pass;
-- 2D WASM example: point, pixel, marker, segment, path, primitive, image, glyph, and mesh content render;
+- 2D WASM example: point, pixel, marker, segment, path, primitive, image, glyph, text, and mesh content render;
   pan/zoom and resize work;
 - 3D WASM example: sphere impostors and a textured cube render; arcball drag, wheel zoom, and
   resize work.
@@ -252,6 +253,17 @@ Glyph promotion proof recorded on 2026-06-05:
   texture upload, and retained 2D frame draws through the JS WebGPU runner smoke;
 - `just webgpu-browser-smoke`: 2D and 3D WASM pages rendered, browser interaction was exercised,
   and dashboard WASM scene checks reported `2 pass, 0 fail`.
+
+Semantic text promotion proof recorded on 2026-06-05:
+
+- `node --check tools/wasm_scene_smoke.mjs`: passed;
+- `node --check web/wasm/scene.js`: passed;
+- `node --check examples/webgpu/demos/wasm_2d.js`: passed;
+- `node --check web/drp2/context.js`: passed;
+- `node --check web/drp2/webgpu.js`: passed;
+- `just wasm-scene-smoke`: WASM semantic text strings emitted a generated glyph visual, a bitmap
+  atlas texture upload, source-over transparent render passes, split packets, and browser-runner
+  replay for the retained 2D scene.
 
 Path promotion proof recorded on 2026-06-05:
 

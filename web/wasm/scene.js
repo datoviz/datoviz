@@ -45,6 +45,7 @@ export const DvzWasmVisual = Object.freeze({
   glyph: 8,
   primitive: 9,
   sphere: 10,
+  text: 11,
 });
 
 function requireOk(condition, message) {
@@ -82,6 +83,7 @@ function browserCapabilityArgs(capabilities = {}) {
       256,
     ),
     maxSampleCount: Math.max(1, ...sampleCounts),
+    supportsColorBlending: capabilities.supports_color_blending !== false,
   };
 }
 
@@ -197,6 +199,20 @@ function allocCString(Module, text) {
   return ptr;
 }
 
+function allocCStringArray(Module, values) {
+  requireOk(values.length > 0, "WASM string array must not be empty");
+  const stringPtrs = values.map((value) => allocCString(Module, value));
+  const arrayPtr = Module._malloc(stringPtrs.length * 4);
+  if (arrayPtr === 0) {
+    for (const ptr of stringPtrs) {
+      Module._free(ptr);
+    }
+    throw new Error("WASM allocation failed");
+  }
+  Module.HEAPU32.set(stringPtrs, arrayPtr / 4);
+  return { arrayPtr, stringPtrs };
+}
+
 function diagnosticMessage(Module, scene, prefix) {
   const count = Module._dvz_wasm_api_diagnostic_count(scene);
   const messages = [];
@@ -251,6 +267,7 @@ export class DatovizWasmScene {
       caps.maxBufferSize,
       caps.minTextureCopyBytesPerRowAlignment,
       caps.maxSampleCount,
+      caps.supportsColorBlending ? 1 : 0,
     );
     if (capsStatus !== 0) {
       throw new Error(diagnosticMessage(Module, scene, "scene rejected browser capabilities"));
@@ -667,6 +684,28 @@ export class DatovizWasmVisualHandle {
     } finally {
       this.Module._free(attrPtr);
       this.Module._free(dataPtr);
+    }
+  }
+
+  setStrings(attr, values) {
+    const attrPtr = allocCString(this.Module, attr);
+    const { arrayPtr, stringPtrs } = allocCStringArray(this.Module, values);
+    try {
+      const status = this.Module._dvz_wasm_api_visual_set_strings(
+        this.handle,
+        attrPtr,
+        arrayPtr,
+        values.length,
+      );
+      if (status !== 0) {
+        throw new Error(this._diagnosticMessage(`dvz_wasm_api_visual_set_strings(${attr}) failed with ${status}`));
+      }
+    } finally {
+      this.Module._free(attrPtr);
+      this.Module._free(arrayPtr);
+      for (const ptr of stringPtrs) {
+        this.Module._free(ptr);
+      }
     }
   }
 

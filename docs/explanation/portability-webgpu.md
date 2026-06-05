@@ -36,8 +36,8 @@ This keeps portability work from forking scene semantics.
 ## Current Browser Shape
 
 The first scene subset proves buffer-backed point/pixel positions, marker, segment/path cap-join
-controls, primitive, RGBA8 image, low-level atlas glyph, basic/textured/material mesh, basic
-sphere, panzoom, and a 3D sphere + textured mesh scene with arcball
+controls, primitive, RGBA8 image, low-level atlas glyph, semantic bitmap text,
+basic/textured/material mesh, basic sphere, panzoom, and a 3D sphere + textured mesh scene with arcball
 through the generic WASM scene ABI. The browser pages call the same handle-based `dvz_wasm_api_*` object API and feed emitted
 split DRP2 setup, update, and frame packets into the browser WebGPU runtime. JSON emission remains a
 debug and fixture-export view.
@@ -57,7 +57,7 @@ not mean that every native scene, app, or visual feature renders in the browser.
 | Scene semantics | supported for declared v0.4 scene/app surface | shared for the experimental WASM scene subset |
 | Runtime transport | DRP2 streams into vklite/canvas/stream/app | split binary DRP2 setup/update/frame packets into WebGPU |
 | Shader input | native runtime may use internal GLSL/SPIR-V/WGSL paths | WGSL only |
-| Visual families | broader retained v0.4 visual surface | buffer-backed point/pixel positions, basic marker, segment/path cap-join controls, primitive, RGBA8 image, low-level atlas glyph, basic/textured/material mesh, and basic sphere demos |
+| Visual families | broader retained v0.4 visual surface | buffer-backed point/pixel positions, basic marker, segment/path cap-join controls, primitive, RGBA8 image, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, and basic sphere demos |
 | Interaction | native controllers through app/window paths | panzoom and one arcball scene through WASM ABI input |
 | DRP2 command execution | native runtime under active hardening | committed positive fixture slice, WebGPU attachment streams, and semantic negative parity |
 | Compute | experimental compute-to-render lane | fixture-level compute and ResourceBarrier validation; gallery-level parity still experimental |

@@ -12,6 +12,7 @@
 
 #include <string.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_technique.h"
 
@@ -140,15 +141,25 @@ bool _scene_frame_plan_contracts_validate_ex(
             continue;
         }
 
-        DvzScenePassContract contract = {0};
-        if (!_scene_pass_contract_from_render_ex(plan, panel, render, graph_pass, caps, &contract))
+        DvzScenePassContract* contract =
+            (DvzScenePassContract*)dvz_calloc(1, sizeof(DvzScenePassContract));
+        if (contract == NULL)
         {
-            _contract_report(report, "render contract resolution failed");
+            _contract_report(report, "render contract allocation failed");
             ok = false;
             continue;
         }
-        if (!_scene_pass_contract_validate(&contract, report))
+
+        if (!_scene_pass_contract_from_render_ex(plan, panel, render, graph_pass, caps, contract))
+        {
+            _contract_report(report, "render contract resolution failed");
             ok = false;
+            dvz_free(contract);
+            continue;
+        }
+        if (!_scene_pass_contract_validate(contract, report))
+            ok = false;
+        dvz_free(contract);
     }
     return ok;
 }

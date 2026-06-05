@@ -30,6 +30,7 @@ const DVZ_WASM_VISUAL_MESH = 7;
 const DVZ_WASM_VISUAL_GLYPH = 8;
 const DVZ_WASM_VISUAL_PRIMITIVE = 9;
 const DVZ_WASM_VISUAL_SPHERE = 10;
+const DVZ_WASM_VISUAL_TEXT = 11;
 const DVZ_MATERIAL_MODEL_STANDARD = 2;
 const DVZ_SEGMENT_CAP_ROUND = 1;
 const DVZ_SEGMENT_CAP_TRIANGLE_OUT = 3;
@@ -63,6 +64,23 @@ function allocCString(Module, text) {
   requireOk(ptr !== 0, "malloc failed");
   Module.HEAPU8.set(bytes, ptr);
   return ptr;
+}
+
+function allocCStringArray(Module, values) {
+  requireOk(values.length > 0, "empty string arrays are not supported");
+  const stringPtrs = values.map((value) => allocCString(Module, value));
+  const ptr = Module._malloc(values.length * 4);
+  if (ptr === 0) {
+    for (const stringPtr of stringPtrs) Module._free(stringPtr);
+    throw new Error("malloc failed");
+  }
+  Module.HEAPU32.set(stringPtrs, ptr / 4);
+  return { ptr, stringPtrs };
+}
+
+function freeCStringArray(Module, array) {
+  Module._free(array.ptr);
+  for (const ptr of array.stringPtrs) Module._free(ptr);
 }
 
 function diagnostics(Module, scene) {
@@ -275,6 +293,7 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(source.includes("_dvz_wasm_api_buffer_set_data"), "browser wrapper cannot upload scene buffers");
   requireOk(source.includes("_dvz_wasm_api_visual_set_attr_buffer"), "browser wrapper cannot bind attr buffers");
   requireOk(source.includes("_dvz_wasm_api_visual_set_u32"), "browser wrapper cannot upload u32 attrs");
+  requireOk(source.includes("_dvz_wasm_api_visual_set_strings"), "browser wrapper cannot upload text strings");
   requireOk(source.includes("_dvz_wasm_api_visual_set_material"), "browser wrapper cannot set materials");
   requireOk(source.includes("_dvz_wasm_api_visual_set_segment_caps"), "browser wrapper cannot set segment caps");
   requireOk(source.includes("_dvz_wasm_api_visual_set_path_caps"), "browser wrapper cannot set path caps");
@@ -418,24 +437,24 @@ function expectDepthPipeline(pipeline, label, writeEnabled = true, compare = "le
   );
 }
 
-function expectCanvasRenderPass(stream, label) {
+function expectCanvasRenderPass(stream, label, expectedCount = 1) {
   const passes = commandsOf(stream, "BeginRenderPass");
-  requireOk(passes.length === 1, `${label}: expected one render pass, got ${passes.length}`);
-  const pass = passes[0];
   requireOk(
-    Array.isArray(pass.color_attachments) && pass.color_attachments.length === 1,
-    `${label}: expected one color attachment`,
+    passes.length === expectedCount,
+    `${label}: expected ${expectedCount} render pass(es), got ${passes.length}`,
   );
-  requireOk(
-    pass.color_attachments[0].texture_id === 0,
-    `${label}: expected browser canvas color target texture_id 0`,
-  );
-  requireOk(
-    pass.depth_stencil_attachment?.texture_id === 0,
-    `${label}: expected browser canvas depth target texture_id 0`,
-  );
-  expectCommandCount(stream, "SetViewport", 1, label);
-  expectCommandCount(stream, "SetScissor", 1, label);
+  for (const pass of passes) {
+    requireOk(
+      Array.isArray(pass.color_attachments) && pass.color_attachments.length === 1,
+      `${label}: expected one color attachment`,
+    );
+    requireOk(
+      pass.color_attachments[0].texture_id === 0,
+      `${label}: expected browser canvas color target texture_id 0`,
+    );
+  }
+  expectCommandCount(stream, "SetViewport", expectedCount, label);
+  expectCommandCount(stream, "SetScissor", expectedCount, label);
 }
 
 function expectDraw(stream, vertexCount, instanceCount, label) {
@@ -458,24 +477,24 @@ function expectDrawIndexed(stream, indexCount, instanceCount, label) {
   );
 }
 
-function expectFrameCommandShape(stream, label) {
+function expectFrameCommandShape(stream, label, expectedRenderPassCount = 1) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
-  expectCanvasRenderPass(stream, label);
+  expectCanvasRenderPass(stream, label, expectedRenderPassCount);
   expectCommandCount(stream, "BeginCommandEncoder", 1, label);
-  expectCommandCount(stream, "EndRenderPass", 1, label);
+  expectCommandCount(stream, "EndRenderPass", expectedRenderPassCount, label);
   expectCommandCount(stream, "FinishCommandEncoder", 1, label);
   expectCommandCount(stream, "QueueSubmit", 1, label);
 }
 
-function expectCommonSceneStreamShape(stream, label) {
-  expectFrameCommandShape(stream, label);
+function expectCommonSceneStreamShape(stream, label, expectedRenderPassCount = 1) {
+  expectFrameCommandShape(stream, label, expectedRenderPassCount);
   expectCommandCount(stream, "HelloRenderer", 1, label);
   expectCommandCount(stream, "RendererHelloReply", 1, label);
 }
 
 function expect2DSceneStreamShape(stream, label) {
-  expectCommonSceneStreamShape(stream, label);
+  expectCommonSceneStreamShape(stream, label, 2);
   expectDraw(stream, 6, 5, `${label} point`);
   expectDraw(stream, 6, 6, `${label} pixel`);
   expectDraw(stream, 6, 4, `${label} marker`);
@@ -484,6 +503,7 @@ function expect2DSceneStreamShape(stream, label) {
   expectDraw(stream, 3, 1, `${label} primitive`);
   expectDraw(stream, 4, 1, `${label} image`);
   expectDraw(stream, 18, 1, `${label} glyph`);
+  expectDraw(stream, 24, 1, `${label} text`);
   expectDraw(stream, 6, 1, `${label} mesh`);
   const pointPipeline = expectPipeline(
     stream,
@@ -642,18 +662,21 @@ function expect2DSceneStreamShape(stream, label) {
   const writes = commandsOf(stream, "WriteTexture");
   const imageTexture = textures.find((texture) => texture.width === 8 && texture.height === 8);
   const glyphTexture = textures.find((texture) => texture.width === 48 && texture.height === 16);
-  requireOk(textures.length === 2, `${label}: expected image and glyph RGBA8 textures, got ${textures.length}`);
+  const textTexture = textures.find((texture) => texture.width === 128 && texture.height === 60);
+  requireOk(textures.length === 3, `${label}: expected image, glyph, and text RGBA8 textures, got ${textures.length}`);
   requireOk(imageTexture !== undefined, `${label}: missing image texture`);
   requireOk(glyphTexture !== undefined, `${label}: missing glyph texture`);
-  for (const texture of [imageTexture, glyphTexture]) {
+  requireOk(textTexture !== undefined, `${label}: missing text atlas texture`);
+  for (const texture of [imageTexture, glyphTexture, textTexture]) {
     requireOk(
       texture.usage.includes("COPY_DST") && texture.usage.includes("TEXTURE_BINDING"),
       `${label}: texture ${texture.id} needs COPY_DST and TEXTURE_BINDING usage`,
     );
   }
-  requireOk(writes.length === 2, `${label}: expected image and glyph texture uploads, got ${writes.length}`);
+  requireOk(writes.length === 3, `${label}: expected image, glyph, and text texture uploads, got ${writes.length}`);
   const imageWrite = writes.find((write) => write.texture_id === imageTexture.id);
   const glyphWrite = writes.find((write) => write.texture_id === glyphTexture.id);
+  const textWrite = writes.find((write) => write.texture_id === textTexture.id);
   requireOk(
     imageWrite?.size?.width === 8 && imageWrite?.size?.height === 8,
     `${label}: image texture upload does not match texture resource`,
@@ -662,17 +685,29 @@ function expect2DSceneStreamShape(stream, label) {
     glyphWrite?.size?.width === 48 && glyphWrite?.size?.height === 16,
     `${label}: glyph texture upload does not match texture resource`,
   );
+  requireOk(
+    textWrite?.size?.width === 128 && textWrite?.size?.height === 60,
+    `${label}: text atlas upload does not match texture resource`,
+  );
   requireOk(imageWrite.bytes_per_row === 32, `${label}: unexpected image upload row pitch`);
   requireOk(glyphWrite.bytes_per_row === 192, `${label}: unexpected glyph upload row pitch`);
+  requireOk(textWrite.bytes_per_row === 512, `${label}: unexpected text atlas upload row pitch`);
   requireOk(
-    commandsOf(stream, "CreateRenderPipeline").length === 9,
-    `${label}: expected point, pixel, marker, segment, path, primitive, image, glyph, and mesh pipelines`,
+    commandsOf(stream, "CreateRenderPipeline").length === 10,
+    `${label}: expected point, pixel, marker, segment, path, primitive, image, glyph, text, and mesh pipelines`,
   );
 }
 
-function expect2DUpdateStreamShape(stream, label, pointInstances = 5) {
-  expectFrameCommandShape(stream, label);
-  expectNoSetupCommands(stream, label);
+function expect2DUpdateStreamShape(
+  stream,
+  label,
+  pointInstances = 5,
+  { allowSetupCommands = false } = {},
+) {
+  expectFrameCommandShape(stream, label, 2);
+  if (!allowSetupCommands) {
+    expectNoSetupCommands(stream, label);
+  }
   expectDraw(stream, 6, pointInstances, `${label} point`);
   expectDraw(stream, 6, 6, `${label} pixel`);
   expectDraw(stream, 6, 4, `${label} marker`);
@@ -681,6 +716,7 @@ function expect2DUpdateStreamShape(stream, label, pointInstances = 5) {
   expectDraw(stream, 3, 1, `${label} primitive`);
   expectDraw(stream, 4, 1, `${label} image`);
   expectDraw(stream, 18, 1, `${label} glyph`);
+  expectDraw(stream, 24, 1, `${label} text`);
   expectDraw(stream, 6, 1, `${label} mesh`);
 }
 
@@ -892,6 +928,7 @@ function setCapabilities(
   minTextureCopyBytesPerRowAlignment,
   maxSampleCount,
   label,
+  { supportsColorBlending = true } = {},
 ) {
   expectStatus(
     Module._dvz_wasm_api_set_capabilities(
@@ -902,6 +939,7 @@ function setCapabilities(
       maxBufferSize,
       minTextureCopyBytesPerRowAlignment,
       maxSampleCount,
+      supportsColorBlending ? 1 : 0,
     ),
     0,
     label,
@@ -928,6 +966,9 @@ const normalNamePtr = allocCString(Module, "normal");
 const radiusNamePtr = allocCString(Module, "radius");
 const texcoordsNamePtr = allocCString(Module, "texcoords");
 const boundsNamePtr = allocCString(Module, "bounds");
+const textNamePtr = allocCString(Module, "text");
+const anchorNamePtr = allocCString(Module, "anchor");
+const sizeNamePtr = allocCString(Module, "size");
 
 try {
   const diagnosticScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
@@ -946,7 +987,7 @@ try {
     );
     expectNoDiagnostics(Module, diagnosticScene, "successful format reset");
     expectStatus(
-      Module._dvz_wasm_api_set_capabilities(diagnosticScene, 0, 4, 8, 1024, 256, 1),
+      Module._dvz_wasm_api_set_capabilities(diagnosticScene, 0, 4, 8, 1024, 256, 1, 1),
       -1,
       "invalid capabilities",
     );
@@ -1081,7 +1122,6 @@ try {
   } finally {
     Module._dvz_wasm_api_scene_destroy(diagnosticScene);
   }
-
   const positions = new Float32Array([-0.75, -0.45, 0, -0.35, 0.35, 0, 0.05, -0.1, 0, 0.42, 0.5, 0, 0.72, -0.35, 0]);
   const colors = new Uint8Array([231, 77, 60, 255, 46, 204, 113, 255, 52, 152, 219, 255, 241, 196, 15, 255, 155, 89, 182, 255]);
   const sizes = new Float32Array([32, 44, 36, 48, 40]);
@@ -1161,6 +1201,12 @@ try {
   const glyphTexcoordsData = new Float32Array(glyphTexcoords);
   const glyphColorData = new Uint8Array(glyphColors);
   const glyphAngleData = new Float32Array(glyphAngles);
+  const textStrings = allocCStringArray(Module, ["WASM"]);
+  const textPositions = new Float32Array([0.02, 0.78, 0.24]);
+  const textAnchors = new Float32Array([0, 0.5]);
+  const textSizes = new Float32Array([12]);
+  const textColors = new Uint8Array([255, 255, 255, 245]);
+  const textAngles = new Float32Array([0]);
   const meshPositions = new Float32Array([0.18, 0.18, 0.22, 0.86, 0.18, 0.22, 0.18, 0.78, 0.22, 0.86, 0.18, 0.22, 0.86, 0.78, 0.22, 0.18, 0.78, 0.22]);
   const meshColors = new Uint8Array([90, 170, 255, 240, 85, 230, 190, 240, 160, 120, 255, 240, 85, 230, 190, 240, 255, 135, 210, 240, 160, 120, 255, 240]);
   const meshNormals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
@@ -1182,6 +1228,8 @@ try {
     allocArray(Module, glyphPositionData), allocArray(Module, glyphBoundsData),
     allocArray(Module, glyphTexcoordsData), allocArray(Module, glyphColorData),
     allocArray(Module, glyphAngleData), allocArray(Module, glyphPixels),
+    allocArray(Module, textPositions), allocArray(Module, textAnchors),
+    allocArray(Module, textSizes), allocArray(Module, textColors), allocArray(Module, textAngles),
     allocArray(Module, meshPositions), allocArray(Module, meshColors), allocArray(Module, meshNormals),
   ];
   try {
@@ -1265,9 +1313,9 @@ try {
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, glyph), 0, "api add glyph");
 
     const mesh = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_MESH, 0);
-    setF32(Module, mesh, positionNamePtr, ptrs[29], meshPositions.length / 3, "api mesh position");
-    setRGBA8(Module, mesh, colorNamePtr, ptrs[30], meshColors.length / 4, "api mesh color");
-    setF32(Module, mesh, normalNamePtr, ptrs[31], meshNormals.length / 3, "api mesh normal");
+    setF32(Module, mesh, positionNamePtr, ptrs[34], meshPositions.length / 3, "api mesh position");
+    setRGBA8(Module, mesh, colorNamePtr, ptrs[35], meshColors.length / 4, "api mesh color");
+    setF32(Module, mesh, normalNamePtr, ptrs[36], meshNormals.length / 3, "api mesh normal");
     setStandardMaterial(Module, mesh, "api mesh standard material");
     expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, mesh), 0, "api add mesh");
 
@@ -1277,6 +1325,20 @@ try {
     expectStatus(Module._dvz_wasm_api_emit(scene, figure), -1, "buffer capability emit rejection");
     expectAnyDiagnostics(Module, scene, "buffer capability emit rejection");
     setCapabilities(Module, scene, 4096, 4, 8, 256 * 1024 * 1024, 256, 1, "restore buffer capability");
+
+    const text = Module._dvz_wasm_api_visual(scene, DVZ_WASM_VISUAL_TEXT, 0);
+    expectStatus(
+      Module._dvz_wasm_api_visual_set_strings(text, textNamePtr, textStrings.ptr, 1),
+      0,
+      "api text strings",
+    );
+    setF32(Module, text, positionNamePtr, ptrs[29], textPositions.length / 3, "api text position");
+    setF32(Module, text, anchorNamePtr, ptrs[30], textAnchors.length / 2, "api text anchor");
+    setF32(Module, text, sizeNamePtr, ptrs[31], textSizes.length, "api text size");
+    setRGBA8(Module, text, colorNamePtr, ptrs[32], textColors.length / 4, "api text color");
+    setF32(Module, text, angleNamePtr, ptrs[33], textAngles.length, "api text angle");
+    expectStatus(Module._dvz_wasm_api_panel_add_visual(panel, text), 0, "api add text");
+
     const initial = emitStream(Module, scene, figure, "generic 2D initial");
     expect2DSceneStreamShape(initial.stream, "generic 2D initial");
     const updatedColors = new Uint8Array(colors);
@@ -1354,7 +1416,7 @@ try {
         "api image texture resize",
       );
       const visualReload = emitStream(Module, scene, figure, "generic 2D visual reload");
-      expectFrameCommandShape(visualReload.stream, "generic 2D visual reload");
+      expectFrameCommandShape(visualReload.stream, "generic 2D visual reload", 2);
       expectSetupCommands(visualReload.stream, "generic 2D visual reload");
       expectDraw(visualReload.stream, 6, 5, "generic 2D visual reload point");
       expectDraw(visualReload.stream, 6, 6, "generic 2D visual reload pixel");
@@ -1364,6 +1426,7 @@ try {
       expectDraw(visualReload.stream, 3, 1, "generic 2D visual reload primitive");
       expectDraw(visualReload.stream, 4, 1, "generic 2D visual reload image");
       expectDraw(visualReload.stream, 18, 1, "generic 2D visual reload glyph");
+      expectDraw(visualReload.stream, 24, 1, "generic 2D visual reload text");
       expectDraw(visualReload.stream, 6, 1, "generic 2D visual reload mesh");
       expectStatus(
         Module._dvz_wasm_api_visual_set_texture_rgba8(image, ptrs[22], imageWidth, imageHeight),
@@ -1394,7 +1457,7 @@ try {
     expectStatus(Module._dvz_wasm_api_resize(scene, figure, smokeSize * 2, smokeSize + 8, 2), 0, "api resize");
     expectNoPayload(Module, scene, "resize invalidates 2D payload");
     const resized = emitStream(Module, scene, figure, "generic 2D resized");
-    expect2DUpdateStreamShape(resized.stream, "generic 2D resized");
+    expect2DUpdateStreamShape(resized.stream, "generic 2D resized", 5, { allowSetupCommands: true });
     requireOk(
       resized.payload !== interactive.payload,
       "generic 2D resized payload did not replace interactive payload",
@@ -1405,6 +1468,7 @@ try {
     console.log(`commands_api2d=initial:${initial.stream.commands.length} interactive:${interactive.stream.commands.length} resize:${resized.stream.commands.length}`);
   } finally {
     ptrs.forEach((ptr) => Module._free(ptr));
+    freeCStringArray(Module, textStrings);
     Module._dvz_wasm_api_scene_destroy(scene);
   }
 
@@ -1492,4 +1556,7 @@ try {
   Module._free(radiusNamePtr);
   Module._free(texcoordsNamePtr);
   Module._free(boundsNamePtr);
+  Module._free(textNamePtr);
+  Module._free(anchorNamePtr);
+  Module._free(sizeNamePtr);
 }

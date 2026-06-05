@@ -331,7 +331,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD, .desc_kind = DVZ_SCENE_VISUAL_DESC_GLYPH,
      .attrs = GLYPH_ATTRS, .attr_count = DVZ_ARRAY_COUNT(GLYPH_ATTRS),
      .expected_attrs = "position, bounds, texcoords, color, angle, plus a bound 2D field",
-     .upload_position_topology = true, .panel_clip_rect = true},
+     .upload_position_topology = true, .panel_clip_rect = true,
+     .sampled_field_texture_upload = true},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_TEXT, "text", _scene_text_visual_lowering,
          _scene_visual_default_bounds, _scene_text_visual_bind_desc,

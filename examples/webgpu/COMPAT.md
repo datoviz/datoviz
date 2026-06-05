@@ -178,6 +178,12 @@ Current status as of this note:
   panzoom stream and the 3D sphere/textured mesh/arcball stream; `just webgpu-browser-smoke`
   rendered both WASM demos, exercised interaction, and reported dashboard WASM scene checks
   `2 pass, 0 fail`.
+- recorded local semantic-text promotion proof on 2026-06-05: `node --check
+  tools/wasm_scene_smoke.mjs`, `node --check web/wasm/scene.js`, `node --check
+  examples/webgpu/demos/wasm_2d.js`, `node --check web/drp2/context.js`, and `node --check
+  web/drp2/webgpu.js` passed; `just wasm-scene-smoke` emitted, preflighted, packetized, and
+  replayed the 2D point/pixel/marker/segment/path/primitive/image/glyph/text/mesh + panzoom stream
+  and the 3D sphere/textured mesh/arcball stream through the JS WebGPU runner smoke.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
@@ -281,6 +287,7 @@ lets fixture-level `capabilities` entries narrow it for negative tests. The curr
 - `supported_shader_formats`: `wgsl`
 - `supported_texture_formats`: the committed WebGPU texture subset plus the preferred canvas format
 - `supported_sample_counts`: `1` and `4`
+- `supports_color_blending`: `true`
 - `max_texture_dimension_2d` when exposed by the WebGPU device limits
 - `supports_fp64`: `false`
 

@@ -11,6 +11,7 @@ export const demo = {
     addPrimitive(scene, panel);
     addImage(scene, panel);
     addGlyphs(scene, panel);
+    addText(scene, panel);
     addMesh(scene, panel);
     scene.attachPanzoom(panel);
   },
@@ -279,6 +280,24 @@ function addGlyphs(scene, panel) {
   glyph.setF32("angle", new Float32Array(angles), angles.length);
   glyph.setTextureRGBA8(makeGlyphAtlas(width, height), width, height);
   scene.addVisual(panel, glyph);
+}
+
+function addText(scene, panel) {
+  const text = scene.visual("text");
+  const strings = ["WASM"];
+  const positions = new Float32Array([0.02, 0.78, 0.24]);
+  const anchors = new Float32Array([0, 0.5]);
+  const sizes = new Float32Array([15]);
+  const colors = new Uint8Array([255, 255, 255, 245]);
+  const angles = new Float32Array([0]);
+
+  text.setStrings("text", strings);
+  text.setF32("position", positions, strings.length);
+  text.setF32("anchor", anchors, strings.length);
+  text.setF32("size", sizes, strings.length);
+  text.setRGBA8("color", colors, strings.length);
+  text.setF32("angle", angles, strings.length);
+  scene.addVisual(panel, text);
 }
 
 function addMesh(scene, panel) {

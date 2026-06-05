@@ -484,19 +484,22 @@ bool _emitter_prepare_render_multi(
             {
                 ok = dvz_drp2_stream_pipeline_set_color_target(stream, 0, VK_FORMAT_R32_SFLOAT);
             }
-            else if (ok && cfg != NULL && cfg->color_target_format != 0)
+            else
             {
-                ok = dvz_drp2_stream_pipeline_set_color_target(
-                    stream, 0, cfg->color_target_format);
-            }
-            else if (ok && (_scene_alpha_mode_is_blended(alpha_mode) || segment_coverage_blend))
-            {
-                ok = dvz_drp2_stream_pipeline_set_color_blend(
-                    stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-                    VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-                    VK_BLEND_OP_ADD,
-                    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
+                if (ok && cfg != NULL && cfg->color_target_format != 0)
+                {
+                    ok = dvz_drp2_stream_pipeline_set_color_target(
+                        stream, 0, cfg->color_target_format);
+                }
+                if (ok && (_scene_alpha_mode_is_blended(alpha_mode) || segment_coverage_blend))
+                {
+                    ok = dvz_drp2_stream_pipeline_set_color_blend(
+                        stream, 0, VK_BLEND_FACTOR_SRC_ALPHA,
+                        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE,
+                        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
+                        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                            VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
+                }
             }
             if (!ok)
                 _diagnostic(report, "scene render pipeline setup failed");

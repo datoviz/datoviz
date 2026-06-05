@@ -26,6 +26,7 @@ export function runtimeCapabilities(device, canvasFormat, adapter = null) {
     supported_shader_formats: ["wgsl"],
     supported_texture_formats: supportedTextureFormats(canvasFormat),
     supported_sample_counts: [1, 4],
+    supports_color_blending: true,
     supports_fp64: false,
     min_texture_copy_bytes_per_row_alignment: 256,
   };

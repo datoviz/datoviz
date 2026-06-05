@@ -25,7 +25,7 @@ The WASM examples build the generic scene ABI with Emscripten, route pointer inp
 controllers, and execute emitted DRP2 packets with the browser WebGPU runtime. Reusable browser
 bridge/session code lives under `web/wasm/`; `examples/webgpu/demos/` contains content-only demo
 modules. The 2D proof renders buffer-backed point/pixel positions, marker, styled segment/path,
-primitive, image, glyph, and mesh visuals with panzoom.
+primitive, image, glyph, semantic bitmap text, and mesh visuals with panzoom.
 
 ```bash
 just wasm-scene-smoke
