@@ -105,7 +105,7 @@ static void _fill_points(VideoExportScenario* state, double t)
         state->colors[i] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
     }
 
-    const float phase = 0.50f * TAU * (float)t;
+    const float phase = 0.12f * TAU * (float)t;
     const uint32_t cursor = POINT_COUNT - 1u;
     state->positions[cursor][0] = 0.78f * sinf(phase);
     state->positions[cursor][1] = 0.18f * cosf(0.65f * phase);
