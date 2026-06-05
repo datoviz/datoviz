@@ -10,8 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/annotation_readout
- * Run:    ./build/examples/c/features/annotation_readout
- * Smoke:  ./build/examples/c/features/annotation_readout 1
+ * Run:    ./build/examples/c/features/annotation_readout --live
+ * Smoke:  ./build/examples/c/features/annotation_readout --png
  */
 
 
@@ -27,10 +27,9 @@
 
 #include "_assertions.h"
 #include "_compat.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -218,11 +217,82 @@ static DvzAnnotation* _add_readout(DvzPanel* panel, const vec3 position)
 
 
 /*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Initialize the deterministic retained annotation readout scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
+
+    vec3 data_positions[POINT_COUNT] = {{0}};
+    DvzColor colors[POINT_COUNT] = {{0}};
+    float diameters[POINT_COUNT] = {0};
+
+    _fill_points(data_positions, colors, diameters);
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
+
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
+    example_graphite_cyan_set_panel_background(panel);
+
+    if (!dvz_panel_set_layout_reserve(
+        panel, &(DvzPanelLayoutReserve){.left = 0.09f, .right = 0.06f, .bottom = 0.10f,
+                                        .top = 0.06f}))
+        return false;
+    if (dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) != 0)
+        return false;
+    if (dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, 1.0) != 0)
+        return false;
+
+    if (!_add_points(ctx->scene, panel, data_positions, colors, diameters))
+        return false;
+
+    DvzAnnotation* readout = _add_readout(panel, data_positions[READOUT_INDEX]);
+    return readout != NULL;
+}
+
+
+
+/**
+ * Return the annotation readout scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _annotation_readout_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_annotation_readout",
+        .title = "annotation_readout",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 /**
- * Run the deterministic retained annotation readout feature proof.
+ * Run the deterministic retained annotation readout feature proof through the native scenario
+ * runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -230,58 +300,6 @@ static DvzAnnotation* _add_readout(DvzPanel* panel, const vec3 position)
  */
 int main(int argc, char** argv)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_annotation_readout");
-
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    vec3 data_positions[POINT_COUNT] = {{0}};
-    DvzColor colors[POINT_COUNT] = {{0}};
-    float diameters[POINT_COUNT] = {0};
-
-    _fill_points(data_positions, colors, diameters);
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    example_graphite_cyan_set_panel_background(panel);
-
-    bool ok = dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.09f, .right = 0.06f, .bottom = 0.10f,
-                                        .top = 0.06f});
-    EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve() failed");
-    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(x) failed");
-    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, 1.0);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(y) failed");
-
-    ok = _add_points(scene, panel, data_positions, colors, diameters);
-    EXAMPLE_CHECK(ok, "adding readout points failed");
-
-    DvzAnnotation* readout = _add_readout(panel, data_positions[READOUT_INDEX]);
-    EXAMPLE_CHECK(readout != NULL, "dvz_annotation_label() failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "annotation_readout");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    DvzScenarioSpec spec = _annotation_readout_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
