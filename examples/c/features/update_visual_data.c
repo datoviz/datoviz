@@ -10,8 +10,9 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/update_visual_data
- * Run:    ./build/examples/c/features/update_visual_data
- * Smoke:  ./build/examples/c/features/update_visual_data 1
+ * Run:    ./build/examples/c/features/update_visual_data --live
+ * Smoke:  ./build/examples/c/features/update_visual_data --png
+ * Video:  ./build/examples/c/features/update_visual_data --offscreen-record 120
  */
 
 
@@ -23,10 +24,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "datoviz/app.h"
+#include "_alloc.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -41,48 +42,32 @@
 
 
 /*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct UpdateVisualDataState
+{
+    DvzVisual* point;
+    bool updated;
+} UpdateVisualDataState;
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
 /**
- * Upload all point arrays to one retained point visual.
+ * Upload either the initial or replacement point arrays to one retained point visual.
  *
  * @param visual point visual
- * @param positions point positions
- * @param colors point colors
- * @param diameters point diameters
+ * @param updated whether to upload the replacement data
  * @return true when the upload succeeds
  */
-static bool _upload_points(
-    DvzVisual* visual, const vec3 positions[POINT_COUNT], const DvzColor colors[POINT_COUNT],
-    const float diameters[POINT_COUNT])
+static bool _upload_points(DvzVisual* visual, bool updated)
 {
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
-        {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
-    };
-    return dvz_visual_set_data_many(visual, updates, 3) == 0;
-}
-
-
-
-/*************************************************************************************************/
-/*  Functions                                                                                    */
-/*************************************************************************************************/
-
-/**
- * Run the full retained visual data update feature example.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
- */
-int main(int argc, char** argv)
-{
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
+    if (visual == NULL)
+        return false;
 
     const vec3 initial_positions[POINT_COUNT] = {
         {-0.72f, -0.32f, 0.0f}, {-0.48f, -0.32f, 0.0f}, {-0.24f, -0.32f, 0.0f},
@@ -115,51 +100,154 @@ int main(int argc, char** argv)
     const float initial_diameters[POINT_COUNT] = {18.0f, 18.0f, 18.0f, 18.0f, 18.0f, 18.0f, 18.0f};
     const float updated_diameters[POINT_COUNT] = {26.0f, 34.0f, 44.0f, 58.0f, 44.0f, 34.0f, 26.0f};
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    DvzVisualDataUpdate updates[] = {
+        {
+            .attr_name = "position",
+            .data = updated ? updated_positions : initial_positions,
+            .item_count = POINT_COUNT,
+        },
+        {
+            .attr_name = "color",
+            .data = updated ? updated_colors : initial_colors,
+            .item_count = POINT_COUNT,
+        },
+        {
+            .attr_name = "diameter",
+            .data = updated ? updated_diameters : initial_diameters,
+            .item_count = POINT_COUNT,
+        },
+    };
+    return dvz_visual_set_data_many(visual, updates, 3) == 0;
+}
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+
+/*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Initialize the retained visual data update scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL || out_user == NULL)
+        return false;
+
+    UpdateVisualDataState* state =
+        (UpdateVisualDataState*)dvz_calloc(1, sizeof(UpdateVisualDataState));
+    if (state == NULL)
+        return false;
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        goto error;
+
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        goto error;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzVisual* point = dvz_point(scene, 0);
-    EXAMPLE_CHECK(point != NULL, "dvz_point() failed");
-
-    EXAMPLE_CHECK(
-        _upload_points(point, initial_positions, initial_colors, initial_diameters),
-        "initial point upload failed");
-    EXAMPLE_CHECK(
-        _upload_points(point, updated_positions, updated_colors, updated_diameters),
-        "full point data replacement failed");
+    state->point = dvz_point(ctx->scene, 0);
+    if (state->point == NULL)
+        goto error;
+    if (!_upload_points(state->point, false))
+        goto error;
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
     style.stroke_width = 0.0f;
-    int rc = dvz_point_set_style(point, &style);
-    EXAMPLE_CHECK(rc == 0, "dvz_point_set_style() failed");
+    if (dvz_point_set_style(state->point, &style) != 0)
+        goto error;
 
-    rc = dvz_visual_set_depth_test(point, false);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_depth_test() failed");
+    if (dvz_visual_set_depth_test(state->point, false) != 0)
+        goto error;
 
-    rc = dvz_panel_add_visual(panel, point, NULL);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
+    if (dvz_panel_add_visual(panel, state->point, NULL) != 0)
+        goto error;
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
+    *out_user = state;
+    return true;
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "update_visual_data");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+error:
+    dvz_free(state);
+    return false;
+}
 
-    dvz_app_run(app, example_frame_count_any(argc, argv));
-    ret = 0;
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+/**
+ * Replace retained point data once after one second of scenario time.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    if (ctx == NULL || user == NULL)
+        return;
+
+    UpdateVisualDataState* state = (UpdateVisualDataState*)user;
+    if (!state->updated && ctx->time >= 1.0)
+    {
+        state->updated = _upload_points(state->point, true);
+    }
+}
+
+
+
+/**
+ * Destroy the retained visual data update scenario.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
+}
+
+
+
+/**
+ * Return the retained visual data update scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _update_visual_data_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_update_visual_data",
+        .title = "update_visual_data",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .frame = _scenario_frame,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the full retained visual data update feature example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _update_visual_data_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
