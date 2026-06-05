@@ -39,7 +39,8 @@ accepting NumPy arrays for policy-declared data arguments. Source of truth:
    one short feature example per public v0.4 feature, retained textured mesh, and composed
    annotation/layout examples.
 3. **WebGPU/WASM:** supported subset docs, diagnostics, portable target hardening,
-   browser/runner smoke, and next visual-family expansion.
+   browser/runner smoke, and the promotion queue in `docs/reference/webgpu-subset.md`
+   starting with colorbar.
 4. **Compute+graphics:** minimal DRP2 sync objects/barriers, native compute-to-render proof,
    WebGPU parity diagnostics, and a C-first particle-advection gallery target.
 5. **Runtime hardening:** concrete scene -> DRP2 -> vklite/canvas/app lifetime, resize, descriptor,

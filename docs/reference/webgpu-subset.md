@@ -103,6 +103,23 @@ The browser path intentionally does not support:
 - zero-copy payload transport;
 - stable public JS/TS bindings for the WASM scene ABI.
 
+## WASM Promotion Queue
+
+Promote browser scene features in this order unless a release blocker changes the priority:
+
+1. colorbar;
+2. scale bar;
+3. legend and readout-style overlays;
+4. richer labels, including unsigned label variants and palette/category updates;
+5. broader vector/path parity, including path subpaths and stroke edge cases;
+6. picking and readback for live WASM scenes;
+7. volume rendering.
+
+Each promoted item must reuse the retained native scene path, add the narrow WASM ABI surface it
+needs, extend `tools/wasm_scene_smoke.mjs`, update the 2D or 3D browser demo, and record proof in
+this document plus `examples/webgpu/COMPAT.md`. The next planned visual-family promotion is
+`colorbar`.
+
 Deferred DRP2 commands remain outside the active browser subset:
 
 - `CreatePipelineLayout`;
