@@ -785,14 +785,13 @@ static int kvazaar_start(DvzVideoEncoder* enc)
     cfg->input_bitdepth = 8;
     cfg->input_format = KVZ_FORMAT_P420;
     cfg->intra_period = cfg->framerate_num * 2;
-    uint32_t gop = cfg->gop_len > 0 ? (uint32_t)cfg->gop_len : 1;
-    int32_t aligned = (cfg->intra_period / (int32_t)gop) * (int32_t)gop;
-    if (aligned <= 0)
-    {
-        aligned = (int32_t)gop;
-    }
-    cfg->intra_period = aligned;
-    cfg->gop_len = (int8_t)gop;
+    /* Keep MP4 capture decode timestamps monotonic; the current mux path has no CTS offsets. */
+    cfg->gop_len = 0;
+    cfg->gop_lowdelay = 1;
+    cfg->open_gop = 0;
+    cfg->ref_frames = 1;
+    cfg->bipred = 0;
+    cfg->owf = 0;
     cfg->vps_period = cfg->intra_period;
     cfg->target_bitrate = 0;
     cfg->qp = 22;

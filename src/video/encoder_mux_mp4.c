@@ -29,6 +29,12 @@ MUTE_OFF
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_HEVC_NAL_AUD_NUT        35u
+#define DVZ_HEVC_NAL_FD_NUT         38u
+#define DVZ_HEVC_NAL_PREFIX_SEI_NUT 39u
+#define DVZ_HEVC_NAL_SUFFIX_SEI_NUT 40u
+
+
 static int mp4_write_cb(int64_t offset, const void* buffer, size_t size, void* token)
 {
     FILE* fp = (FILE*)token;
@@ -45,6 +51,98 @@ static int mp4_write_cb(int64_t offset, const void* buffer, size_t size, void* t
     }
     size_t written = fwrite(buffer, 1, size, fp);
     return (written == size) ? MP4E_STATUS_OK : MP4E_STATUS_FILE_WRITE_ERROR;
+}
+
+
+
+static const uint8_t* _annexb_start_code(
+    const uint8_t* ptr, const uint8_t* end, size_t* out_prefix)
+{
+    ANN(out_prefix);
+    *out_prefix = 0;
+    if (ptr == NULL || end == NULL)
+        return NULL;
+
+    while (ptr + 3 <= end)
+    {
+        if (ptr[0] == 0 && ptr[1] == 0)
+        {
+            if (ptr[2] == 1)
+            {
+                *out_prefix = 3;
+                return ptr;
+            }
+            if (ptr + 4 <= end && ptr[2] == 0 && ptr[3] == 1)
+            {
+                *out_prefix = 4;
+                return ptr;
+            }
+        }
+        ptr++;
+    }
+    return NULL;
+}
+
+
+
+static bool _hevc_skip_side_data(const uint8_t* nal, const uint8_t* nal_end)
+{
+    if (nal == NULL || nal_end == NULL || nal + 2 > nal_end)
+        return false;
+
+    const uint32_t type = ((uint32_t)nal[0] >> 1) & 0x3fu;
+    return type == DVZ_HEVC_NAL_AUD_NUT || type == DVZ_HEVC_NAL_FD_NUT ||
+           type == DVZ_HEVC_NAL_PREFIX_SEI_NUT || type == DVZ_HEVC_NAL_SUFFIX_SEI_NUT;
+}
+
+
+
+static int _mp4_h26x_write_datoviz_sample(
+    mp4_h26x_writer_t* writer, const DvzVideoEncoder* enc, const uint8_t* data, uint32_t size,
+    uint32_t duration)
+{
+    ANN(writer);
+    ANN(enc);
+    if (data == NULL || size == 0)
+        return MP4E_STATUS_OK;
+    if (enc->cfg.codec != DVZ_VIDEO_CODEC_HEVC)
+        return mp4_h26x_write_nal(writer, data, (int)size, duration);
+
+    const uint8_t* begin = data;
+    const uint8_t* end = data + size;
+    size_t prefix = 0;
+    const uint8_t* start = _annexb_start_code(begin, end, &prefix);
+    if (start == NULL)
+        return mp4_h26x_write_nal(writer, data, (int)size, duration);
+
+    uint8_t* filtered = (uint8_t*)dvz_malloc(size);
+    if (filtered == NULL)
+        return MP4E_STATUS_NO_MEMORY;
+
+    uint32_t filtered_size = 0;
+    while (start != NULL)
+    {
+        const uint8_t* nal = start + prefix;
+        size_t next_prefix = 0;
+        const uint8_t* next = _annexb_start_code(nal, end, &next_prefix);
+        const uint8_t* nal_end = next != NULL ? next : end;
+
+        if (!_hevc_skip_side_data(nal, nal_end))
+        {
+            const size_t bytes = (size_t)(nal_end - start);
+            dvz_memcpy(filtered + filtered_size, bytes, start, bytes);
+            filtered_size += (uint32_t)bytes;
+        }
+
+        start = next;
+        prefix = next_prefix;
+    }
+
+    int rc = MP4E_STATUS_OK;
+    if (filtered_size > 0)
+        rc = mp4_h26x_write_nal(writer, filtered, (int)filtered_size, duration);
+    dvz_free(filtered);
+    return rc;
 }
 
 
@@ -128,7 +226,7 @@ void dvz_video_encoder_mux_sample(
     {
         return;
     }
-    int err = mp4_h26x_write_nal(enc->mp4_writer, data, (int)size, duration);
+    int err = _mp4_h26x_write_datoviz_sample(enc->mp4_writer, enc, data, size, duration);
     if (err != MP4E_STATUS_OK)
     {
         log_error("minimp4 streaming failed with status %d", err);
@@ -247,7 +345,8 @@ int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
             fclose(mp4_fp);
             return -1;
         }
-        int err = mp4_h26x_write_nal(&writer, buffer, (int)sample.size, sample.duration);
+        int err =
+            _mp4_h26x_write_datoviz_sample(&writer, enc, buffer, sample.size, sample.duration);
         if (err != MP4E_STATUS_OK)
         {
             log_error(
