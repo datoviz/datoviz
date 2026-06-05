@@ -10,9 +10,8 @@
  * Style: visuals, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c visuals/text
- * Run:    ./build/examples/c/visuals/text
- * Smoke:  ./build/examples/c/visuals/text 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/visuals/text 1
+ * Run:    ./build/examples/c/visuals/text --live
+ * Smoke:  ./build/examples/c/visuals/text --png
  */
 
 
@@ -25,10 +24,9 @@
 #include <stdint.h>
 
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -132,11 +130,61 @@ static bool _add_texts(DvzPanel* panel)
 
 
 /*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Initialize the retained semantic text scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
+
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
+    example_graphite_cyan_set_panel_background(panel);
+    return _add_texts(panel);
+}
+
+
+
+/**
+ * Return the semantic text scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _text_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "visual_text",
+        .title = "visual_text",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 /**
- * Run the retained semantic text example.
+ * Run the retained semantic text example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -144,41 +192,6 @@ static bool _add_texts(DvzPanel* panel)
  */
 int main(int argc, char** argv)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("visual_text");
-
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    example_graphite_cyan_set_panel_background(panel);
-
-    EXAMPLE_CHECK(_add_texts(panel), "text setup failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_text");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    DvzScenarioSpec spec = _text_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
