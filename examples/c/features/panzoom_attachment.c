@@ -10,8 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/panzoom_attachment
- * Run:    ./build/examples/c/features/panzoom_attachment
- * Smoke:  ./build/examples/c/features/panzoom_attachment 1
+ * Run:    ./build/examples/c/features/panzoom_attachment --live
+ * Smoke:  ./build/examples/c/features/panzoom_attachment --png
  */
 
 
@@ -25,10 +25,9 @@
 #include <stdint.h>
 
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -130,11 +129,73 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
 
 
 /*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Initialize the panzoom attachment feature scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
+
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        return false;
+    example_graphite_cyan_set_panel_background(panel);
+
+    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, -1.0, 1.0);
+    if (rc != 0)
+        return false;
+    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, 1.0);
+    if (rc != 0)
+        return false;
+
+    if (!_add_points(ctx->scene, panel))
+        return false;
+
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    return panzoom != NULL;
+}
+
+
+
+/**
+ * Return the panzoom attachment scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _panzoom_attachment_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_panzoom_attachment",
+        .title = "panzoom_attachment",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 /**
- * Run the panzoom attachment feature example.
+ * Run the panzoom attachment feature example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -142,43 +203,6 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
  */
 int main(int argc, char** argv)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    example_graphite_cyan_set_panel_background(panel);
-
-    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, -1.0, 1.0);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(x) failed");
-    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, 1.0);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(y) failed");
-
-    EXAMPLE_CHECK(_add_points(scene, panel), "point visual setup failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "panzoom_attachment");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
-    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
-
-    dvz_app_run(app, example_frame_count_any(argc, argv));
-    ret = 0;
-
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    DvzScenarioSpec spec = _panzoom_attachment_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

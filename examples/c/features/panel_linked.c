@@ -10,9 +10,8 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/panel_linked
- * Run:    ./build/examples/c/features/panel_linked
- * Smoke:  ./build/examples/c/features/panel_linked 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/features/panel_linked 1
+ * Run:    ./build/examples/c/features/panel_linked --live
+ * Smoke:  ./build/examples/c/features/panel_linked --png
  */
 
 
@@ -26,10 +25,9 @@
 #include <stdint.h>
 
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -128,45 +126,42 @@ static bool _add_line_panel(DvzScene* scene, DvzPanel* panel, float phase, uint8
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the linked-panel feature example.
+ * Initialize the linked-panel feature scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_panel_linked");
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        return false;
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzGrid* grid = dvz_figure_grid(figure, 2, 1);
-    EXAMPLE_CHECK(grid != NULL, "dvz_figure_grid() failed");
-    EXAMPLE_CHECK(
-        dvz_grid_set_margins(
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 2, 1);
+    if (grid == NULL)
+        return false;
+    if (!dvz_grid_set_margins(
             grid, &(DvzPanelReserve){
                       .left_px = 100.0f, .right_px = 100.0f, .top_px = 90.0f,
-                      .bottom_px = 90.0f}),
-        "dvz_grid_set_margins() failed");
-    EXAMPLE_CHECK(dvz_grid_set_gutter(grid, 0.0f, 40.0f), "dvz_grid_set_gutter() failed");
+                      .bottom_px = 90.0f}))
+        return false;
+    if (!dvz_grid_set_gutter(grid, 0.0f, 40.0f))
+        return false;
 
     DvzPanel* top = dvz_grid_panel(grid, 0, 0);
     DvzPanel* bottom = dvz_grid_panel(grid, 1, 0);
-    EXAMPLE_CHECK(top != NULL && bottom != NULL, "dvz_grid_panel() failed");
+    if (top == NULL || bottom == NULL)
+        return false;
 
     DvzPanel* panels[2] = {top, bottom};
     for (uint32_t i = 0; i < 2u; i++)
@@ -175,30 +170,33 @@ int main(int argc, char** argv)
         DvzPanelBorderDesc border = dvz_panel_border_desc();
         border.color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
         border.width_px = 1.5f;
-        EXAMPLE_CHECK(dvz_panel_set_border(panels[i], &border), "dvz_panel_set_border() failed");
+        if (!dvz_panel_set_border(panels[i], &border))
+            return false;
     }
 
-    EXAMPLE_CHECK(_set_panel_domain(top, -1.1, 1.1), "top panel domain setup failed");
-    EXAMPLE_CHECK(_set_panel_domain(bottom, -1.8, 1.8), "bottom panel domain setup failed");
-    EXAMPLE_CHECK(_add_line_panel(scene, top, 0.03f, 188u), "top panel visual setup failed");
-    EXAMPLE_CHECK(_add_line_panel(scene, bottom, 0.24f, 164u), "bottom panel visual setup failed");
+    if (!_set_panel_domain(top, -1.1, 1.1))
+        return false;
+    if (!_set_panel_domain(bottom, -1.8, 1.8))
+        return false;
+    if (!_add_line_panel(ctx->scene, top, 0.03f, 188u))
+        return false;
+    if (!_add_line_panel(ctx->scene, bottom, 0.24f, 164u))
+        return false;
 
-    DvzController* top_x = dvz_panzoom(scene, NULL);
-    DvzController* bottom_x = dvz_panzoom(scene, NULL);
-    DvzController* top_y = dvz_panzoom(scene, NULL);
-    DvzController* bottom_y = dvz_panzoom(scene, NULL);
-    EXAMPLE_CHECK(
-        top_x != NULL && bottom_x != NULL && top_y != NULL && bottom_y != NULL,
-        "dvz_panzoom() failed");
+    DvzController* top_x = dvz_panzoom(ctx->scene, NULL);
+    DvzController* bottom_x = dvz_panzoom(ctx->scene, NULL);
+    DvzController* top_y = dvz_panzoom(ctx->scene, NULL);
+    DvzController* bottom_y = dvz_panzoom(ctx->scene, NULL);
+    if (top_x == NULL || bottom_x == NULL || top_y == NULL || bottom_y == NULL)
+        return false;
 
     DvzPanzoom* top_x_panzoom = dvz_controller_panzoom(top_x);
     DvzPanzoom* bottom_x_panzoom = dvz_controller_panzoom(bottom_x);
     DvzPanzoom* top_y_panzoom = dvz_controller_panzoom(top_y);
     DvzPanzoom* bottom_y_panzoom = dvz_controller_panzoom(bottom_y);
-    EXAMPLE_CHECK(
-        top_x_panzoom != NULL && bottom_x_panzoom != NULL && top_y_panzoom != NULL &&
-            bottom_y_panzoom != NULL,
-        "dvz_controller_panzoom() failed");
+    if (top_x_panzoom == NULL || bottom_x_panzoom == NULL || top_y_panzoom == NULL ||
+        bottom_y_panzoom == NULL)
+        return false;
 
     dvz_panzoom_zoom(top_x_panzoom, (vec2){1.80f, 1.0f});
     dvz_panzoom_pan(top_x_panzoom, (vec2){+0.22f, 0.0f});
@@ -206,43 +204,57 @@ int main(int argc, char** argv)
     dvz_panzoom_zoom(bottom_y_panzoom, (vec2){1.0f, 1.45f});
 
     DvzControllerLink* link_top_to_bottom = dvz_controller_link(
-        scene, top_x, bottom_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
+        ctx->scene, top_x, bottom_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
     DvzControllerLink* link_bottom_to_top = dvz_controller_link(
-        scene, bottom_x, top_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
-    EXAMPLE_CHECK(
-        link_top_to_bottom != NULL && link_bottom_to_top != NULL, "dvz_controller_link() failed");
-    EXAMPLE_CHECK(
-        fabsf(bottom_x_panzoom->zoom[0] - top_x_panzoom->zoom[0]) < 1e-6f,
-        "linked X zoom mismatch");
+        ctx->scene, bottom_x, top_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
+    if (link_top_to_bottom == NULL || link_bottom_to_top == NULL)
+        return false;
+    if (fabsf(bottom_x_panzoom->zoom[0] - top_x_panzoom->zoom[0]) >= 1e-6f)
+        return false;
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
+    if (dvz_scenario_bind_controller(ctx, top, top_x, DVZ_DIM_MASK_X) != 0)
+        return false;
+    if (dvz_scenario_bind_controller(ctx, top, top_y, DVZ_DIM_MASK_Y) != 0)
+        return false;
+    if (dvz_scenario_bind_controller(ctx, bottom, bottom_x, DVZ_DIM_MASK_X) != 0)
+        return false;
+    return dvz_scenario_bind_controller(ctx, bottom, bottom_y, DVZ_DIM_MASK_Y) == 0;
+}
 
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "panel_linked");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    EXAMPLE_CHECK(
-        dvz_view_bind_controller(win, top, top_x, DVZ_DIM_MASK_X) == 0,
-        "top X controller binding failed");
-    EXAMPLE_CHECK(
-        dvz_view_bind_controller(win, top, top_y, DVZ_DIM_MASK_Y) == 0,
-        "top Y controller binding failed");
-    EXAMPLE_CHECK(
-        dvz_view_bind_controller(win, bottom, bottom_x, DVZ_DIM_MASK_X) == 0,
-        "bottom X controller binding failed");
-    EXAMPLE_CHECK(
-        dvz_view_bind_controller(win, bottom, bottom_y, DVZ_DIM_MASK_Y) == 0,
-        "bottom Y controller binding failed");
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
+/**
+ * Return the linked-panel scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _panel_linked_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_panel_linked",
+        .title = "panel_linked",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
 
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the linked-panel feature example through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _panel_linked_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
