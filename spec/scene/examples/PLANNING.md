@@ -123,7 +123,7 @@ examples:
 | `feature.selection` | `examples/c/features/selection.c` | persistent selected-item highlight on a small visual |
 | `feature.material_mesh` | `examples/c/features/material_mesh.c` | neutral mesh material parameters with readable normals/shading |
 | `feature.lighting` | `examples/c/features/lighting.c` | simple 3D lighting direction/intensity proof |
-| `feature.timer_animation` | `examples/c/features/timer_animation.c` | deterministic timer/frame-callback animation |
+| `feature.timer_animation` | `examples/c/features/timer_animation.c` | deterministic runner frame-callback animation |
 
 Tentative examples now exist for `examples/c/features/legend_categorical.c` and
 `examples/c/features/video_export.c`. `video_export.c` is the first native scenario-runner proof for

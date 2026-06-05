@@ -4,15 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* timer_animation - scene timer callback updating retained point data.
+/* timer_animation - portable scenario updating retained point data on runner frames.
  *
  * Scenario: feature.timer_animation
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/timer_animation
- * Run:    ./build/examples/c/features/timer_animation
- * Smoke:  ./build/examples/c/features/timer_animation 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/features/timer_animation 1
+ * Run:    ./build/examples/c/features/timer_animation --live
+ * Smoke:  ./build/examples/c/features/timer_animation --png
+ * Video:  ./build/examples/c/features/timer_animation --offscreen-record 120
  */
 
 
@@ -25,10 +25,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "datoviz/app.h"
+#include "_alloc.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -70,6 +70,9 @@ typedef struct TimerAnimationState
  */
 static bool _upload_timer_points(TimerAnimationState* state)
 {
+    if (state == NULL || state->point == NULL)
+        return false;
+
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = state->positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = state->colors, .item_count = POINT_COUNT},
@@ -81,13 +84,16 @@ static bool _upload_timer_points(TimerAnimationState* state)
 
 
 /**
- * Fill the deterministic frame state at one scene time.
+ * Fill the deterministic frame state at one scenario time.
  *
  * @param state animation state
- * @param t scene time in seconds
+ * @param t scenario time in seconds
  */
 static void _fill_timer_points(TimerAnimationState* state, double t)
 {
+    if (state == NULL)
+        return;
+
     const ExampleStyleColorRole palette[] = {
         EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
         EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
@@ -110,24 +116,112 @@ static void _fill_timer_points(TimerAnimationState* state, double t)
 
 
 
-/**
- * Timer callback that mutates retained visual data for the next frame.
- *
- * @param animation animation handle
- * @param t scene time in seconds
- * @param dt scene time delta in seconds
- * @param user_data TimerAnimationState pointer
- */
-static void _timer_callback(DvzAnimation* animation, double t, double dt, void* user_data)
-{
-    (void)animation;
-    (void)dt;
+/*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
 
-    TimerAnimationState* state = (TimerAnimationState*)user_data;
-    if (state == NULL || state->point == NULL)
+/**
+ * Initialize the timer-animation scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return true on success
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL || out_user == NULL)
+        return false;
+
+    TimerAnimationState* state =
+        (TimerAnimationState*)dvz_calloc(1, sizeof(TimerAnimationState));
+    if (state == NULL)
+        return false;
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    if (ctx->figure == NULL)
+        goto error;
+
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    if (panel == NULL)
+        goto error;
+    example_graphite_cyan_set_panel_background(panel);
+
+    state->point = dvz_point(ctx->scene, 0);
+    if (state->point == NULL)
+        goto error;
+    _fill_timer_points(state, 0.0);
+    if (!_upload_timer_points(state))
+        goto error;
+
+    DvzPointStyleDesc style = dvz_point_style_desc();
+    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
+    style.stroke_width = 0.0f;
+    if (dvz_point_set_style(state->point, &style) != 0)
+        goto error;
+    if (dvz_visual_set_depth_test(state->point, false) != 0)
+        goto error;
+    if (dvz_panel_add_visual(panel, state->point, NULL) != 0)
+        goto error;
+
+    *out_user = state;
+    return true;
+
+error:
+    dvz_free(state);
+    return false;
+}
+
+
+
+/**
+ * Advance the timer-animation scenario for one runner frame.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    if (ctx == NULL || user == NULL)
         return;
-    _fill_timer_points(state, t);
+
+    TimerAnimationState* state = (TimerAnimationState*)user;
+    _fill_timer_points(state, ctx->time);
     (void)_upload_timer_points(state);
+}
+
+
+
+/**
+ * Destroy the timer-animation scenario.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
+}
+
+
+
+/**
+ * Return the timer-animation scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _timer_animation_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "feature_timer_animation",
+        .title = "timer_animation",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 12.0,
+        .init = _scenario_init,
+        .frame = _scenario_frame,
+        .destroy = _scenario_destroy,
+    };
 }
 
 
@@ -137,7 +231,7 @@ static void _timer_callback(DvzAnimation* animation, double t, double dt, void* 
 /*************************************************************************************************/
 
 /**
- * Run the timer-animation feature example.
+ * Run the timer-animation feature example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -145,62 +239,6 @@ static void _timer_callback(DvzAnimation* animation, double t, double dt, void* 
  */
 int main(int argc, char** argv)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("feature_timer_animation");
-
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    TimerAnimationState state = {0};
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
-    dvz_scene_set_fps(scene, 12.0);
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    example_graphite_cyan_set_panel_background(panel);
-
-    state.point = dvz_point(scene, 0);
-    EXAMPLE_CHECK(state.point != NULL, "dvz_point() failed");
-    _fill_timer_points(&state, 0.0);
-    EXAMPLE_CHECK(_upload_timer_points(&state), "initial point upload failed");
-
-    DvzPointStyleDesc style = dvz_point_style_desc();
-    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
-    EXAMPLE_CHECK(dvz_point_set_style(state.point, &style) == 0, "dvz_point_set_style() failed");
-    EXAMPLE_CHECK(
-        dvz_visual_set_depth_test(state.point, false) == 0,
-        "dvz_visual_set_depth_test() failed");
-    EXAMPLE_CHECK(
-        dvz_panel_add_visual(panel, state.point, NULL) == 0,
-        "dvz_panel_add_visual() failed");
-
-    DvzAnimation* timer = dvz_anim_timer(scene, 0.0, _timer_callback, &state);
-    EXAMPLE_CHECK(timer != NULL, "dvz_anim_timer() failed");
-    dvz_anim_start(timer, 0.0);
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "timer_animation");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    DvzScenarioSpec spec = _timer_animation_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
