@@ -1965,10 +1965,14 @@ capture-landing: build
     @python3 tools/capture_gallery.py --landing
 
 
-# Build the gallery Markdown files
+# Build the gallery Markdown files and machine-readable example manifests.
 gallery:
     @echo "Generating the gallery Markdown files..."
     @python tools/build_gallery.py
+    @echo "Generating the public examples manifest..."
+    @python3 tools/build_examples_manifest.py
+    @echo "Generating the public capabilities manifest..."
+    @python3 tools/build_capabilities.py
 
 
 # -------------------------------------------------------------------------------------------------
