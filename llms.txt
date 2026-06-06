@@ -1,0 +1,37 @@
+# Datoviz v0.4
+
+Datoviz v0.4 is a C-first GPU scientific visualization engine. The active public path is scene and
+app APIs lowering through DRP2 to the runtime; do not assume v0.3 API compatibility.
+
+## Start
+
+- Overview: https://datoviz.org/start/what-is-datoviz/
+- Choose a layer: https://datoviz.org/start/choose-your-layer/
+- First C program: https://datoviz.org/start/first-c-program/
+- Build from source: https://datoviz.org/start/build-from-source/
+- Project status: https://datoviz.org/start/project-status/
+
+## Examples
+
+- Examples index: https://datoviz.org/examples/
+- Machine-readable examples manifest: https://datoviz.org/examples/examples.json
+- Visual gallery: https://datoviz.org/examples/visual-gallery/
+- Feature gallery: https://datoviz.org/examples/feature-gallery/
+- Showcases: https://datoviz.org/examples/showcases/
+- Validation gallery: https://datoviz.org/examples/validation-gallery/
+
+## Agent Guidance
+
+- Agent quickstart: https://datoviz.org/contributors/agent-quickstart/
+- AI agents: https://datoviz.org/contributors/ai-agents/
+- Adding examples: https://datoviz.org/contributors/adding-examples/
+- Build and test: https://datoviz.org/contributors/build-and-test/
+
+## Reference
+
+- Feature status: https://datoviz.org/reference/feature-status/
+- C API: https://datoviz.org/reference/c-api/
+- Raw ctypes: https://datoviz.org/reference/ctypes/
+- WebGPU subset: https://datoviz.org/reference/webgpu-subset/
+- Objects and lifetimes: https://datoviz.org/reference/objects-and-lifetimes/
+- Visual families: https://datoviz.org/reference/visual-families/
