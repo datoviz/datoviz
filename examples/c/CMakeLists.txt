@@ -151,8 +151,6 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(features marker_symbols features/marker_symbols.c)
     dvz_add_example(features legend_categorical features/legend_categorical.c)
     dvz_add_example(features video_export features/video_export.c)
-    dvz_add_example(features polygon features/polygon.c)
-    dvz_add_example(features graph features/graph.c)
 
     dvz_add_example(visuals point visuals/point.c)
     dvz_add_example(visuals pixel visuals/pixel.c)
@@ -169,6 +167,9 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(visuals glyph visuals/glyph.c)
     dvz_add_example(visuals labels visuals/labels.c)
     dvz_add_example(visuals volume visuals/volume.c)
+
+    dvz_add_example(composites polygon composites/polygon.c)
+    dvz_add_example(composites graph composites/graph.c)
 
     dvz_add_example(showcases gpu_particle_smoke showcases/gpu_particle_smoke.c)
     dvz_add_example(showcases brain_volume_mesh showcases/brain_volume_mesh.c)

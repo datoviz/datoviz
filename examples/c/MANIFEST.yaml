@@ -9,6 +9,7 @@ taxonomy:
   target_public_categories:
     visuals: one public visual family per example
     features: one isolated feature or rendering technique per example
+    composites: one semantic object that lowers to one or more visuals per example
     showcases: composed workflows, scientific stories, real-data examples, and polished demos
   tag_not_folder:
     - workflow
@@ -24,6 +25,7 @@ folders:
   public:
     - examples/c/features
     - examples/c/visuals
+    - examples/c/composites
     - examples/c/showcases
   non_public:
     - examples/c/lab
@@ -592,8 +594,8 @@ examples:
   - id: composite_polygon
     title: Polygon Composite
     stage: v0.4_required
-    lane: features
-    source: examples/c/features/polygon.c
+    lane: composites
+    source: examples/c/composites/polygon.c
     validation: smoke+screenshot
     gallery:
       card: small
@@ -608,8 +610,8 @@ examples:
   - id: composite_graph
     title: Graph Composite
     stage: v0.4_required
-    lane: features
-    source: examples/c/features/graph.c
+    lane: composites
+    source: examples/c/composites/graph.c
     validation: smoke+screenshot
     gallery:
       card: small

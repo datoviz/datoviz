@@ -155,13 +155,16 @@ Tutorial rules:
 
 ## Examples
 
-Purpose: provide minimal executable truth for visuals, features, techniques, and showcases.
+Purpose: provide minimal executable truth for visuals, features, composites, techniques, and
+showcases.
 
 Examples are a public documentation pillar, not an appendix. The rule is:
 
 1. one public visual family gets one dedicated minimal C example;
 2. one public feature gets one dedicated minimal C example;
-3. showcases may compose multiple visuals and features, but they must not replace minimal examples.
+3. one public semantic composite gets one dedicated minimal C example;
+4. showcases may compose multiple visuals, features, and composites, but they must not replace
+   minimal examples.
 
 Current MkDocs navigation:
 

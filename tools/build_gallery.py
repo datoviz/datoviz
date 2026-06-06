@@ -18,7 +18,7 @@ DEFAULT_MANIFEST = ROOT / "examples/c/MANIFEST.yaml"
 DEFAULT_DOCS_DIR = ROOT / "docs/examples"
 DEFAULT_IMAGE_DIR = ROOT / "docs/images/gallery"
 SOURCE_BASE_URL = "https://github.com/datoviz/datoviz/blob/v0.4-dev"
-PUBLIC_LANES = ("visuals", "features", "showcases")
+PUBLIC_LANES = ("visuals", "features", "composites", "showcases")
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
 PYTHON_SOURCE_BY_ID = {}
 
@@ -37,7 +37,15 @@ PAGE_CONFIG = {
         "lanes": ("features",),
         "intro": """\
             This page indexes focused C examples for public scene, layout, adornment, interaction,
-            update, rendering-technique, appearance, and semantic-composite features.
+            update, rendering-technique, and appearance features.
+        """,
+    },
+    "composites.md": {
+        "title": "Composites",
+        "lanes": ("composites",),
+        "intro": """\
+            This page indexes semantic scene objects that lower to one or more visual families.
+            Composite examples are still atomic building blocks, not polished user-goal showcases.
         """,
     },
     "showcases.md": {
@@ -302,6 +310,7 @@ def render_index(examples: list[Example], docs_dir: Path) -> None:
     by_lane = {lane: [example for example in examples if example.lane == lane] for lane in PUBLIC_LANES}
     visual_examples = by_lane["visuals"]
     feature_examples = by_lane["features"]
+    composite_examples = by_lane["composites"]
     showcase_examples = by_lane["showcases"]
     lines = generated_header("Examples")
     lines.extend(
@@ -324,7 +333,8 @@ def render_index(examples: list[Example], docs_dir: Path) -> None:
             "| Category | Examples | Use |",
             "| --- | ---: | --- |",
             f"| [Visual gallery](visual-gallery.md) | {len(visual_examples)} | One public visual family per example. |",
-            f"| [Feature gallery](feature-gallery.md) | {len(feature_examples)} | One isolated feature, technique, or semantic composite per example. |",
+            f"| [Feature gallery](feature-gallery.md) | {len(feature_examples)} | One isolated feature or technique per example. |",
+            f"| [Composites](composites.md) | {len(composite_examples)} | One semantic object lowering to one or more visuals per example. |",
             f"| [Showcases](showcases.md) | {len(showcase_examples)} | Composed workflows, scientific stories, real-data examples, and polished demos. |",
         ]
     )
@@ -335,6 +345,7 @@ def render_index(examples: list[Example], docs_dir: Path) -> None:
             "| --- | ---: | --- |",
             f"| [Visual gallery](visual-gallery.md) | {len(visual_examples)} | {status_counts(visual_examples)} |",
             f"| [Feature gallery](feature-gallery.md) | {len(feature_examples)} | {status_counts(feature_examples)} |",
+            f"| [Composites](composites.md) | {len(composite_examples)} | {status_counts(composite_examples)} |",
             f"| [Showcases](showcases.md) | {len(showcase_examples)} | {status_counts(showcase_examples)} |",
             f"| [Techniques](techniques.md) | {len([e for e in examples if e.id in TECHNIQUE_IDS])} | Rendering and compute behavior coverage |",
             f"| [Validation gallery](validation-gallery.md) | {len(examples)} | Release evidence checklist |",
@@ -345,8 +356,8 @@ def render_index(examples: list[Example], docs_dir: Path) -> None:
             "",
             "## Current Source Lanes",
             "",
-            "Public source lanes use `visuals`, `features`, or `showcases`. Concepts such as",
-            "`workflow`, `scientific`, `real-data`, and `composite` are manifest tags.",
+            "Public source lanes use `visuals`, `features`, `composites`, or `showcases`.",
+            "Concepts such as `workflow`, `scientific`, and `real-data` are manifest tags.",
             "",
         ]
     )

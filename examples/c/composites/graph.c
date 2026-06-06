@@ -9,9 +9,9 @@
  * Scenario: composite_graph
  * Style: feature composite, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just example-c features/graph
- * Run:    ./build/examples/c/features/graph
- * Smoke:  ./build/examples/c/features/graph 1
+ * Build:  just example-c composites/graph
+ * Run:    ./build/examples/c/composites/graph
+ * Smoke:  ./build/examples/c/composites/graph 1
  */
 
 

@@ -1,7 +1,7 @@
 # v0.4 Required Composite Examples
 
 Composite examples demonstrate semantic objects that lower to several coordinated visuals. They
-belong in `examples/c/features/`, not in `examples/c/visuals/`, unless a future API promotes a
+belong in `examples/c/composites/`, not in `examples/c/visuals/`, unless a future API promotes a
 true visual family.
 
 

@@ -153,7 +153,7 @@ Extended screenshot rules:
 1. Treat every gallery screenshot as a documentation artifact, not an incidental frame.
 2. Use a consistent capture shape:
    - public gallery examples: default to `1600x1200`;
-   - features, visuals, composites, showcases, and scientific examples: default to `1600x1200`;
+   - features, visuals, composites, showcases, and real-data examples: default to `1600x1200`;
    - lab, diagnostics, and backend probes: free size when the chosen size serves the fixture;
    - intrinsically wide dashboards, timelines, panoramic/geospatial scenes, square images, or tall
      mobile-first scenes may opt into a documented exception;

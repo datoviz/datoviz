@@ -9,9 +9,9 @@
  * Scenario: composite_polygon
  * Style: feature composite, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just example-c features/polygon
- * Run:    ./build/examples/c/features/polygon
- * Smoke:  ./build/examples/c/features/polygon 1
+ * Build:  just example-c composites/polygon
+ * Run:    ./build/examples/c/composites/polygon
+ * Smoke:  ./build/examples/c/composites/polygon 1
  */
 
 

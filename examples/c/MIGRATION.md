@@ -65,8 +65,8 @@ source material.
 | `feature_legend_categorical` | `features/legend_categorical.c` | Experimental feature proof. |
 | `feature_video_export` | `features/video_export.c` | Experimental feature proof. |
 | `linked_panels_probe_colorbar` | `showcases/linked_probe_colorbar.c` | Workflow showcase proof. |
-| `composite_polygon` | `features/polygon.c` | Composite feature proof. |
-| `composite_graph` | `features/graph.c` | Composite feature proof. |
+| `composite_polygon` | `composites/polygon.c` | Composite proof. |
+| `composite_graph` | `composites/graph.c` | Composite proof. |
 | `us_state_choropleth` | `showcases/choropleth.c` | Real Census data showcase with provenance. |
 | `protein_arcball_viewer` | `showcases/protein.c` | Real RCSB PDB data showcase with provenance. |
 | `showcase_gpu_particle_smoke` | `showcases/gpu_particle_smoke.c` | Experimental compute showcase. |
@@ -108,7 +108,8 @@ Target public taxonomy:
 
 ```text
 examples/c/visuals/    one public visual family per file
-examples/c/features/   one isolated feature, technique, or semantic composite per file
+examples/c/features/   one isolated feature or technique per file
+examples/c/composites/ one semantic object that lowers to visual roles per file
 examples/c/showcases/  composed workflows, scientific stories, real-data examples, and demos
 ```
 
@@ -124,8 +125,8 @@ exposes a build break that cannot be fixed otherwise.
 | `workflows/scalebar_measurement.c` | `showcases/scalebar_measurement.c` | `scalebar_measurement_workflow` | `workflow`, `scale-bar`, `measurement`, `synthetic` |
 | `scientific/choropleth.c` | `showcases/choropleth.c` | `us_state_choropleth` | `scientific`, `real-data`, `geo`, `polygon-set`, `colorbar` |
 | `scientific/protein.c` | `showcases/protein.c` | `protein_arcball_viewer` | `scientific`, `real-data`, `molecular`, `sphere`, `arcball` |
-| `composites/polygon.c` | `features/polygon.c` | `composite_polygon` | `composite`, `polygon`, `polygon-set`, `holes`, `panzoom` |
-| `composites/graph.c` | `features/graph.c` | `composite_graph` | `composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom` |
+| `composites/polygon.c` | `composites/polygon.c` | `composite_polygon` | `composite`, `polygon`, `polygon-set`, `holes`, `panzoom` |
+| `composites/graph.c` | `composites/graph.c` | `composite_graph` | `composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom` |
 
 The empty transitional directories and their README files were removed.
 
@@ -137,10 +138,11 @@ Update these in the same migration commit:
 2. `examples/c/MANIFEST.yaml` source paths, lanes/categories, tags, dataset metadata, and
    transitional-lane notes.
 3. Build/run comments at the top of moved C files.
-4. `examples/c/README.md`, `examples/c/features/README.md`, and `examples/c/showcases/README.md`.
+4. `examples/c/README.md`, `examples/c/features/README.md`, `examples/c/composites/README.md`,
+   and `examples/c/showcases/README.md`.
 5. Scenario/spec references that describe current implementation targets.
-6. Gallery generator assumptions if it can stop treating `workflows`, `scientific`, and
-   `composites` as public lanes.
+6. Gallery generator assumptions if it can stop treating `workflows` and `scientific` as public
+   lanes.
 7. Generated docs from `python3 tools/build_gallery.py`.
 
 Do not hand-edit generated gallery pages except through the manifest or generator.
@@ -152,7 +154,7 @@ Prefer renaming executable paths to match the new taxonomy:
 ```text
 build/examples/c/showcases/linked_probe_colorbar
 build/examples/c/showcases/choropleth
-build/examples/c/features/polygon
+build/examples/c/composites/polygon
 ```
 
 Do not keep old `workflows/`, `scientific/`, or `composites/` executable aliases unless a release
@@ -177,8 +179,8 @@ just example-c showcases/linked_probe_colorbar
 just example-c showcases/scalebar_measurement
 just example-c showcases/choropleth
 just example-c showcases/protein
-just example-c features/polygon
-just example-c features/graph
+just example-c composites/polygon
+just example-c composites/graph
 ```
 
 On macOS/Vulkan-sensitive paths, prefer:
@@ -193,8 +195,7 @@ Stop before committing the migration if:
 
 1. a moved file depends on a relative asset path that changes semantics;
 2. the build system requires old executable paths for release tooling;
-3. generated docs still create public pages under `gallery/workflows`, `gallery/scientific`, or
-   `gallery/composites`;
+3. generated docs still create public pages under `gallery/workflows` or `gallery/scientific`;
 4. a real-data example loses source, license, citation, or preprocessing metadata;
 5. validation would require staging generated media, vendored runtime libraries, or `data` submodule
    changes.

@@ -5,11 +5,11 @@
 semantic graph composite with clustered curved edges.
 
 - ID: `composite_graph`
-- Lane: `features`
+- Lane: `composites`
 - Status: `supported`
-- Source: [`examples/c/features/graph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/graph.c)
-- Build: `just example-c features/graph`
-- Smoke: `./build/examples/c/features/graph --png`
+- Source: [`examples/c/composites/graph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c)
+- Build: `just example-c composites/graph`
+- Smoke: `./build/examples/c/composites/graph --png`
 - Validation: `smoke+screenshot`
 
 ## Features
@@ -28,5 +28,5 @@ prepared separately from this page and should not be staged without explicit app
 === "C"
 
     ```c
-    --8<-- "examples/c/features/graph.c"
+    --8<-- "examples/c/composites/graph.c"
     ```

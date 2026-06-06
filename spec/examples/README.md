@@ -11,11 +11,12 @@ views from those examples, but it should not be the authoritative home of runnab
 
 ## Goals
 
-The examples system serves three separate source-category needs:
+The examples system serves four separate source-category needs:
 
 1. teach one visual family with the smallest useful scene;
 2. teach one API feature or rendering technique with the smallest useful program;
-3. present composed goal-oriented examples, including workflows, scientific stories, and polished
+3. teach one semantic composite object with the smallest useful scene;
+4. present composed goal-oriented examples, including workflows, scientific stories, and polished
    release showcases.
 
 These needs overlap, but they should not be collapsed into one bucket. A beautiful showcase does not
@@ -32,6 +33,7 @@ Use these logical source categories for new first-class examples:
 examples/
   visuals/
   features/
+  composites/
   showcases/
 ```
 
@@ -47,10 +49,14 @@ search, and gallery tooling.
 | --- | --- | --- | --- |
 | `visuals` | one visual family | teach one visual type with minimal surrounding setup | usually synthetic |
 | `features` | one API feature or rendering technique | teach one capability quickly | usually synthetic |
+| `composites` | one semantic scene object | teach an object that lowers to coordinated visual roles | usually synthetic |
 | `showcases` | one composed goal | show workflows, scientific stories, and polished scenes | synthetic, simulated, or real with provenance |
 
 Feature examples should stay minimal. They demonstrate a capability such as a colorbar, controller,
 pick query, texture upload, linked panel, rendering technique, or partial update.
+
+Composite examples should stay minimal. They demonstrate semantic objects such as polygon sets or
+graphs that carry identity, topology, styling, and one or more visual roles.
 
 Visual examples should stay minimal. They demonstrate a public visual family such as point, marker,
 path, image, mesh, sphere, volume, text, or labels. They may use a few supporting features, but only

@@ -14,7 +14,8 @@ keeps media status explicit while capture artifacts are prepared separately.
 | Category | Examples | Use |
 | --- | ---: | --- |
 | [Visual gallery](visual-gallery.md) | 15 | One public visual family per example. |
-| [Feature gallery](feature-gallery.md) | 41 | One isolated feature, technique, or semantic composite per example. |
+| [Feature gallery](feature-gallery.md) | 39 | One isolated feature or technique per example. |
+| [Composites](composites.md) | 2 | One semantic object lowering to one or more visuals per example. |
 | [Showcases](showcases.md) | 10 | Composed workflows, scientific stories, real-data examples, and polished demos. |
 
 ## Gallery Sections
@@ -22,18 +23,20 @@ keeps media status explicit while capture artifacts are prepared separately.
 | Section | Examples | Status |
 | --- | ---: | --- |
 | [Visual gallery](visual-gallery.md) | 15 | 13 supported, 2 experimental |
-| [Feature gallery](feature-gallery.md) | 41 | 39 supported, 2 experimental |
+| [Feature gallery](feature-gallery.md) | 39 | 37 supported, 2 experimental |
+| [Composites](composites.md) | 2 | 2 supported |
 | [Showcases](showcases.md) | 10 | 8 supported, 1 experimental, 1 prototype |
 | [Techniques](techniques.md) | 8 | Rendering and compute behavior coverage |
 | [Validation gallery](validation-gallery.md) | 66 | Release evidence checklist |
 
 ## Current Source Lanes
 
-Public source lanes use `visuals`, `features`, or `showcases`. Concepts such as
-`workflow`, `scientific`, `real-data`, and `composite` are manifest tags.
+Public source lanes use `visuals`, `features`, `composites`, or `showcases`.
+Concepts such as `workflow`, `scientific`, and `real-data` are manifest tags.
 
 | Lane | Source directory | Examples |
 | --- | --- | ---: |
 | Visuals | `examples/c/visuals/` | 15 |
-| Features | `examples/c/features/` | 41 |
+| Features | `examples/c/features/` | 39 |
+| Composites | `examples/c/composites/` | 2 |
 | Showcases | `examples/c/showcases/` | 10 |

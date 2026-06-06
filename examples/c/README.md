@@ -9,7 +9,8 @@ material.
 | Folder | Purpose |
 | --- | --- |
 | `visuals/` | Public one-visual examples: one visual family per file. |
-| `features/` | Public feature examples: one isolated capability, technique, or semantic composite per file. |
+| `features/` | Public feature examples: one isolated capability or technique per file. |
+| `composites/` | Public semantic object examples that lower to one or more visuals. |
 | `showcases/` | Public composed examples: workflows, scientific stories, real-data examples, and gallery-facing demos. |
 | `lab/` | Non-public experiments, diagnostics, stress/perf demos, and development workbenches. Flat folder only. |
 | `legacy/` | Temporary archive of older examples that are not built by default. Promote or delete from here deliberately. |

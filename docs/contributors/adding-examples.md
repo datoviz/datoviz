@@ -16,8 +16,9 @@ Before adding or changing a public example, check:
 
 ## Minimal Examples
 
-A minimal example should demonstrate one public visual or feature with the least surrounding code
-needed to run it. It should keep setup, data binding, rendering, and cleanup visible.
+A minimal example should demonstrate one public visual, feature, or composite with the least
+surrounding code needed to run it. It should keep setup, data binding, rendering, and cleanup
+visible.
 
 Use the public source taxonomy:
 
@@ -25,6 +26,7 @@ Use the public source taxonomy:
 | --- | --- |
 | `examples/c/visuals/` | one public visual family per file. |
 | `examples/c/features/` | one isolated feature or rendering technique per file. |
+| `examples/c/composites/` | one semantic scene object per file. |
 | `examples/c/showcases/` | composed workflows, scientific stories, real-data examples, and polished demos. |
 
 Do not create new public folders for `workflow`, `scientific`, `technique`, or domain labels. Use
@@ -46,7 +48,7 @@ Every documented example should eventually have metadata with:
 
 1. stable `id`;
 2. `source` path;
-3. `category`: `visual`, `feature`, or `showcase`;
+3. `category`: `visual`, `feature`, `composite`, or `showcase`;
 4. `primary_visual` or `primary_feature` for atomic examples;
 5. tags such as `workflow`, `scientific`, `real-data`, `simulated`, `interactive`, or `offscreen`;
 6. dataset metadata when real or prepared data is used;

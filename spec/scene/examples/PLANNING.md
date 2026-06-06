@@ -28,22 +28,22 @@ editorial as long as their release status is explicit.
 
 ## Public Example Taxonomy
 
-Use three public example categories for v0.4:
+Use four public example categories for v0.4:
 
 | Category | Rule | Purpose |
 | --- | --- | --- |
 | `visuals` | one visual family per example | Mechanical proof of the visual data contract. |
 | `features` | one isolated feature or rendering technique per example | Mechanical proof of one capability with minimal scaffolding. |
+| `composites` | one semantic object per example | Mechanical proof of objects that lower to one or more visuals. |
 | `showcases` | one composed user goal per example | Combined workflows, scientific scenes, real or simulated data stories, and polished release media. |
 
 `workflow`, `scientific`, `technique`, `real-data`, `fake-data`, `simulated`, `interactive`,
 `offscreen`, and domain labels should be tags in manifest metadata, not additional public
-structural categories. Semantic composites such as graph and polygon should be treated as features
-or showcases unless a future API promotes them to true visual families.
+structural categories.
 
-The active public C source directories are `examples/c/visuals/`, `examples/c/features/`, and
-`examples/c/showcases/`. Do not add new structural folders for new concepts when tags would
-disambiguate the example.
+The active public C source directories are `examples/c/visuals/`, `examples/c/features/`,
+`examples/c/composites/`, and `examples/c/showcases/`. Do not add new structural folders for new
+concepts when tags would disambiguate the example.
 
 
 ## Staging Vocabulary
@@ -115,8 +115,8 @@ The main remaining polish, promotion, or feature gaps are:
 | `textured_terrain_or_planet` | `ready-now` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof lives in `examples/c/showcases/textured_planet.c`: Earth/Mars UV sphere with real sampled textures and procedural fallbacks. Mars DEM terrain analysis remains v0.5/later. |
 | `brain_volume_mesh` | `ready-now` | volume, occluded slice composition, arcball | Public proof lives in `examples/c/showcases/brain_volume_mesh.c` over the prepared Allen/IBL RGBA volume. The newer atlas-mesh bundle remains source material for a later mesh-overlay polish pass; full atlas explorer is v0.5. |
 | `point_cloud` | `ready-now` | large RGB pixel cloud, direct colors, GUI-tunable EDL, fly camera, capture | Public proof lives in `examples/c/showcases/point_cloud.c`, with required RESEPI raw-LAZ preprocessing through `tools/data/prepare_point_cloud.py`; no synthetic or bundled-NPZ fallback is provided. |
-| `composite_polygon` | `ready-now` | semantic polygon/polygon-set, fill+stroke composite, holes, region styling | Public proof lives in `examples/c/features/polygon.c`; polygon is not a visual family even if it appears near visual examples. |
-| `composite_graph` | `ready-now` | semantic graph, user-provided layout, nodes+edges composite, stable ids, Bezier edges | Public proof lives in `examples/c/features/graph.c`. Keep layout user-supplied first; edge-mode comparisons belong in tests or lab examples. |
+| `composite_polygon` | `ready-now` | semantic polygon/polygon-set, fill+stroke composite, holes, region styling | Public proof lives in `examples/c/composites/polygon.c`; polygon is not a visual family even if it appears near visual examples. |
+| `composite_graph` | `ready-now` | semantic graph, user-provided layout, nodes+edges composite, stable ids, Bezier edges | Public proof lives in `examples/c/composites/graph.c`. Keep layout user-supplied first; edge-mode comparisons belong in tests or lab examples. |
 
 
 ## v0.4 Short Feature Coverage Queue

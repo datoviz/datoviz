@@ -54,6 +54,8 @@ ownership, plotting conveniences, notebooks, or ecosystem data loading, it belon
 - Features: reusable scene/app capabilities and rendering techniques, such as partial update,
   mutability hints, visibility, depth, controllers, sampled fields, colormaps, colorbar, picking,
   probing, selection, pinned readout, video export, WBOIT, EDL, SSAO, and DVZR.
+- Composites: semantic scene objects such as polygon sets and graphs that lower to coordinated
+  visual roles while preserving identity, topology, and styling.
 - Showcases: composed user goals and polished domain demos for workflows, geo, physics,
   engineering, dashboards, neuroscience, astronomy, medical, volume, and embeddings. Synthetic,
   simulated, generated, or real data is allowed when the example is honest about it.
@@ -94,6 +96,7 @@ examples/
   c/
     visuals/
     features/
+    composites/
     showcases/
     lab/
     legacy/
@@ -153,7 +156,7 @@ Each runnable or generated example should eventually have compact metadata:
 id: showcase_earth_cubemap
 title: Earth Cubemap
 layer: c | raw_python | gsp | plot | fixture
-category: visual | feature | showcase | lab | fixture
+category: visual | feature | composite | showcase | lab | fixture
 tags: [real-data, workflow, offscreen]
 status: required | experimental | fixture-only | future | external
 data: inline | synthetic | bundled | public-download

@@ -60,6 +60,7 @@ Use the example taxonomy when searching:
 | --- | --- |
 | One visual family | `examples/c/visuals/` |
 | One isolated feature or rendering technique | `examples/c/features/` |
+| One semantic scene object | `examples/c/composites/` |
 | A composed workflow, real-data story, or polished goal | `examples/c/showcases/` or showcase-tagged manifest entries |
 
 Treat `workflow`, `scientific`, `real-data`, `simulated`, `interactive`, `offscreen`, and domain

@@ -98,6 +98,7 @@ Agent-first documentation depends on a simple example taxonomy:
 | --- | --- | --- |
 | `visuals` | one public visual family per example | learn the required data shape for a visual. |
 | `features` | one isolated capability or technique per example | add one behavior without extra composition. |
+| `composites` | one semantic scene object per example | learn semantic objects that lower to visual roles. |
 | `showcases` | one goal-oriented composed example | adapt a complete scene or user workflow. |
 
 `workflow`, `scientific`, `technique`, `real-data`, `simulated`, `fake-data`, `interactive`,
@@ -106,7 +107,7 @@ Agent-first documentation depends on a simple example taxonomy:
 This lets agents decompose requests:
 
 1. find a showcase with a similar goal;
-2. trace its tags back to atomic visual and feature examples;
+2. trace its tags back to atomic visual, feature, and composite examples;
 3. combine only the documented pieces;
 4. report any missing feature instead of inventing API calls.
 

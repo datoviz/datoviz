@@ -18,20 +18,21 @@ fixtures and current implementation work.
 
 1. One public visual family gets one minimal C example.
 2. One public feature gets one minimal C example.
-3. Rendering techniques count as features unless they become public visual families.
-4. A minimal example should avoid unrelated visual polish.
-5. A showcase may compose many visuals, features, techniques, and workflows, but it does not satisfy
-   the minimal-example requirement.
-6. Every example should be linked from the relevant reference and how-to pages.
-7. Examples should have stable identifiers that can be used by docs, tests, release notes, and LLM
+3. One public semantic composite gets one minimal C example.
+4. Rendering techniques count as features unless they become public visual families.
+5. A minimal example should avoid unrelated visual polish.
+6. A showcase may compose many visuals, features, composites, techniques, and workflows, but it does
+   not satisfy the minimal-example requirement.
+7. Every example should be linked from the relevant reference and how-to pages.
+8. Examples should have stable identifiers that can be used by docs, tests, release notes, and LLM
    retrieval.
-8. Copy-safe examples should use the preferred scene/app ownership pattern and declare their
+9. Copy-safe examples should use the preferred scene/app ownership pattern and declare their
    validation command.
-9. If an example is only an API sketch, pressure test, or showcase, mark it so agents do not copy it
+10. If an example is only an API sketch, pressure test, or showcase, mark it so agents do not copy it
    as a minimal starting point.
-10. How-to pages should not be created one-to-one for every feature. Add a how-to page when a user
+11. How-to pages should not be created one-to-one for every feature. Add a how-to page when a user
    task needs workflow guidance, tradeoffs, ownership notes, or adaptation advice.
-11. Visual documentation should include authored judgment such as "use when", "avoid when", and
+12. Visual documentation should include authored judgment such as "use when", "avoid when", and
     "choose this over that"; keep generated or mechanical facts in reference tables.
 
 
@@ -108,6 +109,7 @@ prevents users and agents from overpromising unstable behavior.
 examples/c/
   visuals/
   features/
+  composites/
   showcases/
   lab/
   legacy/
@@ -119,6 +121,7 @@ The public taxonomy should stay this small:
 | --- | --- | --- |
 | `visuals` | one public visual family | Mechanical proof for the data shape and smallest useful styling of one visual. |
 | `features` | one isolated feature or technique | Mechanical proof for one capability, using the simplest visual scaffolding needed. |
+| `composites` | one semantic scene object | Mechanical proof for objects that lower to coordinated visual roles. |
 | `showcases` | one composed goal | Workflows, scientific examples, shiny demos, real-data stories, and multi-feature scenes. |
 
 Do not add public source folders for `workflow`, `scientific`, `technique`, or domain labels unless a
@@ -180,7 +183,7 @@ Current implementation seeds:
 | `visual.text` | `examples/c/visuals/text.c`, `examples/c/lab/text_msdf_diagnostics.c` | Current text baseline uses the public text API; do not document raw glyph internals. |
 | `visual.labels` | `examples/c/visuals/labels.c`, `examples/c/features/probe_labels.c` | Current labels baseline is separate from label probing. |
 | `visual.splat` | `examples/c/visuals/splat.c`, `examples/c/legacy/showcase/gothic_splat.c` | Experimental v0.4 visual; publish with explicit experimental labeling and no full asset-pipeline promise. |
-| `composite.polygon` | `examples/c/features/polygon.c`, `docs/gallery/features/polygon.md` | Polygon is in v0.4 release scope as a semantic composite; rebuild the old feature page as a C-first composite page. |
+| `composite.polygon` | `examples/c/composites/polygon.c`, `docs/gallery/composites/polygon.md` | Polygon is in v0.4 release scope as a semantic composite; rebuild the old feature page as a C-first composite page. |
 
 
 ## AI-Assisted Coverage Matrix
@@ -414,7 +417,7 @@ Current high-level docs actions:
 | `docs/gallery/visuals/{point,pixel,path,segment,image,mesh,sphere,volume}.md` | Salvage idea and screenshots only; rewrite as C-first v0.4 examples. |
 | `docs/gallery/features/{axes,panel,arcball,fly,offscreen}.md` | Replace with targeted C-first feature or runtime pages. |
 | `docs/gallery/features/{colorbar,colormaps}.md` | Salvage into scalar field, colormap, colorbar, and image-probe feature rows. |
-| `docs/gallery/features/polygon.md` | Rebuild as `docs/gallery/visuals/polygon.md`; polygon is a v0.4 visual-family example. |
+| `docs/gallery/features/polygon.md` | Rebuild as a C-first composite page; polygon is a v0.4 semantic composite, not a visual family. |
 | `docs/gallery/features/{animation,timer,video}.md` | Replace with one deterministic animation example plus optional video-export page. |
 | `docs/gallery/features/{keyboard,mouse,camera,orbit,timestamps,gui_panel}.md` | Defer unless the corresponding public v0.4 surface is explicitly kept. |
 | `docs/gallery/features/{fixed,hide,stop}.md` | Delete from public gallery or move to reference/API notes. |
