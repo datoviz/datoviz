@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "examples/c/MANIFEST.yaml"
 DEFAULT_BUILD_DIR = ROOT / "build"
 DEFAULT_IMAGE_DIR = ROOT / "docs/images/gallery"
+DEFAULT_CAPTURE_FRAMES = "60"
 PUBLIC_LANES = ("visuals", "features", "composites", "showcases")
 CATEGORY_TO_LANE = {
     "visual": "visuals",
@@ -299,7 +300,18 @@ def paeth(left: int, up: int, up_left: int) -> int:
 
 
 def command_for(example: CaptureExample, build_dir: Path) -> list[str]:
-    return [str(executable_path(example, build_dir)), "--png"]
+    exe = str(executable_path(example, build_dir))
+    if uses_scenario_runner(example):
+        return [exe, "--png"]
+    return [exe, DEFAULT_CAPTURE_FRAMES]
+
+
+def uses_scenario_runner(example: CaptureExample) -> bool:
+    try:
+        source = (ROOT / example.source).read_text(encoding="utf8", errors="replace")
+    except OSError:
+        return False
+    return "dvz_scenario_run_native_cli" in source
 
 
 def capture_one(example: CaptureExample, args: argparse.Namespace) -> tuple[bool, str]:
@@ -311,6 +323,7 @@ def capture_one(example: CaptureExample, args: argparse.Namespace) -> tuple[bool
     env = os.environ.copy()
     apply_runtime_env(env)
     png.parent.mkdir(parents=True, exist_ok=True)
+    env["DVZ_CAPTURE"] = "png"
     env["DVZ_CAPTURE_DIR"] = str(png.parent)
     env["DVZ_CAPTURE_BASENAME"] = png.stem
 
