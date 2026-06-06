@@ -65,7 +65,8 @@ The browser WebGPU runner executes the committed fixture subset of:
 - render passes with one or more color attachments;
 - depth attachment checks used by the fixture set;
 - dynamic buffer offsets by materializing equivalent WebGPU bind groups;
-- copy commands covered by the fixture set, including row-pitch adaptation when WebGPU requires it;
+- copy commands covered by the fixture set, including row-pitch adaptation when WebGPU requires it
+  and packet-level buffer/texture readback plumbing;
 - object destruction and use-after-destroy validation for the active command subset.
 
 Active command coverage is recorded in `examples/webgpu/COMPAT.md`.
@@ -82,8 +83,8 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Vulkan-specific modules and presentation | unsupported in WASM; native-only |
 | Scene visual parity | limited to point/pixel dense and buffer-backed positions, basic marker, segment/path cap-join controls, primitive, RGBA8 image, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, and basic sphere demos |
 | Controller parity | limited to panzoom and one 3D arcball proof |
-| Compute-to-render parity | experimental; fixture coverage exists, gallery-level behavior remains a separate release lane |
-| Query/picking/readback scene parity | deferred for live WASM scenes |
+| Compute-to-render parity | DRP2 fixture and native scene proof exist; browser-live particle scene is an RC target, not current support |
+| Query/picking/readback scene parity | packet-level readback plumbing exists; browser-live scene query/readback is an RC target, not current support |
 
 Any future feature promoted into the browser subset must update the scene emitter, DRP2 schema or
 fixture coverage when needed, WebGPU execution, capability reporting, diagnostics, and this page in
@@ -97,9 +98,13 @@ The browser path intentionally does not support:
 - GLSL/SPIR-V browser shader translation;
 - native scene/app parity;
 - custom shader APIs;
-- colorbars, scale bars, picking, readback, volume, unsigned/rich labels, path subpath controls,
-  broad stroke/vector parity, sphere raycast/depth/material parity, and advanced technique parity
-  in the WASM scene demos;
+- browser-live scene compute particles until the portable scenario host and WGSL compute path are
+  proven;
+- browser-live scene picking/readback until the async request/query/result ABI and promoted query
+  shaders are proven;
+- colorbars, scale bars, volume, unsigned/rich labels, path subpath controls, broad stroke/vector
+  parity, sphere raycast/depth/material parity, full query parity, and advanced technique parity in
+  the WASM scene demos;
 - zero-copy payload transport;
 - stable public JS/TS bindings for the WASM scene ABI.
 
@@ -107,18 +112,21 @@ The browser path intentionally does not support:
 
 Promote browser scene features in this order unless a release blocker changes the priority:
 
-1. colorbar;
-2. scale bar;
-3. legend and readout-style overlays;
-4. richer labels, including unsigned label variants and palette/category updates;
-5. broader vector/path parity, including path subpaths and stroke edge cases;
-6. picking and readback for live WASM scenes;
-7. volume rendering.
+1. portable scenario host for live website examples;
+2. frame callbacks and animation;
+3. compute-to-render particle smoke at a documented browser particle budget;
+4. narrow request/query/readback slice: point and marker picking plus one sampled probe path;
+5. colorbar;
+6. scale bar;
+7. legend and readout-style overlays;
+8. richer labels, including unsigned label variants and palette/category updates;
+9. broader vector/path parity, including path subpaths and stroke edge cases;
+10. volume rendering.
 
 Each promoted item must reuse the retained native scene path, add the narrow WASM ABI surface it
 needs, extend `tools/wasm_scene_smoke.mjs`, update the 2D or 3D browser demo, and record proof in
-this document plus `examples/webgpu/COMPAT.md`. The next planned visual-family promotion is
-`colorbar`.
+this document plus `examples/webgpu/COMPAT.md`. Planned RC targets must not be described as current
+support until browser smoke evidence lands.
 
 Deferred DRP2 commands remain outside the active browser subset:
 

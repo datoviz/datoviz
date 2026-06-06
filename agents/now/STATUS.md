@@ -14,7 +14,7 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits split DRP2 packets for buffer-backed point/pixel positions, basic marker, segment/path with cap/join controls, primitive, RGBA8 image, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, panzoom, and a 3D sphere + textured mesh/arcball proof. Fresh 2026-06-05 browserless, native glyph/path/sphere/material/stroke-style/buffer-attr/text/labels/axes, and headless-browser proof is recorded in `examples/webgpu/COMPAT.md` and `docs/reference/webgpu-subset.md`. | Harden diagnostic ABI behavior and remove remaining demo shortcuts without expanding the RC subset. |
+| WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits split DRP2 packets for buffer-backed point/pixel positions, basic marker, segment/path with cap/join controls, primitive, RGBA8 image, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, panzoom, and a 3D sphere + textured mesh/arcball proof. Fresh 2026-06-05 browserless, native glyph/path/sphere/material/stroke-style/buffer-attr/text/labels/axes, and headless-browser proof is recorded in `examples/webgpu/COMPAT.md` and `docs/reference/webgpu-subset.md`. | Promote from demo subset to RC example-host subset: portable scenario host, compute-to-render particle smoke, narrow request/query/readback slice, and manifest-backed classification of live WebGPU vs native-only examples. |
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04; native GPU execution skipped in this shell because Vulkan instance creation failed. | Record native Vulkan execution evidence in a Vulkan-capable environment and capture a release artifact from `examples/c/showcases/gpu_particle_smoke.c`. |
 | Qt/PyQt hosted path | Native Qt hosting has an optional example path; PyQt needs a native Qt bridge because current PyQt6 wheels do not expose `QVulkanInstance::setVkInstance()` or `vkInstance()`. | Implement the optional `datoviz_qtbridge` provider from `spec/scene/integration/QT_HOST_BRIDGE.md` and prove the PyQt hosted example. |
 | v0.3 visible parity audit | Missing. | Table each visible capability as fixed, deferred, or external/GSP. |
@@ -38,11 +38,12 @@ accepting NumPy arrays for policy-declared data arguments. Source of truth:
 2. **Example proof:** C examples and fixture smokes for the declared release surface, especially
    one short feature example per public v0.4 feature, retained textured mesh, and composed
    annotation/layout examples.
-3. **WebGPU/WASM:** supported subset docs, diagnostics, portable target hardening,
-   browser/runner smoke, and the promotion queue in `docs/reference/webgpu-subset.md`
-   starting with colorbar.
+3. **WebGPU/WASM RC examples:** portable scenario host, live website examples for most non-desktop
+   scene scenarios, current subset diagnostics, compute particles, narrow request/query/readback,
+   manifest-backed example classification, and browser/runner smoke evidence.
 4. **Compute+graphics:** minimal DRP2 sync objects/barriers, native compute-to-render proof,
-   WebGPU parity diagnostics, and a C-first particle-advection gallery target.
+   WebGPU parity diagnostics, and a C-first particle-advection gallery target that becomes the
+   browser compute proof once the WASM scenario host can drive it.
 5. **Runtime hardening:** concrete scene -> DRP2 -> vklite/canvas/app lifetime, resize, descriptor,
    repeated-frame, or churn bugs.
 6. **Qt/PyQt provider:** optional Qt bridge shared library, dynamic Python loader, binding

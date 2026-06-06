@@ -18,7 +18,9 @@ Required before feature freeze:
 
 1. Native scene/app path covers the declared v0.4 visual and interaction subset.
 2. Retained textured mesh has deterministic example or fixture proof.
-3. WebGPU/WASM has an honest experimental subset with unsupported-feature diagnostics.
+3. WebGPU/WASM has an honest experimental RC subset broad enough to host most non-desktop scene
+   examples live on the website, including core visuals, animation/frame callbacks,
+   compute-to-render particles, and a narrow request/query/readback slice.
 4. Raw `ctypes` generation and smoke tests work for the intended public C surface.
 5. v0.3 visible capability gaps are fixed, explicitly deferred, or external/GSP-owned.
 6. Core examples compile and exercise the release feature set.
@@ -32,7 +34,8 @@ Not required for v0.4:
 1. v0.3 source or ABI compatibility.
 2. High-level object-oriented Python plotting wrappers.
 3. Publication-quality PDF/SVG/vector export.
-4. Full WebGPU parity with native Vulkan.
+4. Full WebGPU parity with native Vulkan, full query parity across every visual family, browser
+   equivalents for native desktop runtime examples, and advanced WebGPU technique parity.
 5. Complex text shaping, TeX/math layout, collision solving, dashboards, general custom shader
    APIs, CUDA interop beyond an optional native advanced example, CuPy/Python interop,
    LOD/out-of-core policies, or full application APIs.
@@ -81,15 +84,20 @@ release docs.
 
 ### 3. WebGPU/WASM Experimental Slice
 
-Ship an honest browser/backend subset, not native parity.
+Ship an honest browser/backend subset with broad live-example coverage, not native parity.
 
 Exit criteria:
 
-1. Supported subset is explicit, initially point, primitive, image, and preferably basic mesh.
-2. DRP2/WebGPU runner and WGSL emission work for the subset.
-3. Unsupported commands, visual families, shader variants, and runtime features have diagnostics.
-4. A browser-visible demo, fixture dashboard, or runnable page exists.
-5. Scene semantics are shared; there is no WebGPU-only scene contract.
+1. Portable scenario host exists for native and browser runners.
+2. Example manifest marks each public example as `webgpu-live`, `webgpu-planned`,
+   `webgpu-deferred`, or `native-only`.
+3. Most non-desktop scene examples have live browser routes or explicit `webgpu-planned` gaps.
+4. DRP2/WebGPU runner and WGSL emission work for the declared subset.
+5. Compute-to-render particle showcase runs in browser WebGPU at a documented particle budget.
+6. Point/marker picking plus one probe/readback example works through async browser readback.
+7. Unsupported commands, visual families, query targets, shader variants, native-only runtime
+   features, and capability failures have diagnostics.
+8. Scene semantics are shared; there is no WebGPU-only scene contract.
 
 ### 4. Compute+Graphics Experimental Slice
 

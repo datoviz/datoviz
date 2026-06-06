@@ -26,6 +26,30 @@ JavaScript should load the WASM module, normalize browser input, execute DRP2 pa
 diagnostics, and manage the WebGPU canvas. It should not reimplement Datoviz scene behavior.
 
 
+## v0.4 RC Target
+
+For v0.4 RC, the browser target is broad live example coverage, not full native Vulkan parity.
+Most scene-level examples that do not require native desktop runtime facilities should have a live
+WebGPU version on the website.
+
+Required RC browser capabilities:
+
+1. portable C scenario host for native and browser runners;
+2. current core visual families already promoted to WebGPU;
+3. frame callbacks and animation;
+4. scene buffers and buffer-backed visual attributes;
+5. compute-to-render for the particle showcase;
+6. request/query/readback for a narrow interaction slice;
+7. example manifest metadata distinguishing `webgpu-live`, `webgpu-planned`,
+   `webgpu-deferred`, and `native-only`;
+8. deterministic diagnostics for unsupported browser requirements.
+
+The RC query/readback target is intentionally narrow: point and marker item picking plus one
+sampled probe path, preferably image or labels. Full query parity across every visual family,
+volume ray-hit picking, advanced technique parity, native desktop runtime examples, and native
+capture/video/GUI/CUDA paths remain outside the RC WebGPU promise.
+
+
 ## Non-Goals
 
 WASM/WebGPU parity does not require browser equivalents for:
@@ -83,9 +107,15 @@ The current browser path proves:
 15. WebGPU runner execution for the committed DRP2 fixture subset;
 16. semantic negative-fixture parity in the WebGPU runner;
 17. compute and `ResourceBarrier` at DRP2 fixture level;
-17. browser evidence through `examples/webgpu/examples.html` and `examples/webgpu/fixtures.html`.
+18. browser evidence through `examples/webgpu/examples.html` and `examples/webgpu/fixtures.html`.
 
 This is an experimental subset, not native Vulkan feature parity.
+
+Status labels in this plan:
+
+1. `current`: implemented and validated in the active browser subset;
+2. `rc-target`: intended before v0.4 RC, but not yet current until browser smoke evidence lands;
+3. `future`: not part of the v0.4 RC browser promise.
 
 
 ## Architecture
@@ -122,7 +152,7 @@ Rules:
 
 The current WASM scene ABI is intentionally narrow. Broad parity requires these additions:
 
-1. generic portable example/session ABI based on `DvzExampleSpec`;
+1. generic portable example/session ABI based on `DvzScenarioSpec`;
 2. scene buffer creation and destruction;
 3. scene buffer data upload and partial update;
 4. buffer-backed visual attributes through `dvz_visual_set_attr_buffer()` semantics;
@@ -172,25 +202,25 @@ provides:
 
 ## Visual Family Matrix
 
-Use this table as the parity work tracker. `Current` means implemented in the active browser
-subset. `Next` means the preferred near-term promotion target. `Deferred` means do not expand into
-that family until earlier rows are stable.
+Use this table as the parity work tracker. `current` means implemented in the active browser
+subset. `rc-target` means intended for v0.4 RC once evidence lands. `future` means do not expand
+into that family until earlier rows are stable.
 
 | Family | Native Vulkan status | WASM/WebGPU target | Status | Required work |
 | --- | --- | --- | --- | --- |
-| point | retained scene visual | point visual with buffer-backed attrs current; particles next | current/next | keep buffer-backed attr evidence; prove compute-written positions |
+| point | retained scene visual | point visual with buffer-backed attrs current; particles next | current/rc-target | keep buffer-backed attr evidence; prove compute-written positions |
 | primitive | retained triangle-list visual | triangle-list visual | current | keep fixture/browser evidence and diagnostics |
 | image | retained RGBA/scalar image paths | RGBA8 image first, scalar/colormap later | current | add scalar/colormap variants after query/colorbar path is stable |
 | mesh | basic/textured/lit mesh paths | basic, textured, and material-controlled mesh current | current | keep texture-sampling and material-update evidence; broaden only with additional shader/material models |
 | pixel | retained pixel visual | dense and buffer-backed 2D pixel visual | current | keep fixture/browser evidence |
-| marker | retained marker visual | built-in marker subset current; glyph/atlas subset next | current/next | keep built-in marker evidence; settle atlas variants and picking diagnostics |
-| segment/path/stroke | retained path and stroke-shaped paths | segment/path cap-join controls current; broader subpath/vector parity next | current/next | keep cap/join evidence; settle subpath/vector policy and browser proof |
+| marker | retained marker visual | built-in marker subset current; item picking rc-target | current/rc-target | keep built-in marker evidence; add request/readback proof for promoted picking payloads |
+| segment/path/stroke | retained path and stroke-shaped paths | segment/path cap-join controls current; broader subpath/vector parity future | current/future | keep cap/join evidence; settle subpath/vector policy and browser proof later |
 | text/glyph | retained text and glyph visuals | low-level atlas glyph and semantic bitmap text current | current | keep glyph/text evidence; richer shaping, font packaging, and layout remain future work |
-| labels | label field and readback paths | label rendering and label probe subset | later | texture/label formats, query/readback, diagnostics |
-| sphere | sphere impostor visual | basic sphere impostor current; raycast/depth/material parity next | current/next | keep WGSL/browser evidence; promote native-depth and material variants with parity proof |
-| volume | volume visual and query paths | reduced volume/slice subset | later | 3D texture limits, sampling shaders, memory diagnostics |
-| splat | experimental splat visual | explicit experimental subset | later | sorting/blending/WBOIT policy and memory limits |
-| vector | planned/polish lane | vector arrows/glyphs | later | native family stabilization first |
+| labels | label field and readback paths | label rendering current; label probe rc-target if chosen as sampled probe | current/rc-target | texture/label formats, query/readback, diagnostics |
+| sphere | sphere impostor visual | basic sphere impostor current; raycast/depth/material parity future | current/future | keep WGSL/browser evidence; promote native-depth and material variants later |
+| volume | volume visual and query paths | reduced volume/slice subset | future | 3D texture limits, sampling shaders, memory diagnostics |
+| splat | experimental splat visual | explicit experimental subset | future | sorting/blending/WBOIT policy and memory limits |
+| vector | planned/polish lane | vector arrows/glyphs | future | native family stabilization first |
 
 
 ## Annotation And Layout Matrix
@@ -213,15 +243,15 @@ Annotations should be promoted after core visual families and query/readback bas
 | --- | --- | --- | --- |
 | panzoom | browser pointer/wheel to C controller | current | keep smoke coverage |
 | arcball | browser drag/wheel to C controller | current | keep smoke coverage |
-| fly/turntable | browser input to C controllers | next | expose controller creation/binding variants and smoke |
-| frame callbacks | portable example frame callback | next | `DvzExampleSpec` host runner and WASM frame entrypoint |
+| fly/turntable | browser input to C controllers | future | expose controller creation/binding variants and smoke after RC example host lands |
+| frame callbacks | portable example frame callback | rc-target | portable scenario host runner and WASM frame entrypoint |
 | resize/high-DPI | browser resize to C scene and packet replay | current | keep capability/resize diagnostics |
-| picking/query | request/poll query results | later | WASM query ABI, WebGPU readback latency policy |
-| selection | update retained selection state | later | query path, visual state update path |
-| capture | browser artifact capture | later | browser screenshot/video policy separate from native capture |
+| picking/query | request/poll query results | rc-target | WASM query ABI, async WebGPU readback delivery, point/marker plus one probe proof |
+| selection | update retained selection state | rc-target | query path, visual state update path for one promoted picking example |
+| capture | browser artifact capture | future | browser screenshot/video policy separate from native capture |
 | streaming/partial updates | same-shape updates and bounded growth | partial | buffer update ABI, diagnostics, memory limits |
-| compute-to-render | scene compute writes render buffers | next | scene buffer/compute ABI and particle smoke browser proof |
-| techniques | EDL/SSAO/WBOIT/depth peeling | deferred | per-technique WebGPU feasibility and fallback diagnostics |
+| compute-to-render | scene compute writes render buffers | rc-target | scene buffer/compute ABI and particle smoke browser proof |
+| techniques | EDL/SSAO/WBOIT/depth peeling | future | per-technique WebGPU feasibility and fallback diagnostics |
 
 
 ## Implementation Order
@@ -259,7 +289,33 @@ Required work:
 Start with a browser particle count such as `32k` or `64k`, then raise after browser memory and
 frame-time evidence is available.
 
-### Phase 3: Core Visual Parity
+### Phase 3: Request/Query/Readback RC Slice
+
+The RC slice supports browser-visible interaction examples, not full native query parity.
+
+Required work:
+
+1. define a WASM query request/result ABI;
+2. schedule WebGPU readbacks asynchronously and deliver results through polling or callbacks;
+3. implement latest-request-wins behavior for hover/probe examples;
+4. add point and marker item-picking smokes;
+5. add one sampled probe smoke, preferably image or labels;
+6. update selection state for one browser-visible promoted example;
+7. document unsupported query targets, payload types, formats, and visual families.
+
+
+### Phase 4: Example And Gallery Promotion
+
+1. Add manifest metadata for `webgpu-live`, `webgpu-planned`, `webgpu-deferred`, and
+   `native-only`.
+2. Classify every public C example.
+3. Convert portable scene examples before composed showcases.
+4. Keep examples native-only only when they require native app/window handles, native GUI, video,
+   CUDA interop, platform capture, or backend-specific diagnostics.
+5. Generate the website live-example matrix from metadata, not hand-maintained prose.
+
+
+### Phase 5: Core Visual Parity
 
 Promote visuals in this order:
 
@@ -271,15 +327,7 @@ Promote visuals in this order:
 
 Each promotion must satisfy the promotion rule above.
 
-### Phase 4: Query And Selection Parity
-
-1. Define WASM query request/result ABI.
-2. Implement WebGPU readback scheduling and latest-request-wins behavior.
-3. Add point/image/label readback smokes.
-4. Add selection state updates and browser-visible selection proof.
-5. Document readback latency and unsupported formats.
-
-### Phase 5: Larger Data And Reliability
+### Phase 6: Larger Data And Reliability
 
 1. Add browser memory-budget diagnostics.
 2. Add long-run retained-session churn tests.
@@ -335,6 +383,19 @@ Every promoted browser feature must update:
 3. `examples/webgpu/COMPAT.md` when fixture or browser evidence changes;
 4. the relevant visual or feature reference page;
 5. example metadata/manifest status when an example becomes portable or remains native-only.
+
+`current` support claims should be traceable to code or validation evidence. Before marking a
+feature or example `webgpu-live`, check:
+
+1. C WASM visual constants and ABI entry points in `src/wasm/scene_api.c`;
+2. JS wrapper enums and calls in `web/wasm/`;
+3. exported WASM functions in `src/wasm/CMakeLists.txt`;
+4. WebGPU runner command handling under `web/drp2/`;
+5. example manifest requirement tags;
+6. `wasm-scene-smoke`, `webgpu-browser-smoke`, and relevant native/DRP2 proof logs.
+
+Longer term, this inventory should become a cheap status check in `just spec-check` or a dedicated
+`just webgpu-status-check`.
 
 
 ## Risks

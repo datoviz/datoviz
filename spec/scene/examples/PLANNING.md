@@ -68,6 +68,25 @@ Each example may also carry a readiness label:
 | `blocked-by-v0.5-feature` | Should not be forced into v0.4. |
 
 
+## WebGPU Live-Example Vocabulary
+
+The v0.4 RC WebGPU goal is live browser coverage for most scene-level examples that do not require
+native desktop runtime facilities. Example metadata should classify browser status explicitly:
+
+| WebGPU status | Meaning |
+| --- | --- |
+| `webgpu-live` | Browser route is implemented, validated, and suitable for the website. |
+| `webgpu-planned` | Intended for the v0.4 RC live-example target, but not current support yet. |
+| `webgpu-deferred` | Good future browser target, but outside the RC browser promise. |
+| `native-only` | Requires native app/window handles, GUI, video, CUDA interop, platform capture, or backend diagnostics. |
+| `browser-only` | Exists specifically to test browser integration rather than normal scene portability. |
+
+`webgpu-live` and `webgpu-planned` rows should list requirement tags such as `point`, `mesh`,
+`panzoom`, `arcball`, `frame-callbacks`, `scene-buffers`, `scene-compute`, `query-readback`,
+`native-capture`, `gui`, `video`, and `cuda`. Public docs and generated gallery pages should derive
+their live-example matrix from metadata instead of hand-maintained prose.
+
+
 ## Current Capability Snapshot
 
 The active scene stack already covers retained figures and panels, per-panel viewport/scissor,

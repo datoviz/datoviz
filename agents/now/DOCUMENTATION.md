@@ -40,9 +40,11 @@ guide as current Datoviz documentation.
 10. WebGPU/WASM experimental-scope documentation.
 11. Compute+graphics experimental-scope documentation, including the portable DRP2 subset, native
     synchronization boundary, and optional CUDA SDK example status.
-12. Gallery/data attribution policy for public datasets, generated media, and reuse in release
+12. WebGPU live-example matrix generated from example metadata, classifying every public example as
+    `webgpu-live`, `webgpu-planned`, `webgpu-deferred`, or `native-only`.
+13. Gallery/data attribution policy for public datasets, generated media, and reuse in release
     communication.
-13. Short contributor guidance for AI-assisted docs/example work: page type, source of truth,
+14. Short contributor guidance for AI-assisted docs/example work: page type, source of truth,
     validation command, and unsupported-feature status.
 
 
@@ -58,7 +60,11 @@ Required:
    `datoviz.raw` layer;
 6. WebGPU/WASM experimental scope and known gaps;
 7. compute+graphics experimental scope and CUDA/CuPy boundary;
-8. clear statement that old high-level Pythonic Datoviz API migration is outside v0.4 Datoviz
+8. WebGPU live-example matrix with requirement tags for compute, request/query/readback,
+   native capture, GUI, video, CUDA, and desktop app/runtime dependencies;
+9. clear statement that browser request/query/readback is asynchronous and that the RC slice is
+   limited to promoted query families, not full native query parity;
+10. clear statement that old high-level Pythonic Datoviz API migration is outside v0.4 Datoviz
    scope.
 
 The Python binding scope page may land before the generated API reference is complete. For RC1, it

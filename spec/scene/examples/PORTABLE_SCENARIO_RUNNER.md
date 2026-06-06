@@ -2,7 +2,7 @@
 
 Execution Status:
 
-- Status: proposed example architecture for v0.4/v0.5 portability work
+- Status: RC architecture candidate for v0.4 portability work
 - Updated on: 2026-06-05
 - Purpose: make most scene examples compile as portable C scenarios and run through native,
   offscreen, capture, and browser hosts
@@ -83,6 +83,7 @@ several examples prove the shape.
 ```c
 typedef struct DvzScenarioContext DvzScenarioContext;
 typedef struct DvzScenarioSpec DvzScenarioSpec;
+typedef struct DvzScenarioQueryResult DvzScenarioQueryResult;
 
 typedef bool (*DvzScenarioInitFn)(DvzScenarioContext* ctx, void** out_user);
 typedef void (*DvzScenarioFrameFn)(DvzScenarioContext* ctx, void* user);
@@ -92,6 +93,8 @@ typedef void (*DvzScenarioPointerFn)(
     DvzScenarioContext* ctx, const DvzScenarioPointerEvent* event, void* user);
 typedef void (*DvzScenarioWheelFn)(
     DvzScenarioContext* ctx, const DvzScenarioWheelEvent* event, void* user);
+typedef void (*DvzScenarioQueryResultFn)(
+    DvzScenarioContext* ctx, const DvzScenarioQueryResult* result, void* user);
 typedef void (*DvzScenarioDestroyFn)(DvzScenarioContext* ctx, void* user);
 
 struct DvzScenarioSpec
@@ -108,6 +111,7 @@ struct DvzScenarioSpec
     DvzScenarioResizeFn resize;
     DvzScenarioPointerFn pointer;
     DvzScenarioWheelFn wheel;
+    DvzScenarioQueryResultFn query_result;
     DvzScenarioDestroyFn destroy;
 };
 ```
@@ -171,9 +175,15 @@ enum
     DVZ_SCENARIO_REQ_STORAGE_BUFFERS = 1ull << 6,
     DVZ_SCENARIO_REQ_SCENE_COMPUTE = 1ull << 7,
     DVZ_SCENARIO_REQ_QUERY_READBACK = 1ull << 8,
-    DVZ_SCENARIO_REQ_NATIVE_CAPTURE = 1ull << 9,
+    DVZ_SCENARIO_REQ_FRAME_CALLBACKS = 1ull << 9,
+    DVZ_SCENARIO_REQ_NATIVE_CAPTURE = 1ull << 10,
 };
 ```
+
+Browser/WASM runners must treat request/query/readback as asynchronous. Scenario code may enqueue a
+query during pointer, wheel, or frame handling, but results arrive later through polling or
+`query_result`. Native runners may keep blocking helpers where supported, but portable scenarios
+must not depend on synchronous readback.
 
 
 ## Runner API Sketch
@@ -628,8 +638,23 @@ external-memory interop, native GUI diagnostics, or platform packaging.
 
 Browser-only examples are exceptions for examples whose subject is browser integration itself.
 
-Example manifests should distinguish `portable-scenario`, `native-only`, `browser-only`, and
-`unsupported-on-webgpu` status.
+Examples are browser-live candidates by default once they use only scene-level APIs and scenario
+callbacks. The burden is on metadata to explain why an example is native-only, deferred, or
+unsupported on WebGPU.
+
+Example manifests should distinguish:
+
+1. `portable-scenario`: same C scenario can run under native and browser runners;
+2. `webgpu-live`: browser route is implemented and validated;
+3. `webgpu-planned`: intended for the RC live-example target, but not yet current;
+4. `webgpu-deferred`: useful browser target after RC;
+5. `native-only`: requires native app/window handles, GUI, video, CUDA, capture, or backend
+   diagnostics;
+6. `browser-only`: exists specifically to test browser integration.
+
+Each `webgpu-live` or `webgpu-planned` row should list requirement tags such as
+`point`, `mesh`, `panzoom`, `frame-callbacks`, `scene-buffers`, `scene-compute`, and
+`query-readback`.
 
 
 ## Implementation Plan
@@ -681,11 +706,15 @@ feature migration.
 5. Ensure unsupported requirements produce deterministic diagnostics rather than partial browser
    rewrites.
 
-### Phase 5: Compute And Showcase Migration
+### Phase 5: Compute, Query, And Showcase Migration
 
 Refactor `gpu_particle_smoke.c` into a shared scenario plus native host once the runner supports
 compute requirements. This is the first high-value proof that the same C scenario can drive native
 Vulkan and WASM/WebGPU evidence for a compute-to-render workflow.
+
+After compute particles, migrate one point or marker picking example and one sampled probe example
+through the same runner shape. These examples prove async request/query/readback delivery without
+promising full query parity for every visual family.
 
 ### Promotion Gate
 

@@ -6,9 +6,27 @@ The WebGPU runner is a strict subset check, not a full DRP2 backend. It tracks t
 command surface and validates the currently portable fixture slice: `37` positive DRP2 fixtures,
 `2` WebGPU-only attachment streams, and `82` expected-failure semantic negative fixtures.
 
-As of the capability-preflight slice (`c03e89227`), the pure browser WebGPU runner is considered
-closed for the v0.4 RC experimental subset. Remaining WebGPU/WASM release work is scene/WASM
-emission and transport, not additional pure WebGPU command coverage for this subset.
+As of the capability-preflight slice (`c03e89227`), the pure browser WebGPU runner was considered
+closed for the original narrow v0.4 RC experimental subset. The current RC target widens the
+scene/WASM example-host layer so most non-desktop scene examples can have live WebGPU website
+versions. Runner command expansion should remain evidence-driven and scoped to that target.
+
+
+## RC Promotion Target
+
+Current proof counts remain the fixture/dashboard truth until new browser evidence is recorded.
+Planned RC promotions are:
+
+1. portable scenario host for native and browser runners;
+2. frame callbacks and animation in WASM examples;
+3. browser-live compute-to-render particle smoke at a documented particle budget;
+4. browser-live request/query/readback slice for point and marker picking plus one sampled probe;
+5. manifest-backed example classification as `webgpu-live`, `webgpu-planned`,
+   `webgpu-deferred`, or `native-only`.
+
+Do not move compute particles, scene query/readback, or broad live-example coverage into the
+supported/current section until `wasm-scene-smoke`, `webgpu-browser-smoke`, and any relevant
+native/DRP2 checks have recorded evidence for the promoted slice.
 
 
 ## Fixture Dashboard
