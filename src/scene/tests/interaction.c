@@ -29,6 +29,7 @@
 #include "annotation/prepare_internal.h"
 #include "datoviz/input.h"
 #include "interaction/internal.h"
+#include "plot/internal.h"
 #include "query/internal.h"
 #include "scene_emit/internal.h"
 #include "scene_emit/scene_emit.h"

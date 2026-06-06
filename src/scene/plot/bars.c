@@ -25,7 +25,7 @@
 #include "_scene.h"
 #include "core/scene_notify_internal.h"
 #include "datoviz/scene.h"
-#include "prepare_internal.h"
+#include "plot/internal.h"
 
 
 

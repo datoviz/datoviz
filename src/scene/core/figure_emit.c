@@ -33,6 +33,7 @@
 #include "core/figure_emit_internal.h"
 #include "core/frame_trace_internal.h"
 #include "domain/field_internal.h"
+#include "plot/internal.h"
 #include "_visual_internal.h"
 #include "datoviz/scene.h"
 
