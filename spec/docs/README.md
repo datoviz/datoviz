@@ -24,6 +24,8 @@ scientific plotting belongs to VisPy2/GSP, with Datoviz as one rendering backend
   support-pack plan, and contributor boundaries for users and agents.
 - [GALLERY_SITE.md](GALLERY_SITE.md): MkDocs/gallery page-shape notes and front-page gallery
   policy.
+- [WEBSITE_TRANSITION.md](WEBSITE_TRANSITION.md): v0.4 landing/docs transition plan that preserves
+  the current public v0.3 website until the v0.4 public site is usable.
 
 AI-facing usage contracts are routed through this directory first. Scene-level default API guidance
 lives in [`../scene/api/API_SURFACE.md`](../scene/api/API_SURFACE.md), copy-safe example policy
