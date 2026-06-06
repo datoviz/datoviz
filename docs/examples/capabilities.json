@@ -1,0 +1,3125 @@
+{
+  "schema": "datoviz.public-capabilities.v1",
+  "source": "examples/c/MANIFEST.yaml",
+  "generated_by": "tools/build_capabilities.py",
+  "example_manifest": "docs/examples/examples.json",
+  "example_count": 67,
+  "categories": {
+    "composite": 2,
+    "feature": 39,
+    "showcase": 11,
+    "visual": 15
+  },
+  "statuses": {
+    "experimental": 5,
+    "prototype": 1,
+    "supported": 61
+  },
+  "agent_copy_safe": {
+    "false": 15,
+    "true": 52
+  },
+  "capabilities": {
+    "composites": {
+      "graph": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "composite_graph",
+            "title": "Graph Composite",
+            "category": "composite",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/composites/graph.c",
+            "page": "gallery/composites/composite_graph.md"
+          }
+        ]
+      },
+      "polygon": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "composite_polygon",
+            "title": "Polygon Composite",
+            "category": "composite",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/composites/polygon.c",
+            "page": "gallery/composites/composite_polygon.md"
+          }
+        ]
+      }
+    },
+    "data_kinds": {
+      "prepared": {
+        "count": 3,
+        "examples": [
+          {
+            "id": "us_state_choropleth",
+            "title": "U.S. State Choropleth",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/choropleth.c",
+            "page": "gallery/showcases/us_state_choropleth.md"
+          },
+          {
+            "id": "brain_volume_mesh",
+            "title": "Allen Mouse Brain",
+            "category": "showcase",
+            "status": "prototype",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/brain_volume_mesh.c",
+            "page": "gallery/showcases/brain_volume_mesh.md"
+          },
+          {
+            "id": "point_cloud",
+            "title": "Point Cloud",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/point_cloud.c",
+            "page": "gallery/showcases/point_cloud.md"
+          }
+        ]
+      },
+      "real": {
+        "count": 2,
+        "examples": [
+          {
+            "id": "protein_arcball_viewer",
+            "title": "Protein",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/protein.c",
+            "page": "gallery/showcases/protein_arcball_viewer.md"
+          },
+          {
+            "id": "textured_terrain_or_planet",
+            "title": "Textured Planets",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/textured_terrain_or_planet.md"
+          }
+        ]
+      },
+      "simulated": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcase_gpu_particle_smoke",
+            "title": "GPU Particle Smoke",
+            "category": "showcase",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/gpu_particle_smoke.c",
+            "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
+          }
+        ]
+      },
+      "synthetic": {
+        "count": 61,
+        "examples": [
+          {
+            "id": "feature_scene_basic",
+            "title": "Basic Scene",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/scene_basic.c",
+            "page": "gallery/features/feature_scene_basic.md"
+          },
+          {
+            "id": "feature_panel_single",
+            "title": "Single Panel",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panel_single.c",
+            "page": "gallery/features/feature_panel_single.md"
+          },
+          {
+            "id": "feature_panel_grid",
+            "title": "Panel Grid",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panel_grid.c",
+            "page": "gallery/features/feature_panel_grid.md"
+          },
+          {
+            "id": "feature_panel_multi",
+            "title": "Multiple Panels",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panel_multi.c",
+            "page": "gallery/features/feature_panel_multi.md"
+          },
+          {
+            "id": "feature_panel_linked",
+            "title": "Linked Panels",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panel_linked.c",
+            "page": "gallery/features/feature_panel_linked.md"
+          },
+          {
+            "id": "path_axes_2d",
+            "title": "Path With 2D Axes",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/axes_2d.c",
+            "page": "gallery/features/path_axes_2d.md"
+          },
+          {
+            "id": "feature_axis_labels",
+            "title": "Axis Labels",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/axis_labels.c",
+            "page": "gallery/features/feature_axis_labels.md"
+          },
+          {
+            "id": "feature_sampled_field_2d",
+            "title": "2D Sampled Field",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/sampled_field_2d.c",
+            "page": "gallery/features/feature_sampled_field_2d.md"
+          },
+          {
+            "id": "feature_sampled_field_3d",
+            "title": "3D Sampled Field",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/sampled_field_3d.c",
+            "page": "gallery/features/feature_sampled_field_3d.md"
+          },
+          {
+            "id": "feature_text_block",
+            "title": "Text Block",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/text_block.c",
+            "page": "gallery/features/feature_text_block.md"
+          },
+          {
+            "id": "feature_overlay_card",
+            "title": "Overlay Card",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/overlay_card.c",
+            "page": "gallery/features/feature_overlay_card.md"
+          },
+          {
+            "id": "feature_controller_arcball",
+            "title": "Arcball Controller",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/controller_arcball.c",
+            "page": "gallery/features/feature_controller_arcball.md"
+          },
+          {
+            "id": "feature_controller_fly",
+            "title": "Fly Controller",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/controller_fly.c",
+            "page": "gallery/features/feature_controller_fly.md"
+          },
+          {
+            "id": "feature_controller_turntable",
+            "title": "Turntable Controller",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/controller_turntable.c",
+            "page": "gallery/features/feature_controller_turntable.md"
+          },
+          {
+            "id": "feature_mesh_texture",
+            "title": "Textured Mesh",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/mesh_texture.c",
+            "page": "gallery/features/feature_mesh_texture.md"
+          },
+          {
+            "id": "feature_material_mesh",
+            "title": "Mesh Materials",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/material_mesh.c",
+            "page": "gallery/features/feature_material_mesh.md"
+          },
+          {
+            "id": "feature_lighting",
+            "title": "Lighting",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/lighting.c",
+            "page": "gallery/features/feature_lighting.md"
+          },
+          {
+            "id": "linked_panels_axes_panzoom",
+            "title": "Linked Panels With Axes",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/panel_linked_axes.c",
+            "page": "gallery/showcases/linked_panels_axes_panzoom.md"
+          },
+          {
+            "id": "linked_panels_probe_colorbar",
+            "title": "Linked Probe With Colorbar",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/linked_probe_colorbar.c",
+            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+          },
+          {
+            "id": "scientific_plotting_workflow",
+            "title": "Scientific Plotting Workflow",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/scientific_plotting.c",
+            "page": "gallery/showcases/scientific_plotting_workflow.md"
+          },
+          {
+            "id": "scale_bar",
+            "title": "Scale Bar",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/scalebar.c",
+            "page": "gallery/features/scale_bar.md"
+          },
+          {
+            "id": "scalebar_units",
+            "title": "Scale Bar Units",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/scalebar_units.c",
+            "page": "gallery/features/scalebar_units.md"
+          },
+          {
+            "id": "scalebar_measurement_workflow",
+            "title": "Scale Bar Measurement Workflow",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/scalebar_measurement.c",
+            "page": "gallery/showcases/scalebar_measurement_workflow.md"
+          },
+          {
+            "id": "colorbar",
+            "title": "Colorbar",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/colorbar.c",
+            "page": "gallery/features/colorbar.md"
+          },
+          {
+            "id": "colormap_scale",
+            "title": "Scalar Color Scale",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/colormap_scale.c",
+            "page": "gallery/features/colormap_scale.md"
+          },
+          {
+            "id": "annotation_readout",
+            "title": "Annotation Readout",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/annotation_readout.c",
+            "page": "gallery/features/annotation_readout.md"
+          },
+          {
+            "id": "update_partial",
+            "title": "Partial Data Update",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/update_partial.c",
+            "page": "gallery/features/update_partial.md"
+          },
+          {
+            "id": "feature_update_visual_data",
+            "title": "Visual Data Update",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/update_visual_data.c",
+            "page": "gallery/features/feature_update_visual_data.md"
+          },
+          {
+            "id": "feature_visibility",
+            "title": "Visual Visibility",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/visibility.c",
+            "page": "gallery/features/feature_visibility.md"
+          },
+          {
+            "id": "depth_test",
+            "title": "Depth Test Toggle",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/depth_test.c",
+            "page": "gallery/features/depth_test.md"
+          },
+          {
+            "id": "alpha_blending",
+            "title": "Alpha Blending",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/alpha_blending.c",
+            "page": "gallery/features/alpha_blending.md"
+          },
+          {
+            "id": "panel_background",
+            "title": "Panel Background",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panel_background.c",
+            "page": "gallery/features/panel_background.md"
+          },
+          {
+            "id": "controller_panzoom",
+            "title": "Panzoom Attachment",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panzoom_attachment.c",
+            "page": "gallery/features/controller_panzoom.md"
+          },
+          {
+            "id": "image_probe",
+            "title": "Image Probe",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/image_probe.c",
+            "page": "gallery/features/image_probe.md"
+          },
+          {
+            "id": "marker_picking",
+            "title": "Marker Picking",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/pick_marker.c",
+            "page": "gallery/features/marker_picking.md"
+          },
+          {
+            "id": "feature_pick_point",
+            "title": "Point Picking",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/pick_point.c",
+            "page": "gallery/features/feature_pick_point.md"
+          },
+          {
+            "id": "feature_pick_hover",
+            "title": "Hover Picking",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/pick_hover.c",
+            "page": "gallery/features/feature_pick_hover.md"
+          },
+          {
+            "id": "feature_probe_labels",
+            "title": "Label Probe",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/probe_labels.c",
+            "page": "gallery/features/feature_probe_labels.md"
+          },
+          {
+            "id": "feature_selection",
+            "title": "Selection",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/selection.c",
+            "page": "gallery/features/feature_selection.md"
+          },
+          {
+            "id": "feature_timer_animation",
+            "title": "Timer Animation",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/timer_animation.c",
+            "page": "gallery/features/feature_timer_animation.md"
+          },
+          {
+            "id": "feature_marker_symbols",
+            "title": "Marker Symbols",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/marker_symbols.c",
+            "page": "gallery/features/feature_marker_symbols.md"
+          },
+          {
+            "id": "feature_legend_categorical",
+            "title": "Categorical Legend",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/legend_categorical.c",
+            "page": "gallery/features/feature_legend_categorical.md"
+          },
+          {
+            "id": "feature_video_export",
+            "title": "Video Export",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/video_export.c",
+            "page": "gallery/features/feature_video_export.md"
+          },
+          {
+            "id": "point_2d",
+            "title": "Point",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/point.c",
+            "page": "gallery/visuals/point_2d.md"
+          },
+          {
+            "id": "visual_pixel",
+            "title": "Pixel",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/pixel.c",
+            "page": "gallery/visuals/visual_pixel.md"
+          },
+          {
+            "id": "visual_marker",
+            "title": "Marker",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/marker.c",
+            "page": "gallery/visuals/visual_marker.md"
+          },
+          {
+            "id": "visual_primitive",
+            "title": "Primitive",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/primitive.c",
+            "page": "gallery/visuals/visual_primitive.md"
+          },
+          {
+            "id": "visual_segment",
+            "title": "Segment",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/segment.c",
+            "page": "gallery/visuals/visual_segment.md"
+          },
+          {
+            "id": "visual_vector",
+            "title": "Vector",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/vector.c",
+            "page": "gallery/visuals/visual_vector.md"
+          },
+          {
+            "id": "visual_path",
+            "title": "Path",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/path.c",
+            "page": "gallery/visuals/visual_path.md"
+          },
+          {
+            "id": "visual_image",
+            "title": "Image",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/image.c",
+            "page": "gallery/visuals/visual_image.md"
+          },
+          {
+            "id": "visual_mesh",
+            "title": "Mesh",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/mesh.c",
+            "page": "gallery/visuals/visual_mesh.md"
+          },
+          {
+            "id": "sphere_impostor",
+            "title": "Sphere",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/sphere.c",
+            "page": "gallery/visuals/sphere_impostor.md"
+          },
+          {
+            "id": "visual_splat",
+            "title": "Splat",
+            "category": "visual",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/visuals/splat.c",
+            "page": "gallery/visuals/visual_splat.md"
+          },
+          {
+            "id": "visual_text",
+            "title": "Text",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/text.c",
+            "page": "gallery/visuals/visual_text.md"
+          },
+          {
+            "id": "visual_glyph",
+            "title": "Glyph",
+            "category": "visual",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/visuals/glyph.c",
+            "page": "gallery/visuals/visual_glyph.md"
+          },
+          {
+            "id": "visual_labels",
+            "title": "Labels",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/labels.c",
+            "page": "gallery/visuals/visual_labels.md"
+          },
+          {
+            "id": "volume",
+            "title": "Volume",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/volume.c",
+            "page": "gallery/visuals/volume.md"
+          },
+          {
+            "id": "composite_polygon",
+            "title": "Polygon Composite",
+            "category": "composite",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/composites/polygon.c",
+            "page": "gallery/composites/composite_polygon.md"
+          },
+          {
+            "id": "composite_graph",
+            "title": "Graph Composite",
+            "category": "composite",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/composites/graph.c",
+            "page": "gallery/composites/composite_graph.md"
+          },
+          {
+            "id": "showcase_wind_field",
+            "title": "Wind Field",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/wind_field.c",
+            "page": "gallery/showcases/showcase_wind_field.md"
+          }
+        ]
+      }
+    },
+    "features": {
+      "alpha-blending": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "alpha_blending",
+            "title": "Alpha Blending",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/alpha_blending.c",
+            "page": "gallery/features/alpha_blending.md"
+          }
+        ]
+      },
+      "annotation-readout": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "annotation_readout",
+            "title": "Annotation Readout",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/annotation_readout.c",
+            "page": "gallery/features/annotation_readout.md"
+          }
+        ]
+      },
+      "axes-2d": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "path_axes_2d",
+            "title": "Path With 2D Axes",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/axes_2d.c",
+            "page": "gallery/features/path_axes_2d.md"
+          }
+        ]
+      },
+      "axis-labels": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_axis_labels",
+            "title": "Axis Labels",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/axis_labels.c",
+            "page": "gallery/features/feature_axis_labels.md"
+          }
+        ]
+      },
+      "colorbar": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "colorbar",
+            "title": "Colorbar",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/colorbar.c",
+            "page": "gallery/features/colorbar.md"
+          }
+        ]
+      },
+      "colormap-scale": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "colormap_scale",
+            "title": "Scalar Color Scale",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/colormap_scale.c",
+            "page": "gallery/features/colormap_scale.md"
+          }
+        ]
+      },
+      "controller-arcball": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_controller_arcball",
+            "title": "Arcball Controller",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/controller_arcball.c",
+            "page": "gallery/features/feature_controller_arcball.md"
+          }
+        ]
+      },
+      "controller-fly": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_controller_fly",
+            "title": "Fly Controller",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/controller_fly.c",
+            "page": "gallery/features/feature_controller_fly.md"
+          }
+        ]
+      },
+      "controller-panzoom": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "controller_panzoom",
+            "title": "Panzoom Attachment",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panzoom_attachment.c",
+            "page": "gallery/features/controller_panzoom.md"
+          }
+        ]
+      },
+      "controller-turntable": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_controller_turntable",
+            "title": "Turntable Controller",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/controller_turntable.c",
+            "page": "gallery/features/feature_controller_turntable.md"
+          }
+        ]
+      },
+      "depth-test": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "depth_test",
+            "title": "Depth Test Toggle",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/depth_test.c",
+            "page": "gallery/features/depth_test.md"
+          }
+        ]
+      },
+      "image-probe": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "image_probe",
+            "title": "Image Probe",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/image_probe.c",
+            "page": "gallery/features/image_probe.md"
+          }
+        ]
+      },
+      "legend-categorical": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_legend_categorical",
+            "title": "Categorical Legend",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/legend_categorical.c",
+            "page": "gallery/features/feature_legend_categorical.md"
+          }
+        ]
+      },
+      "lighting": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_lighting",
+            "title": "Lighting",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/lighting.c",
+            "page": "gallery/features/feature_lighting.md"
+          }
+        ]
+      },
+      "linked-panels": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_panel_linked",
+            "title": "Linked Panels",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panel_linked.c",
+            "page": "gallery/features/feature_panel_linked.md"
+          }
+        ]
+      },
+      "marker-picking": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "marker_picking",
+            "title": "Marker Picking",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/pick_marker.c",
+            "page": "gallery/features/marker_picking.md"
+          }
+        ]
+      },
+      "marker-symbols": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_marker_symbols",
+            "title": "Marker Symbols",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/marker_symbols.c",
+            "page": "gallery/features/feature_marker_symbols.md"
+          }
+        ]
+      },
+      "material-mesh": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_material_mesh",
+            "title": "Mesh Materials",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/material_mesh.c",
+            "page": "gallery/features/feature_material_mesh.md"
+          }
+        ]
+      },
+      "mesh-texture": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_mesh_texture",
+            "title": "Textured Mesh",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/mesh_texture.c",
+            "page": "gallery/features/feature_mesh_texture.md"
+          }
+        ]
+      },
+      "multi-panel": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_panel_multi",
+            "title": "Multiple Panels",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panel_multi.c",
+            "page": "gallery/features/feature_panel_multi.md"
+          }
+        ]
+      },
+      "overlay-card": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_overlay_card",
+            "title": "Overlay Card",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/overlay_card.c",
+            "page": "gallery/features/feature_overlay_card.md"
+          }
+        ]
+      },
+      "panel-background": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "panel_background",
+            "title": "Panel Background",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panel_background.c",
+            "page": "gallery/features/panel_background.md"
+          }
+        ]
+      },
+      "panel-grid": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_panel_grid",
+            "title": "Panel Grid",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panel_grid.c",
+            "page": "gallery/features/feature_panel_grid.md"
+          }
+        ]
+      },
+      "panel-single": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_panel_single",
+            "title": "Single Panel",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panel_single.c",
+            "page": "gallery/features/feature_panel_single.md"
+          }
+        ]
+      },
+      "pick-hover": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_pick_hover",
+            "title": "Hover Picking",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/pick_hover.c",
+            "page": "gallery/features/feature_pick_hover.md"
+          }
+        ]
+      },
+      "pick-point": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_pick_point",
+            "title": "Point Picking",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/pick_point.c",
+            "page": "gallery/features/feature_pick_point.md"
+          }
+        ]
+      },
+      "probe-labels": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_probe_labels",
+            "title": "Label Probe",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/probe_labels.c",
+            "page": "gallery/features/feature_probe_labels.md"
+          }
+        ]
+      },
+      "sampled-field-2d": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_sampled_field_2d",
+            "title": "2D Sampled Field",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/sampled_field_2d.c",
+            "page": "gallery/features/feature_sampled_field_2d.md"
+          }
+        ]
+      },
+      "sampled-field-3d": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_sampled_field_3d",
+            "title": "3D Sampled Field",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/sampled_field_3d.c",
+            "page": "gallery/features/feature_sampled_field_3d.md"
+          }
+        ]
+      },
+      "scale-bar": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "scale_bar",
+            "title": "Scale Bar",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/scalebar.c",
+            "page": "gallery/features/scale_bar.md"
+          }
+        ]
+      },
+      "scalebar-units": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "scalebar_units",
+            "title": "Scale Bar Units",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/scalebar_units.c",
+            "page": "gallery/features/scalebar_units.md"
+          }
+        ]
+      },
+      "scene": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_scene_basic",
+            "title": "Basic Scene",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/scene_basic.c",
+            "page": "gallery/features/feature_scene_basic.md"
+          }
+        ]
+      },
+      "selection": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_selection",
+            "title": "Selection",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/selection.c",
+            "page": "gallery/features/feature_selection.md"
+          }
+        ]
+      },
+      "text-block": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_text_block",
+            "title": "Text Block",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/text_block.c",
+            "page": "gallery/features/feature_text_block.md"
+          }
+        ]
+      },
+      "timer-animation": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_timer_animation",
+            "title": "Timer Animation",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/timer_animation.c",
+            "page": "gallery/features/feature_timer_animation.md"
+          }
+        ]
+      },
+      "update-partial": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "update_partial",
+            "title": "Partial Data Update",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/update_partial.c",
+            "page": "gallery/features/update_partial.md"
+          }
+        ]
+      },
+      "update-visual-data": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_update_visual_data",
+            "title": "Visual Data Update",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/update_visual_data.c",
+            "page": "gallery/features/feature_update_visual_data.md"
+          }
+        ]
+      },
+      "video-export": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_video_export",
+            "title": "Video Export",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/video_export.c",
+            "page": "gallery/features/feature_video_export.md"
+          }
+        ]
+      },
+      "visibility": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_visibility",
+            "title": "Visual Visibility",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/visibility.c",
+            "page": "gallery/features/feature_visibility.md"
+          }
+        ]
+      }
+    },
+    "tags": {
+      "alpha-blending": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcase_gpu_particle_smoke",
+            "title": "GPU Particle Smoke",
+            "category": "showcase",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/gpu_particle_smoke.c",
+            "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
+          }
+        ]
+      },
+      "animation": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_video_export",
+            "title": "Video Export",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/video_export.c",
+            "page": "gallery/features/feature_video_export.md"
+          }
+        ]
+      },
+      "app-capture": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_video_export",
+            "title": "Video Export",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/video_export.c",
+            "page": "gallery/features/feature_video_export.md"
+          }
+        ]
+      },
+      "arcball": {
+        "count": 6,
+        "examples": [
+          {
+            "id": "visual_mesh",
+            "title": "Mesh",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/mesh.c",
+            "page": "gallery/visuals/visual_mesh.md"
+          },
+          {
+            "id": "sphere_impostor",
+            "title": "Sphere",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/sphere.c",
+            "page": "gallery/visuals/sphere_impostor.md"
+          },
+          {
+            "id": "volume",
+            "title": "Volume",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/volume.c",
+            "page": "gallery/visuals/volume.md"
+          },
+          {
+            "id": "protein_arcball_viewer",
+            "title": "Protein",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/protein.c",
+            "page": "gallery/showcases/protein_arcball_viewer.md"
+          },
+          {
+            "id": "brain_volume_mesh",
+            "title": "Allen Mouse Brain",
+            "category": "showcase",
+            "status": "prototype",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/brain_volume_mesh.c",
+            "page": "gallery/showcases/brain_volume_mesh.md"
+          },
+          {
+            "id": "textured_terrain_or_planet",
+            "title": "Textured Planets",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/textured_terrain_or_planet.md"
+          }
+        ]
+      },
+      "axes": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "linked_panels_axes_panzoom",
+            "title": "Linked Panels With Axes",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/panel_linked_axes.c",
+            "page": "gallery/showcases/linked_panels_axes_panzoom.md"
+          }
+        ]
+      },
+      "bezier-edges": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "composite_graph",
+            "title": "Graph Composite",
+            "category": "composite",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/composites/graph.c",
+            "page": "gallery/composites/composite_graph.md"
+          }
+        ]
+      },
+      "bitmap-symbol": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_marker_symbols",
+            "title": "Marker Symbols",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/marker_symbols.c",
+            "page": "gallery/features/feature_marker_symbols.md"
+          }
+        ]
+      },
+      "boundary-box": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "volume",
+            "title": "Volume",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/volume.c",
+            "page": "gallery/visuals/volume.md"
+          }
+        ]
+      },
+      "capture": {
+        "count": 23,
+        "examples": [
+          {
+            "id": "colorbar",
+            "title": "Colorbar",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/colorbar.c",
+            "page": "gallery/features/colorbar.md"
+          },
+          {
+            "id": "feature_legend_categorical",
+            "title": "Categorical Legend",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/legend_categorical.c",
+            "page": "gallery/features/feature_legend_categorical.md"
+          },
+          {
+            "id": "point_2d",
+            "title": "Point",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/point.c",
+            "page": "gallery/visuals/point_2d.md"
+          },
+          {
+            "id": "visual_pixel",
+            "title": "Pixel",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/pixel.c",
+            "page": "gallery/visuals/visual_pixel.md"
+          },
+          {
+            "id": "visual_marker",
+            "title": "Marker",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/marker.c",
+            "page": "gallery/visuals/visual_marker.md"
+          },
+          {
+            "id": "visual_primitive",
+            "title": "Primitive",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/primitive.c",
+            "page": "gallery/visuals/visual_primitive.md"
+          },
+          {
+            "id": "visual_segment",
+            "title": "Segment",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/segment.c",
+            "page": "gallery/visuals/visual_segment.md"
+          },
+          {
+            "id": "visual_vector",
+            "title": "Vector",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/vector.c",
+            "page": "gallery/visuals/visual_vector.md"
+          },
+          {
+            "id": "visual_path",
+            "title": "Path",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/path.c",
+            "page": "gallery/visuals/visual_path.md"
+          },
+          {
+            "id": "visual_image",
+            "title": "Image",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/image.c",
+            "page": "gallery/visuals/visual_image.md"
+          },
+          {
+            "id": "visual_mesh",
+            "title": "Mesh",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/mesh.c",
+            "page": "gallery/visuals/visual_mesh.md"
+          },
+          {
+            "id": "sphere_impostor",
+            "title": "Sphere",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/sphere.c",
+            "page": "gallery/visuals/sphere_impostor.md"
+          },
+          {
+            "id": "visual_splat",
+            "title": "Splat",
+            "category": "visual",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/visuals/splat.c",
+            "page": "gallery/visuals/visual_splat.md"
+          },
+          {
+            "id": "visual_text",
+            "title": "Text",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/text.c",
+            "page": "gallery/visuals/visual_text.md"
+          },
+          {
+            "id": "visual_glyph",
+            "title": "Glyph",
+            "category": "visual",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/visuals/glyph.c",
+            "page": "gallery/visuals/visual_glyph.md"
+          },
+          {
+            "id": "visual_labels",
+            "title": "Labels",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/labels.c",
+            "page": "gallery/visuals/visual_labels.md"
+          },
+          {
+            "id": "volume",
+            "title": "Volume",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/volume.c",
+            "page": "gallery/visuals/volume.md"
+          },
+          {
+            "id": "us_state_choropleth",
+            "title": "U.S. State Choropleth",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/choropleth.c",
+            "page": "gallery/showcases/us_state_choropleth.md"
+          },
+          {
+            "id": "showcase_wind_field",
+            "title": "Wind Field",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/wind_field.c",
+            "page": "gallery/showcases/showcase_wind_field.md"
+          },
+          {
+            "id": "showcase_gpu_particle_smoke",
+            "title": "GPU Particle Smoke",
+            "category": "showcase",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/gpu_particle_smoke.c",
+            "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
+          },
+          {
+            "id": "brain_volume_mesh",
+            "title": "Allen Mouse Brain",
+            "category": "showcase",
+            "status": "prototype",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/brain_volume_mesh.c",
+            "page": "gallery/showcases/brain_volume_mesh.md"
+          },
+          {
+            "id": "point_cloud",
+            "title": "Point Cloud",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/point_cloud.c",
+            "page": "gallery/showcases/point_cloud.md"
+          },
+          {
+            "id": "textured_terrain_or_planet",
+            "title": "Textured Planets",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/textured_terrain_or_planet.md"
+          }
+        ]
+      },
+      "categorical-scale": {
+        "count": 2,
+        "examples": [
+          {
+            "id": "feature_legend_categorical",
+            "title": "Categorical Legend",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/legend_categorical.c",
+            "page": "gallery/features/feature_legend_categorical.md"
+          },
+          {
+            "id": "visual_labels",
+            "title": "Labels",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/labels.c",
+            "page": "gallery/visuals/visual_labels.md"
+          }
+        ]
+      },
+      "choropleth": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "us_state_choropleth",
+            "title": "U.S. State Choropleth",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/choropleth.c",
+            "page": "gallery/showcases/us_state_choropleth.md"
+          }
+        ]
+      },
+      "colorbar": {
+        "count": 4,
+        "examples": [
+          {
+            "id": "linked_panels_probe_colorbar",
+            "title": "Linked Probe With Colorbar",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/linked_probe_colorbar.c",
+            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+          },
+          {
+            "id": "colorbar",
+            "title": "Colorbar",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/colorbar.c",
+            "page": "gallery/features/colorbar.md"
+          },
+          {
+            "id": "us_state_choropleth",
+            "title": "U.S. State Choropleth",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/choropleth.c",
+            "page": "gallery/showcases/us_state_choropleth.md"
+          },
+          {
+            "id": "showcase_wind_field",
+            "title": "Wind Field",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/wind_field.c",
+            "page": "gallery/showcases/showcase_wind_field.md"
+          }
+        ]
+      },
+      "composite": {
+        "count": 3,
+        "examples": [
+          {
+            "id": "composite_polygon",
+            "title": "Polygon Composite",
+            "category": "composite",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/composites/polygon.c",
+            "page": "gallery/composites/composite_polygon.md"
+          },
+          {
+            "id": "composite_graph",
+            "title": "Graph Composite",
+            "category": "composite",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/composites/graph.c",
+            "page": "gallery/composites/composite_graph.md"
+          },
+          {
+            "id": "us_state_choropleth",
+            "title": "U.S. State Choropleth",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/choropleth.c",
+            "page": "gallery/showcases/us_state_choropleth.md"
+          }
+        ]
+      },
+      "compute": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcase_gpu_particle_smoke",
+            "title": "GPU Particle Smoke",
+            "category": "showcase",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/gpu_particle_smoke.c",
+            "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
+          }
+        ]
+      },
+      "dense-point-cloud": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "point_cloud",
+            "title": "Point Cloud",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/point_cloud.c",
+            "page": "gallery/showcases/point_cloud.md"
+          }
+        ]
+      },
+      "direct-color": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "point_cloud",
+            "title": "Point Cloud",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/point_cloud.c",
+            "page": "gallery/showcases/point_cloud.md"
+          }
+        ]
+      },
+      "distance-field-symbol": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_marker_symbols",
+            "title": "Marker Symbols",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/marker_symbols.c",
+            "page": "gallery/features/feature_marker_symbols.md"
+          }
+        ]
+      },
+      "eye-dome-lighting": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "point_cloud",
+            "title": "Point Cloud",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/point_cloud.c",
+            "page": "gallery/showcases/point_cloud.md"
+          }
+        ]
+      },
+      "fly": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "point_cloud",
+            "title": "Point Cloud",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/point_cloud.c",
+            "page": "gallery/showcases/point_cloud.md"
+          }
+        ]
+      },
+      "geo": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "us_state_choropleth",
+            "title": "U.S. State Choropleth",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/choropleth.c",
+            "page": "gallery/showcases/us_state_choropleth.md"
+          }
+        ]
+      },
+      "glyph": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_glyph",
+            "title": "Glyph",
+            "category": "visual",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/visuals/glyph.c",
+            "page": "gallery/visuals/visual_glyph.md"
+          }
+        ]
+      },
+      "graph": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "composite_graph",
+            "title": "Graph Composite",
+            "category": "composite",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/composites/graph.c",
+            "page": "gallery/composites/composite_graph.md"
+          }
+        ]
+      },
+      "gui": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "point_cloud",
+            "title": "Point Cloud",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/point_cloud.c",
+            "page": "gallery/showcases/point_cloud.md"
+          }
+        ]
+      },
+      "guide-lines": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "scientific_plotting_workflow",
+            "title": "Scientific Plotting Workflow",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/scientific_plotting.c",
+            "page": "gallery/showcases/scientific_plotting_workflow.md"
+          }
+        ]
+      },
+      "guide-spans": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "scientific_plotting_workflow",
+            "title": "Scientific Plotting Workflow",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/scientific_plotting.c",
+            "page": "gallery/showcases/scientific_plotting_workflow.md"
+          }
+        ]
+      },
+      "histogram": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "scientific_plotting_workflow",
+            "title": "Scientific Plotting Workflow",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/scientific_plotting.c",
+            "page": "gallery/showcases/scientific_plotting_workflow.md"
+          }
+        ]
+      },
+      "holes": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "composite_polygon",
+            "title": "Polygon Composite",
+            "category": "composite",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/composites/polygon.c",
+            "page": "gallery/composites/composite_polygon.md"
+          }
+        ]
+      },
+      "image": {
+        "count": 3,
+        "examples": [
+          {
+            "id": "linked_panels_probe_colorbar",
+            "title": "Linked Probe With Colorbar",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/linked_probe_colorbar.c",
+            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+          },
+          {
+            "id": "colorbar",
+            "title": "Colorbar",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/colorbar.c",
+            "page": "gallery/features/colorbar.md"
+          },
+          {
+            "id": "visual_image",
+            "title": "Image",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/image.c",
+            "page": "gallery/visuals/visual_image.md"
+          }
+        ]
+      },
+      "indexed-geometry": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_mesh",
+            "title": "Mesh",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/mesh.c",
+            "page": "gallery/visuals/visual_mesh.md"
+          }
+        ]
+      },
+      "labels": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_labels",
+            "title": "Labels",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/labels.c",
+            "page": "gallery/visuals/visual_labels.md"
+          }
+        ]
+      },
+      "legend": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_legend_categorical",
+            "title": "Categorical Legend",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/legend_categorical.c",
+            "page": "gallery/features/feature_legend_categorical.md"
+          }
+        ]
+      },
+      "linked-panels": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "linked_panels_axes_panzoom",
+            "title": "Linked Panels With Axes",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/panel_linked_axes.c",
+            "page": "gallery/showcases/linked_panels_axes_panzoom.md"
+          }
+        ]
+      },
+      "linked-panzoom": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "linked_panels_probe_colorbar",
+            "title": "Linked Probe With Colorbar",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/linked_probe_colorbar.c",
+            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+          }
+        ]
+      },
+      "marker": {
+        "count": 3,
+        "examples": [
+          {
+            "id": "feature_marker_symbols",
+            "title": "Marker Symbols",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/marker_symbols.c",
+            "page": "gallery/features/feature_marker_symbols.md"
+          },
+          {
+            "id": "feature_legend_categorical",
+            "title": "Categorical Legend",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/legend_categorical.c",
+            "page": "gallery/features/feature_legend_categorical.md"
+          },
+          {
+            "id": "visual_marker",
+            "title": "Marker",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/marker.c",
+            "page": "gallery/visuals/visual_marker.md"
+          }
+        ]
+      },
+      "marker-nodes": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "composite_graph",
+            "title": "Graph Composite",
+            "category": "composite",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/composites/graph.c",
+            "page": "gallery/composites/composite_graph.md"
+          }
+        ]
+      },
+      "measurement": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "scalebar_measurement_workflow",
+            "title": "Scale Bar Measurement Workflow",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/scalebar_measurement.c",
+            "page": "gallery/showcases/scalebar_measurement_workflow.md"
+          }
+        ]
+      },
+      "mesh": {
+        "count": 2,
+        "examples": [
+          {
+            "id": "visual_mesh",
+            "title": "Mesh",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/mesh.c",
+            "page": "gallery/visuals/visual_mesh.md"
+          },
+          {
+            "id": "textured_terrain_or_planet",
+            "title": "Textured Planets",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/textured_terrain_or_planet.md"
+          }
+        ]
+      },
+      "molecular": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "protein_arcball_viewer",
+            "title": "Protein",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/protein.c",
+            "page": "gallery/showcases/protein_arcball_viewer.md"
+          }
+        ]
+      },
+      "panzoom": {
+        "count": 11,
+        "examples": [
+          {
+            "id": "linked_panels_axes_panzoom",
+            "title": "Linked Panels With Axes",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/panel_linked_axes.c",
+            "page": "gallery/showcases/linked_panels_axes_panzoom.md"
+          },
+          {
+            "id": "point_2d",
+            "title": "Point",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/point.c",
+            "page": "gallery/visuals/point_2d.md"
+          },
+          {
+            "id": "visual_pixel",
+            "title": "Pixel",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/pixel.c",
+            "page": "gallery/visuals/visual_pixel.md"
+          },
+          {
+            "id": "visual_marker",
+            "title": "Marker",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/marker.c",
+            "page": "gallery/visuals/visual_marker.md"
+          },
+          {
+            "id": "visual_segment",
+            "title": "Segment",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/segment.c",
+            "page": "gallery/visuals/visual_segment.md"
+          },
+          {
+            "id": "visual_vector",
+            "title": "Vector",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/vector.c",
+            "page": "gallery/visuals/visual_vector.md"
+          },
+          {
+            "id": "visual_splat",
+            "title": "Splat",
+            "category": "visual",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/visuals/splat.c",
+            "page": "gallery/visuals/visual_splat.md"
+          },
+          {
+            "id": "visual_labels",
+            "title": "Labels",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/labels.c",
+            "page": "gallery/visuals/visual_labels.md"
+          },
+          {
+            "id": "composite_polygon",
+            "title": "Polygon Composite",
+            "category": "composite",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/composites/polygon.c",
+            "page": "gallery/composites/composite_polygon.md"
+          },
+          {
+            "id": "composite_graph",
+            "title": "Graph Composite",
+            "category": "composite",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/composites/graph.c",
+            "page": "gallery/composites/composite_graph.md"
+          },
+          {
+            "id": "us_state_choropleth",
+            "title": "U.S. State Choropleth",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/choropleth.c",
+            "page": "gallery/showcases/us_state_choropleth.md"
+          }
+        ]
+      },
+      "particles": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcase_gpu_particle_smoke",
+            "title": "GPU Particle Smoke",
+            "category": "showcase",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/gpu_particle_smoke.c",
+            "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
+          }
+        ]
+      },
+      "path": {
+        "count": 2,
+        "examples": [
+          {
+            "id": "visual_vector",
+            "title": "Vector",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/vector.c",
+            "page": "gallery/visuals/visual_vector.md"
+          },
+          {
+            "id": "visual_path",
+            "title": "Path",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/path.c",
+            "page": "gallery/visuals/visual_path.md"
+          }
+        ]
+      },
+      "pixel": {
+        "count": 2,
+        "examples": [
+          {
+            "id": "visual_pixel",
+            "title": "Pixel",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/pixel.c",
+            "page": "gallery/visuals/visual_pixel.md"
+          },
+          {
+            "id": "point_cloud",
+            "title": "Point Cloud",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/point_cloud.c",
+            "page": "gallery/showcases/point_cloud.md"
+          }
+        ]
+      },
+      "pixel-query": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "linked_panels_probe_colorbar",
+            "title": "Linked Probe With Colorbar",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/linked_probe_colorbar.c",
+            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+          }
+        ]
+      },
+      "point": {
+        "count": 2,
+        "examples": [
+          {
+            "id": "point_2d",
+            "title": "Point",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/point.c",
+            "page": "gallery/visuals/point_2d.md"
+          },
+          {
+            "id": "showcase_gpu_particle_smoke",
+            "title": "GPU Particle Smoke",
+            "category": "showcase",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/gpu_particle_smoke.c",
+            "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
+          }
+        ]
+      },
+      "polygon": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "composite_polygon",
+            "title": "Polygon Composite",
+            "category": "composite",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/composites/polygon.c",
+            "page": "gallery/composites/composite_polygon.md"
+          }
+        ]
+      },
+      "polygon-set": {
+        "count": 2,
+        "examples": [
+          {
+            "id": "composite_polygon",
+            "title": "Polygon Composite",
+            "category": "composite",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/composites/polygon.c",
+            "page": "gallery/composites/composite_polygon.md"
+          },
+          {
+            "id": "us_state_choropleth",
+            "title": "U.S. State Choropleth",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/choropleth.c",
+            "page": "gallery/showcases/us_state_choropleth.md"
+          }
+        ]
+      },
+      "primitive": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_primitive",
+            "title": "Primitive",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/primitive.c",
+            "page": "gallery/visuals/visual_primitive.md"
+          }
+        ]
+      },
+      "readout": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "linked_panels_probe_colorbar",
+            "title": "Linked Probe With Colorbar",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/linked_probe_colorbar.c",
+            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+          }
+        ]
+      },
+      "real-data": {
+        "count": 5,
+        "examples": [
+          {
+            "id": "us_state_choropleth",
+            "title": "U.S. State Choropleth",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/choropleth.c",
+            "page": "gallery/showcases/us_state_choropleth.md"
+          },
+          {
+            "id": "protein_arcball_viewer",
+            "title": "Protein",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/protein.c",
+            "page": "gallery/showcases/protein_arcball_viewer.md"
+          },
+          {
+            "id": "brain_volume_mesh",
+            "title": "Allen Mouse Brain",
+            "category": "showcase",
+            "status": "prototype",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/brain_volume_mesh.c",
+            "page": "gallery/showcases/brain_volume_mesh.md"
+          },
+          {
+            "id": "point_cloud",
+            "title": "Point Cloud",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/point_cloud.c",
+            "page": "gallery/showcases/point_cloud.md"
+          },
+          {
+            "id": "textured_terrain_or_planet",
+            "title": "Textured Planets",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/textured_terrain_or_planet.md"
+          }
+        ]
+      },
+      "sampled-field": {
+        "count": 5,
+        "examples": [
+          {
+            "id": "linked_panels_probe_colorbar",
+            "title": "Linked Probe With Colorbar",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/linked_probe_colorbar.c",
+            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+          },
+          {
+            "id": "visual_image",
+            "title": "Image",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/image.c",
+            "page": "gallery/visuals/visual_image.md"
+          },
+          {
+            "id": "visual_glyph",
+            "title": "Glyph",
+            "category": "visual",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/visuals/glyph.c",
+            "page": "gallery/visuals/visual_glyph.md"
+          },
+          {
+            "id": "volume",
+            "title": "Volume",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/volume.c",
+            "page": "gallery/visuals/volume.md"
+          },
+          {
+            "id": "textured_terrain_or_planet",
+            "title": "Textured Planets",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/textured_terrain_or_planet.md"
+          }
+        ]
+      },
+      "scalar-field": {
+        "count": 2,
+        "examples": [
+          {
+            "id": "colorbar",
+            "title": "Colorbar",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/colorbar.c",
+            "page": "gallery/features/colorbar.md"
+          },
+          {
+            "id": "showcase_wind_field",
+            "title": "Wind Field",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/wind_field.c",
+            "page": "gallery/showcases/showcase_wind_field.md"
+          }
+        ]
+      },
+      "scale-bar": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "scalebar_measurement_workflow",
+            "title": "Scale Bar Measurement Workflow",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/scalebar_measurement.c",
+            "page": "gallery/showcases/scalebar_measurement_workflow.md"
+          }
+        ]
+      },
+      "scenario-runner": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_video_export",
+            "title": "Video Export",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/video_export.c",
+            "page": "gallery/features/feature_video_export.md"
+          }
+        ]
+      },
+      "scientific": {
+        "count": 5,
+        "examples": [
+          {
+            "id": "scientific_plotting_workflow",
+            "title": "Scientific Plotting Workflow",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/scientific_plotting.c",
+            "page": "gallery/showcases/scientific_plotting_workflow.md"
+          },
+          {
+            "id": "us_state_choropleth",
+            "title": "U.S. State Choropleth",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/choropleth.c",
+            "page": "gallery/showcases/us_state_choropleth.md"
+          },
+          {
+            "id": "protein_arcball_viewer",
+            "title": "Protein",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/protein.c",
+            "page": "gallery/showcases/protein_arcball_viewer.md"
+          },
+          {
+            "id": "showcase_wind_field",
+            "title": "Wind Field",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/wind_field.c",
+            "page": "gallery/showcases/showcase_wind_field.md"
+          },
+          {
+            "id": "brain_volume_mesh",
+            "title": "Allen Mouse Brain",
+            "category": "showcase",
+            "status": "prototype",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/brain_volume_mesh.c",
+            "page": "gallery/showcases/brain_volume_mesh.md"
+          }
+        ]
+      },
+      "segment": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_segment",
+            "title": "Segment",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/segment.c",
+            "page": "gallery/visuals/visual_segment.md"
+          }
+        ]
+      },
+      "simulation": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcase_gpu_particle_smoke",
+            "title": "GPU Particle Smoke",
+            "category": "showcase",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/gpu_particle_smoke.c",
+            "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
+          }
+        ]
+      },
+      "sphere": {
+        "count": 2,
+        "examples": [
+          {
+            "id": "sphere_impostor",
+            "title": "Sphere",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/sphere.c",
+            "page": "gallery/visuals/sphere_impostor.md"
+          },
+          {
+            "id": "protein_arcball_viewer",
+            "title": "Protein",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/protein.c",
+            "page": "gallery/showcases/protein_arcball_viewer.md"
+          }
+        ]
+      },
+      "splat": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_splat",
+            "title": "Splat",
+            "category": "visual",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/visuals/splat.c",
+            "page": "gallery/visuals/visual_splat.md"
+          }
+        ]
+      },
+      "stacked-traces": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "scientific_plotting_workflow",
+            "title": "Scientific Plotting Workflow",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/scientific_plotting.c",
+            "page": "gallery/showcases/scientific_plotting_workflow.md"
+          }
+        ]
+      },
+      "svg-path-symbol": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_marker_symbols",
+            "title": "Marker Symbols",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/marker_symbols.c",
+            "page": "gallery/features/feature_marker_symbols.md"
+          }
+        ]
+      },
+      "symbol-set": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_marker_symbols",
+            "title": "Marker Symbols",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/marker_symbols.c",
+            "page": "gallery/features/feature_marker_symbols.md"
+          }
+        ]
+      },
+      "synthetic": {
+        "count": 3,
+        "examples": [
+          {
+            "id": "linked_panels_axes_panzoom",
+            "title": "Linked Panels With Axes",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/panel_linked_axes.c",
+            "page": "gallery/showcases/linked_panels_axes_panzoom.md"
+          },
+          {
+            "id": "scalebar_measurement_workflow",
+            "title": "Scale Bar Measurement Workflow",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/scalebar_measurement.c",
+            "page": "gallery/showcases/scalebar_measurement_workflow.md"
+          },
+          {
+            "id": "showcase_wind_field",
+            "title": "Wind Field",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/wind_field.c",
+            "page": "gallery/showcases/showcase_wind_field.md"
+          }
+        ]
+      },
+      "text": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_text",
+            "title": "Text",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/text.c",
+            "page": "gallery/visuals/visual_text.md"
+          }
+        ]
+      },
+      "texture": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "textured_terrain_or_planet",
+            "title": "Textured Planets",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/textured_terrain_or_planet.md"
+          }
+        ]
+      },
+      "transfer-function": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "volume",
+            "title": "Volume",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/volume.c",
+            "page": "gallery/visuals/volume.md"
+          }
+        ]
+      },
+      "uncertainty-band": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "scientific_plotting_workflow",
+            "title": "Scientific Plotting Workflow",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/scientific_plotting.c",
+            "page": "gallery/showcases/scientific_plotting_workflow.md"
+          }
+        ]
+      },
+      "vector": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_vector",
+            "title": "Vector",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/vector.c",
+            "page": "gallery/visuals/visual_vector.md"
+          }
+        ]
+      },
+      "vector-field": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcase_wind_field",
+            "title": "Wind Field",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/wind_field.c",
+            "page": "gallery/showcases/showcase_wind_field.md"
+          }
+        ]
+      },
+      "video": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_video_export",
+            "title": "Video Export",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/video_export.c",
+            "page": "gallery/features/feature_video_export.md"
+          }
+        ]
+      },
+      "volume": {
+        "count": 2,
+        "examples": [
+          {
+            "id": "volume",
+            "title": "Volume",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/volume.c",
+            "page": "gallery/visuals/volume.md"
+          },
+          {
+            "id": "brain_volume_mesh",
+            "title": "Allen Mouse Brain",
+            "category": "showcase",
+            "status": "prototype",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/brain_volume_mesh.c",
+            "page": "gallery/showcases/brain_volume_mesh.md"
+          }
+        ]
+      },
+      "volume-occlusion": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "brain_volume_mesh",
+            "title": "Allen Mouse Brain",
+            "category": "showcase",
+            "status": "prototype",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/brain_volume_mesh.c",
+            "page": "gallery/showcases/brain_volume_mesh.md"
+          }
+        ]
+      },
+      "volume-slice": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "brain_volume_mesh",
+            "title": "Allen Mouse Brain",
+            "category": "showcase",
+            "status": "prototype",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/brain_volume_mesh.c",
+            "page": "gallery/showcases/brain_volume_mesh.md"
+          }
+        ]
+      },
+      "wind-field": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcase_wind_field",
+            "title": "Wind Field",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/wind_field.c",
+            "page": "gallery/showcases/showcase_wind_field.md"
+          }
+        ]
+      },
+      "workflow": {
+        "count": 4,
+        "examples": [
+          {
+            "id": "linked_panels_axes_panzoom",
+            "title": "Linked Panels With Axes",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/panel_linked_axes.c",
+            "page": "gallery/showcases/linked_panels_axes_panzoom.md"
+          },
+          {
+            "id": "linked_panels_probe_colorbar",
+            "title": "Linked Probe With Colorbar",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/linked_probe_colorbar.c",
+            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+          },
+          {
+            "id": "scientific_plotting_workflow",
+            "title": "Scientific Plotting Workflow",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/scientific_plotting.c",
+            "page": "gallery/showcases/scientific_plotting_workflow.md"
+          },
+          {
+            "id": "scalebar_measurement_workflow",
+            "title": "Scale Bar Measurement Workflow",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/scalebar_measurement.c",
+            "page": "gallery/showcases/scalebar_measurement_workflow.md"
+          }
+        ]
+      }
+    },
+    "visuals": {
+      "glyph": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_glyph",
+            "title": "Glyph",
+            "category": "visual",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/visuals/glyph.c",
+            "page": "gallery/visuals/visual_glyph.md"
+          }
+        ]
+      },
+      "image": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_image",
+            "title": "Image",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/image.c",
+            "page": "gallery/visuals/visual_image.md"
+          }
+        ]
+      },
+      "labels": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_labels",
+            "title": "Labels",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/labels.c",
+            "page": "gallery/visuals/visual_labels.md"
+          }
+        ]
+      },
+      "marker": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_marker",
+            "title": "Marker",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/marker.c",
+            "page": "gallery/visuals/visual_marker.md"
+          }
+        ]
+      },
+      "mesh": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_mesh",
+            "title": "Mesh",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/mesh.c",
+            "page": "gallery/visuals/visual_mesh.md"
+          }
+        ]
+      },
+      "path": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_path",
+            "title": "Path",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/path.c",
+            "page": "gallery/visuals/visual_path.md"
+          }
+        ]
+      },
+      "pixel": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_pixel",
+            "title": "Pixel",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/pixel.c",
+            "page": "gallery/visuals/visual_pixel.md"
+          }
+        ]
+      },
+      "point": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "point_2d",
+            "title": "Point",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/point.c",
+            "page": "gallery/visuals/point_2d.md"
+          }
+        ]
+      },
+      "primitive": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_primitive",
+            "title": "Primitive",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/primitive.c",
+            "page": "gallery/visuals/visual_primitive.md"
+          }
+        ]
+      },
+      "segment": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_segment",
+            "title": "Segment",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/segment.c",
+            "page": "gallery/visuals/visual_segment.md"
+          }
+        ]
+      },
+      "sphere": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "sphere_impostor",
+            "title": "Sphere",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/sphere.c",
+            "page": "gallery/visuals/sphere_impostor.md"
+          }
+        ]
+      },
+      "splat": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_splat",
+            "title": "Splat",
+            "category": "visual",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/visuals/splat.c",
+            "page": "gallery/visuals/visual_splat.md"
+          }
+        ]
+      },
+      "text": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_text",
+            "title": "Text",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/text.c",
+            "page": "gallery/visuals/visual_text.md"
+          }
+        ]
+      },
+      "vector": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_vector",
+            "title": "Vector",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/vector.c",
+            "page": "gallery/visuals/visual_vector.md"
+          }
+        ]
+      },
+      "volume": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "volume",
+            "title": "Volume",
+            "category": "visual",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/visuals/volume.c",
+            "page": "gallery/visuals/volume.md"
+          }
+        ]
+      }
+    }
+  }
+}
