@@ -5,6 +5,9 @@ Status: v0.4 design boundary. Updated: 2026-06-06.
 This note defines the split between Datoviz scene/composite support and the future GSP/VisPy2
 plotting layer for common scientific plotting features.
 
+First-slice implementation details are tracked in
+[`SCIENTIFIC_PLOTTING_IMPLEMENTATION.md`](SCIENTIFIC_PLOTTING_IMPLEMENTATION.md).
+
 Datoviz should provide rendering-native building blocks that are useful from C, raw bindings, GSP,
 and VisPy2. GSP/VisPy2 should own the high-level plotting grammar, statistical policy, and Python
 data adaptation.
@@ -149,4 +152,3 @@ GSP/VisPy2 examples where the statistical/data-preparation layer is Python-owned
    normal scene resource path.
 5. Keep examples deterministic and small enough for release validation, while still looking like
    real scientific workflows.
-

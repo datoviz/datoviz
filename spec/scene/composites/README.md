@@ -34,6 +34,9 @@ The durable boundary is recorded in
 [`SCIENTIFIC_PLOTTING_BOUNDARY.md`](SCIENTIFIC_PLOTTING_BOUNDARY.md). Use that note before adding
 histogram, `hline`/`vline`, error-band, or stacked-trace APIs.
 
+The first-slice API and implementation order are tracked in
+[`SCIENTIFIC_PLOTTING_IMPLEMENTATION.md`](SCIENTIFIC_PLOTTING_IMPLEMENTATION.md).
+
 
 ## Composite Model
 
