@@ -49,16 +49,17 @@ Use focused headers once implementation begins:
 
 ```text
 include/datoviz/scene/plot.h
-src/scene/composites/guide.c
-src/scene/composites/bars.c
-src/scene/composites/band.c
+src/scene/annotation/guide.c
+src/scene/plot/bars.c
+src/scene/plot/band.c
+src/scene/plot/internal.h
 ```
 
 `include/datoviz/scene.h` should include `scene/plot.h` once the API is active.
 
-If guide lines are implemented inside the annotation subsystem first, keep the public declarations
-in `scene/plot.h` or a future `scene/guide.h`; do not hide plotting-oriented guide names in a
-large generic annotation header.
+Guides remain in the annotation subsystem because they own label annotations and panel-domain
+annotation semantics. Bars and bands live in `src/scene/plot/` because they are plotting composites,
+not annotations.
 
 
 ## Common API Rules
@@ -73,8 +74,27 @@ All descriptors must follow existing scene conventions:
    viewport space;
 6. generated visuals use ordinary role names for advanced inspection.
 
-Advanced role access should eventually use the shared composite role accessor. Normal examples
-should not require role-visual mutation.
+Advanced role access uses borrowed visual accessors keyed by `DvzPlotRole`. Normal examples should
+not require role-visual mutation, but GSP/VisPy2 and advanced C callers may use the role accessors
+for controlled styling, query wiring, legends, or inspection.
+
+Current role accessors:
+
+```c
+DvzVisual* dvz_guide_line_visual(DvzGuideLine* guide, DvzPlotRole role);
+DvzVisual* dvz_guide_span_visual(DvzGuideSpan* span, DvzPlotRole role);
+DvzVisual* dvz_bars_visual(DvzBars* bars, DvzPlotRole role);
+DvzVisual* dvz_band_visual(DvzBand* band, DvzPlotRole role);
+```
+
+Typed setters should remain the primary public mutation path:
+
+```c
+int dvz_guide_line_set_value(DvzGuideLine* guide, double value);
+int dvz_guide_span_set_range(DvzGuideSpan* span, double min_value, double max_value);
+int dvz_bars_set_style(DvzBars* bars, const DvzBarsDesc* desc);
+int dvz_band_set_style(DvzBand* band, const DvzBandDesc* desc);
+```
 
 
 ## Guide Lines And Spans
@@ -314,17 +334,25 @@ Datoviz plotting API.
 
 ## Implementation Order
 
-1. Add `scene/plot.h` descriptor sketches and opaque handle declarations behind implementation
-   files.
-2. Implement `DvzGuideLine` and `DvzGuideSpan` as panel-attached retained objects.
-3. Add guide geometry tests and one small guide feature example.
-4. Implement `DvzBars` from explicit intervals.
-5. Add the spike autocorrelogram example using `DvzBars`, `dvz_hline()`, `dvz_vline()`, and
-   `dvz_vspan()`.
-6. Implement `DvzBand`.
-7. Add the error-band path example.
-8. Add the stacked-trace example using existing path subpaths.
-9. Reassess whether trace collection, histogram wrapper, or rectangle visual is justified.
+Completed first-slice checkpoints:
+
+1. add `scene/plot.h` descriptor sketches and opaque handle declarations behind implementation
+   files;
+2. implement `DvzGuideLine` and `DvzGuideSpan` as panel-attached retained objects;
+3. add guide geometry tests;
+4. implement `DvzBars` from explicit intervals;
+5. implement `DvzBand`;
+6. add typed setters for guide values/ranges and bars/band styling;
+7. add borrowed role visual accessors;
+8. add one composed scientific plotting showcase covering autocorrelogram guides/bars, stacked
+   path traces, and a band-backed error margin.
+
+Remaining reassessment items:
+
+1. capture and visually tune the scientific plotting showcase;
+2. decide whether a trace collection is justified after GSP/VisPy2 lowering starts;
+3. decide whether a histogram wrapper or fixed-bin helper is useful beyond `DvzBars`;
+4. decide whether role access should later converge with a broader composite role accessor.
 
 
 ## Non-Goals For The First Slice
