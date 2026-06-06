@@ -1,5 +1,66 @@
 :root {
-    --md-primary-fg-color: #554596;
+    --dvz-bg: #0e1117;
+    --dvz-bg-elevated: #161b22;
+    --dvz-grid: #30363d;
+    --dvz-text: #c9d1d9;
+    --dvz-muted: #8b949e;
+    --dvz-cyan: #4cc9f0;
+    --dvz-mint: #80ffdb;
+    --dvz-amber: #ffb703;
+    --dvz-rose: #ef476f;
+    --md-primary-fg-color: #0e1117;
+    --md-primary-fg-color--dark: #0a0d12;
+    --md-accent-fg-color: #4cc9f0;
+}
+
+[data-md-color-scheme="slate"] {
+    --md-default-bg-color: #0e1117;
+    --md-default-fg-color: #c9d1d9;
+    --md-default-fg-color--light: #8b949e;
+    --md-typeset-a-color: #4cc9f0;
+    --md-code-bg-color: #161b22;
+    --md-code-fg-color: #c9d1d9;
+    --md-footer-bg-color: #0a0d12;
+    --md-footer-bg-color--dark: #06080c;
+}
+
+body {
+    letter-spacing: 0;
+}
+
+.md-header,
+.md-tabs {
+    background-color: #0a0d12;
+}
+
+.md-tabs {
+    border-bottom: 1px solid rgba(76, 201, 240, 0.18);
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+    color: #f0f6fc;
+    letter-spacing: 0;
+}
+
+.md-typeset code {
+    border: 1px solid rgba(76, 201, 240, 0.16);
+}
+
+.md-typeset table:not([class]) {
+    background-color: #10161f;
+}
+
+.md-typeset table:not([class]) th {
+    background-color: #161b22;
+    color: #f0f6fc;
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+    background-color: #10161f;
+    border-color: rgba(76, 201, 240, 0.28);
 }
 
 .md-header-nav__button.md-logo img,

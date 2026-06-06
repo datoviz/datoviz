@@ -20,6 +20,10 @@ exclude_docs: |
 theme:
   name: material
   logo: images/logow.png
+  palette:
+    scheme: slate
+    primary: black
+    accent: cyan
   features:
     - content.code.copy
     - content.tabs.link
@@ -36,6 +40,7 @@ theme:
     repo: fontawesome/brands/github
 extra_css:
   - stylesheets/extra.css
+  - stylesheets/landing.css
 markdown_extensions:
   - toc:
       permalink: true
@@ -200,6 +205,7 @@ not_in_nav: |
   architecture/*
   blog/*
   discussions/*
+  landing/*
   examples/gallery/*
   gallery/*
   guide/*

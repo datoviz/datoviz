@@ -1,4 +1,4 @@
-# Datoviz v0.4
+# Datoviz v0.4 Documentation
 
 Datoviz v0.4 is a C-first GPU rendering engine for scientific visualization. It provides a native
 scene and app layer, a backend-facing DRP2 command stream, a Vulkan runtime, and raw generated
@@ -19,11 +19,39 @@ resources. Use VisPy2/GSP for high-level scientific plotting.
 - [Project status](start/project-status.md) lists supported, experimental, and deferred areas.
 
 
-## Documentation Shape
+## Main Sections
 
-The v0.4 docs are organized around runnable C examples, concise task pages, exact reference tables,
-and contributor guidance. Legacy v0.3 Pythonic plotting material is not the current Datoviz v0.4
-surface.
+<div class="grid cards" markdown="1">
 
-This documentation tree is being rebuilt in the v0.4 development branch. Pages marked as draft
-stubs identify intended content and stable source files before the final release documentation pass.
+-   **Tutorials**
+
+    Follow the first scene, interactive window, offscreen capture, and composed workflow pages.
+
+    [:octicons-arrow-right-24: Tutorials](tutorials/index.md)
+
+-   **Examples**
+
+    Browse executable release proof generated from the C example manifest.
+
+    [:octicons-arrow-right-24: Examples](examples/index.md)
+
+-   **Reference**
+
+    Check feature status, platform support, C API, raw bindings, DRP2, and backend notes.
+
+    [:octicons-arrow-right-24: Reference](reference/index.md)
+
+-   **Explanation**
+
+    Read the scene model, runtime boundary, frame lifecycle, and GSP/VisPy2 positioning.
+
+    [:octicons-arrow-right-24: Explanation](explanation/architecture.md)
+
+</div>
+
+
+## Public Website Prototype
+
+A local-only future root landing page prototype lives at [Landing](landing/index.md). It is not part
+of the current public deployment plan and should stay local until v0.4 reaches a usable public
+documentation state.
