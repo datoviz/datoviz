@@ -24,6 +24,7 @@ app APIs lowering through DRP2 to the runtime; do not assume v0.3 API compatibil
 ## Agent Guidance
 
 - Agent quickstart: https://datoviz.org/contributors/agent-quickstart/
+- Example selection by capability: https://datoviz.org/contributors/example-selection-by-capability/
 - AI agents: https://datoviz.org/contributors/ai-agents/
 - Adding examples: https://datoviz.org/contributors/adding-examples/
 - Build and test: https://datoviz.org/contributors/build-and-test/

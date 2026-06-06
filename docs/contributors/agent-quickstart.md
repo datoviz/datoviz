@@ -25,6 +25,9 @@ Use these category routes:
 | One semantic scene object | `category: composite`, then `primary_composite` |
 | A full workflow or scientific demo | `category: showcase`, then `tags` and `data.kind` |
 
+For capability-first lookup, use [Example Selection By Capability](example-selection-by-capability.md)
+with `docs/examples/capabilities.json`.
+
 
 ## Respect Data Metadata
 
