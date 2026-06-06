@@ -666,6 +666,24 @@ int dvz_band_set_style(DvzBand* band, const DvzBandDesc* desc)
 }
 
 
+DvzVisual* dvz_band_visual(DvzBand* band, DvzPlotRole role)
+{
+    if (band == NULL || !band->active)
+        return NULL;
+    switch (role)
+    {
+    case DVZ_PLOT_ROLE_FILL:
+        return band->fill_visual;
+    case DVZ_PLOT_ROLE_LINE:
+        return band->line_visual;
+    case DVZ_PLOT_ROLE_BOUNDS:
+        return band->bounds_visual;
+    default:
+        return NULL;
+    }
+}
+
+
 
 /*************************************************************************************************/
 /*  Internal API                                                                                 */

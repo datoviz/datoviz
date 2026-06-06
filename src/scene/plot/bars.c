@@ -500,6 +500,22 @@ int dvz_bars_set_style(DvzBars* bars, const DvzBarsDesc* desc)
 }
 
 
+DvzVisual* dvz_bars_visual(DvzBars* bars, DvzPlotRole role)
+{
+    if (bars == NULL || !bars->active)
+        return NULL;
+    switch (role)
+    {
+    case DVZ_PLOT_ROLE_FILL:
+        return bars->fill_visual;
+    case DVZ_PLOT_ROLE_OUTLINE:
+        return bars->outline_visual;
+    default:
+        return NULL;
+    }
+}
+
+
 
 /*************************************************************************************************/
 /*  Internal API                                                                                 */

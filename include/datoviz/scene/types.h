@@ -331,6 +331,15 @@ typedef enum
 } DvzGuideOrientation;
 
 
+typedef enum
+{
+    DVZ_PLOT_ROLE_FILL = 0,
+    DVZ_PLOT_ROLE_LINE,
+    DVZ_PLOT_ROLE_OUTLINE,
+    DVZ_PLOT_ROLE_BOUNDS,
+} DvzPlotRole;
+
+
 struct DvzGuideLineDesc
 {
     uint32_t struct_size;

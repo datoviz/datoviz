@@ -465,6 +465,9 @@ int test_scene_bars_descriptor_and_data_validation(TstContext* suite, const TstC
     style.outline_width_px = 1.5f;
     AT(dvz_bars_set_style(bars, &style) == 0);
     AT(bars->outline_visual != NULL);
+    AT(dvz_bars_visual(bars, DVZ_PLOT_ROLE_FILL) == bars->fill_visual);
+    AT(dvz_bars_visual(bars, DVZ_PLOT_ROLE_OUTLINE) == bars->outline_visual);
+    AT(dvz_bars_visual(bars, DVZ_PLOT_ROLE_LINE) == NULL);
     style.gap_fraction = NAN;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_bars_set_style(bars, &style) < 0);
 
@@ -518,6 +521,10 @@ int test_scene_band_descriptor_and_data_validation(TstContext* suite, const TstC
     style.show_bounds = true;
     AT(dvz_band_set_style(band, &style) == 0);
     AT(band->bounds_visual != NULL);
+    AT(dvz_band_visual(band, DVZ_PLOT_ROLE_FILL) == band->fill_visual);
+    AT(dvz_band_visual(band, DVZ_PLOT_ROLE_LINE) == band->line_visual);
+    AT(dvz_band_visual(band, DVZ_PLOT_ROLE_BOUNDS) == band->bounds_visual);
+    AT(dvz_band_visual(band, DVZ_PLOT_ROLE_OUTLINE) == NULL);
     style.line_width_px = NAN;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_style(band, &style) < 0);
 
@@ -1453,6 +1460,8 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     AT(scene->guide_line_count == 1);
     AT(hline->line_visual != NULL);
     AT(hline->line_visual->type == DVZ_VISUAL_TYPE_SEGMENT);
+    AT(dvz_guide_line_visual(hline, DVZ_PLOT_ROLE_LINE) == hline->line_visual);
+    AT(dvz_guide_line_visual(hline, DVZ_PLOT_ROLE_FILL) == NULL);
 
     DvzGuideSpanDesc span_desc = dvz_guide_span_desc();
     span_desc.fill_color = dvz_color_rgba(239, 71, 111, 48);
@@ -1465,6 +1474,9 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     AT(vspan->fill_visual->type == DVZ_VISUAL_TYPE_PRIMITIVE);
     AT(vspan->outline_visual != NULL);
     AT(vspan->outline_visual->type == DVZ_VISUAL_TYPE_SEGMENT);
+    AT(dvz_guide_span_visual(vspan, DVZ_PLOT_ROLE_FILL) == vspan->fill_visual);
+    AT(dvz_guide_span_visual(vspan, DVZ_PLOT_ROLE_OUTLINE) == vspan->outline_visual);
+    AT(dvz_guide_span_visual(vspan, DVZ_PLOT_ROLE_LINE) == NULL);
 
     _scene_prepare_guide_visuals(figure);
 
@@ -1551,6 +1563,9 @@ int test_scene_bars_prepare_visuals(TstContext* suite, const TstCase* item)
     AT(bars->fill_visual->type == DVZ_VISUAL_TYPE_PRIMITIVE);
     AT(bars->outline_visual != NULL);
     AT(bars->outline_visual->type == DVZ_VISUAL_TYPE_SEGMENT);
+    AT(dvz_bars_visual(bars, DVZ_PLOT_ROLE_FILL) == bars->fill_visual);
+    AT(dvz_bars_visual(bars, DVZ_PLOT_ROLE_OUTLINE) == bars->outline_visual);
+    AT(dvz_bars_visual(bars, DVZ_PLOT_ROLE_LINE) == NULL);
 
     const double starts[] = {0.0, 1.0};
     const double ends[] = {1.0, 2.0};
@@ -1652,6 +1667,10 @@ int test_scene_band_prepare_visuals(TstContext* suite, const TstCase* item)
     AT(band->line_visual->type == DVZ_VISUAL_TYPE_PATH);
     AT(band->bounds_visual != NULL);
     AT(band->bounds_visual->type == DVZ_VISUAL_TYPE_PATH);
+    AT(dvz_band_visual(band, DVZ_PLOT_ROLE_FILL) == band->fill_visual);
+    AT(dvz_band_visual(band, DVZ_PLOT_ROLE_LINE) == band->line_visual);
+    AT(dvz_band_visual(band, DVZ_PLOT_ROLE_BOUNDS) == band->bounds_visual);
+    AT(dvz_band_visual(band, DVZ_PLOT_ROLE_OUTLINE) == NULL);
 
     const double x[] = {0.0, 1.0, NAN, 3.0, 4.0};
     const double lower[] = {0.0, 0.5, NAN, 1.0, 1.5};

@@ -434,6 +434,14 @@ DvzGuideLine* dvz_vline(DvzPanel* panel, double x, const DvzGuideLineDesc* desc)
 }
 
 
+DvzVisual* dvz_guide_line_visual(DvzGuideLine* guide, DvzPlotRole role)
+{
+    if (guide == NULL || !guide->active)
+        return NULL;
+    return role == DVZ_PLOT_ROLE_LINE ? guide->line_visual : NULL;
+}
+
+
 int dvz_guide_line_set_value(DvzGuideLine* guide, double value)
 {
     if (guide == NULL || !guide->active)
@@ -524,6 +532,22 @@ DvzGuideSpan* dvz_vspan(
     resolved.min_value = x0;
     resolved.max_value = x1;
     return dvz_guide_span(panel, &resolved);
+}
+
+
+DvzVisual* dvz_guide_span_visual(DvzGuideSpan* span, DvzPlotRole role)
+{
+    if (span == NULL || !span->active)
+        return NULL;
+    switch (role)
+    {
+    case DVZ_PLOT_ROLE_FILL:
+        return span->fill_visual;
+    case DVZ_PLOT_ROLE_OUTLINE:
+        return span->outline_visual;
+    default:
+        return NULL;
+    }
 }
 
 

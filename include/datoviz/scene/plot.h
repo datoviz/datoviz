@@ -92,6 +92,18 @@ DVZ_EXPORT DvzGuideLine* dvz_vline(DvzPanel* panel, double x, const DvzGuideLine
 
 
 /**
+ * Return a borrowed role visual from a guide line.
+ *
+ * Only `DVZ_PLOT_ROLE_LINE` is valid for guide lines.
+ *
+ * @param guide the guide line
+ * @param role visual role
+ * @return borrowed visual, or NULL when unavailable
+ */
+DVZ_EXPORT DvzVisual* dvz_guide_line_visual(DvzGuideLine* guide, DvzPlotRole role);
+
+
+/**
  * Update a guide line data-coordinate value.
  *
  * @param guide the guide line
@@ -135,6 +147,18 @@ dvz_hspan(DvzPanel* panel, double y0, double y1, const DvzGuideSpanDesc* desc);
  */
 DVZ_EXPORT DvzGuideSpan*
 dvz_vspan(DvzPanel* panel, double x0, double x1, const DvzGuideSpanDesc* desc);
+
+
+/**
+ * Return a borrowed role visual from a guide span.
+ *
+ * Valid roles are `DVZ_PLOT_ROLE_FILL` and `DVZ_PLOT_ROLE_OUTLINE`.
+ *
+ * @param span the guide span
+ * @param role visual role
+ * @return borrowed visual, or NULL when unavailable
+ */
+DVZ_EXPORT DvzVisual* dvz_guide_span_visual(DvzGuideSpan* span, DvzPlotRole role);
 
 
 /**
@@ -191,6 +215,18 @@ DVZ_EXPORT int dvz_bars_set_style(DvzBars* bars, const DvzBarsDesc* desc);
 
 
 /**
+ * Return a borrowed role visual from a bars object.
+ *
+ * Valid roles are `DVZ_PLOT_ROLE_FILL` and `DVZ_PLOT_ROLE_OUTLINE`.
+ *
+ * @param bars the bars object
+ * @param role visual role
+ * @return borrowed visual, or NULL when unavailable
+ */
+DVZ_EXPORT DvzVisual* dvz_bars_visual(DvzBars* bars, DvzPlotRole role);
+
+
+/**
  * Create a retained band/ribbon attached to one panel.
  *
  * @param panel the panel
@@ -244,6 +280,18 @@ dvz_band_set_center(DvzBand* band, uint32_t count, const double* x, const double
  * @return 0 on success, -1 on validation/allocation error
  */
 DVZ_EXPORT int dvz_band_set_style(DvzBand* band, const DvzBandDesc* desc);
+
+
+/**
+ * Return a borrowed role visual from a band object.
+ *
+ * Valid roles are `DVZ_PLOT_ROLE_FILL`, `DVZ_PLOT_ROLE_LINE`, and `DVZ_PLOT_ROLE_BOUNDS`.
+ *
+ * @param band the band object
+ * @param role visual role
+ * @return borrowed visual, or NULL when unavailable
+ */
+DVZ_EXPORT DvzVisual* dvz_band_visual(DvzBand* band, DvzPlotRole role);
 
 
 EXTERN_C_OFF
