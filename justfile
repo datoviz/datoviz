@@ -1974,6 +1974,9 @@ gallery:
     @echo "Generating the public capabilities manifest..."
     @python3 tools/build_capabilities.py
 
+check-example-manifests:
+    @python3 tools/check_example_manifests.py
+
 
 # -------------------------------------------------------------------------------------------------
 # Documentation
