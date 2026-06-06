@@ -10,8 +10,8 @@
  * Style: feature composite, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c composites/polygon
- * Run:    ./build/examples/c/composites/polygon
- * Smoke:  ./build/examples/c/composites/polygon 1
+ * Run:    ./build/examples/c/composites/polygon --live
+ * Smoke:  ./build/examples/c/composites/polygon --png
  */
 
 
@@ -21,13 +21,13 @@
 /*************************************************************************************************/
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
-#include "example_debug.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -208,51 +208,54 @@ static bool _add_polygon_set(DvzScene* scene, DvzPanel* panel)
 
 
 
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
+
+    bool ok = false;
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
+
+    DvzPanel* panel = dvz_panel(ctx->figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
+    EXAMPLE_CHECK(_configure_panel(panel), "panel configuration failed");
+    EXAMPLE_CHECK(_add_holed_polygon(ctx->scene, panel), "holed polygon setup failed");
+    EXAMPLE_CHECK(_add_polygon_set(ctx->scene, panel), "polygon set setup failed");
+
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
+    (void)panzoom;
+
+    ok = true;
+cleanup:
+    return ok;
+}
+
+
+
+static DvzScenarioSpec _polygon_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "composite_polygon",
+        .title = "composite_polygon",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
+
+
+
 /*************************************************************************************************/
 /*  Main                                                                                         */
 /*************************************************************************************************/
 
 int main(int argc, char** argv)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    ExampleDebug debug = {0};
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
-    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
-    EXAMPLE_CHECK(_configure_panel(panel), "panel configuration failed");
-    EXAMPLE_CHECK(_add_holed_polygon(scene, panel), "holed polygon setup failed");
-    EXAMPLE_CHECK(_add_polygon_set(scene, panel), "polygon set setup failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "composite_polygon");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
-    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
-
-    EXAMPLE_CHECK(
-        example_debug_setup(&debug, win, argc, argv, "composite_polygon"),
-        "example_debug_setup() failed");
-    example_debug_panzoom(&debug, "composite_polygon", panzoom);
-
-    dvz_app_run(app, example_frame_count_any(argc, argv));
-    ret = 0;
-
-cleanup:
-    example_debug_uninstall(&debug);
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    DvzScenarioSpec spec = _polygon_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
