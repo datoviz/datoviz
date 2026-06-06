@@ -383,9 +383,10 @@ def render_index(examples: list[Example], docs_dir: Path) -> None:
             "Public source lanes use `visuals`, `features`, `composites`, or `showcases`.",
             "Concepts such as `workflow`, `scientific`, and `real-data` are manifest tags.",
             "",
-            "Coding agents should use [`docs/examples/examples.json`](examples.json) and the",
+            "Coding agents should use [`docs/examples/examples.json`](examples.json),",
+            "[`docs/examples/capabilities.json`](capabilities.json), and the",
             "[agent quickstart](../contributors/agent-quickstart.md) when selecting copy-safe",
-            "starting points.",
+            "starting points by example or capability.",
             "",
         ]
     )

@@ -15,6 +15,7 @@ app APIs lowering through DRP2 to the runtime; do not assume v0.3 API compatibil
 
 - Examples index: https://datoviz.org/examples/
 - Machine-readable examples manifest: https://datoviz.org/examples/examples.json
+- Machine-readable capabilities manifest: https://datoviz.org/examples/capabilities.json
 - Visual gallery: https://datoviz.org/examples/visual-gallery/
 - Feature gallery: https://datoviz.org/examples/feature-gallery/
 - Showcases: https://datoviz.org/examples/showcases/
