@@ -434,6 +434,24 @@ DvzGuideLine* dvz_vline(DvzPanel* panel, double x, const DvzGuideLineDesc* desc)
 }
 
 
+int dvz_guide_line_set_value(DvzGuideLine* guide, double value)
+{
+    if (guide == NULL || !guide->active)
+        return -1;
+    if (!isfinite(value))
+    {
+        log_error("invalid guide-line value");
+        return -1;
+    }
+
+    guide->desc.value = value;
+    guide->dirty = true;
+    guide->version++;
+    _scene_notify_request_frame(guide->panel != NULL ? guide->panel->figure : NULL);
+    return 0;
+}
+
+
 
 DvzGuideSpan* dvz_guide_span(DvzPanel* panel, const DvzGuideSpanDesc* desc)
 {
@@ -506,6 +524,30 @@ DvzGuideSpan* dvz_vspan(
     resolved.min_value = x0;
     resolved.max_value = x1;
     return dvz_guide_span(panel, &resolved);
+}
+
+
+int dvz_guide_span_set_range(DvzGuideSpan* span, double min_value, double max_value)
+{
+    if (span == NULL || !span->active)
+        return -1;
+    if (!isfinite(min_value) || !isfinite(max_value))
+    {
+        log_error("invalid guide-span values");
+        return -1;
+    }
+    if (fabs(max_value - min_value) <= DBL_EPSILON)
+    {
+        log_error("guide-span values must differ");
+        return -1;
+    }
+
+    span->desc.min_value = min_value;
+    span->desc.max_value = max_value;
+    span->dirty = true;
+    span->version++;
+    _scene_notify_request_frame(span->panel != NULL ? span->panel->figure : NULL);
+    return 0;
 }
 
 

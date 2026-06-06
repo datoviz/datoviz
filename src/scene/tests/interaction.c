@@ -409,6 +409,15 @@ int test_scene_guide_descriptor_abi_rejects_invalid_structs(
     span.max_value = 1.0;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_guide_span(panel, &span) == NULL);
 
+    DvzGuideLine* valid_line = dvz_hline(panel, 0.0, NULL);
+    ANN(valid_line);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_guide_line_set_value(valid_line, NAN) < 0);
+
+    DvzGuideSpan* valid_span = dvz_vspan(panel, -1.0, 1.0, NULL);
+    ANN(valid_span);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_guide_span_set_range(valid_span, 1.0, 1.0) < 0);
+
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -451,6 +460,13 @@ int test_scene_bars_descriptor_and_data_validation(TstContext* suite, const TstC
     AT_EXPECTED_ERROR_STRICT(suite, dvz_bars_set_intervals(bars, 1, NULL, ends, values) < 0);
     ends[0] = starts[0];
     AT_EXPECTED_ERROR_STRICT(suite, dvz_bars_set_intervals(bars, 1, starts, ends, values) < 0);
+    AT(bars->outline_visual == NULL);
+    DvzBarsDesc style = dvz_bars_desc();
+    style.outline_width_px = 1.5f;
+    AT(dvz_bars_set_style(bars, &style) == 0);
+    AT(bars->outline_visual != NULL);
+    style.gap_fraction = NAN;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars_set_style(bars, &style) < 0);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -497,6 +513,13 @@ int test_scene_band_descriptor_and_data_validation(TstContext* suite, const TstC
     x[1] = NAN;
     AT(dvz_band_set_bounds(band, 2, x, lower, upper) == 0);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_center(band, 2, NULL, lower) < 0);
+    AT(band->bounds_visual == NULL);
+    DvzBandDesc style = dvz_band_desc();
+    style.show_bounds = true;
+    AT(dvz_band_set_style(band, &style) == 0);
+    AT(band->bounds_visual != NULL);
+    style.line_width_px = NAN;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_style(band, &style) < 0);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1483,6 +1506,22 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     AC(outline_start[1], -2.0f, 1e-6f);
     AC(outline_end[0], 4.0f, 1e-6f);
     AC(outline_end[1], -2.0f, 1e-6f);
+
+    AT(dvz_guide_line_set_value(hline, 1.0) == 0);
+    AT(dvz_guide_span_set_range(vspan, 5.0, 6.0) == 0);
+    _scene_prepare_guide_visuals(figure);
+
+    AT(dvz_visual_data(hline->line_visual, "position_start", &line_start_view) == 0);
+    AT(dvz_visual_data(hline->line_visual, "position_end", &line_end_view) == 0);
+    line_start = (const float*)line_start_view.data;
+    line_end = (const float*)line_end_view.data;
+    AC(line_start[1], 1.0f, 1e-6f);
+    AC(line_end[1], 1.0f, 1e-6f);
+
+    AT(dvz_visual_data(vspan->fill_visual, "position", &fill_position_view) == 0);
+    fill_positions = (const float*)fill_position_view.data;
+    AC(fill_positions[0], 5.0f, 1e-6f);
+    AC(fill_positions[3], 6.0f, 1e-6f);
 
     dvz_scene_destroy(scene);
     return 0;

@@ -92,6 +92,16 @@ DVZ_EXPORT DvzGuideLine* dvz_vline(DvzPanel* panel, double x, const DvzGuideLine
 
 
 /**
+ * Update a guide line data-coordinate value.
+ *
+ * @param guide the guide line
+ * @param value new X or Y value, depending on orientation
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_guide_line_set_value(DvzGuideLine* guide, double value);
+
+
+/**
  * Create a retained guide span attached to one panel.
  *
  * @param panel the panel
@@ -128,6 +138,18 @@ dvz_vspan(DvzPanel* panel, double x0, double x1, const DvzGuideSpanDesc* desc);
 
 
 /**
+ * Update a guide span data-coordinate range.
+ *
+ * @param span the guide span
+ * @param min_value first range endpoint
+ * @param max_value second range endpoint
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int
+dvz_guide_span_set_range(DvzGuideSpan* span, double min_value, double max_value);
+
+
+/**
  * Create a retained explicit-interval bar series attached to one panel.
  *
  * @param panel the panel
@@ -154,6 +176,18 @@ DVZ_EXPORT DvzBars* dvz_bars(DvzPanel* panel, const DvzBarsDesc* desc);
 DVZ_EXPORT int dvz_bars_set_intervals(
     DvzBars* bars, uint32_t count, const double* starts, const double* ends,
     const double* values);
+
+
+/**
+ * Update bar style and rendering options while preserving interval data.
+ *
+ * The descriptor is copied. Enabling an outline after construction creates the outline role visual.
+ *
+ * @param bars the bars object
+ * @param desc bars descriptor
+ * @return 0 on success, -1 on validation/allocation error
+ */
+DVZ_EXPORT int dvz_bars_set_style(DvzBars* bars, const DvzBarsDesc* desc);
 
 
 /**
@@ -197,6 +231,19 @@ DVZ_EXPORT int dvz_band_set_bounds(
  */
 DVZ_EXPORT int
 dvz_band_set_center(DvzBand* band, uint32_t count, const double* x, const double* y);
+
+
+/**
+ * Update band style and rendering options while preserving bounds and center data.
+ *
+ * The descriptor is copied. Enabling center or bound paths after construction creates the
+ * corresponding role visual.
+ *
+ * @param band the band object
+ * @param desc band descriptor
+ * @return 0 on success, -1 on validation/allocation error
+ */
+DVZ_EXPORT int dvz_band_set_style(DvzBand* band, const DvzBandDesc* desc);
 
 
 EXTERN_C_OFF

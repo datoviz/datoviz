@@ -179,6 +179,55 @@ static void _band_attach_visual(DvzPanel* panel, DvzVisual* visual, int32_t z_la
 }
 
 
+static DvzVisual* _band_create_fill_visual(DvzScene* scene, const DvzBandDesc* desc)
+{
+    ANN(scene);
+    ANN(desc);
+    DvzVisual* fill = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    if (fill == NULL)
+        return NULL;
+    _band_apply_visual_defaults(fill, true);
+    dvz_visual_set_visible(fill, false);
+    return fill;
+}
+
+
+
+static DvzVisual* _band_create_line_visual(DvzScene* scene, const DvzBandDesc* desc)
+{
+    ANN(scene);
+    ANN(desc);
+    if (!desc->show_line || desc->line_width_px <= 0.0f || desc->line_color.a == 0)
+        return NULL;
+    DvzVisual* line = dvz_path(scene, 0);
+    if (line == NULL)
+        return NULL;
+    _band_apply_visual_defaults(line, desc->line_color.a < 255);
+    (void)dvz_path_set_caps(line, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND);
+    (void)dvz_path_set_join(line, DVZ_PATH_JOIN_ROUND, 4.0f);
+    dvz_visual_set_visible(line, false);
+    return line;
+}
+
+
+
+static DvzVisual* _band_create_bounds_visual(DvzScene* scene, const DvzBandDesc* desc)
+{
+    ANN(scene);
+    ANN(desc);
+    if (!desc->show_bounds || desc->bound_width_px <= 0.0f || desc->bound_color.a == 0)
+        return NULL;
+    DvzVisual* bounds = dvz_path(scene, 0);
+    if (bounds == NULL)
+        return NULL;
+    _band_apply_visual_defaults(bounds, desc->bound_color.a < 255);
+    (void)dvz_path_set_caps(bounds, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND);
+    (void)dvz_path_set_join(bounds, DVZ_PATH_JOIN_ROUND, 4.0f);
+    dvz_visual_set_visible(bounds, false);
+    return bounds;
+}
+
+
 
 static bool _band_upload_fill(DvzBand* band)
 {
@@ -455,35 +504,19 @@ DvzBand* dvz_band(DvzPanel* panel, const DvzBandDesc* desc)
         return NULL;
     }
 
-    DvzVisual* fill = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* fill = _band_create_fill_visual(scene, &resolved);
     if (fill == NULL)
         return NULL;
-    _band_apply_visual_defaults(fill, true);
-    dvz_visual_set_visible(fill, false);
 
-    DvzVisual* line = NULL;
-    if (resolved.show_line && resolved.line_width_px > 0.0f && resolved.line_color.a > 0)
-    {
-        line = dvz_path(scene, 0);
-        if (line == NULL)
-            return NULL;
-        _band_apply_visual_defaults(line, resolved.line_color.a < 255);
-        (void)dvz_path_set_caps(line, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND);
-        (void)dvz_path_set_join(line, DVZ_PATH_JOIN_ROUND, 4.0f);
-        dvz_visual_set_visible(line, false);
-    }
+    DvzVisual* line = _band_create_line_visual(scene, &resolved);
+    if (resolved.show_line && resolved.line_width_px > 0.0f && resolved.line_color.a > 0 &&
+        line == NULL)
+        return NULL;
 
-    DvzVisual* bounds = NULL;
-    if (resolved.show_bounds && resolved.bound_width_px > 0.0f && resolved.bound_color.a > 0)
-    {
-        bounds = dvz_path(scene, 0);
-        if (bounds == NULL)
-            return NULL;
-        _band_apply_visual_defaults(bounds, resolved.bound_color.a < 255);
-        (void)dvz_path_set_caps(bounds, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND);
-        (void)dvz_path_set_join(bounds, DVZ_PATH_JOIN_ROUND, 4.0f);
-        dvz_visual_set_visible(bounds, false);
-    }
+    DvzVisual* bounds = _band_create_bounds_visual(scene, &resolved);
+    if (resolved.show_bounds && resolved.bound_width_px > 0.0f && resolved.bound_color.a > 0 &&
+        bounds == NULL)
+        return NULL;
 
     DvzBand* band = &scene->bands[scene->band_count++];
     dvz_memset(band, sizeof(DvzBand), 0, sizeof(DvzBand));
@@ -573,6 +606,59 @@ int dvz_band_set_center(DvzBand* band, uint32_t count, const double* x, const do
     band->center_y = new_y;
     band->center_count = count;
     band->has_center = count > 0;
+    band->dirty = true;
+    band->version++;
+    _scene_notify_request_frame(band->panel != NULL ? band->panel->figure : NULL);
+    return 0;
+}
+
+
+int dvz_band_set_style(DvzBand* band, const DvzBandDesc* desc)
+{
+    if (band == NULL || !band->active || desc == NULL)
+        return -1;
+    DvzBandDesc resolved = *desc;
+    if (!_band_desc_validate(&resolved))
+        return -1;
+
+    if (band->fill_visual != NULL)
+        _band_apply_visual_defaults(band->fill_visual, true);
+
+    const bool wants_line =
+        resolved.show_line && resolved.line_width_px > 0.0f && resolved.line_color.a > 0;
+    if (wants_line && band->line_visual == NULL)
+    {
+        band->line_visual = _band_create_line_visual(band->scene, &resolved);
+        if (band->line_visual == NULL)
+            return -1;
+        _band_attach_visual(band->panel, band->line_visual, resolved.z_layer + 1);
+    }
+    if (band->line_visual != NULL)
+    {
+        if (wants_line)
+            _band_apply_visual_defaults(band->line_visual, resolved.line_color.a < 255);
+        else
+            dvz_visual_set_visible(band->line_visual, false);
+    }
+
+    const bool wants_bounds =
+        resolved.show_bounds && resolved.bound_width_px > 0.0f && resolved.bound_color.a > 0;
+    if (wants_bounds && band->bounds_visual == NULL)
+    {
+        band->bounds_visual = _band_create_bounds_visual(band->scene, &resolved);
+        if (band->bounds_visual == NULL)
+            return -1;
+        _band_attach_visual(band->panel, band->bounds_visual, resolved.z_layer + 2);
+    }
+    if (band->bounds_visual != NULL)
+    {
+        if (wants_bounds)
+            _band_apply_visual_defaults(band->bounds_visual, resolved.bound_color.a < 255);
+        else
+            dvz_visual_set_visible(band->bounds_visual, false);
+    }
+
+    band->desc = resolved;
     band->dirty = true;
     band->version++;
     _scene_notify_request_frame(band->panel != NULL ? band->panel->figure : NULL);

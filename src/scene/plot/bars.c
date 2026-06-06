@@ -119,6 +119,37 @@ static void _bars_attach_visual(DvzPanel* panel, DvzVisual* visual, int32_t z_la
 
 
 
+static DvzVisual* _bars_create_fill_visual(DvzScene* scene, const DvzBarsDesc* desc)
+{
+    ANN(scene);
+    ANN(desc);
+    DvzVisual* fill = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    if (fill == NULL)
+        return NULL;
+    _bars_apply_visual_defaults(fill, desc->fill_color.a < 255);
+    dvz_visual_set_visible(fill, false);
+    return fill;
+}
+
+
+
+static DvzVisual* _bars_create_outline_visual(DvzScene* scene, const DvzBarsDesc* desc)
+{
+    ANN(scene);
+    ANN(desc);
+    if (desc->outline_width_px <= 0.0f || desc->outline_color.a == 0)
+        return NULL;
+    DvzVisual* outline = dvz_segment(scene, 0);
+    if (outline == NULL)
+        return NULL;
+    (void)dvz_segment_set_caps(outline, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT);
+    _bars_apply_visual_defaults(outline, desc->outline_color.a < 255);
+    dvz_visual_set_visible(outline, false);
+    return outline;
+}
+
+
+
 static bool _bars_interval_data_valid(
     uint32_t count, const double* starts, const double* ends, const double* values)
 {
@@ -363,22 +394,13 @@ DvzBars* dvz_bars(DvzPanel* panel, const DvzBarsDesc* desc)
         return NULL;
     }
 
-    DvzVisual* fill = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* fill = _bars_create_fill_visual(scene, &resolved);
     if (fill == NULL)
         return NULL;
-    _bars_apply_visual_defaults(fill, resolved.fill_color.a < 255);
-    dvz_visual_set_visible(fill, false);
 
-    DvzVisual* outline = NULL;
-    if (resolved.outline_width_px > 0.0f && resolved.outline_color.a > 0)
-    {
-        outline = dvz_segment(scene, 0);
-        if (outline == NULL)
-            return NULL;
-        (void)dvz_segment_set_caps(outline, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT);
-        _bars_apply_visual_defaults(outline, resolved.outline_color.a < 255);
-        dvz_visual_set_visible(outline, false);
-    }
+    DvzVisual* outline = _bars_create_outline_visual(scene, &resolved);
+    if (resolved.outline_width_px > 0.0f && resolved.outline_color.a > 0 && outline == NULL)
+        return NULL;
 
     DvzBars* bars = &scene->bars[scene->bars_count++];
     dvz_memset(bars, sizeof(DvzBars), 0, sizeof(DvzBars));
@@ -436,6 +458,41 @@ int dvz_bars_set_intervals(
     dvz_free(old_ends);
     dvz_free(old_values);
     bars->count = count;
+    bars->dirty = true;
+    bars->version++;
+    _scene_notify_request_frame(bars->panel != NULL ? bars->panel->figure : NULL);
+    return 0;
+}
+
+
+int dvz_bars_set_style(DvzBars* bars, const DvzBarsDesc* desc)
+{
+    if (bars == NULL || !bars->active || desc == NULL)
+        return -1;
+    DvzBarsDesc resolved = *desc;
+    if (!_bars_desc_validate(&resolved))
+        return -1;
+
+    if (bars->fill_visual != NULL)
+        _bars_apply_visual_defaults(bars->fill_visual, resolved.fill_color.a < 255);
+
+    const bool wants_outline = resolved.outline_width_px > 0.0f && resolved.outline_color.a > 0;
+    if (wants_outline && bars->outline_visual == NULL)
+    {
+        bars->outline_visual = _bars_create_outline_visual(bars->scene, &resolved);
+        if (bars->outline_visual == NULL)
+            return -1;
+        _bars_attach_visual(bars->panel, bars->outline_visual, resolved.z_layer + 1);
+    }
+    if (bars->outline_visual != NULL)
+    {
+        if (wants_outline)
+            _bars_apply_visual_defaults(bars->outline_visual, resolved.outline_color.a < 255);
+        else
+            dvz_visual_set_visible(bars->outline_visual, false);
+    }
+
+    bars->desc = resolved;
     bars->dirty = true;
     bars->version++;
     _scene_notify_request_frame(bars->panel != NULL ? bars->panel->figure : NULL);
