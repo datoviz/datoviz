@@ -9,6 +9,7 @@ scale-aware overview, detail, and 3D measurement workflow.
 - Lane: `showcases`
 - Status: `supported`
 - Source: [`examples/c/showcases/scalebar_measurement.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c)
+- Agent copy-safe: `false`
 - Build: `just example-c showcases/scalebar_measurement`
 - Smoke: `./build/examples/c/showcases/scalebar_measurement --png`
 - Validation: `smoke+screenshot`
@@ -16,6 +17,12 @@ scale-aware overview, detail, and 3D measurement workflow.
 ## Tags
 
 `workflow`, `scale-bar`, `measurement`, `synthetic`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

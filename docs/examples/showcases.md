@@ -19,7 +19,7 @@ Coverage: 11 examples (9 supported, 1 experimental, 1 prototype).
 
 _Media pending._
 
-`prototype` `showcases`<br><span>`volume`, `volume-slice`, `volume-occlusion`, `arcball`, `capture`</span>
+`prototype` `showcases`<br><span>`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, ...</span>
 
 local Allen mouse brain RGBA volume and occluded slice.
 
@@ -31,7 +31,7 @@ local Allen mouse brain RGBA volume and occluded slice.
 
 _Media pending._
 
-`experimental` `showcases`
+`experimental` `showcases`<br><span>`compute`, `simulation`, `particles`, `point`, `alpha-blending`, ...</span>
 
 scene API compute-to-graphics particle smoke showcase.
 
@@ -67,7 +67,7 @@ linked image panels with one probe readout and shared colorbar.
 
 _Media pending._
 
-`supported` `showcases`<br><span>`pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, `gui`, ...</span>
+`supported` `showcases`<br><span>`real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, ...</span>
 
 RESEPI RGB LiDAR dense point cloud.
 
@@ -115,7 +115,7 @@ histogram, guide annotations, stacked traces, and error bands.
 
 _Media pending._
 
-`supported` `showcases`<br><span>`mesh`, `sampled-field`, `texture`, `arcball`, `capture`</span>
+`supported` `showcases`<br><span>`real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, ...</span>
 
 UV textured planet mesh via dvz_mesh + sampled fields.
 
@@ -139,7 +139,7 @@ contiguous U.S. state population-density choropleth.
 
 _Media pending._
 
-`supported` `showcases`
+`supported` `showcases`<br><span>`scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, ...</span>
 
 synthetic weather-like scalar and vector field showcase.
 

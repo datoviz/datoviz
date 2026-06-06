@@ -9,6 +9,7 @@ linked temporal panels with a spanning summary panel.
 - Lane: `showcases`
 - Status: `supported`
 - Source: [`examples/c/showcases/panel_linked_axes.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c)
+- Agent copy-safe: `false`
 - Build: `just example-c showcases/panel_linked_axes`
 - Smoke: `./build/examples/c/showcases/panel_linked_axes --png`
 - Validation: `smoke+interaction`
@@ -16,6 +17,12 @@ linked temporal panels with a spanning summary panel.
 ## Tags
 
 `workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

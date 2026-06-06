@@ -9,9 +9,20 @@ scene API compute-to-graphics particle smoke showcase.
 - Lane: `showcases`
 - Status: `experimental`
 - Source: [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c)
+- Agent copy-safe: `false`
 - Build: `just example-c showcases/gpu_particle_smoke`
 - Smoke: `./build/examples/c/showcases/gpu_particle_smoke --png`
 - Validation: `smoke+screenshot`
+
+## Tags
+
+`compute`, `simulation`, `particles`, `point`, `alpha-blending`, `capture`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | simulated |
 
 ## Media
 

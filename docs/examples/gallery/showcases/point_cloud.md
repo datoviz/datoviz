@@ -9,13 +9,20 @@ RESEPI RGB LiDAR dense point cloud.
 - Lane: `showcases`
 - Status: `supported`
 - Source: [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c)
+- Agent copy-safe: `false`
 - Build: `just example-c showcases/point_cloud`
 - Smoke: `./build/examples/c/showcases/point_cloud --png`
 - Validation: `smoke+screenshot`
 
 ## Tags
 
-`pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, `gui`, `fly`, `capture`
+`real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, `gui`, `fly`, `capture`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | prepared |
 
 ## Dataset
 

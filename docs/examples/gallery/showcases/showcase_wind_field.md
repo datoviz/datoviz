@@ -9,9 +9,20 @@ synthetic weather-like scalar and vector field showcase.
 - Lane: `showcases`
 - Status: `supported`
 - Source: [`examples/c/showcases/wind_field.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c)
+- Agent copy-safe: `false`
 - Build: `just example-c showcases/wind_field`
 - Smoke: `./build/examples/c/showcases/wind_field --png`
 - Validation: `smoke+screenshot`
+
+## Tags
+
+`scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, `colorbar`, `capture`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 
