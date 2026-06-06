@@ -9,9 +9,16 @@ smallest runner-backed retained scene with one point visual.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/scene_basic.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scene_basic.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/scene_basic`
 - Smoke: `./build/examples/c/features/scene_basic --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

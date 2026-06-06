@@ -9,9 +9,16 @@ bind a panzoom controller to one panel with a simple 2D visual.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/panzoom_attachment.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom_attachment.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/panzoom_attachment`
 - Smoke: `./build/examples/c/features/panzoom_attachment --png`
 - Validation: `smoke+interaction`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

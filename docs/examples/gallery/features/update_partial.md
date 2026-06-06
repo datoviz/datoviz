@@ -9,9 +9,16 @@ point visual with one retained data-range update.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/update_partial.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_partial.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/update_partial`
 - Smoke: `./build/examples/c/features/update_partial --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

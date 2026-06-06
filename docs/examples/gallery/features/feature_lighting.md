@@ -9,9 +9,16 @@ lit sphere cluster with explicit light direction.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/lighting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/lighting`
 - Smoke: `./build/examples/c/features/lighting --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

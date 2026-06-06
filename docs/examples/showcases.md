@@ -7,7 +7,7 @@ They may use workflows, prepared data, animation, postprocess settings, or
 domain-specific context. Each item still needs a deterministic screenshot before final
 publication.
 
-Coverage: 10 examples (8 supported, 1 experimental, 1 prototype).
+Coverage: 11 examples (9 supported, 1 experimental, 1 prototype).
 
 ## Showcases
 
@@ -94,6 +94,18 @@ _Media pending._
 `supported` `showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
 
 scale-aware overview, detail, and 3D measurement workflow.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md)
+
+_Media pending._
+
+`supported` `showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
+
+histogram, guide annotations, stacked traces, and error bands.
 
 </div>
 

@@ -9,9 +9,16 @@ point visual with scalar float colors and one retained color scale.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/colormap_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colormap_scale.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/colormap_scale`
 - Smoke: `./build/examples/c/features/colormap_scale --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

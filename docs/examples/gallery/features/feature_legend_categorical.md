@@ -9,6 +9,7 @@ tentative retained categorical legend proof.
 - Lane: `features`
 - Status: `experimental`
 - Source: [`examples/c/features/legend_categorical.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c)
+- Agent copy-safe: `false`
 - Build: `just example-c features/legend_categorical`
 - Smoke: `./build/examples/c/features/legend_categorical --png`
 - Validation: `smoke+screenshot`
@@ -16,6 +17,12 @@ tentative retained categorical legend proof.
 ## Tags
 
 `categorical-scale`, `legend`, `marker`, `capture`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

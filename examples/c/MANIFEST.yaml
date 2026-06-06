@@ -48,121 +48,206 @@ examples:
   - id: feature_scene_basic
     title: Basic Scene
     stage: v0.4_required
+    category: feature
+    primary_feature: scene
     lane: features
     source: examples/c/features/scene_basic.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_panel_single
     title: Single Panel
     stage: v0.4_required
+    category: feature
+    primary_feature: panel-single
     lane: features
     source: examples/c/features/panel_single.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_panel_grid
     title: Panel Grid
     stage: v0.4_required
+    category: feature
+    primary_feature: panel-grid
     lane: features
     source: examples/c/features/panel_grid.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_panel_multi
     title: Multiple Panels
     stage: v0.4_required
+    category: feature
+    primary_feature: multi-panel
     lane: features
     source: examples/c/features/panel_multi.c
     validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_panel_linked
     title: Linked Panels
     stage: v0.4_required
+    category: feature
+    primary_feature: linked-panels
     lane: features
     source: examples/c/features/panel_linked.c
     validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: path_axes_2d
     title: Path With 2D Axes
     stage: v0.4_required
+    category: feature
+    primary_feature: axes-2d
     lane: features
     source: examples/c/features/axes_2d.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_axis_labels
     title: Axis Labels
     stage: v0.4_required
+    category: feature
+    primary_feature: axis-labels
     lane: features
     source: examples/c/features/axis_labels.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_sampled_field_2d
     title: 2D Sampled Field
     stage: v0.4_required
+    category: feature
+    primary_feature: sampled-field-2d
     lane: features
     source: examples/c/features/sampled_field_2d.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_sampled_field_3d
     title: 3D Sampled Field
     stage: v0.4_required
+    category: feature
+    primary_feature: sampled-field-3d
     lane: features
     source: examples/c/features/sampled_field_3d.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_text_block
     title: Text Block
     stage: v0.4_required
+    category: feature
+    primary_feature: text-block
     lane: features
     source: examples/c/features/text_block.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_overlay_card
     title: Overlay Card
     stage: v0.4_required
+    category: feature
+    primary_feature: overlay-card
     lane: features
     source: examples/c/features/overlay_card.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_controller_arcball
     title: Arcball Controller
     stage: v0.4_required
+    category: feature
+    primary_feature: controller-arcball
     lane: features
     source: examples/c/features/controller_arcball.c
     validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_controller_fly
     title: Fly Controller
     stage: v0.4_required
+    category: feature
+    primary_feature: controller-fly
     lane: features
     source: examples/c/features/controller_fly.c
     validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_controller_turntable
     title: Turntable Controller
     stage: v0.4_required
+    category: feature
+    primary_feature: controller-turntable
     lane: features
     source: examples/c/features/controller_turntable.c
     validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_mesh_texture
     title: Textured Mesh
     stage: v0.4_required
+    category: feature
+    primary_feature: mesh-texture
     lane: features
     source: examples/c/features/mesh_texture.c
     validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_material_mesh
     title: Mesh Materials
     stage: v0.4_required
+    category: feature
+    primary_feature: material-mesh
     lane: features
     source: examples/c/features/material_mesh.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_lighting
     title: Lighting
     stage: v0.4_required
+    category: feature
+    primary_feature: lighting
     lane: features
     source: examples/c/features/lighting.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: linked_panels_axes_panzoom
     title: Linked Panels With Axes
@@ -220,16 +305,26 @@ examples:
   - id: scale_bar
     title: Scale Bar
     stage: v0.4_required
+    category: feature
+    primary_feature: scale-bar
     lane: features
     source: examples/c/features/scalebar.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: scalebar_units
     title: Scale Bar Units
     stage: v0.4_required
+    category: feature
+    primary_feature: scalebar-units
     lane: features
     source: examples/c/features/scalebar_units.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: scalebar_measurement_workflow
     title: Scale Bar Measurement Workflow
@@ -263,125 +358,210 @@ examples:
   - id: colormap_scale
     title: Scalar Color Scale
     stage: v0.4_required
+    category: feature
+    primary_feature: colormap-scale
     lane: features
     source: examples/c/features/colormap_scale.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: annotation_readout
     title: Annotation Readout
     stage: v0.4_required
+    category: feature
+    primary_feature: annotation-readout
     lane: features
     source: examples/c/features/annotation_readout.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: update_partial
     title: Partial Data Update
     stage: v0.4_required
+    category: feature
+    primary_feature: update-partial
     lane: features
     source: examples/c/features/update_partial.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_update_visual_data
     title: Visual Data Update
     stage: v0.4_required
+    category: feature
+    primary_feature: update-visual-data
     lane: features
     source: examples/c/features/update_visual_data.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_visibility
     title: Visual Visibility
     stage: v0.4_required
+    category: feature
+    primary_feature: visibility
     lane: features
     source: examples/c/features/visibility.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: depth_test
     title: Depth Test Toggle
     stage: v0.4_required
+    category: feature
+    primary_feature: depth-test
     lane: features
     source: examples/c/features/depth_test.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: alpha_blending
     title: Alpha Blending
     stage: v0.4_required
+    category: feature
+    primary_feature: alpha-blending
     lane: features
     source: examples/c/features/alpha_blending.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: panel_background
     title: Panel Background
     stage: v0.4_required
+    category: feature
+    primary_feature: panel-background
     lane: features
     source: examples/c/features/panel_background.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: controller_panzoom
     title: Panzoom Attachment
     stage: v0.4_required
+    category: feature
+    primary_feature: controller-panzoom
     lane: features
     source: examples/c/features/panzoom_attachment.c
     validation: smoke+interaction
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: image_probe
     title: Image Probe
     stage: v0.4_required
+    category: feature
+    primary_feature: image-probe
     lane: features
     source: examples/c/features/image_probe.c
     validation: smoke+readback+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: marker_picking
     title: Marker Picking
     stage: v0.4_required
+    category: feature
+    primary_feature: marker-picking
     lane: features
     source: examples/c/features/pick_marker.c
     validation: smoke+interaction
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_pick_point
     title: Point Picking
     stage: v0.4_required
+    category: feature
+    primary_feature: pick-point
     lane: features
     source: examples/c/features/pick_point.c
     validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_pick_hover
     title: Hover Picking
     stage: v0.4_required
+    category: feature
+    primary_feature: pick-hover
     lane: features
     source: examples/c/features/pick_hover.c
     validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_probe_labels
     title: Label Probe
     stage: v0.4_required
+    category: feature
+    primary_feature: probe-labels
     lane: features
     source: examples/c/features/probe_labels.c
     validation: smoke+readback+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_selection
     title: Selection
     stage: v0.4_required
+    category: feature
+    primary_feature: selection
     lane: features
     source: examples/c/features/selection.c
     validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_timer_animation
     title: Timer Animation
     stage: v0.4_required
+    category: feature
+    primary_feature: timer-animation
     lane: features
     source: examples/c/features/timer_animation.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
 
   - id: feature_marker_symbols
     title: Marker Symbols
     stage: v0.4_required
+    category: feature
+    primary_feature: marker-symbols
     lane: features
     source: examples/c/features/marker_symbols.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - marker
       - symbol-set
       - bitmap-symbol
@@ -391,13 +571,18 @@ examples:
   - id: feature_legend_categorical
     title: Categorical Legend
     stage: v0.4_experimental
+    category: feature
+    primary_feature: legend-categorical
     lane: features
     source: examples/c/features/legend_categorical.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: false
     gallery:
       card: small
       status_label: experimental
-    features:
+    tags:
       - categorical-scale
       - legend
       - marker
@@ -406,13 +591,18 @@ examples:
   - id: feature_video_export
     title: Video Export
     stage: v0.4_experimental
+    category: feature
+    primary_feature: video-export
     lane: features
     source: examples/c/features/video_export.c
     validation: smoke+optional-video
+    data:
+      kind: synthetic
+    agent_copy_safe: false
     gallery:
       card: small
       status_label: experimental
-    features:
+    tags:
       - app-capture
       - scenario-runner
       - video
@@ -440,13 +630,18 @@ examples:
   - id: visual_pixel
     title: Pixel
     stage: v0.4_required
+    category: visual
+    primary_visual: pixel
     lane: visuals
     source: examples/c/visuals/pixel.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - pixel
       - panzoom
       - capture
@@ -454,13 +649,18 @@ examples:
   - id: visual_marker
     title: Marker
     stage: v0.4_required
+    category: visual
+    primary_visual: marker
     lane: visuals
     source: examples/c/visuals/marker.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - marker
       - panzoom
       - capture
@@ -468,26 +668,36 @@ examples:
   - id: visual_primitive
     title: Primitive
     stage: v0.4_required
+    category: visual
+    primary_visual: primitive
     lane: visuals
     source: examples/c/visuals/primitive.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - primitive
       - capture
 
   - id: visual_segment
     title: Segment
     stage: v0.4_required
+    category: visual
+    primary_visual: segment
     lane: visuals
     source: examples/c/visuals/segment.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - segment
       - panzoom
       - capture
@@ -495,13 +705,18 @@ examples:
   - id: visual_vector
     title: Vector
     stage: v0.4_required
+    category: visual
+    primary_visual: vector
     lane: visuals
     source: examples/c/visuals/vector.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - vector
       - path
       - panzoom
@@ -510,26 +725,36 @@ examples:
   - id: visual_path
     title: Path
     stage: v0.4_required
+    category: visual
+    primary_visual: path
     lane: visuals
     source: examples/c/visuals/path.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - path
       - capture
 
   - id: visual_image
     title: Image
     stage: v0.4_required
+    category: visual
+    primary_visual: image
     lane: visuals
     source: examples/c/visuals/image.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - image
       - sampled-field
       - capture
@@ -537,13 +762,18 @@ examples:
   - id: visual_mesh
     title: Mesh
     stage: v0.4_required
+    category: visual
+    primary_visual: mesh
     lane: visuals
     source: examples/c/visuals/mesh.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - mesh
       - indexed-geometry
       - arcball
@@ -552,13 +782,18 @@ examples:
   - id: sphere_impostor
     title: Sphere
     stage: v0.4_required
+    category: visual
+    primary_visual: sphere
     lane: visuals
     source: examples/c/visuals/sphere.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - sphere
       - arcball
       - capture
@@ -566,13 +801,18 @@ examples:
   - id: visual_splat
     title: Splat
     stage: v0.4_experimental
+    category: visual
+    primary_visual: splat
     lane: visuals
     source: examples/c/visuals/splat.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: false
     gallery:
       card: small
       status_label: experimental
-    features:
+    tags:
       - splat
       - panzoom
       - capture
@@ -580,26 +820,36 @@ examples:
   - id: visual_text
     title: Text
     stage: v0.4_required
+    category: visual
+    primary_visual: text
     lane: visuals
     source: examples/c/visuals/text.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - text
       - capture
 
   - id: visual_glyph
     title: Glyph
     stage: v0.4_experimental
+    category: visual
+    primary_visual: glyph
     lane: visuals
     source: examples/c/visuals/glyph.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: false
     gallery:
       card: small
       status_label: experimental
-    features:
+    tags:
       - glyph
       - sampled-field
       - capture
@@ -607,13 +857,18 @@ examples:
   - id: visual_labels
     title: Labels
     stage: v0.4_required
+    category: visual
+    primary_visual: labels
     lane: visuals
     source: examples/c/visuals/labels.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - labels
       - categorical-scale
       - panzoom
@@ -622,13 +877,18 @@ examples:
   - id: volume
     title: Volume
     stage: v0.4_required
+    category: visual
+    primary_visual: volume
     lane: visuals
     source: examples/c/visuals/volume.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - sampled-field
       - volume
       - transfer-function
@@ -639,13 +899,18 @@ examples:
   - id: composite_polygon
     title: Polygon Composite
     stage: v0.4_required
+    category: composite
+    primary_composite: polygon
     lane: composites
     source: examples/c/composites/polygon.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - composite
       - polygon
       - polygon-set

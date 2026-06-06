@@ -9,9 +9,16 @@ multiple independent panels with panel-local panzoom controllers.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/panel_multi.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_multi.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/panel_multi`
 - Smoke: `./build/examples/c/features/panel_multi --png`
 - Validation: `smoke+interaction+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

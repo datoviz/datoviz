@@ -9,9 +9,16 @@ retained primitive visual using per-vertex alpha and source-over blending.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/alpha_blending.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/alpha_blending.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/alpha_blending`
 - Smoke: `./build/examples/c/features/alpha_blending --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

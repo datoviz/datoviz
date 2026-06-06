@@ -9,6 +9,7 @@ retained straight and curved vector visual example.
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/vector.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/vector.c)
+- Agent copy-safe: `true`
 - Build: `just example-c visuals/vector`
 - Smoke: `./build/examples/c/visuals/vector --png`
 - Validation: `smoke+screenshot`
@@ -16,6 +17,12 @@ retained straight and curved vector visual example.
 ## Tags
 
 `vector`, `path`, `panzoom`, `capture`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

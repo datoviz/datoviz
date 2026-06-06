@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Public C examples in manifest: 66
-- Examples declaring screenshot validation: 62
+- Public C examples in manifest: 67
+- Examples declaring screenshot validation: 63
 - Examples that should have video or motion evidence: 3
 
 ## Commands
@@ -46,6 +46,7 @@ Screenshot and video capture should be run separately from documentation generat
 | [Mesh Materials](gallery/features/feature_material_mesh.md) | [`examples/c/features/material_mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c) | `supported` | `smoke+screenshot` |
 | [Lighting](gallery/features/feature_lighting.md) | [`examples/c/features/lighting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c) | `supported` | `smoke+screenshot` |
 | [Linked Probe With Colorbar](gallery/showcases/linked_panels_probe_colorbar.md) | [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c) | `supported` | `smoke+readback+interaction+screenshot` |
+| [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md) | [`examples/c/showcases/scientific_plotting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c) | `supported` | `smoke+screenshot` |
 | [Scale Bar](gallery/features/scale_bar.md) | [`examples/c/features/scalebar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c) | `supported` | `smoke+screenshot` |
 | [Scale Bar Units](gallery/features/scalebar_units.md) | [`examples/c/features/scalebar_units.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar_units.c) | `supported` | `smoke+screenshot` |
 | [Scale Bar Measurement Workflow](gallery/showcases/scalebar_measurement_workflow.md) | [`examples/c/showcases/scalebar_measurement.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c) | `supported` | `smoke+screenshot` |

@@ -9,6 +9,7 @@ deterministic retained pixel visual baseline.
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/pixel.c)
+- Agent copy-safe: `true`
 - Build: `just example-c visuals/pixel`
 - Smoke: `./build/examples/c/visuals/pixel --png`
 - Validation: `smoke+screenshot`
@@ -16,6 +17,12 @@ deterministic retained pixel visual baseline.
 ## Tags
 
 `pixel`, `panzoom`, `capture`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

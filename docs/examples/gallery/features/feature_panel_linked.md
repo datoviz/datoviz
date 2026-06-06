@@ -9,9 +9,16 @@ two panels with bidirectional linked X panzoom state.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/panel_linked.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_linked.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/panel_linked`
 - Smoke: `./build/examples/c/features/panel_linked --png`
 - Validation: `smoke+interaction+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

@@ -9,6 +9,7 @@ raw atlas-backed glyph quads with explicit retained attributes.
 - Lane: `visuals`
 - Status: `experimental`
 - Source: [`examples/c/visuals/glyph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/glyph.c)
+- Agent copy-safe: `false`
 - Build: `just example-c visuals/glyph`
 - Smoke: `./build/examples/c/visuals/glyph --png`
 - Validation: `smoke+screenshot`
@@ -16,6 +17,12 @@ raw atlas-backed glyph quads with explicit retained attributes.
 ## Tags
 
 `glyph`, `sampled-field`, `capture`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

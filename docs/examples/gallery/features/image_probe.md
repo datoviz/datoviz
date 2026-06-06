@@ -9,9 +9,16 @@ scalar image pixel-query proof with a live probe marker.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/image_probe.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/image_probe.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/image_probe`
 - Smoke: `./build/examples/c/features/image_probe --png`
 - Validation: `smoke+readback+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

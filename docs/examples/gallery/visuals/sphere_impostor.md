@@ -9,6 +9,7 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c)
+- Agent copy-safe: `true`
 - Build: `just example-c visuals/sphere`
 - Smoke: `./build/examples/c/visuals/sphere --png`
 - Validation: `smoke+screenshot`
@@ -16,6 +17,12 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
 ## Tags
 
 `sphere`, `arcball`, `capture`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

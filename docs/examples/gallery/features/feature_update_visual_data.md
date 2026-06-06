@@ -9,9 +9,16 @@ retained point visual with full data replacement.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/update_visual_data.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_visual_data.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/update_visual_data`
 - Smoke: `./build/examples/c/features/update_visual_data --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

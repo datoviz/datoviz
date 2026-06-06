@@ -9,9 +9,16 @@ portable scenario updating retained point data on runner frames.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/timer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/timer_animation.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/timer_animation`
 - Smoke: `./build/examples/c/features/timer_animation --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

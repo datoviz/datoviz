@@ -9,6 +9,7 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
 - Lane: `visuals`
 - Status: `experimental`
 - Source: [`examples/c/visuals/splat.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/splat.c)
+- Agent copy-safe: `false`
 - Build: `just example-c visuals/splat`
 - Smoke: `./build/examples/c/visuals/splat --png`
 - Validation: `smoke+screenshot`
@@ -16,6 +17,12 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
 ## Tags
 
 `splat`, `panzoom`, `capture`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

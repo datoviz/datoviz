@@ -16,7 +16,7 @@ keeps media status explicit while capture artifacts are prepared separately.
 | [Visual gallery](visual-gallery.md) | 15 | One public visual family per example. |
 | [Feature gallery](feature-gallery.md) | 39 | One isolated feature or technique per example. |
 | [Composites](composites.md) | 2 | One semantic object lowering to one or more visuals per example. |
-| [Showcases](showcases.md) | 10 | Composed workflows, scientific stories, real-data examples, and polished demos. |
+| [Showcases](showcases.md) | 11 | Composed workflows, scientific stories, real-data examples, and polished demos. |
 
 ## Gallery Sections
 
@@ -25,9 +25,9 @@ keeps media status explicit while capture artifacts are prepared separately.
 | [Visual gallery](visual-gallery.md) | 15 | 13 supported, 2 experimental |
 | [Feature gallery](feature-gallery.md) | 39 | 37 supported, 2 experimental |
 | [Composites](composites.md) | 2 | 2 supported |
-| [Showcases](showcases.md) | 10 | 8 supported, 1 experimental, 1 prototype |
+| [Showcases](showcases.md) | 11 | 9 supported, 1 experimental, 1 prototype |
 | [Techniques](techniques.md) | 8 | Rendering and compute behavior coverage |
-| [Validation gallery](validation-gallery.md) | 66 | Release evidence checklist |
+| [Validation gallery](validation-gallery.md) | 67 | Release evidence checklist |
 
 ## Current Source Lanes
 
@@ -39,4 +39,4 @@ Concepts such as `workflow`, `scientific`, and `real-data` are manifest tags.
 | Visuals | `examples/c/visuals/` | 15 |
 | Features | `examples/c/features/` | 39 |
 | Composites | `examples/c/composites/` | 2 |
-| Showcases | `examples/c/showcases/` | 10 |
+| Showcases | `examples/c/showcases/` | 11 |

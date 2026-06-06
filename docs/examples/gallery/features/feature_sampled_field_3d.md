@@ -9,9 +9,16 @@ scene-owned 3D sampled field bound to a volume visual.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/sampled_field_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_3d.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/sampled_field_3d`
 - Smoke: `./build/examples/c/features/sampled_field_3d --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

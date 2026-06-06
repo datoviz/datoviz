@@ -9,6 +9,7 @@ retained lit indexed cube mesh.
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/mesh.c)
+- Agent copy-safe: `true`
 - Build: `just example-c visuals/mesh`
 - Smoke: `./build/examples/c/visuals/mesh --png`
 - Validation: `smoke+screenshot`
@@ -16,6 +17,12 @@ retained lit indexed cube mesh.
 ## Tags
 
 `mesh`, `indexed-geometry`, `arcball`, `capture`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

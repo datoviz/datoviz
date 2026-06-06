@@ -9,6 +9,7 @@ retained semantic text objects lowered to glyph visuals.
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/text.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c)
+- Agent copy-safe: `true`
 - Build: `just example-c visuals/text`
 - Smoke: `./build/examples/c/visuals/text --png`
 - Validation: `smoke+screenshot`
@@ -16,6 +17,12 @@ retained semantic text objects lowered to glyph visuals.
 ## Tags
 
 `text`, `capture`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

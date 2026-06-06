@@ -9,6 +9,7 @@ deterministic scalar sampled field rendered with the retained image visual.
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/image.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image.c)
+- Agent copy-safe: `true`
 - Build: `just example-c visuals/image`
 - Smoke: `./build/examples/c/visuals/image --png`
 - Validation: `smoke+screenshot`
@@ -16,6 +17,12 @@ deterministic scalar sampled field rendered with the retained image visual.
 ## Tags
 
 `image`, `sampled-field`, `capture`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

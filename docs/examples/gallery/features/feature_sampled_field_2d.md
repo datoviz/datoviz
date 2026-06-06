@@ -9,9 +9,16 @@ scene-owned 2D sampled field bound to an image visual.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/sampled_field_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_2d.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/sampled_field_2d`
 - Smoke: `./build/examples/c/features/sampled_field_2d --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

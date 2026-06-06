@@ -9,6 +9,7 @@ portable scenario using the native runner's live/capture modes.
 - Lane: `features`
 - Status: `experimental`
 - Source: [`examples/c/features/video_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/video_export.c)
+- Agent copy-safe: `false`
 - Build: `just example-c features/video_export`
 - Smoke: `./build/examples/c/features/video_export --png`
 - Validation: `smoke+optional-video`
@@ -16,6 +17,12 @@ portable scenario using the native runner's live/capture modes.
 ## Tags
 
 `app-capture`, `scenario-runner`, `video`, `animation`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

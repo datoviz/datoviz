@@ -9,9 +9,16 @@ constrained turntable controller around a small 3D mesh.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/controller_turntable.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_turntable.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/controller_turntable`
 - Smoke: `./build/examples/c/features/controller_turntable --png`
 - Validation: `smoke+interaction+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

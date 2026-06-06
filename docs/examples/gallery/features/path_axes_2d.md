@@ -9,9 +9,16 @@ deterministic path with retained 2D axes and tick labels.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/axes_2d`
 - Smoke: `./build/examples/c/features/axes_2d --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

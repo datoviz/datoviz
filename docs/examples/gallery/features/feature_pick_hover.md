@@ -9,9 +9,16 @@ retained point hover proof.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/pick_hover.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/pick_hover.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/pick_hover`
 - Smoke: `./build/examples/c/features/pick_hover --png`
 - Validation: `smoke+interaction+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

@@ -9,9 +9,16 @@ retained visual visibility toggled on a runner frame.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/visibility.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visibility.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/visibility`
 - Smoke: `./build/examples/c/features/visibility --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

@@ -9,9 +9,16 @@ retained axis titles and tick-label placement with plot margins.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/axis_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axis_labels.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/axis_labels`
 - Smoke: `./build/examples/c/features/axis_labels --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

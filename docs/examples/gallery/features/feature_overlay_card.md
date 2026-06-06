@@ -9,9 +9,16 @@ screen-space overlay card attached to a panel.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/overlay_card.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/overlay_card.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/overlay_card`
 - Smoke: `./build/examples/c/features/overlay_card --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

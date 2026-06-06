@@ -9,9 +9,16 @@ retained mesh visuals with explicit material parameters.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/material_mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/material_mesh`
 - Smoke: `./build/examples/c/features/material_mesh --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

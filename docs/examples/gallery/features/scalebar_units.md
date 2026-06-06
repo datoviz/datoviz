@@ -9,9 +9,16 @@ retained scale bar with a custom time-unit string.
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/scalebar_units.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar_units.c)
+- Agent copy-safe: `true`
 - Build: `just example-c features/scalebar_units`
 - Smoke: `./build/examples/c/features/scalebar_units --png`
 - Validation: `smoke+screenshot`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 
