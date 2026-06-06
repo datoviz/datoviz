@@ -15,9 +15,8 @@
  *   python tools/data/prepare_point_cloud.py
  *
  * Build:  just example-c showcases/point_cloud
- * Run:    ./build/examples/c/showcases/point_cloud
- * Smoke:  ./build/examples/c/showcases/point_cloud 60
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/showcases/point_cloud 60
+ * Run:    ./build/examples/c/showcases/point_cloud --live
+ * Smoke:  ./build/examples/c/showcases/point_cloud --png
  */
 
 
@@ -33,12 +32,10 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
-#include "example_debug.h"
-#include "example_gui_controls.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -94,11 +91,10 @@ typedef struct PointCloudData
 } PointCloudData;
 
 
-typedef struct PointCloudGuiState
+typedef struct PointCloudState
 {
-    DvzPanel* panel;
-    DvzExampleGuiEdlControls edl;
-} PointCloudGuiState;
+    PointCloudData data;
+} PointCloudState;
 
 
 
@@ -263,111 +259,38 @@ static bool _upload_pixels(DvzVisual* visual, const PointCloudData* data)
 }
 
 
-/**
- * Reset EDL controls to the point-cloud defaults.
- *
- * @param state GUI state
- */
-static void _reset_edl(PointCloudGuiState* state)
-{
-    ANN(state);
-    state->edl = (DvzExampleGuiEdlControls){
-        .enabled = true,
-        .radius = 1.8f,
-        .strength = 34.0f,
-        .depth_scale = 1.0f,
-    };
-}
-
+/*************************************************************************************************/
+/*  Scenario callbacks                                                                           */
+/*************************************************************************************************/
 
 /**
- * Apply current EDL controls to the panel.
+ * Initialize the point-cloud showcase scenario.
  *
- * @param state GUI state
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return whether initialization succeeded
  */
-static void _apply_edl(PointCloudGuiState* state)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    ANN(state);
-    ANN(state->panel);
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    DvzEdlDesc edl = {
-        DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc),
-        .radius = state->edl.enabled ? state->edl.radius : 0.0f,
-        .strength = state->edl.enabled ? state->edl.strength : 0.0f,
-        .depth_scale = state->edl.depth_scale,
-    };
-    (void)dvz_panel_set_edl(state->panel, &edl);
-}
-
-
-/**
- * Draw point-cloud GUI controls.
- *
- * @param gui GUI overlay
- * @param win view
- * @param user_data GUI state
- */
-static void _point_cloud_gui(DvzGui* gui, DvzView* win, void* user_data)
-{
-    (void)win;
-    PointCloudGuiState* state = (PointCloudGuiState*)user_data;
+    bool ok = false;
+    PointCloudState* state = (PointCloudState*)dvz_calloc(1, sizeof(*state));
     if (state == NULL)
-        return;
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
 
-    bool changed = false;
-    bool reset = false;
-    if (dvz_gui_begin(gui, "Point Cloud", NULL, 0))
-    {
-        dvz_gui_separator_text(gui, "Depth");
-        changed |= dvz_example_gui_edl(gui, &state->edl);
-        reset = dvz_gui_button(gui, "Reset EDL");
-    }
-    dvz_gui_end(gui);
+    EXAMPLE_CHECK(_load_data(&state->data), "point-cloud data setup failed");
+    dvz_fprintf(stderr, "point_cloud: %u points (prepared real data)\n", state->data.count);
 
-    if (reset)
-    {
-        _reset_edl(state);
-        changed = true;
-    }
-    if (changed)
-        _apply_edl(state);
-}
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
 
-
-
-/*************************************************************************************************/
-/*  Functions                                                                                    */
-/*************************************************************************************************/
-
-/**
- * Run the point-cloud showcase example.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
- */
-int main(int argc, char** argv)
-{
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    PointCloudData data = {0};
-    PointCloudGuiState gui_state = {0};
-    ExampleDebug debug = {0};
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("showcase_point_cloud");
-
-    EXAMPLE_CHECK(_load_data(&data), "point-cloud data setup failed");
-    dvz_fprintf(stderr, "point_cloud: %u points (prepared real data)\n", data.count);
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
@@ -388,27 +311,26 @@ int main(int argc, char** argv)
     camera_desc.ortho_height = 2.000000f;
     DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera() failed");
+    (void)camera;
 
-    gui_state.panel = panel;
-    _reset_edl(&gui_state);
-    _apply_edl(&gui_state);
+    DvzEdlDesc edl = {
+        DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc),
+        .radius = 1.8f,
+        .strength = 34.0f,
+        .depth_scale = 1.0f,
+    };
+    (void)dvz_panel_set_edl(panel, &edl);
 
-    DvzVisual* pixels = dvz_pixel(scene, 0);
+    DvzVisual* pixels = dvz_pixel(ctx->scene, 0);
     EXAMPLE_CHECK(pixels != NULL, "dvz_pixel() failed");
 
-    EXAMPLE_CHECK(_upload_pixels(pixels, &data), "point-cloud upload failed");
+    EXAMPLE_CHECK(_upload_pixels(pixels, &state->data), "point-cloud upload failed");
 
     int rc = dvz_visual_set_depth_test(pixels, true);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_depth_test() failed");
 
     rc = dvz_panel_add_visual(panel, pixels, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "point_cloud");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
     DvzFlyDesc fly_desc = dvz_fly_desc();
     fly_desc.mode = DVZ_FLY_MODE_PLANE;
@@ -420,30 +342,73 @@ int main(int argc, char** argv)
     fly_desc.up[1] = 1.0f;
     fly_desc.up[2] = 0.0f;
     fly_desc.speed = 0.55f;
-    DvzFly* fly = dvz_view_fly(win, panel, &fly_desc);
+    DvzController* controller = dvz_fly(ctx->scene, &fly_desc);
+    EXAMPLE_CHECK(controller != NULL, "dvz_fly() failed");
+    DvzFly* fly = dvz_controller_fly(controller);
     EXAMPLE_CHECK(fly != NULL, "failed to create or bind fly controller");
-
     EXAMPLE_CHECK(
-        example_debug_setup(&debug, win, argc, argv, "point_cloud"),
-        "example_debug_setup() failed");
-    example_debug_camera_ref(&debug, "point_cloud", camera, &camera_desc);
+        dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == 0,
+        "dvz_scenario_bind_controller() failed");
+    (void)fly;
 
-    DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_view_gui(win, &gui_config);
-    EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
-    dvz_view_set_gui_callback(win, _point_cloud_gui, &gui_state);
-
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
+    ok = true;
 cleanup:
-    example_debug_uninstall(&debug);
-    if (app != NULL)
-        dvz_app_destroy(app);
-    _free_data(&data);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    return ok;
+}
+
+
+
+/**
+ * Destroy the point-cloud showcase scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    PointCloudState* state = (PointCloudState*)user;
+    if (state == NULL)
+        return;
+    _free_data(&state->data);
+    dvz_free(state);
+}
+
+
+
+/**
+ * Return the point-cloud showcase scenario.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _point_cloud_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "point_cloud",
+        .title = "point_cloud",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the point-cloud showcase through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _point_cloud_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
