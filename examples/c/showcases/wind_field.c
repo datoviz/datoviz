@@ -10,8 +10,8 @@
  * Style: showcase, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c showcases/wind_field
- * Run:    ./build/examples/c/showcases/wind_field
- * Smoke:  ./build/examples/c/showcases/wind_field 120
+ * Run:    ./build/examples/c/showcases/wind_field --live
+ * Smoke:  ./build/examples/c/showcases/wind_field --png
  */
 
 
@@ -27,10 +27,10 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -90,7 +90,6 @@ typedef struct WindShowcaseState
     DvzVisual* vectors;
     DvzVisual* streamlines;
     float* values;
-    uint32_t frame_index;
 } WindShowcaseState;
 
 
@@ -1064,64 +1063,62 @@ cleanup:
 /**
  * Advance the deterministic weather animation.
  *
- * @param win view receiving frames
+ * @param ctx scenario context
  * @param user_data showcase animation state
  */
-static void _wind_frame(DvzView* win, void* user_data)
+static void _scenario_frame(DvzScenarioContext* ctx, void* user_data)
 {
     WindShowcaseState* state = (WindShowcaseState*)user_data;
-    if (state == NULL)
+    if (ctx == NULL || state == NULL)
         return;
 
-    state->frame_index++;
-    if (state->frame_index % ANIMATION_STRIDE != 0)
+    const uint32_t frame_index = (uint32_t)ctx->frame_index + 1u;
+    if (frame_index % ANIMATION_STRIDE != 0)
         return;
 
-    const float time_s = (float)state->frame_index / ANIMATION_FPS;
+    const float time_s = (float)frame_index / ANIMATION_FPS;
     if (!_update_wind_image(state, time_s))
         return;
     if (!_update_streamlines(state, time_s))
         return;
-    if (!_update_vectors(state, time_s))
-        return;
-    dvz_view_request_frame(win);
+    (void)_update_vectors(state, time_s);
 }
 
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the synthetic weather field showcase.
+ * Initialize the synthetic weather field showcase scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return whether initialization succeeded
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    uint32_t frames = example_frame_count(argc, argv);
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    float* values = NULL;
-    bool capture_started = false;
-    WindShowcaseState state = {0};
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    bool ok = false;
+    WindShowcaseState* state = (WindShowcaseState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
 
-    DvzPanel* panel = dvz_panel_full(figure);
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
-    bool ok = dvz_panel_set_layout_reserve(
+    ok = dvz_panel_set_layout_reserve(
         panel, &(DvzPanelLayoutReserve){.left = 0.055f, .right = 0.030f, .bottom = 0.050f,
                                         .top = 0.035f});
     EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve() failed");
@@ -1131,57 +1128,88 @@ int main(int argc, char** argv)
     rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, DOMAIN_Y_MIN_KM, DOMAIN_Y_MAX_KM);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(y) failed");
 
-    DvzScale* scale = _add_wind_scale(scene);
+    DvzScale* scale = _add_wind_scale(ctx->scene);
     EXAMPLE_CHECK(scale != NULL, "_add_wind_scale() failed");
     DvzColorbar* colorbar = _add_wind_colorbar(panel, scale);
     EXAMPLE_CHECK(colorbar != NULL, "_add_wind_colorbar() failed");
 
-    values = (float*)dvz_calloc((DvzSize)FIELD_WIDTH * FIELD_HEIGHT, sizeof(float));
-    EXAMPLE_CHECK(values != NULL, "wind scalar field allocation failed");
-    _fill_scalar_field(values, 0.0f);
-    state.panel = panel;
-    state.values = values;
+    state->values = (float*)dvz_calloc((DvzSize)FIELD_WIDTH * FIELD_HEIGHT, sizeof(float));
+    EXAMPLE_CHECK(state->values != NULL, "wind scalar field allocation failed");
+    _fill_scalar_field(state->values, 0.0f);
+    state->panel = panel;
 
-    ok = _add_wind_image(scene, panel, scale, values, &state.field);
+    ok = _add_wind_image(ctx->scene, panel, scale, state->values, &state->field);
     EXAMPLE_CHECK(ok, "_add_wind_image() failed");
-    ok = _add_streamlines(scene, panel, &state.streamlines, 0.0f);
+    ok = _add_streamlines(ctx->scene, panel, &state->streamlines, 0.0f);
     EXAMPLE_CHECK(ok, "_add_streamlines() failed");
-    ok = _add_vectors(scene, panel, &state.vectors, 0.0f);
+    ok = _add_vectors(ctx->scene, panel, &state->vectors, 0.0f);
     EXAMPLE_CHECK(ok, "_add_vectors() failed");
-    ok = _add_probe(scene, panel);
+    ok = _add_probe(ctx->scene, panel);
     EXAMPLE_CHECK(ok, "_add_probe() failed");
 
-    DvzAppConfig app_config = dvz_app_config();
-    app_config.schedule_mode = DVZ_APP_SCHEDULE_CONTINUOUS;
-    app = dvz_app_with_config(scene, &app_config);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "showcase_wind_field");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-    dvz_view_set_frame_callback(win, _wind_frame, &state);
-
-    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
-    dvz_view_request_frame(win);
+    (void)panzoom;
 
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("showcase_wind_field");
-    rc = dvz_view_capture_start(win, &capture);
-    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_start() failed");
-    capture_started = true;
-
-    dvz_app_run(app, frames);
-    rc = dvz_view_capture_stop(win);
-    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_stop() failed");
-    capture_started = false;
-    ret = 0;
-
+    ok = true;
 cleanup:
-    if (capture_started && win != NULL)
-        (void)dvz_view_capture_stop(win);
-    dvz_free(values);
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    return ok;
+}
+
+
+
+/**
+ * Destroy the synthetic weather field showcase scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    WindShowcaseState* state = (WindShowcaseState*)user;
+    if (state == NULL)
+        return;
+    dvz_free(state->values);
+    dvz_free(state);
+}
+
+
+
+/**
+ * Return the synthetic weather field showcase scenario.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _wind_field_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "showcase_wind_field",
+        .title = "showcase_wind_field",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .frame = _scenario_frame,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the synthetic weather field showcase through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _wind_field_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
