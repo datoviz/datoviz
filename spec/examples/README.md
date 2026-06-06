@@ -11,13 +11,12 @@ views from those examples, but it should not be the authoritative home of runnab
 
 ## Goals
 
-The examples system serves four separate user needs:
+The examples system serves three separate source-category needs:
 
-1. teach one API feature with the smallest useful program;
-2. teach one visual family with the smallest useful scene;
-3. demonstrate a small multi-feature workflow without turning it into a gallery piece;
-4. present a polished, curated public gallery with a consistent graphic direction;
-5. prove scientific relevance with real datasets, real encodings, and provenance.
+1. teach one visual family with the smallest useful scene;
+2. teach one API feature or rendering technique with the smallest useful program;
+3. present composed goal-oriented examples, including workflows, scientific stories, and polished
+   release showcases.
 
 These needs overlap, but they should not be collapsed into one bucket. A beautiful showcase does not
 replace a minimal copy-safe feature example. A real-data scientific example does not need to match
@@ -31,11 +30,9 @@ Use these logical source categories for new first-class examples:
 
 ```text
 examples/
-  features/
   visuals/
-  workflows/
+  features/
   showcases/
-  scientific/
 ```
 
 If a build system, language binding, or runtime requires a compatibility prefix such as
@@ -48,31 +45,26 @@ search, and gallery tooling.
 
 | Category | Unit | Purpose | Data |
 | --- | --- | --- | --- |
-| `features` | one API feature | teach one capability quickly | usually synthetic |
 | `visuals` | one visual family | teach one visual type with minimal surrounding setup | usually synthetic |
-| `workflows` | one small task pattern | show several supported features working together | usually synthetic |
-| `showcases` | one polished composition | provide curated visual impact and design consistency | synthetic or domain-flavored fake data allowed |
-| `scientific` | one real dataset story | prove relevance to scientific users | real data with provenance |
+| `features` | one API feature or rendering technique | teach one capability quickly | usually synthetic |
+| `showcases` | one composed goal | show workflows, scientific stories, and polished scenes | synthetic, simulated, or real with provenance |
 
 Feature examples should stay minimal. They demonstrate a capability such as a colorbar, controller,
-pick query, texture upload, linked panel, or partial update.
+pick query, texture upload, linked panel, rendering technique, or partial update.
 
 Visual examples should stay minimal. They demonstrate a public visual family such as point, marker,
 path, image, mesh, sphere, volume, text, or labels. They may use a few supporting features, but only
 when needed to make the visual family intelligible.
 
-Workflow examples are small composed examples. They demonstrate task patterns such as linked
-panels, linked panzoom state, probe plus readout, or explanatory layouts. They may combine several
-supported features, but they should remain compact and synthetic unless promoted to `scientific`.
+Showcase examples are allowed to compose visuals, panels, styling, annotations, camera motion,
+workflow steps, and synthetic, simulated, or real data. Their job is to make the project look
+coherent and useful for real goals. They must not imply that fake or simulated data is real
+scientific evidence.
 
-Showcase examples are allowed to compose visuals, panels, styling, annotations, camera motion, and
-synthetic or procedural data. Their job is to make the project look coherent and modern. They must
-not imply that fake data is scientific evidence.
-
-Scientific examples use real datasets and domain-appropriate encodings. They may be less visually
-uniform than curated showcases because real scientific data varies in shape, scale, and convention.
-They should still share baseline Datoviz presentation quality: clean framing, legible colorbars,
-consistent typography where applicable, clear backgrounds, documented units, and stable captures.
+Use metadata tags for `workflow`, `scientific`, `real-data`, `simulated`, `fake-data`, `interactive`,
+`offscreen`, and domain labels. Real scientific showcases should include domain-appropriate
+encodings, source attribution, license or citation notes, documented units when available, and stable
+captures.
 
 
 ## Website Pages
@@ -109,9 +101,7 @@ Default gallery behavior:
 | --- | --- |
 | `features` | excluded |
 | `visuals` | excluded unless promoted |
-| `workflows` | excluded unless promoted |
 | `showcases` | included when visually mature |
-| `scientific` | included when visually mature and properly attributed |
 
 Promoted gallery entries should have strong screenshots or short loops, stable captures, clear
 metadata, and no unsupported implication about release status. A front-page gallery may select an

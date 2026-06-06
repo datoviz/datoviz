@@ -5,6 +5,25 @@ source_of_truth:
   execution: ../../spec/scene/examples/EXECUTION.md
   style: ../../spec/scene/examples/STYLE.md
 
+taxonomy:
+  target_public_categories:
+    visuals: one public visual family per example
+    features: one isolated feature or rendering technique per example
+    showcases: composed workflows, scientific stories, real-data examples, and polished demos
+  transitional_lanes:
+    - workflows
+    - composites
+    - scientific
+  tag_not_folder:
+    - workflow
+    - scientific
+    - technique
+    - real-data
+    - simulated
+    - fake-data
+    - interactive
+    - offscreen
+
 folders:
   public:
     - examples/c/features

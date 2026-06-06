@@ -19,6 +19,18 @@ Before adding or changing a public example, check:
 A minimal example should demonstrate one public visual or feature with the least surrounding code
 needed to run it. It should keep setup, data binding, rendering, and cleanup visible.
 
+Use the public source taxonomy:
+
+| Directory | Use |
+| --- | --- |
+| `examples/c/visuals/` | one public visual family per file. |
+| `examples/c/features/` | one isolated feature or rendering technique per file. |
+| `examples/c/showcases/` | composed workflows, scientific stories, real-data examples, and polished demos. |
+
+Do not create new public folders for `workflow`, `scientific`, `technique`, or domain labels. Use
+manifest tags and dataset metadata instead. Existing transitional folders may remain until the
+example tree is migrated mechanically.
+
 Minimal examples should not:
 
 1. depend on hidden global state;
@@ -34,13 +46,16 @@ Every documented example should eventually have metadata with:
 
 1. stable `id`;
 2. `source` path;
-3. public feature or visual family;
-4. `status`;
-5. `role`;
-6. `agent_copy_safe`;
-7. backend and platform requirements;
-8. validation commands;
-9. reference and how-to links.
+3. `category`: `visual`, `feature`, or `showcase`;
+4. `primary_visual` or `primary_feature` for atomic examples;
+5. tags such as `workflow`, `scientific`, `real-data`, `simulated`, `interactive`, or `offscreen`;
+6. dataset metadata when real or prepared data is used;
+7. `status`;
+8. `role`;
+9. `agent_copy_safe`;
+10. backend and platform requirements;
+11. validation commands;
+12. reference and how-to links.
 
 Use `agent_copy_safe: true` only for complete examples that are current enough to be copied into a
 user project. Mark API sketches, pressure tests, and showcases as not copy-safe.

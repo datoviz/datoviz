@@ -80,6 +80,18 @@ Use these roles in metadata where possible:
 | `showcase` | Attractive composed example; not a minimal starting point. |
 | `sketch` | API pressure test or future design sketch; not copy-safe. |
 
+For public source layout, keep the taxonomy small:
+
+```text
+examples/c/visuals/
+examples/c/features/
+examples/c/showcases/
+```
+
+Existing `workflows`, `scientific`, and `composites` lanes are transitional source lanes. New
+examples should use tags such as `workflow`, `scientific`, `real-data`, `simulated`, `technique`,
+`interactive`, or `offscreen` instead of adding more public directories.
+
 
 ## Editing Rules
 

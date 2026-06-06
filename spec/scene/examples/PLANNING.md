@@ -26,6 +26,26 @@ afterward. Minimal examples remain executable truth; showcases are allowed to be
 editorial as long as their release status is explicit.
 
 
+## Public Example Taxonomy
+
+Use three public example categories for v0.4:
+
+| Category | Rule | Purpose |
+| --- | --- | --- |
+| `visuals` | one visual family per example | Mechanical proof of the visual data contract. |
+| `features` | one isolated feature or rendering technique per example | Mechanical proof of one capability with minimal scaffolding. |
+| `showcases` | one composed user goal per example | Combined workflows, scientific scenes, real or simulated data stories, and polished release media. |
+
+`workflow`, `scientific`, `technique`, `real-data`, `fake-data`, `simulated`, `interactive`,
+`offscreen`, and domain labels should be tags in manifest metadata, not additional public
+structural categories. Semantic composites such as graph and polygon should be treated as features
+or showcases unless a future API promotes them to true visual families.
+
+Current source directories such as `examples/c/workflows/`, `examples/c/scientific/`, and
+`examples/c/composites/` are transitional. Keep them indexed, but do not add new structural folders
+for new concepts when tags would disambiguate the example.
+
+
 ## Staging Vocabulary
 
 | Stage | Meaning |

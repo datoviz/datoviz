@@ -49,25 +49,21 @@ ownership, plotting conveniences, notebooks, or ecosystem data loading, it belon
 
 ## Example Lanes
 
-- Fundamentals: create/render/update/close workflows with small synthetic data, such as hello
-  scene, offscreen capture, bounded window, resize, frame callback, animation, multi-panel, and
-  linked panzoom.
 - Visuals: one active visual family at a time, such as point, pixel, marker, primitive, segment,
   path, mesh, image, volume slice/rendering, sphere impostor, and text/annotation when active.
-- Features: reusable scene/app capabilities, such as partial update, mutability hints, visibility,
-  depth, controllers, sampled fields, colormaps, colorbar, picking, probing, selection, pinned
-  readout, video export, and DVZR.
-- Workflows: compact composed task examples that combine supported features without becoming
-  gallery showcases, such as linked panels with axes, probe plus readout, or explanatory layouts.
-- Techniques and low-level runtime proofs: keep as tests, WebGPU fixtures, or `lab/` material until
-  they become polished public teaching examples.
-- Showcases: polished domain demos for geo, physics, engineering, dashboards, neuroscience,
-  astronomy, medical, volume, and embeddings. Synthetic or generated data is allowed when the
-  example is honest about it.
-- Scientific: real-dataset examples with recorded source, license, citation or attribution,
-  preprocessing command, and encoding notes.
+- Features: reusable scene/app capabilities and rendering techniques, such as partial update,
+  mutability hints, visibility, depth, controllers, sampled fields, colormaps, colorbar, picking,
+  probing, selection, pinned readout, video export, WBOIT, EDL, SSAO, and DVZR.
+- Showcases: composed user goals and polished domain demos for workflows, geo, physics,
+  engineering, dashboards, neuroscience, astronomy, medical, volume, and embeddings. Synthetic,
+  simulated, generated, or real data is allowed when the example is honest about it.
 - Regression/golden: owned by tests and fixture infrastructure, not by a public examples lane.
 - Stress/benchmark: keep in flat `examples/c/lab/` unless a dedicated benchmark suite is created.
+
+Use metadata tags, not public folder names, for `workflow`, `scientific`, `real-data`, `simulated`,
+`fake-data`, `interactive`, `offscreen`, `compute`, and domain labels. Existing `workflows`,
+`scientific`, and `composites` source directories are transitional and may be indexed into the three
+public categories by the documentation generator.
 
 Existing examples may be reorganized aggressively to match these lanes. Prefer fewer, stronger
 public examples over many scripts with unclear public roles:
@@ -96,18 +92,15 @@ Datoviz:
 ```text
 examples/
   c/
-    features/
     visuals/
-    workflows/
+    features/
     showcases/
-    scientific/
-    composites/
     lab/
     legacy/
   python/
-    fundamentals/
     visuals/
     features/
+    showcases/
     regression/
 data/
   examples/
@@ -160,7 +153,8 @@ Each runnable or generated example should eventually have compact metadata:
 id: showcase_earth_cubemap
 title: Earth Cubemap
 layer: c | raw_python | gsp | plot | fixture
-lane: fundamentals | visuals | features | showcase | lab | fixture
+category: visual | feature | showcase | lab | fixture
+tags: [real-data, workflow, offscreen]
 status: required | experimental | fixture-only | future | external
 data: inline | synthetic | bundled | public-download
 validation: smoke | screenshot | readback | fixture | manual

@@ -9,6 +9,10 @@ adapt, or debug Datoviz code instead of reading the whole API directly. The docu
 has to make the preferred API path easy to infer, examples safe to copy, and failures specific enough
 for generated code to be repaired.
 
+The public product direction for this model lives in
+[AGENT_FIRST_DOCUMENTATION.md](AGENT_FIRST_DOCUMENTATION.md). This file owns the authoring rules and
+support-pack details that make that direction practical.
+
 
 ## User-Facing AI Goals
 

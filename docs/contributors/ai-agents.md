@@ -54,6 +54,17 @@ Prefer examples that are:
 If no copy-safe example exists, have the agent create the minimal example first or clearly mark the
 code as an API sketch. Do not let a showcase example become the only source for a basic feature.
 
+Use the example taxonomy when searching:
+
+| Need | Start from |
+| --- | --- |
+| One visual family | `examples/c/visuals/` |
+| One isolated feature or rendering technique | `examples/c/features/` |
+| A composed workflow, real-data story, or polished goal | `examples/c/showcases/` or showcase-tagged manifest entries |
+
+Treat `workflow`, `scientific`, `real-data`, `simulated`, `interactive`, `offscreen`, and domain
+labels as tags. Do not add new public source folders for those concepts.
+
 
 ## Do Not Invent
 

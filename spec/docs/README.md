@@ -20,6 +20,8 @@ scientific plotting belongs to VisPy2/GSP, with Datoviz as one rendering backend
   audiences, Diataxis mapping, navigation, and content boundaries.
 - [EXAMPLE_COVERAGE.md](EXAMPLE_COVERAGE.md): required minimal C examples, feature coverage,
   showcase policy, and example metadata.
+- [AGENT_FIRST_DOCUMENTATION.md](AGENT_FIRST_DOCUMENTATION.md): public agent-first product
+  direction, homepage promise, LLM index, example discovery, and Matplotlib translation routing.
 - [AI_DOCUMENTATION.md](AI_DOCUMENTATION.md): LLM-friendly documentation rules, user-facing AI
   support-pack plan, and contributor boundaries for users and agents.
 - [GALLERY_SITE.md](GALLERY_SITE.md): MkDocs/gallery page-shape notes and front-page gallery

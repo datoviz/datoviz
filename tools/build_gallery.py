@@ -25,29 +25,29 @@ PYTHON_SOURCE_BY_ID = {}
 PAGE_CONFIG = {
     "visual-gallery.md": {
         "title": "Visual Gallery",
-        "lanes": ("visuals", "composites"),
+        "lanes": ("visuals",),
         "intro": """\
-            This page indexes the current C examples for visual families and semantic composites.
-            Visual examples are intentionally small: each one demonstrates one retained rendering
-            family or one reusable composite boundary.
+            This page indexes the current C examples for visual families. Visual examples are
+            intentionally small: each one demonstrates one retained rendering family and avoids
+            unrelated features where possible.
         """,
     },
     "feature-gallery.md": {
         "title": "Feature Gallery",
-        "lanes": ("features", "workflows"),
+        "lanes": ("features", "composites"),
         "intro": """\
             This page indexes focused C examples for public scene, layout, adornment, interaction,
-            update, and appearance features. Workflow examples compose several focused features
-            without replacing the minimal examples.
+            update, rendering-technique, appearance, and semantic-composite features.
         """,
     },
     "showcases.md": {
         "title": "Showcases",
-        "lanes": ("showcases", "scientific"),
+        "lanes": ("workflows", "showcases", "scientific"),
         "intro": """\
-            Showcases are composed examples for release proof and public website media. They may
-            use prepared data, animation, postprocess settings, or domain-specific context. Each
-            item still needs a deterministic screenshot before final publication.
+            Showcases are composed examples for user goals, release proof, and public website media.
+            They may use workflows, prepared data, animation, postprocess settings, or
+            domain-specific context. Each item still needs a deterministic screenshot before final
+            publication.
         """,
     },
 }
@@ -300,6 +300,9 @@ def render_gallery_page(
 
 def render_index(examples: list[Example], docs_dir: Path) -> None:
     by_lane = {lane: [example for example in examples if example.lane == lane] for lane in PUBLIC_LANES}
+    visual_examples = by_lane["visuals"]
+    feature_examples = by_lane["features"] + by_lane["composites"]
+    showcase_examples = by_lane["workflows"] + by_lane["showcases"] + by_lane["scientific"]
     lines = generated_header("Examples")
     lines.extend(
         dedent(
@@ -315,19 +318,38 @@ def render_index(examples: list[Example], docs_dir: Path) -> None:
         .strip()
         .splitlines()
     )
+    lines.extend(["", "## Public Taxonomy", ""])
+    lines.extend(
+        [
+            "| Category | Examples | Use |",
+            "| --- | ---: | --- |",
+            f"| [Visual gallery](visual-gallery.md) | {len(visual_examples)} | One public visual family per example. |",
+            f"| [Feature gallery](feature-gallery.md) | {len(feature_examples)} | One isolated feature, technique, or semantic composite per example. |",
+            f"| [Showcases](showcases.md) | {len(showcase_examples)} | Composed workflows, scientific stories, real-data examples, and polished demos. |",
+        ]
+    )
     lines.extend(["", "## Gallery Sections", ""])
     lines.extend(
         [
             "| Section | Examples | Status |",
             "| --- | ---: | --- |",
-            f"| [Visual gallery](visual-gallery.md) | {len(by_lane['visuals']) + len(by_lane['composites'])} | {status_counts(by_lane['visuals'] + by_lane['composites'])} |",
-            f"| [Feature gallery](feature-gallery.md) | {len(by_lane['features']) + len(by_lane['workflows'])} | {status_counts(by_lane['features'] + by_lane['workflows'])} |",
-            f"| [Showcases](showcases.md) | {len(by_lane['showcases']) + len(by_lane['scientific'])} | {status_counts(by_lane['showcases'] + by_lane['scientific'])} |",
+            f"| [Visual gallery](visual-gallery.md) | {len(visual_examples)} | {status_counts(visual_examples)} |",
+            f"| [Feature gallery](feature-gallery.md) | {len(feature_examples)} | {status_counts(feature_examples)} |",
+            f"| [Showcases](showcases.md) | {len(showcase_examples)} | {status_counts(showcase_examples)} |",
             f"| [Techniques](techniques.md) | {len([e for e in examples if e.id in TECHNIQUE_IDS])} | Rendering and compute behavior coverage |",
             f"| [Validation gallery](validation-gallery.md) | {len(examples)} | Release evidence checklist |",
         ]
     )
-    lines.extend(["", "## Source Lanes", ""])
+    lines.extend(
+        [
+            "",
+            "## Current Source Lanes",
+            "",
+            "The source tree still has transitional lanes. New public concepts should normally use",
+            "`visuals`, `features`, or `showcases` plus tags in `examples/c/MANIFEST.yaml`.",
+            "",
+        ]
+    )
     lines.extend(["| Lane | Source directory | Examples |", "| --- | --- | ---: |"])
     for lane in PUBLIC_LANES:
         lines.append(f"| {lane_title(lane)} | `examples/c/{lane}/` | {len(by_lane[lane])} |")
@@ -341,8 +363,8 @@ def render_techniques(examples: list[Example], docs_dir: Path) -> None:
         dedent(
             """\
             Technique coverage is currently represented by focused feature examples and selected
-            showcases. Dedicated `examples/c/techniques/` sources remain future work until those
-            behaviors are promoted into the v0.4 public surface.
+            showcases. Public rendering techniques should normally be indexed as feature examples,
+            with `technique` tags for filtering.
             """
         )
         .strip()

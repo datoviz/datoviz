@@ -9,17 +9,28 @@ scene -> DRP2 -> runtime path.
 Static screenshots are required before final website publication. This generated index
 keeps media status explicit while capture artifacts are prepared separately.
 
+## Public Taxonomy
+
+| Category | Examples | Use |
+| --- | ---: | --- |
+| [Visual gallery](visual-gallery.md) | 15 | One public visual family per example. |
+| [Feature gallery](feature-gallery.md) | 41 | One isolated feature, technique, or semantic composite per example. |
+| [Showcases](showcases.md) | 10 | Composed workflows, scientific stories, real-data examples, and polished demos. |
+
 ## Gallery Sections
 
 | Section | Examples | Status |
 | --- | ---: | --- |
-| [Visual gallery](visual-gallery.md) | 17 | 15 supported, 2 experimental |
-| [Feature gallery](feature-gallery.md) | 42 | 40 supported, 2 experimental |
-| [Showcases](showcases.md) | 7 | 5 supported, 1 experimental, 1 prototype |
+| [Visual gallery](visual-gallery.md) | 15 | 13 supported, 2 experimental |
+| [Feature gallery](feature-gallery.md) | 41 | 39 supported, 2 experimental |
+| [Showcases](showcases.md) | 10 | 8 supported, 1 experimental, 1 prototype |
 | [Techniques](techniques.md) | 8 | Rendering and compute behavior coverage |
 | [Validation gallery](validation-gallery.md) | 66 | Release evidence checklist |
 
-## Source Lanes
+## Current Source Lanes
+
+The source tree still has transitional lanes. New public concepts should normally use
+`visuals`, `features`, or `showcases` plus tags in `examples/c/MANIFEST.yaml`.
 
 | Lane | Source directory | Examples |
 | --- | --- | ---: |

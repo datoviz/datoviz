@@ -18,18 +18,20 @@ fixtures and current implementation work.
 
 1. One public visual family gets one minimal C example.
 2. One public feature gets one minimal C example.
-3. A minimal example should avoid unrelated visual polish.
-4. A showcase may compose many features, but it does not satisfy the minimal-example requirement.
-5. Every example should be linked from the relevant reference and how-to pages.
-6. Examples should have stable identifiers that can be used by docs, tests, release notes, and LLM
+3. Rendering techniques count as features unless they become public visual families.
+4. A minimal example should avoid unrelated visual polish.
+5. A showcase may compose many visuals, features, techniques, and workflows, but it does not satisfy
+   the minimal-example requirement.
+6. Every example should be linked from the relevant reference and how-to pages.
+7. Examples should have stable identifiers that can be used by docs, tests, release notes, and LLM
    retrieval.
-7. Copy-safe examples should use the preferred scene/app ownership pattern and declare their
+8. Copy-safe examples should use the preferred scene/app ownership pattern and declare their
    validation command.
-8. If an example is only an API sketch, pressure test, or showcase, mark it so agents do not copy it
+9. If an example is only an API sketch, pressure test, or showcase, mark it so agents do not copy it
    as a minimal starting point.
-9. How-to pages should not be created one-to-one for every feature. Add a how-to page when a user
+10. How-to pages should not be created one-to-one for every feature. Add a how-to page when a user
    task needs workflow guidance, tradeoffs, ownership notes, or adaptation advice.
-10. Visual documentation should include authored judgment such as "use when", "avoid when", and
+11. Visual documentation should include authored judgment such as "use when", "avoid when", and
     "choose this over that"; keep generated or mechanical facts in reference tables.
 
 
@@ -106,11 +108,22 @@ prevents users and agents from overpromising unstable behavior.
 examples/c/
   visuals/
   features/
-  techniques/
   showcases/
-  runtime/
-  drp2/
+  lab/
+  legacy/
 ```
+
+The public taxonomy should stay this small:
+
+| Category | Unit | Notes |
+| --- | --- | --- |
+| `visuals` | one public visual family | Mechanical proof for the data shape and smallest useful styling of one visual. |
+| `features` | one isolated feature or technique | Mechanical proof for one capability, using the simplest visual scaffolding needed. |
+| `showcases` | one composed goal | Workflows, scientific examples, shiny demos, real-data stories, and multi-feature scenes. |
+
+Do not add public source folders for `workflow`, `scientific`, `technique`, or domain labels unless a
+future build-system constraint requires it. Prefer metadata tags such as `workflow`, `real-data`,
+`simulated`, `scientific`, `interactive`, `offscreen`, `compute`, `geo`, or `molecular`.
 
 WebGPU examples and fixtures may keep their existing browser-oriented layout under `examples/webgpu/`
 while being indexed by the same documentation manifest.
@@ -310,21 +323,22 @@ Runtime examples document how a program is hosted or executed:
 | `runtime.qt_hosted` | existing Qt example path, linked when supported | Hosted rendering in a Qt surface. | Only public when Qt integration is supported and documented. |
 
 
-## Technique Examples
+## Technique Feature Examples
 
-Technique examples may compose a small number of visuals and runtime features to demonstrate a
-rendering technique:
+Technique examples are feature examples. They may compose a small number of visuals and runtime
+features to demonstrate one rendering technique, but they should live under `examples/c/features/`
+when they become public:
 
 | ID | Source | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- |
-| `technique.transparency` | `examples/c/techniques/transparency.c` | Overlapping translucent objects with ordering behavior visible. | Teaches basic transparency constraints. |
-| `technique.wboit` | `examples/c/techniques/wboit.c` | Side-by-side or toggled weighted blended OIT effect. | Teaches WBOIT, backend requirements, and limitations. |
-| `technique.msaa` | `examples/c/techniques/msaa.c` | Geometry with clear edge aliasing improvement. | Teaches MSAA configuration. |
-| `technique.depth_testing` | `examples/c/techniques/depth_testing.c` | Overlapping 3D objects that make depth testing or ordering behavior obvious. | Teaches depth-buffer behavior. Keep depth cueing, transparency, and WBOIT separate. |
-| `technique.edl` | `examples/c/techniques/edl.c` | Dense point or pixel cloud with depth enhancement visible. | Teaches EDL as a rendering technique, not point visual basics. |
-| `technique.ssao` | `examples/c/techniques/ssao.c` | 3D mesh or sphere scene with ambient occlusion visible. | Teaches SSAO configuration. |
-| `technique.depth_cue` | `examples/c/techniques/depth_cue.c` | 3D objects fading or scaling with depth. | Teaches depth cueing. |
-| `technique.bounds_overlay` | `examples/c/techniques/bounds_overlay.c` | Visual bounds or debug overlays drawn around known objects. | Keep diagnostic status explicit; do not make this a normal visual example. |
+| `technique.transparency` | `examples/c/features/transparency.c` | Overlapping translucent objects with ordering behavior visible. | Teaches basic transparency constraints. |
+| `technique.wboit` | `examples/c/features/wboit.c` | Side-by-side or toggled weighted blended OIT effect. | Teaches WBOIT, backend requirements, and limitations. |
+| `technique.msaa` | `examples/c/features/msaa.c` | Geometry with clear edge aliasing improvement. | Teaches MSAA configuration. |
+| `technique.depth_testing` | `examples/c/features/depth_testing.c` | Overlapping 3D objects that make depth testing or ordering behavior obvious. | Teaches depth-buffer behavior. Keep depth cueing, transparency, and WBOIT separate. |
+| `technique.edl` | `examples/c/features/edl.c` | Dense point or pixel cloud with depth enhancement visible. | Teaches EDL as a rendering technique, not point visual basics. |
+| `technique.ssao` | `examples/c/features/ssao.c` | 3D mesh or sphere scene with ambient occlusion visible. | Teaches SSAO configuration. |
+| `technique.depth_cue` | `examples/c/features/depth_cue.c` | 3D objects fading or scaling with depth. | Teaches depth cueing. |
+| `technique.bounds_overlay` | `examples/c/features/bounds_overlay.c` | Visual bounds or debug overlays drawn around known objects. | Keep diagnostic status explicit; do not make this a normal visual example. |
 
 
 ## DRP2 And Portability Examples
