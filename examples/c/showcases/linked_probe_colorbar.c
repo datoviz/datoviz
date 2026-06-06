@@ -10,9 +10,8 @@
  * Style: showcase workflow, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c showcases/linked_probe_colorbar
- * Run:    ./build/examples/c/showcases/linked_probe_colorbar
- * Smoke:  ./build/examples/c/showcases/linked_probe_colorbar 120
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/showcases/linked_probe_colorbar 1
+ * Run:    ./build/examples/c/showcases/linked_probe_colorbar --live
+ * Smoke:  ./build/examples/c/showcases/linked_probe_colorbar --png
  */
 
 
@@ -26,13 +25,14 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "datoviz/app.h"
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -66,6 +66,8 @@ typedef struct ProbeMarker
 typedef struct LinkedProbeState
 {
     DvzScene* scene;
+    float* measurement;
+    float* derived;
     DvzPanel* source_panel;
     DvzPanel* derived_panel;
     ProbeMarker source_marker;
@@ -671,34 +673,24 @@ static bool _add_colorbar(DvzPanel* panel, DvzScale* scale)
 /**
  * Bind one panzoom controller to both image panels.
  *
- * @param scene scene owning the controller
- * @param win view owning input routing
+ * @param ctx scenario context
  * @param source source panel
  * @param derived derived panel
  * @return true when controller binding is ready
  */
 static bool _bind_linked_panzoom(
-    DvzScene* scene, DvzView* win, DvzPanel* source, DvzPanel* derived)
+    DvzScenarioContext* ctx, DvzPanel* source, DvzPanel* derived)
 {
-    ANN(scene);
-    ANN(win);
+    ANN(ctx);
     ANN(source);
     ANN(derived);
 
-    DvzController* panzoom = dvz_panzoom(scene, NULL);
+    DvzController* panzoom = dvz_panzoom(ctx->scene, NULL);
     if (panzoom == NULL)
         return false;
-    if (dvz_panel_bind_controller(source, panzoom, DVZ_DIM_MASK_XY) != 0)
+    if (dvz_scenario_bind_controller(ctx, source, panzoom, DVZ_DIM_MASK_XY) != 0)
         return false;
-    if (dvz_panel_bind_controller(derived, panzoom, DVZ_DIM_MASK_XY) != 0)
-        return false;
-
-    DvzInputRouter* router = dvz_view_input(win);
-    if (router == NULL)
-        return false;
-    if (dvz_panel_connect_input(source, router) != 0)
-        return false;
-    return dvz_panel_connect_input(derived, router) == 0;
+    return dvz_scenario_bind_controller(ctx, derived, panzoom, DVZ_DIM_MASK_XY) == 0;
 }
 
 
@@ -871,33 +863,38 @@ static void _linked_probe_frame(DvzView* win, void* user_data)
 /*************************************************************************************************/
 
 /**
- * Run the linked probe and colorbar workflow example.
+ * Initialize the linked probe and colorbar workflow scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return whether initialization succeeded
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("workflow_linked_probe_colorbar");
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    float measurement[FIELD_WIDTH * FIELD_HEIGHT] = {0};
-    float derived[FIELD_WIDTH * FIELD_HEIGHT] = {0};
-    _fill_fields(measurement, derived);
+    bool ok = false;
+    LinkedProbeState* state = (LinkedProbeState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    state->scene = ctx->scene;
+    if (out_user != NULL)
+        *out_user = state;
+    state->measurement =
+        (float*)dvz_calloc((DvzSize)FIELD_WIDTH * FIELD_HEIGHT, sizeof(float));
+    state->derived = (float*)dvz_calloc((DvzSize)FIELD_WIDTH * FIELD_HEIGHT, sizeof(float));
+    EXAMPLE_CHECK(
+        state->measurement != NULL && state->derived != NULL, "linked field allocation failed");
+    _fill_fields(state->measurement, state->derived);
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzGrid* grid = dvz_figure_grid(figure, 1, 2);
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
     EXAMPLE_CHECK(grid != NULL, "dvz_figure_grid() failed");
-    bool ok = dvz_grid_set_margins(
+    ok = dvz_grid_set_margins(
         grid, &(DvzPanelReserve){.left_px = 38.0f, .right_px = 30.0f, .top_px = 28.0f,
                                  .bottom_px = 32.0f});
     EXAMPLE_CHECK(ok, "dvz_grid_set_margins() failed");
@@ -925,12 +922,12 @@ int main(int argc, char** argv)
     ok = _set_image_domain(derived_panel);
     EXAMPLE_CHECK(ok, "_set_image_domain(derived) failed");
 
-    DvzScale* scale = _add_scale(scene);
+    DvzScale* scale = _add_scale(ctx->scene);
     EXAMPLE_CHECK(scale != NULL, "adding shared color scale failed");
 
-    ok = _add_image(scene, source, scale, measurement, true);
+    ok = _add_image(ctx->scene, source, scale, state->measurement, true);
     EXAMPLE_CHECK(ok, "adding source image failed");
-    ok = _add_image(scene, derived_panel, scale, derived, false);
+    ok = _add_image(ctx->scene, derived_panel, scale, state->derived, false);
     EXAMPLE_CHECK(ok, "adding derived image failed");
 
     ok = _add_axes(source);
@@ -943,9 +940,9 @@ int main(int argc, char** argv)
 
     ProbeMarker source_marker = {0};
     ProbeMarker derived_marker = {0};
-    ok = _add_probe_marker(scene, source, &source_marker);
+    ok = _add_probe_marker(ctx->scene, source, &source_marker);
     EXAMPLE_CHECK(ok, "_add_probe_marker(source) failed");
-    ok = _add_probe_marker(scene, derived_panel, &derived_marker);
+    ok = _add_probe_marker(ctx->scene, derived_panel, &derived_marker);
     EXAMPLE_CHECK(ok, "_add_probe_marker(derived) failed");
 
     ok = _add_panel_label(source, "measurement", EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
@@ -956,41 +953,94 @@ int main(int argc, char** argv)
     DvzText* readout = _add_readout(source);
     EXAMPLE_CHECK(readout != NULL, "_add_readout() failed");
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "linked_probe_colorbar");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    ok = _bind_linked_panzoom(scene, win, source, derived_panel);
+    ok = _bind_linked_panzoom(ctx, source, derived_panel);
     EXAMPLE_CHECK(ok, "_bind_linked_panzoom() failed");
 
-    DvzInputRouter* router = dvz_view_input(win);
-    EXAMPLE_CHECK(router != NULL, "dvz_view_input() failed");
+    state->source_panel = source;
+    state->derived_panel = derived_panel;
+    state->source_marker = source_marker;
+    state->derived_marker = derived_marker;
+    state->readout = readout;
+    _update_readout(state, PROBE_X, PROBE_Y, true);
+    _set_probe(state, PROBE_X, PROBE_Y);
 
-    LinkedProbeState state = {
-        .scene = scene,
-        .source_panel = source,
-        .derived_panel = derived_panel,
-        .source_marker = source_marker,
-        .derived_marker = derived_marker,
-        .readout = readout,
-    };
-    _update_readout(&state, PROBE_X, PROBE_Y, true);
-    _set_probe(&state, PROBE_X, PROBE_Y);
-
-    dvz_input_subscribe_pointer(router, _linked_probe_pointer, &state);
-    dvz_view_set_frame_callback(win, _linked_probe_frame, &state);
-
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
+    ok = true;
 cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    return ok;
+}
+
+
+
+/**
+ * Attach native-view input callbacks for the linked probe workflow.
+ *
+ * @param ctx scenario context
+ * @param app native app
+ * @param view native view
+ * @param user scenario state
+ * @return whether setup succeeded
+ */
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)ctx;
+    (void)app;
+    LinkedProbeState* state = (LinkedProbeState*)user;
+    if (state == NULL || view == NULL)
+        return true;
+
+    DvzInputRouter* router = dvz_view_input(view);
+    if (router != NULL)
+        dvz_input_subscribe_pointer(router, _linked_probe_pointer, state);
+    dvz_view_set_frame_callback(view, _linked_probe_frame, state);
+    return true;
+}
+
+
+
+/**
+ * Destroy the linked probe and colorbar workflow scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    LinkedProbeState* state = (LinkedProbeState*)user;
+    if (state == NULL)
+        return;
+    dvz_free(state->derived);
+    dvz_free(state->measurement);
+    dvz_free(state);
+}
+
+
+
+static DvzScenarioSpec _linked_probe_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "linked_panels_probe_colorbar",
+        .title = "linked_probe_colorbar",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .native_view = _scenario_native_view,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/**
+ * Run the linked probe and colorbar workflow through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _linked_probe_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

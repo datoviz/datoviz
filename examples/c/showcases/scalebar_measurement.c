@@ -10,8 +10,8 @@
  * Style: showcase workflow, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c showcases/scalebar_measurement
- * Run:    ./build/examples/c/showcases/scalebar_measurement
- * Smoke:  ./build/examples/c/showcases/scalebar_measurement 1
+ * Run:    ./build/examples/c/showcases/scalebar_measurement --live
+ * Smoke:  ./build/examples/c/showcases/scalebar_measurement --png
  */
 
 
@@ -23,12 +23,13 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -48,6 +49,17 @@
 #define ROTATION_SPEED_RAD_PER_SEC 0.35f
 
 static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct ScalebarMeasurementState
+{
+    DvzExampleVisualSpin specimen_spin;
+} ScalebarMeasurementState;
 
 
 
@@ -527,33 +539,39 @@ static bool _add_3d_cloud(DvzScene* scene, DvzPanel* panel, DvzVisual** out)
 /*************************************************************************************************/
 
 /**
- * Run the scale-aware measurement workflow.
+ * Initialize the scale-aware measurement workflow scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return whether initialization succeeded
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzExampleVisualSpin specimen_spin = {0};
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
+
+    bool ok = false;
+    ScalebarMeasurementState* state =
+        (ScalebarMeasurementState*)calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
+
     uint8_t overview_pixels[OVERVIEW_WIDTH * OVERVIEW_HEIGHT * 4u] = {0};
     uint8_t detail_pixels[DETAIL_WIDTH * DETAIL_HEIGHT * 4u] = {0};
 
     _fill_field_texture(overview_pixels, OVERVIEW_WIDTH, OVERVIEW_HEIGHT, false);
     _fill_field_texture(detail_pixels, DETAIL_WIDTH, DETAIL_HEIGHT, true);
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzGrid* grid = dvz_figure_grid(figure, 2, 2);
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 2, 2);
     EXAMPLE_CHECK(grid != NULL, "dvz_figure_grid() failed");
-    bool ok = dvz_grid_set_margins(
+    ok = dvz_grid_set_margins(
         grid, &(DvzPanelReserve){.left_px = 36.0f, .right_px = 30.0f, .top_px = 24.0f,
                                  .bottom_px = 30.0f});
     EXAMPLE_CHECK(ok, "dvz_grid_set_margins() failed");
@@ -577,18 +595,20 @@ int main(int argc, char** argv)
     ok = _set_domain(detail, 3.10, 5.10, 2.25, 3.65);
     EXAMPLE_CHECK(ok, "_set_domain(detail) failed");
 
-    ok = _add_image(scene, overview, overview_pixels, OVERVIEW_WIDTH, OVERVIEW_HEIGHT, 0.0f, 12.0f,
-                    0.0f, 8.0f);
+    ok = _add_image(
+        ctx->scene, overview, overview_pixels, OVERVIEW_WIDTH, OVERVIEW_HEIGHT, 0.0f, 12.0f,
+        0.0f, 8.0f);
     EXAMPLE_CHECK(ok, "_add_image(overview) failed");
-    ok = _add_image(scene, detail, detail_pixels, DETAIL_WIDTH, DETAIL_HEIGHT, 3.10f, 5.10f,
-                    2.25f, 3.65f);
+    ok = _add_image(
+        ctx->scene, detail, detail_pixels, DETAIL_WIDTH, DETAIL_HEIGHT, 3.10f, 5.10f, 2.25f,
+        3.65f);
     EXAMPLE_CHECK(ok, "_add_image(detail) failed");
-    ok = _add_zoom_box(scene, overview);
+    ok = _add_zoom_box(ctx->scene, overview);
     EXAMPLE_CHECK(ok, "_add_zoom_box() failed");
-    ok = _add_detail_points(scene, detail);
+    ok = _add_detail_points(ctx->scene, detail);
     EXAMPLE_CHECK(ok, "_add_detail_points() failed");
     DvzVisual* specimen_cloud = NULL;
-    ok = _add_3d_cloud(scene, specimen, &specimen_cloud);
+    ok = _add_3d_cloud(ctx->scene, specimen, &specimen_cloud);
     EXAMPLE_CHECK(ok, "_add_3d_cloud() failed");
 
     DvzColor primary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
@@ -604,43 +624,78 @@ int main(int argc, char** argv)
     ok = _add_world_scalebar(specimen);
     EXAMPLE_CHECK(ok, "_add_world_scalebar() failed");
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "scalebar_measurement");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzPanzoom* overview_panzoom = dvz_view_panzoom(win, overview, NULL);
+    DvzPanzoom* overview_panzoom =
+        dvz_scenario_panzoom(ctx, overview, NULL, DVZ_DIM_MASK_XY);
     EXAMPLE_CHECK(overview_panzoom != NULL, "failed to bind overview panzoom controller");
-    DvzPanzoom* detail_panzoom = dvz_view_panzoom(win, detail, NULL);
+    DvzPanzoom* detail_panzoom =
+        dvz_scenario_panzoom(ctx, detail, NULL, DVZ_DIM_MASK_XY);
     EXAMPLE_CHECK(detail_panzoom != NULL, "failed to bind detail panzoom controller");
 
-    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    DvzController* arcball_controller = dvz_arcball(ctx->scene, NULL);
     EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
     DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
     EXAMPLE_CHECK(arcball != NULL, "failed to bind arcball controller");
     EXAMPLE_CHECK(
-        dvz_view_bind_controller(win, specimen, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
-        "dvz_view_bind_controller() failed");
+        dvz_scenario_bind_controller(ctx, specimen, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
+        "dvz_scenario_bind_controller() failed");
     dvz_arcball_set(arcball, (vec3){+0.56f, -0.18f, +0.30f});
 
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
-    dvz_scene_set_fps(scene, 60.0);
     EXAMPLE_CHECK(
         example_visual_spin(
-            scene, specimen_cloud, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-            arcball_controller, &specimen_spin),
+            ctx->scene, specimen_cloud, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            arcball_controller, &state->specimen_spin),
         "example_visual_spin(specimen) failed");
-    example_visual_spin_start(&specimen_spin, 0.0);
+    example_visual_spin_start(&state->specimen_spin, 0.0);
 
-    dvz_app_run(app, example_frame_count(argc, argv));
-    ret = 0;
-
+    ok = true;
 cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    example_visual_spin_destroy(&specimen_spin);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    return ok;
+}
+
+
+
+/**
+ * Destroy the scale-aware measurement workflow scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    ScalebarMeasurementState* state = (ScalebarMeasurementState*)user;
+    if (state == NULL)
+        return;
+    example_visual_spin_destroy(&state->specimen_spin);
+    free(state);
+}
+
+
+
+static DvzScenarioSpec _scalebar_measurement_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "scalebar_measurement_workflow",
+        .title = "scalebar_measurement",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/**
+ * Run the scale-aware measurement workflow through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _scalebar_measurement_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
