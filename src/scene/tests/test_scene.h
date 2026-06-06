@@ -982,6 +982,9 @@ int test_scene_interaction_descriptor_abi_rejects_invalid_structs(
 int test_scene_text_annotation_descriptor_abi_rejects_invalid_structs(
     TstContext* suite, const TstCase* item);
 
+int test_scene_guide_descriptor_abi_rejects_invalid_structs(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_overlay_descriptor_abi_rejects_invalid_structs(
     TstContext* suite, const TstCase* item);
 
@@ -1002,6 +1005,8 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item);
 int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCase* item);
 
 int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* item);
+
+int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstCase* item);
 
 int test_scene_font_defaults(TstContext* suite, const TstCase* item);
 

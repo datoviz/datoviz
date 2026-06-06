@@ -68,6 +68,8 @@
 #define DVZ_SCENE_MAX_TEXTS 128
 #define DVZ_SCENE_MAX_SYMBOL_SETS 64
 #define DVZ_SCENE_MAX_ANNOTATIONS 128
+#define DVZ_SCENE_MAX_GUIDE_LINES 128
+#define DVZ_SCENE_MAX_GUIDE_SPANS 64
 #define DVZ_SCENE_MAX_PANEL_COLORBARS 16
 #define DVZ_SCENE_MAX_PANEL_LEGENDS 16
 #define DVZ_SCENE_MAX_COLORBAR_TICKS 16
@@ -330,6 +332,8 @@ typedef struct DvzFont DvzFont;
 typedef struct DvzText DvzText;
 typedef struct DvzSymbolSet DvzSymbolSet;
 typedef struct DvzAnnotation DvzAnnotation;
+typedef struct DvzGuideLine DvzGuideLine;
+typedef struct DvzGuideSpan DvzGuideSpan;
 typedef struct DvzAxis DvzAxis;
 typedef struct DvzAnimation DvzAnimation;
 typedef struct DvzTextShapedGlyph DvzTextShapedGlyph;
@@ -1197,6 +1201,33 @@ struct DvzAnnotation
 };
 
 
+struct DvzGuideLine
+{
+    DvzScene* scene;
+    DvzPanel* panel;
+    DvzGuideLineDesc desc;
+    bool active;
+    bool dirty;
+    uint64_t version;
+    DvzVisual* line_visual;
+    DvzAnnotation* label;
+};
+
+
+struct DvzGuideSpan
+{
+    DvzScene* scene;
+    DvzPanel* panel;
+    DvzGuideSpanDesc desc;
+    bool active;
+    bool dirty;
+    uint64_t version;
+    DvzVisual* fill_visual;
+    DvzVisual* outline_visual;
+    DvzAnnotation* label;
+};
+
+
 typedef struct DvzPendingQueryRequest DvzPendingQueryRequest;
 typedef struct DvzQueuedQueryResult DvzQueuedQueryResult;
 typedef struct DvzRequestFreshnessScope DvzRequestFreshnessScope;
@@ -1999,6 +2030,12 @@ struct DvzScene
 
     uint32_t annotation_count;
     DvzAnnotation annotations[DVZ_SCENE_MAX_ANNOTATIONS];
+
+    uint32_t guide_line_count;
+    DvzGuideLine guide_lines[DVZ_SCENE_MAX_GUIDE_LINES];
+
+    uint32_t guide_span_count;
+    DvzGuideSpan guide_spans[DVZ_SCENE_MAX_GUIDE_SPANS];
 
     uint32_t pending_query_count;
     DvzPendingQueryRequest pending_queries[DVZ_SCENE_MAX_PENDING_REQUESTS];

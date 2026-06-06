@@ -370,6 +370,49 @@ int test_scene_text_annotation_descriptor_abi_rejects_invalid_structs(
 }
 
 
+int test_scene_guide_descriptor_abi_rejects_invalid_structs(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzGuideLineDesc line = dvz_guide_line_desc();
+    line.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_guide_line(panel, &line) == NULL);
+
+    line = dvz_guide_line_desc();
+    line.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_guide_line(panel, &line) == NULL);
+
+    line = dvz_guide_line_desc();
+    line.value = NAN;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_guide_line(panel, &line) == NULL);
+
+    DvzGuideSpanDesc span = dvz_guide_span_desc();
+    span.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_guide_span(panel, &span) == NULL);
+
+    span = dvz_guide_span_desc();
+    span.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_guide_span(panel, &span) == NULL);
+
+    span = dvz_guide_span_desc();
+    span.min_value = 1.0;
+    span.max_value = 1.0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_guide_span(panel, &span) == NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_overlay_descriptor_abi_rejects_invalid_structs(
     TstContext* suite, const TstCase* item)
 {
@@ -1269,6 +1312,87 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
     dvz_font_destroy(font);
     AT(annotation->scene == NULL);
     AT(font->scene == NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -2.0, 2.0) == 0);
+
+    DvzGuideLineDesc line_desc = dvz_guide_line_desc();
+    line_desc.color = dvz_color_rgba(76, 201, 240, 220);
+    line_desc.stroke_width_px = 3.0f;
+    DvzGuideLine* hline = dvz_hline(panel, 0.5, &line_desc);
+    ANN(hline);
+    AT(scene->guide_line_count == 1);
+    AT(hline->line_visual != NULL);
+    AT(hline->line_visual->type == DVZ_VISUAL_TYPE_SEGMENT);
+
+    DvzGuideSpanDesc span_desc = dvz_guide_span_desc();
+    span_desc.fill_color = dvz_color_rgba(239, 71, 111, 48);
+    span_desc.outline_color = dvz_color_rgba(239, 71, 111, 180);
+    span_desc.outline_width_px = 2.0f;
+    DvzGuideSpan* vspan = dvz_vspan(panel, 2.0, 4.0, &span_desc);
+    ANN(vspan);
+    AT(scene->guide_span_count == 1);
+    AT(vspan->fill_visual != NULL);
+    AT(vspan->fill_visual->type == DVZ_VISUAL_TYPE_PRIMITIVE);
+    AT(vspan->outline_visual != NULL);
+    AT(vspan->outline_visual->type == DVZ_VISUAL_TYPE_SEGMENT);
+
+    _scene_prepare_guide_visuals(figure);
+
+    DvzVisualDataView line_start_view = {0};
+    DvzVisualDataView line_end_view = {0};
+    DvzVisualDataView line_width_view = {0};
+    AT(dvz_visual_data(hline->line_visual, "position_start", &line_start_view) == 0);
+    AT(dvz_visual_data(hline->line_visual, "position_end", &line_end_view) == 0);
+    AT(dvz_visual_data(hline->line_visual, "stroke_width", &line_width_view) == 0);
+    const float* line_start = (const float*)line_start_view.data;
+    const float* line_end = (const float*)line_end_view.data;
+    const float* line_width = (const float*)line_width_view.data;
+    AT(line_start_view.item_count == 1);
+    AC(line_start[0], 0.0f, 1e-6f);
+    AC(line_start[1], 0.5f, 1e-6f);
+    AC(line_end[0], 10.0f, 1e-6f);
+    AC(line_end[1], 0.5f, 1e-6f);
+    AC(line_width[0], 3.0f, 1e-6f);
+
+    DvzVisualDataView fill_position_view = {0};
+    AT(dvz_visual_data(vspan->fill_visual, "position", &fill_position_view) == 0);
+    const float* fill_positions = (const float*)fill_position_view.data;
+    AT(fill_position_view.item_count == 6);
+    AC(fill_positions[0], 2.0f, 1e-6f);
+    AC(fill_positions[1], -2.0f, 1e-6f);
+    AC(fill_positions[3], 4.0f, 1e-6f);
+    AC(fill_positions[4], -2.0f, 1e-6f);
+    AC(fill_positions[6], 4.0f, 1e-6f);
+    AC(fill_positions[7], 2.0f, 1e-6f);
+
+    DvzVisualDataView outline_start_view = {0};
+    DvzVisualDataView outline_end_view = {0};
+    AT(dvz_visual_data(vspan->outline_visual, "position_start", &outline_start_view) == 0);
+    AT(dvz_visual_data(vspan->outline_visual, "position_end", &outline_end_view) == 0);
+    const float* outline_start = (const float*)outline_start_view.data;
+    const float* outline_end = (const float*)outline_end_view.data;
+    AT(outline_start_view.item_count == 4);
+    AC(outline_start[0], 2.0f, 1e-6f);
+    AC(outline_start[1], -2.0f, 1e-6f);
+    AC(outline_end[0], 4.0f, 1e-6f);
+    AC(outline_end[1], -2.0f, 1e-6f);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -3497,6 +3621,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_interaction_core);
     TST_CASE(test_scene_interaction_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_text_annotation_descriptor_abi_rejects_invalid_structs);
+    TST_CASE(test_scene_guide_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_overlay_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_item_interaction_defaults_and_lifetime);
     TST_CASE(test_scene_item_interaction_input_queries);
@@ -3507,6 +3632,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_overlay_card_public_api);
     TST_CASE(test_scene_overlay_card_rich_text_public_api);
     TST_CASE(test_scene_text_annotation_bookkeeping);
+    TST_CASE(test_scene_guide_line_and_span_prepare_visuals);
     TST_CASE(test_scene_scalebar_formatting);
     TST_CASE(test_scene_units_formatting_core);
     TST_CASE(test_scene_scalebar_2d_realization);

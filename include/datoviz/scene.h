@@ -32,6 +32,7 @@
 #include "scene/orbit_camera.h"
 #include "scene/overlay.h"
 #include "scene/panzoom.h"
+#include "scene/plot.h"
 #include "scene/scale.h"
 #include "scene/text.h"
 #include "scene/turntable.h"
