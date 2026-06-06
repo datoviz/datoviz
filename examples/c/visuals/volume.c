@@ -9,11 +9,10 @@
  * Scenario: visual.volume
  * Style: visuals, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just volume
- * Run:    ./build/examples/c/visuals/volume
- * Smoke:  ./build/examples/c/visuals/volume 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/visuals/volume 90
- * Video:  DVZ_CAPTURE=mp4 ./build/examples/c/visuals/volume 360
+ * Build:  just example-c visuals/volume
+ * Run:    ./build/examples/c/visuals/volume --live
+ * Smoke:  ./build/examples/c/visuals/volume --png
+ * Video:  ./build/examples/c/visuals/volume --offscreen-record 360
  */
 
 
@@ -25,15 +24,14 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -49,6 +47,18 @@
 #define ROTATION_SPEED_RAD_PER_SEC 0.16f
 
 static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct VolumeState
+{
+    DvzExampleVisualSpin volume_spin;
+    DvzExampleVisualSpin box_spin;
+} VolumeState;
 
 
 
@@ -342,38 +352,52 @@ static bool _add_boundary_box(DvzScene* scene, DvzPanel* panel, DvzVisual** out)
 
 
 
+/**
+ * Destroy the retained volume visual scenario state.
+ *
+ * @param state scenario state
+ */
+static void _volume_state_destroy(VolumeState* state)
+{
+    if (state == NULL)
+        return;
+    example_visual_spin_destroy(&state->box_spin);
+    example_visual_spin_destroy(&state->volume_spin);
+    dvz_free(state);
+}
+
+
+
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the retained volume visual example.
+ * Initialize the retained volume visual scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return whether initialization succeeded
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("visual_volume");
-    const bool video_enabled = (capture.flags & DVZ_APP_CAPTURE_VIDEO) != 0;
-
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
     uint8_t* data = NULL;
-    DvzView* win = NULL;
-    DvzExampleVisualSpin volume_spin = {0};
-    DvzExampleVisualSpin box_spin = {0};
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    bool ok = false;
+    VolumeState* state = (VolumeState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
 
-    DvzPanel* panel = dvz_panel_full(figure);
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
@@ -386,7 +410,7 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.66f;
     camera_desc.near = 0.05f;
     camera_desc.far = 100.0f;
-    bool ok = dvz_panel_set_camera(panel, &camera_desc);
+    ok = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
     const uint64_t bytes = (uint64_t)FIELD_SIZE * FIELD_SIZE * FIELD_SIZE;
@@ -395,7 +419,7 @@ int main(int argc, char** argv)
     _fill_volume(data, FIELD_SIZE);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        ctx->scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -413,64 +437,98 @@ int main(int argc, char** argv)
     dvz_free(data);
     data = NULL;
 
-    DvzVisual* volume = dvz_volume(scene, 0);
+    DvzVisual* volume = dvz_volume(ctx->scene, 0);
     EXAMPLE_CHECK(volume != NULL, "dvz_volume() failed");
     ok = dvz_visual_set_field(volume, "field", field);
     EXAMPLE_CHECK(ok, "dvz_visual_set_field() failed");
     ok = _configure_volume(volume);
     EXAMPLE_CHECK(ok, "volume configuration failed");
-    ok = _attach_transfer(scene, volume);
+    ok = _attach_transfer(ctx->scene, volume);
     EXAMPLE_CHECK(ok, "volume transfer setup failed");
 
     int rc = dvz_panel_add_visual(panel, volume, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
     DvzVisual* box = NULL;
-    ok = _add_boundary_box(scene, panel, &box);
+    ok = _add_boundary_box(ctx->scene, panel, &box);
     EXAMPLE_CHECK(ok, "boundary box setup failed");
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_volume");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    DvzController* arcball_controller = dvz_arcball(ctx->scene, NULL);
     EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
     DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     EXAMPLE_CHECK(
-        dvz_view_bind_controller(win, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
-        "dvz_view_bind_controller() failed");
+        dvz_scenario_bind_controller(ctx, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
+        "dvz_scenario_bind_controller() failed");
     dvz_arcball_set(arcball, (vec3){+0.50f, -0.10f, +0.24f});
-
-    dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);
-    dvz_scene_set_fps(scene, 60.0);
 
     EXAMPLE_CHECK(
         example_visual_spin(
-            scene, volume, (vec3){0.0f, 0.0f, 1.0f}, ROTATION_SPEED_RAD_PER_SEC,
-            arcball_controller, &volume_spin),
+            ctx->scene, volume, (vec3){0.0f, 0.0f, 1.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            arcball_controller, &state->volume_spin),
         "example_visual_spin(volume) failed");
     EXAMPLE_CHECK(
         example_visual_spin(
-            scene, box, (vec3){0.0f, 0.0f, 1.0f}, ROTATION_SPEED_RAD_PER_SEC,
-            arcball_controller, &box_spin),
+            ctx->scene, box, (vec3){0.0f, 0.0f, 1.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            arcball_controller, &state->box_spin),
         "example_visual_spin(box) failed");
-    example_visual_spin_start(&volume_spin, 0.0);
-    example_visual_spin_start(&box_spin, 0.0);
+    example_visual_spin_start(&state->volume_spin, 0.0);
+    example_visual_spin_start(&state->box_spin, 0.0);
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
+    ok = true;
 cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    example_visual_spin_destroy(&box_spin);
-    example_visual_spin_destroy(&volume_spin);
     dvz_free(data);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    return ok;
+}
+
+
+
+/**
+ * Destroy the retained volume visual scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    _volume_state_destroy((VolumeState*)user);
+}
+
+
+
+/**
+ * Return the retained volume visual scenario.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _volume_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "volume",
+        .title = "visual_volume",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the retained volume visual through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _volume_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

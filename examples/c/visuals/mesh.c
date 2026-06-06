@@ -10,9 +10,8 @@
  * Style: visuals, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c visuals/mesh
- * Run:    ./build/examples/c/visuals/mesh
- * Smoke:  ./build/examples/c/visuals/mesh 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/visuals/mesh 1
+ * Run:    ./build/examples/c/visuals/mesh --live
+ * Smoke:  ./build/examples/c/visuals/mesh --png
  */
 
 
@@ -23,12 +22,13 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
-#include "datoviz/app.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -73,35 +73,42 @@ static bool _add_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geomet
 
 
 
+typedef struct MeshState
+{
+    DvzGeometry* geometry;
+} MeshState;
+
+
+
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
 /**
- * Run the retained lit indexed mesh visual example.
+ * Initialize the retained lit indexed mesh visual scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return whether initialization succeeded
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("visual_mesh");
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
-    DvzGeometry* geometry = NULL;
+    bool ok = false;
+    MeshState* state = (MeshState*)calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
@@ -116,34 +123,76 @@ int main(int argc, char** argv)
     camera_desc.far = 100.0f;
     EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
 
-    EXAMPLE_CHECK(_add_mesh(scene, panel, &geometry), "mesh visual setup failed");
+    EXAMPLE_CHECK(_add_mesh(ctx->scene, panel, &state->geometry), "mesh visual setup failed");
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_mesh");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    DvzController* arcball_controller = dvz_arcball(ctx->scene, NULL);
     EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
     DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     EXAMPLE_CHECK(
-        dvz_view_bind_controller(win, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
-        "dvz_view_bind_controller() failed");
+        dvz_scenario_bind_controller(ctx, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
+        "dvz_scenario_bind_controller() failed");
     dvz_arcball_set(arcball, (vec3){+0.60f, -0.10f, +0.28f});
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
+    ok = true;
 cleanup:
-    if (geometry != NULL)
-        dvz_geometry_destroy(geometry);
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    return ok;
+}
+
+
+
+/**
+ * Destroy the retained lit indexed mesh visual scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    MeshState* state = (MeshState*)user;
+    if (state == NULL)
+        return;
+    if (state->geometry != NULL)
+        dvz_geometry_destroy(state->geometry);
+    free(state);
+}
+
+
+
+/**
+ * Return the retained lit indexed mesh visual scenario.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _mesh_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "visual_mesh",
+        .title = "visual_mesh",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the retained lit indexed mesh visual through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _mesh_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

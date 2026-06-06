@@ -10,9 +10,8 @@
  * Style: visuals, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c visuals/sphere
- * Run:    ./build/examples/c/visuals/sphere
- * Smoke:  ./build/examples/c/visuals/sphere 1
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/visuals/sphere 1
+ * Run:    ./build/examples/c/visuals/sphere --live
+ * Smoke:  ./build/examples/c/visuals/sphere --png
  */
 
 
@@ -26,10 +25,10 @@
 #include <stdint.h>
 
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -129,34 +128,25 @@ static bool _add_spheres(DvzScene* scene, DvzPanel* panel)
 
 
 
-/*************************************************************************************************/
-/*  Functions                                                                                    */
-/*************************************************************************************************/
-
 /**
- * Run the retained sphere visual example.
+ * Initialize the retained sphere visual scenario.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return whether initialization succeeded
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    const uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("visual_sphere");
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    DvzView* win = NULL;
+    bool ok = false;
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzPanel* panel = dvz_panel_full(figure);
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
@@ -171,37 +161,61 @@ int main(int argc, char** argv)
     camera_desc.far = 100.0f;
     EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
 
-    EXAMPLE_CHECK(_add_spheres(scene, panel), "sphere visual setup failed");
+    EXAMPLE_CHECK(_add_spheres(ctx->scene, panel), "sphere visual setup failed");
 
     DvzMsaaDesc msaa_desc = dvz_msaa_desc();
     msaa_desc.sample_count = 8;
     msaa_desc.alpha_to_coverage = true;
     (void)dvz_panel_set_msaa(panel, &msaa_desc);
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "visual_sphere");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    DvzController* arcball_controller = dvz_arcball(ctx->scene, NULL);
     EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
     DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     EXAMPLE_CHECK(
-        dvz_view_bind_controller(win, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
-        "dvz_view_bind_controller() failed");
+        dvz_scenario_bind_controller(ctx, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
+        "dvz_scenario_bind_controller() failed");
     dvz_arcball_set(arcball, (vec3){+0.55f, -0.18f, +0.22f});
 
-    EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
-
+    ok = true;
 cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    return ok;
+}
+
+
+
+/**
+ * Return the retained sphere visual scenario.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _sphere_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "sphere_impostor",
+        .title = "visual_sphere",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the retained sphere visual through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _sphere_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
