@@ -86,6 +86,7 @@ typedef struct DvzAnnotation        DvzAnnotation;
 typedef struct DvzAnnotation        DvzScaleBar;
 typedef struct DvzGuideLine         DvzGuideLine;
 typedef struct DvzGuideSpan         DvzGuideSpan;
+typedef struct DvzBars              DvzBars;
 typedef struct DvzAxis              DvzAxis;
 typedef struct DvzUnitLadder        DvzUnitLadder;
 typedef struct DvzUnits             DvzUnits;
@@ -359,6 +360,28 @@ struct DvzGuideSpanDesc
     const char* label;
 };
 typedef struct DvzGuideSpanDesc DvzGuideSpanDesc;
+
+
+typedef enum
+{
+    DVZ_BARS_ORIENTATION_VERTICAL = 0,
+    DVZ_BARS_ORIENTATION_HORIZONTAL = 1,
+} DvzBarsOrientation;
+
+
+struct DvzBarsDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzBarsOrientation orientation;
+    double baseline;
+    float gap_fraction;
+    DvzColor fill_color;
+    DvzColor outline_color;
+    float outline_width_px;
+    int32_t z_layer;
+};
+typedef struct DvzBarsDesc DvzBarsDesc;
 
 
 struct DvzPanelBorderDesc

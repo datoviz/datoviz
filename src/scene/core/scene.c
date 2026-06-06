@@ -217,6 +217,8 @@ void dvz_scene_destroy(DvzScene* scene)
         _scene_polygon_reset(&scene->polygons[i]);
     for (uint32_t i = 0; i < scene->graph_count; i++)
         _scene_graph_reset(&scene->graphs[i]);
+    for (uint32_t i = 0; i < scene->bars_count; i++)
+        _scene_bars_reset(&scene->bars[i]);
     for (uint32_t i = 0; i < scene->visual_count; i++)
         _scene_visual_reset(&scene->visuals[i], true);
     for (uint32_t i = 0; i < scene->scale_count; i++)

@@ -413,6 +413,49 @@ int test_scene_guide_descriptor_abi_rejects_invalid_structs(
 }
 
 
+int test_scene_bars_descriptor_and_data_validation(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzBarsDesc desc = dvz_bars_desc();
+    desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars(panel, &desc) == NULL);
+
+    desc = dvz_bars_desc();
+    desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars(panel, &desc) == NULL);
+
+    desc = dvz_bars_desc();
+    desc.gap_fraction = 1.0f;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars(panel, &desc) == NULL);
+
+    desc = dvz_bars_desc();
+    desc.outline_width_px = NAN;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars(panel, &desc) == NULL);
+
+    DvzBars* bars = dvz_bars(panel, NULL);
+    ANN(bars);
+    double starts[] = {0.0};
+    double ends[] = {1.0};
+    double values[] = {2.0};
+    AT(dvz_bars_set_intervals(bars, 1, starts, ends, values) == 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars_set_intervals(bars, 1, NULL, ends, values) < 0);
+    ends[0] = starts[0];
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars_set_intervals(bars, 1, starts, ends, values) < 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_overlay_descriptor_abi_rejects_invalid_structs(
     TstContext* suite, const TstCase* item)
 {
@@ -1393,6 +1436,102 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     AC(outline_start[1], -2.0f, 1e-6f);
     AC(outline_end[0], 4.0f, 1e-6f);
     AC(outline_end[1], -2.0f, 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_bars_prepare_visuals(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzBarsDesc desc = dvz_bars_desc();
+    desc.fill_color = dvz_color_rgba(76, 201, 240, 180);
+    desc.outline_color = dvz_color_rgba(30, 30, 36, 220);
+    desc.outline_width_px = 1.5f;
+    DvzBars* bars = dvz_bars(panel, &desc);
+    ANN(bars);
+    AT(scene->bars_count == 1);
+    AT(bars->fill_visual != NULL);
+    AT(bars->fill_visual->type == DVZ_VISUAL_TYPE_PRIMITIVE);
+    AT(bars->outline_visual != NULL);
+    AT(bars->outline_visual->type == DVZ_VISUAL_TYPE_SEGMENT);
+
+    const double starts[] = {0.0, 1.0};
+    const double ends[] = {1.0, 2.0};
+    const double values[] = {2.0, -1.0};
+    AT(dvz_bars_set_intervals(bars, 2, starts, ends, values) == 0);
+
+    DvzBarsDesc horizontal_desc = dvz_bars_desc();
+    horizontal_desc.orientation = DVZ_BARS_ORIENTATION_HORIZONTAL;
+    horizontal_desc.baseline = -1.0;
+    horizontal_desc.gap_fraction = 0.2f;
+    horizontal_desc.fill_color = dvz_color_rgba(239, 71, 111, 160);
+    DvzBars* horizontal = dvz_bars(panel, &horizontal_desc);
+    ANN(horizontal);
+    const double hstarts[] = {0.0};
+    const double hends[] = {10.0};
+    const double hvalues[] = {3.0};
+    AT(dvz_bars_set_intervals(horizontal, 1, hstarts, hends, hvalues) == 0);
+
+    _scene_prepare_bars_visuals(figure);
+
+    DvzVisualDataView fill_position_view = {0};
+    AT(dvz_visual_data(bars->fill_visual, "position", &fill_position_view) == 0);
+    const float* fill_positions = (const float*)fill_position_view.data;
+    AT(fill_position_view.item_count == 12);
+    AC(fill_positions[0], 0.0f, 1e-6f);
+    AC(fill_positions[1], 0.0f, 1e-6f);
+    AC(fill_positions[3], 1.0f, 1e-6f);
+    AC(fill_positions[4], 0.0f, 1e-6f);
+    AC(fill_positions[6], 1.0f, 1e-6f);
+    AC(fill_positions[7], 2.0f, 1e-6f);
+    AC(fill_positions[9], 0.0f, 1e-6f);
+    AC(fill_positions[10], 0.0f, 1e-6f);
+    AC(fill_positions[12], 1.0f, 1e-6f);
+    AC(fill_positions[13], 2.0f, 1e-6f);
+    AC(fill_positions[15], 0.0f, 1e-6f);
+    AC(fill_positions[16], 2.0f, 1e-6f);
+    AC(fill_positions[18], 1.0f, 1e-6f);
+    AC(fill_positions[19], 0.0f, 1e-6f);
+    AC(fill_positions[24], 2.0f, 1e-6f);
+    AC(fill_positions[25], -1.0f, 1e-6f);
+
+    DvzVisualDataView outline_start_view = {0};
+    DvzVisualDataView outline_end_view = {0};
+    DvzVisualDataView outline_width_view = {0};
+    AT(dvz_visual_data(bars->outline_visual, "position_start", &outline_start_view) == 0);
+    AT(dvz_visual_data(bars->outline_visual, "position_end", &outline_end_view) == 0);
+    AT(dvz_visual_data(bars->outline_visual, "stroke_width", &outline_width_view) == 0);
+    const float* outline_start = (const float*)outline_start_view.data;
+    const float* outline_end = (const float*)outline_end_view.data;
+    const float* outline_width = (const float*)outline_width_view.data;
+    AT(outline_start_view.item_count == 8);
+    AC(outline_start[0], 0.0f, 1e-6f);
+    AC(outline_start[1], 0.0f, 1e-6f);
+    AC(outline_end[0], 1.0f, 1e-6f);
+    AC(outline_end[1], 0.0f, 1e-6f);
+    AC(outline_width[0], 1.5f, 1e-6f);
+
+    DvzVisualDataView horizontal_position_view = {0};
+    AT(dvz_visual_data(horizontal->fill_visual, "position", &horizontal_position_view) == 0);
+    const float* horizontal_positions = (const float*)horizontal_position_view.data;
+    AT(horizontal_position_view.item_count == 6);
+    AC(horizontal_positions[0], -1.0f, 1e-6f);
+    AC(horizontal_positions[1], 1.0f, 1e-6f);
+    AC(horizontal_positions[3], 3.0f, 1e-6f);
+    AC(horizontal_positions[4], 1.0f, 1e-6f);
+    AC(horizontal_positions[6], 3.0f, 1e-6f);
+    AC(horizontal_positions[7], 9.0f, 1e-6f);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -3622,6 +3761,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_interaction_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_text_annotation_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_guide_descriptor_abi_rejects_invalid_structs);
+    TST_CASE(test_scene_bars_descriptor_and_data_validation);
     TST_CASE(test_scene_overlay_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_item_interaction_defaults_and_lifetime);
     TST_CASE(test_scene_item_interaction_input_queries);
@@ -3633,6 +3773,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_overlay_card_rich_text_public_api);
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_guide_line_and_span_prepare_visuals);
+    TST_CASE(test_scene_bars_prepare_visuals);
     TST_CASE(test_scene_scalebar_formatting);
     TST_CASE(test_scene_units_formatting_core);
     TST_CASE(test_scene_scalebar_2d_realization);

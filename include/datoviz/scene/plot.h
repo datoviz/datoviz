@@ -44,6 +44,14 @@ DVZ_EXPORT DvzGuideSpanDesc dvz_guide_span_desc(void);
 
 
 /**
+ * Return the default bars descriptor.
+ *
+ * @return default bars descriptor
+ */
+DVZ_EXPORT DvzBarsDesc dvz_bars_desc(void);
+
+
+/**
  * Create a retained guide line attached to one panel.
  *
  * @param panel the panel
@@ -109,6 +117,35 @@ dvz_hspan(DvzPanel* panel, double y0, double y1, const DvzGuideSpanDesc* desc);
  */
 DVZ_EXPORT DvzGuideSpan*
 dvz_vspan(DvzPanel* panel, double x0, double x1, const DvzGuideSpanDesc* desc);
+
+
+/**
+ * Create a retained explicit-interval bar series attached to one panel.
+ *
+ * @param panel the panel
+ * @param desc optional bars descriptor; NULL uses defaults
+ * @return the bars object, or NULL on validation/allocation error
+ */
+DVZ_EXPORT DvzBars* dvz_bars(DvzPanel* panel, const DvzBarsDesc* desc);
+
+
+/**
+ * Set explicit bar intervals and values.
+ *
+ * For vertical bars, starts/ends are X interval edges and values are Y values from the baseline.
+ * For horizontal bars, starts/ends are Y interval edges and values are X values from the baseline.
+ * Arrays are copied into scene-owned storage.
+ *
+ * @param bars the bars object
+ * @param count number of bars
+ * @param starts interval start values
+ * @param ends interval end values
+ * @param values bar terminal values
+ * @return 0 on success, -1 on validation/allocation error
+ */
+DVZ_EXPORT int dvz_bars_set_intervals(
+    DvzBars* bars, uint32_t count, const double* starts, const double* ends,
+    const double* values);
 
 
 EXTERN_C_OFF

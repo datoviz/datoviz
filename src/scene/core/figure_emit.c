@@ -649,6 +649,7 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
         (void)_scene_panel_sync_fly_pivot_marker(&figure->panels[pi]);
     _scene_prepare_guide_visuals(figure);
+    _scene_prepare_bars_visuals(figure);
 
     DvzFramePlan* plan = dvz_frame_plan(figure_id, 0);
     if (plan == NULL)

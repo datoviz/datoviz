@@ -70,6 +70,7 @@
 #define DVZ_SCENE_MAX_ANNOTATIONS 128
 #define DVZ_SCENE_MAX_GUIDE_LINES 128
 #define DVZ_SCENE_MAX_GUIDE_SPANS 64
+#define DVZ_SCENE_MAX_BARS 64
 #define DVZ_SCENE_MAX_PANEL_COLORBARS 16
 #define DVZ_SCENE_MAX_PANEL_LEGENDS 16
 #define DVZ_SCENE_MAX_COLORBAR_TICKS 16
@@ -334,6 +335,7 @@ typedef struct DvzSymbolSet DvzSymbolSet;
 typedef struct DvzAnnotation DvzAnnotation;
 typedef struct DvzGuideLine DvzGuideLine;
 typedef struct DvzGuideSpan DvzGuideSpan;
+typedef struct DvzBars DvzBars;
 typedef struct DvzAxis DvzAxis;
 typedef struct DvzAnimation DvzAnimation;
 typedef struct DvzTextShapedGlyph DvzTextShapedGlyph;
@@ -841,6 +843,7 @@ void _scene_controller_destroy(DvzController* controller);
 bool _scene_panel_sync_fly_pivot_marker(DvzPanel* panel);
 bool _scene_panel_refresh_border(DvzPanel* panel);
 int _scene_panel_apply_domain_fit(DvzPanel* panel);
+void _scene_bars_reset(DvzBars* bars);
 
 bool _dvz_figure_fly_update(DvzFigure* figure, double dt);
 
@@ -1225,6 +1228,23 @@ struct DvzGuideSpan
     DvzVisual* fill_visual;
     DvzVisual* outline_visual;
     DvzAnnotation* label;
+};
+
+
+struct DvzBars
+{
+    DvzScene* scene;
+    DvzPanel* panel;
+    DvzBarsDesc desc;
+    bool active;
+    bool dirty;
+    uint64_t version;
+    double* starts;
+    double* ends;
+    double* values;
+    uint32_t count;
+    DvzVisual* fill_visual;
+    DvzVisual* outline_visual;
 };
 
 
@@ -2036,6 +2056,9 @@ struct DvzScene
 
     uint32_t guide_span_count;
     DvzGuideSpan guide_spans[DVZ_SCENE_MAX_GUIDE_SPANS];
+
+    uint32_t bars_count;
+    DvzBars bars[DVZ_SCENE_MAX_BARS];
 
     uint32_t pending_query_count;
     DvzPendingQueryRequest pending_queries[DVZ_SCENE_MAX_PENDING_REQUESTS];
