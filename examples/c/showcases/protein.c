@@ -38,17 +38,14 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
-#include "example_debug.h"
-#include "example_gui_controls.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -80,21 +77,14 @@ typedef struct ProteinAtoms
 } ProteinAtoms;
 
 
-typedef struct ProteinArgs
+typedef struct ProteinState
 {
-    const char* bundle_path;
-    const char* frame_arg;
-    bool spin;
-} ProteinArgs;
-
-
-typedef struct ProteinDiagnostics
-{
-    DvzPanel* panel;
-    DvzExampleGuiEdlControls edl;
-    DvzExampleGuiMsaaControls msaa;
-    DvzExampleGuiSsaoControls ssao;
-} ProteinDiagnostics;
+    ProteinAtoms atoms;
+    float* scaled_radii;
+    DvzExampleVisualSpin sphere_spin;
+    DvzExampleVisualSpin selection_spin;
+    DvzExampleVisualSpin crosshair_spin;
+} ProteinState;
 
 
 
@@ -220,69 +210,6 @@ static bool _default_bundle_path(char* out, size_t out_size)
         return true;
     int n = dvz_snprintf(out, out_size, "%s", DEFAULT_BUNDLE_PATH);
     return n > 0 && (size_t)n < out_size;
-}
-
-
-
-/**
- * Return whether text is a non-empty unsigned integer.
- *
- * @param text candidate text
- * @return true when text contains only digits
- */
-static bool _is_uint_text(const char* text)
-{
-    if (text == NULL || text[0] == '\0')
-        return false;
-    for (size_t i = 0; text[i] != '\0'; i++)
-    {
-        if (!isdigit((unsigned char)text[i]))
-            return false;
-    }
-    return true;
-}
-
-
-
-/**
- * Parse showcase arguments.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return parsed arguments
- */
-static ProteinArgs _parse_args(int argc, char** argv)
-{
-    ProteinArgs args = {0};
-    for (int i = 1; i < argc; i++)
-    {
-        const char* arg = argv[i];
-        if (strcmp(arg, "--spin") == 0)
-        {
-            args.spin = true;
-        }
-        else if (example_debug_arg(arg))
-        {
-            continue;
-        }
-        else if (args.bundle_path == NULL && args.frame_arg == NULL && _is_uint_text(arg))
-        {
-            args.frame_arg = arg;
-        }
-        else if (args.bundle_path == NULL)
-        {
-            args.bundle_path = arg;
-        }
-        else if (args.frame_arg == NULL)
-        {
-            args.frame_arg = arg;
-        }
-        else
-        {
-            dvz_fprintf(stderr, "warning: ignoring extra argument '%s'\n", arg);
-        }
-    }
-    return args;
 }
 
 
@@ -514,199 +441,6 @@ static bool _upload_selection(
 
 
 /**
- * Snap an MSAA sample-count slider value to a supported sample count.
- *
- * @param value slider value
- * @return supported MSAA sample count
- */
-static uint32_t _snap_msaa_samples(float value)
-{
-    if (value <= 2.0f)
-        return 2;
-    if (value <= 4.0f)
-        return 4;
-    if (value <= 8.0f)
-        return 8;
-    return 16;
-}
-
-
-
-/**
- * Apply the diagnostics EDL state to the protein panel.
- *
- * @param diagnostics diagnostics state
- */
-static void _protein_apply_edl(ProteinDiagnostics* diagnostics)
-{
-    ANN(diagnostics);
-    ANN(diagnostics->panel);
-    if (!diagnostics->edl.enabled)
-    {
-        (void)dvz_panel_set_edl(diagnostics->panel, NULL);
-        return;
-    }
-
-    DvzEdlDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc),
-        .radius = diagnostics->edl.radius,
-        .strength = diagnostics->edl.strength,
-        .depth_scale = diagnostics->edl.depth_scale,
-    };
-    if (!dvz_panel_set_edl(diagnostics->panel, &desc))
-        dvz_fprintf(stderr, "dvz_panel_set_edl() failed\n");
-}
-
-
-
-/**
- * Apply the diagnostics MSAA state to the protein panel.
- *
- * @param diagnostics diagnostics state
- */
-static void _protein_apply_msaa(ProteinDiagnostics* diagnostics)
-{
-    ANN(diagnostics);
-    ANN(diagnostics->panel);
-    if (!diagnostics->msaa.enabled)
-    {
-        (void)dvz_panel_set_msaa(diagnostics->panel, NULL);
-        return;
-    }
-
-    uint32_t sample_count = _snap_msaa_samples(diagnostics->msaa.samples);
-    diagnostics->msaa.samples = (float)sample_count;
-    DvzMsaaDesc desc = dvz_msaa_desc();
-    desc.sample_count = sample_count;
-    desc.alpha_to_coverage = diagnostics->msaa.alpha_to_coverage;
-    if (!dvz_panel_set_msaa(diagnostics->panel, &desc))
-        dvz_fprintf(stderr, "dvz_panel_set_msaa() failed\n");
-}
-
-
-
-/**
- * Apply the diagnostics SSAO state to the protein panel.
- *
- * @param diagnostics diagnostics state
- */
-static void _protein_apply_ssao(ProteinDiagnostics* diagnostics)
-{
-    ANN(diagnostics);
-    ANN(diagnostics->panel);
-    if (!diagnostics->ssao.enabled)
-    {
-        (void)dvz_panel_set_ssao(diagnostics->panel, NULL);
-        return;
-    }
-
-    DvzSsaoDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzSsaoDesc),
-        .radius = diagnostics->ssao.radius,
-        .strength = diagnostics->ssao.strength,
-        .bias = diagnostics->ssao.bias,
-        .power = diagnostics->ssao.power,
-        .min_visibility = diagnostics->ssao.min_visibility,
-        .blur_radius = diagnostics->ssao.blur_radius,
-        .blur_depth_sigma = diagnostics->ssao.blur_depth_sigma,
-        .blur_normal_sigma = diagnostics->ssao.blur_normal_sigma,
-        .sample_count = (uint32_t)(diagnostics->ssao.samples + 0.5f),
-        .blur_enabled = diagnostics->ssao.blur,
-        .debug_view = diagnostics->ssao.debug_view,
-    };
-    if (!dvz_panel_set_ssao(diagnostics->panel, &desc))
-        dvz_fprintf(stderr, "dvz_panel_set_ssao() failed\n");
-}
-
-
-
-/**
- * Return initial diagnostics controls matching the showcase defaults.
- *
- * @param panel protein panel
- * @param msaa initial MSAA descriptor
- * @param ssao initial SSAO descriptor
- * @return initialized diagnostics state
- */
-static ProteinDiagnostics
-_protein_diagnostics(DvzPanel* panel, const DvzMsaaDesc* msaa, const DvzSsaoDesc* ssao)
-{
-    ANN(panel);
-    ANN(msaa);
-    ANN(ssao);
-    return (ProteinDiagnostics){
-        .panel = panel,
-        .edl =
-            {
-                .enabled = false,
-                .radius = 2.0f,
-                .strength = 55.0f,
-                .depth_scale = 1.0f,
-            },
-        .msaa =
-            {
-                .enabled = msaa->enabled,
-                .alpha_to_coverage = msaa->alpha_to_coverage,
-                .samples = (float)msaa->sample_count,
-                .min_samples = 2.0f,
-                .max_samples = 16.0f,
-            },
-        .ssao =
-            {
-                .enabled = true,
-                .blur = ssao->blur_enabled,
-                .debug_view = ssao->debug_view,
-                .show_blur_sigmas = true,
-                .show_debug_view = true,
-                .radius = ssao->radius,
-                .strength = ssao->strength,
-                .bias = ssao->bias,
-                .power = ssao->power,
-                .min_visibility = ssao->min_visibility,
-                .samples = (float)ssao->sample_count,
-                .min_samples = 4.0f,
-                .max_samples = 32.0f,
-                .blur_radius = ssao->blur_radius,
-                .blur_radius_max = 16.0f,
-                .blur_depth_sigma = ssao->blur_depth_sigma,
-                .blur_normal_sigma = ssao->blur_normal_sigma,
-            },
-    };
-}
-
-
-
-/**
- * Draw the optional protein diagnostics GUI.
- *
- * @param gui GUI overlay
- * @param win view
- * @param user_data ProteinDiagnostics pointer
- */
-static void _protein_diagnostics_gui(DvzGui* gui, DvzView* win, void* user_data)
-{
-    ANN(gui);
-    (void)win;
-    ProteinDiagnostics* diagnostics = (ProteinDiagnostics*)user_data;
-    if (diagnostics == NULL)
-        return;
-
-    if (dvz_gui_begin(gui, "Protein diagnostics", NULL, 0))
-    {
-        dvz_gui_separator_text(gui, "Post-processing");
-        if (dvz_example_gui_edl(gui, &diagnostics->edl))
-            _protein_apply_edl(diagnostics);
-        dvz_gui_separator_text(gui, "Antialiasing");
-        if (dvz_example_gui_msaa(gui, &diagnostics->msaa))
-            _protein_apply_msaa(diagnostics);
-        dvz_gui_separator_text(gui, "SSAO");
-        if (dvz_example_gui_ssao(gui, &diagnostics->ssao))
-            _protein_apply_ssao(diagnostics);
-    }
-    dvz_gui_end(gui);
-}
-
-
-
-/**
  * Print a short message explaining how to create the default bundle.
  *
  * @param path expected bundle path
@@ -725,52 +459,43 @@ static void _print_prepare_hint(const char* path)
 /*************************************************************************************************/
 
 /**
- * Run the protein gallery showcase.
+ * Initialize the protein gallery showcase.
  *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return whether initialization succeeded
  */
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    int status = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    float* scaled_radii = NULL;
-    ExampleDebug debug = {0};
-    ProteinDiagnostics diagnostics = {0};
-    DvzExampleVisualSpin sphere_spin = {0};
-    DvzExampleVisualSpin selection_spin = {0};
-    DvzExampleVisualSpin crosshair_spin = {0};
-    ProteinAtoms atoms = {0};
-    char default_path[1024] = {0};
-    ProteinArgs args = _parse_args(argc, argv);
-    const char* bundle_path = args.bundle_path;
-    if (bundle_path == NULL)
-    {
-        if (!_default_bundle_path(default_path, sizeof(default_path)))
-        {
-            dvz_fprintf(stderr, "HOME is not set; pass a protein bundle path explicitly\n");
-            return 1;
-        }
-        bundle_path = default_path;
-    }
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    if (!_protein_atoms_load(bundle_path, &atoms))
+    bool ok = false;
+    ProteinState* state = (ProteinState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
+
+    char bundle_path[1024] = {0};
+    EXAMPLE_CHECK(
+        _default_bundle_path(bundle_path, sizeof(bundle_path)),
+        "HOME is not set; cannot resolve the default protein bundle path");
+
+    if (!_protein_atoms_load(bundle_path, &state->atoms))
     {
         _print_prepare_hint(bundle_path);
         goto cleanup;
     }
 
-    scaled_radii = _scaled_radii(&atoms, DEFAULT_ATOM_SCALE);
-    EXAMPLE_CHECK(scaled_radii != NULL, "failed to allocate scaled radii");
+    state->scaled_radii = _scaled_radii(&state->atoms, DEFAULT_ATOM_SCALE);
+    EXAMPLE_CHECK(state->scaled_radii != NULL, "failed to allocate scaled radii");
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    DvzPanel* panel = dvz_panel_full(figure);
-    EXAMPLE_CHECK(figure != NULL && panel != NULL, "scene setup failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
+    EXAMPLE_CHECK(ctx->figure != NULL && panel != NULL, "scene setup failed");
     example_graphite_cyan_set_panel_background(panel);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
@@ -784,9 +509,9 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(
         dvz_panel_set_camera(panel, &camera_desc) != NULL, "dvz_panel_set_camera() failed");
 
-    DvzVisual* spheres = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
-    DvzVisual* selection = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
-    DvzVisual* crosshair = dvz_segment(scene, 0);
+    DvzVisual* spheres = dvz_sphere(ctx->scene, DVZ_SPHERE_FLAGS_LIGHTING);
+    DvzVisual* selection = dvz_sphere(ctx->scene, DVZ_SPHERE_FLAGS_LIGHTING);
+    DvzVisual* crosshair = dvz_segment(ctx->scene, 0);
     EXAMPLE_CHECK(
         spheres != NULL && selection != NULL && crosshair != NULL, "visual creation failed");
     EXAMPLE_CHECK(
@@ -808,9 +533,9 @@ int main(int argc, char** argv)
     (void)dvz_visual_set_material(selection, &material);
 
     DvzVisualDataUpdate sphere_updates[] = {
-        {.attr_name = "position", .data = atoms.positions, .item_count = atoms.count},
-        {.attr_name = "color", .data = atoms.colors, .item_count = atoms.count},
-        {.attr_name = "radius", .data = scaled_radii, .item_count = atoms.count},
+        {.attr_name = "position", .data = state->atoms.positions, .item_count = state->atoms.count},
+        {.attr_name = "color", .data = state->atoms.colors, .item_count = state->atoms.count},
+        {.attr_name = "radius", .data = state->scaled_radii, .item_count = state->atoms.count},
     };
     EXAMPLE_CHECK(
         dvz_visual_set_data_many(spheres, sphere_updates, 3) == 0,
@@ -826,7 +551,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(dvz_panel_add_visual(panel, crosshair, NULL) == 0, "add crosshair failed");
     EXAMPLE_CHECK(
         _upload_selection(
-            selection, crosshair, &atoms, _selected_atom(&atoms), DEFAULT_ATOM_SCALE),
+            selection, crosshair, &state->atoms, _selected_atom(&state->atoms),
+            DEFAULT_ATOM_SCALE),
         "selection upload failed");
 
     DvzMsaaDesc msaa_desc = dvz_msaa_desc();
@@ -848,80 +574,94 @@ int main(int argc, char** argv)
     };
     (void)dvz_panel_set_ssao(panel, &ssao_desc);
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "protein");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    DvzController* arcball_controller = dvz_arcball(ctx->scene, NULL);
     EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
     DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     EXAMPLE_CHECK(
-        dvz_view_bind_controller(win, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
-        "dvz_view_bind_controller() failed");
+        dvz_scenario_bind_controller(ctx, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
+        "dvz_scenario_bind_controller() failed");
     dvz_arcball_initial(arcball, (vec3){+0.790430f, -0.651732f, +0.810104f});
 
     EXAMPLE_CHECK(
-        example_debug_setup(&debug, win, argc, argv, "protein"),
-        "example_debug_setup() failed");
-    example_debug_arcball(&debug, "protein", arcball);
-    example_debug_camera(&debug, "protein", &camera_desc);
-    if (example_debug_gui_requested())
-    {
-        diagnostics = _protein_diagnostics(panel, &msaa_desc, &ssao_desc);
-        DvzGui* gui = dvz_view_gui(win, NULL);
-        EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
-        dvz_view_set_gui_callback(win, _protein_diagnostics_gui, &diagnostics);
-        dvz_fprintf(stderr, "example debug: protein diagnostics GUI enabled\n");
-    }
-
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
-    dvz_scene_set_fps(scene, 60.0);
-
-    EXAMPLE_CHECK(
         example_visual_spin(
-            scene, spheres, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-            arcball_controller, &sphere_spin),
+            ctx->scene, spheres, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            arcball_controller, &state->sphere_spin),
         "example_visual_spin(spheres) failed");
     EXAMPLE_CHECK(
         example_visual_spin(
-            scene, selection, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-            arcball_controller, &selection_spin),
+            ctx->scene, selection, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            arcball_controller, &state->selection_spin),
         "example_visual_spin(selection) failed");
     EXAMPLE_CHECK(
         example_visual_spin(
-            scene, crosshair, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-            arcball_controller, &crosshair_spin),
+            ctx->scene, crosshair, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            arcball_controller, &state->crosshair_spin),
         "example_visual_spin(crosshair) failed");
-    if (args.spin)
-    {
-        example_visual_spin_start(&sphere_spin, 0.0);
-        example_visual_spin_start(&selection_spin, 0.0);
-        example_visual_spin_start(&crosshair_spin, 0.0);
-    }
-    else
-    {
-        example_visual_spin_stop(&sphere_spin);
-        example_visual_spin_stop(&selection_spin);
-        example_visual_spin_stop(&crosshair_spin);
-    }
+    example_visual_spin_stop(&state->sphere_spin);
+    example_visual_spin_stop(&state->selection_spin);
+    example_visual_spin_stop(&state->crosshair_spin);
 
-    dvz_fprintf(stderr, "loaded %" PRIu32 " atoms from %s\n", atoms.count, atoms.path);
-    dvz_app_run(app, example_frame_count_from_text(args.frame_arg));
-    status = 0;
-
+    dvz_fprintf(stderr, "loaded %" PRIu32 " atoms from %s\n", state->atoms.count, state->atoms.path);
+    ok = true;
 cleanup:
-    example_debug_uninstall(&debug);
-    if (app != NULL)
-        dvz_app_destroy(app);
-    example_visual_spin_destroy(&crosshair_spin);
-    example_visual_spin_destroy(&selection_spin);
-    example_visual_spin_destroy(&sphere_spin);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    dvz_free(scaled_radii);
-    _protein_atoms_destroy(&atoms);
-    return status;
+    return ok;
+}
+
+
+
+/**
+ * Destroy the protein gallery showcase state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    ProteinState* state = (ProteinState*)user;
+    if (state == NULL)
+        return;
+
+    example_visual_spin_destroy(&state->crosshair_spin);
+    example_visual_spin_destroy(&state->selection_spin);
+    example_visual_spin_destroy(&state->sphere_spin);
+    dvz_free(state->scaled_radii);
+    _protein_atoms_destroy(&state->atoms);
+    dvz_free(state);
+}
+
+
+
+/**
+ * Return the protein gallery showcase scenario.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _protein_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "protein_arcball_viewer",
+        .title = "protein",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/**
+ * Run the protein gallery showcase through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _protein_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
