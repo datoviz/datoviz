@@ -1,0 +1,1638 @@
+{
+  "schema": "datoviz.public-examples.v1",
+  "source": "examples/c/MANIFEST.yaml",
+  "generated_by": "tools/build_examples_manifest.py",
+  "count": 67,
+  "categories": {
+    "composite": 2,
+    "feature": 39,
+    "showcase": 11,
+    "visual": 15
+  },
+  "statuses": {
+    "experimental": 5,
+    "prototype": 1,
+    "supported": 61
+  },
+  "agent_copy_safe": {
+    "false": 15,
+    "true": 52
+  },
+  "examples": [
+    {
+      "id": "feature_scene_basic",
+      "title": "Basic Scene",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/scene_basic.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scene_basic.c",
+      "page": "gallery/features/feature_scene_basic.md",
+      "summary": "smallest runner-backed retained scene with one point visual.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/scene_basic",
+      "smoke_command": "./build/examples/c/features/scene_basic --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "scene"
+    },
+    {
+      "id": "feature_panel_single",
+      "title": "Single Panel",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/panel_single.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_single.c",
+      "page": "gallery/features/feature_panel_single.md",
+      "summary": "one explicit panel rectangle with panel chrome and one visual.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/panel_single",
+      "smoke_command": "./build/examples/c/features/panel_single --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "panel-single"
+    },
+    {
+      "id": "feature_panel_grid",
+      "title": "Panel Grid",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/panel_grid.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_grid.c",
+      "page": "gallery/features/feature_panel_grid.md",
+      "summary": "four grid-owned panels with clipped panel-local content.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/panel_grid",
+      "smoke_command": "./build/examples/c/features/panel_grid --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "panel-grid"
+    },
+    {
+      "id": "feature_panel_multi",
+      "title": "Multiple Panels",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/panel_multi.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_multi.c",
+      "page": "gallery/features/feature_panel_multi.md",
+      "summary": "multiple independent panels with panel-local panzoom controllers.",
+      "validation": "smoke+interaction+screenshot",
+      "build_command": "just example-c features/panel_multi",
+      "smoke_command": "./build/examples/c/features/panel_multi --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "multi-panel"
+    },
+    {
+      "id": "feature_panel_linked",
+      "title": "Linked Panels",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/panel_linked.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_linked.c",
+      "page": "gallery/features/feature_panel_linked.md",
+      "summary": "two panels with bidirectional linked X panzoom state.",
+      "validation": "smoke+interaction+screenshot",
+      "build_command": "just example-c features/panel_linked",
+      "smoke_command": "./build/examples/c/features/panel_linked --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "linked-panels"
+    },
+    {
+      "id": "path_axes_2d",
+      "title": "Path With 2D Axes",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/axes_2d.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c",
+      "page": "gallery/features/path_axes_2d.md",
+      "summary": "deterministic path with retained 2D axes and tick labels.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/axes_2d",
+      "smoke_command": "./build/examples/c/features/axes_2d --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "axes-2d"
+    },
+    {
+      "id": "feature_axis_labels",
+      "title": "Axis Labels",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/axis_labels.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axis_labels.c",
+      "page": "gallery/features/feature_axis_labels.md",
+      "summary": "retained axis titles and tick-label placement with plot margins.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/axis_labels",
+      "smoke_command": "./build/examples/c/features/axis_labels --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "axis-labels"
+    },
+    {
+      "id": "feature_sampled_field_2d",
+      "title": "2D Sampled Field",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/sampled_field_2d.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_2d.c",
+      "page": "gallery/features/feature_sampled_field_2d.md",
+      "summary": "scene-owned 2D sampled field bound to an image visual.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/sampled_field_2d",
+      "smoke_command": "./build/examples/c/features/sampled_field_2d --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "sampled-field-2d"
+    },
+    {
+      "id": "feature_sampled_field_3d",
+      "title": "3D Sampled Field",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/sampled_field_3d.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_3d.c",
+      "page": "gallery/features/feature_sampled_field_3d.md",
+      "summary": "scene-owned 3D sampled field bound to a volume visual.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/sampled_field_3d",
+      "smoke_command": "./build/examples/c/features/sampled_field_3d --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "sampled-field-3d"
+    },
+    {
+      "id": "feature_text_block",
+      "title": "Text Block",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/text_block.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/text_block.c",
+      "page": "gallery/features/feature_text_block.md",
+      "summary": "compact retained text block with stable screen placement.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/text_block",
+      "smoke_command": "./build/examples/c/features/text_block --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "text-block"
+    },
+    {
+      "id": "feature_overlay_card",
+      "title": "Overlay Card",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/overlay_card.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/overlay_card.c",
+      "page": "gallery/features/feature_overlay_card.md",
+      "summary": "screen-space overlay card attached to a panel.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/overlay_card",
+      "smoke_command": "./build/examples/c/features/overlay_card --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "overlay-card"
+    },
+    {
+      "id": "feature_controller_arcball",
+      "title": "Arcball Controller",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/controller_arcball.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c",
+      "page": "gallery/features/feature_controller_arcball.md",
+      "summary": "arcball controller attached to a small 3D mesh.",
+      "validation": "smoke+interaction+screenshot",
+      "build_command": "just example-c features/controller_arcball",
+      "smoke_command": "./build/examples/c/features/controller_arcball --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "controller-arcball"
+    },
+    {
+      "id": "feature_controller_fly",
+      "title": "Fly Controller",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/controller_fly.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_fly.c",
+      "page": "gallery/features/feature_controller_fly.md",
+      "summary": "fly controller with deterministic camera translation.",
+      "validation": "smoke+interaction+screenshot",
+      "build_command": "just example-c features/controller_fly",
+      "smoke_command": "./build/examples/c/features/controller_fly --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "controller-fly"
+    },
+    {
+      "id": "feature_controller_turntable",
+      "title": "Turntable Controller",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/controller_turntable.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_turntable.c",
+      "page": "gallery/features/feature_controller_turntable.md",
+      "summary": "constrained turntable controller around a small 3D mesh.",
+      "validation": "smoke+interaction+screenshot",
+      "build_command": "just example-c features/controller_turntable",
+      "smoke_command": "./build/examples/c/features/controller_turntable --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "controller-turntable"
+    },
+    {
+      "id": "feature_mesh_texture",
+      "title": "Textured Mesh",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/mesh_texture.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/mesh_texture.c",
+      "page": "gallery/features/feature_mesh_texture.md",
+      "summary": "minimal UV textured mesh with a procedural RGBA8 texture.",
+      "validation": "smoke+interaction+screenshot",
+      "build_command": "just example-c features/mesh_texture",
+      "smoke_command": "./build/examples/c/features/mesh_texture --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "mesh-texture"
+    },
+    {
+      "id": "feature_material_mesh",
+      "title": "Mesh Materials",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/material_mesh.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c",
+      "page": "gallery/features/feature_material_mesh.md",
+      "summary": "retained mesh visuals with explicit material parameters.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/material_mesh",
+      "smoke_command": "./build/examples/c/features/material_mesh --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "material-mesh"
+    },
+    {
+      "id": "feature_lighting",
+      "title": "Lighting",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/lighting.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c",
+      "page": "gallery/features/feature_lighting.md",
+      "summary": "lit sphere cluster with explicit light direction.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/lighting",
+      "smoke_command": "./build/examples/c/features/lighting --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "lighting"
+    },
+    {
+      "id": "linked_panels_axes_panzoom",
+      "title": "Linked Panels With Axes",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/showcases/panel_linked_axes.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c",
+      "page": "gallery/showcases/linked_panels_axes_panzoom.md",
+      "summary": "linked temporal panels with a spanning summary panel.",
+      "validation": "smoke+interaction",
+      "build_command": "just example-c showcases/panel_linked_axes",
+      "smoke_command": "./build/examples/c/showcases/panel_linked_axes --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "workflow",
+        "linked-panels",
+        "axes",
+        "panzoom",
+        "synthetic"
+      ],
+      "data": {
+        "kind": "synthetic"
+      }
+    },
+    {
+      "id": "linked_panels_probe_colorbar",
+      "title": "Linked Probe With Colorbar",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/showcases/linked_probe_colorbar.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c",
+      "page": "gallery/showcases/linked_panels_probe_colorbar.md",
+      "summary": "linked image panels with one probe readout and shared colorbar.",
+      "validation": "smoke+readback+interaction+screenshot",
+      "build_command": "just example-c showcases/linked_probe_colorbar",
+      "smoke_command": "./build/examples/c/showcases/linked_probe_colorbar --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "workflow",
+        "image",
+        "sampled-field",
+        "pixel-query",
+        "linked-panzoom",
+        "colorbar",
+        "readout"
+      ],
+      "data": {
+        "kind": "synthetic"
+      }
+    },
+    {
+      "id": "scientific_plotting_workflow",
+      "title": "Scientific Plotting Workflow",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/showcases/scientific_plotting.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c",
+      "page": "gallery/showcases/scientific_plotting_workflow.md",
+      "summary": "histogram, guide annotations, stacked traces, and error bands.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c showcases/scientific_plotting",
+      "smoke_command": "./build/examples/c/showcases/scientific_plotting --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "workflow",
+        "scientific",
+        "histogram",
+        "guide-lines",
+        "guide-spans",
+        "stacked-traces",
+        "uncertainty-band"
+      ],
+      "data": {
+        "kind": "synthetic"
+      }
+    },
+    {
+      "id": "scale_bar",
+      "title": "Scale Bar",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/scalebar.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c",
+      "page": "gallery/features/scale_bar.md",
+      "summary": "minimal retained scale bar attached to one 2D panel.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/scalebar",
+      "smoke_command": "./build/examples/c/features/scalebar --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "scale-bar"
+    },
+    {
+      "id": "scalebar_units",
+      "title": "Scale Bar Units",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/scalebar_units.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar_units.c",
+      "page": "gallery/features/scalebar_units.md",
+      "summary": "retained scale bar with a custom time-unit string.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/scalebar_units",
+      "smoke_command": "./build/examples/c/features/scalebar_units --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "scalebar-units"
+    },
+    {
+      "id": "scalebar_measurement_workflow",
+      "title": "Scale Bar Measurement Workflow",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/showcases/scalebar_measurement.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c",
+      "page": "gallery/showcases/scalebar_measurement_workflow.md",
+      "summary": "scale-aware overview, detail, and 3D measurement workflow.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c showcases/scalebar_measurement",
+      "smoke_command": "./build/examples/c/showcases/scalebar_measurement --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "workflow",
+        "scale-bar",
+        "measurement",
+        "synthetic"
+      ],
+      "data": {
+        "kind": "synthetic"
+      }
+    },
+    {
+      "id": "colorbar",
+      "title": "Colorbar",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/colorbar.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colorbar.c",
+      "page": "gallery/features/colorbar.md",
+      "summary": "deterministic scalar image with one retained continuous colorbar.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/colorbar",
+      "smoke_command": "./build/examples/c/features/colorbar --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "colorbar",
+        "scalar-field",
+        "image",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "colorbar"
+    },
+    {
+      "id": "colormap_scale",
+      "title": "Scalar Color Scale",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/colormap_scale.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colormap_scale.c",
+      "page": "gallery/features/colormap_scale.md",
+      "summary": "point visual with scalar float colors and one retained color scale.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/colormap_scale",
+      "smoke_command": "./build/examples/c/features/colormap_scale --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "colormap-scale"
+    },
+    {
+      "id": "annotation_readout",
+      "title": "Annotation Readout",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/annotation_readout.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/annotation_readout.c",
+      "page": "gallery/features/annotation_readout.md",
+      "summary": "retained label annotation anchored to data.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/annotation_readout",
+      "smoke_command": "./build/examples/c/features/annotation_readout --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "annotation-readout"
+    },
+    {
+      "id": "update_partial",
+      "title": "Partial Data Update",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/update_partial.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_partial.c",
+      "page": "gallery/features/update_partial.md",
+      "summary": "point visual with one retained data-range update.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/update_partial",
+      "smoke_command": "./build/examples/c/features/update_partial --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "update-partial"
+    },
+    {
+      "id": "feature_update_visual_data",
+      "title": "Visual Data Update",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/update_visual_data.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_visual_data.c",
+      "page": "gallery/features/feature_update_visual_data.md",
+      "summary": "retained point visual with full data replacement.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/update_visual_data",
+      "smoke_command": "./build/examples/c/features/update_visual_data --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "update-visual-data"
+    },
+    {
+      "id": "feature_visibility",
+      "title": "Visual Visibility",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/visibility.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visibility.c",
+      "page": "gallery/features/feature_visibility.md",
+      "summary": "retained visual visibility toggled on a runner frame.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/visibility",
+      "smoke_command": "./build/examples/c/features/visibility --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "visibility"
+    },
+    {
+      "id": "depth_test",
+      "title": "Depth Test Toggle",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/depth_test.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/depth_test.c",
+      "page": "gallery/features/depth_test.md",
+      "summary": "side-by-side visual depth-test toggle with overlapping 3D points.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/depth_test",
+      "smoke_command": "./build/examples/c/features/depth_test --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "depth-test"
+    },
+    {
+      "id": "alpha_blending",
+      "title": "Alpha Blending",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/alpha_blending.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/alpha_blending.c",
+      "page": "gallery/features/alpha_blending.md",
+      "summary": "retained primitive visual using per-vertex alpha and source-over blending.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/alpha_blending",
+      "smoke_command": "./build/examples/c/features/alpha_blending --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "alpha-blending"
+    },
+    {
+      "id": "panel_background",
+      "title": "Panel Background",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/panel_background.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_background.c",
+      "page": "gallery/features/panel_background.md",
+      "summary": "fixed graphite-cyan panel background behind a simple visual.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/panel_background",
+      "smoke_command": "./build/examples/c/features/panel_background --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "panel-background"
+    },
+    {
+      "id": "controller_panzoom",
+      "title": "Panzoom Attachment",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/panzoom_attachment.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom_attachment.c",
+      "page": "gallery/features/controller_panzoom.md",
+      "summary": "bind a panzoom controller to one panel with a simple 2D visual.",
+      "validation": "smoke+interaction",
+      "build_command": "just example-c features/panzoom_attachment",
+      "smoke_command": "./build/examples/c/features/panzoom_attachment --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "controller-panzoom"
+    },
+    {
+      "id": "image_probe",
+      "title": "Image Probe",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/image_probe.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/image_probe.c",
+      "page": "gallery/features/image_probe.md",
+      "summary": "scalar image pixel-query proof with a live probe marker.",
+      "validation": "smoke+readback+screenshot",
+      "build_command": "just example-c features/image_probe",
+      "smoke_command": "./build/examples/c/features/image_probe --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "image-probe"
+    },
+    {
+      "id": "marker_picking",
+      "title": "Marker Picking",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/pick_marker.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/pick_marker.c",
+      "page": "gallery/features/marker_picking.md",
+      "summary": "retained marker item picking and selection proof.",
+      "validation": "smoke+interaction",
+      "build_command": "just example-c features/pick_marker",
+      "smoke_command": "./build/examples/c/features/pick_marker --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "marker-picking"
+    },
+    {
+      "id": "feature_pick_point",
+      "title": "Point Picking",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/pick_point.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/pick_point.c",
+      "page": "gallery/features/feature_pick_point.md",
+      "summary": "retained point item picking proof.",
+      "validation": "smoke+interaction+screenshot",
+      "build_command": "just example-c features/pick_point",
+      "smoke_command": "./build/examples/c/features/pick_point --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "pick-point"
+    },
+    {
+      "id": "feature_pick_hover",
+      "title": "Hover Picking",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/pick_hover.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/pick_hover.c",
+      "page": "gallery/features/feature_pick_hover.md",
+      "summary": "retained point hover proof.",
+      "validation": "smoke+interaction+screenshot",
+      "build_command": "just example-c features/pick_hover",
+      "smoke_command": "./build/examples/c/features/pick_hover --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "pick-hover"
+    },
+    {
+      "id": "feature_probe_labels",
+      "title": "Label Probe",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/probe_labels.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c",
+      "page": "gallery/features/feature_probe_labels.md",
+      "summary": "categorical labels query proof with deterministic label-id readout.",
+      "validation": "smoke+readback+screenshot",
+      "build_command": "just example-c features/probe_labels",
+      "smoke_command": "./build/examples/c/features/probe_labels --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "probe-labels"
+    },
+    {
+      "id": "feature_selection",
+      "title": "Selection",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/selection.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection.c",
+      "page": "gallery/features/feature_selection.md",
+      "summary": "retained point selection proof.",
+      "validation": "smoke+interaction+screenshot",
+      "build_command": "just example-c features/selection",
+      "smoke_command": "./build/examples/c/features/selection --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "selection"
+    },
+    {
+      "id": "feature_timer_animation",
+      "title": "Timer Animation",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/timer_animation.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/timer_animation.c",
+      "page": "gallery/features/feature_timer_animation.md",
+      "summary": "portable scenario updating retained point data on runner frames.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/timer_animation",
+      "smoke_command": "./build/examples/c/features/timer_animation --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "timer-animation"
+    },
+    {
+      "id": "feature_marker_symbols",
+      "title": "Marker Symbols",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/marker_symbols.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c",
+      "page": "gallery/features/feature_marker_symbols.md",
+      "summary": "marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/marker_symbols",
+      "smoke_command": "./build/examples/c/features/marker_symbols --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "marker",
+        "symbol-set",
+        "bitmap-symbol",
+        "distance-field-symbol",
+        "svg-path-symbol"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "marker-symbols"
+    },
+    {
+      "id": "feature_legend_categorical",
+      "title": "Categorical Legend",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/features/legend_categorical.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c",
+      "page": "gallery/features/feature_legend_categorical.md",
+      "summary": "tentative retained categorical legend proof.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/legend_categorical",
+      "smoke_command": "./build/examples/c/features/legend_categorical --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "categorical-scale",
+        "legend",
+        "marker",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "legend-categorical"
+    },
+    {
+      "id": "feature_video_export",
+      "title": "Video Export",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/features/video_export.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/video_export.c",
+      "page": "gallery/features/feature_video_export.md",
+      "summary": "portable scenario using the native runner's live/capture modes.",
+      "validation": "smoke+optional-video",
+      "build_command": "just example-c features/video_export",
+      "smoke_command": "./build/examples/c/features/video_export --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "app-capture",
+        "scenario-runner",
+        "video",
+        "animation"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "video-export"
+    },
+    {
+      "id": "point_2d",
+      "title": "Point",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/visuals/point.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/point.c",
+      "page": "gallery/visuals/point_2d.md",
+      "summary": "deterministic retained 2D point visual baseline.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/point",
+      "smoke_command": "./build/examples/c/visuals/point --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "point",
+        "panzoom",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "point"
+    },
+    {
+      "id": "visual_pixel",
+      "title": "Pixel",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/visuals/pixel.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/pixel.c",
+      "page": "gallery/visuals/visual_pixel.md",
+      "summary": "deterministic retained pixel visual baseline.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/pixel",
+      "smoke_command": "./build/examples/c/visuals/pixel --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "pixel",
+        "panzoom",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "pixel"
+    },
+    {
+      "id": "visual_marker",
+      "title": "Marker",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/visuals/marker.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/marker.c",
+      "page": "gallery/visuals/visual_marker.md",
+      "summary": "retained marker visual with deterministic symbol, fill, stroke, and size variation.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/marker",
+      "smoke_command": "./build/examples/c/visuals/marker --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "marker",
+        "panzoom",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "marker"
+    },
+    {
+      "id": "visual_primitive",
+      "title": "Primitive",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/visuals/primitive.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/primitive.c",
+      "page": "gallery/visuals/visual_primitive.md",
+      "summary": "topology-parametric triangles rendered with the retained primitive visual.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/primitive",
+      "smoke_command": "./build/examples/c/visuals/primitive --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "primitive",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "primitive"
+    },
+    {
+      "id": "visual_segment",
+      "title": "Segment",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/visuals/segment.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/segment.c",
+      "page": "gallery/visuals/visual_segment.md",
+      "summary": "retained segment visual with independent endpoint-pair strokes.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/segment",
+      "smoke_command": "./build/examples/c/visuals/segment --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "segment",
+        "panzoom",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "segment"
+    },
+    {
+      "id": "visual_vector",
+      "title": "Vector",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/visuals/vector.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/vector.c",
+      "page": "gallery/visuals/visual_vector.md",
+      "summary": "retained straight and curved vector visual example.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/vector",
+      "smoke_command": "./build/examples/c/visuals/vector --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "vector",
+        "path",
+        "panzoom",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "vector"
+    },
+    {
+      "id": "visual_path",
+      "title": "Path",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/visuals/path.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/path.c",
+      "page": "gallery/visuals/visual_path.md",
+      "summary": "deterministic multi-signal retained path visual.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/path",
+      "smoke_command": "./build/examples/c/visuals/path --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "path",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "path"
+    },
+    {
+      "id": "visual_image",
+      "title": "Image",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/visuals/image.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image.c",
+      "page": "gallery/visuals/visual_image.md",
+      "summary": "deterministic scalar sampled field rendered with the retained image visual.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/image",
+      "smoke_command": "./build/examples/c/visuals/image --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "image",
+        "sampled-field",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "image"
+    },
+    {
+      "id": "visual_mesh",
+      "title": "Mesh",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/visuals/mesh.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/mesh.c",
+      "page": "gallery/visuals/visual_mesh.md",
+      "summary": "retained lit indexed cube mesh.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/mesh",
+      "smoke_command": "./build/examples/c/visuals/mesh --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "mesh",
+        "indexed-geometry",
+        "arcball",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "mesh"
+    },
+    {
+      "id": "sphere_impostor",
+      "title": "Sphere",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/visuals/sphere.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c",
+      "page": "gallery/visuals/sphere_impostor.md",
+      "summary": "deterministic 3D impostor-sphere cluster with depth, radius, and color variation.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/sphere",
+      "smoke_command": "./build/examples/c/visuals/sphere --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "sphere",
+        "arcball",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "sphere"
+    },
+    {
+      "id": "visual_splat",
+      "title": "Splat",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/visuals/splat.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/splat.c",
+      "page": "gallery/visuals/visual_splat.md",
+      "summary": "retained Gaussian splat visual with deterministic screen-space ellipses.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/splat",
+      "smoke_command": "./build/examples/c/visuals/splat --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "splat",
+        "panzoom",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "splat"
+    },
+    {
+      "id": "visual_text",
+      "title": "Text",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/visuals/text.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c",
+      "page": "gallery/visuals/visual_text.md",
+      "summary": "retained semantic text objects lowered to glyph visuals.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/text",
+      "smoke_command": "./build/examples/c/visuals/text --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "text",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "text"
+    },
+    {
+      "id": "visual_glyph",
+      "title": "Glyph",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/visuals/glyph.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/glyph.c",
+      "page": "gallery/visuals/visual_glyph.md",
+      "summary": "raw atlas-backed glyph quads with explicit retained attributes.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/glyph",
+      "smoke_command": "./build/examples/c/visuals/glyph --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "glyph",
+        "sampled-field",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "glyph"
+    },
+    {
+      "id": "visual_labels",
+      "title": "Labels",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/visuals/labels.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/labels.c",
+      "page": "gallery/visuals/visual_labels.md",
+      "summary": "retained labels visual with a small deterministic integer sampled field.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/labels",
+      "smoke_command": "./build/examples/c/visuals/labels --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "labels",
+        "categorical-scale",
+        "panzoom",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "labels"
+    },
+    {
+      "id": "volume",
+      "title": "Volume",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/visuals/volume.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/volume.c",
+      "page": "gallery/visuals/volume.md",
+      "summary": "deterministic gyroid scalar field rendered with the retained volume visual.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/volume",
+      "smoke_command": "./build/examples/c/visuals/volume --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "sampled-field",
+        "volume",
+        "transfer-function",
+        "boundary-box",
+        "arcball",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_visual": "volume"
+    },
+    {
+      "id": "composite_polygon",
+      "title": "Polygon Composite",
+      "category": "composite",
+      "lane": "composites",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/composites/polygon.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c",
+      "page": "gallery/composites/composite_polygon.md",
+      "summary": "semantic polygon and polygon-set composites.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c composites/polygon",
+      "smoke_command": "./build/examples/c/composites/polygon --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "composite",
+        "polygon",
+        "polygon-set",
+        "holes",
+        "panzoom"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_composite": "polygon"
+    },
+    {
+      "id": "composite_graph",
+      "title": "Graph Composite",
+      "category": "composite",
+      "lane": "composites",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/composites/graph.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c",
+      "page": "gallery/composites/composite_graph.md",
+      "summary": "semantic graph composite with clustered curved edges.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c composites/graph",
+      "smoke_command": "./build/examples/c/composites/graph --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "composite",
+        "graph",
+        "marker-nodes",
+        "bezier-edges",
+        "panzoom"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_composite": "graph"
+    },
+    {
+      "id": "us_state_choropleth",
+      "title": "U.S. State Choropleth",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/showcases/choropleth.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/choropleth.c",
+      "page": "gallery/showcases/us_state_choropleth.md",
+      "summary": "contiguous U.S. state population-density choropleth.",
+      "validation": "smoke+screenshot+manual",
+      "build_command": "just example-c showcases/choropleth",
+      "smoke_command": "./build/examples/c/showcases/choropleth --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "scientific",
+        "real-data",
+        "geo",
+        "composite",
+        "polygon-set",
+        "choropleth",
+        "colorbar",
+        "panzoom",
+        "capture"
+      ],
+      "data": {
+        "kind": "prepared"
+      },
+      "dataset": {
+        "name": "Contiguous U.S. state population density",
+        "boundary_source": "https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip",
+        "population_source": "https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx",
+        "license": "U.S. Census Bureau public data; cite the Census Bureau as source.",
+        "fallback_prepared_path": ".cache/datoviz/examples/us_state_choropleth/prepared",
+        "promoted_prepared_path": "data/examples/us_state_choropleth/prepared",
+        "preprocessing": "python tools/data/prepare_us_state_choropleth.py",
+        "prepared_layout": "flat typed arrays plus metadata.tsv"
+      },
+      "encoding": {
+        "position": "Census boundary rings projected with a spherical Albers equal-area transform and normalized into scene space",
+        "color": "log10 of Vintage 2025 resident population per Census ALAND square kilometer",
+        "topology": "each shapefile ring is rendered as one polygon-set region; interior holes are not preserved"
+      }
+    },
+    {
+      "id": "protein_arcball_viewer",
+      "title": "Protein",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/showcases/protein.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c",
+      "page": "gallery/showcases/protein_arcball_viewer.md",
+      "summary": "RCSB PDB protein structure rendered as clustered spheres.",
+      "validation": "smoke+screenshot+manual",
+      "build_command": "just example-c showcases/protein",
+      "smoke_command": "./build/examples/c/showcases/protein --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "scientific",
+        "real-data",
+        "molecular",
+        "sphere",
+        "arcball"
+      ],
+      "data": {
+        "kind": "real"
+      },
+      "dataset": {
+        "name": "RCSB PDB protein structure",
+        "source": "https://files.rcsb.org/download/{pdb_id}.pdb",
+        "license": "RCSB PDB data usage policy applies.",
+        "default_pdb_id": "6M0J",
+        "fallback_pdb_id": "1UBQ",
+        "fallback_prepared_path": "data/examples/proteins/1ubq/prepared",
+        "preprocessing": "python tools/data/prepare_protein_arcball.py 1UBQ --regenerate"
+      },
+      "encoding": {
+        "position": "atom coordinates normalized into scene space",
+        "color": "element-style atom colors from the preparation bundle",
+        "size": "atom radii scaled for sphere impostors"
+      }
+    },
+    {
+      "id": "showcase_wind_field",
+      "title": "Wind Field",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/showcases/wind_field.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c",
+      "page": "gallery/showcases/showcase_wind_field.md",
+      "summary": "synthetic weather-like scalar and vector field showcase.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c showcases/wind_field",
+      "smoke_command": "./build/examples/c/showcases/wind_field --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "scientific",
+        "synthetic",
+        "scalar-field",
+        "vector-field",
+        "wind-field",
+        "colorbar",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      }
+    },
+    {
+      "id": "showcase_gpu_particle_smoke",
+      "title": "GPU Particle Smoke",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_required",
+      "status": "experimental",
+      "source": "examples/c/showcases/gpu_particle_smoke.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c",
+      "page": "gallery/showcases/showcase_gpu_particle_smoke.md",
+      "summary": "scene API compute-to-graphics particle smoke showcase.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c showcases/gpu_particle_smoke",
+      "smoke_command": "./build/examples/c/showcases/gpu_particle_smoke --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "compute",
+        "simulation",
+        "particles",
+        "point",
+        "alpha-blending",
+        "capture"
+      ],
+      "data": {
+        "kind": "simulated"
+      }
+    },
+    {
+      "id": "brain_volume_mesh",
+      "title": "Allen Mouse Brain",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_required",
+      "status": "prototype",
+      "source": "examples/c/showcases/brain_volume_mesh.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume_mesh.c",
+      "page": "gallery/showcases/brain_volume_mesh.md",
+      "summary": "local Allen mouse brain RGBA volume and occluded slice.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c showcases/brain_volume_mesh",
+      "smoke_command": "./build/examples/c/showcases/brain_volume_mesh --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "scientific",
+        "real-data",
+        "volume",
+        "volume-slice",
+        "volume-occlusion",
+        "arcball",
+        "capture"
+      ],
+      "data": {
+        "kind": "prepared"
+      },
+      "dataset": {
+        "name": "Allen mouse brain RGBA volume",
+        "source": "data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz",
+        "license": "repository data submodule terms"
+      }
+    },
+    {
+      "id": "point_cloud",
+      "title": "Point Cloud",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/showcases/point_cloud.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c",
+      "page": "gallery/showcases/point_cloud.md",
+      "summary": "RESEPI RGB LiDAR dense point cloud.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c showcases/point_cloud",
+      "smoke_command": "./build/examples/c/showcases/point_cloud --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "real-data",
+        "pixel",
+        "dense-point-cloud",
+        "direct-color",
+        "eye-dome-lighting",
+        "gui",
+        "fly",
+        "capture"
+      ],
+      "data": {
+        "kind": "prepared"
+      },
+      "dataset": {
+        "name": "RESEPI GENM2X colorized benchmark point cloud",
+        "source": "https://lidarpayload.com/sample-data/",
+        "license": "Public RESEPI sample data; usage follows the source site's terms",
+        "preprocessing": "python tools/data/prepare_point_cloud.py",
+        "cache_prepared_path": ".cache/datoviz/examples/point_cloud/prepared"
+      }
+    },
+    {
+      "id": "textured_terrain_or_planet",
+      "title": "Textured Planets",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/showcases/textured_planet.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c",
+      "page": "gallery/showcases/textured_terrain_or_planet.md",
+      "summary": "UV textured planet mesh via dvz_mesh + sampled fields.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c showcases/textured_planet",
+      "smoke_command": "./build/examples/c/showcases/textured_planet --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "real-data",
+        "mesh",
+        "sampled-field",
+        "texture",
+        "arcball",
+        "capture"
+      ],
+      "data": {
+        "kind": "real"
+      }
+    }
+  ]
+}
