@@ -18,6 +18,8 @@ taxonomy:
     primary_composite: required for composite examples
     tags: searchable labels for docs, agents, and gallery filters
     data.kind: synthetic | simulated | real | prepared
+    capture.mode: scenario by default; custom requires capture.reason
+    capture.size: optional WxH override; defaults to defaults.public_capture
     agent_copy_safe: true only for examples suitable as starting points for generated user code
   tag_not_folder:
     - workflow

@@ -20,7 +20,6 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "examples/c/MANIFEST.yaml"
 DEFAULT_BUILD_DIR = ROOT / "build"
 DEFAULT_IMAGE_DIR = ROOT / "docs/images/gallery"
-DEFAULT_CAPTURE_FRAMES = "60"
 PUBLIC_LANES = ("visuals", "features", "composites", "showcases")
 CATEGORY_TO_LANE = {
     "visual": "visuals",
@@ -44,6 +43,10 @@ class CaptureExample:
     lane: str
     source: str
     validation: str
+    capture_mode: str
+    capture_reason: str
+    expected_width: int
+    expected_height: int
 
     @property
     def rel_executable(self) -> str:
@@ -100,6 +103,25 @@ def load_manifest(path: Path) -> dict:
     return manifest
 
 
+def parse_capture_size(value: object, fallback: tuple[int, int]) -> tuple[int, int]:
+    if value is None:
+        return fallback
+    if isinstance(value, str):
+        parts = value.lower().split("x")
+        if len(parts) == 2 and parts[0].strip().isdigit() and parts[1].strip().isdigit():
+            return int(parts[0]), int(parts[1])
+    if isinstance(value, dict):
+        width = value.get("width")
+        height = value.get("height")
+        if isinstance(width, int) and isinstance(height, int):
+            return width, height
+        size = value.get("size")
+        if size is not None:
+            return parse_capture_size(size, fallback)
+        return fallback
+    raise ValueError(f"invalid capture size: {value!r}")
+
+
 def entry_lane(entry: dict) -> str:
     raw_category = entry.get("category")
     if raw_category is not None:
@@ -110,12 +132,18 @@ def entry_lane(entry: dict) -> str:
 
 def collect_examples(manifest: dict) -> list[CaptureExample]:
     examples: list[CaptureExample] = []
+    defaults = manifest.get("defaults") or {}
+    default_size = parse_capture_size(defaults.get("public_capture"), (1600, 1200))
     for entry in manifest["examples"]:
         source = str(entry.get("source", ""))
         lane = entry_lane(entry)
         stage = str(entry.get("stage", ""))
         if not source or lane not in PUBLIC_LANES or stage == "lab":
             continue
+        capture = entry.get("capture") or {}
+        if not isinstance(capture, dict):
+            raise ValueError(f"{entry['id']} capture metadata must be a mapping")
+        expected_width, expected_height = parse_capture_size(capture, default_size)
         examples.append(
             CaptureExample(
                 id=str(entry["id"]),
@@ -123,6 +151,10 @@ def collect_examples(manifest: dict) -> list[CaptureExample]:
                 lane=lane,
                 source=source,
                 validation=str(entry.get("validation", "")),
+                capture_mode=str(capture.get("mode", "scenario")),
+                capture_reason=str(capture.get("reason", "")),
+                expected_width=expected_width,
+                expected_height=expected_height,
             )
         )
     return examples
@@ -168,7 +200,7 @@ def executable_path(example: CaptureExample, build_dir: Path) -> Path:
     return build_dir / "examples" / "c" / example.rel_executable
 
 
-def png_is_nonblank(path: Path) -> tuple[bool, str]:
+def png_is_nonblank(path: Path, expected_size: tuple[int, int]) -> tuple[bool, str]:
     if not path.exists():
         return False, "missing"
     if path.stat().st_size < 1024:
@@ -180,6 +212,9 @@ def png_is_nonblank(path: Path) -> tuple[bool, str]:
         return False, str(exc)
     if width < 32 or height < 32:
         return False, f"unexpected size {width}x{height}"
+    expected_width, expected_height = expected_size
+    if width != expected_width or height != expected_height:
+        return False, f"expected {expected_width}x{expected_height}, got {width}x{height}"
 
     color_spread = max(high - low for low, high in extrema["color"])
     alpha = extrema.get("alpha")
@@ -301,9 +336,9 @@ def paeth(left: int, up: int, up_left: int) -> int:
 
 def command_for(example: CaptureExample, build_dir: Path) -> list[str]:
     exe = str(executable_path(example, build_dir))
-    if uses_scenario_runner(example):
+    if example.capture_mode == "scenario":
         return [exe, "--png"]
-    return [exe, DEFAULT_CAPTURE_FRAMES]
+    return [exe]
 
 
 def uses_scenario_runner(example: CaptureExample) -> bool:
@@ -319,11 +354,14 @@ def capture_one(example: CaptureExample, args: argparse.Namespace) -> tuple[bool
     png = output_path(example, args.image_dir)
     if not exe.is_file():
         return False, f"missing executable: {exe.relative_to(ROOT)}"
+    if example.capture_mode == "scenario" and not uses_scenario_runner(example):
+        return False, "public gallery captures must use dvz_scenario_run_native_cli()"
+    if example.capture_mode != "scenario" and not example.capture_reason:
+        return False, "custom capture mode requires capture.reason in the manifest"
 
     env = os.environ.copy()
     apply_runtime_env(env)
     png.parent.mkdir(parents=True, exist_ok=True)
-    env["DVZ_CAPTURE"] = "png"
     env["DVZ_CAPTURE_DIR"] = str(png.parent)
     env["DVZ_CAPTURE_BASENAME"] = png.stem
 
@@ -339,7 +377,7 @@ def capture_one(example: CaptureExample, args: argparse.Namespace) -> tuple[bool
     if args.skip_nonblank_check:
         return True, str(png.relative_to(ROOT))
 
-    ok, detail = png_is_nonblank(png)
+    ok, detail = png_is_nonblank(png, (example.expected_width, example.expected_height))
     if not ok:
         return False, detail
     return True, detail
@@ -350,7 +388,8 @@ def print_examples(examples: list[CaptureExample], args: argparse.Namespace) -> 
         png = output_path(example, args.image_dir).relative_to(ROOT)
         exe = executable_path(example, args.build_dir)
         exe_display = exe.relative_to(ROOT) if exe.is_relative_to(ROOT) else exe
-        print(f"{example.id:32} {example.lane:10} {exe_display} -> {png}")
+        size = f"{example.expected_width}x{example.expected_height}"
+        print(f"{example.id:32} {example.lane:10} {size:10} {exe_display} -> {png}")
 
 
 def main() -> int:
