@@ -1954,6 +1954,17 @@ gallery-screenshots filter="": && gallery
     @python tools/build_screenshots.py {{filter}}
 
 
+# Capture v0.4 C gallery screenshots into docs/images/gallery/.
+[positional-arguments]
+capture-gallery *args: build
+    @python3 tools/capture_gallery.py "$@"
+
+
+# Capture the native C screenshots used by the local v0.4 landing prototype.
+capture-landing: build
+    @python3 tools/capture_gallery.py --landing
+
+
 # Build the gallery Markdown files
 gallery:
     @echo "Generating the gallery Markdown files..."
