@@ -14,11 +14,11 @@
  * real Earth and Mars textures from the data submodule when available. Earth keeps a generated
  * fallback; Mars requires the real texture and is unavailable when that file is missing.
  *
- * Build:  just textured_planet
- * Run:    ./build/examples/c/showcases/textured_planet
- * Smoke:  ./build/examples/c/showcases/textured_planet 60
- * DVZR:   DVZ_CAPTURE=dvzr ./build/examples/c/showcases/textured_planet 60
- * Video:  DVZ_CAPTURE=mp4 ./build/examples/c/showcases/textured_planet 60
+ * Build:  just example-c showcases/textured_planet
+ * Run:    ./build/examples/c/showcases/textured_planet --live
+ * Smoke:  ./build/examples/c/showcases/textured_planet --png
+ * DVZR:   ./build/examples/c/showcases/textured_planet --dvzr 60
+ * Video:  ./build/examples/c/showcases/textured_planet --offscreen-record 60
  */
 
 
@@ -33,12 +33,12 @@
 #include <stdio.h>
 
 #include "_alloc.h"
-#include "datoviz/app.h"
 #include "datoviz/fileio.h"
 #include "datoviz/geom.h"
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -109,6 +109,8 @@ typedef struct TexturedPlanetState
 {
     DvzVisual* visual;
     DvzExampleVisualSpin spin;
+    DvzTrack* flyover_eye;
+    DvzTrack* flyover_target;
     PlanetTexture textures[PLANET_COUNT];
     int planet_index;
     bool auto_rotate;
@@ -576,29 +578,27 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    uint32_t frame_count = example_frame_count_any(argc, argv);
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("textured_planet");
-    bool video_enabled = (capture.flags & DVZ_APP_CAPTURE_VIDEO) != 0;
-
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
     DvzGeometry* sphere = NULL;
-    DvzTrack* flyover_eye = NULL;
-    DvzTrack* flyover_target = NULL;
-    TexturedPlanetState gui_state = {0};
-    gui_state.planet_index = PLANET_EARTH;
-    _state_reset_controls(&gui_state);
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    bool ok = false;
+    TexturedPlanetState* state = (TexturedPlanetState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
+    state->planet_index = PLANET_EARTH;
+    _state_reset_controls(state);
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
 
-    DvzPanel* panel = dvz_panel_full(figure);
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
@@ -613,7 +613,7 @@ int main(int argc, char** argv)
     DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera() failed");
 
-    DvzVisual* stars = _create_star_shell(scene);
+    DvzVisual* stars = _create_star_shell(ctx->scene);
     EXAMPLE_CHECK(stars != NULL, "failed to create star shell");
     int rc = dvz_panel_add_visual(panel, stars, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(stars) failed");
@@ -628,11 +628,11 @@ int main(int argc, char** argv)
     });
     EXAMPLE_CHECK(sphere != NULL, "dvz_geom_sphere() failed");
 
-    DvzVisual* visual = dvz_mesh(scene, 0);
+    DvzVisual* visual = dvz_mesh(ctx->scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");
-    gui_state.visual = visual;
+    state->visual = visual;
 
-    bool ok = example_mesh_geometry(visual, sphere);
+    ok = example_mesh_geometry(visual, sphere);
     EXAMPLE_CHECK(ok, "example_mesh_geometry() failed");
     dvz_geometry_destroy(sphere);
     sphere = NULL;
@@ -650,47 +650,33 @@ int main(int argc, char** argv)
 
     for (uint32_t i = 0; i < PLANET_COUNT; i++)
     {
-        ok = _create_planet_texture(scene, (PlanetKind)i, &gui_state.textures[i]);
+        ok = _create_planet_texture(ctx->scene, (PlanetKind)i, &state->textures[i]);
         EXAMPLE_CHECK(ok, "failed to create planet texture");
     }
 
-    ok = dvz_visual_set_field(visual, "texture", gui_state.textures[gui_state.planet_index].field);
+    ok = dvz_visual_set_field(visual, "texture", state->textures[state->planet_index].field);
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(texture) failed");
 
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
     dvz_panel_set_background_color(panel, 0.006f, 0.008f, 0.014f, 1.0f);
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "textured planets");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_view_gui(win, &gui_config);
-    EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
-    dvz_view_set_gui_callback(win, _textured_planet_gui, &gui_state);
-
-    DvzController* orbit_controller = dvz_orbit_camera(scene, NULL);
+    DvzController* orbit_controller = dvz_orbit_camera(ctx->scene, NULL);
     EXAMPLE_CHECK(orbit_controller != NULL, "dvz_orbit_camera() failed");
     DvzOrbitCamera* orbit = dvz_controller_orbit_camera(orbit_controller);
     EXAMPLE_CHECK(orbit != NULL, "failed to create or bind orbit-camera controller");
     EXAMPLE_CHECK(
-        dvz_view_bind_controller(win, panel, orbit_controller, DVZ_DIM_MASK_XYZ) == 0,
-        "dvz_view_bind_controller() failed");
-
-    dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);
-    dvz_scene_set_fps(scene, 60.0);
+        dvz_scenario_bind_controller(ctx, panel, orbit_controller, DVZ_DIM_MASK_XYZ) == 0,
+        "dvz_scenario_bind_controller() failed");
 
     EXAMPLE_CHECK(
         example_visual_spin(
-            scene, visual, (vec3){0.0f, 0.0f, 1.0f}, gui_state.spin_speed, NULL,
-            &gui_state.spin),
+            ctx->scene, visual, (vec3){0.0f, 0.0f, 1.0f}, state->spin_speed, NULL,
+            &state->spin),
         "example_visual_spin(planet) failed");
-    example_visual_spin_start(&gui_state.spin, 0.0);
+    example_visual_spin_start(&state->spin, 0.0);
 
-    flyover_eye = dvz_track_circle3(&(DvzTrackCircle3Desc){
+    state->flyover_eye = dvz_track_circle3(&(DvzTrackCircle3Desc){
         DVZ_STRUCT_INIT_FIELDS(DvzTrackCircle3Desc),
         .center = {0.0f, 0.34f, 0.28f},
         .normal = {0.38f, 0.20f, 0.90f},
@@ -698,20 +684,20 @@ int main(int argc, char** argv)
         .phase = 1.35f,
         .speed_rad_per_sec = -0.018f,
     });
-    EXAMPLE_CHECK(flyover_eye != NULL, "dvz_track_circle3() failed");
-    flyover_target = dvz_track_constant(&(DvzTrackConstantDesc){
+    EXAMPLE_CHECK(state->flyover_eye != NULL, "dvz_track_circle3() failed");
+    state->flyover_target = dvz_track_constant(&(DvzTrackConstantDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzTrackConstantDesc),
         .type = DVZ_TRACK_VEC3,
         .value = (float[3]){0.0f, 0.0f, 0.0f},
     });
-    EXAMPLE_CHECK(flyover_target != NULL, "dvz_track_constant() failed");
+    EXAMPLE_CHECK(state->flyover_target != NULL, "dvz_track_constant() failed");
 
     DvzAnimation* flyover = dvz_anim_camera_motion(
-        scene, camera,
+        ctx->scene, camera,
         &(DvzCameraMotionDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzCameraMotionDesc),
-            .eye = flyover_eye,
-            .target = flyover_target,
+            .eye = state->flyover_eye,
+            .target = state->flyover_target,
             .up_mode = DVZ_CAMERA_UP_WORLD,
             .up = {0.0f, 0.0f, 1.0f},
         });
@@ -720,25 +706,67 @@ int main(int argc, char** argv)
         flyover, orbit_controller, DVZ_ANIM_INTERACTION_STOP, 0.0);
     dvz_anim_start(flyover, 0.0);
 
-    rc = dvz_view_capture_start(win, &capture);
-    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_start() failed");
-
-    dvz_app_run(app, frame_count);
-    rc = dvz_view_capture_stop(win);
-    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_stop() failed");
-    ret = 0;
-
+    ok = true;
 cleanup:
     if (sphere != NULL)
         dvz_geometry_destroy(sphere);
-    if (app != NULL)
-        dvz_app_destroy(app);
-    example_visual_spin_destroy(&gui_state.spin);
-    dvz_track_destroy(flyover_target);
-    dvz_track_destroy(flyover_eye);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
+    return ok;
+}
+
+
+
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)ctx;
+    (void)app;
+    TexturedPlanetState* state = (TexturedPlanetState*)user;
+    if (state == NULL || view == NULL)
+        return true;
+
+    DvzGuiConfig gui_config = dvz_gui_config();
+    DvzGui* gui = dvz_view_gui(view, &gui_config);
+    if (gui == NULL)
+        return true;
+    dvz_view_set_gui_callback(view, _textured_planet_gui, state);
+    return true;
+}
+
+
+
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    TexturedPlanetState* state = (TexturedPlanetState*)user;
+    if (state == NULL)
+        return;
+    example_visual_spin_destroy(&state->spin);
+    dvz_track_destroy(state->flyover_target);
+    dvz_track_destroy(state->flyover_eye);
     for (uint32_t i = 0; i < PLANET_COUNT; i++)
-        dvz_free(gui_state.textures[i].pixels);
-    return ret;
+        dvz_free(state->textures[i].pixels);
+    dvz_free(state);
+}
+
+
+
+static DvzScenarioSpec _textured_planet_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "textured_terrain_or_planet",
+        .title = "textured planets",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .native_view = _scenario_native_view,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _textured_planet_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

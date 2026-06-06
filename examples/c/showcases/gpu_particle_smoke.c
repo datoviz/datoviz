@@ -10,8 +10,8 @@
  * Style: showcase, graphite_cyan, 1600x1200 capture target, experimental scene compute
  *
  * Build:  just example-c showcases/gpu_particle_smoke
- * Run:    ./build/examples/c/showcases/gpu_particle_smoke
- * Smoke:  ./build/examples/c/showcases/gpu_particle_smoke 120
+ * Run:    ./build/examples/c/showcases/gpu_particle_smoke --live
+ * Smoke:  ./build/examples/c/showcases/gpu_particle_smoke --png
  */
 
 
@@ -22,15 +22,13 @@
 
 #include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/input.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -444,19 +442,27 @@ static void _particle_frame(DvzView* win, void* user_data)
 /*  Main                                                                                         */
 /*************************************************************************************************/
 
-int main(int argc, char** argv)
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    int rc = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
     vec3* positions = NULL;
     vec3* velocities = NULL;
     float* ages = NULL;
     DvzColor* colors = NULL;
     float* sizes = NULL;
     char compute_glsl[COMPUTE_SOURCE_CAPACITY] = {0};
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    const uint32_t frames = example_frame_count(argc, argv);
+    bool ok = false;
+    ParticleState* state = (ParticleState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    state->scene = ctx->scene;
+    if (out_user != NULL)
+        *out_user = state;
+
     positions = (vec3*)dvz_calloc(PARTICLE_COUNT, sizeof(vec3));
     velocities = (vec3*)dvz_calloc(PARTICLE_COUNT, sizeof(vec3));
     ages = (float*)dvz_calloc(PARTICLE_COUNT, sizeof(float));
@@ -467,37 +473,36 @@ int main(int argc, char** argv)
         "gpu_particle_smoke: allocation failed");
     _init_particles(positions, velocities, ages, colors, sizes);
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
+    DvzPanel* panel = dvz_panel(ctx->figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzSceneBuffer* position_buffer = _scene_buffer(
-        scene, DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec3),
+        ctx->scene, DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec3),
         (uint64_t)PARTICLE_COUNT * sizeof(vec3));
     DvzSceneBuffer* velocity_buffer = _scene_buffer(
-        scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec3),
+        ctx->scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec3),
         (uint64_t)PARTICLE_COUNT * sizeof(vec3));
     DvzSceneBuffer* age_buffer = _scene_buffer(
-        scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(float),
+        ctx->scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(float),
         (uint64_t)PARTICLE_COUNT * sizeof(float));
     DvzSceneBuffer* color_buffer = _scene_buffer(
-        scene, DVZ_SCENE_BUFFER_USAGE_VERTEX, sizeof(DvzColor),
+        ctx->scene, DVZ_SCENE_BUFFER_USAGE_VERTEX, sizeof(DvzColor),
         (uint64_t)PARTICLE_COUNT * sizeof(DvzColor));
     DvzSceneBuffer* size_buffer = _scene_buffer(
-        scene, DVZ_SCENE_BUFFER_USAGE_VERTEX, sizeof(float),
+        ctx->scene, DVZ_SCENE_BUFFER_USAGE_VERTEX, sizeof(float),
         (uint64_t)PARTICLE_COUNT * sizeof(float));
     DvzSceneBuffer* param_buffer =
-        _scene_buffer(scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec4), 3 * sizeof(vec4));
+        _scene_buffer(ctx->scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec4), 3 * sizeof(vec4));
     EXAMPLE_CHECK(
         position_buffer != NULL && velocity_buffer != NULL && age_buffer != NULL &&
             color_buffer != NULL && size_buffer != NULL && param_buffer != NULL,
         "dvz_scene_buffer() failed");
-    ParticleState state = {.scene = scene, .params = param_buffer, .sim_time = 0.0f};
+    state->params = param_buffer;
+    state->sim_time = 0.0f;
     vec4 params[3] = {0};
-    _params_for_state(&state, 0.0f, params);
+    _params_for_state(state, 0.0f, params);
     EXAMPLE_CHECK(
         dvz_scene_buffer_set_data(
             position_buffer, positions, (uint64_t)PARTICLE_COUNT * sizeof(vec3)),
@@ -520,7 +525,7 @@ int main(int argc, char** argv)
         dvz_scene_buffer_set_data(param_buffer, params, sizeof(params)),
         "param buffer upload failed");
 
-    DvzVisual* points = dvz_point(scene, 0);
+    DvzVisual* points = dvz_point(ctx->scene, 0);
     EXAMPLE_CHECK(points != NULL, "dvz_point() failed");
     EXAMPLE_CHECK(
         dvz_visual_set_attr_buffer(points, "position", position_buffer, 0, PARTICLE_COUNT),
@@ -546,7 +551,7 @@ int main(int argc, char** argv)
     compute_desc.dispatch[0] = (PARTICLE_COUNT + WORKGROUP_SIZE - 1u) / WORKGROUP_SIZE;
     compute_desc.dispatch[1] = 1;
     compute_desc.dispatch[2] = 1;
-    DvzSceneCompute* compute = dvz_scene_compute(scene, &compute_desc);
+    DvzSceneCompute* compute = dvz_scene_compute(ctx->scene, &compute_desc);
     EXAMPLE_CHECK(compute != NULL, "dvz_scene_compute() failed");
     EXAMPLE_CHECK(
         dvz_scene_compute_set_buffer(
@@ -567,43 +572,64 @@ int main(int argc, char** argv)
             compute, 3, age_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0,
             (uint64_t)PARTICLE_COUNT * sizeof(float)),
         "bind compute ages failed");
-    EXAMPLE_CHECK(dvz_figure_add_compute(figure, compute), "attach compute pass failed");
+    EXAMPLE_CHECK(dvz_figure_add_compute(ctx->figure, compute), "attach compute pass failed");
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "gpu_particle_smoke");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzInputRouter* router = dvz_view_input(win);
-    EXAMPLE_CHECK(router != NULL, "dvz_view_input() failed");
-    dvz_input_subscribe_pointer(router, _particle_pointer, &state);
-    dvz_view_set_frame_callback(win, _particle_frame, &state);
-    dvz_view_request_frame(win);
-
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("gpu_particle_smoke");
-    EXAMPLE_CHECK(dvz_view_capture_start(win, &capture) == 0, "dvz_view_capture_start() failed");
-    dvz_app_run(app, frames);
-    EXAMPLE_CHECK(dvz_view_capture_stop(win) == 0, "dvz_view_capture_stop() failed");
-
-    if (frames == 0)
-        printf(
-            "gpu_particle_smoke: %u smoke particles, interactive scene compute path\n",
-            PARTICLE_COUNT);
-    else
-        printf(
-            "gpu_particle_smoke: %u smoke particles, %u frames, scene compute path\n",
-            PARTICLE_COUNT, frames);
-    rc = 0;
-
+    ok = true;
 cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    else if (scene != NULL)
-        dvz_scene_destroy(scene);
     dvz_free(sizes);
     dvz_free(colors);
     dvz_free(ages);
     dvz_free(velocities);
     dvz_free(positions);
-    return rc;
+    return ok;
+}
+
+
+
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)ctx;
+    (void)app;
+    ParticleState* state = (ParticleState*)user;
+    if (state == NULL || view == NULL)
+        return true;
+
+    DvzInputRouter* router = dvz_view_input(view);
+    if (router != NULL)
+        dvz_input_subscribe_pointer(router, _particle_pointer, state);
+    dvz_view_set_frame_callback(view, _particle_frame, state);
+    dvz_view_request_frame(view);
+    return true;
+}
+
+
+
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
+}
+
+
+
+static DvzScenarioSpec _gpu_particle_smoke_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "showcase_gpu_particle_smoke",
+        .title = "gpu_particle_smoke",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .native_view = _scenario_native_view,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _gpu_particle_smoke_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
