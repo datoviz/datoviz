@@ -18,7 +18,7 @@ DEFAULT_MANIFEST = ROOT / "examples/c/MANIFEST.yaml"
 DEFAULT_DOCS_DIR = ROOT / "docs/examples"
 DEFAULT_IMAGE_DIR = ROOT / "docs/images/gallery"
 SOURCE_BASE_URL = "https://github.com/datoviz/datoviz/blob/v0.4-dev"
-PUBLIC_LANES = ("visuals", "features", "workflows", "composites", "showcases", "scientific")
+PUBLIC_LANES = ("visuals", "features", "showcases")
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
 PYTHON_SOURCE_BY_ID = {}
 
@@ -34,7 +34,7 @@ PAGE_CONFIG = {
     },
     "feature-gallery.md": {
         "title": "Feature Gallery",
-        "lanes": ("features", "composites"),
+        "lanes": ("features",),
         "intro": """\
             This page indexes focused C examples for public scene, layout, adornment, interaction,
             update, rendering-technique, appearance, and semantic-composite features.
@@ -42,7 +42,7 @@ PAGE_CONFIG = {
     },
     "showcases.md": {
         "title": "Showcases",
-        "lanes": ("workflows", "showcases", "scientific"),
+        "lanes": ("showcases",),
         "intro": """\
             Showcases are composed examples for user goals, release proof, and public website media.
             They may use workflows, prepared data, animation, postprocess settings, or
@@ -301,8 +301,8 @@ def render_gallery_page(
 def render_index(examples: list[Example], docs_dir: Path) -> None:
     by_lane = {lane: [example for example in examples if example.lane == lane] for lane in PUBLIC_LANES}
     visual_examples = by_lane["visuals"]
-    feature_examples = by_lane["features"] + by_lane["composites"]
-    showcase_examples = by_lane["workflows"] + by_lane["showcases"] + by_lane["scientific"]
+    feature_examples = by_lane["features"]
+    showcase_examples = by_lane["showcases"]
     lines = generated_header("Examples")
     lines.extend(
         dedent(
@@ -345,8 +345,8 @@ def render_index(examples: list[Example], docs_dir: Path) -> None:
             "",
             "## Current Source Lanes",
             "",
-            "The source tree still has transitional lanes. New public concepts should normally use",
-            "`visuals`, `features`, or `showcases` plus tags in `examples/c/MANIFEST.yaml`.",
+            "Public source lanes use `visuals`, `features`, or `showcases`. Concepts such as",
+            "`workflow`, `scientific`, `real-data`, and `composite` are manifest tags.",
             "",
         ]
     )

@@ -40,10 +40,10 @@ source material.
 | `feature_material_mesh` | `features/material_mesh.c` | Feature proof. |
 | `feature_lighting` | `features/lighting.c` | Feature proof. |
 | `feature_datetime_axis` | `features/datetime_axis.c` | Experimental feature proof. |
-| `linked_panels_axes_panzoom` | `workflows/panel_linked_axes.c` | Workflow proof. |
+| `linked_panels_axes_panzoom` | `showcases/panel_linked_axes.c` | Workflow showcase proof. |
 | `scale_bar` | `features/scalebar.c` | Minimal feature proof. |
 | `scalebar_units` | `features/scalebar_units.c` | Unit-conversion feature proof. |
-| `scalebar_measurement_workflow` | `workflows/scalebar_measurement.c` | Workflow proof. |
+| `scalebar_measurement_workflow` | `showcases/scalebar_measurement.c` | Workflow showcase proof. |
 | `colorbar` | `features/colorbar.c` | Feature proof. |
 | `colormap_scale` | `features/colormap_scale.c` | Feature proof. |
 | `annotation_readout` | `features/annotation_readout.c` | Feature proof. |
@@ -64,11 +64,11 @@ source material.
 | `feature_marker_symbols` | `features/marker_symbols.c` | Feature proof. |
 | `feature_legend_categorical` | `features/legend_categorical.c` | Experimental feature proof. |
 | `feature_video_export` | `features/video_export.c` | Experimental feature proof. |
-| `linked_panels_probe_colorbar` | `workflows/linked_probe_colorbar.c` | Workflow proof. |
-| `composite_polygon` | `composites/polygon.c` | Composite proof. |
-| `composite_graph` | `composites/graph.c` | Composite proof. |
-| `us_state_choropleth` | `scientific/choropleth.c` | Real Census data example with provenance. |
-| `protein_arcball_viewer` | `scientific/protein.c` | Real RCSB PDB data example with provenance. |
+| `linked_panels_probe_colorbar` | `showcases/linked_probe_colorbar.c` | Workflow showcase proof. |
+| `composite_polygon` | `features/polygon.c` | Composite feature proof. |
+| `composite_graph` | `features/graph.c` | Composite feature proof. |
+| `us_state_choropleth` | `showcases/choropleth.c` | Real Census data showcase with provenance. |
+| `protein_arcball_viewer` | `showcases/protein.c` | Real RCSB PDB data showcase with provenance. |
 | `showcase_gpu_particle_smoke` | `showcases/gpu_particle_smoke.c` | Experimental compute showcase. |
 | `showcase_wind_field` | `showcases/wind_field.c` | Gallery/showcase seed. |
 | `brain_volume_mesh` | `showcases/brain_volume_mesh.c` | Gallery/showcase seed. |
@@ -102,7 +102,7 @@ Legacy examples are not built by default. Promote by copying or moving into `fea
 or `showcases/` only after polishing and manifest updates.
 
 
-## Next Mechanical Taxonomy Migration
+## Completed Mechanical Taxonomy Migration
 
 Target public taxonomy:
 
@@ -112,8 +112,8 @@ examples/c/features/   one isolated feature, technique, or semantic composite pe
 examples/c/showcases/  composed workflows, scientific stories, real-data examples, and demos
 ```
 
-The next migration should be mechanical. Do not rewrite example behavior in the same commit unless
-the move exposes a build break that cannot be fixed otherwise.
+The migration was mechanical. Do not rewrite example behavior in the same commit unless the move
+exposes a build break that cannot be fixed otherwise.
 
 ### Move Map
 
@@ -127,8 +127,7 @@ the move exposes a build break that cannot be fixed otherwise.
 | `composites/polygon.c` | `features/polygon.c` | `composite_polygon` | `composite`, `polygon`, `polygon-set`, `holes`, `panzoom` |
 | `composites/graph.c` | `features/graph.c` | `composite_graph` | `composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom` |
 
-After the move, remove empty transitional directories and their README files unless another tracked
-source still references them.
+The empty transitional directories and their README files were removed.
 
 ### Required Edits
 

@@ -13,6 +13,6 @@ with `technique` tags for filtering.
 | [Lighting](gallery/features/feature_lighting.md) | [`examples/c/features/lighting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c) | `supported` |
 | [Depth Test Toggle](gallery/features/depth_test.md) | [`examples/c/features/depth_test.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/depth_test.c) | `supported` |
 | [Alpha Blending](gallery/features/alpha_blending.md) | [`examples/c/features/alpha_blending.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/alpha_blending.c) | `supported` |
-| [Protein](gallery/scientific/protein_arcball_viewer.md) | [`examples/c/scientific/protein.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/scientific/protein.c) | `supported` |
+| [Protein](gallery/showcases/protein_arcball_viewer.md) | [`examples/c/showcases/protein.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c) | `supported` |
 | [GPU Particle Smoke](gallery/showcases/showcase_gpu_particle_smoke.md) | [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c) | `experimental` |
 | [Point Cloud](gallery/showcases/point_cloud.md) | [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c) | `supported` |

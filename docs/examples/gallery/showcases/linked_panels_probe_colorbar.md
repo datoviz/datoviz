@@ -5,16 +5,16 @@
 linked image panels with one probe readout and shared colorbar.
 
 - ID: `linked_panels_probe_colorbar`
-- Lane: `workflows`
+- Lane: `showcases`
 - Status: `supported`
-- Source: [`examples/c/workflows/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/workflows/linked_probe_colorbar.c)
-- Build: `just example-c workflows/linked_probe_colorbar`
-- Smoke: `./build/examples/c/workflows/linked_probe_colorbar --png`
+- Source: [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c)
+- Build: `just example-c showcases/linked_probe_colorbar`
+- Smoke: `./build/examples/c/showcases/linked_probe_colorbar --png`
 - Validation: `smoke+readback+interaction+screenshot`
 
 ## Features
 
-`image`, `sampled-field`, `pixel-query`, `linked-panzoom`, `colorbar`, `readout`
+`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, `colorbar`, `readout`
 
 ## Media
 
@@ -28,5 +28,5 @@ prepared separately from this page and should not be staged without explicit app
 === "C"
 
     ```c
-    --8<-- "examples/c/workflows/linked_probe_colorbar.c"
+    --8<-- "examples/c/showcases/linked_probe_colorbar.c"
     ```

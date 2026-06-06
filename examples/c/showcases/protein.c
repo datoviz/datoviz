@@ -7,7 +7,7 @@
 /* protein - RCSB PDB protein structure rendered as clustered spheres.
  *
  * Scenario: protein_arcball_viewer
- * Style: scientific, graphite_cyan, 1600x1200 capture target
+ * Style: showcase scientific, graphite_cyan, 1600x1200 capture target
  *
  * Data:    RCSB PDB structure data. The default cache target is 6M0J; the repository fallback is
  *          data/examples/proteins/1ubq/prepared, generated from RCSB PDB 1UBQ.
@@ -15,9 +15,9 @@
  * Terms:   RCSB PDB data usage policy applies.
  * Prepare: python tools/data/prepare_protein_arcball.py 1UBQ --regenerate
  *          python tools/preprocess_protein.py 6M0J
- * Build:   cmake --build build --target protein
- * Run:     ./build/examples/c/scientific/protein
- * Smoke:   ./build/examples/c/scientific/protein 60
+ * Build:   just example-c showcases/protein
+ * Run:     ./build/examples/c/showcases/protein
+ * Smoke:   ./build/examples/c/showcases/protein 60
  * Options: --spin, --debug, [bundle-path], [frame-count]
  * Debug:   DVZ_EXAMPLE_DEBUG=gui enables post-processing diagnostics
  *

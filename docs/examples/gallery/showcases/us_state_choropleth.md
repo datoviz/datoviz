@@ -5,16 +5,16 @@
 contiguous U.S. state population-density choropleth.
 
 - ID: `us_state_choropleth`
-- Lane: `scientific`
+- Lane: `showcases`
 - Status: `supported`
-- Source: [`examples/c/scientific/choropleth.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/scientific/choropleth.c)
-- Build: `just example-c scientific/choropleth`
-- Smoke: `./build/examples/c/scientific/choropleth --png`
+- Source: [`examples/c/showcases/choropleth.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/choropleth.c)
+- Build: `just example-c showcases/choropleth`
+- Smoke: `./build/examples/c/showcases/choropleth --png`
 - Validation: `smoke+screenshot+manual`
 
 ## Features
 
-`composite`, `polygon-set`, `choropleth`, `colorbar`, `panzoom`, `capture`
+`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, `choropleth`, `colorbar`, `panzoom`, `capture`
 
 ## Dataset
 
@@ -49,5 +49,5 @@ prepared separately from this page and should not be staged without explicit app
 === "C"
 
     ```c
-    --8<-- "examples/c/scientific/choropleth.c"
+    --8<-- "examples/c/showcases/choropleth.c"
     ```

@@ -7,12 +7,12 @@
 /* linked_probe_colorbar - linked image panels with one probe readout and shared colorbar.
  *
  * Scenario: linked_panels_probe_colorbar
- * Style: workflows, graphite_cyan, 1600x1200 capture target
+ * Style: showcase workflow, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just example-c workflows/linked_probe_colorbar
- * Run:    ./build/examples/c/workflows/linked_probe_colorbar
- * Smoke:  ./build/examples/c/workflows/linked_probe_colorbar 120
- * PNG:    DVZ_CAPTURE=png ./build/examples/c/workflows/linked_probe_colorbar 1
+ * Build:  just example-c showcases/linked_probe_colorbar
+ * Run:    ./build/examples/c/showcases/linked_probe_colorbar
+ * Smoke:  ./build/examples/c/showcases/linked_probe_colorbar 120
+ * PNG:    DVZ_CAPTURE=png ./build/examples/c/showcases/linked_probe_colorbar 1
  */
 
 

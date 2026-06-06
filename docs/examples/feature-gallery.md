@@ -145,6 +145,18 @@ fly controller with deterministic camera translation.
 
 <div class="card" markdown="1">
 
+### [Graph Composite](gallery/features/composite_graph.md)
+
+_Media pending._
+
+`supported` `features`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
+
+semantic graph composite with clustered curved edges.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Hover Picking](gallery/features/feature_pick_hover.md)
 
 _Media pending._
@@ -337,6 +349,18 @@ retained point item picking proof.
 
 <div class="card" markdown="1">
 
+### [Polygon Composite](gallery/features/composite_polygon.md)
+
+_Media pending._
+
+`supported` `features`<br><span>`composite`, `polygon`, `polygon-set`, `holes`, `panzoom`</span>
+
+semantic polygon and polygon-set composites.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Scalar Color Scale](gallery/features/colormap_scale.md)
 
 _Media pending._
@@ -476,36 +500,6 @@ _Media pending._
 `supported` `features`
 
 retained visual visibility toggled on a runner frame.
-
-</div>
-
-</div>
-
-## Composites
-
-<div class="grid cards" markdown="1">
-
-<div class="card" markdown="1">
-
-### [Graph Composite](gallery/composites/composite_graph.md)
-
-_Media pending._
-
-`supported` `composites`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
-
-semantic graph composite with clustered curved edges.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Polygon Composite](gallery/composites/composite_polygon.md)
-
-_Media pending._
-
-`supported` `composites`<br><span>`composite`, `polygon`, `polygon-set`, `holes`, `panzoom`</span>
-
-semantic polygon and polygon-set composites.
 
 </div>
 

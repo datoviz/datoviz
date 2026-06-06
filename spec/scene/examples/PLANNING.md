@@ -41,9 +41,9 @@ Use three public example categories for v0.4:
 structural categories. Semantic composites such as graph and polygon should be treated as features
 or showcases unless a future API promotes them to true visual families.
 
-Current source directories such as `examples/c/workflows/`, `examples/c/scientific/`, and
-`examples/c/composites/` are transitional. Keep them indexed, but do not add new structural folders
-for new concepts when tags would disambiguate the example.
+The active public C source directories are `examples/c/visuals/`, `examples/c/features/`, and
+`examples/c/showcases/`. Do not add new structural folders for new concepts when tags would
+disambiguate the example.
 
 
 ## Staging Vocabulary
@@ -98,25 +98,25 @@ The main remaining polish, promotion, or feature gaps are:
 | --- | --- | --- | --- |
 | `point_2d` | `ready-now` | retained scene, point visual, panzoom/offscreen | Public proof lives in `examples/c/visuals/point.c`. Keep as the smallest retained-scene point visual smoke; `examples/c/lab/point_stress.c` remains non-public stress material. |
 | `path_axes_2d` | `ready-now` | path, rendered text, 2D axes/ticks | Public proof lives in `examples/c/features/axes_2d.c`. |
-| `linked_panels_axes_panzoom` | `ready-now` | grid/layout, linked panzoom, axes | Public proof lives in `examples/c/workflows/panel_linked_axes.c`. |
-| `linked_panels_probe_colorbar` | `ready-now` | image probe, colorbar, annotation/readout, linked state | Public proof lives in `examples/c/workflows/linked_probe_colorbar.c`; focused proofs still cover the parts separately in `image_probe`, `colorbar`, and `annotation_readout`. |
+| `linked_panels_axes_panzoom` | `ready-now` | grid/layout, linked panzoom, axes | Public proof lives in `examples/c/showcases/panel_linked_axes.c`. |
+| `linked_panels_probe_colorbar` | `ready-now` | image probe, colorbar, annotation/readout, linked state | Public proof lives in `examples/c/showcases/linked_probe_colorbar.c`; focused proofs still cover the parts separately in `image_probe`, `colorbar`, and `annotation_readout`. |
 | `marker_picking` | `ready-now` | marker visual, item pick, selection highlight | Public proof lives in `examples/c/features/pick_marker.c`. |
 | `sphere_impostor` | `ready-now` | sphere visual, lighting/depth | Public proof lives in `examples/c/visuals/sphere.c`; molecule/protein semantics stay in the scientific protein example. |
 | `volume` | `ready-now` | 3D sampled field, slice/render, capture | Public proof lives in `examples/c/visuals/volume.c`. |
-| `scale_bar` | `ready-now` | retained scale bar, label, panzoom/domain updates | Minimal feature proof lives in `examples/c/features/scalebar.c`; unit conversion proof lives in `examples/c/features/scalebar_units.c`; richer overview/detail/3D measurement composition lives in `examples/c/workflows/scalebar_measurement.c`. |
+| `scale_bar` | `ready-now` | retained scale bar, label, panzoom/domain updates | Minimal feature proof lives in `examples/c/features/scalebar.c`; unit conversion proof lives in `examples/c/features/scalebar_units.c`; richer overview/detail/3D measurement composition lives in `examples/c/showcases/scalebar_measurement.c`. |
 | `scalebar_units` | `ready-now` | retained scale bar, non-spatial unit conversion | Public proof lives in `examples/c/features/scalebar_units.c`. |
-| `scalebar_measurement_workflow` | `ready-now` | overview/detail/3D measurement composition | Public proof lives in `examples/c/workflows/scalebar_measurement.c`. |
+| `scalebar_measurement_workflow` | `ready-now` | overview/detail/3D measurement composition | Public proof lives in `examples/c/showcases/scalebar_measurement.c`. |
 | `colorbar` | `ready-now` | scalar field, continuous colorbar, range labels | Standalone feature proof lives in `examples/c/features/colorbar.c`; probing stays separate. |
 | `annotation_readout` | `ready-now` | anchored text/readout, highlighted data target | Standalone feature proof lives in `examples/c/features/annotation_readout.c`; query behavior stays separate. |
 | `image_probe` | `ready-now` | scalar sampled image, pixel query, probe marker, stdout readback | Focused public image-query proof lives in `examples/c/features/image_probe.c`; colorbar/readout and broader linked-panel pressure remain separate. |
-| `protein_arcball_viewer` | `ready-now` | real PDB data, sphere impostors, materials, SSAO/MSAA, GUI, arcball | Public proof lives in `examples/c/scientific/protein.c`; defer labels/picking/molecular surface if needed. |
+| `protein_arcball_viewer` | `ready-now` | real PDB data, sphere impostors, materials, SSAO/MSAA, GUI, arcball | Public proof lives in `examples/c/showcases/protein.c`; defer labels/picking/molecular surface if needed. |
 | `showcase_wind_field` | `ready-now` | image field, vector visual, paths, panzoom, colorbar | Public proof lives in `examples/c/showcases/wind_field.c` using the retained `dvz_vector()` visual plus streamlines. |
 | `showcase_gpu_particle_smoke` | `ready-now` | scene compute, shared storage/vertex buffers, blended points | Public experimental compute-to-graphics showcase lives in `examples/c/showcases/gpu_particle_smoke.c`. |
 | `textured_terrain_or_planet` | `ready-now` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof lives in `examples/c/showcases/textured_planet.c`: Earth/Mars UV sphere with real sampled textures and procedural fallbacks. Mars DEM terrain analysis remains v0.5/later. |
 | `brain_volume_mesh` | `ready-now` | volume, occluded slice composition, arcball | Public proof lives in `examples/c/showcases/brain_volume_mesh.c` over the prepared Allen/IBL RGBA volume. The newer atlas-mesh bundle remains source material for a later mesh-overlay polish pass; full atlas explorer is v0.5. |
 | `point_cloud` | `ready-now` | large RGB pixel cloud, direct colors, GUI-tunable EDL, fly camera, capture | Public proof lives in `examples/c/showcases/point_cloud.c`, with required RESEPI raw-LAZ preprocessing through `tools/data/prepare_point_cloud.py`; no synthetic or bundled-NPZ fallback is provided. |
-| `composite_polygon` | `ready-now` | semantic polygon/polygon-set, fill+stroke composite, holes, region styling | Public proof lives in `examples/c/composites/polygon.c`; polygon is not a visual family even if it appears near visual examples. |
-| `composite_graph` | `ready-now` | semantic graph, user-provided layout, nodes+edges composite, stable ids, Bezier edges | Public proof lives in `examples/c/composites/graph.c`. Keep layout user-supplied first; edge-mode comparisons belong in tests or lab examples. |
+| `composite_polygon` | `ready-now` | semantic polygon/polygon-set, fill+stroke composite, holes, region styling | Public proof lives in `examples/c/features/polygon.c`; polygon is not a visual family even if it appears near visual examples. |
+| `composite_graph` | `ready-now` | semantic graph, user-provided layout, nodes+edges composite, stable ids, Bezier edges | Public proof lives in `examples/c/features/graph.c`. Keep layout user-supplied first; edge-mode comparisons belong in tests or lab examples. |
 
 
 ## v0.4 Short Feature Coverage Queue

@@ -7,11 +7,11 @@
 /* panel_linked_axes - linked temporal panels with a spanning summary panel.
  *
  * Scenario: linked_panels_axes_panzoom
- * Style: workflows, graphite_cyan, 1600x1200 capture target
+ * Style: showcase workflow, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just example-c workflows/panel_linked_axes
- * Run:    ./build/examples/c/workflows/panel_linked_axes
- * Smoke:  ./build/examples/c/workflows/panel_linked_axes 1
+ * Build:  just example-c showcases/panel_linked_axes
+ * Run:    ./build/examples/c/showcases/panel_linked_axes
+ * Smoke:  ./build/examples/c/showcases/panel_linked_axes 1
  */
 
 

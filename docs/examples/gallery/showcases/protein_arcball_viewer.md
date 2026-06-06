@@ -5,12 +5,16 @@
 RCSB PDB protein structure rendered as clustered spheres.
 
 - ID: `protein_arcball_viewer`
-- Lane: `scientific`
+- Lane: `showcases`
 - Status: `supported`
-- Source: [`examples/c/scientific/protein.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/scientific/protein.c)
-- Build: `just example-c scientific/protein`
-- Smoke: `./build/examples/c/scientific/protein --png`
+- Source: [`examples/c/showcases/protein.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c)
+- Build: `just example-c showcases/protein`
+- Smoke: `./build/examples/c/showcases/protein --png`
 - Validation: `smoke+screenshot+manual`
+
+## Features
+
+`scientific`, `real-data`, `molecular`, `sphere`, `arcball`
 
 ## Dataset
 
@@ -44,5 +48,5 @@ prepared separately from this page and should not be staged without explicit app
 === "C"
 
     ```c
-    --8<-- "examples/c/scientific/protein.c"
+    --8<-- "examples/c/showcases/protein.c"
     ```

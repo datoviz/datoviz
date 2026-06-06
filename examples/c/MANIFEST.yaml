@@ -10,10 +10,6 @@ taxonomy:
     visuals: one public visual family per example
     features: one isolated feature or rendering technique per example
     showcases: composed workflows, scientific stories, real-data examples, and polished demos
-  transitional_lanes:
-    - workflows
-    - composites
-    - scientific
   tag_not_folder:
     - workflow
     - scientific
@@ -28,10 +24,7 @@ folders:
   public:
     - examples/c/features
     - examples/c/visuals
-    - examples/c/composites
-    - examples/c/workflows
     - examples/c/showcases
-    - examples/c/scientific
   non_public:
     - examples/c/lab
     - examples/c/legacy
@@ -164,20 +157,27 @@ examples:
   - id: linked_panels_axes_panzoom
     title: Linked Panels With Axes
     stage: v0.4_required
-    lane: workflows
-    source: examples/c/workflows/panel_linked_axes.c
+    lane: showcases
+    source: examples/c/showcases/panel_linked_axes.c
     validation: smoke+interaction
+    features:
+      - workflow
+      - linked-panels
+      - axes
+      - panzoom
+      - synthetic
 
   - id: linked_panels_probe_colorbar
     title: Linked Probe With Colorbar
     stage: v0.4_required
-    lane: workflows
-    source: examples/c/workflows/linked_probe_colorbar.c
+    lane: showcases
+    source: examples/c/showcases/linked_probe_colorbar.c
     validation: smoke+readback+interaction+screenshot
     gallery:
       card: section
       status_label: supported
     features:
+      - workflow
       - image
       - sampled-field
       - pixel-query
@@ -202,9 +202,14 @@ examples:
   - id: scalebar_measurement_workflow
     title: Scale Bar Measurement Workflow
     stage: v0.4_required
-    lane: workflows
-    source: examples/c/workflows/scalebar_measurement.c
+    lane: showcases
+    source: examples/c/showcases/scalebar_measurement.c
     validation: smoke+screenshot
+    features:
+      - workflow
+      - scale-bar
+      - measurement
+      - synthetic
 
   - id: colorbar
     title: Colorbar
@@ -587,8 +592,8 @@ examples:
   - id: composite_polygon
     title: Polygon Composite
     stage: v0.4_required
-    lane: composites
-    source: examples/c/composites/polygon.c
+    lane: features
+    source: examples/c/features/polygon.c
     validation: smoke+screenshot
     gallery:
       card: small
@@ -603,8 +608,8 @@ examples:
   - id: composite_graph
     title: Graph Composite
     stage: v0.4_required
-    lane: composites
-    source: examples/c/composites/graph.c
+    lane: features
+    source: examples/c/features/graph.c
     validation: smoke+screenshot
     gallery:
       card: small
@@ -619,8 +624,8 @@ examples:
   - id: us_state_choropleth
     title: U.S. State Choropleth
     stage: v0.4_required
-    lane: scientific
-    source: examples/c/scientific/choropleth.c
+    lane: showcases
+    source: examples/c/showcases/choropleth.c
     validation: smoke+screenshot+manual
     dataset:
       name: Contiguous U.S. state population density
@@ -639,6 +644,9 @@ examples:
       card: section
       status_label: supported
     features:
+      - scientific
+      - real-data
+      - geo
       - composite
       - polygon-set
       - choropleth
@@ -649,8 +657,8 @@ examples:
   - id: protein_arcball_viewer
     title: Protein
     stage: v0.4_required
-    lane: scientific
-    source: examples/c/scientific/protein.c
+    lane: showcases
+    source: examples/c/showcases/protein.c
     validation: smoke+screenshot+manual
     dataset:
       name: RCSB PDB protein structure
@@ -667,6 +675,12 @@ examples:
     gallery:
       card: section
       status_label: supported
+    features:
+      - scientific
+      - real-data
+      - molecular
+      - sphere
+      - arcball
 
   - id: showcase_wind_field
     title: Wind Field

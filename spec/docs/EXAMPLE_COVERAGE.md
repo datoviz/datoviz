@@ -175,12 +175,12 @@ Current implementation seeds:
 | `visual.vector` | `examples/c/visuals/vector.c`, `examples/c/showcases/wind_field.c` | Current C examples cover straight/curved vectors and a composed wind-field proof. |
 | `visual.image` | `examples/c/visuals/image.c`, `examples/c/features/image_probe.c` | Current image baseline is separate from probing and colorbar/readout behavior. |
 | `visual.mesh` | `examples/c/visuals/mesh.c`, `docs/gallery/visuals/mesh.md` | Current C example is the source of truth; textured mesh is a separate feature/showcase proof. |
-| `visual.sphere` | `examples/c/visuals/sphere.c`, `examples/c/scientific/protein.c` | Current sphere baseline is separate from molecule/protein scientific material. |
+| `visual.sphere` | `examples/c/visuals/sphere.c`, `examples/c/showcases/protein.c` | Current sphere baseline is separate from molecule/protein scientific material. |
 | `visual.volume` | `examples/c/visuals/volume.c`, `examples/c/showcases/brain_volume_mesh.c` | Current volume baseline is separate from full brain/medical composition. |
 | `visual.text` | `examples/c/visuals/text.c`, `examples/c/lab/text_msdf_diagnostics.c` | Current text baseline uses the public text API; do not document raw glyph internals. |
 | `visual.labels` | `examples/c/visuals/labels.c`, `examples/c/features/probe_labels.c` | Current labels baseline is separate from label probing. |
 | `visual.splat` | `examples/c/visuals/splat.c`, `examples/c/legacy/showcase/gothic_splat.c` | Experimental v0.4 visual; publish with explicit experimental labeling and no full asset-pipeline promise. |
-| `composite.polygon` | `examples/c/composites/polygon.c`, `docs/gallery/features/polygon.md` | Polygon is in v0.4 release scope as a semantic composite; rebuild the old feature page as a C-first composite page. |
+| `composite.polygon` | `examples/c/features/polygon.c`, `docs/gallery/features/polygon.md` | Polygon is in v0.4 release scope as a semantic composite; rebuild the old feature page as a C-first composite page. |
 
 
 ## AI-Assisted Coverage Matrix
@@ -264,7 +264,7 @@ scaffolding, but the feature must be the visible point of the example.
 | `feature.probe_image` | `examples/c/features/image_probe.c` | `ready-now` | Image field with a cursor or pinned marker showing data coordinates and sampled value. | Teaches image probing and pixel-query readback. Keep colorbars and textual readout annotations in separate feature examples. |
 | `feature.probe_labels` | `examples/c/features/probe_labels.c` | `ready-now` | Label field or labeled regions where hovering reports stable label ids and names. | Teaches label probing. Avoid segmentation editor scope. |
 | `feature.selection` | `examples/c/features/selection.c` | `ready-now` | A small visual where selected items remain highlighted after a click or scripted selection. | Teaches selection model and visual feedback. Avoid multi-visual selection linking. |
-| `workflow.linked_probe_colorbar` | `examples/c/workflows/linked_probe_colorbar.c` | `ready-now` | Two linked panels, one scalar image, one context/detail view, with colorbar and readout synchronized. | Teaches composed explanatory layout. This is not a minimal image, colorbar, or panel example. |
+| `workflow.linked_probe_colorbar` | `examples/c/showcases/linked_probe_colorbar.c` | `ready-now` | Two linked panels, one scalar image, one context/detail view, with colorbar and readout synchronized. | Teaches composed explanatory layout. This is not a minimal image, colorbar, or panel example. |
 
 ### Materials And Appearance
 
@@ -291,14 +291,14 @@ Current feature seeds and migration notes:
 | ID | Useful existing source or page | Migration note |
 | --- | --- | --- |
 | `feature.axes_2d` | `examples/c/features/axes_2d.c`, `docs/gallery/features/axes.md` | Replace old docs with C-first `path_axes_2d` or scatter/axes proof. |
-| `feature.panel_linked` | `examples/c/features/panel_linked.c`, `examples/c/workflows/panel_linked_axes.c` | Minimal linked-panel proof is separate from the axes workflow. |
-| `feature.scalebar` | `examples/c/features/scalebar.c`, `examples/c/features/scalebar_units.c`, `examples/c/workflows/scalebar_measurement.c` | Minimal feature proofs stay separate from the richer measurement workflow; the older 2D/3D comparison stays in lab. |
+| `feature.panel_linked` | `examples/c/features/panel_linked.c`, `examples/c/showcases/panel_linked_axes.c` | Minimal linked-panel proof is separate from the axes workflow. |
+| `feature.scalebar` | `examples/c/features/scalebar.c`, `examples/c/features/scalebar_units.c`, `examples/c/showcases/scalebar_measurement.c` | Minimal feature proofs stay separate from the richer measurement workflow; the older 2D/3D comparison stays in lab. |
 | `feature.colorbar` | `examples/c/features/colorbar.c` | Standalone scalar scale/colorbar proof; do not add probing or linked panels. |
 | `feature.annotation_label` | `examples/c/features/annotation_readout.c` | Standalone anchored text/readout proof; keep data query behavior elsewhere. |
 | `feature.probe_image` | `examples/c/features/image_probe.c` | Focused image probe using a sampled scalar field and pixel query; colorbar and annotation/readout are split into separate examples. |
 | `feature.pick_marker` | `examples/c/features/pick_marker.c` | Picking/selection proof; do not use as the marker visual baseline. |
 | `feature.mesh_texture` | `examples/c/features/mesh_texture.c`, `examples/c/showcases/textured_planet.c` | Minimal textured-mesh proof is separate from the planet showcase. |
-| `feature.controller_arcball` | `examples/c/features/controller_arcball.c`, `examples/c/scientific/protein.c` | Minimal controller proof is separate from composed scientific/showcase examples. |
+| `feature.controller_arcball` | `examples/c/features/controller_arcball.c`, `examples/c/showcases/protein.c` | Minimal controller proof is separate from composed scientific/showcase examples. |
 | `feature.controller_fly` | `examples/c/features/controller_fly.c`, `examples/c/showcases/point_cloud.c` | Minimal fly-controller proof is separate from the dense point-cloud showcase. |
 | `feature.timer_animation` | `examples/c/features/timer_animation.c` | Current C example replaces old animation/timer gallery pages. |
 | `feature.video_export` | `examples/c/features/video_export.c` | Experimental scenario-runner video proof replaces the old video gallery page. |
@@ -364,12 +364,12 @@ Current showcase and scientific gallery-facing examples:
 | Showcase | Demonstrates |
 | --- | --- |
 | `examples/c/showcases/point_cloud.c` | large RGB point cloud, fly controller, EDL, performance |
-| `examples/c/scientific/protein.c` | real PDB atom spheres, arcball, materials, postprocess diagnostics |
+| `examples/c/showcases/protein.c` | real PDB atom spheres, arcball, materials, postprocess diagnostics |
 | `examples/c/showcases/brain_volume_mesh.c` | Allen/IBL RGBA volume, occluded slice, arcball |
 | `examples/c/showcases/wind_field.c` | scalar field, retained vectors, streamlines, animation |
 | `examples/c/showcases/textured_planet.c` | textured mesh, sampled textures, lighting, arcball, video capture |
 | `examples/c/showcases/gpu_particle_smoke.c` | experimental scene compute feeding point rendering |
-| `examples/c/scientific/choropleth.c` | real Census polygon-set choropleth, scalar color scale, panzoom |
+| `examples/c/showcases/choropleth.c` | real Census polygon-set choropleth, scalar color scale, panzoom |
 
 Additional composed gallery candidates such as brain image/labels, multi-panel dashboards, mesh
 technique demos, and annotation/readout demos remain useful, but they are not missing required C

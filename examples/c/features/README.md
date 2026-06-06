@@ -1,7 +1,8 @@
 # C Feature Examples
 
 Scene and app capabilities belong here: panels, axes, colorbars, scale bars, annotations, overlays,
-controllers, sampled fields, picking, probing, selection, and retained updates.
+controllers, sampled fields, picking, probing, selection, retained updates, rendering techniques,
+and semantic composites.
 
 - `axes_2d.c`: retained numeric axes and tick labels.
 - `axis_labels.c`: retained axis titles and tick-label placement with plot margins.
@@ -36,6 +37,8 @@ controllers, sampled fields, picking, probing, selection, and retained updates.
 - `panel_linked.c`: two panels with bidirectional linked X panzoom state.
 - `timer_animation.c`: runner-backed frame animation updating retained point data.
 - `marker_symbols.c`: marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
+- `polygon.c`: semantic polygon and polygon-set composite.
+- `graph.c`: semantic graph composite with marker nodes and curved edges.
 - `update_visual_data.c`: retained point visual with full data replacement.
 - `visibility.c`: retained visual visibility toggled before rendering.
 - `legend_categorical.c`: tentative retained categorical legend attached to a panel.

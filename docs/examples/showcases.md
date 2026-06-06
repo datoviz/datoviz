@@ -9,48 +9,6 @@ publication.
 
 Coverage: 10 examples (8 supported, 1 experimental, 1 prototype).
 
-## Workflows
-
-<div class="grid cards" markdown="1">
-
-<div class="card" markdown="1">
-
-### [Linked Panels With Axes](gallery/workflows/linked_panels_axes_panzoom.md)
-
-_Media pending._
-
-`supported` `workflows`
-
-linked temporal panels with a spanning summary panel.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Linked Probe With Colorbar](gallery/workflows/linked_panels_probe_colorbar.md)
-
-_Media pending._
-
-`supported` `workflows`<br><span>`image`, `sampled-field`, `pixel-query`, `linked-panzoom`, `colorbar`, ...</span>
-
-linked image panels with one probe readout and shared colorbar.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Scale Bar Measurement Workflow](gallery/workflows/scalebar_measurement_workflow.md)
-
-_Media pending._
-
-`supported` `workflows`
-
-scale-aware overview, detail, and 3D measurement workflow.
-
-</div>
-
-</div>
-
 ## Showcases
 
 <div class="grid cards" markdown="1">
@@ -81,6 +39,30 @@ scene API compute-to-graphics particle smoke showcase.
 
 <div class="card" markdown="1">
 
+### [Linked Panels With Axes](gallery/showcases/linked_panels_axes_panzoom.md)
+
+_Media pending._
+
+`supported` `showcases`<br><span>`workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`</span>
+
+linked temporal panels with a spanning summary panel.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Linked Probe With Colorbar](gallery/showcases/linked_panels_probe_colorbar.md)
+
+_Media pending._
+
+`supported` `showcases`<br><span>`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, ...</span>
+
+linked image panels with one probe readout and shared colorbar.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Point Cloud](gallery/showcases/point_cloud.md)
 
 _Media pending._
@@ -88,6 +70,30 @@ _Media pending._
 `supported` `showcases`<br><span>`pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, `gui`, ...</span>
 
 RESEPI RGB LiDAR dense point cloud.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Protein](gallery/showcases/protein_arcball_viewer.md)
+
+_Media pending._
+
+`supported` `showcases`<br><span>`scientific`, `real-data`, `molecular`, `sphere`, `arcball`</span>
+
+RCSB PDB protein structure rendered as clustered spheres.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Scale Bar Measurement Workflow](gallery/showcases/scalebar_measurement_workflow.md)
+
+_Media pending._
+
+`supported` `showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
+
+scale-aware overview, detail, and 3D measurement workflow.
 
 </div>
 
@@ -105,6 +111,18 @@ UV textured planet mesh via dvz_mesh + sampled fields.
 
 <div class="card" markdown="1">
 
+### [U.S. State Choropleth](gallery/showcases/us_state_choropleth.md)
+
+_Media pending._
+
+`supported` `showcases`<br><span>`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, ...</span>
+
+contiguous U.S. state population-density choropleth.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Wind Field](gallery/showcases/showcase_wind_field.md)
 
 _Media pending._
@@ -112,36 +130,6 @@ _Media pending._
 `supported` `showcases`
 
 synthetic weather-like scalar and vector field showcase.
-
-</div>
-
-</div>
-
-## Scientific
-
-<div class="grid cards" markdown="1">
-
-<div class="card" markdown="1">
-
-### [Protein](gallery/scientific/protein_arcball_viewer.md)
-
-_Media pending._
-
-`supported` `scientific`
-
-RCSB PDB protein structure rendered as clustered spheres.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [U.S. State Choropleth](gallery/scientific/us_state_choropleth.md)
-
-_Media pending._
-
-`supported` `scientific`<br><span>`composite`, `polygon-set`, `choropleth`, `colorbar`, `panzoom`, ...</span>
-
-contiguous U.S. state population-density choropleth.
 
 </div>
 

@@ -5,12 +5,16 @@
 scale-aware overview, detail, and 3D measurement workflow.
 
 - ID: `scalebar_measurement_workflow`
-- Lane: `workflows`
+- Lane: `showcases`
 - Status: `supported`
-- Source: [`examples/c/workflows/scalebar_measurement.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/workflows/scalebar_measurement.c)
-- Build: `just example-c workflows/scalebar_measurement`
-- Smoke: `./build/examples/c/workflows/scalebar_measurement --png`
+- Source: [`examples/c/showcases/scalebar_measurement.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c)
+- Build: `just example-c showcases/scalebar_measurement`
+- Smoke: `./build/examples/c/showcases/scalebar_measurement --png`
 - Validation: `smoke+screenshot`
+
+## Features
+
+`workflow`, `scale-bar`, `measurement`, `synthetic`
 
 ## Media
 
@@ -24,5 +28,5 @@ prepared separately from this page and should not be staged without explicit app
 === "C"
 
     ```c
-    --8<-- "examples/c/workflows/scalebar_measurement.c"
+    --8<-- "examples/c/showcases/scalebar_measurement.c"
     ```

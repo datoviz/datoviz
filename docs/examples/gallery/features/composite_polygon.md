@@ -5,11 +5,11 @@
 semantic polygon and polygon-set composites.
 
 - ID: `composite_polygon`
-- Lane: `composites`
+- Lane: `features`
 - Status: `supported`
-- Source: [`examples/c/composites/polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c)
-- Build: `just example-c composites/polygon`
-- Smoke: `./build/examples/c/composites/polygon --png`
+- Source: [`examples/c/features/polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/polygon.c)
+- Build: `just example-c features/polygon`
+- Smoke: `./build/examples/c/features/polygon --png`
 - Validation: `smoke+screenshot`
 
 ## Features
@@ -28,5 +28,5 @@ prepared separately from this page and should not be staged without explicit app
 === "C"
 
     ```c
-    --8<-- "examples/c/composites/polygon.c"
+    --8<-- "examples/c/features/polygon.c"
     ```

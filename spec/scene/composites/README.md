@@ -94,7 +94,7 @@ Implemented v0.4 polish:
 7. keep fill/stroke lowering selectable in the future, but default to `mesh` fill plus `path`
    stroke for v0.4.
 
-The first public composite example should be `examples/c/composites/polygon.c`: a few deterministic
+The first public composite example should be `examples/c/features/polygon.c`: a few deterministic
 regions, one hole, visible stroke joins, per-region colors, and role access only for an optional
 advanced styling note.
 
@@ -205,13 +205,13 @@ need.
 Add a public composite lane:
 
 ```text
-examples/c/composites/
+examples/c/features/
 ```
 
 v0.4 targets:
 
-1. `composite_polygon`: `examples/c/composites/polygon.c`;
-2. `composite_graph`: `examples/c/composites/graph.c`.
+1. `composite_polygon`: `examples/c/features/polygon.c`;
+2. `composite_graph`: `examples/c/features/graph.c`.
 
 Keep compute-driven graph layout in `examples/c/lab/` until the compute-to-render buffer contract is
 release-proven.

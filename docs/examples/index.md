@@ -29,14 +29,11 @@ keeps media status explicit while capture artifacts are prepared separately.
 
 ## Current Source Lanes
 
-The source tree still has transitional lanes. New public concepts should normally use
-`visuals`, `features`, or `showcases` plus tags in `examples/c/MANIFEST.yaml`.
+Public source lanes use `visuals`, `features`, or `showcases`. Concepts such as
+`workflow`, `scientific`, `real-data`, and `composite` are manifest tags.
 
 | Lane | Source directory | Examples |
 | --- | --- | ---: |
 | Visuals | `examples/c/visuals/` | 15 |
-| Features | `examples/c/features/` | 39 |
-| Workflows | `examples/c/workflows/` | 3 |
-| Composites | `examples/c/composites/` | 2 |
-| Showcases | `examples/c/showcases/` | 5 |
-| Scientific | `examples/c/scientific/` | 2 |
+| Features | `examples/c/features/` | 41 |
+| Showcases | `examples/c/showcases/` | 10 |

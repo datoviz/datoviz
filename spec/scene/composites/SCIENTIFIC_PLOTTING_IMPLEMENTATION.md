@@ -303,9 +303,9 @@ Add examples after the corresponding primitives exist:
 
 | Example | Depends on | Purpose |
 | --- | --- | --- |
-| `examples/c/scientific/spike_autocorrelogram.c` | guides, spans, bars | histogram plus baseline/refractory annotations |
-| `examples/c/scientific/stacked_traces.c` | path subpaths | panel-6 style high-density time-series proof |
-| `examples/c/scientific/error_band_path.c` | band, path | thick path plus semi-opaque margin of error |
+| `examples/c/showcases/spike_autocorrelogram.c` | guides, spans, bars | histogram plus baseline/refractory annotations |
+| `examples/c/showcases/stacked_traces.c` | path subpaths | panel-6 style high-density time-series proof |
+| `examples/c/showcases/error_band_path.c` | band, path | thick path plus semi-opaque margin of error |
 
 The spike autocorrelogram example should use deterministic synthetic data or prepared arrays. The
 example may compute autocorrelogram bins locally for C proof, but that computation is not a core
@@ -335,4 +335,3 @@ Datoviz plotting API.
 4. automatic annotation collision solving;
 5. Matplotlib-compatible Python naming beyond Datoviz convenience wrappers;
 6. a new renderer, presentation path, or backend-specific shortcut.
-

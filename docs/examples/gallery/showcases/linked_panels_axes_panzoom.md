@@ -5,12 +5,16 @@
 linked temporal panels with a spanning summary panel.
 
 - ID: `linked_panels_axes_panzoom`
-- Lane: `workflows`
+- Lane: `showcases`
 - Status: `supported`
-- Source: [`examples/c/workflows/panel_linked_axes.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/workflows/panel_linked_axes.c)
-- Build: `just example-c workflows/panel_linked_axes`
-- Smoke: `./build/examples/c/workflows/panel_linked_axes --png`
+- Source: [`examples/c/showcases/panel_linked_axes.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c)
+- Build: `just example-c showcases/panel_linked_axes`
+- Smoke: `./build/examples/c/showcases/panel_linked_axes --png`
 - Validation: `smoke+interaction`
+
+## Features
+
+`workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`
 
 ## Media
 
@@ -24,5 +28,5 @@ prepared separately from this page and should not be staged without explicit app
 === "C"
 
     ```c
-    --8<-- "examples/c/workflows/panel_linked_axes.c"
+    --8<-- "examples/c/showcases/panel_linked_axes.c"
     ```

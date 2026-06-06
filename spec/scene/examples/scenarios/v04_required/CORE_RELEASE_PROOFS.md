@@ -42,7 +42,7 @@ axes that update without rebuilding unrelated resources.
 Main 2D explanatory-object pressure test. It combines shared sampled fields, image probe requests,
 crosshair/readout state, colorbar, and linked panels.
 
-Current public C target: `examples/c/workflows/linked_probe_colorbar.c`, with two linked image
+Current public C target: `examples/c/showcases/linked_probe_colorbar.c`, with two linked image
 panels backed by compatible fields, mirrored probe markers, one probe result that updates a retained
 readout, and one continuous colorbar with stable scale identity.
 
@@ -80,7 +80,7 @@ Narrow proof for retained scale bars in a 2D context.
 
 Minimal target: one 2D panel with a simple reference visual and one scale bar whose label updates
 only when the formatted value or relevant style changes. The composed overview/detail/3D measurement
-workflow lives in `examples/c/workflows/scalebar_measurement.c`.
+workflow lives in `examples/c/showcases/scalebar_measurement.c`.
 
 Unit-string target: one time-series panel whose X data units are milliseconds and whose scale bar
 uses `.unit = "ms"` with `.data_to_unit = 1.0`, proving that scale bars are not restricted to

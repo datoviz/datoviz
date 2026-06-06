@@ -7,11 +7,11 @@
 /* scalebar_measurement - scale-aware overview, detail, and 3D measurement workflow.
  *
  * Scenario: scalebar_measurement_workflow
- * Style: workflows, graphite_cyan, 1600x1200 capture target
+ * Style: showcase workflow, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just example-c workflows/scalebar_measurement
- * Run:    ./build/examples/c/workflows/scalebar_measurement
- * Smoke:  ./build/examples/c/workflows/scalebar_measurement 1
+ * Build:  just example-c showcases/scalebar_measurement
+ * Run:    ./build/examples/c/showcases/scalebar_measurement
+ * Smoke:  ./build/examples/c/showcases/scalebar_measurement 1
  */
 
 

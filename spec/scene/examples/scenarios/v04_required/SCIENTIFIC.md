@@ -15,7 +15,7 @@ visual impact.
 Flagship current-stack 3D scientific example. It should communicate shaded molecular 3D,
 interaction, and multi-pass rendering without waiting for full molecular tooling.
 
-Current v0.4 implementation target: `examples/c/scientific/protein.c`, a prepared RCSB PDB atom
+Current v0.4 implementation target: `examples/c/showcases/protein.c`, a prepared RCSB PDB atom
 bundle rendered as sphere impostors with arcball camera, EDL, MSAA, SSAO where available, optional
 diagnostics, and bounded screenshot smoke.
 
@@ -37,7 +37,7 @@ Defer full ball-and-stick chemistry, labels, picking, and molecular surfaces if 
 Current-stack geospatial/scientific example for many-region polygon-set rendering, scalar
 colormaps, and publication data provenance.
 
-Current v0.4 implementation target: `examples/c/scientific/choropleth.c`, a contiguous U.S. state
+Current v0.4 implementation target: `examples/c/showcases/choropleth.c`, a contiguous U.S. state
 population-density choropleth rendered from prepared flat polygon-set arrays. The example uses
 Census cartographic state boundaries and Vintage 2025 resident population estimates, with a
 cache-local prepared-data fallback and an optional promoted bundle under

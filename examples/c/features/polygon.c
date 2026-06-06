@@ -7,11 +7,11 @@
 /* polygon - semantic polygon and polygon-set composites.
  *
  * Scenario: composite_polygon
- * Style: composites, graphite_cyan, 1600x1200 capture target
+ * Style: feature composite, graphite_cyan, 1600x1200 capture target
  *
- * Build:  cmake --build build --target polygon
- * Run:    ./build/examples/c/composites/polygon
- * Smoke:  ./build/examples/c/composites/polygon 1
+ * Build:  just example-c features/polygon
+ * Run:    ./build/examples/c/features/polygon
+ * Smoke:  ./build/examples/c/features/polygon 1
  */
 
 

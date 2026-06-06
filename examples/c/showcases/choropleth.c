@@ -7,7 +7,7 @@
 /* choropleth - contiguous U.S. state population-density choropleth.
  *
  * Scenario: us_state_choropleth
- * Style: scientific, polygon-set, 1600x1200 capture target
+ * Style: showcase scientific, polygon-set, 1600x1200 capture target
  *
  * Data:    U.S. Census Bureau 2024 cartographic state boundaries and Vintage 2025 resident
  *          population estimates, prepared into flat polygon-set arrays.
@@ -16,9 +16,9 @@
  * Terms:   U.S. Census Bureau public data; cite the Census Bureau as source.
  * Prepare: python tools/data/prepare_us_state_choropleth.py
  * Promote: python tools/data/prepare_us_state_choropleth.py --output data/examples/us_state_choropleth
- * Build:   cmake --build build --target choropleth
- * Run:     ./build/examples/c/scientific/choropleth --live
- * Smoke:   ./build/examples/c/scientific/choropleth --png
+ * Build:   just example-c showcases/choropleth
+ * Run:     ./build/examples/c/showcases/choropleth --live
+ * Smoke:   ./build/examples/c/showcases/choropleth --png
  */
 
 
