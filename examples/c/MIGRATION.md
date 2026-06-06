@@ -100,3 +100,102 @@ source material.
 
 Legacy examples are not built by default. Promote by copying or moving into `features/`, `visuals/`,
 or `showcases/` only after polishing and manifest updates.
+
+
+## Next Mechanical Taxonomy Migration
+
+Target public taxonomy:
+
+```text
+examples/c/visuals/    one public visual family per file
+examples/c/features/   one isolated feature, technique, or semantic composite per file
+examples/c/showcases/  composed workflows, scientific stories, real-data examples, and demos
+```
+
+The next migration should be mechanical. Do not rewrite example behavior in the same commit unless
+the move exposes a build break that cannot be fixed otherwise.
+
+### Move Map
+
+| Current source | Target source | Keep scenario ID | Metadata tags |
+| --- | --- | --- | --- |
+| `workflows/panel_linked_axes.c` | `showcases/panel_linked_axes.c` | `linked_panels_axes_panzoom` | `workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic` |
+| `workflows/linked_probe_colorbar.c` | `showcases/linked_probe_colorbar.c` | `linked_panels_probe_colorbar` | `workflow`, `image`, `probe`, `colorbar`, `readout`, `synthetic` |
+| `workflows/scalebar_measurement.c` | `showcases/scalebar_measurement.c` | `scalebar_measurement_workflow` | `workflow`, `scale-bar`, `measurement`, `synthetic` |
+| `scientific/choropleth.c` | `showcases/choropleth.c` | `us_state_choropleth` | `scientific`, `real-data`, `geo`, `polygon-set`, `colorbar` |
+| `scientific/protein.c` | `showcases/protein.c` | `protein_arcball_viewer` | `scientific`, `real-data`, `molecular`, `sphere`, `arcball` |
+| `composites/polygon.c` | `features/polygon.c` | `composite_polygon` | `composite`, `polygon`, `polygon-set`, `holes`, `panzoom` |
+| `composites/graph.c` | `features/graph.c` | `composite_graph` | `composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom` |
+
+After the move, remove empty transitional directories and their README files unless another tracked
+source still references them.
+
+### Required Edits
+
+Update these in the same migration commit:
+
+1. `examples/c/CMakeLists.txt` target groups and source paths.
+2. `examples/c/MANIFEST.yaml` source paths, lanes/categories, tags, dataset metadata, and
+   transitional-lane notes.
+3. Build/run comments at the top of moved C files.
+4. `examples/c/README.md`, `examples/c/features/README.md`, and `examples/c/showcases/README.md`.
+5. Scenario/spec references that describe current implementation targets.
+6. Gallery generator assumptions if it can stop treating `workflows`, `scientific`, and
+   `composites` as public lanes.
+7. Generated docs from `python3 tools/build_gallery.py`.
+
+Do not hand-edit generated gallery pages except through the manifest or generator.
+
+### Compatibility Decision
+
+Prefer renaming executable paths to match the new taxonomy:
+
+```text
+build/examples/c/showcases/linked_probe_colorbar
+build/examples/c/showcases/choropleth
+build/examples/c/features/polygon
+```
+
+Do not keep old `workflows/`, `scientific/`, or `composites/` executable aliases unless a release
+candidate already documents those paths. If aliases are needed later, add them explicitly as a
+separate compatibility decision.
+
+### Validation
+
+Minimum validation for the mechanical move:
+
+```sh
+python3 tools/build_gallery.py
+git diff --check
+just build
+```
+
+If the local graphics environment is usable, also run the moved example smoke set:
+
+```sh
+just example-c showcases/panel_linked_axes
+just example-c showcases/linked_probe_colorbar
+just example-c showcases/scalebar_measurement
+just example-c showcases/choropleth
+just example-c showcases/protein
+just example-c features/polygon
+just example-c features/graph
+```
+
+On macOS/Vulkan-sensitive paths, prefer:
+
+```sh
+direnv exec . just example-c showcases/linked_probe_colorbar
+```
+
+### Stop Conditions
+
+Stop before committing the migration if:
+
+1. a moved file depends on a relative asset path that changes semantics;
+2. the build system requires old executable paths for release tooling;
+3. generated docs still create public pages under `gallery/workflows`, `gallery/scientific`, or
+   `gallery/composites`;
+4. a real-data example loses source, license, citation, or preprocessing metadata;
+5. validation would require staging generated media, vendored runtime libraries, or `data` submodule
+   changes.
