@@ -52,6 +52,14 @@ DVZ_EXPORT DvzBarsDesc dvz_bars_desc(void);
 
 
 /**
+ * Return the default band/ribbon descriptor.
+ *
+ * @return default band descriptor
+ */
+DVZ_EXPORT DvzBandDesc dvz_band_desc(void);
+
+
+/**
  * Create a retained guide line attached to one panel.
  *
  * @param panel the panel
@@ -146,6 +154,49 @@ DVZ_EXPORT DvzBars* dvz_bars(DvzPanel* panel, const DvzBarsDesc* desc);
 DVZ_EXPORT int dvz_bars_set_intervals(
     DvzBars* bars, uint32_t count, const double* starts, const double* ends,
     const double* values);
+
+
+/**
+ * Create a retained band/ribbon attached to one panel.
+ *
+ * @param panel the panel
+ * @param desc optional band descriptor; NULL uses defaults
+ * @return the band object, or NULL on validation/allocation error
+ */
+DVZ_EXPORT DvzBand* dvz_band(DvzPanel* panel, const DvzBandDesc* desc);
+
+
+/**
+ * Set lower/upper band bounds.
+ *
+ * Arrays are copied into scene-owned storage. NaN values split the generated fill and paths into
+ * gaps.
+ *
+ * @param band the band object
+ * @param count number of samples
+ * @param x X coordinates
+ * @param lower lower Y coordinates
+ * @param upper upper Y coordinates
+ * @return 0 on success, -1 on validation/allocation error
+ */
+DVZ_EXPORT int dvz_band_set_bounds(
+    DvzBand* band, uint32_t count, const double* x, const double* lower, const double* upper);
+
+
+/**
+ * Set an explicit center line for the band.
+ *
+ * If absent and the descriptor enables the center line, the line is derived from the bounds as
+ * `0.5 * (lower + upper)`. Arrays are copied into scene-owned storage. NaN values split the line.
+ *
+ * @param band the band object
+ * @param count number of samples
+ * @param x X coordinates
+ * @param y Y coordinates
+ * @return 0 on success, -1 on validation/allocation error
+ */
+DVZ_EXPORT int
+dvz_band_set_center(DvzBand* band, uint32_t count, const double* x, const double* y);
 
 
 EXTERN_C_OFF

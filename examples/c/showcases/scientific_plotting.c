@@ -39,7 +39,6 @@
 #define HEIGHT                 1200u
 #define CORR_BINS              101u
 #define MEAN_COUNT             320u
-#define ERROR_BAND_VERTEX_COUNT (6u * (MEAN_COUNT - 1u))
 #define TRACE_COUNT            32u
 #define TRACE_SAMPLES          320u
 #define TRACE_VERTEX_COUNT     (TRACE_COUNT * TRACE_SAMPLES)
@@ -305,58 +304,27 @@ static bool _add_autocorrelogram(DvzScene* scene, DvzPanel* panel)
 
 
 /**
- * Fill mean path and uncertainty band data.
+ * Fill mean path and uncertainty bounds.
  *
- * @param mean_positions output mean path positions
- * @param mean_colors output mean path colors
- * @param mean_widths output mean path widths
- * @param band_positions output band triangle positions
- * @param band_colors output band colors
+ * @param x output X coordinates
+ * @param lower output lower bounds
+ * @param upper output upper bounds
+ * @param center output center line values
  */
-static void _fill_mean_error(vec3 mean_positions[MEAN_COUNT], DvzColor mean_colors[MEAN_COUNT],
-                             float mean_widths[MEAN_COUNT],
-                             vec3 band_positions[ERROR_BAND_VERTEX_COUNT],
-                             DvzColor band_colors[ERROR_BAND_VERTEX_COUNT])
+static void _fill_mean_error(
+    double x[MEAN_COUNT], double lower[MEAN_COUNT], double upper[MEAN_COUNT],
+    double center[MEAN_COUNT])
 {
-    DvzColor cyan = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
-    DvzColor mint = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
     for (uint32_t i = 0; i < MEAN_COUNT; i++)
     {
         const float t = (float)i / (float)(MEAN_COUNT - 1u);
-        const float x = 10.0f * t;
         const float y = 1.1f + 0.42f * sinf(TAU * (0.82f * t + 0.08f)) +
                         0.18f * sinf(TAU * (2.4f * t + 0.42f));
-        mean_positions[i][0] = x;
-        mean_positions[i][1] = y;
-        mean_positions[i][2] = 0.0f;
-        mean_colors[i] = _lerp_color(cyan, mint, t, 255);
-        mean_widths[i] = 5.5f;
-    }
-
-    for (uint32_t i = 0; i < MEAN_COUNT - 1u; i++)
-    {
-        const float t0 = (float)i / (float)(MEAN_COUNT - 1u);
-        const float t1 = (float)(i + 1u) / (float)(MEAN_COUNT - 1u);
-        const float e0 = 0.14f + 0.06f * sinf(TAU * (1.7f * t0 + 0.20f));
-        const float e1 = 0.14f + 0.06f * sinf(TAU * (1.7f * t1 + 0.20f));
-        const uint32_t k = 6u * i;
-        band_positions[k + 0][0] = mean_positions[i][0];
-        band_positions[k + 0][1] = mean_positions[i][1] - e0;
-        band_positions[k + 1][0] = mean_positions[i + 1u][0];
-        band_positions[k + 1][1] = mean_positions[i + 1u][1] - e1;
-        band_positions[k + 2][0] = mean_positions[i + 1u][0];
-        band_positions[k + 2][1] = mean_positions[i + 1u][1] + e1;
-        band_positions[k + 3][0] = mean_positions[i][0];
-        band_positions[k + 3][1] = mean_positions[i][1] - e0;
-        band_positions[k + 4][0] = mean_positions[i + 1u][0];
-        band_positions[k + 4][1] = mean_positions[i + 1u][1] + e1;
-        band_positions[k + 5][0] = mean_positions[i][0];
-        band_positions[k + 5][1] = mean_positions[i][1] + e0;
-        for (uint32_t j = 0; j < 6u; j++)
-        {
-            band_positions[k + j][2] = -0.01f;
-            band_colors[k + j] = dvz_color_rgba(128, 255, 219, 58);
-        }
+        const float e = 0.14f + 0.06f * sinf(TAU * (1.7f * t + 0.20f));
+        x[i] = 10.0 * (double)t;
+        center[i] = (double)y;
+        lower[i] = (double)(y - e);
+        upper[i] = (double)(y + e);
     }
 }
 
@@ -371,46 +339,20 @@ static void _fill_mean_error(vec3 mean_positions[MEAN_COUNT], DvzColor mean_colo
  */
 static bool _add_mean_error(DvzScene* scene, DvzPanel* panel)
 {
-    vec3 mean_positions[MEAN_COUNT] = {{0}};
-    DvzColor mean_colors[MEAN_COUNT] = {{0}};
-    float mean_widths[MEAN_COUNT] = {0};
-    vec3 band_positions[ERROR_BAND_VERTEX_COUNT] = {{0}};
-    DvzColor band_colors[ERROR_BAND_VERTEX_COUNT] = {{0}};
-    _fill_mean_error(mean_positions, mean_colors, mean_widths, band_positions, band_colors);
+    (void)scene;
+    double x[MEAN_COUNT] = {0};
+    double lower[MEAN_COUNT] = {0};
+    double upper[MEAN_COUNT] = {0};
+    double center[MEAN_COUNT] = {0};
+    _fill_mean_error(x, lower, upper, center);
 
-    DvzVisual* band = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
-    if (band == NULL)
-        return false;
-    DvzVisualDataUpdate band_updates[] = {
-        {.attr_name = "position", .data = band_positions, .item_count = ERROR_BAND_VERTEX_COUNT},
-        {.attr_name = "color", .data = band_colors, .item_count = ERROR_BAND_VERTEX_COUNT},
-    };
-    if (dvz_visual_set_data_many(band, band_updates, 2) != 0)
-        return false;
-    if (dvz_visual_set_alpha_mode(band, DVZ_ALPHA_BLENDED) != 0)
-        return false;
-    if (dvz_visual_set_depth_test(band, false) != 0)
-        return false;
-    if (!_add_data_visual(panel, band, 0))
-        return false;
-
-    DvzVisual* mean = dvz_path(scene, 0);
-    if (mean == NULL)
-        return false;
-    DvzVisualDataUpdate mean_updates[] = {
-        {.attr_name = "position", .data = mean_positions, .item_count = MEAN_COUNT},
-        {.attr_name = "color", .data = mean_colors, .item_count = MEAN_COUNT},
-        {.attr_name = "stroke_width", .data = mean_widths, .item_count = MEAN_COUNT},
-    };
-    if (dvz_visual_set_data_many(mean, mean_updates, 3) != 0)
-        return false;
-    if (dvz_path_set_caps(mean, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) != 0)
-        return false;
-    if (dvz_path_set_join(mean, DVZ_PATH_JOIN_ROUND, 4.0f) != 0)
-        return false;
-    if (dvz_visual_set_depth_test(mean, false) != 0)
-        return false;
-    return _add_data_visual(panel, mean, 1);
+    DvzBandDesc desc = dvz_band_desc();
+    desc.fill_color = dvz_color_rgba(128, 255, 219, 58);
+    desc.line_color = dvz_color_rgba(76, 201, 240, 255);
+    desc.line_width_px = 5.5f;
+    DvzBand* band = dvz_band(panel, &desc);
+    return band != NULL && dvz_band_set_bounds(band, MEAN_COUNT, x, lower, upper) == 0 &&
+           dvz_band_set_center(band, MEAN_COUNT, x, center) == 0;
 }
 
 

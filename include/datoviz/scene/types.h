@@ -87,6 +87,7 @@ typedef struct DvzAnnotation        DvzScaleBar;
 typedef struct DvzGuideLine         DvzGuideLine;
 typedef struct DvzGuideSpan         DvzGuideSpan;
 typedef struct DvzBars              DvzBars;
+typedef struct DvzBand              DvzBand;
 typedef struct DvzAxis              DvzAxis;
 typedef struct DvzUnitLadder        DvzUnitLadder;
 typedef struct DvzUnits             DvzUnits;
@@ -382,6 +383,22 @@ struct DvzBarsDesc
     int32_t z_layer;
 };
 typedef struct DvzBarsDesc DvzBarsDesc;
+
+
+struct DvzBandDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzColor fill_color;
+    DvzColor line_color;
+    float line_width_px;
+    bool show_line;
+    bool show_bounds;
+    DvzColor bound_color;
+    float bound_width_px;
+    int32_t z_layer;
+};
+typedef struct DvzBandDesc DvzBandDesc;
 
 
 struct DvzPanelBorderDesc

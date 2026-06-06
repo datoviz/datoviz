@@ -24,6 +24,8 @@ void _scene_prepare_guide_visuals(DvzFigure* figure);
 
 void _scene_prepare_bars_visuals(DvzFigure* figure);
 
+void _scene_prepare_band_visuals(DvzFigure* figure);
+
 void _scene_prepare_pinned_readout_cards(DvzFigure* figure);
 
 void _scene_prepare_selection_cards(DvzFigure* figure);

@@ -456,6 +456,52 @@ int test_scene_bars_descriptor_and_data_validation(TstContext* suite, const TstC
 }
 
 
+int test_scene_band_descriptor_and_data_validation(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzBandDesc desc = dvz_band_desc();
+    desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_band(panel, &desc) == NULL);
+
+    desc = dvz_band_desc();
+    desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_band(panel, &desc) == NULL);
+
+    desc = dvz_band_desc();
+    desc.line_width_px = NAN;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_band(panel, &desc) == NULL);
+
+    desc = dvz_band_desc();
+    desc.bound_width_px = -1.0f;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_band(panel, &desc) == NULL);
+
+    DvzBand* band = dvz_band(panel, NULL);
+    ANN(band);
+    double x[] = {0.0, 1.0};
+    double lower[] = {0.0, 0.5};
+    double upper[] = {1.0, 1.5};
+    AT(dvz_band_set_bounds(band, 2, x, lower, upper) == 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_bounds(band, 2, NULL, lower, upper) < 0);
+    x[1] = INFINITY;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_bounds(band, 2, x, lower, upper) < 0);
+    x[1] = NAN;
+    AT(dvz_band_set_bounds(band, 2, x, lower, upper) == 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_center(band, 2, NULL, lower) < 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_overlay_descriptor_abi_rejects_invalid_structs(
     TstContext* suite, const TstCase* item)
 {
@@ -1532,6 +1578,88 @@ int test_scene_bars_prepare_visuals(TstContext* suite, const TstCase* item)
     AC(horizontal_positions[4], 1.0f, 1e-6f);
     AC(horizontal_positions[6], 3.0f, 1e-6f);
     AC(horizontal_positions[7], 9.0f, 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_band_prepare_visuals(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzBandDesc desc = dvz_band_desc();
+    desc.fill_color = dvz_color_rgba(128, 255, 219, 64);
+    desc.line_color = dvz_color_rgba(76, 201, 240, 255);
+    desc.line_width_px = 5.0f;
+    desc.show_bounds = true;
+    desc.bound_color = dvz_color_rgba(128, 255, 219, 180);
+    desc.bound_width_px = 1.25f;
+    DvzBand* band = dvz_band(panel, &desc);
+    ANN(band);
+    AT(scene->band_count == 1);
+    AT(band->fill_visual != NULL);
+    AT(band->fill_visual->type == DVZ_VISUAL_TYPE_PRIMITIVE);
+    AT(band->line_visual != NULL);
+    AT(band->line_visual->type == DVZ_VISUAL_TYPE_PATH);
+    AT(band->bounds_visual != NULL);
+    AT(band->bounds_visual->type == DVZ_VISUAL_TYPE_PATH);
+
+    const double x[] = {0.0, 1.0, NAN, 3.0, 4.0};
+    const double lower[] = {0.0, 0.5, NAN, 1.0, 1.5};
+    const double upper[] = {1.0, 1.5, NAN, 2.0, 2.5};
+    const double center_y[] = {0.7, 1.1, NAN, 1.8, 2.0};
+    AT(dvz_band_set_bounds(band, 5, x, lower, upper) == 0);
+    AT(dvz_band_set_center(band, 5, x, center_y) == 0);
+
+    _scene_prepare_band_visuals(figure);
+
+    DvzVisualDataView fill_position_view = {0};
+    AT(dvz_visual_data(band->fill_visual, "position", &fill_position_view) == 0);
+    const float* fill_positions = (const float*)fill_position_view.data;
+    AT(fill_position_view.item_count == 12);
+    AC(fill_positions[0], 0.0f, 1e-6f);
+    AC(fill_positions[1], 0.0f, 1e-6f);
+    AC(fill_positions[3], 1.0f, 1e-6f);
+    AC(fill_positions[4], 0.5f, 1e-6f);
+    AC(fill_positions[6], 1.0f, 1e-6f);
+    AC(fill_positions[7], 1.5f, 1e-6f);
+    AC(fill_positions[18], 3.0f, 1e-6f);
+    AC(fill_positions[19], 1.0f, 1e-6f);
+
+    DvzVisualDataView line_position_view = {0};
+    DvzVisualDataView line_width_view = {0};
+    AT(dvz_visual_data(band->line_visual, "position", &line_position_view) == 0);
+    AT(dvz_visual_data(band->line_visual, "stroke_width", &line_width_view) == 0);
+    const float* line_positions = (const float*)line_position_view.data;
+    const float* line_widths = (const float*)line_width_view.data;
+    AT(line_position_view.item_count == 4);
+    AC(line_positions[0], 0.0f, 1e-6f);
+    AC(line_positions[1], 0.7f, 1e-6f);
+    AC(line_positions[3], 1.0f, 1e-6f);
+    AC(line_positions[4], 1.1f, 1e-6f);
+    AC(line_widths[0], 5.0f, 1e-6f);
+
+    DvzVisualDataView bounds_position_view = {0};
+    DvzVisualDataView bounds_width_view = {0};
+    AT(dvz_visual_data(band->bounds_visual, "position", &bounds_position_view) == 0);
+    AT(dvz_visual_data(band->bounds_visual, "stroke_width", &bounds_width_view) == 0);
+    const float* bounds_positions = (const float*)bounds_position_view.data;
+    const float* bounds_widths = (const float*)bounds_width_view.data;
+    AT(bounds_position_view.item_count == 8);
+    AC(bounds_positions[0], 0.0f, 1e-6f);
+    AC(bounds_positions[1], 0.0f, 1e-6f);
+    AC(bounds_positions[6], 0.0f, 1e-6f);
+    AC(bounds_positions[7], 1.0f, 1e-6f);
+    AC(bounds_widths[0], 1.25f, 1e-6f);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -3762,6 +3890,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_annotation_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_guide_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_bars_descriptor_and_data_validation);
+    TST_CASE(test_scene_band_descriptor_and_data_validation);
     TST_CASE(test_scene_overlay_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_item_interaction_defaults_and_lifetime);
     TST_CASE(test_scene_item_interaction_input_queries);
@@ -3774,6 +3903,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_guide_line_and_span_prepare_visuals);
     TST_CASE(test_scene_bars_prepare_visuals);
+    TST_CASE(test_scene_band_prepare_visuals);
     TST_CASE(test_scene_scalebar_formatting);
     TST_CASE(test_scene_units_formatting_core);
     TST_CASE(test_scene_scalebar_2d_realization);
