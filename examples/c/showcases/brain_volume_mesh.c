@@ -9,9 +9,9 @@
  * Scenario: brain_volume_mesh
  * Style: showcase, graphite_cyan, 1600x1200 capture target
  *
- * Build:   just example-c brain_volume_mesh
- * Run:     ./build/examples/c/showcases/brain_volume_mesh [frames] [--downsample=2]
- * PNG:     DVZ_CAPTURE=png ./build/examples/c/showcases/brain_volume_mesh 60 --downsample=2
+ * Build:   just example-c showcases/brain_volume_mesh
+ * Run:     ./build/examples/c/showcases/brain_volume_mesh --live
+ * Smoke:   ./build/examples/c/showcases/brain_volume_mesh --png
  * Data:    data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz
  */
 
@@ -32,11 +32,11 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_overflow.h"
-#include "datoviz/app.h"
 #include "datoviz/fileio.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -48,12 +48,12 @@
 #define HEIGHT 1200
 
 #define DEFAULT_DATA_PATH "data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz"
-#define DEFAULT_VOLUME_FILE "allen_mouse_brain_rgba.npy.gz"
 #define DEFAULT_AXIS          DVZ_VOLUME_AXIS_Y
 #define DEFAULT_SLICE_POS     0.5f
 #define DEFAULT_SLICE_OPACITY 1.0f
 #define DEFAULT_VOLUME_OPACITY 0.85f
 #define DEFAULT_VOLUME_STEPS  192.0f
+#define DEFAULT_DOWNSAMPLE    2u
 #define DEFAULT_OCCLUSION_THRESHOLD 0.000001f
 #define DEFAULT_OCCLUSION_FADE 0.000001f
 #define DEFAULT_OCCLUSION_HIDDEN_ALPHA 0.097f
@@ -81,159 +81,16 @@ typedef struct AllenMouseBrainVolume
 } AllenMouseBrainVolume;
 
 
+typedef struct BrainVolumeState
+{
+    AllenMouseBrainVolume volume_data;
+} BrainVolumeState;
+
+
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Parse an optional bounded unsigned command-line option.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @param name long option name without leading dashes
- * @param default_value fallback value when the option is absent
- * @param min_value minimum accepted value
- * @param max_value maximum accepted value
- * @return parsed option value
- */
-static uint32_t _option_u32(
-    int argc, char** argv, const char* name, uint32_t default_value, uint32_t min_value,
-    uint32_t max_value)
-{
-    ANN(name);
-    if (argc < 2 || argv == NULL)
-        return default_value;
-
-    char prefix[64] = {0};
-    int prefix_len = dvz_snprintf(prefix, sizeof(prefix), "--%s=", name);
-    if (prefix_len <= 0 || (size_t)prefix_len >= sizeof(prefix))
-        return default_value;
-
-    char flag[64] = {0};
-    int flag_len = dvz_snprintf(flag, sizeof(flag), "--%s", name);
-    if (flag_len <= 0 || (size_t)flag_len >= sizeof(flag))
-        return default_value;
-
-    for (int i = 1; i < argc; i++)
-    {
-        if (argv[i] == NULL)
-            continue;
-
-        const char* value_str = NULL;
-        if (strncmp(argv[i], prefix, (size_t)prefix_len) == 0)
-        {
-            value_str = argv[i] + prefix_len;
-        }
-        else if (strcmp(argv[i], flag) == 0 && i + 1 < argc && argv[i + 1] != NULL)
-        {
-            value_str = argv[i + 1];
-        }
-        if (value_str == NULL)
-            continue;
-
-        char* end = NULL;
-        unsigned long value = strtoul(value_str, &end, 10);
-        if (end == value_str || (end != NULL && *end != '\0'))
-            return default_value;
-        if (value < min_value)
-            return min_value;
-        if (value > max_value)
-            return max_value;
-        return (uint32_t)value;
-    }
-    return default_value;
-}
-
-
-
-/**
- * Join a directory and a file name into a fixed-size output path buffer.
- *
- * @param dir directory path
- * @param basename file base name
- * @param out output buffer
- * @param out_size output buffer size in bytes
- * @return whether the output path fits
- */
-static bool _join_path(
-    const char* dir, const char* basename, char* out, size_t out_size)
-{
-    ANN(dir);
-    ANN(basename);
-    ANN(out);
-    size_t dir_len = strlen(dir);
-    if (dir_len == 0 || basename[0] == '\0')
-        return false;
-    const char* sep =
-        (dir_len > 0 && dir[dir_len - 1] == '/') || (dir[dir_len - 1] == '\\') ? "" : "/";
-    int written = dvz_snprintf(out, out_size, "%s%s%s", dir, sep, basename);
-    return written > 0 && (size_t)written < out_size;
-}
-
-
-
-/**
- * Copy a plain path into the output buffer.
- *
- * @param path source path
- * @param out output buffer
- * @param out_size output buffer size
- * @return whether the path fits
- */
-static bool _copy_path(const char* path, char* out, size_t out_size)
-{
-    ANN(path);
-    ANN(out);
-    if (path[0] == '\0')
-        return false;
-    int written = dvz_snprintf(out, out_size, "%s", path);
-    return written > 0 && (size_t)written < out_size;
-}
-
-
-/**
- * Return the requested data file path.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @param out output path buffer
- * @param out_size output buffer size
- * @return whether path extraction succeeded
- */
-static bool _data_path(int argc, char** argv, char* out, size_t out_size)
-{
-    if (out == NULL || out_size == 0)
-        return false;
-    out[0] = '\0';
-
-    for (int i = 1; i < argc; i++)
-    {
-        if (argv[i] == NULL)
-            continue;
-        if (strncmp(argv[i], "--data-file=", 11) == 0)
-            return _copy_path(argv[i] + 11, out, out_size);
-
-        if (strncmp(argv[i], "--data-dir=", 11) == 0)
-        {
-            return _join_path(argv[i] + 11, DEFAULT_VOLUME_FILE, out, out_size);
-        }
-
-        if (strcmp(argv[i], "--data-file") == 0 && i + 1 < argc && argv[i + 1] != NULL)
-        {
-            return _copy_path(argv[i + 1], out, out_size);
-        }
-        if (strcmp(argv[i], "--data-dir") == 0 && i + 1 < argc && argv[i + 1] != NULL)
-            return _join_path(argv[i + 1], DEFAULT_VOLUME_FILE, out, out_size);
-    }
-
-    if (dvz_snprintf(out, out_size, "%s", DEFAULT_DATA_PATH) <= 0 ||
-        strlen(out) >= out_size)
-        return false;
-    return true;
-}
-
-
 
 /**
  * Skip ASCII spaces.
@@ -1014,66 +871,69 @@ static void _enable_slice_volume_occlusion(DvzPanel* panel, DvzVisual* volume, D
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
-int main(int argc, char** argv)
+/**
+ * Initialize the brain volume showcase scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return whether initialization succeeded
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    uint32_t frame_count = example_frame_count_any(argc, argv);
-    uint32_t downsample = _option_u32(argc, argv, "downsample", 2, 1, 8);
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-    AllenMouseBrainVolume volume_data = {0};
+    if (ctx == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = NULL;
 
-    char data_path[1024] = {0};
-    if (!_data_path(argc, argv, data_path, sizeof(data_path)))
-    {
-        dvz_fprintf(stderr, "failed to resolve data path\n");
-        return 1;
-    }
+    bool ok = false;
+    BrainVolumeState* state = (BrainVolumeState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
 
-    if (!_read_allen_mouse_brain(data_path, &volume_data))
+    AllenMouseBrainVolume* volume_data = &state->volume_data;
+    if (!_read_allen_mouse_brain(DEFAULT_DATA_PATH, volume_data))
     {
-        dvz_fprintf(
-            stderr,
-            "failed to load %s\n"
-            "prepare the file with the repository data folder or pass --data-file=<path>\n",
-            data_path);
-        return 1;
-    }
-    if (!_downsample_allen_mouse_brain(&volume_data, downsample))
-    {
-        dvz_fprintf(stderr, "failed to downsample Allen mouse brain volume by %u\n", downsample);
+        dvz_fprintf(stderr, "failed to load %s\n", DEFAULT_DATA_PATH);
         goto cleanup;
     }
-    _normalize_allen_alpha(&volume_data);
-    if (!_build_scalar_volume(&volume_data))
+    if (!_downsample_allen_mouse_brain(volume_data, DEFAULT_DOWNSAMPLE))
+    {
+        dvz_fprintf(
+            stderr, "failed to downsample Allen mouse brain volume by %u\n",
+            DEFAULT_DOWNSAMPLE);
+        goto cleanup;
+    }
+    _normalize_allen_alpha(volume_data);
+    if (!_build_scalar_volume(volume_data))
     {
         dvz_fprintf(stderr, "failed to derive scalar Allen mouse brain volume\n");
         goto cleanup;
     }
-    if (volume_data.downsample > 1)
+    if (volume_data->downsample > 1)
     {
         dvz_fprintf(
             stderr, "using downsampled Allen mouse brain volume %ux%ux%u (factor %u)\n",
-            volume_data.width, volume_data.height, volume_data.depth, volume_data.downsample);
+            volume_data->width, volume_data->height, volume_data->depth,
+            volume_data->downsample);
     }
 
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 3;
     caps.render_target_format_rgba16float = true;
     caps.render_target_format_r16float = true;
     caps.supports_render_target_sampling = true;
     caps.supports_color_blending = true;
-    dvz_scene_set_capabilities(scene, &caps);
+    dvz_scene_set_capabilities(ctx->scene, &caps);
 
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
 
-    DvzPanel* panel = dvz_panel_full(figure);
+    DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
@@ -1082,43 +942,45 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.78539816339f;
     camera_desc.near = 0.01f;
     camera_desc.far = 100.0f;
-    bool ok = dvz_panel_set_camera(panel, &camera_desc);
+    ok = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
+        ctx->scene, &(DvzSampledFieldDesc){
                    DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
-                   .width = volume_data.width,
-                   .height = volume_data.height,
-                   .depth = volume_data.depth,
+                   .width = volume_data->width,
+                   .height = volume_data->height,
+                   .depth = volume_data->depth,
                });
     EXAMPLE_CHECK(field != NULL, "dvz_sampled_field() failed");
     ok = dvz_sampled_field_set_data(
         field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                   .data = volume_data.scalar_voxels,
-                   .bytes_per_row = volume_data.width,
-                   .rows_per_image = volume_data.height,
+                   .data = volume_data->scalar_voxels,
+                   .bytes_per_row = volume_data->width,
+                   .rows_per_image = volume_data->height,
                });
     EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data() failed");
 
-    DvzVisual* volume_3d = dvz_volume(scene, 0);
-    DvzVisual* volume_slice = dvz_volume(scene, 0);
+    DvzVisual* volume_3d = dvz_volume(ctx->scene, 0);
+    DvzVisual* volume_slice = dvz_volume(ctx->scene, 0);
     EXAMPLE_CHECK(volume_3d != NULL && volume_slice != NULL, "dvz_volume() failed");
     ok = dvz_visual_set_field(volume_3d, "field", field);
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(volume_3d) failed");
 
     ok = dvz_visual_set_field(volume_slice, "field", field);
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(volume_slice) failed");
-    EXAMPLE_CHECK(_attach_brain_transfer(scene, volume_3d, false), "volume transfer setup failed");
-    EXAMPLE_CHECK(_attach_brain_transfer(scene, volume_slice, true), "slice transfer setup failed");
+    EXAMPLE_CHECK(
+        _attach_brain_transfer(ctx->scene, volume_3d, false), "volume transfer setup failed");
+    EXAMPLE_CHECK(
+        _attach_brain_transfer(ctx->scene, volume_slice, true), "slice transfer setup failed");
 
-    AllenMouseBrainVolume display_volume = volume_data;
-    display_volume.width = volume_data.height;
-    display_volume.height = volume_data.depth;
-    display_volume.depth = volume_data.width;
+    AllenMouseBrainVolume display_volume = *volume_data;
+    display_volume.width = volume_data->height;
+    display_volume.height = volume_data->depth;
+    display_volume.depth = volume_data->width;
     double bounds_min[3] = {0};
     double bounds_max[3] = {0};
     _volume_aspect_bounds(&display_volume, bounds_min, bounds_max);
@@ -1158,30 +1020,73 @@ int main(int argc, char** argv)
     _configure_volume_slice(volume_3d, volume_slice);
     _enable_slice_volume_occlusion(panel, volume_3d, volume_slice);
 
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    DvzView* win =
-        dvz_view_glfw(app, figure, WIDTH, HEIGHT, "brain_volume_mesh");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    EXAMPLE_CHECK(controller != NULL, "dvz_arcball() failed");
+    DvzArcball* arcball = dvz_controller_arcball(controller);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
-
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
-    dvz_scene_set_fps(scene, 60.0);
-
-    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("showcase_brain_volume_mesh");
     EXAMPLE_CHECK(
-        example_run_with_capture(app, win, frame_count, &capture),
-        "example_run_with_capture() failed");
-    ret = 0;
+        dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == 0,
+        "dvz_scenario_bind_controller() failed");
+    (void)arcball;
 
+    ok = true;
 cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    _allen_mouse_brain_destroy(&volume_data);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    return ok;
+}
+
+
+
+/**
+ * Destroy the brain volume showcase scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    BrainVolumeState* state = (BrainVolumeState*)user;
+    if (state == NULL)
+        return;
+    _allen_mouse_brain_destroy(&state->volume_data);
+    dvz_free(state);
+}
+
+
+
+/**
+ * Return the brain volume showcase scenario.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _brain_volume_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "brain_volume_mesh",
+        .title = "brain_volume_mesh",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+        .destroy = _scenario_destroy,
+    };
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Run the brain volume showcase through the native scenario runner.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    DvzScenarioSpec spec = _brain_volume_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
