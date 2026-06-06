@@ -63,6 +63,32 @@ Datoviz remains one backend beneath that stack, not the home of the high-level
 Python plotting API.
 
 
+## Scientific Plotting Boundary
+
+Datoviz should provide rendering-native scientific building blocks that GSP and
+VisPy2 can target. Examples include guide lines and spans, bars/intervals for
+pre-binned data, uncertainty bands/ribbons, thick paths, and efficient stacked
+trace collections.
+
+GSP and VisPy2 should own the higher-level plotting layer: `hist()`,
+`fill_between()`, `axhline()`/`axvline()` aliases, bin-selection policy, weighted
+or cumulative histogram semantics, spike-train autocorrelogram computation,
+NumPy/pandas/xarray adaptation, subplot grammar, and user-facing plot defaults.
+
+The intended split is:
+
+| Feature | Datoviz | GSP/VisPy2 |
+|---|---|---|
+| guide lines/spans | scene annotations lowered to built-in visuals | plotting aliases and defaults |
+| histogram rendering | bars/intervals or pre-binned histogram composite | `hist()` statistics and data adaptation |
+| uncertainty bands | band/ribbon composite plus path styling | `fill_between()` and interval computation |
+| stacked traces | efficient path/trace rendering | ergonomic multi-series plotting API |
+| spike-train workflows | deterministic C example with prepared data | neuroscience analysis and recipe layer |
+
+The durable design boundary lives in
+[`spec/scene/composites/SCIENTIFIC_PLOTTING_BOUNDARY.md`](../../spec/scene/composites/SCIENTIFIC_PLOTTING_BOUNDARY.md).
+
+
 ## Backend Roles
 
 ### Datoviz Backend

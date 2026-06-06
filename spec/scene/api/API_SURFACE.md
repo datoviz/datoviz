@@ -164,6 +164,13 @@ surface for straight and curved vectors while lowering internally to generated l
 `"shaft"`, `"head_start"`, and `"head_end"`. Arrowhead behavior should be shared across straight and
 curved variants through one head-style semantic contract rather than per-leaf ad hoc setters.
 
+Scientific plotting APIs should follow the same leaf-versus-semantic split. Datoviz may expose
+retained scene building blocks for guide lines/spans, bars or interval series, bands/ribbons, and
+trace collections when those objects need panel-domain attachment, retained rendering, annotation
+integration, or coordinated visual roles. GSP/VisPy2 owns high-level plotting functions, statistical
+transforms, Python data adaptation, and domain-specific recipes. The design boundary is recorded in
+[`../composites/SCIENTIFIC_PLOTTING_BOUNDARY.md`](../composites/SCIENTIFIC_PLOTTING_BOUNDARY.md).
+
 
 ## Transform And Controller Semantics
 

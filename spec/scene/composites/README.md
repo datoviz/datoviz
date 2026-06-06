@@ -23,6 +23,18 @@ Do not add a new visual family unless the renderable itself has a distinct resou
 participation, picking contract, or fallback behavior. Polygon and graph are semantic composites.
 
 
+## Scientific Plotting Boundary
+
+Scientific plotting support should be split between reusable Datoviz scene building blocks and the
+future GSP/VisPy2 plotting layer. Datoviz owns rendering-native guide annotations, spans,
+bars/intervals, bands/ribbons, and trace collections. GSP/VisPy2 owns statistical transforms,
+high-level plotting grammar, Python data adaptation, and domain-specific recipes.
+
+The durable boundary is recorded in
+[`SCIENTIFIC_PLOTTING_BOUNDARY.md`](SCIENTIFIC_PLOTTING_BOUNDARY.md). Use that note before adding
+histogram, `hline`/`vline`, error-band, or stacked-trace APIs.
+
+
 ## Composite Model
 
 `DvzComposite` should stay a narrow render-view bridge:
