@@ -5,6 +5,7 @@
 compact retained text block with stable screen placement.
 
 - ID: `feature_text_block`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/text_block.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/text_block.c)

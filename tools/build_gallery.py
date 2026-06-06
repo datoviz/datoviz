@@ -22,6 +22,15 @@ PUBLIC_LANES = ("visuals", "features", "composites", "showcases")
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
 PYTHON_SOURCE_BY_ID = {}
 
+CATEGORY_TO_LANE = {
+    "visual": "visuals",
+    "feature": "features",
+    "composite": "composites",
+    "showcase": "showcases",
+}
+
+LANE_TO_CATEGORY = {lane: category for category, lane in CATEGORY_TO_LANE.items()}
+
 PAGE_CONFIG = {
     "visual-gallery.md": {
         "title": "Visual Gallery",
@@ -76,15 +85,18 @@ TECHNIQUE_IDS = (
 class Example:
     id: str
     title: str
+    category: str
     lane: str
     stage: str
     source: str
     validation: str
     status: str
-    features: tuple[str, ...]
+    tags: tuple[str, ...]
     summary: str
+    data: dict
     dataset: dict
     encoding: dict
+    agent_copy_safe: bool | None
     python_source: str | None
 
     @property
@@ -172,23 +184,35 @@ def extract_c_summary(path: Path) -> str:
 def collect_examples(manifest: dict) -> list[Example]:
     examples: list[Example] = []
     for entry in manifest["examples"]:
-        lane = str(entry.get("lane", ""))
+        raw_category = entry.get("category")
+        if raw_category is not None:
+            category = str(raw_category)
+            lane = CATEGORY_TO_LANE.get(category, category)
+        else:
+            lane = str(entry.get("lane", ""))
+            category = LANE_TO_CATEGORY.get(lane, lane)
         stage = str(entry.get("stage", ""))
         source = str(entry.get("source", ""))
         if lane not in PUBLIC_LANES or stage == "lab" or not source:
             continue
+        tags = entry.get("tags")
+        if tags is None:
+            tags = entry.get("features", [])
         example = Example(
             id=str(entry["id"]),
             title=str(entry.get("title", entry["id"])),
+            category=category,
             lane=lane,
             stage=stage,
             source=source,
             validation=str(entry.get("validation", "")),
             status=status_from_entry(entry),
-            features=tuple(str(feature) for feature in entry.get("features", [])),
+            tags=tuple(str(tag) for tag in tags),
             summary=extract_c_summary(ROOT / source),
+            data=entry.get("data") or {},
             dataset=entry.get("dataset") or {},
             encoding=entry.get("encoding") or {},
+            agent_copy_safe=entry.get("agent_copy_safe"),
             python_source=PYTHON_SOURCE_BY_ID.get(str(entry["id"])),
         )
         examples.append(example)
@@ -245,10 +269,10 @@ def render_card(example: Example, docs_dir: Path, image_dir: Path) -> str:
     page = Path(example.page_path)
     href = page.as_posix()
     media = media_block(example, image_dir)
-    features = ", ".join(f"`{feature}`" for feature in example.features[:5])
-    if len(example.features) > 5:
-        features += ", ..."
-    feature_line = f"<br><span>{features}</span>" if features else ""
+    tags = ", ".join(f"`{tag}`" for tag in example.tags[:5])
+    if len(example.tags) > 5:
+        tags += ", ..."
+    tag_line = f"<br><span>{tags}</span>" if tags else ""
     return f"""\
 <div class="card" markdown="1">
 
@@ -256,7 +280,7 @@ def render_card(example: Example, docs_dir: Path, image_dir: Path) -> str:
 
 {media}
 
-`{example.status}` `{example.lane}`{feature_line}
+`{example.status}` `{example.lane}`{tag_line}
 
 {example.summary}
 
@@ -450,10 +474,13 @@ def render_example_page(example: Example, docs_dir: Path, image_dir: Path) -> No
     lines.extend([example.summary, ""])
     metadata = [
         f"- ID: `{example.id}`",
+        f"- Category: `{example.category}`",
         f"- Lane: `{example.lane}`",
         f"- Status: `{example.status}`",
         f"- Source: [`{example.source}`]({source_url(example)})",
     ]
+    if example.agent_copy_safe is not None:
+        metadata.append(f"- Agent copy-safe: `{str(example.agent_copy_safe).lower()}`")
     if example.python_source is not None:
         metadata.append(
             f"- Python source: [`{example.python_source}`]({SOURCE_BASE_URL}/{example.python_source})",
@@ -467,9 +494,14 @@ def render_example_page(example: Example, docs_dir: Path, image_dir: Path) -> No
     )
     lines.extend(metadata)
     lines.append("")
-    if example.features:
-        lines.extend(["## Features", ""])
-        lines.append(", ".join(f"`{feature}`" for feature in example.features))
+    if example.tags:
+        lines.extend(["## Tags", ""])
+        lines.append(", ".join(f"`{tag}`" for tag in example.tags))
+        lines.append("")
+    if example.data:
+        lines.extend(["## Data", "", "| Field | Value |", "| --- | --- |"])
+        for key, value in example.data.items():
+            lines.append(f"| `{key}` | {value} |")
         lines.append("")
     if example.dataset:
         lines.extend(["## Dataset", "", "| Field | Value |", "| --- | --- |"])

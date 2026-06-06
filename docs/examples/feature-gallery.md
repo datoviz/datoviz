@@ -113,7 +113,7 @@ tentative retained categorical legend proof.
 
 _Media pending._
 
-`supported` `features`
+`supported` `features`<br><span>`colorbar`, `scalar-field`, `image`, `capture`</span>
 
 deterministic scalar image with one retained continuous colorbar.
 

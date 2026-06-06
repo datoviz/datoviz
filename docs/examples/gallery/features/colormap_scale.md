@@ -5,6 +5,7 @@
 point visual with scalar float colors and one retained color scale.
 
 - ID: `colormap_scale`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/colormap_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colormap_scale.c)

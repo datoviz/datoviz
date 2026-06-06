@@ -5,6 +5,7 @@
 minimal retained scale bar attached to one 2D panel.
 
 - ID: `scale_bar`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/scalebar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c)

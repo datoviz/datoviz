@@ -5,6 +5,7 @@
 retained marker item picking and selection proof.
 
 - ID: `marker_picking`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/pick_marker.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/pick_marker.c)

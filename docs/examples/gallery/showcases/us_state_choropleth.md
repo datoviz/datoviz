@@ -5,6 +5,7 @@
 contiguous U.S. state population-density choropleth.
 
 - ID: `us_state_choropleth`
+- Category: `showcase`
 - Lane: `showcases`
 - Status: `supported`
 - Source: [`examples/c/showcases/choropleth.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/choropleth.c)
@@ -12,7 +13,7 @@ contiguous U.S. state population-density choropleth.
 - Smoke: `./build/examples/c/showcases/choropleth --png`
 - Validation: `smoke+screenshot+manual`
 
-## Features
+## Tags
 
 `scientific`, `real-data`, `geo`, `composite`, `polygon-set`, `choropleth`, `colorbar`, `panzoom`, `capture`
 

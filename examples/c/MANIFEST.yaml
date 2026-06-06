@@ -11,6 +11,14 @@ taxonomy:
     features: one isolated feature or rendering technique per example
     composites: one semantic object that lowers to one or more visuals per example
     showcases: composed workflows, scientific stories, real-data examples, and polished demos
+  schema:
+    category: visual | feature | composite | showcase
+    primary_visual: required for visual examples
+    primary_feature: required for feature examples
+    primary_composite: required for composite examples
+    tags: searchable labels for docs, agents, and gallery filters
+    data.kind: synthetic | simulated | real | prepared
+    agent_copy_safe: true only for examples suitable as starting points for generated user code
   tag_not_folder:
     - workflow
     - scientific
@@ -172,13 +180,17 @@ examples:
   - id: linked_panels_probe_colorbar
     title: Linked Probe With Colorbar
     stage: v0.4_required
+    category: showcase
     lane: showcases
     source: examples/c/showcases/linked_probe_colorbar.c
     validation: smoke+readback+interaction+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: false
     gallery:
       card: section
       status_label: supported
-    features:
+    tags:
       - workflow
       - image
       - sampled-field
@@ -216,9 +228,19 @@ examples:
   - id: colorbar
     title: Colorbar
     stage: v0.4_required
+    category: feature
+    primary_feature: colorbar
     lane: features
     source: examples/c/features/colorbar.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
+    tags:
+      - colorbar
+      - scalar-field
+      - image
+      - capture
 
   - id: colormap_scale
     title: Scalar Color Scale
@@ -381,13 +403,18 @@ examples:
   - id: point_2d
     title: Point
     stage: v0.4_required
+    category: visual
+    primary_visual: point
     lane: visuals
     source: examples/c/visuals/point.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - point
       - panzoom
       - capture
@@ -610,13 +637,18 @@ examples:
   - id: composite_graph
     title: Graph Composite
     stage: v0.4_required
+    category: composite
+    primary_composite: graph
     lane: composites
     source: examples/c/composites/graph.c
     validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
-    features:
+    tags:
       - composite
       - graph
       - marker-nodes
@@ -659,9 +691,13 @@ examples:
   - id: protein_arcball_viewer
     title: Protein
     stage: v0.4_required
+    category: showcase
     lane: showcases
     source: examples/c/showcases/protein.c
     validation: smoke+screenshot+manual
+    data:
+      kind: real
+    agent_copy_safe: false
     dataset:
       name: RCSB PDB protein structure
       source: https://files.rcsb.org/download/{pdb_id}.pdb
@@ -677,7 +713,7 @@ examples:
     gallery:
       card: section
       status_label: supported
-    features:
+    tags:
       - scientific
       - real-data
       - molecular

@@ -5,6 +5,7 @@
 retained point selection proof.
 
 - ID: `feature_selection`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/selection.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection.c)

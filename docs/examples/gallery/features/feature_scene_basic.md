@@ -5,6 +5,7 @@
 smallest runner-backed retained scene with one point visual.
 
 - ID: `feature_scene_basic`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/scene_basic.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scene_basic.c)

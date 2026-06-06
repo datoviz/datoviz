@@ -5,6 +5,7 @@
 RESEPI RGB LiDAR dense point cloud.
 
 - ID: `point_cloud`
+- Category: `showcase`
 - Lane: `showcases`
 - Status: `supported`
 - Source: [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c)
@@ -12,7 +13,7 @@ RESEPI RGB LiDAR dense point cloud.
 - Smoke: `./build/examples/c/showcases/point_cloud --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, `gui`, `fly`, `capture`
 

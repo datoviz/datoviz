@@ -5,6 +5,7 @@
 retained point visual with full data replacement.
 
 - ID: `feature_update_visual_data`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/update_visual_data.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_visual_data.c)

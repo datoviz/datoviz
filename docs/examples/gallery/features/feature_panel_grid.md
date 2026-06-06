@@ -5,6 +5,7 @@
 four grid-owned panels with clipped panel-local content.
 
 - ID: `feature_panel_grid`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/panel_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_grid.c)

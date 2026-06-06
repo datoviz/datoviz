@@ -5,6 +5,7 @@
 semantic polygon and polygon-set composites.
 
 - ID: `composite_polygon`
+- Category: `composite`
 - Lane: `composites`
 - Status: `supported`
 - Source: [`examples/c/composites/polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c)
@@ -12,7 +13,7 @@ semantic polygon and polygon-set composites.
 - Smoke: `./build/examples/c/composites/polygon --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `composite`, `polygon`, `polygon-set`, `holes`, `panzoom`
 

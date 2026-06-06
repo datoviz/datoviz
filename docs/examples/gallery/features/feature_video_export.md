@@ -5,6 +5,7 @@
 portable scenario using the native runner's live/capture modes.
 
 - ID: `feature_video_export`
+- Category: `feature`
 - Lane: `features`
 - Status: `experimental`
 - Source: [`examples/c/features/video_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/video_export.c)
@@ -12,7 +13,7 @@ portable scenario using the native runner's live/capture modes.
 - Smoke: `./build/examples/c/features/video_export --png`
 - Validation: `smoke+optional-video`
 
-## Features
+## Tags
 
 `app-capture`, `scenario-runner`, `video`, `animation`
 

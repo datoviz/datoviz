@@ -5,6 +5,7 @@
 side-by-side visual depth-test toggle with overlapping 3D points.
 
 - ID: `depth_test`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/depth_test.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/depth_test.c)

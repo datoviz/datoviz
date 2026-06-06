@@ -5,6 +5,7 @@
 topology-parametric triangles rendered with the retained primitive visual.
 
 - ID: `visual_primitive`
+- Category: `visual`
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/primitive.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/primitive.c)
@@ -12,7 +13,7 @@ topology-parametric triangles rendered with the retained primitive visual.
 - Smoke: `./build/examples/c/visuals/primitive --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `primitive`, `capture`
 

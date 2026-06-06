@@ -5,6 +5,7 @@
 retained lit indexed cube mesh.
 
 - ID: `visual_mesh`
+- Category: `visual`
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/mesh.c)
@@ -12,7 +13,7 @@ retained lit indexed cube mesh.
 - Smoke: `./build/examples/c/visuals/mesh --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `mesh`, `indexed-geometry`, `arcball`, `capture`
 

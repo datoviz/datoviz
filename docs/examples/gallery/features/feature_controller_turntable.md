@@ -5,6 +5,7 @@
 constrained turntable controller around a small 3D mesh.
 
 - ID: `feature_controller_turntable`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/controller_turntable.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_turntable.c)

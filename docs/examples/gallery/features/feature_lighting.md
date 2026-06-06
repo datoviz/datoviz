@@ -5,6 +5,7 @@
 lit sphere cluster with explicit light direction.
 
 - ID: `feature_lighting`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/lighting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c)

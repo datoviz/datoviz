@@ -5,6 +5,7 @@
 UV textured planet mesh via dvz_mesh + sampled fields.
 
 - ID: `textured_terrain_or_planet`
+- Category: `showcase`
 - Lane: `showcases`
 - Status: `supported`
 - Source: [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c)
@@ -12,7 +13,7 @@ UV textured planet mesh via dvz_mesh + sampled fields.
 - Smoke: `./build/examples/c/showcases/textured_planet --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `mesh`, `sampled-field`, `texture`, `arcball`, `capture`
 

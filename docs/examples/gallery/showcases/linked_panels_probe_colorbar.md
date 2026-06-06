@@ -5,16 +5,24 @@
 linked image panels with one probe readout and shared colorbar.
 
 - ID: `linked_panels_probe_colorbar`
+- Category: `showcase`
 - Lane: `showcases`
 - Status: `supported`
 - Source: [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c)
+- Agent copy-safe: `false`
 - Build: `just example-c showcases/linked_probe_colorbar`
 - Smoke: `./build/examples/c/showcases/linked_probe_colorbar --png`
 - Validation: `smoke+readback+interaction+screenshot`
 
-## Features
+## Tags
 
 `workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, `colorbar`, `readout`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

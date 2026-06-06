@@ -5,6 +5,7 @@
 multiple independent panels with panel-local panzoom controllers.
 
 - ID: `feature_panel_multi`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/panel_multi.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_multi.c)

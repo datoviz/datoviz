@@ -5,6 +5,7 @@
 minimal UV textured mesh with a procedural RGBA8 texture.
 
 - ID: `feature_mesh_texture`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/mesh_texture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/mesh_texture.c)

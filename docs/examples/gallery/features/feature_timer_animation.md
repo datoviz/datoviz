@@ -5,6 +5,7 @@
 portable scenario updating retained point data on runner frames.
 
 - ID: `feature_timer_animation`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/timer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/timer_animation.c)

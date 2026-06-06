@@ -5,6 +5,7 @@
 retained segment visual with independent endpoint-pair strokes.
 
 - ID: `visual_segment`
+- Category: `visual`
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/segment.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/segment.c)
@@ -12,7 +13,7 @@ retained segment visual with independent endpoint-pair strokes.
 - Smoke: `./build/examples/c/visuals/segment --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `segment`, `panzoom`, `capture`
 

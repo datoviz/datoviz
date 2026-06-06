@@ -5,6 +5,7 @@
 retained marker visual with deterministic symbol, fill, stroke, and size variation.
 
 - ID: `visual_marker`
+- Category: `visual`
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/marker.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/marker.c)
@@ -12,7 +13,7 @@ retained marker visual with deterministic symbol, fill, stroke, and size variati
 - Smoke: `./build/examples/c/visuals/marker --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `marker`, `panzoom`, `capture`
 

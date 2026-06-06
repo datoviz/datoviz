@@ -5,6 +5,7 @@
 retained label annotation anchored to data.
 
 - ID: `annotation_readout`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/annotation_readout.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/annotation_readout.c)

@@ -5,6 +5,7 @@
 retained point hover proof.
 
 - ID: `feature_pick_hover`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/pick_hover.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/pick_hover.c)

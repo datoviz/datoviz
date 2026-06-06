@@ -5,6 +5,7 @@
 deterministic path with retained 2D axes and tick labels.
 
 - ID: `path_axes_2d`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c)

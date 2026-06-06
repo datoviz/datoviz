@@ -5,6 +5,7 @@
 two panels with bidirectional linked X panzoom state.
 
 - ID: `feature_panel_linked`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/panel_linked.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_linked.c)

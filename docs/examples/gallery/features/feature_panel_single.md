@@ -5,6 +5,7 @@
 one explicit panel rectangle with panel chrome and one visual.
 
 - ID: `feature_panel_single`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/panel_single.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_single.c)

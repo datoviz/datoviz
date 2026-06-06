@@ -5,6 +5,7 @@
 fixed graphite-cyan panel background behind a simple visual.
 
 - ID: `panel_background`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/panel_background.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_background.c)

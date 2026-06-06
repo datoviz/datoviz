@@ -5,6 +5,7 @@
 fly controller with deterministic camera translation.
 
 - ID: `feature_controller_fly`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/controller_fly.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_fly.c)

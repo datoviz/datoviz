@@ -5,6 +5,7 @@
 deterministic gyroid scalar field rendered with the retained volume visual.
 
 - ID: `volume`
+- Category: `visual`
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/volume.c)
@@ -12,7 +13,7 @@ deterministic gyroid scalar field rendered with the retained volume visual.
 - Smoke: `./build/examples/c/visuals/volume --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `sampled-field`, `volume`, `transfer-function`, `boundary-box`, `arcball`, `capture`
 

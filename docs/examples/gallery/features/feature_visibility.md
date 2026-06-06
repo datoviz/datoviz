@@ -5,6 +5,7 @@
 retained visual visibility toggled on a runner frame.
 
 - ID: `feature_visibility`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/visibility.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visibility.c)

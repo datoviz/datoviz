@@ -5,6 +5,7 @@
 retained point item picking proof.
 
 - ID: `feature_pick_point`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/pick_point.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/pick_point.c)

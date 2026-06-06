@@ -5,6 +5,7 @@
 retained scale bar with a custom time-unit string.
 
 - ID: `scalebar_units`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/scalebar_units.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar_units.c)

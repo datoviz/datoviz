@@ -5,6 +5,7 @@
 scene API compute-to-graphics particle smoke showcase.
 
 - ID: `showcase_gpu_particle_smoke`
+- Category: `showcase`
 - Lane: `showcases`
 - Status: `experimental`
 - Source: [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c)

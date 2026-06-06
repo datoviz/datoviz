@@ -5,6 +5,7 @@
 categorical labels query proof with deterministic label-id readout.
 
 - ID: `feature_probe_labels`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/probe_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c)

@@ -5,6 +5,7 @@
 bind a panzoom controller to one panel with a simple 2D visual.
 
 - ID: `controller_panzoom`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/panzoom_attachment.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom_attachment.c)

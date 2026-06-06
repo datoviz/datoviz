@@ -5,16 +5,24 @@
 deterministic retained 2D point visual baseline.
 
 - ID: `point_2d`
+- Category: `visual`
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/point.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/point.c)
+- Agent copy-safe: `true`
 - Build: `just example-c visuals/point`
 - Smoke: `./build/examples/c/visuals/point --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `point`, `panzoom`, `capture`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

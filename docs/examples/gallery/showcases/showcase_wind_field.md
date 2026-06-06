@@ -5,6 +5,7 @@
 synthetic weather-like scalar and vector field showcase.
 
 - ID: `showcase_wind_field`
+- Category: `showcase`
 - Lane: `showcases`
 - Status: `supported`
 - Source: [`examples/c/showcases/wind_field.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c)

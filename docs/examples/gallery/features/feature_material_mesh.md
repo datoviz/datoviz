@@ -5,6 +5,7 @@
 retained mesh visuals with explicit material parameters.
 
 - ID: `feature_material_mesh`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/material_mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c)

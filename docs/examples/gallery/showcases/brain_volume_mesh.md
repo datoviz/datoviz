@@ -5,6 +5,7 @@
 local Allen mouse brain RGBA volume and occluded slice.
 
 - ID: `brain_volume_mesh`
+- Category: `showcase`
 - Lane: `showcases`
 - Status: `prototype`
 - Source: [`examples/c/showcases/brain_volume_mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume_mesh.c)
@@ -12,7 +13,7 @@ local Allen mouse brain RGBA volume and occluded slice.
 - Smoke: `./build/examples/c/showcases/brain_volume_mesh --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `volume`, `volume-slice`, `volume-occlusion`, `arcball`, `capture`
 

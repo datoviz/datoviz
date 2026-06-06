@@ -5,6 +5,7 @@
 screen-space overlay card attached to a panel.
 
 - ID: `feature_overlay_card`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/overlay_card.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/overlay_card.c)

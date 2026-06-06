@@ -5,6 +5,7 @@
 retained semantic text objects lowered to glyph visuals.
 
 - ID: `visual_text`
+- Category: `visual`
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/text.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c)
@@ -12,7 +13,7 @@ retained semantic text objects lowered to glyph visuals.
 - Smoke: `./build/examples/c/visuals/text --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `text`, `capture`
 

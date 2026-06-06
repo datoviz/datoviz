@@ -5,6 +5,7 @@
 scalar image pixel-query proof with a live probe marker.
 
 - ID: `image_probe`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/image_probe.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/image_probe.c)

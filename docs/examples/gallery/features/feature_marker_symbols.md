@@ -5,6 +5,7 @@
 marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
 - ID: `feature_marker_symbols`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c)
@@ -12,7 +13,7 @@ marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 - Smoke: `./build/examples/c/features/marker_symbols --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`, `svg-path-symbol`
 

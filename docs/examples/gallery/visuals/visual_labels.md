@@ -5,6 +5,7 @@
 retained labels visual with a small deterministic integer sampled field.
 
 - ID: `visual_labels`
+- Category: `visual`
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/labels.c)
@@ -12,7 +13,7 @@ retained labels visual with a small deterministic integer sampled field.
 - Smoke: `./build/examples/c/visuals/labels --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `labels`, `categorical-scale`, `panzoom`, `capture`
 

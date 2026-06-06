@@ -5,6 +5,7 @@
 scene-owned 2D sampled field bound to an image visual.
 
 - ID: `feature_sampled_field_2d`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/sampled_field_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_2d.c)

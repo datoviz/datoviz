@@ -5,6 +5,7 @@
 deterministic multi-signal retained path visual.
 
 - ID: `visual_path`
+- Category: `visual`
 - Lane: `visuals`
 - Status: `supported`
 - Source: [`examples/c/visuals/path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/path.c)
@@ -12,7 +13,7 @@ deterministic multi-signal retained path visual.
 - Smoke: `./build/examples/c/visuals/path --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `path`, `capture`
 

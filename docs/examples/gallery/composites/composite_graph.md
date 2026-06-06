@@ -5,16 +5,24 @@
 semantic graph composite with clustered curved edges.
 
 - ID: `composite_graph`
+- Category: `composite`
 - Lane: `composites`
 - Status: `supported`
 - Source: [`examples/c/composites/graph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c)
+- Agent copy-safe: `true`
 - Build: `just example-c composites/graph`
 - Smoke: `./build/examples/c/composites/graph --png`
 - Validation: `smoke+screenshot`
 
-## Features
+## Tags
 
 `composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`
+
+## Data
+
+| Field | Value |
+| --- | --- |
+| `kind` | synthetic |
 
 ## Media
 

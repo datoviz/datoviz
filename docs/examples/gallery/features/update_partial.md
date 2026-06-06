@@ -5,6 +5,7 @@
 point visual with one retained data-range update.
 
 - ID: `update_partial`
+- Category: `feature`
 - Lane: `features`
 - Status: `supported`
 - Source: [`examples/c/features/update_partial.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_partial.c)
