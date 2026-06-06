@@ -194,6 +194,7 @@ nav:
     - Documentation:
       - Docs authoring: 'contributors/docs-authoring.md'
       - AI agents: 'contributors/ai-agents.md'
+      - Agent quickstart: 'contributors/agent-quickstart.md'
       - Adding examples: 'contributors/adding-examples.md'
     - Development:
       - Adding a visual: 'contributors/adding-a-visual.md'

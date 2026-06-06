@@ -34,6 +34,10 @@ keeps media status explicit while capture artifacts are prepared separately.
 Public source lanes use `visuals`, `features`, `composites`, or `showcases`.
 Concepts such as `workflow`, `scientific`, and `real-data` are manifest tags.
 
+Coding agents should use [`docs/examples/examples.json`](examples.json) and the
+[agent quickstart](../contributors/agent-quickstart.md) when selecting copy-safe
+starting points.
+
 | Lane | Source directory | Examples |
 | --- | --- | ---: |
 | Visuals | `examples/c/visuals/` | 15 |

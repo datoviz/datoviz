@@ -44,6 +44,9 @@ figure -> panel -> visual or retained object -> data/resources -> render/show/ca
 
 ## Copy From Current Examples
 
+For example selection, start with [Agent Quickstart](agent-quickstart.md). It uses
+`docs/examples/examples.json` as the machine-readable source of truth for current public examples.
+
 Prefer examples that are:
 
 1. complete source files;
