@@ -218,6 +218,8 @@ static DvzScenarioSpec _video_export_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_FRAME_CALLBACKS |
+                        DVZ_SCENARIO_REQ_NATIVE_CAPTURE,
         .init = _scenario_init,
         .frame = _scenario_frame,
         .destroy = _scenario_destroy,

@@ -48,6 +48,7 @@ typedef enum DvzRunnerPresentation
 {
     DVZ_RUNNER_PRESENT_GLFW,
     DVZ_RUNNER_PRESENT_OFFSCREEN,
+    DVZ_RUNNER_PRESENT_BROWSER,
 } DvzRunnerPresentation;
 
 
@@ -58,6 +59,26 @@ typedef enum DvzRunnerCaptureKind
     DVZ_RUNNER_CAPTURE_PNG,
     DVZ_RUNNER_CAPTURE_DVZR,
 } DvzRunnerCaptureKind;
+
+
+typedef enum DvzScenarioRequirement
+{
+    DVZ_SCENARIO_REQ_POINT_VISUAL = 1ull << 0,
+    DVZ_SCENARIO_REQ_MARKER_VISUAL = 1ull << 1,
+    DVZ_SCENARIO_REQ_MESH_VISUAL = 1ull << 2,
+    DVZ_SCENARIO_REQ_IMAGE_VISUAL = 1ull << 3,
+    DVZ_SCENARIO_REQ_TEXT_VISUAL = 1ull << 4,
+    DVZ_SCENARIO_REQ_SCENE_BUFFERS = 1ull << 5,
+    DVZ_SCENARIO_REQ_STORAGE_BUFFERS = 1ull << 6,
+    DVZ_SCENARIO_REQ_SCENE_COMPUTE = 1ull << 7,
+    DVZ_SCENARIO_REQ_QUERY_READBACK = 1ull << 8,
+    DVZ_SCENARIO_REQ_FRAME_CALLBACKS = 1ull << 9,
+    DVZ_SCENARIO_REQ_NATIVE_CAPTURE = 1ull << 10,
+    DVZ_SCENARIO_REQ_NATIVE_VIEW = 1ull << 11,
+    DVZ_SCENARIO_REQ_CONTROLLER = 1ull << 12,
+    DVZ_SCENARIO_REQ_PANZOOM = 1ull << 13,
+    DVZ_SCENARIO_REQ_ARCBALL = 1ull << 14,
+} DvzScenarioRequirement;
 
 
 
@@ -105,6 +126,7 @@ typedef struct DvzScenarioSpec
     uint32_t width;
     uint32_t height;
     double fps;
+    uint64_t requirements;
 
     DvzScenarioInitFn init;
     DvzScenarioFrameFn frame;

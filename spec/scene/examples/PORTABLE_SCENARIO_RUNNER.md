@@ -9,6 +9,15 @@ Execution Status:
 - Scope: scenario/runner boundaries, native runner modes, WASM host expectations, capture
   ownership, migration sequence, and promotion rules
 
+Current implementation checkpoint:
+
+1. `examples/c/runner/` contains the native GLFW/offscreen/capture runner.
+2. `DvzScenarioSpec.requirements` and runner-side requirement diagnostics are active in example
+   support code.
+3. `scene_basic`, `timer_animation`, and `video_export` carry first-slice requirement metadata in
+   code and `examples/c/MANIFEST.yaml`.
+4. Portable event/query callbacks and the browser/WASM scenario host remain the next phases.
+
 Full visual and feature parity sequencing lives in
 [../integration/WASM_WEBGPU_PARITY_PLAN.md](../integration/WASM_WEBGPU_PARITY_PLAN.md). This file
 defines the example architecture used by that parity program.

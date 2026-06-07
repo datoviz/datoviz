@@ -54,6 +54,39 @@ typedef struct RunnerProgressState
 } RunnerProgressState;
 
 
+typedef struct RunnerRequirementName
+{
+    uint64_t bit;
+    const char* name;
+} RunnerRequirementName;
+
+
+
+/*************************************************************************************************/
+/*  Requirement table                                                                            */
+/*************************************************************************************************/
+
+static const RunnerRequirementName REQ_NAMES[] = {
+    {DVZ_SCENARIO_REQ_POINT_VISUAL, "point"},
+    {DVZ_SCENARIO_REQ_MARKER_VISUAL, "marker"},
+    {DVZ_SCENARIO_REQ_MESH_VISUAL, "mesh"},
+    {DVZ_SCENARIO_REQ_IMAGE_VISUAL, "image"},
+    {DVZ_SCENARIO_REQ_TEXT_VISUAL, "text"},
+    {DVZ_SCENARIO_REQ_SCENE_BUFFERS, "scene-buffers"},
+    {DVZ_SCENARIO_REQ_STORAGE_BUFFERS, "storage-buffers"},
+    {DVZ_SCENARIO_REQ_SCENE_COMPUTE, "scene-compute"},
+    {DVZ_SCENARIO_REQ_QUERY_READBACK, "query-readback"},
+    {DVZ_SCENARIO_REQ_FRAME_CALLBACKS, "frame-callbacks"},
+    {DVZ_SCENARIO_REQ_NATIVE_CAPTURE, "native-capture"},
+    {DVZ_SCENARIO_REQ_NATIVE_VIEW, "native-view"},
+    {DVZ_SCENARIO_REQ_CONTROLLER, "controller"},
+    {DVZ_SCENARIO_REQ_PANZOOM, "panzoom"},
+    {DVZ_SCENARIO_REQ_ARCBALL, "arcball"},
+};
+
+static const uint32_t REQ_NAME_COUNT = sizeof(REQ_NAMES) / sizeof(REQ_NAMES[0]);
+
+
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
@@ -123,6 +156,23 @@ static uint32_t _capture_flags(DvzRunnerCaptureKind kind)
 
 
 
+static const char* _presentation_label(DvzRunnerPresentation presentation)
+{
+    switch (presentation)
+    {
+    case DVZ_RUNNER_PRESENT_GLFW:
+        return "glfw";
+    case DVZ_RUNNER_PRESENT_OFFSCREEN:
+        return "offscreen";
+    case DVZ_RUNNER_PRESENT_BROWSER:
+        return "browser";
+    default:
+        return "unknown";
+    }
+}
+
+
+
 static const char* _capture_label(DvzRunnerCaptureKind kind)
 {
     switch (kind)
@@ -137,6 +187,82 @@ static const char* _capture_label(DvzRunnerCaptureKind kind)
     default:
         return "capture";
     }
+}
+
+
+
+static uint64_t _known_requirement_mask(void)
+{
+    uint64_t mask = 0;
+    for (uint32_t i = 0; i < REQ_NAME_COUNT; i++)
+        mask |= REQ_NAMES[i].bit;
+    return mask;
+}
+
+
+
+static uint64_t _effective_requirements(
+    const DvzScenarioSpec* spec, const DvzRunnerConfig* config)
+{
+    uint64_t requirements = spec != NULL ? spec->requirements : 0;
+    if (spec != NULL && spec->frame != NULL)
+        requirements |= DVZ_SCENARIO_REQ_FRAME_CALLBACKS;
+    if (spec != NULL && spec->native_view != NULL)
+        requirements |= DVZ_SCENARIO_REQ_NATIVE_VIEW;
+    if (config != NULL && config->capture_kind != DVZ_RUNNER_CAPTURE_NONE)
+        requirements |= DVZ_SCENARIO_REQ_NATIVE_CAPTURE;
+    return requirements;
+}
+
+
+
+static void _print_requirements(FILE* stream, uint64_t requirements)
+{
+    ANN(stream);
+
+    bool first = true;
+    for (uint32_t i = 0; i < REQ_NAME_COUNT; i++)
+    {
+        if ((requirements & REQ_NAMES[i].bit) == 0)
+            continue;
+        fprintf(stream, "%s%s", first ? "" : ",", REQ_NAMES[i].name);
+        first = false;
+    }
+    if (first)
+        fprintf(stream, "none");
+}
+
+
+
+static int _validate_requirements(const DvzScenarioSpec* spec, const DvzRunnerConfig* config)
+{
+    ANN(spec);
+    ANN(config);
+
+    if (config->presentation == DVZ_RUNNER_PRESENT_BROWSER)
+    {
+        fprintf(stderr,
+                "scenario_runner: native runner cannot use presentation '%s' for scenario '%s'\n",
+                _presentation_label(config->presentation), spec->id != NULL ? spec->id : "?");
+        return -1;
+    }
+
+    const uint64_t requirements = _effective_requirements(spec, config);
+    const uint64_t unknown = requirements & ~_known_requirement_mask();
+    if (unknown != 0)
+    {
+        fprintf(stderr, "scenario_runner: scenario '%s' has unknown requirement bits 0x%llx\n",
+                spec->id != NULL ? spec->id : "?", (unsigned long long)unknown);
+        return -1;
+    }
+
+    if (requirements != 0)
+    {
+        fprintf(stdout, "scenario_runner: %s requirements: ", spec->id != NULL ? spec->id : "?");
+        _print_requirements(stdout, requirements);
+        fprintf(stdout, "\n");
+    }
+    return 0;
 }
 
 
@@ -380,6 +506,7 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     RunnerFrameState frame_state = {0};
     RunnerProgressState progress = {0};
     DvzRunnerConfig resolved = *config;
+    DvzScenarioContext ctx = {0};
 
     if (resolved.width == 0)
         resolved.width = spec->width;
@@ -390,11 +517,11 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     resolved.capture.flags = _capture_flags(resolved.capture_kind);
     if (resolved.capture.fps <= 0)
         resolved.capture.fps = resolved.fps;
+    if (_validate_requirements(spec, &resolved) != 0)
+        goto cleanup;
 
-    DvzScenarioContext ctx = {
-        .width = resolved.width,
-        .height = resolved.height,
-    };
+    ctx.width = resolved.width;
+    ctx.height = resolved.height;
 
     scene = dvz_scene();
     if (scene == NULL)

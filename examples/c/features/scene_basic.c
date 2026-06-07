@@ -115,6 +115,7 @@ static DvzScenarioSpec _scene_basic_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL,
         .init = _scenario_init,
     };
 }

@@ -20,6 +20,9 @@ taxonomy:
     data.kind: synthetic | simulated | real | prepared
     capture.mode: scenario by default; custom requires capture.reason
     capture.size: optional WxH override; defaults to defaults.public_capture
+    portability: portable-scenario | native-only | browser-only
+    webgpu.status: webgpu-live | webgpu-planned | webgpu-deferred | native-only | browser-only
+    webgpu.requirements: requirement tags used by the scenario runner and website routing
     agent_copy_safe: true only for examples suitable as starting points for generated user code
   tag_not_folder:
     - workflow
@@ -57,6 +60,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - point
     agent_copy_safe: true
 
   - id: feature_panel_single
@@ -556,6 +564,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - point
+        - frame-callbacks
     agent_copy_safe: true
 
   - id: feature_marker_symbols
@@ -609,6 +623,14 @@ examples:
     validation: smoke+optional-video
     data:
       kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: native-only
+      requirements:
+        - point
+        - frame-callbacks
+        - native-capture
+      reason: video export uses native capture backends in v0.4
     agent_copy_safe: false
     gallery:
       card: small
