@@ -10,6 +10,7 @@ const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs")
 const browserWrapperPath = resolve(root, "web/wasm/scene.js");
 const output2dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_point_pixel_marker_segment_path_primitive_image_mesh_panzoom.json");
 const output3dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_sphere_textured_mesh3d_arcball.json");
+const outputScenarioPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scenario_timer_animation.json");
 
 const DVZ_POINTER_EVENT_PRESS = 1;
 const DVZ_POINTER_EVENT_RELEASE = 0;
@@ -276,6 +277,24 @@ function emitPacketStream(Module, scene, figure, label) {
   };
 }
 
+function emitIncrementalPacketStream(Module, scene, figure, label) {
+  requireOk(typeof Module._dvz_wasm_api_emit_packets === "function", `${label}: missing packet emit ABI`);
+
+  const status = Module._dvz_wasm_api_emit_packets(scene, figure);
+  const messages = diagnostics(Module, scene);
+  if (status !== 0) {
+    requireOk(messages.length > 0, `${label}: no diagnostic was reported`);
+    throw new Error(`${label}: ${messages.join("; ")}`);
+  }
+  requireOk(Module._dvz_wasm_api_packet_status(scene) === 0, `${label}: packet status not OK`);
+  requireOk(messages.length === 0, `${label}: diagnostics: ${messages.join("; ")}`);
+
+  return {
+    update: expectPacket(Module, scene, DVZ_DRP2_PACKET_UPDATE, `${label} update`, { expectArena: true }),
+    frame: expectPacket(Module, scene, DVZ_DRP2_PACKET_FRAME, `${label} frame`),
+  };
+}
+
 async function expectBrowserWrapperPacketRuntime() {
   const source = await readFile(browserWrapperPath, "utf8");
   const renderInitial = source.match(/async renderInitial\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
@@ -294,6 +313,9 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(source.includes("_dvz_wasm_api_packet_status"), "browser wrapper ignores packet status");
   requireOk(source.includes("_dvz_wasm_api_buffer"), "browser wrapper cannot create scene buffers");
   requireOk(source.includes("_dvz_wasm_api_buffer_set_data"), "browser wrapper cannot upload scene buffers");
+  requireOk(source.includes("createScenario"), "browser wrapper cannot create portable scenarios");
+  requireOk(source.includes("_dvz_wasm_api_scenario_create"), "browser wrapper cannot instantiate C scenarios");
+  requireOk(source.includes("_dvz_wasm_api_scenario_frame"), "browser wrapper cannot advance C scenarios");
   requireOk(source.includes("_dvz_wasm_api_visual_set_attr_buffer"), "browser wrapper cannot bind attr buffers");
   requireOk(source.includes("_dvz_wasm_api_visual_set_u32"), "browser wrapper cannot upload u32 attrs");
   requireOk(source.includes("_dvz_wasm_api_visual_set_strings"), "browser wrapper cannot upload text strings");
@@ -832,6 +854,38 @@ function expect3DUpdateStreamShape(stream, label) {
   expectDraw(stream, 36, 1, `${label} mesh`);
 }
 
+function expectTimerScenarioStreamShape(stream, label, { allowSetupCommands = true } = {}) {
+  expectFrameCommandShape(stream, label);
+  if (!allowSetupCommands) {
+    expectNoSetupCommands(stream, label);
+  }
+  expectDraw(stream, 6, 8, `${label} point`);
+  if (!allowSetupCommands) {
+    return;
+  }
+  const pointPipeline = expectPipeline(
+    stream,
+    `${label} point`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.point",
+  );
+  requireOk(pointPipeline.topology === "triangle-list", `${label} point: unexpected topology`);
+  requireOk(
+    JSON.stringify(pipelineAttributeFormats(pointPipeline)) ===
+      JSON.stringify([
+        { stepMode: "instance", formats: ["float32x3"] },
+        { stepMode: "instance", formats: ["unorm8x4"] },
+        { stepMode: "instance", formats: ["float32"] },
+      ]),
+    `${label} point: unexpected vertex attributes`,
+  );
+  requireOk(
+    commandsOf(stream, "CreateRenderPipeline").filter(
+      (pipeline) => pipeline.builtin_pipeline === "scene.point",
+    ).length === 1,
+    `${label}: expected one point pipeline`,
+  );
+}
+
 function makeCubeMesh(size) {
   const s = size / 2;
   const faces = [
@@ -1197,6 +1251,72 @@ try {
   } finally {
     Module._dvz_wasm_api_scene_destroy(diagnosticScene);
   }
+
+  requireOk(Module._dvz_wasm_api_scenario_count() >= 1, "expected at least one WASM scenario");
+  const scenarioIdPtr = Module._dvz_wasm_api_scenario_id(0);
+  requireOk(scenarioIdPtr !== 0, "WASM scenario 0 has no id");
+  const scenarioId = Module.UTF8ToString(scenarioIdPtr);
+  requireOk(scenarioId === "feature_timer_animation", `unexpected scenario id ${scenarioId}`);
+  const scenarioTitlePtr = Module._dvz_wasm_api_scenario_title(0);
+  requireOk(scenarioTitlePtr !== 0, "WASM scenario 0 has no title");
+  requireOk(Module.UTF8ToString(scenarioTitlePtr) === "timer_animation", "unexpected scenario title");
+  requireOk(Module._dvz_wasm_api_scenario_width(0) === 1600, "unexpected scenario width");
+  requireOk(Module._dvz_wasm_api_scenario_height(0) === 1200, "unexpected scenario height");
+  requireOk(Module._dvz_wasm_api_scenario_fps(0) === 60, "unexpected scenario fps");
+  requireOk(
+    (Module._dvz_wasm_api_scenario_requirements(0) & (1 << 9)) !== 0,
+    "timer scenario did not declare frame callbacks",
+  );
+
+  const scenarioScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
+  requireOk(scenarioScene !== 0, "scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(scenarioScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "scenario canvas format",
+    );
+    expectStatus(Module._dvz_wasm_api_scenario_create(scenarioScene, 0), 0, "timer scenario create");
+    expectNoDiagnostics(Module, scenarioScene, "timer scenario create diagnostics");
+    const scenarioFigure = Module._dvz_wasm_api_scenario_figure(scenarioScene);
+    requireOk(scenarioFigure !== 0, "timer scenario has no figure");
+    const initialScenario = emitStream(Module, scenarioScene, scenarioFigure, "timer scenario initial");
+    expectTimerScenarioStreamShape(initialScenario.stream, "timer scenario initial");
+
+    expectStatus(
+      Module._dvz_wasm_api_scenario_frame(scenarioScene, 0.25, 1 / 60),
+      0,
+      "timer scenario first frame",
+    );
+    expectNoPayload(Module, scenarioScene, "scenario frame invalidates payload");
+    const frameScenario = emitStream(Module, scenarioScene, scenarioFigure, "timer scenario frame");
+    expectTimerScenarioStreamShape(frameScenario.stream, "timer scenario frame", {
+      allowSetupCommands: false,
+    });
+    expectWriteCommands(frameScenario.stream, "timer scenario frame");
+    requireOk(
+      frameScenario.payload !== initialScenario.payload,
+      "timer scenario frame payload did not replace initial payload",
+    );
+
+    expectStatus(
+      Module._dvz_wasm_api_scenario_frame(scenarioScene, 0.5, 1 / 60),
+      0,
+      "timer scenario second frame",
+    );
+    const splitScenario = emitIncrementalPacketStream(
+      Module, scenarioScene, scenarioFigure, "timer scenario split packet frame");
+    requireOk(
+      splitScenario.update.commandCount > 0 && splitScenario.frame.commandCount > 0,
+      "timer scenario split packet frame missing update/frame commands",
+    );
+    await writeFile(outputScenarioPath, `${JSON.stringify(initialScenario.stream, null, 2)}\n`, "utf8");
+    console.log(`Wrote ${outputScenarioPath}`);
+    console.log(`commands_scenario_timer=initial:${initialScenario.stream.commands.length} frame:${frameScenario.stream.commands.length}`);
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(scenarioScene);
+  }
+
   const positions = new Float32Array([-0.75, -0.45, 0, -0.35, 0.35, 0, 0.05, -0.1, 0, 0.42, 0.5, 0, 0.72, -0.35, 0]);
   const colors = new Uint8Array([231, 77, 60, 255, 46, 204, 113, 255, 52, 152, 219, 255, 241, 196, 15, 255, 155, 89, 182, 255]);
   const sizes = new Float32Array([32, 44, 36, 48, 40]);

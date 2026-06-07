@@ -18,7 +18,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifndef DVZ_EXAMPLE_NO_APP
 #include "datoviz/app.h"
+#else
+typedef struct DvzApp DvzApp;
+typedef struct DvzView DvzView;
+typedef struct DvzAppCaptureConfig
+{
+    uint32_t unused;
+} DvzAppCaptureConfig;
+#endif
 
 
 

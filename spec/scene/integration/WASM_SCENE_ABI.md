@@ -45,6 +45,16 @@ Initial functions should be deliberately small:
 
 ```c
 uint32_t dvz_wasm_api_scene(uint32_t width, uint32_t height);
+uint32_t dvz_wasm_api_scenario_count(void);
+uint32_t dvz_wasm_api_scenario_id(uint32_t index);
+uint32_t dvz_wasm_api_scenario_title(uint32_t index);
+uint32_t dvz_wasm_api_scenario_width(uint32_t index);
+uint32_t dvz_wasm_api_scenario_height(uint32_t index);
+double dvz_wasm_api_scenario_fps(uint32_t index);
+uint32_t dvz_wasm_api_scenario_requirements(uint32_t index);
+int dvz_wasm_api_scenario_create(uint32_t scene, uint32_t index);
+uint32_t dvz_wasm_api_scenario_figure(uint32_t scene);
+int dvz_wasm_api_scenario_frame(uint32_t scene, double t, double dt);
 uint32_t dvz_wasm_api_figure(uint32_t scene, uint32_t width, uint32_t height);
 uint32_t dvz_wasm_api_panel_full(uint32_t figure);
 uint32_t dvz_wasm_api_visual(uint32_t scene, uint32_t visual_type, uint32_t flags);
@@ -89,6 +99,20 @@ void dvz_wasm_api_scene_destroy(uint32_t scene);
    experimental browser ABI.
 5. Texture uploads start with tightly packed RGBA8 2D data only.
 
+## Portable Scenario Rules
+
+The scenario ABI is the first bridge from reusable C examples to the browser host:
+
+1. `dvz_wasm_api_scenario_count()` and metadata accessors expose the compiled scenario registry.
+2. `dvz_wasm_api_scenario_create()` initializes one scenario inside an existing scene and must be
+   called before manual object construction on that scene.
+3. Unsupported requirement bits fail before partial rendering and report diagnostics.
+4. `dvz_wasm_api_scenario_figure()` returns the retained figure created by scenario init.
+5. `dvz_wasm_api_scenario_frame()` is driven by browser `requestAnimationFrame`; it runs the
+   scenario frame callback and invalidates borrowed packet/JSON payloads like other mutating calls.
+6. The first promoted scenario is `feature_timer_animation`; broad live-example coverage is still
+   an RC target, not current support.
+
 ## Packet, Payload, And Diagnostics Lifetime
 
 1. `dvz_wasm_api_emit_packets()` is the browser runtime path. It exposes setup, update, and frame
@@ -110,7 +134,9 @@ The demo-specific `src/wasm/scene_bridge.c` path has been retired. The generic A
 
 1. 2D buffer-backed point/pixel positions + marker + styled segment/path + primitive + image +
    low-level atlas glyph + semantic bitmap text + mesh + panzoom;
-2. 3D sphere + textured material mesh + arcball.
+2. 3D sphere + textured material mesh + arcball;
+3. one portable C scenario, `feature_timer_animation`, with browser-driven frame callbacks and
+   retained point updates.
 
 The browser pages and `just wasm-scene-smoke` use the generic `dvz_wasm_api_*` object ABI.
 
@@ -124,3 +150,4 @@ The browser pages and `just wasm-scene-smoke` use the generic `dvz_wasm_api_*` o
 4. Done: move the browser demos to the JS wrapper and retire the demo-specific bridge.
 5. Done: replace JSON hot-path transport with split binary DRP2 packets and payload arenas.
 6. Done: remove the legacy direct-payload JSON ABI exports.
+7. Done: add the first portable scenario registry/frame ABI for `feature_timer_animation`.

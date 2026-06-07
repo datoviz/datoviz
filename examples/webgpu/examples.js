@@ -11,6 +11,11 @@ const DEMOS = [
     label: "WASM 3D arcball",
     load: () => import("./demos/wasm_3d.js"),
   },
+  {
+    id: "wasm-timer-animation",
+    label: "WASM timer animation",
+    load: () => import("./demos/wasm_timer_animation.js"),
+  },
 ];
 
 const canvas = document.querySelector("#viewport");

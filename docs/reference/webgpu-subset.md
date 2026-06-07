@@ -41,6 +41,8 @@ Supported browser pages:
   segment/path + primitive + image + labels + glyph + text + mesh + panzoom;
 - `examples/webgpu/examples.html?demo=wasm-3d`: basic sphere + textured 3D mesh + camera +
   arcball;
+- `examples/webgpu/examples.html?demo=wasm-timer-animation`: first portable C scenario host proof,
+  running `feature_timer_animation` through WASM frame callbacks and retained point updates;
 - `examples/webgpu/fixtures.html`: DRP2 fixture dashboard for the pure browser WebGPU runner,
   retained runtime stress checks, and WASM scene smoke rows.
 
@@ -83,6 +85,7 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Vulkan-specific modules and presentation | unsupported in WASM; native-only |
 | Scene visual parity | limited to point/pixel dense and buffer-backed positions, basic marker, segment/path cap-join controls, primitive, RGBA8 image, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, and basic sphere demos |
 | Controller parity | limited to panzoom and one 3D arcball proof |
+| Portable scenario host parity | first `feature_timer_animation` C scenario and browser frame-callback proof are current; broad example-host coverage remains an RC target |
 | Compute-to-render parity | DRP2 fixture and native scene proof exist; browser-live particle scene is an RC target, not current support |
 | Query/picking/readback scene parity | packet-level readback plumbing exists; browser-live scene query/readback is an RC target, not current support |
 
@@ -112,16 +115,15 @@ The browser path intentionally does not support:
 
 Promote browser scene features in this order unless a release blocker changes the priority:
 
-1. portable scenario host for live website examples;
-2. frame callbacks and animation;
-3. compute-to-render particle smoke at a documented browser particle budget;
-4. narrow request/query/readback slice: point and marker picking plus one sampled probe path;
-5. colorbar;
-6. scale bar;
-7. legend and readout-style overlays;
-8. richer labels, including unsigned label variants and palette/category updates;
-9. broader vector/path parity, including path subpaths and stroke edge cases;
-10. volume rendering.
+1. broaden the portable scenario host from `feature_timer_animation` to live website examples;
+2. compute-to-render particle smoke at a documented browser particle budget;
+3. narrow request/query/readback slice: point and marker picking plus one sampled probe path;
+4. colorbar;
+5. scale bar;
+6. legend and readout-style overlays;
+7. richer labels, including unsigned label variants and palette/category updates;
+8. broader vector/path parity, including path subpaths and stroke edge cases;
+9. volume rendering.
 
 Each promoted item must reuse the retained native scene path, add the narrow WASM ABI surface it
 needs, extend `tools/wasm_scene_smoke.mjs`, update the 2D or 3D browser demo, and record proof in
@@ -374,6 +376,18 @@ Sphere promotion proof recorded on 2026-06-05:
   runner smoke;
 - `just webgpu-browser-smoke`: 2D and 3D WASM pages rendered, browser interaction was exercised,
   and dashboard WASM scene checks reported `2 pass, 0 fail`.
+
+Portable scenario/frame-callback proof recorded on 2026-06-07:
+
+- `node --check web/wasm/scene.js`, `node --check web/wasm/session.js`,
+  `node --check tools/wasm_scene_smoke.mjs`, and `node --check tools/webgpu_browser_smoke.mjs`
+  passed;
+- `just example-c features/timer_animation`: passed;
+- `just wasm-scene-smoke`: `feature_timer_animation` C scenario stream plus the existing 2D/3D
+  WASM streams emitted, preflighted, and replayed by the JS WebGPU runner smoke as
+  `generated_streams=3`;
+- `just webgpu-browser-smoke`: the `wasm-timer-animation` browser route rendered and advanced
+  scenario frames; dashboard WASM scene checks reported `2 pass, 0 fail`.
 
 Headless Chrome/Dawn can skip WebGPU render checks before the scene contract is exercised because
 of external instance loss, including `A valid external Instance reference no longer exists` or

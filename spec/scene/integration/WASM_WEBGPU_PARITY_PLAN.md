@@ -108,6 +108,8 @@ The current browser path proves:
 16. semantic negative-fixture parity in the WebGPU runner;
 17. compute and `ResourceBarrier` at DRP2 fixture level;
 18. browser evidence through `examples/webgpu/examples.html` and `examples/webgpu/fixtures.html`.
+19. one portable C scenario host proof for `feature_timer_animation`, including browser-driven frame
+    callbacks and retained point updates.
 
 This is an experimental subset, not native Vulkan feature parity.
 
@@ -246,7 +248,7 @@ query/readback RC slices are stable.
 | panzoom | browser pointer/wheel to C controller | current | keep smoke coverage |
 | arcball | browser drag/wheel to C controller | current | keep smoke coverage |
 | fly/turntable | browser input to C controllers | future | expose controller creation/binding variants and smoke after RC example host lands |
-| frame callbacks | portable example frame callback | rc-target | portable scenario host runner and WASM frame entrypoint |
+| frame callbacks | portable example frame callback | current/rc-target | first `feature_timer_animation` scenario is current; broader example-host conversion remains an RC target |
 | resize/high-DPI | browser resize to C scene and packet replay | current | keep capability/resize diagnostics |
 | picking/query | request/poll query results | rc-target | WASM query ABI, async WebGPU readback delivery, point/marker plus one probe proof |
 | selection | update retained selection state | rc-target | query path, visual state update path for one promoted picking example |
@@ -260,8 +262,10 @@ query/readback RC slices are stable.
 
 ### Phase 1: Make Examples Portable
 
-1. Implement the portable scenario helper and native host runner.
-2. Add a generic WASM example host beside the current scene ABI.
+1. Implement the portable scenario helper and native host runner. Current first slice:
+   `feature_timer_animation`.
+2. Add a generic WASM example host beside the current scene ABI. Current first slice:
+   browser frame callbacks for `feature_timer_animation`.
 3. Keep one raw native scene/app example that shows the underlying API without helper indirection.
 4. Convert small feature examples first, then showcases.
 5. Mark native-integration examples explicitly as native-only.

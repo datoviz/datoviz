@@ -15,13 +15,13 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current proof counts remain the fixture/dashboard truth until new browser evidence is recorded.
-Planned RC promotions are:
+The first portable scenario/frame-callback slice is current for `feature_timer_animation`. Planned
+RC promotions are:
 
-1. portable scenario host for native and browser runners;
-2. frame callbacks and animation in WASM examples;
-3. browser-live compute-to-render particle smoke at a documented particle budget;
-4. browser-live request/query/readback slice for point and marker picking plus one sampled probe;
-5. manifest-backed example classification as `webgpu-live`, `webgpu-planned`,
+1. broaden the portable scenario host from `feature_timer_animation` to website examples;
+2. browser-live compute-to-render particle smoke at a documented particle budget;
+3. browser-live request/query/readback slice for point and marker picking plus one sampled probe;
+4. manifest-backed example classification as `webgpu-live`, `webgpu-planned`,
    `webgpu-deferred`, or `native-only`.
 
 Do not move compute particles, scene query/readback, or broad live-example coverage into the
@@ -218,6 +218,14 @@ Current status as of this note:
   . just test test_axis_panzoom_visible_domain` passed; `just wasm-scene-smoke` emitted,
   preflighted, and replayed the 2D WASM stream with retained X/Y axes, grid lines, and bitmap
   tick/axis labels.
+- recorded local portable-scenario/frame-callback proof on 2026-06-07: `node --check
+  web/wasm/scene.js`, `node --check web/wasm/session.js`, `node --check
+  tools/wasm_scene_smoke.mjs`, and `node --check tools/webgpu_browser_smoke.mjs` passed; `just
+  example-c features/timer_animation` passed and preserved the native scenario runner path; `just
+  wasm-scene-smoke` generated and replayed the `feature_timer_animation` C scenario stream plus the
+  existing 2D/3D WASM streams, with WebGPU runner smoke reporting `generated_streams=3`; `just
+  webgpu-browser-smoke` rendered 2D and 3D WASM pages, advanced browser-driven frames on the
+  `wasm-timer-animation` route, and reported dashboard WASM scene checks `2 pass, 0 fail`.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

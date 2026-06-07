@@ -32,6 +32,7 @@
 #include "datoviz/scene.h"
 #include "datoviz/scene/frame_packets.h"
 #include "datoviz/vk/enums.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -52,6 +53,13 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
+#define DVZ_WASM_API_SCENARIO_COUNT 1
+
+#define DVZ_WASM_BROWSER_SUPPORTED_REQUIREMENTS                                                       \
+    (DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_MESH_VISUAL |  \
+     DVZ_SCENARIO_REQ_IMAGE_VISUAL | DVZ_SCENARIO_REQ_TEXT_VISUAL |                                  \
+     DVZ_SCENARIO_REQ_SCENE_BUFFERS | DVZ_SCENARIO_REQ_FRAME_CALLBACKS |                             \
+     DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM | DVZ_SCENARIO_REQ_ARCBALL)
 
 
 
@@ -60,6 +68,8 @@
 /*************************************************************************************************/
 
 DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags);
+
+DvzScenarioSpec dvz_example_timer_animation_scenario(void);
 
 
 
@@ -108,6 +118,10 @@ typedef struct
 struct DvzWasmApiScene
 {
     DvzScene* scene;
+    DvzScenarioContext scenario_ctx;
+    DvzScenarioSpec scenario_spec;
+    void* scenario_user;
+    DvzWasmApiFigure* scenario_figure;
     DvzDrp2CommandStream* stream;
     DvzInputRouter* router;
     DvzPointerGestureHandler* gestures;
@@ -126,6 +140,7 @@ struct DvzWasmApiScene
     uint32_t width;
     uint32_t height;
     uint32_t color_format;
+    bool scenario_active;
 };
 
 
@@ -166,6 +181,111 @@ static DvzWasmApiAxis* _axis(uint32_t handle) { return (DvzWasmApiAxis*)(uintptr
 
 
 static uint32_t _handle(void* ptr) { return (uint32_t)(uintptr_t)ptr; }
+
+
+
+static int _fail(DvzWasmApiScene* scene, const char* diagnostic);
+
+
+
+static uint32_t _fail_handle(DvzWasmApiScene* scene, const char* diagnostic);
+
+
+
+static DvzScenarioSpec _scenario_spec(uint32_t index)
+{
+    switch (index)
+    {
+    case 0:
+        return dvz_example_timer_animation_scenario();
+    default:
+        return (DvzScenarioSpec){0};
+    }
+}
+
+
+
+static const char* _requirement_name(uint64_t bit)
+{
+    switch (bit)
+    {
+    case DVZ_SCENARIO_REQ_POINT_VISUAL:
+        return "point";
+    case DVZ_SCENARIO_REQ_MARKER_VISUAL:
+        return "marker";
+    case DVZ_SCENARIO_REQ_MESH_VISUAL:
+        return "mesh";
+    case DVZ_SCENARIO_REQ_IMAGE_VISUAL:
+        return "image";
+    case DVZ_SCENARIO_REQ_TEXT_VISUAL:
+        return "text";
+    case DVZ_SCENARIO_REQ_SCENE_BUFFERS:
+        return "scene-buffers";
+    case DVZ_SCENARIO_REQ_STORAGE_BUFFERS:
+        return "storage-buffers";
+    case DVZ_SCENARIO_REQ_SCENE_COMPUTE:
+        return "scene-compute";
+    case DVZ_SCENARIO_REQ_QUERY_READBACK:
+        return "query-readback";
+    case DVZ_SCENARIO_REQ_FRAME_CALLBACKS:
+        return "frame-callbacks";
+    case DVZ_SCENARIO_REQ_NATIVE_CAPTURE:
+        return "native-capture";
+    case DVZ_SCENARIO_REQ_NATIVE_VIEW:
+        return "native-view";
+    case DVZ_SCENARIO_REQ_CONTROLLER:
+        return "controller";
+    case DVZ_SCENARIO_REQ_PANZOOM:
+        return "panzoom";
+    case DVZ_SCENARIO_REQ_ARCBALL:
+        return "arcball";
+    default:
+        return "unknown";
+    }
+}
+
+
+
+static uint64_t _scenario_effective_requirements(const DvzScenarioSpec* spec)
+{
+    uint64_t requirements = spec != NULL ? spec->requirements : 0;
+    if (spec != NULL && spec->frame != NULL)
+        requirements |= DVZ_SCENARIO_REQ_FRAME_CALLBACKS;
+    if (spec != NULL && spec->native_view != NULL)
+        requirements |= DVZ_SCENARIO_REQ_NATIVE_VIEW;
+    return requirements;
+}
+
+
+
+static int _fail_unsupported_requirements(
+    DvzWasmApiScene* scene, const DvzScenarioSpec* spec, uint64_t unsupported)
+{
+    char diagnostic[DVZ_SCENE_DIAGNOSTIC_SIZE] = {0};
+    const char* scenario_id = spec != NULL && spec->id != NULL ? spec->id : "<unknown>";
+    int written = snprintf(
+        diagnostic, sizeof(diagnostic), "WASM scenario '%s' has unsupported requirements: ",
+        scenario_id);
+    if (written < 0 || (size_t)written >= sizeof(diagnostic))
+        return _fail(scene, "WASM scenario has unsupported requirements");
+
+    size_t offset = (size_t)written;
+    bool first = true;
+    for (uint32_t bit_index = 0; bit_index < 64; bit_index++)
+    {
+        const uint64_t bit = 1ull << bit_index;
+        if ((unsupported & bit) == 0)
+            continue;
+        const char* name = _requirement_name(bit);
+        written = snprintf(
+            diagnostic + offset, sizeof(diagnostic) - offset, "%s%s", first ? "" : ",", name);
+        if (written < 0 || (size_t)written >= sizeof(diagnostic) - offset)
+            return _fail(scene, "WASM scenario has unsupported requirements");
+        offset += (size_t)written;
+        first = false;
+    }
+    return _fail(scene, diagnostic);
+}
 
 
 
@@ -307,6 +427,12 @@ void dvz_wasm_api_scene_destroy(uint32_t scene_handle)
     if (scene == NULL)
         return;
     _clear_payload(scene);
+    if (scene->scenario_active && scene->scenario_spec.destroy != NULL)
+    {
+        scene->scenario_spec.destroy(&scene->scenario_ctx, scene->scenario_user);
+        scene->scenario_user = NULL;
+        scene->scenario_active = false;
+    }
     if (scene->gestures != NULL)
     {
         dvz_pointer_gesture_handler_destroy(scene->gestures);
@@ -325,6 +451,166 @@ void dvz_wasm_api_scene_destroy(uint32_t scene_handle)
     for (uint32_t i = 0; i < scene->wrapper_count; i++)
         free(scene->wrappers[i]);
     free(scene);
+}
+
+
+
+/*************************************************************************************************/
+/*  Portable scenarios                                                                           */
+/*************************************************************************************************/
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_scenario_count(void) { return DVZ_WASM_API_SCENARIO_COUNT; }
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_scenario_id(uint32_t index)
+{
+    DvzScenarioSpec spec = _scenario_spec(index);
+    return _handle((void*)spec.id);
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_scenario_title(uint32_t index)
+{
+    DvzScenarioSpec spec = _scenario_spec(index);
+    return _handle((void*)spec.title);
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_scenario_width(uint32_t index)
+{
+    DvzScenarioSpec spec = _scenario_spec(index);
+    return spec.width;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_scenario_height(uint32_t index)
+{
+    DvzScenarioSpec spec = _scenario_spec(index);
+    return spec.height;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+double dvz_wasm_api_scenario_fps(uint32_t index)
+{
+    DvzScenarioSpec spec = _scenario_spec(index);
+    return spec.fps;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_scenario_requirements(uint32_t index)
+{
+    DvzScenarioSpec spec = _scenario_spec(index);
+    const uint64_t requirements = _scenario_effective_requirements(&spec);
+    return requirements <= UINT32_MAX ? (uint32_t)requirements : 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_scenario_create(uint32_t scene_handle, uint32_t index)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    if (scene == NULL || scene->scene == NULL)
+        return _fail(scene, "invalid WASM scenario scene handle");
+    if (scene->scenario_active || scene->wrapper_count != 0)
+        return _fail(scene, "WASM scenario must be the first object created in a scene");
+
+    DvzScenarioSpec spec = _scenario_spec(index);
+    if (spec.id == NULL || spec.init == NULL)
+        return _fail(scene, "invalid WASM scenario index");
+
+    const uint64_t requirements = _scenario_effective_requirements(&spec);
+    const uint64_t unsupported = requirements & ~DVZ_WASM_BROWSER_SUPPORTED_REQUIREMENTS;
+    if (unsupported != 0)
+        return _fail_unsupported_requirements(scene, &spec, unsupported);
+
+    _clear_payload(scene);
+    scene->scenario_spec = spec;
+    if (scene->width == 0)
+        scene->width = spec.width != 0 ? spec.width : 640;
+    if (scene->height == 0)
+        scene->height = spec.height != 0 ? spec.height : 640;
+    if (spec.fps > 0)
+    {
+        dvz_scene_set_clock_mode(scene->scene, DVZ_CLOCK_OFFLINE);
+        dvz_scene_set_fps(scene->scene, spec.fps);
+    }
+    scene->scenario_ctx = (DvzScenarioContext){
+        .scene = scene->scene,
+        .width = scene->width,
+        .height = scene->height,
+    };
+
+    if (!spec.init(&scene->scenario_ctx, &scene->scenario_user) ||
+        scene->scenario_ctx.figure == NULL)
+    {
+        scene->scenario_user = NULL;
+        return _fail(scene, "WASM scenario init failed");
+    }
+
+    DvzWasmApiFigure* figure = (DvzWasmApiFigure*)calloc(1, sizeof(DvzWasmApiFigure));
+    if (figure == NULL)
+    {
+        if (spec.destroy != NULL)
+            spec.destroy(&scene->scenario_ctx, scene->scenario_user);
+        scene->scenario_user = NULL;
+        return _fail(scene, "WASM scenario figure wrapper allocation failed");
+    }
+    figure->owner = scene;
+    figure->figure = scene->scenario_ctx.figure;
+    if (!_remember(scene, figure))
+    {
+        free(figure);
+        if (spec.destroy != NULL)
+            spec.destroy(&scene->scenario_ctx, scene->scenario_user);
+        scene->scenario_user = NULL;
+        return _fail(scene, "WASM scenario figure wrapper registration failed");
+    }
+    scene->scenario_figure = figure;
+    scene->scenario_active = true;
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_scenario_figure(uint32_t scene_handle)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    if (scene == NULL || !scene->scenario_active || scene->scenario_figure == NULL)
+        return _fail_handle(scene, "WASM scenario has no active figure");
+    return _handle(scene->scenario_figure);
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_scenario_frame(uint32_t scene_handle, double t, double dt)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    if (scene == NULL || !scene->scenario_active)
+        return _fail(scene, "WASM scenario frame requested without an active scenario");
+    if (scene->scenario_spec.frame == NULL)
+        return 0;
+    _clear_payload(scene);
+    scene->scenario_ctx.time = t;
+    scene->scenario_ctx.dt = dt;
+    scene->scenario_spec.frame(&scene->scenario_ctx, scene->scenario_user);
+    scene->scenario_ctx.frame_index++;
+    return 0;
 }
 
 

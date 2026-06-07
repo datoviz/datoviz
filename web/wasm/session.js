@@ -25,6 +25,8 @@ export class WasmSceneSession {
     this.demo = null;
     this.rendering = false;
     this.pending = false;
+    this.animationFrame = 0;
+    this.lastAnimationTime = null;
   }
 
   async load(demo) {
@@ -32,17 +34,19 @@ export class WasmSceneSession {
     if (demo === null) {
       return null;
     }
-    if (typeof demo.build !== "function") {
-      throw new Error("WASM demo needs a build(scene) function");
+    if (typeof demo.build !== "function" && typeof demo.scenarioId !== "string") {
+      throw new Error("WASM demo needs a build(scene) function or scenarioId");
     }
 
     this.demo = demo;
     this.status(`Loading ${demo.label ?? demo.id ?? "WASM scene"}`);
-    this.scene = await DatovizWasmScene.create(
-      this.canvas,
-      this.gpu !== null ? { gpu: this.gpu } : {},
-    );
-    await demo.build(this.scene);
+    const createOptions = this.gpu !== null ? { gpu: this.gpu } : {};
+    if (typeof demo.scenarioId === "string") {
+      this.scene = await DatovizWasmScene.createScenario(this.canvas, demo.scenarioId, createOptions);
+    } else {
+      this.scene = await DatovizWasmScene.create(this.canvas, createOptions);
+      await demo.build(this.scene);
+    }
     await this.render();
 
     const requestRender = () => {
@@ -50,6 +54,9 @@ export class WasmSceneSession {
     };
     this.scene.attachControllerInput(requestRender);
     this.scene.attachResizeObserver(requestRender);
+    if (demo.animate === true) {
+      this.startAnimationLoop();
+    }
     return this.scene;
   }
 
@@ -85,7 +92,47 @@ export class WasmSceneSession {
     })();
   }
 
+  startAnimationLoop() {
+    if (this.scene === null || this.demo?.animate !== true) {
+      return;
+    }
+    this.stopAnimationLoop();
+    const fps = Number.isFinite(this.scene.scenario?.fps) && this.scene.scenario.fps > 0
+      ? this.scene.scenario.fps
+      : 60;
+    const fallbackDt = 1 / fps;
+    const tick = (nowMs) => {
+      if (this.scene === null || this.demo?.animate !== true) {
+        this.animationFrame = 0;
+        return;
+      }
+      const now = nowMs / 1000;
+      const dt = this.lastAnimationTime === null ? fallbackDt : Math.max(0, now - this.lastAnimationTime);
+      this.lastAnimationTime = now;
+      void (async () => {
+        try {
+          this.scene.scenarioFrame(now, dt);
+          await this.render();
+          this.animationFrame = requestAnimationFrame(tick);
+        } catch (error) {
+          this.animationFrame = 0;
+          this.status(error instanceof Error ? error.message : String(error), true);
+        }
+      })();
+    };
+    this.animationFrame = requestAnimationFrame(tick);
+  }
+
+  stopAnimationLoop() {
+    if (this.animationFrame !== 0) {
+      cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = 0;
+    }
+    this.lastAnimationTime = null;
+  }
+
   destroy() {
+    this.stopAnimationLoop();
     this.rendering = false;
     this.pending = false;
     if (this.scene !== null) {

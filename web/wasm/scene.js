@@ -202,6 +202,23 @@ function wasmModuleUrl() {
   return url;
 }
 
+async function loadDatovizWasmModule() {
+  const moduleUrl = wasmModuleUrl();
+  const { default: createDatovizWasm } = await import(moduleUrl.href);
+  const Module = await createDatovizWasm({
+    locateFile(path) {
+      const url = new URL(path, moduleUrl);
+      url.searchParams.set("v", moduleUrl.searchParams.get("v"));
+      return url.href;
+    },
+  });
+  requireOk(
+    typeof Module._malloc === "function" && typeof Module._free === "function",
+    "WASM module is stale or missing malloc/free exports; run `just wasm-scene-smoke` and hard-refresh",
+  );
+  return Module;
+}
+
 function allocArray(Module, typedArray) {
   const ptr = Module._malloc(typedArray.byteLength);
   requireOk(ptr !== 0, "WASM allocation failed");
@@ -254,19 +271,7 @@ function hasPacketApi(Module) {
 
 export class DatovizWasmScene {
   static async create(canvas, options = {}) {
-    const moduleUrl = wasmModuleUrl();
-    const { default: createDatovizWasm } = await import(moduleUrl.href);
-    const Module = await createDatovizWasm({
-      locateFile(path) {
-        const url = new URL(path, moduleUrl);
-        url.searchParams.set("v", moduleUrl.searchParams.get("v"));
-        return url.href;
-      },
-    });
-    requireOk(
-      typeof Module._malloc === "function" && typeof Module._free === "function",
-      "WASM module is stale or missing malloc/free exports; run `just wasm-scene-smoke` and hard-refresh",
-    );
+    const Module = await loadDatovizWasmModule();
 
     const gpu = options.gpu ?? await initWebGPU(canvas);
     resizeWebGpuCanvas(canvas, gpu.device, gpu.context, gpu.format);
@@ -297,6 +302,68 @@ export class DatovizWasmScene {
     return new DatovizWasmScene(Module, gpu, canvas, scene, figure);
   }
 
+  static async createScenario(canvas, scenarioId, options = {}) {
+    const Module = await loadDatovizWasmModule();
+    requireOk(
+      typeof Module._dvz_wasm_api_scenario_count === "function" &&
+        typeof Module._dvz_wasm_api_scenario_create === "function" &&
+        typeof Module._dvz_wasm_api_scenario_figure === "function" &&
+        typeof Module._dvz_wasm_api_scenario_frame === "function",
+      "WASM module is stale or missing scenario exports; run `just wasm-scene-smoke` and hard-refresh",
+    );
+
+    const gpu = options.gpu ?? await initWebGPU(canvas);
+    resizeWebGpuCanvas(canvas, gpu.device, gpu.context, gpu.format);
+    const scene = Module._dvz_wasm_api_scene(canvas.width, canvas.height);
+    requireOk(scene !== 0, "dvz_wasm_api_scene failed");
+    const formatStatus = Module._dvz_wasm_api_set_canvas_format(scene, canvasFormatCode(gpu.format));
+    if (formatStatus !== 0) {
+      throw new Error(diagnosticMessage(Module, scene, `scene rejected browser canvas format ${gpu.format}`));
+    }
+    const caps = browserCapabilityArgs(gpu.capabilities);
+    const capsStatus = Module._dvz_wasm_api_set_capabilities(
+      scene,
+      caps.maxTextureDimension2d,
+      caps.maxBindGroups,
+      caps.maxVertexBuffers,
+      caps.maxBufferSize,
+      caps.minTextureCopyBytesPerRowAlignment,
+      caps.maxSampleCount,
+      caps.supportsColorBlending ? 1 : 0,
+    );
+    if (capsStatus !== 0) {
+      throw new Error(diagnosticMessage(Module, scene, "scene rejected browser capabilities"));
+    }
+
+    const count = Module._dvz_wasm_api_scenario_count();
+    let index = -1;
+    for (let i = 0; i < count; i++) {
+      const ptr = Module._dvz_wasm_api_scenario_id(i);
+      const id = ptr !== 0 ? Module.UTF8ToString(ptr) : "";
+      if (id === scenarioId) {
+        index = i;
+        break;
+      }
+    }
+    requireOk(index >= 0, `unknown WASM scenario ${scenarioId}`);
+    const status = Module._dvz_wasm_api_scenario_create(scene, index);
+    if (status !== 0) {
+      throw new Error(diagnosticMessage(Module, scene, `dvz_wasm_api_scenario_create failed with ${status}`));
+    }
+    const figure = Module._dvz_wasm_api_scenario_figure(scene);
+    if (figure === 0) {
+      throw new Error(diagnosticMessage(Module, scene, "dvz_wasm_api_scenario_figure failed"));
+    }
+    const wrapper = new DatovizWasmScene(Module, gpu, canvas, scene, figure);
+    wrapper.scenario = {
+      id: scenarioId,
+      index,
+      fps: Module._dvz_wasm_api_scenario_fps?.(index) ?? 60,
+    };
+    wrapper.resize();
+    return wrapper;
+  }
+
   constructor(Module, gpu, canvas, scene, figure) {
     this.Module = Module;
     this.gpu = gpu;
@@ -304,6 +371,7 @@ export class DatovizWasmScene {
     this.scene = scene;
     this.figure = figure;
     this.runtime = null;
+    this.scenario = null;
     this._cleanup = [];
   }
 
@@ -460,6 +528,15 @@ export class DatovizWasmScene {
         performance.now(),
       ),
       "dvz_wasm_api_wheel failed",
+    );
+  }
+
+  scenarioFrame(timeSeconds, dtSeconds) {
+    this._requireAlive();
+    requireOk(this.scenario !== null, "WASM scene has no active scenario");
+    this._requireStatus(
+      this.Module._dvz_wasm_api_scenario_frame(this.scene, timeSeconds, dtSeconds),
+      "dvz_wasm_api_scenario_frame failed",
     );
   }
 

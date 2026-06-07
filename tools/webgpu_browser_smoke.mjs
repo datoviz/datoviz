@@ -544,6 +544,46 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
   return { initialStatus, interactiveStatus };
 }
 
+async function smokeAnimatedWasmPage(page, baseUrl, path, expectedStatus, screenshotPath) {
+  await page.navigate(`${baseUrl}${path}`);
+  requireOk(
+    await page.evaluate('typeof navigator.gpu === "object"'),
+    `navigator.gpu is not available for ${path}`,
+  );
+  const initialStatus = await page.waitFor(`(() => {
+    const status = document.querySelector("#status");
+    const text = status?.textContent ?? "";
+    if (status?.classList.contains("error")) return "ERROR: " + text;
+    return text.includes(${JSON.stringify(expectedStatus)}) && text;
+  })()`, 45000);
+  requireOk(!String(initialStatus).startsWith('ERROR:'), initialStatus);
+  const initialFrame = await page.evaluate(`(() => {
+    const scene = window.__datovizWasmScene;
+    return scene?.runtime?.packetFrameIndex ?? 0;
+  })()`);
+  const animatedFrame = await page.waitFor(`(() => {
+    const scene = window.__datovizWasmScene;
+    const session = window.__datovizWasmSession;
+    if (scene?.runtime?.stream?.name !== "drp2_packet_set") return false;
+    if (scene?.scenario?.id !== "feature_timer_animation") return false;
+    return (scene.runtime.packetFrameIndex > ${Number(initialFrame)} + 1) && session?.animationFrame !== 0;
+  })()`, 15000);
+  requireOk(animatedFrame, `${path}: scenario animation did not advance`);
+  await page.screenshotCanvas(screenshotPath);
+  await page.evaluate(`(() => {
+    window.__datovizWasmSession?.stopAnimationLoop();
+  })()`);
+  const destroyed = await page.evaluate(`(() => {
+    const scene = window.__datovizWasmScene;
+    if (scene === undefined || scene === null || scene.scene === 0) return false;
+    window.dispatchEvent(new Event("pagehide"));
+    return window.__datovizWasmScene === null && scene.scene === 0;
+  })()`);
+  requireOk(destroyed, `${path}: WASM scenario did not destroy cleanly on pagehide`);
+  assertNoBrowserErrors(page, path);
+  return { initialStatus, initialFrame };
+}
+
 async function smokeWasmDashboard(page, baseUrl) {
   await page.navigate(`${baseUrl}/examples/webgpu/fixtures.html`);
   requireOk(
@@ -592,6 +632,7 @@ async function main() {
     page = await createPage(chrome.debugPort);
     let wasm2d = null;
     let wasm3d = null;
+    let wasmTimer = null;
     try {
       wasm2d = await smokeWasmPage(
         page,
@@ -606,6 +647,13 @@ async function main() {
         '/examples/webgpu/examples.html?demo=wasm-3d',
         'Rendered WASM 3D arcball',
         join(artifactsDir, 'wasm_examples_3d.png'),
+      );
+      wasmTimer = await smokeAnimatedWasmPage(
+        page,
+        baseUrl,
+        '/examples/webgpu/examples.html?demo=wasm-timer-animation',
+        'Rendered WASM timer animation',
+        join(artifactsDir, 'wasm_examples_timer_animation.png'),
       );
     } catch (error) {
       if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
@@ -627,6 +675,9 @@ async function main() {
     }
     if (wasm3d !== null) {
       console.log(`PASS 3D WASM: ${wasm3d.initialStatus}; ${wasm3d.interactiveStatus}`);
+    }
+    if (wasmTimer !== null) {
+      console.log(`PASS timer WASM: ${wasmTimer.initialStatus}; initial_frame=${wasmTimer.initialFrame}`);
     }
     if (wasmDashboard !== null) {
       console.log(`PASS WASM dashboard: ${wasmDashboard}`);
