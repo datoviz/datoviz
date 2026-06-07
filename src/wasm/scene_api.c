@@ -365,6 +365,62 @@ static bool _remember(DvzWasmApiScene* scene, void* wrapper)
 
 
 
+static DvzScenarioPointerType _scenario_pointer_type_from_wasm(DvzPointerEventType type)
+{
+    switch (type)
+    {
+    case DVZ_POINTER_EVENT_RELEASE:
+        return DVZ_SCENARIO_POINTER_RELEASE;
+    case DVZ_POINTER_EVENT_PRESS:
+        return DVZ_SCENARIO_POINTER_PRESS;
+    case DVZ_POINTER_EVENT_MOVE:
+        return DVZ_SCENARIO_POINTER_MOVE;
+    case DVZ_POINTER_EVENT_CLICK:
+        return DVZ_SCENARIO_POINTER_CLICK;
+    case DVZ_POINTER_EVENT_DOUBLE_CLICK:
+        return DVZ_SCENARIO_POINTER_DOUBLE_CLICK;
+    case DVZ_POINTER_EVENT_DRAG_START:
+        return DVZ_SCENARIO_POINTER_DRAG_START;
+    case DVZ_POINTER_EVENT_DRAG:
+        return DVZ_SCENARIO_POINTER_DRAG;
+    case DVZ_POINTER_EVENT_DRAG_STOP:
+        return DVZ_SCENARIO_POINTER_DRAG_STOP;
+    case DVZ_POINTER_EVENT_WHEEL:
+        return DVZ_SCENARIO_POINTER_WHEEL;
+    default:
+        return DVZ_SCENARIO_POINTER_NONE;
+    }
+}
+
+
+
+static int _connect_scenario_controller_bindings(DvzWasmApiScene* scene)
+{
+    if (scene == NULL || scene->router == NULL)
+        return _fail(scene, "invalid WASM scenario input router");
+    if (scene->scenario_ctx.controller_binding_count == 0)
+        return 0;
+
+    for (uint32_t i = 0; i < scene->scenario_ctx.controller_binding_count; i++)
+    {
+        DvzPanel* panel = scene->scenario_ctx.controller_bindings[i].panel;
+        if (panel == NULL)
+            return _fail(scene, "invalid WASM scenario controller binding");
+        if (dvz_panel_connect_input(panel, scene->router) != 0)
+            return _fail(scene, "WASM scenario panel input connection failed");
+    }
+
+    if (scene->gestures == NULL)
+    {
+        scene->gestures = dvz_pointer_gesture_handler(scene->router);
+        if (scene->gestures == NULL)
+            return _fail(scene, "WASM scenario pointer gesture setup failed");
+    }
+    return 0;
+}
+
+
+
 static void _emit_resize(
     DvzWasmApiScene* scene, uint32_t width, uint32_t height, float device_scale)
 {
@@ -562,6 +618,13 @@ int dvz_wasm_api_scenario_create(uint32_t scene_handle, uint32_t index)
         scene->scenario_user = NULL;
         return _fail(scene, "WASM scenario init failed");
     }
+    if (_connect_scenario_controller_bindings(scene) != 0)
+    {
+        if (spec.destroy != NULL)
+            spec.destroy(&scene->scenario_ctx, scene->scenario_user);
+        scene->scenario_user = NULL;
+        return -1;
+    }
 
     DvzWasmApiFigure* figure = (DvzWasmApiFigure*)calloc(1, sizeof(DvzWasmApiFigure));
     if (figure == NULL)
@@ -612,6 +675,63 @@ int dvz_wasm_api_scenario_frame(uint32_t scene_handle, double t, double dt)
     scene->scenario_ctx.dt = dt;
     scene->scenario_spec.frame(&scene->scenario_ctx, scene->scenario_user);
     scene->scenario_ctx.frame_index++;
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_scenario_pointer(
+    uint32_t scene_handle, int type, float x, float y, int button, int mods, float content_scale,
+    double timestamp_ms)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    if (scene == NULL || !scene->scenario_active)
+        return _fail(scene, "WASM scenario pointer requested without an active scenario");
+    if (scene->scenario_spec.event == NULL)
+        return 0;
+
+    _clear_payload(scene);
+    DvzScenarioEvent event = {0};
+    event.kind = DVZ_SCENARIO_EVENT_POINTER;
+    event.content.pointer.type = _scenario_pointer_type_from_wasm((DvzPointerEventType)type);
+    event.content.pointer.x = x;
+    event.content.pointer.y = y;
+    event.content.pointer.content_scale = content_scale > 0.0f ? content_scale : 1.0f;
+    event.content.pointer.button = button >= 0 ? (uint32_t)button : 0;
+    event.content.pointer.modifiers = mods >= 0 ? (uint32_t)mods : 0;
+    event.content.pointer.timestamp_ns =
+        timestamp_ms > 0.0 ? (uint64_t)(timestamp_ms * 1000000.0) : 0;
+    scene->scenario_spec.event(&scene->scenario_ctx, &event, scene->scenario_user);
+    return 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_scenario_wheel(
+    uint32_t scene_handle, float x, float y, float dir_x, float dir_y, int mods,
+    float content_scale, double timestamp_ms)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    if (scene == NULL || !scene->scenario_active)
+        return _fail(scene, "WASM scenario wheel requested without an active scenario");
+    if (scene->scenario_spec.event == NULL)
+        return 0;
+
+    _clear_payload(scene);
+    DvzScenarioEvent event = {0};
+    event.kind = DVZ_SCENARIO_EVENT_POINTER;
+    event.content.pointer.type = DVZ_SCENARIO_POINTER_WHEEL;
+    event.content.pointer.x = x;
+    event.content.pointer.y = y;
+    event.content.pointer.dx = dir_x;
+    event.content.pointer.dy = dir_y;
+    event.content.pointer.content_scale = content_scale > 0.0f ? content_scale : 1.0f;
+    event.content.pointer.modifiers = mods >= 0 ? (uint32_t)mods : 0;
+    event.content.pointer.timestamp_ns =
+        timestamp_ms > 0.0 ? (uint64_t)(timestamp_ms * 1000000.0) : 0;
+    scene->scenario_spec.event(&scene->scenario_ctx, &event, scene->scenario_user);
     return 0;
 }
 

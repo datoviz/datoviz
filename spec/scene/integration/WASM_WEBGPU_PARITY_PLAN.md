@@ -109,7 +109,7 @@ The current browser path and portable-scenario path prove:
 17. compute and `ResourceBarrier` at DRP2 fixture level;
 18. browser evidence through `examples/webgpu/examples.html` and `examples/webgpu/fixtures.html`.
 19. one portable C scenario host proof for `feature_timer_animation`, including browser-driven frame
-    callbacks and retained point updates;
+    callbacks, browser pointer/wheel event delivery, and retained point updates;
 20. native scenario-runner requirement diagnostics plus portable event/post-frame hooks;
 21. `feature_pick_point`, `feature_pick_marker`, `feature_pick_hover`, `feature_selection`, and
     `image_probe` migrated off `native_view` as query/readback-shaped portable scenarios, still
@@ -270,8 +270,8 @@ query/readback RC slices are stable.
    `feature_timer_animation`, native `feature_pick_point`, native `feature_pick_marker`, native
    `feature_pick_hover`, native `feature_selection`, and native `image_probe`.
 2. Add a generic WASM example host beside the current scene ABI. Current first slice:
-   browser frame callbacks for `feature_timer_animation`; next browser slice is scenario event
-   delivery.
+   browser frame callbacks and pointer/wheel event delivery for `feature_timer_animation`; next
+   browser slice is query/readback delivery.
 3. Keep one raw native scene/app example that shows the underlying API without helper indirection.
 4. Convert small feature examples first, then showcases.
 5. Mark native-integration examples explicitly as native-only.

@@ -316,6 +316,8 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(source.includes("createScenario"), "browser wrapper cannot create portable scenarios");
   requireOk(source.includes("_dvz_wasm_api_scenario_create"), "browser wrapper cannot instantiate C scenarios");
   requireOk(source.includes("_dvz_wasm_api_scenario_frame"), "browser wrapper cannot advance C scenarios");
+  requireOk(source.includes("_dvz_wasm_api_scenario_pointer"), "browser wrapper cannot route scenario pointer events");
+  requireOk(source.includes("_dvz_wasm_api_scenario_wheel"), "browser wrapper cannot route scenario wheel events");
   requireOk(source.includes("_dvz_wasm_api_visual_set_attr_buffer"), "browser wrapper cannot bind attr buffers");
   requireOk(source.includes("_dvz_wasm_api_visual_set_u32"), "browser wrapper cannot upload u32 attrs");
   requireOk(source.includes("_dvz_wasm_api_visual_set_strings"), "browser wrapper cannot upload text strings");
@@ -1282,6 +1284,19 @@ try {
     requireOk(scenarioFigure !== 0, "timer scenario has no figure");
     const initialScenario = emitStream(Module, scenarioScene, scenarioFigure, "timer scenario initial");
     expectTimerScenarioStreamShape(initialScenario.stream, "timer scenario initial");
+
+    expectStatus(
+      Module._dvz_wasm_api_scenario_pointer(
+        scenarioScene, DVZ_POINTER_EVENT_MOVE, 128, 96, DVZ_POINTER_BUTTON_LEFT, 0, 1, 25),
+      0,
+      "timer scenario pointer event",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_scenario_wheel(scenarioScene, 128, 96, 0, -1, 0, 1, 26),
+      0,
+      "timer scenario wheel event",
+    );
+    expectNoDiagnostics(Module, scenarioScene, "timer scenario event diagnostics");
 
     expectStatus(
       Module._dvz_wasm_api_scenario_frame(scenarioScene, 0.25, 1 / 60),

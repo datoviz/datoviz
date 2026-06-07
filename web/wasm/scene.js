@@ -308,7 +308,9 @@ export class DatovizWasmScene {
       typeof Module._dvz_wasm_api_scenario_count === "function" &&
         typeof Module._dvz_wasm_api_scenario_create === "function" &&
         typeof Module._dvz_wasm_api_scenario_figure === "function" &&
-        typeof Module._dvz_wasm_api_scenario_frame === "function",
+        typeof Module._dvz_wasm_api_scenario_frame === "function" &&
+        typeof Module._dvz_wasm_api_scenario_pointer === "function" &&
+        typeof Module._dvz_wasm_api_scenario_wheel === "function",
       "WASM module is stale or missing scenario exports; run `just wasm-scene-smoke` and hard-refresh",
     );
 
@@ -513,6 +515,25 @@ export class DatovizWasmScene {
     );
   }
 
+  scenarioPointer(type, event) {
+    this._requireAlive();
+    requireOk(this.scenario !== null, "WASM scene has no active scenario");
+    const point = this._canvasPoint(event);
+    this._requireStatus(
+      this.Module._dvz_wasm_api_scenario_pointer(
+        this.scene,
+        type,
+        point.x,
+        point.y,
+        this._buttonFromPointerEvent(event),
+        this._modifierMask(event),
+        point.scale,
+        performance.now(),
+      ),
+      "dvz_wasm_api_scenario_pointer failed",
+    );
+  }
+
   wheel(event) {
     this._requireAlive();
     const point = this._canvasPoint(event);
@@ -531,6 +552,25 @@ export class DatovizWasmScene {
     );
   }
 
+  scenarioWheel(event) {
+    this._requireAlive();
+    requireOk(this.scenario !== null, "WASM scene has no active scenario");
+    const point = this._canvasPoint(event);
+    this._requireStatus(
+      this.Module._dvz_wasm_api_scenario_wheel(
+        this.scene,
+        point.x,
+        point.y,
+        0,
+        -event.deltaY / 100,
+        this._modifierMask(event),
+        point.scale,
+        performance.now(),
+      ),
+      "dvz_wasm_api_scenario_wheel failed",
+    );
+  }
+
   scenarioFrame(timeSeconds, dtSeconds) {
     this._requireAlive();
     requireOk(this.scenario !== null, "WASM scene has no active scenario");
@@ -545,6 +585,9 @@ export class DatovizWasmScene {
     const route = (event, type) => {
       event.preventDefault();
       this.pointer(type, event);
+      if (this.scenario !== null) {
+        this.scenarioPointer(type, event);
+      }
       onChange();
     };
     const onPointerDown = (event) => {
@@ -562,6 +605,9 @@ export class DatovizWasmScene {
     const onWheel = (event) => {
       event.preventDefault();
       this.wheel(event);
+      if (this.scenario !== null) {
+        this.scenarioWheel(event);
+      }
       onChange();
     };
     const onContextMenu = (event) => event.preventDefault();

@@ -23,9 +23,11 @@ Current implementation checkpoint:
    background-miss clearing on the same portable path. `selection` proves persistent click state
    driven by portable pointer events and post-frame query consumption. `image_probe` proves the
    same bridge for sampled image pixel queries.
-5. The WASM scenario host can drive `feature_timer_animation` and report unsupported scenario
-   requirements deterministically.
-6. Browser-side scenario event delivery and query/readback result delivery remain the next phases.
+5. The WASM scenario host can drive `feature_timer_animation`, deliver browser pointer/wheel events
+   to active scenario `event` callbacks, and report unsupported scenario requirements
+   deterministically.
+6. Browser-side query/readback result delivery remains the next phase before the migrated pick/probe
+   scenarios can be promoted to browser-live.
 
 Current native escape hatches to retire or classify:
 
@@ -37,10 +39,10 @@ Current native escape hatches to retire or classify:
 
 Near-term implementation order:
 
-1. expose browser scenario event delivery before widening the live website example set;
-2. implement the narrow WASM/WebGPU query/readback ABI for point, marker, selection, and
+1. implement the narrow WASM/WebGPU query/readback ABI for point, marker, selection, and
    `image_probe`;
-3. use `probe_labels.c` as the categorical query follow-up once pixel query delivery is live.
+2. use `probe_labels.c` as the categorical query follow-up once pixel query delivery is live;
+3. classify live WebGPU vs native-only examples from manifest metadata.
 
 Full visual and feature parity sequencing lives in
 [../integration/WASM_WEBGPU_PARITY_PLAN.md](../integration/WASM_WEBGPU_PARITY_PLAN.md). This file
@@ -719,12 +721,12 @@ public Datoviz APIs just to finish this group.
 Add portable runner bridges for resize, pointer, wheel, keyboard modifiers, controller requests,
 asynchronous picking/query results, and request-frame signals. Current status: native pointer/key/
 resize event translation and post-frame callbacks exist; `pick_point.c`, `pick_marker.c`,
-`pick_hover.c`, `selection.c`, and `image_probe.c` are migrated off `native_view`; browser event
-delivery and async query result delivery are still missing. Then
+`pick_hover.c`, `selection.c`, and `image_probe.c` are migrated off `native_view`; browser
+pointer/wheel event delivery exists; async query result delivery is still missing. Then
 migrate representative interaction examples before broad conversion:
 
-1. browser event delivery and async query result delivery for the migrated point, marker,
-   selection, and image-probe scenarios;
+1. async query result delivery for the migrated point, marker, selection, and image-probe
+   scenarios;
 2. `probe_labels.c` for the categorical query follow-up;
 3. `panel_multi.c` and `panzoom_attachment.c` after controller request helpers are settled.
 
