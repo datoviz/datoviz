@@ -316,8 +316,11 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(source.includes("createScenario"), "browser wrapper cannot create portable scenarios");
   requireOk(source.includes("_dvz_wasm_api_scenario_create"), "browser wrapper cannot instantiate C scenarios");
   requireOk(source.includes("_dvz_wasm_api_scenario_frame"), "browser wrapper cannot advance C scenarios");
+  requireOk(source.includes("_dvz_wasm_api_scenario_post_frame"), "browser wrapper cannot run scenario post-frame hooks");
   requireOk(source.includes("_dvz_wasm_api_scenario_pointer"), "browser wrapper cannot route scenario pointer events");
   requireOk(source.includes("_dvz_wasm_api_scenario_wheel"), "browser wrapper cannot route scenario wheel events");
+  requireOk(source.includes("_dvz_wasm_api_emit_query_packets"), "browser wrapper cannot emit scenario query packets");
+  requireOk(source.includes("_dvz_wasm_api_query_resolve"), "browser wrapper cannot resolve scenario query readbacks");
   requireOk(source.includes("_dvz_wasm_api_visual_set_attr_buffer"), "browser wrapper cannot bind attr buffers");
   requireOk(source.includes("_dvz_wasm_api_visual_set_u32"), "browser wrapper cannot upload u32 attrs");
   requireOk(source.includes("_dvz_wasm_api_visual_set_strings"), "browser wrapper cannot upload text strings");
@@ -1302,6 +1305,35 @@ try {
       Module._dvz_wasm_api_scenario_frame(scenarioScene, 0.25, 1 / 60),
       0,
       "timer scenario first frame",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_scenario_post_frame(scenarioScene),
+      0,
+      "timer scenario post-frame",
+    );
+    requireOk(
+      typeof Module._dvz_wasm_api_query_pending_count === "function",
+      "missing WASM scenario query pending ABI",
+    );
+    requireOk(
+      typeof Module._dvz_wasm_api_emit_query_packets === "function",
+      "missing WASM scenario query packet ABI",
+    );
+    requireOk(
+      typeof Module._dvz_wasm_api_query_active === "function",
+      "missing WASM scenario query active ABI",
+    );
+    requireOk(
+      typeof Module._dvz_wasm_api_query_readback_size === "function",
+      "missing WASM scenario query readback size ABI",
+    );
+    requireOk(
+      typeof Module._dvz_wasm_api_query_resolve === "function",
+      "missing WASM scenario query resolve ABI",
+    );
+    requireOk(
+      Module._dvz_wasm_api_query_pending_count(scenarioScene) === 0,
+      "timer scenario should not queue query requests",
     );
     expectNoPayload(Module, scenarioScene, "scenario frame invalidates payload");
     const frameScenario = emitStream(Module, scenarioScene, scenarioFigure, "timer scenario frame");

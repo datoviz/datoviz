@@ -258,6 +258,15 @@ function diagnosticMessage(Module, scene, prefix) {
   return `${prefix}${messages.length > 0 ? `: ${messages.join("; ")}` : ""}`;
 }
 
+function decodeBase64(data) {
+  const binary = atob(data);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
 function hasPacketApi(Module) {
   return (
     typeof Module._dvz_wasm_api_emit_packets === "function" &&
@@ -309,6 +318,7 @@ export class DatovizWasmScene {
         typeof Module._dvz_wasm_api_scenario_create === "function" &&
         typeof Module._dvz_wasm_api_scenario_figure === "function" &&
         typeof Module._dvz_wasm_api_scenario_frame === "function" &&
+        typeof Module._dvz_wasm_api_scenario_post_frame === "function" &&
         typeof Module._dvz_wasm_api_scenario_pointer === "function" &&
         typeof Module._dvz_wasm_api_scenario_wheel === "function",
       "WASM module is stale or missing scenario exports; run `just wasm-scene-smoke` and hard-refresh",
@@ -580,6 +590,15 @@ export class DatovizWasmScene {
     );
   }
 
+  scenarioPostFrame() {
+    this._requireAlive();
+    requireOk(this.scenario !== null, "WASM scene has no active scenario");
+    this._requireStatus(
+      this.Module._dvz_wasm_api_scenario_post_frame(this.scene),
+      "dvz_wasm_api_scenario_post_frame failed",
+    );
+  }
+
   attachControllerInput(onChange) {
     this._requireAlive();
     const route = (event, type) => {
@@ -709,16 +728,7 @@ export class DatovizWasmScene {
     return JSON.parse(new TextDecoder().decode(this.Module.HEAPU8.subarray(ptr, ptr + size)));
   }
 
-  emitPackets() {
-    this._requireAlive();
-    requireOk(
-      hasPacketApi(this.Module),
-      "WASM module is stale or missing split packet exports; run `just wasm-scene-smoke` and hard-refresh",
-    );
-    const status = this.Module._dvz_wasm_api_emit_packets(this.scene, this.figure);
-    if (status !== 0) {
-      throw new Error(this._diagnosticMessage(`dvz_wasm_api_emit_packets failed with ${status}`));
-    }
+  _currentPacketSet() {
     const packetStatus = this.Module._dvz_wasm_api_packet_status(this.scene);
     if (packetStatus !== 0) {
       throw new Error(this._diagnosticMessage(`dvz_wasm_api_packet_status returned ${packetStatus}`));
@@ -746,6 +756,75 @@ export class DatovizWasmScene {
     };
   }
 
+  emitPackets() {
+    this._requireAlive();
+    requireOk(
+      hasPacketApi(this.Module),
+      "WASM module is stale or missing split packet exports; run `just wasm-scene-smoke` and hard-refresh",
+    );
+    const status = this.Module._dvz_wasm_api_emit_packets(this.scene, this.figure);
+    if (status !== 0) {
+      throw new Error(this._diagnosticMessage(`dvz_wasm_api_emit_packets failed with ${status}`));
+    }
+    return this._currentPacketSet();
+  }
+
+  async flushScenarioQueries() {
+    this._requireAlive();
+    if (this.scenario === null || this.runtime === null) {
+      return 0;
+    }
+    const Module = this.Module;
+    if (
+      typeof Module._dvz_wasm_api_query_pending_count !== "function" ||
+      typeof Module._dvz_wasm_api_emit_query_packets !== "function" ||
+      typeof Module._dvz_wasm_api_query_active !== "function" ||
+      typeof Module._dvz_wasm_api_query_readback_size !== "function" ||
+      typeof Module._dvz_wasm_api_query_resolve !== "function"
+    ) {
+      throw new Error("WASM module is stale or missing query exports; run `just wasm-scene-smoke` and hard-refresh");
+    }
+
+    let processed = 0;
+    const maxPasses = 8;
+    for (let pass = 0; pass < maxPasses; pass++) {
+      if (Module._dvz_wasm_api_query_pending_count(this.scene) === 0) {
+        return processed;
+      }
+      const status = Module._dvz_wasm_api_emit_query_packets(this.scene, this.figure);
+      if (status !== 0) {
+        throw new Error(this._diagnosticMessage(`dvz_wasm_api_emit_query_packets failed with ${status}`));
+      }
+      if (Module._dvz_wasm_api_query_active(this.scene) === 0) {
+        processed++;
+        continue;
+      }
+
+      const packetSet = this._currentPacketSet();
+      const result = await this.runtime.executePacketSet(packetSet);
+      const readback = result.readbacks?.[0] ?? null;
+      const expectedSize = Module._dvz_wasm_api_query_readback_size(this.scene);
+      if (readback === null || expectedSize === 0) {
+        throw new Error("WASM query packet produced no readback");
+      }
+      const bytes = decodeBase64(readback.data);
+      requireOk(bytes.byteLength >= expectedSize, "WASM query readback is shorter than expected");
+      const ptr = Module._malloc(expectedSize);
+      requireOk(ptr !== 0, "WASM query readback allocation failed");
+      try {
+        Module.HEAPU8.set(bytes.subarray(0, expectedSize), ptr);
+        this._requireStatus(
+          Module._dvz_wasm_api_query_resolve(this.scene, ptr, expectedSize),
+          "dvz_wasm_api_query_resolve failed",
+        );
+      } finally {
+        Module._free(ptr);
+      }
+      processed++;
+    }
+    throw new Error("WASM scenario query drain exceeded the bounded pass count");
+  }
+
   async renderInitial() {
     this._requireAlive();
     const packetSet = this.emitPackets();
@@ -754,7 +833,12 @@ export class DatovizWasmScene {
       capabilities: this.gpu.capabilities,
     });
     await this.runtime.executePacketSet(packetSet, { reset: true, replaceExistingResources: false });
-    return this.runtime.stream;
+    const stream = this.runtime.stream;
+    await this.flushScenarioQueries();
+    if (this.scenario !== null) {
+      this.scenarioPostFrame();
+    }
+    return stream;
   }
 
   async renderIncremental() {
@@ -762,7 +846,12 @@ export class DatovizWasmScene {
     requireOk(this.runtime !== null, "renderInitial() must be called before renderIncremental()");
     const packetSet = this.emitPackets();
     await this.runtime.executePacketSet(packetSet);
-    return this.runtime.stream;
+    const stream = this.runtime.stream;
+    await this.flushScenarioQueries();
+    if (this.scenario !== null) {
+      this.scenarioPostFrame();
+    }
+    return stream;
   }
 }
 
