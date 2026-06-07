@@ -145,25 +145,38 @@ showcase or workflow already composes the same feature. These are copy-safe API 
 gallery material second. Keep each file narrow: one feature, deterministic data, no unrelated GUI or
 domain polish, and smoke/screenshot validation once runnable.
 
-Implemented first batch: `feature.scene_basic` (now a static scenario-runner proof),
-`feature.panel_single`, `feature.panel_grid`,
-`feature.panel_multi`, `feature.panel_linked`, `feature.sampled_field_2d`,
-`feature.sampled_field_3d`, `feature.axis_labels`, `feature.text_block`,
-`feature.overlay_card`, `feature.controller_arcball`, `feature.mesh_texture`,
-`feature.update_visual_data`, and `feature.visibility`. Remaining highest-priority missing feature
-examples:
+Focused examples already cover the first release slice of retained scenes, panels, axes, sampled
+fields, text, overlays, panzoom/arcball/fly/turntable controllers, textured/material mesh, lighting,
+retained visual updates, visibility, picking/probing/selection, animation through scenario frames,
+marker symbols, color scales, colorbars, scale bars, alpha/depth toggles, panel backgrounds,
+categorical legends, and video export. Remaining broad coverage gaps should stay here until the
+source file exists, then move into `examples/c/MANIFEST.yaml` with concrete metadata.
 
-| Feature | Source | Required slice |
-| --- | --- | --- |
-| `feature.controller_fly` | `examples/c/features/controller_fly.c` | sparse 3D scene proving fly-camera translation |
-| `feature.controller_turntable` | `examples/c/features/controller_turntable.c` | constrained up-axis 3D controller proof |
-| `feature.pick_point` | `examples/c/features/pick_point.c` | point item identity, callback/readback, and visible selection |
-| `feature.pick_hover` | `examples/c/features/pick_hover.c` | hover feedback with latest-request-wins and background-miss clearing |
-| `feature.probe_labels` | `examples/c/features/probe_labels.c` | label-id probe/readout on a categorical label field |
-| `feature.selection` | `examples/c/features/selection.c` | persistent selected-item highlight on a small visual |
-| `feature.material_mesh` | `examples/c/features/material_mesh.c` | neutral mesh material parameters with readable normals/shading |
-| `feature.lighting` | `examples/c/features/lighting.c` | simple 3D lighting direction/intensity proof |
-| `feature.timer_animation` | `examples/c/features/timer_animation.c` | deterministic runner frame-callback animation |
+| Feature | Proposed source | Priority | Required slice |
+| --- | --- | --- | --- |
+| `feature.gui_controls` | `examples/c/features/gui_controls.c` | high | native-only Datoviz GUI wrapper controls mutating retained visual state |
+| `feature.gui_viewport` | `examples/c/features/gui_viewport.c` | high | native-only dockable Datoviz viewport using `dvz_gui_viewport()` and forwarded input |
+| `feature.gui_cimgui` | `examples/c/features/gui_cimgui.c` | high | raw `datoviz/imgui.h` escape hatch for ImGui features not wrapped by Datoviz, such as tables or tabs |
+| `feature.animation_tracks` | `examples/c/features/animation_tracks.c` | high | retained `dvz_anim_*` track/phase animation, distinct from runner frame callbacks |
+| `feature.scene_compute_buffer` | `examples/c/features/scene_compute_buffer.c` | high | minimal `DvzSceneBuffer`/`DvzSceneCompute` compute-to-render proof outside a showcase |
+| `feature.edl` | `examples/c/features/edl.c` | medium | focused Eye-Dome Lighting toggle with readable before/after geometry |
+| `feature.ssao` | `examples/c/features/ssao.c` | medium | focused SSAO toggle and parameter proof on simple 3D geometry |
+| `feature.msaa` | `examples/c/features/msaa.c` | medium | panel MSAA sample-count proof with thin geometry or text edges |
+| `feature.depth_cue` | `examples/c/features/depth_cue.c` | medium | visual depth-cue parameters independent of EDL/SSAO showcases |
+| `feature.transparency_order` | `examples/c/features/transparency_order.c` | medium | WBOIT/depth-peeling-shaped transparency behavior beyond basic alpha blending |
+| `feature.volume_occlusion` | `examples/c/features/volume_occlusion.c` | medium | volume/mesh occlusion setup as an isolated feature, not only the brain showcase |
+| `feature.guide_lines` | `examples/c/features/guide_lines.c` | medium | `dvz_hline()`, `dvz_vline()`, custom guide-line styling and updates |
+| `feature.guide_spans` | `examples/c/features/guide_spans.c` | medium | retained guide spans for selected data intervals |
+| `feature.bars_bands` | `examples/c/features/bars_bands.c` | medium | plot helper bars and uncertainty bands |
+| `feature.app_glfw` | `examples/c/features/app_glfw.c` | medium | direct native app/view lifecycle without hiding all runtime setup in the scenario runner |
+| `feature.offscreen_capture` | `examples/c/features/offscreen_capture.c` | medium | offscreen render-once and PNG capture as a minimal app/runtime feature |
+| `feature.input_events` | `examples/c/features/input_events.c` | medium | raw pointer/wheel/keyboard routing independent of controllers and picking |
+| `feature.record_replay` | `examples/c/features/record_replay.c` | low | app event recording/replay if promoted from lab/diagnostic status |
+| `feature.controller_orbit_camera` | `examples/c/features/controller_orbit_camera.c` | low | orbit-camera controller if it remains part of the public v0.4 surface |
+| `feature.visual_transform` | `examples/c/features/visual_transform.c` | low | per-visual transform set/get/clear on one retained visual |
+| `feature.panel_domain_fit` | `examples/c/features/panel_domain_fit.c` | low | explicit domain fit, bounds computation, and data-to-visual coordinate conversion |
+| `feature.scene_json` | `examples/c/features/scene_json.c` | low | scene JSON serialization and diagnostic/capability reporting if documented as public |
+| `feature.external_surface` | `examples/c/features/external_surface.c` | low | only if external-surface hosting belongs in the C feature lane rather than `examples/qt/` or provider docs |
 
 Tentative examples now exist for `examples/c/features/legend_categorical.c` and
 `examples/c/features/video_export.c`. `video_export.c` is the first native scenario-runner proof for
