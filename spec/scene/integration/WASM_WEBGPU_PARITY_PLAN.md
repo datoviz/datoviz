@@ -111,9 +111,9 @@ The current browser path and portable-scenario path prove:
 19. one portable C scenario host proof for `feature_timer_animation`, including browser-driven frame
     callbacks and retained point updates;
 20. native scenario-runner requirement diagnostics plus portable event/post-frame hooks;
-21. `feature_pick_point` and `feature_pick_marker` migrated off `native_view` as the first
-    query/readback-shaped portable scenarios, still blocked from browser-live status by missing
-    WASM/WebGPU query delivery.
+21. `feature_pick_point`, `feature_pick_marker`, and `feature_pick_hover` migrated off
+    `native_view` as the first query/readback-shaped portable scenarios, still blocked from
+    browser-live status by missing WASM/WebGPU query delivery.
 
 This is an experimental subset, not native Vulkan feature parity.
 
@@ -267,7 +267,8 @@ query/readback RC slices are stable.
 ### Phase 1: Make Examples Portable
 
 1. Implement the portable scenario helper and native host runner. Current first slices:
-   `feature_timer_animation`, native `feature_pick_point`, and native `feature_pick_marker`.
+   `feature_timer_animation`, native `feature_pick_point`, native `feature_pick_marker`, and native
+   `feature_pick_hover`.
 2. Add a generic WASM example host beside the current scene ABI. Current first slice:
    browser frame callbacks for `feature_timer_animation`; next browser slice is scenario event
    delivery.
@@ -306,8 +307,8 @@ The RC slice supports browser-visible interaction examples, not full native quer
 
 Required work:
 
-1. finish native portable query-shaped examples: `pick_hover`, `selection`, and one sampled probe
-   after `pick_point`/`pick_marker`;
+1. finish native portable query-shaped examples: `selection` and one sampled probe after
+   `pick_point`/`pick_marker`/`pick_hover`;
 2. define a WASM query request/result ABI;
 3. schedule WebGPU readbacks asynchronously and deliver results through scenario events or polling;
 4. implement latest-request-wins behavior for hover/probe examples;

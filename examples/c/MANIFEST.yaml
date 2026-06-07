@@ -544,6 +544,14 @@ examples:
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - point
+        - panzoom
+        - query-readback
+        - frame-callbacks
     agent_copy_safe: true
 
   - id: feature_probe_labels
