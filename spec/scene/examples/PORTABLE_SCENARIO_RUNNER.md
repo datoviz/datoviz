@@ -14,18 +14,18 @@ Current implementation checkpoint:
 1. `examples/c/runner/` contains the native GLFW/offscreen/capture runner.
 2. `DvzScenarioSpec.requirements` and runner-side requirement diagnostics are active in example
    support code.
-3. `scene_basic`, `timer_animation`, `video_export`, and `pick_point` carry first-slice
+3. `scene_basic`, `timer_animation`, `video_export`, `pick_point`, and `pick_marker` carry first-slice
    requirement metadata in code and `examples/c/MANIFEST.yaml`.
 4. Portable event and post-frame callbacks are active in the native runner; `pick_point` is the
-   first query/readback migration proof without `native_view`.
+   first query/readback migration proof without `native_view`, and `pick_marker` is the second
+   item-picking family on the same bridge.
 5. The WASM scenario host can drive `feature_timer_animation` and report unsupported scenario
    requirements deterministically.
 6. Browser-side scenario event delivery and query/readback result delivery remain the next phases.
 
 Current native escape hatches to retire or classify:
 
-1. migrate next: `pick_marker.c`, `pick_hover.c`, `selection.c`, `image_probe.c`, and
-   `probe_labels.c`;
+1. migrate next: `pick_hover.c`, `selection.c`, `image_probe.c`, and `probe_labels.c`;
 2. keep native-only or defer until compute/query browser support: `gpu_particle_smoke.c`,
    `textured_planet.c`, and `linked_probe_colorbar.c`;
 3. add manifest classifications for every public C example once the query/probe migration pattern is
@@ -34,10 +34,9 @@ Current native escape hatches to retire or classify:
 Near-term implementation order:
 
 1. extract shared runner helpers for panel-local pointer coordinates and panel query requests;
-2. migrate `pick_marker.c` through the portable event/post-frame path as the second picking proof;
-3. migrate `pick_hover.c` and `selection.c` to prove latest-hover state and persistent selection;
-4. expose browser scenario event delivery before widening the live website example set;
-5. implement the narrow WASM/WebGPU query/readback ABI for point, marker, and one sampled probe.
+2. migrate `pick_hover.c` and `selection.c` to prove latest-hover state and persistent selection;
+3. expose browser scenario event delivery before widening the live website example set;
+4. implement the narrow WASM/WebGPU query/readback ABI for point, marker, and one sampled probe.
 
 Full visual and feature parity sequencing lives in
 [../integration/WASM_WEBGPU_PARITY_PLAN.md](../integration/WASM_WEBGPU_PARITY_PLAN.md). This file

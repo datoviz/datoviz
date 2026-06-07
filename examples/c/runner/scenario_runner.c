@@ -610,6 +610,41 @@ DvzPanzoom* dvz_scenario_panzoom(
 
 
 
+bool dvz_scenario_panel_pointer_position(
+    const DvzPanel* panel, const DvzScenarioPointerEvent* event, double* out_x, double* out_y)
+{
+    if (panel == NULL || event == NULL || out_x == NULL || out_y == NULL)
+        return false;
+
+    DvzRect rect = {0};
+    if (!dvz_panel_inner_rect_px(panel, &rect) || rect.width <= 0.0f || rect.height <= 0.0f)
+        return false;
+
+    float x = event->x;
+    float y = event->y;
+
+    x -= rect.x;
+    y -= rect.y;
+    if (x < 0.0f || x >= rect.width || y < 0.0f || y >= rect.height)
+        return false;
+
+    *out_x = (double)x;
+    *out_y = (double)y;
+    return true;
+}
+
+
+
+int dvz_scenario_panel_query(
+    DvzPanel* panel, double x, double y, const DvzQueryRequest* request)
+{
+    if (panel == NULL || request == NULL)
+        return -1;
+    return dvz_panel_query(panel, x, y, request);
+}
+
+
+
 int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* config)
 {
     if (spec == NULL || spec->init == NULL || config == NULL)

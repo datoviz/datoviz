@@ -28,9 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "datoviz/input/router.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -154,26 +152,24 @@ static void _toggle_marker_selection(MarkerPickState* state, const DvzQueryResul
 /**
  * Record the latest pointer position and click intent in panel coordinates.
  *
- * @param router input router emitting the event
- * @param event pointer event payload
+ * @param event portable pointer event
  * @param user_data marker-pick example state
  */
-static void
-_marker_pick_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+static void _marker_pick_pointer(const DvzScenarioPointerEvent* event, void* user_data)
 {
-    (void)router;
     MarkerPickState* state = (MarkerPickState*)user_data;
     if (state == NULL || event == NULL)
         return;
     if (
-        event->type != DVZ_POINTER_EVENT_MOVE && event->type != DVZ_POINTER_EVENT_PRESS)
+        event->type != DVZ_SCENARIO_POINTER_MOVE && event->type != DVZ_SCENARIO_POINTER_PRESS)
         return;
 
-    state->cursor_valid = true;
-    state->cursor_x = event->pos[0];
-    state->cursor_y = event->pos[1];
-    if (event->type == DVZ_POINTER_EVENT_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
+    state->cursor_valid = dvz_scenario_panel_pointer_position(
+        state->panel, event, &state->cursor_x, &state->cursor_y);
+    if (event->type == DVZ_SCENARIO_POINTER_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
     {
+        if (!state->cursor_valid)
+            return;
         if (state->has_hover_query)
             _toggle_marker_selection(state, &state->latest_hover_query);
         else
@@ -186,12 +182,12 @@ _marker_pick_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void*
 /**
  * Consume marker query results, update hover styling, and queue the next query.
  *
- * @param win view whose frame just completed
+ * @param ctx scenario context
  * @param user_data marker-pick example state
  */
-static void _marker_pick_frame(DvzView* win, void* user_data)
+static void _marker_pick_post_frame(DvzScenarioContext* ctx, void* user_data)
 {
-    (void)win;
+    (void)ctx;
     MarkerPickState* state = (MarkerPickState*)user_data;
     if (state == NULL)
         return;
@@ -230,11 +226,29 @@ static void _marker_pick_frame(DvzView* win, void* user_data)
         request.target = DVZ_SCENE_TARGET_ITEM;
         request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
 
-        if (dvz_panel_query(state->panel, state->cursor_x, state->cursor_y, &request) != 0)
+        if (dvz_scenario_panel_query(state->panel, state->cursor_x, state->cursor_y, &request) != 0)
         {
-            fprintf(stderr, "dvz_panel_query() failed\n");
+            fprintf(stderr, "dvz_scenario_panel_query() failed\n");
         }
     }
+}
+
+
+
+/**
+ * Handle portable scenario events.
+ *
+ * @param ctx scenario context
+ * @param event portable event
+ * @param user scenario state
+ */
+static void _scenario_event(DvzScenarioContext* ctx, const DvzScenarioEvent* event, void* user)
+{
+    (void)ctx;
+    if (event == NULL)
+        return;
+    if (event->kind == DVZ_SCENARIO_EVENT_POINTER)
+        _marker_pick_pointer(&event->content.pointer, user);
 }
 
 
@@ -374,35 +388,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
 
 /**
- * Attach native GLFW callbacks for the retained marker picking feature scenario.
- *
- * @param ctx scenario context
- * @param app native app
- * @param view native view
- * @param user scenario state
- * @return true on success
- */
-static bool _scenario_native_view(
-    DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
-{
-    (void)ctx;
-    (void)app;
-    MarkerPickState* state = (MarkerPickState*)user;
-    if (state == NULL || view == NULL)
-        return false;
-
-    DvzInputRouter* router = dvz_view_input(view);
-    if (router == NULL)
-        return true;
-
-    dvz_input_subscribe_pointer(router, _marker_pick_pointer, state);
-    dvz_view_set_frame_callback(view, _marker_pick_frame, state);
-    return true;
-}
-
-
-
-/**
  * Destroy the retained marker picking feature scenario state.
  *
  * @param ctx scenario context
@@ -429,8 +414,12 @@ static DvzScenarioSpec _pick_marker_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_QUERY_READBACK |
+                        DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM |
+                        DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
-        .native_view = _scenario_native_view,
+        .event = _scenario_event,
+        .post_frame = _marker_pick_post_frame,
         .destroy = _scenario_destroy,
     };
 }

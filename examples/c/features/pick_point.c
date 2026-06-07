@@ -125,40 +125,6 @@ static void _toggle_point_selection(PointPickState* state, const DvzQueryResult*
 /*************************************************************************************************/
 
 /**
- * Convert one portable pointer event to panel-local figure coordinates.
- *
- * @param panel target panel
- * @param event portable pointer event
- * @param out_x output panel-local x coordinate
- * @param out_y output panel-local y coordinate
- * @return true when the pointer is inside the panel rectangle
- */
-static bool _panel_pointer_position(
-    const DvzPanel* panel, const DvzScenarioPointerEvent* event, double* out_x, double* out_y)
-{
-    if (panel == NULL || event == NULL || out_x == NULL || out_y == NULL)
-        return false;
-
-    DvzRect rect = {0};
-    if (!dvz_panel_inner_rect_px(panel, &rect) || rect.width <= 0.0f || rect.height <= 0.0f)
-        return false;
-
-    float x = event->x;
-    float y = event->y;
-
-    x -= rect.x;
-    y -= rect.y;
-    if (x < 0.0f || x >= rect.width || y < 0.0f || y >= rect.height)
-        return false;
-
-    *out_x = (double)x;
-    *out_y = (double)y;
-    return true;
-}
-
-
-
-/**
  * Record pointer position and dispatch click selection.
  *
  * @param user_data point-pick example state
@@ -172,7 +138,7 @@ static void _point_pick_pointer(const DvzScenarioPointerEvent* event, void* user
         return;
 
     state->cursor_valid =
-        _panel_pointer_position(state->panel, event, &state->cursor_x, &state->cursor_y);
+        dvz_scenario_panel_pointer_position(state->panel, event, &state->cursor_x, &state->cursor_y);
     if (event->type == DVZ_SCENARIO_POINTER_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
     {
         if (!state->cursor_valid)
@@ -233,8 +199,8 @@ static void _point_pick_post_frame(DvzScenarioContext* ctx, void* user_data)
         request.target = DVZ_SCENE_TARGET_ITEM;
         request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
 
-        if (dvz_panel_query(state->panel, state->cursor_x, state->cursor_y, &request) != 0)
-            fprintf(stderr, "dvz_panel_query() failed\n");
+        if (dvz_scenario_panel_query(state->panel, state->cursor_x, state->cursor_y, &request) != 0)
+            fprintf(stderr, "dvz_scenario_panel_query() failed\n");
     }
 }
 

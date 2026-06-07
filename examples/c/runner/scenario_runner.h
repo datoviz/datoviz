@@ -39,6 +39,7 @@ typedef struct DvzScene DvzScene;
 typedef struct DvzFigure DvzFigure;
 typedef struct DvzPanel DvzPanel;
 typedef struct DvzController DvzController;
+typedef struct DvzQueryRequest DvzQueryRequest;
 typedef struct DvzQueryResult DvzQueryResult;
 typedef struct DvzScenarioContext DvzScenarioContext;
 typedef struct DvzScenarioEvent DvzScenarioEvent;
@@ -276,6 +277,30 @@ int dvz_scenario_bind_controller(
  */
 DvzPanzoom* dvz_scenario_panzoom(
     DvzScenarioContext* ctx, DvzPanel* panel, const DvzPanzoomDesc* desc, DvzDimMask dims);
+
+/**
+ * Convert one portable pointer event to panel-local coordinates.
+ *
+ * @param panel target panel
+ * @param event portable pointer event
+ * @param out_x output panel-local x coordinate
+ * @param out_y output panel-local y coordinate
+ * @return true when the pointer is inside the panel rectangle
+ */
+bool dvz_scenario_panel_pointer_position(
+    const DvzPanel* panel, const DvzScenarioPointerEvent* event, double* out_x, double* out_y);
+
+/**
+ * Queue one panel query in panel-local coordinates.
+ *
+ * @param panel target panel
+ * @param x panel-local x coordinate
+ * @param y panel-local y coordinate
+ * @param request query request
+ * @return 0 on success, negative on error
+ */
+int dvz_scenario_panel_query(
+    DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
 
 int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* config);
 
