@@ -47,11 +47,28 @@ typedef struct RunnerFrameState
 } RunnerFrameState;
 
 
+typedef struct RunnerEventState
+{
+    const DvzScenarioSpec* spec;
+    DvzScenarioContext* ctx;
+    void* user;
+} RunnerEventState;
+
+
 typedef struct RunnerProgressState
 {
     uint32_t frame_count;
     uint32_t rendered;
 } RunnerProgressState;
+
+
+typedef struct RunnerViewFrameState
+{
+    const DvzScenarioSpec* spec;
+    DvzScenarioContext* ctx;
+    void* user;
+    RunnerProgressState progress;
+} RunnerViewFrameState;
 
 
 typedef struct RunnerRequirementName
@@ -207,6 +224,8 @@ static uint64_t _effective_requirements(
     uint64_t requirements = spec != NULL ? spec->requirements : 0;
     if (spec != NULL && spec->frame != NULL)
         requirements |= DVZ_SCENARIO_REQ_FRAME_CALLBACKS;
+    if (spec != NULL && spec->post_frame != NULL)
+        requirements |= DVZ_SCENARIO_REQ_FRAME_CALLBACKS;
     if (spec != NULL && spec->native_view != NULL)
         requirements |= DVZ_SCENARIO_REQ_NATIVE_VIEW;
     if (config != NULL && config->capture_kind != DVZ_RUNNER_CAPTURE_NONE)
@@ -282,6 +301,37 @@ static void _print_progress(uint32_t completed, uint32_t total)
 
 
 
+static DvzScenarioPointerType _scenario_pointer_type(DvzPointerEventType type)
+{
+    switch (type)
+    {
+    case DVZ_POINTER_EVENT_RELEASE:
+        return DVZ_SCENARIO_POINTER_RELEASE;
+    case DVZ_POINTER_EVENT_PRESS:
+        return DVZ_SCENARIO_POINTER_PRESS;
+    case DVZ_POINTER_EVENT_MOVE:
+        return DVZ_SCENARIO_POINTER_MOVE;
+    case DVZ_POINTER_EVENT_CLICK:
+        return DVZ_SCENARIO_POINTER_CLICK;
+    case DVZ_POINTER_EVENT_DOUBLE_CLICK:
+        return DVZ_SCENARIO_POINTER_DOUBLE_CLICK;
+    case DVZ_POINTER_EVENT_DRAG_START:
+        return DVZ_SCENARIO_POINTER_DRAG_START;
+    case DVZ_POINTER_EVENT_DRAG:
+        return DVZ_SCENARIO_POINTER_DRAG;
+    case DVZ_POINTER_EVENT_DRAG_STOP:
+        return DVZ_SCENARIO_POINTER_DRAG_STOP;
+    case DVZ_POINTER_EVENT_WHEEL:
+        return DVZ_SCENARIO_POINTER_WHEEL;
+    case DVZ_POINTER_EVENT_NONE:
+    case DVZ_POINTER_EVENT_ALL:
+    default:
+        return DVZ_SCENARIO_POINTER_NONE;
+    }
+}
+
+
+
 static void _timer_callback(DvzAnimation* animation, double t, double dt, void* user_data)
 {
     (void)animation;
@@ -297,16 +347,86 @@ static void _timer_callback(DvzAnimation* animation, double t, double dt, void* 
 
 
 
-static void _progress_frame(DvzView* view, void* user_data)
+static void _runner_event(DvzInputRouter* router, const DvzInputEvent* input, void* user_data)
 {
-    (void)view;
-    RunnerProgressState* progress = (RunnerProgressState*)user_data;
-    if (progress == NULL || progress->frame_count == 0)
+    (void)router;
+    RunnerEventState* state = (RunnerEventState*)user_data;
+    if (
+        state == NULL || state->spec == NULL || state->ctx == NULL ||
+        state->spec->event == NULL || input == NULL)
         return;
 
-    if (progress->rendered < progress->frame_count)
-        progress->rendered++;
-    _print_progress(progress->rendered, progress->frame_count);
+    DvzScenarioEvent event = {0};
+    switch (input->type)
+    {
+    case DVZ_INPUT_EVENT_POINTER:
+    {
+        const DvzPointerEvent* pointer = &input->content.pointer;
+        event.kind = DVZ_SCENARIO_EVENT_POINTER;
+        event.content.pointer.type = _scenario_pointer_type(pointer->type);
+        event.content.pointer.x = pointer->pos[0];
+        event.content.pointer.y = pointer->pos[1];
+        event.content.pointer.dx = pointer->type == DVZ_POINTER_EVENT_WHEEL
+                                       ? pointer->content.w.dir[0]
+                                       : 0.0f;
+        event.content.pointer.dy = pointer->type == DVZ_POINTER_EVENT_WHEEL
+                                       ? pointer->content.w.dir[1]
+                                       : 0.0f;
+        event.content.pointer.content_scale = pointer->content_scale;
+        event.content.pointer.button = (uint32_t)pointer->button;
+        event.content.pointer.modifiers = pointer->mods >= 0 ? (uint32_t)pointer->mods : 0;
+        event.content.pointer.timestamp_ns = pointer->timestamp_ns;
+        break;
+    }
+    case DVZ_INPUT_EVENT_KEYBOARD:
+    {
+        const DvzKeyboardEvent* key = &input->content.keyboard;
+        event.kind = DVZ_SCENARIO_EVENT_KEY;
+        event.content.key.type = (uint32_t)key->type;
+        event.content.key.key = (uint32_t)key->key;
+        event.content.key.modifiers = key->mods >= 0 ? (uint32_t)key->mods : 0;
+        break;
+    }
+    case DVZ_INPUT_EVENT_RESIZE:
+    {
+        const DvzInputResizeEvent* resize = &input->content.resize;
+        event.kind = DVZ_SCENARIO_EVENT_RESIZE;
+        event.content.resize.framebuffer_width = resize->framebuffer_width;
+        event.content.resize.framebuffer_height = resize->framebuffer_height;
+        event.content.resize.window_width = resize->window_width;
+        event.content.resize.window_height = resize->window_height;
+        event.content.resize.content_scale_x = resize->content_scale_x;
+        event.content.resize.content_scale_y = resize->content_scale_y;
+        break;
+    }
+    case DVZ_INPUT_EVENT_SCALE:
+    case DVZ_INPUT_EVENT_NONE:
+    default:
+        return;
+    }
+
+    state->spec->event(state->ctx, &event, state->user);
+}
+
+
+
+static void _view_frame(DvzView* view, void* user_data)
+{
+    (void)view;
+    RunnerViewFrameState* state = (RunnerViewFrameState*)user_data;
+    if (state == NULL)
+        return;
+
+    if (state->spec != NULL && state->spec->post_frame != NULL && state->ctx != NULL)
+        state->spec->post_frame(state->ctx, state->user);
+
+    RunnerProgressState* progress = &state->progress;
+    if (progress->frame_count != 0)
+    {
+        if (progress->rendered < progress->frame_count)
+            progress->rendered++;
+        _print_progress(progress->rendered, progress->frame_count);
+    }
 }
 
 
@@ -504,7 +624,8 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     bool capture_started = false;
     void* user = NULL;
     RunnerFrameState frame_state = {0};
-    RunnerProgressState progress = {0};
+    RunnerEventState event_state = {0};
+    RunnerViewFrameState view_frame_state = {0};
     DvzRunnerConfig resolved = *config;
     DvzScenarioContext ctx = {0};
 
@@ -585,6 +706,20 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         goto cleanup;
     }
 
+    if (spec->event != NULL)
+    {
+        DvzInputRouter* router = dvz_view_input(view);
+        if (router == NULL)
+        {
+            fprintf(stderr, "scenario_runner: event bridge requires view input\n");
+            goto cleanup;
+        }
+        event_state.spec = spec;
+        event_state.ctx = &ctx;
+        event_state.user = user;
+        dvz_input_subscribe_event(router, _runner_event, &event_state);
+    }
+
     if (spec->native_view != NULL && !spec->native_view(&ctx, app, view, user))
     {
         fprintf(stderr, "scenario_runner: native view setup failed\n");
@@ -606,8 +741,14 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
 
     if (resolved.frame_count > 0 && resolved.print_progress)
     {
-        progress.frame_count = resolved.frame_count;
-        dvz_view_set_frame_callback(capture_view, _progress_frame, &progress);
+        view_frame_state.progress.frame_count = resolved.frame_count;
+    }
+    if (spec->post_frame != NULL || view_frame_state.progress.frame_count != 0)
+    {
+        view_frame_state.spec = spec;
+        view_frame_state.ctx = &ctx;
+        view_frame_state.user = user;
+        dvz_view_set_frame_callback(capture_view, _view_frame, &view_frame_state);
     }
 
     if (resolved.capture_kind != DVZ_RUNNER_CAPTURE_NONE)

@@ -39,10 +39,15 @@ typedef struct DvzScene DvzScene;
 typedef struct DvzFigure DvzFigure;
 typedef struct DvzPanel DvzPanel;
 typedef struct DvzController DvzController;
+typedef struct DvzQueryResult DvzQueryResult;
 typedef struct DvzScenarioContext DvzScenarioContext;
+typedef struct DvzScenarioEvent DvzScenarioEvent;
 
 typedef bool (*DvzScenarioInitFn)(DvzScenarioContext* ctx, void** out_user);
 typedef void (*DvzScenarioFrameFn)(DvzScenarioContext* ctx, void* user);
+typedef void (*DvzScenarioEventFn)(
+    DvzScenarioContext* ctx, const DvzScenarioEvent* event, void* user);
+typedef void (*DvzScenarioPostFrameFn)(DvzScenarioContext* ctx, void* user);
 typedef bool (*DvzScenarioNativeViewFn)(
     DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user);
 typedef void (*DvzScenarioDestroyFn)(DvzScenarioContext* ctx, void* user);
@@ -90,6 +95,31 @@ typedef enum DvzScenarioRequirement
 } DvzScenarioRequirement;
 
 
+typedef enum DvzScenarioEventKind
+{
+    DVZ_SCENARIO_EVENT_NONE = 0,
+    DVZ_SCENARIO_EVENT_POINTER,
+    DVZ_SCENARIO_EVENT_KEY,
+    DVZ_SCENARIO_EVENT_RESIZE,
+    DVZ_SCENARIO_EVENT_QUERY_RESULT,
+} DvzScenarioEventKind;
+
+
+typedef enum DvzScenarioPointerType
+{
+    DVZ_SCENARIO_POINTER_NONE = 0,
+    DVZ_SCENARIO_POINTER_RELEASE,
+    DVZ_SCENARIO_POINTER_PRESS,
+    DVZ_SCENARIO_POINTER_MOVE,
+    DVZ_SCENARIO_POINTER_CLICK,
+    DVZ_SCENARIO_POINTER_DOUBLE_CLICK,
+    DVZ_SCENARIO_POINTER_DRAG_START,
+    DVZ_SCENARIO_POINTER_DRAG,
+    DVZ_SCENARIO_POINTER_DRAG_STOP,
+    DVZ_SCENARIO_POINTER_WHEEL,
+} DvzScenarioPointerType;
+
+
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
@@ -109,6 +139,52 @@ typedef struct DvzScenarioControllerBinding
     DvzController* controller;
     DvzDimMask dims;
 } DvzScenarioControllerBinding;
+
+
+typedef struct DvzScenarioPointerEvent
+{
+    DvzScenarioPointerType type;
+    float x;
+    float y;
+    float dx;
+    float dy;
+    float content_scale;
+    uint32_t button;
+    uint32_t modifiers;
+    uint64_t timestamp_ns;
+} DvzScenarioPointerEvent;
+
+
+typedef struct DvzScenarioKeyEvent
+{
+    uint32_t type;
+    uint32_t key;
+    uint32_t modifiers;
+} DvzScenarioKeyEvent;
+
+
+typedef struct DvzScenarioResizeEvent
+{
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    uint32_t window_width;
+    uint32_t window_height;
+    float content_scale_x;
+    float content_scale_y;
+} DvzScenarioResizeEvent;
+
+
+struct DvzScenarioEvent
+{
+    DvzScenarioEventKind kind;
+    union
+    {
+        DvzScenarioPointerEvent pointer;
+        DvzScenarioKeyEvent key;
+        DvzScenarioResizeEvent resize;
+        const DvzQueryResult* query_result;
+    } content;
+};
 
 
 struct DvzScenarioContext
@@ -139,6 +215,8 @@ typedef struct DvzScenarioSpec
 
     DvzScenarioInitFn init;
     DvzScenarioFrameFn frame;
+    DvzScenarioEventFn event;
+    DvzScenarioPostFrameFn post_frame;
     DvzScenarioNativeViewFn native_view;
     DvzScenarioDestroyFn destroy;
 } DvzScenarioSpec;

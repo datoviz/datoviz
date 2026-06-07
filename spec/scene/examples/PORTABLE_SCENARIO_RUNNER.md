@@ -14,9 +14,11 @@ Current implementation checkpoint:
 1. `examples/c/runner/` contains the native GLFW/offscreen/capture runner.
 2. `DvzScenarioSpec.requirements` and runner-side requirement diagnostics are active in example
    support code.
-3. `scene_basic`, `timer_animation`, and `video_export` carry first-slice requirement metadata in
-   code and `examples/c/MANIFEST.yaml`.
-4. Portable event/query callbacks and the browser/WASM scenario host remain the next phases.
+3. `scene_basic`, `timer_animation`, `video_export`, and `pick_point` carry first-slice
+   requirement metadata in code and `examples/c/MANIFEST.yaml`.
+4. Portable event and post-frame callbacks are active in the native runner; `pick_point` is the
+   first query/readback migration proof without `native_view`.
+5. Browser-side event/query delivery remains the next phase.
 
 Full visual and feature parity sequencing lives in
 [../integration/WASM_WEBGPU_PARITY_PLAN.md](../integration/WASM_WEBGPU_PARITY_PLAN.md). This file

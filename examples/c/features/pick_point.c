@@ -30,9 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "datoviz/input/router.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -127,24 +125,55 @@ static void _toggle_point_selection(PointPickState* state, const DvzQueryResult*
 /*************************************************************************************************/
 
 /**
+ * Convert one portable pointer event to panel-local figure coordinates.
+ *
+ * @param panel target panel
+ * @param event portable pointer event
+ * @param out_x output panel-local x coordinate
+ * @param out_y output panel-local y coordinate
+ * @return true when the pointer is inside the panel rectangle
+ */
+static bool _panel_pointer_position(
+    const DvzPanel* panel, const DvzScenarioPointerEvent* event, double* out_x, double* out_y)
+{
+    if (panel == NULL || event == NULL || out_x == NULL || out_y == NULL)
+        return false;
+
+    DvzRect rect = {0};
+    if (!dvz_panel_inner_rect_px(panel, &rect) || rect.width <= 0.0f || rect.height <= 0.0f)
+        return false;
+
+    float x = event->x;
+    float y = event->y;
+
+    x -= rect.x;
+    y -= rect.y;
+    if (x < 0.0f || x >= rect.width || y < 0.0f || y >= rect.height)
+        return false;
+
+    *out_x = (double)x;
+    *out_y = (double)y;
+    return true;
+}
+
+
+
+/**
  * Record pointer position and dispatch click selection.
  *
- * @param router input router emitting the event
- * @param event pointer event payload
  * @param user_data point-pick example state
  */
-static void _point_pick_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+static void _point_pick_pointer(const DvzScenarioPointerEvent* event, void* user_data)
 {
-    (void)router;
     PointPickState* state = (PointPickState*)user_data;
     if (state == NULL || event == NULL)
         return;
-    if (event->type != DVZ_POINTER_EVENT_MOVE && event->type != DVZ_POINTER_EVENT_PRESS)
+    if (event->type != DVZ_SCENARIO_POINTER_MOVE && event->type != DVZ_SCENARIO_POINTER_PRESS)
         return;
 
     state->cursor_valid =
-        example_panel_pointer_position(state->panel, event, &state->cursor_x, &state->cursor_y);
-    if (event->type == DVZ_POINTER_EVENT_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
+        _panel_pointer_position(state->panel, event, &state->cursor_x, &state->cursor_y);
+    if (event->type == DVZ_SCENARIO_POINTER_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
     {
         if (!state->cursor_valid)
             return;
@@ -160,12 +189,12 @@ static void _point_pick_pointer(DvzInputRouter* router, const DvzPointerEvent* e
 /**
  * Consume point query results, update hover styling, and queue the next query.
  *
- * @param win view whose frame just completed
+ * @param ctx scenario context
  * @param user_data point-pick example state
  */
-static void _point_pick_frame(DvzView* win, void* user_data)
+static void _point_pick_post_frame(DvzScenarioContext* ctx, void* user_data)
 {
-    (void)win;
+    (void)ctx;
     PointPickState* state = (PointPickState*)user_data;
     if (state == NULL)
         return;
@@ -207,6 +236,24 @@ static void _point_pick_frame(DvzView* win, void* user_data)
         if (dvz_panel_query(state->panel, state->cursor_x, state->cursor_y, &request) != 0)
             fprintf(stderr, "dvz_panel_query() failed\n");
     }
+}
+
+
+
+/**
+ * Handle portable scenario events.
+ *
+ * @param ctx scenario context
+ * @param event portable event
+ * @param user scenario state
+ */
+static void _scenario_event(DvzScenarioContext* ctx, const DvzScenarioEvent* event, void* user)
+{
+    (void)ctx;
+    if (event == NULL)
+        return;
+    if (event->kind == DVZ_SCENARIO_EVENT_POINTER)
+        _point_pick_pointer(&event->content.pointer, user);
 }
 
 
@@ -327,35 +374,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
 
 /**
- * Attach native GLFW callbacks for the retained point picking feature scenario.
- *
- * @param ctx scenario context
- * @param app native app
- * @param view native view
- * @param user scenario state
- * @return true on success
- */
-static bool _scenario_native_view(
-    DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
-{
-    (void)ctx;
-    (void)app;
-    PointPickState* state = (PointPickState*)user;
-    if (state == NULL || view == NULL)
-        return false;
-
-    DvzInputRouter* router = dvz_view_input(view);
-    if (router == NULL)
-        return true;
-
-    dvz_input_subscribe_pointer(router, _point_pick_pointer, state);
-    dvz_view_set_frame_callback(view, _point_pick_frame, state);
-    return true;
-}
-
-
-
-/**
  * Destroy the retained point picking feature scenario state.
  *
  * @param ctx scenario context
@@ -382,8 +400,12 @@ static DvzScenarioSpec _pick_point_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_QUERY_READBACK |
+                        DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM |
+                        DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
-        .native_view = _scenario_native_view,
+        .event = _scenario_event,
+        .post_frame = _point_pick_post_frame,
         .destroy = _scenario_destroy,
     };
 }

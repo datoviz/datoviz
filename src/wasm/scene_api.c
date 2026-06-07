@@ -251,6 +251,8 @@ static uint64_t _scenario_effective_requirements(const DvzScenarioSpec* spec)
     uint64_t requirements = spec != NULL ? spec->requirements : 0;
     if (spec != NULL && spec->frame != NULL)
         requirements |= DVZ_SCENARIO_REQ_FRAME_CALLBACKS;
+    if (spec != NULL && spec->post_frame != NULL)
+        requirements |= DVZ_SCENARIO_REQ_FRAME_CALLBACKS;
     if (spec != NULL && spec->native_view != NULL)
         requirements |= DVZ_SCENARIO_REQ_NATIVE_VIEW;
     return requirements;
