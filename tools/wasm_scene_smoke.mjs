@@ -1257,7 +1257,27 @@ try {
     Module._dvz_wasm_api_scene_destroy(diagnosticScene);
   }
 
-  requireOk(Module._dvz_wasm_api_scenario_count() >= 1, "expected at least one WASM scenario");
+  requireOk(Module._dvz_wasm_api_scenario_count() >= 6, "expected query-capable WASM scenarios");
+  const expectedScenarioIds = [
+    "feature_timer_animation",
+    "feature_pick_point",
+    "feature_pick_marker",
+    "feature_pick_hover",
+    "feature_selection",
+    "feature_image_probe",
+  ];
+  for (let i = 0; i < expectedScenarioIds.length; i++) {
+    const ptr = Module._dvz_wasm_api_scenario_id(i);
+    requireOk(ptr !== 0, `WASM scenario ${i} has no id`);
+    const id = Module.UTF8ToString(ptr);
+    requireOk(id === expectedScenarioIds[i], `unexpected scenario ${i} id ${id}`);
+    if (i > 0) {
+      requireOk(
+        (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 8)) !== 0,
+        `${id} did not declare query readback`,
+      );
+    }
+  }
   const scenarioIdPtr = Module._dvz_wasm_api_scenario_id(0);
   requireOk(scenarioIdPtr !== 0, "WASM scenario 0 has no id");
   const scenarioId = Module.UTF8ToString(scenarioIdPtr);

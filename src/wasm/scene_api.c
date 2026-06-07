@@ -57,7 +57,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 1
+#define DVZ_WASM_API_SCENARIO_COUNT 6
 
 #define DVZ_WASM_BROWSER_SUPPORTED_REQUIREMENTS                                                       \
     (DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_MESH_VISUAL |  \
@@ -75,6 +75,11 @@
 DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags);
 
 DvzScenarioSpec dvz_example_timer_animation_scenario(void);
+DvzScenarioSpec dvz_example_pick_point_scenario(void);
+DvzScenarioSpec dvz_example_pick_marker_scenario(void);
+DvzScenarioSpec dvz_example_pick_hover_scenario(void);
+DvzScenarioSpec dvz_example_selection_scenario(void);
+DvzScenarioSpec dvz_example_image_probe_scenario(void);
 
 
 
@@ -204,6 +209,83 @@ static uint32_t _fail_handle(DvzWasmApiScene* scene, const char* diagnostic);
 
 
 
+int dvz_scenario_bind_controller(
+    DvzScenarioContext* ctx, DvzPanel* panel, DvzController* controller, DvzDimMask dims)
+{
+    if (ctx == NULL || panel == NULL || controller == NULL)
+        return -1;
+
+    for (uint32_t i = 0; i < ctx->controller_binding_count; i++)
+    {
+        DvzScenarioControllerBinding* binding = &ctx->controller_bindings[i];
+        if (binding->panel == panel && binding->controller == controller && binding->dims == dims)
+            return dvz_panel_bind_controller(panel, controller, dims);
+    }
+
+    if (ctx->controller_binding_count >= DVZ_SCENARIO_MAX_CONTROLLER_BINDINGS)
+        return -1;
+    if (dvz_panel_bind_controller(panel, controller, dims) != 0)
+        return -1;
+
+    DvzScenarioControllerBinding* binding =
+        &ctx->controller_bindings[ctx->controller_binding_count++];
+    binding->panel = panel;
+    binding->controller = controller;
+    binding->dims = dims;
+    return 0;
+}
+
+
+
+DvzPanzoom* dvz_scenario_panzoom(
+    DvzScenarioContext* ctx, DvzPanel* panel, const DvzPanzoomDesc* desc, DvzDimMask dims)
+{
+    if (ctx == NULL || ctx->scene == NULL || panel == NULL)
+        return NULL;
+
+    DvzController* controller = dvz_panzoom(ctx->scene, desc);
+    DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
+    if (panzoom == NULL)
+        return NULL;
+    if (dvz_scenario_bind_controller(ctx, panel, controller, dims) != 0)
+        return NULL;
+    return panzoom;
+}
+
+
+
+bool dvz_scenario_panel_pointer_position(
+    const DvzPanel* panel, const DvzScenarioPointerEvent* event, double* out_x, double* out_y)
+{
+    if (panel == NULL || event == NULL || out_x == NULL || out_y == NULL)
+        return false;
+
+    DvzRect rect = {0};
+    if (!dvz_panel_inner_rect_px(panel, &rect) || rect.width <= 0.0f || rect.height <= 0.0f)
+        return false;
+
+    float x = event->x - rect.x;
+    float y = event->y - rect.y;
+    if (x < 0.0f || x >= rect.width || y < 0.0f || y >= rect.height)
+        return false;
+
+    *out_x = (double)x;
+    *out_y = (double)y;
+    return true;
+}
+
+
+
+int dvz_scenario_panel_query(
+    DvzPanel* panel, double x, double y, const DvzQueryRequest* request)
+{
+    if (panel == NULL || request == NULL)
+        return -1;
+    return dvz_panel_query(panel, x, y, request);
+}
+
+
+
 static void _clear_query(DvzWasmApiScene* scene)
 {
     if (scene == NULL)
@@ -227,6 +309,16 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
     {
     case 0:
         return dvz_example_timer_animation_scenario();
+    case 1:
+        return dvz_example_pick_point_scenario();
+    case 2:
+        return dvz_example_pick_marker_scenario();
+    case 3:
+        return dvz_example_pick_hover_scenario();
+    case 4:
+        return dvz_example_selection_scenario();
+    case 5:
+        return dvz_example_image_probe_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

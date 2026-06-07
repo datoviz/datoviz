@@ -9,6 +9,11 @@ endif()
 add_executable(datoviz_wasm_scene
     scene_api.c
     ${PROJECT_SOURCE_DIR}/examples/c/example_style.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/image_probe.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/pick_hover.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/pick_marker.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/pick_point.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/selection.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/timer_animation.c
 )
 
