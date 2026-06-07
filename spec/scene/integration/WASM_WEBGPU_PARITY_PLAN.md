@@ -88,7 +88,7 @@ in DRP2 specs. Example-host structure stays in the portable scenario runner spec
 
 ## Current Experimental Subset
 
-The current browser path proves:
+The current browser path and portable-scenario path prove:
 
 1. C/WASM scene state emitting split DRP2 setup/update/frame packets;
 2. point visual;
@@ -109,7 +109,10 @@ The current browser path proves:
 17. compute and `ResourceBarrier` at DRP2 fixture level;
 18. browser evidence through `examples/webgpu/examples.html` and `examples/webgpu/fixtures.html`.
 19. one portable C scenario host proof for `feature_timer_animation`, including browser-driven frame
-    callbacks and retained point updates.
+    callbacks and retained point updates;
+20. native scenario-runner requirement diagnostics plus portable event/post-frame hooks;
+21. `feature_pick_point` migrated off `native_view` as the first query/readback-shaped portable
+    scenario, still blocked from browser-live status by missing WASM/WebGPU query delivery.
 
 This is an experimental subset, not native Vulkan feature parity.
 
@@ -262,10 +265,11 @@ query/readback RC slices are stable.
 
 ### Phase 1: Make Examples Portable
 
-1. Implement the portable scenario helper and native host runner. Current first slice:
-   `feature_timer_animation`.
+1. Implement the portable scenario helper and native host runner. Current first slices:
+   `feature_timer_animation` and native `feature_pick_point`.
 2. Add a generic WASM example host beside the current scene ABI. Current first slice:
-   browser frame callbacks for `feature_timer_animation`.
+   browser frame callbacks for `feature_timer_animation`; next browser slice is scenario event
+   delivery.
 3. Keep one raw native scene/app example that shows the underlying API without helper indirection.
 4. Convert small feature examples first, then showcases.
 5. Mark native-integration examples explicitly as native-only.
@@ -301,13 +305,15 @@ The RC slice supports browser-visible interaction examples, not full native quer
 
 Required work:
 
-1. define a WASM query request/result ABI;
-2. schedule WebGPU readbacks asynchronously and deliver results through polling or callbacks;
-3. implement latest-request-wins behavior for hover/probe examples;
-4. add point and marker item-picking smokes;
-5. add one sampled probe smoke, preferably image or labels;
-6. update selection state for one browser-visible promoted example;
-7. document unsupported query targets, payload types, formats, and visual families.
+1. finish native portable query-shaped examples: `pick_marker`, `pick_hover`, `selection`, and one
+   sampled probe after `pick_point`;
+2. define a WASM query request/result ABI;
+3. schedule WebGPU readbacks asynchronously and deliver results through scenario events or polling;
+4. implement latest-request-wins behavior for hover/probe examples;
+5. add point and marker item-picking smokes;
+6. add one sampled probe smoke, preferably image or labels;
+7. update selection state for one browser-visible promoted example;
+8. document unsupported query targets, payload types, formats, and visual families.
 
 
 ### Phase 4: Example And Gallery Promotion

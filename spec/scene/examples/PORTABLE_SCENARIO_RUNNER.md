@@ -3,7 +3,7 @@
 Execution Status:
 
 - Status: RC architecture candidate for v0.4 portability work
-- Updated on: 2026-06-05
+- Updated on: 2026-06-07
 - Purpose: make most scene examples compile as portable C scenarios and run through native,
   offscreen, capture, and browser hosts
 - Scope: scenario/runner boundaries, native runner modes, WASM host expectations, capture
@@ -18,7 +18,26 @@ Current implementation checkpoint:
    requirement metadata in code and `examples/c/MANIFEST.yaml`.
 4. Portable event and post-frame callbacks are active in the native runner; `pick_point` is the
    first query/readback migration proof without `native_view`.
-5. Browser-side event/query delivery remains the next phase.
+5. The WASM scenario host can drive `feature_timer_animation` and report unsupported scenario
+   requirements deterministically.
+6. Browser-side scenario event delivery and query/readback result delivery remain the next phases.
+
+Current native escape hatches to retire or classify:
+
+1. migrate next: `pick_marker.c`, `pick_hover.c`, `selection.c`, `image_probe.c`, and
+   `probe_labels.c`;
+2. keep native-only or defer until compute/query browser support: `gpu_particle_smoke.c`,
+   `textured_planet.c`, and `linked_probe_colorbar.c`;
+3. add manifest classifications for every public C example once the query/probe migration pattern is
+   stable.
+
+Near-term implementation order:
+
+1. extract shared runner helpers for panel-local pointer coordinates and panel query requests;
+2. migrate `pick_marker.c` through the portable event/post-frame path as the second picking proof;
+3. migrate `pick_hover.c` and `selection.c` to prove latest-hover state and persistent selection;
+4. expose browser scenario event delivery before widening the live website example set;
+5. implement the narrow WASM/WebGPU query/readback ABI for point, marker, and one sampled probe.
 
 Full visual and feature parity sequencing lives in
 [../integration/WASM_WEBGPU_PARITY_PLAN.md](../integration/WASM_WEBGPU_PARITY_PLAN.md). This file
@@ -695,13 +714,16 @@ public Datoviz APIs just to finish this group.
 ### Phase 3: Interaction, Controllers, And Resize
 
 Add portable runner bridges for resize, pointer, wheel, keyboard modifiers, controller requests,
-asynchronous picking/query results, and request-frame signals. Then migrate representative
-interaction examples before broad conversion:
+asynchronous picking/query results, and request-frame signals. Current status: native pointer/key/
+resize event translation and post-frame callbacks exist; `pick_point.c` is migrated off
+`native_view`; browser event delivery and async query result delivery are still missing. Then
+migrate representative interaction examples before broad conversion:
 
-1. `panel_multi.c` for runner-owned panzoom requests on multiple panels;
-2. `panzoom_attachment.c` for normalized wheel/pointer input and controller wiring;
-3. one picking example, preferably `pick_point.c`, for readback/callback behavior;
-4. one persistent state example, preferably `selection.c`.
+1. `pick_marker.c` for a second item-picking family using the same event/post-frame bridge;
+2. `pick_hover.c` for latest-hover behavior and background-miss clearing;
+3. `selection.c` for persistent state driven by portable events;
+4. `image_probe.c` or `probe_labels.c` for the first sampled probe shape;
+5. `panel_multi.c` and `panzoom_attachment.c` after controller request helpers are settled.
 
 Only after these examples pass should the runner input API be treated as stable enough for broader
 feature migration.
