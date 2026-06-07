@@ -22,13 +22,12 @@
 
 #include <math.h>
 #include <stdbool.h>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "datoviz/input/router.h"
 #include "datoviz/scene.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
@@ -672,9 +671,10 @@ static void _queue_probe(ImageProbeState* state)
     request.request_id = PROBE_REQUEST_ID;
     request.target = DVZ_SCENE_TARGET_PIXEL;
 
-    const int rc = dvz_panel_query(state->panel, state->cursor_x, state->cursor_y, &request);
+    const int rc =
+        dvz_scenario_panel_query(state->panel, state->cursor_x, state->cursor_y, &request);
     if (rc != 0)
-        dvz_fprintf(stderr, "dvz_panel_query() failed\n");
+        dvz_fprintf(stderr, "dvz_scenario_panel_query() failed\n");
 }
 
 
@@ -686,23 +686,19 @@ static void _queue_probe(ImageProbeState* state)
 /**
  * Record the latest cursor position and move the live probe marker.
  *
- * @param router input router emitting the event
- * @param event pointer event payload
+ * @param event portable pointer event
  * @param user_data image probe example state
  */
-static void
-_image_probe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+static void _image_probe_pointer(const DvzScenarioPointerEvent* event, void* user_data)
 {
-    (void)router;
     ImageProbeState* state = (ImageProbeState*)user_data;
     if (state == NULL || event == NULL)
         return;
-    if (event->type != DVZ_POINTER_EVENT_MOVE && event->type != DVZ_POINTER_EVENT_CLICK)
+    if (event->type != DVZ_SCENARIO_POINTER_MOVE && event->type != DVZ_SCENARIO_POINTER_CLICK)
         return;
 
-    state->cursor_valid = true;
-    state->cursor_x = event->pos[0];
-    state->cursor_y = event->pos[1];
+    state->cursor_valid =
+        dvz_scenario_panel_pointer_position(state->panel, event, &state->cursor_x, &state->cursor_y);
     _update_probe_marker_from_cursor(state);
 }
 
@@ -711,12 +707,12 @@ _image_probe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void*
 /**
  * Poll image query results and queue the next probe.
  *
- * @param win view whose frame just completed
+ * @param ctx scenario context
  * @param user_data image probe example state
  */
-static void _image_probe_frame(DvzView* win, void* user_data)
+static void _image_probe_post_frame(DvzScenarioContext* ctx, void* user_data)
 {
-    (void)win;
+    (void)ctx;
     ImageProbeState* state = (ImageProbeState*)user_data;
     if (state == NULL)
         return;
@@ -744,6 +740,24 @@ static void _image_probe_frame(DvzView* win, void* user_data)
     }
 
     _queue_probe(state);
+}
+
+
+
+/**
+ * Handle portable scenario events.
+ *
+ * @param ctx scenario context
+ * @param event portable event
+ * @param user scenario state
+ */
+static void _scenario_event(DvzScenarioContext* ctx, const DvzScenarioEvent* event, void* user)
+{
+    (void)ctx;
+    if (event == NULL)
+        return;
+    if (event->kind == DVZ_SCENARIO_EVENT_POINTER)
+        _image_probe_pointer(&event->content.pointer, user);
 }
 
 
@@ -826,35 +840,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
 
 /**
- * Attach native GLFW callbacks for the scalar image probe feature scenario.
- *
- * @param ctx scenario context
- * @param app native app
- * @param view native view
- * @param user scenario state
- * @return true on success
- */
-static bool _scenario_native_view(
-    DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
-{
-    (void)ctx;
-    (void)app;
-    ImageProbeState* state = (ImageProbeState*)user;
-    if (state == NULL || view == NULL)
-        return false;
-
-    DvzInputRouter* router = dvz_view_input(view);
-    if (router == NULL)
-        return true;
-
-    dvz_input_subscribe_pointer(router, _image_probe_pointer, state);
-    dvz_view_set_frame_callback(view, _image_probe_frame, state);
-    return true;
-}
-
-
-
-/**
  * Destroy the scalar image probe feature scenario state.
  *
  * @param ctx scenario context
@@ -885,8 +870,11 @@ static DvzScenarioSpec _image_probe_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_IMAGE_VISUAL | DVZ_SCENARIO_REQ_QUERY_READBACK |
+                        DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
-        .native_view = _scenario_native_view,
+        .event = _scenario_event,
+        .post_frame = _image_probe_post_frame,
         .destroy = _scenario_destroy,
     };
 }

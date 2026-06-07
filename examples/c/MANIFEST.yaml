@@ -492,6 +492,13 @@ examples:
     validation: smoke+readback+screenshot
     data:
       kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - image
+        - query-readback
+        - frame-callbacks
     agent_copy_safe: true
 
   - id: marker_picking

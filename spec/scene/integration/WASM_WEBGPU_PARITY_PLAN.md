@@ -111,9 +111,9 @@ The current browser path and portable-scenario path prove:
 19. one portable C scenario host proof for `feature_timer_animation`, including browser-driven frame
     callbacks and retained point updates;
 20. native scenario-runner requirement diagnostics plus portable event/post-frame hooks;
-21. `feature_pick_point`, `feature_pick_marker`, `feature_pick_hover`, and `feature_selection`
-    migrated off `native_view` as the first query/readback-shaped portable scenarios, still blocked
-    from browser-live status by missing WASM/WebGPU query delivery.
+21. `feature_pick_point`, `feature_pick_marker`, `feature_pick_hover`, `feature_selection`, and
+    `image_probe` migrated off `native_view` as query/readback-shaped portable scenarios, still
+    blocked from browser-live status by missing WASM/WebGPU query delivery.
 
 This is an experimental subset, not native Vulkan feature parity.
 
@@ -268,7 +268,7 @@ query/readback RC slices are stable.
 
 1. Implement the portable scenario helper and native host runner. Current first slices:
    `feature_timer_animation`, native `feature_pick_point`, native `feature_pick_marker`, native
-   `feature_pick_hover`, and native `feature_selection`.
+   `feature_pick_hover`, native `feature_selection`, and native `image_probe`.
 2. Add a generic WASM example host beside the current scene ABI. Current first slice:
    browser frame callbacks for `feature_timer_animation`; next browser slice is scenario event
    delivery.
