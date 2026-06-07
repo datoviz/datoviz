@@ -225,11 +225,13 @@ into that family until earlier rows are stable.
 
 ## Annotation And Layout Matrix
 
-Annotations should be promoted after core visual families and query/readback basics are stable.
+Basic retained 2D axes have already been promoted through the bitmap text subset. Remaining
+annotation/layout features should be promoted after the example host, frame callback, compute, and
+query/readback RC slices are stable.
 
 | Feature | WASM/WebGPU target | Status | Required work |
 | --- | --- | --- | --- |
-| axes/ticks | 2D axes with ticks and labels | deferred | text/glyph subset, layout reserve semantics |
+| axes/ticks | 2D axes with ticks, grid lines, and bitmap text labels | current | keep browser smoke evidence and broaden layout reserve semantics later |
 | colorbar | continuous scalar colorbar | deferred | scalar image/field color mapping, text labels |
 | categorical legend | simple swatches and labels | deferred | legend semantics, text subset |
 | scale bar | 2D scale bar with label | deferred | panzoom/domain update path and text subset |
