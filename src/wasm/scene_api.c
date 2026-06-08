@@ -2114,9 +2114,12 @@ static int _emit_packets(uint32_t scene_handle, uint32_t figure_handle)
     emit_cfg.target_width = scene->width;
     emit_cfg.target_height = scene->height;
 
-    DvzDrp2CommandStream* stream =
-        dvz_figure_emit_ex(figure->figure, &scene->caps, &scene->report, &emit_cfg);
-    if (stream == NULL)
+    uint64_t next_frame_index = scene->frame_index + 1;
+    uint64_t next_resource_version = scene->resource_version + 1;
+    scene->packet_artifact = _scene_emit_packet_artifact(
+        figure->figure, &scene->caps, &scene->report, &emit_cfg, next_resource_version,
+        next_frame_index);
+    if (scene->packet_artifact == NULL)
     {
         if (dvz_diagnostic_report_count(&scene->report) == 0)
             (void)dvz_diagnostic_report_add(&scene->report, "WASM scene packet emission failed");
@@ -2125,22 +2128,15 @@ static int _emit_packets(uint32_t scene_handle, uint32_t figure_handle)
     }
     if (dvz_diagnostic_report_count(&scene->report) > 0)
     {
-        dvz_drp2_stream_destroy(stream);
+        _scene_packet_artifact_destroy(scene->packet_artifact);
+        scene->packet_artifact = NULL;
         scene->packet_status = -1;
         return -1;
     }
 
-    scene->frame_index++;
-    scene->resource_version++;
+    scene->frame_index = next_frame_index;
+    scene->resource_version = next_resource_version;
     scene->packet_view_query = false;
-    scene->packet_artifact =
-        _scene_packet_artifact(stream, scene->resource_version, scene->frame_index);
-    if (scene->packet_artifact == NULL)
-    {
-        (void)_fail(scene, "WASM DRP2 packet artifact creation failed");
-        scene->packet_status = -2;
-        return -1;
-    }
     if (_scene_packet_artifact_status(scene->packet_artifact) != DVZ_SCENE_PACKET_ARTIFACT_STATUS_OK)
     {
         (void)_fail(scene, "WASM DRP2 packet encoding failed");

@@ -21,6 +21,7 @@
 #include "_assertions.h"
 #include "_overflow.h"
 #include "datoviz/drp2.h"
+#include "datoviz/scene.h"
 #include "frame_artifact_internal.h"
 #include "../../drp2/_stream.h"
 
@@ -174,6 +175,21 @@ DvzScenePacketArtifact* _scene_packet_artifact(
     }
 
     return artifact;
+}
+
+
+/**
+ * Emit a figure directly into an owned packet artifact.
+ */
+DvzScenePacketArtifact* _scene_emit_packet_artifact(
+    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
+    const DvzFramePlanEmitConfig* cfg, uint64_t resource_version, uint64_t frame_index)
+{
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, caps, report, cfg);
+    if (stream == NULL)
+        return NULL;
+
+    return _scene_packet_artifact(stream, resource_version, frame_index);
 }
 
 

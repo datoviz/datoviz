@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "datoviz/drp2.h"
+#include "datoviz/scene.h"
 
 
 
@@ -60,6 +61,26 @@ typedef enum
  */
 DvzScenePacketArtifact* _scene_packet_artifact(
     DvzDrp2CommandStream* stream, uint64_t resource_version, uint64_t frame_index);
+
+
+/**
+ * Emit a figure directly into an owned packet artifact.
+ *
+ * This helper centralizes the legacy stream emission and immediate artifact freeze step. The returned
+ * artifact owns the stream snapshot and encoded packet arenas; scene mutation is legal after a
+ * successful return because the artifact has already released the emitted stream owner.
+ *
+ * @param figure the figure to emit
+ * @param caps the capability snapshot
+ * @param report output diagnostic report
+ * @param cfg the emission configuration
+ * @param resource_version the retained resource version
+ * @param frame_index the frame index
+ * @return the owned packet artifact, or NULL
+ */
+DvzScenePacketArtifact* _scene_emit_packet_artifact(
+    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
+    const DvzFramePlanEmitConfig* cfg, uint64_t resource_version, uint64_t frame_index);
 
 
 /**

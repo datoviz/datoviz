@@ -3054,8 +3054,9 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* emitted_stream = dvz_figure_emit_ex(win->figure, &caps, &report, &cfg);
-    if (emitted_stream == NULL)
+    DvzScenePacketArtifact* artifact =
+        _scene_emit_packet_artifact(win->figure, &caps, &report, &cfg, 0, win->frame_index);
+    if (artifact == NULL)
     {
         uint32_t n = dvz_diagnostic_report_count(&report);
         for (uint32_t i = 0; i < n; i++)
@@ -3066,11 +3067,8 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         return;
     }
 
-    DvzScenePacketArtifact* artifact =
-        _scene_packet_artifact(emitted_stream, 0, win->frame_index);
     DvzDrp2CommandStream* stream = _scene_packet_artifact_stream(artifact);
     if (
-        artifact == NULL ||
         _scene_packet_artifact_status(artifact) != DVZ_SCENE_PACKET_ARTIFACT_STATUS_OK ||
         stream == NULL)
     {
