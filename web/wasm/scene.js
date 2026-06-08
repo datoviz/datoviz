@@ -385,6 +385,7 @@ export class DatovizWasmScene {
     this.runtime = null;
     this.scenario = null;
     this._cleanup = [];
+    this._runtimeExecution = Promise.resolve();
   }
 
   destroy() {
@@ -780,6 +781,13 @@ export class DatovizWasmScene {
     return this._currentPacketSet();
   }
 
+  async _executePacketSet(packetSet, options = {}) {
+    requireOk(this.runtime !== null, "WASM scene runtime has not been created");
+    const execute = this._runtimeExecution.then(() => this.runtime.executePacketSet(packetSet, options));
+    this._runtimeExecution = execute.catch(() => {});
+    return await execute;
+  }
+
   async flushScenarioQueries() {
     this._requireAlive();
     if (this.scenario === null || this.runtime === null) {
@@ -815,7 +823,7 @@ export class DatovizWasmScene {
       }
 
       const packetSet = this._currentPacketSet();
-      const result = await this.runtime.executePacketSet(packetSet);
+      const result = await this._executePacketSet(packetSet);
       const readback = result.readbacks?.[0] ?? null;
       const expectedSize = Module._dvz_wasm_api_query_readback_size(this.scene);
       if (readback === null || expectedSize === 0) {
@@ -851,7 +859,8 @@ export class DatovizWasmScene {
       canvas: this.canvas,
       capabilities: this.gpu.capabilities,
     });
-    await this.runtime.executePacketSet(packetSet, { reset: true, replaceExistingResources: false });
+    this._runtimeExecution = Promise.resolve();
+    await this._executePacketSet(packetSet, { reset: true, replaceExistingResources: false });
     const stream = this.runtime.stream;
     await this.flushScenarioQueries();
     if (this.scenario !== null) {
@@ -864,7 +873,7 @@ export class DatovizWasmScene {
     this._requireAlive();
     requireOk(this.runtime !== null, "renderInitial() must be called before renderIncremental()");
     const packetSet = this.emitPackets();
-    await this.runtime.executePacketSet(packetSet);
+    await this._executePacketSet(packetSet);
     const stream = this.runtime.stream;
     await this.flushScenarioQueries();
     if (this.scenario !== null) {
