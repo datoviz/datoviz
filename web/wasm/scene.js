@@ -655,6 +655,7 @@ export class DatovizWasmScene {
 
   attachResizeObserver(onChange) {
     this._requireAlive();
+    const observed = this.canvas.parentElement ?? this.canvas;
     let lastWidth = this.canvas.clientWidth;
     let lastHeight = this.canvas.clientHeight;
     let lastScale = Math.max(1, window.devicePixelRatio || 1);
@@ -671,7 +672,7 @@ export class DatovizWasmScene {
       this.resize();
       onChange();
     });
-    observer.observe(this.canvas);
+    observer.observe(observed);
     const detach = () => observer.disconnect();
     this._cleanup.push(detach);
     return detach;
