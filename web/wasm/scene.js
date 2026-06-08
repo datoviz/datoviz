@@ -781,9 +781,25 @@ export class DatovizWasmScene {
     return this._currentPacketSet();
   }
 
-  async _executePacketSet(packetSet, options = {}) {
+  _packetExecutionContext(label, packetSet) {
+    return (
+      `${label}: packet_resource=${packetSet.resource_version} ` +
+      `packet_frame=${packetSet.frame_index} ` +
+      `runtime_resource=${this.runtime?.packetResourceVersion ?? "<none>"} ` +
+      `runtime_frame=${this.runtime?.packetFrameIndex ?? "<none>"}`
+    );
+  }
+
+  async _executePacketSet(label, packetSet, options = {}) {
     requireOk(this.runtime !== null, "WASM scene runtime has not been created");
-    const execute = this._runtimeExecution.then(() => this.runtime.executePacketSet(packetSet, options));
+    const execute = this._runtimeExecution.then(async () => {
+      try {
+        return await this.runtime.executePacketSet(packetSet, options);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`${message}: ${this._packetExecutionContext(label, packetSet)}`);
+      }
+    });
     this._runtimeExecution = execute.catch(() => {});
     return await execute;
   }
@@ -823,7 +839,7 @@ export class DatovizWasmScene {
       }
 
       const packetSet = this._currentPacketSet();
-      const result = await this._executePacketSet(packetSet);
+      const result = await this._executePacketSet("query", packetSet);
       const readback = result.readbacks?.[0] ?? null;
       const expectedSize = Module._dvz_wasm_api_query_readback_size(this.scene);
       if (readback === null || expectedSize === 0) {
@@ -860,7 +876,7 @@ export class DatovizWasmScene {
       capabilities: this.gpu.capabilities,
     });
     this._runtimeExecution = Promise.resolve();
-    await this._executePacketSet(packetSet, { reset: true, replaceExistingResources: false });
+    await this._executePacketSet("initial", packetSet, { reset: true, replaceExistingResources: false });
     const stream = this.runtime.stream;
     await this.flushScenarioQueries();
     if (this.scenario !== null) {
@@ -873,7 +889,7 @@ export class DatovizWasmScene {
     this._requireAlive();
     requireOk(this.runtime !== null, "renderInitial() must be called before renderIncremental()");
     const packetSet = this.emitPackets();
-    await this._executePacketSet(packetSet);
+    await this._executePacketSet("render", packetSet);
     const stream = this.runtime.stream;
     await this.flushScenarioQueries();
     if (this.scenario !== null) {
