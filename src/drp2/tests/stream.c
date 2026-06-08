@@ -516,6 +516,59 @@ int test_drp2_packet_shader_module_roundtrip(TstContext* suite, const TstCase* i
 
 
 
+int test_drp2_packet_rejects_empty_shader_module_fields(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    void* packet = NULL;
+    uint64_t packet_size = 0;
+    void* arena = NULL;
+    uint64_t arena_size = 0;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_create_shader_module_format(stream, 1, "VERTEX", "wgsl", ""));
+    AT(!dvz_drp2_packet_encode_stream_phase(
+        stream, DVZ_DRP2_PACKET_SETUP, 1, 1, &packet, &packet_size, &arena, &arena_size));
+    AT(packet == NULL);
+    AT(packet_size == 0);
+    AT(arena == NULL);
+    AT(arena_size == 0);
+    dvz_drp2_stream_destroy(stream);
+
+    stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 1, "VERTEX", "wgsl", "@vertex fn main() {}"));
+    stream->commands[0].u.create_shader_module.stage[0] = '\0';
+    AT(!dvz_drp2_packet_encode_stream_phase(
+        stream, DVZ_DRP2_PACKET_SETUP, 1, 1, &packet, &packet_size, &arena, &arena_size));
+    AT(packet == NULL);
+    AT(packet_size == 0);
+    AT(arena == NULL);
+    AT(arena_size == 0);
+    dvz_drp2_stream_destroy(stream);
+
+    stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 1, "VERTEX", "wgsl", "@vertex fn main() {}"));
+    stream->commands[0].u.create_shader_module.format[0] = '\0';
+    AT(!dvz_drp2_packet_encode_stream_phase(
+        stream, DVZ_DRP2_PACKET_SETUP, 1, 1, &packet, &packet_size, &arena, &arena_size));
+    AT(packet == NULL);
+    AT(packet_size == 0);
+    AT(arena == NULL);
+    AT(arena_size == 0);
+    dvz_drp2_stream_destroy(stream);
+
+    return 0;
+}
+
+
+
 int test_drp2_write_buffer_bytes_large_json_roundtrip(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

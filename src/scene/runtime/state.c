@@ -231,6 +231,8 @@ uint64_t _resource_id(ConverterState* state, const char* key)
 {
     ANN(state);
     ANN(key);
+    if (key[0] == '\0')
+        return 0;
     for (uint32_t i = 0; i < state->count; i++)
     {
         if (strcmp(state->resources[i].key, key) == 0)
@@ -309,6 +311,8 @@ ResourceId* _resource_entry(ConverterState* state, const char* key, bool* is_new
     ANN(key);
     ANN(is_new);
     *is_new = false;
+    if (key[0] == '\0')
+        return NULL;
 
     ResourceId* resource = _resource_find(state, key);
     if (resource != NULL)
@@ -569,6 +573,11 @@ uint64_t _obj_id(DvzFramePlanEmitter* emitter, const char* key, bool* is_new)
     ANN(emitter);
     ANN(key);
     ANN(is_new);
+    if (key[0] == '\0')
+    {
+        *is_new = false;
+        return 0;
+    }
     uint32_t n = emitter->objects.count;
     uint64_t id = _resource_id(&emitter->objects, key);
     *is_new = (id != 0) && (emitter->objects.count > n);
@@ -592,6 +601,11 @@ _obj_buffer_id(DvzFramePlanEmitter* emitter, const char* key, uint64_t byte_size
     ANN(emitter);
     ANN(key);
     ANN(is_new);
+    if (key[0] == '\0')
+    {
+        *is_new = false;
+        return 0;
+    }
 
     ResourceId* resource = _resource_entry(&emitter->objects, key, is_new);
     if (resource == NULL)

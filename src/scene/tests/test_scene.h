@@ -463,6 +463,12 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
 
 int test_frame_plan_emitter_runtime_object_map_grows(TstContext* suite, const TstCase* item);
 
+int test_frame_plan_emitter_rejects_empty_persistent_keys(
+    TstContext* suite, const TstCase* item);
+
+int test_frame_plan_emitter_wgsl_query_shader_validation(
+    TstContext* suite, const TstCase* item);
+
 int test_frame_plan_emitter_runtime_texture_two_frames(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_emitter_runtime_compute_two_frames(TstContext* suite, const TstCase* item);
