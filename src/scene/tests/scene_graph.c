@@ -182,12 +182,9 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_emit_warns_visual_with_no_position);
     TST_CASE(test_scene_rejects_mismatched_point_attribute_counts);
     TST_CASE(test_scene_rejects_range_update_without_full_allocation);
-    TST_CASE(test_scene_rejects_mutation_while_emitted_stream_is_live);
-    TST_CASE(test_scene_rejects_scale_binding_while_emitted_stream_is_live);
-    TST_CASE(test_scene_rejects_range_mutation_while_emitted_stream_is_live);
-    TST_CASE(test_scene_rejects_destroy_while_emitted_stream_is_live);
-    TST_CASE(test_scene_rejects_visual_destroy_while_emitted_stream_is_live);
-    TST_CASE(test_scene_live_stream_count_tracks_multiple_emits);
+    TST_CASE(test_scene_stream_allows_mutation_after_emit);
+    TST_CASE(test_scene_stream_snapshot_freezes_upload_payloads);
+    TST_CASE(test_scene_stream_survives_scene_destroy_after_emit);
     TST_CASE(test_scene_artifact_allows_mutation_after_emit);
     TST_CASE(test_scene_point_emit);
     TST_CASE(test_scene_path_emit);

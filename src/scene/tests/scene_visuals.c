@@ -5321,7 +5321,7 @@ int test_scene_rejects_range_update_without_full_allocation(TstContext* suite, c
 }
 
 
-int test_scene_rejects_mutation_while_emitted_stream_is_live(TstContext* suite, const TstCase* item)
+int test_scene_stream_allows_mutation_after_emit(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5351,73 +5351,10 @@ int test_scene_rejects_mutation_while_emitted_stream_is_live(TstContext* suite, 
     DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
     AT(stream != NULL);
     AT(dvz_diagnostic_report_count(&report) == 0);
-    AT(scene->outstanding_emitted_streams == 1);
 
     float update[2 * 3] = {-0.5f, 0.1f, 0.0f, 0.5f, 0.1f, 0.0f};
-    tst_log_capture_begin(suite);
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(visual, "position", update, 2) == -1);
-    AT(_captured_log_contains(suite, "cannot mutate scene visual data while an emitted stream is still live"));
-
-    dvz_drp2_stream_destroy(stream);
-    AT(scene->outstanding_emitted_streams == 0);
     AT(dvz_visual_set_data(visual, "position", update, 2) == 0);
-
-    dvz_scene_destroy(scene);
-    return 0;
-}
-
-
-int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstContext* suite, const TstCase* item)
-{
-    ANN(suite);
-    (void)item;
-
-    DvzScene* scene = dvz_scene();
-    ANN(scene);
-    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-    ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
-    ANN(panel);
-    DvzVisual* image = dvz_image(scene, 0);
-    ANN(image);
-    DvzScale* scale = dvz_scale(scene, NULL);
-    ANN(scale);
-
-    vec3 positions[4] = {
-        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
-        {0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f},
-    };
-    vec2 texcoords[4] = {
-        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
-    };
-    uint8_t pixels[4 * 4 * 4] = {0};
-    DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
-                   .dim = DVZ_FIELD_DIM_2D,
-                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
-                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
-                   .width = 4,
-                   .height = 4,
-                   .depth = 1,
-               });
-    ANN(field);
-
-    AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
-    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_sampled_field_set_data(
-           field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = pixels, .bytes_per_row = 16, .rows_per_image = 4}));
-    AT(dvz_visual_set_field(image, "field", field));
-    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
-
-    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
-    DvzDiagnosticReport report;
-    dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
-    AT(stream != NULL);
-
-    tst_log_capture_begin(suite);
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(image, "color", scale) == -1);
-    AT(_captured_log_contains(suite, "destroy the stream first"));
+    AT(dvz_drp2_stream_count(stream) > 0);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
@@ -5425,7 +5362,7 @@ int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstContext* su
 }
 
 
-int test_scene_rejects_range_mutation_while_emitted_stream_is_live(TstContext* suite, const TstCase* item)
+int test_scene_stream_snapshot_freezes_upload_payloads(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5439,12 +5376,12 @@ int test_scene_rejects_range_mutation_while_emitted_stream_is_live(TstContext* s
     DvzVisual* visual = dvz_point(scene, 0);
     ANN(visual);
 
-    float positions[4 * 3] = {-0.75f, 0.0f, 0.0f, -0.25f, 0.0f, 0.0f, 0.25f, 0.0f, 0.0f, 0.75f, 0.0f, 0.0f};
-    DvzColor colors[4] = {{255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255}};
-    float sizes[4] = {8.0f, 8.0f, 8.0f, 8.0f};
-    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
-    AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
-    AT(dvz_visual_set_data(visual, "size", sizes, 4) == 0);
+    float positions[2 * 3] = {-0.25f, 0.0f, 0.0f, 0.25f, 0.0f, 0.0f};
+    DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
+    float sizes[2] = {8.0f, 8.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -5454,24 +5391,32 @@ int test_scene_rejects_range_mutation_while_emitted_stream_is_live(TstContext* s
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
     AT(stream != NULL);
-    AT(scene->outstanding_emitted_streams == 1);
 
-    float update[2 * 3] = {-0.1f, 0.2f, 0.0f, 0.1f, 0.2f, 0.0f};
-    tst_log_capture_begin(suite);
-    AT_EXPECTED_ERROR_STRICT(
-        suite, dvz_visual_set_data_range(visual, "position", update, 1, 2) == -1);
-    AT(_captured_log_contains(suite, "cannot mutate scene visual data while an emitted stream is still live"));
+    float update[2] = {10.0f, 12.0f};
+    AT(dvz_visual_set_data_range(visual, "size", update, 0, 2) == 0);
+
+    bool found_size_upload = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_WRITE_BUFFER ||
+            cmd->u.write_buffer.size != 2 * sizeof(float) || cmd->u.write_buffer.data_raw == NULL)
+        {
+            continue;
+        }
+        const float* uploaded = (const float*)cmd->u.write_buffer.data_raw;
+        if (uploaded[0] == 8.0f && uploaded[1] == 8.0f)
+            found_size_upload = true;
+    }
+    AT(found_size_upload);
 
     dvz_drp2_stream_destroy(stream);
-    AT(scene->outstanding_emitted_streams == 0);
-    AT(dvz_visual_set_data_range(visual, "position", update, 1, 2) == 0);
-
     dvz_scene_destroy(scene);
     return 0;
 }
 
 
-int test_scene_rejects_destroy_while_emitted_stream_is_live(TstContext* suite, const TstCase* item)
+int test_scene_stream_survives_scene_destroy_after_emit(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5500,24 +5445,17 @@ int test_scene_rejects_destroy_while_emitted_stream_is_live(TstContext* suite, c
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
     AT(stream != NULL);
-    AT(scene->outstanding_emitted_streams == 1);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_drp2_stream_count(stream) > 0);
 
-    tst_log_capture_begin(suite);
-    tst_expect_error_begin(suite);
     dvz_scene_destroy(scene);
-    AT(tst_expect_error_end(suite) == 0);
-    AT(_captured_log_contains(suite, "cannot destroy scene-owned visual data while an emitted stream is still live"));
-    AT(scene->outstanding_emitted_streams == 1);
-
+    AT(dvz_drp2_stream_count(stream) > 0);
     dvz_drp2_stream_destroy(stream);
-    AT(scene->outstanding_emitted_streams == 0);
-    dvz_scene_destroy(scene);
     return 0;
 }
 
 
-int
-test_scene_rejects_visual_destroy_while_emitted_stream_is_live(TstContext* suite, const TstCase* item)
+int test_scene_artifact_allows_mutation_after_emit(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5550,144 +5488,19 @@ test_scene_rejects_visual_destroy_while_emitted_stream_is_live(TstContext* suite
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
     AT(stream != NULL);
-    AT(scene->outstanding_emitted_streams == 1);
 
-    tst_log_capture_begin(suite);
-    tst_expect_error_begin(suite);
-    dvz_visual_destroy(visual);
-    AT(tst_expect_error_end(suite) == 0);
-    AT(_captured_log_contains(suite, "cannot destroy scene-owned visual data while an emitted stream is still live"));
-    AT(scene->outstanding_emitted_streams == 1);
-    AT(visual->scene == scene);
-    AT(visual->attr_count == 3);
-    for (uint32_t i = 0; i < visual->attr_count; i++)
-        AT(visual->attrs[i].data != NULL);
-
-    dvz_drp2_stream_destroy(stream);
-    AT(scene->outstanding_emitted_streams == 0);
-
-    dvz_visual_destroy(visual);
-    AT(visual->scene == NULL);
-    AT(visual->attr_count == 0);
-
-    dvz_scene_destroy(scene);
-    return 0;
-}
-
-
-int test_scene_live_stream_count_tracks_multiple_emits(TstContext* suite, const TstCase* item)
-{
-    ANN(suite);
-    (void)item;
-
-    DvzScene* scene = dvz_scene();
-    ANN(scene);
-    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-    ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
-    ANN(panel);
-    DvzVisual* visual = dvz_point(scene, 0);
-    ANN(visual);
-
-    float positions[2 * 3] = {-0.25f, 0.0f, 0.0f, 0.25f, 0.0f, 0.0f};
-    DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
-    float sizes[2] = {8.0f, 8.0f};
-    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
-    AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
-    AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
-    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
-
-    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
-    caps.shader_format_wgsl = true;
-
-    DvzDiagnosticReport report;
-    dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
-    AT(stream1 != NULL);
-    AT(scene->outstanding_emitted_streams == 1);
-
-    float update[2] = {9.0f, 10.0f};
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data_range(visual, "size", update, 0, 2) == -1);
-
-    dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream2 = dvz_figure_emit(figure, &caps, &report);
-    AT(stream2 != NULL);
-    AT(scene->outstanding_emitted_streams == 2);
-
-    dvz_drp2_stream_destroy(stream1);
-    AT(scene->outstanding_emitted_streams == 1);
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data_range(visual, "size", update, 0, 2) == -1);
-
-    dvz_drp2_stream_destroy(stream2);
-    AT(scene->outstanding_emitted_streams == 0);
-    AT(dvz_visual_set_data_range(visual, "size", update, 0, 2) == 0);
-
-    dvz_scene_destroy(scene);
-    return 0;
-}
-
-
-int test_scene_artifact_allows_mutation_after_emit(TstContext* suite, const TstCase* item)
-{
-    ANN(suite);
-    (void)item;
-
-    DvzScene* scene = dvz_scene();
-    ANN(scene);
-    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-    ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
-    ANN(panel);
-    DvzVisual* visual = dvz_point(scene, 0);
-    ANN(visual);
-
-    float positions[2 * 3] = {-0.25f, 0.0f, 0.0f, 0.25f, 0.0f, 0.0f};
-    DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
-    float sizes[2] = {8.0f, 8.0f};
-    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
-    AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
-    AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
-    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
-
-    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
-    caps.shader_format_wgsl = true;
-
-    DvzDiagnosticReport report;
-    dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* priming = dvz_figure_emit(figure, &caps, &report);
-    AT(dvz_diagnostic_report_count(&report) == 0);
-    AT(priming != NULL);
-    AT(_stream_visual_write_buffer_count(priming) > 0);
-    dvz_drp2_stream_destroy(priming);
-    AT(scene->outstanding_emitted_streams == 0);
-
-    dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* artifact_stream_source = dvz_figure_emit(figure, &caps, &report);
-    AT(dvz_diagnostic_report_count(&report) == 0);
-    AT(artifact_stream_source != NULL);
-    AT(_stream_visual_write_buffer_count(artifact_stream_source) == 0);
-    AT(scene->outstanding_emitted_streams == 1);
-
-    DvzScenePacketArtifact* artifact = _scene_packet_artifact(artifact_stream_source, 0, 1);
+    DvzScenePacketArtifact* artifact = _scene_packet_artifact(stream, 0, 1);
     AT(artifact != NULL);
     AT(_scene_packet_artifact_status(artifact) == DVZ_SCENE_PACKET_ARTIFACT_STATUS_OK);
-    AT(scene->outstanding_emitted_streams == 0);
 
     const DvzDrp2CommandStream* artifact_stream = _scene_packet_artifact_stream(artifact);
     AT(artifact_stream != NULL);
-    AT(_stream_visual_write_buffer_count(artifact_stream) == 0);
+    AT(dvz_drp2_stream_count(artifact_stream) > 0);
 
     float update[2] = {10.0f, 12.0f};
     AT(dvz_visual_set_data_range(visual, "size", update, 0, 2) == 0);
-    AT(_stream_visual_write_buffer_count(artifact_stream) == 0);
+    AT(dvz_drp2_stream_count(artifact_stream) > 0);
 
-    dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* next_stream = dvz_figure_emit(figure, &caps, &report);
-    AT(dvz_diagnostic_report_count(&report) == 0);
-    AT(next_stream != NULL);
-    AT(_stream_visual_write_buffer_count(next_stream) == 1);
-
-    dvz_drp2_stream_destroy(next_stream);
     _scene_packet_artifact_destroy(artifact);
     dvz_scene_destroy(scene);
     return 0;

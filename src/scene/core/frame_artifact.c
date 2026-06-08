@@ -95,7 +95,7 @@ static bool _write_texture_payload_size(const DvzDrp2Command* command, uint64_t*
 }
 
 
-static bool _freeze_stream_payloads(DvzDrp2CommandStream* stream)
+bool _scene_freeze_stream_payloads(DvzDrp2CommandStream* stream)
 {
     ANN(stream);
     for (uint32_t i = 0; i < stream->count; i++)
@@ -149,7 +149,7 @@ DvzScenePacketArtifact* _scene_packet_artifact(
     artifact->frame_index = frame_index;
     artifact->stream = stream;
 
-    if (!_freeze_stream_payloads(stream))
+    if (!_scene_freeze_stream_payloads(stream))
     {
         artifact->status = DVZ_SCENE_PACKET_ARTIFACT_STATUS_ENCODE_ERROR;
         return artifact;

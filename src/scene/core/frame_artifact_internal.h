@@ -84,6 +84,15 @@ DvzScenePacketArtifact* _scene_emit_packet_artifact(
 
 
 /**
+ * Freeze borrowed payload pointers in a DRP2 stream into owned stream memory.
+ *
+ * @param stream the stream to freeze
+ * @return whether all payloads were frozen successfully
+ */
+bool _scene_freeze_stream_payloads(DvzDrp2CommandStream* stream);
+
+
+/**
  * Destroy a packet artifact.
  *
  * @param artifact the packet artifact

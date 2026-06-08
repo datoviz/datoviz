@@ -87,9 +87,6 @@ DVZ_EXPORT void dvz_scene_set_capabilities(DvzScene* scene, const DvzCapabilityS
 /**
  * Destroy a scene and all objects it owns.
  *
- * This call is rejected while any emitted scene stream is still live. Destroy
- * all streams returned by dvz_figure_emit() / dvz_figure_emit_ex() first.
- *
  * @param scene the scene
  */
 DVZ_EXPORT void dvz_scene_destroy(DvzScene* scene);
@@ -378,10 +375,9 @@ DVZ_EXPORT DvzOrbitCamera* dvz_controller_orbit_camera(DvzController* controller
 /**
  * Build the ordered frame execution plan for one frame.
  *
- * Lifetime: the returned stream embeds borrowed pointers into the visuals'
- * attribute buffers (see dvz_visual_set_data). The stream remains live until
- * dvz_drp2_stream_destroy() is called. While it is live, calls that mutate or
- * destroy scene-owned visual data are rejected.
+ * Lifetime: the returned stream is an immutable execution snapshot. It remains
+ * live until dvz_drp2_stream_destroy() is called, but retained-scene mutation
+ * after emission is legal and affects only later emissions.
  *
  * @param figure the figure
  * @param caps the capability snapshot
@@ -395,8 +391,7 @@ DVZ_EXPORT DvzDrp2CommandStream* dvz_figure_emit(
 /**
  * Emit a DRP2 command stream from a figure with an explicit emit configuration.
  *
- * Lifetime: same borrowed-pointer contract as dvz_figure_emit. The returned
- * stream remains live until dvz_drp2_stream_destroy() is called.
+ * Lifetime: same immutable snapshot contract as dvz_figure_emit().
  *
  * @param figure the figure
  * @param caps the capability snapshot (nullable — defaults applied if NULL)

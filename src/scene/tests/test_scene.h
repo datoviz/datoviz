@@ -841,7 +841,7 @@ int test_scene_point_visual_resizes_existing_attributes(TstContext* suite, const
 
 int test_scene_rejects_range_update_without_full_allocation(TstContext* suite, const TstCase* item);
 
-int test_scene_rejects_mutation_while_emitted_stream_is_live(TstContext* suite, const TstCase* item);
+int test_scene_stream_allows_mutation_after_emit(TstContext* suite, const TstCase* item);
 
 int test_scene_query_registry_covers_active_visual_families(
     TstContext* suite, const TstCase* item);
@@ -932,16 +932,9 @@ int test_scene_labels_query_readback_failure(TstContext* suite, const TstCase* i
 
 int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const TstCase* item);
 
-int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstContext* suite, const TstCase* item);
+int test_scene_stream_snapshot_freezes_upload_payloads(TstContext* suite, const TstCase* item);
 
-int test_scene_rejects_range_mutation_while_emitted_stream_is_live(TstContext* suite, const TstCase* item);
-
-int test_scene_rejects_destroy_while_emitted_stream_is_live(TstContext* suite, const TstCase* item);
-
-int test_scene_rejects_visual_destroy_while_emitted_stream_is_live(
-    TstContext* suite, const TstCase* item);
-
-int test_scene_live_stream_count_tracks_multiple_emits(TstContext* suite, const TstCase* item);
+int test_scene_stream_survives_scene_destroy_after_emit(TstContext* suite, const TstCase* item);
 
 int test_scene_artifact_allows_mutation_after_emit(TstContext* suite, const TstCase* item);
 

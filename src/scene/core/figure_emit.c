@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Scene figure emission and live stream tracking                                               */
+/*  Scene figure emission                                                                        */
 /*************************************************************************************************/
 
 
@@ -31,6 +31,7 @@
 #include "_scene.h"
 #include "annotation/prepare_internal.h"
 #include "core/figure_emit_internal.h"
+#include "core/frame_artifact_internal.h"
 #include "core/frame_trace_internal.h"
 #include "domain/field_internal.h"
 #include "plot/internal.h"
@@ -553,54 +554,11 @@ bool _scene_figure_has_pending_render_work(const DvzFigure* figure)
 
 
 
-static void _scene_stream_release(void* owner)
-{
-    DvzScene* scene = (DvzScene*)owner;
-    if (scene == NULL)
-        return;
-    if (scene->outstanding_emitted_streams == 0)
-    {
-        log_error("scene emitted stream release underflow");
-        return;
-    }
-    scene->outstanding_emitted_streams--;
-}
-
-
-
-static bool _scene_stream_register(DvzScene* scene, DvzDrp2CommandStream* stream)
-{
-    ANN(scene);
-    ANN(stream);
-    if (scene->outstanding_emitted_streams == UINT32_MAX)
-    {
-        log_error("scene emitted stream count overflow");
-        return false;
-    }
-    scene->outstanding_emitted_streams++;
-    stream->owner = scene;
-    stream->owner_release = _scene_stream_release;
-    stream->owner_released = false;
-    return true;
-}
-
-
-
-static bool _scene_has_live_streams(const DvzScene* scene)
-{
-    return scene != NULL && scene->outstanding_emitted_streams > 0;
-}
-
-
-
 bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action)
 {
-    ANN(action);
-    if (!_scene_has_live_streams(scene))
-        return true;
-    log_error(
-        "cannot %s while an emitted stream is still live; destroy the stream first", action);
-    return false;
+    (void)scene;
+    (void)action;
+    return true;
 }
 
 
@@ -702,12 +660,12 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
 
     DvzDrp2CommandStream* stream =
         dvz_frame_plan_emitter_emit_drp2(emitter, plan, caps, report, cfg);
-    if (stream != NULL && !_scene_stream_register(figure->scene, stream))
+    if (stream != NULL && !_scene_freeze_stream_payloads(stream))
     {
+        (void)dvz_diagnostic_report_add(report, "scene DRP2 stream payload freeze failed");
         dvz_drp2_stream_destroy(stream);
         stream = NULL;
     }
-
     if (stream != NULL)
         _scene_commit_emit_success(figure);
 
