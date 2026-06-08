@@ -111,6 +111,11 @@ ordering, pass scheduling, and dependency graph construction. `runtime/` still o
 render target realization, viewport/scissor setup, descriptor refresh, and graph-resource
 execution.
 
+Uploads are resource writes, not rendering decisions. Texture-backed visuals must still reach
+runtime emission through typed visual metadata, visual descriptors, and draw contracts. The runtime
+must not recover image, glyph, labels, volume, or textured-mesh rendering from texture uploads,
+resource names, or upload order.
+
 Non-visual cleanup such as coarse scene CMake targets, broad private-header shrinking, and remaining
 domain/annotation ownership polish should use this same rule: move only when a stable owner is clear,
 and do not duplicate completed source-split work. Those items are secondary to the visual-boundary
@@ -132,7 +137,8 @@ Generic code must not:
 2. include family-private headers such as `point/internal.h` or `volume/internal.h`;
 3. inspect family-specific state fields on `DvzVisual`;
 4. infer visual families from resource order, upload order, shader names, or descriptor-kind lists;
-5. add a root-level switch when a new registry callback or descriptor field would express the
+5. select render behavior from resource names, upload resource kind, or texture presence;
+6. add a root-level switch when a new registry callback or descriptor field would express the
    contract.
 
 Allowed central knowledge:
@@ -248,5 +254,7 @@ The phase is complete when:
 4. family-specific retained state is opaque or has a clear migration plan with no new fields added
    to generic `DvzVisual`;
 5. visual-specific behavior is confined to family folders or explicit shared visual subsystems;
-6. architecture checks enforce the boundary in CI or the default validation workflow;
-7. full scene validation passes after the allowlist reaches the agreed final state.
+6. texture-backed visuals have no runtime fallback path that bypasses typed metadata and draw
+   contracts;
+7. architecture checks enforce the boundary in CI or the default validation workflow;
+8. full scene validation passes after the allowlist reaches the agreed final state.

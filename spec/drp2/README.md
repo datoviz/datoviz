@@ -99,6 +99,11 @@ important, but they should pressure-test the contract rather than bloat the firs
 The currently active pressure points are native depth-enabled 3D scenes, point/image readbacks for
 pick/probe requests, and browser/WebGPU portability of the existing resource/pipeline/pass subset.
 
+Native and browser/WebGPU runtimes consume the same typed DRP2 streams. Backend-specific gaps must
+be expressed through capabilities, validation diagnostics, or unsupported-feature failures. Scene
+lowering should not fork to compensate for a backend, and texture-backed scene visuals should not
+use a parallel runtime path outside the normal resource, bind, pipeline, pass, and draw commands.
+
 
 ## `2.0` Decisions Already Taken
 

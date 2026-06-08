@@ -40,4 +40,6 @@ as real implementation, not scaffolding.
    streams, or Vulkan wrappers.
 2. Prefer small generalizations and cleaner subsystem boundaries over ad-hoc patches.
 3. Keep examples and focused tests in lockstep with retained v0.4 slices.
-4. For documentation-only work, run `git diff --check` and inspect `git status --short`.
+4. Do not add texture/resource-name-based render shortcuts. Uploads define resources; render nodes,
+   visual descriptors, and draw contracts define draws.
+5. For documentation-only work, run `git diff --check` and inspect `git status --short`.

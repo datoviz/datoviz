@@ -18,6 +18,20 @@ Scene should emit frame plans and DRP2 streams. The native runtime should execut
 and borrowed canvas frames without scene owning swapchains, command-buffer lifecycle, or sinks.
 
 
+## Resource And Render Contracts
+
+Upload nodes create or update resources only. They must not select render behavior.
+
+Render nodes must emit through typed visual metadata, visual descriptors, and draw contracts.
+Texture-backed visuals such as image, glyph, labels, volume, and textured mesh still use the same
+visual registry path as buffer-backed visuals. Do not add runtime shortcuts based on resource names,
+upload order, texture presence, or the fact that an upload created a texture.
+
+Backends consume the same DRP2 command streams. Native/WebGPU gaps should surface as capability
+diagnostics or unsupported-feature errors, not as scene-lowering forks or parallel texture render
+paths.
+
+
 ## Current Scene Coverage
 
 Built-in scene visuals include point, pixel, marker, primitive, mesh, path/segment, image, volume,

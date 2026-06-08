@@ -52,6 +52,10 @@ accepting NumPy arrays for policy-declared data arguments. Source of truth:
 7. **Docs inventory:** public header inventory, ownership notes, raw `ctypes` scope, array-aware
    Python facade scope, WebGPU/WASM scope, known issues, and GSP/VisPy2 boundary.
 
+Current runtime/WebGPU guardrail: keep texture-backed scene visuals on typed visual/draw-contract
+DRP2 streams. Do not restore legacy texture-render shortcuts; WebGPU parity work should validate
+capability diagnostics against the same streams used by native runtime execution.
+
 When adding visible capability work, prefer gallery-proof improvements first, then vector visual
 polish, label query hardening, explanatory layout proof, and optional experimental splats only if
 release-proof lanes remain on track.
