@@ -589,9 +589,10 @@ static bool _add_choropleth_polygons(
     for (uint32_t i = 0; i < bundle->ring_count; i++)
     {
         const ChoroplethRing* ring = &bundle->rings[i];
+        const dvec2* xy = (const dvec2*)&bundle->points[ring->point_first];
         const uint32_t index = dvz_polygon_set_add(
             set, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
-                   .outer = {.xy = &bundle->points[ring->point_first], .count = ring->point_count}});
+                   .outer = {.xy = xy, .count = ring->point_count}});
         if (index == UINT32_MAX || index != i)
         {
             ok = false;
