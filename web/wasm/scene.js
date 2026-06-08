@@ -655,7 +655,19 @@ export class DatovizWasmScene {
 
   attachResizeObserver(onChange) {
     this._requireAlive();
+    let lastWidth = this.canvas.clientWidth;
+    let lastHeight = this.canvas.clientHeight;
+    let lastScale = Math.max(1, window.devicePixelRatio || 1);
     const observer = new ResizeObserver(() => {
+      const width = this.canvas.clientWidth;
+      const height = this.canvas.clientHeight;
+      const scale = Math.max(1, window.devicePixelRatio || 1);
+      if (width === lastWidth && height === lastHeight && scale === lastScale) {
+        return;
+      }
+      lastWidth = width;
+      lastHeight = height;
+      lastScale = scale;
       this.resize();
       onChange();
     });
