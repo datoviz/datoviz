@@ -26,7 +26,9 @@ RC promotions are:
 
 Do not move compute particles, scene query/readback, or broad live-example coverage into the
 supported/current section until `wasm-scene-smoke`, `webgpu-browser-smoke`, and any relevant
-native/DRP2 checks have recorded evidence for the promoted slice.
+native/DRP2 checks have recorded evidence for the promoted slice. The first point-picking
+packet/readback route exists, but browser-live promotion remains blocked until resolved results can
+update retained hover/selection state without live-stream lifetime diagnostics.
 
 
 ## Fixture Dashboard
@@ -226,6 +228,14 @@ Current status as of this note:
   existing 2D/3D WASM streams, with WebGPU runner smoke reporting `generated_streams=3`; `just
   webgpu-browser-smoke` rendered 2D and 3D WASM pages, advanced browser-driven frames on the
   `wasm-timer-animation` route, and reported dashboard WASM scene checks `2 pass, 0 fail`.
+- recorded local point-query packet/readback checkpoint on 2026-06-08: `node --check
+  web/wasm/scene.js`, `node --check web/wasm/session.js`, and `node --check
+  tools/webgpu_browser_smoke.mjs` passed; `just wasm-scene-smoke` generated and replayed the
+  existing scenario and WASM scene streams; `node tools/wasm_query_packet_probe.mjs` emitted point
+  query setup/update/frame packets with readback metadata. `just webgpu-browser-smoke` reached the
+  `wasm-pick-point` route but failed because applying the resolved hover `item_state` result tried
+  to clear retained visual state while an emitted stream was still live. Keep point picking
+  `webgpu-planned` until that stream-lifetime issue is fixed and the browser smoke passes.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

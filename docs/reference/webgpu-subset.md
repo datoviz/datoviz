@@ -43,6 +43,9 @@ Supported browser pages:
   arcball;
 - `examples/webgpu/examples.html?demo=wasm-timer-animation`: first portable C scenario host proof,
   running `feature_timer_animation` through WASM frame callbacks and retained point updates;
+- `examples/webgpu/examples.html?demo=wasm-pick-point`: first portable query/readback browser
+  route for `feature_pick_point`, currently a packet/readback proof rather than browser-live
+  support because result-state application still trips a retained stream-lifetime diagnostic;
 - `examples/webgpu/fixtures.html`: DRP2 fixture dashboard for the pure browser WebGPU runner,
   retained runtime stress checks, and WASM scene smoke rows.
 
@@ -87,7 +90,7 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Controller parity | limited to panzoom and one 3D arcball proof |
 | Portable scenario host parity | first `feature_timer_animation` C scenario and browser frame-callback proof are current; broad example-host coverage remains an RC target |
 | Compute-to-render parity | DRP2 fixture and native scene proof exist; browser-live particle scene is an RC target, not current support |
-| Query/picking/readback scene parity | packet-level readback plumbing exists; browser-live scene query/readback is an RC target, not current support |
+| Query/picking/readback scene parity | first point-picking query packet/readback plumbing exists; browser-live query support is still blocked by result-state lifetime hardening, then marker and one sampled probe remain RC targets |
 
 Any future feature promoted into the browser subset must update the scene emitter, DRP2 schema or
 fixture coverage when needed, WebGPU execution, capability reporting, diagnostics, and this page in
@@ -103,8 +106,8 @@ The browser path intentionally does not support:
 - custom shader APIs;
 - browser-live scene compute particles until the portable scenario host and WGSL compute path are
   proven;
-- browser-live scene picking/readback until the async request/query/result ABI and promoted query
-  shaders are proven;
+- browser-live scene picking/readback beyond the first point-picking packet/readback proof until
+  result-state lifetime hardening, marker picking, and one sampled probe are proven;
 - colorbars, scale bars, volume, unsigned/rich labels, path subpath controls, broad stroke/vector
   parity, sphere raycast/depth/material parity, full query parity, and advanced technique parity in
   the WASM scene demos;
@@ -115,9 +118,9 @@ The browser path intentionally does not support:
 
 Promote browser scene features in this order unless a release blocker changes the priority:
 
-1. broaden the portable scenario host from `feature_timer_animation` to live website examples;
-2. compute-to-render particle smoke at a documented browser particle budget;
-3. narrow request/query/readback slice: point and marker picking plus one sampled probe path;
+1. harden `wasm-pick-point` result-state application and promote point picking to browser-live;
+2. extend the narrow request/query/readback slice to marker picking plus one sampled probe path;
+3. compute-to-render particle smoke at a documented browser particle budget;
 4. colorbar;
 5. scale bar;
 6. legend and readout-style overlays;

@@ -3,7 +3,7 @@
 Execution Status:
 
 - Status: canonical parity plan for future implementation
-- Updated on: 2026-06-05
+- Updated on: 2026-06-08
 - Purpose: define the route from the current experimental browser subset to broad native
   Vulkan/WASM WebGPU scene parity
 - Scope: scene features, visual families, WASM ABI expansion, DRP2/WebGPU runtime parity,
@@ -112,8 +112,10 @@ The current browser path and portable-scenario path prove:
     callbacks, browser pointer/wheel event delivery, and retained point updates;
 20. native scenario-runner requirement diagnostics plus portable event/post-frame hooks;
 21. `feature_pick_point`, `feature_pick_marker`, `feature_pick_hover`, `feature_selection`, and
-    `image_probe` migrated off `native_view` as query/readback-shaped portable scenarios, still
-    blocked from browser-live status by missing WASM/WebGPU query delivery.
+    `image_probe` migrated off `native_view` as query/readback-shaped portable scenarios.
+22. first WASM query packet/readback plumbing for `feature_pick_point`, including split DRP2 query
+    packets and a browser route, with full browser-live promotion still blocked by a retained
+    stream-lifetime diagnostic when applying hover `item_state` results.
 
 This is an experimental subset, not native Vulkan feature parity.
 
@@ -254,7 +256,7 @@ query/readback RC slices are stable.
 | fly/turntable | browser input to C controllers | future | expose controller creation/binding variants and smoke after RC example host lands |
 | frame callbacks | portable example frame callback | current/rc-target | first `feature_timer_animation` scenario is current; broader example-host conversion remains an RC target |
 | resize/high-DPI | browser resize to C scene and packet replay | current | keep capability/resize diagnostics |
-| picking/query | request/poll query results | rc-target | WASM query ABI, async WebGPU readback delivery, point/marker plus one probe proof |
+| picking/query | request/poll query results | partial/rc-target | point query packet/readback plumbing exists; fix browser result-application lifetime, then add marker plus one probe proof |
 | selection | update retained selection state | rc-target | query path, visual state update path for one promoted picking example |
 | capture | browser artifact capture | future | browser screenshot/video policy separate from native capture |
 | streaming/partial updates | same-shape updates and bounded growth | partial | buffer update ABI, diagnostics, memory limits |
@@ -269,9 +271,10 @@ query/readback RC slices are stable.
 1. Implement the portable scenario helper and native host runner. Current first slices:
    `feature_timer_animation`, native `feature_pick_point`, native `feature_pick_marker`, native
    `feature_pick_hover`, native `feature_selection`, and native `image_probe`.
-2. Add a generic WASM example host beside the current scene ABI. Current first slice:
-   browser frame callbacks and pointer/wheel event delivery for `feature_timer_animation`; next
-   browser slice is query/readback delivery.
+2. Add a generic WASM example host beside the current scene ABI. Current slices:
+   browser frame callbacks and pointer/wheel event delivery for `feature_timer_animation`, plus
+   first query packet/readback plumbing for `feature_pick_point`; the next browser slice is
+   result-application lifetime hardening and marker/probe delivery.
 3. Keep one raw native scene/app example that shows the underlying API without helper indirection.
 4. Convert small feature examples first, then showcases.
 5. Mark native-integration examples explicitly as native-only.
@@ -307,12 +310,13 @@ The RC slice supports browser-visible interaction examples, not full native quer
 
 Required work:
 
-1. finish native portable query-shaped examples: `selection` and one sampled probe after
-   `pick_point`/`pick_marker`/`pick_hover`;
-2. define a WASM query request/result ABI;
+1. keep native portable query-shaped examples current: `pick_point`, `pick_marker`, `pick_hover`,
+   `selection`, and `image_probe`;
+2. harden the first WASM query request/result ABI so resolved point-picking results can update
+   retained state after query packet execution without live-stream lifetime violations;
 3. schedule WebGPU readbacks asynchronously and deliver results through scenario events or polling;
 4. implement latest-request-wins behavior for hover/probe examples;
-5. add point and marker item-picking smokes;
+5. add point and marker item-picking browser smokes;
 6. add one sampled probe smoke, preferably image or labels;
 7. update selection state for one browser-visible promoted example;
 8. document unsupported query targets, payload types, formats, and visual families.

@@ -3,7 +3,7 @@
 Execution Status:
 
 - Status: RC architecture candidate for v0.4 portability work
-- Updated on: 2026-06-07
+- Updated on: 2026-06-08
 - Purpose: make most scene examples compile as portable C scenarios and run through native,
   offscreen, capture, and browser hosts
 - Scope: scenario/runner boundaries, native runner modes, WASM host expectations, capture
@@ -26,8 +26,9 @@ Current implementation checkpoint:
 5. The WASM scenario host can drive `feature_timer_animation`, deliver browser pointer/wheel events
    to active scenario `event` callbacks, and report unsupported scenario requirements
    deterministically.
-6. Browser-side query/readback result delivery remains the next phase before the migrated pick/probe
-   scenarios can be promoted to browser-live.
+6. Browser-side query/readback packet emission and WebGPU readback plumbing exist for
+   `feature_pick_point`. Full browser-live promotion remains blocked by a retained stream-lifetime
+   diagnostic when applying hover `item_state` results after the readback is resolved.
 
 Current native escape hatches to retire or classify:
 
@@ -39,10 +40,11 @@ Current native escape hatches to retire or classify:
 
 Near-term implementation order:
 
-1. implement the narrow WASM/WebGPU query/readback ABI for point, marker, selection, and
-   `image_probe`;
-2. use `probe_labels.c` as the categorical query follow-up once pixel query delivery is live;
-3. classify live WebGPU vs native-only examples from manifest metadata.
+1. fix the `feature_pick_point` result-application lifetime path so browser smoke can promote point
+   picking from packet/readback proof to browser-live;
+2. extend the narrow WASM/WebGPU query/readback ABI to marker, selection, and `image_probe`;
+3. use `probe_labels.c` as the categorical query follow-up once pixel query delivery is live;
+4. classify live WebGPU vs native-only examples from manifest metadata.
 
 Full visual and feature parity sequencing lives in
 [../integration/WASM_WEBGPU_PARITY_PLAN.md](../integration/WASM_WEBGPU_PARITY_PLAN.md). This file
@@ -750,9 +752,10 @@ Refactor `gpu_particle_smoke.c` into a shared scenario plus native host once the
 compute requirements. This is the first high-value proof that the same C scenario can drive native
 Vulkan and WASM/WebGPU evidence for a compute-to-render workflow.
 
-After compute particles, migrate one point or marker picking example and one sampled probe example
-through the same runner shape. These examples prove async request/query/readback delivery without
-promising full query parity for every visual family.
+In parallel with compute particles, promote the query examples in the same runner shape. The first
+point-picking packet/readback proof exists; the remaining promotion work is browser result-state
+application, marker picking, selection/hover, and one sampled probe example. These examples prove
+async request/query/readback delivery without promising full query parity for every visual family.
 
 ### Promotion Gate
 
