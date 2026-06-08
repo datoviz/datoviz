@@ -274,7 +274,8 @@ function hasPacketApi(Module) {
     typeof Module._dvz_wasm_api_packet_size === "function" &&
     typeof Module._dvz_wasm_api_packet_arena_ptr === "function" &&
     typeof Module._dvz_wasm_api_packet_arena_size === "function" &&
-    typeof Module._dvz_wasm_api_packet_status === "function"
+    typeof Module._dvz_wasm_api_packet_status === "function" &&
+    typeof Module._dvz_wasm_api_release_packets === "function"
   );
 }
 
@@ -802,7 +803,12 @@ export class DatovizWasmScene {
     if (status !== 0) {
       throw new Error(this._diagnosticMessage(`dvz_wasm_api_emit_packets failed with ${status}`));
     }
-    return this._currentPacketSet();
+    const packetSet = this._currentPacketSet();
+    this._requireStatus(
+      this.Module._dvz_wasm_api_release_packets(this.scene),
+      "dvz_wasm_api_release_packets failed",
+    );
+    return packetSet;
   }
 
   _packetExecutionContext(label, packetSet) {
