@@ -584,6 +584,107 @@ async function smokeAnimatedWasmPage(page, baseUrl, path, expectedStatus, screen
   return { initialStatus, initialFrame };
 }
 
+async function smokePointQueryWasmPage(page, baseUrl, screenshotPath) {
+  const path = '/examples/webgpu/examples.html?demo=wasm-pick-point';
+  await page.navigate(`${baseUrl}${path}`);
+  requireOk(
+    await page.evaluate('typeof navigator.gpu === "object"'),
+    `navigator.gpu is not available for ${path}`,
+  );
+  const initialStatus = await page.waitFor(`(() => {
+    const status = document.querySelector("#status");
+    const text = status?.textContent ?? "";
+    if (status?.classList.contains("error")) return "ERROR: " + text;
+    return text.includes("Rendered WASM point picking") && text;
+  })()`, 45000);
+  requireOk(!String(initialStatus).startsWith('ERROR:'), initialStatus);
+  await page.screenshotCanvas(screenshotPath);
+
+  const queryDelivery = await page.waitFor(`(async () => {
+    let stage = "start";
+    try {
+      const scene = window.__datovizWasmScene;
+      const session = window.__datovizWasmSession;
+      const status = document.querySelector("#status");
+      const text = status?.textContent ?? "";
+      if (status?.classList.contains("error")) return "ERROR: " + text;
+      if (scene === undefined || scene === null || scene.scene === 0 || scene.runtime === null) {
+        return false;
+      }
+      if (session === undefined || session === null) {
+        return false;
+      }
+      if (scene.scenario?.id !== "feature_pick_point") {
+        return "wrong scenario id " + scene.scenario?.id;
+      }
+      const Module = scene.Module;
+      if (
+        typeof Module._dvz_wasm_api_query_pending_count !== "function" ||
+        typeof scene.flushScenarioQueries !== "function"
+      ) {
+        return "missing query readback ABI";
+      }
+      for (let i = 0; i < 100 && session.rendering; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+
+      stage = "prime-pointer";
+      const canvas = document.querySelector("#viewport");
+      const rect = canvas.getBoundingClientRect();
+      scene.scenarioPointer(2, {
+        clientX: rect.left + rect.width * 0.5,
+        clientY: rect.top + rect.height * 0.5,
+        button: -1,
+        buttons: 0,
+        shiftKey: false,
+        ctrlKey: false,
+        altKey: false,
+        metaKey: false,
+      });
+
+      stage = "queue-query";
+      await session.render();
+      const pendingBefore = Module._dvz_wasm_api_query_pending_count(scene.scene);
+      if (pendingBefore === 0) {
+        return false;
+      }
+
+      stage = "drain-query";
+      const frameBefore = scene.runtime.packetFrameIndex;
+      const processed = await scene.flushScenarioQueries();
+      const pendingAfter = Module._dvz_wasm_api_query_pending_count(scene.scene);
+      const activeAfter = Module._dvz_wasm_api_query_active(scene.scene);
+      const frameAfter = scene.runtime.packetFrameIndex;
+      if (processed <= 0) {
+        return "query drain processed no requests";
+      }
+      if (pendingAfter !== 0 || activeAfter !== 0) {
+        return "query drain left pending=" + pendingAfter + " active=" + activeAfter;
+      }
+      if (frameAfter <= frameBefore) {
+        return "query packet execution did not advance the runtime frame";
+      }
+
+      stage = "render-resolved-result";
+      await session.render();
+      return { processed, pendingBefore, frameBefore, frameAfter };
+    } catch (error) {
+      return stage + ": " + (error instanceof Error ? error.message : String(error));
+    }
+  })()`, 30000);
+  requireOk(typeof queryDelivery === 'object', `${path}: query/readback delivery failed: ${queryDelivery}`);
+  await page.screenshotCanvas(screenshotPath.replace('.png', '-resolved.png'));
+  const destroyed = await page.evaluate(`(() => {
+    const scene = window.__datovizWasmScene;
+    if (scene === undefined || scene === null || scene.scene === 0) return false;
+    window.dispatchEvent(new Event("pagehide"));
+    return window.__datovizWasmScene === null && scene.scene === 0;
+  })()`);
+  requireOk(destroyed, `${path}: WASM query scenario did not destroy cleanly on pagehide`);
+  assertNoBrowserErrors(page, path);
+  return { initialStatus, queryDelivery };
+}
+
 async function smokeWasmDashboard(page, baseUrl) {
   await page.navigate(`${baseUrl}/examples/webgpu/fixtures.html`);
   requireOk(
@@ -633,6 +734,19 @@ async function main() {
     let wasm2d = null;
     let wasm3d = null;
     let wasmTimer = null;
+    let wasmPointQuery = null;
+    try {
+      wasmPointQuery = await smokePointQueryWasmPage(
+        page,
+        baseUrl,
+        join(artifactsDir, 'wasm_examples_pick_point.png'),
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(`SKIP WASM point query: headless WebGPU instance loss (${error.message})`);
+    }
     try {
       wasm2d = await smokeWasmPage(
         page,
@@ -678,6 +792,12 @@ async function main() {
     }
     if (wasmTimer !== null) {
       console.log(`PASS timer WASM: ${wasmTimer.initialStatus}; initial_frame=${wasmTimer.initialFrame}`);
+    }
+    if (wasmPointQuery !== null) {
+      console.log(
+        `PASS point query WASM: ${wasmPointQuery.initialStatus}; ` +
+        `processed=${wasmPointQuery.queryDelivery.processed}`,
+      );
     }
     if (wasmDashboard !== null) {
       console.log(`PASS WASM dashboard: ${wasmDashboard}`);

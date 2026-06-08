@@ -699,6 +699,17 @@ export class DatovizWasmScene {
     return diagnosticMessage(this.Module, this.scene, prefix);
   }
 
+  _queryDiagnosticMessage(prefix) {
+    const Module = this.Module;
+    const pending = Module._dvz_wasm_api_query_pending_count?.(this.scene) ?? "<missing>";
+    const active = Module._dvz_wasm_api_query_active?.(this.scene) ?? "<missing>";
+    const readbackSize = Module._dvz_wasm_api_query_readback_size?.(this.scene) ?? "<missing>";
+    const packetStatus = Module._dvz_wasm_api_packet_status?.(this.scene) ?? "<missing>";
+    return this._diagnosticMessage(
+      `${prefix}: pending=${pending} active=${active} readback_size=${readbackSize} packet_status=${packetStatus}`,
+    );
+  }
+
   _requireAlive() {
     requireOk(this.scene !== 0, "WASM scene has been destroyed");
   }
@@ -796,6 +807,9 @@ export class DatovizWasmScene {
         throw new Error(this._diagnosticMessage(`dvz_wasm_api_emit_query_packets failed with ${status}`));
       }
       if (Module._dvz_wasm_api_query_active(this.scene) === 0) {
+        if ((Module._dvz_wasm_api_diagnostic_count?.(this.scene) ?? 0) > 0) {
+          throw new Error(this._queryDiagnosticMessage("WASM query setup completed without readback"));
+        }
         processed++;
         continue;
       }
@@ -805,12 +819,17 @@ export class DatovizWasmScene {
       const readback = result.readbacks?.[0] ?? null;
       const expectedSize = Module._dvz_wasm_api_query_readback_size(this.scene);
       if (readback === null || expectedSize === 0) {
-        throw new Error("WASM query packet produced no readback");
+        throw new Error(this._queryDiagnosticMessage("WASM query packet produced no readback"));
       }
       const bytes = decodeBase64(readback.data);
-      requireOk(bytes.byteLength >= expectedSize, "WASM query readback is shorter than expected");
+      requireOk(
+        bytes.byteLength >= expectedSize,
+        this._queryDiagnosticMessage(
+          `WASM query readback is shorter than expected: bytes=${bytes.byteLength}`,
+        ),
+      );
       const ptr = Module._malloc(expectedSize);
-      requireOk(ptr !== 0, "WASM query readback allocation failed");
+      requireOk(ptr !== 0, this._queryDiagnosticMessage("WASM query readback allocation failed"));
       try {
         Module.HEAPU8.set(bytes.subarray(0, expectedSize), ptr);
         this._requireStatus(

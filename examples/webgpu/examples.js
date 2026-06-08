@@ -16,6 +16,11 @@ const DEMOS = [
     label: "WASM timer animation",
     load: () => import("./demos/wasm_timer_animation.js"),
   },
+  {
+    id: "wasm-pick-point",
+    label: "WASM point picking",
+    load: () => import("./demos/wasm_pick_point.js"),
+  },
 ];
 
 const canvas = document.querySelector("#viewport");

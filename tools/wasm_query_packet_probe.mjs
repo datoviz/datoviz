@@ -2,6 +2,7 @@
 
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
+import { decodeDrp2Packet } from "../web/drp2/packet.js";
 
 const modulePath = process.argv[2] ?? "build-wasm-scene/wasm/datoviz_wasm_scene.mjs";
 const createModule = (await import(pathToFileURL(resolve(modulePath)))).default;
@@ -27,6 +28,18 @@ function packetSize(scene, kind) {
   const size = Module._dvz_wasm_api_packet_size(scene, kind);
   requireOk(size > 0, `missing packet kind ${kind}`);
   return size;
+}
+
+function packet(scene, kind) {
+  const packetPtr = Module._dvz_wasm_api_packet_ptr(scene, kind);
+  const packetBytes = packetSize(scene, kind);
+  const arenaPtr = Module._dvz_wasm_api_packet_arena_ptr(scene, kind);
+  const arenaBytes = Module._dvz_wasm_api_packet_arena_size(scene, kind);
+  const bytes = Module.HEAPU8.subarray(packetPtr, packetPtr + packetBytes).slice();
+  const arena = arenaPtr !== 0
+    ? Module.HEAPU8.subarray(arenaPtr, arenaPtr + arenaBytes).slice()
+    : new Uint8Array();
+  return decodeDrp2Packet(bytes, arena);
 }
 
 const scene = Module._dvz_wasm_api_scene(256, 256);
@@ -55,6 +68,22 @@ try {
   requireOk(Module._dvz_wasm_api_query_active(scene) === 1, "query did not remain active");
   requireOk(Module._dvz_wasm_api_query_readback_size(scene) === 4, "unexpected readback size");
   requireOk(Module._dvz_wasm_api_diagnostic_count(scene) === 0, "unexpected query diagnostics");
+
+  const setup = packet(scene, DVZ_DRP2_PACKET_SETUP);
+  const frame = packet(scene, DVZ_DRP2_PACKET_FRAME);
+  requireOk(
+    setup.commands.some((command) => command.cmd === "CreateTexture" && command.format === "r32uint"),
+    "query setup packet did not create an r32uint target",
+  );
+  requireOk(
+    frame.commands.some((command) => command.cmd === "CopyTextureToBuffer"),
+    "query frame packet did not copy the query target to a buffer",
+  );
+  const submit = frame.commands.find(
+    (command) => command.cmd === "QueueSubmit" && Array.isArray(command.readbacks),
+  );
+  requireOk(submit !== undefined, "query frame packet did not request a readback");
+  requireOk(submit.readbacks[0]?.size === 4, "query readback size was not 4 bytes");
 
   console.log(
     `query_packets setup=${packetSize(scene, DVZ_DRP2_PACKET_SETUP)} ` +

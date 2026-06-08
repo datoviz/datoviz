@@ -34,7 +34,6 @@
 #include "datoviz/vk/enums.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "_overflow.h"
 #include "core/_scene.h"
 #include "frame_plan/emit.h"
 #include "query/internal.h"
@@ -547,6 +546,36 @@ static bool _push_immediate_query_result(
 
 
 
+static const char* _query_family_name(const DvzSceneQueryFamilyOps* ops)
+{
+    return ops != NULL && ops->name != NULL ? ops->name : "<none>";
+}
+
+
+
+static void _query_setup_diagnostic(
+    DvzWasmApiScene* scene, const char* reason, const DvzSceneQueryFamilyOps* ops,
+    DvzVisualType visual_type, uint64_t visual_id, DvzSceneTargetKind target,
+    DvzQueryProfile profile)
+{
+    if (scene == NULL || reason == NULL)
+        return;
+
+    char diagnostic[DVZ_SCENE_DIAGNOSTIC_SIZE];
+    int ret = snprintf(
+        diagnostic, sizeof(diagnostic),
+        "WASM query setup failed: family=%s visual_type=%u visual_id=%llu target=%u "
+        "profile=%u reason=%s",
+        _query_family_name(ops), (uint32_t)visual_type, (unsigned long long)visual_id,
+        (uint32_t)target, (uint32_t)profile, reason);
+    if (ret < 0 || (size_t)ret >= sizeof(diagnostic))
+        (void)dvz_diagnostic_report_add(&scene->report, "WASM query setup failed");
+    else
+        (void)dvz_diagnostic_report_add(&scene->report, diagnostic);
+}
+
+
+
 static int _emit_packets_to(
     DvzWasmApiScene* scene, DvzDrp2CommandStream* stream, void* packets[4], uint64_t packet_sizes[4],
     void* arenas[4], uint64_t arena_sizes[4], int* out_status)
@@ -642,171 +671,6 @@ static void _mark_query_static_upload(DvzWasmApiScene* scene)
 }
 
 
-
-static bool _wasm_query_upload_bytes(
-    DvzFramePlan* plan, const char* resource_id, uint64_t byte_size, const char* data_tag,
-    const void* data, DvzFramePlanResourceRole role, DvzVisualType visual_type,
-    uint64_t item_count, uint32_t buffer_index)
-{
-    ANN(plan);
-    DvzFramePlanUploadMeta meta = {
-        .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
-        .role = role,
-        .visual_type = (uint32_t)visual_type,
-        .buffer_index = buffer_index,
-        .logical_item_count = item_count,
-    };
-    return dvz_frame_plan_upload_bytes(plan, resource_id, 0, byte_size, data_tag, data) &&
-           dvz_frame_plan_upload_metadata(plan, &meta);
-}
-
-
-
-static void _wasm_copy_label(char* dst, size_t dst_size, const char* src)
-{
-    ANN(dst);
-    ANN(src);
-    if (dst_size == 0)
-        return;
-    size_t len = strlen(src);
-    if (len >= dst_size)
-        len = dst_size - 1;
-    memcpy(dst, src, len);
-    dst[len] = '\0';
-}
-
-
-
-static bool _wasm_point_query_build(
-    const DvzSceneQueryBuildContext* ctx, DvzSceneQueryPlan* out_plan)
-{
-    ANN(ctx);
-    ANN(ctx->figure);
-    ANN(ctx->panel);
-    ANN(ctx->visual);
-    ANN(ctx->pending);
-    ANN(out_plan);
-    DvzFigure* figure = ctx->figure;
-    DvzPanel* panel = ctx->panel;
-    DvzVisual* visual = ctx->visual;
-    const DvzPendingQueryRequest* pending = ctx->pending;
-    vec2 request_ndc = {ctx->request_ndc[0], ctx->request_ndc[1]};
-
-    const DvzVisualAttr* pos_attr = NULL;
-    const DvzVisualAttr* color_attr = NULL;
-    const DvzVisualAttr* size_attr = NULL;
-    if (!_dvz_scene_query_dense_attr(visual, "position", sizeof(vec3), &pos_attr) ||
-        !_dvz_scene_query_dense_attr(visual, "color", sizeof(DvzColor), &color_attr) ||
-        !_dvz_scene_query_dense_attr(visual, "size", sizeof(float), &size_attr))
-    {
-        return false;
-    }
-    if (
-        color_attr->item_count != pos_attr->item_count ||
-        size_attr->item_count != pos_attr->item_count)
-    {
-        return false;
-    }
-
-    uint64_t position_bytes = 0;
-    uint64_t color_bytes = 0;
-    uint64_t size_bytes = 0;
-    if (_dvz_mul_u64_overflows(pos_attr->item_count, pos_attr->item_size, &position_bytes) ||
-        _dvz_mul_u64_overflows(color_attr->item_count, color_attr->item_size, &color_bytes) ||
-        _dvz_mul_u64_overflows(size_attr->item_count, size_attr->item_size, &size_bytes))
-    {
-        return false;
-    }
-
-    uint32_t target_width = 0;
-    uint32_t target_height = 0;
-    if (!_dvz_scene_query_target_extent(figure, panel, &target_width, &target_height))
-        return false;
-
-    DvzFramePlan* plan = dvz_frame_plan("figure.query.point", pending->request.request_id);
-    bool ok = plan != NULL;
-    ok = ok &&
-         _wasm_query_upload_bytes(
-             plan, "query0_position", position_bytes, "position", pos_attr->data,
-             DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION, DVZ_VISUAL_TYPE_POINT, pos_attr->item_count,
-             0) &&
-         _wasm_query_upload_bytes(
-             plan, "query0_color", color_bytes, "color", color_attr->data,
-             DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR, DVZ_VISUAL_TYPE_POINT, color_attr->item_count, 1) &&
-         _wasm_query_upload_bytes(
-             plan, "query0_size", size_bytes, "size", size_attr->data,
-             DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE, DVZ_VISUAL_TYPE_POINT, size_attr->item_count, 2);
-
-    DvzFramePlanVisualMeta metadata = {0};
-    metadata.has_metadata = true;
-    metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_POINT;
-    metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_POINT_LIKE;
-    metadata.desc_kind = (uint32_t)DVZ_SCENE_VISUAL_DESC_POINT;
-    metadata.point_like_kind = (uint32_t)DVZ_SCENE_POINT_LIKE_POINT;
-    metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
-    metadata.depth_test_enabled = visual->depth_test_enabled;
-    metadata.depth_compare_op = visual->depth_compare_op;
-    _wasm_copy_label(metadata.position_id, sizeof(metadata.position_id), "query0_position");
-    _wasm_copy_label(metadata.color_id, sizeof(metadata.color_id), "query0_color");
-    _wasm_copy_label(metadata.size_id, sizeof(metadata.size_id), "query0_size");
-
-    ok = ok && dvz_frame_plan_render_panel(
-                   plan, "panel.query", "target.query", true,
-                   (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
-    DvzFramePlanNode* query_render = dvz_frame_plan_last_render_node(plan);
-    if (
-        ok && query_render != NULL &&
-        query_render->u.render.visual_count < DVZ_SCENE_MAX_RENDER_VISUALS)
-    {
-        memcpy(query_render->u.render.visuals[query_render->u.render.visual_count], "query0", 6);
-        query_render->u.render.visual_count++;
-    }
-    else
-    {
-        ok = false;
-    }
-    ok = ok && dvz_frame_plan_render_visual_metadata(plan, &metadata);
-    if (ok)
-    {
-        _dvz_scene_query_apply_render_state(
-            plan, panel, visual, request_ndc, target_width, target_height);
-    }
-
-    DvzFramePlanCopyDesc copy = dvz_frame_plan_copy_desc();
-    copy.src_resource_id = "target.query";
-    copy.dst_resource_id = "buf.query";
-    copy.extent[0] = 1;
-    copy.extent[1] = 1;
-    copy.extent[2] = 1;
-    copy.format = DVZ_FORMAT_R32_UINT;
-    copy.bytes_per_texel = sizeof(uint32_t);
-    copy.bytes_per_row = sizeof(uint32_t);
-    copy.rows_per_image = 1;
-    copy.byte_size = sizeof(uint32_t);
-    copy.request_id = pending->request.request_id;
-    ok = ok && dvz_frame_plan_copy_ex(plan, &copy) &&
-         dvz_frame_plan_readback(plan, "buf.query", "request.query");
-    if (!ok)
-    {
-        dvz_frame_plan_destroy(plan);
-        return false;
-    }
-
-    out_plan->scratch.plan = plan;
-    out_plan->target_width = target_width;
-    out_plan->target_height = target_height;
-    out_plan->format = DVZ_FORMAT_R32_UINT;
-    out_plan->byte_size = sizeof(uint32_t);
-    out_plan->schema.fields = DVZ_SCENE_QUERY_SCHEMA_FIELD_ITEM_ID;
-    out_plan->schema.value_kind = DVZ_QUERY_VALUE_NONE;
-    out_plan->schema.profile = ctx->profile;
-    out_plan->schema.format = DVZ_FORMAT_R32_UINT;
-    out_plan->schema.byte_size = sizeof(uint32_t);
-    return true;
-}
-
-
-
 static bool _query_emit_result(
     DvzWasmApiScene* scene, DvzFigure* figure, const DvzPendingQueryRequest* pending,
     DvzQueryResult* out_result)
@@ -854,18 +718,20 @@ static bool _query_emit_result(
         if ((visual->query_capabilities & capability) == 0)
             continue;
 
-        bool direct_point =
-            _dvz_scene_query_item_target_eligible(visual, &pending->request, DVZ_VISUAL_TYPE_POINT);
-        const DvzSceneQueryFamilyOps* ops =
-            direct_point ? _dvz_scene_query_point_ops()
-                         : _dvz_scene_query_family_ops_for_visual(
-                               pending->panel, visual, &pending->request);
-        if (!direct_point && (ops == NULL || ops->build == NULL || ops->decode == NULL))
-            continue;
         attempted = true;
-        DvzSceneVisualFamily family =
-            direct_point ? DVZ_SCENE_VISUAL_FAMILY_POINT : ops->family;
         uint64_t visual_id = _scene_visual_public_id(figure->scene, visual);
+        const DvzSceneQueryFamilyOps* ops =
+            _dvz_scene_query_family_ops_for_visual(pending->panel, visual, &pending->request);
+        if (ops == NULL || ops->build == NULL || ops->decode == NULL)
+        {
+            out_result->visual_id = visual_id;
+            out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+            _query_setup_diagnostic(
+                scene, "missing visual-family query operations", ops, visual->type, visual_id,
+                pending->request.target, out_result->profile);
+            return false;
+        }
+        DvzSceneVisualFamily family = ops->family;
 
         DvzSceneQueryBuildContext build = {
             .figure = figure,
@@ -878,25 +744,32 @@ static bool _query_emit_result(
         };
         build.request_ndc[0] = request_ndc[0];
         build.request_ndc[1] = request_ndc[1];
-        bool supports_profile =
-            direct_point
-                ? out_result->profile == DVZ_QUERY_PROFILE_U32_R32
-                : (ops->supports_profile != NULL ? ops->supports_profile(&build, out_result->profile)
-                                                 : out_result->profile == DVZ_QUERY_PROFILE_U32_R32);
+        bool supports_profile = ops->supports_profile != NULL
+                                    ? ops->supports_profile(&build, out_result->profile)
+                                    : out_result->profile == DVZ_QUERY_PROFILE_U32_R32;
         if (!supports_profile)
         {
             out_result->visual_id = visual_id;
             out_result->visual_family = family;
             out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_QUERY_PROFILE;
+            _query_setup_diagnostic(
+                scene, "unsupported query profile for visual family", ops, visual->type, visual_id,
+                pending->request.target, out_result->profile);
             return false;
         }
 
         DvzSceneQueryPlan plan = {0};
-        bool built = direct_point ? _wasm_point_query_build(&build, &plan) : ops->build(&build, &plan);
+        bool built = ops->build(&build, &plan);
         if (!built)
         {
             _scene_query_scratch_destroy(&plan.scratch);
-            continue;
+            out_result->visual_id = visual_id;
+            out_result->visual_family = family;
+            out_result->status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
+            _query_setup_diagnostic(
+                scene, "visual-family query plan build failed", ops, visual->type, visual_id,
+                pending->request.target, out_result->profile);
+            return false;
         }
         if (!dvz_frame_plan_render_metadata_complete(plan.scratch.plan))
         {
@@ -904,6 +777,9 @@ static bool _query_emit_result(
             out_result->visual_family = family;
             out_result->status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
             _scene_query_scratch_destroy(&plan.scratch);
+            _query_setup_diagnostic(
+                scene, "query frame plan render metadata incomplete", ops, visual->type,
+                visual_id, pending->request.target, out_result->profile);
             return false;
         }
 
@@ -914,8 +790,8 @@ static bool _query_emit_result(
         scene->query_build.pending = &scene->query_pending;
         scene->query_plan = plan;
         scene->query_result = *out_result;
-        scene->query_ops = direct_point ? NULL : ops;
-        scene->query_visual_type = direct_point ? visual->type : DVZ_VISUAL_TYPE_NONE;
+        scene->query_ops = ops;
+        scene->query_visual_type = visual->type;
         scene->query_family = family;
         scene->query_panel = pending->panel;
         scene->query_active = true;
@@ -2426,9 +2302,15 @@ int dvz_wasm_api_emit_query_packets(uint32_t scene_handle, uint32_t figure_handl
         executor->emitter, scene->query_plan.scratch.plan, &query_caps, &scene->report, &emit_cfg);
     if (scene->query_stream == NULL)
     {
-        _remove_pending_query_at(owner, pending_index);
         DvzQueryResult result = scene->query_result;
         result.status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
+        if (dvz_diagnostic_report_count(&scene->report) == 0)
+        {
+            _query_setup_diagnostic(
+                scene, "DRP2 query stream emission failed", scene->query_ops,
+                scene->query_visual_type, result.visual_id, pending.request.target, result.profile);
+        }
+        _remove_pending_query_at(owner, pending_index);
         _clear_query(scene);
         if (!_push_immediate_query_result(scene, pending.panel, pending.freshness_serial, &result))
             return _fail(scene, "WASM query emission failure push failed");
