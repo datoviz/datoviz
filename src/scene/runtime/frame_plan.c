@@ -17,6 +17,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "_assertions.h"
 #include "frame_plan/frame_plan.h"
@@ -53,6 +54,61 @@ static bool _runtime_emit_config_validate(
         return false;
     }
     return true;
+}
+
+
+
+static bool _runtime_upload_is_texture(const DvzFramePlanNode* node)
+{
+    ANN(node);
+    return node->type == DVZ_FRAME_PLAN_NODE_UPLOAD && node->u.upload.texture_width > 0 &&
+           node->u.upload.texture_height > 0;
+}
+
+
+
+static bool _runtime_plan_uploads_resource(const DvzFramePlan* plan, const char* resource_id)
+{
+    ANN(plan);
+    if (resource_id == NULL || resource_id[0] == '\0')
+        return false;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        const DvzFramePlanNode* node = &plan->nodes[i];
+        if (node->type != DVZ_FRAME_PLAN_NODE_UPLOAD)
+            continue;
+        if (strcmp(node->u.upload.resource_id, resource_id) == 0)
+            return true;
+    }
+    return false;
+}
+
+
+
+static bool _runtime_render_has_typed_scene_visual(
+    const DvzFramePlan* plan, const DvzFramePlanNode* render)
+{
+    ANN(plan);
+    ANN(render);
+    if (render->type != DVZ_FRAME_PLAN_NODE_RENDER || render->u.render.visual_count == 0)
+        return false;
+
+    bool has_uploads = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_UPLOAD) != NULL;
+    for (uint32_t i = 0; i < render->u.render.visual_count; i++)
+    {
+        const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
+        if (!meta->has_metadata ||
+            (meta->visual_type == 0 && meta->desc_kind == 0 && !meta->has_draw_contract))
+        {
+            continue;
+        }
+        if (!has_uploads || _runtime_plan_uploads_resource(plan, meta->position_id) ||
+            _runtime_plan_uploads_resource(plan, meta->position_start_id))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 
@@ -98,6 +154,10 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
         return NULL;
     }
     bool texture_render = !clear_only && _render_uses_texture(render);
+    bool scene_render =
+        !clear_only && !render->u.render.picking &&
+        _runtime_render_has_typed_scene_visual(plan, render);
+    bool legacy_texture_render = texture_render && !scene_render;
     if (compute != NULL)
     {
         if (compute->u.compute.write_count == 0)
@@ -140,7 +200,7 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     {
         if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_UPLOAD)
         {
-            if (texture_render)
+            if (texture_render && _runtime_upload_is_texture(&plan->nodes[i]))
             {
                 ok = _emitter_emit_texture_upload(emitter, stream, &plan->nodes[i], &texture_id);
             }
@@ -161,10 +221,11 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
          (clear_only ? _emitter_emit_clear_only(emitter, stream, clear, copy, true, cfg)
           : compute != NULL && !scene_compute
               ? _emitter_emit_compute_assisted_render(emitter, stream, compute, copy, cfg)
-          : texture_render ? _emitter_emit_texture_render(emitter, stream, texture_id, copy, cfg)
-                           : _emitter_emit_plain_renders(
-                                 emitter, stream, plan, fallback_vertex_buffer_ids,
-                                 fallback_vertex_buffer_count, copy, cfg, report));
+          : legacy_texture_render
+              ? _emitter_emit_texture_render(emitter, stream, texture_id, copy, cfg)
+              : _emitter_emit_plain_renders(
+                    emitter, stream, plan, fallback_vertex_buffer_ids, fallback_vertex_buffer_count,
+                    copy, cfg, report));
     if (!ok)
     {
         _diagnostic(report, "failed to emit runtime DRP2 stream");

@@ -1486,9 +1486,6 @@ bool _emitter_emit_plain_renders(
             emitter, stream, plan, readback, cfg, any_scene_render_needs_depth, report);
         return scene_ok;
     }
-    if (render_node_count > 0 && scene_render_node_count == 0)
-        _diagnostic(report, "plain render path found no scene render node with position resource");
-
     bool ok = true;
     uint32_t render_count = 0;
     SceneRenderStateCache scene_cache = {0};

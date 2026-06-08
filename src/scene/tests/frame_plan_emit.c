@@ -146,6 +146,7 @@ static bool _frame_plan_render_image_fixture_visual(
 
     DvzFramePlanVisualMeta metadata = {0};
     metadata.visual_type = DVZ_VISUAL_TYPE_IMAGE;
+    metadata.renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD;
     metadata.desc_kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
     metadata.buffer_index = UINT32_MAX;
     metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
@@ -1687,6 +1688,7 @@ int test_frame_plan_emit_drp2_rejects_small_caps(TstContext* suite, const TstCas
     DvzFramePlan* texture_plan = dvz_frame_plan("figure.convert.small_bind_group_caps", 19);
     ANN(texture_plan);
     AT(dvz_frame_plan_upload(texture_plan, "tex.image.rgba", 0, 16, "image.rgba"));
+    AT(dvz_frame_plan_upload_set_texture_extent(texture_plan, 2, 2));
     AT(dvz_frame_plan_render(texture_plan, "panel.0", "target.panel.0.color", false));
     AT(_frame_plan_render_image_fixture_visual(
         texture_plan, "visual.image.0", "buf.image.position", "buf.image.texcoords",
@@ -1944,6 +1946,7 @@ int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
     AT(_frame_plan_upload_image_fixture_geometry(
         frame0, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame0, "tex.image.rgba", 0, 16, "image.rgba.0"));
+    AT(dvz_frame_plan_upload_set_texture_extent(frame0, 2, 2));
     AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_image_fixture_visual(
         frame0, "visual.image.0", "buf.image.position", "buf.image.texcoords",
@@ -1954,6 +1957,7 @@ int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
     AT(_frame_plan_upload_image_fixture_geometry(
         frame1, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame1, "tex.image.rgba", 0, 16, "image.rgba.1"));
+    AT(dvz_frame_plan_upload_set_texture_extent(frame1, 2, 2));
     AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_image_fixture_visual(
         frame1, "visual.image.0", "buf.image.position", "buf.image.texcoords",
@@ -2359,6 +2363,7 @@ int test_frame_plan_emit_drp2_texture_sampling(TstContext* suite, const TstCase*
     ANN(plan);
 
     AT(dvz_frame_plan_upload(plan, "tex.image.rgba", 0, 16, "image.rgba"));
+    AT(dvz_frame_plan_upload_set_texture_extent(plan, 2, 2));
     AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
     AT(_frame_plan_render_image_fixture_visual(
         plan, "visual.image.0", "buf.image.position", "buf.image.texcoords", "tex.image.rgba"));
@@ -3184,6 +3189,7 @@ int test_frame_plan_emitter_runtime_texture_two_frames(TstContext* suite, const 
     AT(_frame_plan_upload_image_fixture_geometry(
         frame0, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame0, "tex.image.rgba", 0, 16, "image.rgba.0"));
+    AT(dvz_frame_plan_upload_set_texture_extent(frame0, 2, 2));
     AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_image_fixture_visual(
         frame0, "visual.image.0", "buf.image.position", "buf.image.texcoords",
@@ -3194,6 +3200,7 @@ int test_frame_plan_emitter_runtime_texture_two_frames(TstContext* suite, const 
     AT(_frame_plan_upload_image_fixture_geometry(
         frame1, "buf.image.position", "buf.image.texcoords"));
     AT(dvz_frame_plan_upload(frame1, "tex.image.rgba", 0, 16, "image.rgba.1"));
+    AT(dvz_frame_plan_upload_set_texture_extent(frame1, 2, 2));
     AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.query", true));
     AT(_frame_plan_render_image_fixture_visual(
         frame1, "visual.image.0", "buf.image.position", "buf.image.texcoords",
