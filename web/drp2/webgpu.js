@@ -1181,7 +1181,18 @@ function validateTextureCapabilityPreflight(commandIndex, command, capabilities,
 
 
 function validateShaderCapabilityPreflight(commandIndex, command, capabilities) {
+  const stage = required(command.stage, "CreateShaderModule needs stage");
+  if (stage === "") {
+    unsupportedCapability(commandIndex, command, "CreateShaderModule needs non-empty stage");
+  }
   const format = required(command.format, "CreateShaderModule needs format");
+  if (format === "") {
+    unsupportedCapability(commandIndex, command, "CreateShaderModule needs non-empty format");
+  }
+  const code = required(command.code, "CreateShaderModule needs code");
+  if (code === "") {
+    unsupportedCapability(commandIndex, command, "CreateShaderModule needs non-empty code");
+  }
   requireCapabilityValue(
     commandIndex,
     command,

@@ -300,6 +300,22 @@ static uint64_t _fixed_body_size(DvzDrp2CommandType type)
 
 
 
+static bool _shader_payload_valid(const DvzDrp2Command* command)
+{
+    ANN(command);
+    if (command->type != DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+        return true;
+    if (command->u.create_shader_module.stage[0] == '\0' ||
+        command->u.create_shader_module.format[0] == '\0')
+        return false;
+    if (command->u.create_shader_module.code != NULL)
+        return command->u.create_shader_module.code[0] != '\0';
+    return command->u.create_shader_module.spirv != NULL &&
+           command->u.create_shader_module.spirv_size > 0;
+}
+
+
+
 static bool _payload_info(const DvzDrp2Command* command, const void** out_ptr, uint64_t* out_size)
 {
     ANN(command);
@@ -326,6 +342,8 @@ static bool _payload_info(const DvzDrp2Command* command, const void** out_ptr, u
     }
     else if (command->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
     {
+        if (!_shader_payload_valid(command))
+            return false;
         if (command->u.create_shader_module.code != NULL)
         {
             ptr = command->u.create_shader_module.code;
@@ -466,7 +484,9 @@ static bool _decode_body(
     {
         PacketShaderBody sh = {0};
         memcpy(&sh, body, sizeof(sh));
-        if (payload_offset == DVZ_DRP2_PACKET_NO_PAYLOAD || payload_size != sh.payload_size)
+        if (sh.stage[0] == '\0' || sh.format[0] == '\0' ||
+            payload_offset == DVZ_DRP2_PACKET_NO_PAYLOAD || payload_size != sh.payload_size ||
+            payload_size == 0)
             return false;
         command->u.create_shader_module.id = sh.id;
         memcpy(command->u.create_shader_module.stage, sh.stage,
@@ -480,7 +500,8 @@ static bool _decode_body(
         command->u.create_shader_module.builtin_version = sh.builtin_version;
         if (sh.payload_kind == 1)
         {
-            if (payload_size == 0 || arena[payload_offset + payload_size - 1] != 0)
+            if (payload_size <= 1 || arena[payload_offset] == 0 ||
+                arena[payload_offset + payload_size - 1] != 0)
                 return false;
             char* code = (char*)dvz_malloc(payload_size);
             if (code == NULL)
@@ -576,8 +597,10 @@ static bool _packet_encode_stream_filtered(
             if (_dvz_add_u64_overflows(payload_bytes, payload_size, &payload_bytes))
                 return false;
         }
-        else if (command->type == DVZ_DRP2_COMMAND_WRITE_BUFFER ||
-                 command->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+        else if (
+            command->type == DVZ_DRP2_COMMAND_WRITE_BUFFER ||
+            command->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE ||
+            command->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
         {
             return false;
         }

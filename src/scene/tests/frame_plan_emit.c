@@ -23,6 +23,7 @@
 #include "_log.h"
 #include "frame_plan/frame_plan.h"
 #include "frame_plan/emit.h"
+#include "_frame_plan_runtime_internal.h"
 #include "_scene.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
@@ -2993,6 +2994,181 @@ int test_frame_plan_emitter_runtime_object_map_grows(TstContext* suite, const Ts
 }
 
 
+
+int test_frame_plan_emitter_rejects_empty_persistent_keys(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+
+    bool is_new = true;
+    AT(_resource_id(&emitter->resources, "") == 0);
+    AT(_resource_entry(&emitter->resources, "", &is_new) == NULL);
+    AT(!is_new);
+    is_new = true;
+    AT(_obj_id(emitter, "", &is_new) == 0);
+    AT(!is_new);
+    is_new = true;
+    AT(_obj_buffer_id(emitter, "", 16, &is_new) == 0);
+    AT(!is_new);
+    AT(emitter->resources.count == 0);
+    AT(emitter->objects.count == 0);
+
+    dvz_frame_plan_emitter_destroy(emitter);
+    return 0;
+}
+
+
+
+int test_frame_plan_emitter_wgsl_query_shader_resolves(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.runtime.wgsl.validation", 0);
+    ANN(plan);
+
+    DvzFramePlanUploadMeta upload_meta = {0};
+    upload_meta.kind = DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER;
+    upload_meta.visual_type = DVZ_VISUAL_TYPE_POINT;
+    upload_meta.visual_index = 0;
+    upload_meta.buffer_index = UINT32_MAX;
+
+    AT(dvz_frame_plan_upload(plan, "point-position", 0, 3 * 3 * sizeof(float), ""));
+    upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION;
+    AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
+    AT(dvz_frame_plan_upload(plan, "point-color", 0, 3 * sizeof(DvzColor), ""));
+    upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR;
+    AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
+    AT(dvz_frame_plan_upload(plan, "point-size", 0, 3 * sizeof(float), ""));
+    upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE;
+    AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
+
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.query", true));
+    AT(dvz_frame_plan_render_visual(plan, "point"));
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.visual_type = DVZ_VISUAL_TYPE_POINT;
+    metadata.visual_index = 0;
+    metadata.buffer_index = UINT32_MAX;
+    metadata.topology = UINT32_MAX;
+    dvz_strlcpy(metadata.position_id, "point-position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.color_id, "point-color", sizeof(metadata.color_id));
+    dvz_strlcpy(metadata.size_id, "point-size", sizeof(metadata.size_id));
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+    AT(dvz_frame_plan_copy(plan, "target.panel.0.query", "buf.query", sizeof(uint32_t)));
+    AT(dvz_frame_plan_readback(plan, "buf.query", "request.query"));
+
+    const uint32_t count_before = plan->count;
+    uint32_t render_count_before = 0;
+    uint32_t render_visual_count_before = 0;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        if (plan->nodes[i].type != DVZ_FRAME_PLAN_NODE_RENDER)
+            continue;
+        render_count_before++;
+        render_visual_count_before += plan->nodes[i].u.render.visual_count;
+    }
+    AT(count_before == 6);
+    AT(render_count_before == 1);
+    AT(render_visual_count_before == 1);
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    emit_cfg.color_target_format = VK_FORMAT_R32_UINT;
+
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &emit_cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(plan->count == count_before);
+    uint32_t render_count_after = 0;
+    uint32_t render_visual_count_after = 0;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        if (plan->nodes[i].type != DVZ_FRAME_PLAN_NODE_RENDER)
+            continue;
+        render_count_after++;
+        render_visual_count_after += plan->nodes[i].u.render.visual_count;
+    }
+    AT(render_count_after == render_count_before);
+    AT(render_visual_count_after == render_visual_count_before);
+
+    uint32_t query_shader_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+            continue;
+        if (strcmp(command->u.create_shader_module.format, "wgsl") != 0)
+            continue;
+        AT(command->u.create_shader_module.code != NULL);
+        if (
+            strstr(command->u.create_shader_module.code, "id: u32") == NULL &&
+            strstr(command->u.create_shader_module.code, "output.id") == NULL)
+        {
+            continue;
+        }
+        AT(command->u.create_shader_module.stage[0] != '\0');
+        AT(command->u.create_shader_module.code[0] != '\0');
+        query_shader_count++;
+    }
+    AT(query_shader_count == 2);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+int test_frame_plan_emitter_wgsl_missing_source_preflight(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzSceneVisualDesc desc = {0};
+    desc.kind = DVZ_SCENE_VISUAL_DESC_POINT;
+
+    DvzSceneVisualShaderDesc shader = {0};
+    dvz_strlcpy(shader.vertex_key, "_vs_missing_wgsl", sizeof(shader.vertex_key));
+    dvz_strlcpy(shader.fragment_key, "_fs_missing_wgsl", sizeof(shader.fragment_key));
+    shader.vertex_glsl = "void main() {}";
+    shader.fragment_glsl = "void main() {}";
+    shader.fragment_wgsl = "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0); }";
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    DvzSceneResolvedShader resolved = {0};
+    AT(!_scene_runtime_shader_resolve(
+        &shader, &desc, DVZ_FRAME_PLAN_RENDER_PASS_PICKING, DVZ_SCENE_SHADER_FORMAT_WGSL,
+        &resolved, &report));
+    AT(dvz_diagnostic_report_count(&report) == 1);
+
+    const char* message = dvz_diagnostic_report_get(&report, 0);
+    ANN(message);
+    AT(strstr(message, "scene runtime shader validation failed") != NULL);
+    AT(strstr(message, "visual=point") != NULL);
+    AT(strstr(message, "pass=picking") != NULL);
+    AT(strstr(message, "format=wgsl") != NULL);
+    AT(strstr(message, "stage=vertex") != NULL);
+    AT(strstr(message, "key=_vs_missing_wgsl") != NULL);
+    AT(strstr(message, "reason=missing WGSL source") != NULL);
+
+    return 0;
+}
+
+
 int test_frame_plan_emitter_runtime_texture_two_frames(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -3260,6 +3436,9 @@ int test_scene_frame_plan_emit(TstSuite* suite)
     TST_CASE(test_frame_plan_emitter_runtime_dynamic_grow_buffer);
     TST_CASE(test_frame_plan_emitter_runtime_texture_extent_changes);
     TST_CASE(test_frame_plan_emitter_runtime_object_map_grows);
+    TST_CASE(test_frame_plan_emitter_rejects_empty_persistent_keys);
+    TST_CASE(test_frame_plan_emitter_wgsl_query_shader_resolves);
+    TST_CASE(test_frame_plan_emitter_wgsl_missing_source_preflight);
     TST_CASE(test_frame_plan_emitter_runtime_texture_two_frames);
     TST_CASE(test_frame_plan_emitter_runtime_compute_two_frames);
     TST_CASE(test_frame_plan_emit_scene_core_visuals_record_portable_dvzr);

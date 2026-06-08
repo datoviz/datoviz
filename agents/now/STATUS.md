@@ -69,6 +69,9 @@ release-proof lanes remain on track.
 8. [../../spec/scene/integration/OPTIONAL_PROVIDERS.md](../../spec/scene/integration/OPTIONAL_PROVIDERS.md)
 9. [../../spec/scene/integration/QT_HOST_BRIDGE.md](../../spec/scene/integration/QT_HOST_BRIDGE.md)
 10. [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md)
+11. [../../spec/scene/integration/WASM_DEBUGGABILITY_REFACTOR_PLAN.md](../../spec/scene/integration/WASM_DEBUGGABILITY_REFACTOR_PLAN.md)
+    - includes the 2026-06 WASM stack-overflow failure mode and the required
+      ASan/SAFE_HEAP/stack-usage workflow.
 
 
 ## Validation Defaults

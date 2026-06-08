@@ -117,6 +117,25 @@ static void dvz_system_aligned_free(void* pointer)
 
 
 
+#ifdef __EMSCRIPTEN__
+static DvzAllocator DVZ_SYSTEM_ALLOCATOR = {0};
+static bool DVZ_SYSTEM_ALLOCATOR_INITIALIZED = false;
+
+static const DvzAllocator* dvz_system_allocator_init(void)
+{
+    if (!DVZ_SYSTEM_ALLOCATOR_INITIALIZED)
+    {
+        DVZ_SYSTEM_ALLOCATOR.malloc_fn = dvz_system_malloc;
+        DVZ_SYSTEM_ALLOCATOR.calloc_fn = dvz_system_calloc;
+        DVZ_SYSTEM_ALLOCATOR.realloc_fn = dvz_system_realloc;
+        DVZ_SYSTEM_ALLOCATOR.free_fn = dvz_system_free;
+        DVZ_SYSTEM_ALLOCATOR.aligned_alloc_fn = dvz_system_aligned_alloc;
+        DVZ_SYSTEM_ALLOCATOR.aligned_free_fn = dvz_system_aligned_free;
+        DVZ_SYSTEM_ALLOCATOR_INITIALIZED = true;
+    }
+    return &DVZ_SYSTEM_ALLOCATOR;
+}
+#else
 static const DvzAllocator DVZ_SYSTEM_ALLOCATOR = {
     /* Fallback backend: rely on the platform C runtime. */
     .malloc_fn = dvz_system_malloc,
@@ -126,6 +145,9 @@ static const DvzAllocator DVZ_SYSTEM_ALLOCATOR = {
     .aligned_alloc_fn = dvz_system_aligned_alloc,
     .aligned_free_fn = dvz_system_aligned_free,
 };
+
+static const DvzAllocator* dvz_system_allocator_init(void) { return &DVZ_SYSTEM_ALLOCATOR; }
+#endif
 
 
 
@@ -197,7 +219,7 @@ static void dvz_allocator_set_default(void)
 #if DVZ_ALLOCATOR_DEFAULT_MIMALLOC && DVZ_HAS_MIMALLOC
     DVZ_ACTIVE_ALLOCATOR = &DVZ_MIMALLOC_ALLOCATOR;
 #else
-    DVZ_ACTIVE_ALLOCATOR = &DVZ_SYSTEM_ALLOCATOR;
+    DVZ_ACTIVE_ALLOCATOR = dvz_system_allocator_init();
 #endif
 }
 
@@ -225,7 +247,7 @@ const DvzAllocator* dvz_get_allocator(void)
 
 
 
-const DvzAllocator* dvz_system_allocator(void) { return &DVZ_SYSTEM_ALLOCATOR; }
+const DvzAllocator* dvz_system_allocator(void) { return dvz_system_allocator_init(); }
 
 
 

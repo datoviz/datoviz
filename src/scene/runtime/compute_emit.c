@@ -115,7 +115,7 @@ static bool _compute_emit_one(
     ANN(stream);
     ANN(compute);
 
-    if (compute->u.compute.shader_source == NULL)
+    if (compute->u.compute.shader_source == NULL || compute->u.compute.shader_source[0] == '\0')
     {
         _diagnostic(report, "scene compute requires shader source");
         return false;

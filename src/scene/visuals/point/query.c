@@ -27,6 +27,16 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+static const DvzScenePointLikeQueryDesc POINT_QUERY_DESC = {
+    .label = "point",
+    .plan_id = "figure.query.point",
+    .metadata_visual_type = DVZ_VISUAL_TYPE_POINT,
+    .desc_kind = DVZ_SCENE_VISUAL_DESC_POINT,
+    .point_like_kind = DVZ_SCENE_POINT_LIKE_POINT,
+};
+
+
+
 /**
  * Return whether a point visual can answer one query request.
  *
@@ -51,17 +61,10 @@ static bool _point_query_eligible(
  * @param out_plan output query plan
  * @return true when the plan was assembled
  */
-static bool _point_query_build(
+bool _point_query_build(
     const DvzSceneQueryBuildContext* ctx, DvzSceneQueryPlan* out_plan)
 {
-    static const DvzScenePointLikeQueryDesc desc = {
-        .label = "point",
-        .plan_id = "figure.query.point",
-        .metadata_visual_type = DVZ_VISUAL_TYPE_POINT,
-        .desc_kind = DVZ_SCENE_VISUAL_DESC_POINT,
-        .point_like_kind = DVZ_SCENE_POINT_LIKE_POINT,
-    };
-    return _scene_query_point_like_build(ctx, &desc, out_plan);
+    return _scene_query_point_like_build(ctx, &POINT_QUERY_DESC, out_plan);
 }
 
 
@@ -73,7 +76,7 @@ static bool _point_query_build(
  * @param out_result output query result
  * @return true when a terminal result was produced
  */
-static bool _point_query_decode(
+bool _point_query_decode(
     const DvzSceneQueryDecodeContext* ctx, DvzQueryResult* out_result)
 {
     return _dvz_scene_query_decode_item_id(ctx, DVZ_SCENE_VISUAL_FAMILY_POINT, out_result);

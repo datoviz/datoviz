@@ -72,6 +72,21 @@ static bool _state_ensure_capacity(ConverterState* state, uint32_t min_capacity)
 
 
 
+static void _state_copy_key(char* dst, size_t dst_size, const char* src)
+{
+    ANN(dst);
+    ANN(src);
+    if (dst_size == 0)
+        return;
+    size_t len = strlen(src);
+    if (len >= dst_size)
+        len = dst_size - 1;
+    memcpy(dst, src, len);
+    dst[len] = '\0';
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -231,6 +246,8 @@ uint64_t _resource_id(ConverterState* state, const char* key)
 {
     ANN(state);
     ANN(key);
+    if (key[0] == '\0')
+        return 0;
     for (uint32_t i = 0; i < state->count; i++)
     {
         if (strcmp(state->resources[i].key, key) == 0)
@@ -245,7 +262,7 @@ uint64_t _resource_id(ConverterState* state, const char* key)
 
     ResourceId* resource = &state->resources[state->count++];
     dvz_memset(resource, sizeof(ResourceId), 0, sizeof(ResourceId));
-    dvz_strlcpy(resource->key, key, sizeof(resource->key));
+    _state_copy_key(resource->key, sizeof(resource->key), key);
     resource->id = state->next_id++;
     resource->topology = UINT32_MAX;
     return resource->id;
@@ -309,6 +326,8 @@ ResourceId* _resource_entry(ConverterState* state, const char* key, bool* is_new
     ANN(key);
     ANN(is_new);
     *is_new = false;
+    if (key[0] == '\0')
+        return NULL;
 
     ResourceId* resource = _resource_find(state, key);
     if (resource != NULL)
@@ -324,7 +343,7 @@ ResourceId* _resource_entry(ConverterState* state, const char* key, bool* is_new
 
     resource = &state->resources[state->count++];
     dvz_memset(resource, sizeof(ResourceId), 0, sizeof(ResourceId));
-    dvz_strlcpy(resource->key, key, sizeof(resource->key));
+    _state_copy_key(resource->key, sizeof(resource->key), key);
     resource->id = state->next_id++;
     resource->topology = UINT32_MAX;
     *is_new = true;
@@ -569,6 +588,11 @@ uint64_t _obj_id(DvzFramePlanEmitter* emitter, const char* key, bool* is_new)
     ANN(emitter);
     ANN(key);
     ANN(is_new);
+    if (key[0] == '\0')
+    {
+        *is_new = false;
+        return 0;
+    }
     uint32_t n = emitter->objects.count;
     uint64_t id = _resource_id(&emitter->objects, key);
     *is_new = (id != 0) && (emitter->objects.count > n);
@@ -592,6 +616,11 @@ _obj_buffer_id(DvzFramePlanEmitter* emitter, const char* key, uint64_t byte_size
     ANN(emitter);
     ANN(key);
     ANN(is_new);
+    if (key[0] == '\0')
+    {
+        *is_new = false;
+        return 0;
+    }
 
     ResourceId* resource = _resource_entry(&emitter->objects, key, is_new);
     if (resource == NULL)

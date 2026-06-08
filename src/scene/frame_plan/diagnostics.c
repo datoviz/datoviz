@@ -16,6 +16,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -53,8 +54,12 @@ bool dvz_diagnostic_report_add(DvzDiagnosticReport* report, const char* message)
     ANN(message);
     if (report->count >= DVZ_SCENE_MAX_DIAGNOSTICS)
         return false;
-    _frame_plan_copy_label(
-        report->messages[report->count], DVZ_SCENE_DIAGNOSTIC_SIZE, message);
+    char* dst = report->messages[report->count];
+    size_t len = strlen(message);
+    if (len >= DVZ_SCENE_DIAGNOSTIC_SIZE)
+        len = DVZ_SCENE_DIAGNOSTIC_SIZE - 1;
+    memcpy(dst, message, len);
+    dst[len] = '\0';
     report->count++;
     return true;
 }

@@ -33,6 +33,7 @@
 #include "_scene_shader_abi.h"
 #include "_shader_registry.h"
 #include "_technique.h"
+#include "_visual_internal.h"
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
 #include "datoviz/drp2.h"
@@ -178,66 +179,25 @@ bool _emitter_prepare_render_multi(
             break;
         }
 
-        /* Shaders (cached). */
-        uint64_t vs_id = _obj_id(emitter, shader.vertex_key, &is_new);
-        if (vs_id == 0)
+        DvzSceneResolvedShader resolved_shader = {0};
+        if (!_scene_runtime_shader_resolve(
+                &shader, &desc, render->u.render.pass_role, shader_format, &resolved_shader,
+                report))
         {
+            _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
             ok = false;
             break;
-        }
-        if (is_new)
-        {
-            if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
-            {
-                if (shader.vertex_wgsl == NULL)
-                    ok = false;
-                else
-                    ok = ok &&
-                         _emit_shader(
-                             stream, vs_id, "VERTEX", shader.vertex_wgsl, shader.vertex_glsl, cfg);
-            }
-            else if (shader.vertex_spirv_key != NULL)
-                ok = ok && _emit_shader_spirv(
-                               stream, vs_id, "VERTEX", shader.vertex_spirv_key,
-                               shader.vertex_glsl, cfg);
-            else
-                ok = ok && _emit_shader(stream, vs_id, "VERTEX", NULL, shader.vertex_glsl, cfg);
-            if (ok && shader.builtin_family != NULL && shader.builtin_variant != NULL)
-                ok = dvz_drp2_stream_shader_set_builtin_identity(
-                    stream, vs_id, shader.builtin_family, shader.builtin_variant,
-                    shader.builtin_version != 0 ? shader.builtin_version
-                                                : DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION);
         }
 
-        uint64_t fs_id = _obj_id(emitter, shader.fragment_key, &is_new);
-        if (fs_id == 0)
+        /* Shaders (cached). */
+        uint64_t vs_id = 0;
+        uint64_t fs_id = 0;
+        if (!_scene_runtime_shader_emit(
+                emitter, stream, &resolved_shader, cfg, &vs_id, &fs_id))
         {
+            _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
             ok = false;
             break;
-        }
-        if (ok && is_new)
-        {
-            if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
-            {
-                if (shader.fragment_wgsl == NULL)
-                    ok = false;
-                else
-                    ok = ok && _emit_shader(
-                                   stream, fs_id, "FRAGMENT", shader.fragment_wgsl,
-                                   shader.fragment_glsl, cfg);
-            }
-            else if (shader.fragment_spirv_key != NULL)
-                ok = ok && _emit_shader_spirv(
-                               stream, fs_id, "FRAGMENT", shader.fragment_spirv_key,
-                               shader.fragment_glsl, cfg);
-            else
-                ok =
-                    ok && _emit_shader(stream, fs_id, "FRAGMENT", NULL, shader.fragment_glsl, cfg);
-            if (ok && shader.builtin_family != NULL && shader.builtin_variant != NULL)
-                ok = dvz_drp2_stream_shader_set_builtin_identity(
-                    stream, fs_id, shader.builtin_family, shader.builtin_variant,
-                    shader.builtin_version != 0 ? shader.builtin_version
-                                                : DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION);
         }
         _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
 

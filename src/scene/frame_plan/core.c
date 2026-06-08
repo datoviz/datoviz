@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <stdint.h>
+#include <string.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -39,7 +40,13 @@ void _frame_plan_copy_label(char* dst, uint64_t dst_size, const char* src)
 {
     ANN(dst);
     ANN(src);
-    dvz_strlcpy(dst, src, (size_t)dst_size);
+    if (dst_size == 0)
+        return;
+    size_t len = strlen(src);
+    if (len >= dst_size)
+        len = (size_t)dst_size - 1;
+    memcpy(dst, src, len);
+    dst[len] = '\0';
 }
 
 

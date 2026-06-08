@@ -51,6 +51,25 @@ static bool _query_point_like_attr(
 
 
 
+static bool _query_point_like_upload_bytes(
+    DvzFramePlan* plan, const char* resource_id, uint64_t byte_size, const char* data_tag,
+    const void* data, DvzFramePlanResourceRole role, DvzVisualType visual_type,
+    uint64_t item_count, uint32_t buffer_index)
+{
+    ANN(plan);
+    DvzFramePlanUploadMeta meta = {
+        .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
+        .role = role,
+        .visual_type = (uint32_t)visual_type,
+        .buffer_index = buffer_index,
+        .logical_item_count = item_count,
+    };
+    return dvz_frame_plan_upload_bytes(plan, resource_id, 0, byte_size, data_tag, data) &&
+           dvz_frame_plan_upload_metadata(plan, &meta);
+}
+
+
+
 /**
  * Apply the request-centered MVP and viewport to a query render node.
  *
@@ -81,26 +100,31 @@ static void _query_point_like_apply_render_state(
  * @param out_plan output query plan
  * @return true when the plan was assembled
  */
-bool _scene_query_point_like_build(
-    const DvzSceneQueryBuildContext* ctx, const DvzScenePointLikeQueryDesc* desc,
-    DvzSceneQueryPlan* out_plan)
+bool _scene_query_point_like_build_ex(
+    const DvzSceneQueryBuildContext* ctx, const char* label, const char* plan_id,
+    DvzVisualType metadata_visual_type, DvzSceneVisualDescKind desc_kind,
+    DvzScenePointLikeKind point_like_kind, DvzSceneQueryPlan* out_plan)
 {
     ANN(ctx);
     ANN(ctx->figure);
     ANN(ctx->panel);
     ANN(ctx->visual);
     ANN(ctx->pending);
-    ANN(desc);
-    ANN(desc->label);
-    ANN(desc->plan_id);
+    ANN(label);
+    ANN(plan_id);
     ANN(out_plan);
+    DvzFigure* figure = ctx->figure;
+    DvzPanel* panel = ctx->panel;
+    DvzVisual* visual = ctx->visual;
+    const DvzPendingQueryRequest* pending = ctx->pending;
+    vec2 request_ndc = {ctx->request_ndc[0], ctx->request_ndc[1]};
 
     const DvzVisualAttr* pos_attr = NULL;
     const DvzVisualAttr* color_attr = NULL;
     const DvzVisualAttr* size_attr = NULL;
-    if (!_query_point_like_attr(ctx->visual, "position", sizeof(vec3), &pos_attr) ||
-        !_query_point_like_attr(ctx->visual, "color", sizeof(DvzColor), &color_attr) ||
-        !_query_point_like_attr(ctx->visual, "size", sizeof(float), &size_attr))
+    if (!_query_point_like_attr(visual, "position", sizeof(vec3), &pos_attr) ||
+        !_query_point_like_attr(visual, "color", sizeof(DvzColor), &color_attr) ||
+        !_query_point_like_attr(visual, "size", sizeof(float), &size_attr))
     {
         return false;
     }
@@ -118,33 +142,37 @@ bool _scene_query_point_like_build(
         _dvz_mul_u64_overflows(color_attr->item_count, color_attr->item_size, &color_bytes) ||
         _dvz_mul_u64_overflows(size_attr->item_count, size_attr->item_size, &size_bytes))
     {
-        log_error("%s query request buffer size overflow", desc->label);
+        log_error("%s query request buffer size overflow", label);
         return false;
     }
 
     uint32_t target_width = 0;
     uint32_t target_height = 0;
-    if (!_dvz_scene_query_target_extent(ctx->figure, ctx->panel, &target_width, &target_height))
+    if (!_dvz_scene_query_target_extent(figure, panel, &target_width, &target_height))
         return false;
 
-    DvzFramePlan* plan = dvz_frame_plan(desc->plan_id, ctx->pending->request.request_id);
+    DvzFramePlan* plan = dvz_frame_plan(plan_id, pending->request.request_id);
     bool ok = plan != NULL;
-    ok = ok && dvz_frame_plan_upload_bytes(
-                   plan, "query0_position", 0, position_bytes, "position", pos_attr->data) &&
-         dvz_frame_plan_upload_bytes(
-             plan, "query0_color", 0, color_bytes, "color", color_attr->data) &&
-         dvz_frame_plan_upload_bytes(
-             plan, "query0_size", 0, size_bytes, "size", size_attr->data);
+    ok = ok &&
+         _query_point_like_upload_bytes(
+             plan, "query0_position", position_bytes, "position", pos_attr->data,
+             DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION, metadata_visual_type, pos_attr->item_count, 0) &&
+         _query_point_like_upload_bytes(
+             plan, "query0_color", color_bytes, "color", color_attr->data,
+             DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR, metadata_visual_type, color_attr->item_count, 1) &&
+         _query_point_like_upload_bytes(
+             plan, "query0_size", size_bytes, "size", size_attr->data,
+             DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE, metadata_visual_type, size_attr->item_count, 2);
 
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;
-    metadata.visual_type = (uint32_t)desc->metadata_visual_type;
+    metadata.visual_type = (uint32_t)metadata_visual_type;
     metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_POINT_LIKE;
-    metadata.desc_kind = (uint32_t)desc->desc_kind;
-    metadata.point_like_kind = (uint32_t)desc->point_like_kind;
+    metadata.desc_kind = (uint32_t)desc_kind;
+    metadata.point_like_kind = (uint32_t)point_like_kind;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
-    metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
-    metadata.depth_compare_op = ctx->visual->depth_compare_op;
+    metadata.depth_test_enabled = visual->depth_test_enabled;
+    metadata.depth_compare_op = visual->depth_compare_op;
     dvz_strlcpy(metadata.position_id, "query0_position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.color_id, "query0_color", sizeof(metadata.color_id));
     dvz_strlcpy(metadata.size_id, "query0_size", sizeof(metadata.size_id));
@@ -155,8 +183,10 @@ bool _scene_query_point_like_build(
          dvz_frame_plan_render_visual(plan, "query0") &&
          dvz_frame_plan_render_visual_metadata(plan, &metadata);
     if (ok)
+    {
         _query_point_like_apply_render_state(
-            plan, ctx->panel, ctx->visual, ctx->request_ndc, target_width, target_height);
+            plan, panel, visual, request_ndc, target_width, target_height);
+    }
 
     DvzFramePlanCopyDesc copy = dvz_frame_plan_copy_desc();
     copy.src_resource_id = "target.query";
@@ -169,14 +199,14 @@ bool _scene_query_point_like_build(
     copy.bytes_per_row = sizeof(uint32_t);
     copy.rows_per_image = 1;
     copy.byte_size = sizeof(uint32_t);
-    copy.request_id = ctx->pending->request.request_id;
+    copy.request_id = pending->request.request_id;
     ok = ok && dvz_frame_plan_copy_ex(plan, &copy) &&
          dvz_frame_plan_readback(plan, "buf.query", "request.query");
     if (!ok)
     {
         log_error(
             "%s query request %" PRIu64 " failed to assemble the GPU readback plan",
-            desc->label, ctx->pending->request.request_id);
+            label, pending->request.request_id);
         dvz_frame_plan_destroy(plan);
         return false;
     }
@@ -186,7 +216,24 @@ bool _scene_query_point_like_build(
     out_plan->target_height = target_height;
     out_plan->format = VK_FORMAT_R32_UINT;
     out_plan->byte_size = sizeof(uint32_t);
+    out_plan->schema.fields = DVZ_SCENE_QUERY_SCHEMA_FIELD_ITEM_ID;
+    out_plan->schema.value_kind = DVZ_QUERY_VALUE_NONE;
+    out_plan->schema.profile = ctx->profile;
+    out_plan->schema.format = VK_FORMAT_R32_UINT;
+    out_plan->schema.byte_size = sizeof(uint32_t);
     return true;
+}
+
+
+
+bool _scene_query_point_like_build(
+    const DvzSceneQueryBuildContext* ctx, const DvzScenePointLikeQueryDesc* desc,
+    DvzSceneQueryPlan* out_plan)
+{
+    ANN(desc);
+    return _scene_query_point_like_build_ex(
+        ctx, desc->label, desc->plan_id, desc->metadata_visual_type, desc->desc_kind,
+        desc->point_like_kind, out_plan);
 }
 
 

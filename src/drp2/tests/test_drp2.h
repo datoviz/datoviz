@@ -50,6 +50,8 @@ int test_drp2_packet_phase_split_roundtrip(TstContext* suite, const TstCase* ite
 
 int test_drp2_packet_shader_module_roundtrip(TstContext* suite, const TstCase* item);
 
+int test_drp2_packet_rejects_empty_shader_module_fields(TstContext* suite, const TstCase* item);
+
 int test_drp2_render_pipeline_step_modes_json(TstContext* suite, const TstCase* item);
 
 int test_drp2_recording_linear_roundtrip(TstContext* suite, const TstCase* item);

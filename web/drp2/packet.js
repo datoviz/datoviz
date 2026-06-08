@@ -281,12 +281,23 @@ function decodeCommand(type, view, bodyOffset, bodySize, arena, payloadOffset, p
   case 7: {
     const payload = payloadView(arena, payloadOffset, payloadSize);
     if (payload === null) throw new Error("CreateShaderModule needs payload");
+    if (payload.byteLength === 0) throw new Error("CreateShaderModule needs non-empty payload");
+    if (payload[payload.byteLength - 1] !== 0) {
+      throw new Error("CreateShaderModule text payload needs terminator");
+    }
     const codeBytes = payload[payload.byteLength - 1] === 0 ? payload.subarray(0, -1) : payload;
+    if (codeBytes.byteLength === 0) {
+      throw new Error("CreateShaderModule needs non-empty source");
+    }
+    const stage = readCString(bytes, bodyOffset + 8);
+    if (stage === "") throw new Error("CreateShaderModule needs stage");
+    const format = readCString(bytes, bodyOffset + 520);
+    if (format === "") throw new Error("CreateShaderModule needs format");
     const command = {
       cmd,
       id: readU64(view, bodyOffset),
-      stage: readCString(bytes, bodyOffset + 8),
-      format: readCString(bytes, bodyOffset + 520) || "wgsl",
+      stage,
+      format,
       entry_point: "main",
       code: new TextDecoder().decode(codeBytes),
     };

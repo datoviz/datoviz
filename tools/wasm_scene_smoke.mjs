@@ -186,6 +186,8 @@ function expectPacketPayloadArena(packet, arena, decoded, label) {
   const decodedShaders = decoded.commands.filter((command) => command.cmd === "CreateShaderModule");
   requireOk(decodedShaders.length >= shaderPayloads, `${label}: missing decoded shader payloads`);
   for (const shader of decodedShaders) {
+    requireOk(typeof shader.stage === "string" && shader.stage.length > 0, `${label}: empty shader stage`);
+    requireOk(typeof shader.format === "string" && shader.format.length > 0, `${label}: empty shader format`);
     requireOk(typeof shader.code === "string" && shader.code.length > 0, `${label}: empty shader code`);
   }
   if (arena.byteLength > 0) {
