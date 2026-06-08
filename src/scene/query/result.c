@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "internal.h"
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
@@ -107,7 +108,13 @@ void _dvz_scene_query_drop_superseded_results(
 {
     ANN(scene);
     ANN(panel);
-    DvzQueuedQueryResult kept[DVZ_SCENE_MAX_QUERY_RESULTS] = {0};
+    DvzQueuedQueryResult* kept =
+        (DvzQueuedQueryResult*)dvz_calloc(DVZ_SCENE_MAX_QUERY_RESULTS, sizeof(DvzQueuedQueryResult));
+    if (kept == NULL)
+    {
+        log_error("failed to allocate query result compaction scratch");
+        return;
+    }
     uint32_t kept_count = 0;
     for (uint32_t i = 0; i < scene->query_result_count; i++)
     {
@@ -125,6 +132,7 @@ void _dvz_scene_query_drop_superseded_results(
         scene->query_results[i] = kept[i];
     scene->query_result_head = 0;
     scene->query_result_count = kept_count;
+    dvz_free(kept);
 }
 
 
