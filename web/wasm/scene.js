@@ -529,7 +529,7 @@ export class DatovizWasmScene {
   scenarioPointer(type, event) {
     this._requireAlive();
     requireOk(this.scenario !== null, "WASM scene has no active scenario");
-    const point = this._canvasPoint(event);
+    const point = this._canvasPoint(event, true);
     this._requireStatus(
       this.Module._dvz_wasm_api_scenario_pointer(
         this.scene,
@@ -566,7 +566,7 @@ export class DatovizWasmScene {
   scenarioWheel(event) {
     this._requireAlive();
     requireOk(this.scenario !== null, "WASM scene has no active scenario");
-    const point = this._canvasPoint(event);
+    const point = this._canvasPoint(event, true);
     this._requireStatus(
       this.Module._dvz_wasm_api_scenario_wheel(
         this.scene,
@@ -678,11 +678,22 @@ export class DatovizWasmScene {
     return detach;
   }
 
-  _canvasPoint(event) {
+  _canvasPoint(event, framebuffer = false) {
     const rect = this.canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    if (framebuffer) {
+      const scaleX = rect.width > 0 ? this.canvas.width / rect.width : 1;
+      const scaleY = rect.height > 0 ? this.canvas.height / rect.height : 1;
+      return {
+        x: x * scaleX,
+        y: y * scaleY,
+        scale: Math.max(scaleX, scaleY, 1),
+      };
+    }
     return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
+      x,
+      y,
       scale: Math.max(1, window.devicePixelRatio || 1),
     };
   }
