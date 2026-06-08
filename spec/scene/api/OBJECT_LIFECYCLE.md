@@ -170,5 +170,5 @@ For each lifecycle API, add focused tests for:
 5. dependent reference cleanup;
 6. slot reuse after destruction;
 7. frame emission after destruction;
-8. rejection while borrowed emitted streams are live when visual/resource data may be affected.
-
+8. rejection while legacy raw borrowed emitted streams are live when visual/resource data may be
+   affected, while artifact-backed emission snapshots allow later retained-scene mutation.

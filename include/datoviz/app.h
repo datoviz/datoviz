@@ -799,9 +799,9 @@ DVZ_EXPORT void dvz_view_set_request_frame_callback(
 /**
  * Register a callback invoked after each successful frame for one view.
  *
- * The callback runs after the scene stream has been emitted, executed, request processing has
- * completed, and the emitted stream has been destroyed. Scene mutations from the callback are
- * therefore allowed and become visible on the next frame.
+ * The callback runs after the scene frame artifact has been emitted, executed, request processing
+ * has completed, and the artifact-owned stream snapshot has been destroyed. Scene mutations from
+ * the callback are therefore allowed and become visible on the next frame.
  *
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
