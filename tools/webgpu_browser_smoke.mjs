@@ -29,6 +29,28 @@ const mimeTypes = new Map([
   ['.css', 'text/css; charset=utf-8'],
 ]);
 
+const COLOR_GREEN = '\x1b[32m';
+const COLOR_YELLOW = '\x1b[33m';
+const COLOR_RESET = '\x1b[0m';
+
+function useColor() {
+  if (process.env.FORCE_COLOR !== undefined && process.env.FORCE_COLOR !== '0') return true;
+  if (process.env.NO_COLOR !== undefined) return false;
+  return Boolean(process.stdout.isTTY);
+}
+
+function color(text, colorCode) {
+  return useColor() ? `${colorCode}${text}${COLOR_RESET}` : text;
+}
+
+function passLine(text) {
+  return `${color('PASS', COLOR_GREEN)} ${text}`;
+}
+
+function skipLine(text) {
+  return `${color('SKIP', COLOR_YELLOW)} ${text}`;
+}
+
 function requireOk(condition, message) {
   if (!condition) {
     throw new Error(message);
@@ -840,7 +862,7 @@ async function main() {
       if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(`SKIP WASM query scenarios: headless WebGPU instance loss (${error.message})`);
+      console.log(skipLine(`WASM query scenarios: headless WebGPU instance loss (${error.message})`));
     }
     let wasmDashboard = null;
     try {
@@ -849,49 +871,59 @@ async function main() {
       if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(`SKIP WASM dashboard: headless WebGPU instance loss (${error.message})`);
+      console.log(skipLine(`WASM dashboard: headless WebGPU instance loss (${error.message})`));
     }
     if (wasm2d !== null) {
-      console.log(`PASS 2D WASM: ${wasm2d.initialStatus}; ${wasm2d.interactiveStatus}`);
+      console.log(passLine(`2D WASM: ${wasm2d.initialStatus}; ${wasm2d.interactiveStatus}`));
     }
     if (wasm3d !== null) {
-      console.log(`PASS 3D WASM: ${wasm3d.initialStatus}; ${wasm3d.interactiveStatus}`);
+      console.log(passLine(`3D WASM: ${wasm3d.initialStatus}; ${wasm3d.interactiveStatus}`));
     }
     if (wasmTimer !== null) {
-      console.log(`PASS timer WASM: ${wasmTimer.initialStatus}; initial_frame=${wasmTimer.initialFrame}`);
+      console.log(passLine(`timer WASM: ${wasmTimer.initialStatus}; initial_frame=${wasmTimer.initialFrame}`));
     }
     if (wasmPointQuery !== null) {
       console.log(
-        `PASS point query WASM: ${wasmPointQuery.initialStatus}; ` +
-        `processed=${wasmPointQuery.queryDelivery.processed}`,
+        passLine(
+          `point query WASM: ${wasmPointQuery.initialStatus}; ` +
+            `processed=${wasmPointQuery.queryDelivery.processed}`,
+        ),
       );
     }
     if (wasmMarkerQuery !== null) {
       console.log(
-        `PASS marker query WASM: ${wasmMarkerQuery.initialStatus}; ` +
-        `processed=${wasmMarkerQuery.queryDelivery.processed}`,
+        passLine(
+          `marker query WASM: ${wasmMarkerQuery.initialStatus}; ` +
+            `processed=${wasmMarkerQuery.queryDelivery.processed}`,
+        ),
       );
     }
     if (wasmHoverQuery !== null) {
       console.log(
-        `PASS hover query WASM: ${wasmHoverQuery.initialStatus}; ` +
-        `processed=${wasmHoverQuery.queryDelivery.processed}`,
+        passLine(
+          `hover query WASM: ${wasmHoverQuery.initialStatus}; ` +
+            `processed=${wasmHoverQuery.queryDelivery.processed}`,
+        ),
       );
     }
     if (wasmSelectionQuery !== null) {
       console.log(
-        `PASS selection query WASM: ${wasmSelectionQuery.initialStatus}; ` +
-        `processed=${wasmSelectionQuery.queryDelivery.processed}`,
+        passLine(
+          `selection query WASM: ${wasmSelectionQuery.initialStatus}; ` +
+            `processed=${wasmSelectionQuery.queryDelivery.processed}`,
+        ),
       );
     }
     if (wasmImageProbe !== null) {
       console.log(
-        `PASS image probe WASM: ${wasmImageProbe.initialStatus}; ` +
-        `processed=${wasmImageProbe.queryDelivery.processed}`,
+        passLine(
+          `image probe WASM: ${wasmImageProbe.initialStatus}; ` +
+            `processed=${wasmImageProbe.queryDelivery.processed}`,
+        ),
       );
     }
     if (wasmDashboard !== null) {
-      console.log(`PASS WASM dashboard: ${wasmDashboard}`);
+      console.log(passLine(`WASM dashboard: ${wasmDashboard}`));
     }
     console.log(`Wrote ${artifactsDir}`);
   } finally {

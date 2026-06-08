@@ -3,6 +3,23 @@
 import { readFile } from 'node:fs/promises';
 import { decodeDrp2Packet, decodeDrp2PacketSet } from '../web/drp2/packet.js';
 
+const COLOR_GREEN = '\x1b[32m';
+const COLOR_RESET = '\x1b[0m';
+
+function useColor() {
+  if (process.env.FORCE_COLOR !== undefined && process.env.FORCE_COLOR !== '0') return true;
+  if (process.env.NO_COLOR !== undefined) return false;
+  return Boolean(process.stdout.isTTY);
+}
+
+function color(text, colorCode) {
+  return useColor() ? `${colorCode}${text}${COLOR_RESET}` : text;
+}
+
+function passLine(text) {
+  return `${color('PASS', COLOR_GREEN)} ${text}`;
+}
+
 const fakeCanvas = {
   width: 640,
   height: 480,
@@ -600,7 +617,7 @@ async function smokeStreamPathsOnly(Drp2WebGpuRuntime, executeDrp2Stream, paths)
     }
   }
 
-  console.log(`PASS WebGPU runner smoke generated_streams=${paths.length}`);
+  console.log(passLine(`WebGPU runner smoke generated_streams=${paths.length}`));
 }
 
 async function smokeDemoPath(WebGpuDemoSession) {
@@ -1045,8 +1062,10 @@ async function main() {
   await smokeDemoPath(WebGpuDemoSession);
 
   console.log(
-    `PASS WebGPU runner smoke fixtures=${manifest.positive.length} ` +
-      `streams=${streamPaths.length} negatives=${negativePaths.length}`,
+    passLine(
+      `WebGPU runner smoke fixtures=${manifest.positive.length} ` +
+        `streams=${streamPaths.length} negatives=${negativePaths.length}`,
+    ),
   );
 }
 

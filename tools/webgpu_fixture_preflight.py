@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence
@@ -13,6 +15,27 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST_PATH = ROOT_DIR / 'examples' / 'webgpu' / 'fixture_manifest.json'
+
+COLOR_GREEN = '\033[32m'
+COLOR_RED = '\033[31m'
+COLOR_RESET = '\033[0m'
+
+
+def _use_color() -> bool:
+    force = os.environ.get('FORCE_COLOR')
+    if force is not None and force != '0':
+        return True
+    if os.environ.get('NO_COLOR') is not None:
+        return False
+    return sys.stdout.isatty()
+
+
+def _color(text: str, color: str) -> str:
+    return f'{color}{text}{COLOR_RESET}' if _use_color() else text
+
+
+def _status_text(passed: bool) -> str:
+    return _color('PASS', COLOR_GREEN) if passed else _color('FAIL', COLOR_RED)
 
 VERTEX_FORMAT_BYTES = {
     'float32': 4,
@@ -822,7 +845,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 
 def _print_text(results: Sequence[WebGPUPreflightResult]) -> None:
     for result in results:
-        status = 'PASS' if result.passed else 'FAIL'
+        status = _status_text(result.passed)
         print(f'{status} {result.fixture_path} ({result.fixture_name})')
         if not result.passed:
             print(f'  command_index: {result.command_index}')
@@ -830,7 +853,9 @@ def _print_text(results: Sequence[WebGPUPreflightResult]) -> None:
     total = len(results)
     passed = sum(1 for result in results if result.passed)
     failed = total - passed
-    print(f'SUMMARY total={total} passed={passed} failed={failed}')
+    passed_text = _color(str(passed), COLOR_GREEN)
+    failed_text = _color(str(failed), COLOR_RED) if failed else str(failed)
+    print(f'SUMMARY total={total} passed={passed_text} failed={failed_text}')
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
