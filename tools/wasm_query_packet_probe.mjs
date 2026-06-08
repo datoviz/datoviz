@@ -79,6 +79,15 @@ try {
     setup.commands.some((command) => command.cmd === "CreateTexture" && command.format === "r32uint"),
     "query setup packet did not create an r32uint target",
   );
+  const pipeline = setup.commands.find((command) => command.cmd === "CreateRenderPipeline");
+  requireOk(pipeline !== undefined, "query setup packet did not create a render pipeline");
+  const attributeLocations = (pipeline.vertex_buffers ?? [])
+    .flatMap((buffer) => buffer.attributes ?? [])
+    .map((attribute) => attribute.shader_location);
+  requireOk(
+    !attributeLocations.includes(1),
+    "point query pipeline still advertises unused color attribute",
+  );
   requireOk(
     frame.commands.some((command) => command.cmd === "CopyTextureToBuffer"),
     "query frame packet did not copy the query target to a buffer",

@@ -2,7 +2,6 @@
 
 struct VertexIn {
     @location(0) position: vec3f,
-    @location(1) color: vec4f,
     @location(2) size: f32,
 }
 
