@@ -533,7 +533,7 @@ examples:
       kind: synthetic
     portability: portable-scenario
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
       requirements:
         - point
         - panzoom
