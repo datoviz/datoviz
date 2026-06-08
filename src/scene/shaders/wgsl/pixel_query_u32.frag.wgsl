@@ -1,5 +1,5 @@
 struct FragmentIn {
-    @location(0) id: u32,
+    @location(0) @interpolate(flat) id: u32,
 }
 
 @fragment

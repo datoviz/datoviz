@@ -8,7 +8,7 @@ struct VertexIn {
 
 struct VertexOut {
     @builtin(position) position: vec4f,
-    @location(0) id: u32,
+    @location(0) @interpolate(flat) id: u32,
 }
 
 fn quad_corner(vertex_id: u32) -> vec2f {

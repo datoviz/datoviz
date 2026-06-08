@@ -8,7 +8,7 @@ struct VertexIn {
 
 struct VertexOut {
     @builtin(position) position: vec4f,
-    @location(0) id: u32,
+    @location(0) @interpolate(flat) id: u32,
     @location(1) corner: vec2f,
     @location(2) size: f32,
 }
