@@ -160,11 +160,9 @@ DvzDrp2CommandStream* dvz_drp2_stream(void)
 
 
 /**
- * Destroy a DRP2 command stream.
- *
- * @param stream the command stream
+ * Release the owner lock associated with a DRP2 stream without destroying the stream.
  */
-void dvz_drp2_stream_destroy(DvzDrp2CommandStream* stream)
+void _dvz_drp2_stream_release_owner(DvzDrp2CommandStream* stream)
 {
     if (stream == NULL)
         return;
@@ -173,6 +171,20 @@ void dvz_drp2_stream_destroy(DvzDrp2CommandStream* stream)
         stream->owner_release(stream->owner);
         stream->owner_released = true;
     }
+}
+
+
+
+/**
+ * Destroy a DRP2 command stream.
+ *
+ * @param stream the command stream
+ */
+void dvz_drp2_stream_destroy(DvzDrp2CommandStream* stream)
+{
+    if (stream == NULL)
+        return;
+    _dvz_drp2_stream_release_owner(stream);
     for (uint32_t i = 0; i < stream->count; i++)
     {
         DvzDrp2Command* cmd = &stream->commands[i];
@@ -183,7 +195,11 @@ void dvz_drp2_stream_destroy(DvzDrp2CommandStream* stream)
             dvz_free(cmd->u.write_buffer.data_base64);
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+        {
+            if (cmd->u.write_texture.data_raw_owned)
+                dvz_free((void*)(uintptr_t)cmd->u.write_texture.data_raw);
             dvz_free(cmd->u.write_texture.data_base64);
+        }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
             dvz_free(cmd->u.create_shader_module.code);
     }

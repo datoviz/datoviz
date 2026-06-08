@@ -186,8 +186,9 @@ struct DvzDrp2Command
             uint32_t depth;
             uint32_t bytes_per_row;
             uint32_t rows_per_image;
-            const void* data_raw;  /* in-process path: borrowed pointer, never freed */
-            char* data_base64;     /* JSON path: heap-allocated, freed by stream_destroy */
+            const void* data_raw; /* in-process path: borrowed or owned pointer */
+            bool data_raw_owned;  /* whether data_raw is owned directly by this command */
+            char* data_base64;    /* JSON path: heap-allocated, freed by stream_destroy */
         } write_texture;
         struct
         {
@@ -381,3 +382,16 @@ struct DvzDrp2CommandStream
     DvzDrp2StreamOwnerRelease owner_release;
     bool owner_released;
 };
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Release the owner lock associated with a DRP2 stream without destroying the stream.
+ *
+ * @param stream the command stream
+ */
+void _dvz_drp2_stream_release_owner(DvzDrp2CommandStream* stream);

@@ -19,8 +19,10 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_overflow.h"
 #include "datoviz/drp2.h"
 #include "frame_artifact_internal.h"
+#include "../../drp2/_stream.h"
 
 
 
@@ -69,6 +71,56 @@ static const PacketSpan* _span_const(
 }
 
 
+static bool _write_texture_payload_size(const DvzDrp2Command* command, uint64_t* out_size)
+{
+    ANN(command);
+    ANN(out_size);
+    *out_size = 0;
+    if (command->type != DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+        return false;
+
+    uint64_t row_bytes = command->u.write_texture.bytes_per_row;
+    uint64_t rows = command->u.write_texture.rows_per_image;
+    uint64_t depth = command->u.write_texture.depth > 0 ? command->u.write_texture.depth : 1;
+    if (row_bytes == 0 || rows == 0)
+        return false;
+
+    uint64_t image_bytes = 0;
+    if (_dvz_mul_u64_overflows(row_bytes, rows, &image_bytes))
+        return false;
+    if (_dvz_mul_u64_overflows(image_bytes, depth, out_size))
+        return false;
+    return *out_size > 0;
+}
+
+
+static bool _freeze_stream_payloads(DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        DvzDrp2Command* command = &stream->commands[i];
+        if (
+            command->type != DVZ_DRP2_COMMAND_WRITE_TEXTURE ||
+            command->u.write_texture.data_raw == NULL || command->u.write_texture.data_raw_owned)
+        {
+            continue;
+        }
+
+        uint64_t byte_size = 0;
+        if (!_write_texture_payload_size(command, &byte_size) || byte_size > SIZE_MAX)
+            return false;
+        void* copy = dvz_malloc((size_t)byte_size);
+        if (copy == NULL)
+            return false;
+        dvz_memcpy(copy, (size_t)byte_size, command->u.write_texture.data_raw, (size_t)byte_size);
+        command->u.write_texture.data_raw = copy;
+        command->u.write_texture.data_raw_owned = true;
+    }
+    return true;
+}
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
@@ -95,6 +147,13 @@ DvzScenePacketArtifact* _scene_packet_artifact(
     artifact->resource_version = resource_version;
     artifact->frame_index = frame_index;
     artifact->stream = stream;
+
+    if (!_freeze_stream_payloads(stream))
+    {
+        artifact->status = DVZ_SCENE_PACKET_ARTIFACT_STATUS_ENCODE_ERROR;
+        return artifact;
+    }
+    _dvz_drp2_stream_release_owner(stream);
 
     const DvzDrp2PacketKind phases[3] = {
         DVZ_DRP2_PACKET_SETUP,
