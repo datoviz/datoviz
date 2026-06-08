@@ -148,7 +148,31 @@ bool _emitter_emit_upload(
             emitter->resources.first_texture_id = id;
         *out_id = id;
         if (node->u.upload.data == NULL)
-            return false;
+        {
+            char* zero_data = _zero_base64_alloc(node->u.upload.byte_size);
+            if (zero_data == NULL)
+                return false;
+            bool ok = false;
+            if (texture_d > 1 || d > 1 || node->u.upload.texture_origin_z != 0)
+            {
+                ok = dvz_drp2_stream_write_texture_3d(
+                    stream, id, 0, node->u.upload.texture_origin_x,
+                    node->u.upload.texture_origin_y, node->u.upload.texture_origin_z, w, h, d,
+                    bpr, h, zero_data);
+            }
+            else if (node->u.upload.texture_origin_x == 0 && node->u.upload.texture_origin_y == 0)
+            {
+                ok = dvz_drp2_stream_write_texture_2d(stream, id, 0, w, h, bpr, h, zero_data);
+            }
+            else
+            {
+                ok = dvz_drp2_stream_write_texture_2d_region(
+                    stream, id, 0, node->u.upload.texture_origin_x,
+                    node->u.upload.texture_origin_y, w, h, bpr, h, zero_data);
+            }
+            dvz_free(zero_data);
+            return ok;
+        }
         if (texture_d > 1 || d > 1 || node->u.upload.texture_origin_z != 0)
         {
             return dvz_drp2_stream_write_texture_3d_bytes(
@@ -219,85 +243,6 @@ bool _emitter_emit_upload(
         dvz_free(zero_data);
         return ok;
     }
-}
-
-
-
-/**
- * Emit runtime-mode texture upload commands.
- *
- * @param emitter the persistent emitter
- * @param stream the DRP2 command stream
- * @param node the upload node
- * @param out_id the emitted texture id
- * @return whether the commands were emitted
- */
-bool _emitter_emit_texture_upload(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* node,
-    uint64_t* out_id)
-{
-    ANN(emitter);
-    ANN(stream);
-    ANN(node);
-    ANN(out_id);
-
-    if (node->u.upload.data != NULL)
-        return _emitter_emit_upload(emitter, stream, node, out_id);
-
-    bool is_new = false;
-    ResourceId* resource =
-        _resource_entry(&emitter->resources, node->u.upload.resource_id, &is_new);
-    if (resource == NULL)
-        return false;
-
-    char* data = _zero_base64_alloc(node->u.upload.byte_size);
-    if (data == NULL)
-        return false;
-
-    uint32_t write_width = node->u.upload.texture_width > 0 ? node->u.upload.texture_width : 2;
-    uint32_t write_height = node->u.upload.texture_height > 0 ? node->u.upload.texture_height : 2;
-    uint32_t alloc_width =
-        node->u.upload.texture_alloc_width > 0 ? node->u.upload.texture_alloc_width : write_width;
-    uint32_t alloc_height = node->u.upload.texture_alloc_height > 0
-                                ? node->u.upload.texture_alloc_height
-                                : write_height;
-    uint64_t end_x = 0;
-    uint64_t end_y = 0;
-    if (_dvz_add_u64_overflows(node->u.upload.texture_origin_x, write_width, &end_x) ||
-        _dvz_add_u64_overflows(node->u.upload.texture_origin_y, write_height, &end_y) ||
-        end_x > alloc_width || end_y > alloc_height)
-    {
-        dvz_free(data);
-        return false;
-    }
-    if (!_resource_ensure_texture_2d(
-            &emitter->resources, resource, alloc_width, alloc_height, &is_new))
-    {
-        dvz_free(data);
-        return false;
-    }
-    uint64_t id = resource->id;
-
-    uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
-    if (is_new &&
-        !dvz_drp2_stream_create_texture_2d_usage(stream, id, alloc_width, alloc_height, usage))
-    {
-        dvz_free(data);
-        return false;
-    }
-    if (emitter->resources.first_texture_id == 0)
-        emitter->resources.first_texture_id = id;
-    *out_id = id;
-    bool ok = false;
-    if (node->u.upload.texture_origin_x == 0 && node->u.upload.texture_origin_y == 0)
-        ok = dvz_drp2_stream_write_texture_2d(
-            stream, id, 0, write_width, write_height, write_width * 4, write_height, data);
-    else
-        ok = dvz_drp2_stream_write_texture_2d_region(
-            stream, id, 0, node->u.upload.texture_origin_x, node->u.upload.texture_origin_y,
-            write_width, write_height, write_width * 4, write_height, data);
-    dvz_free(data);
-    return ok;
 }
 
 
