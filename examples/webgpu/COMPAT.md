@@ -240,6 +240,15 @@ Current status as of this note:
   `node --check tools/webgpu_browser_smoke.mjs` passed; `just webgpu-browser-smoke` rendered
   `wasm-pick-marker` and reported `processed=1`, proving marker item readback through the same
   artifact-backed query path.
+- recorded local hover/selection browser-live checkpoint on 2026-06-08: `node --check
+  examples/webgpu/demos/wasm_pick_hover.js`, `node --check
+  examples/webgpu/demos/wasm_selection.js`, and `node --check tools/webgpu_browser_smoke.mjs`
+  passed; `just webgpu-browser-smoke` rendered `wasm-pick-hover` and `wasm-selection`, each with
+  `processed=1`, proving retained hover and selection state updates through the same query path.
+- recorded local image-probe browser-live checkpoint on 2026-06-08: `node --check
+  examples/webgpu/demos/wasm_image_probe.js` and `node --check tools/webgpu_browser_smoke.mjs`
+  passed; `just webgpu-browser-smoke` rendered `wasm-image-probe` with `processed=1`, proving one
+  sampled pixel probe through the browser query/readback path.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

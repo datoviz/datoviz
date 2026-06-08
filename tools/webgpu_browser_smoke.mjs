@@ -631,9 +631,11 @@ async function smokeQueryWasmPage(page, baseUrl, scenario, screenshotPath) {
       stage = "prime-pointer";
       const canvas = document.querySelector("#viewport");
       const rect = canvas.getBoundingClientRect();
+      const pointerX = rect.left + rect.width * ${Number(scenario.pointerX ?? 0.5)};
+      const pointerY = rect.top + rect.height * ${Number(scenario.pointerY ?? 0.5)};
       scene.scenarioPointer(2, {
-        clientX: rect.left + rect.width * 0.5,
-        clientY: rect.top + rect.height * 0.5,
+        clientX: pointerX,
+        clientY: pointerY,
         button: -1,
         buttons: 0,
         shiftKey: false,
@@ -667,6 +669,20 @@ async function smokeQueryWasmPage(page, baseUrl, scenario, screenshotPath) {
 
       stage = "render-resolved-result";
       await session.render();
+      if (${scenario.pressAfterResolve === true ? 'true' : 'false'}) {
+        stage = "press-resolved-result";
+        scene.scenarioPointer(1, {
+          clientX: pointerX,
+          clientY: pointerY,
+          button: 0,
+          buttons: 1,
+          shiftKey: false,
+          ctrlKey: false,
+          altKey: false,
+          metaKey: false,
+        });
+        await session.render();
+      }
       return { processed, pendingBefore, frameBefore, frameAfter };
     } catch (error) {
       return stage + ": " + (error instanceof Error ? error.message : String(error));
@@ -736,33 +752,9 @@ async function main() {
     let wasmTimer = null;
     let wasmPointQuery = null;
     let wasmMarkerQuery = null;
-    try {
-      wasmPointQuery = await smokeQueryWasmPage(
-        page,
-        baseUrl,
-        {
-          demo: 'wasm-pick-point',
-          label: 'WASM point picking',
-          scenarioId: 'feature_pick_point',
-        },
-        join(artifactsDir, 'wasm_examples_pick_point.png'),
-      );
-      wasmMarkerQuery = await smokeQueryWasmPage(
-        page,
-        baseUrl,
-        {
-          demo: 'wasm-pick-marker',
-          label: 'WASM marker picking',
-          scenarioId: 'feature_pick_marker',
-        },
-        join(artifactsDir, 'wasm_examples_pick_marker.png'),
-      );
-    } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
-        throw error;
-      }
-      console.log(`SKIP WASM point query: headless WebGPU instance loss (${error.message})`);
-    }
+    let wasmHoverQuery = null;
+    let wasmSelectionQuery = null;
+    let wasmImageProbe = null;
     try {
       wasm2d = await smokeWasmPage(
         page,
@@ -790,6 +782,65 @@ async function main() {
         throw error;
       }
       console.log(`SKIP WASM page render: headless WebGPU instance loss (${error.message})`);
+    }
+    try {
+      wasmPointQuery = await smokeQueryWasmPage(
+        page,
+        baseUrl,
+        {
+          demo: 'wasm-pick-point',
+          label: 'WASM point picking',
+          scenarioId: 'feature_pick_point',
+        },
+        join(artifactsDir, 'wasm_examples_pick_point.png'),
+      );
+      wasmMarkerQuery = await smokeQueryWasmPage(
+        page,
+        baseUrl,
+        {
+          demo: 'wasm-pick-marker',
+          label: 'WASM marker picking',
+          scenarioId: 'feature_pick_marker',
+        },
+        join(artifactsDir, 'wasm_examples_pick_marker.png'),
+      );
+      wasmHoverQuery = await smokeQueryWasmPage(
+        page,
+        baseUrl,
+        {
+          demo: 'wasm-pick-hover',
+          label: 'WASM hover picking',
+          scenarioId: 'feature_pick_hover',
+          pointerY: 0.55,
+        },
+        join(artifactsDir, 'wasm_examples_pick_hover.png'),
+      );
+      wasmSelectionQuery = await smokeQueryWasmPage(
+        page,
+        baseUrl,
+        {
+          demo: 'wasm-selection',
+          label: 'WASM selection',
+          scenarioId: 'feature_selection',
+          pressAfterResolve: true,
+        },
+        join(artifactsDir, 'wasm_examples_selection.png'),
+      );
+      wasmImageProbe = await smokeQueryWasmPage(
+        page,
+        baseUrl,
+        {
+          demo: 'wasm-image-probe',
+          label: 'WASM image probe',
+          scenarioId: 'feature_image_probe',
+        },
+        join(artifactsDir, 'wasm_examples_image_probe.png'),
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(`SKIP WASM query scenarios: headless WebGPU instance loss (${error.message})`);
     }
     let wasmDashboard = null;
     try {
@@ -819,6 +870,24 @@ async function main() {
       console.log(
         `PASS marker query WASM: ${wasmMarkerQuery.initialStatus}; ` +
         `processed=${wasmMarkerQuery.queryDelivery.processed}`,
+      );
+    }
+    if (wasmHoverQuery !== null) {
+      console.log(
+        `PASS hover query WASM: ${wasmHoverQuery.initialStatus}; ` +
+        `processed=${wasmHoverQuery.queryDelivery.processed}`,
+      );
+    }
+    if (wasmSelectionQuery !== null) {
+      console.log(
+        `PASS selection query WASM: ${wasmSelectionQuery.initialStatus}; ` +
+        `processed=${wasmSelectionQuery.queryDelivery.processed}`,
+      );
+    }
+    if (wasmImageProbe !== null) {
+      console.log(
+        `PASS image probe WASM: ${wasmImageProbe.initialStatus}; ` +
+        `processed=${wasmImageProbe.queryDelivery.processed}`,
       );
     }
     if (wasmDashboard !== null) {

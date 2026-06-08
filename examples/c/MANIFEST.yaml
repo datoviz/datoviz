@@ -494,7 +494,7 @@ examples:
       kind: synthetic
     portability: portable-scenario
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
       requirements:
         - image
         - query-readback
@@ -553,7 +553,7 @@ examples:
       kind: synthetic
     portability: portable-scenario
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
       requirements:
         - point
         - panzoom
@@ -585,7 +585,7 @@ examples:
       kind: synthetic
     portability: portable-scenario
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
       requirements:
         - point
         - panzoom

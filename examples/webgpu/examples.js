@@ -26,6 +26,21 @@ const DEMOS = [
     label: "WASM marker picking",
     load: () => import("./demos/wasm_pick_marker.js"),
   },
+  {
+    id: "wasm-pick-hover",
+    label: "WASM hover picking",
+    load: () => import("./demos/wasm_pick_hover.js"),
+  },
+  {
+    id: "wasm-selection",
+    label: "WASM selection",
+    load: () => import("./demos/wasm_selection.js"),
+  },
+  {
+    id: "wasm-image-probe",
+    label: "WASM image probe",
+    load: () => import("./demos/wasm_image_probe.js"),
+  },
 ];
 
 const canvas = document.querySelector("#viewport");
