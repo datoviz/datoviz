@@ -943,6 +943,8 @@ int test_scene_rejects_visual_destroy_while_emitted_stream_is_live(
 
 int test_scene_live_stream_count_tracks_multiple_emits(TstContext* suite, const TstCase* item);
 
+int test_scene_artifact_allows_mutation_after_emit(TstContext* suite, const TstCase* item);
+
 int test_scene_point_emit(TstContext* suite, const TstCase* item);
 
 int test_scene_path_emit(TstContext* suite, const TstCase* item);

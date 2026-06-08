@@ -20,6 +20,7 @@
 #include "scene_graph_utils.h"
 #include "_frame_plan_runtime_internal.h"
 #include "core/figure_emit_internal.h"
+#include "core/frame_artifact_internal.h"
 #include "datoviz/geom.h"
 #include "datoviz/vk/memory_interop.h"
 #include "datoviz/vklite/sync.h"
@@ -5621,6 +5622,73 @@ int test_scene_live_stream_count_tracks_multiple_emits(TstContext* suite, const 
     AT(scene->outstanding_emitted_streams == 0);
     AT(dvz_visual_set_data_range(visual, "size", update, 0, 2) == 0);
 
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_artifact_allows_mutation_after_emit(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    float positions[2 * 3] = {-0.25f, 0.0f, 0.0f, 0.25f, 0.0f, 0.0f};
+    DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
+    float sizes[2] = {8.0f, 8.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_wgsl = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* priming = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(priming != NULL);
+    AT(_stream_visual_write_buffer_count(priming) > 0);
+    dvz_drp2_stream_destroy(priming);
+    AT(scene->outstanding_emitted_streams == 0);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* artifact_stream_source = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(artifact_stream_source != NULL);
+    AT(_stream_visual_write_buffer_count(artifact_stream_source) == 0);
+    AT(scene->outstanding_emitted_streams == 1);
+
+    DvzScenePacketArtifact* artifact = _scene_packet_artifact(artifact_stream_source, 0, 1);
+    AT(artifact != NULL);
+    AT(_scene_packet_artifact_status(artifact) == DVZ_SCENE_PACKET_ARTIFACT_STATUS_OK);
+    AT(scene->outstanding_emitted_streams == 0);
+
+    const DvzDrp2CommandStream* artifact_stream = _scene_packet_artifact_stream(artifact);
+    AT(artifact_stream != NULL);
+    AT(_stream_visual_write_buffer_count(artifact_stream) == 0);
+
+    float update[2] = {10.0f, 12.0f};
+    AT(dvz_visual_set_data_range(visual, "size", update, 0, 2) == 0);
+    AT(_stream_visual_write_buffer_count(artifact_stream) == 0);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* next_stream = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(next_stream != NULL);
+    AT(_stream_visual_write_buffer_count(next_stream) == 1);
+
+    dvz_drp2_stream_destroy(next_stream);
+    _scene_packet_artifact_destroy(artifact);
     dvz_scene_destroy(scene);
     return 0;
 }
