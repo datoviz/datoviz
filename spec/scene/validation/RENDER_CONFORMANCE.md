@@ -66,7 +66,7 @@ volatile mechanics that do not represent scene behavior, such as transient encod
 borrowed frame handles, command-buffer handles, submission ids, payload pointers, and other
 frame-local runtime details.
 
-This layer answers: did the emitted stream change in a way humans should inspect?
+This layer answers: did the frame artifact stream snapshot change in a way humans should inspect?
 
 The current app trace code already implements this idea for live stream churn detection. Its
 normalizer/fingerprint behavior should be reused by the conformance lane after refactoring it out of

@@ -21,12 +21,14 @@ threads, high-DPI windows, or custom user-provided visual families.
    and other host-owned event-loop integrations.
 8. [CUPY_CUDA_INTEROP.md](CUPY_CUDA_INTEROP.md): zero-copy CUDA/CuPy memory sharing design for
    real-time Datoviz visualization.
-9. [WEBGPU_WASM.md](WEBGPU_WASM.md): experimental browser WebGPU and WASM scene integration
+9. [ENTRY_POINTS.md](ENTRY_POINTS.md): low-level and hybrid public integration lanes for canvas,
+   vklite, DRP2, scene export, and full scene/app usage.
+10. [WEBGPU_WASM.md](WEBGPU_WASM.md): experimental browser WebGPU and WASM scene integration
     contract.
-10. [WASM_WEBGPU_PARITY_PLAN.md](WASM_WEBGPU_PARITY_PLAN.md): implementation plan for broad
+11. [WASM_WEBGPU_PARITY_PLAN.md](WASM_WEBGPU_PARITY_PLAN.md): implementation plan for broad
     native Vulkan and WASM/WebGPU scene parity.
-11. [future](future/README.md): Android, iOS, and touch pressure notes.
-12. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
+12. [future](future/README.md): Android, iOS, and touch pressure notes.
+13. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
 
 
 ## Active Proposal Inputs

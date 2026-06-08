@@ -13,7 +13,7 @@ path. JSON stays available only for fixtures, debugging, and human-readable evid
 4. Remove JavaScript command-name heuristics and browser-side mutation of scene-owned resources.
 5. Keep the browser runtime generic: it executes DRP2 packets, not scene visual families.
 6. Make emission an immutable artifact boundary so retained scene state may be mutated immediately
-   after packet artifact creation.
+   after frame artifact creation.
 
 ## Artifact Boundary
 
@@ -31,13 +31,15 @@ as artifact-owned snapshots; they must not make scene mutation legality depend o
 or stream destruction timing.
 
 This boundary intentionally replaces the older rule that an externally live emitted
-`DvzDrp2CommandStream` prevents visual or interaction state mutation. During migration,
-compatibility wrappers may still expose command streams internally, but the architectural center is
-the immutable artifact.
+`DvzDrp2CommandStream` prevents visual or interaction state mutation. The long-term scene
+architecture is tracked in
+[`spec/scene/implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md`](../scene/implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md):
+the architectural center is `DvzSceneFrameArtifact`, and raw command streams are artifact-owned
+execution snapshots.
 
 ## Packet Result Boundary
 
-A scene emission returns one structured packet artifact:
+A scene emission returns one structured frame artifact with packet projections:
 
 1. `status`: success, validation error, unsupported feature, or internal error;
 2. `diagnostics_ptr`, `diagnostics_size`: UTF-8 diagnostics owned by the artifact until artifact
@@ -72,7 +74,7 @@ int      dvz_wasm_api_release_packets(scene)
 
 `kind` is the numeric packet phase id: `1` setup, `2` update, `3` frame.
 
-All returned pointers are borrowed WASM linear-memory addresses backed by the current packet
+All returned pointers are borrowed WASM linear-memory addresses backed by the current frame
 artifact. They remain valid only until `dvz_wasm_api_release_packets()`, the next emit call, or scene
 destruction. JavaScript may create temporary `Uint8Array` views for immediate decode/upload and may
 copy them into JS-owned arrays for later execution. It must not retain WASM memory views after
@@ -106,7 +108,7 @@ A setup packet advances `resource_version`. Replaying an older setup packet agai
 session is invalid unless the session has been reset.
 
 After a reset, setup is required for resources that later update/frame packets reference. Reset does
-not make old packet artifacts usable for a newer retained session unless the runtime explicitly
+not make old frame artifacts usable for a newer retained session unless the runtime explicitly
 starts a fresh session from that artifact; JavaScript must request or retain a packet set that
 contains the setup needed to rebuild the session.
 

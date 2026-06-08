@@ -120,7 +120,7 @@ window resize
   -> grid spec resolves using the new width and height
   -> grid-owned panel descriptors are updated
   -> controllers receive the new panel pixel viewport
-  -> next dvz_figure_emit() emits updated viewport/scissor commands
+  -> next frame artifact emission contains updated viewport/scissor commands
 ```
 
 Pixel units should be resolved before normalization. For example, with fixed margins and gutters:

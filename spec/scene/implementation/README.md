@@ -24,9 +24,12 @@ behavior instead of restating it here.
 7. [SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](SCENE_VISUAL_BOUNDARY_GUARDRAILS.md): active
    visual-architecture phase for keeping generic scene code registry-driven and confining
    visual-specific behavior to family folders or explicit shared visual subsystems.
-8. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): retired pointer for the completed
+8. [FRAME_ARTIFACT_REFACTOR_PLAN.md](FRAME_ARTIFACT_REFACTOR_PLAN.md): active plan to make
+   `DvzSceneFrameArtifact` the single scene emission product while preserving DRP2 streams as the
+   artifact-owned execution IR.
+9. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): retired pointer for the completed
    broad scene source split; active work moved to `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`.
-9. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): retired pointer
+10. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): retired pointer
    for the completed architecture queue.
 
 ## Current priorities
@@ -39,8 +42,10 @@ behavior instead of restating it here.
 5. Keep graph-backed effects and transparency implementation rules in `GRAPH_TECHNIQUES.md`.
 6. Keep SSAO and occlusion implementation rules in `OCCLUSION_EFFECTS.md`.
 7. Keep transparency, depth-peeling, and MSAA implementation rules in `TRANSPARENCY_MSAA.md`.
-8. Use `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md` before adding new root-level visual switches,
+8. Use `FRAME_ARTIFACT_REFACTOR_PLAN.md` before changing scene emission ownership, WASM packet
+   payloads, JSON emission, app/runtime handoff, or public `dvz_figure_emit*` semantics.
+9. Use `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md` before adding new root-level visual switches,
    family-private includes from generic code, or family-specific fields to generic retained visual
    state.
-9. Treat `SCENE_CODE_SPLIT_ROADMAP.md` and `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` as retired
+10. Treat `SCENE_CODE_SPLIT_ROADMAP.md` and `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` as retired
    compatibility links, not active queues.

@@ -411,12 +411,12 @@ Use progressively broader validation:
 2. DRP2 semantic tests that do not require vklite;
 3. scene emission tests requesting WGSL without vklite execution;
 4. Emscripten compile;
-5. Node or browser smoke for create/destroy and stream emission;
+5. Node or browser smoke for create/destroy and frame artifact emission;
 6. `just webgpu-fixture-preflight`;
 7. browser fixture execution;
 8. scene point/primitive/image canvas smoke;
 9. resize and repeated-frame resource-count checks;
-10. native/browser scene-emitted stream comparisons where deterministic.
+10. native/browser frame artifact stream snapshot comparisons where deterministic.
 
 For WASM-only failures, validate memory and stack before assuming scene semantics are wrong:
 

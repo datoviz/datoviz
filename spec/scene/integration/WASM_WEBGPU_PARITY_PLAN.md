@@ -316,8 +316,8 @@ Required work:
 
 1. keep native portable query-shaped examples current: `pick_point`, `pick_marker`, `pick_hover`,
    `selection`, and `image_probe`;
-2. keep the artifact-backed WASM query request/result ABI so resolved point-picking results update
-   retained state after query packet execution without live-stream lifetime violations;
+2. keep the frame-artifact-backed WASM query request/result ABI so resolved point-picking results
+   update retained state after query packet execution without raw-stream lifetime constraints;
 3. schedule WebGPU readbacks asynchronously and deliver results through scenario events or polling;
 4. keep latest-request-wins behavior for hover/probe examples;
 5. keep point, marker, hover, selection, and image-probe browser smokes;

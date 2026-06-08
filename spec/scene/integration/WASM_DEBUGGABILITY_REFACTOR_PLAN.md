@@ -237,8 +237,8 @@ Rules:
    uses a separate explicit anonymous/transient API.
 3. Shader, pipeline, bind-group-layout, bind-group, sampler, buffer, texture, and readback keys
    should have role-specific prefixes or typed wrappers.
-4. Anonymous keys are allowed only for transient objects whose lifetime is one emitted stream or
-   one command encoder.
+4. Anonymous keys are allowed only for transient objects whose lifetime is one frame artifact or one
+   command encoder.
 5. If an empty key reaches runtime emission, emit a diagnostic before any object id is allocated.
 
 The main objective is to prevent an invalid key from poisoning a persistent id map and causing a

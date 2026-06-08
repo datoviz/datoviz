@@ -39,6 +39,8 @@ families and interactions are already implemented.
    behavior.
 6. [pipeline/README.md](pipeline/README.md): resource, transform, invalidation, frame-plan, and
    lifecycle contracts.
+7. [implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md](implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md):
+   active scene emission artifact refactor plan.
 
 
 ## Directory Layout

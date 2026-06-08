@@ -69,6 +69,8 @@ Read the scene spec in this order during review.
    tessellation, simplification, hull, boolean ops, and SDF/MSDF pipeline.
 5. [pipeline/FRAME_PLAN.md](pipeline/FRAME_PLAN.md): canonical producer-side frame artifact.
 6. [pipeline/FRAME_LIFECYCLE.md](pipeline/FRAME_LIFECYCLE.md): update/build/emit flow.
+7. [implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md](implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md):
+   active migration from raw scene-emitted streams to `DvzSceneFrameArtifact`.
 
 
 ## 5. Validation, Adaptation, Interaction, And Diagnostics
@@ -128,12 +130,14 @@ Current implementation orientation:
 4. [ROADMAP.md](ROADMAP.md): compact backlog, release-proof order, and post-v0.4 direction.
 5. [Scene visual boundary guardrails][scene-visual-boundary-guardrails]: active
    visual-architecture phase and pointers to retired source-split records.
-6. [implementation/SCENE_CODE_SPLIT_ROADMAP.md](implementation/SCENE_CODE_SPLIT_ROADMAP.md):
+6. [implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md](implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md):
+   active scene emission artifact refactor plan.
+7. [implementation/SCENE_CODE_SPLIT_ROADMAP.md](implementation/SCENE_CODE_SPLIT_ROADMAP.md):
    retired pointer for the completed broad scene source split.
-7. [core/RUNTIME_BOUNDARY.md](core/RUNTIME_BOUNDARY.md): active scene -> FramePlan -> DRP2 ->
+8. [core/RUNTIME_BOUNDARY.md](core/RUNTIME_BOUNDARY.md): active scene -> FramePlan -> DRP2 ->
    app/runtime boundary.
-8. [pipeline/FRAME_LIFECYCLE.md](pipeline/FRAME_LIFECYCLE.md): update/build/emit/submit flow.
-9. [validation/DEFERRED_TRACKER.md](validation/DEFERRED_TRACKER.md): consolidated deferred-item
+9. [pipeline/FRAME_LIFECYCLE.md](pipeline/FRAME_LIFECYCLE.md): update/build/emit/submit flow.
+10. [validation/DEFERRED_TRACKER.md](validation/DEFERRED_TRACKER.md): consolidated deferred-item
    index.
 
 Normative scene semantics and pipeline contracts:

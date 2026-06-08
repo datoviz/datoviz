@@ -83,10 +83,11 @@ authoring.
 **Primary API anchors:**
 
 - `dvz_scene_json()` / `dvz_scene_json_destroy()`
-- `dvz_figure_emit()` / `dvz_figure_emit_ex()`
+- planned `dvz_figure_emit_frame()` and `DvzSceneFrameArtifact` accessors
 
-**Notes:** scene state can be serialized or converted to DRP2 stream outputs and consumed by external
-renderers/adapters.
+**Notes:** scene state can be serialized or emitted as immutable frame artifacts. External
+renderers/adapters should treat DRP2 streams, JSON, and packet spans as projections of the same
+artifact-owned frame snapshot.
 
 
 ## Tier E — Scene + DRP2 emission + Datoviz runtime
@@ -98,10 +99,11 @@ renderers/adapters.
 **Primary API anchors:**
 
 - Scene lifecycle and figure/panel/visual APIs
-- `dvz_figure_emit[_ex]()` and request processing helpers
+- planned `dvz_figure_emit_frame()` and request processing helpers
 - `dvz_app*` window/presentation entry points
 
-**Notes:** this is the end-to-end maintained vertical slice in v0.4.
+**Notes:** this is the end-to-end maintained vertical slice in v0.4. The app/runtime path should
+consume a frame artifact and retrieve its DRP2 stream snapshot for native execution.
 
 
 ## Packaging and build profiles
@@ -139,7 +141,8 @@ For each lane, include:
 
 - minimal bootstrap example
 - ownership/borrowing rules
-- lifecycle constraints (especially live stream/resource mutation constraints)
+- lifecycle constraints, especially artifact-owned stream snapshots, borrowed packet spans, and
+  retained-scene mutation after frame emission
 - required module toggles and platform caveats
 
 
