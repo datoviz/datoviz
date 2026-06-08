@@ -35,7 +35,7 @@ The generic ABI uses handles for these objects:
 
 | Object | Initial role |
 | --- | --- |
-| scene | Owns the retained scene, diagnostics, emitted stream, and payload. |
+| scene | Owns the retained scene, diagnostics, and current emitted artifact handle. |
 | figure | Retained figure created inside a scene. |
 | panel | Retained panel created inside a figure. |
 | visual | Retained visual created inside a scene. |
@@ -109,7 +109,8 @@ The scenario ABI is the first bridge from reusable C examples to the browser hos
 3. Unsupported requirement bits fail before partial rendering and report diagnostics.
 4. `dvz_wasm_api_scenario_figure()` returns the retained figure created by scenario init.
 5. `dvz_wasm_api_scenario_frame()` is driven by browser `requestAnimationFrame`; it runs the
-   scenario frame callback and invalidates borrowed packet/JSON payloads like other mutating calls.
+   scenario frame callback and may coexist with an older emitted artifact because artifact memory is
+   immutable until explicit release.
 6. The first promoted scenario is `feature_timer_animation`; broad live-example coverage is still
    an RC target, not current support.
 
@@ -117,13 +118,14 @@ The scenario ABI is the first bridge from reusable C examples to the browser hos
 
 1. `dvz_wasm_api_emit_packets()` is the browser runtime path. It exposes setup, update, and frame
    binary DRP2 packets plus one payload arena per packet kind.
-2. Packet and arena pointers are borrowed and valid only until the next mutating ABI call on the
-   same scene or scene destruction.
-3. JS must decode and execute packet spans immediately and must not retain packet or arena views
-   across another ABI call on that scene.
+2. Packet and arena pointers are borrowed from the current emitted artifact and valid only until
+   explicit packet release, the next emit call on the same scene, or scene destruction.
+3. JS must decode or copy packet spans immediately and must not retain packet or arena WASM views
+   after artifact release.
 4. `dvz_wasm_api_emit()` remains a debug and fixture-export path. Its JSON payload pointer is
    borrowed with the same lifetime rules and is not a browser render path.
-5. Diagnostics are borrowed with the same lifetime as the current diagnostic report.
+5. Diagnostics are borrowed with the same lifetime as the current diagnostic report or emitted
+   artifact.
 6. Successful emits should leave diagnostics empty.
 7. Failed emits and rejected operations should return `-1`; detailed diagnostics are required where
    the scene/DRP2 layer can explain the failure.

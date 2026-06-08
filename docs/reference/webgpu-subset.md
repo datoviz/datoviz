@@ -154,11 +154,10 @@ Payload and diagnostics lifetime:
 
 - `dvz_wasm_api_emit_packets()` is the browser runtime path and returns setup, update, and frame
   binary DRP2 packets plus payload arenas through packet accessors;
-- packet and arena spans are valid only until the next mutating ABI call on the same scene or scene
-  destruction;
-- JavaScript must decode and execute packet spans immediately and must not retain packet or arena
-  views across resize, pointer, wheel, data upload, emit, canvas-format, capability, or destroy
-  calls;
+- packet and arena spans are borrowed from the current emitted artifact and valid only until
+  explicit packet release, the next emit call on the same scene, or scene destruction;
+- JavaScript must decode or copy packet spans immediately and must not retain packet or arena WASM
+  views after artifact release;
 - `dvz_wasm_api_emit()` plus `dvz_wasm_api_payload_ptr()` and `dvz_wasm_api_payload_size()` expose
   borrowed UTF-8 JSON for debug and fixture export only;
 - JSON is not used as the browser render path;
@@ -166,7 +165,7 @@ Payload and diagnostics lifetime:
   groups, vertex buffers, buffer size, texture-copy row alignment, sample count, and color-blending
   support into scene emission;
 - `dvz_wasm_api_diagnostic()` returns borrowed strings with the same lifetime as the current
-  diagnostic report;
+  diagnostic report or emitted artifact;
 - successful emits should leave diagnostics empty;
 - failed emits and rejected operations should return an error status and expose diagnostics when the
   scene or DRP2 layer can explain the failure.

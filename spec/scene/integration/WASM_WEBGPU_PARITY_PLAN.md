@@ -174,8 +174,10 @@ The current WASM scene ABI is intentionally narrow. Broad parity requires these 
     copy row pitch;
 12. versioned reset/lifecycle behavior for retained browser runtime sessions.
 
-The ABI should expose opaque handles and borrowed packet spans only. JavaScript must copy or execute
-packet and arena spans before the next mutating WASM call.
+The ABI should expose opaque handles and borrowed packet spans backed by emitted artifacts.
+JavaScript must copy or execute packet and arena spans before artifact release. Retained scene
+mutation after artifact creation must remain legal; older artifacts affect only backend execution,
+not the mutability of later hover, selection, query, or visual state.
 
 
 ## Shader Policy

@@ -13,14 +13,14 @@ presentation stack.
 ```text
 C/WASM scene state
   -> scene FramePlan
-  -> WGSL DRP2 command stream
+  -> immutable WGSL DRP2 frame/query artifact
   -> browser WebGPU DRP2 runtime
   -> HTML canvas
 ```
 
 The scene layer remains the owner of scene semantics, visual lowering, controller state, shader
 selection, resource ids, and request bookkeeping. The browser runtime executes portable DRP2
-streams. It must not know about Datoviz visual families except through the DRP2 contract.
+artifacts. It must not know about Datoviz visual families except through the DRP2 contract.
 
 Interaction state follows the same boundary. Browser JavaScript may translate DOM events into
 scene/controller API calls, but the WASM scene layer owns the panzoom/camera/controller math and
@@ -109,12 +109,14 @@ The exported C/WASM API should cover:
 3. create a small set of visuals;
 4. upload or update visual data;
 5. update figure size and controller state;
-6. emit one WGSL DRP2 frame stream;
-7. return stream JSON or an owned pointer/length to encoded commands;
-8. destroy emitted streams and owned payload buffers.
+6. emit one immutable WGSL DRP2 frame or query artifact;
+7. return packet spans and payload arenas owned by that artifact;
+8. explicitly release emitted artifacts after the browser runtime has copied or executed them.
 
-Every exported pointer must have explicit ownership: borrowed until the next call, or owned until a
-matching destroy call.
+Every exported pointer must have explicit ownership: borrowed from the current artifact until
+artifact release, or owned until a matching destroy call. Retained scene mutation must be legal
+after artifact creation; backend execution timing must not keep the scene locked against hover,
+selection, query, or visual data updates.
 
 ## Browser DRP2 Runtime
 
@@ -375,11 +377,11 @@ The `src/wasm/scene_api.c` API is an unstable experimental ABI for the browser e
 2. `dvz_wasm_api_emit_packets()` is the browser runtime emit path and exposes split binary DRP2
    setup/update/frame packets plus payload arenas through the packet accessors documented in
    `spec/drp2/PACKETS.md`;
-3. packet pointers, arena pointers, and diagnostic strings are borrowed WASM linear-memory spans
-   valid only until the next mutating bridge call on the same handle or
+3. packet pointers and arena pointers are borrowed WASM linear-memory spans valid only until
+   `dvz_wasm_api_release_packets()`, the next emit call on the same handle, or
    `dvz_wasm_api_scene_destroy()`;
-4. JavaScript decodes and executes packets immediately and must not retain packet or arena views
-   across another bridge call;
+4. JavaScript decodes or copies packets immediately and must not retain packet or arena WASM views
+   after artifact release;
 5. `dvz_wasm_api_emit()` plus `dvz_wasm_api_payload_ptr()` and
    `dvz_wasm_api_payload_size()` expose borrowed UTF-8 JSON for debug and fixture export only;
 6. JavaScript must not use JSON as the browser render path; runtime rendering consumes the split
@@ -387,8 +389,8 @@ The `src/wasm/scene_api.c` API is an unstable experimental ABI for the browser e
 7. JavaScript must copy or decode the debug JSON payload before calling resize, pointer, wheel,
    data-upload, emit, canvas-format, capability, or destroy functions again;
 8. diagnostics returned by `dvz_wasm_api_diagnostic()` are borrowed strings with the same lifetime
-   as the current diagnostic report, valid only until the next bridge call on the same handle or
-   destroy;
+   as the current diagnostic report, valid only until artifact release, the next bridge call on the
+   same handle, or destroy;
 9. successful emits should leave the diagnostic report empty; failed emits must be surfaced with
    non-empty diagnostics where the scene/DRP2 layer can explain the failure;
 10. the supported browser canvas formats are `rgba8unorm` and `bgra8unorm`, mapped to

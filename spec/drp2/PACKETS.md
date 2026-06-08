@@ -12,14 +12,36 @@ path. JSON stays available only for fixtures, debugging, and human-readable evid
 3. Split scene emission into explicit `setup`, `update`, and `frame` packets.
 4. Remove JavaScript command-name heuristics and browser-side mutation of scene-owned resources.
 5. Keep the browser runtime generic: it executes DRP2 packets, not scene visual families.
+6. Make emission an immutable artifact boundary so retained scene state may be mutated immediately
+   after packet artifact creation.
+
+## Artifact Boundary
+
+Scene emission has two different products:
+
+1. retained scene state remains mutable and owns visual, controller, query, hover, and selection
+   semantics;
+2. an emitted frame or query artifact owns the command stream snapshot, encoded packet bytes, and
+   payload arenas needed by one backend execution step.
+
+Creating an artifact freezes the emitted command data. The artifact may be executed, copied,
+recorded, or destroyed without locking retained scene mutation. Later scene mutations affect only
+later artifacts. Backends may keep optimized internal command representations, but they must behave
+as artifact-owned snapshots; they must not make scene mutation legality depend on backend execution
+or stream destruction timing.
+
+This boundary intentionally replaces the older rule that an externally live emitted
+`DvzDrp2CommandStream` prevents visual or interaction state mutation. During migration,
+compatibility wrappers may still expose command streams internally, but the architectural center is
+the immutable artifact.
 
 ## Packet Result Boundary
 
-A scene emission returns one structured result:
+A scene emission returns one structured packet artifact:
 
 1. `status`: success, validation error, unsupported feature, or internal error;
-2. `diagnostics_ptr`, `diagnostics_size`: UTF-8 diagnostics owned by the WASM scene bridge until the
-   next mutating bridge call or explicit result destroy;
+2. `diagnostics_ptr`, `diagnostics_size`: UTF-8 diagnostics owned by the artifact until artifact
+   destroy;
 3. `setup_packet_ptr`, `setup_packet_size`;
 4. `update_packet_ptr`, `update_packet_size`;
 5. `frame_packet_ptr`, `frame_packet_size`;
@@ -27,8 +49,10 @@ A scene emission returns one structured result:
 7. `scene_version`, `resource_version`, and `frame_index` counters.
 
 A zero packet pointer or zero size means that phase has no commands. Packet pointers and the payload
-arena are borrowed WASM memory; JavaScript must execute or copy them before another mutating bridge
-call. Browser runtimes must never retain borrowed WASM spans after result destroy or scene destroy.
+arena are borrowed views into artifact-owned memory. JavaScript must execute or copy them before
+artifact destroy. Browser runtimes must never retain borrowed WASM spans after artifact destroy or
+scene destroy. Retained scene mutations are allowed while an artifact is alive, because artifact
+memory is immutable and no longer borrows mutable scene-owned visual payloads.
 
 ## WASM Scene Bridge ABI
 
@@ -43,15 +67,17 @@ uint32_t dvz_wasm_api_packet_arena_ptr(scene, kind)
 uint32_t dvz_wasm_api_packet_arena_size(scene, kind)
 uint32_t dvz_wasm_api_resource_version(scene)
 uint32_t dvz_wasm_api_frame_index(scene)
+int      dvz_wasm_api_release_packets(scene)
 ```
 
 `kind` is the numeric packet phase id: `1` setup, `2` update, `3` frame.
 
-All returned pointers are borrowed WASM linear-memory addresses. They remain valid only until the
-next mutating scene bridge call, the next emit call, or scene destruction. JavaScript may create
-temporary `Uint8Array` views for immediate decode/upload, but must not retain those views across
-another bridge call. JSON emit functions remain a debug/fixture export and are not the browser
-runtime path.
+All returned pointers are borrowed WASM linear-memory addresses backed by the current packet
+artifact. They remain valid only until `dvz_wasm_api_release_packets()`, the next emit call, or scene
+destruction. JavaScript may create temporary `Uint8Array` views for immediate decode/upload and may
+copy them into JS-owned arrays for later execution. It must not retain WASM memory views after
+artifact release. JSON emit functions remain a debug/fixture export and are not the browser runtime
+path.
 
 Current browser runtime requirements:
 
@@ -80,7 +106,8 @@ A setup packet advances `resource_version`. Replaying an older setup packet agai
 session is invalid unless the session has been reset.
 
 After a reset, setup is required for resources that later update/frame packets reference. Reset does
-not make old borrowed packet spans valid again; JavaScript must request or retain a packet set that
+not make old packet artifacts usable for a newer retained session unless the runtime explicitly
+starts a fresh session from that artifact; JavaScript must request or retain a packet set that
 contains the setup needed to rebuild the session.
 
 ### `update`
@@ -151,8 +178,8 @@ or browser-only metadata.
 
 ## Payload Arena Rules
 
-1. Arena offsets are stable only within one emission result.
-2. Payload contents are immutable after the result is returned.
+1. Arena offsets are stable only within one emitted artifact.
+2. Payload contents are immutable after the artifact is returned.
 3. Multiple commands may reference the same arena span only when the scene emitter deliberately
    deduplicates identical bytes and both commands use the exact same range.
 4. The browser runtime copies or uploads from arena spans during packet execution; it must not retain
@@ -183,7 +210,7 @@ frame packet may discard transient command encoder/pass state but must not mutat
 resources except for uploads already committed before the failure; runtimes should validate before
 execution where practical.
 
-Packet counters are session-order guards, not resource lifetime owners. A reset clears the runtime's
+Packet counters are session-order guards, not retained scene lifetime owners. A reset clears the runtime's
 remembered `resource_version` and `frame_index` so a fresh setup-bearing packet set can rebuild the
 session. Once a newer packet set has executed in that reset session, older packet sets from before or
 after the reset are stale and must be rejected by `resource_version` or `frame_index`. Replaying
