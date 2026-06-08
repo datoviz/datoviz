@@ -59,6 +59,7 @@ also the initial view should be tilted in such a way that we see the slice and s
 
 showcases/choropleth
 title and subtitle are way too small on macOS retina
+zoom with right drag should force fixed aspect ratio
 
 showcases/scientific_plotting
 xaxis is clipped by panel bottom end
