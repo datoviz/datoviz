@@ -27,8 +27,9 @@ Current implementation checkpoint:
    to active scenario `event` callbacks, and report unsupported scenario requirements
    deterministically.
 6. Browser-side query/readback packet emission and WebGPU readback plumbing exist for
-   `feature_pick_point`, and `wasm-pick-point` is browser-live. The remaining query promotion work
-   is marker picking, hover/selection delivery beyond the point proof, and one sampled probe route.
+   `feature_pick_point` and `feature_pick_marker`, and `wasm-pick-point` plus `wasm-pick-marker`
+   are browser-live. The remaining query promotion work is hover/selection delivery beyond the item
+   picking proofs and one sampled probe route.
 
 Current native escape hatches to retire or classify:
 
@@ -40,7 +41,7 @@ Current native escape hatches to retire or classify:
 
 Near-term implementation order:
 
-1. extend the narrow WASM/WebGPU query/readback ABI to marker, selection/hover, and `image_probe`;
+1. extend the narrow WASM/WebGPU query/readback ABI to selection/hover and `image_probe`;
 2. add browser routes and smoke evidence for each promoted query scenario;
 3. use `probe_labels.c` as the categorical query follow-up once pixel query delivery is live;
 4. classify live WebGPU vs native-only examples from manifest metadata.
@@ -723,11 +724,11 @@ Add portable runner bridges for resize, pointer, wheel, keyboard modifiers, cont
 asynchronous picking/query results, and request-frame signals. Current status: native pointer/key/
 resize event translation and post-frame callbacks exist; `pick_point.c`, `pick_marker.c`,
 `pick_hover.c`, `selection.c`, and `image_probe.c` are migrated off `native_view`; browser
-pointer/wheel event delivery exists; point-picking async query result delivery is browser-live.
+pointer/wheel event delivery exists; point and marker async query result delivery are browser-live.
 Then
 migrate representative interaction examples before broad conversion:
 
-1. async query result delivery for the migrated marker, selection/hover, and image-probe scenarios;
+1. async query result delivery for the migrated selection/hover and image-probe scenarios;
 2. `probe_labels.c` for the categorical query follow-up;
 3. `panel_multi.c` and `panzoom_attachment.c` after controller request helpers are settled.
 
@@ -752,8 +753,8 @@ compute requirements. This is the first high-value proof that the same C scenari
 Vulkan and WASM/WebGPU evidence for a compute-to-render workflow.
 
 In parallel with compute particles, promote the query examples in the same runner shape. The first
-point-picking browser-live proof exists; the remaining promotion work is marker picking,
-selection/hover, and one sampled probe example. These examples prove
+point and marker picking browser-live proofs exist; the remaining promotion work is
+selection/hover and one sampled probe example. These examples prove
 async request/query/readback delivery without promising full query parity for every visual family.
 
 ### Promotion Gate

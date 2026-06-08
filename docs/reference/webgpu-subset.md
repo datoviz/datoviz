@@ -46,6 +46,8 @@ Supported browser pages:
 - `examples/webgpu/examples.html?demo=wasm-pick-point`: first portable query/readback browser
   route for `feature_pick_point`, including browser-live point query readback and retained
   selection/hover result-state updates;
+- `examples/webgpu/examples.html?demo=wasm-pick-marker`: marker item query/readback through the
+  same portable scenario and artifact-backed result-state path;
 - `examples/webgpu/fixtures.html`: DRP2 fixture dashboard for the pure browser WebGPU runner,
   retained runtime stress checks, and WASM scene smoke rows.
 
@@ -90,7 +92,7 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Controller parity | limited to panzoom and one 3D arcball proof |
 | Portable scenario host parity | first `feature_timer_animation` C scenario and browser frame-callback proof are current; broad example-host coverage remains an RC target |
 | Compute-to-render parity | DRP2 fixture and native scene proof exist; browser-live particle scene is an RC target, not current support |
-| Query/picking/readback scene parity | first point-picking query/readback route is browser-live; marker/hover/selection promotion and one sampled probe remain RC targets |
+| Query/picking/readback scene parity | point and marker item picking are browser-live; hover/selection promotion and one sampled probe remain RC targets |
 
 Any future feature promoted into the browser subset must update the scene emitter, DRP2 schema or
 fixture coverage when needed, WebGPU execution, capability reporting, diagnostics, and this page in
@@ -106,8 +108,8 @@ The browser path intentionally does not support:
 - custom shader APIs;
 - browser-live scene compute particles until the portable scenario host and WGSL compute path are
   proven;
-- browser-live scene picking/readback beyond the first point-picking route until marker picking,
-  hover/selection delivery, and one sampled probe are proven;
+- browser-live scene picking/readback beyond point and marker item picking until hover/selection
+  delivery and one sampled probe are proven;
 - colorbars, scale bars, volume, unsigned/rich labels, path subpath controls, broad stroke/vector
   parity, sphere raycast/depth/material parity, full query parity, and advanced technique parity in
   the WASM scene demos;
@@ -118,8 +120,8 @@ The browser path intentionally does not support:
 
 Promote browser scene features in this order unless a release blocker changes the priority:
 
-1. extend the narrow request/query/readback slice to marker picking, hover/selection delivery, and
-   one sampled probe path;
+1. extend the narrow request/query/readback slice to hover/selection delivery and one sampled probe
+   path;
 2. add manifest-driven browser routes for promoted portable scenarios;
 3. compute-to-render particle smoke at a documented browser particle budget;
 4. colorbar;

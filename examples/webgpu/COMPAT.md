@@ -235,6 +235,11 @@ Current status as of this note:
   query setup/update/frame packets with readback metadata; `just webgpu-browser-smoke` rendered
   `wasm-pick-point` and reported `processed=1`, proving point-picking readback and retained
   result-state updates through the artifact-backed lifetime path.
+- recorded local marker-query browser-live checkpoint on 2026-06-08: `node --check
+  examples/webgpu/examples.js`, `node --check examples/webgpu/demos/wasm_pick_marker.js`, and
+  `node --check tools/webgpu_browser_smoke.mjs` passed; `just webgpu-browser-smoke` rendered
+  `wasm-pick-marker` and reported `processed=1`, proving marker item readback through the same
+  artifact-backed query path.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

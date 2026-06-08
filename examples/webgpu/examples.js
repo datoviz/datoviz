@@ -21,6 +21,11 @@ const DEMOS = [
     label: "WASM point picking",
     load: () => import("./demos/wasm_pick_point.js"),
   },
+  {
+    id: "wasm-pick-marker",
+    label: "WASM marker picking",
+    load: () => import("./demos/wasm_pick_marker.js"),
+  },
 ];
 
 const canvas = document.querySelector("#viewport");

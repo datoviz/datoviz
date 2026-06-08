@@ -113,8 +113,9 @@ The current browser path and portable-scenario path prove:
 20. native scenario-runner requirement diagnostics plus portable event/post-frame hooks;
 21. `feature_pick_point`, `feature_pick_marker`, `feature_pick_hover`, `feature_selection`, and
     `image_probe` migrated off `native_view` as query/readback-shaped portable scenarios.
-22. first browser-live WASM query/readback route for `feature_pick_point`, including split DRP2
-    query packets, WebGPU readback, and retained hover/selection result-state updates.
+22. first browser-live WASM query/readback routes for `feature_pick_point` and
+    `feature_pick_marker`, including split DRP2 query packets, WebGPU readback, and retained
+    hover/selection result-state updates.
 
 This is an experimental subset, not native Vulkan feature parity.
 
@@ -222,7 +223,7 @@ into that family until earlier rows are stable.
 | image | retained RGBA/scalar image paths | RGBA8 image first, scalar/colormap later | current | add scalar/colormap variants after query/colorbar path is stable |
 | mesh | basic/textured/lit mesh paths | basic, textured, and material-controlled mesh current | current | keep texture-sampling and material-update evidence; broaden only with additional shader/material models |
 | pixel | retained pixel visual | dense and buffer-backed 2D pixel visual | current | keep fixture/browser evidence |
-| marker | retained marker visual | built-in marker subset current; item picking rc-target | current/rc-target | keep built-in marker evidence; add request/readback proof for promoted picking payloads |
+| marker | retained marker visual | built-in marker subset and item picking current | current | keep built-in marker and query/readback evidence |
 | segment/path/stroke | retained path and stroke-shaped paths | segment/path cap-join controls current; broader subpath/vector parity future | current/future | keep cap/join evidence; settle subpath/vector policy and browser proof later |
 | text/glyph | retained text and glyph visuals | low-level atlas glyph and semantic bitmap text current | current | keep glyph/text evidence; richer shaping, font packaging, and layout remain future work |
 | labels | label field and readback paths | label rendering current; label probe rc-target if chosen as sampled probe | current/rc-target | texture/label formats, query/readback, diagnostics |
@@ -257,7 +258,7 @@ query/readback RC slices are stable.
 | fly/turntable | browser input to C controllers | future | expose controller creation/binding variants and smoke after RC example host lands |
 | frame callbacks | portable example frame callback | current/rc-target | first `feature_timer_animation` scenario is current; broader example-host conversion remains an RC target |
 | resize/high-DPI | browser resize to C scene and packet replay | current | keep capability/resize diagnostics |
-| picking/query | request/poll query results | current/rc-target | point query/readback is browser-live; add marker, hover/selection delivery, and one sampled probe proof |
+| picking/query | request/poll query results | current/rc-target | point and marker item query/readback are browser-live; add hover/selection delivery and one sampled probe proof |
 | selection | update retained selection state | rc-target | query path, visual state update path for one promoted picking example |
 | capture | browser artifact capture | future | browser screenshot/video policy separate from native capture |
 | streaming/partial updates | same-shape updates and bounded growth | partial | buffer update ABI, diagnostics, memory limits |
@@ -274,8 +275,8 @@ query/readback RC slices are stable.
    `feature_pick_hover`, native `feature_selection`, and native `image_probe`.
 2. Add a generic WASM example host beside the current scene ABI. Current slices:
    browser frame callbacks and pointer/wheel event delivery for `feature_timer_animation`, plus
-   browser-live query/readback for `feature_pick_point`; the next browser slice is marker,
-   selection/hover, and sampled-probe delivery.
+   browser-live query/readback for `feature_pick_point` and `feature_pick_marker`; the next browser
+   slice is selection/hover and sampled-probe delivery.
 3. Keep one raw native scene/app example that shows the underlying API without helper indirection.
 4. Convert small feature examples first, then showcases.
 5. Mark native-integration examples explicitly as native-only.
@@ -317,7 +318,7 @@ Required work:
    retained state after query packet execution without live-stream lifetime violations;
 3. schedule WebGPU readbacks asynchronously and deliver results through scenario events or polling;
 4. implement latest-request-wins behavior for hover/probe examples;
-5. keep point item-picking browser smoke and add marker item-picking browser smoke;
+5. keep point and marker item-picking browser smokes;
 6. add one sampled probe smoke, preferably image or labels;
 7. update selection state for one browser-visible promoted example;
 8. document unsupported query targets, payload types, formats, and visual families.

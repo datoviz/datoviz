@@ -584,8 +584,8 @@ async function smokeAnimatedWasmPage(page, baseUrl, path, expectedStatus, screen
   return { initialStatus, initialFrame };
 }
 
-async function smokePointQueryWasmPage(page, baseUrl, screenshotPath) {
-  const path = '/examples/webgpu/examples.html?demo=wasm-pick-point';
+async function smokeQueryWasmPage(page, baseUrl, scenario, screenshotPath) {
+  const path = `/examples/webgpu/examples.html?demo=${scenario.demo}`;
   await page.navigate(`${baseUrl}${path}`);
   requireOk(
     await page.evaluate('typeof navigator.gpu === "object"'),
@@ -595,7 +595,7 @@ async function smokePointQueryWasmPage(page, baseUrl, screenshotPath) {
     const status = document.querySelector("#status");
     const text = status?.textContent ?? "";
     if (status?.classList.contains("error")) return "ERROR: " + text;
-    return text.includes("Rendered WASM point picking") && text;
+    return text.includes(${JSON.stringify(`Rendered ${scenario.label}`)}) && text;
   })()`, 45000);
   requireOk(!String(initialStatus).startsWith('ERROR:'), initialStatus);
   await page.screenshotCanvas(screenshotPath);
@@ -614,7 +614,7 @@ async function smokePointQueryWasmPage(page, baseUrl, screenshotPath) {
       if (session === undefined || session === null) {
         return false;
       }
-      if (scene.scenario?.id !== "feature_pick_point") {
+      if (scene.scenario?.id !== ${JSON.stringify(scenario.scenarioId)}) {
         return "wrong scenario id " + scene.scenario?.id;
       }
       const Module = scene.Module;
@@ -735,11 +735,27 @@ async function main() {
     let wasm3d = null;
     let wasmTimer = null;
     let wasmPointQuery = null;
+    let wasmMarkerQuery = null;
     try {
-      wasmPointQuery = await smokePointQueryWasmPage(
+      wasmPointQuery = await smokeQueryWasmPage(
         page,
         baseUrl,
+        {
+          demo: 'wasm-pick-point',
+          label: 'WASM point picking',
+          scenarioId: 'feature_pick_point',
+        },
         join(artifactsDir, 'wasm_examples_pick_point.png'),
+      );
+      wasmMarkerQuery = await smokeQueryWasmPage(
+        page,
+        baseUrl,
+        {
+          demo: 'wasm-pick-marker',
+          label: 'WASM marker picking',
+          scenarioId: 'feature_pick_marker',
+        },
+        join(artifactsDir, 'wasm_examples_pick_marker.png'),
       );
     } catch (error) {
       if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
@@ -797,6 +813,12 @@ async function main() {
       console.log(
         `PASS point query WASM: ${wasmPointQuery.initialStatus}; ` +
         `processed=${wasmPointQuery.queryDelivery.processed}`,
+      );
+    }
+    if (wasmMarkerQuery !== null) {
+      console.log(
+        `PASS marker query WASM: ${wasmMarkerQuery.initialStatus}; ` +
+        `processed=${wasmMarkerQuery.queryDelivery.processed}`,
       );
     }
     if (wasmDashboard !== null) {
