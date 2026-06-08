@@ -421,10 +421,11 @@ For WASM-only failures, validate memory and stack before assuming scene semantic
 1. Emscripten stack overflow can corrupt linear memory and surface as impossible C state later, such
    as a valid FramePlan becoming empty after an unrelated DRP2 call.
 2. The scene target sets an explicit `STACK_SIZE`; do not raise it casually. First run
-   `-fstack-usage` and `-Wframe-larger-than=<threshold>` and remove large automatic arrays from hot
-   WASM paths.
-3. Use separate instrumented builds for ASan and SAFE_HEAP; Emscripten does not combine them.
-4. Use `-sASSERTIONS=2` and `-sSTACK_OVERFLOW_CHECK=2` when reproducing suspected memory clobber.
+   `just wasm-scene-stack-usage` and remove large automatic arrays from hot WASM paths.
+3. Use separate instrumented builds for ASan and SAFE_HEAP; Emscripten does not combine them. Use
+   `just wasm-scene-build-asan` and `just wasm-scene-build-safeheap`.
+4. Use `just wasm-scene-build-debug` when reproducing suspected memory clobber with assertions,
+   stack-overflow checks, debug symbols, and source maps.
 5. Keep C/native repros and Node packet probes in front of browser/WebGPU smoke. Browser validation
    should confirm integration, not be the first detector of malformed packets or corrupted C state.
 

@@ -1135,7 +1135,7 @@ wasm-env-check:
     emcc --version | head -n 1
 #
 
-wasm-scene-build:
+_wasm-scene-build-mode build_dir build_type flag_config c_flags='' cxx_flags='' linker_flags='':
     #!/usr/bin/env bash
     set -euo pipefail
     export EMSDK_QUIET=1
@@ -1156,19 +1156,66 @@ wasm-scene-build:
             exit 1
         fi
     fi
-    emcmake cmake -S . -B build-wasm-scene -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_SKIP_INSTALL_RULES=ON \
-        -DDVZ_BUILD_VK=OFF \
-        -DDVZ_BUILD_CANVAS=OFF \
-        -DDVZ_BUILD_APP=OFF \
-        -DDVZ_BUILD_GUI=OFF \
-        -DDVZ_WITH_FREETYPE=OFF \
-        -DDVZ_WITH_MSDF_ATLAS=OFF \
-        -DDVZ_ENABLE_KVAZAAR=OFF \
-        -DDVZ_WITH_GLFW=OFF \
-        -DDVZ_WITH_ZLIB=OFF \
+    cmake_args=(
+        -S .
+        -B "{{build_dir}}"
+        -DCMAKE_BUILD_TYPE="{{build_type}}"
+        -DCMAKE_SKIP_INSTALL_RULES=ON
+        -DDVZ_BUILD_VK=OFF
+        -DDVZ_BUILD_CANVAS=OFF
+        -DDVZ_BUILD_APP=OFF
+        -DDVZ_BUILD_GUI=OFF
+        -DDVZ_WITH_FREETYPE=OFF
+        -DDVZ_WITH_MSDF_ATLAS=OFF
+        -DDVZ_ENABLE_KVAZAAR=OFF
+        -DDVZ_WITH_GLFW=OFF
+        -DDVZ_WITH_ZLIB=OFF
         -DDVZ_USE_MIMALLOC_RELEASE_DEFAULT=OFF
-    cmake --build build-wasm-scene --target datoviz_wasm_scene -j 8
+    )
+    if [ -n "{{c_flags}}" ]; then
+        cmake_args+=("-DCMAKE_C_FLAGS_{{flag_config}}={{c_flags}}")
+    fi
+    if [ -n "{{cxx_flags}}" ]; then
+        cmake_args+=("-DCMAKE_CXX_FLAGS_{{flag_config}}={{cxx_flags}}")
+    fi
+    if [ -n "{{linker_flags}}" ]; then
+        cmake_args+=("-DCMAKE_EXE_LINKER_FLAGS_{{flag_config}}={{linker_flags}}")
+    fi
+    emcmake cmake "${cmake_args[@]}"
+    cmake --build "{{build_dir}}" --target datoviz_wasm_scene -j 8
+#
+
+wasm-scene-build:
+    @just _wasm-scene-build-mode build-wasm-scene Release RELEASE
+#
+
+wasm-scene-build-debug:
+    @just _wasm-scene-build-mode build-wasm-scene-debug Debug DEBUG \
+        "-O0 -g3 -fno-omit-frame-pointer" \
+        "-O0 -g3 -fno-omit-frame-pointer" \
+        "-sASSERTIONS=2 -sSTACK_OVERFLOW_CHECK=2 -sSTACK_SIZE=1048576 -gsource-map --source-map-base=/"
+#
+
+wasm-scene-build-asan:
+    @just _wasm-scene-build-mode build-wasm-scene-asan Debug DEBUG \
+        "-O1 -g -fsanitize=address -fno-omit-frame-pointer" \
+        "-O1 -g -fsanitize=address -fno-omit-frame-pointer" \
+        "-fsanitize=address -sASSERTIONS=2 -sSTACK_OVERFLOW_CHECK=2 -sSTACK_SIZE=1048576 -gsource-map --source-map-base=/"
+#
+
+wasm-scene-build-safeheap:
+    @just _wasm-scene-build-mode build-wasm-scene-safeheap Debug DEBUG \
+        "-O1 -g -fno-omit-frame-pointer" \
+        "-O1 -g -fno-omit-frame-pointer" \
+        "-sASSERTIONS=2 -sSAFE_HEAP=1 -sSTACK_OVERFLOW_CHECK=2 -sSTACK_SIZE=1048576 -gsource-map --source-map-base=/"
+#
+
+wasm-scene-stack-usage:
+    @just _wasm-scene-build-mode build-wasm-scene-stackusage Release RELEASE \
+        "-O3 -fstack-usage -Wframe-larger-than=32768" \
+        "-O3 -fstack-usage -Wframe-larger-than=32768"
+    @find build-wasm-scene-stackusage -name '*.su' -print0 | \
+        xargs -0 awk '{print $2 "\t" $1}' | sort -nr | head -n 30
 #
 
 wasm-scene-smoke: wasm-scene-build

@@ -91,9 +91,15 @@ Workflow rule:
 1. If valid C state becomes impossible after an unrelated WASM call, do not keep narrowing with
    sentinel returns first.
 2. Build a native repro for the C boundary and run ASan/UBSan.
-3. Build Emscripten variants with `-fsanitize=address`, `-sASSERTIONS=2`, `-sSAFE_HEAP=1`, and
-   `-sSTACK_OVERFLOW_CHECK=2` where applicable. ASan and SAFE_HEAP cannot be combined.
-4. Add `-fstack-usage` and `-Wframe-larger-than=<threshold>` to rank large automatic stack frames.
+3. Build Emscripten variants with the named recipes:
+   - `just wasm-scene-build-debug` for `ASSERTIONS=2`, `STACK_OVERFLOW_CHECK=2`, debug symbols, and
+     source maps;
+   - `just wasm-scene-build-asan` for Emscripten ASan. ASan and SAFE_HEAP cannot be combined;
+   - `just wasm-scene-build-safeheap` for SAFE_HEAP linear-memory checks;
+   - `just wasm-scene-stack-usage` for `-fstack-usage`, `-Wframe-larger-than=32768`, and a ranked
+     stack-frame summary.
+4. Use the focused Node probe against any instrumented build, for example
+   `node tools/wasm_query_packet_probe.mjs build-wasm-scene-asan/wasm/datoviz_wasm_scene.mjs`.
 5. Prefer removing large automatic arrays or moving scratch storage to heap/owned state before
    raising `STACK_SIZE`. Raising stack size is a mitigation, not a root-cause explanation.
 6. Keep a narrow Node packet probe for the promoted WASM feature so the browser/WebGPU runtime is
