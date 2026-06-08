@@ -23,6 +23,7 @@
 #include "_log.h"
 #include "frame_plan/frame_plan.h"
 #include "frame_plan/emit.h"
+#include "_frame_plan_runtime_internal.h"
 #include "_scene.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
@@ -3022,7 +3023,7 @@ int test_frame_plan_emitter_rejects_empty_persistent_keys(
 
 
 
-int test_frame_plan_emitter_wgsl_query_shader_validation(
+int test_frame_plan_emitter_wgsl_query_shader_resolves(
     TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -3070,31 +3071,72 @@ int test_frame_plan_emitter_wgsl_query_shader_validation(
 
     DvzDrp2CommandStream* stream =
         dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &emit_cfg);
-    AT(stream == NULL);
-    AT(dvz_diagnostic_report_count(&report) > 0);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    uint32_t query_shader_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+            continue;
+        if (strcmp(command->u.create_shader_module.format, "wgsl") != 0)
+            continue;
+        AT(command->u.create_shader_module.code != NULL);
+        if (
+            strstr(command->u.create_shader_module.code, "id: u32") == NULL &&
+            strstr(command->u.create_shader_module.code, "output.id") == NULL)
+        {
+            continue;
+        }
+        AT(command->u.create_shader_module.stage[0] != '\0');
+        AT(command->u.create_shader_module.code[0] != '\0');
+        query_shader_count++;
+    }
+    AT(query_shader_count == 2);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+int test_frame_plan_emitter_wgsl_missing_source_preflight(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzSceneVisualDesc desc = {0};
+    desc.kind = DVZ_SCENE_VISUAL_DESC_POINT;
+
+    DvzSceneVisualShaderDesc shader = {0};
+    dvz_strlcpy(shader.vertex_key, "_vs_missing_wgsl", sizeof(shader.vertex_key));
+    dvz_strlcpy(shader.fragment_key, "_fs_missing_wgsl", sizeof(shader.fragment_key));
+    shader.vertex_glsl = "void main() {}";
+    shader.fragment_glsl = "void main() {}";
+    shader.fragment_wgsl = "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0); }";
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    DvzSceneResolvedShader resolved = {0};
+    AT(!_scene_runtime_shader_resolve(
+        &shader, &desc, DVZ_FRAME_PLAN_RENDER_PASS_PICKING, DVZ_SCENE_SHADER_FORMAT_WGSL,
+        &resolved, &report));
+    AT(dvz_diagnostic_report_count(&report) == 1);
+
     const char* message = dvz_diagnostic_report_get(&report, 0);
     ANN(message);
     AT(strstr(message, "scene runtime shader validation failed") != NULL);
     AT(strstr(message, "visual=point") != NULL);
     AT(strstr(message, "pass=picking") != NULL);
     AT(strstr(message, "format=wgsl") != NULL);
-    AT(strstr(message, "stage=") != NULL);
-    AT(strstr(message, "key=") != NULL);
+    AT(strstr(message, "stage=vertex") != NULL);
+    AT(strstr(message, "key=_vs_missing_wgsl") != NULL);
     AT(strstr(message, "reason=missing WGSL source") != NULL);
 
-    const char* key_begin = strstr(message, "key=");
-    ANN(key_begin);
-    key_begin += 4;
-    const char* key_end = strchr(key_begin, ' ');
-    ANN(key_end);
-    char key[DVZ_SCENE_LABEL_SIZE] = {0};
-    size_t key_len = (size_t)(key_end - key_begin);
-    AT(key_len > 0 && key_len < sizeof(key));
-    dvz_memcpy(key, key_len, key_begin, key_len);
-    AT(dvz_frame_plan_emitter_object_id(emitter, key) == 0);
-
-    dvz_frame_plan_emitter_destroy(emitter);
-    dvz_frame_plan_destroy(plan);
     return 0;
 }
 
@@ -3367,7 +3409,8 @@ int test_scene_frame_plan_emit(TstSuite* suite)
     TST_CASE(test_frame_plan_emitter_runtime_texture_extent_changes);
     TST_CASE(test_frame_plan_emitter_runtime_object_map_grows);
     TST_CASE(test_frame_plan_emitter_rejects_empty_persistent_keys);
-    TST_CASE(test_frame_plan_emitter_wgsl_query_shader_validation);
+    TST_CASE(test_frame_plan_emitter_wgsl_query_shader_resolves);
+    TST_CASE(test_frame_plan_emitter_wgsl_missing_source_preflight);
     TST_CASE(test_frame_plan_emitter_runtime_texture_two_frames);
     TST_CASE(test_frame_plan_emitter_runtime_compute_two_frames);
     TST_CASE(test_frame_plan_emit_scene_core_visuals_record_portable_dvzr);

@@ -46,6 +46,8 @@ typedef struct SceneSsaoTargets SceneSsaoTargets;
 typedef struct SceneEdlTargets SceneEdlTargets;
 typedef struct SceneWboitTargets SceneWboitTargets;
 typedef struct SceneDepthPeelTargets SceneDepthPeelTargets;
+typedef struct DvzSceneResolvedShaderStage DvzSceneResolvedShaderStage;
+typedef struct DvzSceneResolvedShader DvzSceneResolvedShader;
 
 typedef struct DvzSceneOcclusionUniform
 {
@@ -194,6 +196,30 @@ struct SceneDepthPeelTargets
 };
 
 
+struct DvzSceneResolvedShaderStage
+{
+    char key[64];
+    const char* stage;
+    const char* stage_label;
+    const char* format;
+    const char* source;
+    const char* wgsl;
+    const char* glsl;
+    const char* spirv_key;
+    bool use_spirv;
+};
+
+
+struct DvzSceneResolvedShader
+{
+    DvzSceneResolvedShaderStage vertex;
+    DvzSceneResolvedShaderStage fragment;
+    const char* builtin_family;
+    const char* builtin_variant;
+    uint32_t builtin_version;
+};
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
@@ -201,6 +227,15 @@ struct SceneDepthPeelTargets
 
 DvzSceneBuiltinShader _depth_peel_fragment_shader(bool lit, bool back_pass);
 const char* _depth_peel_fragment_spirv_key(DvzSceneBuiltinShader shader);
+const char* _scene_runtime_pass_role_name(DvzFramePlanRenderPassRole role);
+bool _scene_runtime_shader_resolve(
+    const DvzSceneVisualShaderDesc* shader, const DvzSceneVisualDesc* desc,
+    DvzFramePlanRenderPassRole pass, DvzSceneShaderFormat format,
+    DvzSceneResolvedShader* out, DvzDiagnosticReport* report);
+bool _scene_runtime_shader_emit(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream,
+    const DvzSceneResolvedShader* shader, const DvzFramePlanEmitConfig* cfg, uint64_t* out_vs_id,
+    uint64_t* out_fs_id);
 void _pipeline_bind_group_layouts(
     const DvzSceneVisualPipelineDesc* pipeline, uint64_t common_bgl_id, uint64_t image_bgl_id,
     uint64_t labels_bgl_id, uint64_t glyph_bgl_id, uint64_t volume_bgl_id,

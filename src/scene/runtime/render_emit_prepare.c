@@ -43,136 +43,6 @@
 
 
 /*************************************************************************************************/
-/*  Helpers                                                                                      */
-/*************************************************************************************************/
-
-static const char* _runtime_pass_role_name(DvzFramePlanRenderPassRole role)
-{
-    switch (role)
-    {
-    case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
-        return "opaque";
-    case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
-        return "gbuffer";
-    case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
-        return "volume_occlusion";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
-        return "scene_occlusion";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
-        return "ssao";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
-        return "ssao_blur";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
-        return "ssao_composite";
-    case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
-        return "edl_resolve";
-    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
-        return "transparent_accumulation";
-    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
-        return "transparent_blend";
-    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
-        return "wboit_resolve";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
-        return "depth_peel_init";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
-        return "depth_peel_iter";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
-        return "depth_peel_composite";
-    case DVZ_FRAME_PLAN_RENDER_PASS_PICKING:
-        return "picking";
-    default:
-        return "unknown";
-    }
-}
-
-
-
-static const char* _shader_source_for_format(
-    const DvzSceneVisualShaderDesc* shader, DvzSceneShaderFormat format, bool fragment)
-{
-    ANN(shader);
-    if (format == DVZ_SCENE_SHADER_FORMAT_WGSL)
-        return fragment ? shader->fragment_wgsl : shader->vertex_wgsl;
-    return fragment ? shader->fragment_glsl : shader->vertex_glsl;
-}
-
-
-
-static const char* _shader_key_for_stage(const DvzSceneVisualShaderDesc* shader, bool fragment)
-{
-    ANN(shader);
-    return fragment ? shader->fragment_key : shader->vertex_key;
-}
-
-
-
-static bool _runtime_shader_report(
-    DvzDiagnosticReport* report, const DvzSceneVisualDesc* desc, DvzFramePlanRenderPassRole pass,
-    const char* format, const char* stage, const char* key, const char* reason)
-{
-    ANN(desc);
-    ANN(format);
-    ANN(stage);
-    ANN(reason);
-    char message[384];
-    const DvzVisualType type = _scene_visual_desc_default_type(desc->kind);
-    const char* visual = _visual_type_name(type);
-    int written = dvz_snprintf(
-        message, sizeof(message),
-        "scene runtime shader validation failed: visual=%s pass=%s format=%s stage=%s key=%s "
-        "reason=%s",
-        visual, _runtime_pass_role_name(pass), format, stage,
-        key != NULL && key[0] != '\0' ? key : "<empty>", reason);
-    if (written < 0 || (size_t)written >= sizeof(message))
-        _diagnostic(report, "scene runtime shader validation failed");
-    else
-        _diagnostic(report, message);
-    return false;
-}
-
-
-
-static bool _runtime_shader_stage_valid(
-    const DvzSceneVisualShaderDesc* shader, const DvzSceneVisualDesc* desc,
-    DvzFramePlanRenderPassRole pass, DvzSceneShaderFormat format, const char* format_label,
-    bool fragment, DvzDiagnosticReport* report)
-{
-    ANN(shader);
-    ANN(desc);
-    ANN(format_label);
-
-    const char* key = _shader_key_for_stage(shader, fragment);
-    const char* stage = fragment ? "fragment" : "vertex";
-    if (key == NULL || key[0] == '\0')
-        return _runtime_shader_report(report, desc, pass, format_label, stage, key, "empty key");
-
-    const char* source = _shader_source_for_format(shader, format, fragment);
-    if (source == NULL || source[0] == '\0')
-    {
-        const char* reason =
-            format == DVZ_SCENE_SHADER_FORMAT_WGSL ? "missing WGSL source" : "missing GLSL source";
-        return _runtime_shader_report(report, desc, pass, format_label, stage, key, reason);
-    }
-    return true;
-}
-
-
-
-static bool _runtime_shader_desc_valid(
-    const DvzSceneVisualShaderDesc* shader, const DvzSceneVisualDesc* desc,
-    DvzFramePlanRenderPassRole pass, DvzSceneShaderFormat format, const char* format_label,
-    DvzDiagnosticReport* report)
-{
-    ANN(shader);
-    ANN(desc);
-    ANN(format_label);
-    return _runtime_shader_stage_valid(shader, desc, pass, format, format_label, false, report) &&
-           _runtime_shader_stage_valid(shader, desc, pass, format, format_label, true, report);
-}
-
-
-
-/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -309,9 +179,10 @@ bool _emitter_prepare_render_multi(
             break;
         }
 
-        if (!_runtime_shader_desc_valid(
-                &shader, &desc, render->u.render.pass_role, shader_format,
-                _shader_format_token(cfg), report))
+        DvzSceneResolvedShader resolved_shader = {0};
+        if (!_scene_runtime_shader_resolve(
+                &shader, &desc, render->u.render.pass_role, shader_format, &resolved_shader,
+                report))
         {
             _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
             ok = false;
@@ -319,65 +190,14 @@ bool _emitter_prepare_render_multi(
         }
 
         /* Shaders (cached). */
-        uint64_t vs_id = _obj_id(emitter, shader.vertex_key, &is_new);
-        if (vs_id == 0)
+        uint64_t vs_id = 0;
+        uint64_t fs_id = 0;
+        if (!_scene_runtime_shader_emit(
+                emitter, stream, &resolved_shader, cfg, &vs_id, &fs_id))
         {
+            _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
             ok = false;
             break;
-        }
-        if (is_new)
-        {
-            if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
-            {
-                if (shader.vertex_wgsl == NULL)
-                    ok = false;
-                else
-                    ok = ok &&
-                         _emit_shader(
-                             stream, vs_id, "VERTEX", shader.vertex_wgsl, shader.vertex_glsl, cfg);
-            }
-            else if (shader.vertex_spirv_key != NULL)
-                ok = ok && _emit_shader_spirv(
-                               stream, vs_id, "VERTEX", shader.vertex_spirv_key,
-                               shader.vertex_glsl, cfg);
-            else
-                ok = ok && _emit_shader(stream, vs_id, "VERTEX", NULL, shader.vertex_glsl, cfg);
-            if (ok && shader.builtin_family != NULL && shader.builtin_variant != NULL)
-                ok = dvz_drp2_stream_shader_set_builtin_identity(
-                    stream, vs_id, shader.builtin_family, shader.builtin_variant,
-                    shader.builtin_version != 0 ? shader.builtin_version
-                                                : DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION);
-        }
-
-        uint64_t fs_id = _obj_id(emitter, shader.fragment_key, &is_new);
-        if (fs_id == 0)
-        {
-            ok = false;
-            break;
-        }
-        if (ok && is_new)
-        {
-            if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
-            {
-                if (shader.fragment_wgsl == NULL)
-                    ok = false;
-                else
-                    ok = ok && _emit_shader(
-                                   stream, fs_id, "FRAGMENT", shader.fragment_wgsl,
-                                   shader.fragment_glsl, cfg);
-            }
-            else if (shader.fragment_spirv_key != NULL)
-                ok = ok && _emit_shader_spirv(
-                               stream, fs_id, "FRAGMENT", shader.fragment_spirv_key,
-                               shader.fragment_glsl, cfg);
-            else
-                ok =
-                    ok && _emit_shader(stream, fs_id, "FRAGMENT", NULL, shader.fragment_glsl, cfg);
-            if (ok && shader.builtin_family != NULL && shader.builtin_variant != NULL)
-                ok = dvz_drp2_stream_shader_set_builtin_identity(
-                    stream, fs_id, shader.builtin_family, shader.builtin_variant,
-                    shader.builtin_version != 0 ? shader.builtin_version
-                                                : DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION);
         }
         _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
 
