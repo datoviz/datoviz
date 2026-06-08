@@ -56,6 +56,54 @@ Current failure amplifiers:
    the first precise failure detector.
 
 
+## Known WASM Failure Mode: Stack Overflow Masquerading As Data Corruption
+
+One concrete 2026-06 debugging failure looked like a query/shader/DRP2 bug but was primarily an
+Emscripten stack-size problem.
+
+Observed symptoms:
+
+1. the query FramePlan was valid immediately before runtime emission: six nodes and one render node;
+2. `dvz_frame_plan_emitter_emit_drp2()` received the valid plan;
+3. after DRP2 stream setup/handshake, `plan->count` was observed as zero in the optimized WASM
+   build;
+4. query setup packets included render-pipeline commands, but decoded shader modules appeared empty
+   downstream;
+5. temporary sentinel returns changed the observed behavior because they changed control flow and
+   stack/layout, not because they isolated the logical bug.
+
+Root cause and fix:
+
+1. Emscripten's default stack is small for C code with large automatic arrays. A stack overflow can
+   corrupt global or heap memory and then fail far away from the function that overflowed.
+2. The direct query offender was `_dvz_scene_query_drop_superseded_results()`, which allocated
+   `DvzQueuedQueryResult kept[DVZ_SCENE_MAX_QUERY_RESULTS]` on the stack. With
+   `DVZ_SCENE_MAX_QUERY_RESULTS == 128` and `sizeof(DvzQueuedQueryResult) == 608`, that one local
+   array used 77,824 bytes.
+3. Moving that scratch queue to heap storage reduced the function's measured stack frame from
+   77,824 bytes to 608 bytes.
+4. The WASM scene target now uses an explicit `-sSTACK_SIZE=1048576`. This is intentionally larger
+   than Emscripten's default but much smaller than the temporary 16 MiB value used to prove the
+   failure mode.
+
+Workflow rule:
+
+1. If valid C state becomes impossible after an unrelated WASM call, do not keep narrowing with
+   sentinel returns first.
+2. Build a native repro for the C boundary and run ASan/UBSan.
+3. Build Emscripten variants with `-fsanitize=address`, `-sASSERTIONS=2`, `-sSAFE_HEAP=1`, and
+   `-sSTACK_OVERFLOW_CHECK=2` where applicable. ASan and SAFE_HEAP cannot be combined.
+4. Add `-fstack-usage` and `-Wframe-larger-than=<threshold>` to rank large automatic stack frames.
+5. Prefer removing large automatic arrays or moving scratch storage to heap/owned state before
+   raising `STACK_SIZE`. Raising stack size is a mitigation, not a root-cause explanation.
+6. Keep a narrow Node packet probe for the promoted WASM feature so the browser/WebGPU runtime is
+   not the first detector.
+
+Current measured stack offenders after the query cleanup include unrelated annotation/render/text
+paths. If future WASM work trips stack checks, inspect those frames before assuming query, shader, or
+packet corruption.
+
+
 ## Goal
 
 Make the browser path boring to debug.
