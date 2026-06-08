@@ -172,9 +172,7 @@ struct DvzWasmApiScene
     DvzCapabilitySnapshot caps;
     char* json;
     DvzDiagnosticReport report;
-    DvzScenePacketArtifact* query_artifact;
     int packet_status;
-    int query_packet_status;
     uint64_t resource_version;
     uint64_t frame_index;
     DvzPendingQueryRequest query_pending;
@@ -186,7 +184,6 @@ struct DvzWasmApiScene
     DvzSceneVisualFamily query_family;
     DvzPanel* query_panel;
     bool query_active;
-    bool packet_view_query;
     void* wrappers[DVZ_WASM_API_MAX_WRAPPERS];
     uint32_t wrapper_count;
     uint32_t width;
@@ -327,12 +324,12 @@ static void _clear_query(DvzWasmApiScene* scene)
         return;
     if (scene->query_active)
         _scene_query_scratch_destroy(&scene->query_plan.scratch);
-    if (scene->query_artifact != NULL)
+    if (scene->packet_artifact != NULL)
     {
-        _scene_packet_artifact_destroy(scene->query_artifact);
-        scene->query_artifact = NULL;
+        _scene_packet_artifact_destroy(scene->packet_artifact);
+        scene->packet_artifact = NULL;
     }
-    scene->query_packet_status = 0;
+    scene->packet_status = 0;
     scene->query_pending = (DvzPendingQueryRequest){0};
     scene->query_build = (DvzSceneQueryBuildContext){0};
     scene->query_plan = (DvzSceneQueryPlan){0};
@@ -342,7 +339,6 @@ static void _clear_query(DvzWasmApiScene* scene)
     scene->query_family = DVZ_SCENE_VISUAL_FAMILY_NONE;
     scene->query_panel = NULL;
     scene->query_active = false;
-    scene->packet_view_query = false;
 }
 
 
@@ -476,7 +472,6 @@ static void _clear_payload(DvzWasmApiScene* scene)
         scene->packet_artifact = NULL;
     }
     scene->packet_status = 0;
-    scene->packet_view_query = false;
     dvz_diagnostic_report_init(&scene->report);
 }
 
@@ -566,23 +561,22 @@ static int _emit_current_query_packets(DvzWasmApiScene* scene, DvzDrp2CommandStr
     ANN(stream);
     scene->frame_index++;
     scene->resource_version++;
-    scene->query_artifact = _scene_packet_artifact(stream, scene->resource_version, scene->frame_index);
-    if (scene->query_artifact == NULL)
+    scene->packet_artifact = _scene_packet_artifact(stream, scene->resource_version, scene->frame_index);
+    if (scene->packet_artifact == NULL)
     {
         (void)_fail(scene, "WASM query packet artifact creation failed");
-        scene->query_packet_status = -2;
+        scene->packet_status = -2;
         return -1;
     }
-    if (_scene_packet_artifact_status(scene->query_artifact) != DVZ_SCENE_PACKET_ARTIFACT_STATUS_OK)
+    if (_scene_packet_artifact_status(scene->packet_artifact) != DVZ_SCENE_PACKET_ARTIFACT_STATUS_OK)
     {
         (void)_fail(scene, "WASM query DRP2 packet encoding failed");
-        _scene_packet_artifact_destroy(scene->query_artifact);
-        scene->query_artifact = NULL;
-        scene->query_packet_status = -2;
+        _scene_packet_artifact_destroy(scene->packet_artifact);
+        scene->packet_artifact = NULL;
+        scene->packet_status = -2;
         return -1;
     }
-    scene->query_packet_status = 0;
-    scene->packet_view_query = true;
+    scene->packet_status = 0;
     return 0;
 }
 
@@ -2136,7 +2130,6 @@ static int _emit_packets(uint32_t scene_handle, uint32_t figure_handle)
 
     scene->frame_index = next_frame_index;
     scene->resource_version = next_resource_version;
-    scene->packet_view_query = false;
     if (_scene_packet_artifact_status(scene->packet_artifact) != DVZ_SCENE_PACKET_ARTIFACT_STATUS_OK)
     {
         (void)_fail(scene, "WASM DRP2 packet encoding failed");
@@ -2169,8 +2162,7 @@ int dvz_wasm_api_release_packets(uint32_t scene_handle)
         _scene_packet_artifact_destroy(scene->packet_artifact);
         scene->packet_artifact = NULL;
     }
-    if (!scene->packet_view_query)
-        scene->packet_status = 0;
+    scene->packet_status = 0;
     return 0;
 }
 
@@ -2371,7 +2363,7 @@ int dvz_wasm_api_packet_status(uint32_t scene_handle)
     DvzWasmApiScene* scene = _scene(scene_handle);
     if (scene == NULL)
         return -1;
-    return scene->packet_view_query ? scene->query_packet_status : scene->packet_status;
+    return scene->packet_status;
 }
 
 
@@ -2383,10 +2375,8 @@ uint32_t dvz_wasm_api_packet_ptr(uint32_t scene_handle, uint32_t kind)
     if (scene == NULL || !_valid_packet_kind(kind))
         return 0;
     const void* ptr = NULL;
-    const DvzScenePacketArtifact* artifact =
-        scene->packet_view_query ? scene->query_artifact : scene->packet_artifact;
     (void)_scene_packet_artifact_get(
-        artifact, (DvzDrp2PacketKind)kind, &ptr, NULL, NULL, NULL);
+        scene->packet_artifact, (DvzDrp2PacketKind)kind, &ptr, NULL, NULL, NULL);
     return ptr != NULL ? (uint32_t)(uintptr_t)ptr : 0;
 }
 
@@ -2399,10 +2389,8 @@ uint32_t dvz_wasm_api_packet_size(uint32_t scene_handle, uint32_t kind)
     uint64_t size = 0;
     if (scene != NULL && _valid_packet_kind(kind))
     {
-        const DvzScenePacketArtifact* artifact =
-            scene->packet_view_query ? scene->query_artifact : scene->packet_artifact;
         (void)_scene_packet_artifact_get(
-            artifact, (DvzDrp2PacketKind)kind, NULL, &size, NULL, NULL);
+            scene->packet_artifact, (DvzDrp2PacketKind)kind, NULL, &size, NULL, NULL);
     }
     return size <= UINT32_MAX ? (uint32_t)size : 0;
 }
@@ -2416,10 +2404,8 @@ uint32_t dvz_wasm_api_packet_arena_ptr(uint32_t scene_handle, uint32_t kind)
     if (scene == NULL || !_valid_packet_kind(kind))
         return 0;
     const void* ptr = NULL;
-    const DvzScenePacketArtifact* artifact =
-        scene->packet_view_query ? scene->query_artifact : scene->packet_artifact;
     (void)_scene_packet_artifact_get(
-        artifact, (DvzDrp2PacketKind)kind, NULL, NULL, &ptr, NULL);
+        scene->packet_artifact, (DvzDrp2PacketKind)kind, NULL, NULL, &ptr, NULL);
     return ptr != NULL ? (uint32_t)(uintptr_t)ptr : 0;
 }
 
@@ -2432,10 +2418,8 @@ uint32_t dvz_wasm_api_packet_arena_size(uint32_t scene_handle, uint32_t kind)
     uint64_t size = 0;
     if (scene != NULL && _valid_packet_kind(kind))
     {
-        const DvzScenePacketArtifact* artifact =
-            scene->packet_view_query ? scene->query_artifact : scene->packet_artifact;
         (void)_scene_packet_artifact_get(
-            artifact, (DvzDrp2PacketKind)kind, NULL, NULL, NULL, &size);
+            scene->packet_artifact, (DvzDrp2PacketKind)kind, NULL, NULL, NULL, &size);
     }
     return size <= UINT32_MAX ? (uint32_t)size : 0;
 }
