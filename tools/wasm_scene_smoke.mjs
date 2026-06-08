@@ -55,6 +55,41 @@ function expectStatus(status, expected, label) {
   requireOk(status === expected, `${label} returned ${status}, expected ${expected}`);
 }
 
+const stderrCaptures = [];
+
+function wasmPrintErr(text) {
+  const activeCapture = stderrCaptures[stderrCaptures.length - 1];
+  if (activeCapture !== undefined) {
+    activeCapture.push(String(text));
+    return;
+  }
+  console.error(text);
+}
+
+function captureExpectedStderr(label, fn) {
+  const captured = [];
+  stderrCaptures.push(captured);
+  try {
+    fn();
+  } catch (error) {
+    if (captured.length > 0) {
+      error.message = `${error.message}\n${label}: captured stderr: ${captured.join("; ")}`;
+    }
+    throw error;
+  } finally {
+    stderrCaptures.pop();
+  }
+  return captured;
+}
+
+function expectCapturedStderr(captured, needle, label) {
+  requireOk(captured.length > 0, `${label}: expected captured stderr`);
+  requireOk(
+    captured.some((line) => line.includes(needle)),
+    `${label}: expected stderr containing ${needle}, got ${captured.join("; ")}`,
+  );
+}
+
 function allocArray(Module, typedArray) {
   const ptr = Module._malloc(typedArray.byteLength);
   requireOk(ptr !== 0, "malloc failed");
@@ -1080,7 +1115,10 @@ function setCapabilities(
 }
 
 const { default: createModule } = await import(pathToFileURL(modulePath).href);
-const Module = await createModule({ locateFile: (path) => join(dirname(modulePath), path) });
+const Module = await createModule({
+  locateFile: (path) => join(dirname(modulePath), path),
+  printErr: wasmPrintErr,
+});
 const smokeSize = 64;
 
 await expectBrowserWrapperPacketRuntime();
@@ -1151,33 +1189,46 @@ try {
     const pointForDiagnostics = Module._dvz_wasm_api_visual(diagnosticScene, DVZ_WASM_VISUAL_POINT, 0);
     requireOk(pointForDiagnostics !== 0, "diagnostic point creation failed");
     expectNoDiagnostics(Module, diagnosticScene, "successful visual creation clears diagnostics");
-    expectStatus(
-      Module._dvz_wasm_api_visual_set_material(
-        pointForDiagnostics,
-        DVZ_MATERIAL_MODEL_STANDARD,
-        1.0,
-        1.0, 1.0, 1.0, 1.0,
-        -0.45, -0.35, 0.82,
-        0.24, 0.82, 0.24, 26.0,
-        0.62, 0.34, 0.0,
-        0.0, 0.0, 0.0, 0.1,
-      ),
-      -1,
-      "unsupported material visual",
-    );
+    const materialStderr = captureExpectedStderr("point material rejection", () => {
+      expectStatus(
+        Module._dvz_wasm_api_visual_set_material(
+          pointForDiagnostics,
+          DVZ_MATERIAL_MODEL_STANDARD,
+          1.0,
+          1.0, 1.0, 1.0, 1.0,
+          -0.45, -0.35, 0.82,
+          0.24, 0.82, 0.24, 26.0,
+          0.62, 0.34, 0.0,
+          0.0, 0.0, 0.0, 0.1,
+        ),
+        -1,
+        "unsupported material visual",
+      );
+    });
+    expectCapturedStderr(
+      materialStderr, "materials are only supported", "point material rejection");
     expectDiagnostics(Module, diagnosticScene, "WASM visual material update failed", "point material rejection");
-    expectStatus(
-      Module._dvz_wasm_api_visual_set_segment_caps(
-        pointForDiagnostics, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_SQUARE),
-      -1,
-      "unsupported segment cap visual",
-    );
+    const segmentCapStderr = captureExpectedStderr("point segment cap rejection", () => {
+      expectStatus(
+        Module._dvz_wasm_api_visual_set_segment_caps(
+          pointForDiagnostics, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_SQUARE),
+        -1,
+        "unsupported segment cap visual",
+      );
+    });
+    expectCapturedStderr(
+      segmentCapStderr, "dvz_segment_set_caps requires a segment visual",
+      "point segment cap rejection");
     expectDiagnostics(Module, diagnosticScene, "WASM segment cap update failed", "point segment cap rejection");
-    expectStatus(
-      Module._dvz_wasm_api_visual_set_path_join(pointForDiagnostics, DVZ_PATH_JOIN_BEVEL, 4.0),
-      -1,
-      "unsupported path join visual",
-    );
+    const pathJoinStderr = captureExpectedStderr("point path join rejection", () => {
+      expectStatus(
+        Module._dvz_wasm_api_visual_set_path_join(pointForDiagnostics, DVZ_PATH_JOIN_BEVEL, 4.0),
+        -1,
+        "unsupported path join visual",
+      );
+    });
+    expectCapturedStderr(
+      pathJoinStderr, "dvz_path_set_join requires a path visual", "point path join rejection");
     expectDiagnostics(Module, diagnosticScene, "WASM path join update failed", "point path join rejection");
 
     const badAttrNamePtr = allocCString(Module, "not_an_attr");
@@ -1186,20 +1237,29 @@ try {
       const diagnosticBuffer =
         createBuffer(Module, diagnosticScene, DVZ_SCENE_BUFFER_USAGE_VERTEX, 12, 12, "diagnostic position buffer");
       setBufferData(Module, diagnosticBuffer, onePositionPtr, 12, "diagnostic position buffer upload");
-      expectStatus(
-        Module._dvz_wasm_api_visual_set_attr_buffer(
-          pointForDiagnostics, badAttrNamePtr, diagnosticBuffer, 0, 1),
-        -1,
-        "invalid visual attribute buffer",
-      );
+      const attrBufferStderr = captureExpectedStderr("invalid attr buffer", () => {
+        expectStatus(
+          Module._dvz_wasm_api_visual_set_attr_buffer(
+            pointForDiagnostics, badAttrNamePtr, diagnosticBuffer, 0, 1),
+          -1,
+          "invalid visual attribute buffer",
+        );
+      });
+      expectCapturedStderr(
+        attrBufferStderr, "unsupported point visual attribute 'not_an_attr'",
+        "invalid attr buffer");
       expectDiagnostics(
         Module, diagnosticScene, "WASM visual attribute buffer bind failed",
         "invalid attr buffer");
-      expectStatus(
-        Module._dvz_wasm_api_visual_set_f32(pointForDiagnostics, badAttrNamePtr, onePositionPtr, 1),
-        -1,
-        "invalid visual attribute",
-      );
+      const attrUploadStderr = captureExpectedStderr("invalid attr", () => {
+        expectStatus(
+          Module._dvz_wasm_api_visual_set_f32(pointForDiagnostics, badAttrNamePtr, onePositionPtr, 1),
+          -1,
+          "invalid visual attribute",
+        );
+      });
+      expectCapturedStderr(
+        attrUploadStderr, "unsupported point visual attribute 'not_an_attr'", "invalid attr");
       expectDiagnostics(Module, diagnosticScene, "WASM f32 visual upload failed", "invalid attr");
     } finally {
       Module._free(badAttrNamePtr);
@@ -1696,15 +1756,21 @@ try {
     expectWriteCommands(strokeStyleUpdate.stream, "generic 2D stroke style update");
     const grownPositionPtr = allocArray(Module, new Float32Array([...positions, -0.1, 0.75, 0]));
     try {
-      expectStatus(
-        Module._dvz_wasm_api_visual_set_f32(
-          point, positionNamePtr, grownPositionPtr, positions.length / 3 + 1),
-        -1,
-        "api point count growth",
-      );
-    expectDiagnostics(
-      Module, scene, "WASM f32 visual upload failed: attr=position item_count=6",
-      "point count growth");
+      const pointCountStderr = captureExpectedStderr("point count growth", () => {
+        expectStatus(
+          Module._dvz_wasm_api_visual_set_f32(
+            point, positionNamePtr, grownPositionPtr, positions.length / 3 + 1),
+          -1,
+          "api point count growth",
+        );
+      });
+      expectCapturedStderr(
+        pointCountStderr,
+        "point visual attribute 'position' item_count 6 does not match existing attribute 'color' item_count 5",
+        "point count growth");
+      expectDiagnostics(
+        Module, scene, "WASM f32 visual upload failed: attr=position item_count=6",
+        "point count growth");
     } finally {
       Module._free(grownPositionPtr);
     }
