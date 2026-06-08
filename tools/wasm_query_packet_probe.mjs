@@ -71,6 +71,10 @@ try {
 
   const setup = packet(scene, DVZ_DRP2_PACKET_SETUP);
   const frame = packet(scene, DVZ_DRP2_PACKET_FRAME);
+  const querySetupSize = packetSize(scene, DVZ_DRP2_PACKET_SETUP);
+  const queryUpdateSize = packetSize(scene, DVZ_DRP2_PACKET_UPDATE);
+  const queryFrameSize = packetSize(scene, DVZ_DRP2_PACKET_FRAME);
+  const queryFrameIndex = frame.frame_index;
   requireOk(
     setup.commands.some((command) => command.cmd === "CreateTexture" && command.format === "r32uint"),
     "query setup packet did not create an r32uint target",
@@ -85,10 +89,19 @@ try {
   requireOk(submit !== undefined, "query frame packet did not request a readback");
   requireOk(submit.readbacks[0]?.size === 4, "query readback size was not 4 bytes");
 
+  requireOk(Module._dvz_wasm_api_emit_packets(scene, figure) === 0, "normal packet emit after query failed");
+  const renderFrame = packet(scene, DVZ_DRP2_PACKET_FRAME);
+  requireOk(
+    renderFrame.frame_index === Module._dvz_wasm_api_frame_index(scene),
+    "normal packet view returned stale query packet bytes",
+  );
+  requireOk(renderFrame.frame_index > queryFrameIndex, "normal packet frame did not advance after query");
+  requireOk(Module._dvz_wasm_api_query_active(scene) === 1, "normal packet emit cleared active query");
+
   console.log(
-    `query_packets setup=${packetSize(scene, DVZ_DRP2_PACKET_SETUP)} ` +
-    `update=${packetSize(scene, DVZ_DRP2_PACKET_UPDATE)} ` +
-    `frame=${packetSize(scene, DVZ_DRP2_PACKET_FRAME)}`,
+    `query_packets setup=${querySetupSize} ` +
+    `update=${queryUpdateSize} ` +
+    `frame=${queryFrameSize}`,
   );
 } catch (error) {
   const count = Module._dvz_wasm_api_diagnostic_count(scene);

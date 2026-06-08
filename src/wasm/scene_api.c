@@ -192,6 +192,7 @@ struct DvzWasmApiScene
     DvzSceneVisualFamily query_family;
     DvzPanel* query_panel;
     bool query_active;
+    bool packet_view_query;
     void* wrappers[DVZ_WASM_API_MAX_WRAPPERS];
     uint32_t wrapper_count;
     uint32_t width;
@@ -356,6 +357,7 @@ static void _clear_query(DvzWasmApiScene* scene)
     scene->query_family = DVZ_SCENE_VISUAL_FAMILY_NONE;
     scene->query_panel = NULL;
     scene->query_active = false;
+    scene->packet_view_query = false;
 }
 
 
@@ -493,6 +495,7 @@ static void _clear_payload(DvzWasmApiScene* scene)
         scene->arena_sizes[i] = 0;
     }
     scene->packet_status = 0;
+    scene->packet_view_query = false;
     dvz_diagnostic_report_init(&scene->report);
 }
 
@@ -615,9 +618,12 @@ static int _emit_packets_to(
 static int _emit_current_packets(DvzWasmApiScene* scene, DvzDrp2CommandStream* stream)
 {
     ANN(scene);
-    return _emit_packets_to(
+    int ret = _emit_packets_to(
         scene, stream, scene->packets, scene->packet_sizes, scene->arenas, scene->arena_sizes,
         &scene->packet_status);
+    if (ret == 0)
+        scene->packet_view_query = false;
+    return ret;
 }
 
 
@@ -625,9 +631,12 @@ static int _emit_current_packets(DvzWasmApiScene* scene, DvzDrp2CommandStream* s
 static int _emit_current_query_packets(DvzWasmApiScene* scene, DvzDrp2CommandStream* stream)
 {
     ANN(scene);
-    return _emit_packets_to(
+    int ret = _emit_packets_to(
         scene, stream, scene->query_packets, scene->query_packet_sizes, scene->query_arenas,
         scene->query_arena_sizes, &scene->query_packet_status);
+    if (ret == 0)
+        scene->packet_view_query = true;
+    return ret;
 }
 
 
@@ -2179,6 +2188,7 @@ static int _emit_packets(uint32_t scene_handle, uint32_t figure_handle)
         DVZ_DRP2_PACKET_UPDATE,
         DVZ_DRP2_PACKET_FRAME,
     };
+    scene->packet_view_query = false;
     for (uint32_t i = 0; i < 3; i++)
     {
         DvzDrp2PacketKind kind = phases[i];
@@ -2401,7 +2411,7 @@ int dvz_wasm_api_packet_status(uint32_t scene_handle)
     DvzWasmApiScene* scene = _scene(scene_handle);
     if (scene == NULL)
         return -1;
-    return scene->query_active ? scene->query_packet_status : scene->packet_status;
+    return scene->packet_view_query ? scene->query_packet_status : scene->packet_status;
 }
 
 
@@ -2412,7 +2422,7 @@ uint32_t dvz_wasm_api_packet_ptr(uint32_t scene_handle, uint32_t kind)
     DvzWasmApiScene* scene = _scene(scene_handle);
     if (scene == NULL || !_valid_packet_kind(kind))
         return 0;
-    void* ptr = scene->query_active ? scene->query_packets[kind] : scene->packets[kind];
+    void* ptr = scene->packet_view_query ? scene->query_packets[kind] : scene->packets[kind];
     return ptr != NULL ? (uint32_t)(uintptr_t)ptr : 0;
 }
 
@@ -2424,7 +2434,7 @@ uint32_t dvz_wasm_api_packet_size(uint32_t scene_handle, uint32_t kind)
     DvzWasmApiScene* scene = _scene(scene_handle);
     uint64_t size = 0;
     if (scene != NULL && _valid_packet_kind(kind))
-        size = scene->query_active ? scene->query_packet_sizes[kind] : scene->packet_sizes[kind];
+        size = scene->packet_view_query ? scene->query_packet_sizes[kind] : scene->packet_sizes[kind];
     return size <= UINT32_MAX ? (uint32_t)size : 0;
 }
 
@@ -2436,7 +2446,7 @@ uint32_t dvz_wasm_api_packet_arena_ptr(uint32_t scene_handle, uint32_t kind)
     DvzWasmApiScene* scene = _scene(scene_handle);
     if (scene == NULL || !_valid_packet_kind(kind))
         return 0;
-    void* ptr = scene->query_active ? scene->query_arenas[kind] : scene->arenas[kind];
+    void* ptr = scene->packet_view_query ? scene->query_arenas[kind] : scene->arenas[kind];
     return ptr != NULL ? (uint32_t)(uintptr_t)ptr : 0;
 }
 
@@ -2448,7 +2458,7 @@ uint32_t dvz_wasm_api_packet_arena_size(uint32_t scene_handle, uint32_t kind)
     DvzWasmApiScene* scene = _scene(scene_handle);
     uint64_t size = 0;
     if (scene != NULL && _valid_packet_kind(kind))
-        size = scene->query_active ? scene->query_arena_sizes[kind] : scene->arena_sizes[kind];
+        size = scene->packet_view_query ? scene->query_arena_sizes[kind] : scene->arena_sizes[kind];
     return size <= UINT32_MAX ? (uint32_t)size : 0;
 }
 
