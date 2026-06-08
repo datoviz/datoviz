@@ -35,6 +35,7 @@
 #include "datoviz/scene.h"
 #include "../drp2/_stream.h"
 #include "_scene.h"
+#include "core/frame_artifact_internal.h"
 #include "core/scene_notify_internal.h"
 #include "core/figure_emit_internal.h"
 #include "interaction/animation_internal.h"
@@ -3053,12 +3054,28 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(win->figure, &caps, &report, &cfg);
-    if (stream == NULL)
+    DvzDrp2CommandStream* emitted_stream = dvz_figure_emit_ex(win->figure, &caps, &report, &cfg);
+    if (emitted_stream == NULL)
     {
         uint32_t n = dvz_diagnostic_report_count(&report);
         for (uint32_t i = 0; i < n; i++)
             log_error("_app_draw emit failed: %s", dvz_diagnostic_report_get(&report, i));
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+        _app_render_gui_frame(win, frame);
+#endif
+        return;
+    }
+
+    DvzScenePacketArtifact* artifact =
+        _scene_packet_artifact(emitted_stream, 0, win->frame_index);
+    DvzDrp2CommandStream* stream = _scene_packet_artifact_stream(artifact);
+    if (
+        artifact == NULL ||
+        _scene_packet_artifact_status(artifact) != DVZ_SCENE_PACKET_ARTIFACT_STATUS_OK ||
+        stream == NULL)
+    {
+        log_error("_app_draw failed to create scene packet artifact");
+        _scene_packet_artifact_destroy(artifact);
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
         _app_render_gui_frame(win, frame);
 #endif
@@ -3078,7 +3095,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     if (result.ok)
         _app_record_stream(win, frame, stream);
-    dvz_drp2_stream_destroy(stream);
+    _scene_packet_artifact_destroy(artifact);
 
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     _app_render_gui_frame(win, frame);
