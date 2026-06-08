@@ -267,6 +267,10 @@ void _dvz_scene_query_apply_render_state(
 
 const DvzSceneQueryFamilyOps* _dvz_scene_query_point_ops(void);
 
+bool _point_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQueryPlan* out_plan);
+
+bool _point_query_decode(const DvzSceneQueryDecodeContext* ctx, DvzQueryResult* out_result);
+
 const DvzSceneQueryFamilyOps* _dvz_scene_query_pixel_ops(void);
 
 const DvzSceneQueryFamilyOps* _dvz_scene_query_marker_ops(void);

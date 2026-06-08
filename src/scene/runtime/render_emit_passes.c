@@ -343,11 +343,17 @@ bool _emitter_emit_render_multi(
 
     uint64_t color_id = 0;
     if (!_render_pass_resolve_color_target(emitter, stream, cfg, &color_id))
+    {
+        _diagnostic(report, "scene figure render color target resolution failed");
         return false;
+    }
 
     uint64_t rb_id = 0;
     if (!_render_pass_resolve_readback_buffer(emitter, stream, readback, &rb_id))
+    {
+        _diagnostic(report, "scene figure render readback buffer resolution failed");
         return false;
+    }
 
     bool ok = true;
 
@@ -468,14 +474,19 @@ bool _emitter_emit_scene_figure_renders(
             continue;
         SceneRenderBatch* batch = &batches[batch_count];
         batch->render = render;
+        uint32_t report_start = dvz_diagnostic_report_count(report);
         ok = _emitter_prepare_render_multi(
             emitter, stream, render, cfg, needs_depth, false, 0, false, 0, 0, 0, 0, 1, false,
             report, batch->draws, &batch->draw_count);
+        if (!ok && dvz_diagnostic_report_count(report) == report_start)
+            _diagnostic(report, "scene figure render preparation failed");
         if (ok)
             batch_count++;
     }
     if (!ok || batch_count == 0)
     {
+        if (ok && batch_count == 0)
+            _diagnostic(report, "scene figure render prepared no draw batches");
         dvz_free(batches);
         return false;
     }
@@ -484,8 +495,12 @@ bool _emitter_emit_scene_figure_renders(
          dvz_drp2_stream_begin_render_pass_region_clear(
              stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca, 0.0f, 0.0f, 1.0f, 1.0f,
              true);
+    if (!ok)
+        _diagnostic(report, "scene figure render pass setup failed");
     if (ok && needs_depth)
         ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
+    if (!ok)
+        _diagnostic(report, "scene figure render depth attachment setup failed");
 
     SceneRenderStateCache scene_cache = {0};
     for (uint32_t i = 0; ok && i < batch_count; i++)
@@ -493,12 +508,20 @@ bool _emitter_emit_scene_figure_renders(
         ok = _emitter_emit_render_multi_draws(
             stream, batches[i].render, cfg, render_pass_id, batches[i].draws,
             batches[i].draw_count, &scene_cache);
+        if (!ok)
+            _diagnostic(report, "scene figure render draw emission failed");
     }
 
     ok = ok && dvz_drp2_stream_end_render_pass(stream, render_pass_id);
-    ok =
-        ok && _render_pass_copy_finish_submit(
-                  stream, encoder_id, command_buffer_id, submission_id, color_id, rb_id, readback);
+    if (!ok)
+        _diagnostic(report, "scene figure render pass close failed");
+    if (ok &&
+        !_render_pass_copy_finish_submit(
+            stream, encoder_id, command_buffer_id, submission_id, color_id, rb_id, readback))
+    {
+        _diagnostic(report, "scene figure render copy/submit failed");
+        ok = false;
+    }
     dvz_free(batches);
     return ok;
 }
@@ -1429,7 +1452,10 @@ bool _emitter_emit_plain_renders(
     ANN(plan);
 
     if (_plan_has_graph_render_passes(plan))
-        return _emitter_emit_scene_graph_renders(emitter, stream, plan, readback, cfg, report);
+    {
+        bool graph_ok = _emitter_emit_scene_graph_renders(emitter, stream, plan, readback, cfg, report);
+        return graph_ok;
+    }
 
     uint32_t render_node_count = 0;
     uint32_t scene_render_node_count = 0;
@@ -1451,10 +1477,17 @@ bool _emitter_emit_plain_renders(
         }
     }
     bool depth_panels_overlap = _plain_scene_depth_panels_overlap(emitter, plan, cfg);
+    if (render_node_count == 0)
+        _diagnostic(report, "plain render path found no render nodes");
     if (dvz_frame_plan_graph_pass_count(plan) == 0 && render_node_count > 0 &&
         render_node_count == scene_render_node_count && !depth_panels_overlap)
-        return _emitter_emit_scene_figure_renders(
+    {
+        bool scene_ok = _emitter_emit_scene_figure_renders(
             emitter, stream, plan, readback, cfg, any_scene_render_needs_depth, report);
+        return scene_ok;
+    }
+    if (render_node_count > 0 && scene_render_node_count == 0)
+        _diagnostic(report, "plain render path found no scene render node with position resource");
 
     bool ok = true;
     uint32_t render_count = 0;
@@ -1509,7 +1542,10 @@ bool _emitter_emit_plain_renders(
         }
         render_count++;
     }
-    return ok && render_count > 0;
+    if (render_count == 0)
+        _diagnostic(report, "plain render path emitted no render nodes");
+    bool final_ok = ok && render_count > 0;
+    return final_ok;
 }
 
 

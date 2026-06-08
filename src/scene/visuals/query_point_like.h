@@ -46,5 +46,10 @@ bool _scene_query_point_like_build(
     const DvzSceneQueryBuildContext* ctx, const DvzScenePointLikeQueryDesc* desc,
     DvzSceneQueryPlan* out_plan);
 
+bool _scene_query_point_like_build_ex(
+    const DvzSceneQueryBuildContext* ctx, const char* label, const char* plan_id,
+    DvzVisualType metadata_visual_type, DvzSceneVisualDescKind desc_kind,
+    DvzScenePointLikeKind point_like_kind, DvzSceneQueryPlan* out_plan);
+
 bool _scene_query_point_like_readout(
     const DvzSceneQueryReadoutContext* ctx, DvzQueryResult* result);

@@ -34,9 +34,12 @@
 #include "datoviz/vk/enums.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_overflow.h"
 #include "core/_scene.h"
+#include "frame_plan/emit.h"
 #include "query/internal.h"
 #include "runner/scenario_runner.h"
+#include "visuals/_visual_pipeline.h"
 
 
 
@@ -58,6 +61,9 @@
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
 #define DVZ_WASM_API_SCENARIO_COUNT 6
+#define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
+#define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
+#define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
 
 #define DVZ_WASM_BROWSER_SUPPORTED_REQUIREMENTS                                                       \
     (DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_MESH_VISUAL |  \
@@ -125,6 +131,33 @@ typedef struct
     DvzAxis* axis;
 } DvzWasmApiAxis;
 
+static DvzCapabilitySnapshot _wasm_capability_snapshot(void)
+{
+    DvzCapabilitySnapshot caps = {0};
+    caps.struct_size = DVZ_STRUCT_SIZE(DvzCapabilitySnapshot);
+    caps.flags = 0;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+    caps.max_texture_dimension_2d = 4096;
+    caps.max_bind_groups = 4;
+    caps.max_vertex_buffers = 8;
+    caps.max_color_attachments = 1;
+    caps.max_color_sample_count = 16;
+    caps.max_depth_sample_count = 16;
+    caps.shader_format_wgsl = true;
+    caps.shader_format_glsl = false;
+    caps.supports_readback = true;
+    caps.min_texture_copy_bytes_per_row_alignment = 4;
+    caps.max_readback_size = caps.max_buffer_size;
+    caps.texture_format_r32uint = true;
+    caps.texture_format_rg32uint = true;
+    caps.render_target_format_r32uint = true;
+    caps.render_target_format_rg32uint = true;
+    caps.query_profile_u32_r32 = true;
+    caps.query_profile_u64_rg32 = true;
+    caps.query_profile_u64_2xr32 = true;
+    return caps;
+}
+
 struct DvzWasmApiScene
 {
     DvzScene* scene;
@@ -138,11 +171,17 @@ struct DvzWasmApiScene
     DvzCapabilitySnapshot caps;
     char* json;
     DvzDiagnosticReport report;
+    DvzDrp2CommandStream* query_stream;
     void* packets[4];
     uint64_t packet_sizes[4];
     void* arenas[4];
     uint64_t arena_sizes[4];
+    void* query_packets[4];
+    uint64_t query_packet_sizes[4];
+    void* query_arenas[4];
+    uint64_t query_arena_sizes[4];
     int packet_status;
+    int query_packet_status;
     uint64_t resource_version;
     uint64_t frame_index;
     DvzPendingQueryRequest query_pending;
@@ -150,6 +189,8 @@ struct DvzWasmApiScene
     DvzSceneQueryPlan query_plan;
     DvzQueryResult query_result;
     const DvzSceneQueryFamilyOps* query_ops;
+    DvzVisualType query_visual_type;
+    DvzSceneVisualFamily query_family;
     DvzPanel* query_panel;
     bool query_active;
     void* wrappers[DVZ_WASM_API_MAX_WRAPPERS];
@@ -292,11 +333,28 @@ static void _clear_query(DvzWasmApiScene* scene)
         return;
     if (scene->query_active)
         _scene_query_scratch_destroy(&scene->query_plan.scratch);
+    if (scene->query_stream != NULL)
+    {
+        dvz_drp2_stream_destroy(scene->query_stream);
+        scene->query_stream = NULL;
+    }
+    for (uint32_t i = DVZ_DRP2_PACKET_SETUP; i <= DVZ_DRP2_PACKET_FRAME; i++)
+    {
+        dvz_drp2_packet_destroy(scene->query_packets[i]);
+        dvz_drp2_packet_destroy(scene->query_arenas[i]);
+        scene->query_packets[i] = NULL;
+        scene->query_packet_sizes[i] = 0;
+        scene->query_arenas[i] = NULL;
+        scene->query_arena_sizes[i] = 0;
+    }
+    scene->query_packet_status = 0;
     scene->query_pending = (DvzPendingQueryRequest){0};
     scene->query_build = (DvzSceneQueryBuildContext){0};
     scene->query_plan = (DvzSceneQueryPlan){0};
     scene->query_result = (DvzQueryResult){0};
     scene->query_ops = NULL;
+    scene->query_visual_type = DVZ_VISUAL_TYPE_NONE;
+    scene->query_family = DVZ_SCENE_VISUAL_FAMILY_NONE;
     scene->query_panel = NULL;
     scene->query_active = false;
 }
@@ -489,10 +547,17 @@ static bool _push_immediate_query_result(
 
 
 
-static int _emit_current_packets(DvzWasmApiScene* scene, DvzDrp2CommandStream* stream)
+static int _emit_packets_to(
+    DvzWasmApiScene* scene, DvzDrp2CommandStream* stream, void* packets[4], uint64_t packet_sizes[4],
+    void* arenas[4], uint64_t arena_sizes[4], int* out_status)
 {
     ANN(scene);
     ANN(stream);
+    ANN(packets);
+    ANN(packet_sizes);
+    ANN(arenas);
+    ANN(arena_sizes);
+    ANN(out_status);
     scene->frame_index++;
     scene->resource_version++;
     const DvzDrp2PacketKind phases[3] = {
@@ -504,16 +569,55 @@ static int _emit_current_packets(DvzWasmApiScene* scene, DvzDrp2CommandStream* s
     {
         DvzDrp2PacketKind kind = phases[i];
         if (!dvz_drp2_packet_encode_stream_phase(
-                stream, kind, scene->resource_version, scene->frame_index, &scene->packets[kind],
-                &scene->packet_sizes[kind], &scene->arenas[kind], &scene->arena_sizes[kind]))
+                stream, kind, scene->resource_version, scene->frame_index, &packets[kind],
+                &packet_sizes[kind], &arenas[kind], &arena_sizes[kind]))
         {
             (void)_fail(scene, "WASM DRP2 packet encoding failed");
-            scene->packet_status = -2;
+            *out_status = -20 - (int)kind;
             return -1;
         }
     }
-    scene->packet_status = 0;
+    *out_status = 0;
     return 0;
+}
+
+
+
+static int _emit_current_packets(DvzWasmApiScene* scene, DvzDrp2CommandStream* stream)
+{
+    ANN(scene);
+    return _emit_packets_to(
+        scene, stream, scene->packets, scene->packet_sizes, scene->arenas, scene->arena_sizes,
+        &scene->packet_status);
+}
+
+
+
+static int _emit_current_query_packets(DvzWasmApiScene* scene, DvzDrp2CommandStream* stream)
+{
+    ANN(scene);
+    return _emit_packets_to(
+        scene, stream, scene->query_packets, scene->query_packet_sizes, scene->query_arenas,
+        scene->query_arena_sizes, &scene->query_packet_status);
+}
+
+
+
+static bool _ensure_query_emitter(DvzScene* owner)
+{
+    ANN(owner);
+    DvzSceneRequestExecutor* executor = &owner->query_executor;
+    if (executor->emitter != NULL)
+        return true;
+
+    executor->emitter = dvz_frame_plan_emitter();
+    if (executor->emitter == NULL)
+        return false;
+    executor->emitter->resources.next_id = DVZ_WASM_QUERY_RESOURCE_ID_BASE;
+    executor->emitter->objects.next_id = DVZ_WASM_QUERY_OBJECT_ID_BASE;
+    executor->emitter->next_transient_id = DVZ_WASM_QUERY_TRANSIENT_ID_BASE;
+    executor->emitter_create_count++;
+    return true;
 }
 
 
@@ -535,6 +639,170 @@ static void _mark_query_static_upload(DvzWasmApiScene* scene)
     for (uint32_t i = 0; i < plan->static_cache_key_count; i++)
         executor->query_static_cache_keys[i] = plan->static_cache_keys[i];
     executor->query_static_cache_upload_count++;
+}
+
+
+
+static bool _wasm_query_upload_bytes(
+    DvzFramePlan* plan, const char* resource_id, uint64_t byte_size, const char* data_tag,
+    const void* data, DvzFramePlanResourceRole role, DvzVisualType visual_type,
+    uint64_t item_count, uint32_t buffer_index)
+{
+    ANN(plan);
+    DvzFramePlanUploadMeta meta = {
+        .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
+        .role = role,
+        .visual_type = (uint32_t)visual_type,
+        .buffer_index = buffer_index,
+        .logical_item_count = item_count,
+    };
+    return dvz_frame_plan_upload_bytes(plan, resource_id, 0, byte_size, data_tag, data) &&
+           dvz_frame_plan_upload_metadata(plan, &meta);
+}
+
+
+
+static void _wasm_copy_label(char* dst, size_t dst_size, const char* src)
+{
+    ANN(dst);
+    ANN(src);
+    if (dst_size == 0)
+        return;
+    size_t len = strlen(src);
+    if (len >= dst_size)
+        len = dst_size - 1;
+    memcpy(dst, src, len);
+    dst[len] = '\0';
+}
+
+
+
+static bool _wasm_point_query_build(
+    const DvzSceneQueryBuildContext* ctx, DvzSceneQueryPlan* out_plan)
+{
+    ANN(ctx);
+    ANN(ctx->figure);
+    ANN(ctx->panel);
+    ANN(ctx->visual);
+    ANN(ctx->pending);
+    ANN(out_plan);
+    DvzFigure* figure = ctx->figure;
+    DvzPanel* panel = ctx->panel;
+    DvzVisual* visual = ctx->visual;
+    const DvzPendingQueryRequest* pending = ctx->pending;
+    vec2 request_ndc = {ctx->request_ndc[0], ctx->request_ndc[1]};
+
+    const DvzVisualAttr* pos_attr = NULL;
+    const DvzVisualAttr* color_attr = NULL;
+    const DvzVisualAttr* size_attr = NULL;
+    if (!_dvz_scene_query_dense_attr(visual, "position", sizeof(vec3), &pos_attr) ||
+        !_dvz_scene_query_dense_attr(visual, "color", sizeof(DvzColor), &color_attr) ||
+        !_dvz_scene_query_dense_attr(visual, "size", sizeof(float), &size_attr))
+    {
+        return false;
+    }
+    if (
+        color_attr->item_count != pos_attr->item_count ||
+        size_attr->item_count != pos_attr->item_count)
+    {
+        return false;
+    }
+
+    uint64_t position_bytes = 0;
+    uint64_t color_bytes = 0;
+    uint64_t size_bytes = 0;
+    if (_dvz_mul_u64_overflows(pos_attr->item_count, pos_attr->item_size, &position_bytes) ||
+        _dvz_mul_u64_overflows(color_attr->item_count, color_attr->item_size, &color_bytes) ||
+        _dvz_mul_u64_overflows(size_attr->item_count, size_attr->item_size, &size_bytes))
+    {
+        return false;
+    }
+
+    uint32_t target_width = 0;
+    uint32_t target_height = 0;
+    if (!_dvz_scene_query_target_extent(figure, panel, &target_width, &target_height))
+        return false;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.query.point", pending->request.request_id);
+    bool ok = plan != NULL;
+    ok = ok &&
+         _wasm_query_upload_bytes(
+             plan, "query0_position", position_bytes, "position", pos_attr->data,
+             DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION, DVZ_VISUAL_TYPE_POINT, pos_attr->item_count,
+             0) &&
+         _wasm_query_upload_bytes(
+             plan, "query0_color", color_bytes, "color", color_attr->data,
+             DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR, DVZ_VISUAL_TYPE_POINT, color_attr->item_count, 1) &&
+         _wasm_query_upload_bytes(
+             plan, "query0_size", size_bytes, "size", size_attr->data,
+             DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE, DVZ_VISUAL_TYPE_POINT, size_attr->item_count, 2);
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.has_metadata = true;
+    metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_POINT;
+    metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_POINT_LIKE;
+    metadata.desc_kind = (uint32_t)DVZ_SCENE_VISUAL_DESC_POINT;
+    metadata.point_like_kind = (uint32_t)DVZ_SCENE_POINT_LIKE_POINT;
+    metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
+    metadata.depth_test_enabled = visual->depth_test_enabled;
+    metadata.depth_compare_op = visual->depth_compare_op;
+    _wasm_copy_label(metadata.position_id, sizeof(metadata.position_id), "query0_position");
+    _wasm_copy_label(metadata.color_id, sizeof(metadata.color_id), "query0_color");
+    _wasm_copy_label(metadata.size_id, sizeof(metadata.size_id), "query0_size");
+
+    ok = ok && dvz_frame_plan_render_panel(
+                   plan, "panel.query", "target.query", true,
+                   (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    DvzFramePlanNode* query_render = dvz_frame_plan_last_render_node(plan);
+    if (
+        ok && query_render != NULL &&
+        query_render->u.render.visual_count < DVZ_SCENE_MAX_RENDER_VISUALS)
+    {
+        memcpy(query_render->u.render.visuals[query_render->u.render.visual_count], "query0", 6);
+        query_render->u.render.visual_count++;
+    }
+    else
+    {
+        ok = false;
+    }
+    ok = ok && dvz_frame_plan_render_visual_metadata(plan, &metadata);
+    if (ok)
+    {
+        _dvz_scene_query_apply_render_state(
+            plan, panel, visual, request_ndc, target_width, target_height);
+    }
+
+    DvzFramePlanCopyDesc copy = dvz_frame_plan_copy_desc();
+    copy.src_resource_id = "target.query";
+    copy.dst_resource_id = "buf.query";
+    copy.extent[0] = 1;
+    copy.extent[1] = 1;
+    copy.extent[2] = 1;
+    copy.format = DVZ_FORMAT_R32_UINT;
+    copy.bytes_per_texel = sizeof(uint32_t);
+    copy.bytes_per_row = sizeof(uint32_t);
+    copy.rows_per_image = 1;
+    copy.byte_size = sizeof(uint32_t);
+    copy.request_id = pending->request.request_id;
+    ok = ok && dvz_frame_plan_copy_ex(plan, &copy) &&
+         dvz_frame_plan_readback(plan, "buf.query", "request.query");
+    if (!ok)
+    {
+        dvz_frame_plan_destroy(plan);
+        return false;
+    }
+
+    out_plan->scratch.plan = plan;
+    out_plan->target_width = target_width;
+    out_plan->target_height = target_height;
+    out_plan->format = DVZ_FORMAT_R32_UINT;
+    out_plan->byte_size = sizeof(uint32_t);
+    out_plan->schema.fields = DVZ_SCENE_QUERY_SCHEMA_FIELD_ITEM_ID;
+    out_plan->schema.value_kind = DVZ_QUERY_VALUE_NONE;
+    out_plan->schema.profile = ctx->profile;
+    out_plan->schema.format = DVZ_FORMAT_R32_UINT;
+    out_plan->schema.byte_size = sizeof(uint32_t);
+    return true;
 }
 
 
@@ -586,11 +854,18 @@ static bool _query_emit_result(
         if ((visual->query_capabilities & capability) == 0)
             continue;
 
+        bool direct_point =
+            _dvz_scene_query_item_target_eligible(visual, &pending->request, DVZ_VISUAL_TYPE_POINT);
         const DvzSceneQueryFamilyOps* ops =
-            _dvz_scene_query_family_ops_for_visual(pending->panel, visual, &pending->request);
-        if (ops == NULL || ops->build == NULL || ops->decode == NULL)
+            direct_point ? _dvz_scene_query_point_ops()
+                         : _dvz_scene_query_family_ops_for_visual(
+                               pending->panel, visual, &pending->request);
+        if (!direct_point && (ops == NULL || ops->build == NULL || ops->decode == NULL))
             continue;
         attempted = true;
+        DvzSceneVisualFamily family =
+            direct_point ? DVZ_SCENE_VISUAL_FAMILY_POINT : ops->family;
+        uint64_t visual_id = _scene_visual_public_id(figure->scene, visual);
 
         DvzSceneQueryBuildContext build = {
             .figure = figure,
@@ -603,40 +878,45 @@ static bool _query_emit_result(
         };
         build.request_ndc[0] = request_ndc[0];
         build.request_ndc[1] = request_ndc[1];
-        bool supports_profile = ops->supports_profile != NULL
-                                    ? ops->supports_profile(&build, out_result->profile)
-                                    : out_result->profile == DVZ_QUERY_PROFILE_U32_R32;
+        bool supports_profile =
+            direct_point
+                ? out_result->profile == DVZ_QUERY_PROFILE_U32_R32
+                : (ops->supports_profile != NULL ? ops->supports_profile(&build, out_result->profile)
+                                                 : out_result->profile == DVZ_QUERY_PROFILE_U32_R32);
         if (!supports_profile)
         {
-            out_result->visual_id = _scene_visual_public_id(figure->scene, visual);
-            out_result->visual_family = ops->family;
+            out_result->visual_id = visual_id;
+            out_result->visual_family = family;
             out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_QUERY_PROFILE;
             return false;
         }
 
         DvzSceneQueryPlan plan = {0};
-        if (!ops->build(&build, &plan))
+        bool built = direct_point ? _wasm_point_query_build(&build, &plan) : ops->build(&build, &plan);
+        if (!built)
         {
             _scene_query_scratch_destroy(&plan.scratch);
             continue;
         }
         if (!dvz_frame_plan_render_metadata_complete(plan.scratch.plan))
         {
-            out_result->visual_id = _scene_visual_public_id(figure->scene, visual);
-            out_result->visual_family = ops->family;
+            out_result->visual_id = visual_id;
+            out_result->visual_family = family;
             out_result->status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
             _scene_query_scratch_destroy(&plan.scratch);
             return false;
         }
 
-        out_result->visual_id = _scene_visual_public_id(figure->scene, visual);
-        out_result->visual_family = ops->family;
+        out_result->visual_id = visual_id;
+        out_result->visual_family = family;
         scene->query_pending = *pending;
         scene->query_build = build;
         scene->query_build.pending = &scene->query_pending;
         scene->query_plan = plan;
         scene->query_result = *out_result;
-        scene->query_ops = ops;
+        scene->query_ops = direct_point ? NULL : ops;
+        scene->query_visual_type = direct_point ? visual->type : DVZ_VISUAL_TYPE_NONE;
+        scene->query_family = family;
         scene->query_panel = pending->panel;
         scene->query_active = true;
         return true;
@@ -809,15 +1089,13 @@ uint32_t dvz_wasm_api_scene(uint32_t width, uint32_t height)
     if (scene == NULL)
         return 0;
     dvz_diagnostic_report_init(&scene->report);
-    scene->caps = dvz_capability_snapshot();
-    scene->caps.shader_format_wgsl = true;
-    scene->caps.shader_format_glsl = false;
+    scene->caps = _wasm_capability_snapshot();
     scene->width = width;
     scene->height = height;
     scene->color_format = DVZ_FORMAT_R8G8B8A8_UNORM;
     scene->scene = dvz_scene();
     scene->router = dvz_input_router();
-    if (scene->scene == NULL || scene->router == NULL)
+    if (scene->scene == NULL || scene->router == NULL || !_ensure_query_emitter(scene->scene))
     {
         if (scene->router != NULL)
             dvz_input_router_destroy(scene->router);
@@ -2128,8 +2406,8 @@ int dvz_wasm_api_emit_query_packets(uint32_t scene_handle, uint32_t figure_handl
         return 0;
     }
 
-    DvzDiagnosticReport report = {0};
-    dvz_diagnostic_report_init(&report);
+    dvz_diagnostic_report_init(&scene->report);
+    DvzCapabilitySnapshot query_caps = _wasm_capability_snapshot();
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
     emit_cfg.target_width = scene->query_plan.target_width > 0 ? scene->query_plan.target_width : 1;
@@ -2137,9 +2415,16 @@ int dvz_wasm_api_emit_query_packets(uint32_t scene_handle, uint32_t figure_handl
         scene->query_plan.target_height > 0 ? scene->query_plan.target_height : 1;
     emit_cfg.color_target_format = scene->query_plan.format;
 
-    scene->stream = dvz_frame_plan_emitter_emit_drp2(
-        owner->emitter, scene->query_plan.scratch.plan, &scene->caps, &report, &emit_cfg);
-    if (scene->stream == NULL)
+    DvzSceneRequestExecutor* executor = &owner->query_executor;
+    if (executor->emitter == NULL)
+    {
+        if (!_ensure_query_emitter(owner))
+            return _fail(scene, "WASM query emitter creation failed");
+    }
+
+    scene->query_stream = dvz_frame_plan_emitter_emit_drp2(
+        executor->emitter, scene->query_plan.scratch.plan, &query_caps, &scene->report, &emit_cfg);
+    if (scene->query_stream == NULL)
     {
         _remove_pending_query_at(owner, pending_index);
         DvzQueryResult result = scene->query_result;
@@ -2150,7 +2435,7 @@ int dvz_wasm_api_emit_query_packets(uint32_t scene_handle, uint32_t figure_handl
         return 0;
     }
 
-    if (_emit_current_packets(scene, scene->stream) != 0)
+    if (_emit_current_query_packets(scene, scene->query_stream) != 0)
         return -1;
     _remove_pending_query_at(owner, pending_index);
     return 0;
@@ -2174,10 +2459,15 @@ int dvz_wasm_api_query_resolve(uint32_t scene_handle, const uint8_t* bytes, uint
         .bytes = bytes,
         .byte_size = scene->query_plan.byte_size,
     };
-    if (!scene->query_ops->decode(&decode, &result))
+    bool decoded = false;
+    if (scene->query_visual_type == DVZ_VISUAL_TYPE_POINT)
+        decoded = _point_query_decode(&decode, &result);
+    else if (scene->query_ops != NULL && scene->query_ops->decode != NULL)
+        decoded = scene->query_ops->decode(&decode, &result);
+    if (!decoded)
         result.status = DVZ_QUERY_STATUS_MISS;
 
-    if (scene->query_ops->readout != NULL)
+    if (scene->query_ops != NULL && scene->query_ops->readout != NULL)
     {
         DvzSceneQueryReadoutContext readout = {
             .build = &scene->query_build,
@@ -2227,7 +2517,9 @@ EMSCRIPTEN_KEEPALIVE
 int dvz_wasm_api_packet_status(uint32_t scene_handle)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
-    return scene != NULL ? scene->packet_status : -1;
+    if (scene == NULL)
+        return -1;
+    return scene->query_active ? scene->query_packet_status : scene->packet_status;
 }
 
 
@@ -2236,9 +2528,10 @@ EMSCRIPTEN_KEEPALIVE
 uint32_t dvz_wasm_api_packet_ptr(uint32_t scene_handle, uint32_t kind)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
-    return scene != NULL && _valid_packet_kind(kind) && scene->packets[kind] != NULL
-               ? (uint32_t)(uintptr_t)scene->packets[kind]
-               : 0;
+    if (scene == NULL || !_valid_packet_kind(kind))
+        return 0;
+    void* ptr = scene->query_active ? scene->query_packets[kind] : scene->packets[kind];
+    return ptr != NULL ? (uint32_t)(uintptr_t)ptr : 0;
 }
 
 
@@ -2247,7 +2540,9 @@ EMSCRIPTEN_KEEPALIVE
 uint32_t dvz_wasm_api_packet_size(uint32_t scene_handle, uint32_t kind)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
-    uint64_t size = scene != NULL && _valid_packet_kind(kind) ? scene->packet_sizes[kind] : 0;
+    uint64_t size = 0;
+    if (scene != NULL && _valid_packet_kind(kind))
+        size = scene->query_active ? scene->query_packet_sizes[kind] : scene->packet_sizes[kind];
     return size <= UINT32_MAX ? (uint32_t)size : 0;
 }
 
@@ -2257,9 +2552,10 @@ EMSCRIPTEN_KEEPALIVE
 uint32_t dvz_wasm_api_packet_arena_ptr(uint32_t scene_handle, uint32_t kind)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
-    return scene != NULL && _valid_packet_kind(kind) && scene->arenas[kind] != NULL
-               ? (uint32_t)(uintptr_t)scene->arenas[kind]
-               : 0;
+    if (scene == NULL || !_valid_packet_kind(kind))
+        return 0;
+    void* ptr = scene->query_active ? scene->query_arenas[kind] : scene->arenas[kind];
+    return ptr != NULL ? (uint32_t)(uintptr_t)ptr : 0;
 }
 
 
@@ -2268,7 +2564,9 @@ EMSCRIPTEN_KEEPALIVE
 uint32_t dvz_wasm_api_packet_arena_size(uint32_t scene_handle, uint32_t kind)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
-    uint64_t size = scene != NULL && _valid_packet_kind(kind) ? scene->arena_sizes[kind] : 0;
+    uint64_t size = 0;
+    if (scene != NULL && _valid_packet_kind(kind))
+        size = scene->query_active ? scene->query_arena_sizes[kind] : scene->arena_sizes[kind];
     return size <= UINT32_MAX ? (uint32_t)size : 0;
 }
 

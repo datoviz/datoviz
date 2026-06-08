@@ -72,6 +72,21 @@ static bool _state_ensure_capacity(ConverterState* state, uint32_t min_capacity)
 
 
 
+static void _state_copy_key(char* dst, size_t dst_size, const char* src)
+{
+    ANN(dst);
+    ANN(src);
+    if (dst_size == 0)
+        return;
+    size_t len = strlen(src);
+    if (len >= dst_size)
+        len = dst_size - 1;
+    memcpy(dst, src, len);
+    dst[len] = '\0';
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -247,7 +262,7 @@ uint64_t _resource_id(ConverterState* state, const char* key)
 
     ResourceId* resource = &state->resources[state->count++];
     dvz_memset(resource, sizeof(ResourceId), 0, sizeof(ResourceId));
-    dvz_strlcpy(resource->key, key, sizeof(resource->key));
+    _state_copy_key(resource->key, sizeof(resource->key), key);
     resource->id = state->next_id++;
     resource->topology = UINT32_MAX;
     return resource->id;
@@ -328,7 +343,7 @@ ResourceId* _resource_entry(ConverterState* state, const char* key, bool* is_new
 
     resource = &state->resources[state->count++];
     dvz_memset(resource, sizeof(ResourceId), 0, sizeof(ResourceId));
-    dvz_strlcpy(resource->key, key, sizeof(resource->key));
+    _state_copy_key(resource->key, sizeof(resource->key), key);
     resource->id = state->next_id++;
     resource->topology = UINT32_MAX;
     *is_new = true;

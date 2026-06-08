@@ -157,6 +157,17 @@ bool _render_uses_texture(const DvzFramePlanNode* node)
     ANN(node);
     for (uint32_t i = 0; i < node->u.render.visual_count; i++)
     {
+        const DvzFramePlanVisualMeta* meta = &node->u.render.visual_metadata[i];
+        if (meta->has_metadata)
+        {
+            if (
+                meta->renderable_kind == (uint32_t)DVZ_RENDERABLE_TEXTURED_QUAD ||
+                meta->renderable_kind == (uint32_t)DVZ_RENDERABLE_VOLUME_PROXY)
+            {
+                return true;
+            }
+            continue;
+        }
         const char* visual = node->u.render.visuals[i];
         if (strstr(visual, "image") != NULL || strstr(visual, "texture") != NULL)
             return true;

@@ -3059,6 +3059,22 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
     dvz_strlcpy(metadata.color_id, "point-color", sizeof(metadata.color_id));
     dvz_strlcpy(metadata.size_id, "point-size", sizeof(metadata.size_id));
     AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+    AT(dvz_frame_plan_copy(plan, "target.panel.0.query", "buf.query", sizeof(uint32_t)));
+    AT(dvz_frame_plan_readback(plan, "buf.query", "request.query"));
+
+    const uint32_t count_before = plan->count;
+    uint32_t render_count_before = 0;
+    uint32_t render_visual_count_before = 0;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        if (plan->nodes[i].type != DVZ_FRAME_PLAN_NODE_RENDER)
+            continue;
+        render_count_before++;
+        render_visual_count_before += plan->nodes[i].u.render.visual_count;
+    }
+    AT(count_before == 6);
+    AT(render_count_before == 1);
+    AT(render_visual_count_before == 1);
 
     DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
     ANN(emitter);
@@ -3073,6 +3089,18 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
         dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &emit_cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(plan->count == count_before);
+    uint32_t render_count_after = 0;
+    uint32_t render_visual_count_after = 0;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        if (plan->nodes[i].type != DVZ_FRAME_PLAN_NODE_RENDER)
+            continue;
+        render_count_after++;
+        render_visual_count_after += plan->nodes[i].u.render.visual_count;
+    }
+    AT(render_count_after == render_count_before);
+    AT(render_visual_count_after == render_visual_count_before);
 
     uint32_t query_shader_count = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)

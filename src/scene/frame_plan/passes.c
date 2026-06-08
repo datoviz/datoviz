@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <stdint.h>
+#include <string.h>
 
 #include "_alloc.h"
 #include "internal.h"
@@ -228,11 +229,16 @@ bool dvz_frame_plan_clear_panel(
 bool dvz_frame_plan_render_visual(DvzFramePlan* plan, const char* visual_id)
 {
     DvzFramePlanNode* node = _frame_plan_last_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
-    if (node == NULL || node->u.render.visual_count >= DVZ_SCENE_MAX_RENDER_VISUALS)
+    if (
+        node == NULL || visual_id == NULL || visual_id[0] == '\0' ||
+        node->u.render.visual_count >= DVZ_SCENE_MAX_RENDER_VISUALS)
         return false;
-    _frame_plan_copy_label(
-        node->u.render.visuals[node->u.render.visual_count], DVZ_SCENE_LABEL_SIZE,
-        visual_id ? visual_id : "");
+    char* dst = node->u.render.visuals[node->u.render.visual_count];
+    size_t len = strlen(visual_id);
+    if (len >= DVZ_SCENE_LABEL_SIZE)
+        len = DVZ_SCENE_LABEL_SIZE - 1;
+    memcpy(dst, visual_id, len);
+    dst[len] = '\0';
     node->u.render.visual_count++;
     return true;
 }
