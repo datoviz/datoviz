@@ -80,6 +80,7 @@ typedef struct DvzScale             DvzScale;
 typedef struct DvzColormap          DvzColormap;
 typedef struct DvzColorbar          DvzColorbar;
 typedef struct DvzLegend            DvzLegend;
+typedef struct DvzOrientationGizmo  DvzOrientationGizmo;
 typedef struct DvzFont              DvzFont;
 typedef struct DvzText              DvzText;
 typedef struct DvzSymbolSet         DvzSymbolSet;
@@ -549,6 +550,22 @@ struct DvzPlacement
     float height_px;
 };
 typedef struct DvzPlacement DvzPlacement;
+
+
+struct DvzOrientationGizmoDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzController* source_controller;
+    DvzPlacement placement;
+    bool show_axes;
+    float axis_length;
+    float axis_width_px;
+    DvzColor x_color;
+    DvzColor y_color;
+    DvzColor z_color;
+};
+typedef struct DvzOrientationGizmoDesc DvzOrientationGizmoDesc;
 
 
 struct DvzEdlDesc

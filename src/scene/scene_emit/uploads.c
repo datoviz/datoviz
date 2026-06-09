@@ -18,6 +18,7 @@
 #include "_assertions.h"
 #include "_scene.h"
 #include "annotation/prepare_internal.h"
+#include "core/orientation_gizmo_internal.h"
 #include "domain/polygon_internal.h"
 #include "registry/registry.h"
 #include "scene_emit/scene_emit.h"
@@ -44,6 +45,7 @@ void _scene_emit_visual_uploads(
     ANN(figure->scene);
     ANN(plan);
     _scene_prepare_composite_visuals(figure);
+    _scene_prepare_orientation_gizmos(figure);
     _scene_prepare_axis_visuals(figure);
     _scene_prepare_colorbar_visuals(figure, report);
     _scene_prepare_legend_visuals(figure, report);

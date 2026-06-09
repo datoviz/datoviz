@@ -54,6 +54,7 @@
 #define DVZ_SCENE_MAX_COLORMAPS  64
 #define DVZ_SCENE_MAX_COLORBARS  64
 #define DVZ_SCENE_MAX_LEGENDS    64
+#define DVZ_SCENE_MAX_ORIENTATION_GIZMOS 64
 #define DVZ_SCENE_MAX_SCALE_CATEGORIES 4096
 #define DVZ_SCENE_MAX_LEGEND_TEXTS (DVZ_SCENE_MAX_SCALE_CATEGORIES + 1)
 #define DVZ_SCENE_MAX_INTERACTIONS 64
@@ -1051,6 +1052,22 @@ struct DvzPinnedReadout
 };
 
 
+struct DvzOrientationGizmo
+{
+    DvzScene* scene;
+    DvzPanel* source_panel;
+    DvzPanel* panel;
+    DvzController* source_controller;
+    DvzController* controller;
+    DvzControllerLink* link;
+    DvzVisual* axes_visual;
+    DvzOrientationGizmoDesc desc;
+    bool active;
+    bool visible;
+    uint64_t version;
+};
+
+
 struct DvzOverlay
 {
     DvzScene* scene;
@@ -2040,6 +2057,9 @@ struct DvzScene
 
     uint32_t legend_count;
     DvzLegend legends[DVZ_SCENE_MAX_LEGENDS];
+
+    uint32_t orientation_gizmo_count;
+    DvzOrientationGizmo orientation_gizmos[DVZ_SCENE_MAX_ORIENTATION_GIZMOS];
 
     uint32_t interaction_count;
     DvzInteractionPolicy interactions[DVZ_SCENE_MAX_INTERACTIONS];

@@ -201,6 +201,18 @@ examples:
       kind: synthetic
     agent_copy_safe: true
 
+  - id: feature_orientation_gizmo
+    title: Orientation Gizmo
+    stage: v0.4_required
+    category: feature
+    primary_feature: orientation-gizmo
+    lane: features
+    source: examples/c/features/orientation_gizmo.c
+    validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
+
   - id: feature_controller_fly
     title: Fly Controller
     stage: v0.4_required

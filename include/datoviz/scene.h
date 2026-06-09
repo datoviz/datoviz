@@ -653,6 +653,49 @@ DVZ_EXPORT bool dvz_placement_resolve(
     DvzRect* out);
 
 
+/*************************************************************************************************/
+/*  Orientation gizmo                                                                            */
+/*************************************************************************************************/
+
+/**
+ * Return the default orientation-gizmo descriptor.
+ *
+ * @return default orientation-gizmo descriptor
+ */
+DVZ_EXPORT DvzOrientationGizmoDesc dvz_orientation_gizmo_desc(void);
+
+
+/**
+ * Create a passive orientation gizmo attached to one source panel.
+ *
+ * The first v0.4 slice links the gizmo to an arcball controller and renders a fixed-size inset
+ * axis triad with existing retained segment visuals.
+ *
+ * @param panel source panel
+ * @param desc descriptor, or NULL for defaults
+ * @return the orientation gizmo, or NULL on validation/allocation error
+ */
+DVZ_EXPORT DvzOrientationGizmo* dvz_orientation_gizmo(
+    DvzPanel* panel, const DvzOrientationGizmoDesc* desc);
+
+
+/**
+ * Destroy an orientation gizmo.
+ *
+ * @param gizmo the orientation gizmo
+ */
+DVZ_EXPORT void dvz_orientation_gizmo_destroy(DvzOrientationGizmo* gizmo);
+
+
+/**
+ * Set orientation-gizmo visibility.
+ *
+ * @param gizmo the orientation gizmo
+ * @param visible whether the gizmo should be visible
+ */
+DVZ_EXPORT void dvz_orientation_gizmo_set_visible(DvzOrientationGizmo* gizmo, bool visible);
+
+
 /**
  * Reserve visual-space room around one panel's plot area for future adornments.
  *

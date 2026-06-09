@@ -19,6 +19,7 @@
 #include "_assertions.h"
 #include "_controllers.h"
 #include "_scene.h"
+#include "core/orientation_gizmo_internal.h"
 #include "core/scene_notify_internal.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
@@ -689,6 +690,61 @@ int test_controller_link_arcball_rotation_only_keeps_target_centered(
     AC(gizmo_arcball->zoom, 1.0f, 1e-6f);
 
     dvz_input_router_destroy(router);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_orientation_gizmo_create_place_resize_and_visibility(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 1000, 800, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzController* controller = dvz_arcball(scene, NULL);
+    ANN(controller);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
+
+    DvzOrientationGizmoDesc desc = dvz_orientation_gizmo_desc();
+    desc.placement = dvz_placement_panel_corner(
+        DVZ_HORIZONTAL_ANCHOR_RIGHT, DVZ_VERTICAL_ANCHOR_BOTTOM, 150.0f, 150.0f, -16.0f,
+        -16.0f);
+    DvzOrientationGizmo* gizmo = dvz_orientation_gizmo(panel, &desc);
+    ANN(gizmo);
+    ANN(gizmo->panel);
+    ANN(gizmo->axes_visual);
+    ANN(gizmo->controller);
+    ANN(gizmo->link);
+    AT(gizmo->source_controller == controller);
+    AT(scene->orientation_gizmo_count == 1);
+    AC(gizmo->panel->desc.x, 0.834f, 1e-6f);
+    AC(gizmo->panel->desc.y, 0.7925f, 1e-6f);
+    AC(gizmo->panel->desc.width, 0.15f, 1e-6f);
+    AC(gizmo->panel->desc.height, 0.1875f, 1e-6f);
+
+    dvz_figure_resize(figure, 1200, 900);
+    _scene_prepare_orientation_gizmos(figure);
+    AC(gizmo->panel->desc.x, 1034.0f / 1200.0f, 1e-6f);
+    AC(gizmo->panel->desc.y, 734.0f / 900.0f, 1e-6f);
+    AC(gizmo->panel->desc.width, 150.0f / 1200.0f, 1e-6f);
+    AC(gizmo->panel->desc.height, 150.0f / 900.0f, 1e-6f);
+
+    dvz_orientation_gizmo_set_visible(gizmo, false);
+    AT(!gizmo->visible);
+    AT(!gizmo->axes_visual->visible);
+    dvz_orientation_gizmo_set_visible(gizmo, true);
+    AT(gizmo->visible);
+    AT(gizmo->axes_visual->visible);
+
+    dvz_orientation_gizmo_destroy(gizmo);
+    AT(!scene->orientation_gizmos[0].active);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1693,6 +1749,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_arcball_scene_binding_uses_panel_input);
     TST_CASE(test_arcball_panel_input_uses_hidpi_figure_coordinates);
     TST_CASE(test_controller_link_arcball_rotation_only_keeps_target_centered);
+    TST_CASE(test_orientation_gizmo_create_place_resize_and_visibility);
     TST_CASE(test_controller_link_panzoom_extent_x_only);
     TST_CASE(test_controller_link_validation);
     TST_CASE(test_controller_link_destroy_stops_arcball_propagation);
