@@ -130,6 +130,7 @@ static const DvzVisualFamilyAttrDesc SPHERE_ATTRS[] = {
     {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
     {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
     {"size", sizeof(float), SRC_SIZE_GROUPED, false},
+    {"item_state", sizeof(uint32_t), SRC_ITEM_ONLY, false},
 };
 
 
@@ -320,7 +321,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .default_material_kind = DVZ_MATERIAL_KIND_LIT,
      .default_material_model = DVZ_MATERIAL_MODEL_PHONG, .supports_material = true,
      .supports_depth_cue = true, .attrs = SPHERE_ATTRS,
-     .attr_count = DVZ_ARRAY_COUNT(SPHERE_ATTRS), .expected_attrs = "position, color, radius",
+     .attr_count = DVZ_ARRAY_COUNT(SPHERE_ATTRS),
+     .expected_attrs = "position, color, radius, item_state",
      .attr_alias_public = "radius", .attr_alias_storage = "size", .upload_position_topology = true,
      .upload_material_params = true},
     {VISUAL_OPS(

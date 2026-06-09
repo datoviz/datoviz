@@ -489,7 +489,8 @@ static void _scene_commit_emit_success(DvzFigure* figure)
                     visual->attrs[normal_idx].item_count > 0;
                 bool point_like = visual->type == DVZ_VISUAL_TYPE_POINT ||
                                   visual->type == DVZ_VISUAL_TYPE_PIXEL ||
-                                  visual->type == DVZ_VISUAL_TYPE_MARKER;
+                                  visual->type == DVZ_VISUAL_TYPE_MARKER ||
+                                  visual->type == DVZ_VISUAL_TYPE_SPHERE;
                 if (point_like || has_normals || visual->type == DVZ_VISUAL_TYPE_SEGMENT ||
                     visual->type == DVZ_VISUAL_TYPE_PATH || visual->type == DVZ_VISUAL_TYPE_SPHERE)
                     _visual_family_state(visual)->material_params_dirty = false;

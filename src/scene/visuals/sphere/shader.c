@@ -45,16 +45,20 @@ bool _scene_sphere_visual_shader_desc(
     if (visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE || wboit_accumulation)
         return false;
 
-    const char* suffix = picking ? "_pick" : "";
+    bool item_state = visual->has_item_state && !picking;
+    const char* suffix = picking ? "_pick" : item_state ? "_item_state" : "";
     dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_sphere%s%s", suffix, format_tag);
     dvz_snprintf(
         out->fragment_key, sizeof(out->fragment_key), "_fs_sphere%s%s", suffix, format_tag);
     dvz_snprintf(
         out->pipeline_key, sizeof(out->pipeline_key), "_pipe_sphere%s%s", suffix, format_tag);
     _scene_shader_desc_set_builtin(
-        out, picking ? DVZ_SCENE_BUILTIN_SHADER_SPHERE_PICK : DVZ_SCENE_BUILTIN_SHADER_SPHERE);
-    _scene_shader_desc_set_identity(out, "scene.sphere", picking ? "pick" : "default");
-    out->vertex_spirv_key = "sphere_vert";
+        out, picking     ? DVZ_SCENE_BUILTIN_SHADER_SPHERE_PICK
+             : item_state ? DVZ_SCENE_BUILTIN_SHADER_SPHERE_ITEM_STATE
+                          : DVZ_SCENE_BUILTIN_SHADER_SPHERE);
+    _scene_shader_desc_set_identity(
+        out, "scene.sphere", picking ? "pick" : item_state ? "item_state" : "default");
+    out->vertex_spirv_key = item_state ? "sphere_item_state_vert" : "sphere_vert";
     out->fragment_spirv_key = picking ? "sphere_pick_frag" : "sphere_frag";
     return true;
 }

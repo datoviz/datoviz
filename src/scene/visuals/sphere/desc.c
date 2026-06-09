@@ -47,6 +47,9 @@ bool _scene_sphere_visual_desc_from_metadata(
 
     uint64_t color_id = _scene_visual_desc_resource(emitter, meta->color_id);
     uint64_t size_id = _scene_visual_desc_resource(emitter, meta->size_id);
+    uint64_t selection_id = _scene_visual_desc_resource(emitter, meta->selection_id);
+    uint64_t item_state_style_id =
+        _scene_visual_desc_resource(emitter, meta->item_state_style_id);
     if (color_id == 0 || size_id == 0)
     {
         if (error != NULL)
@@ -58,6 +61,18 @@ bool _scene_sphere_visual_desc_from_metadata(
     out->point_like_kind = DVZ_SCENE_POINT_LIKE_SPHERE;
     out->vbuf_ids[out->vbuf_count++] = color_id;
     out->vbuf_ids[out->vbuf_count++] = size_id;
+    if (selection_id != 0)
+    {
+        if (item_state_style_id == 0)
+        {
+            if (error != NULL)
+                *error = "typed sphere metadata missing item-state style resource";
+            return false;
+        }
+        out->vbuf_ids[out->vbuf_count++] = selection_id;
+        out->has_item_state = true;
+        out->item_state_style_buffer_id = item_state_style_id;
+    }
     out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
     out->material_buffer_id = _scene_visual_desc_resource(emitter, meta->material_id);
     return true;

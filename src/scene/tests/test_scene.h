@@ -1023,6 +1023,8 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
 
 int test_scene_pixel_hover_selection_item_state(TstContext* suite, const TstCase* item);
 
+int test_scene_sphere_hover_selection_item_state(TstContext* suite, const TstCase* item);
+
 int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const TstCase* item);
 
 int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item);

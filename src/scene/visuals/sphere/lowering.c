@@ -75,5 +75,7 @@ bool _scene_sphere_visual_bind_desc(
     out->uses_fixed_common = caps.fixed_controller;
     out->uses_material_set1 = caps.uses_material_set;
     out->material_buffer_id = visual->material_buffer_id;
+    out->uses_item_state_style_set1 = visual->has_item_state;
+    out->item_state_style_buffer_id = visual->item_state_style_buffer_id;
     return true;
 }

@@ -967,6 +967,26 @@ examples:
         - frame-callbacks
     agent_copy_safe: true
 
+  - id: feature_selection_sphere
+    title: Sphere Selection
+    stage: v0.4_required
+    category: feature
+    primary_feature: selection-sphere
+    lane: features
+    source: examples/c/features/selection_sphere.c
+    validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - sphere
+        - arcball
+        - query-readback
+        - frame-callbacks
+    agent_copy_safe: true
+
   - id: feature_triangulation_polygon
     title: Polygon Triangulation
     stage: v0.4_required

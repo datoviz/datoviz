@@ -400,7 +400,7 @@ static void _selection_clear_items(DvzSelection* selection)
 
 
 /**
- * Return whether one visual supports the first item-state rendering path.
+ * Return whether one visual supports the retained item-state rendering path.
  *
  * @param visual the visual
  * @return whether the visual supports a per-item state bitfield
@@ -409,7 +409,7 @@ static bool _item_state_visual_supports(const DvzVisual* visual)
 {
     return visual != NULL &&
            (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
-            visual->type == DVZ_VISUAL_TYPE_MARKER);
+            visual->type == DVZ_VISUAL_TYPE_MARKER || visual->type == DVZ_VISUAL_TYPE_SPHERE);
 }
 
 
@@ -434,7 +434,7 @@ static DvzVisual* _item_state_visual_from_public_id(DvzScene* scene, uint64_t vi
 
 
 /**
- * Return the selectable item count for one point-like visual.
+ * Return the selectable item count for one item-state visual.
  *
  * @param visual the visual
  * @return the item count, or zero when unavailable
@@ -614,7 +614,7 @@ static bool _item_state_active_hover_style(DvzScene* scene, DvzItemStateVisualSt
 
 
 /**
- * Synchronize point-like item-state visual style material parameters.
+ * Synchronize item-state visual style material parameters.
  *
  * @param scene the scene
  * @param visual the visual
@@ -711,7 +711,7 @@ static int _item_state_sync_visual(DvzScene* scene, DvzVisual* visual)
 
 
 /**
- * Synchronize all point-like item-state attributes in a scene.
+ * Synchronize all retained item-state attributes in a scene.
  *
  * @param scene the scene
  * @param reason mutation reason for diagnostics
