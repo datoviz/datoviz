@@ -1639,6 +1639,35 @@ examples:
       - alpha-blending
       - capture
 
+  - id: showcase_embedding_atlas
+    title: Embedding Atlas
+    stage: v0.4_required
+    category: showcase
+    lane: showcases
+    source: examples/c/showcases/embedding_atlas.c
+    validation: smoke+interaction+screenshot
+    data:
+      kind: generated
+    agent_copy_safe: false
+    dataset:
+      name: Synthetic embedding atlas
+      source: deterministic local generation
+      license: generated under repository license
+      preprocessing: python tools/data/prepare_embedding_atlas.py
+      cache_prepared_path: .cache/datoviz/examples/embedding_atlas/prepared
+    gallery:
+      card: section
+      status_label: supported
+    tags:
+      - scientific
+      - synthetic
+      - embedding
+      - point
+      - panzoom
+      - query-readback
+      - selection
+      - overlay-card
+
   - id: brain_volume
     title: Allen Mouse Brain
     stage: v0.4_required

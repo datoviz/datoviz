@@ -31,6 +31,7 @@ SCRIPT_GROUPS: dict[str, list[str]] = {
         "tools/data/prepare_cfd_vortex.py",
         "tools/data/prepare_tokamak.py",
         "tools/data/prepare_image_embedding_toy.py",
+        "tools/data/prepare_embedding_atlas.py",
     ],
     "external": [
         "tools/data/prepare_geo_public.py",
