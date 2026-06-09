@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* graph - semantic graph composite with clustered curved edges.
+/* graph - semantic two-community graph composite with bridge edges.
  *
  * Scenario: composite_graph
  * Style: feature composite, graphite_cyan, 1600x1200 capture target
@@ -38,13 +38,13 @@
 
 #define WIDTH  1600u
 #define HEIGHT 1200u
-#define CLUSTER_COUNT 3u
-#define CLUSTER_SIZE  9u
-#define RING_COUNT    (CLUSTER_SIZE - 1u)
-#define BRIDGE_COUNT  3u
-#define NODE_COUNT    (CLUSTER_COUNT * CLUSTER_SIZE + BRIDGE_COUNT)
-#define INTRA_EDGE_COUNT  (CLUSTER_COUNT * RING_COUNT * 2u)
-#define BRIDGE_EDGE_COUNT 12u
+#define COMMUNITY_COUNT 2u
+#define COMMUNITY_SIZE  11u
+#define RING_COUNT      (COMMUNITY_SIZE - 1u)
+#define BRIDGE_COUNT    2u
+#define NODE_COUNT      (COMMUNITY_COUNT * COMMUNITY_SIZE + BRIDGE_COUNT)
+#define INTRA_EDGE_COUNT  (COMMUNITY_COUNT * RING_COUNT * 2u)
+#define BRIDGE_EDGE_COUNT 8u
 #define EDGE_COUNT        (INTRA_EDGE_COUNT + BRIDGE_EDGE_COUNT)
 #define PI 3.14159265358979323846
 
@@ -69,10 +69,10 @@ static bool _configure_panel(DvzPanel* panel)
                                         .top = 0.06f});
     if (!ok)
         return false;
-    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, -1.75, 1.75);
+    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, -1.60, 1.60);
     if (rc != 0)
         return false;
-    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.35, 1.35);
+    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.10, 1.10);
     return rc == 0;
 }
 
@@ -85,34 +85,31 @@ static bool _configure_panel(DvzPanel* panel)
  */
 static void _make_positions(dvec3 positions[NODE_COUNT])
 {
-    static const dvec2 centers[CLUSTER_COUNT] = {
-        {-0.86, +0.42},
-        {+0.86, +0.38},
-        {+0.02, -0.64},
+    static const dvec2 centers[COMMUNITY_COUNT] = {
+        {-0.70, +0.00},
+        {+0.70, +0.00},
     };
 
-    for (uint32_t c = 0; c < CLUSTER_COUNT; c++)
+    for (uint32_t c = 0; c < COMMUNITY_COUNT; c++)
     {
-        const uint32_t base = c * CLUSTER_SIZE;
+        const uint32_t base = c * COMMUNITY_SIZE;
         positions[base][0] = centers[c][0];
         positions[base][1] = centers[c][1];
         positions[base][2] = 0.0;
         for (uint32_t i = 0; i < RING_COUNT; i++)
         {
-            const double angle = 2.0 * PI * (double)i / (double)RING_COUNT + 0.24 * (double)c;
-            const double radius = i % 2 == 0 ? 0.36 : 0.25;
+            const double angle = 2.0 * PI * (double)i / (double)RING_COUNT + 0.18 * (double)c;
+            const double radius = 0.38;
             positions[base + 1 + i][0] = centers[c][0] + radius * cos(angle);
             positions[base + 1 + i][1] = centers[c][1] + radius * sin(angle);
             positions[base + 1 + i][2] = 0.0;
         }
     }
 
-    positions[27][0] = -0.31;
-    positions[27][1] = +0.11;
-    positions[28][0] = +0.31;
-    positions[28][1] = +0.10;
-    positions[29][0] = +0.00;
-    positions[29][1] = -0.18;
+    positions[22][0] = -0.08;
+    positions[22][1] = +0.36;
+    positions[23][0] = +0.08;
+    positions[23][1] = -0.36;
 }
 
 
@@ -136,9 +133,9 @@ static void _make_edges(uint32_t endpoints[2 * EDGE_COUNT], uint32_t* bridge_fir
     ANN(bridge_first_edge);
 
     uint32_t edge_count = 0;
-    for (uint32_t c = 0; c < CLUSTER_COUNT; c++)
+    for (uint32_t c = 0; c < COMMUNITY_COUNT; c++)
     {
-        const uint32_t base = c * CLUSTER_SIZE;
+        const uint32_t base = c * COMMUNITY_SIZE;
         for (uint32_t i = 0; i < RING_COUNT; i++)
         {
             _push_edge(endpoints, &edge_count, base, base + 1 + i);
@@ -149,10 +146,8 @@ static void _make_edges(uint32_t endpoints[2 * EDGE_COUNT], uint32_t* bridge_fir
     *bridge_first_edge = edge_count;
 
     static const uint32_t bridge_edges[2 * BRIDGE_EDGE_COUNT] = {
-        0,  27, 9,  28, 18, 29, //
-        27, 28, 28, 29, 29, 27, //
-        27, 9,  28, 18, 29, 0,  //
-        0,  9,  9,  18, 18, 0,
+        0, 22, 11, 23, 22, 23, 22, 11, //
+        23, 0,  1,  12, 6,  17, 22, 17,
     };
     for (uint32_t i = 0; i < BRIDGE_EDGE_COUNT; i++)
         _push_edge(endpoints, &edge_count, bridge_edges[2 * i], bridge_edges[2 * i + 1]);
@@ -182,7 +177,7 @@ static void _make_bridge_controls(
         const double ty = positions[target][1];
         const double dx = tx - sx;
         const double dy = ty - sy;
-        const double bend = (i % 2 == 0 ? 1.0 : -1.0) * (i >= 9 ? 0.42 : 0.24);
+        const double bend = (i % 2 == 0 ? 1.0 : -1.0) * 0.18;
 
         control0[i][0] = sx + 0.36 * dx - bend * dy;
         control0[i][1] = sy + 0.36 * dy + bend * dx;
@@ -246,8 +241,8 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
     float node_sizes[NODE_COUNT] = {0};
     for (uint32_t i = 0; i < NODE_COUNT; i++)
     {
-        const bool hub = i == 0 || i == 9 || i == 18;
-        const bool bridge = i >= 27;
+        const bool hub = i == 0 || i == COMMUNITY_SIZE;
+        const bool bridge = i >= COMMUNITY_COUNT * COMMUNITY_SIZE;
         node_colors[i] = bridge ? (DvzColor){231, 98, 82, 255} :
                          hub    ? (DvzColor){255, 198, 80, 255} :
                                   (DvzColor){46, 190, 210, 255};

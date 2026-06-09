@@ -9,8 +9,8 @@ is still visible with the blocker or preferred next action.
 
 | Item | Status | Evidence / next action |
 | --- | --- | --- |
-| `composites/graph` | deferred | Needs a classic two-community/ring+chord rewrite in `examples/c/composites/graph.c`. |
-| `composites/polygon` | deferred | `features/triangulation_polygon.c` covers triangulation; composite still needs cleaner regular composition. |
+| `composites/graph` | resolved | Rewritten as a cleaner two-community graph with bridge edges in `examples/c/composites/graph.c`; compiled and docs regenerated. |
+| `composites/polygon` | resolved | Rewritten as a regular holed polygon plus non-overlapping star/tiles in `examples/c/composites/polygon.c`; triangulation remains covered by `features/triangulation_polygon.c`. |
 | `features/animation_tracks` | deferred | Needs rotating object plus camera keyframes using `dvz_track_keyframes`. |
 | `features/annotation_readout` | resolved | Larger closer label in `examples/c/features/annotation_readout.c`; compiled in focused example batch. |
 | `features/app_glfw` | resolved | Standard 1600x1200 size in `examples/c/features/app_glfw.c`. |

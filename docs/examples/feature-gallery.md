@@ -367,7 +367,7 @@ _Media pending._
 
 `supported` `features`
 
-lit sphere cluster with explicit light direction.
+compare lit sphere clusters with different material and light settings.
 
 </div>
 

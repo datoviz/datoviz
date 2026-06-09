@@ -19,7 +19,7 @@ _Media pending._
 
 `supported` `composites`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
 
-semantic graph composite with clustered curved edges.
+semantic two-community graph composite with bridge edges.
 
 </div>
 
@@ -31,7 +31,7 @@ _Media pending._
 
 `supported` `composites`<br><span>`composite`, `polygon`, `polygon-set`, `holes`, `panzoom`</span>
 
-semantic polygon and polygon-set composites.
+clean semantic polygon and polygon-set composites.
 
 </div>
 

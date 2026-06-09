@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* polygon - semantic polygon and polygon-set composites.
+/* polygon - clean semantic polygon and polygon-set composites.
  *
  * Scenario: composite_polygon
  * Style: feature composite, graphite_cyan, 1600x1200 capture target
@@ -80,15 +80,13 @@ static bool _add_holed_polygon(DvzScene* scene, DvzPanel* panel)
     ANN(scene);
     ANN(panel);
 
-    static const dvec2 outer[6] = {
-        {-2.00, -0.86}, {-1.22, -1.04}, {-0.55, -0.42},
-        {-0.70, +0.88}, {-1.58, +1.18}, {-2.18, +0.42},
+    static const dvec2 outer[8] = {
+        {-2.12, +0.00}, {-1.88, -0.58}, {-1.30, -0.82}, {-0.72, -0.58},
+        {-0.48, +0.00}, {-0.72, +0.58}, {-1.30, +0.82}, {-1.88, +0.58},
     };
-    static const dvec2 hole[4] = {
-        {-1.62, -0.20},
-        {-1.06, -0.10},
-        {-1.16, +0.48},
-        {-1.72, +0.35},
+    static const dvec2 hole[6] = {
+        {-1.66, +0.00}, {-1.52, -0.26}, {-1.22, -0.26},
+        {-1.08, +0.00}, {-1.22, +0.26}, {-1.52, +0.26},
     };
 
     DvzPolygon* polygon = dvz_polygon(scene, 0);
@@ -96,10 +94,10 @@ static bool _add_holed_polygon(DvzScene* scene, DvzPanel* panel)
         return false;
     int rc = dvz_polygon_geometry(
         polygon, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
-                                   .outer = {.xy = outer, .count = 6}});
+                                   .outer = {.xy = outer, .count = DVZ_ARRAY_COUNT(outer)}});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_hole(polygon, 0, 4, hole);
+    rc = dvz_polygon_hole(polygon, 0, DVZ_ARRAY_COUNT(hole), hole);
     if (rc != 0)
         return false;
     rc = dvz_polygon_id(polygon, 10);
@@ -141,15 +139,21 @@ static bool _add_polygon_set(DvzScene* scene, DvzPanel* panel)
     ANN(scene);
     ANN(panel);
 
-    static const dvec2 left[5] = {
-        {+0.10, -0.95}, {+0.95, -1.10}, {+1.22, -0.22}, {+0.62, +0.42}, {-0.10, +0.10},
+    static const dvec2 left[10] = {
+        {+0.05, +0.74}, {+0.24, +0.24}, {+0.78, +0.24}, {+0.35, -0.06}, {+0.52, -0.58},
+        {+0.05, -0.26}, {-0.42, -0.58}, {-0.25, -0.06}, {-0.68, +0.24}, {-0.14, +0.24},
     };
-    static const dvec2 middle[5] = {
-        {+0.84, -0.05}, {+1.56, -0.36}, {+2.05, +0.20}, {+1.74, +1.02}, {+0.88, +0.76},
+    static const dvec2 middle[4] = {
+        {+1.12, -0.82},
+        {+1.92, -0.82},
+        {+1.92, -0.10},
+        {+1.12, -0.10},
     };
-    static const dvec2 right[6] = {
-        {+2.00, -0.88}, {+2.88, -0.82}, {+3.18, -0.15},
-        {+2.92, +0.68}, {+2.20, +0.92}, {+1.88, +0.18},
+    static const dvec2 right[4] = {
+        {+2.20, +0.10},
+        {+3.00, +0.10},
+        {+3.00, +0.82},
+        {+2.20, +0.82},
     };
 
     DvzPolygonSet* set = dvz_polygon_set(scene, 0);
@@ -158,13 +162,13 @@ static bool _add_polygon_set(DvzScene* scene, DvzPanel* panel)
 
     const uint32_t a = dvz_polygon_set_add(
         set, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
-                               .outer = {.xy = left, .count = 5}});
+                               .outer = {.xy = left, .count = DVZ_ARRAY_COUNT(left)}});
     const uint32_t b = dvz_polygon_set_add(
         set, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
-                               .outer = {.xy = middle, .count = 5}});
+                               .outer = {.xy = middle, .count = DVZ_ARRAY_COUNT(middle)}});
     const uint32_t c = dvz_polygon_set_add(
         set, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
-                               .outer = {.xy = right, .count = 6}});
+                               .outer = {.xy = right, .count = DVZ_ARRAY_COUNT(right)}});
     if (a == UINT32_MAX || b == UINT32_MAX || c == UINT32_MAX)
         return false;
 
