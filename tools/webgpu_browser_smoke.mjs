@@ -781,6 +781,7 @@ async function main() {
     let wasmLegend = null;
     let wasmReadout = null;
     let wasmQuery = null;
+    let wasmLinkedProbe = null;
     try {
       wasmBasic = await smokeAnimatedWasmPage(
         page,
@@ -885,6 +886,25 @@ async function main() {
       }
       console.log(skipLine(`WebGPU live query smoke: headless WebGPU instance loss (${error.message})`));
     }
+    try {
+      wasmLinkedProbe = await smokeQueryWasmPage(
+        page,
+        baseUrl,
+        {
+          path: '/examples/webgpu/live.html?id=linked_panels_probe_colorbar',
+          label: 'Linked Probe With Colorbar',
+          scenarioId: 'linked_panels_probe_colorbar',
+          pointerX: 0.25,
+          pointerY: 0.52,
+        },
+        join(artifactsDir, 'webgpu_live_linked_probe_colorbar.png'),
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(skipLine(`WebGPU live linked-probe smoke: headless WebGPU instance loss (${error.message})`));
+    }
     if (wasmBasic !== null) {
       console.log(passLine(`live basic: ${wasmBasic.initialStatus}; initial_frame=${wasmBasic.initialFrame}`));
     }
@@ -907,6 +927,13 @@ async function main() {
       console.log(
         passLine(
           `live query: ${wasmQuery.initialStatus}; processed=${wasmQuery.queryDelivery.processed}`,
+        ),
+      );
+    }
+    if (wasmLinkedProbe !== null) {
+      console.log(
+        passLine(
+          `live linked probe: ${wasmLinkedProbe.initialStatus}; processed=${wasmLinkedProbe.queryDelivery.processed}`,
         ),
       );
     }

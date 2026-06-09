@@ -10,7 +10,8 @@ linked image panels with one probe readout and shared colorbar.
 - Status: `supported`
 - Source: [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c)
 - Agent copy-safe: `false`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=linked_panels_probe_colorbar`](/examples/webgpu/live.html?id=linked_panels_probe_colorbar)
 - WebGPU requirements: `panel-grid`, `linked-panels`, `image`, `colorbar`, `query-readback`, `readout`
 - Build: `just example-c showcases/linked_probe_colorbar`
 - Smoke: `./build/examples/c/showcases/linked_probe_colorbar --png`
@@ -32,6 +33,14 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=linked_panels_probe_colorbar" title="Linked Probe With Colorbar WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=linked_panels_probe_colorbar).
 
 ## Source
 

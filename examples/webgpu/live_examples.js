@@ -100,6 +100,11 @@ export const LIVE_EXAMPLES = [
     label: "Annotation Readout",
     scenarioId: "feature_annotation_readout",
   },
+  {
+    id: "linked_panels_probe_colorbar",
+    label: "Linked Probe With Colorbar",
+    scenarioId: "linked_panels_probe_colorbar",
+  },
 ];
 
 export function liveExampleById(id) {

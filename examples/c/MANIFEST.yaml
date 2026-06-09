@@ -899,7 +899,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=linked_panels_probe_colorbar
       requirements:
         - panel-grid
         - linked-panels

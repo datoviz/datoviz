@@ -974,6 +974,47 @@ function expectAnnotationReadoutScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
 }
 
+function expectLinkedProbeColorbarScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  expectCommandCount(stream, "BeginCommandEncoder", 1, label);
+  expectCommandCount(stream, "FinishCommandEncoder", 1, label);
+  expectCommandCount(stream, "QueueSubmit", 1, label);
+  requireOk(commandsOf(stream, "BeginRenderPass").length >= 1, `${label}: expected render pass`);
+  requireOk(commandsOf(stream, "SetViewport").length >= 2, `${label}: expected linked-panel viewports`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 2, `${label}: expected linked-panel scissors`);
+  expectPipeline(
+    stream,
+    `${label} images`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.image",
+  );
+  expectPipeline(
+    stream,
+    `${label} probe markers`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.marker",
+  );
+  expectPipeline(
+    stream,
+    `${label} segments`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.segment",
+  );
+  expectPipeline(
+    stream,
+    `${label} primitive ramp`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.primitive",
+  );
+  expectPipeline(
+    stream,
+    `${label} labels`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 5, `${label}: expected images, markers, ramp, and labels`);
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected axis or colorbar segments`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 3, `${label}: expected two fields and glyph texture uploads`);
+}
+
 function expectScaleBarScenarioStreamShape(stream, label, { reference = "point" } = {}) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -1530,6 +1571,7 @@ try {
     "feature_scalebar_units",
     "feature_legend_categorical",
     "feature_annotation_readout",
+    "linked_panels_probe_colorbar",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -1843,6 +1885,65 @@ try {
       initialReadout.stream, "annotation readout scenario initial");
   } finally {
     Module._dvz_wasm_api_scene_destroy(readoutScene);
+  }
+
+  const linkedProbeIndex = scenarioIndex(Module, "linked_panels_probe_colorbar");
+  const linkedProbeWidth = Module._dvz_wasm_api_scenario_width(linkedProbeIndex);
+  const linkedProbeHeight = Module._dvz_wasm_api_scenario_height(linkedProbeIndex);
+  const linkedProbeScene = Module._dvz_wasm_api_scene(linkedProbeWidth, linkedProbeHeight);
+  requireOk(linkedProbeScene !== 0, "linked probe scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(linkedProbeScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "linked probe scenario canvas format",
+    );
+    setCapabilities(
+      Module, linkedProbeScene, 4096, 4, 8, 256 * 1024 * 1024, 256, 4,
+      "linked probe scenario capabilities");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(linkedProbeScene, linkedProbeIndex),
+      0,
+      "linked probe scenario create",
+    );
+    expectNoDiagnostics(Module, linkedProbeScene, "linked probe scenario create diagnostics");
+    const linkedProbeFigure = Module._dvz_wasm_api_scenario_figure(linkedProbeScene);
+    requireOk(linkedProbeFigure !== 0, "linked probe scenario has no figure");
+    const initialLinkedProbe =
+      emitStream(Module, linkedProbeScene, linkedProbeFigure, "linked probe scenario initial");
+    expectLinkedProbeColorbarScenarioStreamShape(
+      initialLinkedProbe.stream, "linked probe scenario initial");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_post_frame(linkedProbeScene),
+      0,
+      "linked probe scenario post-frame",
+    );
+    requireOk(
+      Module._dvz_wasm_api_query_pending_count(linkedProbeScene) > 0,
+      "linked probe scenario did not queue a query",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_emit_query_packets(linkedProbeScene, linkedProbeFigure),
+      0,
+      "linked probe query packet emit",
+    );
+    expectNoDiagnostics(Module, linkedProbeScene, "linked probe query packet diagnostics");
+    requireOk(
+      Module._dvz_wasm_api_query_active(linkedProbeScene) === 1,
+      "linked probe query did not become active",
+    );
+    requireOk(
+      Module._dvz_wasm_api_query_readback_size(linkedProbeScene) > 0,
+      "linked probe query has no readback size",
+    );
+    expectPacket(Module, linkedProbeScene, DVZ_DRP2_PACKET_SETUP, "linked probe query setup");
+    expectPacket(
+      Module, linkedProbeScene, DVZ_DRP2_PACKET_UPDATE, "linked probe query update", {
+        expectArena: true,
+      });
+    expectPacket(Module, linkedProbeScene, DVZ_DRP2_PACKET_FRAME, "linked probe query frame");
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(linkedProbeScene);
   }
 
   const pixelSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);

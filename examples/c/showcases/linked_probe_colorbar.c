@@ -28,11 +28,14 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "datoviz/input/router.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
+
+
+
+DvzScenarioSpec dvz_showcase_linked_probe_colorbar_scenario(void);
 
 
 
@@ -800,24 +803,22 @@ static void _set_probe(LinkedProbeState* state, float x, float y)
 /**
  * Keep both linked probe markers at the latest cursor coordinate.
  *
- * @param router input router emitting the event
- * @param event pointer event payload
+ * @param event portable pointer event
  * @param user_data workflow state
  */
 static void _linked_probe_pointer(
-    DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+    const DvzScenarioPointerEvent* event, void* user_data)
 {
-    (void)router;
     LinkedProbeState* state = (LinkedProbeState*)user_data;
     if (state == NULL || event == NULL)
         return;
-    if (event->type != DVZ_POINTER_EVENT_MOVE && event->type != DVZ_POINTER_EVENT_CLICK)
+    if (event->type != DVZ_SCENARIO_POINTER_MOVE && event->type != DVZ_SCENARIO_POINTER_CLICK)
         return;
 
     float x = 0.0f;
     float y = 0.0f;
-    if (_figure_to_data(state->source_panel, event->pos[0], event->pos[1], &x, &y) ||
-        _figure_to_data(state->derived_panel, event->pos[0], event->pos[1], &x, &y))
+    if (_figure_to_data(state->source_panel, event->x, event->y, &x, &y) ||
+        _figure_to_data(state->derived_panel, event->x, event->y, &x, &y))
     {
         _set_probe(state, x, y);
     }
@@ -828,12 +829,12 @@ static void _linked_probe_pointer(
 /**
  * Poll query results and update the retained readout.
  *
- * @param win view whose frame completed
+ * @param ctx scenario context
  * @param user_data workflow state
  */
-static void _linked_probe_frame(DvzView* win, void* user_data)
+static void _linked_probe_post_frame(DvzScenarioContext* ctx, void* user_data)
 {
-    (void)win;
+    (void)ctx;
     LinkedProbeState* state = (LinkedProbeState*)user_data;
     if (state == NULL)
         return;
@@ -854,6 +855,23 @@ static void _linked_probe_frame(DvzView* win, void* user_data)
     }
 
     _queue_probe(state);
+}
+
+
+/**
+ * Handle portable scenario events.
+ *
+ * @param ctx scenario context
+ * @param event portable event
+ * @param user scenario state
+ */
+static void _scenario_event(DvzScenarioContext* ctx, const DvzScenarioEvent* event, void* user)
+{
+    (void)ctx;
+    if (event == NULL)
+        return;
+    if (event->kind == DVZ_SCENARIO_EVENT_POINTER)
+        _linked_probe_pointer(&event->content.pointer, user);
 }
 
 
@@ -972,32 +990,6 @@ cleanup:
 
 
 /**
- * Attach native-view input callbacks for the linked probe workflow.
- *
- * @param ctx scenario context
- * @param app native app
- * @param view native view
- * @param user scenario state
- * @return whether setup succeeded
- */
-static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
-{
-    (void)ctx;
-    (void)app;
-    LinkedProbeState* state = (LinkedProbeState*)user;
-    if (state == NULL || view == NULL)
-        return true;
-
-    DvzInputRouter* router = dvz_view_input(view);
-    if (router != NULL)
-        dvz_input_subscribe_pointer(router, _linked_probe_pointer, state);
-    dvz_view_set_frame_callback(view, _linked_probe_frame, state);
-    return true;
-}
-
-
-
-/**
  * Destroy the linked probe and colorbar workflow scenario state.
  *
  * @param ctx scenario context
@@ -1016,7 +1008,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 
 
 
-static DvzScenarioSpec _linked_probe_scenario(void)
+DvzScenarioSpec dvz_showcase_linked_probe_colorbar_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "linked_panels_probe_colorbar",
@@ -1024,8 +1016,13 @@ static DvzScenarioSpec _linked_probe_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_IMAGE_VISUAL | DVZ_SCENARIO_REQ_MARKER_VISUAL |
+                        DVZ_SCENARIO_REQ_TEXT_VISUAL | DVZ_SCENARIO_REQ_QUERY_READBACK |
+                        DVZ_SCENARIO_REQ_FRAME_CALLBACKS | DVZ_SCENARIO_REQ_CONTROLLER |
+                        DVZ_SCENARIO_REQ_PANZOOM,
         .init = _scenario_init,
-        .native_view = _scenario_native_view,
+        .event = _scenario_event,
+        .post_frame = _linked_probe_post_frame,
         .destroy = _scenario_destroy,
     };
 }
@@ -1039,8 +1036,10 @@ static DvzScenarioSpec _linked_probe_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _linked_probe_scenario();
+    DvzScenarioSpec spec = dvz_showcase_linked_probe_colorbar_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

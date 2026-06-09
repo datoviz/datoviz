@@ -301,6 +301,15 @@ Current status as of this note:
   cloud and glyph readout label. `just webgpu-browser-smoke` exited successfully in this shell,
   with the live timer, colorbar, scale-bar, scale-bar-units, legend, annotation-readout, and query
   checks skipped by known headless WebGPU instance loss before scene rendering.
+- recorded local linked-probe/colorbar promotion checkpoint on 2026-06-09: `node --check
+  tools/wasm_scene_smoke.mjs`, `node --check tools/webgpu_browser_smoke.mjs`, and `node --check
+  examples/webgpu/live_examples.js` passed; `python3 tools/check_example_manifests.py` passed;
+  `just example-c showcases/linked_probe_colorbar` passed; `just wasm-scene-smoke` emitted,
+  packetized, and replayed the composed linked probe/colorbar scenario, including two sampled image
+  panels, linked panzoom bindings, probe markers, axes, colorbar, readout glyphs, and image-query
+  packets. `just webgpu-browser-smoke` exited successfully in this shell, with the live timer,
+  colorbar, scale-bar, scale-bar-units, legend, annotation-readout, picking query, and linked-probe
+  query checks skipped by known headless WebGPU instance loss before scene rendering.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
