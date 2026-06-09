@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "_assertions.h"
+#include "datoviz/fileio.h"
 #include "datoviz/scene.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
@@ -39,6 +40,7 @@
 #define WIDTH       1600u
 #define HEIGHT      1200u
 #define POINT_COUNT 3u
+#define JSON_PATH   "json_export.json"
 
 
 
@@ -86,7 +88,7 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
 
 
 /**
- * Serialize the scene once and print a compact diagnostic.
+ * Serialize the scene once and save a compact diagnostic artifact.
  *
  * @param scene scene to serialize
  * @return true when serialization returned a plausible JSON document
@@ -102,10 +104,18 @@ static bool _serialize_scene(DvzScene* scene)
     const size_t length = strlen(json);
     const bool ok = length > 2u && json[0] == '{' && strstr(json, "\"figures\"") != NULL;
     if (ok)
-        fprintf(stderr, "json_export: %zu bytes\n", length);
+    {
+        const int rc = dvz_write_bytes(JSON_PATH, "wb", (DvzSize)length, (const uint8_t*)json);
+        if (rc == 0)
+            fprintf(stdout, "json_export: wrote %s (%zu bytes)\n", JSON_PATH, length);
+        else
+            fprintf(stderr, "json_export: failed to write %s\n", JSON_PATH);
+        dvz_scene_json_destroy(json);
+        return rc == 0;
+    }
 
     dvz_scene_json_destroy(json);
-    return ok;
+    return false;
 }
 
 

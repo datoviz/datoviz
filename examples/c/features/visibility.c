@@ -136,6 +136,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto error;
     example_graphite_cyan_set_panel_background(panel);
 
+    /*
+     * This example uses separate visual objects only to expose visual-level visibility toggling.
+     * Production scenes should batch related items in one visual when they share the same family.
+     */
     if (!_add_point_visual(
             ctx->scene, panel, -0.42f,
             example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY), true, NULL))
