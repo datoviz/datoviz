@@ -549,6 +549,79 @@ int test_scene_panel_destroy_removes_grid_attachment(TstContext* suite, const Ts
 }
 
 
+int test_scene_reference_grid_api_and_geometry(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzReferenceGridDesc invalid = dvz_reference_grid_desc();
+    invalid.plane = DVZ_REFERENCE_GRID_CUSTOM;
+    invalid.axis_u[0] = 0.0f;
+    invalid.axis_u[1] = 0.0f;
+    invalid.axis_u[2] = 0.0f;
+    AT(dvz_reference_grid(panel, &invalid) == NULL);
+
+    DvzReferenceGridDesc desc = dvz_reference_grid_desc();
+    desc.plane = DVZ_REFERENCE_GRID_XZ;
+    desc.origin[1] = -0.50f;
+    desc.size[0] = 2.0f;
+    desc.size[1] = 1.0f;
+    desc.spacing = 0.50f;
+    desc.major_every = 2;
+    desc.depth_test = false;
+
+    DvzReferenceGrid* grid = dvz_reference_grid(panel, &desc);
+    ANN(grid);
+    ANN(grid->visual);
+    AT(scene->reference_grid_count == 1);
+    AT(grid->line_count == 8);
+    AT(!dvz_visual_depth_test(grid->visual));
+
+    DvzVisualDataView start_view = {0};
+    DvzVisualDataView end_view = {0};
+    DvzVisualDataView color_view = {0};
+    DvzVisualDataView width_view = {0};
+    AT(dvz_visual_data(grid->visual, "position_start", &start_view) == 0);
+    AT(dvz_visual_data(grid->visual, "position_end", &end_view) == 0);
+    AT(dvz_visual_data(grid->visual, "color", &color_view) == 0);
+    AT(dvz_visual_data(grid->visual, "stroke_width", &width_view) == 0);
+    AT(start_view.item_count == 8);
+    AT(end_view.item_count == 8);
+    AT(color_view.item_count == 8);
+    AT(width_view.item_count == 8);
+
+    const vec3* starts = (const vec3*)start_view.data;
+    const vec3* ends = (const vec3*)end_view.data;
+    ANN(starts);
+    ANN(ends);
+    AC(starts[0][0], -1.0f, 1e-6f);
+    AC(starts[0][1], -0.5f, 1e-6f);
+    AC(starts[0][2], -0.5f, 1e-6f);
+    AC(ends[0][0], -1.0f, 1e-6f);
+    AC(ends[0][1], -0.5f, 1e-6f);
+    AC(ends[0][2], +0.5f, 1e-6f);
+
+    dvz_reference_grid_set_visible(grid, false);
+    AT(!grid->visible);
+    AT(!grid->visual->visible);
+    dvz_reference_grid_set_visible(grid, true);
+    AT(grid->visible);
+    AT(grid->visual->visible);
+
+    dvz_reference_grid_destroy(grid);
+    AT(!scene->reference_grids[0].active);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_figure_destroy_cascades_and_reuses_slot(TstContext* suite, const TstCase* item)
 {
     (void)suite;

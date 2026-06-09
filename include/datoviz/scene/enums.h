@@ -77,6 +77,15 @@ typedef enum
 } DvzGridSizeMode;
 
 
+typedef enum
+{
+    DVZ_REFERENCE_GRID_XY = 0,
+    DVZ_REFERENCE_GRID_XZ,
+    DVZ_REFERENCE_GRID_YZ,
+    DVZ_REFERENCE_GRID_CUSTOM,
+} DvzReferenceGridPlane;
+
+
 
 typedef enum
 {

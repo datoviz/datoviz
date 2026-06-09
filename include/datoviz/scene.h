@@ -696,6 +696,48 @@ DVZ_EXPORT void dvz_orientation_gizmo_destroy(DvzOrientationGizmo* gizmo);
 DVZ_EXPORT void dvz_orientation_gizmo_set_visible(DvzOrientationGizmo* gizmo, bool visible);
 
 
+/*************************************************************************************************/
+/*  Reference grid                                                                               */
+/*************************************************************************************************/
+
+/**
+ * Return the default reference-grid descriptor.
+ *
+ * @return default reference-grid descriptor
+ */
+DVZ_EXPORT DvzReferenceGridDesc dvz_reference_grid_desc(void);
+
+
+/**
+ * Create a retained plane-oriented reference grid attached to one panel.
+ *
+ * The helper lowers to a retained segment visual and does not introduce a renderer path.
+ *
+ * @param panel panel receiving the grid
+ * @param desc descriptor, or NULL for defaults
+ * @return the reference grid, or NULL on validation/allocation error
+ */
+DVZ_EXPORT DvzReferenceGrid* dvz_reference_grid(
+    DvzPanel* panel, const DvzReferenceGridDesc* desc);
+
+
+/**
+ * Destroy a reference grid.
+ *
+ * @param grid the reference grid
+ */
+DVZ_EXPORT void dvz_reference_grid_destroy(DvzReferenceGrid* grid);
+
+
+/**
+ * Set reference-grid visibility.
+ *
+ * @param grid the reference grid
+ * @param visible whether the grid should be visible
+ */
+DVZ_EXPORT void dvz_reference_grid_set_visible(DvzReferenceGrid* grid, bool visible);
+
+
 /**
  * Reserve visual-space room around one panel's plot area for future adornments.
  *

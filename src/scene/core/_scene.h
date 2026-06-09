@@ -55,6 +55,7 @@
 #define DVZ_SCENE_MAX_COLORBARS  64
 #define DVZ_SCENE_MAX_LEGENDS    64
 #define DVZ_SCENE_MAX_ORIENTATION_GIZMOS 64
+#define DVZ_SCENE_MAX_REFERENCE_GRIDS    64
 #define DVZ_SCENE_MAX_SCALE_CATEGORIES 4096
 #define DVZ_SCENE_MAX_LEGEND_TEXTS (DVZ_SCENE_MAX_SCALE_CATEGORIES + 1)
 #define DVZ_SCENE_MAX_INTERACTIONS 64
@@ -1068,6 +1069,19 @@ struct DvzOrientationGizmo
 };
 
 
+struct DvzReferenceGrid
+{
+    DvzScene* scene;
+    DvzPanel* panel;
+    DvzVisual* visual;
+    DvzReferenceGridDesc desc;
+    uint32_t line_count;
+    bool active;
+    bool visible;
+    uint64_t version;
+};
+
+
 struct DvzOverlay
 {
     DvzScene* scene;
@@ -2060,6 +2074,9 @@ struct DvzScene
 
     uint32_t orientation_gizmo_count;
     DvzOrientationGizmo orientation_gizmos[DVZ_SCENE_MAX_ORIENTATION_GIZMOS];
+
+    uint32_t reference_grid_count;
+    DvzReferenceGrid reference_grids[DVZ_SCENE_MAX_REFERENCE_GRIDS];
 
     uint32_t interaction_count;
     DvzInteractionPolicy interactions[DVZ_SCENE_MAX_INTERACTIONS];

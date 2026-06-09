@@ -81,6 +81,7 @@ typedef struct DvzColormap          DvzColormap;
 typedef struct DvzColorbar          DvzColorbar;
 typedef struct DvzLegend            DvzLegend;
 typedef struct DvzOrientationGizmo  DvzOrientationGizmo;
+typedef struct DvzReferenceGrid     DvzReferenceGrid;
 typedef struct DvzFont              DvzFont;
 typedef struct DvzText              DvzText;
 typedef struct DvzSymbolSet         DvzSymbolSet;
@@ -566,6 +567,31 @@ struct DvzOrientationGizmoDesc
     DvzColor z_color;
 };
 typedef struct DvzOrientationGizmoDesc DvzOrientationGizmoDesc;
+
+
+struct DvzReferenceGridDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzReferenceGridPlane plane;
+    vec3 origin;
+    vec3 axis_u;
+    vec3 axis_v;
+    float size[2];
+    float spacing;
+    uint32_t major_every;
+    DvzColor minor_color;
+    DvzColor major_color;
+    DvzColor axis_color;
+    float minor_width_px;
+    float major_width_px;
+    float axis_width_px;
+    bool show_minor;
+    bool show_major;
+    bool show_axes;
+    bool depth_test;
+};
+typedef struct DvzReferenceGridDesc DvzReferenceGridDesc;
 
 
 struct DvzEdlDesc
