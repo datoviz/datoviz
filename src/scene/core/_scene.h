@@ -1961,6 +1961,9 @@ struct DvzFigure
     uint32_t   compute_count;
     DvzSceneCompute* computes[DVZ_SCENE_MAX_COMPUTES];
 
+    uint64_t artifact_resource_version;
+    uint64_t artifact_frame_index;
+
     char* last_frame_plan_trace;
     bool has_last_frame_plan_trace;
 };

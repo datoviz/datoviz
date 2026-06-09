@@ -22,6 +22,7 @@
 #include "_overflow.h"
 #include "datoviz/drp2.h"
 #include "datoviz/scene.h"
+#include "figure_emit_internal.h"
 #include "frame_artifact_internal.h"
 #include "../../drp2/_stream.h"
 
@@ -185,7 +186,7 @@ DvzSceneFrameArtifact* _scene_emit_frame_artifact(
     DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
     const DvzFramePlanEmitConfig* cfg, uint64_t resource_version, uint64_t frame_index)
 {
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, caps, report, cfg);
+    DvzDrp2CommandStream* stream = _scene_figure_emit_stream_ex(figure, caps, report, cfg);
     if (stream == NULL)
         return NULL;
 

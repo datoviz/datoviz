@@ -48,6 +48,7 @@ typedef struct DvzFramePlanEmitter DvzFramePlanEmitter;
 typedef struct DvzFramePlanEmitConfig DvzFramePlanEmitConfig;
 typedef struct DvzFramePlan DvzFramePlan;
 typedef struct DvzFramePlanNode DvzFramePlanNode;
+typedef struct DvzSceneFrameArtifact DvzSceneFrameArtifact;
 typedef struct DvzVisualTransformDesc DvzVisualTransformDesc;
 typedef struct DvzVisualShaderDesc DvzVisualShaderDesc;
 
@@ -175,6 +176,13 @@ typedef enum
     DVZ_CONTROLLER_TYPE_TURNTABLE = 4,
     DVZ_CONTROLLER_TYPE_ORBIT_CAMERA = 5,
 } DvzControllerType;
+
+
+typedef enum
+{
+    DVZ_SCENE_FRAME_ARTIFACT_STATUS_OK = 0,
+    DVZ_SCENE_FRAME_ARTIFACT_STATUS_ENCODE_ERROR = 1,
+} DvzSceneFrameArtifactStatus;
 
 
 

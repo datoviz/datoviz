@@ -20,7 +20,6 @@
 #include "scene_graph_utils.h"
 #include "_frame_plan_runtime_internal.h"
 #include "core/figure_emit_internal.h"
-#include "core/frame_artifact_internal.h"
 #include "datoviz/geom.h"
 #include "datoviz/vk/memory_interop.h"
 #include "datoviz/vklite/sync.h"
@@ -5486,22 +5485,37 @@ int test_scene_artifact_allows_mutation_after_emit(TstContext* suite, const TstC
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
-    AT(stream != NULL);
-
-    DvzSceneFrameArtifact* artifact = _scene_frame_artifact(stream, 0, 1);
+    DvzSceneFrameArtifact* artifact = dvz_figure_emit_frame(figure, &caps, &report, NULL);
     AT(artifact != NULL);
-    AT(_scene_frame_artifact_status(artifact) == DVZ_SCENE_FRAME_ARTIFACT_STATUS_OK);
+    AT(dvz_scene_frame_artifact_status(artifact) == DVZ_SCENE_FRAME_ARTIFACT_STATUS_OK);
+    AT(dvz_scene_frame_artifact_resource_version(artifact) == 1);
+    AT(dvz_scene_frame_artifact_frame_index(artifact) == 1);
 
-    const DvzDrp2CommandStream* artifact_stream = _scene_frame_artifact_stream(artifact);
+    const DvzDrp2CommandStream* artifact_stream = dvz_scene_frame_artifact_stream(artifact);
     AT(artifact_stream != NULL);
     AT(dvz_drp2_stream_count(artifact_stream) > 0);
+
+    char* json = dvz_scene_frame_artifact_json(artifact, "scene_artifact_test");
+    AT(json != NULL);
+    AT(strstr(json, "\"commands\"") != NULL);
+    dvz_drp2_stream_json_destroy(json);
+
+    const void* packet = NULL;
+    uint64_t packet_size = 0;
+    const void* arena = NULL;
+    uint64_t arena_size = 0;
+    AT(dvz_scene_frame_artifact_get_packet(
+        artifact, DVZ_DRP2_PACKET_FRAME, &packet, &packet_size, &arena, &arena_size));
+    AT(packet != NULL);
+    AT(packet_size > 0);
+    (void)arena;
+    (void)arena_size;
 
     float update[2] = {10.0f, 12.0f};
     AT(dvz_visual_set_data_range(visual, "size", update, 0, 2) == 0);
     AT(dvz_drp2_stream_count(artifact_stream) > 0);
 
-    _scene_frame_artifact_destroy(artifact);
+    dvz_scene_frame_artifact_destroy(artifact);
     dvz_scene_destroy(scene);
     return 0;
 }

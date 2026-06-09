@@ -19,6 +19,7 @@
 #include <stddef.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/drp2/packet.h"
 #include "datoviz/geom/types.h"
 #include "scene/annotation.h"
 #include "scene/animation.h"
@@ -373,11 +374,108 @@ DVZ_EXPORT DvzOrbitCamera* dvz_controller_orbit_camera(DvzController* controller
 
 
 /**
- * Build the ordered frame execution plan for one frame.
+ * Emit an immutable frame artifact from a retained figure.
  *
- * Lifetime: the returned stream is an immutable execution snapshot. It remains
- * live until dvz_drp2_stream_destroy() is called, but retained-scene mutation
- * after emission is legal and affects only later emissions.
+ * The artifact owns the DRP2 command stream snapshot, frozen upload payload bytes, and split packet
+ * spans for one frame. Retained scene mutation is legal immediately after successful artifact
+ * creation and affects only later artifacts.
+ *
+ * @param figure the figure
+ * @param caps the capability snapshot (nullable — defaults applied if NULL)
+ * @param report output diagnostic report (nullable)
+ * @param cfg the emission configuration (nullable — defaults applied if NULL)
+ * @return an owned frame artifact, or NULL on failure
+ */
+DVZ_EXPORT DvzSceneFrameArtifact* dvz_figure_emit_frame(
+    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
+    const DvzFramePlanEmitConfig* cfg);
+
+
+/**
+ * Destroy a frame artifact.
+ *
+ * @param artifact the frame artifact
+ */
+DVZ_EXPORT void dvz_scene_frame_artifact_destroy(DvzSceneFrameArtifact* artifact);
+
+
+/**
+ * Return the artifact status.
+ *
+ * @param artifact the frame artifact
+ * @return the artifact status
+ */
+DVZ_EXPORT DvzSceneFrameArtifactStatus dvz_scene_frame_artifact_status(
+    const DvzSceneFrameArtifact* artifact);
+
+
+/**
+ * Return the artifact-owned DRP2 command stream snapshot.
+ *
+ * @param artifact the frame artifact
+ * @return a borrowed immutable stream snapshot, or NULL
+ */
+DVZ_EXPORT const DvzDrp2CommandStream*
+dvz_scene_frame_artifact_stream(const DvzSceneFrameArtifact* artifact);
+
+
+/**
+ * Serialize the artifact stream snapshot to DRP2 JSON.
+ *
+ * The returned string is owned by the caller and should be released with
+ * dvz_drp2_stream_json_destroy().
+ *
+ * @param artifact the frame artifact
+ * @param name optional stream name
+ * @return an owned JSON string, or NULL
+ */
+DVZ_EXPORT char* dvz_scene_frame_artifact_json(
+    const DvzSceneFrameArtifact* artifact, const char* name);
+
+
+/**
+ * Return the retained resource version associated with an artifact.
+ *
+ * @param artifact the frame artifact
+ * @return the retained resource version
+ */
+DVZ_EXPORT uint64_t dvz_scene_frame_artifact_resource_version(
+    const DvzSceneFrameArtifact* artifact);
+
+
+/**
+ * Return the frame index associated with an artifact.
+ *
+ * @param artifact the frame artifact
+ * @return the frame index
+ */
+DVZ_EXPORT uint64_t dvz_scene_frame_artifact_frame_index(const DvzSceneFrameArtifact* artifact);
+
+
+/**
+ * Return one encoded packet span and companion payload arena from the frame artifact.
+ *
+ * Empty phases return true with NULL packet and zero sizes. Returned spans are borrowed from the
+ * artifact and remain valid only until artifact destruction.
+ *
+ * @param artifact the frame artifact
+ * @param kind setup, update, or frame
+ * @param packet output borrowed packet pointer
+ * @param packet_size output packet byte size
+ * @param arena output borrowed payload arena pointer
+ * @param arena_size output arena byte size
+ * @return whether `kind` is valid and outputs were populated
+ */
+DVZ_EXPORT bool dvz_scene_frame_artifact_get_packet(
+    const DvzSceneFrameArtifact* artifact, DvzDrp2PacketKind kind, const void** packet,
+    uint64_t* packet_size, const void** arena, uint64_t* arena_size);
+
+
+/**
+ * Deprecated scene emission helper returning a raw DRP2 stream snapshot.
+ *
+ * Prefer dvz_figure_emit_frame(); this helper remains temporarily for DRP2-level tests and
+ * transition code.
  *
  * @param figure the figure
  * @param caps the capability snapshot
@@ -389,9 +487,10 @@ DVZ_EXPORT DvzDrp2CommandStream* dvz_figure_emit(
 
 
 /**
- * Emit a DRP2 command stream from a figure with an explicit emit configuration.
+ * Deprecated scene emission helper returning a raw DRP2 stream snapshot with explicit config.
  *
- * Lifetime: same immutable snapshot contract as dvz_figure_emit().
+ * Prefer dvz_figure_emit_frame(); this helper remains temporarily for DRP2-level tests and
+ * transition code.
  *
  * @param figure the figure
  * @param caps the capability snapshot (nullable — defaults applied if NULL)

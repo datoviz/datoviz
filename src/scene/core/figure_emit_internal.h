@@ -15,3 +15,7 @@
 #include "_scene.h"
 
 bool _scene_figure_has_pending_render_work(const DvzFigure* figure);
+
+DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
+    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
+    const DvzFramePlanEmitConfig* cfg);

@@ -562,7 +562,7 @@ bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action)
 }
 
 
-DvzDrp2CommandStream* dvz_figure_emit_ex(
+DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
     DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
     const DvzFramePlanEmitConfig* cfg)
 {
@@ -675,8 +675,90 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
 
 
 
+DvzSceneFrameArtifact* dvz_figure_emit_frame(
+    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
+    const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(figure);
+    const uint64_t resource_version = figure->artifact_resource_version + 1;
+    const uint64_t frame_index = figure->artifact_frame_index + 1;
+    DvzSceneFrameArtifact* artifact =
+        _scene_emit_frame_artifact(figure, caps, report, cfg, resource_version, frame_index);
+    if (artifact != NULL)
+    {
+        figure->artifact_resource_version = resource_version;
+        figure->artifact_frame_index = frame_index;
+    }
+    return artifact;
+}
+
+
+
+void dvz_scene_frame_artifact_destroy(DvzSceneFrameArtifact* artifact)
+{
+    _scene_frame_artifact_destroy(artifact);
+}
+
+
+
+DvzSceneFrameArtifactStatus dvz_scene_frame_artifact_status(
+    const DvzSceneFrameArtifact* artifact)
+{
+    return _scene_frame_artifact_status(artifact);
+}
+
+
+
+const DvzDrp2CommandStream*
+dvz_scene_frame_artifact_stream(const DvzSceneFrameArtifact* artifact)
+{
+    return _scene_frame_artifact_stream(artifact);
+}
+
+
+
+char* dvz_scene_frame_artifact_json(const DvzSceneFrameArtifact* artifact, const char* name)
+{
+    const DvzDrp2CommandStream* stream = dvz_scene_frame_artifact_stream(artifact);
+    return stream != NULL ? dvz_drp2_stream_json(stream, name) : NULL;
+}
+
+
+
+uint64_t dvz_scene_frame_artifact_resource_version(const DvzSceneFrameArtifact* artifact)
+{
+    return _scene_frame_artifact_resource_version(artifact);
+}
+
+
+
+uint64_t dvz_scene_frame_artifact_frame_index(const DvzSceneFrameArtifact* artifact)
+{
+    return _scene_frame_artifact_frame_index(artifact);
+}
+
+
+
+bool dvz_scene_frame_artifact_get_packet(
+    const DvzSceneFrameArtifact* artifact, DvzDrp2PacketKind kind, const void** packet,
+    uint64_t* packet_size, const void** arena, uint64_t* arena_size)
+{
+    return _scene_frame_artifact_get_packet(artifact, kind, packet, packet_size, arena, arena_size);
+}
+
+
+
+DvzDrp2CommandStream* dvz_figure_emit_ex(
+    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
+    const DvzFramePlanEmitConfig* cfg)
+{
+    return _scene_figure_emit_stream_ex(figure, caps, report, cfg);
+}
+
+
+
 DvzDrp2CommandStream* dvz_figure_emit(
     DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report)
 {
-    return dvz_figure_emit_ex(figure, caps, report, NULL);
+    return _scene_figure_emit_stream_ex(figure, caps, report, NULL);
 }
