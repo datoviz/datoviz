@@ -1,5 +1,70 @@
 some notes about the examples
 
+
+## Closure ledger - 2026-06-09
+
+Status values: `resolved` means source/metadata was changed or audited with evidence; `partial`
+means a contained improvement landed but more visual/runtime work remains; `deferred` means the item
+is still visible with the blocker or preferred next action.
+
+| Item | Status | Evidence / next action |
+| --- | --- | --- |
+| `composites/graph` | deferred | Needs a classic two-community/ring+chord rewrite in `examples/c/composites/graph.c`. |
+| `composites/polygon` | deferred | `features/triangulation_polygon.c` covers triangulation; composite still needs cleaner regular composition. |
+| `features/animation_tracks` | deferred | Needs rotating object plus camera keyframes using `dvz_track_keyframes`. |
+| `features/annotation_readout` | resolved | Larger closer label in `examples/c/features/annotation_readout.c`; compiled in focused example batch. |
+| `features/app_glfw` | resolved | Standard 1600x1200 size in `examples/c/features/app_glfw.c`. |
+| `features/axis_labels` | resolved | Removed confusing tilted segment clutter; retained only simple plot-frame guides in `examples/c/features/axis_labels.c`. |
+| `features/colormap_scale` | resolved | Scale/colormap setup is explicit in `examples/c/features/colormap_scale.c`. |
+| `features/controller_fly` | deferred | Runtime audit found basis/drag ambiguity in `src/controller/fly.c`; do not flip blindly. Needs interactive validation and sign regression for the exact z-up plane pose. |
+| `features/technique_depth_cue` | partial | Already two-panel comparison in `examples/c/features/technique_depth_cue.c`; still uses points rather than 3D spheres/lattice. |
+| `features/technique_depth_test` | deferred | Shader antialiasing diagnosis still required. |
+| `features/technique_edl` | partial | Naming is correct; still needs shared stronger 3D comparison audit. |
+| `features/external_surface` | resolved | Public advanced example is `examples/c/advanced/external_surface_glfw.c`; gallery generator now includes advanced pages. |
+| `features/gui_cimgui` | deferred | App/window path remains justified until scenario GUI hosting exists. |
+| `features/gui_controls` | deferred | Needs current builtin-controls decision; app/window path remains justified for GUI host integration. |
+| `features/gui_viewport` | deferred | Runtime audit points to Retina logical/framebuffer resize in `src/gui/gui.cpp`; needs runtime fix, not example-only patch. |
+| `features/guide_lines` | resolved | Cursor event callback updates guides in real time in `examples/c/features/guide_lines.c`; compiled. |
+| `features/guide_spans` | resolved | Cursor event callback centers spans in real time in `examples/c/features/guide_spans.c`; compiled. |
+| `features/input_events` | partial | Current example prints emitted input events through app/view router; a live terminal window variant remains optional. |
+| `features/legend_categorical` | resolved | Removed highlighted entry that made one swatch larger in `examples/c/features/legend_categorical.c`; compiled. |
+| `features/lighting` | resolved | Three-panel material/light comparison in `examples/c/features/lighting.c`; compiled. |
+| `features/marker_symbols` | deferred | Needs clearer row labels and a stronger bitmap pin symbol. |
+| `features/technique_msaa` | partial | Prefix is correct; stronger 3D mesh/cube comparison still needed. |
+| `features/offscreen_capture` | deferred | Keep exact-pixel offscreen semantics; add high-DPI/supersampled variant separately if desired. |
+| `features/overlay_card` | deferred | Needs realistic minimal overlay use case. |
+| `features/panel_background` | resolved | Uses explicit inset gradient panel background in `examples/c/features/panel_background.c`; compiled. |
+| `features/panel_domain_fit` | resolved | Side-by-side free-domain vs equal-aspect fit in `examples/c/features/panel_domain_fit.c`; compiled. |
+| `features/panzoom` | resolved | Manifest/source/docs now use `feature_panzoom` with source/executable `panzoom`; generated stale `controller_panzoom` page removed. |
+| `features/pick*` | resolved | `features/picking.c` is the unified example; query y-orientation regression exists in `src/scene/tests/query.c`. |
+| `features/record_replay` | deferred | Runtime audit points to setup-only replay frame consumption in `_app_draw_replay()`; avoid render-twice workaround. |
+| `features/basic_scene` | resolved | No `scene_` source/executable prefix; manifest/docs use `feature_basic_scene` as internal gallery ID. |
+| `features/compute_buffer_animation` | resolved | Compute shader now drives small independent circular point motion in `examples/c/features/compute_buffer_animation.c`; compiled. |
+| `features/json_export` | resolved | Writes `scene_export.json` and prints `./scene_export.json`; title/feature metadata updated to JSON Export. |
+| `features/technique_ssao` | partial | Prefix is correct; blur/grain visual tuning remains. |
+| `features/technique_transparency` | partial | Prefix is correct; stronger 3D overlapping-cubes comparison remains. |
+| `features/video_export` | resolved | Runner record modes print video output paths; `examples/c/features/video_export.c` runs frame animation. |
+| `features/visibility` | resolved | Batching/visual-level visibility comment exists in `examples/c/features/visibility.c`. |
+| `features/visual_transform` | resolved | Two-panel without/with transform comparison in `examples/c/features/visual_transform.c`; compiled. |
+| `features/volume_occlusion` | deferred | Needs two-panel volume occluder comparison rewrite. |
+| `showcases/brain_volume` | partial | Name is already `brain_volume`; initial tilted view still needs visual smoke in Vulkan-capable environment. |
+| `showcases/choropleth` | deferred | Retina title size and fixed-aspect right-drag zoom remain. |
+| `showcases/scientific_plotting` | deferred | X-axis clipping remains to inspect/fix. |
+| `showcases/textured_planet` | deferred | Dark-side lighting and zoom limits/sensitivity remain. |
+| `showcases/wind_field` | deferred | Ellipsoid pointer needs removal/replacement/explanation. |
+| `visuals/glyph` | deferred | Clarify low-level atlas glyph vs marker/text, or switch to actual font glyph semantics. |
+| `visuals/segment` | resolved | Shows butt, square, and round caps in `examples/c/visuals/segment.c`; compiled. |
+| General comments/descriptions | partial | Changed summaries regenerate docs; broader top-of-file copy audit remains. |
+| Scenario-helper use | partial | New/changed examples use scenario runner where appropriate; app/window/advanced exceptions remain explicit. |
+| Builtin-shapes parity | deferred | v0.4 has 2D/3D shape examples; Platonic solids/histogram/gizmo-shape parity is deferred or needs geom API additions. |
+| Further: `showcases/surface_grid` | deferred | Needs new showcase port. |
+| Further: `features/instancing` | resolved | Current feature exists as `examples/c/features/selection_mesh_instances.c`; plain non-selection instancing example still optional. |
+| Further: `features/isolines` | resolved | Current implementation exists in `examples/c/features/isolines.c` and is in generated docs. |
+| Further: raw triangles | resolved | `advanced_raw_triangle_vklite` and `advanced_raw_triangle_drp2` are in CMake/manifest/generated advanced docs. |
+| Further: `bounds_overlay.c` | deferred | Needs one/two feature-example ports. |
+| Further: `arcball_gizmo.c` | resolved | Superseded by synchronized inset `examples/c/features/orientation_gizmo.c`; generated docs now include it. |
+
+
 composites/graph
 not very pretty, can't we have a more classic/standard graph? something more compelling
 
