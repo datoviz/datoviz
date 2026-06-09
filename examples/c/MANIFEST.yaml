@@ -923,6 +923,43 @@ examples:
         - frame-callbacks
     agent_copy_safe: true
 
+  - id: feature_triangulation_polygon
+    title: Polygon Triangulation
+    stage: v0.4_required
+    category: feature
+    primary_feature: polygon-triangulation
+    lane: features
+    source: examples/c/features/triangulation_polygon.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - primitive
+        - segment
+    agent_copy_safe: true
+
+  - id: feature_isolines
+    title: Isolines
+    stage: v0.4_required
+    category: feature
+    primary_feature: isolines
+    lane: features
+    source: examples/c/features/isolines.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - mesh
+        - segment
+        - controller
+    agent_copy_safe: true
+
   - id: feature_probe_labels
     title: Label Probe
     stage: v0.4_required

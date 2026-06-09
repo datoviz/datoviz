@@ -39,6 +39,8 @@ techniques.
 - `panel_domain_fit.c`: explicit panel domain fitting and reserved plot layout.
 - `json_export.c`: experimental scene JSON serialization diagnostic.
 - `bezier_curve_path.c`: CPU-tessellated Bezier curves rendered through retained paths.
+- `triangulation_polygon.c`: CPU polygon triangulation with derived mesh-edge overlays.
+- `isolines.c`: CPU contour extraction rendered as retained segment overlays.
 - `datetime_axis.c`: compact data coordinates with UTC datetime tick labels.
 - `scalebar.c`: retained metric scale bar using builtin length units.
 - `scalebar_units.c`: retained duration scale bar using builtin duration units.

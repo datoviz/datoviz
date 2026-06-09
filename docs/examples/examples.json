@@ -2,21 +2,21 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 88,
+  "count": 90,
   "categories": {
     "composite": 2,
-    "feature": 60,
+    "feature": 62,
     "showcase": 11,
     "visual": 15
   },
   "statuses": {
     "experimental": 8,
     "prototype": 1,
-    "supported": 79
+    "supported": 81
   },
   "agent_copy_safe": {
     "false": 20,
-    "true": 68
+    "true": 70
   },
   "examples": [
     {
@@ -1289,6 +1289,48 @@
         "kind": "synthetic"
       },
       "primary_feature": "picking"
+    },
+    {
+      "id": "feature_triangulation_polygon",
+      "title": "Polygon Triangulation",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/triangulation_polygon.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/triangulation_polygon.c",
+      "page": "gallery/features/feature_triangulation_polygon.md",
+      "summary": "polygon triangulation with derived edge overlay.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/triangulation_polygon",
+      "smoke_command": "./build/examples/c/features/triangulation_polygon --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "polygon-triangulation"
+    },
+    {
+      "id": "feature_isolines",
+      "title": "Isolines",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/isolines.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/isolines.c",
+      "page": "gallery/features/feature_isolines.md",
+      "summary": "CPU contour extraction rendered as retained segment overlays.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/isolines",
+      "smoke_command": "./build/examples/c/features/isolines --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "isolines"
     },
     {
       "id": "feature_probe_labels",

@@ -3,21 +3,21 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 88,
+  "example_count": 90,
   "categories": {
     "composite": 2,
-    "feature": 60,
+    "feature": 62,
     "showcase": 11,
     "visual": 15
   },
   "statuses": {
     "experimental": 8,
     "prototype": 1,
-    "supported": 79
+    "supported": 81
   },
   "agent_copy_safe": {
     "false": 20,
-    "true": 68
+    "true": 70
   },
   "capabilities": {
     "composites": {
@@ -121,7 +121,7 @@
         ]
       },
       "synthetic": {
-        "count": 82,
+        "count": 84,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -653,6 +653,24 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/picking.c",
             "page": "gallery/features/feature_picking.md"
+          },
+          {
+            "id": "feature_triangulation_polygon",
+            "title": "Polygon Triangulation",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/triangulation_polygon.c",
+            "page": "gallery/features/feature_triangulation_polygon.md"
+          },
+          {
+            "id": "feature_isolines",
+            "title": "Isolines",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/isolines.c",
+            "page": "gallery/features/feature_isolines.md"
           },
           {
             "id": "feature_probe_labels",
@@ -1215,6 +1233,20 @@
           }
         ]
       },
+      "isolines": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_isolines",
+            "title": "Isolines",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/isolines.c",
+            "page": "gallery/features/feature_isolines.md"
+          }
+        ]
+      },
       "legend-categorical": {
         "count": 1,
         "examples": [
@@ -1422,6 +1454,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/picking.c",
             "page": "gallery/features/feature_picking.md"
+          }
+        ]
+      },
+      "polygon-triangulation": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_triangulation_polygon",
+            "title": "Polygon Triangulation",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/triangulation_polygon.c",
+            "page": "gallery/features/feature_triangulation_polygon.md"
           }
         ]
       },

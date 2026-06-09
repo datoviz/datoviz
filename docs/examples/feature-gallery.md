@@ -5,7 +5,7 @@
 This page indexes focused C examples for public scene, layout, adornment, interaction,
 update, rendering-technique, and appearance features.
 
-Coverage: 60 examples (55 supported, 5 experimental).
+Coverage: 62 examples (57 supported, 5 experimental).
 
 ## Features
 
@@ -301,6 +301,18 @@ hosted input event emission and router subscriptions.
 
 <div class="card" markdown="1">
 
+### [Isolines](gallery/features/feature_isolines.md)
+
+_Media pending._
+
+`supported` `features`
+
+CPU contour extraction rendered as retained segment overlays.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Label Probe](gallery/features/feature_probe_labels.md)
 
 _Media pending._
@@ -500,6 +512,18 @@ _Media pending._
 `supported` `features`
 
 unified retained marker hover and selection proof.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Polygon Triangulation](gallery/features/feature_triangulation_polygon.md)
+
+_Media pending._
+
+`supported` `features`
+
+polygon triangulation with derived edge overlay.
 
 </div>
 
