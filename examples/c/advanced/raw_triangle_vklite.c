@@ -6,6 +6,9 @@
 
 /* raw_triangle_vklite — vklite draw commands into DvzCanvas.
  *
+ * Scenario: advanced_raw_triangle_vklite
+ * Style: advanced, native-only, low-level vklite/canvas
+ *
  * Shows how to write your own Vulkan draw commands using vklite helpers while
  * letting DvzCanvas manage all presentation plumbing (offscreen images, frame
  * timing, submission, video recording).  The draw callback is identical for

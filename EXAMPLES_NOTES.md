@@ -54,15 +54,41 @@ is still visible with the blocker or preferred next action.
 | `showcases/wind_field` | resolved | Current showcase uses a fixed probe crosshair and readout card in `examples/c/showcases/wind_field.c`; no ellipsoid pointer remains; compiled. |
 | `visuals/glyph` | resolved | Source/manifest/docs now identify it as a low-level SDF atlas-quad visual distinct from font-shaped text and marker symbols; compiled. |
 | `visuals/segment` | resolved | Shows butt, square, and round caps in `examples/c/visuals/segment.c`; compiled. |
-| General comments/descriptions | partial | Changed summaries regenerate docs; broader top-of-file copy audit remains. |
-| Scenario-helper use | partial | New/changed examples use scenario runner where appropriate; app/window/advanced exceptions remain explicit. |
-| Builtin-shapes parity | deferred | v0.4 has 2D/3D shape examples; Platonic solids/histogram/gizmo-shape parity is deferred or needs geom API additions. |
+| General comments/descriptions | resolved | Audited all 106 public C manifest entries: each public example now has a structured top-of-file title, Scenario, Style, Build, and Run/Live line usable by gallery pages; `just gallery && just check-example-manifests` passed. |
+| Scenario-helper use | resolved | Audited all 106 public C manifest entries; `showcases/panel_linked_axes.c` was migrated to `dvz_scenario_run_native_cli()`. The 10 remaining non-scenario examples are explicit native-only host/runtime exceptions: GUI controls, GUI viewport, raw cimgui, app_glfw, offscreen_capture, input_events, record_replay, raw_triangle_vklite, raw_triangle_drp2, and external_surface_glfw. |
+| Builtin-shapes parity | resolved | v0.4 examples cover current public C geometry builders in `builtin_shapes_2d.c`, `builtin_shapes_3d.c`, `surface_grid.c`, and `obj_loading.c`. The v0.3 guide's Platonic solids/hexahedron names are not present in `include/datoviz/geom.h`; adding them is a future geom API decision, not an example-port blocker. |
 | Further: `showcases/surface_grid` | resolved | Added `examples/c/showcases/surface_grid.c` with `dvz_geom_surface_grid()` mesh plus derived wireframe overlay; registered in CMake/manifest/generated docs; `./build/examples/c/showcases/surface_grid --png` passed. |
 | Further: `features/instancing` | resolved | Current feature exists as `examples/c/features/selection_mesh_instances.c`; plain non-selection instancing example still optional. |
 | Further: `features/isolines` | resolved | Current implementation exists in `examples/c/features/isolines.c` and is in generated docs. |
 | Further: raw triangles | resolved | `advanced_raw_triangle_vklite` and `advanced_raw_triangle_drp2` are in CMake/manifest/generated advanced docs. |
 | Further: `bounds_overlay.c` | resolved | Added diagnostic `examples/c/features/bounds_overlay.c` with 2D/3D retained visual bounds overlays; registered in CMake/manifest/generated docs; `./build/examples/c/features/bounds_overlay --png` passed. |
 | Further: `arcball_gizmo.c` | resolved | Superseded by synchronized inset `examples/c/features/orientation_gizmo.c`; generated docs now include it. |
+
+
+## Broad audits - 2026-06-09
+
+Top-of-file copy audit: all 106 public C examples listed in `examples/c/MANIFEST.yaml` have a
+structured descriptive header with title, Scenario, Style, Build, and Run/Live metadata. The
+advanced raw examples keep native-only low-level descriptions instead of pretending to be portable
+scenarios.
+
+Scenario-helper audit: all public examples use `dvz_scenario_run_native_cli()` except the explicit
+native-only host/runtime examples where the scenario runner would hide the feature being shown:
+`features/gui_controls`, `features/gui_viewport`, `features/gui_cimgui`, `features/app_glfw`,
+`features/offscreen_capture`, `features/input_events`, `features/record_replay`,
+`advanced/raw_triangle_vklite`, `advanced/raw_triangle_drp2`, and
+`advanced/external_surface_glfw`. `showcases/panel_linked_axes` was migrated from direct
+`dvz_app()`/`dvz_view_glfw()` to the scenario runner during this audit.
+
+Builtin-shapes parity audit:
+
+| Area | v0.4 public C status |
+| --- | --- |
+| 2D basic shapes | `examples/c/features/builtin_shapes_2d.c` shows plane/square, disc, sector, regular polygon, star, and a triangulated polygon with a hole. |
+| 3D basic shapes | `examples/c/features/builtin_shapes_3d.c` shows cube, sphere, cylinder, cone, torus, and arrow. |
+| Structured surface | `examples/c/showcases/surface_grid.c` shows `dvz_geom_surface_grid()` with a derived wireframe overlay. |
+| OBJ/custom mesh | `examples/c/features/obj_loading.c` covers OBJ loading; mesh examples cover custom indexed geometry. |
+| v0.3 guide shapes still missing as public C geometry builders | Tetrahedron, hexahedron alias, octahedron, dodecahedron, and icosahedron. These are absent from `include/datoviz/geom.h`; do not fake them in examples unless the geom API adds first-class builders. |
 
 
 composites/graph

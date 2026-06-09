@@ -10,6 +10,7 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/video_export
+ * Run:    ./build/examples/c/features/video_export --live
  * Live:   ./build/examples/c/features/video_export --live
  * Video:  ./build/examples/c/features/video_export --live-record 120
  * Hidden: ./build/examples/c/features/video_export --offscreen-record 120

@@ -6,6 +6,9 @@
 
 /* raw_triangle_drp2 — triangle rendered via a hand-written DRP2 command stream.
  *
+ * Scenario: advanced_raw_triangle_drp2
+ * Style: advanced, native-only, low-level DRP2/vklite
+ *
  * DRP2 (Datoviz Rendering Protocol 2) is the backend-agnostic IR that sits
  * between the scene layer and the GPU.  This example bypasses both DvzScene
  * and DvzCanvas, constructs a DRP2 command stream from scratch, executes it

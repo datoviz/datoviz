@@ -1,7 +1,7 @@
 # Examples Notes Implementation Prompt
 
-Status: active handoff. Created: 2026-06-09. Refreshed: 2026-06-09 after
-the runtime/readability checkpoint.
+Status: complete for the 2026-06-09 EXAMPLES_NOTES ledger. Created: 2026-06-09. Refreshed:
+2026-06-09 after the final broad-audit checkpoint.
 
 Use this prompt for the next agent tasked with closing every suggestion in
 `EXAMPLES_NOTES.md`.
@@ -13,12 +13,9 @@ You are working in `/home/cyrille/GIT/Viz/datoviz` on `v0.4-dev`. Read
 `AGENTS.md`, `agents/now/START.md`, `agents/now/STATUS.md`, and
 `agents/now/RELEASE.md` before changing files. Then read `EXAMPLES_NOTES.md`.
 
-Goal: implement, verify, and document closure for the unresolved or partial
-ledger entries in `EXAMPLES_NOTES.md`. Most original suggestions were closed by
-2026-06-09 commits; do not re-open resolved items unless new evidence shows the
-closure is wrong. Do not remove a note or call an item resolved unless there is
-concrete evidence in source, tests, generated gallery metadata, or validation
-output.
+Goal status: the original unresolved and partial ledger entries in `EXAMPLES_NOTES.md` are now
+closed with source changes, generated gallery metadata, smoke validation, or explicit audit
+evidence. Do not re-open resolved items unless new evidence shows the closure is wrong.
 
 Constraints:
 
@@ -61,9 +58,10 @@ Constraints:
 
 ## Current Unresolved Queue
 
-Treat the following ledger entries as active. Runtime/readability fixes and
-example-behavior decisions are now resolved unless later validation proves the
-closure wrong.
+No active unresolved `EXAMPLES_NOTES.md` entries remain as of the final 2026-06-09 broad-audit
+checkpoint. Runtime/readability fixes, example-behavior decisions, further-example requests,
+top-of-file comments, scenario-helper use, and builtin-shapes parity are now resolved unless later
+validation proves a closure wrong.
 
 Resolved in checkpoint `showcases/surface_grid` / `features/bounds_overlay`:
 
@@ -94,15 +92,14 @@ Resolved in checkpoint `runtime/readability`:
 - `features/offscreen_capture`: keeps exact output-pixel semantics and asserts
   requested framebuffer/PNG size.
 
-General `EXAMPLES_NOTES.md` comments still to close:
+General `EXAMPLES_NOTES.md` comments resolved:
 
-- Improve top-of-file comments/descriptions so they can be reused on example
-  webpages.
-- Ensure all examples use the scenario helper, with explicit exceptions for
-  examples whose purpose is lower-level app/window/canvas/host integration.
-- Complete the builtin-shapes parity audit against v0.3: list what v0.3 had,
-  what v0.4 now has, what is missing, and whether missing items are added or
-  deferred.
+- All 106 public C manifest entries have structured top-of-file metadata.
+- `showcases/panel_linked_axes` was migrated to the scenario runner; remaining
+  non-scenario examples are explicit native-only host/runtime exceptions.
+- Builtin-shapes parity is audited against the v0.3 guide list and current
+  `include/datoviz/geom.h`; Platonic solids/hexahedron aliases remain future
+  geom API work, not an example blocker.
 
 Further examples already resolved or audited:
 

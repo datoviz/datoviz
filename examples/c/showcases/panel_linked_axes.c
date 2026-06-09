@@ -10,8 +10,7 @@
  * Style: showcase workflow, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c showcases/panel_linked_axes
- * Run:    ./build/examples/c/showcases/panel_linked_axes
- * Smoke:  ./build/examples/c/showcases/panel_linked_axes 1
+ * Run:    ./build/examples/c/showcases/panel_linked_axes --live
  */
 
 
@@ -25,10 +24,10 @@
 #include <stdint.h>
 
 #include "_assertions.h"
-#include "datoviz/app.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "runner/scenario_runner.h"
 
 
 
@@ -48,6 +47,16 @@
 #define CURSOR_COUNT      BAND_COUNT
 
 static const float TAU = 6.28318530718f;
+
+#define LINKED_AXES_CHECK(condition, message)                                                    \
+    do                                                                                            \
+    {                                                                                             \
+        if (!(condition))                                                                         \
+        {                                                                                         \
+            dvz_fprintf(stderr, "%s\n", message);                                                \
+            return false;                                                                         \
+        }                                                                                         \
+    } while (0)
 
 
 
@@ -632,48 +641,35 @@ static bool _add_summary_panel(DvzScene* scene, DvzPanel* panel)
 /**
  * Bind shared X panzoom and independent Y/summary panzooms.
  *
- * @param scene scene owning the controllers
- * @param win view owning the input router
+ * @param ctx scenario context
  * @param left left-column panels
  * @param left_count number of left-column panels
  * @param summary right summary panel
  * @return true when controllers and input routing are ready
  */
 static bool _bind_linked_panzooms(
-    DvzScene* scene, DvzView* win, DvzPanel** left, uint32_t left_count, DvzPanel* summary)
+    DvzScenarioContext* ctx, DvzPanel** left, uint32_t left_count, DvzPanel* summary)
 {
-    ANN(scene);
-    ANN(win);
+    ANN(ctx);
     ANN(left);
     ANN(summary);
 
-    DvzController* shared_x = dvz_panzoom(scene, NULL);
-    DvzController* summary_xy = dvz_panzoom(scene, NULL);
+    DvzController* shared_x = dvz_panzoom(ctx->scene, NULL);
+    DvzController* summary_xy = dvz_panzoom(ctx->scene, NULL);
     if (shared_x == NULL || summary_xy == NULL)
         return false;
 
     for (uint32_t i = 0; i < left_count; i++)
     {
-        DvzController* y = dvz_panzoom(scene, NULL);
+        DvzController* y = dvz_panzoom(ctx->scene, NULL);
         if (left[i] == NULL || y == NULL)
             return false;
-        if (dvz_panel_bind_controller(left[i], shared_x, DVZ_DIM_MASK_X) != 0)
+        if (dvz_scenario_bind_controller(ctx, left[i], shared_x, DVZ_DIM_MASK_X) != 0)
             return false;
-        if (dvz_panel_bind_controller(left[i], y, DVZ_DIM_MASK_Y) != 0)
-            return false;
-    }
-    if (dvz_panel_bind_controller(summary, summary_xy, DVZ_DIM_MASK_XY) != 0)
-        return false;
-
-    DvzInputRouter* router = dvz_view_input(win);
-    if (router == NULL)
-        return false;
-    for (uint32_t i = 0; i < left_count; i++)
-    {
-        if (dvz_panel_connect_input(left[i], router) != 0)
+        if (dvz_scenario_bind_controller(ctx, left[i], y, DVZ_DIM_MASK_Y) != 0)
             return false;
     }
-    return dvz_panel_connect_input(summary, router) == 0;
+    return dvz_scenario_bind_controller(ctx, summary, summary_xy, DVZ_DIM_MASK_XY) == 0;
 }
 
 
@@ -742,6 +738,120 @@ static bool _configure_panel(DvzPanel* panel, float bottom)
 
 
 
+/**
+ * Initialize the linked-panel axes scenario.
+ *
+ * @param ctx scenario context
+ * @param out_user scenario state output
+ * @return whether setup succeeded
+ */
+static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+{
+    ANN(ctx);
+    ANN(ctx->scene);
+    if (out_user != NULL)
+        *out_user = NULL;
+
+    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
+    LINKED_AXES_CHECK(ctx->figure != NULL, "dvz_figure() failed");
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 3, 2);
+    LINKED_AXES_CHECK(grid != NULL, "dvz_figure_grid() failed");
+    bool ok = dvz_grid_set_margins(
+        grid, &(DvzPanelReserve){.left_px = 36.0f, .right_px = 30.0f, .top_px = 24.0f,
+                                 .bottom_px = 30.0f});
+    LINKED_AXES_CHECK(ok, "dvz_grid_set_margins() failed");
+    ok = dvz_grid_set_gutter(grid, 28.0f, 26.0f);
+    LINKED_AXES_CHECK(ok, "dvz_grid_set_gutter() failed");
+
+    DvzPanel* signal = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* events = dvz_grid_panel(grid, 1, 0);
+    DvzPanel* residuals = dvz_grid_panel(grid, 2, 0);
+    DvzPanel* summary = dvz_grid_panel_span(grid, 0, 1, 3, 1);
+    LINKED_AXES_CHECK(
+        signal != NULL && events != NULL && residuals != NULL && summary != NULL,
+        "dvz_grid_panel() failed");
+
+    ok = _configure_panel(signal, 0.20f);
+    LINKED_AXES_CHECK(ok, "_configure_panel(signal) failed");
+    ok = _configure_panel(events, 0.20f);
+    LINKED_AXES_CHECK(ok, "_configure_panel(events) failed");
+    ok = _configure_panel(residuals, 0.36f);
+    LINKED_AXES_CHECK(ok, "_configure_panel(residuals) failed");
+    ok = dvz_panel_set_layout_reserve(
+        summary, &(DvzPanelLayoutReserve){.left = 0.20f, .right = 0.08f, .bottom = 0.13f,
+                                          .top = 0.06f});
+    LINKED_AXES_CHECK(ok, "dvz_panel_set_layout_reserve(summary) failed");
+    example_graphite_cyan_set_panel_background(summary);
+    ok = _set_panel_border(summary);
+    LINKED_AXES_CHECK(ok, "_set_panel_border(summary) failed");
+
+    ok = _set_domains(signal, 0.0, 12.0, -1.6, 1.6);
+    LINKED_AXES_CHECK(ok, "_set_domains(signal) failed");
+    ok = _set_domains(events, 0.0, 12.0, -0.8, 7.8);
+    LINKED_AXES_CHECK(ok, "_set_domains(events) failed");
+    ok = _set_domains(residuals, 0.0, 12.0, -1.0, 1.0);
+    LINKED_AXES_CHECK(ok, "_set_domains(residuals) failed");
+    ok = _set_domains(summary, -1.45, 1.45, -1.45, 1.45);
+    LINKED_AXES_CHECK(ok, "_set_domains(summary) failed");
+
+    ok = _add_bands(ctx->scene, signal, -1.6, 1.6);
+    LINKED_AXES_CHECK(ok, "_add_bands(signal) failed");
+    ok = _add_bands(ctx->scene, events, -0.8, 7.8);
+    LINKED_AXES_CHECK(ok, "_add_bands(events) failed");
+    ok = _add_bands(ctx->scene, residuals, -1.0, 1.0);
+    LINKED_AXES_CHECK(ok, "_add_bands(residuals) failed");
+    ok = _add_signal_panel(ctx->scene, signal);
+    LINKED_AXES_CHECK(ok, "_add_signal_panel() failed");
+    ok = _add_event_panel(ctx->scene, events);
+    LINKED_AXES_CHECK(ok, "_add_event_panel() failed");
+    ok = _add_residual_panel(ctx->scene, residuals);
+    LINKED_AXES_CHECK(ok, "_add_residual_panel() failed");
+    ok = _add_summary_panel(ctx->scene, summary);
+    LINKED_AXES_CHECK(ok, "_add_summary_panel() failed");
+    ok = _add_cursor_lines(ctx->scene, signal, -1.6, 1.6);
+    LINKED_AXES_CHECK(ok, "_add_cursor_lines(signal) failed");
+    ok = _add_cursor_lines(ctx->scene, events, -0.8, 7.8);
+    LINKED_AXES_CHECK(ok, "_add_cursor_lines(events) failed");
+    ok = _add_cursor_lines(ctx->scene, residuals, -1.0, 1.0);
+    LINKED_AXES_CHECK(ok, "_add_cursor_lines(residuals) failed");
+
+    ok = _add_axes(signal, NULL, "signal");
+    LINKED_AXES_CHECK(ok, "_add_axes(signal) failed");
+    ok = _add_axes(events, NULL, "events");
+    LINKED_AXES_CHECK(ok, "_add_axes(events) failed");
+    ok = _add_axes(residuals, "time (s)", "residual");
+    LINKED_AXES_CHECK(ok, "_add_axes(residuals) failed");
+    ok = _add_axes(summary, "signal", "lagged");
+    LINKED_AXES_CHECK(ok, "_add_axes(summary) failed");
+
+    DvzPanel* left[] = {signal, events, residuals};
+    ok = _bind_linked_panzooms(ctx, left, 3, summary);
+    LINKED_AXES_CHECK(ok, "_bind_linked_panzooms() failed");
+
+    return true;
+}
+
+
+
+/**
+ * Return the linked-panel axes scenario specification.
+ *
+ * @return scenario specification
+ */
+static DvzScenarioSpec _linked_panel_axes_scenario(void)
+{
+    return (DvzScenarioSpec){
+        .id = "linked_panels_axes_panzoom",
+        .title = "panel_linked_axes",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .init = _scenario_init,
+    };
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -755,103 +865,8 @@ static bool _configure_panel(DvzPanel* panel, float bottom)
  */
 int main(int argc, char** argv)
 {
-    int ret = 1;
-    DvzScene* scene = NULL;
-    DvzApp* app = NULL;
-
-    scene = dvz_scene();
-    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
-
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
-
-    DvzGrid* grid = dvz_figure_grid(figure, 3, 2);
-    EXAMPLE_CHECK(grid != NULL, "dvz_figure_grid() failed");
-    bool ok = dvz_grid_set_margins(
-        grid, &(DvzPanelReserve){.left_px = 36.0f, .right_px = 30.0f, .top_px = 24.0f,
-                                 .bottom_px = 30.0f});
-    EXAMPLE_CHECK(ok, "dvz_grid_set_margins() failed");
-    ok = dvz_grid_set_gutter(grid, 28.0f, 26.0f);
-    EXAMPLE_CHECK(ok, "dvz_grid_set_gutter() failed");
-
-    DvzPanel* signal = dvz_grid_panel(grid, 0, 0);
-    DvzPanel* events = dvz_grid_panel(grid, 1, 0);
-    DvzPanel* residuals = dvz_grid_panel(grid, 2, 0);
-    DvzPanel* summary = dvz_grid_panel_span(grid, 0, 1, 3, 1);
-    EXAMPLE_CHECK(
-        signal != NULL && events != NULL && residuals != NULL && summary != NULL,
-        "dvz_grid_panel() failed");
-
-    ok = _configure_panel(signal, 0.20f);
-    EXAMPLE_CHECK(ok, "_configure_panel(signal) failed");
-    ok = _configure_panel(events, 0.20f);
-    EXAMPLE_CHECK(ok, "_configure_panel(events) failed");
-    ok = _configure_panel(residuals, 0.36f);
-    EXAMPLE_CHECK(ok, "_configure_panel(residuals) failed");
-    ok = dvz_panel_set_layout_reserve(
-        summary, &(DvzPanelLayoutReserve){.left = 0.20f, .right = 0.08f, .bottom = 0.13f,
-                                          .top = 0.06f});
-    EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve(summary) failed");
-    example_graphite_cyan_set_panel_background(summary);
-    ok = _set_panel_border(summary);
-    EXAMPLE_CHECK(ok, "_set_panel_border(summary) failed");
-
-    ok = _set_domains(signal, 0.0, 12.0, -1.6, 1.6);
-    EXAMPLE_CHECK(ok, "_set_domains(signal) failed");
-    ok = _set_domains(events, 0.0, 12.0, -0.8, 7.8);
-    EXAMPLE_CHECK(ok, "_set_domains(events) failed");
-    ok = _set_domains(residuals, 0.0, 12.0, -1.0, 1.0);
-    EXAMPLE_CHECK(ok, "_set_domains(residuals) failed");
-    ok = _set_domains(summary, -1.45, 1.45, -1.45, 1.45);
-    EXAMPLE_CHECK(ok, "_set_domains(summary) failed");
-
-    ok = _add_bands(scene, signal, -1.6, 1.6);
-    EXAMPLE_CHECK(ok, "_add_bands(signal) failed");
-    ok = _add_bands(scene, events, -0.8, 7.8);
-    EXAMPLE_CHECK(ok, "_add_bands(events) failed");
-    ok = _add_bands(scene, residuals, -1.0, 1.0);
-    EXAMPLE_CHECK(ok, "_add_bands(residuals) failed");
-    ok = _add_signal_panel(scene, signal);
-    EXAMPLE_CHECK(ok, "_add_signal_panel() failed");
-    ok = _add_event_panel(scene, events);
-    EXAMPLE_CHECK(ok, "_add_event_panel() failed");
-    ok = _add_residual_panel(scene, residuals);
-    EXAMPLE_CHECK(ok, "_add_residual_panel() failed");
-    ok = _add_summary_panel(scene, summary);
-    EXAMPLE_CHECK(ok, "_add_summary_panel() failed");
-    ok = _add_cursor_lines(scene, signal, -1.6, 1.6);
-    EXAMPLE_CHECK(ok, "_add_cursor_lines(signal) failed");
-    ok = _add_cursor_lines(scene, events, -0.8, 7.8);
-    EXAMPLE_CHECK(ok, "_add_cursor_lines(events) failed");
-    ok = _add_cursor_lines(scene, residuals, -1.0, 1.0);
-    EXAMPLE_CHECK(ok, "_add_cursor_lines(residuals) failed");
-
-    ok = _add_axes(signal, NULL, "signal");
-    EXAMPLE_CHECK(ok, "_add_axes(signal) failed");
-    ok = _add_axes(events, NULL, "events");
-    EXAMPLE_CHECK(ok, "_add_axes(events) failed");
-    ok = _add_axes(residuals, "time (s)", "residual");
-    EXAMPLE_CHECK(ok, "_add_axes(residuals) failed");
-    ok = _add_axes(summary, "signal", "lagged");
-    EXAMPLE_CHECK(ok, "_add_axes(summary) failed");
-
-    app = dvz_app(scene);
-    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
-
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "linked_panels_axes_panzoom");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-
-    DvzPanel* left[] = {signal, events, residuals};
-    ok = _bind_linked_panzooms(scene, win, left, 3, summary);
-    EXAMPLE_CHECK(ok, "_bind_linked_panzooms() failed");
-
-    dvz_app_run(app, example_frame_count(argc, argv));
-    ret = 0;
-
-cleanup:
-    if (app != NULL)
-        dvz_app_destroy(app);
-    if (scene != NULL)
-        dvz_scene_destroy(scene);
-    return ret;
+    DvzScenarioSpec spec = _linked_panel_axes_scenario();
+    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+
+#undef LINKED_AXES_CHECK

@@ -6,6 +6,9 @@
 
 /* external_surface_glfw - host-owned GLFW loop using Datoviz hosted rendering.
  *
+ * Scenario: advanced_external_surface_glfw
+ * Style: advanced, native-only, external window/surface host
+ *
  * GLFW is used here only as an external toolkit surrogate. Datoviz does not create the GLFW
  * window and does not enter dvz_app_run(); the host provides Vulkan instance extensions,
  * creates VkSurfaceKHR from the Datoviz-owned VkInstance, forwards resize metadata, and calls
