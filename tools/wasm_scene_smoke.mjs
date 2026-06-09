@@ -1367,6 +1367,7 @@ try {
     "feature_animation_tracks",
     "feature_obj_loading",
     "feature_picking",
+    "feature_selection_pixel",
     "feature_image_probe",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
@@ -1516,6 +1517,65 @@ try {
     expectWriteCommands(frameAnimation.stream, "animation scenario frame");
   } finally {
     Module._dvz_wasm_api_scene_destroy(animationScene);
+  }
+
+  const pixelSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
+  requireOk(pixelSelectionScene !== 0, "pixel selection scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(pixelSelectionScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "pixel selection scenario canvas format",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(pixelSelectionScene, 9),
+      0,
+      "pixel selection scenario create",
+    );
+    expectNoDiagnostics(Module, pixelSelectionScene, "pixel selection scenario create diagnostics");
+    const pixelSelectionFigure = Module._dvz_wasm_api_scenario_figure(pixelSelectionScene);
+    requireOk(pixelSelectionFigure !== 0, "pixel selection scenario has no figure");
+    const initialPixelSelection =
+      emitStream(Module, pixelSelectionScene, pixelSelectionFigure, "pixel selection initial");
+    expectWriteCommands(initialPixelSelection.stream, "pixel selection initial");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_pointer(
+        pixelSelectionScene, DVZ_POINTER_EVENT_MOVE, smokeSize / 2, smokeSize / 2, 0, 0, 1, 40),
+      0,
+      "pixel selection pointer move",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_scenario_post_frame(pixelSelectionScene),
+      0,
+      "pixel selection post-frame",
+    );
+    requireOk(
+      Module._dvz_wasm_api_query_pending_count(pixelSelectionScene) > 0,
+      "pixel selection scenario did not queue a query",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_emit_query_packets(pixelSelectionScene, pixelSelectionFigure),
+      0,
+      "pixel selection query packet emit",
+    );
+    expectNoDiagnostics(Module, pixelSelectionScene, "pixel selection query packet diagnostics");
+    requireOk(
+      Module._dvz_wasm_api_query_active(pixelSelectionScene) === 1,
+      "pixel selection query did not become active",
+    );
+    requireOk(
+      Module._dvz_wasm_api_query_readback_size(pixelSelectionScene) > 0,
+      "pixel selection query has no readback size",
+    );
+    expectPacket(
+      Module, pixelSelectionScene, DVZ_DRP2_PACKET_SETUP, "pixel selection query setup");
+    expectPacket(
+      Module, pixelSelectionScene, DVZ_DRP2_PACKET_UPDATE, "pixel selection query update", {
+        expectArena: true,
+      });
+    expectPacket(Module, pixelSelectionScene, DVZ_DRP2_PACKET_FRAME, "pixel selection query frame");
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(pixelSelectionScene);
   }
 
   const positions = new Float32Array([-0.75, -0.45, 0, -0.35, 0.35, 0, 0.05, -0.1, 0, 0.42, 0.5, 0, 0.72, -0.35, 0]);

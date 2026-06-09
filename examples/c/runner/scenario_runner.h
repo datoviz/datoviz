@@ -93,6 +93,7 @@ typedef enum DvzScenarioRequirement
     DVZ_SCENARIO_REQ_CONTROLLER = 1ull << 12,
     DVZ_SCENARIO_REQ_PANZOOM = 1ull << 13,
     DVZ_SCENARIO_REQ_ARCBALL = 1ull << 14,
+    DVZ_SCENARIO_REQ_PIXEL_VISUAL = 1ull << 15,
 } DvzScenarioRequirement;
 
 

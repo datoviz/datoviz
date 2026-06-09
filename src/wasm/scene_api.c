@@ -61,13 +61,14 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 10
+#define DVZ_WASM_API_SCENARIO_COUNT 11
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
 
 #define DVZ_WASM_BROWSER_SUPPORTED_REQUIREMENTS                                                       \
-    (DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_MESH_VISUAL |  \
+    (DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_PIXEL_VISUAL |                                 \
+     DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_MESH_VISUAL |                                 \
      DVZ_SCENARIO_REQ_IMAGE_VISUAL | DVZ_SCENARIO_REQ_TEXT_VISUAL |                                  \
      DVZ_SCENARIO_REQ_SCENE_BUFFERS | DVZ_SCENARIO_REQ_QUERY_READBACK |                              \
      DVZ_SCENARIO_REQ_FRAME_CALLBACKS |                                                             \
@@ -91,6 +92,7 @@ DvzScenarioSpec dvz_example_picking_scenario(void);
 DvzScenarioSpec dvz_example_image_probe_scenario(void);
 DvzScenarioSpec dvz_example_isolines_scenario(void);
 DvzScenarioSpec dvz_example_obj_loading_scenario(void);
+DvzScenarioSpec dvz_example_selection_pixel_scenario(void);
 
 
 
@@ -368,6 +370,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
     case 8:
         return dvz_example_picking_scenario();
     case 9:
+        return dvz_example_selection_pixel_scenario();
+    case 10:
         return dvz_example_image_probe_scenario();
     default:
         return (DvzScenarioSpec){0};
@@ -382,6 +386,8 @@ static const char* _requirement_name(uint64_t bit)
     {
     case DVZ_SCENARIO_REQ_POINT_VISUAL:
         return "point";
+    case DVZ_SCENARIO_REQ_PIXEL_VISUAL:
+        return "pixel";
     case DVZ_SCENARIO_REQ_MARKER_VISUAL:
         return "marker";
     case DVZ_SCENARIO_REQ_MESH_VISUAL:

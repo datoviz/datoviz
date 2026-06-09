@@ -37,6 +37,9 @@
 #include "runner/scenario_runner.h"
 
 
+DvzScenarioSpec dvz_example_selection_pixel_scenario(void);
+
+
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
@@ -435,7 +438,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _selection_pixel_scenario(void)
+DvzScenarioSpec dvz_example_selection_pixel_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_selection_pixel",
@@ -443,8 +446,9 @@ static DvzScenarioSpec _selection_pixel_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
-        .requirements = DVZ_SCENARIO_REQ_QUERY_READBACK | DVZ_SCENARIO_REQ_CONTROLLER |
-                        DVZ_SCENARIO_REQ_PANZOOM | DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
+        .requirements = DVZ_SCENARIO_REQ_PIXEL_VISUAL | DVZ_SCENARIO_REQ_QUERY_READBACK |
+                        DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM |
+                        DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
         .event = _scenario_event,
         .post_frame = _selection_pixel_post_frame,
@@ -458,6 +462,7 @@ static DvzScenarioSpec _selection_pixel_scenario(void)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+#ifndef DVZ_EXAMPLE_NO_MAIN
 /**
  * Run the retained pixel selection feature example through the native scenario runner.
  *
@@ -467,6 +472,7 @@ static DvzScenarioSpec _selection_pixel_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _selection_pixel_scenario();
+    DvzScenarioSpec spec = dvz_example_selection_pixel_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

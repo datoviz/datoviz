@@ -986,9 +986,11 @@ examples:
       kind: synthetic
     portability: portable-scenario
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_selection_pixel
       requirements:
         - pixel
+        - controller
         - panzoom
         - query-readback
         - frame-callbacks

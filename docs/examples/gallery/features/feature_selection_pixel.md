@@ -10,8 +10,9 @@ retained pixel hover and click selection.
 - Status: `supported`
 - Source: [`examples/c/features/selection_pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_pixel.c)
 - Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `pixel`, `panzoom`, `query-readback`, `frame-callbacks`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_selection_pixel`](/examples/webgpu/live.html?id=feature_selection_pixel)
+- WebGPU requirements: `pixel`, `controller`, `panzoom`, `query-readback`, `frame-callbacks`
 - Build: `just example-c features/selection_pixel`
 - Smoke: `./build/examples/c/features/selection_pixel --png`
 - Validation: `smoke+interaction+screenshot`
@@ -28,6 +29,14 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=feature_selection_pixel" title="Pixel Selection WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_selection_pixel).
 
 ## Source
 

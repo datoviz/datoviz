@@ -85,6 +85,7 @@ typedef struct RunnerRequirementName
 
 static const RunnerRequirementName REQ_NAMES[] = {
     {DVZ_SCENARIO_REQ_POINT_VISUAL, "point"},
+    {DVZ_SCENARIO_REQ_PIXEL_VISUAL, "pixel"},
     {DVZ_SCENARIO_REQ_MARKER_VISUAL, "marker"},
     {DVZ_SCENARIO_REQ_MESH_VISUAL, "mesh"},
     {DVZ_SCENARIO_REQ_IMAGE_VISUAL, "image"},

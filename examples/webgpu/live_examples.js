@@ -47,6 +47,12 @@ export const LIVE_EXAMPLES = [
     scenarioId: "feature_picking",
   },
   {
+    id: "feature_selection_pixel",
+    label: "Pixel Selection",
+    scenarioId: "feature_selection_pixel",
+    animate: true,
+  },
+  {
     id: "image_probe",
     label: "Image Probe",
     scenarioId: "feature_image_probe",
