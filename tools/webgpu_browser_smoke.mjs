@@ -612,7 +612,7 @@ async function smokeAnimatedWasmPage(page, baseUrl, path, expectedStatus, screen
 }
 
 async function smokeQueryWasmPage(page, baseUrl, scenario, screenshotPath) {
-  const path = `/examples/webgpu/examples.html?demo=${scenario.demo}`;
+  const path = scenario.path ?? `/examples/webgpu/examples.html?demo=${scenario.demo}`;
   await page.navigate(`${baseUrl}${path}`);
   requireOk(
     await page.evaluate('typeof navigator.gpu === "object"'),
@@ -774,161 +774,49 @@ async function main() {
   let page = null;
   try {
     page = await createPage(chrome.debugPort);
-    let wasm2d = null;
-    let wasm3d = null;
-    let wasmTimer = null;
-    let wasmPointQuery = null;
-    let wasmMarkerQuery = null;
-    let wasmHoverQuery = null;
-    let wasmSelectionQuery = null;
-    let wasmImageProbe = null;
+    let wasmBasic = null;
+    let wasmQuery = null;
     try {
-      wasm2d = await smokeWasmPage(
+      wasmBasic = await smokeAnimatedWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/examples.html?demo=wasm-2d',
-        'Rendered WASM 2D scene',
-        join(artifactsDir, 'wasm_examples_2d.png'),
-      );
-      wasm3d = await smokeWasmPage(
-        page,
-        baseUrl,
-        '/examples/webgpu/examples.html?demo=wasm-3d',
-        'Rendered WASM 3D arcball',
-        join(artifactsDir, 'wasm_examples_3d.png'),
-      );
-      wasmTimer = await smokeAnimatedWasmPage(
-        page,
-        baseUrl,
-        '/examples/webgpu/examples.html?demo=wasm-timer-animation',
-        'Rendered WASM timer animation',
-        join(artifactsDir, 'wasm_examples_timer_animation.png'),
+        '/examples/webgpu/live.html?id=feature_timer_animation',
+        'Rendered Timer Animation',
+        join(artifactsDir, 'webgpu_live_timer_animation.png'),
       );
     } catch (error) {
       if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(`SKIP WASM page render: headless WebGPU instance loss (${error.message})`);
+      console.log(skipLine(`WebGPU live basic smoke: headless WebGPU instance loss (${error.message})`));
     }
     try {
-      wasmPointQuery = await smokeQueryWasmPage(
+      wasmQuery = await smokeQueryWasmPage(
         page,
         baseUrl,
         {
-          demo: 'wasm-pick-point',
-          label: 'WASM point picking',
-          scenarioId: 'feature_pick_point',
-        },
-        join(artifactsDir, 'wasm_examples_pick_point.png'),
-      );
-      wasmMarkerQuery = await smokeQueryWasmPage(
-        page,
-        baseUrl,
-        {
-          demo: 'wasm-pick-marker',
-          label: 'WASM marker picking',
-          scenarioId: 'feature_pick_marker',
-        },
-        join(artifactsDir, 'wasm_examples_pick_marker.png'),
-      );
-      wasmHoverQuery = await smokeQueryWasmPage(
-        page,
-        baseUrl,
-        {
-          demo: 'wasm-pick-hover',
-          label: 'WASM hover picking',
-          scenarioId: 'feature_pick_hover',
-          pointerY: 0.55,
-        },
-        join(artifactsDir, 'wasm_examples_pick_hover.png'),
-      );
-      wasmSelectionQuery = await smokeQueryWasmPage(
-        page,
-        baseUrl,
-        {
-          demo: 'wasm-selection',
-          label: 'WASM selection',
-          scenarioId: 'feature_selection',
+          path: '/examples/webgpu/live.html?id=feature_picking',
+          label: 'Picking',
+          scenarioId: 'feature_picking',
           pressAfterResolve: true,
         },
-        join(artifactsDir, 'wasm_examples_selection.png'),
-      );
-      wasmImageProbe = await smokeQueryWasmPage(
-        page,
-        baseUrl,
-        {
-          demo: 'wasm-image-probe',
-          label: 'WASM image probe',
-          scenarioId: 'feature_image_probe',
-        },
-        join(artifactsDir, 'wasm_examples_image_probe.png'),
+        join(artifactsDir, 'webgpu_live_picking.png'),
       );
     } catch (error) {
       if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WASM query scenarios: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live query smoke: headless WebGPU instance loss (${error.message})`));
     }
-    let wasmDashboard = null;
-    try {
-      wasmDashboard = await smokeWasmDashboard(page, baseUrl);
-    } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
-        throw error;
-      }
-      console.log(skipLine(`WASM dashboard: headless WebGPU instance loss (${error.message})`));
+    if (wasmBasic !== null) {
+      console.log(passLine(`live basic: ${wasmBasic.initialStatus}; initial_frame=${wasmBasic.initialFrame}`));
     }
-    if (wasm2d !== null) {
-      console.log(passLine(`2D WASM: ${wasm2d.initialStatus}; ${wasm2d.interactiveStatus}`));
-    }
-    if (wasm3d !== null) {
-      console.log(passLine(`3D WASM: ${wasm3d.initialStatus}; ${wasm3d.interactiveStatus}`));
-    }
-    if (wasmTimer !== null) {
-      console.log(passLine(`timer WASM: ${wasmTimer.initialStatus}; initial_frame=${wasmTimer.initialFrame}`));
-    }
-    if (wasmPointQuery !== null) {
+    if (wasmQuery !== null) {
       console.log(
         passLine(
-          `point query WASM: ${wasmPointQuery.initialStatus}; ` +
-            `processed=${wasmPointQuery.queryDelivery.processed}`,
+          `live query: ${wasmQuery.initialStatus}; processed=${wasmQuery.queryDelivery.processed}`,
         ),
       );
-    }
-    if (wasmMarkerQuery !== null) {
-      console.log(
-        passLine(
-          `marker query WASM: ${wasmMarkerQuery.initialStatus}; ` +
-            `processed=${wasmMarkerQuery.queryDelivery.processed}`,
-        ),
-      );
-    }
-    if (wasmHoverQuery !== null) {
-      console.log(
-        passLine(
-          `hover query WASM: ${wasmHoverQuery.initialStatus}; ` +
-            `processed=${wasmHoverQuery.queryDelivery.processed}`,
-        ),
-      );
-    }
-    if (wasmSelectionQuery !== null) {
-      console.log(
-        passLine(
-          `selection query WASM: ${wasmSelectionQuery.initialStatus}; ` +
-            `processed=${wasmSelectionQuery.queryDelivery.processed}`,
-        ),
-      );
-    }
-    if (wasmImageProbe !== null) {
-      console.log(
-        passLine(
-          `image probe WASM: ${wasmImageProbe.initialStatus}; ` +
-            `processed=${wasmImageProbe.queryDelivery.processed}`,
-        ),
-      );
-    }
-    if (wasmDashboard !== null) {
-      console.log(passLine(`WASM dashboard: ${wasmDashboard}`));
     }
     console.log(`Wrote ${artifactsDir}`);
   } finally {

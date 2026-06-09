@@ -219,8 +219,9 @@ Open:
 
 ```text
 http://localhost:8765/examples/webgpu/fixtures.html
-http://localhost:8765/examples/webgpu/examples.html?demo=wasm-2d
-http://localhost:8765/examples/webgpu/examples.html?demo=wasm-3d
+http://localhost:8765/examples/webgpu/live.html?id=feature_timer_animation
+http://localhost:8765/examples/webgpu/live.html?id=feature_picking
+http://localhost:8765/examples/webgpu/live.html?id=image_probe
 ```
 
 Expected manual results for the current subset:
@@ -228,14 +229,13 @@ Expected manual results for the current subset:
 - fixture dashboard: all committed rows pass, no unsupported rows, no failures;
 - fixture dashboard WASM Scene Smoke section: 2D point/pixel/marker/segment update, 2D image texture
   resize reload, and 3D sphere/textured mesh update rows pass;
-- 2D WASM example: basic axes plus point, pixel, marker, segment, path, primitive, image, labels,
-  glyph, text, and mesh content render; pan/zoom and resize work;
-- 3D WASM example: sphere impostors and a textured cube render; arcball drag, wheel zoom, and
-  resize work.
+- live timer animation: the retained point animation advances through browser-driven frames;
+- live picking: pointer delivery, async readback, and retained hover/selection state update;
+- live image probe: sampled image query/readback renders and reports probe state.
 
-`just webgpu-browser-smoke` automates the two WASM example checks through the split-packet
-runtime path and the dashboard WASM Scene Smoke rows with headless Chrome when Chrome/Chromium is
-available locally. It writes transient PNG evidence under `build/webgpu-browser-smoke/`.
+`just webgpu-browser-smoke` automates the minimal live basic and query checks with headless Chrome
+when Chrome/Chromium is available locally. It writes transient PNG evidence under
+`build/webgpu-browser-smoke/`.
 
 Last local release proof recorded on 2026-06-04:
 

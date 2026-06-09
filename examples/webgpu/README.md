@@ -23,22 +23,25 @@ http://localhost:8765/examples/webgpu/fixtures.html
 
 The WASM examples build the generic scene ABI with Emscripten, route pointer input through compiled
 controllers, and execute emitted DRP2 packets with the browser WebGPU runtime. Reusable browser
-bridge/session code lives under `web/wasm/`; `examples/webgpu/demos/` contains content-only demo
-modules. The 2D proof renders buffer-backed point/pixel positions, marker, styled segment/path,
-primitive, image, glyph, semantic bitmap text, and mesh visuals with panzoom.
+bridge/session code lives under `web/wasm/`. Public live examples use `live.html?id=<example_id>`
+and must be backed by the same canonical C scenario as native validation:
 
 ```bash
 just wasm-scene-smoke
+just webgpu-browser-smoke
 ```
+
+```text
+http://localhost:8765/examples/webgpu/live.html?id=feature_timer_animation
+http://localhost:8765/examples/webgpu/live.html?id=feature_picking
+http://localhost:8765/examples/webgpu/live.html?id=image_probe
+```
+
+The broader `examples.html` routes are development samplers for renderer and ABI work. They are not
+the public WebGPU promotion surface:
 
 ```text
 http://localhost:8765/examples/webgpu/examples.html?demo=wasm-2d
-```
-
-The 3D WASM proof uses the same generic ABI wrapper with basic sphere impostors, a textured
-material-controlled mesh, scene-owned camera, and arcball controller:
-
-```text
 http://localhost:8765/examples/webgpu/examples.html?demo=wasm-3d
 ```
 
@@ -131,6 +134,7 @@ Browserless validation from the repository root:
 just webgpu-fixture-preflight
 just webgpu-runner-smoke
 just wasm-scene-smoke
+just webgpu-browser-smoke
 ```
 
 Manual checks:
@@ -146,5 +150,5 @@ Manual checks:
 
 The main stream page keeps the WebGPU runtime resources alive after loading a stream and replays the
 DRP2 frame command slice. Browser interaction for the release-visible scene path is exercised by
-`examples.html`, where DOM input is routed through the generic WASM scene ABI and emitted DRP2
-update streams.
+`live.html`, where DOM input is routed through the generic WASM scene ABI and emitted DRP2 update
+streams.
