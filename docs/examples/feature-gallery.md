@@ -499,7 +499,7 @@ _Media pending._
 
 `supported` `features`
 
-screen-space overlay card attached to a panel.
+screen-space data readout over a simple panel visual.
 
 </div>
 

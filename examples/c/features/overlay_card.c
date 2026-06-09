@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* overlay_card - screen-space overlay card attached to a panel.
+/* overlay_card - screen-space data readout over a simple panel visual.
  *
  * Scenario: feature.overlay_card
  * Style: features, graphite_cyan, 1600x1200 capture target
@@ -35,9 +35,74 @@
 
 #define WIDTH       1600u
 #define HEIGHT      1200u
+#define PATH_COUNT  72u
+#define POINT_COUNT 1u
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Add a small signal and highlighted sample behind the overlay.
+ *
+ * @param scene scene owning visuals
+ * @param panel panel receiving visuals
+ * @return true on success
+ */
+static bool _add_signal(DvzScene* scene, DvzPanel* panel)
+{
+    if (scene == NULL || panel == NULL)
+        return false;
+
+    vec3 positions[PATH_COUNT] = {{0}};
+    DvzColor colors[PATH_COUNT] = {{0}};
+    float widths[PATH_COUNT] = {0};
+    for (uint32_t i = 0; i < PATH_COUNT; i++)
+    {
+        const float t = PATH_COUNT > 1u ? (float)i / (float)(PATH_COUNT - 1u) : 0.0f;
+        const float x = -0.86f + 1.72f * t;
+        positions[i][0] = x;
+        positions[i][1] = 0.32f * (float)(t > 0.58f) +
+                          0.18f * (float)(t < 0.58f) +
+                          0.20f * (float)(t - 0.5f);
+        positions[i][2] = 0.0f;
+        colors[i] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
+        colors[i].a = 235u;
+        widths[i] = 3.0f;
+    }
+
+    DvzVisual* path = dvz_path(scene, 0);
+    if (path == NULL)
+        return false;
+    DvzVisualDataUpdate path_updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = PATH_COUNT},
+        {.attr_name = "color", .data = colors, .item_count = PATH_COUNT},
+        {.attr_name = "stroke_width", .data = widths, .item_count = PATH_COUNT},
+    };
+    if (dvz_visual_set_data_many(path, path_updates, 3) != 0)
+        return false;
+    if (dvz_path_set_caps(path, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) != 0)
+        return false;
+    if (dvz_panel_add_visual(panel, path, NULL) != 0)
+        return false;
+
+    const vec3 point_pos[POINT_COUNT] = {{0.18f, 0.43f, 0.0f}};
+    const DvzColor point_color[POINT_COUNT] = {
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING)};
+    const float diameters[POINT_COUNT] = {42.0f};
+    DvzVisual* point = dvz_point(scene, 0);
+    if (point == NULL)
+        return false;
+    DvzVisualDataUpdate point_updates[] = {
+        {.attr_name = "position", .data = point_pos, .item_count = POINT_COUNT},
+        {.attr_name = "color", .data = point_color, .item_count = POINT_COUNT},
+        {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
+    };
+    if (dvz_visual_set_data_many(point, point_updates, 3) != 0)
+        return false;
+    if (dvz_visual_set_depth_test(point, false) != 0)
+        return false;
+    return dvz_panel_add_visual(panel, point, NULL) == 0;
+}
 
 
 
@@ -69,7 +134,7 @@ static bool _add_overlay_card(DvzPanel* panel)
     style.max_text_chars = 96u;
 
     DvzOverlayCardDesc desc = dvz_overlay_card_desc();
-    desc.text = "Overlay card  sample 42  status stable";
+    desc.text = "selected sample 42   value 0.43   status stable";
     desc.placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_RIGHT;
     desc.offset_px[0] = 24.0f;
     desc.offset_px[1] = 24.0f;
@@ -106,6 +171,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
+    if (!_add_signal(ctx->scene, panel))
+        return false;
     return _add_overlay_card(panel);
 }
 

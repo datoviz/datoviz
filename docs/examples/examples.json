@@ -240,7 +240,7 @@
       "source": "examples/c/features/overlay_card.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/overlay_card.c",
       "page": "gallery/features/feature_overlay_card.md",
-      "summary": "screen-space overlay card attached to a panel.",
+      "summary": "screen-space data readout over a simple panel visual.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/overlay_card",
       "smoke_command": "./build/examples/c/features/overlay_card --png",

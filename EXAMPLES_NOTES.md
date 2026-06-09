@@ -32,7 +32,7 @@ is still visible with the blocker or preferred next action.
 | `features/marker_symbols` | resolved | Added row labels and a distinct colored bitmap-pin row in `examples/c/features/marker_symbols.c`; compiled and docs regenerated. |
 | `features/technique_msaa` | partial | Prefix is correct; stronger 3D mesh/cube comparison still needed. |
 | `features/offscreen_capture` | deferred | Keep exact-pixel offscreen semantics; add high-DPI/supersampled variant separately if desired. |
-| `features/overlay_card` | deferred | Needs realistic minimal overlay use case. |
+| `features/overlay_card` | resolved | Adds a simple signal and highlighted sample behind the fixed readout card in `examples/c/features/overlay_card.c`; compiled and docs regenerated. |
 | `features/panel_background` | resolved | Uses explicit inset gradient panel background in `examples/c/features/panel_background.c`; compiled. |
 | `features/panel_domain_fit` | resolved | Side-by-side free-domain vs equal-aspect fit in `examples/c/features/panel_domain_fit.c`; compiled. |
 | `features/panzoom` | resolved | Manifest/source/docs now use `feature_panzoom` with source/executable `panzoom`; generated stale `controller_panzoom` page removed. |
