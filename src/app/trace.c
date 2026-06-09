@@ -1143,7 +1143,7 @@ DvzAppTraceMode _dvz_app_trace_mode_from_env(const char* value)
  *
  * @param mode active trace mode
  * @param status_line_open whether an in-place unchanged line is currently open
- * @param changed whether the newly emitted stream differs from the previous one
+ * @param changed whether the new frame artifact stream snapshot differs from the previous one
  * @return the trace update plan
  */
 DvzAppTracePlan
@@ -1193,9 +1193,9 @@ bool _dvz_app_trace_fingerprint_name(char* out, uint32_t size)
 
 
 /**
- * Compute a stable semantic fingerprint for one emitted DRP2 stream.
+ * Compute a stable semantic fingerprint for one frame artifact stream snapshot.
  *
- * @param stream the emitted command stream
+ * @param stream the artifact-owned command stream snapshot
  * @param out destination fingerprint
  * @return true on success, false on error
  */

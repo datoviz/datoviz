@@ -35,7 +35,6 @@
 #include "datoviz/scene.h"
 #include "../drp2/_stream.h"
 #include "_scene.h"
-#include "core/frame_artifact_internal.h"
 #include "core/scene_notify_internal.h"
 #include "core/figure_emit_internal.h"
 #include "interaction/animation_internal.h"
@@ -2310,9 +2309,9 @@ static bool _app_trace_print_command_detail(
 
 
 /**
- * Print an expanded human-readable dump for one DRP2 stream.
+ * Print an expanded human-readable dump for one artifact stream snapshot.
  *
- * @param stream emitted command stream
+ * @param stream artifact-owned command stream snapshot
  * @param frame_index 0-based frame index for the owning window
  * @param label short trace label for the frame header
  */
@@ -2348,14 +2347,14 @@ static void _app_trace_stream_full(
 
 
 /**
- * Print or refresh the live DRP2 trace for one emitted stream.
+ * Print or refresh the live DRP2 trace for one frame artifact stream snapshot.
  *
  * In normal mode, changed frames print one expanded human-readable command list while unchanged
  * frames rewrite one in-place status line without scrolling. In full mode, every frame prints an
  * expanded command list.
  *
  * @param win view owning the trace state
- * @param stream the emitted command stream
+ * @param stream the artifact-owned command stream snapshot
  */
 static void _app_trace_stream(DvzView* win, const DvzDrp2CommandStream* stream)
 {
@@ -2597,7 +2596,7 @@ static void _app_runtime_failure_reset(DvzView* win, const char* context)
  *
  * @param win view carrying failure state
  * @param prefix short failure context
- * @param stream the emitted command stream
+ * @param stream artifact-owned command stream snapshot
  * @param result the failed validation result
  */
 static void _app_log_runtime_failure(
@@ -2661,7 +2660,7 @@ static void _app_log_runtime_failure(
  * Return whether a frame callback may safely run mutation-oriented user code.
  *
  * @param win view owning the callback
- * @return true when no emitted scene stream is still live
+ * @return true when scene mutation may run after artifact emission
  */
 static bool _app_frame_callback_allowed(DvzView* win)
 {
@@ -2674,11 +2673,11 @@ static bool _app_frame_callback_allowed(DvzView* win)
 
 
 /**
- * Append one emitted app stream to the active DVZR recorder.
+ * Append one app frame artifact stream snapshot to the active DVZR recorder.
  *
  * @param win view owning the recorder
  * @param frame borrowed stream frame for target dimensions
- * @param stream emitted scene stream
+ * @param stream artifact-owned scene stream snapshot
  */
 static void _app_record_stream(
     DvzView* win, const DvzStreamFrame* frame, const DvzDrp2CommandStream* stream)
@@ -3026,7 +3025,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         return;
     }
 
-    /* Emit the DRP2 command stream with the canvas as external color target. */
+    /* Emit one frame artifact with the canvas as external color target. */
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     _app_apply_runtime_caps(app, &caps);
     caps.shader_format_glsl = true;
@@ -3055,7 +3054,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
     DvzSceneFrameArtifact* artifact =
-        _scene_emit_frame_artifact(win->figure, &caps, &report, &cfg, 0, win->frame_index);
+        dvz_figure_emit_frame(win->figure, &caps, &report, &cfg);
     if (artifact == NULL)
     {
         uint32_t n = dvz_diagnostic_report_count(&report);
@@ -3067,13 +3066,13 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         return;
     }
 
-    DvzDrp2CommandStream* stream = _scene_frame_artifact_stream(artifact);
+    const DvzDrp2CommandStream* stream = dvz_scene_frame_artifact_stream(artifact);
     if (
-        _scene_frame_artifact_status(artifact) != DVZ_SCENE_FRAME_ARTIFACT_STATUS_OK ||
+        dvz_scene_frame_artifact_status(artifact) != DVZ_SCENE_FRAME_ARTIFACT_STATUS_OK ||
         stream == NULL)
     {
         log_error("_app_draw failed to create scene frame artifact");
-        _scene_frame_artifact_destroy(artifact);
+        dvz_scene_frame_artifact_destroy(artifact);
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
         _app_render_gui_frame(win, frame);
 #endif
@@ -3093,7 +3092,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     if (result.ok)
         _app_record_stream(win, frame, stream);
-    _scene_frame_artifact_destroy(artifact);
+    dvz_scene_frame_artifact_destroy(artifact);
 
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     _app_render_gui_frame(win, frame);
