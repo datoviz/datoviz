@@ -1447,8 +1447,8 @@ dvz_visual_attr_format(const DvzVisual* visual, const char* attr_name);
  * glyph: `"position"` (vec3f anchor), `"bounds"` (vec4f local pixel bounds),
  *        `"texcoords"` (vec4f atlas UV bounds), `"color"` (RGBA8), `"angle"` (float radians)
  *
- * All configured attributes on one visual must use the same item_count. This
- * call is rejected while any emitted scene stream is still live.
+ * All configured attributes on one visual must use the same item_count. Retained mutation is legal
+ * after frame artifact creation; changes are reflected only in later artifacts.
  *
  * @param visual the visual
  * @param attr_name attribute name (family-specific, e.g. "position", "color")
@@ -1541,7 +1541,8 @@ DVZ_EXPORT int dvz_visual_set_strings(
  * attributes, such as point position/color/size. All updates are validated before any existing
  * attribute payload is replaced. Every update in the batch must use the same item_count, and any
  * existing dense per-item attribute with a different item_count must also be included in the batch.
- * This call is rejected while any emitted scene stream is still live.
+ * Retained mutation is legal after frame artifact creation; changes are reflected only in later
+ * artifacts.
  *
  * @param visual the visual
  * @param updates attribute update descriptors
@@ -1557,8 +1558,8 @@ DVZ_EXPORT int dvz_visual_set_data_many(
  *
  * The attribute must already be fully allocated by a prior
  * dvz_visual_set_data() call. Only the items in
- * [first_item, first_item + item_count) are uploaded on the next emit. This
- * call is rejected while any emitted scene stream is still live.
+ * [first_item, first_item + item_count) are uploaded on the next emit. Retained mutation is legal
+ * after frame artifact creation; changes are reflected only in later artifacts.
  *
  * @param visual the visual
  * @param attr_name attribute name

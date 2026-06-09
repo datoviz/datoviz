@@ -5,8 +5,13 @@ Status: experimental design for replacing the browser demo bridge with a reusabl
 The proven runtime architecture stays unchanged:
 
 ```text
-C/WASM scene state -> scene FramePlan -> WGSL DRP2 stream -> browser WebGPU runtime -> canvas
+C/WASM scene state -> scene frame artifact -> setup/update/frame packet spans ->
+browser WebGPU runtime -> canvas
 ```
+
+The artifact owns the backend-neutral DRP2 stream snapshot. WASM exposes packet spans as borrowed
+views of the current artifact for browser execution, and exposes JSON only as a debug or fixture
+projection of that artifact stream snapshot.
 
 This document defines the next ABI layer. It does not replace the public native C API and does not
 port Vulkan, vklite, canvas, window, stream, or app to WASM.
@@ -76,6 +81,7 @@ int dvz_wasm_api_emit(uint32_t scene, uint32_t figure);
 uint32_t dvz_wasm_api_payload_ptr(uint32_t scene);
 uint32_t dvz_wasm_api_payload_size(uint32_t scene);
 int dvz_wasm_api_emit_packets(uint32_t scene, uint32_t figure);
+int dvz_wasm_api_release_packets(uint32_t scene);
 int dvz_wasm_api_packet_status(uint32_t scene);
 uint32_t dvz_wasm_api_packet_ptr(uint32_t scene, uint32_t kind);
 uint32_t dvz_wasm_api_packet_size(uint32_t scene, uint32_t kind);
@@ -97,7 +103,7 @@ void dvz_wasm_api_scene_destroy(uint32_t scene);
    generated numeric attribute ids.
 5. Buffer-backed attributes use scene-owned buffers with 32-bit WASM byte sizes and offsets in this
    experimental browser ABI.
-5. Texture uploads start with tightly packed RGBA8 2D data only.
+6. Texture uploads start with tightly packed RGBA8 2D data only.
 
 ## Portable Scenario Rules
 
@@ -116,19 +122,27 @@ The scenario ABI is the first bridge from reusable C examples to the browser hos
 
 ## Packet, Payload, And Diagnostics Lifetime
 
-1. `dvz_wasm_api_emit_packets()` is the browser runtime path. It exposes setup, update, and frame
-   binary DRP2 packets plus one payload arena per packet kind.
-2. Packet and arena pointers are borrowed from the current emitted artifact and valid only until
-   explicit packet release, the next emit call on the same scene, or scene destruction.
-3. JS must decode or copy packet spans immediately and must not retain packet or arena WASM views
-   after artifact release.
-4. `dvz_wasm_api_emit()` remains a debug and fixture-export path. Its JSON payload pointer is
+1. Each successful `dvz_wasm_api_emit_packets()` or `dvz_wasm_api_emit()` creates a new current
+   scene frame artifact, replacing any previous artifact for that scene.
+2. `dvz_wasm_api_emit_packets()` is the browser runtime path. It exposes setup, update, and frame
+   binary DRP2 packets plus one payload arena per packet kind from the current frame artifact.
+3. Packet and arena pointers are borrowed from the current frame artifact and valid only until
+   `dvz_wasm_api_release_packets()`, the next emit call on the same scene, or scene destruction.
+4. JS must decode, execute, or copy packet spans immediately and must not retain packet or arena
+   WASM views after artifact release.
+5. `dvz_wasm_api_resource_version()` and `dvz_wasm_api_frame_index()` report the counters captured
+   by the current frame artifact when one is live; after release they report the scene counters.
+   JavaScript should use these values to detect stale packet sets and reset/recreate retained
+   browser runtime resources when resource versions change incompatibly.
+6. Retained scene mutation is legal immediately after artifact creation because the artifact owns
+   its stream snapshot, payload bytes, and packet spans. Mutations affect later emits only.
+7. `dvz_wasm_api_emit()` remains a debug and fixture-export path. Its JSON payload pointer is
    borrowed with the same lifetime rules and is not a browser render path.
-5. Diagnostics are borrowed with the same lifetime as the current diagnostic report or emitted
+8. Diagnostics are borrowed with the same lifetime as the current diagnostic report or frame
    artifact.
-6. Successful emits should leave diagnostics empty.
-7. Failed emits and rejected operations should return `-1`; detailed diagnostics are required where
-   the scene/DRP2 layer can explain the failure.
+9. Successful emits should leave diagnostics empty.
+10. Failed emits and rejected operations should return `-1`; detailed diagnostics are required where
+    the scene/DRP2 layer can explain the failure.
 
 ## Current PoC Compatibility
 

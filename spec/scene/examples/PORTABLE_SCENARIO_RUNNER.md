@@ -616,10 +616,10 @@ examples/wasm/
 ```
 
 
-## Raw Native Pattern
+## Low-Level Native Pattern
 
-The repository should still keep one small raw scene/app example for users who need to see the
-underlying native API without runner indirection:
+The repository should still keep one small low-level retained scene/app example for users who need
+to see the underlying native host API without runner indirection:
 
 ```c
 DvzScene* scene = dvz_scene();
@@ -639,8 +639,9 @@ dvz_app_destroy(app);
 dvz_scene_destroy(scene);
 ```
 
-This raw example documents the native host API. It should not be the template for most gallery,
-feature, workflow, showcase, or scientific examples.
+This low-level example documents retained scene/app construction. It is not a raw scene-emitted
+stream example, and should not be the template for most gallery, feature, workflow, showcase, or
+scientific examples.
 
 
 ## Shader Policy

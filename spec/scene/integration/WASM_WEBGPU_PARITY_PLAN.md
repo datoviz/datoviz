@@ -175,10 +175,11 @@ The current WASM scene ABI is intentionally narrow. Broad parity requires these 
     copy row pitch;
 12. versioned reset/lifecycle behavior for retained browser runtime sessions.
 
-The ABI should expose opaque handles and borrowed packet spans backed by emitted artifacts.
-JavaScript must copy or execute packet and arena spans before artifact release. Retained scene
-mutation after artifact creation must remain legal; older artifacts affect only backend execution,
-not the mutability of later hover, selection, query, or visual state.
+The ABI should expose opaque handles and borrowed packet spans backed by scene frame artifacts.
+JavaScript must copy or execute packet and arena spans before artifact release. JSON is a debug and
+fixture-export projection of the artifact stream snapshot, not the browser runtime path. Retained
+scene mutation after artifact creation must remain legal; older artifacts affect only backend
+execution, not the mutability of later hover, selection, query, or visual state.
 
 
 ## Shader Policy
@@ -279,7 +280,8 @@ query/readback RC slices are stable.
    browser-live query/readback for `feature_pick_point`, `feature_pick_marker`,
    `feature_pick_hover`, `feature_selection`, and `feature_image_probe`; the next browser slice is
    categorical probe delivery if needed.
-3. Keep one raw native scene/app example that shows the underlying API without helper indirection.
+3. Keep one low-level retained scene/app example that shows the native host API without helper
+   indirection.
 4. Convert small feature examples first, then showcases.
 5. Mark native-integration examples explicitly as native-only.
 
@@ -429,8 +431,10 @@ Longer term, this inventory should become a cheap status check in `just spec-che
 6. JavaScript demo shortcuts creeping back into scene semantics.
 7. Example helper hiding too much of the public scene API.
 
-Mitigation: keep one raw scene/app example, require WGSL/fixture/browser evidence for promoted
-features, and keep browser runtime generic over DRP2 packets.
+Mitigation: keep one low-level retained scene/app example for the native host API, require
+WGSL/fixture/browser evidence for promoted features, and keep browser runtime generic over frame
+artifact packet spans. Do not reintroduce raw scene-emitted stream lifetime as a mutation-safety
+constraint.
 
 
 ## Acceptance Criteria

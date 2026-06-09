@@ -1,6 +1,6 @@
 # Datoviz v0.4 Release Plan
 
-Status: active release roadmap. Updated: 2026-05-30.
+Status: active release roadmap. Updated: 2026-06-09.
 
 This is the short route from the current branch to `v0.4.0`. Use [STATUS.md](STATUS.md) for current
 blockers and [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation gates.
@@ -98,6 +98,7 @@ Exit criteria:
 7. Unsupported commands, visual families, query targets, shader variants, native-only runtime
    features, and capability failures have diagnostics.
 8. Scene semantics are shared; there is no WebGPU-only scene contract.
+9. Browser runtime traffic uses frame artifact packet spans; DRP2 JSON remains debug/fixture-only.
 
 ### 4. Compute+Graphics Experimental Slice
 
@@ -138,6 +139,8 @@ Exit criteria:
 2. ABI/layout smoke checks pass.
 3. Raw examples cover the supported low-level Python path.
 4. The docs state that high-level Python plotting is GSP/VisPy2 scope.
+5. C API docs state that `dvz_figure_emit()` and `dvz_figure_emit_ex()` are gone and that
+   `DvzSceneFrameArtifact` is the scene emission product.
 
 ### 7. RC1
 

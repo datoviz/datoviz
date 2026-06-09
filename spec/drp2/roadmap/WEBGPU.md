@@ -24,12 +24,14 @@ only when it prevents native-only assumptions from entering DRP2 or scene semant
 The native path already exercises:
 
 ```text
-scene frame plan -> DRP2 stream -> vklite runtime -> canvas/stream/app
+scene frame artifact -> DRP2 stream snapshot -> vklite runtime -> canvas/stream/app
 ```
 
-The experimental browser path has a pure WebGPU runner for the current subset and a narrow
-scene/WASM point/panzoom bridge that emits WGSL DRP2 JSON into that runtime. The release target is a
-documented subset with explicit unsupported-feature diagnostics, not native parity.
+The experimental browser path has a pure WebGPU runner for the current subset and a generic
+scene/WASM bridge that emits frame artifact packet spans into that runtime. DRP2 JSON remains a
+debug and fixture-export projection of the artifact stream snapshot; it is not the browser render
+transport. The release target is a documented subset with explicit unsupported-feature diagnostics,
+not native parity.
 
 
 ## Phase Order
@@ -42,8 +44,9 @@ documented subset with explicit unsupported-feature diagnostics, not native pari
    offscreen readback and validation-layer coverage.
 4. **Browser WebGPU runtime:** replay the same fixtures in browser, with matching capabilities,
    diagnostics, lifecycle errors, and resource retention behavior.
-5. **WASM transport:** harden the portable scene/DRP2 WASM bridge, keep pointer ownership and
-   diagnostics explicit, and broaden scene-emitted WGSL streams beyond the point slice.
+5. **WASM transport:** harden the portable scene/DRP2 WASM bridge, keep frame artifact packet-span
+   ownership and diagnostics explicit, and broaden scene-emitted WGSL frame artifact packets beyond
+   the point slice.
 6. **Renderer v1 parity:** add dynamic viewport/scissor, multiple bind groups, texture sampling,
    compute, minimal compute-to-render synchronization, and thread-safe submission semantics.
 7. **Performance and reliability:** add decode/record/submit/update benchmarks, long-run churn
@@ -80,7 +83,7 @@ execution, fixtures, lifecycle rules, and capability reporting together.
 8. memory budget, OOM, eviction, and leak diagnostics;
 9. native interop buffer/image export/import with explicit synchronization;
 10. browser conformance replay suite;
-11. versioned WASM -> JS command transport.
+11. versioned WASM -> JS frame artifact packet transport.
 
 
 ## Acceptance Gates

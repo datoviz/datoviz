@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active RC preparation. Updated: 2026-06-07.
+Status: active RC preparation. Updated: 2026-06-09.
 
 Keep this file short. Durable behavior belongs in `spec/`; completed history belongs in git
 history, not in agent archives.
@@ -14,17 +14,17 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits split DRP2 packets for buffer-backed point/pixel positions, basic marker, segment/path with cap/join controls, primitive, RGBA8 image, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, panzoom, a 3D sphere + textured mesh/arcball proof, and the first portable C scenario/frame-callback proof for `feature_timer_animation`. Native scenario runner now has requirements, portable event/post-frame hooks, and `feature_pick_point`/`feature_pick_marker`/`feature_pick_hover`/`feature_selection`/`image_probe` migrated off `native_view` as query/readback-shaped scenario proofs. WASM scenarios expose browser pointer/wheel event delivery, and point-query packet/readback plumbing exists for `feature_pick_point`. Fresh 2026-06-08 browserless and packet proof is recorded in `examples/webgpu/COMPAT.md` and `docs/reference/webgpu-subset.md`; headless browser promotion is blocked by a retained stream-lifetime diagnostic when applying resolved hover `item_state`. | Fix point-query result-state lifetime so `wasm-pick-point` passes browser smoke, then extend narrow WASM/WebGPU request/query/readback to marker, selection/hover, and one pixel probe; classify live WebGPU vs native-only examples from manifest metadata. |
+| WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits split DRP2 packets for buffer-backed point/pixel positions, basic marker, segment/path with cap/join controls, primitive, RGBA8 image, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, panzoom, a 3D sphere + textured mesh/arcball proof, and the first portable C scenario/frame-callback proof for `feature_timer_animation`. Native scenario runner now has requirements, portable event/post-frame hooks, and `feature_pick_point`/`feature_pick_marker`/`feature_pick_hover`/`feature_selection`/`image_probe` migrated off `native_view` as query/readback-shaped scenario proofs. WASM scenarios expose browser pointer/wheel event delivery, and point-query packet/readback plumbing exists for `feature_pick_point`. The frame artifact refactor is complete: scene emission returns artifact-owned stream snapshots, WASM/WebGPU consumes artifact packet spans, JSON is debug/fixture-only, and retained scene mutation no longer depends on raw emitted stream lifetime. | Extend narrow WASM/WebGPU request/query/readback from point query to marker, selection/hover, and one pixel probe; classify live WebGPU vs native-only examples from manifest metadata. |
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04; native GPU execution skipped in this shell because Vulkan instance creation failed. | Record native Vulkan execution evidence in a Vulkan-capable environment and capture a release artifact from `examples/c/showcases/gpu_particle_smoke.c`. |
 | Qt/PyQt hosted path | Native Qt hosting has an optional example path; PyQt needs a native Qt bridge because current PyQt6 wheels do not expose `QVulkanInstance::setVkInstance()` or `vkInstance()`. | Implement the optional `datoviz_qtbridge` provider from `spec/scene/integration/QT_HOST_BRIDGE.md` and prove the PyQt hosted example. |
 | v0.3 visible parity audit | Missing. | Table each visible capability as fixed, deferred, or external/GSP. |
 | Public API/status cleanup | Missing. | Mark public surfaces as supported, experimental, advanced/unstable, deferred, or external/GSP. |
 | Release example proof | Partial. Retained DATA-coordinate attachments and the choropleth migration away from resize-time geometry rebuild landed on 2026-06-05. CPU/build proof passed; native choropleth visual smoke is blocked in this shell by Vulkan instance creation failure. | Compact native + WebGPU proof set, plus one short public `examples/c/features/` example per v0.4 feature. Capture choropleth resize/equal-aspect visual proof in a Vulkan-capable environment. |
 
-Closed first slices that should stay in validation: raw `ctypes`, retained textured mesh, retained
+Closed first slices that should stay in validation: frame artifact scene emission, raw `ctypes`, retained textured mesh, retained
 DATA-coordinate visual attachments, text, 2D axes/ticks, colorbars, labels/readouts, scale bars,
 app/offscreen rendering, broad item/sample query paths, scene visual-boundary checks, WebGPU fixture
-runner, and WASM point/panzoom scene smoke.
+runner, and WASM frame artifact packet scene smoke.
 
 New Python binding direction: keep `datoviz.raw` as the exact generated `ctypes` layer, and make
 top-level `import datoviz as dvz` the planned array-aware facade that preserves `dvz_*` names while
