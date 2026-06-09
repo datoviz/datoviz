@@ -1034,6 +1034,113 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
 }
 
 
+int test_scene_pixel_hover_selection_item_state(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzVisual* pixel = dvz_pixel(scene, 0);
+    ANN(pixel);
+    dvz_visual_set_query_capabilities(pixel, DVZ_QUERY_CAPABILITY_ITEM);
+    vec3 positions[4] = {
+        {-0.40f, -0.40f, 0.0f},
+        {+0.40f, -0.40f, 0.0f},
+        {-0.40f, +0.40f, 0.0f},
+        {+0.40f, +0.40f, 0.0f},
+    };
+    DvzColor colors[4] = {
+        {80, 160, 220, 255},
+        {80, 160, 220, 255},
+        {80, 160, 220, 255},
+        {80, 160, 220, 255},
+    };
+    float size[4] = {18.0f, 18.0f, 18.0f, 18.0f};
+    AT(dvz_visual_set_data(pixel, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(pixel, "color", colors, 4) == 0);
+    AT(dvz_visual_set_data(pixel, "pixel_size", size, 4) == 0);
+    AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
+
+    DvzHover* hover = dvz_hover(
+        scene,
+        &(DvzHoverDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzHoverDesc),
+            .target = DVZ_SCENE_TARGET_ITEM,
+            .hit_policy = DVZ_QUERY_HIT_FRONTMOST,
+        });
+    DvzSelection* selection = dvz_selection(
+        scene,
+        &(DvzSelectionDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
+            .mode = DVZ_SELECT_TOGGLE,
+            .target = DVZ_SCENE_TARGET_ITEM,
+        });
+    ANN(hover);
+    ANN(selection);
+
+    DvzItemStateVisualStyle hover_style = dvz_item_state_visual_style();
+    hover_style.visual_flags = DVZ_ITEM_STATE_VISUAL_SCALE;
+    hover_style.scale = 1.35f;
+    AT(dvz_hover_set_visual_style(hover, &hover_style) == 0);
+
+    DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
+    selection_style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    selection_style.selected.tint = (DvzColor){255, 190, 64, 255};
+    selection_style.selected.tint_mix = 1.0f;
+    AT(dvz_selection_set_visual_style(selection, &selection_style) == 0);
+
+    DvzQueryResult hit = {
+        .request_id = 8,
+        .status = DVZ_QUERY_STATUS_HIT,
+        .hit = true,
+        .visual_id = _scene_visual_public_id(scene, pixel),
+        .visual_family = DVZ_SCENE_VISUAL_FAMILY_PIXEL,
+        .resolved_target = DVZ_SCENE_TARGET_ITEM,
+        .resolved_id = 2,
+        .item_id = 2,
+    };
+    AT(dvz_hover_apply_query(hover, &hit) == 0);
+
+    int state_idx = _attr_index(pixel, "item_state");
+    AT(state_idx >= 0);
+    const uint32_t* item_state = (const uint32_t*)pixel->attrs[state_idx].data;
+    ANN(item_state);
+    AT(item_state[0] == DVZ_ITEM_STATE_NONE);
+    AT(item_state[1] == DVZ_ITEM_STATE_NONE);
+    AT(item_state[2] == DVZ_ITEM_STATE_HOVERED);
+    AT(item_state[3] == DVZ_ITEM_STATE_NONE);
+    AC(_visual_family_state(pixel)->item_state_style_params.hovered[3], 1.35f, 1e-6f);
+
+    AT(dvz_selection_apply_query(selection, &hit) == 0);
+    item_state = (const uint32_t*)pixel->attrs[state_idx].data;
+    AT(item_state[2] == (DVZ_ITEM_STATE_SELECTED | DVZ_ITEM_STATE_HOVERED));
+    AT(dvz_selection_count(selection) == 1);
+    AT(pixel->attrs[state_idx].dirty_item_count == 4);
+
+    DvzQueryResult miss = {
+        .request_id = 9,
+        .status = DVZ_QUERY_STATUS_MISS,
+        .hit = false,
+    };
+    AT(dvz_hover_apply_query(hover, &miss) == 0);
+    item_state = (const uint32_t*)pixel->attrs[state_idx].data;
+    AT(item_state[2] == DVZ_ITEM_STATE_SELECTED);
+
+    dvz_selection_clear(selection);
+    item_state = (const uint32_t*)pixel->attrs[state_idx].data;
+    AT(item_state[2] == DVZ_ITEM_STATE_NONE);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -3956,6 +4063,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_item_interaction_applies_results);
     TST_CASE(test_scene_selection_apply_query_and_link_keys);
     TST_CASE(test_scene_selection_apply_query_updates_item_state);
+    TST_CASE(test_scene_pixel_hover_selection_item_state);
     TST_CASE(test_scene_selection_card_realizes_query_metadata);
     TST_CASE(test_scene_overlay_card_public_api);
     TST_CASE(test_scene_overlay_card_rich_text_public_api);
