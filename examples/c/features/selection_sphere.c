@@ -49,6 +49,8 @@
 
 static const float TAU = 6.28318530718f;
 
+DvzScenarioSpec dvz_example_selection_sphere_scenario(void);
+
 
 
 /*************************************************************************************************/
@@ -360,11 +362,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (dvz_panel_add_visual(panel, visual, NULL) != 0)
         goto error;
 
-    DvzMsaaDesc msaa_desc = dvz_msaa_desc();
-    msaa_desc.sample_count = 8;
-    msaa_desc.alpha_to_coverage = true;
-    (void)dvz_panel_set_msaa(panel, &msaa_desc);
-
     DvzController* arcball_controller = dvz_arcball(ctx->scene, NULL);
     if (arcball_controller == NULL)
         goto error;
@@ -407,7 +404,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _selection_sphere_scenario(void)
+DvzScenarioSpec dvz_example_selection_sphere_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_selection_sphere",
@@ -430,6 +427,7 @@ static DvzScenarioSpec _selection_sphere_scenario(void)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+#ifndef DVZ_EXAMPLE_NO_MAIN
 /**
  * Run the retained sphere selection feature example through the native scenario runner.
  *
@@ -439,6 +437,7 @@ static DvzScenarioSpec _selection_sphere_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _selection_sphere_scenario();
+    DvzScenarioSpec spec = dvz_example_selection_sphere_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

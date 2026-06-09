@@ -298,7 +298,16 @@ bool _scene_draw_packet_init(
     out->clip_rect = clip_rect;
     DvzSceneVisualDrawDesc draw_desc = {0};
     if (!_scene_visual_draw_desc(visual, shader_format, &draw_desc))
+    {
+        char message[DVZ_SCENE_DIAGNOSTIC_SIZE];
+        dvz_snprintf(
+            message, sizeof(message),
+            "scene draw descriptor resolution failed: visual=%s visual_type=%u shader_format=%u",
+            _scene_visual_desc_kind_name(visual->kind), visual->visual_type,
+            (uint32_t)shader_format);
+        _diagnostic(report, message);
         return false;
+    }
     out->vertex_count = draw_desc.vertex_count;
     out->instance_count = draw_desc.instance_count;
     out->index_buffer_id = draw_desc.index_buffer_id;

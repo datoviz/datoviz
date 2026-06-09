@@ -53,6 +53,12 @@ export const LIVE_EXAMPLES = [
     animate: true,
   },
   {
+    id: "feature_selection_sphere",
+    label: "Sphere Selection",
+    scenarioId: "feature_selection_sphere",
+    animate: true,
+  },
+  {
     id: "image_probe",
     label: "Image Probe",
     scenarioId: "feature_image_probe",

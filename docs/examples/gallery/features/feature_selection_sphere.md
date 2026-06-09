@@ -10,7 +10,8 @@ retained sphere hover and click selection.
 - Status: `supported`
 - Source: [`examples/c/features/selection_sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_sphere.c)
 - Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_selection_sphere`](/examples/webgpu/live.html?id=feature_selection_sphere)
 - WebGPU requirements: `sphere`, `arcball`, `query-readback`, `frame-callbacks`
 - Build: `just example-c features/selection_sphere`
 - Smoke: `./build/examples/c/features/selection_sphere --png`
@@ -28,6 +29,14 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=feature_selection_sphere" title="Sphere Selection WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_selection_sphere).
 
 ## Source
 

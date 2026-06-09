@@ -439,6 +439,15 @@ function expectCommandCount(stream, cmd, expected, label) {
   requireOk(actual === expected, `${label}: expected ${expected} ${cmd}, got ${actual}`);
 }
 
+function scenarioIndex(Module, id) {
+  const count = Module._dvz_wasm_api_scenario_count();
+  for (let i = 0; i < count; i++) {
+    const ptr = Module._dvz_wasm_api_scenario_id(i);
+    if (ptr !== 0 && Module.UTF8ToString(ptr) === id) return i;
+  }
+  throw new Error(`missing WASM scenario ${id}`);
+}
+
 function expectNoSetupCommands(stream, label) {
   for (const cmd of [
     "CreateBuffer",
@@ -1368,6 +1377,7 @@ try {
     "feature_obj_loading",
     "feature_picking",
     "feature_selection_pixel",
+    "feature_selection_sphere",
     "feature_image_probe",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
@@ -1375,25 +1385,30 @@ try {
     requireOk(ptr !== 0, `WASM scenario ${i} has no id`);
     const id = Module.UTF8ToString(ptr);
     requireOk(id === expectedScenarioIds[i], `unexpected scenario ${i} id ${id}`);
-    if (id === "feature_picking" || id === "feature_image_probe") {
+    if (
+      id === "feature_picking" ||
+      id === "feature_selection_sphere" ||
+      id === "feature_image_probe"
+    ) {
       requireOk(
         (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 8)) !== 0,
         `${id} did not declare query readback`,
       );
     }
   }
-  const scenarioIdPtr = Module._dvz_wasm_api_scenario_id(1);
+  const timerScenarioIndex = scenarioIndex(Module, "feature_timer_animation");
+  const scenarioIdPtr = Module._dvz_wasm_api_scenario_id(timerScenarioIndex);
   requireOk(scenarioIdPtr !== 0, "WASM scenario 0 has no id");
   const scenarioId = Module.UTF8ToString(scenarioIdPtr);
   requireOk(scenarioId === "feature_timer_animation", `unexpected scenario id ${scenarioId}`);
-  const scenarioTitlePtr = Module._dvz_wasm_api_scenario_title(1);
+  const scenarioTitlePtr = Module._dvz_wasm_api_scenario_title(timerScenarioIndex);
   requireOk(scenarioTitlePtr !== 0, "WASM scenario 0 has no title");
   requireOk(Module.UTF8ToString(scenarioTitlePtr) === "timer_animation", "unexpected scenario title");
-  requireOk(Module._dvz_wasm_api_scenario_width(1) === 1600, "unexpected scenario width");
-  requireOk(Module._dvz_wasm_api_scenario_height(1) === 1200, "unexpected scenario height");
-  requireOk(Module._dvz_wasm_api_scenario_fps(1) === 60, "unexpected scenario fps");
+  requireOk(Module._dvz_wasm_api_scenario_width(timerScenarioIndex) === 1600, "unexpected scenario width");
+  requireOk(Module._dvz_wasm_api_scenario_height(timerScenarioIndex) === 1200, "unexpected scenario height");
+  requireOk(Module._dvz_wasm_api_scenario_fps(timerScenarioIndex) === 60, "unexpected scenario fps");
   requireOk(
-    (Module._dvz_wasm_api_scenario_requirements(1) & (1 << 9)) !== 0,
+    (Module._dvz_wasm_api_scenario_requirements(timerScenarioIndex) & (1 << 9)) !== 0,
     "timer scenario did not declare frame callbacks",
   );
 
@@ -1405,7 +1420,11 @@ try {
       0,
       "scenario canvas format",
     );
-    expectStatus(Module._dvz_wasm_api_scenario_create(scenarioScene, 1), 0, "timer scenario create");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(scenarioScene, timerScenarioIndex),
+      0,
+      "timer scenario create",
+    );
     expectNoDiagnostics(Module, scenarioScene, "timer scenario create diagnostics");
     const scenarioFigure = Module._dvz_wasm_api_scenario_figure(scenarioScene);
     requireOk(scenarioFigure !== 0, "timer scenario has no figure");
@@ -1576,6 +1595,72 @@ try {
     expectPacket(Module, pixelSelectionScene, DVZ_DRP2_PACKET_FRAME, "pixel selection query frame");
   } finally {
     Module._dvz_wasm_api_scene_destroy(pixelSelectionScene);
+  }
+
+  const sphereSelectionIndex = scenarioIndex(Module, "feature_selection_sphere");
+  const sphereSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
+  requireOk(sphereSelectionScene !== 0, "sphere selection scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(sphereSelectionScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "sphere selection scenario canvas format",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(sphereSelectionScene, sphereSelectionIndex),
+      0,
+      "sphere selection scenario create",
+    );
+    expectNoDiagnostics(Module, sphereSelectionScene, "sphere selection scenario create diagnostics");
+    const sphereSelectionFigure = Module._dvz_wasm_api_scenario_figure(sphereSelectionScene);
+    requireOk(sphereSelectionFigure !== 0, "sphere selection scenario has no figure");
+    const initialSphereSelection =
+      emitStream(Module, sphereSelectionScene, sphereSelectionFigure, "sphere selection initial");
+    expectWriteCommands(initialSphereSelection.stream, "sphere selection initial");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_pointer(
+        sphereSelectionScene, DVZ_POINTER_EVENT_MOVE, smokeSize / 2, smokeSize / 2, 0, 0, 1, 41),
+      0,
+      "sphere selection pointer move",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_scenario_post_frame(sphereSelectionScene),
+      0,
+      "sphere selection post-frame",
+    );
+    requireOk(
+      Module._dvz_wasm_api_query_pending_count(sphereSelectionScene) > 0,
+      "sphere selection scenario did not queue a query",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_emit_query_packets(sphereSelectionScene, sphereSelectionFigure),
+      0,
+      "sphere selection query packet emit",
+    );
+    expectNoDiagnostics(Module, sphereSelectionScene, "sphere selection query packet diagnostics");
+    requireOk(
+      Module._dvz_wasm_api_query_active(sphereSelectionScene) === 1,
+      "sphere selection query did not become active",
+    );
+    requireOk(
+      Module._dvz_wasm_api_query_readback_size(sphereSelectionScene) === 4,
+      "sphere selection query readback size was not 4 bytes",
+    );
+    const sphereQuerySetup = expectPacket(
+      Module, sphereSelectionScene, DVZ_DRP2_PACKET_SETUP, "sphere selection query setup");
+    requireOk(
+      sphereQuerySetup.decoded.commands.some(
+        (command) => command.cmd === "CreateTexture" && command.format === "r32uint",
+      ),
+      "sphere selection query setup did not create an r32uint target",
+    );
+    expectPacket(
+      Module, sphereSelectionScene, DVZ_DRP2_PACKET_UPDATE, "sphere selection query update", {
+        expectArena: true,
+      });
+    expectPacket(Module, sphereSelectionScene, DVZ_DRP2_PACKET_FRAME, "sphere selection query frame");
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(sphereSelectionScene);
   }
 
   const positions = new Float32Array([-0.75, -0.45, 0, -0.35, 0.35, 0, 0.05, -0.1, 0, 0.42, 0.5, 0, 0.72, -0.35, 0]);

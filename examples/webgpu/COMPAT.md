@@ -249,6 +249,12 @@ Current status as of this note:
   examples/webgpu/demos/wasm_image_probe.js` and `node --check tools/webgpu_browser_smoke.mjs`
   passed; `just webgpu-browser-smoke` rendered `wasm-image-probe` with `processed=1`, proving one
   sampled pixel probe through the browser query/readback path.
+- recorded local sphere-selection promotion checkpoint on 2026-06-09: `node --check
+  tools/wasm_scene_smoke.mjs` and `node --check examples/webgpu/live_examples.js` passed;
+  `just example-c features/selection_sphere` passed; `just wasm-scene-smoke` emitted, packetized,
+  and replayed the retained sphere selection scenario plus direct r32uint sphere query packets.
+  `just webgpu-browser-smoke` exited successfully in this shell, but both live checks were skipped
+  by headless WebGPU instance loss before scene rendering.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
