@@ -16,6 +16,11 @@ export const LIVE_EXAMPLES = [
     scenarioId: "feature_triangulation_polygon",
   },
   {
+    id: "feature_builtin_shapes_2d",
+    label: "Builtin Shapes 2D",
+    scenarioId: "feature_builtin_shapes_2d",
+  },
+  {
     id: "feature_picking",
     label: "Picking",
     scenarioId: "feature_picking",

@@ -1082,7 +1082,8 @@ examples:
       kind: synthetic
     portability: portable-scenario
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_builtin_shapes_2d
       requirements:
         - mesh
         - controller
