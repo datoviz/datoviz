@@ -16,6 +16,30 @@ techniques.
 - `mesh_texture.c`: minimal UV textured mesh with a procedural RGBA8 texture.
 - `material_mesh.c`: neutral mesh material parameters with readable normals and shading.
 - `lighting.c`: simple 3D lighting direction and intensity proof.
+- `gui_controls.c`: native Datoviz GUI controls mutating retained visual state.
+- `gui_viewport.c`: dockable ImGui window containing a Datoviz-rendered offscreen viewport.
+- `gui_cimgui.c`: raw `datoviz/imgui.h` access for cimgui tables and tabs.
+- `animation_tracks.c`: retained track-backed visual transform animation.
+- `scene_compute_buffer.c`: experimental scene compute pass writing a render-consumed buffer.
+- `edl.c`: focused Eye-Dome Lighting panel technique proof.
+- `ssao.c`: focused screen-space ambient occlusion technique proof.
+- `msaa.c`: panel multisample antialiasing comparison.
+- `depth_cue.c`: retained visual depth-cue parameter proof.
+- `transparency_order.c`: alpha blending, WBOIT, and depth-peeling ordering comparison.
+- `volume_occlusion.c`: volume-backed scene occlusion for embedded visuals.
+- `guide_lines.c`: retained horizontal and vertical guide lines with updates.
+- `guide_spans.c`: retained interval guide spans with fill and outline styling.
+- `bars_bands.c`: retained bars and uncertainty band plot helpers.
+- `app_glfw.c`: direct GLFW app/view lifecycle without the scenario runner.
+- `offscreen_capture.c`: direct offscreen render-once PNG capture.
+- `input_events.c`: native input event injection independent of picking/controllers.
+- `record_replay.c`: experimental DVZR app recording and live replay.
+- `controller_orbit_camera.c`: orbit-camera controller attached to a compact 3D scene.
+- `visual_transform.c`: retained visual-local transform set/get/clear proof.
+- `panel_domain_fit.c`: explicit panel domain fitting and reserved plot layout.
+- `scene_json.c`: experimental scene JSON serialization diagnostic.
+- `external_surface.c`: native external Vulkan surface API boundary proof.
+- `bezier_curve_path.c`: CPU-tessellated Bezier curves rendered through retained paths.
 - `datetime_axis.c`: compact data coordinates with UTC datetime tick labels.
 - `scalebar.c`: retained metric scale bar using builtin length units.
 - `scalebar_units.c`: retained duration scale bar using builtin duration units.
