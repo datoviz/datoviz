@@ -43,7 +43,7 @@ def _active_schema_commands() -> set[str]:
 
 
 def _webgpu_js_command_cases() -> set[str]:
-    source = (ROOT_DIR / 'examples/webgpu/drp2_webgpu.js').read_text(encoding='utf-8')
+    source = (ROOT_DIR / 'web/drp2/webgpu.js').read_text(encoding='utf-8')
     start = source.index('export async function executeDrp2Stream')
     end = source.index('export async function executeDrp2StreamChecked')
     return set(JS_CASE_RE.findall(source[start:end]))

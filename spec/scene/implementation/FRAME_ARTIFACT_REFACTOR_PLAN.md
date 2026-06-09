@@ -1,6 +1,6 @@
 # Scene Frame Artifact Refactor Plan
 
-Status: active v0.4 architecture refactor. Updated: 2026-06-09.
+Status: implemented v0.4 architecture refactor. Updated: 2026-06-09.
 
 This plan defines the break-compatible migration from raw scene-emitted DRP2 streams to a single
 frame artifact boundary. The refactor is intentionally broad: v0.4 should not carry a parallel
@@ -81,11 +81,11 @@ Packet accessors may be public, semi-public, or WASM-only depending on the API s
 they should use frame-artifact names. Keep `packet` terminology only for encoded setup/update/frame
 packet spans and arenas.
 
-Remove or explicitly demote:
+Removed from the public scene API:
 
 1. `dvz_figure_emit()`;
 2. `dvz_figure_emit_ex()`;
-3. internal names centered on `DvzScenePacketArtifact` or `_scene_packet_artifact`.
+3. internal packet-artifact names not tied to encoded packet spans or arenas.
 
 
 ## Architecture Invariants
@@ -102,16 +102,14 @@ Remove or explicitly demote:
 
 ## Migration Series
 
-Expect 8 to 10 commits for the full refactor including WASM/WebGPU. The preferred complete series is
-9 commits:
+Implemented as the v0.4 frame artifact refactor:
 
 1. **Architecture plan and stale docs cleanup**
    - Add this plan.
    - Clean lifecycle, integration, packet, WebGPU, and trace wording around the new boundary.
 
 2. **Internal frame artifact rename**
-   - Rename `DvzScenePacketArtifact` to `DvzSceneFrameArtifact`.
-   - Rename `_scene_packet_artifact_*` to `_scene_frame_artifact_*`.
+   - Rename the previous internal artifact type and helpers to frame-artifact names.
    - Keep packet wording only for packet span and arena accessors.
 
 3. **Core artifact API**
@@ -143,12 +141,9 @@ Expect 8 to 10 commits for the full refactor including WASM/WebGPU. The preferre
    - Keep browserless packet proof and WebGPU fixture runner coverage current.
 
 9. **Public API cleanup and final docs**
-   - Remove or explicitly demote `dvz_figure_emit()` and `dvz_figure_emit_ex()`.
+   - Remove `dvz_figure_emit()` and `dvz_figure_emit_ex()` from the public scene API.
    - Update API surface docs, generated-reference expectations, lifecycle docs, packet docs, and
      WebGPU subset docs.
-
-If query/readback ownership needs deeper surgery, split it into a tenth commit after WASM/WebGPU
-tests and before final API cleanup.
 
 
 ## Validation

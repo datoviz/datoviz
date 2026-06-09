@@ -43,7 +43,7 @@ behavior instead of restating it here.
 6. Keep SSAO and occlusion implementation rules in `OCCLUSION_EFFECTS.md`.
 7. Keep transparency, depth-peeling, and MSAA implementation rules in `TRANSPARENCY_MSAA.md`.
 8. Use `FRAME_ARTIFACT_REFACTOR_PLAN.md` before changing scene emission ownership, WASM packet
-   payloads, JSON emission, app/runtime handoff, or public `dvz_figure_emit*` semantics.
+   payloads, JSON emission, app/runtime handoff, or `dvz_figure_emit_frame()` semantics.
 9. Use `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md` before adding new root-level visual switches,
    family-private includes from generic code, or family-specific fields to generic retained visual
    state.

@@ -70,7 +70,7 @@ Read the scene spec in this order during review.
 5. [pipeline/FRAME_PLAN.md](pipeline/FRAME_PLAN.md): canonical producer-side frame artifact.
 6. [pipeline/FRAME_LIFECYCLE.md](pipeline/FRAME_LIFECYCLE.md): update/build/emit flow.
 7. [implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md](implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md):
-   active migration from raw scene-emitted streams to `DvzSceneFrameArtifact`.
+   implemented migration to `DvzSceneFrameArtifact` and artifact-owned stream snapshots.
 
 
 ## 5. Validation, Adaptation, Interaction, And Diagnostics

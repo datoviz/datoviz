@@ -83,7 +83,7 @@ authoring.
 **Primary API anchors:**
 
 - `dvz_scene_json()` / `dvz_scene_json_destroy()`
-- planned `dvz_figure_emit_frame()` and `DvzSceneFrameArtifact` accessors
+- `dvz_figure_emit_frame()` and `DvzSceneFrameArtifact` accessors
 
 **Notes:** scene state can be serialized or emitted as immutable frame artifacts. External
 renderers/adapters should treat DRP2 streams, JSON, and packet spans as projections of the same
@@ -99,7 +99,7 @@ artifact-owned frame snapshot.
 **Primary API anchors:**
 
 - Scene lifecycle and figure/panel/visual APIs
-- planned `dvz_figure_emit_frame()` and request processing helpers
+- `dvz_figure_emit_frame()` and request processing helpers
 - `dvz_app*` window/presentation entry points
 
 **Notes:** this is the end-to-end maintained vertical slice in v0.4. The app/runtime path should

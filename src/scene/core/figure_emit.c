@@ -745,20 +745,3 @@ bool dvz_scene_frame_artifact_get_packet(
 {
     return _scene_frame_artifact_get_packet(artifact, kind, packet, packet_size, arena, arena_size);
 }
-
-
-
-DvzDrp2CommandStream* dvz_figure_emit_ex(
-    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
-    const DvzFramePlanEmitConfig* cfg)
-{
-    return _scene_figure_emit_stream_ex(figure, caps, report, cfg);
-}
-
-
-
-DvzDrp2CommandStream* dvz_figure_emit(
-    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report)
-{
-    return _scene_figure_emit_stream_ex(figure, caps, report, NULL);
-}

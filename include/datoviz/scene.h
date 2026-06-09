@@ -472,38 +472,6 @@ DVZ_EXPORT bool dvz_scene_frame_artifact_get_packet(
 
 
 /**
- * Deprecated scene emission helper returning a raw DRP2 stream snapshot.
- *
- * Prefer dvz_figure_emit_frame(); this helper remains temporarily for DRP2-level tests and
- * transition code.
- *
- * @param figure the figure
- * @param caps the capability snapshot
- * @param report output diagnostic report
- * @return an owned DRP2 command stream, or NULL on failure
- */
-DVZ_EXPORT DvzDrp2CommandStream* dvz_figure_emit(
-    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report);
-
-
-/**
- * Deprecated scene emission helper returning a raw DRP2 stream snapshot with explicit config.
- *
- * Prefer dvz_figure_emit_frame(); this helper remains temporarily for DRP2-level tests and
- * transition code.
- *
- * @param figure the figure
- * @param caps the capability snapshot (nullable — defaults applied if NULL)
- * @param report the diagnostic report (nullable)
- * @param cfg the emission configuration (nullable — defaults applied if NULL)
- * @return an owned DRP2 command stream, or NULL on failure
- */
-DVZ_EXPORT DvzDrp2CommandStream* dvz_figure_emit_ex(
-    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
-    const DvzFramePlanEmitConfig* cfg);
-
-
-/**
  * Execute queued query requests for one figure through the DRP2 runtime.
  *
  * @param figure the figure

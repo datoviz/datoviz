@@ -120,7 +120,9 @@ REQUIRED_RAW_SYMBOLS = (
     'dvz_drp2_stream_copy_texture_to_buffer',
     'dvz_drp2_stream_finish_command_encoder',
     'dvz_drp2_stream_queue_submit',
-    'dvz_figure_emit_ex',
+    'dvz_figure_emit_frame',
+    'dvz_scene_frame_artifact_destroy',
+    'dvz_scene_frame_artifact_stream',
     'dvz_window_glfw_init',
     'dvz_window_host',
     'dvz_window_host_destroy',
@@ -815,11 +817,15 @@ class CudaSceneBufferRuntime:
         report = self.dvz.DvzDiagnosticReport()
         self.dvz.dvz_diagnostic_report_init(ctypes.byref(report))
         emit_cfg = scene_setup_emit_config(self.dvz)
-        stream = self.dvz.dvz_figure_emit_ex(
+        artifact = self.dvz.dvz_figure_emit_frame(
             figure, ctypes.byref(caps), ctypes.byref(report), ctypes.byref(emit_cfg)
         )
-        if self.dvz.dvz_diagnostic_report_count(ctypes.byref(report)) != 0 or not stream:
-            raise RuntimeError('dvz_figure_emit_ex() failed while priming shared scene buffer')
+        if self.dvz.dvz_diagnostic_report_count(ctypes.byref(report)) != 0 or not artifact:
+            raise RuntimeError('dvz_figure_emit_frame() failed while priming shared scene buffer')
+        stream = self.dvz.dvz_scene_frame_artifact_stream(artifact)
+        if not stream:
+            self.dvz.dvz_scene_frame_artifact_destroy(artifact)
+            raise RuntimeError('frame artifact has no stream while priming shared scene buffer')
         try:
             key = ctypes.create_string_buffer(128)
             if not self.dvz.dvz_scene_buffer_resource_key(self.scene_buffer, key, len(key)):
@@ -827,9 +833,9 @@ class CudaSceneBufferRuntime:
             buffer_id = int(self.dvz.dvz_drp2_stream_label_id(stream, key.value))
             if buffer_id == 0:
                 raise RuntimeError(f'emitted stream has no id for scene buffer {key.value!r}')
-            return stream, buffer_id
+            return artifact, stream, buffer_id
         except Exception:
-            self.dvz.dvz_drp2_stream_destroy(stream)
+            self.dvz.dvz_scene_frame_artifact_destroy(artifact)
             raise
 
     def create_app_resources(self, figure):
@@ -839,9 +845,9 @@ class CudaSceneBufferRuntime:
         self.runtime = self.dvz.dvz_drp2_runtime_vklite(ctypes.byref(cfg))
         if not self.runtime:
             raise RuntimeError('dvz_drp2_runtime_vklite() failed')
-        stream = None
+        artifact = None
         try:
-            stream, buffer_id = self._emit_setup_stream(figure)
+            artifact, stream, buffer_id = self._emit_setup_stream(figure)
             self.shared.register_external_buffer(self.runtime, buffer_id, usage=self.runtime_usage)
             result = self.dvz.dvz_drp2_runtime_execute(self.runtime, stream)
             if not result.ok:
@@ -850,8 +856,8 @@ class CudaSceneBufferRuntime:
                     f'command={result.command_index}'
                 )
         finally:
-            if stream is not None:
-                self.dvz.dvz_drp2_stream_destroy(stream)
+            if artifact is not None:
+                self.dvz.dvz_scene_frame_artifact_destroy(artifact)
         resources = self.dvz.DvzAppResources()
         resources.gpu_ctx = self.shared.exported.ctx
         resources.runtime = self.runtime
@@ -954,12 +960,16 @@ class CudaSceneSessionRuntime:
         report = self.dvz.DvzDiagnosticReport()
         self.dvz.dvz_diagnostic_report_init(ctypes.byref(report))
         emit_cfg = scene_setup_emit_config(self.dvz)
-        stream = self.dvz.dvz_figure_emit_ex(
+        artifact = self.dvz.dvz_figure_emit_frame(
             figure, ctypes.byref(caps), ctypes.byref(report), ctypes.byref(emit_cfg)
         )
-        if self.dvz.dvz_diagnostic_report_count(ctypes.byref(report)) != 0 or not stream:
-            raise RuntimeError('dvz_figure_emit_ex() failed while priming CUDA scene buffers')
-        return stream
+        if self.dvz.dvz_diagnostic_report_count(ctypes.byref(report)) != 0 or not artifact:
+            raise RuntimeError('dvz_figure_emit_frame() failed while priming CUDA scene buffers')
+        stream = self.dvz.dvz_scene_frame_artifact_stream(artifact)
+        if not stream:
+            self.dvz.dvz_scene_frame_artifact_destroy(artifact)
+            raise RuntimeError('frame artifact has no stream while priming CUDA scene buffers')
+        return artifact, stream
 
     def create_app_resources(self, figure):
         if self.runtime is not None:
@@ -968,9 +978,9 @@ class CudaSceneSessionRuntime:
         self.runtime = self.dvz.dvz_drp2_runtime_vklite(ctypes.byref(cfg))
         if not self.runtime:
             raise RuntimeError('dvz_drp2_runtime_vklite() failed')
-        stream = None
+        artifact = None
         try:
-            stream = self._emit_setup_stream(figure)
+            artifact, stream = self._emit_setup_stream(figure)
             for buffer in self.buffers:
                 buffer.shared.register_scene_buffer(
                     self.runtime, stream, buffer.scene_buffer, usage=buffer.runtime_usage
@@ -982,8 +992,8 @@ class CudaSceneSessionRuntime:
                     f'command={result.command_index}'
                 )
         finally:
-            if stream is not None:
-                self.dvz.dvz_drp2_stream_destroy(stream)
+            if artifact is not None:
+                self.dvz.dvz_scene_frame_artifact_destroy(artifact)
         resources = self.dvz.DvzAppResources()
         resources.gpu_ctx = self.context.ctx
         resources.runtime = self.runtime

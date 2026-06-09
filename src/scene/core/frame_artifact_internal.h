@@ -46,9 +46,9 @@ DvzSceneFrameArtifact* _scene_frame_artifact(
 /**
  * Emit a figure directly into an owned frame artifact.
  *
- * This helper centralizes the legacy stream emission and immediate artifact freeze step. The returned
- * artifact owns the stream snapshot and encoded packet arenas; scene mutation is legal after a
- * successful return because the artifact has already released the emitted stream owner.
+ * This helper centralizes stream snapshot creation and the immediate artifact freeze step. The
+ * returned artifact owns the stream snapshot and encoded packet arenas; scene mutation is legal
+ * after a successful return because the artifact has already released the emitted stream owner.
  *
  * @param figure the figure to emit
  * @param caps the capability snapshot

@@ -2261,7 +2261,7 @@ int dvz_wasm_api_emit_query_packets(uint32_t scene_handle, uint32_t figure_handl
         if (dvz_diagnostic_report_count(&scene->report) == 0)
         {
             _query_setup_diagnostic(
-                scene, "DRP2 query stream emission failed", scene->query_ops,
+                scene, "DRP2 query stream snapshot emission failed", scene->query_ops,
                 scene->query_visual_type, result.visual_id, pending.request.target, result.profile);
         }
         _remove_pending_query_at(owner, pending_index);

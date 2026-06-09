@@ -21,8 +21,8 @@ Historical context for the completed source split is kept in git history.
 Small remaining cleanup work belongs in owning specs or in the boundary guardrails. Preserve these
 specific post-v0.4 refactor candidates when they become relevant:
 
-1. split `dvz_figure_emit_ex()` only along real ownership boundaries such as panel ordering, MVP
-   setup, and pass emission;
+1. split the internal frame artifact emission helpers only along real ownership boundaries such as
+   panel ordering, MVP setup, and pass emission;
 2. centralize texture dirty-state helpers instead of repeating family-specific checks;
 3. share retained slot allocators and destruction-reset helpers across visual resources;
 4. isolate JSON append helpers from core scene mutation;

@@ -41,13 +41,13 @@ private buffer ids, visual-family assumptions, or browser-only metadata.
 
 ## Portable Scene And DRP2 Boundary
 
-The first hardening step is to make DRP2 stream emission and scene planning portable without native
-runtime headers leaking into browser-facing code.
+The first hardening step is to make frame artifact emission and scene planning portable without
+native runtime headers leaking into browser-facing code.
 
 Rules:
 
-1. keep DRP2 command streams, stream construction, JSON/debug serialization, and semantic validation
-   in the portable surface;
+1. keep frame artifacts, artifact-owned DRP2 stream snapshots, JSON/debug serialization, and
+   semantic validation in the portable surface;
 2. move vklite-specific runtime entry points and borrowed native frame helpers behind native-only
    runtime headers;
 3. keep `DvzDrp2Runtime` opaque where validation/runtime handles are needed;
@@ -315,12 +315,12 @@ diagnostics rather than silent fallbacks.
 The first milestone is deliberately small and is now represented by the committed point/panzoom
 bridge:
 
-1. build a WASM module containing portable scene and DRP2 stream emission;
+1. build a WASM module containing portable scene frame artifact emission;
 2. from browser JavaScript, create one scene, one figure, one panel, and buffer-backed point/pixel
    positions, marker, styled segment/path, primitive triangle-list, RGBA8 image, low-level
    atlas glyph, semantic bitmap text, basic/textured/material mesh, and basic sphere visuals;
 3. request WGSL scene emission with an external browser canvas color target;
-4. submit the emitted DRP2 stream to the WebGPU runtime;
+4. submit the emitted frame artifact packet spans to the WebGPU runtime;
 5. render points using the portable WebGPU lowering selected by scene emission.
 
 The current first slice uses the generic `src/wasm/scene_api.c` object ABI for visuals, scene

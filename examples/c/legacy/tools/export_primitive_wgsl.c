@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 
     int ret = 1;
     DvzScene* scene = NULL;
-    DvzDrp2CommandStream* stream = NULL;
+    DvzSceneFrameArtifact* artifact = NULL;
     char* json = NULL;
 
     scene = dvz_scene();
@@ -89,11 +89,11 @@ int main(int argc, char** argv)
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    artifact = dvz_figure_emit_frame(figure, &caps, &report, &emit_cfg);
     uint32_t diagnostic_count = dvz_diagnostic_report_count(&report);
-    EXAMPLE_CHECK(stream != NULL && diagnostic_count == 0, "frame-plan emission failed");
+    EXAMPLE_CHECK(artifact != NULL && diagnostic_count == 0, "frame artifact emission failed");
 
-    json = dvz_drp2_stream_json(stream, "scene_primitive_wgsl");
+    json = dvz_scene_frame_artifact_json(artifact, "scene_primitive_wgsl");
     if (json != NULL)
     {
         DvzSize size = (DvzSize)strlen(json);
@@ -102,8 +102,8 @@ int main(int argc, char** argv)
 
 cleanup:
     dvz_drp2_stream_json_destroy(json);
-    if (stream != NULL)
-        dvz_drp2_stream_destroy(stream);
+    if (artifact != NULL)
+        dvz_scene_frame_artifact_destroy(artifact);
     if (scene != NULL)
         dvz_scene_destroy(scene);
     return ret;
