@@ -10,6 +10,8 @@ deterministic retained pixel visual baseline.
 - Status: `supported`
 - Source: [`examples/c/visuals/pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/pixel.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `pixel`, `panzoom`
 - Build: `just example-c visuals/pixel`
 - Smoke: `./build/examples/c/visuals/pixel --png`
 - Validation: `smoke+screenshot`

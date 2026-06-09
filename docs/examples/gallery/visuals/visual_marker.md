@@ -10,6 +10,8 @@ retained marker visual with deterministic symbol, fill, stroke, and size variati
 - Status: `supported`
 - Source: [`examples/c/visuals/marker.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/marker.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `marker`, `panzoom`
 - Build: `just example-c visuals/marker`
 - Smoke: `./build/examples/c/visuals/marker --png`
 - Validation: `smoke+screenshot`

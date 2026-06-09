@@ -10,6 +10,8 @@ retained labels visual with a small deterministic integer sampled field.
 - Status: `supported`
 - Source: [`examples/c/visuals/labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/labels.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `labels`, `categorical-scale`, `panzoom`
 - Build: `just example-c visuals/labels`
 - Smoke: `./build/examples/c/visuals/labels --png`
 - Validation: `smoke+screenshot`

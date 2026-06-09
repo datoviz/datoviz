@@ -10,6 +10,8 @@ deterministic scalar sampled field rendered with the retained image visual.
 - Status: `supported`
 - Source: [`examples/c/visuals/image.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `image`, `sampled-field`, `panzoom`
 - Build: `just example-c visuals/image`
 - Smoke: `./build/examples/c/visuals/image --png`
 - Validation: `smoke+screenshot`

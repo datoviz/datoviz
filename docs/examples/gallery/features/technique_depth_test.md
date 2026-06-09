@@ -10,6 +10,8 @@ side-by-side visual depth-test toggle with overlapping 3D points.
 - Status: `supported`
 - Source: [`examples/c/features/technique_depth_test.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_test.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `depth-test`, `mesh`
 - Build: `just example-c features/technique_depth_test`
 - Smoke: `./build/examples/c/features/technique_depth_test --png`
 - Validation: `smoke+screenshot`

@@ -10,6 +10,8 @@ deterministic path with retained 2D axes and tick labels.
 - Status: `supported`
 - Source: [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `path`, `axes`, `text`, `panzoom`
 - Build: `just example-c features/axes_2d`
 - Smoke: `./build/examples/c/features/axes_2d --png`
 - Validation: `smoke+screenshot`

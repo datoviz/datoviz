@@ -10,6 +10,8 @@ retained segment visual with independent endpoint-pair strokes.
 - Status: `supported`
 - Source: [`examples/c/visuals/segment.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/segment.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `segment`, `panzoom`
 - Build: `just example-c visuals/segment`
 - Smoke: `./build/examples/c/visuals/segment --png`
 - Validation: `smoke+screenshot`

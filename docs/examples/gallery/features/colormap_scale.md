@@ -10,6 +10,8 @@ point visual with scalar float colors and one retained color scale.
 - Status: `supported`
 - Source: [`examples/c/features/colormap_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colormap_scale.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `colormap`, `sampled-field`, `image`
 - Build: `just example-c features/colormap_scale`
 - Smoke: `./build/examples/c/features/colormap_scale --png`
 - Validation: `smoke+screenshot`

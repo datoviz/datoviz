@@ -10,6 +10,8 @@ plane-oriented reference grid in an arcball 3D scene.
 - Status: `supported`
 - Source: [`examples/c/features/reference_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/reference_grid.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `reference-grid`, `segment`, `controller`
 - Build: `just example-c features/reference_grid`
 - Smoke: `./build/examples/c/features/reference_grid --png`
 - Validation: `smoke+interaction+screenshot`

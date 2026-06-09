@@ -10,6 +10,8 @@ arcball controller attached to a small 3D mesh.
 - Status: `supported`
 - Source: [`examples/c/features/controller_arcball.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `controller`, `arcball`, `mesh`
 - Build: `just example-c features/controller_arcball`
 - Smoke: `./build/examples/c/features/controller_arcball --png`
 - Validation: `smoke+interaction+screenshot`

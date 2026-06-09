@@ -10,6 +10,8 @@ four grid-owned panels with clipped panel-local content.
 - Status: `supported`
 - Source: [`examples/c/features/panel_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_grid.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `panel-grid`, `point`
 - Build: `just example-c features/panel_grid`
 - Smoke: `./build/examples/c/features/panel_grid --png`
 - Validation: `smoke+screenshot`

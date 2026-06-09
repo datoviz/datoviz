@@ -10,6 +10,8 @@ deterministic multi-signal retained path visual.
 - Status: `supported`
 - Source: [`examples/c/visuals/path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/path.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `path`, `panzoom`
 - Build: `just example-c visuals/path`
 - Smoke: `./build/examples/c/visuals/path --png`
 - Validation: `smoke+screenshot`

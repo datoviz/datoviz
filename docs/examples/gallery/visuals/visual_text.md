@@ -10,6 +10,8 @@ retained semantic text objects lowered to glyph visuals.
 - Status: `supported`
 - Source: [`examples/c/visuals/text.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `text`, `glyph-atlas`
 - Build: `just example-c visuals/text`
 - Smoke: `./build/examples/c/visuals/text --png`
 - Validation: `smoke+screenshot`

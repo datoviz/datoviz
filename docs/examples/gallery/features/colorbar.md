@@ -10,6 +10,8 @@ deterministic scalar image with one retained continuous colorbar.
 - Status: `supported`
 - Source: [`examples/c/features/colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colorbar.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `colorbar`, `image`, `sampled-field`, `text`
 - Build: `just example-c features/colorbar`
 - Smoke: `./build/examples/c/features/colorbar --png`
 - Validation: `smoke+screenshot`

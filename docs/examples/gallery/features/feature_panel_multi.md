@@ -10,6 +10,8 @@ multiple independent panels with panel-local panzoom controllers.
 - Status: `supported`
 - Source: [`examples/c/features/panel_multi.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_multi.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `panel-grid`, `multi-panel`, `panzoom`, `point`
 - Build: `just example-c features/panel_multi`
 - Smoke: `./build/examples/c/features/panel_multi --png`
 - Validation: `smoke+interaction+screenshot`

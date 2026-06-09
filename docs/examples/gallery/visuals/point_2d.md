@@ -10,6 +10,8 @@ deterministic retained 2D point visual baseline.
 - Status: `supported`
 - Source: [`examples/c/visuals/point.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/point.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `point`, `panzoom`
 - Build: `just example-c visuals/point`
 - Smoke: `./build/examples/c/visuals/point --png`
 - Validation: `smoke+screenshot`

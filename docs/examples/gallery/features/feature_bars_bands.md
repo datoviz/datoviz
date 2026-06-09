@@ -10,6 +10,8 @@ retained bars and uncertainty band plot helpers.
 - Status: `supported`
 - Source: [`examples/c/features/bars_bands.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bars_bands.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `primitive`, `segment`, `axes`, `panzoom`
 - Build: `just example-c features/bars_bands`
 - Smoke: `./build/examples/c/features/bars_bands --png`
 - Validation: `smoke+screenshot`

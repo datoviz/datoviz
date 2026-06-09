@@ -10,6 +10,8 @@ tentative retained categorical legend proof.
 - Status: `experimental`
 - Source: [`examples/c/features/legend_categorical.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `legend`, `categorical-scale`, `marker`, `text`
 - Build: `just example-c features/legend_categorical`
 - Smoke: `./build/examples/c/features/legend_categorical --png`
 - Validation: `smoke+screenshot`

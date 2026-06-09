@@ -10,6 +10,8 @@ topology-parametric triangles rendered with the retained primitive visual.
 - Status: `supported`
 - Source: [`examples/c/visuals/primitive.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/primitive.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `primitive`
 - Build: `just example-c visuals/primitive`
 - Smoke: `./build/examples/c/visuals/primitive --png`
 - Validation: `smoke+screenshot`

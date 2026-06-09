@@ -10,6 +10,8 @@ retained lit indexed cube mesh.
 - Status: `supported`
 - Source: [`examples/c/visuals/mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/mesh.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `mesh`, `indexed-geometry`, `arcball`
 - Build: `just example-c visuals/mesh`
 - Smoke: `./build/examples/c/visuals/mesh --png`
 - Validation: `smoke+screenshot`

@@ -10,6 +10,8 @@ interactive synthetic AI embedding atlas.
 - Status: `supported`
 - Source: [`examples/c/showcases/embedding_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/embedding_atlas.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `point`, `panzoom`, `query-readback`, `selection`, `overlay`
 - Build: `just example-c showcases/embedding_atlas`
 - Smoke: `./build/examples/c/showcases/embedding_atlas --png`
 - Validation: `smoke+interaction+screenshot`

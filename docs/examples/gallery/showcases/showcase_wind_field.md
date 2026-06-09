@@ -10,6 +10,8 @@ synthetic weather-like scalar and vector field showcase.
 - Status: `supported`
 - Source: [`examples/c/showcases/wind_field.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `image`, `vector`, `path`, `colorbar`, `panzoom`
 - Build: `just example-c showcases/wind_field`
 - Smoke: `./build/examples/c/showcases/wind_field --png`
 - Validation: `smoke+screenshot`

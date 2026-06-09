@@ -10,6 +10,8 @@ point visual with one retained data-range update.
 - Status: `supported`
 - Source: [`examples/c/features/update_partial.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_partial.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `buffer-update`, `point`
 - Build: `just example-c features/update_partial`
 - Smoke: `./build/examples/c/features/update_partial --png`
 - Validation: `smoke+screenshot`

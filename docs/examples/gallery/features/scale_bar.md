@@ -10,6 +10,8 @@ minimal retained scale bar attached to one 2D panel.
 - Status: `supported`
 - Source: [`examples/c/features/scalebar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `scale-bar`, `text`, `panzoom`
 - Build: `just example-c features/scalebar`
 - Smoke: `./build/examples/c/features/scalebar --png`
 - Validation: `smoke+screenshot`

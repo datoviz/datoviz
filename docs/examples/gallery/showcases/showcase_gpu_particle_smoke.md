@@ -10,6 +10,8 @@ scene API compute-to-graphics particle smoke showcase.
 - Status: `experimental`
 - Source: [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `scene-buffers`, `storage-buffers`, `scene-compute`, `point`, `alpha-blending`
 - Build: `just example-c showcases/gpu_particle_smoke`
 - Smoke: `./build/examples/c/showcases/gpu_particle_smoke --png`
 - Validation: `smoke+screenshot`

@@ -10,6 +10,8 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
 - Status: `experimental`
 - Source: [`examples/c/visuals/splat.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/splat.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-deferred`
+- WebGPU requirements: `splat`, `alpha-blending`
 - Build: `just example-c visuals/splat`
 - Smoke: `./build/examples/c/visuals/splat --png`
 - Validation: `smoke+screenshot`

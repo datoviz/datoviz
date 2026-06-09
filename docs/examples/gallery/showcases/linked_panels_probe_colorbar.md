@@ -10,6 +10,8 @@ linked image panels with one probe readout and shared colorbar.
 - Status: `supported`
 - Source: [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `panel-grid`, `linked-panels`, `image`, `colorbar`, `query-readback`, `readout`
 - Build: `just example-c showcases/linked_probe_colorbar`
 - Smoke: `./build/examples/c/showcases/linked_probe_colorbar --png`
 - Validation: `smoke+readback+interaction+screenshot`

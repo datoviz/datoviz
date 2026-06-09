@@ -81,6 +81,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - panel
+        - point
     agent_copy_safe: true
 
   - id: feature_panel_grid
@@ -93,6 +98,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - panel-grid
+        - point
     agent_copy_safe: true
 
   - id: feature_panel_multi
@@ -105,6 +115,13 @@ examples:
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - panel-grid
+        - multi-panel
+        - panzoom
+        - point
     agent_copy_safe: true
 
   - id: feature_panel_linked
@@ -117,6 +134,13 @@ examples:
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - panel-grid
+        - linked-panels
+        - panzoom
+        - point
     agent_copy_safe: true
 
   - id: path_axes_2d
@@ -129,6 +153,13 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - path
+        - axes
+        - text
+        - panzoom
     agent_copy_safe: true
 
   - id: feature_axis_labels
@@ -141,6 +172,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - axes
+        - text
+        - labels
     agent_copy_safe: true
 
   - id: feature_sampled_field_2d
@@ -153,6 +190,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - sampled-field
+        - image
+        - colormap
     agent_copy_safe: true
 
   - id: feature_sampled_field_3d
@@ -165,6 +208,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - sampled-field
+        - volume
+        - texture-3d
     agent_copy_safe: true
 
   - id: feature_text_block
@@ -177,6 +226,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - text
+        - glyph-atlas
     agent_copy_safe: true
 
   - id: feature_overlay_card
@@ -189,6 +243,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - overlay
+        - text
+        - primitive
     agent_copy_safe: true
 
   - id: feature_controller_arcball
@@ -201,6 +261,12 @@ examples:
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - controller
+        - arcball
+        - mesh
     agent_copy_safe: true
 
   - id: feature_orientation_gizmo
@@ -213,6 +279,13 @@ examples:
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - orientation-gizmo
+        - overlay
+        - mesh
+        - controller
     agent_copy_safe: true
 
   - id: feature_reference_grid
@@ -225,6 +298,12 @@ examples:
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - reference-grid
+        - segment
+        - controller
     agent_copy_safe: true
 
   - id: feature_bounds_overlay
@@ -237,6 +316,13 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - bounds-overlay
+        - point
+        - sphere
+        - overlay
     agent_copy_safe: false
     gallery:
       card: small
@@ -258,6 +344,12 @@ examples:
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - controller
+        - fly
+        - mesh
     agent_copy_safe: true
 
   - id: feature_controller_turntable
@@ -270,6 +362,12 @@ examples:
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - controller
+        - turntable
+        - mesh
     agent_copy_safe: true
 
   - id: feature_mesh_texture
@@ -282,6 +380,13 @@ examples:
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - mesh
+        - sampled-field
+        - texture
+        - arcball
     agent_copy_safe: true
 
   - id: feature_material_mesh
@@ -294,6 +399,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - mesh
+        - material
+        - lighting
     agent_copy_safe: true
 
   - id: feature_lighting
@@ -306,6 +417,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - mesh
+        - sphere
+        - lighting
     agent_copy_safe: true
 
   - id: feature_user_scale
@@ -541,6 +658,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - segment
+        - overlay
+        - panzoom
     agent_copy_safe: true
 
   - id: feature_guide_spans
@@ -553,6 +676,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - primitive
+        - overlay
+        - panzoom
     agent_copy_safe: true
 
   - id: feature_bars_bands
@@ -565,6 +694,13 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - primitive
+        - segment
+        - axes
+        - panzoom
     agent_copy_safe: true
 
   - id: feature_app_glfw
@@ -668,6 +804,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - visual-transform
+        - mesh
     agent_copy_safe: true
 
   - id: feature_panel_domain_fit
@@ -680,6 +821,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - panel-domain
+        - panzoom
+        - point
     agent_copy_safe: true
 
   - id: feature_json_export
@@ -709,6 +856,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - path
+        - segment
+        - marker
     agent_copy_safe: true
 
   - id: linked_panels_axes_panzoom
@@ -720,6 +873,14 @@ examples:
     validation: smoke+interaction
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - panel-grid
+        - linked-panels
+        - axes
+        - panzoom
+        - path
     agent_copy_safe: false
     tags:
       - workflow
@@ -737,6 +898,15 @@ examples:
     validation: smoke+readback+interaction+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - panel-grid
+        - linked-panels
+        - image
+        - colorbar
+        - query-readback
+        - readout
     agent_copy_safe: false
     gallery:
       card: section
@@ -759,6 +929,14 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - axes
+        - primitive
+        - segment
+        - path
+        - colorbar
     agent_copy_safe: false
     tags:
       - workflow
@@ -779,6 +957,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - scale-bar
+        - text
+        - panzoom
     agent_copy_safe: true
 
   - id: scalebar_units
@@ -791,6 +975,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - scale-bar
+        - text
+        - panzoom
     agent_copy_safe: true
 
   - id: scalebar_measurement_workflow
@@ -802,6 +992,14 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - scale-bar
+        - text
+        - panel-grid
+        - mesh
+        - panzoom
     agent_copy_safe: false
     tags:
       - workflow
@@ -819,6 +1017,13 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - colorbar
+        - image
+        - sampled-field
+        - text
     agent_copy_safe: true
     tags:
       - colorbar
@@ -836,6 +1041,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - colormap
+        - sampled-field
+        - image
     agent_copy_safe: true
 
   - id: annotation_readout
@@ -848,6 +1059,13 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - annotation
+        - readout
+        - text
+        - marker
     agent_copy_safe: true
 
   - id: update_partial
@@ -860,6 +1078,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - buffer-update
+        - point
     agent_copy_safe: true
 
   - id: feature_update_visual_data
@@ -872,6 +1095,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - buffer-update
+        - visual-update
+        - point
     agent_copy_safe: true
 
   - id: feature_visibility
@@ -884,6 +1113,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - visual-visibility
+        - point
+        - marker
     agent_copy_safe: true
 
   - id: technique_depth_test
@@ -896,6 +1131,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - depth-test
+        - mesh
     agent_copy_safe: true
 
   - id: alpha_blending
@@ -908,6 +1148,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - alpha-blending
+        - point
+        - marker
     agent_copy_safe: true
 
   - id: panel_background
@@ -920,6 +1166,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - panel-background
+        - primitive
     agent_copy_safe: true
 
   - id: feature_panzoom
@@ -932,6 +1183,12 @@ examples:
     validation: smoke+interaction
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - controller
+        - panzoom
+        - point
     agent_copy_safe: true
 
   - id: image_probe
@@ -1148,6 +1405,12 @@ examples:
     validation: smoke+readback+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - labels
+        - query-readback
+        - panzoom
     agent_copy_safe: true
 
   - id: feature_timer_animation
@@ -1179,6 +1442,13 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - marker
+        - symbol-set
+        - glyph-atlas
+      reason: marker symbol-set and mixed atlas encoding parity are not in the RC WebGPU path yet
     agent_copy_safe: true
     gallery:
       card: small
@@ -1200,6 +1470,13 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - legend
+        - categorical-scale
+        - marker
+        - text
     agent_copy_safe: false
     gallery:
       card: small
@@ -1248,6 +1525,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - point
+        - panzoom
     agent_copy_safe: true
     gallery:
       card: small
@@ -1267,6 +1549,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - pixel
+        - panzoom
     agent_copy_safe: true
     gallery:
       card: small
@@ -1286,6 +1573,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - marker
+        - panzoom
     agent_copy_safe: true
     gallery:
       card: small
@@ -1305,6 +1597,10 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - primitive
     agent_copy_safe: true
     gallery:
       card: small
@@ -1323,6 +1619,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - segment
+        - panzoom
     agent_copy_safe: true
     gallery:
       card: small
@@ -1342,6 +1643,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - vector
+        - path
+        - panzoom
     agent_copy_safe: true
     gallery:
       card: small
@@ -1362,6 +1669,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - path
+        - panzoom
     agent_copy_safe: true
     gallery:
       card: small
@@ -1380,6 +1692,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - image
+        - sampled-field
+        - panzoom
     agent_copy_safe: true
     gallery:
       card: small
@@ -1399,6 +1717,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - mesh
+        - indexed-geometry
+        - arcball
     agent_copy_safe: true
     gallery:
       card: small
@@ -1419,6 +1743,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - sphere
+        - arcball
     agent_copy_safe: true
     gallery:
       card: small
@@ -1438,6 +1767,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - splat
+        - alpha-blending
+      reason: splat rendering is experimental and outside the RC browser subset
     agent_copy_safe: false
     gallery:
       card: small
@@ -1457,6 +1792,11 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - text
+        - glyph-atlas
     agent_copy_safe: true
     gallery:
       card: small
@@ -1475,6 +1815,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - glyph
+        - glyph-atlas
+        - sdf
     agent_copy_safe: false
     gallery:
       card: small
@@ -1495,6 +1841,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - labels
+        - categorical-scale
+        - panzoom
     agent_copy_safe: true
     gallery:
       card: small
@@ -1515,6 +1867,13 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - volume
+        - sampled-field
+        - texture-3d
+        - arcball
     agent_copy_safe: true
     gallery:
       card: small
@@ -1537,6 +1896,14 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - composite
+        - polygon-set
+        - primitive
+        - segment
+        - panzoom
     agent_copy_safe: true
     gallery:
       card: small
@@ -1558,6 +1925,14 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - composite
+        - marker
+        - bezier-edges
+        - path
+        - panzoom
     agent_copy_safe: true
     gallery:
       card: small
@@ -1578,6 +1953,13 @@ examples:
     validation: smoke+screenshot+manual
     data:
       kind: prepared
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - composite
+        - polygon-set
+        - colorbar
+        - panzoom
     agent_copy_safe: false
     dataset:
       name: Contiguous U.S. state population density
@@ -1615,6 +1997,13 @@ examples:
     validation: smoke+screenshot+manual
     data:
       kind: real
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - sphere
+        - arcball
+        - material
+        - real-data
     agent_copy_safe: false
     dataset:
       name: RCSB PDB protein structure
@@ -1647,6 +2036,14 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - image
+        - vector
+        - path
+        - colorbar
+        - panzoom
     agent_copy_safe: false
     gallery:
       card: section
@@ -1669,6 +2066,14 @@ examples:
     validation: smoke+screenshot
     data:
       kind: simulated
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - scene-buffers
+        - storage-buffers
+        - scene-compute
+        - point
+        - alpha-blending
     agent_copy_safe: false
     gallery:
       card: section
@@ -1690,6 +2095,14 @@ examples:
     validation: smoke+interaction+screenshot
     data:
       kind: generated
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - point
+        - panzoom
+        - query-readback
+        - selection
+        - overlay
     agent_copy_safe: false
     dataset:
       name: Synthetic embedding atlas
@@ -1719,6 +2132,15 @@ examples:
     validation: smoke+screenshot+video
     data:
       kind: prepared
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - image
+        - sampled-field
+        - colorbar
+        - panzoom
+        - video
+      reason: this showcase depends on large prepared data and video-oriented gallery plumbing
     agent_copy_safe: false
     dataset:
       name: Lipid Brain Atlas peaks parquet
@@ -1749,6 +2171,15 @@ examples:
     validation: smoke+screenshot+video
     data:
       kind: generated
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - textured-mesh
+        - animation
+        - reference-grid
+        - arcball
+        - video
+      reason: this showcase needs textured animation and video-oriented gallery plumbing beyond the RC browser subset
     agent_copy_safe: false
     dataset:
       name: Synthetic mouse animation validation bundle
@@ -1779,6 +2210,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - mesh
+        - segment
+        - arcball
     agent_copy_safe: false
     gallery:
       card: section
@@ -1800,6 +2237,12 @@ examples:
     validation: smoke+screenshot
     data:
       kind: prepared
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - volume
+        - texture-3d
+        - arcball
     agent_copy_safe: false
     dataset:
       name: Allen mouse brain RGBA volume
@@ -1826,6 +2269,15 @@ examples:
     validation: smoke+screenshot
     data:
       kind: prepared
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - pixel
+        - dense-point-cloud
+        - depth-postprocess
+        - gui
+        - fly
+      reason: the public point-cloud showcase depends on large prepared data, native GUI controls, and EDL-style rendering
     agent_copy_safe: false
     dataset:
       name: RESEPI GENM2X colorized benchmark point cloud
@@ -1855,6 +2307,13 @@ examples:
     validation: smoke+screenshot
     data:
       kind: real
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - mesh
+        - sampled-field
+        - texture
+        - arcball
     agent_copy_safe: false
     gallery:
       card: section

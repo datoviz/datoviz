@@ -10,6 +10,8 @@ retained straight and curved vector visual example.
 - Status: `supported`
 - Source: [`examples/c/visuals/vector.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/vector.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `vector`, `path`, `panzoom`
 - Build: `just example-c visuals/vector`
 - Smoke: `./build/examples/c/visuals/vector --png`
 - Validation: `smoke+screenshot`

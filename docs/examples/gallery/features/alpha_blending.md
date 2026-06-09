@@ -10,6 +10,8 @@ retained primitive visual using per-vertex alpha and source-over blending.
 - Status: `supported`
 - Source: [`examples/c/features/alpha_blending.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/alpha_blending.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `alpha-blending`, `point`, `marker`
 - Build: `just example-c features/alpha_blending`
 - Smoke: `./build/examples/c/features/alpha_blending --png`
 - Validation: `smoke+screenshot`

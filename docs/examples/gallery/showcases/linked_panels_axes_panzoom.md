@@ -10,6 +10,8 @@ linked temporal panels with a spanning summary panel.
 - Status: `supported`
 - Source: [`examples/c/showcases/panel_linked_axes.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `panel-grid`, `linked-panels`, `axes`, `panzoom`, `path`
 - Build: `just example-c showcases/panel_linked_axes`
 - Smoke: `./build/examples/c/showcases/panel_linked_axes --png`
 - Validation: `smoke+interaction`

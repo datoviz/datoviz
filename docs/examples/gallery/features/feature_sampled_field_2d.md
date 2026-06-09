@@ -10,6 +10,8 @@ scene-owned 2D sampled field bound to an image visual.
 - Status: `supported`
 - Source: [`examples/c/features/sampled_field_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_2d.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `sampled-field`, `image`, `colormap`
 - Build: `just example-c features/sampled_field_2d`
 - Smoke: `./build/examples/c/features/sampled_field_2d --png`
 - Validation: `smoke+screenshot`

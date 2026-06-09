@@ -10,6 +10,8 @@ panel-attached orientation axes linked to an arcball controller.
 - Status: `supported`
 - Source: [`examples/c/features/orientation_gizmo.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/orientation_gizmo.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `orientation-gizmo`, `overlay`, `mesh`, `controller`
 - Build: `just example-c features/orientation_gizmo`
 - Smoke: `./build/examples/c/features/orientation_gizmo --png`
 - Validation: `smoke+interaction+screenshot`

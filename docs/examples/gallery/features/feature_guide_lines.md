@@ -10,6 +10,8 @@ retained horizontal and vertical guide lines in panel data coordinates.
 - Status: `supported`
 - Source: [`examples/c/features/guide_lines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_lines.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `segment`, `overlay`, `panzoom`
 - Build: `just example-c features/guide_lines`
 - Smoke: `./build/examples/c/features/guide_lines --png`
 - Validation: `smoke+screenshot`

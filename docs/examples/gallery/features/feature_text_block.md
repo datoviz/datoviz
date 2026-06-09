@@ -10,6 +10,8 @@ compact retained text block with stable screen placement.
 - Status: `supported`
 - Source: [`examples/c/features/text_block.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/text_block.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `text`, `glyph-atlas`
 - Build: `just example-c features/text_block`
 - Smoke: `./build/examples/c/features/text_block --png`
 - Validation: `smoke+screenshot`

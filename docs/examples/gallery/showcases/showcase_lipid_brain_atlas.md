@@ -10,6 +10,8 @@ section/channel lipid intensity showcase.
 - Status: `prototype`
 - Source: [`examples/c/showcases/lipid_brain_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/lipid_brain_atlas.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-deferred`
+- WebGPU requirements: `image`, `sampled-field`, `colorbar`, `panzoom`, `video`
 - Build: `just example-c showcases/lipid_brain_atlas`
 - Smoke: `./build/examples/c/showcases/lipid_brain_atlas --png`
 - Validation: `smoke+screenshot+video`

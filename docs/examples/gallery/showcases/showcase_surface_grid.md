@@ -10,6 +10,8 @@ generated height-field mesh with a derived wireframe overlay.
 - Status: `supported`
 - Source: [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `mesh`, `segment`, `arcball`
 - Build: `just example-c showcases/surface_grid`
 - Smoke: `./build/examples/c/showcases/surface_grid --png`
 - Validation: `smoke+screenshot`

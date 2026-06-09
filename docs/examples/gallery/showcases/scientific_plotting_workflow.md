@@ -10,6 +10,8 @@ histogram, guide annotations, stacked traces, and error bands.
 - Status: `supported`
 - Source: [`examples/c/showcases/scientific_plotting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `axes`, `primitive`, `segment`, `path`, `colorbar`
 - Build: `just example-c showcases/scientific_plotting`
 - Smoke: `./build/examples/c/showcases/scientific_plotting --png`
 - Validation: `smoke+screenshot`

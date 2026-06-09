@@ -10,6 +10,8 @@ compare lit sphere clusters with different material and light settings.
 - Status: `supported`
 - Source: [`examples/c/features/lighting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `mesh`, `sphere`, `lighting`
 - Build: `just example-c features/lighting`
 - Smoke: `./build/examples/c/features/lighting --png`
 - Validation: `smoke+screenshot`

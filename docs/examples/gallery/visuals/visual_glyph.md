@@ -10,6 +10,8 @@ low-level SDF atlas quads, distinct from font-shaped text and marker symbols.
 - Status: `experimental`
 - Source: [`examples/c/visuals/glyph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/glyph.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `glyph`, `glyph-atlas`, `sdf`
 - Build: `just example-c visuals/glyph`
 - Smoke: `./build/examples/c/visuals/glyph --png`
 - Validation: `smoke+screenshot`

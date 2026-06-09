@@ -10,6 +10,8 @@ semantic two-community graph composite with bridge edges.
 - Status: `supported`
 - Source: [`examples/c/composites/graph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `composite`, `marker`, `bezier-edges`, `path`, `panzoom`
 - Build: `just example-c composites/graph`
 - Smoke: `./build/examples/c/composites/graph --png`
 - Validation: `smoke+screenshot`

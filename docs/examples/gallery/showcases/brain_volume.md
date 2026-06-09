@@ -10,6 +10,8 @@ local Allen mouse brain RGBA volume and occluded slice.
 - Status: `prototype`
 - Source: [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `volume`, `texture-3d`, `arcball`
 - Build: `just example-c showcases/brain_volume`
 - Smoke: `./build/examples/c/showcases/brain_volume --png`
 - Validation: `smoke+screenshot`

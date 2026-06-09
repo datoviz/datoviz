@@ -10,6 +10,8 @@ panel-owned data-domain fit with equal aspect.
 - Status: `supported`
 - Source: [`examples/c/features/panel_domain_fit.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_domain_fit.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `panel-domain`, `panzoom`, `point`
 - Build: `just example-c features/panel_domain_fit`
 - Smoke: `./build/examples/c/features/panel_domain_fit --png`
 - Validation: `smoke+screenshot`

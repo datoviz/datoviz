@@ -10,6 +10,8 @@ scale-aware overview, detail, and 3D measurement workflow.
 - Status: `supported`
 - Source: [`examples/c/showcases/scalebar_measurement.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `scale-bar`, `text`, `panel-grid`, `mesh`, `panzoom`
 - Build: `just example-c showcases/scalebar_measurement`
 - Smoke: `./build/examples/c/showcases/scalebar_measurement --png`
 - Validation: `smoke+screenshot`

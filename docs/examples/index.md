@@ -30,7 +30,7 @@ keeps media status explicit while capture artifacts are prepared separately.
 | [Advanced examples](advanced.md) | 3 | 3 experimental |
 | [Techniques](techniques.md) | 13 | Rendering and compute behavior coverage |
 | [Validation gallery](validation-gallery.md) | 106 | Release evidence checklist |
-| [WebGPU matrix](webgpu-matrix.md) | 34 | Browser live-example status |
+| [WebGPU matrix](webgpu-matrix.md) | 106 | Browser live-example status |
 
 ## Current Source Lanes
 

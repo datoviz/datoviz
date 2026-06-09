@@ -10,6 +10,8 @@ screen-space data readout over a simple panel visual.
 - Status: `supported`
 - Source: [`examples/c/features/overlay_card.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/overlay_card.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `overlay`, `text`, `primitive`
 - Build: `just example-c features/overlay_card`
 - Smoke: `./build/examples/c/features/overlay_card --png`
 - Validation: `smoke+screenshot`

@@ -10,6 +10,8 @@ fly controller with deterministic camera translation.
 - Status: `supported`
 - Source: [`examples/c/features/controller_fly.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_fly.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `controller`, `fly`, `mesh`
 - Build: `just example-c features/controller_fly`
 - Smoke: `./build/examples/c/features/controller_fly --png`
 - Validation: `smoke+interaction+screenshot`

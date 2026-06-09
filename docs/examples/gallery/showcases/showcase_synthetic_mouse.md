@@ -10,6 +10,8 @@ animated textured mouse mesh with trajectory and skeleton trails.
 - Status: `prototype`
 - Source: [`examples/c/showcases/synthetic_mouse.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/synthetic_mouse.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-deferred`
+- WebGPU requirements: `textured-mesh`, `animation`, `reference-grid`, `arcball`, `video`
 - Build: `just example-c showcases/synthetic_mouse`
 - Smoke: `./build/examples/c/showcases/synthetic_mouse --png`
 - Validation: `smoke+screenshot+video`

@@ -10,6 +10,8 @@ retained mesh visuals with explicit material parameters.
 - Status: `supported`
 - Source: [`examples/c/features/material_mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `mesh`, `material`, `lighting`
 - Build: `just example-c features/material_mesh`
 - Smoke: `./build/examples/c/features/material_mesh --png`
 - Validation: `smoke+screenshot`

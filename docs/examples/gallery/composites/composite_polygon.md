@@ -10,6 +10,8 @@ clean semantic polygon and polygon-set composites.
 - Status: `supported`
 - Source: [`examples/c/composites/polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `composite`, `polygon-set`, `primitive`, `segment`, `panzoom`
 - Build: `just example-c composites/polygon`
 - Smoke: `./build/examples/c/composites/polygon --png`
 - Validation: `smoke+screenshot`

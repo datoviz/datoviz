@@ -10,6 +10,8 @@ one explicit panel rectangle with panel chrome and one visual.
 - Status: `supported`
 - Source: [`examples/c/features/panel_single.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_single.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `panel`, `point`
 - Build: `just example-c features/panel_single`
 - Smoke: `./build/examples/c/features/panel_single --png`
 - Validation: `smoke+screenshot`

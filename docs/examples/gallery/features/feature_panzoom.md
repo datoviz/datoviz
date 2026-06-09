@@ -10,6 +10,8 @@ bind a panzoom controller to one panel with a simple 2D visual.
 - Status: `supported`
 - Source: [`examples/c/features/panzoom.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `controller`, `panzoom`, `point`
 - Build: `just example-c features/panzoom`
 - Smoke: `./build/examples/c/features/panzoom --png`
 - Validation: `smoke+interaction`
