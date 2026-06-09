@@ -2805,6 +2805,28 @@ static void _app_replay_filter_synthetic_target(
 
 
 /**
+ * Return whether a replay stream contains commands that draw into the attached frame target.
+ *
+ * @param stream replay frame command stream
+ * @return whether the stream contains at least one draw command
+ */
+static bool _app_replay_stream_has_draw(const DvzDrp2CommandStream* stream)
+{
+    if (stream == NULL || stream->commands == NULL)
+        return false;
+
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        const DvzDrp2CommandType type = stream->commands[i].type;
+        if (type == DVZ_DRP2_COMMAND_DRAW || type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
  * Find the app recording target id in a loaded recording.
  *
  * @param recording loaded recording
@@ -2901,52 +2923,66 @@ static void _app_draw_replay(DvzView* win, const DvzStreamFrame* frame)
     if (frame_count == 0)
         return;
 
-    if (win->replay_frame_index >= frame_count)
+    bool drew_frame = false;
+    uint32_t processed = 0;
+    while (!drew_frame && processed < frame_count)
     {
-        if (!win->replay_loop)
+        if (win->replay_frame_index >= frame_count)
         {
+            if (!win->replay_loop)
+            {
+                win->render_enabled = false;
+                return;
+            }
+            _app_replay_restart(win);
+        }
+
+        const DvzDrp2RecordedFrame* recorded =
+            dvz_drp2_recording_frame(win->replay_recording, win->replay_frame_index);
+        _app_replay_pace(win, recorded);
+
+        if (!dvz_drp2_runtime_attach_frame_target(
+                win->app->runtime, win->replay_target_id, frame))
+        {
+            log_error("_app_draw_replay failed to attach canvas frame target");
             win->render_enabled = false;
             return;
         }
-        _app_replay_restart(win);
-    }
 
-    const DvzDrp2RecordedFrame* recorded =
-        dvz_drp2_recording_frame(win->replay_recording, win->replay_frame_index);
-    _app_replay_pace(win, recorded);
+        DvzDrp2CommandStream* stream =
+            dvz_drp2_recording_frame_stream(win->replay_recording, win->replay_frame_index);
+        if (stream == NULL)
+        {
+            log_error("_app_draw_replay failed to load frame stream");
+            win->render_enabled = false;
+            return;
+        }
+        _app_replay_filter_synthetic_target(stream, win->replay_target_id);
+        const bool has_draw = _app_replay_stream_has_draw(stream);
 
-    if (!dvz_drp2_runtime_attach_frame_target(
-            win->app->runtime, win->replay_target_id, frame))
-    {
-        log_error("_app_draw_replay failed to attach canvas frame target");
-        win->render_enabled = false;
-        return;
-    }
+        DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(win->app->runtime, stream);
+        if (!result.ok)
+        {
+            _app_log_runtime_failure(
+                win, "_app_draw_replay runtime execution failed", stream, result);
+            win->render_enabled = false;
+            dvz_drp2_stream_destroy(stream);
+            return;
+        }
 
-    DvzDrp2CommandStream* stream =
-        dvz_drp2_recording_frame_stream(win->replay_recording, win->replay_frame_index);
-    if (stream == NULL)
-    {
-        log_error("_app_draw_replay failed to load frame stream");
-        win->render_enabled = false;
-        return;
-    }
-    _app_replay_filter_synthetic_target(stream, win->replay_target_id);
-
-    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(win->app->runtime, stream);
-    if (!result.ok)
-    {
-        _app_log_runtime_failure(
-            win, "_app_draw_replay runtime execution failed", stream, result);
-        win->render_enabled = false;
-    }
-    else
-    {
         _app_runtime_failure_reset(win, "_app_draw_replay runtime execution");
         win->replay_frame_index++;
-        win->frame_index++;
+        processed++;
+        if (has_draw)
+        {
+            win->frame_index++;
+            drew_frame = true;
+        }
+        dvz_drp2_stream_destroy(stream);
     }
-    dvz_drp2_stream_destroy(stream);
+
+    if (!drew_frame)
+        win->render_enabled = false;
 }
 
 

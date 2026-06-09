@@ -3030,8 +3030,36 @@ int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* ite
     DvzDrp2ValidationResult result = dvz_drp2_recording_execute_all(recording, runtime);
     AT(result.ok);
     dvz_drp2_runtime_destroy(runtime);
-
     dvz_drp2_recording_close(recording);
+
+    DvzFigure* replay_figure = dvz_figure(scene, 64, 64, 0);
+    AT(replay_figure != NULL);
+    DvzView* replay = dvz_view_offscreen(app, replay_figure, 64, 64);
+    AT(replay != NULL);
+    AT(dvz_view_replay_start(replay, path) == 0);
+    dvz_view_replay_set_paced(replay, false);
+    AT(dvz_view_replay_frame_count(replay) == 3);
+    AT(dvz_view_render_once(replay) == DVZ_CANVAS_FRAME_READY);
+
+    DvzCanvas* replay_canvas = dvz_view_canvas(replay);
+    ANN(replay_canvas);
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(replay_canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+    uint32_t yellow_count = 0;
+    for (uint32_t i = 0; i < width * height; i++)
+    {
+        const uint8_t* pixel = &rgba[4 * i];
+        if (pixel[0] > 200 && pixel[1] > 200)
+            yellow_count++;
+    }
+    AT(yellow_count > 0);
+    dvz_free(rgba);
+    AT(dvz_view_replay_stop(replay) == 0);
+
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     return 0;

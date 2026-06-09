@@ -37,7 +37,7 @@ is still visible with the blocker or preferred next action.
 | `features/panel_domain_fit` | resolved | Side-by-side free-domain vs equal-aspect fit in `examples/c/features/panel_domain_fit.c`; compiled. |
 | `features/panzoom` | resolved | Manifest/source/docs now use `feature_panzoom` with source/executable `panzoom`; generated stale `controller_panzoom` page removed. |
 | `features/pick*` | resolved | `features/picking.c` is the unified example; query y-orientation regression exists in `src/scene/tests/query.c`. |
-| `features/record_replay` | deferred | Runtime audit points to setup-only replay frame consumption in `_app_draw_replay()`; avoid render-twice workaround. |
+| `features/record_replay` | resolved | `_app_draw_replay()` now consumes setup-only recorded frames until a draw frame reaches the attached target; `test_app_offscreen_records_dvzr_frames` covers one-render live replay pixels. |
 | `features/basic_scene` | resolved | No `scene_` source/executable prefix; manifest/docs use `feature_basic_scene` as internal gallery ID. |
 | `features/compute_buffer_animation` | resolved | Compute shader now drives small independent circular point motion in `examples/c/features/compute_buffer_animation.c`; compiled. |
 | `features/json_export` | resolved | Writes `scene_export.json` and prints `./scene_export.json`; title/feature metadata updated to JSON Export. |
