@@ -10,7 +10,8 @@ scene compute pass with independent circular point motion.
 - Status: `experimental`
 - Source: [`examples/c/features/compute_buffer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/compute_buffer_animation.c)
 - Agent copy-safe: `false`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_compute_buffer_animation`](/examples/webgpu/live.html?id=feature_compute_buffer_animation)
 - WebGPU requirements: `scene-buffers`, `storage-buffers`, `scene-compute`, `point`
 - Build: `just example-c features/compute_buffer_animation`
 - Smoke: `./build/examples/c/features/compute_buffer_animation --png`
@@ -32,6 +33,14 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=feature_compute_buffer_animation" title="Compute Buffer Animation WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_compute_buffer_animation).
 
 ## Source
 

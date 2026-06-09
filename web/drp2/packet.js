@@ -487,6 +487,18 @@ function decodeCommand(type, view, bodyOffset, bodySize, arena, payloadOffset, p
     return { cmd, pass_id: readU64(view, bodyOffset), x: view.getUint32(bodyOffset + 8, true), y: view.getUint32(bodyOffset + 12, true), z: view.getUint32(bodyOffset + 16, true) };
   case 33:
     return { cmd, pass_id: readU64(view, bodyOffset) };
+  case 34:
+    return {
+      cmd,
+      encoder_id: readU64(view, bodyOffset),
+      buffer_id: readU64(view, bodyOffset + 8),
+      offset: readU64(view, bodyOffset + 16),
+      size: readU64(view, bodyOffset + 24),
+      src_stage: readCString(bytes, bodyOffset + 32),
+      src_access: readCString(bytes, bodyOffset + 544),
+      dst_stage: readCString(bytes, bodyOffset + 1056),
+      dst_access: readCString(bytes, bodyOffset + 1568),
+    };
   case 35:
     return { cmd, encoder_id: readU64(view, bodyOffset), src_buffer_id: readU64(view, bodyOffset + 8), src_offset: readU64(view, bodyOffset + 16), dst_buffer_id: readU64(view, bodyOffset + 24), dst_offset: readU64(view, bodyOffset + 32), size: readU64(view, bodyOffset + 40) };
   case 36:

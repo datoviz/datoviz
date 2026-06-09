@@ -37,6 +37,12 @@ export const LIVE_EXAMPLES = [
     animate: true,
   },
   {
+    id: "feature_compute_buffer_animation",
+    label: "Compute Buffer Animation",
+    scenarioId: "feature_compute_buffer_animation",
+    animate: true,
+  },
+  {
     id: "feature_obj_loading",
     label: "OBJ Loading",
     scenarioId: "feature_obj_loading",

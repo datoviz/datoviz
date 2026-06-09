@@ -98,7 +98,7 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Scene visual parity | limited to point/pixel dense and buffer-backed positions, basic marker, segment/path cap-join controls, primitive, RGBA8 image, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, and basic sphere demos |
 | Controller parity | limited to panzoom and one 3D arcball proof |
 | Portable scenario host parity | first `feature_timer_animation` C scenario and browser frame-callback proof are current; broad example-host coverage remains an RC target |
-| Compute-to-render parity | DRP2 fixture and native scene proof exist; browser-live particle scene is an RC target, not current support |
+| Compute-to-render parity | DRP2 fixture, native scene proof, and `feature_compute_buffer_animation` browser-live route are current |
 | Query/picking/readback scene parity | point and marker item picking, point hover, point selection, sphere selection, mesh instance selection, and one sampled image probe are browser-live |
 
 Any future feature promoted into the browser subset must update the scene emitter, DRP2 schema or
@@ -124,8 +124,6 @@ The browser path intentionally does not support:
 - GLSL/SPIR-V browser shader translation;
 - native scene/app parity;
 - custom shader APIs;
-- browser-live scene compute particles until the portable scenario host and WGSL compute path are
-  proven;
 - browser-live scene query/readback beyond the promoted point/marker/hover/pixel-selection/
   sphere-selection/mesh-instance-selection/image-probe slice;
 - colorbars, scale bars, volume, unsigned/rich labels, path subpath controls, broad stroke/vector
@@ -138,14 +136,13 @@ The browser path intentionally does not support:
 
 Promote browser scene features in this order unless a release blocker changes the priority:
 
-1. compute-to-render particle smoke at a documented browser particle budget;
-2. add manifest-driven browser routes for broader promoted portable scenarios;
-3. colorbar;
-4. scale bar;
-5. legend and readout-style overlays;
-6. richer labels, including unsigned label variants and palette/category updates;
-7. broader vector/path parity, including path subpaths and stroke edge cases;
-8. volume rendering.
+1. add manifest-driven browser routes for broader promoted portable scenarios;
+2. colorbar;
+3. scale bar;
+4. legend and readout-style overlays;
+5. richer labels, including unsigned label variants and palette/category updates;
+6. broader vector/path parity, including path subpaths and stroke edge cases;
+7. volume rendering.
 
 Each promoted item must reuse the retained native scene path, add the narrow WASM ABI surface it
 needs, extend `tools/wasm_scene_smoke.mjs`, update the 2D or 3D browser demo, and record proof in

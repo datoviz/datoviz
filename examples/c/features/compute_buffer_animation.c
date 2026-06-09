@@ -44,6 +44,26 @@
 /*  Shaders                                                                                      */
 /*************************************************************************************************/
 
+static const char* COMPUTE_WGSL =
+    "struct Params { p: vec4f, }\n"
+    "@group(0) @binding(0) var<storage, read> params: Params;\n"
+    "@group(0) @binding(1) var<storage, read_write> positions: array<f32>;\n"
+    "@group(0) @binding(2) var<storage, read_write> phases: array<f32>;\n"
+    "@compute @workgroup_size(1)\n"
+    "fn main(@builtin(global_invocation_id) global_id: vec3u) {\n"
+    "    let i = global_id.x;\n"
+    "    let count = u32(params.p.z);\n"
+    "    if (i >= count) { return; }\n"
+    "    let phase = phases[i] + params.p.x * (0.65 + 0.18 * f32(i));\n"
+    "    let denom = max(1.0, f32(count - 1u));\n"
+    "    let center = -0.70 + 1.40 * (f32(i) / denom);\n"
+    "    let radius = 0.07 + 0.018 * f32((i * 7u) % 4u);\n"
+    "    positions[3u * i + 0u] = center + radius * cos(phase);\n"
+    "    positions[3u * i + 1u] = 0.18 * sin(0.7 * f32(i)) + radius * sin(phase);\n"
+    "    positions[3u * i + 2u] = 0.0;\n"
+    "    phases[i] = phase;\n"
+    "}\n";
+
 static const char* COMPUTE_GLSL =
     "#version 450\n"
     "layout(local_size_x = 1) in;\n"
@@ -62,6 +82,14 @@ static const char* COMPUTE_GLSL =
     "    positions.x[3u * i + 2u] = 0.0;\n"
     "    phases.x[i] = phase;\n"
     "}\n";
+
+
+
+/*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_example_compute_buffer_animation_scenario(void);
 
 
 
@@ -154,8 +182,13 @@ static bool _add_compute_points(DvzScene* scene, DvzFigure* figure, DvzPanel* pa
 
     DvzSceneComputeDesc compute_desc = dvz_scene_compute_desc();
     compute_desc.label = "feature_compute_buffer_animation";
+#ifdef DVZ_EXAMPLE_NO_APP
+    compute_desc.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    compute_desc.shader_source = COMPUTE_WGSL;
+#else
     compute_desc.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     compute_desc.shader_source = COMPUTE_GLSL;
+#endif
     compute_desc.dispatch[0] = (POINT_COUNT + WORKGROUP_SIZE - 1u) / WORKGROUP_SIZE;
     compute_desc.dispatch[1] = 1u;
     compute_desc.dispatch[2] = 1u;
@@ -213,7 +246,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _compute_buffer_animation_scenario(void)
+DvzScenarioSpec dvz_example_compute_buffer_animation_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_compute_buffer_animation",
@@ -221,6 +254,8 @@ static DvzScenarioSpec _compute_buffer_animation_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_SCENE_BUFFERS |
+                        DVZ_SCENARIO_REQ_STORAGE_BUFFERS | DVZ_SCENARIO_REQ_SCENE_COMPUTE,
         .init = _scenario_init,
     };
 }
@@ -238,8 +273,10 @@ static DvzScenarioSpec _compute_buffer_animation_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _compute_buffer_animation_scenario();
+    DvzScenarioSpec spec = dvz_example_compute_buffer_animation_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

@@ -260,6 +260,11 @@ Current status as of this note:
   `python3 tools/check_scene_shader_abi.py` passed; `just example-c
   features/selection_mesh_instances` passed; `just wasm-scene-smoke` emitted, packetized, and
   replayed the retained mesh instance selection scenario plus direct r32uint mesh query packets.
+- recorded local compute-buffer-animation promotion checkpoint on 2026-06-09: `node --check
+  tools/wasm_scene_smoke.mjs`, `node --check examples/webgpu/live_examples.js`, and
+  `node --check web/drp2/packet.js` passed; `just example-c features/compute_buffer_animation`
+  passed; `just wasm-scene-smoke` emitted, packetized, and replayed the retained compute scenario,
+  including compute pipeline creation, workgroup dispatch, and compute-to-vertex resource barriers.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

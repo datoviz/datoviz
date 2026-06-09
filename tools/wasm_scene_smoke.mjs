@@ -1379,6 +1379,7 @@ try {
     "feature_selection_pixel",
     "feature_selection_sphere",
     "feature_selection_mesh_instances",
+    "feature_compute_buffer_animation",
     "feature_image_probe",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
@@ -1395,6 +1396,20 @@ try {
       requireOk(
         (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 8)) !== 0,
         `${id} did not declare query readback`,
+      );
+    }
+    if (id === "feature_compute_buffer_animation") {
+      requireOk(
+        (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 5)) !== 0,
+        `${id} did not declare scene buffers`,
+      );
+      requireOk(
+        (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 6)) !== 0,
+        `${id} did not declare storage buffers`,
+      );
+      requireOk(
+        (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 7)) !== 0,
+        `${id} did not declare scene compute`,
       );
     }
   }
@@ -1729,6 +1744,63 @@ try {
     expectPacket(Module, meshSelectionScene, DVZ_DRP2_PACKET_FRAME, "mesh selection query frame");
   } finally {
     Module._dvz_wasm_api_scene_destroy(meshSelectionScene);
+  }
+
+  const computeAnimationIndex = scenarioIndex(Module, "feature_compute_buffer_animation");
+  const computeAnimationScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
+  requireOk(computeAnimationScene !== 0, "compute animation scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(computeAnimationScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "compute animation scenario canvas format",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(computeAnimationScene, computeAnimationIndex),
+      0,
+      "compute animation scenario create",
+    );
+    expectNoDiagnostics(Module, computeAnimationScene, "compute animation scenario create diagnostics");
+    const computeAnimationFigure = Module._dvz_wasm_api_scenario_figure(computeAnimationScene);
+    requireOk(computeAnimationFigure !== 0, "compute animation scenario has no figure");
+    const initialComputeAnimation = emitStream(
+      Module, computeAnimationScene, computeAnimationFigure, "compute animation initial");
+    expectWriteCommands(initialComputeAnimation.stream, "compute animation initial");
+    requireOk(
+      initialComputeAnimation.stream.commands.some((command) => command.cmd === "CreateComputePipeline"),
+      "compute animation initial did not create a compute pipeline",
+    );
+    requireOk(
+      initialComputeAnimation.stream.commands.some((command) => command.cmd === "DispatchWorkgroups"),
+      "compute animation initial did not dispatch workgroups",
+    );
+    requireOk(
+      initialComputeAnimation.stream.commands.some(
+        (command) =>
+          command.cmd === "ResourceBarrier" &&
+          command.src_stage === "COMPUTE" &&
+          command.dst_stage === "VERTEX_INPUT",
+      ),
+      "compute animation initial did not barrier compute output for vertex input",
+    );
+    const splitComputeAnimation = emitIncrementalPacketStream(
+      Module, computeAnimationScene, computeAnimationFigure, "compute animation split packet frame");
+    requireOk(
+      splitComputeAnimation.frame.decoded.commands.some(
+        (command) => command.cmd === "DispatchWorkgroups"),
+      "compute animation frame packet did not dispatch workgroups",
+    );
+    requireOk(
+      splitComputeAnimation.frame.decoded.commands.some(
+        (command) =>
+          command.cmd === "ResourceBarrier" &&
+          command.src_stage === "COMPUTE" &&
+          command.dst_stage === "VERTEX_INPUT",
+      ),
+      "compute animation frame packet did not barrier compute output for vertex input",
+    );
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(computeAnimationScene);
   }
 
   const positions = new Float32Array([-0.75, -0.45, 0, -0.35, 0.35, 0, 0.05, -0.1, 0, 0.42, 0.5, 0, 0.72, -0.35, 0]);

@@ -61,7 +61,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 13
+#define DVZ_WASM_API_SCENARIO_COUNT 14
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -70,7 +70,8 @@
     (DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_PIXEL_VISUAL |                                 \
      DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_MESH_VISUAL |                                 \
      DVZ_SCENARIO_REQ_IMAGE_VISUAL | DVZ_SCENARIO_REQ_TEXT_VISUAL |                                  \
-     DVZ_SCENARIO_REQ_SCENE_BUFFERS | DVZ_SCENARIO_REQ_QUERY_READBACK |                              \
+     DVZ_SCENARIO_REQ_SCENE_BUFFERS | DVZ_SCENARIO_REQ_STORAGE_BUFFERS |                            \
+     DVZ_SCENARIO_REQ_SCENE_COMPUTE | DVZ_SCENARIO_REQ_QUERY_READBACK |                              \
      DVZ_SCENARIO_REQ_FRAME_CALLBACKS |                                                             \
      DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM | DVZ_SCENARIO_REQ_ARCBALL)
 
@@ -86,6 +87,7 @@ DvzScenarioSpec dvz_example_animation_tracks_scenario(void);
 DvzScenarioSpec dvz_example_basic_scene_scenario(void);
 DvzScenarioSpec dvz_example_builtin_shapes_2d_scenario(void);
 DvzScenarioSpec dvz_example_builtin_shapes_3d_scenario(void);
+DvzScenarioSpec dvz_example_compute_buffer_animation_scenario(void);
 DvzScenarioSpec dvz_example_timer_animation_scenario(void);
 DvzScenarioSpec dvz_example_triangulation_polygon_scenario(void);
 DvzScenarioSpec dvz_example_picking_scenario(void);
@@ -378,6 +380,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
     case 11:
         return dvz_example_selection_mesh_instances_scenario();
     case 12:
+        return dvz_example_compute_buffer_animation_scenario();
+    case 13:
         return dvz_example_image_probe_scenario();
     default:
         return (DvzScenarioSpec){0};
