@@ -5489,11 +5489,11 @@ int test_scene_artifact_allows_mutation_after_emit(TstContext* suite, const TstC
     DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
     AT(stream != NULL);
 
-    DvzScenePacketArtifact* artifact = _scene_packet_artifact(stream, 0, 1);
+    DvzSceneFrameArtifact* artifact = _scene_frame_artifact(stream, 0, 1);
     AT(artifact != NULL);
-    AT(_scene_packet_artifact_status(artifact) == DVZ_SCENE_PACKET_ARTIFACT_STATUS_OK);
+    AT(_scene_frame_artifact_status(artifact) == DVZ_SCENE_FRAME_ARTIFACT_STATUS_OK);
 
-    const DvzDrp2CommandStream* artifact_stream = _scene_packet_artifact_stream(artifact);
+    const DvzDrp2CommandStream* artifact_stream = _scene_frame_artifact_stream(artifact);
     AT(artifact_stream != NULL);
     AT(dvz_drp2_stream_count(artifact_stream) > 0);
 
@@ -5501,7 +5501,7 @@ int test_scene_artifact_allows_mutation_after_emit(TstContext* suite, const TstC
     AT(dvz_visual_set_data_range(visual, "size", update, 0, 2) == 0);
     AT(dvz_drp2_stream_count(artifact_stream) > 0);
 
-    _scene_packet_artifact_destroy(artifact);
+    _scene_frame_artifact_destroy(artifact);
     dvz_scene_destroy(scene);
     return 0;
 }

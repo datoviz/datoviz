@@ -3054,8 +3054,8 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzScenePacketArtifact* artifact =
-        _scene_emit_packet_artifact(win->figure, &caps, &report, &cfg, 0, win->frame_index);
+    DvzSceneFrameArtifact* artifact =
+        _scene_emit_frame_artifact(win->figure, &caps, &report, &cfg, 0, win->frame_index);
     if (artifact == NULL)
     {
         uint32_t n = dvz_diagnostic_report_count(&report);
@@ -3067,13 +3067,13 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         return;
     }
 
-    DvzDrp2CommandStream* stream = _scene_packet_artifact_stream(artifact);
+    DvzDrp2CommandStream* stream = _scene_frame_artifact_stream(artifact);
     if (
-        _scene_packet_artifact_status(artifact) != DVZ_SCENE_PACKET_ARTIFACT_STATUS_OK ||
+        _scene_frame_artifact_status(artifact) != DVZ_SCENE_FRAME_ARTIFACT_STATUS_OK ||
         stream == NULL)
     {
-        log_error("_app_draw failed to create scene packet artifact");
-        _scene_packet_artifact_destroy(artifact);
+        log_error("_app_draw failed to create scene frame artifact");
+        _scene_frame_artifact_destroy(artifact);
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
         _app_render_gui_frame(win, frame);
 #endif
@@ -3093,7 +3093,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     if (result.ok)
         _app_record_stream(win, frame, stream);
-    _scene_packet_artifact_destroy(artifact);
+    _scene_frame_artifact_destroy(artifact);
 
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     _app_render_gui_frame(win, frame);

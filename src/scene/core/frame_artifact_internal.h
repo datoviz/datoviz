@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Scene packet artifact internals                                                              */
+/*  Scene frame artifact internals                                                              */
 /*************************************************************************************************/
 
 #pragma once
@@ -28,7 +28,7 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzScenePacketArtifact DvzScenePacketArtifact;
+typedef struct DvzSceneFrameArtifact DvzSceneFrameArtifact;
 
 
 
@@ -38,9 +38,9 @@ typedef struct DvzScenePacketArtifact DvzScenePacketArtifact;
 
 typedef enum
 {
-    DVZ_SCENE_PACKET_ARTIFACT_STATUS_OK = 0,
-    DVZ_SCENE_PACKET_ARTIFACT_STATUS_ENCODE_ERROR = 1,
-} DvzScenePacketArtifactStatus;
+    DVZ_SCENE_FRAME_ARTIFACT_STATUS_OK = 0,
+    DVZ_SCENE_FRAME_ARTIFACT_STATUS_ENCODE_ERROR = 1,
+} DvzSceneFrameArtifactStatus;
 
 
 
@@ -49,22 +49,22 @@ typedef enum
 /*************************************************************************************************/
 
 /**
- * Create a packet artifact that owns one DRP2 command stream and encoded split packets.
+ * Create a frame artifact that owns one DRP2 command stream and encoded split packets.
  *
  * The artifact takes ownership of `stream` on every path. Destroy it with
- * `_scene_packet_artifact_destroy()`.
+ * `_scene_frame_artifact_destroy()`.
  *
  * @param stream the owned command stream
  * @param resource_version the retained resource version
  * @param frame_index the frame index
- * @return the owned packet artifact, or NULL
+ * @return the owned frame artifact, or NULL
  */
-DvzScenePacketArtifact* _scene_packet_artifact(
+DvzSceneFrameArtifact* _scene_frame_artifact(
     DvzDrp2CommandStream* stream, uint64_t resource_version, uint64_t frame_index);
 
 
 /**
- * Emit a figure directly into an owned packet artifact.
+ * Emit a figure directly into an owned frame artifact.
  *
  * This helper centralizes the legacy stream emission and immediate artifact freeze step. The returned
  * artifact owns the stream snapshot and encoded packet arenas; scene mutation is legal after a
@@ -76,9 +76,9 @@ DvzScenePacketArtifact* _scene_packet_artifact(
  * @param cfg the emission configuration
  * @param resource_version the retained resource version
  * @param frame_index the frame index
- * @return the owned packet artifact, or NULL
+ * @return the owned frame artifact, or NULL
  */
-DvzScenePacketArtifact* _scene_emit_packet_artifact(
+DvzSceneFrameArtifact* _scene_emit_frame_artifact(
     DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
     const DvzFramePlanEmitConfig* cfg, uint64_t resource_version, uint64_t frame_index);
 
@@ -93,48 +93,48 @@ bool _scene_freeze_stream_payloads(DvzDrp2CommandStream* stream);
 
 
 /**
- * Destroy a packet artifact.
+ * Destroy a frame artifact.
  *
- * @param artifact the packet artifact
+ * @param artifact the frame artifact
  */
-void _scene_packet_artifact_destroy(DvzScenePacketArtifact* artifact);
+void _scene_frame_artifact_destroy(DvzSceneFrameArtifact* artifact);
 
 
 /**
  * Return the artifact status.
  *
- * @param artifact the packet artifact
+ * @param artifact the frame artifact
  * @return the artifact status
  */
-DvzScenePacketArtifactStatus _scene_packet_artifact_status(
-    const DvzScenePacketArtifact* artifact);
+DvzSceneFrameArtifactStatus _scene_frame_artifact_status(
+    const DvzSceneFrameArtifact* artifact);
 
 
 /**
  * Return the resource version associated with an artifact.
  *
- * @param artifact the packet artifact
+ * @param artifact the frame artifact
  * @return the retained resource version
  */
-uint64_t _scene_packet_artifact_resource_version(const DvzScenePacketArtifact* artifact);
+uint64_t _scene_frame_artifact_resource_version(const DvzSceneFrameArtifact* artifact);
 
 
 /**
  * Return the frame index associated with an artifact.
  *
- * @param artifact the packet artifact
+ * @param artifact the frame artifact
  * @return the frame index
  */
-uint64_t _scene_packet_artifact_frame_index(const DvzScenePacketArtifact* artifact);
+uint64_t _scene_frame_artifact_frame_index(const DvzSceneFrameArtifact* artifact);
 
 
 /**
  * Return the owned command stream snapshot.
  *
- * @param artifact the packet artifact
+ * @param artifact the frame artifact
  * @return the owned command stream, or NULL
  */
-DvzDrp2CommandStream* _scene_packet_artifact_stream(const DvzScenePacketArtifact* artifact);
+DvzDrp2CommandStream* _scene_frame_artifact_stream(const DvzSceneFrameArtifact* artifact);
 
 
 /**
@@ -142,7 +142,7 @@ DvzDrp2CommandStream* _scene_packet_artifact_stream(const DvzScenePacketArtifact
  *
  * Empty phases return true with NULL packet and zero sizes.
  *
- * @param artifact the packet artifact
+ * @param artifact the frame artifact
  * @param kind setup, update, or frame
  * @param packet output borrowed packet pointer
  * @param packet_size output packet byte size
@@ -150,6 +150,6 @@ DvzDrp2CommandStream* _scene_packet_artifact_stream(const DvzScenePacketArtifact
  * @param arena_size output arena byte size
  * @return whether `kind` is valid and outputs were populated
  */
-bool _scene_packet_artifact_get(
-    const DvzScenePacketArtifact* artifact, DvzDrp2PacketKind kind, const void** packet,
+bool _scene_frame_artifact_get_packet(
+    const DvzSceneFrameArtifact* artifact, DvzDrp2PacketKind kind, const void** packet,
     uint64_t* packet_size, const void** arena, uint64_t* arena_size);
