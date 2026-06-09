@@ -409,7 +409,7 @@ int test_scene_frame_plan_missing_graph_pass_fails_contract(TstContext* suite, c
     ANN(message);
     AT(strstr(message, "no matching graph pass") != NULL);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
@@ -631,7 +631,7 @@ int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item)
     caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
@@ -694,7 +694,7 @@ int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(found_gbuffer_pass);
     AT(found_gbuffer_pipeline);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
@@ -907,7 +907,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
@@ -973,7 +973,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(found_msaa_pipeline);
     AT(found_sphere_a2c_shader);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
@@ -1071,7 +1071,7 @@ int test_scene_msaa_blended_overlay_runtime_lowering(TstContext* suite, const Ts
     cfg.target_height = 64;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
@@ -1122,7 +1122,7 @@ int test_scene_msaa_blended_overlay_runtime_lowering(TstContext* suite, const Ts
     AT(found_msaa_sphere_pipeline);
     AT(found_single_sample_blended_pipeline);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
@@ -1217,13 +1217,13 @@ int test_scene_msaa_ssao_blended_overlay_runtime_lowering(TstContext* suite, con
     cfg.target_height = 64;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
     AT(validation.ok);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
@@ -1319,7 +1319,7 @@ int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase
     cfg.target_height = 64;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) >= 2);
     const char* fallback_message = dvz_diagnostic_report_get(&report, 0);
@@ -1361,7 +1361,7 @@ int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase
     AT(found_depth_texture);
     AT(found_msaa_pipeline);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
@@ -1454,7 +1454,7 @@ int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
     caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
@@ -1508,7 +1508,7 @@ int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(found_edl_pipeline);
     AT(found_edl_bind_group);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
@@ -1945,7 +1945,7 @@ int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
     caps.supports_color_blending = true;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
@@ -2023,7 +2023,7 @@ int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(found_msaa_render_pipeline);
     AT(found_single_sample_gbuffer);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -2105,7 +2105,7 @@ int test_scene_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     emit_cfg.target_width = 64;
     emit_cfg.target_height = 64;
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream != NULL);
 
@@ -2120,7 +2120,7 @@ int test_scene_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
     dvz_drp2_runtime_destroy(runtime);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     dvz_gpu_ctx_destroy(ctx);
     return 0;
@@ -2196,7 +2196,7 @@ int test_scene_sphere_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     emit_cfg.target_width = 96;
     emit_cfg.target_height = 96;
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream != NULL);
 
@@ -2211,7 +2211,7 @@ int test_scene_sphere_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
     dvz_drp2_runtime_destroy(runtime);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     dvz_gpu_ctx_destroy(ctx);
     return 0;
@@ -2350,7 +2350,7 @@ int test_scene_visual_alpha_mode_standard_blend(TstContext* suite, const TstCase
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream(figure, &caps, &report);
     AT(stream == NULL);
     AT(dvz_diagnostic_report_count(&report) == 1);
     const char* message = dvz_diagnostic_report_get(&report, 0);
@@ -2364,7 +2364,7 @@ int test_scene_visual_alpha_mode_standard_blend(TstContext* suite, const TstCase
     cfg.target_height = 64;
     dvz_diagnostic_report_init(&report);
 
-    stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
@@ -2401,7 +2401,7 @@ int test_scene_visual_alpha_mode_standard_blend(TstContext* suite, const TstCase
     AT(has_standard_blend_depth_test_pipeline);
     AT(begin_pass_count == 2);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
@@ -2576,12 +2576,12 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     cfg.target_width = 64;
     cfg.target_height = 64;
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
     AT(validation.ok);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
 
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
@@ -2900,7 +2900,7 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     volume_bind_group->u.create_bind_group.entries[volume_binding_index].binding =
         original_binding;
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
@@ -3190,13 +3190,13 @@ int test_scene_visual_alpha_mode_wboit_transparent_only_depth(TstContext* suite,
     cfg.target_width = 64;
     cfg.target_height = 64;
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
     AT(validation.ok);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
@@ -3438,7 +3438,7 @@ int test_scene_visual_alpha_mode_mixed_oit_rejected(TstContext* suite, const Tst
     cfg.target_width = 64;
     cfg.target_height = 64;
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(stream == NULL);
     AT(dvz_diagnostic_report_count(&report) == 1);
     const char* message = dvz_diagnostic_report_get(&report, 0);
@@ -3506,7 +3506,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     cfg.target_width = 64;
     cfg.target_height = 64;
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
@@ -3622,7 +3622,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
 
     dvz_diagnostic_report_init(&report);
     cfg.runtime_resource_scope_id = UINT64_C(0x7b);
-    DvzDrp2CommandStream* scoped_stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* scoped_stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(scoped_stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -3657,7 +3657,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     cfg.target_width = 96;
     cfg.target_height = 48;
     DvzDrp2CommandStream* scoped_resize_stream =
-        dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+        _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(scoped_resize_stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -3712,9 +3712,9 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     }
     dvz_drp2_runtime_destroy(runtime);
 
-    dvz_drp2_stream_destroy(scoped_resize_stream);
-    dvz_drp2_stream_destroy(scoped_stream);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(scoped_resize_stream);
+    _test_scene_stream_destroy(scoped_stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -3760,7 +3760,7 @@ int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstContext* suite, 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream(figure, &caps, &report);
     AT(stream == NULL);
     AT(dvz_diagnostic_report_count(&report) == 1);
     const char* message = dvz_diagnostic_report_get(&report, 0);
@@ -3774,11 +3774,11 @@ int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstContext* suite, 
     caps.supports_color_blending = true;
     dvz_diagnostic_report_init(&report);
 
-    stream = dvz_figure_emit(figure, &caps, &report);
+    stream = _test_scene_emit_stream(figure, &caps, &report);
     AT(stream != NULL);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -3841,7 +3841,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
     cfg.target_width = 64;
     cfg.target_height = 64;
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
@@ -4041,7 +4041,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
 
     dvz_diagnostic_report_init(&report);
     cfg.runtime_resource_scope_id = UINT64_C(0x7c);
-    DvzDrp2CommandStream* scoped_stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* scoped_stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(scoped_stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -4084,7 +4084,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
     cfg.target_width = 96;
     cfg.target_height = 48;
     DvzDrp2CommandStream* scoped_resize_stream =
-        dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+        _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(scoped_resize_stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -4146,9 +4146,9 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
     }
     dvz_drp2_runtime_destroy(runtime);
 
-    dvz_drp2_stream_destroy(scoped_resize_stream);
-    dvz_drp2_stream_destroy(scoped_stream);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(scoped_resize_stream);
+    _test_scene_stream_destroy(scoped_stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -4199,7 +4199,7 @@ int test_scene_splat_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCas
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
@@ -4249,7 +4249,7 @@ int test_scene_splat_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCas
     AT(has_splat_wboit_pipeline);
     AT(has_splat_wboit_pipeline_identity);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -4438,7 +4438,7 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstContext* suite, c
     AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
     AT(dvz_diagnostic_report_count(&report) > 0);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
@@ -4549,7 +4549,7 @@ int test_scene_drp2_contract_checker_rejects_raster_drift(TstContext* suite, con
 
     iter_pipeline->u.create_render_pipeline = original_iter_pipeline.u.create_render_pipeline;
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
@@ -4623,7 +4623,7 @@ int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstContext* suite, con
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
     ANN(runtime);
 
-    DvzDrp2CommandStream* source_over0 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* source_over0 = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(source_over0);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -4640,11 +4640,11 @@ int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstContext* suite, con
     AT(!source_over0_has_wboit);
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, source_over0);
     AT(result.ok);
-    dvz_drp2_stream_destroy(source_over0);
+    _test_scene_stream_destroy(source_over0);
 
     AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_WBOIT) == 0);
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* wboit = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* wboit = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(wboit);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -4661,11 +4661,11 @@ int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstContext* suite, con
     AT(wboit_has_accum_pass);
     result = dvz_drp2_runtime_execute(runtime, wboit);
     AT(result.ok);
-    dvz_drp2_stream_destroy(wboit);
+    _test_scene_stream_destroy(wboit);
 
     AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_BLENDED) == 0);
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* source_over1 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* source_over1 = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(source_over1);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -4682,7 +4682,7 @@ int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstContext* suite, con
     AT(!source_over1_has_wboit);
     result = dvz_drp2_runtime_execute(runtime, source_over1);
     AT(result.ok);
-    dvz_drp2_stream_destroy(source_over1);
+    _test_scene_stream_destroy(source_over1);
     dvz_drp2_runtime_destroy(runtime);
     dvz_scene_destroy(scene);
     return 0;
@@ -4762,7 +4762,7 @@ int test_scene_visual_alpha_mode_wboit_glsl_executes(TstContext* suite, const Ts
     cfg.target_width = 64;
     cfg.target_height = 64;
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -4828,9 +4828,9 @@ int test_scene_visual_alpha_mode_wboit_glsl_executes(TstContext* suite, const Ts
     }
     AT(has_resolved_color);
 
-    dvz_drp2_stream_destroy(readback);
+    _test_scene_stream_destroy(readback);
     dvz_drp2_runtime_destroy(runtime);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     dvz_gpu_ctx_destroy(ctx);
     return 0;
@@ -4900,7 +4900,7 @@ int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstContext* suite, con
     cfg.target_width = 64;
     cfg.target_height = 64;
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -4951,9 +4951,9 @@ int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstContext* suite, con
         runtime, readback_buffer_id, 0, byte_size, pixels));
     AT(pixels[0] > 0 || pixels[1] > 0 || pixels[2] > 0);
 
-    dvz_drp2_stream_destroy(readback);
+    _test_scene_stream_destroy(readback);
     dvz_drp2_runtime_destroy(runtime);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     dvz_gpu_ctx_destroy(ctx);
     return 0;

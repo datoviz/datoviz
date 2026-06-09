@@ -1326,7 +1326,7 @@ static int _scene_visual_records_portable_dvzr(SceneDvzrVisualKind kind, const c
     caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(dvz_drp2_stream_count(stream) > 0);
@@ -1380,7 +1380,7 @@ static int _scene_visual_records_portable_dvzr(SceneDvzrVisualKind kind, const c
     dvz_drp2_runtime_destroy(runtime);
 
     dvz_drp2_recording_close(recording);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1433,7 +1433,7 @@ int test_frame_plan_emit_drp2_static_render(TstContext* suite, const TstCase* it
     AT(_assert_stream_matches_fixture(
            stream, "scene_static_render_from_c",
            "spec/drp2/fixtures/positive/scene_static_render_from_c.json") == 0);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     return 0;
 }
@@ -1527,9 +1527,9 @@ int test_frame_plan_emit_drp2_split_packets(TstContext* suite, const TstCase* it
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(frame, dvz_drp2_stream_count(frame) - 1)) ==
        DVZ_DRP2_COMMAND_QUEUE_SUBMIT);
 
-    dvz_drp2_stream_destroy(frame);
-    dvz_drp2_stream_destroy(update);
-    dvz_drp2_stream_destroy(setup);
+    _test_scene_stream_destroy(frame);
+    _test_scene_stream_destroy(update);
+    _test_scene_stream_destroy(setup);
     dvz_frame_plan_packet_result_destroy(result);
     dvz_frame_plan_destroy(plan);
     dvz_frame_plan_emitter_destroy(emitter);
@@ -1571,7 +1571,7 @@ int test_frame_plan_emit_drp2_static_render_glsl(TstContext* suite, const TstCas
     AT(strstr(json, "\"format\": \"wgsl\"") == NULL);
 
     dvz_drp2_stream_json_destroy(json);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     return 0;
 }
@@ -1742,7 +1742,7 @@ int test_frame_plan_emit_drp2_static_render_glsl_executes(TstContext* suite, con
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     return 0;
 }
@@ -1785,7 +1785,7 @@ int test_frame_plan_emit_drp2_readback_glsl_executes(TstContext* suite, const Ts
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 12, 0, 4, downloaded));
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     return 0;
 }
@@ -1846,8 +1846,8 @@ int test_frame_plan_emitter_runtime_two_frames_glsl_executes(TstContext* suite, 
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, rb_id, 0, 4, downloaded));
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
-    dvz_drp2_stream_destroy(stream1);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream0);
     dvz_frame_plan_destroy(frame1);
     dvz_frame_plan_destroy(frame0);
     dvz_frame_plan_emitter_destroy(emitter);
@@ -1915,8 +1915,8 @@ int test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes(
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, rb_id, 0, 4, downloaded));
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
-    dvz_drp2_stream_destroy(stream1);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream0);
     dvz_frame_plan_destroy(frame1);
     dvz_frame_plan_destroy(frame0);
     dvz_frame_plan_emitter_destroy(emitter);
@@ -1990,8 +1990,8 @@ int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, rb_id, 0, 4, downloaded));
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
-    dvz_drp2_stream_destroy(stream1);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream0);
     dvz_frame_plan_destroy(frame1);
     dvz_frame_plan_destroy(frame0);
     dvz_frame_plan_emitter_destroy(emitter);
@@ -2061,8 +2061,8 @@ int test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes(
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, rb_id, 0, 4, downloaded));
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
-    dvz_drp2_stream_destroy(stream1);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream0);
     dvz_frame_plan_destroy(frame1);
     dvz_frame_plan_destroy(frame0);
     dvz_frame_plan_emitter_destroy(emitter);
@@ -2114,7 +2114,7 @@ int test_frame_plan_emit_drp2_depth_peeling_graph_executes(TstContext* suite, co
     if (ctx == NULL)
     {
         log_warn("scene depth-peeling graph DRP2 test skipped because GPU context creation failed");
-        dvz_drp2_stream_destroy(stream);
+        _test_scene_stream_destroy(stream);
         dvz_frame_plan_destroy(plan);
         tst_skip(suite, "GPU context creation failed");
         return 0;
@@ -2136,7 +2136,7 @@ int test_frame_plan_emit_drp2_depth_peeling_graph_executes(TstContext* suite, co
     AT(resolved[3] == 255);
 
     dvz_drp2_runtime_destroy(runtime);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     dvz_gpu_ctx_destroy(ctx);
     return 0;
@@ -2297,7 +2297,7 @@ int test_frame_plan_emit_drp2_readback(TstContext* suite, const TstCase* item)
     AT(_assert_stream_matches_fixture(
            stream, "scene_readback_from_c",
            "spec/drp2/fixtures/positive/scene_readback_from_c.json") == 0);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     return 0;
 }
@@ -2348,7 +2348,7 @@ int test_frame_plan_emit_drp2_dynamic_uploads(TstContext* suite, const TstCase* 
     AT(_assert_stream_matches_fixture(
            stream, "scene_dynamic_uploads_from_c",
            "spec/drp2/fixtures/positive/scene_dynamic_uploads_from_c.json") == 0);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     return 0;
 }
@@ -2437,7 +2437,7 @@ int test_frame_plan_emit_drp2_texture_sampling(TstContext* suite, const TstCase*
     AT(_assert_stream_matches_fixture(
            stream, "scene_texture_sampling_from_c",
            "spec/drp2/fixtures/positive/scene_texture_sampling_from_c.json") == 0);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     return 0;
 }
@@ -2499,7 +2499,7 @@ int test_frame_plan_emit_drp2_compute_assisted(TstContext* suite, const TstCase*
     AT(_assert_stream_matches_fixture(
            stream, "scene_compute_assisted_from_c",
            "spec/drp2/fixtures/positive/scene_compute_assisted_from_c.json") == 0);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     return 0;
 }
@@ -2574,8 +2574,8 @@ int test_frame_plan_emitter_runtime_two_frames(TstContext* suite, const TstCase*
     AT(result.ok);
 
     dvz_drp2_runtime_destroy(runtime);
-    dvz_drp2_stream_destroy(stream1);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream0);
     dvz_frame_plan_destroy(frame1);
     dvz_frame_plan_destroy(frame0);
     dvz_frame_plan_emitter_destroy(emitter);
@@ -2658,8 +2658,8 @@ int test_frame_plan_emitter_runtime_dynamic_two_frames(TstContext* suite, const 
     AT(result.ok);
 
     dvz_drp2_runtime_destroy(runtime);
-    dvz_drp2_stream_destroy(stream1);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream0);
     dvz_frame_plan_destroy(frame1);
     dvz_frame_plan_destroy(frame0);
     dvz_frame_plan_emitter_destroy(emitter);
@@ -2723,8 +2723,8 @@ int test_frame_plan_emitter_runtime_dynamic_grow_buffer(TstContext* suite, const
     AT(result.ok);
 
     dvz_drp2_runtime_destroy(runtime);
-    dvz_drp2_stream_destroy(stream1);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream0);
     dvz_frame_plan_destroy(frame1);
     dvz_frame_plan_destroy(frame0);
     dvz_frame_plan_emitter_destroy(emitter);
@@ -2947,10 +2947,10 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
     AT(result.ok);
 
     dvz_drp2_runtime_destroy(runtime);
-    dvz_drp2_stream_destroy(stream3);
-    dvz_drp2_stream_destroy(stream2);
-    dvz_drp2_stream_destroy(stream1);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream3);
+    _test_scene_stream_destroy(stream2);
+    _test_scene_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream0);
     dvz_frame_plan_destroy(frame3);
     dvz_frame_plan_destroy(frame2);
     dvz_frame_plan_destroy(frame1);
@@ -3129,7 +3129,7 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
     }
     AT(query_shader_count == 2);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);
     dvz_frame_plan_destroy(plan);
     return 0;
@@ -3286,8 +3286,8 @@ int test_frame_plan_emitter_runtime_texture_two_frames(TstContext* suite, const 
     AT(result.ok);
 
     dvz_drp2_runtime_destroy(runtime);
-    dvz_drp2_stream_destroy(stream1);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream0);
     dvz_frame_plan_destroy(frame1);
     dvz_frame_plan_destroy(frame0);
     dvz_frame_plan_emitter_destroy(emitter);
@@ -3378,8 +3378,8 @@ int test_frame_plan_emitter_runtime_compute_two_frames(TstContext* suite, const 
     AT(result.ok);
 
     dvz_drp2_runtime_destroy(runtime);
-    dvz_drp2_stream_destroy(stream1);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream0);
     dvz_frame_plan_destroy(frame1);
     dvz_frame_plan_destroy(frame0);
     dvz_frame_plan_emitter_destroy(emitter);

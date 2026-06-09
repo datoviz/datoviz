@@ -346,7 +346,7 @@ int test_scene_grid_panel_recomputes_before_emit(TstContext* suite, const TstCas
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
@@ -370,7 +370,7 @@ int test_scene_grid_panel_recomputes_before_emit(TstContext* suite, const TstCas
     }
     AT(viewport_count == 2);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -508,10 +508,10 @@ int test_scene_grid_destroy_detached_panel_still_emits(TstContext* suite, const 
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -668,7 +668,7 @@ int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item)
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream != NULL);
 
@@ -684,7 +684,7 @@ int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item)
     AT(draw3 < draw5);  /* behind drawn first */
 
     dvz_drp2_stream_json_destroy(json);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -963,7 +963,7 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
@@ -984,7 +984,7 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
     AT(scissor_count >= 2);
     AT(saw_plot_scissor);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
@@ -1264,7 +1264,7 @@ int test_scene_controller_mode_fixed_emits_separate_mvp(TstContext* suite, const
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
@@ -1284,7 +1284,7 @@ int test_scene_controller_mode_fixed_emits_separate_mvp(TstContext* suite, const
     AT(mvp_buffers == 2);
 
     dvz_drp2_stream_json_destroy(json);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1330,7 +1330,7 @@ int test_scene_panel_one_pass_per_panel(TstContext* suite, const TstCase* item)
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
@@ -1347,7 +1347,7 @@ int test_scene_panel_one_pass_per_panel(TstContext* suite, const TstCase* item)
     AT(pass_count == 1);
     AT(draw_count == 3);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1394,7 +1394,7 @@ int test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state(
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
@@ -1423,7 +1423,7 @@ int test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state(
     AT(viewport_count == 2);
     AT(scissor_count == 2);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1469,7 +1469,7 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
@@ -1528,7 +1528,7 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
     AT(viewport_count == 2);
     AT(scissor_count == 2);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1573,7 +1573,7 @@ int test_scene_overlapping_depth_panels_glsl_clear_depth(TstContext* suite, cons
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
@@ -1597,7 +1597,7 @@ int test_scene_overlapping_depth_panels_glsl_clear_depth(TstContext* suite, cons
     }
     AT(pass_count == 2);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }

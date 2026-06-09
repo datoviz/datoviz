@@ -91,7 +91,7 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
@@ -175,7 +175,7 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
     AT(found_size_upload);
     AT(found_image_position_upload);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }

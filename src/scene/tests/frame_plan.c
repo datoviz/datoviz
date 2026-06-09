@@ -371,7 +371,7 @@ int test_frame_plan_render_visual_metadata(TstContext* suite, const TstCase* ite
     AT(pos_id != 0);
     AT(_resource_role(&emitter->resources, pos_id) == DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);
     dvz_frame_plan_destroy(plan);
     return 0;
@@ -455,7 +455,7 @@ int test_frame_plan_render_visual_metadata_wgsl_uses_typed_labels(
     AT(found_pipeline);
     AT(found_draw);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);
     dvz_frame_plan_destroy(plan);
     return 0;
@@ -544,7 +544,7 @@ int test_frame_plan_render_splat_metadata_wgsl_uses_typed_labels(
     AT(found_pipeline);
     AT(found_draw);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);
     dvz_frame_plan_destroy(plan);
     return 0;
@@ -620,7 +620,7 @@ int test_frame_plan_render_primitive_metadata_wgsl_uses_typed_labels(
     AT(found_pipeline);
     AT(found_draw);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);
     dvz_frame_plan_destroy(plan);
     return 0;
@@ -709,7 +709,7 @@ int test_frame_plan_render_image_metadata_wgsl_uses_typed_labels(
     AT(found_pipeline);
     AT(found_draw);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);
     dvz_frame_plan_destroy(plan);
     return 0;
@@ -807,7 +807,7 @@ int test_frame_plan_render_textured_mesh_metadata_wgsl_uses_typed_labels(
     AT(found_pipeline);
     AT(found_draw);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);
     dvz_frame_plan_destroy(plan);
     return 0;
@@ -925,7 +925,7 @@ static int test_frame_plan_runtime_uses_graph_pass_order(TstContext* suite, cons
     AC(viewport_x[0], 0.0f, 1e-6f);
     AC(viewport_x[1], 50.0f, 1e-6f);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);
     dvz_frame_plan_destroy(plan);
     return 0;

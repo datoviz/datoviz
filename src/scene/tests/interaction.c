@@ -953,7 +953,7 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     dvz_diagnostic_report_init(&report);
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
     AT(_interaction_stream_has_pipeline_attr(
@@ -964,7 +964,7 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
         stream, "_pipe_marker_item_stateg", VK_FORMAT_R32_UINT, 5));
     AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneItemStateStyleParams)) == 3);
     AT(_interaction_stream_item_state_style_bind_group_count(stream) == 3);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
 
     AT(point->attrs[point_state_idx].dirty_item_count == 0);
     AT(pixel->attrs[pixel_state_idx].dirty_item_count == 0);
@@ -1907,7 +1907,7 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
@@ -1954,7 +1954,7 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
     AT(saw_glyph_pipeline);
     AT(saw_glyph_draw);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_annotation_destroy(scalebar);
     AT(!scalebar->scalebar_visual->visible);
     AT(!scalebar->visual->visible);
@@ -2433,7 +2433,7 @@ static int test_scene_scalebar_minimal_stream(TstContext* suite, const TstCase* 
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
@@ -2502,7 +2502,7 @@ static int test_scene_scalebar_minimal_stream(TstContext* suite, const TstCase* 
     AT(saw_glyph_draw);
     AT(segment_draw_index < glyph_draw_index);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -2633,7 +2633,7 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
@@ -2696,7 +2696,7 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
     AT(saw_glyph_draw);
     AT(right_point_draw_index < glyph_draw_index);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }

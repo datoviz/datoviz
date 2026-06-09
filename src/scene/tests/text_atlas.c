@@ -161,7 +161,7 @@ static bool _download_render_target(
         ok = _dvz_drp2_runtime_vklite_download_buffer(
             runtime, readback_buffer_id, 0, byte_size, out_pixels);
 
-    dvz_drp2_stream_destroy(readback);
+    _test_scene_stream_destroy(readback);
     return ok;
 }
 #endif
@@ -348,7 +348,7 @@ int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase
     emit_cfg.target_width = width;
     emit_cfg.target_height = height;
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
     if (stream == NULL && dvz_diagnostic_report_count(&report) > 0)
     {
         log_error("%s", dvz_diagnostic_report_get(&report, 0));
@@ -373,7 +373,7 @@ int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase
     AT(_green_text_pixel_count(pixels, width, height) > 0);
 
     dvz_drp2_runtime_destroy(runtime);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     dvz_gpu_ctx_destroy(ctx);
 #else

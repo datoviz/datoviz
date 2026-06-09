@@ -22,6 +22,7 @@
 #include "frame_plan/emit.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
+#include "datoviz/scene.h"
 #include "testing.h"
 
 
@@ -52,6 +53,15 @@ struct SceneCanvasDrawState
 /*************************************************************************************************/
 
 bool _captured_log_contains(const TstContext* suite, const char* needle);
+
+DvzDrp2CommandStream* _test_scene_emit_stream(
+    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report);
+
+DvzDrp2CommandStream* _test_scene_emit_stream_ex(
+    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
+    const DvzFramePlanEmitConfig* cfg);
+
+void _test_scene_stream_destroy(DvzDrp2CommandStream* stream);
 
 const uint8_t* _pixel_at(
     const uint8_t* rgba, uint32_t width, uint32_t height, uint32_t x, uint32_t y);

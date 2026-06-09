@@ -76,7 +76,7 @@ int test_scene_render_pass_scope_excludes_resource_commands(TstContext* suite, c
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream != NULL);
 
@@ -103,7 +103,7 @@ int test_scene_render_pass_scope_excludes_resource_commands(TstContext* suite, c
     AT(!in_render_pass);
     AT(pass_count > 0);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }

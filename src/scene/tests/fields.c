@@ -630,7 +630,7 @@ int test_scene_legend_emit_stream_contains_derived_visuals(
     caps.supports_color_blending = true;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(legend->mark_visual != NULL);
@@ -674,7 +674,7 @@ int test_scene_legend_emit_stream_contains_derived_visuals(
     AT(found_glyph_draw);
     AT(_colorbar_stream_has_pipeline_label(stream, "_pipe_glyphg"));
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1365,7 +1365,7 @@ int test_scene_colorbar_emit_stream_contains_derived_visuals(
     caps.supports_color_blending = true;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(colorbar->tick_count >= 2);
@@ -1444,7 +1444,7 @@ int test_scene_colorbar_emit_stream_contains_derived_visuals(
     AT(found_tick_index_label);
     AT(found_glyph_position_label);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1485,7 +1485,7 @@ int test_scene_colorbar_invalid_domain_reports_diagnostic(
 
     DvzDrp2CommandStream* stream = NULL;
     AT_EXPECTED_ERROR_STRICT(
-        suite, (stream = dvz_figure_emit(figure, &caps, &report)) != NULL);
+        suite, (stream = _test_scene_emit_stream(figure, &caps, &report)) != NULL);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 1);
     const char* message = dvz_diagnostic_report_get(&report, 0);
@@ -1495,7 +1495,7 @@ int test_scene_colorbar_invalid_domain_reports_diagnostic(
     AT(colorbar->tick_visual == NULL || !colorbar->tick_visual->visible);
     AT(colorbar->text_visual == NULL || !colorbar->text_visual->visible);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1625,9 +1625,9 @@ int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCas
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
-    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream(figure, &caps, &report);
     ANN(stream);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
 
     char* json = dvz_scene_json(scene);
     ANN(json);
@@ -1893,7 +1893,7 @@ int test_scene_image_scalar_texture_uses_bound_scale(TstContext* suite, const Ts
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream(figure, &caps, &report);
     ANN(stream);
     AT(_visual_family_state(visual)->texture.rgba != NULL);
     uint8_t* rgba = (uint8_t*)_visual_family_state(visual)->texture.rgba;
@@ -1902,7 +1902,7 @@ int test_scene_image_scalar_texture_uses_bound_scale(TstContext* suite, const Ts
     AT(rgba[2] == 0);
     AT(rgba[3] == 255);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1968,7 +1968,7 @@ int test_scene_image_r16_float_field_uses_bound_scale(TstContext* suite, const T
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream(figure, &caps, &report);
     ANN(stream);
     AT(_visual_family_state(image)->texture.rgba != NULL);
     uint8_t* rgba = (uint8_t*)_visual_family_state(image)->texture.rgba;
@@ -1977,7 +1977,7 @@ int test_scene_image_r16_float_field_uses_bound_scale(TstContext* suite, const T
     AT(rgba[2] == 0);
     AT(rgba[3] == 255);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -2043,7 +2043,7 @@ int test_scene_image_r16_snorm_field_uses_bound_scale(TstContext* suite, const T
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream(figure, &caps, &report);
     ANN(stream);
     AT(_visual_family_state(image)->texture.rgba != NULL);
     uint8_t* rgba = (uint8_t*)_visual_family_state(image)->texture.rgba;
@@ -2052,7 +2052,7 @@ int test_scene_image_r16_snorm_field_uses_bound_scale(TstContext* suite, const T
     AT(rgba[2] == 0);
     AT(rgba[3] == 255);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -2365,7 +2365,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const Ts
     caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream0 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream0 = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream0);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -2428,7 +2428,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const Ts
     AT(drew_box_proxy);
     AT(!field->dirty);
     AT(!_visual_family_state(volume)->texture.dirty);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream0);
 
     uint16_t patch[2] = {101, 102};
     AT(dvz_sampled_field_update_region(
@@ -2440,7 +2440,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const Ts
         }));
 
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream1 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream1 = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream1);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -2474,7 +2474,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const Ts
     AT(!field->dirty);
     AT(!_visual_family_state(volume)->texture.dirty);
 
-    dvz_drp2_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream1);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -2879,7 +2879,7 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
     caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -2982,7 +2982,7 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
     AT(matched_start_value);
     AT(_visual_family_state(volume)->texture.rgba == NULL);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -3048,12 +3048,12 @@ int test_scene_volume_label_slice_uses_categorical_scale(TstContext* suite, cons
     caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(_colorbar_stream_has_pipeline_label(stream, "_pipe_vol_labels_uint"));
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -3121,12 +3121,12 @@ int test_scene_volume_label_composite_uses_first_hit_shader(
     caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(_colorbar_stream_has_pipeline_label(stream, "_pipe_vol_labels_uint_composite"));
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -3193,12 +3193,12 @@ int test_scene_volume_signed_label_composite_uses_first_hit_shader(
     caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(_colorbar_stream_has_pipeline_label(stream, "_pipe_vol_labels_sint_composite"));
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -3264,7 +3264,7 @@ int test_scene_volume_label_sparse_lookup_buffer(TstContext* suite, const TstCas
     caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -3282,7 +3282,7 @@ int test_scene_volume_label_sparse_lookup_buffer(TstContext* suite, const TstCas
     AT(entries[2].rgba == 0x08070605u);
     AT(_stream_binds_volume_label_lookup(stream, lookup_buffer_id));
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -3347,7 +3347,7 @@ int test_scene_volume_signed_label_sparse_lookup_buffer(TstContext* suite, const
     caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -3365,7 +3365,7 @@ int test_scene_volume_signed_label_sparse_lookup_buffer(TstContext* suite, const
     AT(entries[2].rgba == 0x0c0b0a09u);
     AT(_stream_binds_volume_label_lookup(stream, lookup_buffer_id));
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -3486,7 +3486,7 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
     caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -3561,7 +3561,7 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
     AT(!field->dirty);
     AT(!_visual_family_state(volume)->texture.dirty);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -3707,8 +3707,8 @@ int test_scene_sampled_field_3d_emits_runtime_texture_upload(
     AT(result.ok);
 
     dvz_drp2_runtime_destroy(runtime);
-    dvz_drp2_stream_destroy(stream1);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream0);
     dvz_frame_plan_destroy(frame1);
     dvz_frame_plan_destroy(frame0);
     dvz_frame_plan_emitter_destroy(emitter);
@@ -3891,9 +3891,9 @@ int test_scene_image_field_partial_update_emits_texture_subregion(TstContext* su
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream0 = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream0 = _test_scene_emit_stream(figure, &caps, &report);
     ANN(stream0);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream0);
 
     float patch[2] = {1.0f, 1.0f};
     AT(dvz_sampled_field_update_region(
@@ -3904,7 +3904,7 @@ int test_scene_image_field_partial_update_emits_texture_subregion(TstContext* su
             .rows_per_image = 1,
         }));
 
-    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream1 = _test_scene_emit_stream(figure, &caps, &report);
     ANN(stream1);
 
     uint32_t write_texture_count = 0;
@@ -3925,7 +3925,7 @@ int test_scene_image_field_partial_update_emits_texture_subregion(TstContext* su
     AT(found_region);
     AT(!field->dirty);
 
-    dvz_drp2_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream1);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -3982,7 +3982,7 @@ int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream0 = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream0 = _test_scene_emit_stream(figure, &caps, &report);
     ANN(stream0);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -4006,7 +4006,7 @@ int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, 
     }
     AT(tex0 != 0);
     AT(created_tex0);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream0);
 
     uint8_t resized[4 * 3 * 4] = {0};
     AT(dvz_sampled_field_resize(
@@ -4018,7 +4018,7 @@ int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, 
     AT(desc->height == 3);
 
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream1 = _test_scene_emit_stream(figure, &caps, &report);
     ANN(stream1);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
@@ -4054,7 +4054,7 @@ int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, 
     AT(wrote_resized);
     AT(!field->dirty);
 
-    dvz_drp2_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream1);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -4135,9 +4135,9 @@ int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, co
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream0 = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream0 = _test_scene_emit_stream(figure, &caps, &report);
     ANN(stream0);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream0);
 
     float patch[2] = {1.0f, 1.0f};
     AT(dvz_sampled_field_update_region(
@@ -4149,7 +4149,7 @@ int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, co
         }));
     dvz_scale_set_view_range(scale0, 0.0, 1.0);
 
-    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream1 = _test_scene_emit_stream(figure, &caps, &report);
     ANN(stream1);
 
     uint32_t write_texture_count = 0;
@@ -4176,7 +4176,7 @@ int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, co
     AT(found_full);
     AT(found_partial);
 
-    dvz_drp2_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream1);
     dvz_scene_destroy(scene);
     return 0;
 }

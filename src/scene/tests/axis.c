@@ -820,7 +820,7 @@ static int test_axis_text_hidpi_scales_glyph_bounds(TstContext* suite, const Tst
     cfg.device_scale_x = 2.0f;
     cfg.device_scale_y = 2.0f;
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
     ANN(axis->text_visual);
@@ -840,7 +840,7 @@ static int test_axis_text_hidpi_scales_glyph_bounds(TstContext* suite, const Tst
     }
     AT(max_extent > 30.0f);
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1879,9 +1879,9 @@ static int test_axis_static_prepare_idempotent(TstContext* suite, const TstCase*
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
 
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
 
     AT(!_scene_figure_has_pending_render_work(figure));
 
@@ -1990,21 +1990,21 @@ int test_axis_dynamic_segment_draw_count(TstContext* suite, const TstCase* item)
 
     AT(dvz_axis_set_tick_policy(
         axis, &(DvzAxisTickPolicy){DVZ_STRUCT_INIT_FIELDS(DvzAxisTickPolicy), .target_count = 12, .min_pixel_spacing = 0.0f}));
-    DvzDrp2CommandStream* stream0 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream0 = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream0);
     uint32_t draw0 = _axis_test_draw_vertex_count(stream0);
     AT(draw0 > 0);
-    dvz_drp2_stream_destroy(stream0);
+    _test_scene_stream_destroy(stream0);
 
     dvz_diagnostic_report_init(&report);
     AT(dvz_axis_set_tick_policy(
         axis, &(DvzAxisTickPolicy){DVZ_STRUCT_INIT_FIELDS(DvzAxisTickPolicy), .target_count = 2, .min_pixel_spacing = 0.0f}));
-    DvzDrp2CommandStream* stream1 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzDrp2CommandStream* stream1 = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream1);
     uint32_t draw1 = _axis_test_draw_vertex_count(stream1);
     AT(draw1 > 0);
     AT(draw1 < draw0);
-    dvz_drp2_stream_destroy(stream1);
+    _test_scene_stream_destroy(stream1);
 
     dvz_scene_destroy(scene);
     return 0;

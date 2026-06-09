@@ -39,6 +39,78 @@
 
 /*************************************************************************************************/
 
+#define TEST_SCENE_MAX_ARTIFACT_STREAMS 4096u
+
+static const DvzDrp2CommandStream* _artifact_streams[TEST_SCENE_MAX_ARTIFACT_STREAMS] = {0};
+static DvzSceneFrameArtifact* _artifacts[TEST_SCENE_MAX_ARTIFACT_STREAMS] = {0};
+
+
+
+static bool _test_scene_register_artifact(DvzSceneFrameArtifact* artifact)
+{
+    ANN(artifact);
+    const DvzDrp2CommandStream* stream = dvz_scene_frame_artifact_stream(artifact);
+    if (stream == NULL)
+        return false;
+    for (uint32_t i = 0; i < TEST_SCENE_MAX_ARTIFACT_STREAMS; i++)
+    {
+        if (_artifacts[i] == NULL)
+        {
+            _artifacts[i] = artifact;
+            _artifact_streams[i] = stream;
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+DvzDrp2CommandStream* _test_scene_emit_stream_ex(
+    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
+    const DvzFramePlanEmitConfig* cfg)
+{
+    DvzSceneFrameArtifact* artifact = dvz_figure_emit_frame(figure, caps, report, cfg);
+    if (artifact == NULL)
+        return NULL;
+    if (!_test_scene_register_artifact(artifact))
+    {
+        dvz_scene_frame_artifact_destroy(artifact);
+        return NULL;
+    }
+    return (DvzDrp2CommandStream*)(uintptr_t)dvz_scene_frame_artifact_stream(artifact);
+}
+
+
+
+DvzDrp2CommandStream* _test_scene_emit_stream(
+    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report)
+{
+    return _test_scene_emit_stream_ex(figure, caps, report, NULL);
+}
+
+
+
+void _test_scene_stream_destroy(DvzDrp2CommandStream* stream)
+{
+    if (stream == NULL)
+        return;
+    for (uint32_t i = 0; i < TEST_SCENE_MAX_ARTIFACT_STREAMS; i++)
+    {
+        if (_artifact_streams[i] == stream)
+        {
+            DvzSceneFrameArtifact* artifact = _artifacts[i];
+            _artifact_streams[i] = NULL;
+            _artifacts[i] = NULL;
+            dvz_scene_frame_artifact_destroy(artifact);
+            return;
+        }
+    }
+    dvz_drp2_stream_destroy(stream);
+}
+
+
+
 bool _captured_log_contains(const TstContext* suite, const char* needle)
 {
     ANN(suite);
@@ -144,7 +216,7 @@ void _scene_canvas_drp2_draw(
         state->execute_ok = result.ok && result.code == DVZ_DRP2_VALIDATION_OK;
     }
 
-    dvz_drp2_stream_destroy(stream);
+    _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     state->callback_count++;
 }
