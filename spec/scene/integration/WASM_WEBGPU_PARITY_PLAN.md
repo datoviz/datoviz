@@ -36,6 +36,11 @@ The website gallery is the primary qualitative assessment surface for browser ex
 runner proves DRP2/WebGPU protocol behavior; live gallery pages prove the end-to-end C scene,
 WASM, DRP2 packet, browser runtime, interaction, and diagnostics path that users see.
 
+Automated browser smoke should remain intentionally small: one basic runtime route, one
+query/readback route, and later one compute-to-render route when compute is part of the live browser
+promise. Larger WASM sampler pages are useful for development, but they are not the public
+promotion surface.
+
 Required RC browser capabilities:
 
 1. portable C scenario host for native and browser runners;

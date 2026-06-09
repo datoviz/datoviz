@@ -43,7 +43,8 @@ accepting NumPy arrays for policy-declared data arguments. Source of truth:
    current subset diagnostics, compute particles, narrow request/query/readback,
    manifest-backed example classification, and browser/runner smoke evidence. Live gallery routes
    must reuse the same C example or portable C scenario as native validation; browser code is host
-   glue only.
+   glue only. Keep automated browser smoke to one basic runtime route and one query/readback route;
+   broad `wasm-*` sampler pages are development aids, not the public promotion surface.
 4. **Compute+graphics:** minimal DRP2 sync objects/barriers, native compute-to-render proof,
    WebGPU parity diagnostics, and a C-first particle-advection gallery target that becomes the
    browser compute proof once the WASM scenario host can drive it.

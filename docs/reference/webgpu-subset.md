@@ -112,6 +112,10 @@ configure WebGPU, execute DRP2 packets, surface diagnostics, and provide page UI
 reimplement the example scene construction, visual state, animation, picking, selection,
 query/probe, or data semantics.
 
+Browser smoke routes are deliberately smaller than the gallery. The required RC smoke set is one
+basic runtime route plus one query/readback route; broader WASM sampler pages may remain for
+development but are not the definition of public WebGPU support.
+
 ## Unsupported Or Deferred
 
 The browser path intentionally does not support:

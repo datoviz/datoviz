@@ -94,6 +94,11 @@ glue, asset loading, browser event normalization, WebGPU setup, DRP2 execution, 
 page UI only. It must not reimplement example scene construction, visual state, animation, picking,
 selection, query/probe, or data semantics.
 
+Browser smoke routes should stay minimal. For the RC path, keep one basic runtime smoke and one
+query/readback smoke, with an optional compute smoke only when compute-to-render is promoted.
+Broad `wasm-*` sampler pages are development aids; they should not define public WebGPU support or
+replace canonical live gallery routes.
+
 
 ## Current Capability Snapshot
 
