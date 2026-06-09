@@ -339,6 +339,15 @@ Current status as of this note:
   colorbar, scale-bar, scale-bar-units, legend, annotation-readout, picking query, linked-probe
   query, scientific-plotting, vector, and wind-field checks skipped by known headless WebGPU
   instance loss before scene rendering.
+- recorded local isolines promotion checkpoint on 2026-06-09: `node --check
+  tools/wasm_scene_smoke.mjs`, `node --check tools/webgpu_browser_smoke.mjs`, and `node --check
+  examples/webgpu/live_examples.js` passed; `python3 tools/check_example_manifests.py` passed;
+  `just example-c features/isolines` passed; `just wasm-scene-smoke` emitted, packetized, and
+  replayed the retained isolines scenario, including the surface mesh lowering and contour isolines
+  lowered through segment draw streams. `just webgpu-browser-smoke` exited successfully in this
+  shell, with the live timer, colorbar, scale-bar, scale-bar-units, legend, annotation-readout,
+  picking query, linked-probe query, scientific-plotting, vector, wind-field, and isolines checks
+  skipped by known headless WebGPU instance loss before scene rendering.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

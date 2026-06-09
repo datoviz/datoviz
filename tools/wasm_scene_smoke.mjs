@@ -1117,6 +1117,34 @@ function expectWindFieldScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "WriteTexture").length >= 2, `${label}: expected field and glyph texture uploads`);
 }
 
+function expectIsolinesScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  expectCommandCount(stream, "BeginCommandEncoder", 1, label);
+  expectCommandCount(stream, "FinishCommandEncoder", 1, label);
+  expectCommandCount(stream, "QueueSubmit", 1, label);
+  requireOk(commandsOf(stream, "BeginRenderPass").length >= 1, `${label}: expected render pass`);
+  requireOk(commandsOf(stream, "SetViewport").length >= 1, `${label}: expected viewport command`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 1, `${label}: expected scissor command`);
+  expectPipeline(
+    stream,
+    `${label} surface mesh`,
+    (pipeline) =>
+      pipeline.builtin_pipeline === "scene.mesh" ||
+      pipeline.builtin_pipeline === "scene.primitive",
+  );
+  expectPipeline(
+    stream,
+    `${label} contour segments`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.segment",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected mesh draw`);
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected contour segment draw`);
+  expectWriteCommands(stream, label);
+}
+
 function expectScaleBarScenarioStreamShape(stream, label, { reference = "point" } = {}) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -2136,6 +2164,35 @@ try {
     expectWindFieldScenarioStreamShape(initialWindField.stream, "wind-field scenario initial");
   } finally {
     Module._dvz_wasm_api_scene_destroy(windFieldScene);
+  }
+
+  const isolinesIndex = scenarioIndex(Module, "feature_isolines");
+  const isolinesWidth = Module._dvz_wasm_api_scenario_width(isolinesIndex);
+  const isolinesHeight = Module._dvz_wasm_api_scenario_height(isolinesIndex);
+  const isolinesScene = Module._dvz_wasm_api_scene(isolinesWidth, isolinesHeight);
+  requireOk(isolinesScene !== 0, "isolines scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(isolinesScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "isolines scenario canvas format",
+    );
+    setCapabilities(
+      Module, isolinesScene, 4096, 4, 8, 256 * 1024 * 1024, 256, 4,
+      "isolines scenario capabilities");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(isolinesScene, isolinesIndex),
+      0,
+      "isolines scenario create",
+    );
+    expectNoDiagnostics(Module, isolinesScene, "isolines scenario create diagnostics");
+    const isolinesFigure = Module._dvz_wasm_api_scenario_figure(isolinesScene);
+    requireOk(isolinesFigure !== 0, "isolines scenario has no figure");
+    const initialIsolines =
+      emitStream(Module, isolinesScene, isolinesFigure, "isolines scenario initial");
+    expectIsolinesScenarioStreamShape(initialIsolines.stream, "isolines scenario initial");
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(isolinesScene);
   }
 
   const pixelSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);

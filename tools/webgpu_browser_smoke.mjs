@@ -785,6 +785,7 @@ async function main() {
     let wasmScientific = null;
     let wasmVector = null;
     let wasmWindField = null;
+    let wasmIsolines = null;
     try {
       wasmBasic = await smokeAnimatedWasmPage(
         page,
@@ -950,6 +951,20 @@ async function main() {
       }
       console.log(skipLine(`WebGPU live wind-field smoke: headless WebGPU instance loss (${error.message})`));
     }
+    try {
+      wasmIsolines = await smokeWasmPage(
+        page,
+        baseUrl,
+        '/examples/webgpu/live.html?id=feature_isolines',
+        'Rendered Isolines',
+        join(artifactsDir, 'webgpu_live_isolines.png'),
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(skipLine(`WebGPU live isolines smoke: headless WebGPU instance loss (${error.message})`));
+    }
     if (wasmBasic !== null) {
       console.log(passLine(`live basic: ${wasmBasic.initialStatus}; initial_frame=${wasmBasic.initialFrame}`));
     }
@@ -990,6 +1005,9 @@ async function main() {
     }
     if (wasmWindField !== null) {
       console.log(passLine(`live wind-field: ${wasmWindField.initialStatus}`));
+    }
+    if (wasmIsolines !== null) {
+      console.log(passLine(`live isolines: ${wasmIsolines.initialStatus}`));
     }
     console.log(`Wrote ${artifactsDir}`);
   } finally {
