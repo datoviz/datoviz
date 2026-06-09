@@ -664,7 +664,7 @@
       "source": "examples/c/features/volume_occlusion.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/volume_occlusion.c",
       "page": "gallery/features/feature_volume_occlusion.md",
-      "summary": "volume occluder attenuating an embedded slice visual.",
+      "summary": "side-by-side volume occluder attenuation on an embedded slice.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/volume_occlusion",
       "smoke_command": "./build/examples/c/features/volume_occlusion --png",

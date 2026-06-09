@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* volume_occlusion - volume occluder attenuating an embedded slice visual.
+/* volume_occlusion - side-by-side volume occluder attenuation on an embedded slice.
  *
  * Scenario: feature.volume_occlusion
  * Style: features, graphite_cyan, 1600x1200 capture target
@@ -199,6 +199,81 @@ static bool _configure_volume(DvzScene* scene, DvzVisual* visual, DvzVolumeRende
 
 
 
+/**
+ * Set the shared camera used by each comparison panel.
+ *
+ * @param panel target panel
+ * @return true on success
+ */
+static bool _set_camera(DvzPanel* panel)
+{
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.eye[0] = 1.55f;
+    camera.eye[1] = -2.70f;
+    camera.eye[2] = 1.30f;
+    camera.up[1] = 0.0f;
+    camera.up[2] = 1.0f;
+    camera.fov_y = 0.68f;
+    camera.near = 0.05f;
+    camera.far = 100.0f;
+    return dvz_panel_set_camera(panel, &camera) != NULL;
+}
+
+
+
+/**
+ * Add the volume/slice pair to one panel, optionally enabling slice attenuation by the volume.
+ *
+ * @param scene scene owning visuals
+ * @param panel target panel
+ * @param field sampled scalar field
+ * @param occlusion_enabled whether the slice should sample volume occlusion
+ * @return true on success
+ */
+static bool _add_volume_pair(
+    DvzScene* scene, DvzPanel* panel, DvzSampledField* field, bool occlusion_enabled)
+{
+    DvzVisual* volume = dvz_volume(scene, 0);
+    DvzVisual* slice = dvz_volume(scene, 0);
+    if (volume == NULL || slice == NULL)
+        return false;
+    if (!dvz_visual_set_field(volume, "field", field))
+        return false;
+    if (!dvz_visual_set_field(slice, "field", field))
+        return false;
+    if (!_configure_volume(scene, volume, DVZ_VOLUME_RENDER_COMPOSITE))
+        return false;
+    if (!_configure_volume(scene, slice, DVZ_VOLUME_RENDER_SLICE))
+        return false;
+    if (dvz_visual_set_volume_occluded(slice, occlusion_enabled) != 0)
+        return false;
+
+    if (dvz_panel_add_visual(
+            panel, volume,
+            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 0}) !=
+        0)
+        return false;
+    if (dvz_panel_add_visual(
+            panel, slice,
+            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1}) !=
+        0)
+        return false;
+
+    if (occlusion_enabled)
+    {
+        DvzVolumeOcclusionDesc occlusion = dvz_volume_occlusion_desc();
+        occlusion.enabled = true;
+        occlusion.alpha_threshold = 0.02f;
+        occlusion.fade_distance = 0.05f;
+        occlusion.occluded_alpha = 0.24f;
+        if (dvz_panel_set_volume_occluder(panel, volume, &occlusion) != 0)
+            return false;
+    }
+    return true;
+}
+
+
+
 /*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
@@ -225,55 +300,31 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx->figure == NULL)
         goto error;
 
-    DvzPanel* panel = dvz_panel_full(ctx->figure);
-    if (panel == NULL)
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
+    if (grid == NULL)
         goto error;
-    example_graphite_cyan_set_panel_background(panel);
+    if (!dvz_grid_set_margins(
+            grid, &(DvzPanelReserve){
+                      .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}))
+        goto error;
+    if (!dvz_grid_set_gutter(grid, 30.0f, 0.0f))
+        goto error;
 
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 1.55f;
-    camera.eye[1] = -2.70f;
-    camera.eye[2] = 1.30f;
-    camera.fov_y = 0.68f;
-    if (dvz_panel_set_camera(panel, &camera) == NULL)
+    DvzPanel* plain = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* occluded = dvz_grid_panel(grid, 0, 1);
+    if (plain == NULL || occluded == NULL)
+        goto error;
+    example_graphite_cyan_set_panel_background(plain);
+    example_graphite_cyan_set_panel_background(occluded);
+    if (!_set_camera(plain) || !_set_camera(occluded))
         goto error;
 
     DvzSampledField* field = _field(ctx->scene, state);
     if (field == NULL)
         goto error;
-
-    DvzVisual* volume = dvz_volume(ctx->scene, 0);
-    DvzVisual* slice = dvz_volume(ctx->scene, 0);
-    if (volume == NULL || slice == NULL)
+    if (!_add_volume_pair(ctx->scene, plain, field, false))
         goto error;
-    if (!dvz_visual_set_field(volume, "field", field))
-        goto error;
-    if (!dvz_visual_set_field(slice, "field", field))
-        goto error;
-    if (!_configure_volume(ctx->scene, volume, DVZ_VOLUME_RENDER_COMPOSITE))
-        goto error;
-    if (!_configure_volume(ctx->scene, slice, DVZ_VOLUME_RENDER_SLICE))
-        goto error;
-    if (dvz_visual_set_volume_occluded(slice, true) != 0)
-        goto error;
-
-    if (dvz_panel_add_visual(
-            panel, volume,
-            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 0}) !=
-        0)
-        goto error;
-    if (dvz_panel_add_visual(
-            panel, slice,
-            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1}) !=
-        0)
-        goto error;
-
-    DvzVolumeOcclusionDesc occlusion = dvz_volume_occlusion_desc();
-    occlusion.enabled = true;
-    occlusion.alpha_threshold = 0.02f;
-    occlusion.fade_distance = 0.05f;
-    occlusion.occluded_alpha = 0.24f;
-    if (dvz_panel_set_volume_occluder(panel, volume, &occlusion) != 0)
+    if (!_add_volume_pair(ctx->scene, occluded, field, true))
         goto error;
 
     *out_user = state;

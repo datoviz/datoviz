@@ -46,7 +46,7 @@ is still visible with the blocker or preferred next action.
 | `features/video_export` | resolved | Runner record modes print video output paths; `examples/c/features/video_export.c` runs frame animation. |
 | `features/visibility` | resolved | Batching/visual-level visibility comment exists in `examples/c/features/visibility.c`. |
 | `features/visual_transform` | resolved | Two-panel without/with transform comparison in `examples/c/features/visual_transform.c`; compiled. |
-| `features/volume_occlusion` | deferred | Needs two-panel volume occluder comparison rewrite. |
+| `features/volume_occlusion` | resolved | Rewritten as side-by-side slice rendering without/with volume occlusion in `examples/c/features/volume_occlusion.c`; compiled. |
 | `showcases/brain_volume` | partial | Name is already `brain_volume`; initial tilted view still needs visual smoke in Vulkan-capable environment. |
 | `showcases/choropleth` | deferred | Retina title size and fixed-aspect right-drag zoom remain. |
 | `showcases/scientific_plotting` | deferred | X-axis clipping remains to inspect/fix. |
