@@ -3,18 +3,18 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-#!/usr/bin/env python3
 import json
+import re
 from collections import defaultdict
 from pathlib import Path
 from textwrap import indent
 
-from build_ctypes import map_python_type
+from bindings.generate_ctypes import _callback_typedefs, _ctype_for_type
 
 # Constants
 # -------------------------------------------------------------------------------------------------
 
-HEADERS_PATH = Path('build/headers.json')
+API_PATH = Path('build/bindings/datoviz_api.json')
 OUTPUT_PATH = Path('docs/reference/api_c.md')
 
 
@@ -30,18 +30,24 @@ SECTION_NAMES = {
 # -------------------------------------------------------------------------------------------------
 
 
+PARAM_RE = re.compile(r'^@param\s+(?P<name>\w+)\s*(?P<doc>.*)$')
+RETURN_RE = re.compile(r'^@returns?\s+(?P<doc>.*)$')
+
+
 def classify_header(header_name):
-    if header_name == 'datoviz_protocol.h':
+    path = Path(header_name)
+    name = path.name
+    if name == 'drp2.h' or '/drp2/' in header_name:
         return 'protocol'
-    elif header_name == 'datoviz_gui.h':
+    elif name in {'gui.h', 'imgui.h'}:
         return 'gui'
-    elif header_name == 'datoviz_visuals.h':
+    elif name == 'datoviz_visuals.h':
         return 'visuals'
     else:
         return 'functions'
 
 
-def group_by_section_and_object(headers):
+def group_by_section_and_object(api):
     sections = {
         'functions': defaultdict(list),
         'visuals': defaultdict(list),
@@ -49,16 +55,16 @@ def group_by_section_and_object(headers):
         'protocol': defaultdict(list),
     }
 
-    for header, contents in headers.items():
+    for fn in api.get('functions', []):
+        name = fn['name']
+        if not name.startswith('dvz_'):
+            continue
+        header = fn.get('location', {}).get('file') or ''
         section = classify_header(header)
-        for fn in contents.get('functions', {}).values():
-            name = fn['name']
-            if not name.startswith('dvz_'):
-                continue
-            parts = name[4:].split('_', 1)
-            obj = parts[0] if len(parts) > 1 else 'misc'
-            obj = obj.title()
-            sections[section][obj].append(fn)
+        parts = name[4:].split('_', 1)
+        obj = parts[0] if len(parts) > 1 else 'misc'
+        obj = obj.title()
+        sections[section][obj].append(fn)
 
     return sections
 
@@ -67,17 +73,73 @@ def group_by_section_and_object(headers):
 # -------------------------------------------------------------------------------------------------
 
 
-def format_signature_py(fn):
-    ret = fn.get('returns', {})
-    ret_type = ret.get('dtype', 'void')
-    ret_desc = ret.get('docstring', '')
+def _type_name(type_info):
+    return type_info.get('qualtype') or type_info.get('canonical') or 'void'
+
+
+def _clean_doc(raw):
+    raw = (raw or '').strip()
+    if raw.startswith('/**'):
+        raw = raw[3:]
+    if raw.endswith('*/'):
+        raw = raw[:-2]
+    lines = []
+    for line in raw.splitlines():
+        line = line.strip()
+        if line.startswith('*'):
+            line = line[1:].strip()
+        lines.append(line)
+    return lines
+
+
+def _doc_parts(raw):
+    text = []
+    params = {}
+    ret = ''
+    for line in _clean_doc(raw):
+        if not line:
+            if text and text[-1]:
+                text.append('')
+            continue
+        param_match = PARAM_RE.match(line)
+        if param_match:
+            params[param_match.group('name')] = param_match.group('doc').strip()
+            continue
+        return_match = RETURN_RE.match(line)
+        if return_match:
+            ret = return_match.group('doc').strip()
+            continue
+        if line.startswith('@'):
+            continue
+        text.append(line)
+    while text and not text[-1]:
+        text.pop()
+    return '\n'.join(text), params, ret
+
+
+def _doc_context(api):
+    records = {record['name'] for record in api.get('records', []) if record.get('name')}
+    enums = {enum['name'] for enum in api.get('enums', []) if enum.get('name')}
+    callbacks = set(_callback_typedefs(api))
+    return records, enums, callbacks
+
+
+def _python_type(type_info, ctx):
+    records, enums, callbacks = ctx
+    return _ctype_for_type(type_info, records, enums, callbacks=callbacks) or 'ctypes.c_void_p'
+
+
+def format_signature_py(fn, ctx):
+    _, _, ret_desc = _doc_parts(fn.get('doc', ''))
+    ret_type = _python_type(fn.get('result', {'qualtype': 'void'}), ctx)
     if ret_desc:
         ret_desc = f'  # returns {ret_desc} : {ret_type}'
     lines = [f'dvz.{fn["name"][4:]}({ret_desc}']
-    for arg in fn.get('args', []):
+    _, param_docs, _ = _doc_parts(fn.get('doc', ''))
+    for arg in fn.get('parameters', []):
         name = arg.get('name', '')
-        doc = arg.get('docstring', '')
-        pytype = map_python_type(arg)
+        doc = param_docs.get(name, '')
+        pytype = _python_type(arg.get('type', {}), ctx)
         if name:
             lines.append(f'    {name},  # {doc} : {pytype}')
     lines.append(')')
@@ -87,18 +149,18 @@ def format_signature_py(fn):
 def format_signature_c(fn):
     lines = []
 
-    ret = fn.get('returns', {})
-    ret_type = ret.get('dtype', 'void')
-    ret_desc = ret.get('docstring', '')
+    _, _, ret_desc = _doc_parts(fn.get('doc', ''))
+    ret_type = _type_name(fn.get('result', {'qualtype': 'void'}))
     if ret_desc:
         ret_desc = '  // returns ' + ret_desc
     lines.append(f'{ret_type} {fn["name"]}({ret_desc}')
 
-    args = fn.get('args', [])
+    _, param_docs, _ = _doc_parts(fn.get('doc', ''))
+    args = fn.get('parameters', [])
     for arg in args:
-        dtype = arg.get('dtype', 'void')
+        dtype = _type_name(arg.get('type', {}))
         name = arg.get('name', '')
-        doc = arg.get('docstring', '')
+        doc = param_docs.get(name, '')
         lines.append(f'    {dtype} {name},  // {doc}')
     if args:
         lines[-1] = lines[-1].rstrip(',')  # remove trailing comma
@@ -106,26 +168,33 @@ def format_signature_c(fn):
     return '\n'.join(lines)
 
 
-def format_function(fn):
-    docstring = fn.get('docstring', '').strip()
+def format_function(fn, ctx):
+    docstring, _, _ = _doc_parts(fn.get('doc', ''))
     out = [f'#### `{fn["name"]}()`\n']
     if docstring:
         out.append(docstring + '\n')
     out.append('=== "C"\n')
     out.append('    ```c\n' + indent(format_signature_c(fn), '    ') + '\n    ```')
     out.append('=== "Python"\n')
-    out.append('    ```python\n' + indent(format_signature_py(fn), '    ') + '\n    ```')
+    out.append('    ```python\n' + indent(format_signature_py(fn, ctx), '    ') + '\n    ```')
     return '\n'.join(out) + '\n---\n'
 
 
 def format_enum(name, enum_data):
-    values = '\n'.join(f'{k} = {v}' for k, v in enum_data['values'])
+    values = '\n'.join(f'{value["name"]} = {value["value"]}' for value in enum_data['values'])
     return f'### `{name}`\n```c\n{values}\n```' + '\n\n---\n'
 
 
 def format_struct(name, struct_data):
-    fields = '\n'.join(f'    {f["dtype"]} {f["name"]};' for f in struct_data['fields'])
-    return f'### `{name}`\n```c\nstruct {struct_data["name"]} {{\n{fields}\n}};\n```' + '\n\n---\n'
+    if struct_data.get('opaque'):
+        body = f'typedef struct {name} {name};'
+    else:
+        fields = '\n'.join(
+            f'    {_type_name(field.get("type", {}))} {field["name"]};'
+            for field in struct_data.get('fields', [])
+        )
+        body = f'{struct_data.get("kind", "struct")} {name} {{\n{fields}\n}};'
+    return f'### `{name}`\n```c\n{body}\n```' + '\n\n---\n'
 
 
 def format_define(name, value):
@@ -137,10 +206,11 @@ def format_define(name, value):
 
 
 def build_api_c():
-    data = json.loads(HEADERS_PATH.read_text())
+    data = json.loads(API_PATH.read_text())
     out = ['# C API Reference']
 
     sections = group_by_section_and_object(data)
+    ctx = _doc_context(data)
 
     for section_key in ['functions', 'visuals', 'gui', 'protocol']:
         header = SECTION_NAMES[section_key]
@@ -148,21 +218,17 @@ def build_api_c():
         for obj in sorted(sections[section_key]):
             out.append(f'\n### {obj}')
             for fn in sorted(sections[section_key][obj], key=lambda f: f['name']):
-                out.append(format_function(fn))
+                out.append(format_function(fn, ctx))
 
     # Enums
-    enums = {}
-    for contents in data.values():
-        enums.update(contents.get('enums', {}))
+    enums = {enum['name']: enum for enum in data.get('enums', [])}
     if enums:
         out.append('\n## Enumerations')
         for name in sorted(enums):
             out.append(format_enum(name, enums[name]))
 
     # Structs
-    structs = {}
-    for contents in data.values():
-        structs.update(contents.get('structs', {}))
+    structs = {record['name']: record for record in data.get('records', [])}
     if structs:
         out.append(
             '\n## Structures\n\n> **Note**: The information about these structures is provided for reference only, do not use them in production as the structures may change with each release.\n\n'
