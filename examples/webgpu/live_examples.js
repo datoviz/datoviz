@@ -110,6 +110,11 @@ export const LIVE_EXAMPLES = [
     label: "Scientific Plotting Workflow",
     scenarioId: "scientific_plotting_workflow",
   },
+  {
+    id: "visual_vector",
+    label: "Vector",
+    scenarioId: "visual_vector",
+  },
 ];
 
 export function liveExampleById(id) {

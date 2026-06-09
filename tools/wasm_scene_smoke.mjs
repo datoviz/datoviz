@@ -1051,6 +1051,31 @@ function expectScientificPlottingScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
 }
 
+function expectVectorScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  expectCommandCount(stream, "BeginCommandEncoder", 1, label);
+  expectCommandCount(stream, "FinishCommandEncoder", 1, label);
+  expectCommandCount(stream, "QueueSubmit", 1, label);
+  requireOk(commandsOf(stream, "BeginRenderPass").length >= 1, `${label}: expected render pass`);
+  requireOk(commandsOf(stream, "SetViewport").length >= 1, `${label}: expected viewport command`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 1, `${label}: expected scissor command`);
+  expectPipeline(
+    stream,
+    `${label} straight vectors`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.segment",
+  );
+  expectPipeline(
+    stream,
+    `${label} curved vectors`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.path",
+  );
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 2, `${label}: expected segment and path draws`);
+  expectWriteCommands(stream, label);
+}
+
 function expectScaleBarScenarioStreamShape(stream, label, { reference = "point" } = {}) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -1609,6 +1634,7 @@ try {
     "feature_annotation_readout",
     "linked_panels_probe_colorbar",
     "scientific_plotting_workflow",
+    "visual_vector",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -2011,6 +2037,34 @@ try {
       initialScientific.stream, "scientific plotting scenario initial");
   } finally {
     Module._dvz_wasm_api_scene_destroy(scientificScene);
+  }
+
+  const vectorIndex = scenarioIndex(Module, "visual_vector");
+  const vectorWidth = Module._dvz_wasm_api_scenario_width(vectorIndex);
+  const vectorHeight = Module._dvz_wasm_api_scenario_height(vectorIndex);
+  const vectorScene = Module._dvz_wasm_api_scene(vectorWidth, vectorHeight);
+  requireOk(vectorScene !== 0, "vector scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(vectorScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "vector scenario canvas format",
+    );
+    setCapabilities(
+      Module, vectorScene, 4096, 4, 8, 256 * 1024 * 1024, 256, 4,
+      "vector scenario capabilities");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(vectorScene, vectorIndex),
+      0,
+      "vector scenario create",
+    );
+    expectNoDiagnostics(Module, vectorScene, "vector scenario create diagnostics");
+    const vectorFigure = Module._dvz_wasm_api_scenario_figure(vectorScene);
+    requireOk(vectorFigure !== 0, "vector scenario has no figure");
+    const initialVector = emitStream(Module, vectorScene, vectorFigure, "vector scenario initial");
+    expectVectorScenarioStreamShape(initialVector.stream, "vector scenario initial");
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(vectorScene);
   }
 
   const pixelSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);

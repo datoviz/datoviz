@@ -1652,7 +1652,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=visual_vector
       requirements:
         - vector
         - path
