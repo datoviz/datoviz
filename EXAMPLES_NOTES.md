@@ -26,15 +26,15 @@ i'm a bit confused as to what this is supposed to illustrate mostly because the 
 features/controller_fly
 the left-right drag is very weird and possibly broken
 
-features/depth_cue
+features/technique_depth_cue
 to show this technique we should use a 3D example no? for ex 3D spheres, perhaps organized in a 3D regular lattice, with this technique disabled vs enabled in two different panels? wdyt?
 
-features/depth_test
+features/technique_depth_test
 the disc edges don't seem to be perfectly antialiased (without msaa, just talking about the shaders here), can you double check?
 
-features/edl
+features/technique_edl
 i wonder if the techniques examples should not be prefixed with technique_?
-also, this one i think should use a 3D example, perhaps the same as features/depth_cue, but showing edl instead of depth_cue? wdyt?
+also, this one i think should use a 3D example, perhaps the same as features/technique_depth_cue, but showing edl instead of depth_cue? wdyt?
 
 features/external_surface
 that one is not functional atm. wdyt we should do to show a good example of using an external vulkan surface?
@@ -70,7 +70,7 @@ not sure if this is a good illustration of the lighting system, shouldn't we sho
 features/marker_symbols
 shouldn't the different types of symbols show clearly which is using which technique? for ex for bitmap using a clearly bitmap symbol with, perhaps, colors, that could not be easily made with other techniques (look at v0.3 marker visual example where we had used an actual red pin bitmap)
 
-features/msaa
+features/technique_msaa
 should have technique_ prefix
 also, better to show a 3D scene i think with some meshes like cubes because we would better see the aliasing without msaa
 
@@ -86,7 +86,7 @@ i don't think this is working, i do not see a background
 features/panel_domain_fit
 i'm not sure what this one is supposed to show? is it supposed to force some equal aspect or something? I don't think it's working
 
-features/panzoom_attachment
+features/panzoom
 why not just "panzoom"
 
 features/pick*
@@ -95,25 +95,25 @@ these are mostly broken (notably y flip again, you should really add tight regre
 features/record_replay
 that one is broken, record_replay_replay.png is all purple
 
-features/scene_basic
+features/basic_scene
 do we need the scene_ prefix?
 
-features/scene_compute_buffer
+features/compute_buffer_animation
 do we need the scene_ prefix?
 this example should instead show some small circular independent movement of each dot with different phases and angular speeds
 
-features/scene_json
+features/json_export
 should find a name without scene_ prefix i think
 this example should save the json to a file and print the path of the saved json
 
 features/selection
 shouldn't that be merged with the new picking example? wdyt?
 
-features/ssao
+features/technique_ssao
 should have technique_ as prefix
 should have more blur because looks a lot grainy
 
-features/transparency_order
+features/technique_transparency
 there are no other transparency techniques to show? are you sure a 3D example is not clearer to show the differences between the techniques? like 2 cubes of different sizes that partially overlap or something? wdyt?
 
 features/video_export
@@ -130,7 +130,7 @@ this one is very weird and needs to be redone. perhaps two panels with a volume 
 
 
 
-showcases/brain_volume_mesh
+showcases/brain_volume
 this one should be called just "brain_volume"
 also the initial view should be tilted in such a way that we see the slice and some of the brain volume behind
 

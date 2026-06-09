@@ -15,7 +15,7 @@ Coverage: 11 examples (9 supported, 1 experimental, 1 prototype).
 
 <div class="card" markdown="1">
 
-### [Allen Mouse Brain](gallery/showcases/brain_volume_mesh.md)
+### [Allen Mouse Brain](gallery/showcases/brain_volume.md)
 
 _Media pending._
 

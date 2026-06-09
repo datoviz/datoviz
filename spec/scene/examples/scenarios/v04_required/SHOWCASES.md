@@ -44,13 +44,13 @@ Mars DEM terrain analysis, registered orthoimage/DEM preprocessing, slope/hazard
 probes, and GIS cache policy remain outside this v0.4 slice.
 
 
-## `brain_volume_mesh`
+## `brain_volume`
 
 Narrow neuroscience showcase over the current volume, transparency, occlusion, and controller stack.
 
-Current v0.4 implementation target: `examples/c/showcases/brain_volume_mesh.c`, a prepared
+Current v0.4 implementation target: `examples/c/showcases/brain_volume.c`, a prepared
 Allen/IBL RGBA volume with composite volume rendering, an occluded slice, arcball camera, and
-deterministic capture hooks. The cache-local `brain_volume_mesh.bin` atlas-mesh preparation is
+deterministic capture hooks. The cache-local `brain_volume.bin` atlas-mesh preparation is
 source material for a later mesh-overlay polish pass. Defer full region picking, atlas trees, and
 linked 2D explorer behavior to v0.5.
 

@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* transparency_order - source-over and weighted blended order-independent transparency.
+/* msaa - side-by-side internal multisample antialiasing on thin segments.
  *
- * Scenario: feature.transparency_order
+ * Scenario: feature.msaa
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just example-c features/transparency_order
- * Run:    ./build/examples/c/features/transparency_order --live
- * Smoke:  ./build/examples/c/features/transparency_order --png
+ * Build:  just example-c features/technique_msaa
+ * Run:    ./build/examples/c/features/technique_msaa --live
+ * Smoke:  ./build/examples/c/features/technique_msaa --png
  */
 
 
@@ -20,6 +20,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -33,9 +34,11 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH        1600u
-#define HEIGHT       1200u
-#define VERTEX_COUNT 9u
+#define WIDTH         1600u
+#define HEIGHT        1200u
+#define SEGMENT_COUNT 28u
+
+static const float TAU = 6.28318530718f;
 
 
 
@@ -44,71 +47,50 @@
 /*************************************************************************************************/
 
 /**
- * Fill three overlapping translucent triangles.
- *
- * @param positions output vertex positions
- * @param normals output normals
- * @param colors output colors
- */
-static void _fill_triangles(
-    vec3 positions[VERTEX_COUNT], vec3 normals[VERTEX_COUNT], DvzColor colors[VERTEX_COUNT])
-{
-    const vec3 data[VERTEX_COUNT] = {
-        {-0.82f, -0.54f, 0.00f}, {-0.10f, +0.76f, 0.00f}, {+0.32f, -0.38f, 0.00f},
-        {-0.26f, +0.54f, 0.18f}, {+0.84f, +0.22f, 0.18f}, {+0.02f, -0.82f, 0.18f},
-        {-0.84f, +0.02f, 0.36f}, {+0.18f, +0.88f, 0.36f}, {+0.78f, -0.06f, 0.36f},
-    };
-    const ExampleStyleColorRole roles[3] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_WARNING,
-    };
-    const uint8_t alpha[3] = {122, 136, 150};
-
-    for (uint32_t i = 0; i < VERTEX_COUNT; i++)
-    {
-        positions[i][0] = data[i][0];
-        positions[i][1] = data[i][1];
-        positions[i][2] = data[i][2];
-        normals[i][0] = 0.0f;
-        normals[i][1] = 0.0f;
-        normals[i][2] = 1.0f;
-        const uint32_t triangle = i / 3u;
-        colors[i] = example_graphite_cyan_color(roles[triangle]);
-        colors[i].a = alpha[triangle];
-    }
-}
-
-
-
-/**
- * Add one transparent primitive visual.
+ * Add a starburst of thin diagonal lines to a panel.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
- * @param mode alpha mode
  * @return true on success
  */
-static bool _add_transparent_triangles(DvzScene* scene, DvzPanel* panel, DvzAlphaMode mode)
+static bool _add_line_burst(DvzScene* scene, DvzPanel* panel)
 {
-    vec3 positions[VERTEX_COUNT] = {{0}};
-    vec3 normals[VERTEX_COUNT] = {{0}};
-    DvzColor colors[VERTEX_COUNT] = {{0}};
-    _fill_triangles(positions, normals, colors);
+    vec3 starts[SEGMENT_COUNT] = {{0}};
+    vec3 ends[SEGMENT_COUNT] = {{0}};
+    DvzColor colors[SEGMENT_COUNT] = {{0}};
+    float widths[SEGMENT_COUNT] = {0};
 
-    DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
-    if (visual == NULL)
+    for (uint32_t i = 0; i < SEGMENT_COUNT; i++)
+    {
+        const float t = (float)i / (float)SEGMENT_COUNT;
+        const float a = TAU * t;
+        starts[i][0] = -0.07f * cosf(a);
+        starts[i][1] = -0.07f * sinf(a);
+        starts[i][2] = 0.0f;
+        ends[i][0] = +0.94f * cosf(a);
+        ends[i][1] = +0.94f * sinf(a);
+        ends[i][2] = 0.0f;
+        colors[i] = example_graphite_cyan_color(
+            i % 3u == 0   ? EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY
+            : i % 3u == 1 ? EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY
+                          : EXAMPLE_STYLE_COLOR_WARNING);
+        widths[i] = 1.25f;
+    }
+
+    DvzVisual* segment = dvz_segment(scene, 0);
+    if (segment == NULL)
         return false;
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = VERTEX_COUNT},
-        {.attr_name = "normal", .data = normals, .item_count = VERTEX_COUNT},
-        {.attr_name = "color", .data = colors, .item_count = VERTEX_COUNT},
+        {.attr_name = "position_start", .data = starts, .item_count = SEGMENT_COUNT},
+        {.attr_name = "position_end", .data = ends, .item_count = SEGMENT_COUNT},
+        {.attr_name = "color", .data = colors, .item_count = SEGMENT_COUNT},
+        {.attr_name = "stroke_width", .data = widths, .item_count = SEGMENT_COUNT},
     };
-    if (dvz_visual_set_data_many(visual, updates, 3) != 0)
+    if (dvz_visual_set_data_many(segment, updates, 4) != 0)
         return false;
-    if (dvz_visual_set_alpha_mode(visual, mode) != 0)
+    if (dvz_visual_set_depth_test(segment, false) != 0)
         return false;
-    return dvz_panel_add_visual(panel, visual, NULL) == 0;
+    return dvz_panel_add_visual(panel, segment, NULL) == 0;
 }
 
 
@@ -118,7 +100,7 @@ static bool _add_transparent_triangles(DvzScene* scene, DvzPanel* panel, DvzAlph
 /*************************************************************************************************/
 
 /**
- * Initialize the transparency-order feature scenario.
+ * Initialize the MSAA feature scenario.
  *
  * @param ctx scenario context
  * @param out_user scenario state output
@@ -145,29 +127,35 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!dvz_grid_set_gutter(grid, 30.0f, 0.0f))
         return false;
 
-    DvzPanel* blended = dvz_grid_panel(grid, 0, 0);
-    DvzPanel* wboit = dvz_grid_panel(grid, 0, 1);
-    if (blended == NULL || wboit == NULL)
+    DvzPanel* single = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* multisample = dvz_grid_panel(grid, 0, 1);
+    if (single == NULL || multisample == NULL)
         return false;
-    example_graphite_cyan_set_panel_background(blended);
-    example_graphite_cyan_set_panel_background(wboit);
+    example_graphite_cyan_set_panel_background(single);
+    example_graphite_cyan_set_panel_background(multisample);
 
-    return _add_transparent_triangles(ctx->scene, blended, DVZ_ALPHA_BLENDED) &&
-           _add_transparent_triangles(ctx->scene, wboit, DVZ_ALPHA_WBOIT);
+    if (!_add_line_burst(ctx->scene, single) || !_add_line_burst(ctx->scene, multisample))
+        return false;
+
+    DvzMsaaDesc msaa = dvz_msaa_desc();
+    msaa.enabled = true;
+    msaa.sample_count = 4u;
+    msaa.alpha_to_coverage = false;
+    return dvz_panel_set_msaa(multisample, &msaa);
 }
 
 
 
 /**
- * Return the transparency-order scenario specification.
+ * Return the MSAA scenario specification.
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _transparency_order_scenario(void)
+static DvzScenarioSpec _msaa_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_transparency_order",
-        .title = "transparency_order",
+        .id = "technique_msaa",
+        .title = "msaa",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
@@ -182,7 +170,7 @@ static DvzScenarioSpec _transparency_order_scenario(void)
 /*************************************************************************************************/
 
 /**
- * Run the transparency-order feature example through the native scenario runner.
+ * Run the MSAA feature example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -190,6 +178,6 @@ static DvzScenarioSpec _transparency_order_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _transparency_order_scenario();
+    DvzScenarioSpec spec = _msaa_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

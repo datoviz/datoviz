@@ -22,7 +22,7 @@ source material.
 | `volume` | `visuals/volume.c` | Minimal visual proof. |
 | `visual_glyph` | `visuals/glyph.c` | Experimental visual proof. |
 | `visual_splat` | `visuals/splat.c` | Experimental visual proof. |
-| `feature_scene_basic` | `features/scene_basic.c` | Feature proof. |
+| `feature_basic_scene` | `features/basic_scene.c` | Feature proof. |
 | `feature_panel_single` | `features/panel_single.c` | Feature proof. |
 | `feature_panel_grid` | `features/panel_grid.c` | Feature proof. |
 | `feature_panel_multi` | `features/panel_multi.c` | Feature proof. |
@@ -51,10 +51,10 @@ source material.
 | `feature_update_visual_data` | `features/update_visual_data.c` | Feature proof. |
 | `update_partial` | `features/update_partial.c` | Feature proof. |
 | `feature_visibility` | `features/visibility.c` | Feature proof. |
-| `depth_test` | `features/depth_test.c` | Feature proof. |
+| `depth_test` | `features/technique_depth_test.c` | Feature proof. |
 | `alpha_blending` | `features/alpha_blending.c` | Feature proof. |
 | `panel_background` | `features/panel_background.c` | Feature proof. |
-| `controller_panzoom` | `features/panzoom_attachment.c` | Feature proof. |
+| `controller_panzoom` | `features/panzoom.c` | Feature proof. |
 | `feature_pick_point` | `features/pick_point.c` | Feature proof. |
 | `feature_pick_hover` | `features/pick_hover.c` | Feature proof. |
 | `marker_picking` | `features/pick_marker.c` | Feature proof. |
@@ -71,7 +71,7 @@ source material.
 | `protein_arcball_viewer` | `showcases/protein.c` | Real RCSB PDB data showcase with provenance. |
 | `showcase_gpu_particle_smoke` | `showcases/gpu_particle_smoke.c` | Experimental compute showcase. |
 | `showcase_wind_field` | `showcases/wind_field.c` | Gallery/showcase seed. |
-| `brain_volume_mesh` | `showcases/brain_volume_mesh.c` | Gallery/showcase seed. |
+| `brain_volume` | `showcases/brain_volume.c` | Gallery/showcase seed. |
 | `point_cloud` | `showcases/point_cloud.c` | Real RESEPI point-cloud showcase seed. |
 | `textured_terrain_or_planet` | `showcases/textured_planet.c` | Gallery/showcase seed. |
 

@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* brain_volume_mesh - local Allen mouse brain RGBA volume and occluded slice.
+/* brain_volume - local Allen mouse brain RGBA volume and occluded slice.
  *
- * Scenario: brain_volume_mesh
+ * Scenario: brain_volume
  * Style: showcase, graphite_cyan, 1600x1200 capture target
  *
- * Build:   just example-c showcases/brain_volume_mesh
- * Run:     ./build/examples/c/showcases/brain_volume_mesh --live
- * Smoke:   ./build/examples/c/showcases/brain_volume_mesh --png
+ * Build:   just example-c showcases/brain_volume
+ * Run:     ./build/examples/c/showcases/brain_volume --live
+ * Smoke:   ./build/examples/c/showcases/brain_volume --png
  * Data:    data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz
  */
 
@@ -1062,8 +1062,8 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _brain_volume_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "brain_volume_mesh",
-        .title = "brain_volume_mesh",
+        .id = "brain_volume",
+        .title = "brain_volume",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

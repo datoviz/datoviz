@@ -30,7 +30,7 @@ CATEGORY_TO_LANE = {
 LANDING_IDS = (
     "point_cloud",
     "protein_arcball_viewer",
-    "brain_volume_mesh",
+    "brain_volume",
     "showcase_wind_field",
     "us_state_choropleth",
 )

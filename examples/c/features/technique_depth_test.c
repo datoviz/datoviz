@@ -4,14 +4,17 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* scene_json - retained scene JSON serialization diagnostic.
+/* depth_test - side-by-side visual depth-test toggle with overlapping 3D points.
  *
- * Scenario: feature.scene_json
+ * Scenario: feature.depth_test
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just example-c features/scene_json
- * Run:    ./build/examples/c/features/scene_json --live
- * Smoke:  ./build/examples/c/features/scene_json --png
+ * Build:  just example-c features/technique_depth_test
+ * Run:    ./build/examples/c/features/technique_depth_test --live
+ * Smoke:  ./build/examples/c/features/technique_depth_test --png
+ *
+ * One panel keeps depth testing enabled. The other disables depth testing on the same retained
+ * point visual, so the later far point overdraws the nearer point.
  */
 
 
@@ -22,10 +25,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 
-#include "_assertions.h"
 #include "datoviz/scene.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
@@ -38,7 +38,7 @@
 
 #define WIDTH       1600u
 #define HEIGHT      1200u
-#define POINT_COUNT 3u
+#define POINT_COUNT 2u
 
 
 
@@ -47,32 +47,31 @@
 /*************************************************************************************************/
 
 /**
- * Add a tiny retained point visual.
+ * Add two overlapping depth-separated points to one panel.
  *
  * @param scene scene owning the visual
- * @param panel target panel
+ * @param panel panel receiving the visual
+ * @param depth_test_enabled whether the visual should test scene depth
  * @return true when the visual was added
  */
-static bool _add_points(DvzScene* scene, DvzPanel* panel)
+static bool _add_depth_points(DvzScene* scene, DvzPanel* panel, bool depth_test_enabled)
 {
-    ANN(scene);
-    ANN(panel);
-
     const vec3 positions[POINT_COUNT] = {
-        {-0.45f, -0.18f, 0.0f},
-        {+0.00f, +0.28f, 0.0f},
-        {+0.45f, -0.18f, 0.0f},
+        {-0.06f, -0.34f, 0.02f},
+        {+0.07f, +0.36f, 0.02f},
     };
+    float diameters[POINT_COUNT] = {260.0f, 260.0f};
     DvzColor colors[POINT_COUNT] = {
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
     };
-    const float diameters[POINT_COUNT] = {32.0f, 44.0f, 32.0f};
+    colors[0].a = 248;
+    colors[1].a = 248;
 
     DvzVisual* point = dvz_point(scene, 0);
     if (point == NULL)
         return false;
+
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
@@ -80,32 +79,39 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
     };
     if (dvz_visual_set_data_many(point, updates, 3) != 0)
         return false;
+
+    DvzPointStyleDesc style = dvz_point_style_desc();
+    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
+    style.stroke_width = 0.0f;
+    if (dvz_point_set_style(point, &style) != 0)
+        return false;
+
+    if (dvz_visual_set_depth_test(point, depth_test_enabled) != 0)
+        return false;
+
     return dvz_panel_add_visual(panel, point, NULL) == 0;
 }
 
 
 
 /**
- * Serialize the scene once and print a compact diagnostic.
+ * Apply the shared camera used by both comparison panels.
  *
- * @param scene scene to serialize
- * @return true when serialization returned a plausible JSON document
+ * @param panel target panel
+ * @return true when the camera was applied
  */
-static bool _serialize_scene(DvzScene* scene)
+static bool _set_depth_camera(DvzPanel* panel)
 {
-    ANN(scene);
-
-    char* json = dvz_scene_json(scene);
-    if (json == NULL)
-        return false;
-
-    const size_t length = strlen(json);
-    const bool ok = length > 2u && json[0] == '{' && strstr(json, "\"figures\"") != NULL;
-    if (ok)
-        fprintf(stderr, "scene_json: %zu bytes\n", length);
-
-    dvz_scene_json_destroy(json);
-    return ok;
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[0] = 0.00f;
+    camera_desc.eye[1] = -3.10f;
+    camera_desc.eye[2] = 0.38f;
+    camera_desc.up[1] = 0.0f;
+    camera_desc.up[2] = 1.0f;
+    camera_desc.fov_y = 0.50f;
+    camera_desc.near = 0.05f;
+    camera_desc.far = 100.0f;
+    return dvz_panel_set_camera(panel, &camera_desc) != NULL;
 }
 
 
@@ -115,7 +121,7 @@ static bool _serialize_scene(DvzScene* scene)
 /*************************************************************************************************/
 
 /**
- * Initialize the scene-JSON feature example.
+ * Initialize the visual depth-test scenario.
  *
  * @param ctx scenario context
  * @param out_user scenario state output
@@ -132,28 +138,48 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx->figure == NULL)
         return false;
 
-    DvzPanel* panel = dvz_panel_full(ctx->figure);
-    if (panel == NULL)
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
+    if (grid == NULL)
         return false;
-    example_graphite_cyan_set_panel_background(panel);
+    if (!dvz_grid_set_margins(
+            grid,
+            &(DvzPanelReserve){
+                .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}))
+        return false;
+    if (!dvz_grid_set_gutter(grid, 30.0f, 0.0f))
+        return false;
 
-    if (!_add_points(ctx->scene, panel))
+    DvzPanel* depth_on = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* depth_off = dvz_grid_panel(grid, 0, 1);
+    if (depth_on == NULL || depth_off == NULL)
         return false;
-    return _serialize_scene(ctx->scene);
+    example_graphite_cyan_set_panel_background(depth_on);
+    example_graphite_cyan_set_panel_background(depth_off);
+
+    if (!_set_depth_camera(depth_on))
+        return false;
+    if (!_set_depth_camera(depth_off))
+        return false;
+    if (!_add_depth_points(ctx->scene, depth_on, true))
+        return false;
+    if (!_add_depth_points(ctx->scene, depth_off, false))
+        return false;
+
+    return true;
 }
 
 
 
 /**
- * Return the scene-JSON scenario specification.
+ * Return the depth-test scenario specification.
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _scene_json_scenario(void)
+static DvzScenarioSpec _depth_test_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_scene_json",
-        .title = "scene_json",
+        .id = "technique_depth_test",
+        .title = "depth_test",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
@@ -168,7 +194,7 @@ static DvzScenarioSpec _scene_json_scenario(void)
 /*************************************************************************************************/
 
 /**
- * Run the scene-JSON feature example through the native scenario runner.
+ * Run the visual depth-test feature example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -176,6 +202,6 @@ static DvzScenarioSpec _scene_json_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _scene_json_scenario();
+    DvzScenarioSpec spec = _depth_test_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

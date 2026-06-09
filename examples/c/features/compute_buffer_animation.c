@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* scene_compute_buffer - minimal scene compute pass writing a point position buffer.
+/* compute_buffer_animation - minimal scene compute pass writing a point position buffer.
  *
- * Scenario: feature.scene_compute_buffer
+ * Scenario: feature.compute_buffer_animation
  * Style: features, graphite_cyan, 1600x1200 capture target, experimental scene compute
  *
- * Build:  just example-c features/scene_compute_buffer
- * Run:    ./build/examples/c/features/scene_compute_buffer --live
- * Smoke:  ./build/examples/c/features/scene_compute_buffer --png
+ * Build:  just example-c features/compute_buffer_animation
+ * Run:    ./build/examples/c/features/compute_buffer_animation --live
+ * Smoke:  ./build/examples/c/features/compute_buffer_animation --png
  */
 
 
@@ -143,7 +143,7 @@ static bool _add_compute_points(DvzScene* scene, DvzFigure* figure, DvzPanel* pa
         return false;
 
     DvzSceneComputeDesc compute_desc = dvz_scene_compute_desc();
-    compute_desc.label = "feature_scene_compute_buffer";
+    compute_desc.label = "feature_compute_buffer_animation";
     compute_desc.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     compute_desc.shader_source = COMPUTE_GLSL;
     compute_desc.dispatch[0] = (POINT_COUNT + WORKGROUP_SIZE - 1u) / WORKGROUP_SIZE;
@@ -200,11 +200,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _scene_compute_buffer_scenario(void)
+static DvzScenarioSpec _compute_buffer_animation_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_scene_compute_buffer",
-        .title = "scene_compute_buffer",
+        .id = "feature_compute_buffer_animation",
+        .title = "compute_buffer_animation",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
@@ -227,6 +227,6 @@ static DvzScenarioSpec _scene_compute_buffer_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _scene_compute_buffer_scenario();
+    DvzScenarioSpec spec = _compute_buffer_animation_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

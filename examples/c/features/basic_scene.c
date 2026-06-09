@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* scene_basic - smallest runner-backed retained scene with one point visual.
+/* basic_scene - smallest runner-backed retained scene with one point visual.
  *
- * Scenario: feature.scene_basic
+ * Scenario: feature.basic_scene
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just example-c features/scene_basic
- * Run:    ./build/examples/c/features/scene_basic --live
- * Smoke:  ./build/examples/c/features/scene_basic --png
+ * Build:  just example-c features/basic_scene
+ * Run:    ./build/examples/c/features/basic_scene --live
+ * Smoke:  ./build/examples/c/features/basic_scene --png
  */
 
 
@@ -107,11 +107,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _scene_basic_scenario(void)
+static DvzScenarioSpec _basic_scene_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_scene_basic",
-        .title = "scene_basic",
+        .id = "feature_basic_scene",
+        .title = "basic_scene",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
@@ -135,6 +135,6 @@ static DvzScenarioSpec _scene_basic_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _scene_basic_scenario();
+    DvzScenarioSpec spec = _basic_scene_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

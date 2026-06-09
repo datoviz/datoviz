@@ -26,7 +26,7 @@ part of the main CMake tree.
 just build
 just example-c visuals/point
 just example-c visuals/mesh
-just example-c features/edl
+just example-c features/technique_edl
 just example-c showcases/point_cloud
 just example-c advanced/raw_triangle_vklite
 ```
@@ -35,7 +35,7 @@ The executables land in matching build folders:
 
 ```text
 build/examples/c/visuals/point
-build/examples/c/features/edl
+build/examples/c/features/technique_edl
 build/examples/c/showcases/point_cloud
 build/examples/c/advanced/raw_triangle_vklite
 ```

@@ -187,14 +187,14 @@ Rename technique examples with a `technique_` prefix:
 
 Remove weak `scene_` prefixes when the feature is clearer without them:
 
-- `scene_basic` -> `basic_scene` or retained-scene naming;
+- `basic_scene` -> `basic_scene` or retained-scene naming;
 - `scene_json` -> `json_export`;
-- `scene_compute_buffer` -> `compute_buffer_animation`.
+- `compute_buffer_animation` -> `compute_buffer_animation`.
 
 Other agreed renames:
 
-- `panzoom_attachment` -> `panzoom`;
-- `brain_volume_mesh` -> `brain_volume`.
+- `panzoom` -> `panzoom`;
+- `brain_volume` -> `brain_volume`.
 
 Merge picking/selection examples into one strong `features/picking.c` with hover and selection
 feedback. Keep tight tests for y-flip and coordinate readback regressions.

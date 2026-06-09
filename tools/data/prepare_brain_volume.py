@@ -20,7 +20,7 @@ from common import CACHE_ROOT, artifact, command_argv, relpath, write_manifest, 
 
 ROOT = Path(__file__).resolve().parents[2]
 TOOLS_ROOT = ROOT / "tools"
-EXAMPLE_ID = "brain_volume_mesh"
+EXAMPLE_ID = "brain_volume"
 VERSION = 1
 MAGIC = b"DVZBRN1\0"
 DEFAULT_RESOLUTION_UM = 50
@@ -328,7 +328,7 @@ def prepare(resolution_um: int, force: bool) -> Path:
             }
         )
 
-    binary_path = prepared / "brain_volume_mesh.bin"
+    binary_path = prepared / "brain_volume.bin"
     structures_path = prepared / "structures.json"
     _write_binary(binary_path, resolution_um, average, annotation, categories, mesh, mesh_metadata)
     structures_path.write_text(
@@ -356,7 +356,7 @@ def prepare(resolution_um: int, force: bool) -> Path:
         artifact(
             binary_path,
             bundle_root,
-            "brain_volume_mesh_binary",
+            "brain_volume_binary",
             "bin",
             version=VERSION,
             average_dtype="uint8",
@@ -415,7 +415,7 @@ def prepare(resolution_um: int, force: bool) -> Path:
             "Generated gallery colors are a Datoviz presentation layer; original Allen colors remain recorded in `structures.json`.",
         ],
         notes=[
-            "This script writes to `.cache/datoviz/examples/brain_volume_mesh` by default and does not modify the `data` submodule.",
+            "This script writes to `.cache/datoviz/examples/brain_volume` by default and does not modify the `data` submodule.",
         ],
     )
     print(f"wrote {bundle_root}")

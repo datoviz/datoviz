@@ -132,7 +132,7 @@ The main remaining polish, promotion, or feature gaps are:
 | `showcase_wind_field` | `ready-now` | image field, vector visual, paths, panzoom, colorbar | Public proof lives in `examples/c/showcases/wind_field.c` using the retained `dvz_vector()` visual plus streamlines. |
 | `showcase_gpu_particle_smoke` | `ready-now` | scene compute, shared storage/vertex buffers, blended points | Public experimental compute-to-graphics showcase lives in `examples/c/showcases/gpu_particle_smoke.c`. |
 | `textured_terrain_or_planet` | `ready-now` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof lives in `examples/c/showcases/textured_planet.c`: Earth/Mars UV sphere with real sampled textures and procedural fallbacks. Mars DEM terrain analysis remains v0.5/later. |
-| `brain_volume_mesh` | `ready-now` | volume, occluded slice composition, arcball | Public proof lives in `examples/c/showcases/brain_volume_mesh.c` over the prepared Allen/IBL RGBA volume. The newer atlas-mesh bundle remains source material for a later mesh-overlay polish pass; full atlas explorer is v0.5. |
+| `brain_volume` | `ready-now` | volume, occluded slice composition, arcball | Public proof lives in `examples/c/showcases/brain_volume.c` over the prepared Allen/IBL RGBA volume. The newer atlas-mesh bundle remains source material for a later mesh-overlay polish pass; full atlas explorer is v0.5. |
 | `point_cloud` | `ready-now` | large RGB pixel cloud, direct colors, GUI-tunable EDL, fly camera, capture | Public proof lives in `examples/c/showcases/point_cloud.c`, with required RESEPI raw-LAZ preprocessing through `tools/data/prepare_point_cloud.py`; no synthetic or bundled-NPZ fallback is provided. |
 | `composite_polygon` | `ready-now` | semantic polygon/polygon-set, fill+stroke composite, holes, region styling | Public proof lives in `examples/c/composites/polygon.c`; polygon is not a visual family even if it appears near visual examples. |
 | `composite_graph` | `ready-now` | semantic graph, user-provided layout, nodes+edges composite, stable ids, Bezier edges | Public proof lives in `examples/c/composites/graph.c`. Keep layout user-supplied first; edge-mode comparisons belong in tests or lab examples. |
@@ -260,7 +260,7 @@ optional controls for tessellation quality, stroke width, join mode, and overlay
 17. `composite_polygon`
 18. `composite_graph`
 19. `point_cloud`
-20. `brain_volume_mesh`
+20. `brain_volume`
 21. `feature_controller_arcball`
 22. `feature_mesh_texture`
 23. Feature example validation and capture proof from `examples/c/MANIFEST.yaml`

@@ -179,7 +179,7 @@ Current implementation seeds:
 | `visual.image` | `examples/c/visuals/image.c`, `examples/c/features/image_probe.c` | Current image baseline is separate from probing and colorbar/readout behavior. |
 | `visual.mesh` | `examples/c/visuals/mesh.c`, `docs/gallery/visuals/mesh.md` | Current C example is the source of truth; textured mesh is a separate feature/showcase proof. |
 | `visual.sphere` | `examples/c/visuals/sphere.c`, `examples/c/showcases/protein.c` | Current sphere baseline is separate from molecule/protein scientific material. |
-| `visual.volume` | `examples/c/visuals/volume.c`, `examples/c/showcases/brain_volume_mesh.c` | Current volume baseline is separate from full brain/medical composition. |
+| `visual.volume` | `examples/c/visuals/volume.c`, `examples/c/showcases/brain_volume.c` | Current volume baseline is separate from full brain/medical composition. |
 | `visual.text` | `examples/c/visuals/text.c`, `examples/c/lab/text_msdf_diagnostics.c` | Current text baseline uses the public text API; do not document raw glyph internals. |
 | `visual.labels` | `examples/c/visuals/labels.c`, `examples/c/features/probe_labels.c` | Current labels baseline is separate from label probing. |
 | `visual.splat` | `examples/c/visuals/splat.c`, `examples/c/legacy/showcase/gothic_splat.c` | Experimental v0.4 visual; publish with explicit experimental labeling and no full asset-pipeline promise. |
@@ -226,8 +226,8 @@ scaffolding, but the feature must be the visible point of the example.
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
-| `feature.scene_basic` | `examples/c/features/scene_basic.c` | `ready-now` | One panel with one tiny visual rendered successfully. | Teaches app, scene, figure, panel, visual creation, render/run, and cleanup. Avoid every optional feature. |
-| `feature.panel_single` | `examples/c/features/panel_single.c` | `ready-now` | One figure with a single framed panel and one simple visual. | Teaches panel ownership and viewport basics. Do not duplicate `scene_basic` beyond panel-specific calls. |
+| `feature.basic_scene` | `examples/c/features/basic_scene.c` | `ready-now` | One panel with one tiny visual rendered successfully. | Teaches app, scene, figure, panel, visual creation, render/run, and cleanup. Avoid every optional feature. |
+| `feature.panel_single` | `examples/c/features/panel_single.c` | `ready-now` | One figure with a single framed panel and one simple visual. | Teaches panel ownership and viewport basics. Do not duplicate `basic_scene` beyond panel-specific calls. |
 | `feature.panel_grid` | `examples/c/features/panel_grid.c` | `ready-now` | A small 2x2 grid where each panel has a simple distinct visual or background. | Teaches grid layout and panel addressing. Avoid linked interactions. |
 | `feature.panel_multi` | `examples/c/features/panel_multi.c` | `ready-now` | Multiple panels with independent views, showing that each panel clips and transforms correctly. | Teaches multi-panel rendering and panel-local controllers. Avoid synchronization. |
 | `feature.panel_linked` | `examples/c/features/panel_linked.c` | `ready-now` | Two or more panels where pan/zoom or camera state is visibly linked. | Teaches shared controller or linked state. Avoid colorbar/probe complexity. |
@@ -257,7 +257,7 @@ scaffolding, but the feature must be the visible point of the example.
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
-| `feature.controller_panzoom` | `examples/c/features/panzoom_attachment.c` | `ready-now` | A 2D point, path, or image scene where pan and zoom visibly preserve data-space meaning. | Teaches panzoom attachment and bounds. Avoid axes unless validating bounds is impossible without them. |
+| `feature.controller_panzoom` | `examples/c/features/panzoom.c` | `ready-now` | A 2D point, path, or image scene where pan and zoom visibly preserve data-space meaning. | Teaches panzoom attachment and bounds. Avoid axes unless validating bounds is impossible without them. |
 | `feature.controller_arcball` | `examples/c/features/controller_arcball.c` | `ready-now` | A centered 3D mesh or sphere group where rotation is visually meaningful. | Teaches arcball attachment. Keep lighting/materials minimal. |
 | `feature.controller_fly` | `examples/c/features/controller_fly.c` | `ready-now` | A sparse 3D scene or point cloud where camera translation is visible. | Teaches fly navigation. Avoid dense LiDAR showcase styling. |
 | `feature.controller_turntable` | `examples/c/features/controller_turntable.c` | `ready-now` | A 3D object rotating around a stable up axis. | Teaches constrained turntable navigation. Do not duplicate arcball behavior. |
@@ -276,7 +276,7 @@ scaffolding, but the feature must be the visible point of the example.
 | `feature.material_mesh` | `examples/c/features/material_mesh.c` | `ready-now` | One mesh rendered with a neutral material where normals and shading are clear. | Teaches mesh material parameters. Avoid texture sampling. |
 | `feature.mesh_texture` | `examples/c/features/mesh_texture.c` | `ready-now` | A textured mesh with UVs and visible texture orientation, ideally with a simple checker or planet texture. | Teaches mesh-bound texture resources and UVs. Do not turn into a terrain/planet showcase. |
 | `feature.lighting` | `examples/c/features/lighting.c` | `ready-now` | A simple 3D object where changing light direction or intensity is visibly meaningful. | Teaches light setup. Avoid material matrix demos. |
-| `feature.depth_test` | `examples/c/features/depth_test.c` | `ready-now` | Side-by-side overlapping marks show depth testing enabled and disabled. | Teaches `dvz_visual_set_depth_test()` only. Keep depth cueing and occlusion as separate techniques. |
+| `feature.depth_test` | `examples/c/features/technique_depth_test.c` | `ready-now` | Side-by-side overlapping marks show depth testing enabled and disabled. | Teaches `dvz_visual_set_depth_test()` only. Keep depth cueing and occlusion as separate techniques. |
 | `feature.alpha_blending` | `examples/c/features/alpha_blending.c` | `ready-now` | Overlapping translucent primitives blend source-over against the panel background. | Teaches per-vertex alpha with `DVZ_ALPHA_BLENDED`. Keep WBOIT and depth peeling separate. |
 
 ### Animation And Media
@@ -336,11 +336,11 @@ when they become public:
 | --- | --- | --- | --- |
 | `technique.transparency` | `examples/c/features/transparency.c` | Overlapping translucent objects with ordering behavior visible. | Teaches basic transparency constraints. |
 | `technique.wboit` | `examples/c/features/wboit.c` | Side-by-side or toggled weighted blended OIT effect. | Teaches WBOIT, backend requirements, and limitations. |
-| `technique.msaa` | `examples/c/features/msaa.c` | Geometry with clear edge aliasing improvement. | Teaches MSAA configuration. |
-| `technique.depth_testing` | `examples/c/features/depth_testing.c` | Overlapping 3D objects that make depth testing or ordering behavior obvious. | Teaches depth-buffer behavior. Keep depth cueing, transparency, and WBOIT separate. |
-| `technique.edl` | `examples/c/features/edl.c` | Dense point or pixel cloud with depth enhancement visible. | Teaches EDL as a rendering technique, not point visual basics. |
-| `technique.ssao` | `examples/c/features/ssao.c` | 3D mesh or sphere scene with ambient occlusion visible. | Teaches SSAO configuration. |
-| `technique.depth_cue` | `examples/c/features/depth_cue.c` | 3D objects fading or scaling with depth. | Teaches depth cueing. |
+| `technique.msaa` | `examples/c/features/technique_msaa.c` | Geometry with clear edge aliasing improvement. | Teaches MSAA configuration. |
+| `technique.depth_testing` | `examples/c/features/technique_depth_testing.c` | Overlapping 3D objects that make depth testing or ordering behavior obvious. | Teaches depth-buffer behavior. Keep depth cueing, transparency, and WBOIT separate. |
+| `technique.edl` | `examples/c/features/technique_edl.c` | Dense point or pixel cloud with depth enhancement visible. | Teaches EDL as a rendering technique, not point visual basics. |
+| `technique.ssao` | `examples/c/features/technique_ssao.c` | 3D mesh or sphere scene with ambient occlusion visible. | Teaches SSAO configuration. |
+| `technique.depth_cue` | `examples/c/features/technique_depth_cue.c` | 3D objects fading or scaling with depth. | Teaches depth cueing. |
 | `technique.bounds_overlay` | `examples/c/features/bounds_overlay.c` | Visual bounds or debug overlays drawn around known objects. | Keep diagnostic status explicit; do not make this a normal visual example. |
 
 
@@ -368,7 +368,7 @@ Current showcase and scientific gallery-facing examples:
 | --- | --- |
 | `examples/c/showcases/point_cloud.c` | large RGB point cloud, fly controller, EDL, performance |
 | `examples/c/showcases/protein.c` | real PDB atom spheres, arcball, materials, postprocess diagnostics |
-| `examples/c/showcases/brain_volume_mesh.c` | Allen/IBL RGBA volume, occluded slice, arcball |
+| `examples/c/showcases/brain_volume.c` | Allen/IBL RGBA volume, occluded slice, arcball |
 | `examples/c/showcases/wind_field.c` | scalar field, retained vectors, streamlines, animation |
 | `examples/c/showcases/textured_planet.c` | textured mesh, sampled textures, lighting, arcball, video capture |
 | `examples/c/showcases/gpu_particle_smoke.c` | experimental scene compute feeding point rendering |

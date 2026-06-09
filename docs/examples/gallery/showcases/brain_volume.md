@@ -4,14 +4,14 @@
 
 local Allen mouse brain RGBA volume and occluded slice.
 
-- ID: `brain_volume_mesh`
+- ID: `brain_volume`
 - Category: `showcase`
 - Lane: `showcases`
 - Status: `prototype`
-- Source: [`examples/c/showcases/brain_volume_mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume_mesh.c)
+- Source: [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c)
 - Agent copy-safe: `false`
-- Build: `just example-c showcases/brain_volume_mesh`
-- Smoke: `./build/examples/c/showcases/brain_volume_mesh --png`
+- Build: `just example-c showcases/brain_volume`
+- Smoke: `./build/examples/c/showcases/brain_volume --png`
 - Validation: `smoke+screenshot`
 
 ## Tags
@@ -44,5 +44,5 @@ prepared separately from this page and should not be staged without explicit app
 === "C"
 
     ```c
-    --8<-- "examples/c/showcases/brain_volume_mesh.c"
+    --8<-- "examples/c/showcases/brain_volume.c"
     ```

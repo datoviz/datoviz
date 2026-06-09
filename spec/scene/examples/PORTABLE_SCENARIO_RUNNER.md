@@ -14,7 +14,7 @@ Current implementation checkpoint:
 1. `examples/c/runner/` contains the native GLFW/offscreen/capture runner.
 2. `DvzScenarioSpec.requirements` and runner-side requirement diagnostics are active in example
    support code.
-3. `scene_basic`, `timer_animation`, `video_export`, `pick_point`, `pick_marker`, `pick_hover`,
+3. `basic_scene`, `timer_animation`, `video_export`, `pick_point`, `pick_marker`, `pick_hover`,
    `selection`, and `image_probe` carry first-slice requirement metadata in code and
    `examples/c/MANIFEST.yaml`.
 4. Portable event and post-frame callbacks are active in the native runner; `pick_point` is the
@@ -409,7 +409,7 @@ pick against a panel and receive a later `DVZ_SCENARIO_EVENT_PICK_RESULT` callba
 can fulfill this through GPU readback and app-loop completion. Browser runners can fulfill it
 through WebGPU readback promises or report unsupported requirements deterministically.
 
-Examples that should wait for this bridge include `panel_multi.c`, `panzoom_attachment.c`,
+Examples that should wait for this bridge include `panel_multi.c`, `panzoom.c`,
 controller examples, picking examples, hover/probe examples, and selection examples. Migrating them
 before the bridge would either leak `DvzView*` into scenarios or silently drop important behavior.
 
@@ -597,7 +597,7 @@ examples/c/runner/
 examples/c/features/
   video_export.c       # first runner-backed native executable
   timer_animation.c    # candidate scenario migration
-  scene_basic.c        # candidate static scenario migration
+  basic_scene.c        # candidate static scenario migration
 ```
 
 If scenarios become shared by native and WASM builds, split portable scenario sources from native
@@ -703,7 +703,7 @@ Each `webgpu-live` or `webgpu-planned` row should list requirement tags such as
    reporting, progress, capture failure handling, and the distinction between presentation pacing
    and deterministic recording.
 4. Refactor `timer_animation.c` next because it proves frame-time portability.
-5. Refactor `scene_basic.c` or another static example to prove scenarios without frame callbacks.
+5. Refactor `basic_scene.c` or another static example to prove scenarios without frame callbacks.
 
 ### Phase 2: Low-Risk Feature Migration
 
@@ -728,7 +728,7 @@ result delivery are browser-live. Then migrate representative interaction exampl
 conversion:
 
 1. `probe_labels.c` for the categorical query follow-up;
-2. `panel_multi.c` and `panzoom_attachment.c` after controller request helpers are settled.
+2. `panel_multi.c` and `panzoom.c` after controller request helpers are settled.
 
 Only after these examples pass should the runner input API be treated as stable enough for broader
 feature migration.

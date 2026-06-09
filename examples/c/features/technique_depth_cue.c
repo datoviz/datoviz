@@ -4,17 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* depth_test - side-by-side visual depth-test toggle with overlapping 3D points.
+/* depth_cue - depth-dependent fading applied to a 3D point stack.
  *
- * Scenario: feature.depth_test
+ * Scenario: feature.depth_cue
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just example-c features/depth_test
- * Run:    ./build/examples/c/features/depth_test --live
- * Smoke:  ./build/examples/c/features/depth_test --png
- *
- * One panel keeps depth testing enabled. The other disables depth testing on the same retained
- * point visual, so the later far point overdraws the nearer point.
+ * Build:  just example-c features/technique_depth_cue
+ * Run:    ./build/examples/c/features/technique_depth_cue --live
+ * Smoke:  ./build/examples/c/features/technique_depth_cue --png
  */
 
 
@@ -38,7 +35,7 @@
 
 #define WIDTH       1600u
 #define HEIGHT      1200u
-#define POINT_COUNT 2u
+#define POINT_COUNT 18u
 
 
 
@@ -47,31 +44,35 @@
 /*************************************************************************************************/
 
 /**
- * Add two overlapping depth-separated points to one panel.
+ * Add depth-separated points with optional depth cueing.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
- * @param depth_test_enabled whether the visual should test scene depth
- * @return true when the visual was added
+ * @param cue_enabled whether depth cueing is enabled
+ * @return true on success
  */
-static bool _add_depth_points(DvzScene* scene, DvzPanel* panel, bool depth_test_enabled)
+static bool _add_points(DvzScene* scene, DvzPanel* panel, bool cue_enabled)
 {
-    const vec3 positions[POINT_COUNT] = {
-        {-0.06f, -0.34f, 0.02f},
-        {+0.07f, +0.36f, 0.02f},
-    };
-    float diameters[POINT_COUNT] = {260.0f, 260.0f};
-    DvzColor colors[POINT_COUNT] = {
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
-    };
-    colors[0].a = 248;
-    colors[1].a = 248;
+    vec3 positions[POINT_COUNT] = {{0}};
+    DvzColor colors[POINT_COUNT] = {{0}};
+    float diameters[POINT_COUNT] = {0};
+
+    for (uint32_t i = 0; i < POINT_COUNT; i++)
+    {
+        const float u = (float)i / (float)(POINT_COUNT - 1u);
+        positions[i][0] = -0.74f + 1.48f * u;
+        positions[i][1] = -0.28f + 0.56f * ((float)(i % 3u) - 1.0f);
+        positions[i][2] = -0.70f + 1.65f * u;
+        colors[i] = example_graphite_cyan_color(
+            i % 3u == 0   ? EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY
+            : i % 3u == 1 ? EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY
+                          : EXAMPLE_STYLE_COLOR_WARNING);
+        diameters[i] = 50.0f;
+    }
 
     DvzVisual* point = dvz_point(scene, 0);
     if (point == NULL)
         return false;
-
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
@@ -85,33 +86,45 @@ static bool _add_depth_points(DvzScene* scene, DvzPanel* panel, bool depth_test_
     style.stroke_width = 0.0f;
     if (dvz_point_set_style(point, &style) != 0)
         return false;
-
-    if (dvz_visual_set_depth_test(point, depth_test_enabled) != 0)
-        return false;
-
+    if (cue_enabled)
+    {
+        DvzDepthCueDesc cue = dvz_depth_cue_desc();
+        cue.mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND;
+        cue.metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE;
+        cue.falloff = DVZ_DEPTH_CUE_FALLOFF_LINEAR;
+        cue.near_depth = 1.20f;
+        cue.far_depth = 3.80f;
+        cue.strength = 0.88f;
+        cue.background_color[0] = 0.035f;
+        cue.background_color[1] = 0.047f;
+        cue.background_color[2] = 0.067f;
+        cue.background_color[3] = 1.0f;
+        if (dvz_visual_set_depth_cue(point, &cue) != 0)
+            return false;
+    }
     return dvz_panel_add_visual(panel, point, NULL) == 0;
 }
 
 
 
 /**
- * Apply the shared camera used by both comparison panels.
+ * Set the depth-cue camera.
  *
  * @param panel target panel
- * @return true when the camera was applied
+ * @return true on success
  */
-static bool _set_depth_camera(DvzPanel* panel)
+static bool _set_camera(DvzPanel* panel)
 {
-    DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 0.00f;
-    camera_desc.eye[1] = -3.10f;
-    camera_desc.eye[2] = 0.38f;
-    camera_desc.up[1] = 0.0f;
-    camera_desc.up[2] = 1.0f;
-    camera_desc.fov_y = 0.50f;
-    camera_desc.near = 0.05f;
-    camera_desc.far = 100.0f;
-    return dvz_panel_set_camera(panel, &camera_desc) != NULL;
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.eye[0] = 0.0f;
+    camera.eye[1] = -3.20f;
+    camera.eye[2] = 0.86f;
+    camera.up[1] = 0.0f;
+    camera.up[2] = 1.0f;
+    camera.fov_y = 0.58f;
+    camera.near = 0.05f;
+    camera.far = 100.0f;
+    return dvz_panel_set_camera(panel, &camera) != NULL;
 }
 
 
@@ -121,7 +134,7 @@ static bool _set_depth_camera(DvzPanel* panel)
 /*************************************************************************************************/
 
 /**
- * Initialize the visual depth-test scenario.
+ * Initialize the depth-cue feature scenario.
  *
  * @param ctx scenario context
  * @param out_user scenario state output
@@ -142,44 +155,36 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (grid == NULL)
         return false;
     if (!dvz_grid_set_margins(
-            grid,
-            &(DvzPanelReserve){
-                .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}))
+            grid, &(DvzPanelReserve){
+                      .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}))
         return false;
     if (!dvz_grid_set_gutter(grid, 30.0f, 0.0f))
         return false;
 
-    DvzPanel* depth_on = dvz_grid_panel(grid, 0, 0);
-    DvzPanel* depth_off = dvz_grid_panel(grid, 0, 1);
-    if (depth_on == NULL || depth_off == NULL)
+    DvzPanel* plain = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* cued = dvz_grid_panel(grid, 0, 1);
+    if (plain == NULL || cued == NULL)
         return false;
-    example_graphite_cyan_set_panel_background(depth_on);
-    example_graphite_cyan_set_panel_background(depth_off);
+    example_graphite_cyan_set_panel_background(plain);
+    example_graphite_cyan_set_panel_background(cued);
 
-    if (!_set_depth_camera(depth_on))
+    if (!_set_camera(plain) || !_set_camera(cued))
         return false;
-    if (!_set_depth_camera(depth_off))
-        return false;
-    if (!_add_depth_points(ctx->scene, depth_on, true))
-        return false;
-    if (!_add_depth_points(ctx->scene, depth_off, false))
-        return false;
-
-    return true;
+    return _add_points(ctx->scene, plain, false) && _add_points(ctx->scene, cued, true);
 }
 
 
 
 /**
- * Return the depth-test scenario specification.
+ * Return the depth-cue scenario specification.
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _depth_test_scenario(void)
+static DvzScenarioSpec _depth_cue_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_depth_test",
-        .title = "depth_test",
+        .id = "technique_depth_cue",
+        .title = "depth_cue",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
@@ -194,7 +199,7 @@ static DvzScenarioSpec _depth_test_scenario(void)
 /*************************************************************************************************/
 
 /**
- * Run the visual depth-test feature example through the native scenario runner.
+ * Run the depth-cue feature example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -202,6 +207,6 @@ static DvzScenarioSpec _depth_test_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _depth_test_scenario();
+    DvzScenarioSpec spec = _depth_cue_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

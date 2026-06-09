@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panzoom_attachment - bind a panzoom controller to one panel with a simple 2D visual.
+/* json_export - retained scene JSON serialization diagnostic.
  *
- * Scenario: feature.controller_panzoom
+ * Scenario: feature.json_export
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just example-c features/panzoom_attachment
- * Run:    ./build/examples/c/features/panzoom_attachment --live
- * Smoke:  ./build/examples/c/features/panzoom_attachment --png
+ * Build:  just example-c features/json_export
+ * Run:    ./build/examples/c/features/json_export --live
+ * Smoke:  ./build/examples/c/features/json_export --png
  */
 
 
@@ -20,9 +20,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "_assertions.h"
 #include "datoviz/scene.h"
@@ -37,9 +38,7 @@
 
 #define WIDTH       1600u
 #define HEIGHT      1200u
-#define POINT_COUNT 64u
-
-static const float TAU = 6.28318530718f;
+#define POINT_COUNT 3u
 
 
 
@@ -48,44 +47,10 @@ static const float TAU = 6.28318530718f;
 /*************************************************************************************************/
 
 /**
- * Fill a deterministic 2D point ring in panel data coordinates.
- *
- * @param positions output data-space positions
- * @param colors output point colors
- * @param diameters output point diameters
- */
-static void _fill_points(
-    vec3 positions[POINT_COUNT], DvzColor colors[POINT_COUNT], float diameters[POINT_COUNT])
-{
-    ANN(positions);
-    ANN(colors);
-    ANN(diameters);
-
-    DvzColor primary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
-    DvzColor secondary = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
-    for (uint32_t i = 0; i < POINT_COUNT; i++)
-    {
-        const float t = (float)i / (float)POINT_COUNT;
-        const float theta = TAU * t;
-        const float radius = 0.42f + 0.18f * sinf(5.0f * theta);
-
-        positions[i][0] = radius * cosf(theta);
-        positions[i][1] = radius * sinf(theta);
-        positions[i][2] = 0.0f;
-
-        colors[i] = i % 2u == 0u ? primary : secondary;
-        colors[i].a = 230u;
-        diameters[i] = 8.0f + 5.0f * (0.5f + 0.5f * sinf(3.0f * theta));
-    }
-}
-
-
-
-/**
- * Add the point visual controlled by the panel panzoom.
+ * Add a tiny retained point visual.
  *
  * @param scene scene owning the visual
- * @param panel panel receiving the visual
+ * @param panel target panel
  * @return true when the visual was added
  */
 static bool _add_points(DvzScene* scene, DvzPanel* panel)
@@ -93,37 +58,54 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
     ANN(scene);
     ANN(panel);
 
-    vec3 data_positions[POINT_COUNT] = {{0}};
-    vec3 visual_positions[POINT_COUNT] = {{0}};
-    DvzColor colors[POINT_COUNT] = {{0}};
-    float diameters[POINT_COUNT] = {0};
+    const vec3 positions[POINT_COUNT] = {
+        {-0.45f, -0.18f, 0.0f},
+        {+0.00f, +0.28f, 0.0f},
+        {+0.45f, -0.18f, 0.0f},
+    };
+    DvzColor colors[POINT_COUNT] = {
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
+    };
+    const float diameters[POINT_COUNT] = {32.0f, 44.0f, 32.0f};
 
-    _fill_points(data_positions, colors, diameters);
-    if (dvz_panel_data_to_visual_positions(
-            panel, (const float*)data_positions, (float*)visual_positions, POINT_COUNT) != 0)
+    DvzVisual* point = dvz_point(scene, 0);
+    if (point == NULL)
         return false;
-
-    DvzVisual* visual = dvz_point(scene, 0);
-    if (visual == NULL)
-        return false;
-
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = visual_positions, .item_count = POINT_COUNT},
+        {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
         {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
     };
-    if (dvz_visual_set_data_many(visual, updates, 3) != 0)
+    if (dvz_visual_set_data_many(point, updates, 3) != 0)
+        return false;
+    return dvz_panel_add_visual(panel, point, NULL) == 0;
+}
+
+
+
+/**
+ * Serialize the scene once and print a compact diagnostic.
+ *
+ * @param scene scene to serialize
+ * @return true when serialization returned a plausible JSON document
+ */
+static bool _serialize_scene(DvzScene* scene)
+{
+    ANN(scene);
+
+    char* json = dvz_scene_json(scene);
+    if (json == NULL)
         return false;
 
-    DvzPointStyleDesc style = dvz_point_style_desc();
-    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
-    if (dvz_point_set_style(visual, &style) != 0)
-        return false;
-    if (dvz_visual_set_depth_test(visual, false) != 0)
-        return false;
+    const size_t length = strlen(json);
+    const bool ok = length > 2u && json[0] == '{' && strstr(json, "\"figures\"") != NULL;
+    if (ok)
+        fprintf(stderr, "json_export: %zu bytes\n", length);
 
-    return dvz_panel_add_visual(panel, visual, NULL) == 0;
+    dvz_scene_json_destroy(json);
+    return ok;
 }
 
 
@@ -133,7 +115,7 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
 /*************************************************************************************************/
 
 /**
- * Initialize the panzoom attachment feature scenario.
+ * Initialize the scene-JSON feature example.
  *
  * @param ctx scenario context
  * @param out_user scenario state output
@@ -155,32 +137,23 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, -1.0, 1.0);
-    if (rc != 0)
-        return false;
-    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, 1.0);
-    if (rc != 0)
-        return false;
-
     if (!_add_points(ctx->scene, panel))
         return false;
-
-    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
-    return panzoom != NULL;
+    return _serialize_scene(ctx->scene);
 }
 
 
 
 /**
- * Return the panzoom attachment scenario specification.
+ * Return the scene-JSON scenario specification.
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _panzoom_attachment_scenario(void)
+static DvzScenarioSpec _json_export_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_panzoom_attachment",
-        .title = "panzoom_attachment",
+        .id = "feature_json_export",
+        .title = "json_export",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
@@ -195,7 +168,7 @@ static DvzScenarioSpec _panzoom_attachment_scenario(void)
 /*************************************************************************************************/
 
 /**
- * Run the panzoom attachment feature example through the native scenario runner.
+ * Run the scene-JSON feature example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -203,6 +176,6 @@ static DvzScenarioSpec _panzoom_attachment_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _panzoom_attachment_scenario();
+    DvzScenarioSpec spec = _json_export_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

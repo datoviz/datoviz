@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* depth_cue - depth-dependent fading applied to a 3D point stack.
+/* edl - Eye-Dome Lighting applied to a compact depth-separated point cloud.
  *
- * Scenario: feature.depth_cue
+ * Scenario: feature.edl
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just example-c features/depth_cue
- * Run:    ./build/examples/c/features/depth_cue --live
- * Smoke:  ./build/examples/c/features/depth_cue --png
+ * Build:  just example-c features/technique_edl
+ * Run:    ./build/examples/c/features/technique_edl --live
+ * Smoke:  ./build/examples/c/features/technique_edl --png
  */
 
 
@@ -20,6 +20,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -35,7 +36,9 @@
 
 #define WIDTH       1600u
 #define HEIGHT      1200u
-#define POINT_COUNT 18u
+#define POINT_COLS  13u
+#define POINT_ROWS  9u
+#define POINT_COUNT (POINT_COLS * POINT_ROWS)
 
 
 
@@ -44,35 +47,58 @@
 /*************************************************************************************************/
 
 /**
- * Add depth-separated points with optional depth cueing.
+ * Fill deterministic depth-separated point data.
+ *
+ * @param positions output point positions
+ * @param colors output point colors
+ * @param diameters output point diameters
+ */
+static void _fill_points(
+    vec3 positions[POINT_COUNT], DvzColor colors[POINT_COUNT], float diameters[POINT_COUNT])
+{
+    const ExampleStyleColorRole roles[4] = {
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_WARNING,
+        EXAMPLE_STYLE_COLOR_TEXT,
+    };
+
+    for (uint32_t row = 0; row < POINT_ROWS; row++)
+    {
+        for (uint32_t col = 0; col < POINT_COLS; col++)
+        {
+            const uint32_t i = row * POINT_COLS + col;
+            const float u = (float)col / (float)(POINT_COLS - 1u);
+            const float v = (float)row / (float)(POINT_ROWS - 1u);
+            positions[i][0] = -1.00f + 2.00f * u;
+            positions[i][1] = -0.70f + 1.40f * v;
+            positions[i][2] = 0.50f * sinf(7.0f * u) + 0.35f * cosf(5.0f * v);
+            colors[i] = example_graphite_cyan_color(roles[(col + 2u * row) % 4u]);
+            diameters[i] = 24.0f + 10.0f * (0.5f + 0.5f * sinf(11.0f * u + 3.0f * v));
+        }
+    }
+}
+
+
+
+/**
+ * Add one point cloud visual to a panel.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
- * @param cue_enabled whether depth cueing is enabled
  * @return true on success
  */
-static bool _add_points(DvzScene* scene, DvzPanel* panel, bool cue_enabled)
+static bool _add_point_cloud(DvzScene* scene, DvzPanel* panel)
 {
     vec3 positions[POINT_COUNT] = {{0}};
     DvzColor colors[POINT_COUNT] = {{0}};
     float diameters[POINT_COUNT] = {0};
-
-    for (uint32_t i = 0; i < POINT_COUNT; i++)
-    {
-        const float u = (float)i / (float)(POINT_COUNT - 1u);
-        positions[i][0] = -0.74f + 1.48f * u;
-        positions[i][1] = -0.28f + 0.56f * ((float)(i % 3u) - 1.0f);
-        positions[i][2] = -0.70f + 1.65f * u;
-        colors[i] = example_graphite_cyan_color(
-            i % 3u == 0   ? EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY
-            : i % 3u == 1 ? EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY
-                          : EXAMPLE_STYLE_COLOR_WARNING);
-        diameters[i] = 50.0f;
-    }
+    _fill_points(positions, colors, diameters);
 
     DvzVisual* point = dvz_point(scene, 0);
     if (point == NULL)
         return false;
+
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
@@ -86,29 +112,14 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel, bool cue_enabled)
     style.stroke_width = 0.0f;
     if (dvz_point_set_style(point, &style) != 0)
         return false;
-    if (cue_enabled)
-    {
-        DvzDepthCueDesc cue = dvz_depth_cue_desc();
-        cue.mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND;
-        cue.metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE;
-        cue.falloff = DVZ_DEPTH_CUE_FALLOFF_LINEAR;
-        cue.near_depth = 1.20f;
-        cue.far_depth = 3.80f;
-        cue.strength = 0.88f;
-        cue.background_color[0] = 0.035f;
-        cue.background_color[1] = 0.047f;
-        cue.background_color[2] = 0.067f;
-        cue.background_color[3] = 1.0f;
-        if (dvz_visual_set_depth_cue(point, &cue) != 0)
-            return false;
-    }
+
     return dvz_panel_add_visual(panel, point, NULL) == 0;
 }
 
 
 
 /**
- * Set the depth-cue camera.
+ * Set the shared 3D camera.
  *
  * @param panel target panel
  * @return true on success
@@ -117,11 +128,11 @@ static bool _set_camera(DvzPanel* panel)
 {
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = 0.0f;
-    camera.eye[1] = -3.20f;
-    camera.eye[2] = 0.86f;
+    camera.eye[1] = -3.10f;
+    camera.eye[2] = 1.15f;
     camera.up[1] = 0.0f;
     camera.up[2] = 1.0f;
-    camera.fov_y = 0.58f;
+    camera.fov_y = 0.62f;
     camera.near = 0.05f;
     camera.far = 100.0f;
     return dvz_panel_set_camera(panel, &camera) != NULL;
@@ -134,7 +145,7 @@ static bool _set_camera(DvzPanel* panel)
 /*************************************************************************************************/
 
 /**
- * Initialize the depth-cue feature scenario.
+ * Initialize the EDL feature scenario.
  *
  * @param ctx scenario context
  * @param out_user scenario state output
@@ -162,29 +173,36 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
 
     DvzPanel* plain = dvz_grid_panel(grid, 0, 0);
-    DvzPanel* cued = dvz_grid_panel(grid, 0, 1);
-    if (plain == NULL || cued == NULL)
+    DvzPanel* lit = dvz_grid_panel(grid, 0, 1);
+    if (plain == NULL || lit == NULL)
         return false;
     example_graphite_cyan_set_panel_background(plain);
-    example_graphite_cyan_set_panel_background(cued);
+    example_graphite_cyan_set_panel_background(lit);
 
-    if (!_set_camera(plain) || !_set_camera(cued))
+    if (!_set_camera(plain) || !_set_camera(lit))
         return false;
-    return _add_points(ctx->scene, plain, false) && _add_points(ctx->scene, cued, true);
+    if (!_add_point_cloud(ctx->scene, plain) || !_add_point_cloud(ctx->scene, lit))
+        return false;
+
+    DvzEdlDesc edl = dvz_edl_desc();
+    edl.radius = 2.0f;
+    edl.strength = 58.0f;
+    edl.depth_scale = 1.0f;
+    return dvz_panel_set_edl(lit, &edl);
 }
 
 
 
 /**
- * Return the depth-cue scenario specification.
+ * Return the EDL scenario specification.
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _depth_cue_scenario(void)
+static DvzScenarioSpec _edl_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_depth_cue",
-        .title = "depth_cue",
+        .id = "technique_edl",
+        .title = "edl",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
@@ -199,7 +217,7 @@ static DvzScenarioSpec _depth_cue_scenario(void)
 /*************************************************************************************************/
 
 /**
- * Run the depth-cue feature example through the native scenario runner.
+ * Run the Eye-Dome Lighting feature example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -207,6 +225,6 @@ static DvzScenarioSpec _depth_cue_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _depth_cue_scenario();
+    DvzScenarioSpec spec = _edl_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

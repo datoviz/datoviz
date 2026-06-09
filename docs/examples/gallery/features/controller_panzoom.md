@@ -8,10 +8,10 @@ bind a panzoom controller to one panel with a simple 2D visual.
 - Category: `feature`
 - Lane: `features`
 - Status: `supported`
-- Source: [`examples/c/features/panzoom_attachment.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom_attachment.c)
+- Source: [`examples/c/features/panzoom.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom.c)
 - Agent copy-safe: `true`
-- Build: `just example-c features/panzoom_attachment`
-- Smoke: `./build/examples/c/features/panzoom_attachment --png`
+- Build: `just example-c features/panzoom`
+- Smoke: `./build/examples/c/features/panzoom --png`
 - Validation: `smoke+interaction`
 
 ## Data
@@ -32,5 +32,5 @@ prepared separately from this page and should not be staged without explicit app
 === "C"
 
     ```c
-    --8<-- "examples/c/features/panzoom_attachment.c"
+    --8<-- "examples/c/features/panzoom.c"
     ```

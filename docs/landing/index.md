@@ -102,7 +102,7 @@ replayable command streams, and a Vulkan-first runtime with low-level Python int
 <em>Clustered spheres and interactive 3D inspection for real scientific data.</em>
 </a>
 
-<a class="dvz-public-card" href="../examples/gallery/showcases/brain_volume_mesh/" markdown="1">
+<a class="dvz-public-card" href="../examples/gallery/showcases/brain_volume/" markdown="1">
 <span>03</span>
 <strong>Brain Volume</strong>
 <em>Volume data, slices, transparent mesh overlays, and annotations.</em>

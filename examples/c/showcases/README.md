@@ -7,7 +7,7 @@ preprocessing, and encoding metadata in `MANIFEST.yaml`.
 
 Current public showcase seeds:
 
-- `brain_volume_mesh.c`
+- `brain_volume.c`
 - `choropleth.c`
 - `gpu_particle_smoke.c`
 - `linked_probe_colorbar.c`

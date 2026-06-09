@@ -20,7 +20,7 @@ techniques.
 - `gui_viewport.c`: dockable ImGui window containing a Datoviz-rendered offscreen viewport.
 - `gui_cimgui.c`: raw `datoviz/imgui.h` access for cimgui tables and tabs.
 - `animation_tracks.c`: retained track-backed visual transform animation.
-- `scene_compute_buffer.c`: experimental scene compute pass writing a render-consumed buffer.
+- `compute_buffer_animation.c`: experimental scene compute pass writing a render-consumed buffer.
 - `edl.c`: focused Eye-Dome Lighting panel technique proof.
 - `ssao.c`: focused screen-space ambient occlusion technique proof.
 - `msaa.c`: panel multisample antialiasing comparison.
@@ -37,7 +37,7 @@ techniques.
 - `controller_orbit_camera.c`: orbit-camera controller attached to a compact 3D scene.
 - `visual_transform.c`: retained visual-local transform set/get/clear proof.
 - `panel_domain_fit.c`: explicit panel domain fitting and reserved plot layout.
-- `scene_json.c`: experimental scene JSON serialization diagnostic.
+- `json_export.c`: experimental scene JSON serialization diagnostic.
 - `bezier_curve_path.c`: CPU-tessellated Bezier curves rendered through retained paths.
 - `datetime_axis.c`: compact data coordinates with UTC datetime tick labels.
 - `scalebar.c`: retained metric scale bar using builtin length units.
@@ -48,12 +48,12 @@ techniques.
 - `depth_test.c`: side-by-side visual depth-test toggle.
 - `alpha_blending.c`: source-over alpha blending with translucent primitives.
 - `panel_background.c`: panel background styling behind a simple foreground visual.
-- `panzoom_attachment.c`: one panzoom controller attached to a 2D panel.
+- `panzoom.c`: one panzoom controller attached to a 2D panel.
 - `pick_point.c`: point item picking with callback/readback and visible selection.
 - `pick_hover.c`: latest-request-wins hover feedback with background-miss clearing.
 - `probe_labels.c`: label-id probe/readout on a categorical label field.
 - `selection.c`: persistent selected-item highlight on a small visual.
-- `scene_basic.c`: smallest runner-backed retained scene with one point visual.
+- `basic_scene.c`: smallest runner-backed retained scene with one point visual.
 - `panel_single.c`: one explicit panel rectangle with one visual and panel chrome.
 - `panel_grid.c`: four grid-owned panels with clipped panel-local content.
 - `panel_multi.c`: multiple independent panels with panel-local panzoom controllers.

@@ -9,9 +9,9 @@
  * Scenario: feature.ssao
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just example-c features/ssao
- * Run:    ./build/examples/c/features/ssao --live
- * Smoke:  ./build/examples/c/features/ssao --png
+ * Build:  just example-c features/technique_ssao
+ * Run:    ./build/examples/c/features/technique_ssao --live
+ * Smoke:  ./build/examples/c/features/technique_ssao --png
  */
 
 
@@ -241,7 +241,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 static DvzScenarioSpec _ssao_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_ssao",
+        .id = "technique_ssao",
         .title = "ssao",
         .width = WIDTH,
         .height = HEIGHT,

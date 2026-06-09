@@ -85,7 +85,7 @@ retained axis titles and tick-label placement with plot margins.
 
 <div class="card" markdown="1">
 
-### [Basic Scene](gallery/features/feature_scene_basic.md)
+### [Basic Scene](gallery/features/feature_basic_scene.md)
 
 _Media pending._
 
@@ -121,7 +121,7 @@ deterministic scalar image with one retained continuous colorbar.
 
 <div class="card" markdown="1">
 
-### [Depth Test Toggle](gallery/features/depth_test.md)
+### [Depth Test Toggle](gallery/features/technique_depth_test.md)
 
 _Media pending._
 

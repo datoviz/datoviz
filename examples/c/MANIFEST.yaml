@@ -52,13 +52,13 @@ defaults:
   seed: 12345
 
 examples:
-  - id: feature_scene_basic
+  - id: feature_basic_scene
     title: Basic Scene
     stage: v0.4_required
     category: feature
     primary_feature: scene
     lane: features
-    source: examples/c/features/scene_basic.c
+    source: examples/c/features/basic_scene.c
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -335,13 +335,13 @@ examples:
         - arcball
     agent_copy_safe: true
 
-  - id: feature_scene_compute_buffer
-    title: Scene Compute Buffer
+  - id: feature_compute_buffer_animation
+    title: Compute Buffer Animation
     stage: v0.4_experimental
     category: feature
     primary_feature: scene-compute-buffer
     lane: features
-    source: examples/c/features/scene_compute_buffer.c
+    source: examples/c/features/compute_buffer_animation.c
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -362,13 +362,13 @@ examples:
       - storage-buffer
       - point
 
-  - id: feature_edl
+  - id: technique_edl
     title: Eye-Dome Lighting
     stage: v0.4_required
     category: feature
     primary_feature: edl
     lane: features
-    source: examples/c/features/edl.c
+    source: examples/c/features/technique_edl.c
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -378,13 +378,13 @@ examples:
         - depth-postprocess
     agent_copy_safe: true
 
-  - id: feature_ssao
+  - id: technique_ssao
     title: Screen-Space Ambient Occlusion
     stage: v0.4_required
     category: feature
     primary_feature: ssao
     lane: features
-    source: examples/c/features/ssao.c
+    source: examples/c/features/technique_ssao.c
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -395,13 +395,13 @@ examples:
         - depth-postprocess
     agent_copy_safe: true
 
-  - id: feature_msaa
+  - id: technique_msaa
     title: Multisample Antialiasing
     stage: v0.4_required
     category: feature
     primary_feature: msaa
     lane: features
-    source: examples/c/features/msaa.c
+    source: examples/c/features/technique_msaa.c
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -411,13 +411,13 @@ examples:
         - multisample
     agent_copy_safe: true
 
-  - id: feature_depth_cue
+  - id: technique_depth_cue
     title: Depth Cue
     stage: v0.4_required
     category: feature
     primary_feature: depth-cue
     lane: features
-    source: examples/c/features/depth_cue.c
+    source: examples/c/features/technique_depth_cue.c
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -427,13 +427,13 @@ examples:
         - depth-cue
     agent_copy_safe: true
 
-  - id: feature_transparency_order
+  - id: technique_transparency
     title: Transparency Order
     stage: v0.4_required
     category: feature
     primary_feature: transparency-order
     lane: features
-    source: examples/c/features/transparency_order.c
+    source: examples/c/features/technique_transparency.c
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -612,13 +612,13 @@ examples:
       kind: synthetic
     agent_copy_safe: true
 
-  - id: feature_scene_json
+  - id: feature_json_export
     title: Scene JSON
     stage: v0.4_experimental
     category: feature
     primary_feature: scene-json
     lane: features
-    source: examples/c/features/scene_json.c
+    source: examples/c/features/json_export.c
     validation: smoke+stdout
     data:
       kind: synthetic
@@ -816,13 +816,13 @@ examples:
       kind: synthetic
     agent_copy_safe: true
 
-  - id: depth_test
+  - id: technique_depth_test
     title: Depth Test Toggle
     stage: v0.4_required
     category: feature
     primary_feature: depth-test
     lane: features
-    source: examples/c/features/depth_test.c
+    source: examples/c/features/technique_depth_test.c
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -853,12 +853,12 @@ examples:
     agent_copy_safe: true
 
   - id: controller_panzoom
-    title: Panzoom Attachment
+    title: Panzoom
     stage: v0.4_required
     category: feature
     primary_feature: controller-panzoom
     lane: features
-    source: examples/c/features/panzoom_attachment.c
+    source: examples/c/features/panzoom.c
     validation: smoke+interaction
     data:
       kind: synthetic
@@ -1504,12 +1504,12 @@ examples:
       - alpha-blending
       - capture
 
-  - id: brain_volume_mesh
+  - id: brain_volume
     title: Allen Mouse Brain
     stage: v0.4_required
     category: showcase
     lane: showcases
-    source: examples/c/showcases/brain_volume_mesh.c
+    source: examples/c/showcases/brain_volume.c
     validation: smoke+screenshot
     data:
       kind: prepared
