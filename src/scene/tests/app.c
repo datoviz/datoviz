@@ -1287,6 +1287,132 @@ int test_app_offscreen(TstContext* suite, const TstCase* item)
 }
 
 
+int test_app_view_desc_offscreen_scale(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 80, 60, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_view_desc_offscreen_scale skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+
+    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
+    desc.logical_width = 80;
+    desc.logical_height = 60;
+    desc.device_scale = 2.0f;
+    desc.user_scale = 1.5f;
+    desc.render_scale = 1.25f;
+    DvzView* win = dvz_view(app, figure, &desc);
+    AT(win != NULL);
+
+    uint32_t logical_width = 0;
+    uint32_t logical_height = 0;
+    uint32_t framebuffer_width = 0;
+    uint32_t framebuffer_height = 0;
+    dvz_view_logical_size(win, &logical_width, &logical_height);
+    dvz_view_framebuffer_size(win, &framebuffer_width, &framebuffer_height);
+    AT(logical_width == 80);
+    AT(logical_height == 60);
+    AT(framebuffer_width == 160);
+    AT(framebuffer_height == 120);
+    AT(fabsf(dvz_view_device_scale(win) - 2.0f) < 1e-6f);
+    AT(fabsf(dvz_view_user_scale(win) - 1.5f) < 1e-6f);
+    AT(fabsf(dvz_view_render_scale(win) - 1.25f) < 1e-6f);
+
+    uint32_t figure_width = 0;
+    uint32_t figure_height = 0;
+    dvz_figure_size(figure, &figure_width, &figure_height);
+    AT(figure_width == 80);
+    AT(figure_height == 60);
+
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    uint32_t capture_width = 0;
+    uint32_t capture_height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &capture_width, &capture_height, &rgba) == 0);
+    AT(capture_width == 160);
+    AT(capture_height == 120);
+    dvz_free(rgba);
+
+    dvz_view_set_user_scale(win, 2.0f);
+    AT(fabsf(dvz_view_user_scale(win) - 2.0f) < 1e-6f);
+    dvz_view_logical_size(win, &logical_width, &logical_height);
+    dvz_view_framebuffer_size(win, &framebuffer_width, &framebuffer_height);
+    AT(logical_width == 80);
+    AT(logical_height == 60);
+    AT(framebuffer_width == 160);
+    AT(framebuffer_height == 120);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_app_view_desc_offscreen_exact_pixels(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 0, 0, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_view_desc_offscreen_exact_pixels skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+
+    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
+    desc.framebuffer_width = 96;
+    desc.framebuffer_height = 64;
+    DvzView* win = dvz_view(app, figure, &desc);
+    AT(win != NULL);
+
+    uint32_t logical_width = 0;
+    uint32_t logical_height = 0;
+    uint32_t framebuffer_width = 0;
+    uint32_t framebuffer_height = 0;
+    dvz_view_logical_size(win, &logical_width, &logical_height);
+    dvz_view_framebuffer_size(win, &framebuffer_width, &framebuffer_height);
+    AT(logical_width == 96);
+    AT(logical_height == 64);
+    AT(framebuffer_width == 96);
+    AT(framebuffer_height == 64);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 /**
  * Ensure on-demand scheduling sees retained scene mutations without an explicit frame request.
  *
@@ -6752,6 +6878,8 @@ int test_scene_app(TstSuite* suite)
         _app_gpu_fixture_destroy);
 
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen);
+    TST_SCENE_APP_SHARED_CASE(test_app_view_desc_offscreen_scale);
+    TST_SCENE_APP_SHARED_CASE(test_app_view_desc_offscreen_exact_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_scheduler_sees_scene_dirty_without_request);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_frame_callback_enables_continuous_scheduler);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_query_requests_notify_hosted_callback);

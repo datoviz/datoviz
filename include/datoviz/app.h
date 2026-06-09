@@ -38,6 +38,7 @@ typedef struct DvzApp       DvzApp;
 typedef struct DvzAppCaptureConfig DvzAppCaptureConfig;
 typedef struct DvzAppConfig DvzAppConfig;
 typedef struct DvzAppResources DvzAppResources;
+typedef struct DvzViewDesc DvzViewDesc;
 typedef struct DvzView DvzView;
 typedef struct DvzArcball DvzArcball;
 typedef struct DvzArcballDesc DvzArcballDesc;
@@ -78,6 +79,14 @@ typedef enum DvzAppCaptureFlags
     DVZ_APP_CAPTURE_VIDEO = 1 << 1,
     DVZ_APP_CAPTURE_PNG = 1 << 2,
 } DvzAppCaptureFlags;
+
+
+typedef enum DvzViewKind
+{
+    DVZ_VIEW_OFFSCREEN,
+    DVZ_VIEW_GLFW,
+    DVZ_VIEW_EXTERNAL_SURFACE,
+} DvzViewKind;
 
 
 
@@ -124,6 +133,26 @@ struct DvzAppResources
 
     /* Optional borrowed window host.  The app creates and owns one when NULL. */
     DvzWindowHost* window_host;
+};
+
+
+struct DvzViewDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzViewKind kind;
+
+    uint32_t logical_width;
+    uint32_t logical_height;
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+
+    float device_scale;
+    float user_scale;
+    float render_scale;
+
+    const char* title;
+    const DvzWindowExternalSurfaceInfo* external_surface;
 };
 
 
@@ -216,6 +245,30 @@ DVZ_EXPORT void dvz_app_destroy(DvzApp* app);
 /*************************************************************************************************/
 /*  View management                                                                            */
 /*************************************************************************************************/
+
+/**
+ * Return the default descriptor for one view kind.
+ *
+ * @param kind view kind
+ * @return initialized view descriptor
+ */
+DVZ_EXPORT DvzViewDesc dvz_view_desc(DvzViewKind kind);
+
+
+/**
+ * Create a view for a figure from an explicit descriptor.
+ *
+ * Descriptor dimensions distinguish logical pixels from framebuffer pixels.  For offscreen views,
+ * setting only framebuffer_width/framebuffer_height preserves exact-pixel output; setting
+ * logical_width/logical_height plus device_scale derives the framebuffer size.  render_scale is
+ * tracked separately for future supersampling and does not currently change the framebuffer size.
+ *
+ * @param app the app
+ * @param figure the figure to render (borrowed)
+ * @param desc view descriptor
+ * @return the view handle, or NULL on failure
+ */
+DVZ_EXPORT DvzView* dvz_view(DvzApp* app, DvzFigure* figure, const DvzViewDesc* desc);
 
 /**
  * Create an offscreen view for a figure.
@@ -442,6 +495,37 @@ DVZ_EXPORT struct DvzInputRouter* dvz_view_input(DvzView* view);
  * @return physical pixels per logical pixel, or 1 when unavailable
  */
 DVZ_EXPORT float dvz_view_device_scale(const DvzView* view);
+
+
+/**
+ * Return the current logical view size.
+ *
+ * @param view the view
+ * @param out_width output logical width in pixels, may be NULL
+ * @param out_height output logical height in pixels, may be NULL
+ */
+DVZ_EXPORT void
+dvz_view_logical_size(const DvzView* view, uint32_t* out_width, uint32_t* out_height);
+
+
+/**
+ * Return the current framebuffer view size.
+ *
+ * @param view the view
+ * @param out_width output framebuffer width in physical pixels, may be NULL
+ * @param out_height output framebuffer height in physical pixels, may be NULL
+ */
+DVZ_EXPORT void
+dvz_view_framebuffer_size(const DvzView* view, uint32_t* out_width, uint32_t* out_height);
+
+
+/**
+ * Return the current render scale.
+ *
+ * @param view the view
+ * @return render scale, defaulting to 1
+ */
+DVZ_EXPORT float dvz_view_render_scale(const DvzView* view);
 
 
 /**

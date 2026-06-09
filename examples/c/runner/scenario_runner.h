@@ -193,6 +193,15 @@ struct DvzScenarioContext
     DvzScene* scene;
     DvzFigure* figure;
 
+    uint32_t logical_width;
+    uint32_t logical_height;
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    float device_scale;
+    float user_scale;
+    float render_scale;
+
+    /* Compatibility aliases for logical dimensions. */
     uint32_t width;
     uint32_t height;
 
@@ -228,6 +237,15 @@ typedef struct DvzRunnerConfig
     DvzRunnerPresentation presentation;
     DvzRunnerCaptureKind capture_kind;
 
+    uint32_t logical_width;
+    uint32_t logical_height;
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    float device_scale;
+    float user_scale;
+    float render_scale;
+
+    /* Compatibility aliases for logical dimensions. */
     uint32_t width;
     uint32_t height;
     uint32_t frame_count;

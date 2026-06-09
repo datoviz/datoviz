@@ -1011,7 +1011,7 @@ static void _view_surface_scale(const DvzView* win, float* out_x, float* out_y)
     *out_x = win->device_scale_x > 0.0f ? win->device_scale_x : 1.0f;
     *out_y = win->device_scale_y > 0.0f ? win->device_scale_y : 1.0f;
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
-    if (win->window != NULL)
+    if (win->window != NULL && dvz_window_backend_type(win->window) != DVZ_BACKEND_OFFSCREEN)
     {
         const DvzWindowSurface* surface = dvz_window_surface(win->window);
         if (surface != NULL)
@@ -1060,13 +1060,18 @@ static void _view_refresh_size_state(DvzView* win, const DvzStreamFrame* frame)
                 framebuffer_width = resize.framebuffer_width;
                 framebuffer_height = resize.framebuffer_height;
             }
-            if (resize.window_width > 0 && resize.window_height > 0)
+            const bool surface_controls_scale =
+                win->window == NULL || dvz_window_backend_type(win->window) != DVZ_BACKEND_OFFSCREEN;
+            if (surface_controls_scale && resize.window_width > 0 && resize.window_height > 0)
             {
                 logical_width = resize.window_width;
                 logical_height = resize.window_height;
             }
-            device_scale_x = _view_valid_scale(resize.content_scale_x);
-            device_scale_y = _view_valid_scale(resize.content_scale_y);
+            if (surface_controls_scale)
+            {
+                device_scale_x = _view_valid_scale(resize.content_scale_x);
+                device_scale_y = _view_valid_scale(resize.content_scale_y);
+            }
         }
     }
 #endif
@@ -3382,9 +3387,147 @@ static void _view_connect_figure_panels(DvzView* win)
 }
 
 
+static DvzView*
+_view_create_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height);
 
-DvzView*
-dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height)
+
+static DvzView* _view_create_glfw(
+    DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title);
+
+
+static DvzView* _view_create_external_surface(
+    DvzApp* app, DvzFigure* figure, const DvzWindowExternalSurfaceInfo* surface);
+
+
+/**
+ * Return default view descriptor values.
+ *
+ * @param kind view kind
+ * @return initialized descriptor
+ */
+DvzViewDesc dvz_view_desc(DvzViewKind kind)
+{
+    DvzViewDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzViewDesc)};
+    desc.kind = kind;
+    desc.device_scale = 1.0f;
+    desc.user_scale = 1.0f;
+    desc.render_scale = 1.0f;
+    return desc;
+}
+
+
+
+/**
+ * Resolve implicit descriptor dimensions and scales.
+ *
+ * @param src source descriptor
+ * @param figure figure used for fallback logical dimensions
+ * @param out resolved descriptor
+ */
+static void _view_desc_resolve(
+    const DvzViewDesc* src, const DvzFigure* figure, DvzViewDesc* out)
+{
+    ANN(out);
+    DvzViewDesc desc = src != NULL ? *src : dvz_view_desc(DVZ_VIEW_OFFSCREEN);
+    if (desc.struct_size == 0)
+        desc.struct_size = DVZ_STRUCT_SIZE(DvzViewDesc);
+
+    desc.device_scale = _view_valid_scale(desc.device_scale);
+    desc.user_scale = _view_valid_scale(desc.user_scale);
+    desc.render_scale = _view_valid_scale(desc.render_scale);
+
+    if (desc.logical_width == 0 && desc.framebuffer_width > 0)
+        desc.logical_width = _view_round_size((float)desc.framebuffer_width / desc.device_scale);
+    if (desc.logical_height == 0 && desc.framebuffer_height > 0)
+        desc.logical_height = _view_round_size((float)desc.framebuffer_height / desc.device_scale);
+
+    if (desc.logical_width == 0 && figure != NULL && figure->width > 0)
+        desc.logical_width = figure->width;
+    if (desc.logical_height == 0 && figure != NULL && figure->height > 0)
+        desc.logical_height = figure->height;
+
+    if (desc.logical_width == 0)
+        desc.logical_width = 800;
+    if (desc.logical_height == 0)
+        desc.logical_height = 600;
+
+    if (desc.framebuffer_width == 0)
+        desc.framebuffer_width = _view_round_size((float)desc.logical_width * desc.device_scale);
+    if (desc.framebuffer_height == 0)
+        desc.framebuffer_height = _view_round_size((float)desc.logical_height * desc.device_scale);
+
+    *out = desc;
+}
+
+
+
+/**
+ * Apply descriptor scale state after view construction.
+ *
+ * @param win view to update
+ * @param desc resolved descriptor
+ */
+static void _view_apply_desc_state(DvzView* win, const DvzViewDesc* desc)
+{
+    ANN(win);
+    ANN(desc);
+    win->user_scale = _view_valid_scale(desc->user_scale);
+    win->render_scale = _view_valid_scale(desc->render_scale);
+    _view_update_size_state(
+        win, desc->logical_width, desc->logical_height, desc->framebuffer_width,
+        desc->framebuffer_height, desc->device_scale, desc->device_scale);
+    if (win->figure != NULL && win->logical_width > 0 && win->logical_height > 0)
+        dvz_figure_resize(win->figure, win->logical_width, win->logical_height);
+}
+
+
+
+/**
+ * Create a view from a resolved descriptor.
+ *
+ * @param app app
+ * @param figure figure
+ * @param desc view descriptor
+ * @return view, or NULL
+ */
+DvzView* dvz_view(DvzApp* app, DvzFigure* figure, const DvzViewDesc* desc)
+{
+    ANN(app);
+    ANN(figure);
+
+    DvzViewDesc resolved = {0};
+    _view_desc_resolve(desc, figure, &resolved);
+
+    DvzView* win = NULL;
+    switch (resolved.kind)
+    {
+    case DVZ_VIEW_OFFSCREEN:
+        win = _view_create_offscreen(
+            app, figure, resolved.framebuffer_width, resolved.framebuffer_height);
+        break;
+    case DVZ_VIEW_GLFW:
+        win = _view_create_glfw(
+            app, figure, resolved.logical_width, resolved.logical_height, resolved.title);
+        break;
+    case DVZ_VIEW_EXTERNAL_SURFACE:
+        if (resolved.external_surface == NULL)
+            return NULL;
+        win = _view_create_external_surface(app, figure, resolved.external_surface);
+        break;
+    default:
+        return NULL;
+    }
+    if (win == NULL)
+        return NULL;
+
+    _view_apply_desc_state(win, &resolved);
+    return win;
+}
+
+
+
+static DvzView*
+_view_create_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height)
 {
     ANN(app);
     ANN(figure);
@@ -3443,9 +3586,9 @@ dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t heig
 
 
 
-DvzView*
-dvz_view_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height,
-                    const char* title)
+static DvzView*
+_view_create_glfw(
+    DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title)
 {
     ANN(app);
     ANN(figure);
@@ -3532,7 +3675,7 @@ dvz_view_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height,
  * @param surface external surface description
  * @return view handle, or NULL on failure
  */
-DvzView* dvz_view_external_surface(
+static DvzView* _view_create_external_surface(
     DvzApp* app, DvzFigure* figure, const DvzWindowExternalSurfaceInfo* surface)
 {
     ANN(app);
@@ -3595,6 +3738,73 @@ DvzView* dvz_view_external_surface(
 #else
     return NULL;
 #endif
+}
+
+
+/**
+ * Create an offscreen view with exact framebuffer pixels.
+ *
+ * @param app app that owns the rendering runtime
+ * @param figure figure rendered into the view
+ * @param width framebuffer width in pixels
+ * @param height framebuffer height in pixels
+ * @return view handle, or NULL on failure
+ */
+DvzView*
+dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height)
+{
+    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
+    desc.logical_width = width;
+    desc.logical_height = height;
+    desc.framebuffer_width = width;
+    desc.framebuffer_height = height;
+    return dvz_view(app, figure, &desc);
+}
+
+
+
+/**
+ * Create an interactive GLFW view.
+ *
+ * @param app app that owns the rendering runtime
+ * @param figure figure rendered into the view
+ * @param width logical window width in pixels
+ * @param height logical window height in pixels
+ * @param title window title
+ * @return view handle, or NULL on failure
+ */
+DvzView* dvz_view_glfw(
+    DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title)
+{
+    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_GLFW);
+    desc.logical_width = width;
+    desc.logical_height = height;
+    desc.title = title;
+    return dvz_view(app, figure, &desc);
+}
+
+
+
+/**
+ * Create a hosted external-surface view.
+ *
+ * @param app app that owns the rendering runtime
+ * @param figure figure rendered into the view
+ * @param surface external surface description
+ * @return view handle, or NULL on failure
+ */
+DvzView* dvz_view_external_surface(
+    DvzApp* app, DvzFigure* figure, const DvzWindowExternalSurfaceInfo* surface)
+{
+    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_EXTERNAL_SURFACE);
+    desc.external_surface = surface;
+    if (surface != NULL)
+    {
+        desc.framebuffer_width = surface->extent.width;
+        desc.framebuffer_height = surface->extent.height;
+        desc.device_scale = _view_valid_scale(surface->scale_x);
+    }
+    return dvz_view(app, figure, &desc);
 }
 
 
@@ -3913,10 +4123,59 @@ struct DvzInputRouter* dvz_view_input(DvzView* win)
 float dvz_view_device_scale(const DvzView* win)
 {
     ANN(win);
-    float sx = 1.0f;
-    float sy = 1.0f;
-    _view_surface_scale(win, &sx, &sy);
+    const float sx = win->device_scale_x > 0.0f ? win->device_scale_x : 1.0f;
+    const float sy = win->device_scale_y > 0.0f ? win->device_scale_y : 1.0f;
     return 0.5f * (sx + sy);
+}
+
+
+
+/**
+ * Return the current logical view size.
+ *
+ * @param win the view
+ * @param out_width output logical width, may be NULL
+ * @param out_height output logical height, may be NULL
+ */
+void dvz_view_logical_size(const DvzView* win, uint32_t* out_width, uint32_t* out_height)
+{
+    ANN(win);
+    if (out_width != NULL)
+        *out_width = win->logical_width;
+    if (out_height != NULL)
+        *out_height = win->logical_height;
+}
+
+
+
+/**
+ * Return the current framebuffer view size.
+ *
+ * @param win the view
+ * @param out_width output framebuffer width, may be NULL
+ * @param out_height output framebuffer height, may be NULL
+ */
+void dvz_view_framebuffer_size(const DvzView* win, uint32_t* out_width, uint32_t* out_height)
+{
+    ANN(win);
+    if (out_width != NULL)
+        *out_width = win->framebuffer_width;
+    if (out_height != NULL)
+        *out_height = win->framebuffer_height;
+}
+
+
+
+/**
+ * Return the current render scale for a view.
+ *
+ * @param win the view
+ * @return render scale, defaulting to 1
+ */
+float dvz_view_render_scale(const DvzView* win)
+{
+    ANN(win);
+    return win->render_scale > 0.0f && isfinite(win->render_scale) ? win->render_scale : 1.0f;
 }
 
 

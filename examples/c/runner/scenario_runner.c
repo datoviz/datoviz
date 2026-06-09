@@ -127,6 +127,53 @@ static bool _parse_u32(const char* text, uint32_t* out)
 
 
 
+static bool _parse_size(const char* text, uint32_t* out_width, uint32_t* out_height)
+{
+    if (text == NULL || out_width == NULL || out_height == NULL)
+        return false;
+
+    const char* sep = strchr(text, 'x');
+    if (sep == NULL)
+        sep = strchr(text, 'X');
+    if (sep == NULL || sep == text || sep[1] == '\0')
+        return false;
+
+    char left[32] = {0};
+    const size_t n = (size_t)(sep - text);
+    if (n >= sizeof(left))
+        return false;
+    dvz_memcpy(left, sizeof(left), text, n);
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    if (!_parse_u32(left, &width) || !_parse_u32(sep + 1, &height))
+        return false;
+    if (width == 0 || height == 0)
+        return false;
+
+    *out_width = width;
+    *out_height = height;
+    return true;
+}
+
+
+
+static bool _parse_float(const char* text, float* out)
+{
+    if (text == NULL || text[0] == '\0' || out == NULL)
+        return false;
+
+    char* end = NULL;
+    float value = strtof(text, &end);
+    if (end == text || (end != NULL && *end != '\0') || value <= 0.0f)
+        return false;
+
+    *out = value;
+    return true;
+}
+
+
+
 static uint32_t _frames_after(int argc, char** argv, int index, uint32_t fallback)
 {
     uint32_t out = 0;
@@ -507,6 +554,12 @@ static void _print_usage(const DvzScenarioSpec* spec)
     fprintf(stdout, "  --offscreen-record N   record unpaced offscreen video\n");
     fprintf(stdout, "  --png                  write one offscreen PNG\n");
     fprintf(stdout, "  --dvzr N               record a DVZR stream offscreen\n");
+    fprintf(stdout, "size and scale:\n");
+    fprintf(stdout, "  --size WxH             exact framebuffer/output pixels\n");
+    fprintf(stdout, "  --logical-size WxH     logical layout size in pixels\n");
+    fprintf(stdout, "  --device-scale S       physical pixels per logical pixel\n");
+    fprintf(stdout, "  --user-scale S         UI-like scene quantity scale\n");
+    fprintf(stdout, "  --render-scale S       reserved render-quality scale\n");
 }
 
 
@@ -521,6 +574,13 @@ DvzRunnerConfig dvz_runner_config(const DvzScenarioSpec* spec)
     DvzRunnerConfig config = {
         .presentation = DVZ_RUNNER_PRESENT_GLFW,
         .capture_kind = DVZ_RUNNER_CAPTURE_NONE,
+        .logical_width = spec != NULL ? spec->width : 0,
+        .logical_height = spec != NULL ? spec->height : 0,
+        .framebuffer_width = spec != NULL ? spec->width : 0,
+        .framebuffer_height = spec != NULL ? spec->height : 0,
+        .device_scale = 1.0f,
+        .user_scale = 1.0f,
+        .render_scale = 1.0f,
         .width = spec != NULL ? spec->width : 0,
         .height = spec != NULL ? spec->height : 0,
         .frame_count = 0,
@@ -664,10 +724,30 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     DvzRunnerConfig resolved = *config;
     DvzScenarioContext ctx = {0};
 
-    if (resolved.width == 0)
-        resolved.width = spec->width;
-    if (resolved.height == 0)
-        resolved.height = spec->height;
+    if (resolved.device_scale <= 0.0f)
+        resolved.device_scale = 1.0f;
+    if (resolved.user_scale <= 0.0f)
+        resolved.user_scale = 1.0f;
+    if (resolved.render_scale <= 0.0f)
+        resolved.render_scale = 1.0f;
+    if (resolved.logical_width == 0)
+        resolved.logical_width = resolved.width != 0 ? resolved.width : spec->width;
+    if (resolved.logical_height == 0)
+        resolved.logical_height = resolved.height != 0 ? resolved.height : spec->height;
+    if (resolved.framebuffer_width == 0 && resolved.logical_width > 0)
+        resolved.framebuffer_width =
+            (uint32_t)((float)resolved.logical_width * resolved.device_scale + 0.5f);
+    if (resolved.framebuffer_height == 0 && resolved.logical_height > 0)
+        resolved.framebuffer_height =
+            (uint32_t)((float)resolved.logical_height * resolved.device_scale + 0.5f);
+    if (resolved.logical_width == 0 && resolved.framebuffer_width > 0)
+        resolved.logical_width =
+            (uint32_t)((float)resolved.framebuffer_width / resolved.device_scale + 0.5f);
+    if (resolved.logical_height == 0 && resolved.framebuffer_height > 0)
+        resolved.logical_height =
+            (uint32_t)((float)resolved.framebuffer_height / resolved.device_scale + 0.5f);
+    resolved.width = resolved.logical_width;
+    resolved.height = resolved.logical_height;
     if (resolved.fps <= 0)
         resolved.fps = spec->fps > 0 ? spec->fps : 60.0;
     resolved.capture.flags = _capture_flags(resolved.capture_kind);
@@ -676,8 +756,15 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     if (_validate_requirements(spec, &resolved) != 0)
         goto cleanup;
 
-    ctx.width = resolved.width;
-    ctx.height = resolved.height;
+    ctx.logical_width = resolved.logical_width;
+    ctx.logical_height = resolved.logical_height;
+    ctx.framebuffer_width = resolved.framebuffer_width;
+    ctx.framebuffer_height = resolved.framebuffer_height;
+    ctx.device_scale = resolved.device_scale;
+    ctx.user_scale = resolved.user_scale;
+    ctx.render_scale = resolved.render_scale;
+    ctx.width = resolved.logical_width;
+    ctx.height = resolved.logical_height;
 
     scene = dvz_scene();
     if (scene == NULL)
@@ -722,11 +809,28 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     if (resolved.presentation == DVZ_RUNNER_PRESENT_GLFW)
     {
         const char* title = spec->title != NULL ? spec->title : spec->id;
-        view = dvz_view_glfw(app, ctx.figure, ctx.width, ctx.height, title);
+        DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_GLFW);
+        desc.logical_width = ctx.logical_width;
+        desc.logical_height = ctx.logical_height;
+        desc.framebuffer_width = ctx.framebuffer_width;
+        desc.framebuffer_height = ctx.framebuffer_height;
+        desc.device_scale = ctx.device_scale;
+        desc.user_scale = ctx.user_scale;
+        desc.render_scale = ctx.render_scale;
+        desc.title = title;
+        view = dvz_view(app, ctx.figure, &desc);
     }
     else
     {
-        view = dvz_view_offscreen(app, ctx.figure, ctx.width, ctx.height);
+        DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
+        desc.logical_width = ctx.logical_width;
+        desc.logical_height = ctx.logical_height;
+        desc.framebuffer_width = ctx.framebuffer_width;
+        desc.framebuffer_height = ctx.framebuffer_height;
+        desc.device_scale = ctx.device_scale;
+        desc.user_scale = ctx.user_scale;
+        desc.render_scale = ctx.render_scale;
+        view = dvz_view(app, ctx.figure, &desc);
     }
     if (view == NULL)
     {
@@ -765,7 +869,15 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     if (resolved.presentation == DVZ_RUNNER_PRESENT_GLFW &&
         resolved.capture_kind == DVZ_RUNNER_CAPTURE_VIDEO)
     {
-        capture_view = dvz_view_offscreen(app, ctx.figure, ctx.width, ctx.height);
+        DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
+        desc.logical_width = ctx.logical_width;
+        desc.logical_height = ctx.logical_height;
+        desc.framebuffer_width = ctx.framebuffer_width;
+        desc.framebuffer_height = ctx.framebuffer_height;
+        desc.device_scale = ctx.device_scale;
+        desc.user_scale = ctx.user_scale;
+        desc.render_scale = ctx.render_scale;
+        capture_view = dvz_view(app, ctx.figure, &desc);
         if (capture_view == NULL)
         {
             fprintf(stderr, "scenario_runner: offscreen capture view creation failed\n");
@@ -889,6 +1001,63 @@ int dvz_scenario_run_native_cli(const DvzScenarioSpec* spec, int argc, char** ar
             config.presentation = DVZ_RUNNER_PRESENT_OFFSCREEN;
             config.capture_kind = DVZ_RUNNER_CAPTURE_DVZR;
             config.frame_count = _frames_after(argc, argv, i, RUNNER_DEFAULT_FRAMES);
+        }
+        else if (strcmp(arg, "--size") == 0 && i + 1 < argc)
+        {
+            uint32_t width = 0;
+            uint32_t height = 0;
+            if (!_parse_size(argv[++i], &width, &height))
+            {
+                fprintf(stderr, "scenario_runner: invalid --size value\n");
+                return -1;
+            }
+            config.framebuffer_width = width;
+            config.framebuffer_height = height;
+            config.logical_width = width;
+            config.logical_height = height;
+            config.width = width;
+            config.height = height;
+            config.device_scale = 1.0f;
+        }
+        else if (strcmp(arg, "--logical-size") == 0 && i + 1 < argc)
+        {
+            uint32_t width = 0;
+            uint32_t height = 0;
+            if (!_parse_size(argv[++i], &width, &height))
+            {
+                fprintf(stderr, "scenario_runner: invalid --logical-size value\n");
+                return -1;
+            }
+            config.logical_width = width;
+            config.logical_height = height;
+            config.width = width;
+            config.height = height;
+        }
+        else if (strcmp(arg, "--device-scale") == 0 && i + 1 < argc)
+        {
+            if (!_parse_float(argv[++i], &config.device_scale))
+            {
+                fprintf(stderr, "scenario_runner: invalid --device-scale value\n");
+                return -1;
+            }
+            config.framebuffer_width = 0;
+            config.framebuffer_height = 0;
+        }
+        else if (strcmp(arg, "--user-scale") == 0 && i + 1 < argc)
+        {
+            if (!_parse_float(argv[++i], &config.user_scale))
+            {
+                fprintf(stderr, "scenario_runner: invalid --user-scale value\n");
+                return -1;
+            }
+        }
+        else if (strcmp(arg, "--render-scale") == 0 && i + 1 < argc)
+        {
+            if (!_parse_float(argv[++i], &config.render_scale))
+            {
+                fprintf(stderr, "scenario_runner: invalid --render-scale value\n");
+                return -1;
+            }
         }
         else
         {

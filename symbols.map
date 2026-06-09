@@ -1387,7 +1387,9 @@ dvz_view_capture_png
 dvz_view_capture_start
 dvz_view_capture_stop
 dvz_view_connect_panel
+dvz_view
 dvz_view_device_scale
+dvz_view_desc
 dvz_view_emit_key
 dvz_view_emit_pointer
 dvz_view_emit_resize
@@ -1398,6 +1400,8 @@ dvz_view_fly
 dvz_view_glfw
 dvz_view_gui
 dvz_view_input
+dvz_view_framebuffer_size
+dvz_view_logical_size
 dvz_view_offscreen
 dvz_view_orbit_camera
 dvz_view_panzoom
@@ -1407,6 +1411,7 @@ dvz_view_record_stop
 dvz_view_release_external_surface
 dvz_view_render_enabled
 dvz_view_render_once
+dvz_view_render_scale
 dvz_view_replay_frame_count
 dvz_view_replay_set_loop
 dvz_view_replay_set_paced

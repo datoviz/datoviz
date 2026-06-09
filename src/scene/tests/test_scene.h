@@ -406,6 +406,10 @@ int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCa
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen(TstContext* suite, const TstCase* item);
 
+int test_app_view_desc_offscreen_scale(TstContext* suite, const TstCase* item);
+
+int test_app_view_desc_offscreen_exact_pixels(TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
     TstContext* suite, const TstCase* item);
 
