@@ -30,6 +30,9 @@
 #include "runner/scenario_runner.h"
 
 
+DvzScenarioSpec dvz_example_builtin_shapes_3d_scenario(void);
+
+
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
@@ -199,7 +202,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _builtin_shapes_3d_scenario(void)
+DvzScenarioSpec dvz_example_builtin_shapes_3d_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_builtin_shapes_3d",
@@ -207,6 +210,8 @@ static DvzScenarioSpec _builtin_shapes_3d_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements =
+            DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
     };
 }
@@ -217,6 +222,7 @@ static DvzScenarioSpec _builtin_shapes_3d_scenario(void)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+#ifndef DVZ_EXAMPLE_NO_MAIN
 /**
  * Run the builtin 3D shapes feature example through the native scenario runner.
  *
@@ -226,6 +232,7 @@ static DvzScenarioSpec _builtin_shapes_3d_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _builtin_shapes_3d_scenario();
+    DvzScenarioSpec spec = dvz_example_builtin_shapes_3d_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

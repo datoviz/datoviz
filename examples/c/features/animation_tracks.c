@@ -31,6 +31,9 @@
 #include "runner/scenario_runner.h"
 
 
+DvzScenarioSpec dvz_example_animation_tracks_scenario(void);
+
+
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
@@ -264,7 +267,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _animation_tracks_scenario(void)
+DvzScenarioSpec dvz_example_animation_tracks_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_animation_tracks",
@@ -285,6 +288,7 @@ static DvzScenarioSpec _animation_tracks_scenario(void)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+#ifndef DVZ_EXAMPLE_NO_MAIN
 /**
  * Run the animation-tracks feature example through the native scenario runner.
  *
@@ -294,6 +298,7 @@ static DvzScenarioSpec _animation_tracks_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _animation_tracks_scenario();
+    DvzScenarioSpec spec = dvz_example_animation_tracks_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

@@ -32,6 +32,9 @@
 #include "runner/scenario_runner.h"
 
 
+DvzScenarioSpec dvz_example_isolines_scenario(void);
+
+
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
@@ -289,7 +292,7 @@ error:
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _isolines_scenario(void)
+DvzScenarioSpec dvz_example_isolines_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_isolines",
@@ -297,6 +300,8 @@ static DvzScenarioSpec _isolines_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements =
+            DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
     };
 }
@@ -307,6 +312,7 @@ static DvzScenarioSpec _isolines_scenario(void)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+#ifndef DVZ_EXAMPLE_NO_MAIN
 /**
  * Run the isolines feature example through the native scenario runner.
  *
@@ -316,6 +322,7 @@ static DvzScenarioSpec _isolines_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _isolines_scenario();
+    DvzScenarioSpec spec = dvz_example_isolines_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif
