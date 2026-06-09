@@ -283,22 +283,25 @@ OBJ should be a geometry/file-import feature, not a builtin shape.
 Add a clean v0.4 loader API instead of copying the v0.3 `dvz_shape_obj()` surface:
 
 ```c
-DvzGeometry* dvz_geometry_load_obj(const char* path, const DvzGeometryLoadDesc* desc);
+DvzGeometryObjDesc dvz_geometry_obj_desc(void);
+DvzGeometry* dvz_geom_obj(const char* path, const DvzGeometryObjDesc* desc);
 ```
 
-Initial options should include triangulate faces, compute missing normals, normalize/center,
-preserve texcoords, preserve vertex colors, and optional object/group/material filtering later.
-`tiny_obj_loader.h` is already vendored and remains a reasonable OBJ backend.
+Implemented first slice: `v`, `vn`, and polygonal `f` records; faces are triangulated as fans;
+missing normals are computed; texture coordinates/materials/groups are ignored. Normalize/center,
+texcoords, vertex colors, object/group/material filtering, and a backend swap to `tiny_obj_loader.h`
+remain planned if example pressure requires them.
 
-Add `examples/c/features/obj_loading.c` once the public loader exists.
+Public proof lives in `examples/c/features/obj_loading.c`.
 
-PLY is worth supporting for scientific and engineering workflows: point clouds, scans, meshes with
+PLY remains planned for scientific and engineering workflows: point clouds, scans, meshes with
 vertex colors/normals/scalar properties. Prefer `miniply` as the initial backend because it is small,
 MIT-licensed, C++11-friendly, supports ASCII and binary PLY, and can triangulate polygon faces. Wrap
-it behind a C API:
+it behind a descriptor-based C API:
 
 ```c
-DvzGeometry* dvz_geometry_load_ply(const char* path, const DvzGeometryLoadDesc* desc);
+DvzGeometryPlyDesc dvz_geometry_ply_desc(void);
+DvzGeometry* dvz_geom_ply(const char* path, const DvzGeometryPlyDesc* desc);
 ```
 
 Initial PLY support should cover positions, normals, RGB/RGBA colors, triangle faces, optional face
@@ -318,7 +321,7 @@ brings node transforms, materials, images, buffers, coordinate conventions, and 
 5. Add polygon triangulation and isolines examples using public `geom` helpers.
 6. Add builtin 2D and 3D shape builders and examples.
 7. Add OBJ loader and `features/obj_loading.c`.
-8. Add PLY loader planning or implementation, depending on release pressure.
-9. Mark glTF 2.0 as v0.5 in release/deferred planning.
+8. Keep PLY planned unless release pressure requires implementation.
+9. Keep glTF 2.0 as v0.5 asset-import work.
 10. Rename and triage existing examples, then run build/test/screenshot validation and
     `git diff --check`.

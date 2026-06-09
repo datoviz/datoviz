@@ -20,6 +20,7 @@
 #include "testing.h"
 
 #include <math.h>
+#include <stdio.h>
 
 
 
@@ -82,6 +83,10 @@ int test_geometry_descriptor_abi(TstContext* suite, const TstCase* tstitem)
     DvzGeometryTorusDesc torus = dvz_geometry_torus_desc();
     torus.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_torus(&torus) == NULL);
+
+    DvzGeometryObjDesc obj = dvz_geometry_obj_desc();
+    obj.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_obj("missing.obj", &obj) == NULL);
 
     const dvec2 xy[3] = {{0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}};
     DvzPolygonDesc polygon = dvz_polygon_desc();
@@ -439,6 +444,51 @@ int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem)
            DVZ_STRUCT_INIT_FIELDS(DvzGeometryArrowDesc), .length = 1.0, .shaft_radius = 0.1,
            .head_radius = 0.2, .head_length = 1.0, .sectors = 8}) == NULL);
 
+    return 0;
+}
+
+
+
+int test_geometry_obj_loader(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    (void)tstitem;
+
+    const char* path = "build/test_geom_obj_loader.obj";
+    FILE* fp = fopen(path, "wb");
+    ANN(fp);
+    const char obj[] =
+        "v -1 0 0\n"
+        "v 1 0 0\n"
+        "v 1 1 0\n"
+        "v -1 1 0\n"
+        "vn 0 0 1\n"
+        "f 1//1 2//1 3//1 4//1\n";
+    AT(fwrite(obj, 1, sizeof(obj) - 1u, fp) == sizeof(obj) - 1u);
+    fclose(fp);
+
+    DvzGeometry* geometry = dvz_geom_obj(
+        path, &(DvzGeometryObjDesc){
+                  DVZ_STRUCT_INIT_FIELDS(DvzGeometryObjDesc),
+                  .color = dvz_color_rgba(10, 20, 30, 255),
+              });
+    AT(geometry != NULL);
+    AT(geometry->type == DVZ_GEOMETRY_CUSTOM);
+    AT(geometry->vertex_count == 6);
+    AT(geometry->index_count == 6);
+    for (uint32_t i = 0; i < geometry->vertex_count; i++)
+    {
+        AT(geometry->indices[i] == i);
+        AC(geometry->normals[i][0], 0.0, EPS);
+        AC(geometry->normals[i][1], 0.0, EPS);
+        AC(geometry->normals[i][2], 1.0, EPS);
+        AT(geometry->colors[i].r == 10);
+        AT(geometry->colors[i].g == 20);
+        AT(geometry->colors[i].b == 30);
+        AT(geometry->colors[i].a == 255);
+    }
+    dvz_geometry_destroy(geometry);
+    remove(path);
     return 0;
 }
 
@@ -827,6 +877,7 @@ int test_geom(TstSuite* suite)
     TST_CASE(test_geometry_surface_grid_update);
     TST_CASE(test_geometry_sphere);
     TST_CASE(test_geometry_builtin_shapes);
+    TST_CASE(test_geometry_obj_loader);
     TST_CASE(test_geometry_transform);
     TST_CASE(test_geometry_merge);
     TST_CASE(test_geometry_edges);

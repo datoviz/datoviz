@@ -47,6 +47,7 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzGeometryConeDesc` | `dvz_geometry_cone_desc()` |
 | `DvzGeometryTorusDesc` | `dvz_geometry_torus_desc()` |
 | `DvzGeometryArrowDesc` | `dvz_geometry_arrow_desc()` |
+| `DvzGeometryObjDesc` | `dvz_geometry_obj_desc()` |
 | `DvzPolygonDesc` | `dvz_polygon_desc()` |
 | `DvzTriangulationDesc` | `dvz_triangulation_desc()` |
 | `DvzPanelBackgroundDesc` | `dvz_panel_background_desc()` |

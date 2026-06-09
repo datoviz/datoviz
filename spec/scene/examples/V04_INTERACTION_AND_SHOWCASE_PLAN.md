@@ -530,5 +530,5 @@ Do not include:
 4. Blender runtime loading, skinning, or rig evaluation;
 5. image-thumbnail LOD for embeddings;
 6. full dashboard side-panel UX;
-7. glTF import;
+7. glTF import, which is deferred to v0.5 asset-import work;
 8. committing raw datasets or generated binary payloads.

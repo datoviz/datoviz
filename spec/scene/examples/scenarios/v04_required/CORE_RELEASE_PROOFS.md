@@ -88,6 +88,14 @@ Minimal target: cube, UV sphere, cylinder, cone, torus, and arrow rendered as re
 single orbiting/arcball camera. Classic polyhedra remain planned.
 
 
+## `feature_obj_loading`
+
+Wavefront OBJ file-loading proof.
+
+Minimal target: a tiny self-contained OBJ mesh loaded through `dvz_geom_obj()` and rendered as a
+retained mesh. PLY remains planned and glTF 2.0 is v0.5 asset-import work.
+
+
 ## `sphere_impostor`
 
 Small 3D quality proof for analytic sphere impostors, depth, lighting, and camera interaction.

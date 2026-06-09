@@ -5,7 +5,7 @@
 This page indexes focused C examples for public scene, layout, adornment, interaction,
 update, rendering-technique, and appearance features.
 
-Coverage: 64 examples (59 supported, 5 experimental).
+Coverage: 65 examples (60 supported, 5 experimental).
 
 ## Features
 
@@ -416,6 +416,18 @@ _Media pending._
 `supported` `features`
 
 side-by-side internal multisample antialiasing on thin segments.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [OBJ Loading](gallery/features/feature_obj_loading.md)
+
+_Media pending._
+
+`supported` `features`
+
+Wavefront OBJ mesh loading through geom/fileio helpers.
 
 </div>
 

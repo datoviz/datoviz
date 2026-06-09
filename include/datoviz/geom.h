@@ -372,6 +372,27 @@ DVZ_EXPORT DvzGeometryArrowDesc dvz_geometry_arrow_desc(void);
 DVZ_EXPORT DvzGeometry* dvz_geom_arrow(const DvzGeometryArrowDesc* desc);
 
 
+/**
+ * Return a default Wavefront OBJ geometry loader descriptor.
+ *
+ * @return initialized OBJ loader descriptor
+ */
+DVZ_EXPORT DvzGeometryObjDesc dvz_geometry_obj_desc(void);
+
+
+/**
+ * Load a Wavefront OBJ mesh as indexed geometry.
+ *
+ * The first loader slice supports `v`, `vn`, and polygonal `f` records. Faces are triangulated as
+ * fans and texture coordinates/materials are ignored.
+ *
+ * @param filename OBJ file path
+ * @param desc optional loader descriptor
+ * @return the loaded geometry, or NULL on unsupported input or I/O failure
+ */
+DVZ_EXPORT DvzGeometry* dvz_geom_obj(const char* filename, const DvzGeometryObjDesc* desc);
+
+
 
 /**
  * Return a default polygon descriptor.

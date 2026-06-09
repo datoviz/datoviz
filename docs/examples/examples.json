@@ -2,21 +2,21 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 92,
+  "count": 93,
   "categories": {
     "composite": 2,
-    "feature": 64,
+    "feature": 65,
     "showcase": 11,
     "visual": 15
   },
   "statuses": {
     "experimental": 8,
     "prototype": 1,
-    "supported": 83
+    "supported": 84
   },
   "agent_copy_safe": {
     "false": 20,
-    "true": 72
+    "true": 73
   },
   "examples": [
     {
@@ -1373,6 +1373,27 @@
         "kind": "synthetic"
       },
       "primary_feature": "builtin-shapes-3d"
+    },
+    {
+      "id": "feature_obj_loading",
+      "title": "OBJ Loading",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/obj_loading.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/obj_loading.c",
+      "page": "gallery/features/feature_obj_loading.md",
+      "summary": "Wavefront OBJ mesh loading through geom/fileio helpers.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/obj_loading",
+      "smoke_command": "./build/examples/c/features/obj_loading --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "obj-loading"
     },
     {
       "id": "feature_probe_labels",

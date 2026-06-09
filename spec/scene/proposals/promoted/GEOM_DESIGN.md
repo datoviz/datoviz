@@ -121,10 +121,12 @@ Additional v0.4 follow-up work on 2026-05-22 added:
 
 Remaining deferred work:
 
-1. Add arrow/gizmo-axis and other solid generators when a concrete example needs them.
+1. Add gizmo-axis and classic polyhedron generators when a concrete example needs them.
 2. Add richer structured-grid update/provenance helpers once surface examples require more
    update-efficient behavior.
 3. Add CPU curve tessellation helpers, starting with quadratic/cubic Bezier and then Catmull-Rom
    and B-spline helpers, with output directly consumable by `dvz_path()`.
-4. Defer OBJ import, constrained triangulation, contour/isoline sidecars, and richer asset import
+4. Extend OBJ import beyond the first `v`/`vn`/`f` slice only when examples need texcoords,
+   materials, groups, or normalization policy.
+5. Defer PLY, glTF, constrained triangulation, contour/isoline sidecars, and richer asset import
    until the current container and direct upload path have more example pressure.

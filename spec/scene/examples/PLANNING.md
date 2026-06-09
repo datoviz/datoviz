@@ -124,6 +124,7 @@ The main remaining polish, promotion, or feature gaps are:
 | `feature_isolines` | `ready-now` | surface-grid geometry, scalar contours, segment overlay | Public proof lives in `examples/c/features/isolines.c`. |
 | `feature_builtin_shapes_2d` | `ready-now` | 2D geometry builders, polygon with hole | Public proof lives in `examples/c/features/builtin_shapes_2d.c`. |
 | `feature_builtin_shapes_3d` | `ready-now` | cube, sphere, cylinder, cone, torus, arrow builders | Public proof lives in `examples/c/features/builtin_shapes_3d.c`; classic polyhedra remain planned. |
+| `feature_obj_loading` | `ready-now` | Wavefront OBJ file loading into retained mesh | Public proof lives in `examples/c/features/obj_loading.c`; PLY remains planned and glTF is v0.5. |
 | `sphere_impostor` | `ready-now` | sphere visual, lighting/depth | Public proof lives in `examples/c/visuals/sphere.c`; molecule/protein semantics stay in the scientific protein example. |
 | `volume` | `ready-now` | 3D sampled field, slice/render, capture | Public proof lives in `examples/c/visuals/volume.c`. |
 | `scale_bar` | `ready-now` | retained scale bar, label, panzoom/domain updates | Minimal feature proof lives in `examples/c/features/scalebar.c`; unit conversion proof lives in `examples/c/features/scalebar_units.c`; richer overview/detail/3D measurement composition lives in `examples/c/showcases/scalebar_measurement.c`. |
@@ -260,17 +261,18 @@ optional controls for tessellation quality, stroke width, join mode, and overlay
 13. `feature_isolines`
 14. `feature_builtin_shapes_2d`
 15. `feature_builtin_shapes_3d`
-16. `volume`
-17. `protein_arcball_viewer`
-18. `showcase_wind_field`
-19. `showcase_gpu_particle_smoke`
-20. `textured_terrain_or_planet`
-21. `composite_polygon`
-22. `composite_graph`
-23. `point_cloud`
-24. `brain_volume`
-25. `feature_controller_arcball`
-26. `feature_mesh_texture`
+16. `feature_obj_loading`
+17. `volume`
+18. `protein_arcball_viewer`
+19. `showcase_wind_field`
+20. `showcase_gpu_particle_smoke`
+21. `textured_terrain_or_planet`
+22. `composite_polygon`
+23. `composite_graph`
+24. `point_cloud`
+25. `brain_volume`
+26. `feature_controller_arcball`
+27. `feature_mesh_texture`
 23. Feature example validation and capture proof from `examples/c/MANIFEST.yaml`
 24. `webgpu_browser_subset`
 

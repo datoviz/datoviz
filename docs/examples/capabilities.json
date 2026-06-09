@@ -3,21 +3,21 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 92,
+  "example_count": 93,
   "categories": {
     "composite": 2,
-    "feature": 64,
+    "feature": 65,
     "showcase": 11,
     "visual": 15
   },
   "statuses": {
     "experimental": 8,
     "prototype": 1,
-    "supported": 83
+    "supported": 84
   },
   "agent_copy_safe": {
     "false": 20,
-    "true": 72
+    "true": 73
   },
   "capabilities": {
     "composites": {
@@ -121,7 +121,7 @@
         ]
       },
       "synthetic": {
-        "count": 86,
+        "count": 87,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -689,6 +689,15 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/builtin_shapes_3d.c",
             "page": "gallery/features/feature_builtin_shapes_3d.md"
+          },
+          {
+            "id": "feature_obj_loading",
+            "title": "OBJ Loading",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/obj_loading.c",
+            "page": "gallery/features/feature_obj_loading.md"
           },
           {
             "id": "feature_probe_labels",
@@ -1402,6 +1411,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/panel_multi.c",
             "page": "gallery/features/feature_panel_multi.md"
+          }
+        ]
+      },
+      "obj-loading": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_obj_loading",
+            "title": "OBJ Loading",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/obj_loading.c",
+            "page": "gallery/features/feature_obj_loading.md"
           }
         ]
       },

@@ -41,6 +41,7 @@ typedef struct DvzGeometryCylinderDesc DvzGeometryCylinderDesc;
 typedef struct DvzGeometryConeDesc DvzGeometryConeDesc;
 typedef struct DvzGeometryTorusDesc DvzGeometryTorusDesc;
 typedef struct DvzGeometryArrowDesc DvzGeometryArrowDesc;
+typedef struct DvzGeometryObjDesc DvzGeometryObjDesc;
 typedef struct DvzPolygonRing DvzPolygonRing;
 typedef struct DvzPolygonDesc DvzPolygonDesc;
 typedef struct DvzTriangulationDesc DvzTriangulationDesc;
@@ -251,6 +252,15 @@ struct DvzGeometryArrowDesc
     double head_length;  // cone head length
     uint32_t sectors;    // radial segment count, defaults to 32
     DvzColor color;      // vertex color, defaults to opaque white when all channels are zero
+};
+
+
+
+struct DvzGeometryObjDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzColor color; // vertex color, defaults to opaque white when all channels are zero
 };
 
 

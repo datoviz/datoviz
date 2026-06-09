@@ -42,6 +42,7 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Automatic LOD for mesh simplification | `spec/scene/semantics/GEOMETRY_UTILITIES.md` |
 | Concave (alpha-shape) hull computation | `spec/scene/semantics/GEOMETRY_UTILITIES.md` |
 | Annotation shape generation (msdfgen integration) | `spec/scene/semantics/GEOMETRY_UTILITIES.md` |
+| PLY asset import and glTF 2.0 asset import beyond the active first OBJ loader slice; glTF is a v0.5 asset-import target | `spec/scene/examples/API_AND_EXAMPLES_REFACTOR_PLAN.md`, `spec/scene/semantics/GEOMETRY_UTILITIES.md` |
 | Advanced text shaping, fallback chains, equation layout, diagnostics, and data/world placement polish beyond the active rendered text path | `spec/scene/semantics/TEXT.md`, `spec/scene/visuals/GLYPH.md` |
 | Glyph-level, substring-level, and text-object picking | `spec/scene/semantics/TEXT.md`, `spec/scene/visuals/GLYPH.md` |
 | Non-label rendered annotations, rich readout UI, guides, and callout geometry beyond the active label and scale-bar slices | `spec/scene/semantics/ANNOTATIONS.md` |
