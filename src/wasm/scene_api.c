@@ -60,7 +60,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 3
+#define DVZ_WASM_API_SCENARIO_COUNT 4
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -80,6 +80,7 @@
 
 DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags);
 
+DvzScenarioSpec dvz_example_basic_scene_scenario(void);
 DvzScenarioSpec dvz_example_timer_animation_scenario(void);
 DvzScenarioSpec dvz_example_picking_scenario(void);
 DvzScenarioSpec dvz_example_image_probe_scenario(void);
@@ -342,10 +343,12 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
     switch (index)
     {
     case 0:
-        return dvz_example_timer_animation_scenario();
+        return dvz_example_basic_scene_scenario();
     case 1:
-        return dvz_example_picking_scenario();
+        return dvz_example_timer_animation_scenario();
     case 2:
+        return dvz_example_picking_scenario();
+    case 3:
         return dvz_example_image_probe_scenario();
     default:
         return (DvzScenarioSpec){0};

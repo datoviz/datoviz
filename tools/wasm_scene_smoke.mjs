@@ -1358,6 +1358,7 @@ try {
 
   requireOk(Module._dvz_wasm_api_scenario_count() >= 3, "expected gallery-live WASM scenarios");
   const expectedScenarioIds = [
+    "feature_basic_scene",
     "feature_timer_animation",
     "feature_picking",
     "feature_image_probe",
@@ -1367,25 +1368,25 @@ try {
     requireOk(ptr !== 0, `WASM scenario ${i} has no id`);
     const id = Module.UTF8ToString(ptr);
     requireOk(id === expectedScenarioIds[i], `unexpected scenario ${i} id ${id}`);
-    if (i > 0) {
+    if (i >= 2) {
       requireOk(
         (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 8)) !== 0,
         `${id} did not declare query readback`,
       );
     }
   }
-  const scenarioIdPtr = Module._dvz_wasm_api_scenario_id(0);
+  const scenarioIdPtr = Module._dvz_wasm_api_scenario_id(1);
   requireOk(scenarioIdPtr !== 0, "WASM scenario 0 has no id");
   const scenarioId = Module.UTF8ToString(scenarioIdPtr);
   requireOk(scenarioId === "feature_timer_animation", `unexpected scenario id ${scenarioId}`);
-  const scenarioTitlePtr = Module._dvz_wasm_api_scenario_title(0);
+  const scenarioTitlePtr = Module._dvz_wasm_api_scenario_title(1);
   requireOk(scenarioTitlePtr !== 0, "WASM scenario 0 has no title");
   requireOk(Module.UTF8ToString(scenarioTitlePtr) === "timer_animation", "unexpected scenario title");
-  requireOk(Module._dvz_wasm_api_scenario_width(0) === 1600, "unexpected scenario width");
-  requireOk(Module._dvz_wasm_api_scenario_height(0) === 1200, "unexpected scenario height");
-  requireOk(Module._dvz_wasm_api_scenario_fps(0) === 60, "unexpected scenario fps");
+  requireOk(Module._dvz_wasm_api_scenario_width(1) === 1600, "unexpected scenario width");
+  requireOk(Module._dvz_wasm_api_scenario_height(1) === 1200, "unexpected scenario height");
+  requireOk(Module._dvz_wasm_api_scenario_fps(1) === 60, "unexpected scenario fps");
   requireOk(
-    (Module._dvz_wasm_api_scenario_requirements(0) & (1 << 9)) !== 0,
+    (Module._dvz_wasm_api_scenario_requirements(1) & (1 << 9)) !== 0,
     "timer scenario did not declare frame callbacks",
   );
 
@@ -1397,7 +1398,7 @@ try {
       0,
       "scenario canvas format",
     );
-    expectStatus(Module._dvz_wasm_api_scenario_create(scenarioScene, 0), 0, "timer scenario create");
+    expectStatus(Module._dvz_wasm_api_scenario_create(scenarioScene, 1), 0, "timer scenario create");
     expectNoDiagnostics(Module, scenarioScene, "timer scenario create diagnostics");
     const scenarioFigure = Module._dvz_wasm_api_scenario_figure(scenarioScene);
     requireOk(scenarioFigure !== 0, "timer scenario has no figure");

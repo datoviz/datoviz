@@ -1,5 +1,10 @@
 export const LIVE_EXAMPLES = [
   {
+    id: "feature_basic_scene",
+    label: "Basic Scene",
+    scenarioId: "feature_basic_scene",
+  },
+  {
     id: "feature_timer_animation",
     label: "Timer Animation",
     scenarioId: "feature_timer_animation",
