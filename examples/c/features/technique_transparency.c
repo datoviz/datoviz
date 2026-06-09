@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* transparency_order - source-over and weighted blended order-independent transparency.
+/* transparency_order - source-over, WBOIT, and depth-peel transparency on overlapping cubes.
  *
  * Scenario: feature.transparency_order
  * Style: features, graphite_cyan, 1600x1200 capture target
@@ -22,8 +22,11 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
+#include "datoviz/geom.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -33,9 +36,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH        1600u
-#define HEIGHT       1200u
-#define VERTEX_COUNT 9u
+#define WIDTH  1600u
+#define HEIGHT 1200u
 
 
 
@@ -44,71 +46,166 @@
 /*************************************************************************************************/
 
 /**
- * Fill three overlapping translucent triangles.
+ * Return one visual-local translation transform.
  *
- * @param positions output vertex positions
- * @param normals output normals
- * @param colors output colors
+ * @param x translation x
+ * @param y translation y
+ * @param z translation z
+ * @param out output matrix
  */
-static void _fill_triangles(
-    vec3 positions[VERTEX_COUNT], vec3 normals[VERTEX_COUNT], DvzColor colors[VERTEX_COUNT])
+static void _translation(float x, float y, float z, mat4 out)
 {
-    const vec3 data[VERTEX_COUNT] = {
-        {-0.82f, -0.54f, 0.00f}, {-0.10f, +0.76f, 0.00f}, {+0.32f, -0.38f, 0.00f},
-        {-0.26f, +0.54f, 0.18f}, {+0.84f, +0.22f, 0.18f}, {+0.02f, -0.82f, 0.18f},
-        {-0.84f, +0.02f, 0.36f}, {+0.18f, +0.88f, 0.36f}, {+0.78f, -0.06f, 0.36f},
-    };
-    const ExampleStyleColorRole roles[3] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_WARNING,
-    };
-    const uint8_t alpha[3] = {122, 136, 150};
-
-    for (uint32_t i = 0; i < VERTEX_COUNT; i++)
-    {
-        positions[i][0] = data[i][0];
-        positions[i][1] = data[i][1];
-        positions[i][2] = data[i][2];
-        normals[i][0] = 0.0f;
-        normals[i][1] = 0.0f;
-        normals[i][2] = 1.0f;
-        const uint32_t triangle = i / 3u;
-        colors[i] = example_graphite_cyan_color(roles[triangle]);
-        colors[i].a = alpha[triangle];
-    }
+    if (out == NULL)
+        return;
+    memset(out, 0, sizeof(mat4));
+    out[0][0] = 1.0f;
+    out[1][1] = 1.0f;
+    out[2][2] = 1.0f;
+    out[3][3] = 1.0f;
+    out[3][0] = x;
+    out[3][1] = y;
+    out[3][2] = z;
 }
 
 
 
 /**
- * Add one transparent primitive visual.
+ * Add one translucent cube visual.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
- * @param mode alpha mode
+ * @param size cube edge length
+ * @param position visual-local translation
+ * @param alpha vertex alpha
+ * @param mode alpha technique
+ * @param primary primary face color role
  * @return true on success
  */
-static bool _add_transparent_triangles(DvzScene* scene, DvzPanel* panel, DvzAlphaMode mode)
+static bool _add_transparent_cube(
+    DvzScene* scene,
+    DvzPanel* panel,
+    double size,
+    vec3 position,
+    uint8_t alpha,
+    DvzAlphaMode mode,
+    ExampleStyleColorRole primary)
 {
-    vec3 positions[VERTEX_COUNT] = {{0}};
-    vec3 normals[VERTEX_COUNT] = {{0}};
-    DvzColor colors[VERTEX_COUNT] = {{0}};
-    _fill_triangles(positions, normals, colors);
-
-    DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
-    if (visual == NULL)
-        return false;
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = VERTEX_COUNT},
-        {.attr_name = "normal", .data = normals, .item_count = VERTEX_COUNT},
-        {.attr_name = "color", .data = colors, .item_count = VERTEX_COUNT},
+    const ExampleStyleColorRole roles[6] = {
+        primary,
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_WARNING,
+        EXAMPLE_STYLE_COLOR_TEXT,
+        EXAMPLE_STYLE_COLOR_GRID,
     };
-    if (dvz_visual_set_data_many(visual, updates, 3) != 0)
+    DvzColor face_colors[DVZ_GEOM_CUBE_FACE_COUNT] = {{0}};
+    for (uint32_t i = 0; i < DVZ_GEOM_CUBE_FACE_COUNT; i++)
+    {
+        face_colors[i] = example_graphite_cyan_color(roles[i]);
+        face_colors[i].a = alpha;
+    }
+
+    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
+        .size = size,
+        .face_colors = face_colors,
+        .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT,
+    });
+    if (cube == NULL)
         return false;
+
+    bool ok = false;
+    DvzVisual* visual = dvz_mesh(scene, 0);
+    if (visual == NULL)
+        goto cleanup;
+    if (!example_mesh_geometry(visual, cube))
+        goto cleanup;
+
+    DvzMaterialDesc material = dvz_standard_material_desc();
+    material.standard.roughness = 0.42f;
+    material.standard.specular = 0.30f;
+    material.standard.rim_strength = 0.20f;
+    material.alpha_mode = mode;
+    if (dvz_visual_set_material(visual, &material) != 0)
+        goto cleanup;
     if (dvz_visual_set_alpha_mode(visual, mode) != 0)
+        goto cleanup;
+
+    mat4 transform = {{0}};
+    _translation(position[0], position[1], position[2], transform);
+    if (dvz_visual_set_transform(visual, transform) != 0)
+        goto cleanup;
+
+    ok = dvz_panel_add_visual(panel, visual, NULL) == 0;
+
+cleanup:
+    dvz_geometry_destroy(cube);
+    return ok;
+}
+
+
+
+/**
+ * Add the same overlapping translucent cubes to one panel.
+ *
+ * @param scene scene owning the visual
+ * @param panel panel receiving the visual
+ * @param mode alpha technique
+ * @return true on success
+ */
+static bool _add_transparent_cubes(DvzScene* scene, DvzPanel* panel, DvzAlphaMode mode)
+{
+    return _add_transparent_cube(
+               scene, panel, 1.06, (vec3){-0.20f, -0.02f, +0.00f}, 112u, mode,
+               EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY) &&
+           _add_transparent_cube(
+               scene, panel, 0.78, (vec3){+0.26f, +0.10f, +0.18f}, 146u, mode,
+               EXAMPLE_STYLE_COLOR_WARNING);
+}
+
+
+
+/**
+ * Set the shared 3D camera used by all panels.
+ *
+ * @param panel target panel
+ * @return true on success
+ */
+static bool _set_camera(DvzPanel* panel)
+{
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.eye[0] = +0.10f;
+    camera.eye[1] = -3.25f;
+    camera.eye[2] = +1.25f;
+    camera.up[1] = 0.0f;
+    camera.up[2] = 1.0f;
+    camera.fov_y = 0.58f;
+    camera.near = 0.05f;
+    camera.far = 100.0f;
+    return dvz_panel_set_camera(panel, &camera) != NULL;
+}
+
+
+
+/**
+ * Set the shared arcball orientation used by all panels.
+ *
+ * @param ctx scenario context
+ * @param panel target panel
+ * @return true on success
+ */
+static bool _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel)
+{
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    if (controller == NULL)
         return false;
-    return dvz_panel_add_visual(panel, visual, NULL) == 0;
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    if (arcball == NULL)
+        return false;
+    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return false;
+    dvz_arcball_set(arcball, (vec3){+0.50f, -0.18f, +0.22f});
+    return true;
 }
 
 
@@ -135,25 +232,33 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx->figure == NULL)
         return false;
 
-    DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 3);
     if (grid == NULL)
         return false;
     if (!dvz_grid_set_margins(
             grid, &(DvzPanelReserve){
                       .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}))
         return false;
-    if (!dvz_grid_set_gutter(grid, 30.0f, 0.0f))
+    if (!dvz_grid_set_gutter(grid, 24.0f, 0.0f))
         return false;
 
     DvzPanel* blended = dvz_grid_panel(grid, 0, 0);
     DvzPanel* wboit = dvz_grid_panel(grid, 0, 1);
-    if (blended == NULL || wboit == NULL)
+    DvzPanel* peel = dvz_grid_panel(grid, 0, 2);
+    if (blended == NULL || wboit == NULL || peel == NULL)
         return false;
     example_graphite_cyan_set_panel_background(blended);
     example_graphite_cyan_set_panel_background(wboit);
+    example_graphite_cyan_set_panel_background(peel);
 
-    return _add_transparent_triangles(ctx->scene, blended, DVZ_ALPHA_BLENDED) &&
-           _add_transparent_triangles(ctx->scene, wboit, DVZ_ALPHA_WBOIT);
+    if (!_set_camera(blended) || !_set_camera(wboit) || !_set_camera(peel))
+        return false;
+    if (!_bind_arcball(ctx, blended) || !_bind_arcball(ctx, wboit) || !_bind_arcball(ctx, peel))
+        return false;
+
+    return _add_transparent_cubes(ctx->scene, blended, DVZ_ALPHA_BLENDED) &&
+           _add_transparent_cubes(ctx->scene, wboit, DVZ_ALPHA_WBOIT) &&
+           _add_transparent_cubes(ctx->scene, peel, DVZ_ALPHA_DEPTH_PEEL);
 }
 
 
@@ -171,6 +276,8 @@ static DvzScenarioSpec _transparency_order_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
+                        DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
     };
 }

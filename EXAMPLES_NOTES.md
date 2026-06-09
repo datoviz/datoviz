@@ -30,7 +30,7 @@ is still visible with the blocker or preferred next action.
 | `features/legend_categorical` | resolved | Removed highlighted entry that made one swatch larger in `examples/c/features/legend_categorical.c`; compiled. |
 | `features/lighting` | resolved | Three-panel material/light comparison in `examples/c/features/lighting.c`; compiled. |
 | `features/marker_symbols` | resolved | Added row labels and a distinct colored bitmap-pin row in `examples/c/features/marker_symbols.c`; compiled and docs regenerated. |
-| `features/technique_msaa` | partial | Prefix is correct; stronger 3D mesh/cube comparison still needed. |
+| `features/technique_msaa` | resolved | Side-by-side comparison now uses slanted 3D cube silhouettes with MSAA disabled/enabled in `examples/c/features/technique_msaa.c`; compiled. |
 | `features/offscreen_capture` | deferred | Keep exact-pixel offscreen semantics; add high-DPI/supersampled variant separately if desired. |
 | `features/overlay_card` | resolved | Adds a simple signal and highlighted sample behind the fixed readout card in `examples/c/features/overlay_card.c`; compiled and docs regenerated. |
 | `features/panel_background` | resolved | Uses explicit inset gradient panel background in `examples/c/features/panel_background.c`; compiled. |
@@ -42,7 +42,7 @@ is still visible with the blocker or preferred next action.
 | `features/compute_buffer_animation` | resolved | Compute shader now drives small independent circular point motion in `examples/c/features/compute_buffer_animation.c`; compiled. |
 | `features/json_export` | resolved | Writes `scene_export.json` and prints `./scene_export.json`; title/feature metadata updated to JSON Export. |
 | `features/technique_ssao` | partial | Prefix is correct; blur/grain visual tuning remains. |
-| `features/technique_transparency` | partial | Prefix is correct; stronger 3D overlapping-cubes comparison remains. |
+| `features/technique_transparency` | resolved | Three-panel source-over/WBOIT/depth-peel comparison now uses overlapping translucent 3D cubes in `examples/c/features/technique_transparency.c`; compiled. |
 | `features/video_export` | resolved | Runner record modes print video output paths; `examples/c/features/video_export.c` runs frame animation. |
 | `features/visibility` | resolved | Batching/visual-level visibility comment exists in `examples/c/features/visibility.c`. |
 | `features/visual_transform` | resolved | Two-panel without/with transform comparison in `examples/c/features/visual_transform.c`; compiled. |

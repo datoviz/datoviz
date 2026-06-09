@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* msaa - side-by-side internal multisample antialiasing on thin segments.
+/* msaa - side-by-side multisample antialiasing on slanted 3D cube silhouettes.
  *
  * Scenario: feature.msaa
  * Style: features, graphite_cyan, 1600x1200 capture target
@@ -20,11 +20,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -34,11 +35,9 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH         1600u
-#define HEIGHT        1200u
-#define SEGMENT_COUNT 28u
-
-static const float TAU = 6.28318530718f;
+#define WIDTH      1600u
+#define HEIGHT     1200u
+#define CUBE_COUNT 4u
 
 
 
@@ -47,50 +46,118 @@ static const float TAU = 6.28318530718f;
 /*************************************************************************************************/
 
 /**
- * Add a starburst of thin diagonal lines to a panel.
+ * Return one visual-local translation transform.
+ *
+ * @param x translation x
+ * @param y translation y
+ * @param z translation z
+ * @param out output matrix
+ */
+static void _translation(float x, float y, float z, mat4 out)
+{
+    if (out == NULL)
+        return;
+    memset(out, 0, sizeof(mat4));
+    out[0][0] = 1.0f;
+    out[1][1] = 1.0f;
+    out[2][2] = 1.0f;
+    out[3][3] = 1.0f;
+    out[3][0] = x;
+    out[3][1] = y;
+    out[3][2] = z;
+}
+
+
+
+/**
+ * Add one slanted cube cluster whose edges make MSAA differences visible.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
  * @return true on success
  */
-static bool _add_line_burst(DvzScene* scene, DvzPanel* panel)
+static bool _add_cube_cluster(DvzScene* scene, DvzPanel* panel)
 {
-    vec3 starts[SEGMENT_COUNT] = {{0}};
-    vec3 ends[SEGMENT_COUNT] = {{0}};
-    DvzColor colors[SEGMENT_COUNT] = {{0}};
-    float widths[SEGMENT_COUNT] = {0};
-
-    for (uint32_t i = 0; i < SEGMENT_COUNT; i++)
-    {
-        const float t = (float)i / (float)SEGMENT_COUNT;
-        const float a = TAU * t;
-        starts[i][0] = -0.07f * cosf(a);
-        starts[i][1] = -0.07f * sinf(a);
-        starts[i][2] = 0.0f;
-        ends[i][0] = +0.94f * cosf(a);
-        ends[i][1] = +0.94f * sinf(a);
-        ends[i][2] = 0.0f;
-        colors[i] = example_graphite_cyan_color(
-            i % 3u == 0   ? EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY
-            : i % 3u == 1 ? EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY
-                          : EXAMPLE_STYLE_COLOR_WARNING);
-        widths[i] = 1.25f;
-    }
-
-    DvzVisual* segment = dvz_segment(scene, 0);
-    if (segment == NULL)
-        return false;
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position_start", .data = starts, .item_count = SEGMENT_COUNT},
-        {.attr_name = "position_end", .data = ends, .item_count = SEGMENT_COUNT},
-        {.attr_name = "color", .data = colors, .item_count = SEGMENT_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = SEGMENT_COUNT},
+    static const vec3 positions[CUBE_COUNT] = {
+        {-0.54f, -0.30f, -0.05f},
+        {+0.04f, -0.08f, +0.12f},
+        {+0.52f, +0.16f, +0.00f},
+        {-0.10f, +0.45f, +0.18f},
     };
-    if (dvz_visual_set_data_many(segment, updates, 4) != 0)
+    const double sizes[CUBE_COUNT] = {0.50, 0.62, 0.44, 0.34};
+
+    const ExampleStyleColorRole roles[6] = {
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY, EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_WARNING,        EXAMPLE_STYLE_COLOR_TEXT,
+        EXAMPLE_STYLE_COLOR_GRID,           EXAMPLE_STYLE_COLOR_MINOR_TICK,
+    };
+
+    for (uint32_t i = 0; i < CUBE_COUNT; i++)
+    {
+        DvzVisual* cube = example_graphite_cyan_cube_mesh(scene, sizes[i], roles, NULL);
+        if (cube == NULL)
+            return false;
+
+        DvzMaterialDesc material = dvz_standard_material_desc();
+        material.standard.roughness = 0.46f;
+        material.standard.specular = 0.34f;
+        material.standard.rim_strength = 0.18f;
+        if (dvz_visual_set_material(cube, &material) != 0)
+            return false;
+
+        mat4 transform = {{0}};
+        _translation(positions[i][0], positions[i][1], positions[i][2], transform);
+        if (dvz_visual_set_transform(cube, transform) != 0)
+            return false;
+        if (dvz_panel_add_visual(panel, cube, NULL) != 0)
+            return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Set the shared 3D camera used by both panels.
+ *
+ * @param panel target panel
+ * @return true on success
+ */
+static bool _set_camera(DvzPanel* panel)
+{
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.eye[0] = +0.10f;
+    camera.eye[1] = -3.10f;
+    camera.eye[2] = +1.20f;
+    camera.up[1] = 0.0f;
+    camera.up[2] = 1.0f;
+    camera.fov_y = 0.54f;
+    camera.near = 0.05f;
+    camera.far = 100.0f;
+    return dvz_panel_set_camera(panel, &camera) != NULL;
+}
+
+
+
+/**
+ * Set the shared arcball orientation used by both panels.
+ *
+ * @param ctx scenario context
+ * @param panel target panel
+ * @return true on success
+ */
+static bool _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel)
+{
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    if (controller == NULL)
         return false;
-    if (dvz_visual_set_depth_test(segment, false) != 0)
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    if (arcball == NULL)
         return false;
-    return dvz_panel_add_visual(panel, segment, NULL) == 0;
+    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return false;
+    dvz_arcball_set(arcball, (vec3){+0.58f, -0.24f, +0.18f});
+    return true;
 }
 
 
@@ -134,12 +201,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_graphite_cyan_set_panel_background(single);
     example_graphite_cyan_set_panel_background(multisample);
 
-    if (!_add_line_burst(ctx->scene, single) || !_add_line_burst(ctx->scene, multisample))
+    if (!_set_camera(single) || !_set_camera(multisample))
+        return false;
+    if (!_bind_arcball(ctx, single) || !_bind_arcball(ctx, multisample))
+        return false;
+    if (!_add_cube_cluster(ctx->scene, single) || !_add_cube_cluster(ctx->scene, multisample))
         return false;
 
     DvzMsaaDesc msaa = dvz_msaa_desc();
     msaa.enabled = true;
-    msaa.sample_count = 4u;
+    msaa.sample_count = 8u;
     msaa.alpha_to_coverage = false;
     return dvz_panel_set_msaa(multisample, &msaa);
 }
@@ -159,6 +230,8 @@ static DvzScenarioSpec _msaa_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
+                        DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
     };
 }
