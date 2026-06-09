@@ -105,6 +105,13 @@ Any future feature promoted into the browser subset must update the scene emitte
 fixture coverage when needed, WebGPU execution, capability reporting, diagnostics, and this page in
 the same change set.
 
+Gallery pages are the preferred user-visible validation surface for the browser subset. A
+`webgpu-live` gallery route must use the same canonical C example or portable C scenario as native
+validation. Browser JavaScript may host the WASM module, load assets, normalize browser events,
+configure WebGPU, execute DRP2 packets, surface diagnostics, and provide page UI, but it must not
+reimplement the example scene construction, visual state, animation, picking, selection,
+query/probe, or data semantics.
+
 ## Unsupported Or Deferred
 
 The browser path intentionally does not support:

@@ -14,7 +14,7 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits split DRP2 packets for buffer-backed point/pixel positions, basic marker, segment/path with cap/join controls, primitive, RGBA8 image, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, panzoom, a 3D sphere + textured mesh/arcball proof, and the first portable C scenario/frame-callback proof for `feature_timer_animation`. Native scenario runner now has requirements, portable event/post-frame hooks, and `feature_pick_point`/`feature_pick_marker`/`feature_pick_hover`/`feature_selection`/`image_probe` migrated off `native_view` as query/readback-shaped scenario proofs. WASM scenarios expose browser pointer/wheel event delivery, and point-query packet/readback plumbing exists for `feature_pick_point`. The frame artifact refactor is complete: scene emission returns artifact-owned stream snapshots, WASM/WebGPU consumes artifact packet spans, JSON is debug/fixture-only, and retained scene mutation no longer depends on raw emitted stream lifetime. | Extend narrow WASM/WebGPU request/query/readback from point query to marker, selection/hover, and one pixel probe; classify live WebGPU vs native-only examples from manifest metadata. |
+| WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits split DRP2 packets for buffer-backed point/pixel positions, basic marker, segment/path with cap/join controls, primitive, RGBA8 image, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, panzoom, a 3D sphere + textured mesh/arcball proof, and portable C scenario/frame-callback proof for `feature_timer_animation`. Native scenario runner has requirements, portable event/post-frame hooks, and `feature_pick_point`/`feature_pick_marker`/`feature_pick_hover`/`feature_selection`/`image_probe` migrated off `native_view` as query/readback-shaped scenario proofs. Browser-live WASM demos cover point picking, marker picking, point hover, point selection, and sampled image probe. The frame artifact refactor is complete: scene emission returns artifact-owned stream snapshots, WASM/WebGPU consumes artifact packet spans, JSON is debug/fixture-only, and retained scene mutation no longer depends on raw emitted stream lifetime. | Finish the manifest-backed WebGPU matrix and promote planned examples one by one with browser smoke evidence and live gallery routes that reuse the same C scenario code as native validation. |
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04; native GPU execution skipped in this shell because Vulkan instance creation failed. | Record native Vulkan execution evidence in a Vulkan-capable environment and capture a release artifact from `examples/c/showcases/gpu_particle_smoke.c`. |
 | Qt/PyQt hosted path | Native Qt hosting has an optional example path; PyQt needs a native Qt bridge because current PyQt6 wheels do not expose `QVulkanInstance::setVkInstance()` or `vkInstance()`. | Implement the optional `datoviz_qtbridge` provider from `spec/scene/integration/QT_HOST_BRIDGE.md` and prove the PyQt hosted example. |
 | v0.3 visible parity audit | Missing. | Table each visible capability as fixed, deferred, or external/GSP. |
@@ -41,7 +41,9 @@ accepting NumPy arrays for policy-declared data arguments. Source of truth:
 3. **WebGPU/WASM RC examples:** portable scenario host, native event/query scenario migrations,
    browser scenario event delivery, live website examples for most non-desktop scene scenarios,
    current subset diagnostics, compute particles, narrow request/query/readback,
-   manifest-backed example classification, and browser/runner smoke evidence.
+   manifest-backed example classification, and browser/runner smoke evidence. Live gallery routes
+   must reuse the same C example or portable C scenario as native validation; browser code is host
+   glue only.
 4. **Compute+graphics:** minimal DRP2 sync objects/barriers, native compute-to-render proof,
    WebGPU parity diagnostics, and a C-first particle-advection gallery target that becomes the
    browser compute proof once the WASM scenario host can drive it.
@@ -54,7 +56,9 @@ accepting NumPy arrays for policy-declared data arguments. Source of truth:
 
 Current runtime/WebGPU guardrail: keep texture-backed scene visuals on typed visual/draw-contract
 DRP2 streams. Do not restore legacy texture-render shortcuts; WebGPU parity work should validate
-capability diagnostics against the same streams used by native runtime execution.
+capability diagnostics against the same streams used by native runtime execution. Do not promote a
+browser gallery example by reimplementing its scene, visual state, animation, picking, selection,
+query/probe, or data semantics in JavaScript.
 
 When adding visible capability work, prefer gallery-proof improvements first, then vector visual
 polish, label query hardening, explanatory layout proof, and optional experimental splats only if

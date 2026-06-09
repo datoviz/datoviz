@@ -91,7 +91,8 @@ Exit criteria:
 1. Portable scenario host exists for native and browser runners.
 2. Example manifest marks each public example as `webgpu-live`, `webgpu-planned`,
    `webgpu-deferred`, or `native-only`.
-3. Most non-desktop scene examples have live browser routes or explicit `webgpu-planned` gaps.
+3. Most non-desktop scene examples have live browser gallery routes or explicit `webgpu-planned`
+   gaps.
 4. DRP2/WebGPU runner and WGSL emission work for the declared subset.
 5. Compute-to-render particle showcase runs in browser WebGPU at a documented particle budget.
 6. Point/marker picking plus one probe/readback example works through async browser readback.
@@ -99,6 +100,8 @@ Exit criteria:
    features, and capability failures have diagnostics.
 8. Scene semantics are shared; there is no WebGPU-only scene contract.
 9. Browser runtime traffic uses frame artifact packet spans; DRP2 JSON remains debug/fixture-only.
+10. `webgpu-live` gallery examples reuse the same canonical C example or portable C scenario as the
+    native route; browser JavaScript remains host glue and does not reimplement example behavior.
 
 ### 4. Compute+Graphics Experimental Slice
 

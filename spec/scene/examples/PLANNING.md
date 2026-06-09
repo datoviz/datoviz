@@ -86,6 +86,14 @@ native desktop runtime facilities. Example metadata should classify browser stat
 `native-capture`, `gui`, `video`, and `cuda`. Public docs and generated gallery pages should derive
 their live-example matrix from metadata instead of hand-maintained prose.
 
+The gallery is the preferred user-visible validation surface for WebGPU examples. A
+`webgpu-live` entry means the browser route is implemented from the same canonical C example or
+portable C scenario as the native route, is linked from the website, has browser smoke evidence, and
+has explicit diagnostics for unsupported browser requirements. Browser JavaScript may provide host
+glue, asset loading, browser event normalization, WebGPU setup, DRP2 execution, diagnostics, and
+page UI only. It must not reimplement example scene construction, visual state, animation, picking,
+selection, query/probe, or data semantics.
+
 
 ## Current Capability Snapshot
 

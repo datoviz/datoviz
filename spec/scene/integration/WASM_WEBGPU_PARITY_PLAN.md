@@ -32,6 +32,10 @@ For v0.4 RC, the browser target is broad live example coverage, not full native 
 Most scene-level examples that do not require native desktop runtime facilities should have a live
 WebGPU version on the website.
 
+The website gallery is the primary qualitative assessment surface for browser examples. The fixture
+runner proves DRP2/WebGPU protocol behavior; live gallery pages prove the end-to-end C scene,
+WASM, DRP2 packet, browser runtime, interaction, and diagnostics path that users see.
+
 Required RC browser capabilities:
 
 1. portable C scenario host for native and browser runners;
@@ -153,6 +157,9 @@ Rules:
 3. browser demos should be content loaders and event glue only;
 4. unsupported browser requirements must fail through deterministic diagnostics;
 5. every promoted feature must keep native and browser behavior tied to shared scene semantics.
+6. gallery examples promoted to `webgpu-live` must use the same canonical C example or portable C
+   scenario as the native route; browser code must not duplicate scene construction, visual state,
+   animation, picking, selection, query/probe, or data semantics.
 
 
 ## Required WASM ABI Expansion
@@ -208,6 +215,11 @@ provides:
 7. public docs/status update;
 8. clear unsupported-feature diagnostics;
 9. validation commands recorded in the relevant spec or docs page.
+
+A gallery example is not promotable to `webgpu-live` if it has a second, browser-specific
+implementation of the example behavior. Browser JavaScript may load the WASM module, load assets,
+normalize DOM events, configure WebGPU, execute DRP2 packets, surface diagnostics, and provide page
+controls. The scene behavior must come from the same C source path used by native validation.
 
 
 ## Visual Family Matrix
