@@ -8,6 +8,7 @@ endif()
 
 add_executable(datoviz_wasm_scene
     scene_api.c
+    ${PROJECT_SOURCE_DIR}/examples/c/example_common.c
     ${PROJECT_SOURCE_DIR}/examples/c/example_style.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/animation_tracks.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/basic_scene.c
@@ -17,6 +18,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/isolines.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/obj_loading.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/picking.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/selection_mesh_instances.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_pixel.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_sphere.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/timer_animation.c

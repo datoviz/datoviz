@@ -59,6 +59,12 @@ export const LIVE_EXAMPLES = [
     animate: true,
   },
   {
+    id: "feature_selection_mesh_instances",
+    label: "Mesh Instance Selection",
+    scenarioId: "feature_selection_mesh_instances",
+    animate: true,
+  },
+  {
     id: "image_probe",
     label: "Image Probe",
     scenarioId: "feature_image_probe",

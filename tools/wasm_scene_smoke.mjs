@@ -1378,6 +1378,7 @@ try {
     "feature_picking",
     "feature_selection_pixel",
     "feature_selection_sphere",
+    "feature_selection_mesh_instances",
     "feature_image_probe",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
@@ -1388,6 +1389,7 @@ try {
     if (
       id === "feature_picking" ||
       id === "feature_selection_sphere" ||
+      id === "feature_selection_mesh_instances" ||
       id === "feature_image_probe"
     ) {
       requireOk(
@@ -1661,6 +1663,72 @@ try {
     expectPacket(Module, sphereSelectionScene, DVZ_DRP2_PACKET_FRAME, "sphere selection query frame");
   } finally {
     Module._dvz_wasm_api_scene_destroy(sphereSelectionScene);
+  }
+
+  const meshSelectionIndex = scenarioIndex(Module, "feature_selection_mesh_instances");
+  const meshSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
+  requireOk(meshSelectionScene !== 0, "mesh selection scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(meshSelectionScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "mesh selection scenario canvas format",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(meshSelectionScene, meshSelectionIndex),
+      0,
+      "mesh selection scenario create",
+    );
+    expectNoDiagnostics(Module, meshSelectionScene, "mesh selection scenario create diagnostics");
+    const meshSelectionFigure = Module._dvz_wasm_api_scenario_figure(meshSelectionScene);
+    requireOk(meshSelectionFigure !== 0, "mesh selection scenario has no figure");
+    const initialMeshSelection =
+      emitStream(Module, meshSelectionScene, meshSelectionFigure, "mesh selection initial");
+    expectWriteCommands(initialMeshSelection.stream, "mesh selection initial");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_pointer(
+        meshSelectionScene, DVZ_POINTER_EVENT_MOVE, smokeSize / 2, smokeSize / 2, 0, 0, 1, 42),
+      0,
+      "mesh selection pointer move",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_scenario_post_frame(meshSelectionScene),
+      0,
+      "mesh selection post-frame",
+    );
+    requireOk(
+      Module._dvz_wasm_api_query_pending_count(meshSelectionScene) > 0,
+      "mesh selection scenario did not queue a query",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_emit_query_packets(meshSelectionScene, meshSelectionFigure),
+      0,
+      "mesh selection query packet emit",
+    );
+    expectNoDiagnostics(Module, meshSelectionScene, "mesh selection query packet diagnostics");
+    requireOk(
+      Module._dvz_wasm_api_query_active(meshSelectionScene) === 1,
+      "mesh selection query did not become active",
+    );
+    requireOk(
+      Module._dvz_wasm_api_query_readback_size(meshSelectionScene) === 4,
+      "mesh selection query readback size was not 4 bytes",
+    );
+    const meshQuerySetup = expectPacket(
+      Module, meshSelectionScene, DVZ_DRP2_PACKET_SETUP, "mesh selection query setup");
+    requireOk(
+      meshQuerySetup.decoded.commands.some(
+        (command) => command.cmd === "CreateTexture" && command.format === "r32uint",
+      ),
+      "mesh selection query setup did not create an r32uint target",
+    );
+    expectPacket(
+      Module, meshSelectionScene, DVZ_DRP2_PACKET_UPDATE, "mesh selection query update", {
+        expectArena: true,
+      });
+    expectPacket(Module, meshSelectionScene, DVZ_DRP2_PACKET_FRAME, "mesh selection query frame");
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(meshSelectionScene);
   }
 
   const positions = new Float32Array([-0.75, -0.45, 0, -0.35, 0.35, 0, 0.05, -0.1, 0, 0.42, 0.5, 0, 0.72, -0.35, 0]);

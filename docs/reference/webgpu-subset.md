@@ -99,7 +99,7 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Controller parity | limited to panzoom and one 3D arcball proof |
 | Portable scenario host parity | first `feature_timer_animation` C scenario and browser frame-callback proof are current; broad example-host coverage remains an RC target |
 | Compute-to-render parity | DRP2 fixture and native scene proof exist; browser-live particle scene is an RC target, not current support |
-| Query/picking/readback scene parity | point and marker item picking, point hover, point selection, sphere selection, and one sampled image probe are browser-live |
+| Query/picking/readback scene parity | point and marker item picking, point hover, point selection, sphere selection, mesh instance selection, and one sampled image probe are browser-live |
 
 Any future feature promoted into the browser subset must update the scene emitter, DRP2 schema or
 fixture coverage when needed, WebGPU execution, capability reporting, diagnostics, and this page in
@@ -127,7 +127,7 @@ The browser path intentionally does not support:
 - browser-live scene compute particles until the portable scenario host and WGSL compute path are
   proven;
 - browser-live scene query/readback beyond the promoted point/marker/hover/pixel-selection/
-  sphere-selection/image-probe slice;
+  sphere-selection/mesh-instance-selection/image-probe slice;
 - colorbars, scale bars, volume, unsigned/rich labels, path subpath controls, broad stroke/vector
   parity, sphere raycast/depth/material parity, full query parity, and advanced technique parity in
   the WASM scene demos;

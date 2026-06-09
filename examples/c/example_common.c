@@ -16,7 +16,9 @@
 
 #include "example_common.h"
 
+#ifndef DVZ_EXAMPLE_NO_APP
 #include "datoviz/app.h"
+#endif
 #include "datoviz/geom.h"
 #include "datoviz/input/pointer.h"
 #include "datoviz/math/_cglm.h"
@@ -268,6 +270,7 @@ uint32_t example_frame_count_any(int argc, char** argv)
  * @param capture capture configuration
  * @return true when capture start/stop succeeded
  */
+#ifndef DVZ_EXAMPLE_NO_APP
 bool example_run_with_capture(
     DvzApp* app, DvzView* view, uint32_t frame_count, const DvzAppCaptureConfig* capture)
 {
@@ -279,6 +282,7 @@ bool example_run_with_capture(
     dvz_app_run(app, frame_count);
     return dvz_view_capture_stop(view) == 0;
 }
+#endif
 
 
 
