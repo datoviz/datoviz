@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* glyph - raw atlas-backed glyph quads with explicit retained attributes.
+/* glyph - low-level SDF atlas quads, distinct from font-shaped text and marker symbols.
  *
  * Scenario: visual.glyph
  * Style: visuals, graphite_cyan, 1600x1200 capture target

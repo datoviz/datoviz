@@ -18,9 +18,9 @@ Coverage: 15 examples (13 supported, 2 experimental).
 
 _Media pending._
 
-`experimental` `visuals`<br><span>`glyph`, `sampled-field`, `capture`</span>
+`experimental` `visuals`<br><span>`glyph`, `texture-atlas`, `sdf`, `capture`</span>
 
-raw atlas-backed glyph quads with explicit retained attributes.
+low-level SDF atlas quads, distinct from font-shaped text and marker symbols.
 
 </div>
 

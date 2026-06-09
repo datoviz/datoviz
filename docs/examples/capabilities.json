@@ -3464,7 +3464,7 @@
         ]
       },
       "sampled-field": {
-        "count": 6,
+        "count": 5,
         "examples": [
           {
             "id": "linked_panels_probe_colorbar",
@@ -3483,15 +3483,6 @@
             "agent_copy_safe": true,
             "source": "examples/c/visuals/image.c",
             "page": "gallery/visuals/visual_image.md"
-          },
-          {
-            "id": "visual_glyph",
-            "title": "Glyph",
-            "category": "visual",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visual_glyph.md"
           },
           {
             "id": "volume",
@@ -3661,6 +3652,20 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/brain_volume.c",
             "page": "gallery/showcases/brain_volume.md"
+          }
+        ]
+      },
+      "sdf": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_glyph",
+            "title": "Glyph",
+            "category": "visual",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/visuals/glyph.c",
+            "page": "gallery/visuals/visual_glyph.md"
           }
         ]
       },
@@ -3888,6 +3893,20 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/textured_planet.c",
             "page": "gallery/showcases/textured_terrain_or_planet.md"
+          }
+        ]
+      },
+      "texture-atlas": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_glyph",
+            "title": "Glyph",
+            "category": "visual",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/visuals/glyph.c",
+            "page": "gallery/visuals/visual_glyph.md"
           }
         ]
       },

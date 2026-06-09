@@ -1931,14 +1931,15 @@
       "source": "examples/c/visuals/glyph.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/glyph.c",
       "page": "gallery/visuals/visual_glyph.md",
-      "summary": "raw atlas-backed glyph quads with explicit retained attributes.",
+      "summary": "low-level SDF atlas quads, distinct from font-shaped text and marker symbols.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/glyph",
       "smoke_command": "./build/examples/c/visuals/glyph --png",
       "agent_copy_safe": false,
       "tags": [
         "glyph",
-        "sampled-field",
+        "texture-atlas",
+        "sdf",
         "capture"
       ],
       "data": {

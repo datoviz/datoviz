@@ -439,7 +439,7 @@ _Media pending._
 
 `supported` `features`
 
-side-by-side internal multisample antialiasing on thin segments.
+side-by-side multisample antialiasing on slanted 3D cube silhouettes.
 
 </div>
 
@@ -763,7 +763,7 @@ _Media pending._
 
 `supported` `features`
 
-source-over and weighted blended order-independent transparency.
+source-over, WBOIT, and depth-peel transparency on overlapping cubes.
 
 </div>
 
@@ -847,7 +847,7 @@ _Media pending._
 
 `supported` `features`
 
-volume occluder attenuating an embedded slice visual.
+side-by-side volume occluder attenuation on an embedded slice.
 
 </div>
 
