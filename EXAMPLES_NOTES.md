@@ -47,7 +47,7 @@ is still visible with the blocker or preferred next action.
 | `features/visibility` | resolved | Batching/visual-level visibility comment exists in `examples/c/features/visibility.c`. |
 | `features/visual_transform` | resolved | Two-panel without/with transform comparison in `examples/c/features/visual_transform.c`; compiled. |
 | `features/volume_occlusion` | resolved | Rewritten as side-by-side slice rendering without/with volume occlusion in `examples/c/features/volume_occlusion.c`; compiled. |
-| `showcases/brain_volume` | partial | Name is already `brain_volume`; initial tilted view still needs visual smoke in Vulkan-capable environment. |
+| `showcases/brain_volume` | resolved | Name is already `brain_volume`; initial camera/up vector and arcball orientation now start tilted to show the slice with volume behind it in `examples/c/showcases/brain_volume.c`; compiled. |
 | `showcases/choropleth` | deferred | Retina title size and fixed-aspect right-drag zoom remain. |
 | `showcases/scientific_plotting` | deferred | X-axis clipping remains to inspect/fix. |
 | `showcases/textured_planet` | deferred | Dark-side lighting and zoom limits/sensitivity remain. |
