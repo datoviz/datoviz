@@ -10,8 +10,9 @@ histogram, guide annotations, stacked traces, and error bands.
 - Status: `supported`
 - Source: [`examples/c/showcases/scientific_plotting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c)
 - Agent copy-safe: `false`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `axes`, `primitive`, `segment`, `path`, `colorbar`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=scientific_plotting_workflow`](/examples/webgpu/live.html?id=scientific_plotting_workflow)
+- WebGPU requirements: `axes`, `primitive`, `segment`, `path`, `text`, `panzoom`
 - Build: `just example-c showcases/scientific_plotting`
 - Smoke: `./build/examples/c/showcases/scientific_plotting --png`
 - Validation: `smoke+screenshot`
@@ -32,6 +33,14 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=scientific_plotting_workflow" title="Scientific Plotting Workflow WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=scientific_plotting_workflow).
 
 ## Source
 

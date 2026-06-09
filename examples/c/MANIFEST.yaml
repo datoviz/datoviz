@@ -931,13 +931,15 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=scientific_plotting_workflow
       requirements:
         - axes
         - primitive
         - segment
         - path
-        - colorbar
+        - text
+        - panzoom
     agent_copy_safe: false
     tags:
       - workflow

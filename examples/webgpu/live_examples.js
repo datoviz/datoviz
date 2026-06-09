@@ -105,6 +105,11 @@ export const LIVE_EXAMPLES = [
     label: "Linked Probe With Colorbar",
     scenarioId: "linked_panels_probe_colorbar",
   },
+  {
+    id: "scientific_plotting_workflow",
+    label: "Scientific Plotting Workflow",
+    scenarioId: "scientific_plotting_workflow",
+  },
 ];
 
 export function liveExampleById(id) {

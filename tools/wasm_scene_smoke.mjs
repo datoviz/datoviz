@@ -1015,6 +1015,42 @@ function expectLinkedProbeColorbarScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "WriteTexture").length >= 3, `${label}: expected two fields and glyph texture uploads`);
 }
 
+function expectScientificPlottingScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  expectCommandCount(stream, "BeginCommandEncoder", 1, label);
+  expectCommandCount(stream, "FinishCommandEncoder", 1, label);
+  expectCommandCount(stream, "QueueSubmit", 1, label);
+  requireOk(commandsOf(stream, "BeginRenderPass").length >= 1, `${label}: expected render pass`);
+  requireOk(commandsOf(stream, "SetViewport").length >= 3, `${label}: expected multi-panel viewports`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 3, `${label}: expected multi-panel scissors`);
+  expectPipeline(
+    stream,
+    `${label} primitive plots`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.primitive",
+  );
+  expectPipeline(
+    stream,
+    `${label} segment guides`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.segment",
+  );
+  expectPipeline(
+    stream,
+    `${label} path traces`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.path",
+  );
+  expectPipeline(
+    stream,
+    `${label} labels`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 3, `${label}: expected primitive and label draws`);
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 3, `${label}: expected segment and path indexed draws`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
+}
+
 function expectScaleBarScenarioStreamShape(stream, label, { reference = "point" } = {}) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -1572,6 +1608,7 @@ try {
     "feature_legend_categorical",
     "feature_annotation_readout",
     "linked_panels_probe_colorbar",
+    "scientific_plotting_workflow",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -1944,6 +1981,36 @@ try {
     expectPacket(Module, linkedProbeScene, DVZ_DRP2_PACKET_FRAME, "linked probe query frame");
   } finally {
     Module._dvz_wasm_api_scene_destroy(linkedProbeScene);
+  }
+
+  const scientificIndex = scenarioIndex(Module, "scientific_plotting_workflow");
+  const scientificWidth = Module._dvz_wasm_api_scenario_width(scientificIndex);
+  const scientificHeight = Module._dvz_wasm_api_scenario_height(scientificIndex);
+  const scientificScene = Module._dvz_wasm_api_scene(scientificWidth, scientificHeight);
+  requireOk(scientificScene !== 0, "scientific plotting scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(scientificScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "scientific plotting scenario canvas format",
+    );
+    setCapabilities(
+      Module, scientificScene, 4096, 4, 8, 256 * 1024 * 1024, 256, 4,
+      "scientific plotting scenario capabilities");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(scientificScene, scientificIndex),
+      0,
+      "scientific plotting scenario create",
+    );
+    expectNoDiagnostics(Module, scientificScene, "scientific plotting scenario create diagnostics");
+    const scientificFigure = Module._dvz_wasm_api_scenario_figure(scientificScene);
+    requireOk(scientificFigure !== 0, "scientific plotting scenario has no figure");
+    const initialScientific =
+      emitStream(Module, scientificScene, scientificFigure, "scientific plotting scenario initial");
+    expectScientificPlottingScenarioStreamShape(
+      initialScientific.stream, "scientific plotting scenario initial");
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(scientificScene);
   }
 
   const pixelSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);

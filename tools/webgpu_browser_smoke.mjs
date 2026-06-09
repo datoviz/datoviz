@@ -782,6 +782,7 @@ async function main() {
     let wasmReadout = null;
     let wasmQuery = null;
     let wasmLinkedProbe = null;
+    let wasmScientific = null;
     try {
       wasmBasic = await smokeAnimatedWasmPage(
         page,
@@ -905,6 +906,20 @@ async function main() {
       }
       console.log(skipLine(`WebGPU live linked-probe smoke: headless WebGPU instance loss (${error.message})`));
     }
+    try {
+      wasmScientific = await smokeWasmPage(
+        page,
+        baseUrl,
+        '/examples/webgpu/live.html?id=scientific_plotting_workflow',
+        'Rendered Scientific Plotting Workflow',
+        join(artifactsDir, 'webgpu_live_scientific_plotting.png'),
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(skipLine(`WebGPU live scientific plotting smoke: headless WebGPU instance loss (${error.message})`));
+    }
     if (wasmBasic !== null) {
       console.log(passLine(`live basic: ${wasmBasic.initialStatus}; initial_frame=${wasmBasic.initialFrame}`));
     }
@@ -936,6 +951,9 @@ async function main() {
           `live linked probe: ${wasmLinkedProbe.initialStatus}; processed=${wasmLinkedProbe.queryDelivery.processed}`,
         ),
       );
+    }
+    if (wasmScientific !== null) {
+      console.log(passLine(`live scientific plotting: ${wasmScientific.initialStatus}`));
     }
     console.log(`Wrote ${artifactsDir}`);
   } finally {

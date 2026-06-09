@@ -310,6 +310,16 @@ Current status as of this note:
   packets. `just webgpu-browser-smoke` exited successfully in this shell, with the live timer,
   colorbar, scale-bar, scale-bar-units, legend, annotation-readout, picking query, and linked-probe
   query checks skipped by known headless WebGPU instance loss before scene rendering.
+- recorded local scientific-plotting promotion checkpoint on 2026-06-09: `node --check
+  tools/wasm_scene_smoke.mjs`, `node --check tools/webgpu_browser_smoke.mjs`, and `node --check
+  examples/webgpu/live_examples.js` passed; `python3 tools/check_example_manifests.py` passed;
+  `just example-c showcases/scientific_plotting` passed; `just wasm-scene-smoke` emitted,
+  packetized, and replayed the composed scientific plotting scenario, including histogram bars,
+  guide spans/lines, band fill and center path, stacked trace paths, axes, glyph labels, and
+  panzoom bindings. `just webgpu-browser-smoke` exited successfully in this shell, with the live
+  timer, colorbar, scale-bar, scale-bar-units, legend, annotation-readout, picking query,
+  linked-probe query, and scientific-plotting checks skipped by known headless WebGPU instance loss
+  before scene rendering.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
