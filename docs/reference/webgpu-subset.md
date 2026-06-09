@@ -137,12 +137,11 @@ The browser path intentionally does not support:
 Promote browser scene features in this order unless a release blocker changes the priority:
 
 1. add manifest-driven browser routes for broader promoted portable scenarios;
-2. colorbar;
-3. scale bar;
-4. legend and readout-style overlays;
-5. richer labels, including unsigned label variants and palette/category updates;
-6. broader vector/path parity, including path subpaths and stroke edge cases;
-7. volume rendering.
+2. scale bar;
+3. legend and readout-style overlays;
+4. richer labels, including unsigned label variants and palette/category updates;
+5. broader vector/path parity, including path subpaths and stroke edge cases;
+6. volume rendering.
 
 Each promoted item must reuse the retained native scene path, add the narrow WASM ABI surface it
 needs, extend `tools/wasm_scene_smoke.mjs`, update the 2D or 3D browser demo, and record proof in

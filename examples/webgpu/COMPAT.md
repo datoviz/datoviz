@@ -262,6 +262,13 @@ Current status as of this note:
   `node --check web/drp2/packet.js` passed; `just example-c features/compute_buffer_animation`
   passed; `just wasm-scene-smoke` emitted, packetized, and replayed the retained compute scenario,
   including compute pipeline creation, workgroup dispatch, and compute-to-vertex resource barriers.
+- recorded local colorbar promotion checkpoint on 2026-06-09: `node --check
+  tools/wasm_scene_smoke.mjs`, `node --check tools/webgpu_browser_smoke.mjs`, and `node --check
+  examples/webgpu/live_examples.js` passed; `just wasm-scene-smoke` emitted, packetized, and
+  replayed the retained colorbar scenario, including the scalar image, colorbar ramp primitive,
+  tick segments, and glyph labels. `just webgpu-browser-smoke` exited successfully in this shell,
+  with the live timer, colorbar, and query checks skipped by known headless WebGPU instance loss
+  before scene rendering.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

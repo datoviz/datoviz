@@ -876,6 +876,52 @@ function expect2DUpdateStreamShape(
   expectDraw(stream, 6, 1, `${label} mesh`);
 }
 
+function expectColorbarScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  expectCommandCount(stream, "BeginCommandEncoder", 1, label);
+  expectCommandCount(stream, "EndRenderPass", 2, label);
+  expectCommandCount(stream, "FinishCommandEncoder", 1, label);
+  expectCommandCount(stream, "QueueSubmit", 1, label);
+  const passes = commandsOf(stream, "BeginRenderPass");
+  requireOk(passes.length === 2, `${label}: expected 2 render passes, got ${passes.length}`);
+  for (const pass of passes) {
+    requireOk(
+      pass.color_attachments?.[0]?.texture_id === 0,
+      `${label}: expected browser canvas color target texture_id 0`,
+    );
+  }
+  requireOk(commandsOf(stream, "SetViewport").length >= 2, `${label}: expected viewport commands`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 2, `${label}: expected scissor commands`);
+  expectPipeline(
+    stream,
+    `${label} image`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.image",
+  );
+  expectPipeline(
+    stream,
+    `${label} ramp`,
+    (pipeline) =>
+      pipeline.builtin_pipeline === "scene.primitive" &&
+      pipeline.topology === "triangle-list",
+  );
+  expectPipeline(
+    stream,
+    `${label} ticks`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.segment",
+  );
+  expectPipeline(
+    stream,
+    `${label} labels`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 3, `${label}: expected image, ramp, and label draws`);
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected tick indexed draw`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 2, `${label}: expected scalar image and glyph texture uploads`);
+}
+
 function expect3DSceneStreamShape(stream, label) {
   expectCommonSceneStreamShape(stream, label);
   expectDraw(stream, 6, 3, `${label} sphere`);
@@ -1381,6 +1427,7 @@ try {
     "feature_selection_mesh_instances",
     "feature_compute_buffer_animation",
     "feature_image_probe",
+    "feature_colorbar",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -1553,6 +1600,33 @@ try {
     expectWriteCommands(frameAnimation.stream, "animation scenario frame");
   } finally {
     Module._dvz_wasm_api_scene_destroy(animationScene);
+  }
+
+  const colorbarIndex = scenarioIndex(Module, "feature_colorbar");
+  const colorbarWidth = Module._dvz_wasm_api_scenario_width(colorbarIndex);
+  const colorbarHeight = Module._dvz_wasm_api_scenario_height(colorbarIndex);
+  const colorbarScene = Module._dvz_wasm_api_scene(colorbarWidth, colorbarHeight);
+  requireOk(colorbarScene !== 0, "colorbar scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(colorbarScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "colorbar scenario canvas format",
+    );
+    setCapabilities(
+      Module, colorbarScene, 4096, 4, 8, 256 * 1024 * 1024, 256, 4, "colorbar scenario capabilities");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(colorbarScene, colorbarIndex),
+      0,
+      "colorbar scenario create",
+    );
+    expectNoDiagnostics(Module, colorbarScene, "colorbar scenario create diagnostics");
+    const colorbarFigure = Module._dvz_wasm_api_scenario_figure(colorbarScene);
+    requireOk(colorbarFigure !== 0, "colorbar scenario has no figure");
+    const initialColorbar = emitStream(Module, colorbarScene, colorbarFigure, "colorbar scenario initial");
+    expectColorbarScenarioStreamShape(initialColorbar.stream, "colorbar scenario initial");
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(colorbarScene);
   }
 
   const pixelSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);

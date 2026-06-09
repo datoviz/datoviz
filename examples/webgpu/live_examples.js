@@ -75,6 +75,11 @@ export const LIVE_EXAMPLES = [
     label: "Image Probe",
     scenarioId: "feature_image_probe",
   },
+  {
+    id: "colorbar",
+    label: "Colorbar",
+    scenarioId: "feature_colorbar",
+  },
 ];
 
 export function liveExampleById(id) {
