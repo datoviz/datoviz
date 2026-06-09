@@ -33,6 +33,7 @@ SCRIPT_GROUPS: dict[str, list[str]] = {
         "tools/data/prepare_image_embedding_toy.py",
         "tools/data/prepare_embedding_atlas.py",
         "tools/data/prepare_lipid_brain_atlas.py",
+        "tools/data/prepare_synthetic_mouse.py",
     ],
     "external": [
         "tools/data/prepare_geo_public.py",

@@ -54,6 +54,7 @@ static void _mesh_textured_pipeline_desc(
     _scene_visual_pipeline_attr(out, 3, 3, 3, VK_FORMAT_R32G32_SFLOAT, 2 * sizeof(float));
     out->needs_common_layout = caps->uses_common_set;
     out->needs_image_layout = caps->uses_image_set;
+    out->needs_material_layout = caps->needs_material_layout;
     out->uses_textured_mesh_layout = caps->uses_image_set;
     _scene_visual_pipeline_apply_standard_depth_state(
         caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op, out);

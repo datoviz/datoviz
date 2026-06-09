@@ -1698,6 +1698,36 @@ examples:
       - panzoom
       - video
 
+  - id: showcase_synthetic_mouse
+    title: Synthetic Mouse
+    stage: v0.4_required
+    category: showcase
+    lane: showcases
+    source: examples/c/showcases/synthetic_mouse.c
+    validation: smoke+screenshot+video
+    data:
+      kind: generated
+    agent_copy_safe: false
+    dataset:
+      name: Synthetic mouse animation validation bundle
+      source: https://osf.io/h3ec5/
+      license: generated fallback; upstream OSF terms require review for real assets
+      preprocessing: python tools/data/prepare_synthetic_mouse.py
+      cache_prepared_path: .cache/datoviz/examples/synthetic_mouse/prepared
+    gallery:
+      card: section
+      status_label: prototype
+    tags:
+      - scientific
+      - synthetic
+      - textured-mesh
+      - animation
+      - skeleton
+      - trajectory
+      - reference-grid
+      - arcball
+      - video
+
   - id: brain_volume
     title: Allen Mouse Brain
     stage: v0.4_required
