@@ -60,6 +60,9 @@
 #define MOUSE_FORCE_SCALE    8.0f
 #define MOUSE_SPEED_LIMIT    2.4f
 
+#define GLSL_STR_(x) #x
+#define GLSL_STR(x)  GLSL_STR_(x)
+
 static const float TAU = 6.28318530718f;
 
 
@@ -77,6 +80,7 @@ typedef struct ParticleState
     vec2 mouse_pos;
     vec2 mouse_velocity;
     uint64_t mouse_timestamp;
+    char compute_glsl[COMPUTE_SOURCE_CAPACITY];
 } ParticleState;
 
 
@@ -199,15 +203,13 @@ static bool _compute_shader_source(char* out, size_t size)
     const int n = dvz_snprintf(
         out, size,
         "#version 450\n"
-        "#define SMOKE_LIFETIME %.8g\n"
-        "#define SMOKE_SOURCE_WIDTH %.8g\n"
-        "#define SMOKE_SOURCE_HEIGHT %.8g\n"
-        "#define MOUSE_FORCE_SCALE %.8g\n"
-        "#define MOUSE_SPEED_LIMIT %.8g\n"
+        "#define SMOKE_LIFETIME " GLSL_STR(SMOKE_LIFETIME) "\n"
+        "#define SMOKE_SOURCE_WIDTH " GLSL_STR(SMOKE_SOURCE_WIDTH) "\n"
+        "#define SMOKE_SOURCE_HEIGHT " GLSL_STR(SMOKE_SOURCE_HEIGHT) "\n"
+        "#define MOUSE_FORCE_SCALE " GLSL_STR(MOUSE_FORCE_SCALE) "\n"
+        "#define MOUSE_SPEED_LIMIT " GLSL_STR(MOUSE_SPEED_LIMIT) "\n"
         "%s%s",
-        (double)SMOKE_LIFETIME, (double)SMOKE_SOURCE_WIDTH, (double)SMOKE_SOURCE_HEIGHT,
-        (double)MOUSE_FORCE_SCALE, (double)MOUSE_SPEED_LIMIT, COMPUTE_GLSL_COMMON,
-        COMPUTE_GLSL_MAIN);
+        COMPUTE_GLSL_COMMON, COMPUTE_GLSL_MAIN);
     return n >= 0 && (size_t)n < size;
 }
 
@@ -449,7 +451,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     float* ages = NULL;
     DvzColor* colors = NULL;
     float* sizes = NULL;
-    char compute_glsl[COMPUTE_SOURCE_CAPACITY] = {0};
     if (ctx == NULL)
         return false;
     if (out_user != NULL)
@@ -541,13 +542,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_visual_set_alpha_mode(points, DVZ_ALPHA_BLENDED) == 0, "enable alpha blending failed");
     EXAMPLE_CHECK(dvz_panel_add_visual(panel, points, NULL) == 0, "add point visual failed");
     EXAMPLE_CHECK(
-        _compute_shader_source(compute_glsl, sizeof(compute_glsl)),
+        _compute_shader_source(state->compute_glsl, sizeof(state->compute_glsl)),
         "compute shader source too long");
 
     DvzSceneComputeDesc compute_desc = dvz_scene_compute_desc();
     compute_desc.label = "gpu_particle_smoke";
     compute_desc.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    compute_desc.shader_source = compute_glsl;
+    compute_desc.shader_source = state->compute_glsl;
     compute_desc.dispatch[0] = (PARTICLE_COUNT + WORKGROUP_SIZE - 1u) / WORKGROUP_SIZE;
     compute_desc.dispatch[1] = 1;
     compute_desc.dispatch[2] = 1;
