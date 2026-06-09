@@ -37,6 +37,7 @@
 #include "core/_scene.h"
 #include "core/frame_artifact_internal.h"
 #include "frame_plan/emit.h"
+#include "interaction/animation_internal.h"
 #include "query/internal.h"
 #include "runner/scenario_runner.h"
 #include "visuals/_visual_pipeline.h"
@@ -60,7 +61,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 8
+#define DVZ_WASM_API_SCENARIO_COUNT 9
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -80,6 +81,7 @@
 
 DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags);
 
+DvzScenarioSpec dvz_example_animation_tracks_scenario(void);
 DvzScenarioSpec dvz_example_basic_scene_scenario(void);
 DvzScenarioSpec dvz_example_builtin_shapes_2d_scenario(void);
 DvzScenarioSpec dvz_example_builtin_shapes_3d_scenario(void);
@@ -359,8 +361,10 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
     case 5:
         return dvz_example_isolines_scenario();
     case 6:
-        return dvz_example_picking_scenario();
+        return dvz_example_animation_tracks_scenario();
     case 7:
+        return dvz_example_picking_scenario();
+    case 8:
         return dvz_example_image_probe_scenario();
     default:
         return (DvzScenarioSpec){0};
@@ -1123,12 +1127,13 @@ int dvz_wasm_api_scenario_frame(uint32_t scene_handle, double t, double dt)
     DvzWasmApiScene* scene = _scene(scene_handle);
     if (scene == NULL || !scene->scenario_active)
         return _fail(scene, "WASM scenario frame requested without an active scenario");
-    if (scene->scenario_spec.frame == NULL)
-        return 0;
     _clear_payload(scene);
     scene->scenario_ctx.time = t;
     scene->scenario_ctx.dt = dt;
-    scene->scenario_spec.frame(&scene->scenario_ctx, scene->scenario_user);
+    const uint64_t wall_time_ns = t > 0 ? (uint64_t)(t * 1000000000.0) : 0;
+    _dvz_scene_animations_step(scene->scene, wall_time_ns);
+    if (scene->scenario_spec.frame != NULL)
+        scene->scenario_spec.frame(&scene->scenario_ctx, scene->scenario_user);
     scene->scenario_ctx.frame_index++;
     return 0;
 }

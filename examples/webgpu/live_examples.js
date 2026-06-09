@@ -31,6 +31,12 @@ export const LIVE_EXAMPLES = [
     scenarioId: "feature_isolines",
   },
   {
+    id: "feature_animation_tracks",
+    label: "Animation Tracks",
+    scenarioId: "feature_animation_tracks",
+    animate: true,
+  },
+  {
     id: "feature_picking",
     label: "Picking",
     scenarioId: "feature_picking",

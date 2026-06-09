@@ -1364,6 +1364,7 @@ try {
     "feature_builtin_shapes_2d",
     "feature_builtin_shapes_3d",
     "feature_isolines",
+    "feature_animation_tracks",
     "feature_picking",
     "feature_image_probe",
   ];
@@ -1483,6 +1484,37 @@ try {
     console.log(`commands_scenario_timer=initial:${initialScenario.stream.commands.length} frame:${frameScenario.stream.commands.length}`);
   } finally {
     Module._dvz_wasm_api_scene_destroy(scenarioScene);
+  }
+
+  const animationScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
+  requireOk(animationScene !== 0, "animation scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(animationScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "animation scenario canvas format",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(animationScene, 6),
+      0,
+      "animation scenario create",
+    );
+    expectNoDiagnostics(Module, animationScene, "animation scenario create diagnostics");
+    const animationFigure = Module._dvz_wasm_api_scenario_figure(animationScene);
+    requireOk(animationFigure !== 0, "animation scenario has no figure");
+    const initialAnimation =
+      emitStream(Module, animationScene, animationFigure, "animation scenario initial");
+    expectWriteCommands(initialAnimation.stream, "animation scenario initial");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_frame(animationScene, 0.25, 1 / 60),
+      0,
+      "animation scenario frame",
+    );
+    const frameAnimation =
+      emitStream(Module, animationScene, animationFigure, "animation scenario frame");
+    expectWriteCommands(frameAnimation.stream, "animation scenario frame");
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(animationScene);
   }
 
   const positions = new Float32Array([-0.75, -0.45, 0, -0.35, 0.35, 0, 0.05, -0.1, 0, 0.42, 0.5, 0, 0.72, -0.35, 0]);

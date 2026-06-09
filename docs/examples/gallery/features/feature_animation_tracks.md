@@ -10,8 +10,9 @@ retained track-backed visual transform animation.
 - Status: `supported`
 - Source: [`examples/c/features/animation_tracks.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/animation_tracks.c)
 - Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `mesh`, `frame-callbacks`, `arcball`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_animation_tracks`](/examples/webgpu/live.html?id=feature_animation_tracks)
+- WebGPU requirements: `mesh`, `frame-callbacks`, `controller`, `arcball`
 - Build: `just example-c features/animation_tracks`
 - Smoke: `./build/examples/c/features/animation_tracks --png`
 - Validation: `smoke+interaction+screenshot`
@@ -28,6 +29,14 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=feature_animation_tracks" title="Animation Tracks WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_animation_tracks).
 
 ## Source
 

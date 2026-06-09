@@ -26,7 +26,6 @@
 
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -65,6 +64,52 @@ typedef struct AnimationTracksState
 /*************************************************************************************************/
 
 /**
+ * Create a mesh visual backed by one graphite-cyan colored cube geometry.
+ *
+ * @param scene scene owning the visual
+ * @param size cube edge length
+ * @param face_roles six graphite-cyan face color roles
+ * @param out_geometry geometry handle for cleanup
+ * @return uploaded mesh visual, or NULL on error
+ */
+static DvzVisual* _graphite_cyan_cube_mesh(
+    DvzScene* scene,
+    double size,
+    const ExampleStyleColorRole face_roles[6],
+    DvzGeometry** out_geometry)
+{
+    if (out_geometry != NULL)
+        *out_geometry = NULL;
+    if (scene == NULL || face_roles == NULL)
+        return NULL;
+
+    DvzVisual* visual = dvz_mesh(scene, 0);
+    if (visual == NULL)
+        return NULL;
+
+    DvzColor face_colors[DVZ_GEOM_CUBE_FACE_COUNT] = {0};
+    for (uint32_t i = 0; i < DVZ_GEOM_CUBE_FACE_COUNT; i++)
+        face_colors[i] = example_graphite_cyan_color(face_roles[i]);
+
+    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
+        .size = size,
+        .face_colors = face_colors,
+        .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT,
+    });
+    if (cube == NULL)
+        return NULL;
+    if (out_geometry != NULL)
+        *out_geometry = cube;
+
+    if (dvz_mesh_set_geometry(visual, cube) != 0)
+        return NULL;
+    return visual;
+}
+
+
+
+/**
  * Create one cube whose local transform is driven by retained scene tracks.
  *
  * @param ctx scenario context
@@ -80,8 +125,7 @@ _add_animated_cube(DvzScenarioContext* ctx, DvzPanel* panel, AnimationTracksStat
         EXAMPLE_STYLE_COLOR_WARNING,        EXAMPLE_STYLE_COLOR_TEXT,
         EXAMPLE_STYLE_COLOR_GRID,           EXAMPLE_STYLE_COLOR_MINOR_TICK,
     };
-    DvzVisual* cube =
-        example_graphite_cyan_cube_mesh(ctx->scene, 0.56, face_roles, &state->geometry);
+    DvzVisual* cube = _graphite_cyan_cube_mesh(ctx->scene, 0.56, face_roles, &state->geometry);
     if (cube == NULL)
         return false;
 
