@@ -5,7 +5,7 @@
 This page indexes focused C examples for public scene, layout, adornment, interaction,
 update, rendering-technique, and appearance features.
 
-Coverage: 39 examples (37 supported, 2 experimental).
+Coverage: 63 examples (58 supported, 5 experimental).
 
 ## Features
 
@@ -49,6 +49,18 @@ retained primitive visual using per-vertex alpha and source-over blending.
 
 <div class="card" markdown="1">
 
+### [Animation Tracks](gallery/features/feature_animation_tracks.md)
+
+_Media pending._
+
+`supported` `features`
+
+retained track-backed visual transform animation.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Annotation Readout](gallery/features/annotation_readout.md)
 
 _Media pending._
@@ -85,6 +97,18 @@ retained axis titles and tick-label placement with plot margins.
 
 <div class="card" markdown="1">
 
+### [Bars And Bands](gallery/features/feature_bars_bands.md)
+
+_Media pending._
+
+`supported` `features`
+
+retained bars and uncertainty band plot helpers.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Basic Scene](gallery/features/feature_basic_scene.md)
 
 _Media pending._
@@ -92,6 +116,18 @@ _Media pending._
 `supported` `features`
 
 smallest runner-backed retained scene with one point visual.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Bezier Curve Path](gallery/features/feature_bezier_curve_path.md)
+
+_Media pending._
+
+`supported` `features`
+
+tessellated cubic Bezier curve rendered as a retained path.
 
 </div>
 
@@ -121,6 +157,30 @@ deterministic scalar image with one retained continuous colorbar.
 
 <div class="card" markdown="1">
 
+### [Compute Buffer Animation](gallery/features/feature_compute_buffer_animation.md)
+
+_Media pending._
+
+`experimental` `features`<br><span>`scene-compute`, `storage-buffer`, `point`</span>
+
+minimal scene compute pass writing a point position buffer.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Depth Cue](gallery/features/technique_depth_cue.md)
+
+_Media pending._
+
+`supported` `features`
+
+depth-dependent fading applied to a 3D point stack.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Depth Test Toggle](gallery/features/technique_depth_test.md)
 
 _Media pending._
@@ -133,6 +193,18 @@ side-by-side visual depth-test toggle with overlapping 3D points.
 
 <div class="card" markdown="1">
 
+### [Eye-Dome Lighting](gallery/features/technique_edl.md)
+
+_Media pending._
+
+`supported` `features`
+
+Eye-Dome Lighting applied to a compact depth-separated point cloud.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Fly Controller](gallery/features/feature_controller_fly.md)
 
 _Media pending._
@@ -140,6 +212,66 @@ _Media pending._
 `supported` `features`
 
 fly controller with deterministic camera translation.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [GLFW App](gallery/features/feature_app_glfw.md)
+
+_Media pending._
+
+`supported` `features`
+
+direct GLFW app path without the scenario runner.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [GUI Controls](gallery/features/feature_gui_controls.md)
+
+_Media pending._
+
+`supported` `features`
+
+curated Datoviz GUI controls mutating one retained point visual.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [GUI Viewport](gallery/features/feature_gui_viewport.md)
+
+_Media pending._
+
+`supported` `features`
+
+dockable Dear ImGui window containing a live Datoviz render target.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Guide Lines](gallery/features/feature_guide_lines.md)
+
+_Media pending._
+
+`supported` `features`
+
+retained horizontal and vertical guide lines in panel data coordinates.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Guide Spans](gallery/features/feature_guide_spans.md)
+
+_Media pending._
+
+`supported` `features`
+
+retained horizontal and vertical guide spans in panel data coordinates.
 
 </div>
 
@@ -164,6 +296,18 @@ _Media pending._
 `supported` `features`
 
 scalar image pixel-query proof with a live probe marker.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Input Events](gallery/features/feature_input_events.md)
+
+_Media pending._
+
+`supported` `features`
+
+hosted input event emission and router subscriptions.
 
 </div>
 
@@ -253,6 +397,42 @@ multiple independent panels with panel-local panzoom controllers.
 
 <div class="card" markdown="1">
 
+### [Multisample Antialiasing](gallery/features/technique_msaa.md)
+
+_Media pending._
+
+`supported` `features`
+
+side-by-side internal multisample antialiasing on thin segments.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Offscreen Capture](gallery/features/feature_offscreen_capture.md)
+
+_Media pending._
+
+`supported` `features`
+
+render an offscreen view once and write a PNG.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Orbit Camera Controller](gallery/features/feature_controller_orbit_camera.md)
+
+_Media pending._
+
+`supported` `features`
+
+orbit-camera controller attached to a small 3D mesh.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Overlay Card](gallery/features/feature_overlay_card.md)
 
 _Media pending._
@@ -277,6 +457,18 @@ fixed graphite-cyan panel background behind a simple visual.
 
 <div class="card" markdown="1">
 
+### [Panel Domain Fit](gallery/features/feature_panel_domain_fit.md)
+
+_Media pending._
+
+`supported` `features`
+
+panel-owned data-domain fit with equal aspect.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Panel Grid](gallery/features/feature_panel_grid.md)
 
 _Media pending._
@@ -289,7 +481,7 @@ four grid-owned panels with clipped panel-local content.
 
 <div class="card" markdown="1">
 
-### [Panzoom Attachment](gallery/features/controller_panzoom.md)
+### [Panzoom](gallery/features/controller_panzoom.md)
 
 _Media pending._
 
@@ -337,6 +529,30 @@ retained point item picking proof.
 
 <div class="card" markdown="1">
 
+### [Raw cimgui GUI](gallery/features/feature_gui_cimgui.md)
+
+_Media pending._
+
+`supported` `features`
+
+raw cimgui calls inside a Datoviz GUI callback.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Record Replay](gallery/features/feature_record_replay.md)
+
+_Media pending._
+
+`experimental` `features`
+
+record an offscreen app view and replay it into a second offscreen view.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Scalar Color Scale](gallery/features/colormap_scale.md)
 
 _Media pending._
@@ -368,6 +584,30 @@ _Media pending._
 `supported` `features`
 
 retained scale bar with a custom time-unit string.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Scene JSON](gallery/features/feature_json_export.md)
+
+_Media pending._
+
+`experimental` `features`
+
+retained scene JSON serialization diagnostic.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Screen-Space Ambient Occlusion](gallery/features/technique_ssao.md)
+
+_Media pending._
+
+`supported` `features`
+
+screen-space ambient occlusion on normal-producing mesh geometry.
 
 </div>
 
@@ -433,6 +673,18 @@ portable scenario updating retained point data on runner frames.
 
 <div class="card" markdown="1">
 
+### [Transparency Order](gallery/features/technique_transparency.md)
+
+_Media pending._
+
+`supported` `features`
+
+source-over and weighted blended order-independent transparency.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Turntable Controller](gallery/features/feature_controller_turntable.md)
 
 _Media pending._
@@ -440,6 +692,18 @@ _Media pending._
 `supported` `features`
 
 constrained turntable controller around a small 3D mesh.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [User Scale](gallery/features/feature_user_scale.md)
+
+_Media pending._
+
+`supported` `features`
+
+screen-space marker, path, and axis scaling controlled by a GUI slider.
 
 </div>
 
@@ -469,6 +733,18 @@ retained point visual with full data replacement.
 
 <div class="card" markdown="1">
 
+### [Visual Transform](gallery/features/feature_visual_transform.md)
+
+_Media pending._
+
+`supported` `features`
+
+retained visual-local affine transform on point visuals.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Visual Visibility](gallery/features/feature_visibility.md)
 
 _Media pending._
@@ -476,6 +752,18 @@ _Media pending._
 `supported` `features`
 
 retained visual visibility toggled on a runner frame.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Volume Occlusion](gallery/features/feature_volume_occlusion.md)
+
+_Media pending._
+
+`supported` `features`
+
+volume occluder attenuating an embedded slice visual.
 
 </div>
 

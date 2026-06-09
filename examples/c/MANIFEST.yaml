@@ -261,6 +261,26 @@ examples:
       kind: synthetic
     agent_copy_safe: true
 
+  - id: feature_user_scale
+    title: User Scale
+    stage: v0.4_required
+    category: feature
+    primary_feature: user-scale
+    lane: features
+    source: examples/c/features/user_scale.c
+    validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - marker
+        - path
+        - gui
+      reason: the user-scale control is a native ImGui slider on a Datoviz app view
+    agent_copy_safe: true
+
   - id: feature_gui_controls
     title: GUI Controls
     stage: v0.4_required

@@ -192,6 +192,7 @@ struct DvzScenarioContext
 {
     DvzScene* scene;
     DvzFigure* figure;
+    DvzRunnerPresentation presentation;
 
     uint32_t logical_width;
     uint32_t logical_height;

@@ -11,13 +11,13 @@
     "visual": 15
   },
   "statuses": {
-    "experimental": 9,
+    "experimental": 8,
     "prototype": 1,
-    "supported": 81
+    "supported": 82
   },
   "agent_copy_safe": {
-    "false": 21,
-    "true": 70
+    "false": 20,
+    "true": 71
   },
   "capabilities": {
     "composites": {
@@ -277,6 +277,15 @@
             "page": "gallery/features/feature_lighting.md"
           },
           {
+            "id": "feature_user_scale",
+            "title": "User Scale",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/user_scale.c",
+            "page": "gallery/features/feature_user_scale.md"
+          },
+          {
             "id": "feature_gui_controls",
             "title": "GUI Controls",
             "category": "feature",
@@ -314,7 +323,7 @@
           },
           {
             "id": "feature_compute_buffer_animation",
-            "title": "Scene Compute Buffer",
+            "title": "Compute Buffer Animation",
             "category": "feature",
             "status": "experimental",
             "agent_copy_safe": false,
@@ -592,7 +601,7 @@
             "page": "gallery/features/feature_visibility.md"
           },
           {
-            "id": "depth_test",
+            "id": "technique_depth_test",
             "title": "Depth Test Toggle",
             "category": "feature",
             "status": "supported",
@@ -620,7 +629,7 @@
           },
           {
             "id": "controller_panzoom",
-            "title": "Panzoom Attachment",
+            "title": "Panzoom",
             "category": "feature",
             "status": "supported",
             "agent_copy_safe": true,
@@ -1070,7 +1079,7 @@
         "examples": [
           {
             "id": "controller_panzoom",
-            "title": "Panzoom Attachment",
+            "title": "Panzoom",
             "category": "feature",
             "status": "supported",
             "agent_copy_safe": true,
@@ -1111,7 +1120,7 @@
         "count": 1,
         "examples": [
           {
-            "id": "depth_test",
+            "id": "technique_depth_test",
             "title": "Depth Test Toggle",
             "category": "feature",
             "status": "supported",
@@ -1134,10 +1143,6 @@
             "page": "gallery/features/technique_edl.md"
           }
         ]
-      },
-      "external-surface": {
-        "count": 1,
-        "examples": []
       },
       "gui-cimgui": {
         "count": 1,
@@ -1578,7 +1583,7 @@
         "examples": [
           {
             "id": "feature_compute_buffer_animation",
-            "title": "Scene Compute Buffer",
+            "title": "Compute Buffer Animation",
             "category": "feature",
             "status": "experimental",
             "agent_copy_safe": false,
@@ -1696,6 +1701,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/update_visual_data.c",
             "page": "gallery/features/feature_update_visual_data.md"
+          }
+        ]
+      },
+      "user-scale": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_user_scale",
+            "title": "User Scale",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/user_scale.c",
+            "page": "gallery/features/feature_user_scale.md"
           }
         ]
       },
@@ -2814,7 +2833,7 @@
         "examples": [
           {
             "id": "feature_compute_buffer_animation",
-            "title": "Scene Compute Buffer",
+            "title": "Compute Buffer Animation",
             "category": "feature",
             "status": "experimental",
             "agent_copy_safe": false,
@@ -3062,7 +3081,7 @@
         "examples": [
           {
             "id": "feature_compute_buffer_animation",
-            "title": "Scene Compute Buffer",
+            "title": "Compute Buffer Animation",
             "category": "feature",
             "status": "experimental",
             "agent_copy_safe": false,
@@ -3205,7 +3224,7 @@
         "examples": [
           {
             "id": "feature_compute_buffer_animation",
-            "title": "Scene Compute Buffer",
+            "title": "Compute Buffer Animation",
             "category": "feature",
             "status": "experimental",
             "agent_copy_safe": false,

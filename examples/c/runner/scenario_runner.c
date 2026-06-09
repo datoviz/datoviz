@@ -763,6 +763,7 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     ctx.device_scale = resolved.device_scale;
     ctx.user_scale = resolved.user_scale;
     ctx.render_scale = resolved.render_scale;
+    ctx.presentation = resolved.presentation;
     ctx.width = resolved.logical_width;
     ctx.height = resolved.logical_height;
 

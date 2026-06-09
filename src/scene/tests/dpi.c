@@ -176,6 +176,33 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
     AT(found_image_position_upload);
 
     _test_scene_stream_destroy(stream);
+
+    cfg.user_scale = 2.0f;
+    DvzDiagnosticReport report2;
+    dvz_diagnostic_report_init(&report2);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report2, &cfg);
+    AT(dvz_diagnostic_report_count(&report2) == 0);
+    ANN(stream);
+
+    bool found_rescaled_size_upload = false;
+    count = dvz_drp2_stream_count(stream);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_WRITE_BUFFER ||
+            cmd->u.write_buffer.size != sizeof(float))
+            continue;
+        const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
+        if (label == NULL || strstr(label, "_size") == NULL)
+            continue;
+        const float* uploaded = (const float*)cmd->u.write_buffer.data_raw;
+        ANN(uploaded);
+        if (fabsf(uploaded[0] - 32.0f) < 1e-6f)
+            found_rescaled_size_upload = true;
+    }
+    AT(found_rescaled_size_upload);
+
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }

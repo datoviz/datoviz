@@ -8,9 +8,9 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Public C examples in manifest: 67
-- Examples declaring screenshot validation: 63
-- Examples that should have video or motion evidence: 3
+- Public C examples in manifest: 91
+- Examples declaring screenshot validation: 80
+- Examples that should have video or motion evidence: 5
 
 ## Commands
 
@@ -45,6 +45,23 @@ Screenshot and video capture should be run separately from documentation generat
 | [Textured Mesh](gallery/features/feature_mesh_texture.md) | [`examples/c/features/mesh_texture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/mesh_texture.c) | `supported` | `smoke+interaction+screenshot` |
 | [Mesh Materials](gallery/features/feature_material_mesh.md) | [`examples/c/features/material_mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c) | `supported` | `smoke+screenshot` |
 | [Lighting](gallery/features/feature_lighting.md) | [`examples/c/features/lighting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c) | `supported` | `smoke+screenshot` |
+| [User Scale](gallery/features/feature_user_scale.md) | [`examples/c/features/user_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/user_scale.c) | `supported` | `smoke+interaction+screenshot` |
+| [Animation Tracks](gallery/features/feature_animation_tracks.md) | [`examples/c/features/animation_tracks.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/animation_tracks.c) | `supported` | `smoke+interaction+screenshot` |
+| [Compute Buffer Animation](gallery/features/feature_compute_buffer_animation.md) | [`examples/c/features/compute_buffer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/compute_buffer_animation.c) | `experimental` | `smoke+screenshot` |
+| [Eye-Dome Lighting](gallery/features/technique_edl.md) | [`examples/c/features/technique_edl.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_edl.c) | `supported` | `smoke+screenshot` |
+| [Screen-Space Ambient Occlusion](gallery/features/technique_ssao.md) | [`examples/c/features/technique_ssao.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_ssao.c) | `supported` | `smoke+screenshot` |
+| [Multisample Antialiasing](gallery/features/technique_msaa.md) | [`examples/c/features/technique_msaa.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_msaa.c) | `supported` | `smoke+screenshot` |
+| [Depth Cue](gallery/features/technique_depth_cue.md) | [`examples/c/features/technique_depth_cue.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_cue.c) | `supported` | `smoke+screenshot` |
+| [Transparency Order](gallery/features/technique_transparency.md) | [`examples/c/features/technique_transparency.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_transparency.c) | `supported` | `smoke+screenshot` |
+| [Volume Occlusion](gallery/features/feature_volume_occlusion.md) | [`examples/c/features/volume_occlusion.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/volume_occlusion.c) | `supported` | `smoke+screenshot` |
+| [Guide Lines](gallery/features/feature_guide_lines.md) | [`examples/c/features/guide_lines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_lines.c) | `supported` | `smoke+screenshot` |
+| [Guide Spans](gallery/features/feature_guide_spans.md) | [`examples/c/features/guide_spans.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_spans.c) | `supported` | `smoke+screenshot` |
+| [Bars And Bands](gallery/features/feature_bars_bands.md) | [`examples/c/features/bars_bands.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bars_bands.c) | `supported` | `smoke+screenshot` |
+| [Offscreen Capture](gallery/features/feature_offscreen_capture.md) | [`examples/c/features/offscreen_capture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/offscreen_capture.c) | `supported` | `smoke+screenshot` |
+| [Orbit Camera Controller](gallery/features/feature_controller_orbit_camera.md) | [`examples/c/features/controller_orbit_camera.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_orbit_camera.c) | `supported` | `smoke+interaction+screenshot` |
+| [Visual Transform](gallery/features/feature_visual_transform.md) | [`examples/c/features/visual_transform.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visual_transform.c) | `supported` | `smoke+screenshot` |
+| [Panel Domain Fit](gallery/features/feature_panel_domain_fit.md) | [`examples/c/features/panel_domain_fit.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_domain_fit.c) | `supported` | `smoke+screenshot` |
+| [Bezier Curve Path](gallery/features/feature_bezier_curve_path.md) | [`examples/c/features/bezier_curve_path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bezier_curve_path.c) | `supported` | `smoke+screenshot` |
 | [Linked Probe With Colorbar](gallery/showcases/linked_panels_probe_colorbar.md) | [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c) | `supported` | `smoke+readback+interaction+screenshot` |
 | [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md) | [`examples/c/showcases/scientific_plotting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c) | `supported` | `smoke+screenshot` |
 | [Scale Bar](gallery/features/scale_bar.md) | [`examples/c/features/scalebar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c) | `supported` | `smoke+screenshot` |
