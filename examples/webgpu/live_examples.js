@@ -21,6 +21,11 @@ export const LIVE_EXAMPLES = [
     scenarioId: "feature_builtin_shapes_2d",
   },
   {
+    id: "feature_builtin_shapes_3d",
+    label: "Builtin Shapes 3D",
+    scenarioId: "feature_builtin_shapes_3d",
+  },
+  {
     id: "feature_picking",
     label: "Picking",
     scenarioId: "feature_picking",

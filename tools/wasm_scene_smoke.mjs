@@ -1362,6 +1362,7 @@ try {
     "feature_timer_animation",
     "feature_triangulation_polygon",
     "feature_builtin_shapes_2d",
+    "feature_builtin_shapes_3d",
     "feature_picking",
     "feature_image_probe",
   ];
