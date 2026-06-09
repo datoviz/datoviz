@@ -15,20 +15,17 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current proof counts remain the fixture/dashboard truth until new browser evidence is recorded.
-The first portable scenario/frame-callback slice is current for `feature_timer_animation`. Planned
-RC promotions are:
+The first portable scenario/frame-callback slice is current for `feature_timer_animation`; compute
+buffer animation and the promoted query/readback selection routes now have browser-live evidence.
+Remaining RC promotions are:
 
 1. broaden the portable scenario host from `feature_timer_animation` to website examples;
-2. browser-live compute-to-render particle smoke at a documented particle budget;
-3. browser-live request/query/readback slice for point and marker picking plus one sampled probe;
-4. manifest-backed example classification as `webgpu-live`, `webgpu-planned`,
+2. manifest-backed example classification as `webgpu-live`, `webgpu-planned`,
    `webgpu-deferred`, or `native-only`.
 
-Do not move compute particles, scene query/readback, or broad live-example coverage into the
-supported/current section until `wasm-scene-smoke`, `webgpu-browser-smoke`, and any relevant
-native/DRP2 checks have recorded evidence for the promoted slice. The first point-picking
-packet/readback route exists, but browser-live promotion remains blocked until resolved results can
-update retained hover/selection state without live-stream lifetime diagnostics.
+Do not move broader live-example coverage into the supported/current section until
+`wasm-scene-smoke`, `webgpu-browser-smoke`, and any relevant native/DRP2 checks have recorded
+evidence for the promoted slice.
 
 
 ## Fixture Dashboard

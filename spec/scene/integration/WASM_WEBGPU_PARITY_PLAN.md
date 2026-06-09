@@ -37,9 +37,8 @@ runner proves DRP2/WebGPU protocol behavior; live gallery pages prove the end-to
 WASM, DRP2 packet, browser runtime, interaction, and diagnostics path that users see.
 
 Automated browser smoke should remain intentionally small: one basic runtime route, one
-query/readback route, and later one compute-to-render route when compute is part of the live browser
-promise. Larger WASM sampler pages are useful for development, but they are not the public
-promotion surface.
+query/readback route, and one compute-to-render route. Larger WASM sampler pages are useful for
+development, but they are not the public promotion surface.
 
 Required RC browser capabilities:
 
@@ -53,10 +52,11 @@ Required RC browser capabilities:
    `webgpu-deferred`, and `native-only`;
 8. deterministic diagnostics for unsupported browser requirements.
 
-The RC query/readback target is intentionally narrow: point and marker item picking plus one
-sampled probe path, preferably image or labels. Full query parity across every visual family,
-volume ray-hit picking, advanced technique parity, native desktop runtime examples, and native
-capture/video/GUI/CUDA paths remain outside the RC WebGPU promise.
+The RC query/readback target is intentionally narrow and now includes point and marker picking,
+point hover/selection, sphere selection, mesh instance selection, and one sampled image probe. Full
+query parity across every visual family, volume ray-hit picking, advanced technique parity, native
+desktop runtime examples, and native capture/video/GUI/CUDA paths remain outside the RC WebGPU
+promise.
 
 
 ## Non-Goals
@@ -235,7 +235,7 @@ into that family until earlier rows are stable.
 
 | Family | Native Vulkan status | WASM/WebGPU target | Status | Required work |
 | --- | --- | --- | --- | --- |
-| point | retained scene visual | point visual with buffer-backed attrs current; particles next | current/rc-target | keep buffer-backed attr evidence; prove compute-written positions |
+| point | retained scene visual | point visual with buffer-backed attrs and compute-written positions current | current | keep buffer-backed attr and compute evidence |
 | primitive | retained triangle-list visual | triangle-list visual | current | keep fixture/browser evidence and diagnostics |
 | image | retained RGBA/scalar image paths | RGBA8 image and sampled image probe current, scalar/colormap broader coverage later | current/rc-target | keep image-probe evidence; add scalar/colormap variants after colorbar path is stable |
 | mesh | basic/textured/lit mesh paths | basic, textured, and material-controlled mesh current | current | keep texture-sampling and material-update evidence; broaden only with additional shader/material models |
@@ -243,7 +243,7 @@ into that family until earlier rows are stable.
 | marker | retained marker visual | built-in marker subset and item picking current | current | keep built-in marker and query/readback evidence |
 | segment/path/stroke | retained path and stroke-shaped paths | segment/path cap-join controls current; broader subpath/vector parity future | current/future | keep cap/join evidence; settle subpath/vector policy and browser proof later |
 | text/glyph | retained text and glyph visuals | low-level atlas glyph and semantic bitmap text current | current | keep glyph/text evidence; richer shaping, font packaging, and layout remain future work |
-| labels | label field and readback paths | label rendering current; label probe rc-target if chosen as sampled probe | current/rc-target | texture/label formats, query/readback, diagnostics |
+| labels | label field and readback paths | label rendering current; label probe future unless chosen for a later slice | current/future | texture/label formats, query/readback, diagnostics |
 | sphere | sphere impostor visual | basic sphere impostor current; raycast/depth/material parity future | current/future | keep WGSL/browser evidence; promote native-depth and material variants later |
 | volume | volume visual and query paths | reduced volume/slice subset | future | 3D texture limits, sampling shaders, memory diagnostics |
 | splat | experimental splat visual | explicit experimental subset | future | sorting/blending/WBOIT policy and memory limits |
@@ -253,8 +253,8 @@ into that family until earlier rows are stable.
 ## Annotation And Layout Matrix
 
 Basic retained 2D axes have already been promoted through the bitmap text subset. Remaining
-annotation/layout features should be promoted after the example host, frame callback, compute, and
-query/readback RC slices are stable.
+annotation/layout features should be promoted after the example host and current compute/query
+browser-live slices stay stable.
 
 | Feature | WASM/WebGPU target | Status | Required work |
 | --- | --- | --- | --- |
@@ -275,11 +275,11 @@ query/readback RC slices are stable.
 | fly/turntable | browser input to C controllers | future | expose controller creation/binding variants and smoke after RC example host lands |
 | frame callbacks | portable example frame callback | current/rc-target | first `feature_timer_animation` scenario is current; broader example-host conversion remains an RC target |
 | resize/high-DPI | browser resize to C scene and packet replay | current | keep capability/resize diagnostics |
-| picking/query | request/poll query results | current | point and marker item query/readback, point hover, point selection, and sampled image probe are browser-live |
-| selection | update retained selection state | current/rc-target | point selection browser route is current; broader selection examples remain tied to query/probe promotion |
+| picking/query | request/poll query results | current | point and marker item query/readback, point hover, point selection, sphere selection, mesh instance selection, and sampled image probe are browser-live |
+| selection | update retained selection state | current | point, sphere, and mesh instance selection browser routes are current |
 | capture | browser artifact capture | future | browser screenshot/video policy separate from native capture |
 | streaming/partial updates | same-shape updates and bounded growth | partial | buffer update ABI, diagnostics, memory limits |
-| compute-to-render | scene compute writes render buffers | rc-target | scene buffer/compute ABI and particle smoke browser proof |
+| compute-to-render | scene compute writes render buffers | current | `feature_compute_buffer_animation` browser route proves scene buffer/compute ABI and compute-to-vertex barriers |
 | techniques | EDL/SSAO/WBOIT/depth peeling | future | per-technique WebGPU feasibility and fallback diagnostics |
 
 
@@ -290,35 +290,35 @@ query/readback RC slices are stable.
 1. Implement the portable scenario helper and native host runner. Current first slices:
    `feature_timer_animation`, native `feature_picking`, and native `image_probe`.
 2. Add a generic WASM example host beside the current scene ABI. Current slices:
-   browser frame callbacks and pointer/wheel event delivery for `feature_timer_animation`, plus
-   browser-live query/readback for `feature_picking` and `feature_image_probe`; the next browser slice is
-   categorical probe delivery if needed.
+   browser frame callbacks and pointer/wheel event delivery for `feature_timer_animation`,
+   browser-live query/readback for picking, image probe, and promoted selection examples, plus
+   browser-live compute buffer animation.
 3. Keep one low-level retained scene/app example that shows the native host API without helper
    indirection.
 4. Convert small feature examples first, then showcases.
 5. Mark native-integration examples explicitly as native-only.
 
-### Phase 2: Particle Compute Parity
+### Phase 2: Compute-To-Render Parity
 
-Promote `gpu_particle_smoke` as the first full write-once parity proof:
+`feature_compute_buffer_animation` is the current compact write-once parity proof:
 
 ```text
-same C particle scenario
+same C compute scenario
   -> native Vulkan host
   -> WASM/WebGPU host
 ```
 
 Required work:
 
-1. refactor the example into shared C scenario plus native host;
-2. provide GLSL and WGSL compute shader sources or use WGSL wherever accepted;
-3. expose scene buffers through WASM;
-4. expose buffer-backed point attributes through WASM;
-5. expose scene compute and compute buffer binding through WASM;
-6. update per-frame params through the shared scenario;
-7. emit DRP2 packets with `ResourceBarrier`;
-8. render particles in browser WebGPU;
-9. add `wasm-scene-smoke` and `webgpu-browser-smoke` coverage.
+Current proof:
+
+1. shared C scenario plus native host;
+2. GLSL native compute source and WGSL WASM compute source;
+3. scene buffers and buffer-backed point attributes through WASM;
+4. scene compute and compute buffer binding through WASM;
+5. DRP2 packets with `ResourceBarrier`;
+6. browser WebGPU rendering through the live gallery route;
+7. `wasm-scene-smoke` and `webgpu-browser-smoke` coverage.
 
 Start with a browser particle count such as `32k` or `64k`, then raise after browser memory and
 frame-time evidence is available.

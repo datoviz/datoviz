@@ -2,7 +2,7 @@
 
 Execution Status:
 
-- Status: implementation plan for continuing WebGPU live example support
+- Status: completed on 2026-06-09
 - Updated on: 2026-06-09
 - Scope: remaining `webgpu-planned` examples after the first live gallery promotion batches
 
@@ -28,10 +28,13 @@ The live WebGPU gallery already covers:
 8. `feature_obj_loading`
 9. `feature_picking`
 10. `feature_selection_pixel`
-11. `image_probe`
+11. `feature_selection_sphere`
+12. `feature_selection_mesh_instances`
+13. `feature_compute_buffer_animation`
+14. `image_probe`
 
 
-## Immediate Plan
+## Completed Plan
 
 1. Add shader coverage for selection examples.
 
