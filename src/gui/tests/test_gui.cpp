@@ -130,6 +130,11 @@ static void _gui_viewport_resize_callback(DvzGui* gui, DvzView* win, void* user_
         igSetNextWindowSize(ImVec2{260, 220}, ImGuiCond_Always);
         igSetNextWindowCollapsed(false, ImGuiCond_Always);
     }
+    else if (smoke->frame == 2)
+    {
+        igSetNextWindowSize(ImVec2{260, 220}, ImGuiCond_Always);
+        igSetNextWindowCollapsed(false, ImGuiCond_Always);
+    }
     else
     {
         igSetNextWindowCollapsed(true, ImGuiCond_Always);
@@ -364,6 +369,20 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     DvzGuiViewportConfig config = dvz_gui_viewport_config();
     config.resize_step = 1;
     config.resize_delay_frames = 0;
+
+    AT(dvz_view_resize_scaled(source_win, 160, 120, 2.0f) == 0);
+    uint32_t logical_width = 0;
+    uint32_t logical_height = 0;
+    uint32_t framebuffer_width = 0;
+    uint32_t framebuffer_height = 0;
+    dvz_view_logical_size(source_win, &logical_width, &logical_height);
+    dvz_view_framebuffer_size(source_win, &framebuffer_width, &framebuffer_height);
+    AT(logical_width == 160);
+    AT(logical_height == 120);
+    AT(framebuffer_width == 320);
+    AT(framebuffer_height == 240);
+    AC(dvz_view_device_scale(source_win), 2.0f, 1e-6f);
+
     DvzGuiViewportConfig invalid_viewport = config;
     invalid_viewport.struct_size = 0;
     AT_EXPECTED_ERROR_STRICT(
@@ -379,7 +398,7 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     AT(smoke.viewport != NULL);
 
     dvz_view_set_gui_callback(host_win, _gui_viewport_resize_callback, &smoke);
-    dvz_app_run(app, 4);
+    dvz_app_run(app, 6);
 
     AT(smoke.shown_count > 0);
     AT(smoke.hidden_count > 0);

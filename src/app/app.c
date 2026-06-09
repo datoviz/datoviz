@@ -4877,21 +4877,47 @@ uint32_t dvz_view_replay_frame_count(const DvzView* win)
  */
 int dvz_view_resize(DvzView* win, uint32_t width, uint32_t height)
 {
+    return dvz_view_resize_scaled(win, width, height, 1.0f);
+}
+
+
+/**
+ * Resize a view's logical and framebuffer extent with an explicit device scale.
+ *
+ * @param win the view
+ * @param logical_width logical width in pixels
+ * @param logical_height logical height in pixels
+ * @param device_scale physical pixels per logical pixel
+ * @return 0 on success, negative on error
+ */
+int dvz_view_resize_scaled(
+    DvzView* win, uint32_t logical_width, uint32_t logical_height, float device_scale)
+{
     ANN(win);
-    if (width == 0 || height == 0)
+    if (logical_width == 0 || logical_height == 0)
+        return -1;
+    device_scale = _view_valid_scale(device_scale);
+    uint32_t framebuffer_width = _view_round_size((float)logical_width * device_scale);
+    uint32_t framebuffer_height = _view_round_size((float)logical_height * device_scale);
+    if (framebuffer_width == 0 || framebuffer_height == 0)
         return -1;
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     if (win->window == NULL || win->figure == NULL)
         return -1;
-    dvz_window_backend_emit_resize(win->window, width, height, width, height, 1.0f, 1.0f);
-    _view_update_size_state(win, width, height, width, height, 1.0f, 1.0f);
-    dvz_figure_resize(win->figure, width, height);
+    dvz_window_backend_emit_resize(
+        win->window, framebuffer_width, framebuffer_height, logical_width, logical_height,
+        device_scale, device_scale);
+    _view_update_size_state(
+        win, logical_width, logical_height, framebuffer_width, framebuffer_height, device_scale,
+        device_scale);
+    dvz_figure_resize(win->figure, logical_width, logical_height);
     dvz_view_request_frame(win);
     return 0;
 #else
-    (void)width;
-    (void)height;
+    (void)logical_width;
+    (void)logical_height;
+    (void)device_scale;
     return -1;
 #endif
 }

@@ -331,7 +331,7 @@ _Media pending._
 
 `supported` `features`
 
-hosted input event emission and router subscriptions.
+live native keyboard, pointer, wheel, and resize event logging.
 
 </div>
 
@@ -475,7 +475,7 @@ _Media pending._
 
 `supported` `features`
 
-render an offscreen view once and write a PNG.
+render an exact-pixel offscreen view once and write a PNG.
 
 </div>
 

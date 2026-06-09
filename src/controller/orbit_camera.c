@@ -60,6 +60,9 @@ struct DvzOrbitCamera
     mat4 initial_rotation;
     float initial_distance;
     vec2 initial_pan;
+    float min_distance;
+    float max_distance;
+    float zoom_speed;
 
     DvzCamera* camera;
 };
@@ -229,6 +232,14 @@ static void _orbit_reset_initial(DvzOrbitCamera* orbit)
 
 
 
+static float _orbit_clamp_distance(const DvzOrbitCamera* orbit, float distance)
+{
+    ANN(orbit);
+    return _clampf(distance, orbit->min_distance, orbit->max_distance);
+}
+
+
+
 static bool _orbit_event_in_viewport(const DvzOrbitCamera* orbit, const DvzPointerEvent* ev)
 {
     ANN(orbit);
@@ -317,6 +328,9 @@ DvzOrbitCameraDesc dvz_orbit_camera_desc(void)
         .height = DVZ_ORBIT_CAMERA_DEFAULT_HEIGHT,
         .controller_flags = 0,
         .pivot = {0.0f, 0.0f, 0.0f},
+        .min_distance = DVZ_ORBIT_CAMERA_MIN_DISTANCE,
+        .max_distance = DVZ_ORBIT_CAMERA_MAX_DISTANCE,
+        .zoom_speed = DVZ_ORBIT_CAMERA_ZOOM_COEF,
     };
 }
 
@@ -337,9 +351,18 @@ DvzOrbitCamera* dvz_orbit_camera_create(const DvzOrbitCameraDesc* desc)
     orbit->viewport_size[0] = desc->width > 0.0f ? desc->width : DVZ_ORBIT_CAMERA_DEFAULT_WIDTH;
     orbit->viewport_size[1] = desc->height > 0.0f ? desc->height : DVZ_ORBIT_CAMERA_DEFAULT_HEIGHT;
     glm_vec3_copy((vec3){desc->pivot[0], desc->pivot[1], desc->pivot[2]}, orbit->pivot);
+    orbit->min_distance =
+        desc->min_distance > 0.0f ? desc->min_distance : DVZ_ORBIT_CAMERA_MIN_DISTANCE;
+    orbit->max_distance =
+        desc->max_distance > orbit->min_distance ? desc->max_distance :
+                                                    DVZ_ORBIT_CAMERA_MAX_DISTANCE;
+    if (orbit->max_distance < orbit->min_distance)
+        orbit->max_distance = orbit->min_distance;
+    orbit->zoom_speed =
+        desc->zoom_speed > 0.0f ? desc->zoom_speed : DVZ_ORBIT_CAMERA_ZOOM_COEF;
     glm_mat4_identity(orbit->rotation);
     glm_quat_identity(orbit->drag_rotation);
-    orbit->distance = 3.0f;
+    orbit->distance = _orbit_clamp_distance(orbit, 3.0f);
     _orbit_store_initial(orbit);
     return orbit;
 }
@@ -429,7 +452,7 @@ void _dvz_orbit_camera_sync_camera(DvzOrbitCamera* orbit, DvzCamera* camera)
         float distance = glm_vec3_norm(delta);
         if (distance > 0.0f)
         {
-            orbit->distance = distance;
+            orbit->distance = _orbit_clamp_distance(orbit, distance);
             vec3 forward = {0};
             glm_vec3_scale(delta, 1.0f / distance, forward);
             if (glm_vec3_norm(up) <= 0.0f)
@@ -561,9 +584,8 @@ bool dvz_orbit_camera_pointer(DvzOrbitCamera* orbit, const DvzPointerEvent* ev)
         return true;
 
     case DVZ_POINTER_EVENT_WHEEL:
-        orbit->distance = _clampf(
-            orbit->distance * expf(-DVZ_ORBIT_CAMERA_ZOOM_COEF * ev->content.w.dir[1]),
-            DVZ_ORBIT_CAMERA_MIN_DISTANCE, DVZ_ORBIT_CAMERA_MAX_DISTANCE);
+        orbit->distance = _orbit_clamp_distance(
+            orbit, orbit->distance * expf(-orbit->zoom_speed * ev->content.w.dir[1]));
         dvz_orbit_camera_apply_camera(orbit);
         return true;
 

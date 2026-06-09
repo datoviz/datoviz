@@ -1,7 +1,7 @@
 # Examples Notes Implementation Prompt
 
 Status: active handoff. Created: 2026-06-09. Refreshed: 2026-06-09 after
-today's example-polish commits.
+the runtime/readability checkpoint.
 
 Use this prompt for the next agent tasked with closing every suggestion in
 `EXAMPLES_NOTES.md`.
@@ -61,37 +61,9 @@ Constraints:
 
 ## Current Unresolved Queue
 
-Treat the following ledger entries as active. Everything else in
-`EXAMPLES_NOTES.md` is already resolved or audited unless later validation
-proves otherwise.
-
-Runtime or visual fixes:
-
-- `features/controller_fly`: investigate left-right drag in `src/controller/fly.c`;
-  fix if broken and add a focused sign regression or manual validation note.
-- `features/technique_depth_test`: diagnose shader edge antialiasing without
-  relying on MSAA; fix or record the shader limitation precisely.
-- `features/gui_viewport`: fix Retina logical/framebuffer mismatch, initial
-  zoomed viewport frames, and resize lag/wobble in the GUI viewport runtime.
-- `showcases/choropleth`: improve Retina title/subtitle readability and make
-  right-drag zoom preserve fixed aspect.
-- `showcases/scientific_plotting`: fix x-axis clipping at the panel bottom.
-- `showcases/textured_planet`: lighten dark-side lighting enough to inspect and
-  add sensible zoom limits or less sensitive/log-like zoom behavior.
-
-Example behavior and policy:
-
-- `features/gui_cimgui`: keep the app/window path only if it remains a justified
-  GUI-host exception; otherwise move to the scenario path.
-- `features/gui_controls`: decide whether builtin controls are still a public
-  v0.4 feature and keep or retire the example accordingly; app/window path is
-  justified only for GUI host integration.
-- `features/input_events`: prefer a live window that prints keyboard and mouse
-  events in real time; keep synthetic emitted-event coverage as test/smoke
-  behavior if useful.
-- `features/offscreen_capture`: keep exact-output-pixel semantics unless an
-  explicit render-scale/supersample option is added; record the decision in the
-  example/docs.
+Treat the following ledger entries as active. Runtime/readability fixes and
+example-behavior decisions are now resolved unless later validation proves the
+closure wrong.
 
 Resolved in checkpoint `showcases/surface_grid` / `features/bounds_overlay`:
 
@@ -100,7 +72,29 @@ Resolved in checkpoint `showcases/surface_grid` / `features/bounds_overlay`:
 - `features/bounds_overlay.c`: ported as diagnostic
   `examples/c/features/bounds_overlay.c` with 2D and 3D retained visual bounds.
 
-General `EXAMPLES_NOTES.md` comments to close:
+Resolved in checkpoint `runtime/readability`:
+
+- `features/controller_fly`: `src/controller/fly.c` now uses the configured
+  world-up basis for yaw/pitch, with a z-up drag-sign regression in controller
+  tests.
+- `features/technique_depth_test`: GLSL point fragment shaders use
+  derivative-based disc edge coverage without MSAA.
+- `features/gui_viewport`: `dvz_view_resize_scaled()` and GUI viewport runtime
+  sizing fixes address Retina framebuffer mismatch, stale initial frames, and
+  resize wobble.
+- `showcases/choropleth`: Retina title/subtitle readability and fixed-aspect
+  right-drag zoom are fixed.
+- `showcases/scientific_plotting`: fixed pixel reserves prevent x-axis clipping.
+- `showcases/textured_planet`: lighting and orbit-camera zoom limits/speed are
+  adjusted.
+- `features/gui_cimgui` and `features/gui_controls`: kept as explicit
+  app/window GUI-host exceptions.
+- `features/input_events`: defaults to a live event-printing GLFW window, with
+  `--synthetic` preserved for smoke validation.
+- `features/offscreen_capture`: keeps exact output-pixel semantics and asserts
+  requested framebuffer/PNG size.
+
+General `EXAMPLES_NOTES.md` comments still to close:
 
 - Improve top-of-file comments/descriptions so they can be reused on example
   webpages.
@@ -110,18 +104,19 @@ General `EXAMPLES_NOTES.md` comments to close:
   what v0.4 now has, what is missing, and whether missing items are added or
   deferred.
 
-Further examples to add or explicitly defer:
+Further examples already resolved or audited:
 
 - `showcases/surface_grid`, legacy-like, with wireframes.
-- `features/instancing`, single mesh instanced multiple times with different
-  transforms.
-- `features/isolines`, if the current implementation is insufficient after
-  audit.
-- `raw_triangle_vklite` and `raw_triangle_drp2`, if the current advanced
-  examples are insufficient after audit.
-- `bounds_overlay.c` legacy port into one or two feature examples.
-- `arcball_gizmo.c` legacy port as a feature example with a small bottom-right
-  inset synchronized with a main-panel mesh.
+- `features/instancing`: current public example is
+  `features/selection_mesh_instances`; a plain non-selection instancing example
+  remains optional.
+- `features/isolines`: current implementation exists in
+  `examples/c/features/isolines.c`.
+- `raw_triangle_vklite` and `raw_triangle_drp2`: current examples live under
+  `examples/c/advanced/`.
+- `bounds_overlay.c` legacy port into one feature example.
+- `arcball_gizmo.c`: superseded by synchronized inset
+  `examples/c/features/orientation_gizmo.c`.
 
 
 ## Closure Criteria

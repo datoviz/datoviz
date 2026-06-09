@@ -621,7 +621,12 @@ bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev)
             vec2 shift = {ev->content.d.shift[0], ev->content.d.shift[1]};
             vec2 press = {ev->content.d.press_pos[0], ev->content.d.press_pos[1]};
             if (pz->flags & DVZ_PANZOOM_FLAGS_KEEP_ASPECT)
-                shift[1] = -shift[0];
+            {
+                float w = pz->viewport_size[0];
+                float h = pz->viewport_size[1];
+                float a = w > 0.0f && h > 0.0f ? h / w : 1.0f;
+                shift[1] = -a * shift[0];
+            }
             dvz_panzoom_zoom_shift(pz, shift, press);
         }
         pz->interacting = true;

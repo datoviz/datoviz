@@ -124,14 +124,52 @@ static float _fly_wrap_angle(float angle)
 
 
 /**
+ * Compute the horizontal yaw basis for the configured world-up axis.
+ *
+ * @param world_up normalized world-up vector
+ * @param out_base_x yaw-zero direction
+ * @param out_base_y positive-yaw direction in the horizontal plane
+ */
+static void _fly_yaw_basis(vec3 world_up, vec3 out_base_x, vec3 out_base_y)
+{
+    ANN(out_base_x);
+    ANN(out_base_y);
+
+    vec3 up = {0};
+    if (_vec3_valid(world_up))
+        glm_vec3_normalize_to(world_up, up);
+    else
+        glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, up);
+
+    vec3 ref = {0.0f, 0.0f, 1.0f};
+    if (fabsf(glm_vec3_dot(up, ref)) > 0.92f)
+        glm_vec3_copy((vec3){0.0f, -1.0f, 0.0f}, ref);
+
+    glm_vec3_cross(up, ref, out_base_x);
+    if (!_vec3_valid(out_base_x))
+        glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, out_base_x);
+    else
+        glm_vec3_normalize(out_base_x);
+
+    glm_vec3_cross(out_base_x, up, out_base_y);
+    if (!_vec3_valid(out_base_y))
+        glm_vec3_copy(ref, out_base_y);
+    else
+        glm_vec3_normalize(out_base_y);
+}
+
+
+
+/**
  * Compute yaw and pitch from a direction vector.
  *
  * @param dir input direction
+ * @param world_up world-up vector
  * @param out_yaw output yaw angle
  * @param out_pitch output pitch angle
  * @return whether the direction was usable
  */
-static bool _fly_angles_from_dir(vec3 dir, float* out_yaw, float* out_pitch)
+static bool _fly_angles_from_dir(vec3 dir, vec3 world_up, float* out_yaw, float* out_pitch)
 {
     ANN(out_yaw);
     ANN(out_pitch);
@@ -139,8 +177,30 @@ static bool _fly_angles_from_dir(vec3 dir, float* out_yaw, float* out_pitch)
         return false;
     vec3 n = {0};
     glm_vec3_normalize_to(dir, n);
-    *out_pitch = _fly_clamp_pitch(asinf(_clampf(n[1], -1.0f, +1.0f)));
-    *out_yaw = atan2f(n[2], n[0]);
+
+    vec3 up = {0};
+    if (_vec3_valid(world_up))
+        glm_vec3_normalize_to(world_up, up);
+    else
+        glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, up);
+
+    const float vertical = _clampf(glm_vec3_dot(n, up), -1.0f, +1.0f);
+    *out_pitch = _fly_clamp_pitch(asinf(vertical));
+
+    vec3 horizontal = {0};
+    vec3 vertical_part = {0};
+    glm_vec3_scale(up, vertical, vertical_part);
+    glm_vec3_sub(n, vertical_part, horizontal);
+    if (!_vec3_valid(horizontal))
+    {
+        *out_yaw = 0.0f;
+        return true;
+    }
+    glm_vec3_normalize(horizontal);
+
+    vec3 base_x = {0}, base_y = {0};
+    _fly_yaw_basis(up, base_x, base_y);
+    *out_yaw = atan2f(glm_vec3_dot(horizontal, base_y), glm_vec3_dot(horizontal, base_x));
     return true;
 }
 
@@ -161,18 +221,22 @@ static void _fly_vectors(const DvzFly* fly, vec3 out_front, vec3 out_right, vec3
     ANN(out_right);
     ANN(out_up);
 
-    vec3 front = {
-        cosf(fly->yaw) * cosf(fly->pitch),
-        sinf(fly->pitch),
-        sinf(fly->yaw) * cosf(fly->pitch),
-    };
-    glm_vec3_normalize(front);
-    glm_vec3_copy(front, out_front);
-
     vec3 world_up = {fly->world_up[0], fly->world_up[1], fly->world_up[2]};
     if (!_vec3_valid(world_up))
         glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, world_up);
     glm_vec3_normalize(world_up);
+
+    vec3 base_x = {0}, base_y = {0};
+    _fly_yaw_basis(world_up, base_x, base_y);
+    vec3 front = {0}, horizontal = {0}, horizontal_y = {0}, vertical = {0};
+    glm_vec3_scale(base_x, cosf(fly->yaw), horizontal);
+    glm_vec3_scale(base_y, sinf(fly->yaw), horizontal_y);
+    glm_vec3_add(horizontal, horizontal_y, horizontal);
+    glm_vec3_scale(horizontal, cosf(fly->pitch), front);
+    glm_vec3_scale(world_up, sinf(fly->pitch), vertical);
+    glm_vec3_add(front, vertical, front);
+    glm_vec3_normalize(front);
+    glm_vec3_copy(front, out_front);
 
     glm_vec3_cross(front, world_up, out_right);
     if (!_vec3_valid(out_right))
@@ -590,7 +654,7 @@ void dvz_fly_initial_lookat(DvzFly* fly, vec3 position, vec3 target)
     glm_vec3_sub(target, position, dir);
     float yaw = -GLM_PI_2f;
     float pitch = 0.0f;
-    if (!_fly_angles_from_dir(dir, &yaw, &pitch))
+    if (!_fly_angles_from_dir(dir, fly->world_up, &yaw, &pitch))
         log_warn("invalid fly initial look-at direction, using default orientation");
     dvz_fly_initial(fly, position, yaw, pitch, 0.0f);
 }
@@ -819,7 +883,7 @@ void dvz_fly_look_at_pivot(DvzFly* fly)
     glm_vec3_sub(fly->pivot, fly->position, dir);
     fly->pivot_distance = glm_vec3_norm(dir);
     float yaw = 0.0f, pitch = 0.0f;
-    if (_fly_angles_from_dir(dir, &yaw, &pitch))
+    if (_fly_angles_from_dir(dir, fly->world_up, &yaw, &pitch))
     {
         fly->yaw = yaw;
         fly->pitch = pitch;

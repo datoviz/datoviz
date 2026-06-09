@@ -16,22 +16,22 @@ is still visible with the blocker or preferred next action.
 | `features/app_glfw` | resolved | Standard 1600x1200 size in `examples/c/features/app_glfw.c`. |
 | `features/axis_labels` | resolved | Removed confusing tilted segment clutter; retained only simple plot-frame guides in `examples/c/features/axis_labels.c`. |
 | `features/colormap_scale` | resolved | Scale/colormap setup is explicit in `examples/c/features/colormap_scale.c`. |
-| `features/controller_fly` | deferred | Runtime audit found basis/drag ambiguity in `src/controller/fly.c`; do not flip blindly. Needs interactive validation and sign regression for the exact z-up plane pose. |
+| `features/controller_fly` | resolved | `src/controller/fly.c` now derives yaw/pitch from the configured world-up basis instead of hard-coded Y-up math; `test_controller_fly_z_up_lookat_drag` covers the z-up left/right drag sign and `just test controller` passed. |
 | `features/technique_depth_cue` | resolved | Two-panel comparison now uses a regular 3D sphere lattice in `examples/c/features/technique_depth_cue.c`; compiled and docs regenerated. |
-| `features/technique_depth_test` | deferred | Shader antialiasing diagnosis still required. |
+| `features/technique_depth_test` | resolved | GLSL point fragment shaders now use derivative-based disc coverage (`fwidth`/`smoothstep`) for shader-side edge AA without relying on MSAA; `./build/examples/c/features/technique_depth_test --png` passed and the PNG was visually checked. |
 | `features/technique_edl` | resolved | Two-panel comparison now uses the shared regular 3D sphere-lattice pattern in `examples/c/features/technique_edl.c`; compiled and docs regenerated. |
 | `features/external_surface` | resolved | Public advanced example is `examples/c/advanced/external_surface_glfw.c`; gallery generator now includes advanced pages. |
-| `features/gui_cimgui` | deferred | App/window path remains justified until scenario GUI hosting exists. |
-| `features/gui_controls` | deferred | Needs current builtin-controls decision; app/window path remains justified for GUI host integration. |
-| `features/gui_viewport` | deferred | Runtime audit points to Retina logical/framebuffer resize in `src/gui/gui.cpp`; needs runtime fix, not example-only patch. |
+| `features/gui_cimgui` | resolved | Kept as explicit native app/window exception because the example demonstrates direct Dear ImGui host integration rather than scene-only behavior. |
+| `features/gui_controls` | resolved | Kept as explicit native app/window exception for the current v0.4 GUI control wrappers in `example_gui_controls.c`; scenario hosting remains unnecessary for this host-integration example. |
+| `features/gui_viewport` | resolved | Added scaled offscreen view resize via `dvz_view_resize_scaled()`, seeded GUI viewport requested logical/framebuffer sizes, and kept source rendering active while waiting for a non-stale resized frame; `just test gui` passed. |
 | `features/guide_lines` | resolved | Cursor event callback updates guides in real time in `examples/c/features/guide_lines.c`; compiled. |
 | `features/guide_spans` | resolved | Cursor event callback centers spans in real time in `examples/c/features/guide_spans.c`; compiled. |
-| `features/input_events` | partial | Current example prints emitted input events through app/view router; a live terminal window variant remains optional. |
+| `features/input_events` | resolved | `examples/c/features/input_events.c` now defaults to a live GLFW window that prints pointer, wheel, keyboard, and resize events; `--synthetic`/`--png` keeps the emitted-event smoke path. |
 | `features/legend_categorical` | resolved | Removed highlighted entry that made one swatch larger in `examples/c/features/legend_categorical.c`; compiled. |
 | `features/lighting` | resolved | Three-panel material/light comparison in `examples/c/features/lighting.c`; compiled. |
 | `features/marker_symbols` | resolved | Added row labels and a distinct colored bitmap-pin row in `examples/c/features/marker_symbols.c`; compiled and docs regenerated. |
 | `features/technique_msaa` | resolved | Side-by-side comparison now uses slanted 3D cube silhouettes with MSAA disabled/enabled in `examples/c/features/technique_msaa.c`; compiled. |
-| `features/offscreen_capture` | deferred | Keep exact-pixel offscreen semantics; add high-DPI/supersampled variant separately if desired. |
+| `features/offscreen_capture` | resolved | `examples/c/features/offscreen_capture.c` now asserts and prints exact requested framebuffer/PNG pixels; high-DPI capture remains explicit via logical-size/device-scale view descriptors, not implicit Retina scaling. |
 | `features/overlay_card` | resolved | Adds a simple signal and highlighted sample behind the fixed readout card in `examples/c/features/overlay_card.c`; compiled and docs regenerated. |
 | `features/panel_background` | resolved | Uses explicit inset gradient panel background in `examples/c/features/panel_background.c`; compiled. |
 | `features/panel_domain_fit` | resolved | Side-by-side free-domain vs equal-aspect fit in `examples/c/features/panel_domain_fit.c`; compiled. |
@@ -48,9 +48,9 @@ is still visible with the blocker or preferred next action.
 | `features/visual_transform` | resolved | Two-panel without/with transform comparison in `examples/c/features/visual_transform.c`; compiled. |
 | `features/volume_occlusion` | resolved | Rewritten as side-by-side slice rendering without/with volume occlusion in `examples/c/features/volume_occlusion.c`; compiled. |
 | `showcases/brain_volume` | resolved | Name is already `brain_volume`; initial camera/up vector and arcball orientation now start tilted to show the slice with volume behind it in `examples/c/showcases/brain_volume.c`; compiled. |
-| `showcases/choropleth` | deferred | Retina title size and fixed-aspect right-drag zoom remain. |
-| `showcases/scientific_plotting` | deferred | X-axis clipping remains to inspect/fix. |
-| `showcases/textured_planet` | deferred | Dark-side lighting and zoom limits/sensitivity remain. |
+| `showcases/choropleth` | resolved | Title/subtitle sizes and reserves are larger for Retina readability, and the panzoom controller now keeps aspect during right-drag zoom; `./build/examples/c/showcases/choropleth --png` passed and the PNG was visually checked. |
+| `showcases/scientific_plotting` | resolved | Panel reserves now use fixed pixel margins so bottom x-axes stay inside the panels; `./build/examples/c/showcases/scientific_plotting --png` passed and the PNG was visually checked. |
+| `showcases/textured_planet` | resolved | Material ambient/diffuse settings keep the dark side inspectable, and orbit-camera descriptors now set zoom speed plus min/max distance limits; `./build/examples/c/showcases/textured_planet --png` passed and the PNG was visually checked. |
 | `showcases/wind_field` | resolved | Current showcase uses a fixed probe crosshair and readout card in `examples/c/showcases/wind_field.c`; no ellipsoid pointer remains; compiled. |
 | `visuals/glyph` | resolved | Source/manifest/docs now identify it as a low-level SDF atlas-quad visual distinct from font-shaped text and marker symbols; compiled. |
 | `visuals/segment` | resolved | Shows butt, square, and round caps in `examples/c/visuals/segment.c`; compiled. |

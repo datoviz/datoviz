@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* offscreen_capture - render an offscreen view once and write a PNG.
+/* offscreen_capture - render an exact-pixel offscreen view once and write a PNG.
  *
  * Scenario: feature.offscreen_capture
  * Style: features, native app
@@ -90,11 +90,17 @@ int main(int argc, char** argv)
 
     DvzView* view = dvz_view_offscreen(app, figure, WIDTH, HEIGHT);
     EXAMPLE_CHECK(view != NULL, "dvz_view_offscreen() failed");
+    uint32_t framebuffer_width = 0;
+    uint32_t framebuffer_height = 0;
+    dvz_view_framebuffer_size(view, &framebuffer_width, &framebuffer_height);
+    EXAMPLE_CHECK(
+        framebuffer_width == WIDTH && framebuffer_height == HEIGHT,
+        "offscreen framebuffer size must match requested PNG pixels");
     EXAMPLE_CHECK(
         dvz_view_render_once(view) == DVZ_CANVAS_FRAME_READY, "dvz_view_render_once() failed");
     EXAMPLE_CHECK(dvz_view_capture_png(view, png_path) == 0, "dvz_view_capture_png() failed");
 
-    dvz_fprintf(stdout, "offscreen_capture: wrote %s\n", png_path);
+    dvz_fprintf(stdout, "offscreen_capture: wrote %s (%ux%u exact pixels)\n", png_path, WIDTH, HEIGHT);
     ret = 0;
 
 cleanup:

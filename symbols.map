@@ -1420,6 +1420,7 @@ dvz_view_replay_start
 dvz_view_replay_stop
 dvz_view_request_frame
 dvz_view_resize
+dvz_view_resize_scaled
 dvz_view_set_frame_callback
 dvz_view_set_gui_callback
 dvz_view_set_render_enabled

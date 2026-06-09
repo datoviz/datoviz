@@ -641,8 +641,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     material.light_direction[0] = SUN_DIR_X;
     material.light_direction[1] = SUN_DIR_Y;
     material.light_direction[2] = SUN_DIR_Z;
-    material.phong.ambient = 0.035f;
-    material.phong.diffuse = 1.05f;
+    material.phong.ambient = 0.16f;
+    material.phong.diffuse = 0.92f;
     material.phong.specular = 0.015f;
     material.phong.shininess = 18.0f;
     EXAMPLE_CHECK(
@@ -661,7 +661,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
     dvz_panel_set_background_color(panel, 0.006f, 0.008f, 0.014f, 1.0f);
 
-    DvzController* orbit_controller = dvz_orbit_camera(ctx->scene, NULL);
+    DvzOrbitCameraDesc orbit_desc = dvz_orbit_camera_desc();
+    orbit_desc.min_distance = 1.45f;
+    orbit_desc.max_distance = 7.50f;
+    orbit_desc.zoom_speed = 0.018f;
+    DvzController* orbit_controller = dvz_orbit_camera(ctx->scene, &orbit_desc);
     EXAMPLE_CHECK(orbit_controller != NULL, "dvz_orbit_camera() failed");
     DvzOrbitCamera* orbit = dvz_controller_orbit_camera(orbit_controller);
     EXAMPLE_CHECK(orbit != NULL, "failed to create or bind orbit-camera controller");

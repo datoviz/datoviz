@@ -469,7 +469,7 @@ static bool _configure_panel(DvzPanel* panel, const ChoroplethBundle* bundle)
     example_graphite_cyan_set_panel_background(panel);
     bool ok = dvz_panel_set_layout_reserve(
         panel, &(DvzPanelLayoutReserve){.left = 0.035f, .right = 0.105f, .bottom = 0.045f,
-                                        .top = 0.075f});
+                                        .top = 0.095f});
     if (!ok)
         return false;
 
@@ -640,14 +640,14 @@ static bool _add_annotations(DvzPanel* panel, DvzScale* scale)
     ANN(scale);
 
     if (!_add_screen_text(
-            panel, "Contiguous U.S. state population density", 32.0f, 34.0f, 27.0f,
+            panel, "Contiguous U.S. state population density", 32.0f, 38.0f, 34.0f,
             EXAMPLE_STYLE_COLOR_TEXT))
     {
         return false;
     }
     if (!_add_screen_text(
-            panel, "Census 2024 boundaries + Vintage 2025 population estimates", 32.0f, 66.0f,
-            15.0f, EXAMPLE_STYLE_COLOR_MINOR_TICK))
+            panel, "Census 2024 boundaries + Vintage 2025 population estimates", 32.0f, 76.0f,
+            20.0f, EXAMPLE_STYLE_COLOR_TEXT))
     {
         return false;
     }
@@ -728,7 +728,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!_add_annotations(panel, scale))
         goto fail;
 
-    if (dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY) == NULL)
+    DvzPanzoomDesc panzoom = dvz_panzoom_desc();
+    panzoom.controller_flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
+    if (dvz_scenario_panzoom(ctx, panel, &panzoom, DVZ_DIM_MASK_XY) == NULL)
         goto fail;
 
     dvz_fprintf(

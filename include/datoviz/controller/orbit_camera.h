@@ -48,6 +48,9 @@ struct DvzOrbitCameraDesc
     float height;
     uint32_t controller_flags;
     vec3 pivot;
+    float min_distance;
+    float max_distance;
+    float zoom_speed;
 };
 
 

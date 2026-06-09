@@ -807,6 +807,23 @@ DVZ_EXPORT int dvz_view_resize(DvzView* view, uint32_t width, uint32_t height);
 
 
 /**
+ * Resize a view with distinct logical and framebuffer dimensions.
+ *
+ * This is intended for hosted/offscreen views displayed in a higher-DPI container. The figure uses
+ * logical dimensions while the canvas renders into framebuffer dimensions derived from the device
+ * scale.
+ *
+ * @param view the view
+ * @param logical_width logical width in pixels
+ * @param logical_height logical height in pixels
+ * @param device_scale physical pixels per logical pixel
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_view_resize_scaled(
+    DvzView* view, uint32_t logical_width, uint32_t logical_height, float device_scale);
+
+
+/**
  * Enable or disable rendering for a view.
  *
  * Disabled windows remain owned by the app but dvz_view_render_once() skips them. This is

@@ -17,17 +17,16 @@ float pointDiscDistance()
 
 float pointDiscCoverage(float dist)
 {
-    if (dist <= 0.0)
-        return 1.0;
-    return exp(-dist * dist);
+    float aa = max(fwidth(dist), 1e-6);
+    return 1.0 - smoothstep(-aa, aa, dist);
 }
 
 void main()
 {
     float dist = pointDiscDistance();
-    float aa = 1.0;
+    float aa = max(fwidth(dist), 1e-6);
     float outer = pointDiscCoverage(dist);
-    if (outer < 0.05)
+    if (outer <= 0.0)
         discard;
 
     float lineWidth = max(material.params.x, 0.0);
@@ -39,7 +38,7 @@ void main()
     float fillMask = filled ? 1.0 - edgeMix : 0.0;
     float strokeMask = stroke ? edgeMix : 0.0;
     float coverage = outer * max(fillMask, strokeMask);
-    if (coverage < 0.05)
+    if (coverage <= 0.0)
         discard;
 
     vec4 edgeColor = material.baseColorFactor;

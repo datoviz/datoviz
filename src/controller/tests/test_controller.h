@@ -26,13 +26,19 @@
 
 int test_controller_panzoom_create(TstContext* suite, const TstCase* item);
 
+int test_controller_panzoom_keep_aspect_drag(TstContext* suite, const TstCase* item);
+
 int test_controller_arcball_create(TstContext* suite, const TstCase* item);
 
 int test_controller_camera_create(TstContext* suite, const TstCase* item);
 
 int test_controller_fly_create(TstContext* suite, const TstCase* item);
 
+int test_controller_fly_z_up_lookat_drag(TstContext* suite, const TstCase* item);
+
 int test_controller_turntable_create(TstContext* suite, const TstCase* item);
+
+int test_controller_orbit_camera_zoom_limits(TstContext* suite, const TstCase* item);
 
 int test_controller_desc_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item);
 

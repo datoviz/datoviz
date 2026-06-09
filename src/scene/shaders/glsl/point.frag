@@ -18,16 +18,15 @@ float pointDiscDistance()
 
 float pointDiscCoverage(float dist)
 {
-    if (dist <= 0.0)
-        return 1.0;
-    return exp(-dist * dist);
+    float aa = max(fwidth(dist), 1e-6);
+    return 1.0 - smoothstep(-aa, aa, dist);
 }
 
 void main()
 {
     float dist = pointDiscDistance();
     float alpha = pointDiscCoverage(dist);
-    if (alpha < 0.05)
+    if (alpha <= 0.0)
         discard;
     outColor = vec4(fragColor.rgb, fragColor.a * alpha);
 #ifdef DVZ_SCENE_OCCLUSION

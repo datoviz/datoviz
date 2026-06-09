@@ -17,6 +17,7 @@
 #include "datoviz/gui.h"
 #include "_gui.h"
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -132,6 +133,8 @@ struct DvzGuiViewport
     VkExtent2D extent;
     uint32_t requested_width;
     uint32_t requested_height;
+    uint32_t requested_framebuffer_width;
+    uint32_t requested_framebuffer_height;
     uint32_t pending_width;
     uint32_t pending_height;
     uint32_t pending_stable_frames;
@@ -289,6 +292,29 @@ static uint32_t _gui_viewport_dimension(float value, uint32_t minimum, uint32_t 
 }
 
 
+
+static uint32_t _gui_viewport_scale_dimension(uint32_t value, float scale)
+{
+    if (value == 0)
+        return 0;
+    if (scale <= 0.0f || !isfinite(scale))
+        scale = 1.0f;
+    uint32_t out = (uint32_t)roundf((float)value * scale);
+    return out > 0 ? out : 1u;
+}
+
+
+
+static float _gui_viewport_device_scale(const DvzGuiViewport* viewport)
+{
+    ANN(viewport);
+    if (viewport->gui != NULL && viewport->gui->view != NULL)
+        return dvz_view_device_scale(viewport->gui->view);
+    return 1.0f;
+}
+
+
+
 /**
  * Return a GUI viewport configuration with zero fields replaced by defaults.
  *
@@ -389,7 +415,7 @@ static DvzKeyboardEventType _gui_key_event_type(int action)
  * Update whether the source view should render.
  *
  * @param viewport GUI viewport
- * @param visible whether the viewport image was visible this frame
+ * @param visible whether the viewport window was visible this frame
  */
 static void _gui_viewport_set_visible(DvzGuiViewport* viewport, bool visible)
 {
@@ -639,12 +665,22 @@ static int _gui_viewport_live_image_callback(
 static void _gui_viewport_resize_source(DvzGuiViewport* viewport, uint32_t width, uint32_t height)
 {
     ANN(viewport);
-    if (viewport->requested_width == width && viewport->requested_height == height)
+    float scale = _gui_viewport_device_scale(viewport);
+    uint32_t framebuffer_width = _gui_viewport_scale_dimension(width, scale);
+    uint32_t framebuffer_height = _gui_viewport_scale_dimension(height, scale);
+    if (
+        viewport->requested_width == width && viewport->requested_height == height &&
+        viewport->requested_framebuffer_width == framebuffer_width &&
+        viewport->requested_framebuffer_height == framebuffer_height)
+    {
         return;
-    if (dvz_view_resize(viewport->source, width, height) != 0)
+    }
+    if (dvz_view_resize_scaled(viewport->source, width, height, scale) != 0)
         return;
     viewport->requested_width = width;
     viewport->requested_height = height;
+    viewport->requested_framebuffer_width = framebuffer_width;
+    viewport->requested_framebuffer_height = framebuffer_height;
     if (viewport->canvas != NULL)
     {
         DvzCanvasLiveImageSinkConfig cfg = dvz_canvas_live_image_sink_config();
@@ -1938,6 +1974,9 @@ static DvzGuiViewport* _gui_viewport_from_window(
     viewport->config = _gui_viewport_config_normalize(config);
     viewport->owns_source = owns_source;
     viewport->texture_dirty = true;
+    dvz_view_logical_size(source, &viewport->requested_width, &viewport->requested_height);
+    dvz_view_framebuffer_size(
+        source, &viewport->requested_framebuffer_width, &viewport->requested_framebuffer_height);
     if (!_gui_viewport_create_sampler(viewport))
     {
         dvz_free(viewport);
@@ -1978,8 +2017,14 @@ dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* con
         return NULL;
 
     DvzGuiViewportConfig cfg = _gui_viewport_config_normalize(config);
-    DvzView* source =
-        dvz_view_offscreen(gui->app, figure, cfg.initial_width, cfg.initial_height);
+    float scale = gui->view != NULL ? dvz_view_device_scale(gui->view) : 1.0f;
+    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
+    desc.logical_width = cfg.initial_width;
+    desc.logical_height = cfg.initial_height;
+    desc.framebuffer_width = _gui_viewport_scale_dimension(cfg.initial_width, scale);
+    desc.framebuffer_height = _gui_viewport_scale_dimension(cfg.initial_height, scale);
+    desc.device_scale = scale;
+    DvzView* source = dvz_view(gui->app, figure, &desc);
     if (source == NULL)
         return NULL;
 
@@ -2088,8 +2133,10 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
     _gui_set_current(gui);
 
     bool shown = false;
+    bool window_visible = false;
     if (ImGui::Begin(title, open, flags))
     {
+        window_visible = true;
         ImVec2 avail = ImGui::GetContentRegionAvail();
         /* Repair stale saved layouts that collapsed the hosted source below its minimum size. */
         if (
@@ -2116,7 +2163,13 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
         if (width > 0 && height > 0)
             _gui_viewport_request_resize(viewport, width, height);
 
-        if (_gui_viewport_ensure_texture(viewport))
+        bool frame_matches_request =
+            viewport->requested_framebuffer_width == 0 ||
+            viewport->requested_framebuffer_height == 0 ||
+            (viewport->extent.width == viewport->requested_framebuffer_width &&
+             viewport->extent.height == viewport->requested_framebuffer_height);
+
+        if (_gui_viewport_ensure_texture(viewport) && frame_matches_request)
         {
             ImVec2 image_min = ImGui::GetCursorScreenPos();
             ImVec2 image_max = ImVec2(image_min.x + avail.x, image_min.y + avail.y);
@@ -2139,6 +2192,6 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
         }
     }
     ImGui::End();
-    _gui_viewport_set_visible(viewport, shown);
+    _gui_viewport_set_visible(viewport, window_visible);
     return shown;
 }
