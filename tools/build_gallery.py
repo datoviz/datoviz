@@ -150,6 +150,12 @@ class Example:
         return str(self.webgpu.get("route", ""))
 
     @property
+    def webgpu_site_route(self) -> str:
+        if not self.webgpu_route:
+            return ""
+        return f"/{self.webgpu_route}"
+
+    @property
     def webgpu_requirements(self) -> tuple[str, ...]:
         requirements = self.webgpu.get("requirements") or ()
         return tuple(str(requirement) for requirement in requirements)
@@ -293,6 +299,22 @@ def render_source_tabs(example: Example) -> list[str]:
         lines.extend(["    ```", ""])
 
     return lines
+
+
+def render_webgpu_live(example: Example) -> list[str]:
+    if example.webgpu_status != "webgpu-live" or not example.webgpu_site_route:
+        return []
+    return [
+        "## Live WebGPU",
+        "",
+        '<div class="dvz-webgpu-live" markdown="1">',
+        f'<iframe src="{example.webgpu_site_route}" title="{example.title} WebGPU live example" '
+        'loading="lazy" allow="fullscreen; webgpu"></iframe>',
+        "</div>",
+        "",
+        f"[Open the live WebGPU example]({example.webgpu_site_route}).",
+        "",
+    ]
 
 
 def render_card(example: Example, docs_dir: Path, image_dir: Path) -> str:
@@ -541,7 +563,7 @@ def render_webgpu_matrix(examples: list[Example], docs_dir: Path) -> None:
     for example in classified:
         requirements = ", ".join(f"`{requirement}`" for requirement in example.webgpu_requirements)
         route = (
-            f"[`{example.webgpu_route}`](../../{example.webgpu_route})"
+            f"[`{example.webgpu_route}`]({example.webgpu_site_route})"
             if example.webgpu_route
             else ""
         )
@@ -573,7 +595,7 @@ def render_example_page(example: Example, docs_dir: Path, image_dir: Path) -> No
         metadata.append(f"- WebGPU status: `{example.webgpu_status}`")
         if example.webgpu_route:
             metadata.append(
-                f"- WebGPU live route: [`{example.webgpu_route}`](../../../../{example.webgpu_route})"
+                f"- WebGPU live route: [`{example.webgpu_route}`]({example.webgpu_site_route})"
             )
         if example.webgpu_requirements:
             requirements = ", ".join(f"`{requirement}`" for requirement in example.webgpu_requirements)
@@ -614,6 +636,7 @@ def render_example_page(example: Example, docs_dir: Path, image_dir: Path) -> No
             "",
         ]
     )
+    lines.extend(render_webgpu_live(example))
     lines.extend(render_source_tabs(example))
     write_text(docs_dir / example.page_path, "\n".join(lines))
 

@@ -11,7 +11,7 @@ unified retained marker hover and selection proof.
 - Source: [`examples/c/features/picking.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/picking.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=feature_picking`](../../../../examples/webgpu/live.html?id=feature_picking)
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_picking`](/examples/webgpu/live.html?id=feature_picking)
 - WebGPU requirements: `marker`, `panzoom`, `query-readback`, `frame-callbacks`
 - Build: `just example-c features/picking`
 - Smoke: `./build/examples/c/features/picking --png`
@@ -29,6 +29,14 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=feature_picking" title="Picking WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_picking).
 
 ## Source
 

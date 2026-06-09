@@ -5,12 +5,14 @@
 
 import ast
 import os
+import shutil
 from pathlib import Path
 
 # Constants
 # -------------------------------------------------------------------------------------------------
 
 CURDIR = Path(__file__).parent
+ROOT = CURDIR.parent
 ROOT_DOCS = ('ARCHITECTURE', 'BUILD', 'CONTRIBUTING', 'MAINTAINERS')
 
 
@@ -64,6 +66,25 @@ def remove_example_docstrings():
                 f.write('\n'.join(lines).lstrip() + '\n')
 
 
+def copy_tree_if_exists(src, dst):
+    src_path = ROOT / src
+    dst_path = Path(dst)
+    if not src_path.exists():
+        print(f"mkdocs: skipping missing WebGPU asset source {src_path}")
+        return
+    if dst_path.exists():
+        shutil.rmtree(dst_path)
+    shutil.copytree(src_path, dst_path)
+
+
+def copy_webgpu_live_assets(site_dir):
+    site = Path(site_dir)
+    copy_tree_if_exists('examples/webgpu', site / 'examples/webgpu')
+    copy_tree_if_exists('web/wasm', site / 'web/wasm')
+    copy_tree_if_exists('web/drp2', site / 'web/drp2')
+    copy_tree_if_exists('build-wasm-scene/wasm', site / 'build-wasm-scene/wasm')
+
+
 # Hooks
 # -------------------------------------------------------------------------------------------------
 
@@ -83,3 +104,7 @@ def on_page_markdown(markdown, page, config, files):
 def on_pre_build(**kwargs):
     # build_gallery()
     remove_example_docstrings()
+
+
+def on_post_build(config, **kwargs):
+    copy_webgpu_live_assets(config['site_dir'])

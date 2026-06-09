@@ -91,3 +91,24 @@ img[alt^="cap_"] {
 img[alt*=gpuopen] {
     width: 512px;
 }
+
+.dvz-webgpu-live {
+    width: 100%;
+    margin: 1rem 0;
+    border: 1px solid rgba(76, 201, 240, 0.22);
+    background: #05070a;
+}
+
+.dvz-webgpu-live iframe {
+    display: block;
+    width: 100%;
+    min-height: 520px;
+    border: 0;
+    background: #05070a;
+}
+
+@media screen and (max-width: 760px) {
+    .dvz-webgpu-live iframe {
+        min-height: 420px;
+    }
+}
