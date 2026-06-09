@@ -75,6 +75,14 @@ int test_geometry_descriptor_abi(TstContext* suite, const TstCase* tstitem)
     grid.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_surface_grid(&grid) == NULL);
 
+    DvzGeometryDiscDesc disc = dvz_geometry_disc_desc();
+    disc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_disc(&disc) == NULL);
+
+    DvzGeometryTorusDesc torus = dvz_geometry_torus_desc();
+    torus.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_torus(&torus) == NULL);
+
     const dvec2 xy[3] = {{0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}};
     DvzPolygonDesc polygon = dvz_polygon_desc();
     polygon.outer.xy = xy;
@@ -349,6 +357,88 @@ int test_geometry_sphere(TstContext* suite, const TstCase* tstitem)
            DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc), .radius = -1.0}) == NULL);
 
     dvz_geometry_destroy(sphere);
+    return 0;
+}
+
+
+
+int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    (void)tstitem;
+
+    DvzGeometry* disc = dvz_geom_disc(&(DvzGeometryDiscDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryDiscDesc), .radius = 1.0, .segments = 8});
+    AT(disc != NULL);
+    AT(disc->vertex_count == 9);
+    AT(disc->index_count == 24);
+    AT(disc->flags & DVZ_GEOMETRY_INDEXING_TRIANGLES);
+    dvz_geometry_destroy(disc);
+
+    DvzGeometry* sector = dvz_geom_sector(&(DvzGeometrySectorDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySectorDesc), .radius = 1.0, .sweep_angle = M_PI,
+        .segments = 4});
+    AT(sector != NULL);
+    AT(sector->vertex_count == 6);
+    AT(sector->index_count == 12);
+    dvz_geometry_destroy(sector);
+
+    DvzGeometry* polygon = dvz_geom_regular_polygon(&(DvzGeometryRegularPolygonDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryRegularPolygonDesc), .radius = 1.0, .sides = 5});
+    AT(polygon != NULL);
+    AT(polygon->vertex_count == 6);
+    AT(polygon->index_count == 15);
+    dvz_geometry_destroy(polygon);
+
+    DvzGeometry* star = dvz_geom_star(&(DvzGeometryStarDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryStarDesc), .outer_radius = 1.0, .inner_radius = 0.4,
+        .points = 5});
+    AT(star != NULL);
+    AT(star->vertex_count == 11);
+    AT(star->index_count == 30);
+    dvz_geometry_destroy(star);
+
+    DvzGeometry* cylinder = dvz_geom_cylinder(&(DvzGeometryCylinderDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryCylinderDesc), .radius = 1.0, .height = 2.0,
+        .sectors = 8});
+    AT(cylinder != NULL);
+    AT(cylinder->type == DVZ_GEOMETRY_CYLINDER);
+    AT(cylinder->vertex_count == 38);
+    AT(cylinder->index_count == 96);
+    dvz_geometry_destroy(cylinder);
+
+    DvzGeometry* cone = dvz_geom_cone(&(DvzGeometryConeDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryConeDesc), .radius = 1.0, .height = 2.0, .sectors = 8});
+    AT(cone != NULL);
+    AT(cone->type == DVZ_GEOMETRY_CONE);
+    AT(cone->vertex_count == 34);
+    AT(cone->index_count == 48);
+    dvz_geometry_destroy(cone);
+
+    DvzGeometry* torus = dvz_geom_torus(&(DvzGeometryTorusDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryTorusDesc), .major_radius = 1.0, .minor_radius = 0.2,
+        .rings = 8, .sectors = 6});
+    AT(torus != NULL);
+    AT(torus->type == DVZ_GEOMETRY_TORUS);
+    AT(torus->vertex_count == 63);
+    AT(torus->index_count == 288);
+    dvz_geometry_destroy(torus);
+
+    DvzGeometry* arrow = dvz_geom_arrow(&(DvzGeometryArrowDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryArrowDesc), .length = 2.0, .shaft_radius = 0.1,
+        .head_radius = 0.28, .head_length = 0.55, .sectors = 8});
+    AT(arrow != NULL);
+    AT(arrow->type == DVZ_GEOMETRY_ARROW);
+    AT(arrow->vertex_count == 72);
+    AT(arrow->index_count == 144);
+    dvz_geometry_destroy(arrow);
+
+    AT(dvz_geom_disc(&(DvzGeometryDiscDesc){
+           DVZ_STRUCT_INIT_FIELDS(DvzGeometryDiscDesc), .radius = 1.0, .segments = 2}) == NULL);
+    AT(dvz_geom_arrow(&(DvzGeometryArrowDesc){
+           DVZ_STRUCT_INIT_FIELDS(DvzGeometryArrowDesc), .length = 1.0, .shaft_radius = 0.1,
+           .head_radius = 0.2, .head_length = 1.0, .sectors = 8}) == NULL);
+
     return 0;
 }
 
@@ -736,6 +826,7 @@ int test_geom(TstSuite* suite)
     TST_CASE(test_geometry_surface_grid);
     TST_CASE(test_geometry_surface_grid_update);
     TST_CASE(test_geometry_sphere);
+    TST_CASE(test_geometry_builtin_shapes);
     TST_CASE(test_geometry_transform);
     TST_CASE(test_geometry_merge);
     TST_CASE(test_geometry_edges);

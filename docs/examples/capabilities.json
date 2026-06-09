@@ -3,21 +3,21 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 90,
+  "example_count": 92,
   "categories": {
     "composite": 2,
-    "feature": 62,
+    "feature": 64,
     "showcase": 11,
     "visual": 15
   },
   "statuses": {
     "experimental": 8,
     "prototype": 1,
-    "supported": 81
+    "supported": 83
   },
   "agent_copy_safe": {
     "false": 20,
-    "true": 70
+    "true": 72
   },
   "capabilities": {
     "composites": {
@@ -121,7 +121,7 @@
         ]
       },
       "synthetic": {
-        "count": 84,
+        "count": 86,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -673,6 +673,24 @@
             "page": "gallery/features/feature_isolines.md"
           },
           {
+            "id": "feature_builtin_shapes_2d",
+            "title": "Builtin Shapes 2D",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/builtin_shapes_2d.c",
+            "page": "gallery/features/feature_builtin_shapes_2d.md"
+          },
+          {
+            "id": "feature_builtin_shapes_3d",
+            "title": "Builtin Shapes 3D",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/builtin_shapes_3d.c",
+            "page": "gallery/features/feature_builtin_shapes_3d.md"
+          },
+          {
             "id": "feature_probe_labels",
             "title": "Label Probe",
             "category": "feature",
@@ -992,6 +1010,34 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/bezier_curve_path.c",
             "page": "gallery/features/feature_bezier_curve_path.md"
+          }
+        ]
+      },
+      "builtin-shapes-2d": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_builtin_shapes_2d",
+            "title": "Builtin Shapes 2D",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/builtin_shapes_2d.c",
+            "page": "gallery/features/feature_builtin_shapes_2d.md"
+          }
+        ]
+      },
+      "builtin-shapes-3d": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_builtin_shapes_3d",
+            "title": "Builtin Shapes 3D",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/builtin_shapes_3d.c",
+            "page": "gallery/features/feature_builtin_shapes_3d.md"
           }
         ]
       },

@@ -38,6 +38,8 @@ int test_geometry_surface_grid_update(TstContext* suite, const TstCase* tstitem)
 
 int test_geometry_sphere(TstContext* suite, const TstCase* tstitem);
 
+int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem);
+
 int test_geometry_transform(TstContext* suite, const TstCase* tstitem);
 
 int test_geometry_merge(TstContext* suite, const TstCase* tstitem);

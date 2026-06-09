@@ -236,6 +236,142 @@ DVZ_EXPORT int
 dvz_geom_surface_grid_update_heights(DvzGeometry* geometry, const double* heights, uint32_t count);
 
 
+/**
+ * Return a default disc geometry descriptor.
+ *
+ * @return initialized disc descriptor
+ */
+DVZ_EXPORT DvzGeometryDiscDesc dvz_geometry_disc_desc(void);
+
+
+/**
+ * Create an indexed XY disc geometry.
+ *
+ * @param desc optional disc descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DVZ_EXPORT DvzGeometry* dvz_geom_disc(const DvzGeometryDiscDesc* desc);
+
+
+/**
+ * Return a default sector geometry descriptor.
+ *
+ * @return initialized sector descriptor
+ */
+DVZ_EXPORT DvzGeometrySectorDesc dvz_geometry_sector_desc(void);
+
+
+/**
+ * Create an indexed XY sector geometry.
+ *
+ * @param desc optional sector descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DVZ_EXPORT DvzGeometry* dvz_geom_sector(const DvzGeometrySectorDesc* desc);
+
+
+/**
+ * Return a default regular-polygon geometry descriptor.
+ *
+ * @return initialized regular-polygon descriptor
+ */
+DVZ_EXPORT DvzGeometryRegularPolygonDesc dvz_geometry_regular_polygon_desc(void);
+
+
+/**
+ * Create an indexed XY regular-polygon geometry.
+ *
+ * @param desc optional regular-polygon descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DVZ_EXPORT DvzGeometry* dvz_geom_regular_polygon(const DvzGeometryRegularPolygonDesc* desc);
+
+
+/**
+ * Return a default star geometry descriptor.
+ *
+ * @return initialized star descriptor
+ */
+DVZ_EXPORT DvzGeometryStarDesc dvz_geometry_star_desc(void);
+
+
+/**
+ * Create an indexed XY star geometry.
+ *
+ * @param desc optional star descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DVZ_EXPORT DvzGeometry* dvz_geom_star(const DvzGeometryStarDesc* desc);
+
+
+/**
+ * Return a default cylinder geometry descriptor.
+ *
+ * @return initialized cylinder descriptor
+ */
+DVZ_EXPORT DvzGeometryCylinderDesc dvz_geometry_cylinder_desc(void);
+
+
+/**
+ * Create an indexed Z-axis cylinder geometry.
+ *
+ * @param desc optional cylinder descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DVZ_EXPORT DvzGeometry* dvz_geom_cylinder(const DvzGeometryCylinderDesc* desc);
+
+
+/**
+ * Return a default cone geometry descriptor.
+ *
+ * @return initialized cone descriptor
+ */
+DVZ_EXPORT DvzGeometryConeDesc dvz_geometry_cone_desc(void);
+
+
+/**
+ * Create an indexed Z-axis cone geometry.
+ *
+ * @param desc optional cone descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DVZ_EXPORT DvzGeometry* dvz_geom_cone(const DvzGeometryConeDesc* desc);
+
+
+/**
+ * Return a default torus geometry descriptor.
+ *
+ * @return initialized torus descriptor
+ */
+DVZ_EXPORT DvzGeometryTorusDesc dvz_geometry_torus_desc(void);
+
+
+/**
+ * Create an indexed torus geometry around the Z axis.
+ *
+ * @param desc optional torus descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DVZ_EXPORT DvzGeometry* dvz_geom_torus(const DvzGeometryTorusDesc* desc);
+
+
+/**
+ * Return a default arrow geometry descriptor.
+ *
+ * @return initialized arrow descriptor
+ */
+DVZ_EXPORT DvzGeometryArrowDesc dvz_geometry_arrow_desc(void);
+
+
+/**
+ * Create an indexed Z-axis arrow geometry.
+ *
+ * @param desc optional arrow descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DVZ_EXPORT DvzGeometry* dvz_geom_arrow(const DvzGeometryArrowDesc* desc);
+
+
 
 /**
  * Return a default polygon descriptor.

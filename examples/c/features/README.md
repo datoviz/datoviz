@@ -41,6 +41,8 @@ techniques.
 - `bezier_curve_path.c`: CPU-tessellated Bezier curves rendered through retained paths.
 - `triangulation_polygon.c`: CPU polygon triangulation with derived mesh-edge overlays.
 - `isolines.c`: CPU contour extraction rendered as retained segment overlays.
+- `builtin_shapes_2d.c`: builtin 2D geometry builders rendered as retained meshes.
+- `builtin_shapes_3d.c`: builtin 3D geometry builders rendered as retained meshes.
 - `datetime_axis.c`: compact data coordinates with UTC datetime tick labels.
 - `scalebar.c`: retained metric scale bar using builtin length units.
 - `scalebar_units.c`: retained duration scale bar using builtin duration units.

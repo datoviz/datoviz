@@ -5,7 +5,7 @@
 This page indexes focused C examples for public scene, layout, adornment, interaction,
 update, rendering-technique, and appearance features.
 
-Coverage: 62 examples (57 supported, 5 experimental).
+Coverage: 64 examples (59 supported, 5 experimental).
 
 ## Features
 
@@ -128,6 +128,30 @@ _Media pending._
 `supported` `features`
 
 tessellated cubic Bezier curve rendered as a retained path.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Builtin Shapes 2D](gallery/features/feature_builtin_shapes_2d.md)
+
+_Media pending._
+
+`supported` `features`
+
+builtin 2D geometry builders rendered through retained meshes.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Builtin Shapes 3D](gallery/features/feature_builtin_shapes_3d.md)
+
+_Media pending._
+
+`supported` `features`
+
+builtin 3D geometry builders rendered through retained meshes.
 
 </div>
 

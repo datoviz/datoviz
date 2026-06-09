@@ -14,7 +14,7 @@ keeps media status explicit while capture artifacts are prepared separately.
 | Category | Examples | Use |
 | --- | ---: | --- |
 | [Visual gallery](visual-gallery.md) | 15 | One public visual family per example. |
-| [Feature gallery](feature-gallery.md) | 62 | One isolated feature or technique per example. |
+| [Feature gallery](feature-gallery.md) | 64 | One isolated feature or technique per example. |
 | [Composites](composites.md) | 2 | One semantic object lowering to one or more visuals per example. |
 | [Showcases](showcases.md) | 11 | Composed workflows, scientific stories, real-data examples, and polished demos. |
 
@@ -23,11 +23,11 @@ keeps media status explicit while capture artifacts are prepared separately.
 | Section | Examples | Status |
 | --- | ---: | --- |
 | [Visual gallery](visual-gallery.md) | 15 | 13 supported, 2 experimental |
-| [Feature gallery](feature-gallery.md) | 62 | 57 supported, 5 experimental |
+| [Feature gallery](feature-gallery.md) | 64 | 59 supported, 5 experimental |
 | [Composites](composites.md) | 2 | 2 supported |
 | [Showcases](showcases.md) | 11 | 9 supported, 1 experimental, 1 prototype |
 | [Techniques](techniques.md) | 7 | Rendering and compute behavior coverage |
-| [Validation gallery](validation-gallery.md) | 90 | Release evidence checklist |
+| [Validation gallery](validation-gallery.md) | 92 | Release evidence checklist |
 
 ## Current Source Lanes
 
@@ -42,6 +42,6 @@ starting points by example or capability.
 | Lane | Source directory | Examples |
 | --- | --- | ---: |
 | Visuals | `examples/c/visuals/` | 15 |
-| Features | `examples/c/features/` | 62 |
+| Features | `examples/c/features/` | 64 |
 | Composites | `examples/c/composites/` | 2 |
 | Showcases | `examples/c/showcases/` | 11 |

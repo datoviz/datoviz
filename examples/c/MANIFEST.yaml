@@ -960,6 +960,42 @@ examples:
         - controller
     agent_copy_safe: true
 
+  - id: feature_builtin_shapes_2d
+    title: Builtin Shapes 2D
+    stage: v0.4_required
+    category: feature
+    primary_feature: builtin-shapes-2d
+    lane: features
+    source: examples/c/features/builtin_shapes_2d.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - mesh
+        - controller
+    agent_copy_safe: true
+
+  - id: feature_builtin_shapes_3d
+    title: Builtin Shapes 3D
+    stage: v0.4_required
+    category: feature
+    primary_feature: builtin-shapes-3d
+    lane: features
+    source: examples/c/features/builtin_shapes_3d.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - mesh
+        - controller
+    agent_copy_safe: true
+
   - id: feature_probe_labels
     title: Label Probe
     stage: v0.4_required

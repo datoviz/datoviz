@@ -264,14 +264,15 @@ Recommended examples:
 
 - `examples/c/features/builtin_shapes_2d.c`: square/rectangle, disc, sector, regular polygon,
   star, and polygon with a hole.
-- `examples/c/features/builtin_shapes_3d.c`: cube, UV sphere, cylinder, cone, torus, arrow/gizmo,
-  and Platonic solids.
+- `examples/c/features/builtin_shapes_3d.c`: cube, UV sphere, cylinder, cone, torus, and arrow.
+  Keep full gizmo axes and Platonic solids planned unless they can be added cleanly.
 
 v0.3 exposed a broad shape family: square, disc, sector, histogram, polygon, surface, cube, sphere,
 cylinder, cone, arrow, gizmo, torus, tetrahedron, hexahedron/cube, octahedron, dodecahedron,
-icosahedron, OBJ, and custom shapes. v0.4 currently has cube, plane, UV sphere, surface grid,
-polygon triangulation, contour extraction, and Bezier tessellation. The parity decision is to add
-the common 2D and 3D primitives if they fit cleanly in `geom`; avoid reintroducing v0.3 API names
+icosahedron, OBJ, and custom shapes. v0.4 currently has cube, plane/rectangle, disc, sector,
+regular polygon, star, UV sphere, cylinder, cone, torus, arrow, surface grid, polygon triangulation,
+contour extraction, and Bezier tessellation. Full gizmo axes, classic polyhedra, histogram helpers,
+and custom-shape compatibility remain planned or out of scope; avoid reintroducing v0.3 API names
 solely for compatibility.
 
 

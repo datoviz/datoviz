@@ -6,9 +6,10 @@ find a scenario quickly; use [PLANNING.md](PLANNING.md) for staging decisions an
 As of 2026-06-05, the public C manifest has runnable `v0.4 required` entries for
 `point_2d`, `path_axes_2d`, `linked_panels_axes_panzoom`, `scale_bar`, `scalebar_units`,
 `scalebar_measurement_workflow`, `colorbar`, `annotation_readout`, `image_probe`,
-`feature_picking`, `feature_triangulation_polygon`, `feature_isolines`, `sphere_impostor`,
-`volume`, `composite_polygon`, `composite_graph`, `protein_arcball_viewer`,
-`showcase_wind_field`, `showcase_gpu_particle_smoke`,
+`feature_picking`, `feature_triangulation_polygon`, `feature_isolines`,
+`feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `sphere_impostor`, `volume`,
+`composite_polygon`, `composite_graph`, `protein_arcball_viewer`, `showcase_wind_field`,
+`showcase_gpu_particle_smoke`,
 `textured_terrain_or_planet`, `brain_volume`, `point_cloud`, `us_state_choropleth`, and
 `linked_panels_probe_colorbar`.
 
@@ -21,6 +22,8 @@ As of 2026-06-05, the public C manifest has runnable `v0.4 required` entries for
 | `feature_picking` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
 | `feature_triangulation_polygon` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
 | `feature_isolines` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `feature_builtin_shapes_2d` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `feature_builtin_shapes_3d` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
 | `sphere_impostor` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
 | `volume` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
 | `scale_bar` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |

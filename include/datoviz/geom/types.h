@@ -33,6 +33,14 @@ typedef struct DvzGeometryCubeDesc DvzGeometryCubeDesc;
 typedef struct DvzGeometryPlaneDesc DvzGeometryPlaneDesc;
 typedef struct DvzGeometrySphereDesc DvzGeometrySphereDesc;
 typedef struct DvzGeometrySurfaceGridDesc DvzGeometrySurfaceGridDesc;
+typedef struct DvzGeometryDiscDesc DvzGeometryDiscDesc;
+typedef struct DvzGeometrySectorDesc DvzGeometrySectorDesc;
+typedef struct DvzGeometryRegularPolygonDesc DvzGeometryRegularPolygonDesc;
+typedef struct DvzGeometryStarDesc DvzGeometryStarDesc;
+typedef struct DvzGeometryCylinderDesc DvzGeometryCylinderDesc;
+typedef struct DvzGeometryConeDesc DvzGeometryConeDesc;
+typedef struct DvzGeometryTorusDesc DvzGeometryTorusDesc;
+typedef struct DvzGeometryArrowDesc DvzGeometryArrowDesc;
 typedef struct DvzPolygonRing DvzPolygonRing;
 typedef struct DvzPolygonDesc DvzPolygonDesc;
 typedef struct DvzTriangulationDesc DvzTriangulationDesc;
@@ -137,6 +145,112 @@ struct DvzGeometrySurfaceGridDesc
 
     double height_scale; // multiplier applied to heights, defaults to 1
     DvzColor color;      // fallback vertex color, defaults to opaque white
+};
+
+
+
+struct DvzGeometryDiscDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;      // disc center
+    double radius;     // disc radius
+    uint32_t segments; // perimeter segment count, defaults to 48
+    DvzColor color;    // vertex color, defaults to opaque white when all channels are zero
+};
+
+
+
+struct DvzGeometrySectorDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;       // sector center
+    double radius;      // sector radius
+    double start_angle; // start angle in radians
+    double sweep_angle; // angular span in radians, defaults to 90 degrees
+    uint32_t segments;  // arc segment count, defaults to 32
+    DvzColor color;     // vertex color, defaults to opaque white when all channels are zero
+};
+
+
+
+struct DvzGeometryRegularPolygonDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;   // polygon center
+    double radius;  // circumradius
+    uint32_t sides; // side count, defaults to 6
+    DvzColor color; // vertex color, defaults to opaque white when all channels are zero
+};
+
+
+
+struct DvzGeometryStarDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;        // star center
+    double outer_radius; // outer vertex radius
+    double inner_radius; // inner vertex radius
+    uint32_t points;     // number of star points, defaults to 5
+    DvzColor color;      // vertex color, defaults to opaque white when all channels are zero
+};
+
+
+
+struct DvzGeometryCylinderDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;      // cylinder center
+    double radius;     // cylinder radius
+    double height;     // cylinder height along Z
+    uint32_t sectors;  // radial segment count, defaults to 32
+    DvzColor color;    // vertex color, defaults to opaque white when all channels are zero
+};
+
+
+
+struct DvzGeometryConeDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;     // cone center
+    double radius;    // base radius
+    double height;    // cone height along Z
+    uint32_t sectors; // radial segment count, defaults to 32
+    DvzColor color;   // vertex color, defaults to opaque white when all channels are zero
+};
+
+
+
+struct DvzGeometryTorusDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;        // torus center
+    double major_radius; // distance from center to tube center
+    double minor_radius; // tube radius
+    uint32_t rings;      // major-ring segment count, defaults to 32
+    uint32_t sectors;    // tube segment count, defaults to 16
+    DvzColor color;      // vertex color, defaults to opaque white when all channels are zero
+};
+
+
+
+struct DvzGeometryArrowDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;        // arrow center
+    double length;       // total length along Z
+    double shaft_radius; // shaft cylinder radius
+    double head_radius;  // cone head radius
+    double head_length;  // cone head length
+    uint32_t sectors;    // radial segment count, defaults to 32
+    DvzColor color;      // vertex color, defaults to opaque white when all channels are zero
 };
 
 

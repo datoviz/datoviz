@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Public C examples in manifest: 90
-- Examples declaring screenshot validation: 79
+- Public C examples in manifest: 92
+- Examples declaring screenshot validation: 81
 - Examples that should have video or motion evidence: 5
 
 ## Commands
@@ -79,6 +79,8 @@ Screenshot and video capture should be run separately from documentation generat
 | [Image Probe](gallery/features/image_probe.md) | [`examples/c/features/image_probe.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/image_probe.c) | `supported` | `smoke+readback+screenshot` |
 | [Polygon Triangulation](gallery/features/feature_triangulation_polygon.md) | [`examples/c/features/triangulation_polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/triangulation_polygon.c) | `supported` | `smoke+screenshot` |
 | [Isolines](gallery/features/feature_isolines.md) | [`examples/c/features/isolines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/isolines.c) | `supported` | `smoke+screenshot` |
+| [Builtin Shapes 2D](gallery/features/feature_builtin_shapes_2d.md) | [`examples/c/features/builtin_shapes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_2d.c) | `supported` | `smoke+screenshot` |
+| [Builtin Shapes 3D](gallery/features/feature_builtin_shapes_3d.md) | [`examples/c/features/builtin_shapes_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_3d.c) | `supported` | `smoke+screenshot` |
 | [Label Probe](gallery/features/feature_probe_labels.md) | [`examples/c/features/probe_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c) | `supported` | `smoke+readback+screenshot` |
 | [Timer Animation](gallery/features/feature_timer_animation.md) | [`examples/c/features/timer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/timer_animation.c) | `supported` | `smoke+screenshot` |
 | [Marker Symbols](gallery/features/feature_marker_symbols.md) | [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c) | `supported` | `smoke+screenshot` |

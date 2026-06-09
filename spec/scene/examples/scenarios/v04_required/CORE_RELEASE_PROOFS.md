@@ -72,6 +72,22 @@ Minimal target: structured surface grid with scalar values, extracted contour se
 retained segment overlay above the mesh.
 
 
+## `feature_builtin_shapes_2d`
+
+Builtin 2D geometry-builder proof.
+
+Minimal target: rectangle, disc, sector, regular polygon, star, and triangulated polygon with a hole
+rendered as retained meshes.
+
+
+## `feature_builtin_shapes_3d`
+
+Builtin 3D geometry-builder proof.
+
+Minimal target: cube, UV sphere, cylinder, cone, torus, and arrow rendered as retained meshes with a
+single orbiting/arcball camera. Classic polyhedra remain planned.
+
+
 ## `sphere_impostor`
 
 Small 3D quality proof for analytic sphere impostors, depth, lighting, and camera interaction.

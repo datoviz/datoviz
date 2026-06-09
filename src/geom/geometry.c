@@ -42,10 +42,25 @@
 #define DVZ_GEOM_PLANE_INDEX_COUNT  6
 #define DVZ_GEOM_SPHERE_DEFAULT_RINGS 16
 #define DVZ_GEOM_SPHERE_DEFAULT_SECTORS 32
+#define DVZ_GEOM_DISC_DEFAULT_SEGMENTS 48
+#define DVZ_GEOM_SECTOR_DEFAULT_SEGMENTS 32
+#define DVZ_GEOM_POLYGON_DEFAULT_SIDES 6
+#define DVZ_GEOM_STAR_DEFAULT_POINTS 5
+#define DVZ_GEOM_REVOLUTION_DEFAULT_SECTORS 32
+#define DVZ_GEOM_TORUS_DEFAULT_RINGS 32
+#define DVZ_GEOM_TORUS_DEFAULT_SECTORS 16
 #define DVZ_GEOMETRY_CUBE_DESC_KNOWN_FLAGS 0u
 #define DVZ_GEOMETRY_PLANE_DESC_KNOWN_FLAGS 0u
 #define DVZ_GEOMETRY_SPHERE_DESC_KNOWN_FLAGS 0u
 #define DVZ_GEOMETRY_SURFACE_GRID_DESC_KNOWN_FLAGS 0u
+#define DVZ_GEOMETRY_DISC_DESC_KNOWN_FLAGS 0u
+#define DVZ_GEOMETRY_SECTOR_DESC_KNOWN_FLAGS 0u
+#define DVZ_GEOMETRY_REGULAR_POLYGON_DESC_KNOWN_FLAGS 0u
+#define DVZ_GEOMETRY_STAR_DESC_KNOWN_FLAGS 0u
+#define DVZ_GEOMETRY_CYLINDER_DESC_KNOWN_FLAGS 0u
+#define DVZ_GEOMETRY_CONE_DESC_KNOWN_FLAGS 0u
+#define DVZ_GEOMETRY_TORUS_DESC_KNOWN_FLAGS 0u
+#define DVZ_GEOMETRY_ARROW_DESC_KNOWN_FLAGS 0u
 
 
 
@@ -116,6 +131,119 @@ static bool _geometry_surface_grid_desc_validate(const DvzGeometrySurfaceGridDes
             desc, DvzGeometrySurfaceGridDesc, DVZ_GEOMETRY_SURFACE_GRID_DESC_KNOWN_FLAGS))
     {
         log_error("invalid DvzGeometrySurfaceGridDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+static bool _geometry_disc_desc_validate(const DvzGeometryDiscDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzGeometryDiscDesc, DVZ_GEOMETRY_DISC_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGeometryDiscDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _geometry_sector_desc_validate(const DvzGeometrySectorDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzGeometrySectorDesc, DVZ_GEOMETRY_SECTOR_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGeometrySectorDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _geometry_regular_polygon_desc_validate(const DvzGeometryRegularPolygonDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(
+            desc, DvzGeometryRegularPolygonDesc,
+            DVZ_GEOMETRY_REGULAR_POLYGON_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGeometryRegularPolygonDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _geometry_star_desc_validate(const DvzGeometryStarDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzGeometryStarDesc, DVZ_GEOMETRY_STAR_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGeometryStarDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _geometry_cylinder_desc_validate(const DvzGeometryCylinderDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzGeometryCylinderDesc, DVZ_GEOMETRY_CYLINDER_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGeometryCylinderDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _geometry_cone_desc_validate(const DvzGeometryConeDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzGeometryConeDesc, DVZ_GEOMETRY_CONE_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGeometryConeDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _geometry_torus_desc_validate(const DvzGeometryTorusDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzGeometryTorusDesc, DVZ_GEOMETRY_TORUS_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGeometryTorusDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+
+static bool _geometry_arrow_desc_validate(const DvzGeometryArrowDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzGeometryArrowDesc, DVZ_GEOMETRY_ARROW_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzGeometryArrowDesc ABI prologue");
         return false;
     }
     return true;
@@ -210,6 +338,26 @@ static void _geom_set_index(DvzGeometry* geometry, uint32_t index, DvzIndex valu
     ASSERT(index < geometry->index_count);
     ASSERT(value < geometry->vertex_count);
     geometry->indices[index] = value;
+}
+
+
+
+/**
+ * Fill triangle-fan indices where vertex zero is the center.
+ *
+ * @param geometry the geometry
+ * @param triangle_count number of fan triangles
+ */
+static void _geom_set_fan_indices(DvzGeometry* geometry, uint32_t triangle_count)
+{
+    ANN(geometry);
+    for (uint32_t i = 0; i < triangle_count; i++)
+    {
+        const uint32_t next = i + 2u <= triangle_count ? i + 2u : 1u;
+        _geom_set_index(geometry, 3u * i + 0u, 0u);
+        _geom_set_index(geometry, 3u * i + 1u, i + 1u);
+        _geom_set_index(geometry, 3u * i + 2u, next);
+    }
 }
 
 
@@ -333,6 +481,34 @@ static bool _geom_dvec3_nearly_equal(const dvec3 a, const dvec3 b)
     ANN(b);
     const dvec3 d = {a[0] - b[0], a[1] - b[1], a[2] - b[2]};
     return _geom_dvec3_norm2(d) <= EPSILON * EPSILON;
+}
+
+
+
+/**
+ * Compute a flat triangle normal from three points.
+ *
+ * @param a first point
+ * @param b second point
+ * @param c third point
+ * @param out output normal
+ */
+static void _geom_triangle_normal_from_points(const dvec3 a, const dvec3 b, const dvec3 c, dvec3 out)
+{
+    ANN(a);
+    ANN(b);
+    ANN(c);
+    ANN(out);
+
+    const dvec3 u = {b[0] - a[0], b[1] - a[1], b[2] - a[2]};
+    const dvec3 v = {c[0] - a[0], c[1] - a[1], c[2] - a[2]};
+    _geom_dvec3_cross(u, v, out);
+    if (!_geom_dvec3_normalize(out))
+    {
+        out[0] = 0.0;
+        out[1] = 0.0;
+        out[2] = 1.0;
+    }
 }
 
 
@@ -725,6 +901,142 @@ DvzGeometrySurfaceGridDesc dvz_geometry_surface_grid_desc(void)
         .row_basis = {0.0, 1.0, 0.0},
         .height_axis = {0.0, 0.0, 1.0},
         .height_scale = 1.0,
+    };
+}
+
+
+/**
+ * Return a default disc geometry descriptor.
+ *
+ * @return initialized disc descriptor
+ */
+DvzGeometryDiscDesc dvz_geometry_disc_desc(void)
+{
+    return (DvzGeometryDiscDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryDiscDesc),
+        .radius = 1.0,
+        .segments = DVZ_GEOM_DISC_DEFAULT_SEGMENTS,
+    };
+}
+
+
+
+/**
+ * Return a default sector geometry descriptor.
+ *
+ * @return initialized sector descriptor
+ */
+DvzGeometrySectorDesc dvz_geometry_sector_desc(void)
+{
+    return (DvzGeometrySectorDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySectorDesc),
+        .radius = 1.0,
+        .sweep_angle = 0.5 * M_PI,
+        .segments = DVZ_GEOM_SECTOR_DEFAULT_SEGMENTS,
+    };
+}
+
+
+
+/**
+ * Return a default regular-polygon geometry descriptor.
+ *
+ * @return initialized regular-polygon descriptor
+ */
+DvzGeometryRegularPolygonDesc dvz_geometry_regular_polygon_desc(void)
+{
+    return (DvzGeometryRegularPolygonDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryRegularPolygonDesc),
+        .radius = 1.0,
+        .sides = DVZ_GEOM_POLYGON_DEFAULT_SIDES,
+    };
+}
+
+
+
+/**
+ * Return a default star geometry descriptor.
+ *
+ * @return initialized star descriptor
+ */
+DvzGeometryStarDesc dvz_geometry_star_desc(void)
+{
+    return (DvzGeometryStarDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryStarDesc),
+        .outer_radius = 1.0,
+        .inner_radius = 0.45,
+        .points = DVZ_GEOM_STAR_DEFAULT_POINTS,
+    };
+}
+
+
+
+/**
+ * Return a default cylinder geometry descriptor.
+ *
+ * @return initialized cylinder descriptor
+ */
+DvzGeometryCylinderDesc dvz_geometry_cylinder_desc(void)
+{
+    return (DvzGeometryCylinderDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryCylinderDesc),
+        .radius = 0.5,
+        .height = 1.0,
+        .sectors = DVZ_GEOM_REVOLUTION_DEFAULT_SECTORS,
+    };
+}
+
+
+
+/**
+ * Return a default cone geometry descriptor.
+ *
+ * @return initialized cone descriptor
+ */
+DvzGeometryConeDesc dvz_geometry_cone_desc(void)
+{
+    return (DvzGeometryConeDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryConeDesc),
+        .radius = 0.5,
+        .height = 1.0,
+        .sectors = DVZ_GEOM_REVOLUTION_DEFAULT_SECTORS,
+    };
+}
+
+
+
+/**
+ * Return a default torus geometry descriptor.
+ *
+ * @return initialized torus descriptor
+ */
+DvzGeometryTorusDesc dvz_geometry_torus_desc(void)
+{
+    return (DvzGeometryTorusDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryTorusDesc),
+        .major_radius = 0.65,
+        .minor_radius = 0.18,
+        .rings = DVZ_GEOM_TORUS_DEFAULT_RINGS,
+        .sectors = DVZ_GEOM_TORUS_DEFAULT_SECTORS,
+    };
+}
+
+
+
+/**
+ * Return a default arrow geometry descriptor.
+ *
+ * @return initialized arrow descriptor
+ */
+DvzGeometryArrowDesc dvz_geometry_arrow_desc(void)
+{
+    return (DvzGeometryArrowDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryArrowDesc),
+        .length = 1.25,
+        .shaft_radius = 0.08,
+        .head_radius = 0.20,
+        .head_length = 0.36,
+        .sectors = DVZ_GEOM_REVOLUTION_DEFAULT_SECTORS,
     };
 }
 
@@ -1593,4 +1905,516 @@ int dvz_geom_surface_grid_update_heights(
     }
 
     return dvz_geometry_compute_normals(geometry);
+}
+
+
+
+/**
+ * Create an indexed XY disc geometry.
+ *
+ * @param desc optional disc descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DvzGeometry* dvz_geom_disc(const DvzGeometryDiscDesc* desc)
+{
+    if (!_geometry_disc_desc_validate(desc))
+        return NULL;
+    DvzGeometryDiscDesc cfg = dvz_geometry_disc_desc();
+    if (desc != NULL)
+        cfg = *desc;
+    if (cfg.radius <= 0.0)
+        return NULL;
+    if (cfg.segments == 0)
+        cfg.segments = DVZ_GEOM_DISC_DEFAULT_SEGMENTS;
+    if (cfg.segments < 3u)
+        return NULL;
+
+    DvzColor color = {0};
+    _geom_color_or_default(cfg.color, &color);
+
+    DvzGeometry* geometry = dvz_geometry(cfg.segments + 1u, 3u * cfg.segments);
+    if (geometry == NULL)
+        return NULL;
+    geometry->type = DVZ_GEOMETRY_PLANE;
+    geometry->flags = DVZ_GEOMETRY_INDEXING_TRIANGLES;
+
+    const dvec3 normal = {0.0, 0.0, 1.0};
+    _geom_set_vertex(geometry, 0, cfg.center, normal, (dvec2){0.5, 0.5}, color);
+    for (uint32_t i = 0; i < cfg.segments; i++)
+    {
+        const double t = M_2PI * (double)i / (double)cfg.segments;
+        const double c = cos(t);
+        const double s = sin(t);
+        const dvec3 position = {
+            cfg.center[0] + cfg.radius * c,
+            cfg.center[1] + cfg.radius * s,
+            cfg.center[2],
+        };
+        const dvec2 uv = {0.5 + 0.5 * c, 0.5 + 0.5 * s};
+        _geom_set_vertex(geometry, i + 1u, position, normal, uv, color);
+    }
+    _geom_set_fan_indices(geometry, cfg.segments);
+    return geometry;
+}
+
+
+
+/**
+ * Create an indexed XY sector geometry.
+ *
+ * @param desc optional sector descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DvzGeometry* dvz_geom_sector(const DvzGeometrySectorDesc* desc)
+{
+    if (!_geometry_sector_desc_validate(desc))
+        return NULL;
+    DvzGeometrySectorDesc cfg = dvz_geometry_sector_desc();
+    if (desc != NULL)
+        cfg = *desc;
+    if (cfg.radius <= 0.0 || !isfinite(cfg.start_angle) || !isfinite(cfg.sweep_angle))
+        return NULL;
+    if (cfg.segments == 0)
+        cfg.segments = DVZ_GEOM_SECTOR_DEFAULT_SEGMENTS;
+    if (cfg.segments < 1u || fabs(cfg.sweep_angle) <= EPSILON)
+        return NULL;
+
+    DvzColor color = {0};
+    _geom_color_or_default(cfg.color, &color);
+
+    DvzGeometry* geometry = dvz_geometry(cfg.segments + 2u, 3u * cfg.segments);
+    if (geometry == NULL)
+        return NULL;
+    geometry->type = DVZ_GEOMETRY_PLANE;
+    geometry->flags = DVZ_GEOMETRY_INDEXING_TRIANGLES;
+
+    const dvec3 normal = {0.0, 0.0, cfg.sweep_angle >= 0.0 ? 1.0 : -1.0};
+    _geom_set_vertex(geometry, 0, cfg.center, normal, (dvec2){0.5, 0.5}, color);
+    for (uint32_t i = 0; i <= cfg.segments; i++)
+    {
+        const double u = (double)i / (double)cfg.segments;
+        const double t = cfg.start_angle + cfg.sweep_angle * u;
+        const double c = cos(t);
+        const double s = sin(t);
+        const dvec3 position = {
+            cfg.center[0] + cfg.radius * c,
+            cfg.center[1] + cfg.radius * s,
+            cfg.center[2],
+        };
+        const dvec2 uv = {0.5 + 0.5 * c, 0.5 + 0.5 * s};
+        _geom_set_vertex(geometry, i + 1u, position, normal, uv, color);
+    }
+
+    for (uint32_t i = 0; i < cfg.segments; i++)
+    {
+        _geom_set_index(geometry, 3u * i + 0u, 0u);
+        if (cfg.sweep_angle >= 0.0)
+        {
+            _geom_set_index(geometry, 3u * i + 1u, i + 1u);
+            _geom_set_index(geometry, 3u * i + 2u, i + 2u);
+        }
+        else
+        {
+            _geom_set_index(geometry, 3u * i + 1u, i + 2u);
+            _geom_set_index(geometry, 3u * i + 2u, i + 1u);
+        }
+    }
+    return geometry;
+}
+
+
+
+/**
+ * Create an indexed XY regular-polygon geometry.
+ *
+ * @param desc optional regular-polygon descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DvzGeometry* dvz_geom_regular_polygon(const DvzGeometryRegularPolygonDesc* desc)
+{
+    if (!_geometry_regular_polygon_desc_validate(desc))
+        return NULL;
+    DvzGeometryRegularPolygonDesc cfg = dvz_geometry_regular_polygon_desc();
+    if (desc != NULL)
+        cfg = *desc;
+    if (cfg.sides == 0)
+        cfg.sides = DVZ_GEOM_POLYGON_DEFAULT_SIDES;
+    if (cfg.radius <= 0.0 || cfg.sides < 3u)
+        return NULL;
+
+    return dvz_geom_disc(&(DvzGeometryDiscDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryDiscDesc),
+        .center = {cfg.center[0], cfg.center[1], cfg.center[2]},
+        .radius = cfg.radius,
+        .segments = cfg.sides,
+        .color = cfg.color,
+    });
+}
+
+
+
+/**
+ * Create an indexed XY star geometry.
+ *
+ * @param desc optional star descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DvzGeometry* dvz_geom_star(const DvzGeometryStarDesc* desc)
+{
+    if (!_geometry_star_desc_validate(desc))
+        return NULL;
+    DvzGeometryStarDesc cfg = dvz_geometry_star_desc();
+    if (desc != NULL)
+        cfg = *desc;
+    if (cfg.points == 0)
+        cfg.points = DVZ_GEOM_STAR_DEFAULT_POINTS;
+    if (cfg.outer_radius <= 0.0 || cfg.inner_radius <= 0.0 || cfg.inner_radius >= cfg.outer_radius ||
+        cfg.points < 3u || cfg.points > UINT32_MAX / 2u)
+    {
+        return NULL;
+    }
+
+    DvzColor color = {0};
+    _geom_color_or_default(cfg.color, &color);
+
+    const uint32_t outer_count = 2u * cfg.points;
+    DvzGeometry* geometry = dvz_geometry(outer_count + 1u, 3u * outer_count);
+    if (geometry == NULL)
+        return NULL;
+    geometry->type = DVZ_GEOMETRY_PLANE;
+    geometry->flags = DVZ_GEOMETRY_INDEXING_TRIANGLES;
+
+    const dvec3 normal = {0.0, 0.0, 1.0};
+    _geom_set_vertex(geometry, 0, cfg.center, normal, (dvec2){0.5, 0.5}, color);
+    for (uint32_t i = 0; i < outer_count; i++)
+    {
+        const double radius = i % 2u == 0 ? cfg.outer_radius : cfg.inner_radius;
+        const double t = -0.5 * M_PI + M_2PI * (double)i / (double)outer_count;
+        const double c = cos(t);
+        const double s = sin(t);
+        const dvec3 position = {
+            cfg.center[0] + radius * c,
+            cfg.center[1] + radius * s,
+            cfg.center[2],
+        };
+        const dvec2 uv = {0.5 + 0.5 * c, 0.5 + 0.5 * s};
+        _geom_set_vertex(geometry, i + 1u, position, normal, uv, color);
+    }
+    _geom_set_fan_indices(geometry, outer_count);
+    return geometry;
+}
+
+
+
+/**
+ * Create an indexed Z-axis cylinder geometry.
+ *
+ * @param desc optional cylinder descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DvzGeometry* dvz_geom_cylinder(const DvzGeometryCylinderDesc* desc)
+{
+    if (!_geometry_cylinder_desc_validate(desc))
+        return NULL;
+    DvzGeometryCylinderDesc cfg = dvz_geometry_cylinder_desc();
+    if (desc != NULL)
+        cfg = *desc;
+    if (cfg.sectors == 0)
+        cfg.sectors = DVZ_GEOM_REVOLUTION_DEFAULT_SECTORS;
+    if (cfg.radius <= 0.0 || cfg.height <= 0.0 || cfg.sectors < 3u)
+        return NULL;
+
+    DvzColor color = {0};
+    _geom_color_or_default(cfg.color, &color);
+
+    const uint32_t side_vertices = 2u * (cfg.sectors + 1u);
+    const uint32_t cap_vertices = cfg.sectors + 2u;
+    const uint32_t vertex_count = side_vertices + 2u * cap_vertices;
+    const uint32_t index_count = 12u * cfg.sectors;
+    DvzGeometry* geometry = dvz_geometry(vertex_count, index_count);
+    if (geometry == NULL)
+        return NULL;
+    geometry->type = DVZ_GEOMETRY_CYLINDER;
+    geometry->flags = DVZ_GEOMETRY_INDEXING_TRIANGLES;
+
+    const double z0 = cfg.center[2] - 0.5 * cfg.height;
+    const double z1 = cfg.center[2] + 0.5 * cfg.height;
+    for (uint32_t i = 0; i <= cfg.sectors; i++)
+    {
+        const double u = (double)i / (double)cfg.sectors;
+        const double t = M_2PI * u;
+        const double c = cos(t);
+        const double s = sin(t);
+        const dvec3 normal = {c, s, 0.0};
+        _geom_set_vertex(
+            geometry, 2u * i + 0u,
+            (dvec3){cfg.center[0] + cfg.radius * c, cfg.center[1] + cfg.radius * s, z0},
+            normal, (dvec2){u, 0.0}, color);
+        _geom_set_vertex(
+            geometry, 2u * i + 1u,
+            (dvec3){cfg.center[0] + cfg.radius * c, cfg.center[1] + cfg.radius * s, z1},
+            normal, (dvec2){u, 1.0}, color);
+    }
+
+    uint32_t index = 0;
+    for (uint32_t i = 0; i < cfg.sectors; i++)
+    {
+        const uint32_t b0 = 2u * i;
+        const uint32_t t0 = b0 + 1u;
+        const uint32_t b1 = b0 + 2u;
+        const uint32_t t1 = b0 + 3u;
+        _geom_set_index(geometry, index++, b0);
+        _geom_set_index(geometry, index++, b1);
+        _geom_set_index(geometry, index++, t1);
+        _geom_set_index(geometry, index++, b0);
+        _geom_set_index(geometry, index++, t1);
+        _geom_set_index(geometry, index++, t0);
+    }
+
+    const uint32_t top_base = side_vertices;
+    const uint32_t bottom_base = side_vertices + cap_vertices;
+    _geom_set_vertex(
+        geometry, top_base, (dvec3){cfg.center[0], cfg.center[1], z1}, (dvec3){0, 0, +1},
+        (dvec2){0.5, 0.5}, color);
+    _geom_set_vertex(
+        geometry, bottom_base, (dvec3){cfg.center[0], cfg.center[1], z0}, (dvec3){0, 0, -1},
+        (dvec2){0.5, 0.5}, color);
+    for (uint32_t i = 0; i <= cfg.sectors; i++)
+    {
+        const double u = (double)i / (double)cfg.sectors;
+        const double t = M_2PI * u;
+        const double c = cos(t);
+        const double s = sin(t);
+        const dvec2 uv = {0.5 + 0.5 * c, 0.5 + 0.5 * s};
+        _geom_set_vertex(
+            geometry, top_base + 1u + i,
+            (dvec3){cfg.center[0] + cfg.radius * c, cfg.center[1] + cfg.radius * s, z1},
+            (dvec3){0, 0, +1}, uv, color);
+        _geom_set_vertex(
+            geometry, bottom_base + 1u + i,
+            (dvec3){cfg.center[0] + cfg.radius * c, cfg.center[1] + cfg.radius * s, z0},
+            (dvec3){0, 0, -1}, uv, color);
+    }
+
+    for (uint32_t i = 0; i < cfg.sectors; i++)
+    {
+        _geom_set_index(geometry, index++, top_base);
+        _geom_set_index(geometry, index++, top_base + 1u + i);
+        _geom_set_index(geometry, index++, top_base + 2u + i);
+        _geom_set_index(geometry, index++, bottom_base);
+        _geom_set_index(geometry, index++, bottom_base + 2u + i);
+        _geom_set_index(geometry, index++, bottom_base + 1u + i);
+    }
+    return geometry;
+}
+
+
+
+/**
+ * Create an indexed Z-axis cone geometry.
+ *
+ * @param desc optional cone descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DvzGeometry* dvz_geom_cone(const DvzGeometryConeDesc* desc)
+{
+    if (!_geometry_cone_desc_validate(desc))
+        return NULL;
+    DvzGeometryConeDesc cfg = dvz_geometry_cone_desc();
+    if (desc != NULL)
+        cfg = *desc;
+    if (cfg.sectors == 0)
+        cfg.sectors = DVZ_GEOM_REVOLUTION_DEFAULT_SECTORS;
+    if (cfg.radius <= 0.0 || cfg.height <= 0.0 || cfg.sectors < 3u)
+        return NULL;
+
+    DvzColor color = {0};
+    _geom_color_or_default(cfg.color, &color);
+
+    const uint32_t side_vertices = 3u * cfg.sectors;
+    const uint32_t cap_vertices = cfg.sectors + 2u;
+    DvzGeometry* geometry = dvz_geometry(side_vertices + cap_vertices, 6u * cfg.sectors);
+    if (geometry == NULL)
+        return NULL;
+    geometry->type = DVZ_GEOMETRY_CONE;
+    geometry->flags = DVZ_GEOMETRY_INDEXING_TRIANGLES;
+
+    const double z0 = cfg.center[2] - 0.5 * cfg.height;
+    const double z1 = cfg.center[2] + 0.5 * cfg.height;
+    const dvec3 apex = {cfg.center[0], cfg.center[1], z1};
+    uint32_t vertex = 0;
+    uint32_t index = 0;
+    for (uint32_t i = 0; i < cfg.sectors; i++)
+    {
+        const double t0 = M_2PI * (double)i / (double)cfg.sectors;
+        const double t1 = M_2PI * (double)(i + 1u) / (double)cfg.sectors;
+        const dvec3 p0 = {cfg.center[0] + cfg.radius * cos(t0), cfg.center[1] + cfg.radius * sin(t0), z0};
+        const dvec3 p1 = {cfg.center[0] + cfg.radius * cos(t1), cfg.center[1] + cfg.radius * sin(t1), z0};
+        dvec3 normal = {0};
+        _geom_triangle_normal_from_points(p0, p1, apex, normal);
+        _geom_set_vertex(geometry, vertex + 0u, p0, normal, (dvec2){0.0, 0.0}, color);
+        _geom_set_vertex(geometry, vertex + 1u, p1, normal, (dvec2){1.0, 0.0}, color);
+        _geom_set_vertex(geometry, vertex + 2u, apex, normal, (dvec2){0.5, 1.0}, color);
+        _geom_set_index(geometry, index++, vertex + 0u);
+        _geom_set_index(geometry, index++, vertex + 1u);
+        _geom_set_index(geometry, index++, vertex + 2u);
+        vertex += 3u;
+    }
+
+    const uint32_t cap_base = side_vertices;
+    _geom_set_vertex(
+        geometry, cap_base, (dvec3){cfg.center[0], cfg.center[1], z0}, (dvec3){0, 0, -1},
+        (dvec2){0.5, 0.5}, color);
+    for (uint32_t i = 0; i <= cfg.sectors; i++)
+    {
+        const double u = (double)i / (double)cfg.sectors;
+        const double t = M_2PI * u;
+        const double c = cos(t);
+        const double s = sin(t);
+        _geom_set_vertex(
+            geometry, cap_base + 1u + i,
+            (dvec3){cfg.center[0] + cfg.radius * c, cfg.center[1] + cfg.radius * s, z0},
+            (dvec3){0, 0, -1}, (dvec2){0.5 + 0.5 * c, 0.5 + 0.5 * s}, color);
+    }
+    for (uint32_t i = 0; i < cfg.sectors; i++)
+    {
+        _geom_set_index(geometry, index++, cap_base);
+        _geom_set_index(geometry, index++, cap_base + 2u + i);
+        _geom_set_index(geometry, index++, cap_base + 1u + i);
+    }
+    return geometry;
+}
+
+
+
+/**
+ * Create an indexed torus geometry around the Z axis.
+ *
+ * @param desc optional torus descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DvzGeometry* dvz_geom_torus(const DvzGeometryTorusDesc* desc)
+{
+    if (!_geometry_torus_desc_validate(desc))
+        return NULL;
+    DvzGeometryTorusDesc cfg = dvz_geometry_torus_desc();
+    if (desc != NULL)
+        cfg = *desc;
+    if (cfg.rings == 0)
+        cfg.rings = DVZ_GEOM_TORUS_DEFAULT_RINGS;
+    if (cfg.sectors == 0)
+        cfg.sectors = DVZ_GEOM_TORUS_DEFAULT_SECTORS;
+    if (cfg.major_radius <= 0.0 || cfg.minor_radius <= 0.0 || cfg.rings < 3u || cfg.sectors < 3u)
+        return NULL;
+
+    const uint32_t cols = cfg.sectors + 1u;
+    DvzGeometry* geometry = dvz_geometry((cfg.rings + 1u) * cols, 6u * cfg.rings * cfg.sectors);
+    if (geometry == NULL)
+        return NULL;
+    geometry->type = DVZ_GEOMETRY_TORUS;
+    geometry->flags = DVZ_GEOMETRY_INDEXING_TRIANGLES;
+
+    DvzColor color = {0};
+    _geom_color_or_default(cfg.color, &color);
+
+    for (uint32_t ring = 0; ring <= cfg.rings; ring++)
+    {
+        const double u = (double)ring / (double)cfg.rings;
+        const double phi = M_2PI * u;
+        const double cp = cos(phi);
+        const double sp = sin(phi);
+        for (uint32_t sector = 0; sector <= cfg.sectors; sector++)
+        {
+            const double v = (double)sector / (double)cfg.sectors;
+            const double theta = M_2PI * v;
+            const double ct = cos(theta);
+            const double st = sin(theta);
+            const dvec3 normal = {cp * ct, sp * ct, st};
+            const double radius = cfg.major_radius + cfg.minor_radius * ct;
+            const dvec3 position = {
+                cfg.center[0] + radius * cp,
+                cfg.center[1] + radius * sp,
+                cfg.center[2] + cfg.minor_radius * st,
+            };
+            _geom_set_vertex(geometry, ring * cols + sector, position, normal, (dvec2){u, v}, color);
+        }
+    }
+
+    uint32_t index = 0;
+    for (uint32_t ring = 0; ring < cfg.rings; ring++)
+    {
+        for (uint32_t sector = 0; sector < cfg.sectors; sector++)
+        {
+            const uint32_t i0 = ring * cols + sector;
+            const uint32_t i1 = i0 + 1u;
+            const uint32_t i2 = i0 + cols;
+            const uint32_t i3 = i2 + 1u;
+            _geom_set_index(geometry, index++, i0);
+            _geom_set_index(geometry, index++, i2);
+            _geom_set_index(geometry, index++, i3);
+            _geom_set_index(geometry, index++, i0);
+            _geom_set_index(geometry, index++, i3);
+            _geom_set_index(geometry, index++, i1);
+        }
+    }
+    return geometry;
+}
+
+
+
+/**
+ * Create an indexed Z-axis arrow geometry.
+ *
+ * @param desc optional arrow descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DvzGeometry* dvz_geom_arrow(const DvzGeometryArrowDesc* desc)
+{
+    if (!_geometry_arrow_desc_validate(desc))
+        return NULL;
+    DvzGeometryArrowDesc cfg = dvz_geometry_arrow_desc();
+    if (desc != NULL)
+        cfg = *desc;
+    if (cfg.sectors == 0)
+        cfg.sectors = DVZ_GEOM_REVOLUTION_DEFAULT_SECTORS;
+    if (
+        cfg.length <= 0.0 || cfg.shaft_radius <= 0.0 || cfg.head_radius <= 0.0 ||
+        cfg.head_length <= 0.0 || cfg.head_length >= cfg.length || cfg.sectors < 3u)
+    {
+        return NULL;
+    }
+
+    const double shaft_height = cfg.length - cfg.head_length;
+    DvzGeometry* shaft = dvz_geom_cylinder(&(DvzGeometryCylinderDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryCylinderDesc),
+        .center = {cfg.center[0], cfg.center[1], cfg.center[2] - 0.5 * cfg.head_length},
+        .radius = cfg.shaft_radius,
+        .height = shaft_height,
+        .sectors = cfg.sectors,
+        .color = cfg.color,
+    });
+    DvzGeometry* head = dvz_geom_cone(&(DvzGeometryConeDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryConeDesc),
+        .center = {cfg.center[0], cfg.center[1], cfg.center[2] + 0.5 * shaft_height},
+        .radius = cfg.head_radius,
+        .height = cfg.head_length,
+        .sectors = cfg.sectors,
+        .color = cfg.color,
+    });
+    if (shaft == NULL || head == NULL)
+    {
+        if (shaft != NULL)
+            dvz_geometry_destroy(shaft);
+        if (head != NULL)
+            dvz_geometry_destroy(head);
+        return NULL;
+    }
+
+    const DvzGeometry* parts[] = {shaft, head};
+    DvzGeometry* geometry = dvz_geometry_merge(2, parts);
+    dvz_geometry_destroy(shaft);
+    dvz_geometry_destroy(head);
+    if (geometry != NULL)
+        geometry->type = DVZ_GEOMETRY_ARROW;
+    return geometry;
 }
