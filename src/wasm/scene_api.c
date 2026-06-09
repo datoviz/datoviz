@@ -60,7 +60,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 7
+#define DVZ_WASM_API_SCENARIO_COUNT 8
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -87,6 +87,7 @@ DvzScenarioSpec dvz_example_timer_animation_scenario(void);
 DvzScenarioSpec dvz_example_triangulation_polygon_scenario(void);
 DvzScenarioSpec dvz_example_picking_scenario(void);
 DvzScenarioSpec dvz_example_image_probe_scenario(void);
+DvzScenarioSpec dvz_example_isolines_scenario(void);
 
 
 
@@ -356,8 +357,10 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
     case 4:
         return dvz_example_builtin_shapes_3d_scenario();
     case 5:
-        return dvz_example_picking_scenario();
+        return dvz_example_isolines_scenario();
     case 6:
+        return dvz_example_picking_scenario();
+    case 7:
         return dvz_example_image_probe_scenario();
     default:
         return (DvzScenarioSpec){0};
