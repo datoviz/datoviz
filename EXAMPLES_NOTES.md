@@ -1,263 +1,149 @@
-some notes about the examples
-
-
-## Closure ledger - 2026-06-09
-
-Status values: `resolved` means source/metadata was changed or audited with evidence; `partial`
-means a contained improvement landed but more visual/runtime work remains; `deferred` means the item
-is still visible with the blocker or preferred next action.
-
-| Item | Status | Evidence / next action |
-| --- | --- | --- |
-| `composites/graph` | resolved | Rewritten as a cleaner two-community graph with bridge edges in `examples/c/composites/graph.c`; compiled and docs regenerated. |
-| `composites/polygon` | resolved | Rewritten as a regular holed polygon plus non-overlapping star/tiles in `examples/c/composites/polygon.c`; triangulation remains covered by `features/triangulation_polygon.c`. |
-| `features/animation_tracks` | resolved | Cube rotation remains track-backed and the camera eye now follows looping `dvz_track_keyframes()` while the target stays fixed at the cube center in `examples/c/features/animation_tracks.c`; compiled. |
-| `features/annotation_readout` | resolved | Larger closer label in `examples/c/features/annotation_readout.c`; compiled in focused example batch. |
-| `features/app_glfw` | resolved | Standard 1600x1200 size in `examples/c/features/app_glfw.c`. |
-| `features/axis_labels` | resolved | Removed confusing tilted segment clutter; retained only simple plot-frame guides in `examples/c/features/axis_labels.c`. |
-| `features/colormap_scale` | resolved | Scale/colormap setup is explicit in `examples/c/features/colormap_scale.c`. |
-| `features/controller_fly` | resolved | `src/controller/fly.c` now derives yaw/pitch from the configured world-up basis instead of hard-coded Y-up math; `test_controller_fly_z_up_lookat_drag` covers the z-up left/right drag sign and `just test controller` passed. |
-| `features/technique_depth_cue` | resolved | Two-panel comparison now uses a regular 3D sphere lattice in `examples/c/features/technique_depth_cue.c`; compiled and docs regenerated. |
-| `features/technique_depth_test` | resolved | GLSL point fragment shaders now use derivative-based disc coverage (`fwidth`/`smoothstep`) for shader-side edge AA without relying on MSAA; `./build/examples/c/features/technique_depth_test --png` passed and the PNG was visually checked. |
-| `features/technique_edl` | resolved | Two-panel comparison now uses the shared regular 3D sphere-lattice pattern in `examples/c/features/technique_edl.c`; compiled and docs regenerated. |
-| `features/external_surface` | resolved | Public advanced example is `examples/c/advanced/external_surface_glfw.c`; gallery generator now includes advanced pages. |
-| `features/gui_cimgui` | resolved | Kept as explicit native app/window exception because the example demonstrates direct Dear ImGui host integration rather than scene-only behavior. |
-| `features/gui_controls` | resolved | Kept as explicit native app/window exception for the current v0.4 GUI control wrappers in `example_gui_controls.c`; scenario hosting remains unnecessary for this host-integration example. |
-| `features/gui_viewport` | resolved | Added scaled offscreen view resize via `dvz_view_resize_scaled()`, seeded GUI viewport requested logical/framebuffer sizes, and kept source rendering active while waiting for a non-stale resized frame; `just test gui` passed. |
-| `features/guide_lines` | resolved | Cursor event callback updates guides in real time in `examples/c/features/guide_lines.c`; compiled. |
-| `features/guide_spans` | resolved | Cursor event callback centers spans in real time in `examples/c/features/guide_spans.c`; compiled. |
-| `features/input_events` | resolved | `examples/c/features/input_events.c` now defaults to a live GLFW window that prints pointer, wheel, keyboard, and resize events; `--synthetic`/`--png` keeps the emitted-event smoke path. |
-| `features/legend_categorical` | resolved | Removed highlighted entry that made one swatch larger in `examples/c/features/legend_categorical.c`; compiled. |
-| `features/lighting` | resolved | Three-panel material/light comparison in `examples/c/features/lighting.c`; compiled. |
-| `features/marker_symbols` | resolved | Added row labels and a distinct colored bitmap-pin row in `examples/c/features/marker_symbols.c`; compiled and docs regenerated. |
-| `features/technique_msaa` | resolved | Side-by-side comparison now uses slanted 3D cube silhouettes with MSAA disabled/enabled in `examples/c/features/technique_msaa.c`; compiled. |
-| `features/offscreen_capture` | resolved | `examples/c/features/offscreen_capture.c` now asserts and prints exact requested framebuffer/PNG pixels; high-DPI capture remains explicit via logical-size/device-scale view descriptors, not implicit Retina scaling. |
-| `features/overlay_card` | resolved | Adds a simple signal and highlighted sample behind the fixed readout card in `examples/c/features/overlay_card.c`; compiled and docs regenerated. |
-| `features/panel_background` | resolved | Uses explicit inset gradient panel background in `examples/c/features/panel_background.c`; compiled. |
-| `features/panel_domain_fit` | resolved | Side-by-side free-domain vs equal-aspect fit in `examples/c/features/panel_domain_fit.c`; compiled. |
-| `features/panzoom` | resolved | Manifest/source/docs now use `feature_panzoom` with source/executable `panzoom`; generated stale `controller_panzoom` page removed. |
-| `features/pick*` | resolved | `features/picking.c` is the unified example; query y-orientation regression exists in `src/scene/tests/query.c`. |
-| `features/record_replay` | resolved | `_app_draw_replay()` now consumes setup-only recorded frames until a draw frame reaches the attached target; `test_app_offscreen_records_dvzr_frames` covers one-render live replay pixels. |
-| `features/basic_scene` | resolved | No `scene_` source/executable prefix; manifest/docs use `feature_basic_scene` as internal gallery ID. |
-| `features/compute_buffer_animation` | resolved | Compute shader now drives small independent circular point motion in `examples/c/features/compute_buffer_animation.c`; compiled. |
-| `features/json_export` | resolved | Writes `scene_export.json` and prints `./scene_export.json`; title/feature metadata updated to JSON Export. |
-| `features/technique_ssao` | resolved | Increased SSAO samples and blur radius while lowering strength in `examples/c/features/technique_ssao.c`; compiled. |
-| `features/technique_transparency` | resolved | Three-panel source-over/WBOIT/depth-peel comparison now uses overlapping translucent 3D cubes in `examples/c/features/technique_transparency.c`; compiled. |
-| `features/video_export` | resolved | Runner record modes print video output paths; `examples/c/features/video_export.c` runs frame animation. |
-| `features/visibility` | resolved | Batching/visual-level visibility comment exists in `examples/c/features/visibility.c`. |
-| `features/visual_transform` | resolved | Two-panel without/with transform comparison in `examples/c/features/visual_transform.c`; compiled. |
-| `features/volume_occlusion` | resolved | Rewritten as side-by-side slice rendering without/with volume occlusion in `examples/c/features/volume_occlusion.c`; compiled. |
-| `showcases/brain_volume` | resolved | Name is already `brain_volume`; initial camera/up vector and arcball orientation now start tilted to show the slice with volume behind it in `examples/c/showcases/brain_volume.c`; compiled. |
-| `showcases/choropleth` | resolved | Title/subtitle sizes and reserves are larger for Retina readability, and the panzoom controller now keeps aspect during right-drag zoom; `./build/examples/c/showcases/choropleth --png` passed and the PNG was visually checked. |
-| `showcases/scientific_plotting` | resolved | Panel reserves now use fixed pixel margins so bottom x-axes stay inside the panels; `./build/examples/c/showcases/scientific_plotting --png` passed and the PNG was visually checked. |
-| `showcases/textured_planet` | resolved | Material ambient/diffuse settings keep the dark side inspectable, and orbit-camera descriptors now set zoom speed plus min/max distance limits; `./build/examples/c/showcases/textured_planet --png` passed and the PNG was visually checked. |
-| `showcases/wind_field` | resolved | Current showcase uses a fixed probe crosshair and readout card in `examples/c/showcases/wind_field.c`; no ellipsoid pointer remains; compiled. |
-| `visuals/glyph` | resolved | Source/manifest/docs now identify it as a low-level SDF atlas-quad visual distinct from font-shaped text and marker symbols; compiled. |
-| `visuals/segment` | resolved | Shows butt, square, and round caps in `examples/c/visuals/segment.c`; compiled. |
-| General comments/descriptions | resolved | Audited all 106 public C manifest entries: each public example now has a structured top-of-file title, Scenario, Style, Build, and Run/Live line usable by gallery pages; `just gallery && just check-example-manifests` passed. |
-| Scenario-helper use | resolved | Audited all 106 public C manifest entries; `showcases/panel_linked_axes.c` was migrated to `dvz_scenario_run_native_cli()`. The 10 remaining non-scenario examples are explicit native-only host/runtime exceptions: GUI controls, GUI viewport, raw cimgui, app_glfw, offscreen_capture, input_events, record_replay, raw_triangle_vklite, raw_triangle_drp2, and external_surface_glfw. |
-| Builtin-shapes parity | resolved | v0.4 examples cover current public C geometry builders in `builtin_shapes_2d.c`, `builtin_shapes_3d.c`, `surface_grid.c`, and `obj_loading.c`. The v0.3 guide's Platonic solids/hexahedron names are not present in `include/datoviz/geom.h`; adding them is a future geom API decision, not an example-port blocker. |
-| Further: `showcases/surface_grid` | resolved | Added `examples/c/showcases/surface_grid.c` with `dvz_geom_surface_grid()` mesh plus derived wireframe overlay; registered in CMake/manifest/generated docs; `./build/examples/c/showcases/surface_grid --png` passed. |
-| Further: `features/instancing` | resolved | Current feature exists as `examples/c/features/selection_mesh_instances.c`; plain non-selection instancing example still optional. |
-| Further: `features/isolines` | resolved | Current implementation exists in `examples/c/features/isolines.c` and is in generated docs. |
-| Further: raw triangles | resolved | `advanced_raw_triangle_vklite` and `advanced_raw_triangle_drp2` are in CMake/manifest/generated advanced docs. |
-| Further: `bounds_overlay.c` | resolved | Added diagnostic `examples/c/features/bounds_overlay.c` with 2D/3D retained visual bounds overlays; registered in CMake/manifest/generated docs; `./build/examples/c/features/bounds_overlay --png` passed. |
-| Further: `arcball_gizmo.c` | resolved | Superseded by synchronized inset `examples/c/features/orientation_gizmo.c`; generated docs now include it. |
-
-
-## Broad audits - 2026-06-09
-
-Top-of-file copy audit: all 106 public C examples listed in `examples/c/MANIFEST.yaml` have a
-structured descriptive header with title, Scenario, Style, Build, and Run/Live metadata. The
-advanced raw examples keep native-only low-level descriptions instead of pretending to be portable
-scenarios.
-
-Scenario-helper audit: all public examples use `dvz_scenario_run_native_cli()` except the explicit
-native-only host/runtime examples where the scenario runner would hide the feature being shown:
-`features/gui_controls`, `features/gui_viewport`, `features/gui_cimgui`, `features/app_glfw`,
-`features/offscreen_capture`, `features/input_events`, `features/record_replay`,
-`advanced/raw_triangle_vklite`, `advanced/raw_triangle_drp2`, and
-`advanced/external_surface_glfw`. `showcases/panel_linked_axes` was migrated from direct
-`dvz_app()`/`dvz_view_glfw()` to the scenario runner during this audit.
-
-Builtin-shapes parity audit:
-
-| Area | v0.4 public C status |
-| --- | --- |
-| 2D basic shapes | `examples/c/features/builtin_shapes_2d.c` shows plane/square, disc, sector, regular polygon, star, and a triangulated polygon with a hole. |
-| 3D basic shapes | `examples/c/features/builtin_shapes_3d.c` shows cube, sphere, cylinder, cone, torus, and arrow. |
-| Structured surface | `examples/c/showcases/surface_grid.c` shows `dvz_geom_surface_grid()` with a derived wireframe overlay. |
-| OBJ/custom mesh | `examples/c/features/obj_loading.c` covers OBJ loading; mesh examples cover custom indexed geometry. |
-| v0.3 guide shapes still missing as public C geometry builders | Tetrahedron, hexahedron alias, octahedron, dodecahedron, and icosahedron. These are absent from `include/datoviz/geom.h`; do not fake them in examples unless the geom API adds first-class builders. |
-
-
-composites/graph
-not very pretty, can't we have a more classic/standard graph? something more compelling
-
-composites/polygon
-this is ugly can we have something cleaner and more regular without overlapping polygons
-like a regular polygon, possibly with a hole, and something like a star or something
-also could we show the underlying triangulation? how would that work?
-
-features/animation_tracks
-this one is a bit ugly, can't we find something more compelling? let's say a rotation animation on an object, and at the same time, a camera using dvz_track_keyframes to hover over the visual while keeping the same target point to the center of the visual? something both simple (to mostly show the animation API and not much more) and compelling. wdyt?
-
-features/annotation_readout
-on macOS the text is way too small and far from the point (too much on the bottom right compared to the point)
-
-features/app_glfw
-shouldn't we use the standard window size?
-
-features/axis_labels
-wtf are all these segments? some axis aligned other tilted. seems very wrong and I don't understand what that is supposed to represent
-
-features/colormap_scale
-i'm a bit confused as to what this is supposed to illustrate mostly because the key feature seems to be hidden behind a helper no?
-
-features/controller_fly
-the left-right drag is very weird and possibly broken
-
-features/technique_depth_cue
-to show this technique we should use a 3D example no? for ex 3D spheres, perhaps organized in a 3D regular lattice, with this technique disabled vs enabled in two different panels? wdyt?
-
-features/technique_depth_test
-the disc edges don't seem to be perfectly antialiased (without msaa, just talking about the shaders here), can you double check?
-
-features/technique_edl
-i wonder if the techniques examples should not be prefixed with technique_?
-also, this one i think should use a 3D example, perhaps the same as features/technique_depth_cue, but showing edl instead of depth_cue? wdyt?
-
-features/external_surface
-that one is not functional atm. wdyt we should do to show a good example of using an external vulkan surface?
-
-features/gui_cimgui
-why not use the scenario path for app/window creation?
-
-features/gui_controls
-there are no more builtin controls to show here? also, why not use the scenario path for app/window creation?
-
-features/gui_viewport
-three little problems here, not with the example but with the underlying implementation
-first, the viewport seems antialiased on macOS retina so there may be a framebuffer/view pixel resolution mismatch.
-second, initially, in the first frames after starting the example, the viewport shows a very zoomed in part of the viewport before immediately switching back to the correct viewport.
-third, there is some lag when resizing the viewport with dear imgui, the viewport correctly resizes itself but after a few frames so it all seems a bit unstable/wobbly
-perhaps we could have another example, more complicated, showing docking with multiple viewports, and there could be a button to add a new viewport with random positions each time and viewport dialog title "viewport 1", "viewport 2" etc? wdyt?
-
-features/guide_lines
-instead of switching the positions after 1 second, could the horizontal and vertical lines match the cursor position in real time?
-
-features/guide_spans
-instead of switching the spans after 1 second, could the horizontal and vertical spans be centered around cursor position in real time?
-
-features/input_events
-better to show a live window where we display keyboard and mouse events in the terminal in real time no?
-
-features/legend_categorical
-in the legend the gray square is bigger than the other squares
-
-features/lighting
-not sure if this is a good illustration of the lighting system, shouldn't we show various types of lights/materials/settings etc? wdyt?
-
-features/marker_symbols
-shouldn't the different types of symbols show clearly which is using which technique? for ex for bitmap using a clearly bitmap symbol with, perhaps, colors, that could not be easily made with other techniques (look at v0.3 marker visual example where we had used an actual red pin bitmap)
-
-features/technique_msaa
-should have technique_ prefix
-also, better to show a 3D scene i think with some meshes like cubes because we would better see the aliasing without msaa
-
-features/offscreen_capture
-so this one looks a bit aliased on macOS retina compared to desktop version because the framebuffer size is the requested size, whereas on macOS the underlying framebuffer is twice larger in each dimension. what would be a proper to fix this? something like scale, dpi, resolution or whatever in the offscreen path? or would that be confusing because the requested pixels in offscreen should match the png size? or perhaps we could have an option where we specify the offscreen size not in pixels, but in dots or points or something with dpi and scale? wdyt? what would be a standard, natural way of tackling this, thinking about the right?
-
-features/overlay_card
-for that one i think i would prefer a slightly more realistic example that shows an actual use case of the overlay rather than an isolated overlay with nothing else, while keeping the spirit "1 feature = 1 example", what would you propose?
-
-features/panel_background
-i don't think this is working, i do not see a background
-
-features/panel_domain_fit
-i'm not sure what this one is supposed to show? is it supposed to force some equal aspect or something? I don't think it's working
-
-features/panzoom
-why not just "panzoom"
-
-features/pick*
-resolved by `features/picking.c`: unified hover scaling and click selection/tinting, with a
-query y-orientation regression in `src/scene/tests/query.c`
-
-features/record_replay
-that one is broken, record_replay_replay.png is all purple
-
-features/basic_scene
-do we need the scene_ prefix?
-
-features/compute_buffer_animation
-do we need the scene_ prefix?
-this example should instead show some small circular independent movement of each dot with different phases and angular speeds
-
-features/json_export
-should find a name without scene_ prefix i think
-this example should save the json to a file and print the path of the saved json
-
-features/technique_ssao
-should have technique_ as prefix
-should have more blur because looks a lot grainy
-
-features/technique_transparency
-there are no other transparency techniques to show? are you sure a 3D example is not clearer to show the differences between the techniques? like 2 cubes of different sizes that partially overlap or something? wdyt?
-
-features/video_export
-this one should run for a couple of seconds and save a video file and print on the terminal the path to the video file no?
-
-features/visibility
-we must add a comment that we use different visuals just for demo purposes only but in reality it is better to group visuals of the same family together to benefit from batching, however visibility applies to the level of an entire visual
-
-features/visual_transform
-this one is not very clear? perhaps we could have two panels with the same visual, without or with transform?
-
-features/volume_occlusion
-this one is very weird and needs to be redone. perhaps two panels with a volume occluded by a plane or a mesh, with volume occlusion off and on
-
-
-
 showcases/brain_volume
-this one should be called just "brain_volume"
-also the initial view should be tilted in such a way that we see the slice and some of the brain volume behind
+i want to see it from the other side by default
 
 showcases/choropleth
-title and subtitle are way too small on macOS retina
-zoom with right drag should force fixed aspect ratio
+for aspect-fixed right-drag zoom, the boundary line between zoom in and zoom out seems currently to be x=0 vertical line. I would like it to be y=-x line which may be more natural, ie zoom in should work when right draft right or up
 
-showcases/scientific_plotting
-xaxis is clipped by panel bottom end
+showcases/linked_probe_colorbar
+the text on the left panel at the top is hard to read because of its color on the background, also not enough padding above it, too close to the clip top border
+
+showcases/surface_grid
+i'm not sure if the lighting at the bottom of the grid is correct
+
+showcases/synthetic_mouse
+there is a fake mesh apparently, again, ensure the example fails if the data is not available, NOT simulated data
 
 showcases/textured_planet
-the dark side of the planet is way too dark we don't see anything
-also i think we should put some limits to zoom in/out with this view, and perhaps some kind of log scale because the more we zoom the slower we want to go or something? right now on macOS the double finger zoom is way to sensitive
+initially the camera rotates slowly, but if i rotate the camera with the mouse and then stop, the automatic rotation of the camera stops too. I would like it to continue as before
 
-showcases/wind_field
-the ellipsoid pointer is weird, what is it?
+composites/polygon
+i want fixed aspect ratio and also all polygons should be visible initially, i shouldn't have to zoom out to see all polygons
+
+composites/graph
+i want another more compelling and realistic example of a graph, let's brainstorm about this one
+
+features/animation_tracks
+i think it would be cleaner and clearer with a reference grid on the XZ plane
+
+features/annotation_readout
+the text is too close from the point, there is some overlap and the first character of the text is hard to read
+
+features/axis_labels
+why is this in a small panel with a border? looks weird
+
+features/builtin_shapes_2d
+i want fixed/equal aspect ratio
+
+features/builtin_shapes_3d
+good but not well balanced in terms of symmetry, the objects on the scene
+
+features/compute_buffer_animation
+works but stops unless the mouse moves in the window, a problem with app request frame or something
+
+features/controller_arcball
+we need a XZ reference plane grid
+
+features/controller_fly
+left drag camera movement is too sensitive
+
+features/controller_orbit_camera
+we need a XZ reference plane grid
+
+features/controller_turntable
+we need a XZ reference plane grid
+
+features/gui_controls
+i think we need to show more capabilities of the datoviz gui wrappers, with more controls in the gui
+
+features/guide_lines
+problem with the placement of the line labels, they seem to be in world space, they get smaller or bigger as i zoom in or out, and their position is totally wrong
+
+features/guide_spans
+problem with the placement of the spans labels, they seem to be in world space, they get smaller or bigger as i zoom in or out, and their position is totally wrong
+
+features/lighting
+we need panel legends
+the camera should be much less zoomed in initially
+the spheres are way too close together
+perhaps we could link the camera across the panels?
+
+features/material_mesh
+i would like different panels with the same mesh but different materials, and linked orbit camera across the panels. also with panel legends
+
+features/orientation_gizmo
+there was a much nicer 3D gizmo in the legacy examples no? also, when rotating the arcball and releasing the mouse, the gizmo slightly shifts whereas the model does not so it is not accurate.
+
+features/overlay_card
+the visual shown is very weird, just show a simple curve or something
+
+features/picking
+click to toggle selection doesn't appear to do anything
+
+features/reference_grid
+ok but could it be made infinite? perhaps with some fog at a distance?
+also i would like the cube to be immediately on the plane, not with some space between them
+
+features/selection_mesh_instances
+instance hover is badly broken
+
+features/selection_pixel
+y flip problem (same as showcases/embedding_atlas) and click to select doesn't appear to do anything
+
+features/technique_depth_cue
+features/technique_edl
+need arcball to compare both panels (and with linked panels)
+
+features/technique_msaa
+need linked panels
+
+features/technique_ssao
+still need to tweak the ssao params, check the protein example and use the same params? more blur etc. also we need the arcball
+
+features/technique_transparency
+the first two panels are empty
+
+features/video_export
+doesn't record a video by default, doesn't stop automatically after a few seconds
+
+features/visibility
+could we toggle visibility on and off like 2x per second?
+
+
+
+
 
 
 
 visuals/glyph
-i don't understand this one, compared to marker? shouldn't these be font glyphs? what's the difference with marker?
+explain this visual, it's unclear to me its relationship with marker and text
+why am i not seeing text characters in this example
+why do we need it, when is it expected to be used
 
-visuals/segment
-shouldn't we show different types of segment ends?
+showcases/lipid_brain_atlas
+that's not what i had in mind, i would have imagined millions of color points in 3D (voxels basically) with a way to slice through it using a gui. wdyt?
+
+showcases/embedding_atlas
+a persisting bug that we really need to fix properly, we need to think about the right long term fix here. as soon as i hover a point, the image immediately y flips. then the hover is not working and seems y flipped too.
+also i am not sure what this dataset is supposed to show, is it fake/simulated? If so, it needs to be replaced by actual data. NO FALLBACK to simulated, it should fail if the data is not available, with clear instructions as to how to prepare it.
+
+features/bounds_overlay
+something is wrong because the dots or spheres go a bit beyond the bounding box
+
+features/gui_viewport
+still the same instability problem when resizing the viewport
+
+features/panel_domain_fit
+i still don't understand that one, explain
+
+features/triangulation_polygon
+this is ugly, think of a nicer example. and showing triangulation wireframe in fact
+
+features/volume_occlusion
+this one is pretty bad, let's brainstorm on it carefully
 
 
 
-GENERAL COMMENTS
-- shouldn't the comments/description at the top of each example be a bit more detailed, so that we can reuse the text on each example's webpage?
-- we should ensure all examples use the scenario helper, although there may be a few justified exceptions when what we want to demonstrate lies precisely in what the scenario wraps for, in that case it is reasonable not to use the scenario api
-- we miss some builtin shapes in 2D or 3D like we had in v0.3, ex pythagorean solids etc, can you check what we had in v0.3, what we have in v0.4 so far, what's missing for feature parity, if you see any other standard shape we could include, and report back? no need to match the api, terminology etc, it's just to give an idea. then we could make 1 or 2 examples with all the shapes that we have builtin
 
-
-
-FURTHER EXAMPLES
-- i would like showcases/surface_grid, like the one in legacy, and showing wireframes
-- i would like features/instancing showing a single mesh instanced multiple times with different transforms, like in legacy
-- i would like features/isolines, what would you recommend? could be on mesh, in image, or both?
-- i would like raw_triangle_vklite and raw_triangle_drp2 like in legacy, to show how to use datoviz without the scene api, where should we put them? not in features, not in visuals, not in showcases i guess?
-- bounds_overlay.c in legacy, it would be worth porting it into 1 or 2 feature examples no?
-- arcball_gizmo.c in legacy, it would be worth porting it into a feature example no? it should appear in a small inset at the bottom right, together with a mesh in the main panel, synchronized
+NEW EXAMPLES/GENERAL COMMENTS
+- i would like a new feature example showing linking of arcball in 2 controllers with two meshes but linked arcballs
+- when resizing the window to a size that is too small, error and visual bugs and "_app_draw emit failed: scene grid layout resolution failed"
