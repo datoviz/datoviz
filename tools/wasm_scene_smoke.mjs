@@ -922,6 +922,32 @@ function expectColorbarScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "WriteTexture").length >= 2, `${label}: expected scalar image and glyph texture uploads`);
 }
 
+function expectLegendScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  expectCommandCount(stream, "BeginCommandEncoder", 1, label);
+  expectCommandCount(stream, "FinishCommandEncoder", 1, label);
+  expectCommandCount(stream, "QueueSubmit", 1, label);
+  requireOk(commandsOf(stream, "BeginRenderPass").length >= 1, `${label}: expected render pass`);
+  requireOk(commandsOf(stream, "SetViewport").length >= 1, `${label}: expected viewport command`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 1, `${label}: expected scissor command`);
+  expectPipeline(
+    stream,
+    `${label} markers`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.marker",
+  );
+  expectPipeline(
+    stream,
+    `${label} labels`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  expectDraw(stream, 6, 18, `${label} marker cloud`);
+  requireOk(commandsOf(stream, "Draw").length >= 2, `${label}: expected marker and label draws`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
+}
+
 function expectScaleBarScenarioStreamShape(stream, label, { reference = "point" } = {}) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -1476,6 +1502,7 @@ try {
     "feature_colorbar",
     "feature_scalebar",
     "feature_scalebar_units",
+    "feature_legend_categorical",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -1732,6 +1759,33 @@ try {
       initialScalebarUnits.stream, "scale-bar units scenario initial", { reference: "path" });
   } finally {
     Module._dvz_wasm_api_scene_destroy(scalebarUnitsScene);
+  }
+
+  const legendIndex = scenarioIndex(Module, "feature_legend_categorical");
+  const legendWidth = Module._dvz_wasm_api_scenario_width(legendIndex);
+  const legendHeight = Module._dvz_wasm_api_scenario_height(legendIndex);
+  const legendScene = Module._dvz_wasm_api_scene(legendWidth, legendHeight);
+  requireOk(legendScene !== 0, "legend scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(legendScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "legend scenario canvas format",
+    );
+    setCapabilities(
+      Module, legendScene, 4096, 4, 8, 256 * 1024 * 1024, 256, 4, "legend scenario capabilities");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(legendScene, legendIndex),
+      0,
+      "legend scenario create",
+    );
+    expectNoDiagnostics(Module, legendScene, "legend scenario create diagnostics");
+    const legendFigure = Module._dvz_wasm_api_scenario_figure(legendScene);
+    requireOk(legendFigure !== 0, "legend scenario has no figure");
+    const initialLegend = emitStream(Module, legendScene, legendFigure, "legend scenario initial");
+    expectLegendScenarioStreamShape(initialLegend.stream, "legend scenario initial");
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(legendScene);
   }
 
   const pixelSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);

@@ -90,6 +90,11 @@ export const LIVE_EXAMPLES = [
     label: "Scale Bar Units",
     scenarioId: "feature_scalebar_units",
   },
+  {
+    id: "feature_legend_categorical",
+    label: "Categorical Legend",
+    scenarioId: "feature_legend_categorical",
+  },
 ];
 
 export function liveExampleById(id) {

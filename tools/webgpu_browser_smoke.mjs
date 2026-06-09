@@ -778,6 +778,7 @@ async function main() {
     let wasmColorbar = null;
     let wasmScalebar = null;
     let wasmScalebarUnits = null;
+    let wasmLegend = null;
     let wasmQuery = null;
     try {
       wasmBasic = await smokeAnimatedWasmPage(
@@ -838,6 +839,20 @@ async function main() {
       );
     }
     try {
+      wasmLegend = await smokeWasmPage(
+        page,
+        baseUrl,
+        '/examples/webgpu/live.html?id=feature_legend_categorical',
+        'Rendered Categorical Legend',
+        join(artifactsDir, 'webgpu_live_legend_categorical.png'),
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(skipLine(`WebGPU live legend smoke: headless WebGPU instance loss (${error.message})`));
+    }
+    try {
       wasmQuery = await smokeQueryWasmPage(
         page,
         baseUrl,
@@ -866,6 +881,9 @@ async function main() {
     }
     if (wasmScalebarUnits !== null) {
       console.log(passLine(`live scale-bar units: ${wasmScalebarUnits.initialStatus}`));
+    }
+    if (wasmLegend !== null) {
+      console.log(passLine(`live legend: ${wasmLegend.initialStatus}`));
     }
     if (wasmQuery !== null) {
       console.log(

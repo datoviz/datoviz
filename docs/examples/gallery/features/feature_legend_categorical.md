@@ -10,7 +10,8 @@ tentative retained categorical legend proof.
 - Status: `experimental`
 - Source: [`examples/c/features/legend_categorical.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c)
 - Agent copy-safe: `false`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_legend_categorical`](/examples/webgpu/live.html?id=feature_legend_categorical)
 - WebGPU requirements: `legend`, `categorical-scale`, `marker`, `text`
 - Build: `just example-c features/legend_categorical`
 - Smoke: `./build/examples/c/features/legend_categorical --png`
@@ -32,6 +33,14 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=feature_legend_categorical" title="Categorical Legend WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_legend_categorical).
 
 ## Source
 

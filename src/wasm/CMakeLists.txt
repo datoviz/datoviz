@@ -18,6 +18,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/compute_buffer_animation.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/image_probe.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/isolines.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/legend_categorical.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/obj_loading.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/picking.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_mesh_instances.c
