@@ -779,6 +779,7 @@ async function main() {
     let wasmScalebar = null;
     let wasmScalebarUnits = null;
     let wasmLegend = null;
+    let wasmReadout = null;
     let wasmQuery = null;
     try {
       wasmBasic = await smokeAnimatedWasmPage(
@@ -853,6 +854,20 @@ async function main() {
       console.log(skipLine(`WebGPU live legend smoke: headless WebGPU instance loss (${error.message})`));
     }
     try {
+      wasmReadout = await smokeWasmPage(
+        page,
+        baseUrl,
+        '/examples/webgpu/live.html?id=annotation_readout',
+        'Rendered Annotation Readout',
+        join(artifactsDir, 'webgpu_live_annotation_readout.png'),
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(skipLine(`WebGPU live annotation readout smoke: headless WebGPU instance loss (${error.message})`));
+    }
+    try {
       wasmQuery = await smokeQueryWasmPage(
         page,
         baseUrl,
@@ -884,6 +899,9 @@ async function main() {
     }
     if (wasmLegend !== null) {
       console.log(passLine(`live legend: ${wasmLegend.initialStatus}`));
+    }
+    if (wasmReadout !== null) {
+      console.log(passLine(`live annotation readout: ${wasmReadout.initialStatus}`));
     }
     if (wasmQuery !== null) {
       console.log(

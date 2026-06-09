@@ -293,6 +293,14 @@ Current status as of this note:
   generated legend markers, and glyph labels. `just webgpu-browser-smoke` exited successfully in
   this shell, with the live timer, colorbar, scale-bar, scale-bar-units, legend, and query checks
   skipped by known headless WebGPU instance loss before scene rendering.
+- recorded local annotation-readout promotion checkpoint on 2026-06-09: `node --check
+  tools/wasm_scene_smoke.mjs`, `node --check tools/webgpu_browser_smoke.mjs`, and `node --check
+  examples/webgpu/live_examples.js` passed; `python3 tools/check_example_manifests.py` passed;
+  `just example-c features/annotation_readout` passed; `just wasm-scene-smoke` emitted,
+  packetized, and replayed the retained annotation readout scenario, including the point target
+  cloud and glyph readout label. `just webgpu-browser-smoke` exited successfully in this shell,
+  with the live timer, colorbar, scale-bar, scale-bar-units, legend, annotation-readout, and query
+  checks skipped by known headless WebGPU instance loss before scene rendering.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser

@@ -948,6 +948,32 @@ function expectLegendScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
 }
 
+function expectAnnotationReadoutScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  expectCommandCount(stream, "BeginCommandEncoder", 1, label);
+  expectCommandCount(stream, "FinishCommandEncoder", 1, label);
+  expectCommandCount(stream, "QueueSubmit", 1, label);
+  requireOk(commandsOf(stream, "BeginRenderPass").length >= 1, `${label}: expected render pass`);
+  requireOk(commandsOf(stream, "SetViewport").length >= 1, `${label}: expected viewport command`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 1, `${label}: expected scissor command`);
+  expectPipeline(
+    stream,
+    `${label} points`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.point",
+  );
+  expectPipeline(
+    stream,
+    `${label} readout label`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  expectDraw(stream, 6, 96, `${label} point cloud`);
+  requireOk(commandsOf(stream, "Draw").length >= 2, `${label}: expected point and label draws`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
+}
+
 function expectScaleBarScenarioStreamShape(stream, label, { reference = "point" } = {}) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -1503,6 +1529,7 @@ try {
     "feature_scalebar",
     "feature_scalebar_units",
     "feature_legend_categorical",
+    "feature_annotation_readout",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -1786,6 +1813,36 @@ try {
     expectLegendScenarioStreamShape(initialLegend.stream, "legend scenario initial");
   } finally {
     Module._dvz_wasm_api_scene_destroy(legendScene);
+  }
+
+  const readoutIndex = scenarioIndex(Module, "feature_annotation_readout");
+  const readoutWidth = Module._dvz_wasm_api_scenario_width(readoutIndex);
+  const readoutHeight = Module._dvz_wasm_api_scenario_height(readoutIndex);
+  const readoutScene = Module._dvz_wasm_api_scene(readoutWidth, readoutHeight);
+  requireOk(readoutScene !== 0, "annotation readout scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(readoutScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "annotation readout scenario canvas format",
+    );
+    setCapabilities(
+      Module, readoutScene, 4096, 4, 8, 256 * 1024 * 1024, 256, 4,
+      "annotation readout scenario capabilities");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(readoutScene, readoutIndex),
+      0,
+      "annotation readout scenario create",
+    );
+    expectNoDiagnostics(Module, readoutScene, "annotation readout scenario create diagnostics");
+    const readoutFigure = Module._dvz_wasm_api_scenario_figure(readoutScene);
+    requireOk(readoutFigure !== 0, "annotation readout scenario has no figure");
+    const initialReadout =
+      emitStream(Module, readoutScene, readoutFigure, "annotation readout scenario initial");
+    expectAnnotationReadoutScenarioStreamShape(
+      initialReadout.stream, "annotation readout scenario initial");
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(readoutScene);
   }
 
   const pixelSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);

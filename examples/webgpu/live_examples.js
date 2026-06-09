@@ -95,6 +95,11 @@ export const LIVE_EXAMPLES = [
     label: "Categorical Legend",
     scenarioId: "feature_legend_categorical",
   },
+  {
+    id: "annotation_readout",
+    label: "Annotation Readout",
+    scenarioId: "feature_annotation_readout",
+  },
 ];
 
 export function liveExampleById(id) {

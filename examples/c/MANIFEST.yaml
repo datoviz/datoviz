@@ -1063,12 +1063,13 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=annotation_readout
       requirements:
         - annotation
         - readout
         - text
-        - marker
+        - point
     agent_copy_safe: true
 
   - id: update_partial

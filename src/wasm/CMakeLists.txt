@@ -10,6 +10,7 @@ add_executable(datoviz_wasm_scene
     scene_api.c
     ${PROJECT_SOURCE_DIR}/examples/c/example_common.c
     ${PROJECT_SOURCE_DIR}/examples/c/example_style.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/annotation_readout.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/animation_tracks.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/basic_scene.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/builtin_shapes_2d.c
