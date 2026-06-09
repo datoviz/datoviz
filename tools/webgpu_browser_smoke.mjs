@@ -776,6 +776,7 @@ async function main() {
     page = await createPage(chrome.debugPort);
     let wasmBasic = null;
     let wasmColorbar = null;
+    let wasmScalebar = null;
     let wasmQuery = null;
     try {
       wasmBasic = await smokeAnimatedWasmPage(
@@ -806,6 +807,20 @@ async function main() {
       console.log(skipLine(`WebGPU live colorbar smoke: headless WebGPU instance loss (${error.message})`));
     }
     try {
+      wasmScalebar = await smokeWasmPage(
+        page,
+        baseUrl,
+        '/examples/webgpu/live.html?id=scale_bar',
+        'Rendered Scale Bar',
+        join(artifactsDir, 'webgpu_live_scale_bar.png'),
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(skipLine(`WebGPU live scale-bar smoke: headless WebGPU instance loss (${error.message})`));
+    }
+    try {
       wasmQuery = await smokeQueryWasmPage(
         page,
         baseUrl,
@@ -828,6 +843,9 @@ async function main() {
     }
     if (wasmColorbar !== null) {
       console.log(passLine(`live colorbar: ${wasmColorbar.initialStatus}`));
+    }
+    if (wasmScalebar !== null) {
+      console.log(passLine(`live scale-bar: ${wasmScalebar.initialStatus}`));
     }
     if (wasmQuery !== null) {
       console.log(

@@ -80,6 +80,11 @@ export const LIVE_EXAMPLES = [
     label: "Colorbar",
     scenarioId: "feature_colorbar",
   },
+  {
+    id: "scale_bar",
+    label: "Scale Bar",
+    scenarioId: "feature_scalebar",
+  },
 ];
 
 export function liveExampleById(id) {

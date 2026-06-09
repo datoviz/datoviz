@@ -922,6 +922,37 @@ function expectColorbarScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "WriteTexture").length >= 2, `${label}: expected scalar image and glyph texture uploads`);
 }
 
+function expectScaleBarScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  expectCommandCount(stream, "BeginCommandEncoder", 1, label);
+  expectCommandCount(stream, "FinishCommandEncoder", 1, label);
+  expectCommandCount(stream, "QueueSubmit", 1, label);
+  requireOk(commandsOf(stream, "BeginRenderPass").length >= 1, `${label}: expected render pass`);
+  requireOk(commandsOf(stream, "SetViewport").length >= 1, `${label}: expected viewport command`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 1, `${label}: expected scissor command`);
+  expectPipeline(
+    stream,
+    `${label} point`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.point",
+  );
+  expectPipeline(
+    stream,
+    `${label} scale segment`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.segment",
+  );
+  expectPipeline(
+    stream,
+    `${label} scale label`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  expectDraw(stream, 6, 5, `${label} point`);
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected scale-bar segment draw`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
+}
+
 function expect3DSceneStreamShape(stream, label) {
   expectCommonSceneStreamShape(stream, label);
   expectDraw(stream, 6, 3, `${label} sphere`);
@@ -1428,6 +1459,7 @@ try {
     "feature_compute_buffer_animation",
     "feature_image_probe",
     "feature_colorbar",
+    "feature_scalebar",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -1627,6 +1659,33 @@ try {
     expectColorbarScenarioStreamShape(initialColorbar.stream, "colorbar scenario initial");
   } finally {
     Module._dvz_wasm_api_scene_destroy(colorbarScene);
+  }
+
+  const scalebarIndex = scenarioIndex(Module, "feature_scalebar");
+  const scalebarWidth = Module._dvz_wasm_api_scenario_width(scalebarIndex);
+  const scalebarHeight = Module._dvz_wasm_api_scenario_height(scalebarIndex);
+  const scalebarScene = Module._dvz_wasm_api_scene(scalebarWidth, scalebarHeight);
+  requireOk(scalebarScene !== 0, "scale-bar scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(scalebarScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "scale-bar scenario canvas format",
+    );
+    setCapabilities(
+      Module, scalebarScene, 4096, 4, 8, 256 * 1024 * 1024, 256, 4, "scale-bar scenario capabilities");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(scalebarScene, scalebarIndex),
+      0,
+      "scale-bar scenario create",
+    );
+    expectNoDiagnostics(Module, scalebarScene, "scale-bar scenario create diagnostics");
+    const scalebarFigure = Module._dvz_wasm_api_scenario_figure(scalebarScene);
+    requireOk(scalebarFigure !== 0, "scale-bar scenario has no figure");
+    const initialScalebar = emitStream(Module, scalebarScene, scalebarFigure, "scale-bar scenario initial");
+    expectScaleBarScenarioStreamShape(initialScalebar.stream, "scale-bar scenario initial");
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(scalebarScene);
   }
 
   const pixelSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);

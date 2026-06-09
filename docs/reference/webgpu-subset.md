@@ -137,7 +137,7 @@ The browser path intentionally does not support:
 Promote browser scene features in this order unless a release blocker changes the priority:
 
 1. add manifest-driven browser routes for broader promoted portable scenarios;
-2. scale bar;
+2. scale-bar units;
 3. legend and readout-style overlays;
 4. richer labels, including unsigned label variants and palette/category updates;
 5. broader vector/path parity, including path subpaths and stroke edge cases;

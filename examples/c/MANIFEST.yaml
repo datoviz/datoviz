@@ -958,7 +958,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=scale_bar
       requirements:
         - scale-bar
         - text
