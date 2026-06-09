@@ -1365,6 +1365,7 @@ try {
     "feature_builtin_shapes_3d",
     "feature_isolines",
     "feature_animation_tracks",
+    "feature_obj_loading",
     "feature_picking",
     "feature_image_probe",
   ];

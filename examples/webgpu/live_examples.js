@@ -37,6 +37,11 @@ export const LIVE_EXAMPLES = [
     animate: true,
   },
   {
+    id: "feature_obj_loading",
+    label: "OBJ Loading",
+    scenarioId: "feature_obj_loading",
+  },
+  {
     id: "feature_picking",
     label: "Picking",
     scenarioId: "feature_picking",

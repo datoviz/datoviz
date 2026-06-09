@@ -32,6 +32,9 @@
 #include "runner/scenario_runner.h"
 
 
+DvzScenarioSpec dvz_example_obj_loading_scenario(void);
+
+
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
@@ -165,7 +168,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _obj_loading_scenario(void)
+DvzScenarioSpec dvz_example_obj_loading_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_obj_loading",
@@ -173,6 +176,8 @@ static DvzScenarioSpec _obj_loading_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements =
+            DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
     };
 }
@@ -183,6 +188,7 @@ static DvzScenarioSpec _obj_loading_scenario(void)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+#ifndef DVZ_EXAMPLE_NO_MAIN
 /**
  * Run the OBJ-loading feature example through the native scenario runner.
  *
@@ -192,6 +198,7 @@ static DvzScenarioSpec _obj_loading_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _obj_loading_scenario();
+    DvzScenarioSpec spec = dvz_example_obj_loading_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

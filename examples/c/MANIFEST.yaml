@@ -1125,10 +1125,12 @@ examples:
       kind: synthetic
     portability: portable-scenario
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_obj_loading
       requirements:
         - mesh
         - controller
+        - arcball
     agent_copy_safe: true
 
   - id: feature_probe_labels
