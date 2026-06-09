@@ -34,7 +34,7 @@ const char* _visual_type_name(DvzVisualType type);
 bool _figure_visual_index(const DvzFigure* figure, const DvzVisual* visual, uint32_t* out_index);
 bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action);
 const char* _attr_storage_name(DvzVisualType type, const char* name);
-bool _attr_is_instance_attribute(const char* name);
+bool _attr_is_instance_attribute(DvzVisualType type, const char* name);
 uint32_t _attr_item_size(DvzVisualType type, const char* name);
 bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item_size);
 DvzVisualAttrFormat _attr_default_format(DvzVisualType type, const char* name);

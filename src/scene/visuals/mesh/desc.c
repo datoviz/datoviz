@@ -100,6 +100,28 @@ bool _scene_mesh_visual_desc_from_metadata(
         out->instance_count = (uint32_t)instance_count;
     }
 
+    uint64_t selection_id = _scene_visual_desc_resource(emitter, meta->selection_id);
+    uint64_t item_state_style_id =
+        _scene_visual_desc_resource(emitter, meta->item_state_style_id);
+    if (selection_id != 0)
+    {
+        if (texture_id != 0)
+        {
+            if (error != NULL)
+                *error = "typed textured mesh item_state styling is not supported";
+            return false;
+        }
+        if (item_state_style_id == 0)
+        {
+            if (error != NULL)
+                *error = "typed mesh metadata missing item-state style resource";
+            return false;
+        }
+        out->vbuf_ids[out->vbuf_count++] = selection_id;
+        out->has_item_state = true;
+        out->item_state_style_buffer_id = item_state_style_id;
+    }
+
     uint64_t pos_buf = out->vbuf_ids[0];
     out->topology = _scene_visual_desc_resource_topology(emitter, pos_buf);
     if (out->topology == UINT32_MAX)

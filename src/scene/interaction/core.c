@@ -407,9 +407,12 @@ static void _selection_clear_items(DvzSelection* selection)
  */
 static bool _item_state_visual_supports(const DvzVisual* visual)
 {
-    return visual != NULL &&
-           (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
-            visual->type == DVZ_VISUAL_TYPE_MARKER || visual->type == DVZ_VISUAL_TYPE_SPHERE);
+    if (visual == NULL)
+        return false;
+    if (visual->type == DVZ_VISUAL_TYPE_MESH)
+        return _visual_family_state(visual)->field == NULL;
+    return visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
+           visual->type == DVZ_VISUAL_TYPE_MARKER || visual->type == DVZ_VISUAL_TYPE_SPHERE;
 }
 
 
@@ -443,6 +446,18 @@ static uint32_t _item_state_visual_item_count(const DvzVisual* visual)
 {
     if (!_item_state_visual_supports(visual))
         return 0;
+    if (visual->type == DVZ_VISUAL_TYPE_MESH)
+    {
+        int transform_idx = _attr_index(visual, "instance_transform");
+        if (
+            transform_idx >= 0 && visual->attrs[transform_idx].data != NULL &&
+            visual->attrs[transform_idx].item_count > 0 &&
+            visual->attrs[transform_idx].item_count <= UINT32_MAX)
+        {
+            return (uint32_t)visual->attrs[transform_idx].item_count;
+        }
+        return 1;
+    }
     int pos_idx = _attr_index(visual, "position");
     if (pos_idx < 0 || visual->attrs[pos_idx].item_count > UINT32_MAX)
         return 0;

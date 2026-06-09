@@ -987,6 +987,26 @@ examples:
         - frame-callbacks
     agent_copy_safe: true
 
+  - id: feature_selection_mesh_instances
+    title: Mesh Instance Selection
+    stage: v0.4_required
+    category: feature
+    primary_feature: selection-mesh-instances
+    lane: features
+    source: examples/c/features/selection_mesh_instances.c
+    validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - mesh
+        - arcball
+        - query-readback
+        - frame-callbacks
+    agent_copy_safe: true
+
   - id: feature_triangulation_polygon
     title: Polygon Triangulation
     stage: v0.4_required

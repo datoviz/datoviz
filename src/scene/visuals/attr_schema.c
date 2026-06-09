@@ -49,11 +49,11 @@ const char* _attr_storage_name(DvzVisualType type, const char* name)
  * @param name the retained attribute name
  * @return whether the attribute is per-instance
  */
-bool _attr_is_instance_attribute(const char* name)
+bool _attr_is_instance_attribute(DvzVisualType type, const char* name)
 {
     ANN(name);
-    return strcmp(name, "instance_transform") == 0 || strcmp(name, "instance_color") == 0 ||
-           strcmp(name, "instance_id") == 0;
+    const DvzVisualFamilyAttrDesc* desc = _visual_family_attr_desc(type, name);
+    return desc != NULL && desc->instance;
 }
 
 
@@ -309,7 +309,9 @@ bool _visual_attr_count_consistent(
     {
         const DvzVisualAttr* attr = &visual->attrs[i];
         bool attr_has_payload = attr->data != NULL || attr->buffer != NULL;
-        if (_attr_is_instance_attribute(attr_name) || _attr_is_instance_attribute(attr->name))
+        if (
+            _attr_is_instance_attribute(visual->type, attr_name) ||
+            _attr_is_instance_attribute(visual->type, attr->name))
             continue;
         if (
             _visual_family_state(visual)->mesh_default_color && strcmp(attr_name, "position") == 0 &&

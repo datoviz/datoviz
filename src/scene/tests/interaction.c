@@ -1288,6 +1288,136 @@ int test_scene_sphere_hover_selection_item_state(TstContext* suite, const TstCas
 }
 
 
+int test_scene_mesh_instance_hover_selection_item_state(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
+    dvz_visual_set_query_capabilities(mesh, DVZ_QUERY_CAPABILITY_ITEM);
+    vec3 positions[4] = {
+        {-0.25f, -0.25f, 0.0f},
+        {-0.25f, +0.25f, 0.0f},
+        {+0.25f, -0.25f, 0.0f},
+        {+0.25f, +0.25f, 0.0f},
+    };
+    DvzColor colors[4] = {
+        {100, 170, 230, 255},
+        {100, 170, 230, 255},
+        {100, 170, 230, 255},
+        {100, 170, 230, 255},
+    };
+    float transforms[2][16] = {
+        {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -0.45f, 0, 0, 1},
+        {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, +0.45f, 0, 0, 1},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "color", colors, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "instance_transform", transforms, 2) == 0);
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+
+    DvzHover* hover = dvz_hover(
+        scene,
+        &(DvzHoverDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzHoverDesc),
+            .target = DVZ_SCENE_TARGET_ITEM,
+            .hit_policy = DVZ_QUERY_HIT_FRONTMOST,
+        });
+    DvzSelection* selection = dvz_selection(
+        scene,
+        &(DvzSelectionDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
+            .mode = DVZ_SELECT_TOGGLE,
+            .target = DVZ_SCENE_TARGET_ITEM,
+        });
+    ANN(hover);
+    ANN(selection);
+
+    DvzItemStateVisualStyle hover_style = dvz_item_state_visual_style();
+    hover_style.visual_flags = DVZ_ITEM_STATE_VISUAL_SCALE;
+    hover_style.scale = 1.25f;
+    AT(dvz_hover_set_visual_style(hover, &hover_style) == 0);
+
+    DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
+    selection_style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    selection_style.selected.tint = (DvzColor){255, 190, 64, 255};
+    selection_style.selected.tint_mix = 1.0f;
+    AT(dvz_selection_set_visual_style(selection, &selection_style) == 0);
+
+    DvzQueryResult hit = {
+        .request_id = 21,
+        .status = DVZ_QUERY_STATUS_HIT,
+        .hit = true,
+        .visual_id = _scene_visual_public_id(scene, mesh),
+        .visual_family = DVZ_SCENE_VISUAL_FAMILY_MESH,
+        .resolved_target = DVZ_SCENE_TARGET_ITEM,
+        .resolved_id = 1,
+        .item_id = 1,
+    };
+    AT(dvz_hover_apply_query(hover, &hit) == 0);
+
+    int state_idx = _attr_index(mesh, "item_state");
+    AT(state_idx >= 0);
+    const uint32_t* item_state = (const uint32_t*)mesh->attrs[state_idx].data;
+    ANN(item_state);
+    AT(item_state[0] == DVZ_ITEM_STATE_NONE);
+    AT(item_state[1] == DVZ_ITEM_STATE_HOVERED);
+    AC(_visual_family_state(mesh)->item_state_style_params.hovered[3], 1.25f, 1e-6f);
+
+    AT(dvz_selection_apply_query(selection, &hit) == 0);
+    item_state = (const uint32_t*)mesh->attrs[state_idx].data;
+    AT(item_state[1] == (DVZ_ITEM_STATE_SELECTED | DVZ_ITEM_STATE_HOVERED));
+    AT(dvz_selection_count(selection) == 1);
+    AT(mesh->attrs[state_idx].dirty_item_count == 2);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    AT(_interaction_stream_has_pipeline_attr(
+        stream, "_pipe_prim_t3_inst_item_stateg", VK_FORMAT_R32_UINT, 7));
+    AT(_interaction_stream_item_state_style_bind_group_count(stream) == 1);
+    _test_scene_stream_destroy(stream);
+
+    DvzQueryResult miss = {
+        .request_id = 22,
+        .status = DVZ_QUERY_STATUS_MISS,
+        .hit = false,
+    };
+    AT(dvz_hover_apply_query(hover, &miss) == 0);
+    item_state = (const uint32_t*)mesh->attrs[state_idx].data;
+    AT(item_state[1] == DVZ_ITEM_STATE_SELECTED);
+
+    dvz_selection_clear(selection);
+    item_state = (const uint32_t*)mesh->attrs[state_idx].data;
+    AT(item_state[1] == DVZ_ITEM_STATE_NONE);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -4212,6 +4342,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_selection_apply_query_updates_item_state);
     TST_CASE(test_scene_pixel_hover_selection_item_state);
     TST_CASE(test_scene_sphere_hover_selection_item_state);
+    TST_CASE(test_scene_mesh_instance_hover_selection_item_state);
     TST_CASE(test_scene_selection_card_realizes_query_metadata);
     TST_CASE(test_scene_overlay_card_public_api);
     TST_CASE(test_scene_overlay_card_rich_text_public_api);

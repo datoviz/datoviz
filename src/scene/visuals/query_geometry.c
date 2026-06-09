@@ -279,3 +279,98 @@ bool _scene_query_indexed_primitive_geometry(
     *out_topology = draw_topology;
     return true;
 }
+
+
+
+/**
+ * Build temporary query buffers for mesh object/instance item selection.
+ *
+ * @param label diagnostic query family label
+ * @param visual retained mesh visual
+ * @param scratch output scratch storage
+ * @param out_vertex_count output derived vertex count
+ * @param out_topology output Vulkan draw topology
+ * @return true when derived query buffers were created
+ */
+bool _scene_query_mesh_item_geometry(
+    const char* label, const DvzVisual* visual, DvzSceneQueryScratch* scratch,
+    uint64_t* out_vertex_count, uint32_t* out_topology)
+{
+    ANN(label);
+    ANN(visual);
+    ANN(scratch);
+    ANN(out_vertex_count);
+    ANN(out_topology);
+
+    if (!_scene_query_indexed_primitive_geometry(
+            label, visual, scratch, out_vertex_count, out_topology))
+    {
+        return false;
+    }
+
+    const DvzVisualAttr* transforms = NULL;
+    if (!_dvz_scene_query_dense_attr(visual, "instance_transform", 16 * sizeof(float), &transforms))
+    {
+        for (uint64_t i = 0; i < *out_vertex_count; i++)
+            scratch->query_ids[i] = 1u;
+        return true;
+    }
+
+    uint64_t base_vertex_count = *out_vertex_count;
+    uint64_t instance_count = transforms->item_count;
+    uint64_t vertex_count = 0;
+    if (
+        instance_count == 0 || instance_count > UINT32_MAX ||
+        _dvz_mul_u64_overflows(base_vertex_count, instance_count, &vertex_count) ||
+        vertex_count > UINT32_MAX)
+    {
+        log_error("%s query request instance-expanded vertex count is invalid", label);
+        _scene_query_scratch_destroy(scratch);
+        return false;
+    }
+
+    vec3* positions = NULL;
+    uint32_t* ids = NULL;
+    if (!_dvz_scene_query_alloc(label, (void**)&positions, vertex_count, sizeof(vec3)) ||
+        !_dvz_scene_query_alloc(label, (void**)&ids, vertex_count, sizeof(uint32_t)))
+    {
+        dvz_free(positions);
+        dvz_free(ids);
+        _scene_query_scratch_destroy(scratch);
+        return false;
+    }
+
+    const float* transform = (const float*)transforms->data;
+    for (uint64_t inst = 0; inst < instance_count; inst++)
+    {
+        const float* mat = &transform[16 * inst];
+        for (uint64_t v = 0; v < base_vertex_count; v++)
+        {
+            const float x = scratch->query_positions[v][0];
+            const float y = scratch->query_positions[v][1];
+            const float z = scratch->query_positions[v][2];
+            float tx = mat[0] * x + mat[4] * y + mat[8] * z + mat[12];
+            float ty = mat[1] * x + mat[5] * y + mat[9] * z + mat[13];
+            float tz = mat[2] * x + mat[6] * y + mat[10] * z + mat[14];
+            float tw = mat[3] * x + mat[7] * y + mat[11] * z + mat[15];
+            if (tw != 0.0f)
+            {
+                tx /= tw;
+                ty /= tw;
+                tz /= tw;
+            }
+            uint64_t dst = inst * base_vertex_count + v;
+            positions[dst][0] = tx;
+            positions[dst][1] = ty;
+            positions[dst][2] = tz;
+            ids[dst] = (uint32_t)inst + 1u;
+        }
+    }
+
+    dvz_free(scratch->query_positions);
+    dvz_free(scratch->query_ids);
+    scratch->query_positions = positions;
+    scratch->query_ids = ids;
+    *out_vertex_count = vertex_count;
+    return true;
+}

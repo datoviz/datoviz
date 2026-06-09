@@ -168,16 +168,24 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "sphere_gbuffer_frag" : "sphere_gbuffer_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE:
         return fragment ? "primitive_frag" : "primitive_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_ITEM_STATE:
+        return fragment ? "primitive_frag" : "primitive_item_state_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INSTANCED:
         return fragment ? "primitive_frag" : "primitive_instanced_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INSTANCED_ITEM_STATE:
+        return fragment ? "primitive_frag" : "primitive_instanced_item_state_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_PICK:
         return fragment ? "primitive_pick_frag" : "primitive_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_U32:
         return fragment ? "primitive_query_u32_frag" : "primitive_query_u32_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT:
         return fragment ? "primitive_lit_frag" : "primitive_lit_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_ITEM_STATE:
+        return fragment ? "primitive_lit_frag" : "primitive_lit_item_state_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_INSTANCED:
         return fragment ? "primitive_lit_frag" : "primitive_lit_instanced_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_INSTANCED_ITEM_STATE:
+        return fragment ? "primitive_lit_frag" : "primitive_lit_instanced_item_state_vert";
     case DVZ_SCENE_BUILTIN_SHADER_MESH_TEXTURED:
         return fragment ? "mesh_textured_frag" : "mesh_textured_vert";
     case DVZ_SCENE_BUILTIN_SHADER_GBUFFER_NORMAL:

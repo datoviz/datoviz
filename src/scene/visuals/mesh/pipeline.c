@@ -81,11 +81,13 @@ static void _mesh_primitive_pipeline_desc(
     ANN(visual);
     ANN(out);
 
-    out->vertex_buffer_count =
-        (visual->has_normal ? 3u : 2u) + (visual->has_instance_transform ? 1u : 0u);
+    out->vertex_buffer_count = (visual->has_normal ? 3u : 2u) +
+                               (visual->has_instance_transform ? 1u : 0u) +
+                               (visual->has_item_state ? 1u : 0u);
     out->binding_count = out->vertex_buffer_count;
     out->attr_count = (visual->has_normal ? 3u : 2u) +
-                      (visual->has_instance_transform ? 4u : 0u);
+                      (visual->has_instance_transform ? 4u : 0u) +
+                      (visual->has_item_state ? 1u : 0u);
     _scene_visual_pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
     _scene_visual_pipeline_attr(out, 1, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
     if (visual->has_normal)
@@ -98,9 +100,19 @@ static void _mesh_primitive_pipeline_desc(
         uint32_t transform_binding = visual->has_normal ? 3 : 2;
         _scene_visual_pipeline_instance_transform(out, transform_binding, transform_binding);
     }
+    if (visual->has_item_state)
+    {
+        uint32_t attr = (visual->has_normal ? 3u : 2u) +
+                        (visual->has_instance_transform ? 4u : 0u);
+        uint32_t binding = (visual->has_normal ? 3u : 2u) +
+                           (visual->has_instance_transform ? 1u : 0u);
+        _scene_visual_pipeline_attr(out, attr, binding, 7, VK_FORMAT_R32_UINT, sizeof(uint32_t));
+        out->step_modes[binding] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
+    }
 
     out->needs_common_layout = caps->uses_common_set;
     out->needs_material_layout = caps->needs_material_layout && !picking;
+    out->needs_item_state_style_layout = visual->has_item_state && !picking;
     _scene_visual_pipeline_apply_standard_depth_state(
         caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op, out);
 }

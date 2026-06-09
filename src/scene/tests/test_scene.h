@@ -911,6 +911,8 @@ int test_scene_primitive_query_resolves_item(TstContext* suite, const TstCase* i
 
 int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item);
 
+int test_scene_mesh_query_resolves_instance_item(TstContext* suite, const TstCase* item);
+
 int test_scene_image_query_resolves_item(TstContext* suite, const TstCase* item);
 
 int test_scene_volume_query_resolves_item(TstContext* suite, const TstCase* item);
@@ -1024,6 +1026,8 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
 int test_scene_pixel_hover_selection_item_state(TstContext* suite, const TstCase* item);
 
 int test_scene_sphere_hover_selection_item_state(TstContext* suite, const TstCase* item);
+
+int test_scene_mesh_instance_hover_selection_item_state(TstContext* suite, const TstCase* item);
 
 int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const TstCase* item);
 

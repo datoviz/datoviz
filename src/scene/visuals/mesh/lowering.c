@@ -44,7 +44,9 @@ bool _scene_mesh_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out
     out->desc_kind = _visual_family_state(visual)->field != NULL
                          ? _scene_visual_family_desc_kind(DVZ_VISUAL_TYPE_MESH)
                          : _scene_visual_family_desc_kind(DVZ_VISUAL_TYPE_PRIMITIVE);
-    out->needs_material_params = _scene_visual_has_dense_attr(visual, "normal");
+    out->needs_material_params =
+        _scene_visual_has_dense_attr(visual, "normal") ||
+        _scene_visual_has_dense_attr(visual, "item_state");
     return true;
 }
 
@@ -76,6 +78,8 @@ bool _scene_mesh_visual_bind_desc(
     out->uses_fixed_common = caps.fixed_controller;
     out->uses_material_set1 = caps.uses_material_set;
     out->material_buffer_id = visual->material_buffer_id;
+    out->uses_item_state_style_set1 = visual->has_item_state;
+    out->item_state_style_buffer_id = visual->item_state_style_buffer_id;
 
     if (_scene_visual_desc_is_textured_mesh(visual->kind))
     {

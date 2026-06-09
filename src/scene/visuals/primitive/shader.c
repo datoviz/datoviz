@@ -47,6 +47,7 @@ bool _scene_primitive_visual_shader_desc(
 
     bool lit = visual->has_normal;
     bool instanced = visual->has_instance_transform;
+    bool item_state = visual->has_item_state && !picking && !wboit_accumulation;
     if (picking)
     {
         dvz_snprintf(
@@ -104,32 +105,53 @@ bool _scene_primitive_visual_shader_desc(
     if (lit)
     {
         dvz_snprintf(
-            out->vertex_key, sizeof(out->vertex_key), "_vs_prim_lit%s%s", instanced ? "_inst" : "",
-            format_tag);
+            out->vertex_key, sizeof(out->vertex_key), "_vs_prim_lit%s%s%s",
+            instanced ? "_inst" : "", item_state ? "_item_state" : "", format_tag);
         dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_prim_lit%s", format_tag);
         dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_lit_t%u%s%s",
-            visual->topology, instanced ? "_inst" : "", format_tag);
+            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_lit_t%u%s%s%s",
+            visual->topology, instanced ? "_inst" : "", item_state ? "_item_state" : "",
+            format_tag);
         _scene_shader_desc_set_builtin(
-            out, instanced ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_INSTANCED
-                           : DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT);
+            out,
+            instanced ? (item_state ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_INSTANCED_ITEM_STATE
+                                    : DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_INSTANCED)
+                      : (item_state ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_ITEM_STATE
+                                    : DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT));
         _scene_shader_desc_set_identity(
-            out, "scene.primitive", instanced ? "lit_instanced" : "lit");
+            out, "scene.primitive",
+            instanced ? (item_state ? "lit_instanced_item_state" : "lit_instanced")
+                      : (item_state ? "lit_item_state" : "lit"));
+        if (item_state)
+        {
+            out->vertex_spirv_key = instanced ? "primitive_lit_instanced_item_state_vert"
+                                              : "primitive_lit_item_state_vert";
+            out->fragment_spirv_key = "primitive_lit_frag";
+        }
         return true;
     }
 
     dvz_snprintf(
-        out->vertex_key, sizeof(out->vertex_key), "_vs_prim%s%s", instanced ? "_inst" : "",
-        format_tag);
+        out->vertex_key, sizeof(out->vertex_key), "_vs_prim%s%s%s", instanced ? "_inst" : "",
+        item_state ? "_item_state" : "", format_tag);
     dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_prim%s", format_tag);
     dvz_snprintf(
-        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_t%u%s%s", visual->topology,
-        instanced ? "_inst" : "", format_tag);
+        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_t%u%s%s%s", visual->topology,
+        instanced ? "_inst" : "", item_state ? "_item_state" : "", format_tag);
     _scene_shader_desc_set_builtin(
-        out, instanced ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INSTANCED
-                       : DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE);
-    _scene_shader_desc_set_identity(out, "scene.primitive", instanced ? "instanced" : "default");
-    out->vertex_spirv_key = instanced ? "primitive_instanced_vert" : "primitive_vert";
+        out,
+        instanced ? (item_state ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INSTANCED_ITEM_STATE
+                                : DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INSTANCED)
+                  : (item_state ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_ITEM_STATE
+                                : DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE));
+    _scene_shader_desc_set_identity(
+        out, "scene.primitive",
+        instanced ? (item_state ? "instanced_item_state" : "instanced")
+                  : (item_state ? "item_state" : "default"));
+    out->vertex_spirv_key = instanced ? (item_state ? "primitive_instanced_item_state_vert"
+                                                    : "primitive_instanced_vert")
+                                     : (item_state ? "primitive_item_state_vert"
+                                                   : "primitive_vert");
     out->fragment_spirv_key = "primitive_frag";
     return true;
 }

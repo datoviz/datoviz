@@ -480,9 +480,10 @@ int dvz_visual_set_data_many(
             return -1;
         }
 
-        if (i == 0)
+        bool update_instance_attr = _attr_is_instance_attribute(visual->type, update->attr_name);
+        if (!update_instance_attr && batch_item_count == 0)
             batch_item_count = update->item_count;
-        else if (update->item_count != batch_item_count)
+        else if (!update_instance_attr && update->item_count != batch_item_count)
         {
             log_error(
                 "visual batch data update attribute '%s' item_count %u does not match batch "
@@ -551,9 +552,9 @@ int dvz_visual_set_data_many(
     {
         const DvzVisualAttr* attr = &visual->attrs[i];
         bool attr_has_payload = attr->data != NULL || attr->buffer != NULL;
-        if (attr->item_count == 0 || !attr_has_payload)
+        if (attr->item_count == 0 || !attr_has_payload || batch_item_count == 0)
             continue;
-        if (_attr_is_instance_attribute(attr->name))
+        if (_attr_is_instance_attribute(visual->type, attr->name))
             continue;
         if (_visual_data_update_contains_attr(visual->type, updates, update_count, attr->name))
             continue;

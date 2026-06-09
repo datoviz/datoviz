@@ -147,6 +147,7 @@ static const DvzVisualFamilyAttrDesc MESH_ATTRS[] = {
     {"normal", 3 * sizeof(float), SRC_ITEM_ONLY, false},
     {"texcoords", 2 * sizeof(float), SRC_ITEM_ONLY, false},
     {"instance_transform", 16 * sizeof(float), SRC_ITEM_ONLY, true},
+    {"item_state", sizeof(uint32_t), SRC_ITEM_ONLY, true},
 };
 
 
@@ -286,7 +287,7 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .default_material_model = DVZ_MATERIAL_MODEL_PHONG, .supports_material = true,
      .supports_depth_cue = true,
      .attrs = MESH_ATTRS, .attr_count = DVZ_ARRAY_COUNT(MESH_ATTRS),
-     .expected_attrs = "position, color, normal, texcoords, instance_transform",
+     .expected_attrs = "position, color, normal, texcoords, instance_transform, item_state",
      .after_attr_set = _scene_mesh_visual_after_attr_set, .upload_position_topology = true,
      .upload_material_params = true, .sampled_field_texture_upload = true},
     {VISUAL_OPS(

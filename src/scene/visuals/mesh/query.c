@@ -109,7 +109,7 @@ static bool _mesh_query_build(
 
     uint64_t vertex_count = 0;
     uint32_t topology = 0;
-    if (!_scene_query_indexed_primitive_geometry(
+    if (!_scene_query_mesh_item_geometry(
             "mesh", ctx->visual, &out_plan->scratch, &vertex_count, &topology))
     {
         _scene_query_scratch_destroy(&out_plan->scratch);
