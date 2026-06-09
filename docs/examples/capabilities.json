@@ -3,21 +3,21 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 67,
+  "example_count": 91,
   "categories": {
     "composite": 2,
-    "feature": 39,
+    "feature": 63,
     "showcase": 11,
     "visual": 15
   },
   "statuses": {
-    "experimental": 5,
+    "experimental": 9,
     "prototype": 1,
-    "supported": 61
+    "supported": 81
   },
   "agent_copy_safe": {
-    "false": 15,
-    "true": 52
+    "false": 21,
+    "true": 70
   },
   "capabilities": {
     "composites": {
@@ -121,7 +121,7 @@
         ]
       },
       "synthetic": {
-        "count": 61,
+        "count": 85,
         "examples": [
           {
             "id": "feature_scene_basic",
@@ -275,6 +275,222 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/lighting.c",
             "page": "gallery/features/feature_lighting.md"
+          },
+          {
+            "id": "feature_gui_controls",
+            "title": "GUI Controls",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/gui_controls.c",
+            "page": "gallery/features/feature_gui_controls.md"
+          },
+          {
+            "id": "feature_gui_viewport",
+            "title": "GUI Viewport",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/gui_viewport.c",
+            "page": "gallery/features/feature_gui_viewport.md"
+          },
+          {
+            "id": "feature_gui_cimgui",
+            "title": "Raw cimgui GUI",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/gui_cimgui.c",
+            "page": "gallery/features/feature_gui_cimgui.md"
+          },
+          {
+            "id": "feature_animation_tracks",
+            "title": "Animation Tracks",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/animation_tracks.c",
+            "page": "gallery/features/feature_animation_tracks.md"
+          },
+          {
+            "id": "feature_scene_compute_buffer",
+            "title": "Scene Compute Buffer",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/scene_compute_buffer.c",
+            "page": "gallery/features/feature_scene_compute_buffer.md"
+          },
+          {
+            "id": "feature_edl",
+            "title": "Eye-Dome Lighting",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/edl.c",
+            "page": "gallery/features/feature_edl.md"
+          },
+          {
+            "id": "feature_ssao",
+            "title": "Screen-Space Ambient Occlusion",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/ssao.c",
+            "page": "gallery/features/feature_ssao.md"
+          },
+          {
+            "id": "feature_msaa",
+            "title": "Multisample Antialiasing",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/msaa.c",
+            "page": "gallery/features/feature_msaa.md"
+          },
+          {
+            "id": "feature_depth_cue",
+            "title": "Depth Cue",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/depth_cue.c",
+            "page": "gallery/features/feature_depth_cue.md"
+          },
+          {
+            "id": "feature_transparency_order",
+            "title": "Transparency Order",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/transparency_order.c",
+            "page": "gallery/features/feature_transparency_order.md"
+          },
+          {
+            "id": "feature_volume_occlusion",
+            "title": "Volume Occlusion",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/volume_occlusion.c",
+            "page": "gallery/features/feature_volume_occlusion.md"
+          },
+          {
+            "id": "feature_guide_lines",
+            "title": "Guide Lines",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/guide_lines.c",
+            "page": "gallery/features/feature_guide_lines.md"
+          },
+          {
+            "id": "feature_guide_spans",
+            "title": "Guide Spans",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/guide_spans.c",
+            "page": "gallery/features/feature_guide_spans.md"
+          },
+          {
+            "id": "feature_bars_bands",
+            "title": "Bars And Bands",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/bars_bands.c",
+            "page": "gallery/features/feature_bars_bands.md"
+          },
+          {
+            "id": "feature_app_glfw",
+            "title": "GLFW App",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/app_glfw.c",
+            "page": "gallery/features/feature_app_glfw.md"
+          },
+          {
+            "id": "feature_offscreen_capture",
+            "title": "Offscreen Capture",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/offscreen_capture.c",
+            "page": "gallery/features/feature_offscreen_capture.md"
+          },
+          {
+            "id": "feature_input_events",
+            "title": "Input Events",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/input_events.c",
+            "page": "gallery/features/feature_input_events.md"
+          },
+          {
+            "id": "feature_record_replay",
+            "title": "Record Replay",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/record_replay.c",
+            "page": "gallery/features/feature_record_replay.md"
+          },
+          {
+            "id": "feature_controller_orbit_camera",
+            "title": "Orbit Camera Controller",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/controller_orbit_camera.c",
+            "page": "gallery/features/feature_controller_orbit_camera.md"
+          },
+          {
+            "id": "feature_visual_transform",
+            "title": "Visual Transform",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/visual_transform.c",
+            "page": "gallery/features/feature_visual_transform.md"
+          },
+          {
+            "id": "feature_panel_domain_fit",
+            "title": "Panel Domain Fit",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panel_domain_fit.c",
+            "page": "gallery/features/feature_panel_domain_fit.md"
+          },
+          {
+            "id": "feature_scene_json",
+            "title": "Scene JSON",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/scene_json.c",
+            "page": "gallery/features/feature_scene_json.md"
+          },
+          {
+            "id": "feature_external_surface",
+            "title": "External Surface",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/external_surface.c",
+            "page": "gallery/features/feature_external_surface.md"
+          },
+          {
+            "id": "feature_bezier_curve_path",
+            "title": "Bezier Curve Path",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/bezier_curve_path.c",
+            "page": "gallery/features/feature_bezier_curve_path.md"
           },
           {
             "id": "linked_panels_axes_panzoom",
@@ -690,6 +906,20 @@
           }
         ]
       },
+      "animation-tracks": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_animation_tracks",
+            "title": "Animation Tracks",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/animation_tracks.c",
+            "page": "gallery/features/feature_animation_tracks.md"
+          }
+        ]
+      },
       "annotation-readout": {
         "count": 1,
         "examples": [
@@ -701,6 +931,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/annotation_readout.c",
             "page": "gallery/features/annotation_readout.md"
+          }
+        ]
+      },
+      "app-glfw": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_app_glfw",
+            "title": "GLFW App",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/app_glfw.c",
+            "page": "gallery/features/feature_app_glfw.md"
           }
         ]
       },
@@ -729,6 +973,34 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/axis_labels.c",
             "page": "gallery/features/feature_axis_labels.md"
+          }
+        ]
+      },
+      "bars-bands": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_bars_bands",
+            "title": "Bars And Bands",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/bars_bands.c",
+            "page": "gallery/features/feature_bars_bands.md"
+          }
+        ]
+      },
+      "bezier-curve-path": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_bezier_curve_path",
+            "title": "Bezier Curve Path",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/bezier_curve_path.c",
+            "page": "gallery/features/feature_bezier_curve_path.md"
           }
         ]
       },
@@ -788,6 +1060,20 @@
           }
         ]
       },
+      "controller-orbit-camera": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_controller_orbit_camera",
+            "title": "Orbit Camera Controller",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/controller_orbit_camera.c",
+            "page": "gallery/features/feature_controller_orbit_camera.md"
+          }
+        ]
+      },
       "controller-panzoom": {
         "count": 1,
         "examples": [
@@ -816,6 +1102,20 @@
           }
         ]
       },
+      "depth-cue": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_depth_cue",
+            "title": "Depth Cue",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/depth_cue.c",
+            "page": "gallery/features/feature_depth_cue.md"
+          }
+        ]
+      },
       "depth-test": {
         "count": 1,
         "examples": [
@@ -830,6 +1130,104 @@
           }
         ]
       },
+      "edl": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_edl",
+            "title": "Eye-Dome Lighting",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/edl.c",
+            "page": "gallery/features/feature_edl.md"
+          }
+        ]
+      },
+      "external-surface": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_external_surface",
+            "title": "External Surface",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/external_surface.c",
+            "page": "gallery/features/feature_external_surface.md"
+          }
+        ]
+      },
+      "gui-cimgui": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_gui_cimgui",
+            "title": "Raw cimgui GUI",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/gui_cimgui.c",
+            "page": "gallery/features/feature_gui_cimgui.md"
+          }
+        ]
+      },
+      "gui-controls": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_gui_controls",
+            "title": "GUI Controls",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/gui_controls.c",
+            "page": "gallery/features/feature_gui_controls.md"
+          }
+        ]
+      },
+      "gui-viewport": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_gui_viewport",
+            "title": "GUI Viewport",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/gui_viewport.c",
+            "page": "gallery/features/feature_gui_viewport.md"
+          }
+        ]
+      },
+      "guide-lines": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_guide_lines",
+            "title": "Guide Lines",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/guide_lines.c",
+            "page": "gallery/features/feature_guide_lines.md"
+          }
+        ]
+      },
+      "guide-spans": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_guide_spans",
+            "title": "Guide Spans",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/guide_spans.c",
+            "page": "gallery/features/feature_guide_spans.md"
+          }
+        ]
+      },
       "image-probe": {
         "count": 1,
         "examples": [
@@ -841,6 +1239,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/image_probe.c",
             "page": "gallery/features/image_probe.md"
+          }
+        ]
+      },
+      "input-events": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_input_events",
+            "title": "Input Events",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/input_events.c",
+            "page": "gallery/features/feature_input_events.md"
           }
         ]
       },
@@ -942,6 +1354,20 @@
           }
         ]
       },
+      "msaa": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_msaa",
+            "title": "Multisample Antialiasing",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/msaa.c",
+            "page": "gallery/features/feature_msaa.md"
+          }
+        ]
+      },
       "multi-panel": {
         "count": 1,
         "examples": [
@@ -953,6 +1379,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/panel_multi.c",
             "page": "gallery/features/feature_panel_multi.md"
+          }
+        ]
+      },
+      "offscreen-capture": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_offscreen_capture",
+            "title": "Offscreen Capture",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/offscreen_capture.c",
+            "page": "gallery/features/feature_offscreen_capture.md"
           }
         ]
       },
@@ -981,6 +1421,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/panel_background.c",
             "page": "gallery/features/panel_background.md"
+          }
+        ]
+      },
+      "panel-domain-fit": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_panel_domain_fit",
+            "title": "Panel Domain Fit",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panel_domain_fit.c",
+            "page": "gallery/features/feature_panel_domain_fit.md"
           }
         ]
       },
@@ -1054,6 +1508,20 @@
           }
         ]
       },
+      "record-replay": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_record_replay",
+            "title": "Record Replay",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/record_replay.c",
+            "page": "gallery/features/feature_record_replay.md"
+          }
+        ]
+      },
       "sampled-field-2d": {
         "count": 1,
         "examples": [
@@ -1124,6 +1592,34 @@
           }
         ]
       },
+      "scene-compute-buffer": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_scene_compute_buffer",
+            "title": "Scene Compute Buffer",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/scene_compute_buffer.c",
+            "page": "gallery/features/feature_scene_compute_buffer.md"
+          }
+        ]
+      },
+      "scene-json": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_scene_json",
+            "title": "Scene JSON",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/scene_json.c",
+            "page": "gallery/features/feature_scene_json.md"
+          }
+        ]
+      },
       "selection": {
         "count": 1,
         "examples": [
@@ -1135,6 +1631,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/selection.c",
             "page": "gallery/features/feature_selection.md"
+          }
+        ]
+      },
+      "ssao": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_ssao",
+            "title": "Screen-Space Ambient Occlusion",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/ssao.c",
+            "page": "gallery/features/feature_ssao.md"
           }
         ]
       },
@@ -1163,6 +1673,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/timer_animation.c",
             "page": "gallery/features/feature_timer_animation.md"
+          }
+        ]
+      },
+      "transparency-order": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_transparency_order",
+            "title": "Transparency Order",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/transparency_order.c",
+            "page": "gallery/features/feature_transparency_order.md"
           }
         ]
       },
@@ -1219,6 +1743,34 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/visibility.c",
             "page": "gallery/features/feature_visibility.md"
+          }
+        ]
+      },
+      "visual-transform": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_visual_transform",
+            "title": "Visual Transform",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/visual_transform.c",
+            "page": "gallery/features/feature_visual_transform.md"
+          }
+        ]
+      },
+      "volume-occlusion": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_volume_occlusion",
+            "title": "Volume Occlusion",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/volume_occlusion.c",
+            "page": "gallery/features/feature_volume_occlusion.md"
           }
         ]
       }
@@ -2277,8 +2829,17 @@
         ]
       },
       "point": {
-        "count": 2,
+        "count": 3,
         "examples": [
+          {
+            "id": "feature_scene_compute_buffer",
+            "title": "Scene Compute Buffer",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/scene_compute_buffer.c",
+            "page": "gallery/features/feature_scene_compute_buffer.md"
+          },
           {
             "id": "point_2d",
             "title": "Point",
@@ -2515,6 +3076,20 @@
           }
         ]
       },
+      "scene-compute": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_scene_compute_buffer",
+            "title": "Scene Compute Buffer",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/scene_compute_buffer.c",
+            "page": "gallery/features/feature_scene_compute_buffer.md"
+          }
+        ]
+      },
       "scientific": {
         "count": 5,
         "examples": [
@@ -2641,6 +3216,20 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/scientific_plotting.c",
             "page": "gallery/showcases/scientific_plotting_workflow.md"
+          }
+        ]
+      },
+      "storage-buffer": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_scene_compute_buffer",
+            "title": "Scene Compute Buffer",
+            "category": "feature",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/scene_compute_buffer.c",
+            "page": "gallery/features/feature_scene_compute_buffer.md"
           }
         ]
       },

@@ -2,21 +2,21 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 67,
+  "count": 91,
   "categories": {
     "composite": 2,
-    "feature": 39,
+    "feature": 63,
     "showcase": 11,
     "visual": 15
   },
   "statuses": {
-    "experimental": 5,
+    "experimental": 9,
     "prototype": 1,
-    "supported": 61
+    "supported": 81
   },
   "agent_copy_safe": {
-    "false": 15,
-    "true": 52
+    "false": 21,
+    "true": 70
   },
   "examples": [
     {
@@ -375,6 +375,514 @@
         "kind": "synthetic"
       },
       "primary_feature": "lighting"
+    },
+    {
+      "id": "feature_gui_controls",
+      "title": "GUI Controls",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/gui_controls.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_controls.c",
+      "page": "gallery/features/feature_gui_controls.md",
+      "summary": "curated Datoviz GUI controls mutating one retained point visual.",
+      "validation": "smoke+interaction",
+      "build_command": "just example-c features/gui_controls",
+      "smoke_command": "./build/examples/c/features/gui_controls --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "gui-controls"
+    },
+    {
+      "id": "feature_gui_viewport",
+      "title": "GUI Viewport",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/gui_viewport.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_viewport.c",
+      "page": "gallery/features/feature_gui_viewport.md",
+      "summary": "dockable Dear ImGui window containing a live Datoviz render target.",
+      "validation": "smoke+interaction",
+      "build_command": "just example-c features/gui_viewport",
+      "smoke_command": "./build/examples/c/features/gui_viewport --png",
+      "agent_copy_safe": false,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "gui-viewport"
+    },
+    {
+      "id": "feature_gui_cimgui",
+      "title": "Raw cimgui GUI",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/gui_cimgui.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_cimgui.c",
+      "page": "gallery/features/feature_gui_cimgui.md",
+      "summary": "raw cimgui calls inside a Datoviz GUI callback.",
+      "validation": "smoke+interaction",
+      "build_command": "just example-c features/gui_cimgui",
+      "smoke_command": "./build/examples/c/features/gui_cimgui --png",
+      "agent_copy_safe": false,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "gui-cimgui"
+    },
+    {
+      "id": "feature_animation_tracks",
+      "title": "Animation Tracks",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/animation_tracks.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/animation_tracks.c",
+      "page": "gallery/features/feature_animation_tracks.md",
+      "summary": "retained track-backed visual transform animation.",
+      "validation": "smoke+interaction+screenshot",
+      "build_command": "just example-c features/animation_tracks",
+      "smoke_command": "./build/examples/c/features/animation_tracks --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "animation-tracks"
+    },
+    {
+      "id": "feature_scene_compute_buffer",
+      "title": "Scene Compute Buffer",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/features/scene_compute_buffer.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scene_compute_buffer.c",
+      "page": "gallery/features/feature_scene_compute_buffer.md",
+      "summary": "minimal scene compute pass writing a point position buffer.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/scene_compute_buffer",
+      "smoke_command": "./build/examples/c/features/scene_compute_buffer --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "scene-compute",
+        "storage-buffer",
+        "point"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "scene-compute-buffer"
+    },
+    {
+      "id": "feature_edl",
+      "title": "Eye-Dome Lighting",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/edl.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/edl.c",
+      "page": "gallery/features/feature_edl.md",
+      "summary": "Eye-Dome Lighting applied to a compact depth-separated point cloud.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/edl",
+      "smoke_command": "./build/examples/c/features/edl --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "edl"
+    },
+    {
+      "id": "feature_ssao",
+      "title": "Screen-Space Ambient Occlusion",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/ssao.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/ssao.c",
+      "page": "gallery/features/feature_ssao.md",
+      "summary": "screen-space ambient occlusion on normal-producing mesh geometry.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/ssao",
+      "smoke_command": "./build/examples/c/features/ssao --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "ssao"
+    },
+    {
+      "id": "feature_msaa",
+      "title": "Multisample Antialiasing",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/msaa.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/msaa.c",
+      "page": "gallery/features/feature_msaa.md",
+      "summary": "side-by-side internal multisample antialiasing on thin segments.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/msaa",
+      "smoke_command": "./build/examples/c/features/msaa --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "msaa"
+    },
+    {
+      "id": "feature_depth_cue",
+      "title": "Depth Cue",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/depth_cue.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/depth_cue.c",
+      "page": "gallery/features/feature_depth_cue.md",
+      "summary": "depth-dependent fading applied to a 3D point stack.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/depth_cue",
+      "smoke_command": "./build/examples/c/features/depth_cue --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "depth-cue"
+    },
+    {
+      "id": "feature_transparency_order",
+      "title": "Transparency Order",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/transparency_order.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/transparency_order.c",
+      "page": "gallery/features/feature_transparency_order.md",
+      "summary": "source-over and weighted blended order-independent transparency.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/transparency_order",
+      "smoke_command": "./build/examples/c/features/transparency_order --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "transparency-order"
+    },
+    {
+      "id": "feature_volume_occlusion",
+      "title": "Volume Occlusion",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/volume_occlusion.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/volume_occlusion.c",
+      "page": "gallery/features/feature_volume_occlusion.md",
+      "summary": "volume occluder attenuating an embedded slice visual.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/volume_occlusion",
+      "smoke_command": "./build/examples/c/features/volume_occlusion --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "volume-occlusion"
+    },
+    {
+      "id": "feature_guide_lines",
+      "title": "Guide Lines",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/guide_lines.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_lines.c",
+      "page": "gallery/features/feature_guide_lines.md",
+      "summary": "retained horizontal and vertical guide lines in panel data coordinates.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/guide_lines",
+      "smoke_command": "./build/examples/c/features/guide_lines --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "guide-lines"
+    },
+    {
+      "id": "feature_guide_spans",
+      "title": "Guide Spans",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/guide_spans.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_spans.c",
+      "page": "gallery/features/feature_guide_spans.md",
+      "summary": "retained horizontal and vertical guide spans in panel data coordinates.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/guide_spans",
+      "smoke_command": "./build/examples/c/features/guide_spans --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "guide-spans"
+    },
+    {
+      "id": "feature_bars_bands",
+      "title": "Bars And Bands",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/bars_bands.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bars_bands.c",
+      "page": "gallery/features/feature_bars_bands.md",
+      "summary": "retained bars and uncertainty band plot helpers.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/bars_bands",
+      "smoke_command": "./build/examples/c/features/bars_bands --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "bars-bands"
+    },
+    {
+      "id": "feature_app_glfw",
+      "title": "GLFW App",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/app_glfw.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/app_glfw.c",
+      "page": "gallery/features/feature_app_glfw.md",
+      "summary": "direct GLFW app path without the scenario runner.",
+      "validation": "smoke+interaction",
+      "build_command": "just example-c features/app_glfw",
+      "smoke_command": "./build/examples/c/features/app_glfw --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "app-glfw"
+    },
+    {
+      "id": "feature_offscreen_capture",
+      "title": "Offscreen Capture",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/offscreen_capture.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/offscreen_capture.c",
+      "page": "gallery/features/feature_offscreen_capture.md",
+      "summary": "render an offscreen view once and write a PNG.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/offscreen_capture",
+      "smoke_command": "./build/examples/c/features/offscreen_capture --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "offscreen-capture"
+    },
+    {
+      "id": "feature_input_events",
+      "title": "Input Events",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/input_events.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/input_events.c",
+      "page": "gallery/features/feature_input_events.md",
+      "summary": "hosted input event emission and router subscriptions.",
+      "validation": "smoke+interaction",
+      "build_command": "just example-c features/input_events",
+      "smoke_command": "./build/examples/c/features/input_events --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "input-events"
+    },
+    {
+      "id": "feature_record_replay",
+      "title": "Record Replay",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/features/record_replay.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/record_replay.c",
+      "page": "gallery/features/feature_record_replay.md",
+      "summary": "record an offscreen app view and replay it into a second offscreen view.",
+      "validation": "smoke+capture",
+      "build_command": "just example-c features/record_replay",
+      "smoke_command": "./build/examples/c/features/record_replay --png",
+      "agent_copy_safe": false,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "record-replay"
+    },
+    {
+      "id": "feature_controller_orbit_camera",
+      "title": "Orbit Camera Controller",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/controller_orbit_camera.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_orbit_camera.c",
+      "page": "gallery/features/feature_controller_orbit_camera.md",
+      "summary": "orbit-camera controller attached to a small 3D mesh.",
+      "validation": "smoke+interaction+screenshot",
+      "build_command": "just example-c features/controller_orbit_camera",
+      "smoke_command": "./build/examples/c/features/controller_orbit_camera --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "controller-orbit-camera"
+    },
+    {
+      "id": "feature_visual_transform",
+      "title": "Visual Transform",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/visual_transform.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visual_transform.c",
+      "page": "gallery/features/feature_visual_transform.md",
+      "summary": "retained visual-local affine transform on point visuals.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/visual_transform",
+      "smoke_command": "./build/examples/c/features/visual_transform --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "visual-transform"
+    },
+    {
+      "id": "feature_panel_domain_fit",
+      "title": "Panel Domain Fit",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/panel_domain_fit.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_domain_fit.c",
+      "page": "gallery/features/feature_panel_domain_fit.md",
+      "summary": "panel-owned data-domain fit with equal aspect.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/panel_domain_fit",
+      "smoke_command": "./build/examples/c/features/panel_domain_fit --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "panel-domain-fit"
+    },
+    {
+      "id": "feature_scene_json",
+      "title": "Scene JSON",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/features/scene_json.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scene_json.c",
+      "page": "gallery/features/feature_scene_json.md",
+      "summary": "retained scene JSON serialization diagnostic.",
+      "validation": "smoke+stdout",
+      "build_command": "just example-c features/scene_json",
+      "smoke_command": "./build/examples/c/features/scene_json --png",
+      "agent_copy_safe": false,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "scene-json"
+    },
+    {
+      "id": "feature_external_surface",
+      "title": "External Surface",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/features/external_surface.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/external_surface.c",
+      "page": "gallery/features/feature_external_surface.md",
+      "summary": "hosted Vulkan surface API boundary.",
+      "validation": "smoke+diagnostic",
+      "build_command": "just example-c features/external_surface",
+      "smoke_command": "./build/examples/c/features/external_surface --png",
+      "agent_copy_safe": false,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "external-surface"
+    },
+    {
+      "id": "feature_bezier_curve_path",
+      "title": "Bezier Curve Path",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/bezier_curve_path.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bezier_curve_path.c",
+      "page": "gallery/features/feature_bezier_curve_path.md",
+      "summary": "tessellated cubic Bezier curve rendered as a retained path.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/bezier_curve_path",
+      "smoke_command": "./build/examples/c/features/bezier_curve_path --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "bezier-curve-path"
     },
     {
       "id": "linked_panels_axes_panzoom",

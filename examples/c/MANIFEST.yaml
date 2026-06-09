@@ -259,6 +259,405 @@ examples:
       kind: synthetic
     agent_copy_safe: true
 
+  - id: feature_gui_controls
+    title: GUI Controls
+    stage: v0.4_required
+    category: feature
+    primary_feature: gui-controls
+    lane: features
+    source: examples/c/features/gui_controls.c
+    validation: smoke+interaction
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - gui
+      reason: Datoviz GUI controls require the native ImGui/GLFW app path
+    agent_copy_safe: true
+
+  - id: feature_gui_viewport
+    title: GUI Viewport
+    stage: v0.4_required
+    category: feature
+    primary_feature: gui-viewport
+    lane: features
+    source: examples/c/features/gui_viewport.c
+    validation: smoke+interaction
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - gui
+        - native-view
+      reason: dockable GUI viewports require native ImGui and an offscreen native source view
+    agent_copy_safe: false
+
+  - id: feature_gui_cimgui
+    title: Raw cimgui GUI
+    stage: v0.4_required
+    category: feature
+    primary_feature: gui-cimgui
+    lane: features
+    source: examples/c/features/gui_cimgui.c
+    validation: smoke+interaction
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - gui
+      reason: raw cimgui access requires the native ImGui app path
+    agent_copy_safe: false
+
+  - id: feature_animation_tracks
+    title: Animation Tracks
+    stage: v0.4_required
+    category: feature
+    primary_feature: animation-tracks
+    lane: features
+    source: examples/c/features/animation_tracks.c
+    validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - mesh
+        - frame-callbacks
+        - arcball
+    agent_copy_safe: true
+
+  - id: feature_scene_compute_buffer
+    title: Scene Compute Buffer
+    stage: v0.4_experimental
+    category: feature
+    primary_feature: scene-compute-buffer
+    lane: features
+    source: examples/c/features/scene_compute_buffer.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - scene-buffers
+        - storage-buffers
+        - scene-compute
+        - point
+    agent_copy_safe: false
+    gallery:
+      card: small
+      status_label: experimental
+    tags:
+      - scene-compute
+      - storage-buffer
+      - point
+
+  - id: feature_edl
+    title: Eye-Dome Lighting
+    stage: v0.4_required
+    category: feature
+    primary_feature: edl
+    lane: features
+    source: examples/c/features/edl.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - depth-postprocess
+    agent_copy_safe: true
+
+  - id: feature_ssao
+    title: Screen-Space Ambient Occlusion
+    stage: v0.4_required
+    category: feature
+    primary_feature: ssao
+    lane: features
+    source: examples/c/features/ssao.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - gbuffer
+        - depth-postprocess
+    agent_copy_safe: true
+
+  - id: feature_msaa
+    title: Multisample Antialiasing
+    stage: v0.4_required
+    category: feature
+    primary_feature: msaa
+    lane: features
+    source: examples/c/features/msaa.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - multisample
+    agent_copy_safe: true
+
+  - id: feature_depth_cue
+    title: Depth Cue
+    stage: v0.4_required
+    category: feature
+    primary_feature: depth-cue
+    lane: features
+    source: examples/c/features/depth_cue.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - depth-cue
+    agent_copy_safe: true
+
+  - id: feature_transparency_order
+    title: Transparency Order
+    stage: v0.4_required
+    category: feature
+    primary_feature: transparency-order
+    lane: features
+    source: examples/c/features/transparency_order.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - wboit
+        - depth-peeling
+    agent_copy_safe: true
+
+  - id: feature_volume_occlusion
+    title: Volume Occlusion
+    stage: v0.4_required
+    category: feature
+    primary_feature: volume-occlusion
+    lane: features
+    source: examples/c/features/volume_occlusion.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - volume
+        - scene-occlusion
+    agent_copy_safe: true
+
+  - id: feature_guide_lines
+    title: Guide Lines
+    stage: v0.4_required
+    category: feature
+    primary_feature: guide-lines
+    lane: features
+    source: examples/c/features/guide_lines.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
+
+  - id: feature_guide_spans
+    title: Guide Spans
+    stage: v0.4_required
+    category: feature
+    primary_feature: guide-spans
+    lane: features
+    source: examples/c/features/guide_spans.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
+
+  - id: feature_bars_bands
+    title: Bars And Bands
+    stage: v0.4_required
+    category: feature
+    primary_feature: bars-bands
+    lane: features
+    source: examples/c/features/bars_bands.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
+
+  - id: feature_app_glfw
+    title: GLFW App
+    stage: v0.4_required
+    category: feature
+    primary_feature: app-glfw
+    lane: features
+    source: examples/c/features/app_glfw.c
+    validation: smoke+interaction
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - native-view
+      reason: direct GLFW app lifecycle is native-only
+    agent_copy_safe: true
+
+  - id: feature_offscreen_capture
+    title: Offscreen Capture
+    stage: v0.4_required
+    category: feature
+    primary_feature: offscreen-capture
+    lane: features
+    source: examples/c/features/offscreen_capture.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - native-capture
+      reason: writes a native offscreen PNG through the app capture path
+    agent_copy_safe: true
+
+  - id: feature_input_events
+    title: Input Events
+    stage: v0.4_required
+    category: feature
+    primary_feature: input-events
+    lane: features
+    source: examples/c/features/input_events.c
+    validation: smoke+interaction
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - native-view
+        - input-events
+      reason: demonstrates native hosted event injection APIs
+    agent_copy_safe: true
+
+  - id: feature_record_replay
+    title: Record Replay
+    stage: v0.4_experimental
+    category: feature
+    primary_feature: record-replay
+    lane: features
+    source: examples/c/features/record_replay.c
+    validation: smoke+capture
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - native-capture
+      reason: DVZR app recording and replay use native runtime capture plumbing
+    agent_copy_safe: false
+
+  - id: feature_controller_orbit_camera
+    title: Orbit Camera Controller
+    stage: v0.4_required
+    category: feature
+    primary_feature: controller-orbit-camera
+    lane: features
+    source: examples/c/features/controller_orbit_camera.c
+    validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - controller
+        - orbit-camera
+    agent_copy_safe: true
+
+  - id: feature_visual_transform
+    title: Visual Transform
+    stage: v0.4_required
+    category: feature
+    primary_feature: visual-transform
+    lane: features
+    source: examples/c/features/visual_transform.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
+
+  - id: feature_panel_domain_fit
+    title: Panel Domain Fit
+    stage: v0.4_required
+    category: feature
+    primary_feature: panel-domain-fit
+    lane: features
+    source: examples/c/features/panel_domain_fit.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
+
+  - id: feature_scene_json
+    title: Scene JSON
+    stage: v0.4_experimental
+    category: feature
+    primary_feature: scene-json
+    lane: features
+    source: examples/c/features/scene_json.c
+    validation: smoke+stdout
+    data:
+      kind: synthetic
+    webgpu:
+      status: native-only
+      requirements:
+        - diagnostics
+      reason: scene JSON is a native diagnostic/fixture surface, not a live browser route
+    agent_copy_safe: false
+
+  - id: feature_external_surface
+    title: External Surface
+    stage: v0.4_experimental
+    category: feature
+    primary_feature: external-surface
+    lane: features
+    source: examples/c/features/external_surface.c
+    validation: smoke+diagnostic
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - native-view
+        - external-surface
+      reason: external Vulkan surfaces are native host-integration objects
+    agent_copy_safe: false
+
+  - id: feature_bezier_curve_path
+    title: Bezier Curve Path
+    stage: v0.4_required
+    category: feature
+    primary_feature: bezier-curve-path
+    lane: features
+    source: examples/c/features/bezier_curve_path.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: true
+
   - id: linked_panels_axes_panzoom
     title: Linked Panels With Axes
     stage: v0.4_required

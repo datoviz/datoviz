@@ -145,38 +145,15 @@ showcase or workflow already composes the same feature. These are copy-safe API 
 gallery material second. Keep each file narrow: one feature, deterministic data, no unrelated GUI or
 domain polish, and smoke/screenshot validation once runnable.
 
-Focused examples already cover the first release slice of retained scenes, panels, axes, sampled
-fields, text, overlays, panzoom/arcball/fly/turntable controllers, textured/material mesh, lighting,
-retained visual updates, visibility, picking/probing/selection, animation through scenario frames,
-marker symbols, color scales, colorbars, scale bars, alpha/depth toggles, panel backgrounds,
-categorical legends, and video export. Remaining broad coverage gaps should stay here until the
-source file exists, then move into `examples/c/MANIFEST.yaml` with concrete metadata.
-
-| Feature | Proposed source | Priority | Required slice |
-| --- | --- | --- | --- |
-| `feature.gui_controls` | `examples/c/features/gui_controls.c` | high | native-only Datoviz GUI wrapper controls mutating retained visual state |
-| `feature.gui_viewport` | `examples/c/features/gui_viewport.c` | high | native-only dockable Datoviz viewport using `dvz_gui_viewport()` and forwarded input |
-| `feature.gui_cimgui` | `examples/c/features/gui_cimgui.c` | high | raw `datoviz/imgui.h` escape hatch for ImGui features not wrapped by Datoviz, such as tables or tabs |
-| `feature.animation_tracks` | `examples/c/features/animation_tracks.c` | high | retained `dvz_anim_*` track/phase animation, distinct from runner frame callbacks |
-| `feature.scene_compute_buffer` | `examples/c/features/scene_compute_buffer.c` | high | minimal `DvzSceneBuffer`/`DvzSceneCompute` compute-to-render proof outside a showcase |
-| `feature.edl` | `examples/c/features/edl.c` | medium | focused Eye-Dome Lighting toggle with readable before/after geometry |
-| `feature.ssao` | `examples/c/features/ssao.c` | medium | focused SSAO toggle and parameter proof on simple 3D geometry |
-| `feature.msaa` | `examples/c/features/msaa.c` | medium | panel MSAA sample-count proof with thin geometry or text edges |
-| `feature.depth_cue` | `examples/c/features/depth_cue.c` | medium | visual depth-cue parameters independent of EDL/SSAO showcases |
-| `feature.transparency_order` | `examples/c/features/transparency_order.c` | medium | WBOIT/depth-peeling-shaped transparency behavior beyond basic alpha blending |
-| `feature.volume_occlusion` | `examples/c/features/volume_occlusion.c` | medium | volume/mesh occlusion setup as an isolated feature, not only the brain showcase |
-| `feature.guide_lines` | `examples/c/features/guide_lines.c` | medium | `dvz_hline()`, `dvz_vline()`, custom guide-line styling and updates |
-| `feature.guide_spans` | `examples/c/features/guide_spans.c` | medium | retained guide spans for selected data intervals |
-| `feature.bars_bands` | `examples/c/features/bars_bands.c` | medium | plot helper bars and uncertainty bands |
-| `feature.app_glfw` | `examples/c/features/app_glfw.c` | medium | direct native app/view lifecycle without hiding all runtime setup in the scenario runner |
-| `feature.offscreen_capture` | `examples/c/features/offscreen_capture.c` | medium | offscreen render-once and PNG capture as a minimal app/runtime feature |
-| `feature.input_events` | `examples/c/features/input_events.c` | medium | raw pointer/wheel/keyboard routing independent of controllers and picking |
-| `feature.record_replay` | `examples/c/features/record_replay.c` | low | app event recording/replay if promoted from lab/diagnostic status |
-| `feature.controller_orbit_camera` | `examples/c/features/controller_orbit_camera.c` | low | orbit-camera controller if it remains part of the public v0.4 surface |
-| `feature.visual_transform` | `examples/c/features/visual_transform.c` | low | per-visual transform set/get/clear on one retained visual |
-| `feature.panel_domain_fit` | `examples/c/features/panel_domain_fit.c` | low | explicit domain fit, bounds computation, and data-to-visual coordinate conversion |
-| `feature.scene_json` | `examples/c/features/scene_json.c` | low | scene JSON serialization and diagnostic/capability reporting if documented as public |
-| `feature.external_surface` | `examples/c/features/external_surface.c` | low | only if external-surface hosting belongs in the C feature lane rather than `examples/qt/` or provider docs |
+Focused examples now cover the first release slice of retained scenes, panels, axes, sampled fields,
+text, overlays, panzoom/arcball/fly/turntable/orbit controllers, textured/material mesh, lighting,
+GUI controls/viewports/raw cimgui, retained visual updates/transforms, visibility,
+picking/probing/selection, animation through scenario frames and retained tracks, marker symbols,
+color scales, colorbars, scale bars, alpha/depth toggles, EDL, SSAO, MSAA, depth cue,
+transparency ordering, volume occlusion, panel backgrounds, guide lines/spans, bars/bands, direct
+GLFW app, offscreen capture, input events, record/replay, scene JSON, external surface diagnostics,
+categorical legends, Bezier paths, and video export. Future broad coverage gaps should stay here
+only until the source file exists, then move into `examples/c/MANIFEST.yaml` with concrete metadata.
 
 Tentative examples now exist for `examples/c/features/legend_categorical.c` and
 `examples/c/features/video_export.c`. `video_export.c` is the first native scenario-runner proof for
@@ -286,7 +263,7 @@ optional controls for tessellation quality, stroke width, join mode, and overlay
 20. `brain_volume_mesh`
 21. `feature_controller_arcball`
 22. `feature_mesh_texture`
-23. Remaining `v0.4 Short Feature Coverage Queue`
+23. Feature example validation and capture proof from `examples/c/MANIFEST.yaml`
 24. `webgpu_browser_subset`
 
 
