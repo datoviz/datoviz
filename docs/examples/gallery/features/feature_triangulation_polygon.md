@@ -10,7 +10,8 @@ polygon triangulation with derived edge overlay.
 - Status: `supported`
 - Source: [`examples/c/features/triangulation_polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/triangulation_polygon.c)
 - Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_triangulation_polygon`](/examples/webgpu/live.html?id=feature_triangulation_polygon)
 - WebGPU requirements: `primitive`, `segment`
 - Build: `just example-c features/triangulation_polygon`
 - Smoke: `./build/examples/c/features/triangulation_polygon --png`
@@ -28,6 +29,14 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=feature_triangulation_polygon" title="Polygon Triangulation WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_triangulation_polygon).
 
 ## Source
 

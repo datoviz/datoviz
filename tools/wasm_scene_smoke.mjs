@@ -1360,6 +1360,7 @@ try {
   const expectedScenarioIds = [
     "feature_basic_scene",
     "feature_timer_animation",
+    "feature_triangulation_polygon",
     "feature_picking",
     "feature_image_probe",
   ];
@@ -1368,7 +1369,7 @@ try {
     requireOk(ptr !== 0, `WASM scenario ${i} has no id`);
     const id = Module.UTF8ToString(ptr);
     requireOk(id === expectedScenarioIds[i], `unexpected scenario ${i} id ${id}`);
-    if (i >= 2) {
+    if (id === "feature_picking" || id === "feature_image_probe") {
       requireOk(
         (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 8)) !== 0,
         `${id} did not declare query readback`,

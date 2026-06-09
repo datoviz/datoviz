@@ -13,6 +13,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/image_probe.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/picking.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/timer_animation.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/triangulation_polygon.c
 )
 
 target_link_libraries(datoviz_wasm_scene PRIVATE datoviz)

@@ -11,6 +11,11 @@ export const LIVE_EXAMPLES = [
     animate: true,
   },
   {
+    id: "feature_triangulation_polygon",
+    label: "Polygon Triangulation",
+    scenarioId: "feature_triangulation_polygon",
+  },
+  {
     id: "feature_picking",
     label: "Picking",
     scenarioId: "feature_picking",
