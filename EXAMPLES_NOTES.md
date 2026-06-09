@@ -17,9 +17,9 @@ is still visible with the blocker or preferred next action.
 | `features/axis_labels` | resolved | Removed confusing tilted segment clutter; retained only simple plot-frame guides in `examples/c/features/axis_labels.c`. |
 | `features/colormap_scale` | resolved | Scale/colormap setup is explicit in `examples/c/features/colormap_scale.c`. |
 | `features/controller_fly` | deferred | Runtime audit found basis/drag ambiguity in `src/controller/fly.c`; do not flip blindly. Needs interactive validation and sign regression for the exact z-up plane pose. |
-| `features/technique_depth_cue` | partial | Already two-panel comparison in `examples/c/features/technique_depth_cue.c`; still uses points rather than 3D spheres/lattice. |
+| `features/technique_depth_cue` | resolved | Two-panel comparison now uses a regular 3D sphere lattice in `examples/c/features/technique_depth_cue.c`; compiled and docs regenerated. |
 | `features/technique_depth_test` | deferred | Shader antialiasing diagnosis still required. |
-| `features/technique_edl` | partial | Naming is correct; still needs shared stronger 3D comparison audit. |
+| `features/technique_edl` | resolved | Two-panel comparison now uses the shared regular 3D sphere-lattice pattern in `examples/c/features/technique_edl.c`; compiled and docs regenerated. |
 | `features/external_surface` | resolved | Public advanced example is `examples/c/advanced/external_surface_glfw.c`; gallery generator now includes advanced pages. |
 | `features/gui_cimgui` | deferred | App/window path remains justified until scenario GUI hosting exists. |
 | `features/gui_controls` | deferred | Needs current builtin-controls decision; app/window path remains justified for GUI host integration. |

@@ -199,7 +199,7 @@ _Media pending._
 
 `supported` `features`
 
-depth-dependent fading applied to a 3D point stack.
+depth-dependent fading applied to a regular 3D sphere lattice.
 
 </div>
 
@@ -223,7 +223,7 @@ _Media pending._
 
 `supported` `features`
 
-Eye-Dome Lighting applied to a compact depth-separated point cloud.
+Eye-Dome Lighting applied to a regular 3D sphere lattice.
 
 </div>
 

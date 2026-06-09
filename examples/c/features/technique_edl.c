@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* edl - Eye-Dome Lighting applied to a compact depth-separated point cloud.
+/* edl - Eye-Dome Lighting applied to a regular 3D sphere lattice.
  *
  * Scenario: feature.edl
  * Style: features, graphite_cyan, 1600x1200 capture target
@@ -20,7 +20,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -36,9 +35,8 @@
 
 #define WIDTH       1600u
 #define HEIGHT      1200u
-#define POINT_COLS  13u
-#define POINT_ROWS  9u
-#define POINT_COUNT (POINT_COLS * POINT_ROWS)
+#define LATTICE_SIDE  3u
+#define SPHERE_COUNT  (LATTICE_SIDE * LATTICE_SIDE * LATTICE_SIDE)
 
 
 
@@ -47,73 +45,62 @@
 /*************************************************************************************************/
 
 /**
- * Fill deterministic depth-separated point data.
- *
- * @param positions output point positions
- * @param colors output point colors
- * @param diameters output point diameters
- */
-static void _fill_points(
-    vec3 positions[POINT_COUNT], DvzColor colors[POINT_COUNT], float diameters[POINT_COUNT])
-{
-    const ExampleStyleColorRole roles[4] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_WARNING,
-        EXAMPLE_STYLE_COLOR_TEXT,
-    };
-
-    for (uint32_t row = 0; row < POINT_ROWS; row++)
-    {
-        for (uint32_t col = 0; col < POINT_COLS; col++)
-        {
-            const uint32_t i = row * POINT_COLS + col;
-            const float u = (float)col / (float)(POINT_COLS - 1u);
-            const float v = (float)row / (float)(POINT_ROWS - 1u);
-            positions[i][0] = -1.00f + 2.00f * u;
-            positions[i][1] = -0.70f + 1.40f * v;
-            positions[i][2] = 0.50f * sinf(7.0f * u) + 0.35f * cosf(5.0f * v);
-            colors[i] = example_graphite_cyan_color(roles[(col + 2u * row) % 4u]);
-            diameters[i] = 24.0f + 10.0f * (0.5f + 0.5f * sinf(11.0f * u + 3.0f * v));
-        }
-    }
-}
-
-
-
-/**
- * Add one point cloud visual to a panel.
+ * Add one sphere-lattice visual to a panel.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
  * @return true on success
  */
-static bool _add_point_cloud(DvzScene* scene, DvzPanel* panel)
+static bool _add_sphere_lattice(DvzScene* scene, DvzPanel* panel)
 {
-    vec3 positions[POINT_COUNT] = {{0}};
-    DvzColor colors[POINT_COUNT] = {{0}};
-    float diameters[POINT_COUNT] = {0};
-    _fill_points(positions, colors, diameters);
+    vec3 positions[SPHERE_COUNT] = {{0}};
+    DvzColor colors[SPHERE_COUNT] = {{0}};
+    float radii[SPHERE_COUNT] = {0};
 
-    DvzVisual* point = dvz_point(scene, 0);
-    if (point == NULL)
+    for (uint32_t z = 0; z < LATTICE_SIDE; z++)
+    {
+        for (uint32_t y = 0; y < LATTICE_SIDE; y++)
+        {
+            for (uint32_t x = 0; x < LATTICE_SIDE; x++)
+            {
+                const uint32_t i = z * LATTICE_SIDE * LATTICE_SIDE + y * LATTICE_SIDE + x;
+                positions[i][0] = -0.58f + 0.58f * (float)x;
+                positions[i][1] = -0.44f + 0.44f * (float)y;
+                positions[i][2] = -0.72f + 0.72f * (float)z;
+                colors[i] = example_graphite_cyan_color(
+                    z == 0u   ? EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY
+                    : z == 1u ? EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY
+                              : EXAMPLE_STYLE_COLOR_WARNING);
+                radii[i] = 0.115f;
+            }
+        }
+    }
+
+    DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
+    if (sphere == NULL)
+        return false;
+    if (dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
         return false;
 
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
-        {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
+        {.attr_name = "position", .data = positions, .item_count = SPHERE_COUNT},
+        {.attr_name = "color", .data = colors, .item_count = SPHERE_COUNT},
+        {.attr_name = "radius", .data = radii, .item_count = SPHERE_COUNT},
     };
-    if (dvz_visual_set_data_many(point, updates, 3) != 0)
+    if (dvz_visual_set_data_many(sphere, updates, 3) != 0)
         return false;
 
-    DvzPointStyleDesc style = dvz_point_style_desc();
-    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
-    if (dvz_point_set_style(point, &style) != 0)
+    DvzMaterialDesc material = dvz_standard_material_desc();
+    material.light_direction[0] = -0.32f;
+    material.light_direction[1] = -0.55f;
+    material.light_direction[2] = +0.76f;
+    material.standard.roughness = 0.46f;
+    material.standard.specular = 0.44f;
+    material.standard.rim_strength = 0.18f;
+    if (dvz_visual_set_material(sphere, &material) != 0)
         return false;
 
-    return dvz_panel_add_visual(panel, point, NULL) == 0;
+    return dvz_panel_add_visual(panel, sphere, NULL) == 0;
 }
 
 
@@ -128,8 +115,8 @@ static bool _set_camera(DvzPanel* panel)
 {
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = 0.0f;
-    camera.eye[1] = -3.10f;
-    camera.eye[2] = 1.15f;
+    camera.eye[1] = -3.45f;
+    camera.eye[2] = 1.05f;
     camera.up[1] = 0.0f;
     camera.up[2] = 1.0f;
     camera.fov_y = 0.62f;
@@ -181,7 +168,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     if (!_set_camera(plain) || !_set_camera(lit))
         return false;
-    if (!_add_point_cloud(ctx->scene, plain) || !_add_point_cloud(ctx->scene, lit))
+    if (!_add_sphere_lattice(ctx->scene, plain) || !_add_sphere_lattice(ctx->scene, lit))
         return false;
 
     DvzEdlDesc edl = dvz_edl_desc();
