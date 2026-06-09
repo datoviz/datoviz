@@ -11,8 +11,9 @@ taxonomy:
     features: one isolated feature or rendering technique per example
     composites: one semantic object that lowers to one or more visuals per example
     showcases: composed workflows, scientific stories, real-data examples, and polished demos
+    advanced: low-level runtime, DRP2, and host-integration examples
   schema:
-    category: visual | feature | composite | showcase
+    category: visual | feature | composite | showcase | advanced
     primary_visual: required for visual examples
     primary_feature: required for feature examples
     primary_composite: required for composite examples
@@ -40,6 +41,7 @@ folders:
     - examples/c/visuals
     - examples/c/composites
     - examples/c/showcases
+    - examples/c/advanced
   non_public:
     - examples/c/lab
     - examples/c/legacy
@@ -625,25 +627,6 @@ examples:
       requirements:
         - diagnostics
       reason: scene JSON is a native diagnostic/fixture surface, not a live browser route
-    agent_copy_safe: false
-
-  - id: feature_external_surface
-    title: External Surface
-    stage: v0.4_experimental
-    category: feature
-    primary_feature: external-surface
-    lane: features
-    source: examples/c/features/external_surface.c
-    validation: smoke+diagnostic
-    data:
-      kind: synthetic
-    portability: native-only
-    webgpu:
-      status: native-only
-      requirements:
-        - native-view
-        - external-surface
-      reason: external Vulkan surfaces are native host-integration objects
     agent_copy_safe: false
 
   - id: feature_bezier_curve_path
@@ -1596,6 +1579,76 @@ examples:
       - texture
       - arcball
       - capture
+
+  - id: advanced_raw_triangle_vklite
+    title: Raw Triangle Vklite
+    stage: v0.4_experimental
+    category: advanced
+    lane: advanced
+    source: examples/c/advanced/raw_triangle_vklite.c
+    validation: smoke+png
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - vklite
+        - canvas
+      reason: raw vklite command recording is a native runtime example
+    agent_copy_safe: false
+    tags:
+      - advanced
+      - vklite
+      - canvas
+      - low-level
+
+  - id: advanced_raw_triangle_drp2
+    title: Raw Triangle DRP2
+    stage: v0.4_experimental
+    category: advanced
+    lane: advanced
+    source: examples/c/advanced/raw_triangle_drp2.c
+    validation: smoke+png
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - drp2
+        - vklite
+      reason: hand-written DRP2 native execution is a low-level runtime example
+    agent_copy_safe: false
+    tags:
+      - advanced
+      - drp2
+      - vklite
+      - low-level
+
+  - id: advanced_external_surface_glfw
+    title: External Surface GLFW
+    stage: v0.4_experimental
+    category: advanced
+    lane: advanced
+    source: examples/c/advanced/external_surface_glfw.c
+    validation: native-smoke
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - native-view
+        - external-surface
+        - glfw
+      reason: external Vulkan surfaces are native host-integration objects
+    agent_copy_safe: false
+    tags:
+      - advanced
+      - external-surface
+      - glfw
+      - host-integration
 
   - id: lab_axis_lattice_smoke
     title: Axis Lattice Smoke

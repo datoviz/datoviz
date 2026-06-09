@@ -17,8 +17,8 @@
  * protocol so that developers of other scientific-visualization libraries can
  * understand how DRP2 works and experiment with it directly.
  *
- * Build:  just example-c raw_triangle_drp2
- * Run:    ./build/examples/c/tools/raw_triangle_drp2
+ * Build:  just example-c advanced/raw_triangle_drp2
+ * Run:    ./build/examples/c/advanced/raw_triangle_drp2
  *         → raw_triangle_drp2.png
  */
 
@@ -70,7 +70,7 @@ static const Vertex TRIANGLE[3] = {
 
 
 /*************************************************************************************************/
-/*  Shaders — same GLSL as raw_triangle.c                                                       */
+/*  Shaders — same GLSL as raw_triangle_vklite.c                                                */
 /*************************************************************************************************/
 
 static const char* VERT_GLSL =

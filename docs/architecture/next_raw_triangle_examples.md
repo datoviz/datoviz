@@ -16,12 +16,12 @@ new examples sit below that, showing progressively rawer APIs:
 | Example              | Layer used for rendering  | Canvas / presentation |
 |----------------------|---------------------------|-----------------------|
 | `visuals/point.c`      | Scene + DvzApp            | handled by DvzApp     |
-| `raw_triangle.c`     | vklite draw commands      | DvzCanvas (explicit)  |
-| `raw_triangle_drp2.c`| DRP2 stream commands      | DvzGpuCtx only (no canvas) |
+| `advanced/raw_triangle_vklite.c` | vklite draw commands | DvzCanvas (explicit) |
+| `advanced/raw_triangle_drp2.c` | DRP2 stream commands | DvzGpuCtx only (no canvas) |
 
 ---
 
-## Part 1 — `raw_triangle.c` (vklite draw commands into DvzCanvas)
+## Part 1 — `raw_triangle_vklite.c` (vklite draw commands into DvzCanvas)
 
 ### Goal
 

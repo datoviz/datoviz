@@ -26,18 +26,18 @@ part of the main CMake tree.
 just build
 just example-c visuals/point
 just example-c visuals/mesh
-just example-c techniques/edl
-just example-c showcase/lidar
-just example-c tools/raw_triangle
+just example-c features/edl
+just example-c showcases/point_cloud
+just example-c advanced/raw_triangle_vklite
 ```
 
 The executables land in matching build folders:
 
 ```text
 build/examples/c/visuals/point
-build/examples/c/techniques/edl
-build/examples/c/showcase/lidar
-build/examples/c/tools/raw_triangle
+build/examples/c/features/edl
+build/examples/c/showcases/point_cloud
+build/examples/c/advanced/raw_triangle_vklite
 ```
 
 When a short example name is unique, `just example-c point` also works.
@@ -48,10 +48,11 @@ When a short example name is unique, `just example-c point` also works.
 
 | Group | Purpose |
 |-------|---------|
-| `visuals/` | Per-visual interactive stress workbenches with GUI controls |
-| `techniques/` | Rendering technique and interaction workbenches |
-| `showcase/` | Realistic domain demos using real or prepared datasets |
-| `tools/` | Export, replay, recording, and low-level debugging utilities |
+| `visuals/` | One public visual-family example per file |
+| `features/` | One isolated scene feature, interaction, output workflow, or rendering technique per file |
+| `composites/` | Semantic objects that lower to one or more visuals |
+| `showcases/` | Composed workflows, scientific scenes, and gallery-facing demos |
+| `advanced/` | Low-level runtime, DRP2, and host-integration examples |
 
 Useful visual workbenches include:
 
@@ -92,5 +93,5 @@ visuals/text
 ## See also
 
 - `docs/architecture/drp2-overview.md` — DRP2 protocol design
-- `examples/c/visuals/` — active visual stress workbenches
-- `examples/c/tools/` — raw, replay, and export examples
+- `examples/c/visuals/` — active visual examples
+- `examples/c/advanced/` — raw runtime and host-integration examples

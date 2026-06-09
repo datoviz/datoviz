@@ -126,7 +126,8 @@ lines, strips, fans, and raw points all at once with no CPU-side preprocessing a
 shader specialisation.
 
 This is **not** a "raw" or "custom shader" escape hatch.  Users who need their own shaders
-go through the lower-level `examples/c/raw_triangle.c` (vklite) or `raw_triangle_drp2.c`
+go through the lower-level `examples/c/advanced/raw_triangle_vklite.c` or
+`examples/c/advanced/raw_triangle_drp2.c`
 (DRP2 stream) paths, which are already in the tree.
 
 ### Attributes

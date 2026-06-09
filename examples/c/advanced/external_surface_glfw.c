@@ -4,15 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* hosted_glfw_smoke - host-owned GLFW loop using Datoviz hosted rendering.
+/* external_surface_glfw - host-owned GLFW loop using Datoviz hosted rendering.
  *
  * GLFW is used here only as an external toolkit surrogate. Datoviz does not create the GLFW
  * window and does not enter dvz_app_run(); the host provides Vulkan instance extensions,
  * creates VkSurfaceKHR from the Datoviz-owned VkInstance, forwards resize metadata, and calls
  * dvz_view_render_once() from its own loop.
  *
- * Build:  just build
- * Run:    ./build/examples/c/tools/hosted_glfw_smoke [frames]
+ * Build:  just example-c advanced/external_surface_glfw
+ * Run:    ./build/examples/c/advanced/external_surface_glfw [frames]
  */
 
 #define GLFW_INCLUDE_VULKAN
@@ -345,7 +345,7 @@ int main(int argc, char** argv)
 
     if (!dvz_window_glfw_init())
     {
-        fprintf(stderr, "hosted_glfw_smoke: skipped, GLFW could not initialize\n");
+        fprintf(stderr, "external_surface_glfw: skipped, GLFW could not initialize\n");
         return 0;
     }
 
@@ -353,7 +353,7 @@ int main(int argc, char** argv)
     const char** extensions = glfwGetRequiredInstanceExtensions(&extension_count);
     if (extension_count == 0 || extensions == NULL)
     {
-        fprintf(stderr, "hosted_glfw_smoke: skipped, GLFW returned no Vulkan extensions\n");
+        fprintf(stderr, "external_surface_glfw: skipped, GLFW returned no Vulkan extensions\n");
         glfwTerminate();
         return 0;
     }
@@ -363,7 +363,7 @@ int main(int argc, char** argv)
     DvzScene* scene = _make_scene(&figure, &panel);
     if (scene == NULL || figure == NULL || panel == NULL)
     {
-        fprintf(stderr, "hosted_glfw_smoke: failed to create scene\n");
+        fprintf(stderr, "external_surface_glfw: failed to create scene\n");
         glfwTerminate();
         return 1;
     }
@@ -376,7 +376,7 @@ int main(int argc, char** argv)
     DvzApp* app = dvz_app_with_config(scene, &app_cfg);
     if (app == NULL)
     {
-        fprintf(stderr, "hosted_glfw_smoke: skipped, Datoviz GPU context creation failed\n");
+        fprintf(stderr, "external_surface_glfw: skipped, Datoviz GPU context creation failed\n");
         dvz_scene_destroy(scene);
         glfwTerminate();
         return 0;
@@ -385,7 +385,7 @@ int main(int argc, char** argv)
     VkInstance instance = dvz_app_vk_instance(app);
     if (instance == VK_NULL_HANDLE)
     {
-        fprintf(stderr, "hosted_glfw_smoke: Datoviz returned no Vulkan instance\n");
+        fprintf(stderr, "external_surface_glfw: Datoviz returned no Vulkan instance\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         glfwTerminate();
@@ -394,10 +394,10 @@ int main(int argc, char** argv)
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-    GLFWwindow* window = glfwCreateWindow(800, 600, "hosted_glfw_smoke", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "external_surface_glfw", NULL, NULL);
     if (window == NULL)
     {
-        fprintf(stderr, "hosted_glfw_smoke: skipped, GLFW window creation failed\n");
+        fprintf(stderr, "external_surface_glfw: skipped, GLFW window creation failed\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         glfwTerminate();
@@ -409,7 +409,7 @@ int main(int argc, char** argv)
     if (surface_res != VK_SUCCESS || surface == VK_NULL_HANDLE)
     {
         fprintf(
-            stderr, "hosted_glfw_smoke: skipped, surface creation failed (%d)\n",
+            stderr, "external_surface_glfw: skipped, surface creation failed (%d)\n",
             (int)surface_res);
         glfwDestroyWindow(window);
         dvz_app_destroy(app);
@@ -422,7 +422,7 @@ int main(int argc, char** argv)
     DvzView* view = dvz_view_external_surface(app, figure, &info);
     if (view == NULL)
     {
-        fprintf(stderr, "hosted_glfw_smoke: hosted view creation failed\n");
+        fprintf(stderr, "external_surface_glfw: hosted view creation failed\n");
         vkDestroySurfaceKHR(instance, surface, NULL);
         glfwDestroyWindow(window);
         dvz_app_destroy(app);
@@ -464,7 +464,7 @@ int main(int argc, char** argv)
         info = _surface_info(window, instance, surface, false);
         if (dvz_view_update_external_surface(view, &info) != 0)
         {
-            fprintf(stderr, "hosted_glfw_smoke: surface update failed\n");
+            fprintf(stderr, "external_surface_glfw: surface update failed\n");
             break;
         }
 
@@ -474,7 +474,7 @@ int main(int argc, char** argv)
         int rc = dvz_view_render_once(view);
         if (rc < 0)
         {
-            fprintf(stderr, "hosted_glfw_smoke: render failed (%d)\n", rc);
+            fprintf(stderr, "external_surface_glfw: render failed (%d)\n", rc);
             break;
         }
         if (rc == DVZ_CANVAS_FRAME_READY)
@@ -493,7 +493,7 @@ int main(int argc, char** argv)
     glfwTerminate();
 
     printf(
-        "hosted_glfw_smoke: rendered %u frame(s), %u request(s)\n", frame,
+        "external_surface_glfw: rendered %u frame(s), %u request(s)\n", frame,
         host_state.request_count);
     return 0;
 }

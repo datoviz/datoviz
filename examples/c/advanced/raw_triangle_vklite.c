@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* raw_triangle — vklite draw commands into DvzCanvas.
+/* raw_triangle_vklite — vklite draw commands into DvzCanvas.
  *
  * Shows how to write your own Vulkan draw commands using vklite helpers while
  * letting DvzCanvas manage all presentation plumbing (offscreen images, frame
@@ -12,17 +12,17 @@
  * every backend — only the canvas configuration differs.
  *
  * Usage:
- *   ./raw_triangle [offscreen|video]
+ *   ./raw_triangle_vklite [offscreen|video]
  *
- *   offscreen  render one frame, save raw_triangle.png  (default)
- *   video      render 120 frames, save raw_triangle.mp4
+ *   offscreen  render one frame, save raw_triangle_vklite.png  (default)
+ *   video      render 120 frames, save raw_triangle_vklite.mp4
  *
  * NOTE: GLFW onscreen rendering requires Vulkan surface extensions to be
  * requested at instance creation time, which DvzGpuCtx does not expose today.
  * It will be added in a follow-up commit using the raw dvz_instance_create path.
  *
- * Build:  just example-c raw_triangle
- * Run:    ./build/examples/c/tools/raw_triangle [offscreen|video]
+ * Build:  just example-c advanced/raw_triangle_vklite
+ * Run:    ./build/examples/c/advanced/raw_triangle_vklite [offscreen|video]
  */
 
 #include <stdint.h>
@@ -275,8 +275,8 @@ int main(int argc, char** argv)
         vsink.encoder.height   = wcfg.height;
         vsink.encoder.fps      = 30;
         char mp4_out[512], h26x_out[512];
-        example_outpath(argv[0], "raw_triangle.mp4", mp4_out, sizeof(mp4_out));
-        example_outpath(argv[0], "raw_triangle.h26x", h26x_out, sizeof(h26x_out));
+        example_outpath(argv[0], "raw_triangle_vklite.mp4", mp4_out, sizeof(mp4_out));
+        example_outpath(argv[0], "raw_triangle_vklite.h26x", h26x_out, sizeof(h26x_out));
         vsink.encoder.mp4_path = mp4_out;
         vsink.encoder.raw_path = h26x_out;
         if (dvz_canvas_configure_video_sink(canvas, true, &vsink) != 0)
@@ -307,13 +307,13 @@ int main(int argc, char** argv)
     /* Save PNG for offscreen mode */
     if (!video_mode) {
         char png_out[512];
-        example_outpath(argv[0], "raw_triangle.png", png_out, sizeof(png_out));
+        example_outpath(argv[0], "raw_triangle_vklite.png", png_out, sizeof(png_out));
         dvz_canvas_capture_png(canvas, png_out);
-        printf("raw_triangle: saved %s\n", png_out);
+        printf("raw_triangle_vklite: saved %s\n", png_out);
     } else {
         char mp4_msg[512];
-        example_outpath(argv[0], "raw_triangle.mp4", mp4_msg, sizeof(mp4_msg));
-        printf("raw_triangle: saved %s\n", mp4_msg);
+        example_outpath(argv[0], "raw_triangle_vklite.mp4", mp4_msg, sizeof(mp4_msg));
+        printf("raw_triangle_vklite: saved %s\n", mp4_msg);
     }
 
     /* Cleanup */

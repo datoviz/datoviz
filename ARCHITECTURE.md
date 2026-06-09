@@ -166,10 +166,12 @@ The runner composes module test suites into one process and supports optional fi
 
 The C examples intentionally cover different layers:
 
-- `examples/c/hello_point.c`: minimal high-level scene + app path.
-- `examples/c/hello_scatter.c`: point visual with non-trivial per-item arrays.
-- `examples/c/raw_triangle.c`: vklite commands recorded into a `DvzCanvas` frame callback.
-- `examples/c/raw_triangle_drp2.c`: hand-written DRP2 command stream executed by the native runtime.
+- `examples/c/features/basic_scene.c`: minimal high-level scene + app path.
+- `examples/c/visuals/point.c`: point visual with non-trivial per-item arrays.
+- `examples/c/advanced/raw_triangle_vklite.c`: vklite commands recorded into a `DvzCanvas`
+  frame callback.
+- `examples/c/advanced/raw_triangle_drp2.c`: hand-written DRP2 command stream executed by the
+  native runtime.
 
 
 ## Planned Python binding architecture

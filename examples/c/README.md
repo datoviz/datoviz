@@ -12,6 +12,7 @@ material.
 | `features/` | Public feature examples: one isolated capability or technique per file. |
 | `composites/` | Public semantic object examples that lower to one or more visuals. |
 | `showcases/` | Public composed examples: workflows, scientific stories, real-data examples, and gallery-facing demos. |
+| `advanced/` | Advanced low-level runtime, DRP2, and host-integration examples. Useful, but not gallery-first scene examples. |
 | `lab/` | Non-public experiments, diagnostics, stress/perf demos, and development workbenches. Flat folder only. |
 | `legacy/` | Temporary archive of older examples that are not built by default. Promote or delete from here deliberately. |
 

@@ -38,7 +38,6 @@ techniques.
 - `visual_transform.c`: retained visual-local transform set/get/clear proof.
 - `panel_domain_fit.c`: explicit panel domain fitting and reserved plot layout.
 - `scene_json.c`: experimental scene JSON serialization diagnostic.
-- `external_surface.c`: native external Vulkan surface API boundary proof.
 - `bezier_curve_path.c`: CPU-tessellated Bezier curves rendered through retained paths.
 - `datetime_axis.c`: compact data coordinates with UTC datetime tick labels.
 - `scalebar.c`: retained metric scale bar using builtin length units.
