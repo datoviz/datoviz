@@ -27,8 +27,8 @@ The active implementation covers the retained item-state highlight path for poin
 4. The scene emits optional `item_state` attributes and `item_state_style` uniforms. DRP2 uploads
    them as separate resources, and point/pixel/marker item-state shaders apply selected and
    contextual unselected styling.
-5. `examples/c/techniques/pick_hover.c` demonstrates click selection and linked point-like
-   highlighting.
+5. `examples/c/features/picking.c` demonstrates hover feedback, click selection, and point-like
+   highlighting on marker items.
 
 The broader design below still tracks planned follow-ups: explicit visual attachment APIs,
 parametrizable input maps, richer highlight descriptors, image/mesh/path/volume/text selection,

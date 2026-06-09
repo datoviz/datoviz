@@ -90,7 +90,8 @@ features/panzoom
 why not just "panzoom"
 
 features/pick*
-these are mostly broken (notably y flip again, you should really add tight regressions for that), i would like a single unified picking example with 1 or several visual families where hovering changes the size, and selecting results in some visual change like color or border or something
+resolved by `features/picking.c`: unified hover scaling and click selection/tinting, with a
+query y-orientation regression in `src/scene/tests/query.c`
 
 features/record_replay
 that one is broken, record_replay_replay.png is all purple
@@ -105,9 +106,6 @@ this example should instead show some small circular independent movement of eac
 features/json_export
 should find a name without scene_ prefix i think
 this example should save the json to a file and print the path of the saved json
-
-features/selection
-shouldn't that be merged with the new picking example? wdyt?
 
 features/technique_ssao
 should have technique_ as prefix

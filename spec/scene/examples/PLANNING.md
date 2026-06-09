@@ -119,7 +119,7 @@ The main remaining polish, promotion, or feature gaps are:
 | `path_axes_2d` | `ready-now` | path, rendered text, 2D axes/ticks | Public proof lives in `examples/c/features/axes_2d.c`. |
 | `linked_panels_axes_panzoom` | `ready-now` | grid/layout, linked panzoom, axes | Public proof lives in `examples/c/showcases/panel_linked_axes.c`. |
 | `linked_panels_probe_colorbar` | `ready-now` | image probe, colorbar, annotation/readout, linked state | Public proof lives in `examples/c/showcases/linked_probe_colorbar.c`; focused proofs still cover the parts separately in `image_probe`, `colorbar`, and `annotation_readout`. |
-| `marker_picking` | `ready-now` | marker visual, item pick, selection highlight | Public proof lives in `examples/c/features/pick_marker.c`. |
+| `feature_picking` | `ready-now` | marker visual, item pick, hover feedback, selection highlight | Public proof lives in `examples/c/features/picking.c`. |
 | `sphere_impostor` | `ready-now` | sphere visual, lighting/depth | Public proof lives in `examples/c/visuals/sphere.c`; molecule/protein semantics stay in the scientific protein example. |
 | `volume` | `ready-now` | 3D sampled field, slice/render, capture | Public proof lives in `examples/c/visuals/volume.c`. |
 | `scale_bar` | `ready-now` | retained scale bar, label, panzoom/domain updates | Minimal feature proof lives in `examples/c/features/scalebar.c`; unit conversion proof lives in `examples/c/features/scalebar_units.c`; richer overview/detail/3D measurement composition lives in `examples/c/showcases/scalebar_measurement.c`. |
@@ -251,7 +251,7 @@ optional controls for tessellation quality, stroke width, join mode, and overlay
 8. `annotation_readout`
 9. `image_probe`
 10. `linked_panels_probe_colorbar`
-11. `marker_picking`
+11. `feature_picking`
 12. `volume`
 13. `protein_arcball_viewer`
 14. `showcase_wind_field`

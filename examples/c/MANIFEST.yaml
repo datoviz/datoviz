@@ -903,13 +903,13 @@ examples:
         - frame-callbacks
     agent_copy_safe: true
 
-  - id: marker_picking
-    title: Marker Picking
+  - id: feature_picking
+    title: Picking
     stage: v0.4_required
     category: feature
-    primary_feature: marker-picking
+    primary_feature: picking
     lane: features
-    source: examples/c/features/pick_marker.c
+    source: examples/c/features/picking.c
     validation: smoke+interaction
     data:
       kind: synthetic
@@ -918,46 +918,6 @@ examples:
       status: webgpu-live
       requirements:
         - marker
-        - panzoom
-        - query-readback
-        - frame-callbacks
-    agent_copy_safe: true
-
-  - id: feature_pick_point
-    title: Point Picking
-    stage: v0.4_required
-    category: feature
-    primary_feature: pick-point
-    lane: features
-    source: examples/c/features/pick_point.c
-    validation: smoke+interaction+screenshot
-    data:
-      kind: synthetic
-    portability: portable-scenario
-    webgpu:
-      status: webgpu-live
-      requirements:
-        - point
-        - panzoom
-        - query-readback
-        - frame-callbacks
-    agent_copy_safe: true
-
-  - id: feature_pick_hover
-    title: Hover Picking
-    stage: v0.4_required
-    category: feature
-    primary_feature: pick-hover
-    lane: features
-    source: examples/c/features/pick_hover.c
-    validation: smoke+interaction+screenshot
-    data:
-      kind: synthetic
-    portability: portable-scenario
-    webgpu:
-      status: webgpu-live
-      requirements:
-        - point
         - panzoom
         - query-readback
         - frame-callbacks
@@ -973,26 +933,6 @@ examples:
     validation: smoke+readback+screenshot
     data:
       kind: synthetic
-    agent_copy_safe: true
-
-  - id: feature_selection
-    title: Selection
-    stage: v0.4_required
-    category: feature
-    primary_feature: selection
-    lane: features
-    source: examples/c/features/selection.c
-    validation: smoke+interaction+screenshot
-    data:
-      kind: synthetic
-    portability: portable-scenario
-    webgpu:
-      status: webgpu-live
-      requirements:
-        - point
-        - panzoom
-        - query-readback
-        - frame-callbacks
     agent_copy_safe: true
 
   - id: feature_timer_animation

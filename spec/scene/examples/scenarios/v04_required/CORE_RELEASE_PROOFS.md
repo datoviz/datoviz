@@ -47,7 +47,7 @@ panels backed by compatible fields, mirrored probe markers, one probe result tha
 readout, and one continuous colorbar with stable scale identity.
 
 
-## `marker_picking`
+## `feature_picking`
 
 Marker visual and item-pick proof. Bounding-box GPU picking is acceptable for v0.4; exact SDF
 marker hit testing can follow.

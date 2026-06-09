@@ -5,7 +5,7 @@
 This page indexes focused C examples for public scene, layout, adornment, interaction,
 update, rendering-technique, and appearance features.
 
-Coverage: 63 examples (58 supported, 5 experimental).
+Coverage: 60 examples (55 supported, 5 experimental).
 
 ## Features
 
@@ -277,18 +277,6 @@ retained horizontal and vertical guide spans in panel data coordinates.
 
 <div class="card" markdown="1">
 
-### [Hover Picking](gallery/features/feature_pick_hover.md)
-
-_Media pending._
-
-`supported` `features`
-
-retained point hover proof.
-
-</div>
-
-<div class="card" markdown="1">
-
 ### [Image Probe](gallery/features/image_probe.md)
 
 _Media pending._
@@ -344,18 +332,6 @@ _Media pending._
 `supported` `features`
 
 two panels with bidirectional linked X panzoom state.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Marker Picking](gallery/features/marker_picking.md)
-
-_Media pending._
-
-`supported` `features`
-
-retained marker item picking and selection proof.
 
 </div>
 
@@ -517,13 +493,13 @@ deterministic path with retained 2D axes and tick labels.
 
 <div class="card" markdown="1">
 
-### [Point Picking](gallery/features/feature_pick_point.md)
+### [Picking](gallery/features/feature_picking.md)
 
 _Media pending._
 
 `supported` `features`
 
-retained point item picking proof.
+unified retained marker hover and selection proof.
 
 </div>
 
@@ -608,18 +584,6 @@ _Media pending._
 `supported` `features`
 
 screen-space ambient occlusion on normal-producing mesh geometry.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Selection](gallery/features/feature_selection.md)
-
-_Media pending._
-
-`supported` `features`
-
-retained point selection proof.
 
 </div>
 

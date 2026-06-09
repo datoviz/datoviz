@@ -2,21 +2,21 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 91,
+  "count": 88,
   "categories": {
     "composite": 2,
-    "feature": 63,
+    "feature": 60,
     "showcase": 11,
     "visual": 15
   },
   "statuses": {
     "experimental": 8,
     "prototype": 1,
-    "supported": 82
+    "supported": 79
   },
   "agent_copy_safe": {
     "false": 20,
-    "true": 71
+    "true": 68
   },
   "examples": [
     {
@@ -1270,67 +1270,25 @@
       "primary_feature": "image-probe"
     },
     {
-      "id": "marker_picking",
-      "title": "Marker Picking",
+      "id": "feature_picking",
+      "title": "Picking",
       "category": "feature",
       "lane": "features",
       "stage": "v0.4_required",
       "status": "supported",
-      "source": "examples/c/features/pick_marker.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/pick_marker.c",
-      "page": "gallery/features/marker_picking.md",
-      "summary": "retained marker item picking and selection proof.",
+      "source": "examples/c/features/picking.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/picking.c",
+      "page": "gallery/features/feature_picking.md",
+      "summary": "unified retained marker hover and selection proof.",
       "validation": "smoke+interaction",
-      "build_command": "just example-c features/pick_marker",
-      "smoke_command": "./build/examples/c/features/pick_marker --png",
+      "build_command": "just example-c features/picking",
+      "smoke_command": "./build/examples/c/features/picking --png",
       "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
       },
-      "primary_feature": "marker-picking"
-    },
-    {
-      "id": "feature_pick_point",
-      "title": "Point Picking",
-      "category": "feature",
-      "lane": "features",
-      "stage": "v0.4_required",
-      "status": "supported",
-      "source": "examples/c/features/pick_point.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/pick_point.c",
-      "page": "gallery/features/feature_pick_point.md",
-      "summary": "retained point item picking proof.",
-      "validation": "smoke+interaction+screenshot",
-      "build_command": "just example-c features/pick_point",
-      "smoke_command": "./build/examples/c/features/pick_point --png",
-      "agent_copy_safe": true,
-      "tags": [],
-      "data": {
-        "kind": "synthetic"
-      },
-      "primary_feature": "pick-point"
-    },
-    {
-      "id": "feature_pick_hover",
-      "title": "Hover Picking",
-      "category": "feature",
-      "lane": "features",
-      "stage": "v0.4_required",
-      "status": "supported",
-      "source": "examples/c/features/pick_hover.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/pick_hover.c",
-      "page": "gallery/features/feature_pick_hover.md",
-      "summary": "retained point hover proof.",
-      "validation": "smoke+interaction+screenshot",
-      "build_command": "just example-c features/pick_hover",
-      "smoke_command": "./build/examples/c/features/pick_hover --png",
-      "agent_copy_safe": true,
-      "tags": [],
-      "data": {
-        "kind": "synthetic"
-      },
-      "primary_feature": "pick-hover"
+      "primary_feature": "picking"
     },
     {
       "id": "feature_probe_labels",
@@ -1352,27 +1310,6 @@
         "kind": "synthetic"
       },
       "primary_feature": "probe-labels"
-    },
-    {
-      "id": "feature_selection",
-      "title": "Selection",
-      "category": "feature",
-      "lane": "features",
-      "stage": "v0.4_required",
-      "status": "supported",
-      "source": "examples/c/features/selection.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection.c",
-      "page": "gallery/features/feature_selection.md",
-      "summary": "retained point selection proof.",
-      "validation": "smoke+interaction+screenshot",
-      "build_command": "just example-c features/selection",
-      "smoke_command": "./build/examples/c/features/selection --png",
-      "agent_copy_safe": true,
-      "tags": [],
-      "data": {
-        "kind": "synthetic"
-      },
-      "primary_feature": "selection"
     },
     {
       "id": "feature_timer_animation",

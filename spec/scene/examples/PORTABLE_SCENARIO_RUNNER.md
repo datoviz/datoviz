@@ -14,22 +14,18 @@ Current implementation checkpoint:
 1. `examples/c/runner/` contains the native GLFW/offscreen/capture runner.
 2. `DvzScenarioSpec.requirements` and runner-side requirement diagnostics are active in example
    support code.
-3. `basic_scene`, `timer_animation`, `video_export`, `pick_point`, `pick_marker`, `pick_hover`,
-   `selection`, and `image_probe` carry first-slice requirement metadata in code and
+3. `basic_scene`, `timer_animation`, `video_export`, `picking`, and `image_probe` carry
+   first-slice requirement metadata in code and
    `examples/c/MANIFEST.yaml`.
-4. Portable event and post-frame callbacks are active in the native runner; `pick_point` is the
-   first query/readback migration proof without `native_view`, and `pick_marker` is the second
-   item-picking family on the same bridge. `pick_hover` proves latest hover updates and
-   background-miss clearing on the same portable path. `selection` proves persistent click state
-   driven by portable pointer events and post-frame query consumption. `image_probe` proves the
-   same bridge for sampled image pixel queries.
+4. Portable event and post-frame callbacks are active in the native runner; `picking` is the
+   unified item-picking, hover, and selection proof on that bridge. `image_probe` proves the same
+   bridge for sampled image pixel queries.
 5. The WASM scenario host can drive `feature_timer_animation`, deliver browser pointer/wheel events
    to active scenario `event` callbacks, and report unsupported scenario requirements
    deterministically.
 6. Browser-side query/readback packet emission and WebGPU readback plumbing exist for
-   `feature_pick_point`, `feature_pick_marker`, `feature_pick_hover`, `feature_selection`, and
-   `feature_image_probe`. `wasm-pick-point`, `wasm-pick-marker`, `wasm-pick-hover`,
-   `wasm-selection`, and `wasm-image-probe` are browser-live.
+   `feature_picking` and `feature_image_probe`. `wasm-picking` and `wasm-image-probe` are
+   browser-live.
 
 Current native escape hatches to retire or classify:
 
@@ -721,11 +717,10 @@ public Datoviz APIs just to finish this group.
 
 Add portable runner bridges for resize, pointer, wheel, keyboard modifiers, controller requests,
 asynchronous picking/query results, and request-frame signals. Current status: native pointer/key/
-resize event translation and post-frame callbacks exist; `pick_point.c`, `pick_marker.c`,
-`pick_hover.c`, `selection.c`, and `image_probe.c` are migrated off `native_view`; browser
-pointer/wheel event delivery exists; point, marker, hover, selection, and image-probe async query
-result delivery are browser-live. Then migrate representative interaction examples before broad
-conversion:
+resize event translation and post-frame callbacks exist; `picking.c` and `image_probe.c` are
+migrated off `native_view`; browser pointer/wheel event delivery exists; picking/selection and
+image-probe async query result delivery are browser-live. Then migrate representative interaction
+examples before broad conversion:
 
 1. `probe_labels.c` for the categorical query follow-up;
 2. `panel_multi.c` and `panzoom.c` after controller request helpers are settled.

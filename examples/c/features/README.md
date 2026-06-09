@@ -49,10 +49,8 @@ techniques.
 - `alpha_blending.c`: source-over alpha blending with translucent primitives.
 - `panel_background.c`: panel background styling behind a simple foreground visual.
 - `panzoom.c`: one panzoom controller attached to a 2D panel.
-- `pick_point.c`: point item picking with callback/readback and visible selection.
-- `pick_hover.c`: latest-request-wins hover feedback with background-miss clearing.
+- `picking.c`: marker item picking with hover scaling and persistent selection tinting.
 - `probe_labels.c`: label-id probe/readout on a categorical label field.
-- `selection.c`: persistent selected-item highlight on a small visual.
 - `basic_scene.c`: smallest runner-backed retained scene with one point visual.
 - `panel_single.c`: one explicit panel rectangle with one visual and panel chrome.
 - `panel_grid.c`: four grid-owned panels with clipped panel-local content.

@@ -87,9 +87,9 @@ model is explicit.
 Where possible, share shader helper code between point-like item-state shaders so selected,
 unselected, and hover state logic is not duplicated.
 
-## Marker Picking Example Target
+## Picking Example Target
 
-`examples/c/features/pick_marker.c` should use regular `DvzSelection` with:
+`examples/c/features/picking.c` should use regular `DvzSelection` with:
 
 - toggle selection mode;
 - selected style: amber tint with full mix;

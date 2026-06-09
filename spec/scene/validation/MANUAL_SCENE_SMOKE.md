@@ -42,16 +42,17 @@ Automated coverage: `test_panzoom_create_reset`, `test_panzoom_pan_shift`,
 Current gap: no automated live GLFW gesture test.
 
 
-### Hover point picking
+### Picking, Hover, And Selection
 
 Command:
 
 ```bash
-./build/examples/c/techniques/pick_hover
+./build/examples/c/features/picking --live
 ```
 
-Expected behavior: a point grid renders. Moving the cursor over points grows the frontmost hovered
-point. Panzoom still works while hover requests continue across frames.
+Expected behavior: a marker grid renders. Moving the cursor over markers grows the hovered marker.
+Clicking a marker selects and tints it; clicking the background clears the selection. Panzoom still
+works while hover requests continue across frames.
 
 Automated coverage: `test_scene_process_pick_probe_requests`, `test_scene_point_pick_quadrants`,
 `test_scene_process_requests_coalesces_pending_picks_before_execution`,
@@ -307,7 +308,7 @@ just test test_scene_process_pick_probe_requests
 ./build/examples/c/visuals/image
 ./build/examples/c/visuals/mesh
 ./build/examples/c/visuals/point
-./build/examples/c/techniques/pick_hover
+./build/examples/c/features/picking --live
 ./build/examples/c/visuals/mesh
 ./build/examples/c/techniques/wboit 2
 ```

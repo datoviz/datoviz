@@ -189,6 +189,51 @@ int test_scene_query_queue_coalesces_pending_requests(TstContext* suite, const T
 
 
 
+int test_scene_query_queue_preserves_panel_local_y_orientation(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 100, 100, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.10f, .y = 0.10f, .width = 0.80f, .height = 0.80f});
+    ANN(panel);
+
+    AT(dvz_panel_query(
+           panel, 2.0, 5.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 21, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+    AT(dvz_panel_query(
+           panel, 2.0, 75.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 22, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+    AT(scene->pending_query_count == 2);
+    AC(scene->pending_queries[0].y, 5.0, 1e-12);
+    AC(scene->pending_queries[1].y, 75.0, 1e-12);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 2);
+
+    DvzQueryResult top = {0};
+    DvzQueryResult bottom = {0};
+    AT(dvz_scene_poll_query(scene, &top));
+    AT(dvz_scene_poll_query(scene, &bottom));
+    AT(top.request_id == 21);
+    AT(bottom.request_id == 22);
+    AC(top.panel_position[1], 5.0, 1e-12);
+    AC(bottom.panel_position[1], 75.0, 1e-12);
+    AT(top.framebuffer_position[1] == 15);
+    AT(bottom.framebuffer_position[1] == 85);
+    AT(!dvz_scene_poll_query(scene, &bottom));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_query_volume_sample_is_explicitly_unsupported(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -3143,6 +3188,7 @@ int test_scene_query(TstSuite* suite)
     TST_CASE(test_scene_query_rejects_untyped_render_plan);
     TST_CASE(test_scene_query_queue_processes_native_results);
     TST_CASE(test_scene_query_queue_coalesces_pending_requests);
+    TST_CASE(test_scene_query_queue_preserves_panel_local_y_orientation);
     TST_CASE(test_scene_query_volume_sample_is_explicitly_unsupported);
     TST_CASE(test_scene_query_skips_fixed_visuals);
     TST_CASE(test_scene_query_rejects_missing_query_profile);

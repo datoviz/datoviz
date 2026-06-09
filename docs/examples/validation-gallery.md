@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Public C examples in manifest: 91
-- Examples declaring screenshot validation: 80
+- Public C examples in manifest: 88
+- Examples declaring screenshot validation: 77
 - Examples that should have video or motion evidence: 5
 
 ## Commands
@@ -77,10 +77,7 @@ Screenshot and video capture should be run separately from documentation generat
 | [Alpha Blending](gallery/features/alpha_blending.md) | [`examples/c/features/alpha_blending.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/alpha_blending.c) | `supported` | `smoke+screenshot` |
 | [Panel Background](gallery/features/panel_background.md) | [`examples/c/features/panel_background.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_background.c) | `supported` | `smoke+screenshot` |
 | [Image Probe](gallery/features/image_probe.md) | [`examples/c/features/image_probe.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/image_probe.c) | `supported` | `smoke+readback+screenshot` |
-| [Point Picking](gallery/features/feature_pick_point.md) | [`examples/c/features/pick_point.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/pick_point.c) | `supported` | `smoke+interaction+screenshot` |
-| [Hover Picking](gallery/features/feature_pick_hover.md) | [`examples/c/features/pick_hover.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/pick_hover.c) | `supported` | `smoke+interaction+screenshot` |
 | [Label Probe](gallery/features/feature_probe_labels.md) | [`examples/c/features/probe_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c) | `supported` | `smoke+readback+screenshot` |
-| [Selection](gallery/features/feature_selection.md) | [`examples/c/features/selection.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection.c) | `supported` | `smoke+interaction+screenshot` |
 | [Timer Animation](gallery/features/feature_timer_animation.md) | [`examples/c/features/timer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/timer_animation.c) | `supported` | `smoke+screenshot` |
 | [Marker Symbols](gallery/features/feature_marker_symbols.md) | [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c) | `supported` | `smoke+screenshot` |
 | [Categorical Legend](gallery/features/feature_legend_categorical.md) | [`examples/c/features/legend_categorical.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c) | `experimental` | `smoke+screenshot` |

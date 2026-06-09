@@ -141,7 +141,7 @@ not the old gallery page that may currently occupy a similar slot.
 | --- | --- | --- | --- | --- |
 | `visual.point` | `examples/c/visuals/point.c` | `ready-now` | A deterministic compact cloud of points with visible per-point color and size variation. | Teaches retained point positions, colors, and sizes. Avoid axes, picking, animation, and complex colormaps. |
 | `visual.pixel` | `examples/c/visuals/pixel.c` | `ready-now` | A dense raster-like grid of square pixels, with clear value variation at thumbnail size. | Teaches pixel positions, sizes, and color/value mapping. Avoid image texture APIs and probe readouts. |
-| `visual.marker` | `examples/c/visuals/marker.c` | `ready-now` | A small arranged set of marker shapes large enough to inspect, with shape, fill/stroke color, and size variation. | Teaches marker shape and styling attributes. Put picking in `feature.pick_marker`, not here. |
+| `visual.marker` | `examples/c/visuals/marker.c` | `ready-now` | A small arranged set of marker shapes large enough to inspect, with shape, fill/stroke color, and size variation. | Teaches marker shape and styling attributes. Put picking in `feature.picking`, not here. |
 | `visual.primitive` | `examples/c/visuals/primitive.c` | `ready-now` | A few simple primitives arranged so topology differences are obvious, with distinct colors. | Teaches topology-parametric primitive data. Avoid shape builders, polygons, and mesh indexing. |
 | `visual.segment` | `examples/c/visuals/segment.c` | `ready-now` | Independent line segments with varying color and width, visibly not connected into a continuous path. | Teaches endpoint-pair data and per-segment styling. Avoid path joins, axes, and vector arrowheads. |
 | `visual.path` | `examples/c/visuals/path.c` | `ready-now` | Continuous deterministic signals with clear stroke styling. | Teaches ordered path data, path breaks, width, and color. Avoid axes unless implementing `feature.axes_2d`. |
@@ -171,7 +171,7 @@ Current implementation seeds:
 | --- | --- | --- |
 | `visual.point` | `examples/c/visuals/point.c`, `docs/gallery/visuals/point.md` | Current C example is the source of truth; salvage only screenshot/composition ideas from old docs. |
 | `visual.pixel` | `examples/c/visuals/pixel.c`, `docs/gallery/visuals/pixel.md` | Current C example is the source of truth; keep image upload and probing elsewhere. |
-| `visual.marker` | `examples/c/visuals/marker.c`, `examples/c/features/pick_marker.c` | Current marker baseline is separate from picking. Use `pick_marker.c` only as feature evidence. |
+| `visual.marker` | `examples/c/visuals/marker.c`, `examples/c/features/picking.c` | Current marker baseline is separate from picking. Use `picking.c` only as feature evidence. |
 | `visual.primitive` | `examples/c/visuals/primitive.c`, `docs/gallery/visuals/basic.md` | Replace the old `basic` page with `primitive`; there is no v0.4 `basic` visual family. |
 | `visual.segment` | `examples/c/visuals/segment.c`, `docs/gallery/visuals/segment.md` | Current C example is the source of truth; keep paths and vectors separate. |
 | `visual.path` | `examples/c/visuals/path.c`, `docs/gallery/visuals/path.md` | Current C example is the source of truth; axes belong in `feature.axes_2d`. |
@@ -261,12 +261,9 @@ scaffolding, but the feature must be the visible point of the example.
 | `feature.controller_arcball` | `examples/c/features/controller_arcball.c` | `ready-now` | A centered 3D mesh or sphere group where rotation is visually meaningful. | Teaches arcball attachment. Keep lighting/materials minimal. |
 | `feature.controller_fly` | `examples/c/features/controller_fly.c` | `ready-now` | A sparse 3D scene or point cloud where camera translation is visible. | Teaches fly navigation. Avoid dense LiDAR showcase styling. |
 | `feature.controller_turntable` | `examples/c/features/controller_turntable.c` | `ready-now` | A 3D object rotating around a stable up axis. | Teaches constrained turntable navigation. Do not duplicate arcball behavior. |
-| `feature.pick_point` | `examples/c/features/pick_point.c` | `ready-now` | Sparse points with a visible selected or hovered point and printed or displayed item id. | Teaches callback, query result, and stable item index. Avoid dense performance scenes. |
-| `feature.pick_marker` | `examples/c/features/pick_marker.c` | `ready-now` | Distinct markers where a picked item changes outline, color, or selection state. | Teaches marker picking and item identity. Do not use as the marker visual baseline. |
-| `feature.pick_hover` | `examples/c/features/pick_hover.c` | `ready-now` | Hover feedback follows pointer movement and clears on background miss. | Teaches latest-request-wins hover behavior and miss handling. Avoid persistent selection policy. |
+| `feature.picking` | `examples/c/features/picking.c` | `ready-now` | Distinct markers where hover changes size and click selection changes tint. | Teaches query results, latest hover feedback, selection state, and stable item identity. Do not use as the marker visual baseline. |
 | `feature.probe_image` | `examples/c/features/image_probe.c` | `ready-now` | Image field with a cursor or pinned marker showing data coordinates and sampled value. | Teaches image probing and pixel-query readback. Keep colorbars and textual readout annotations in separate feature examples. |
 | `feature.probe_labels` | `examples/c/features/probe_labels.c` | `ready-now` | Label field or labeled regions where hovering reports stable label ids and names. | Teaches label probing. Avoid segmentation editor scope. |
-| `feature.selection` | `examples/c/features/selection.c` | `ready-now` | A small visual where selected items remain highlighted after a click or scripted selection. | Teaches selection model and visual feedback. Avoid multi-visual selection linking. |
 | `workflow.linked_probe_colorbar` | `examples/c/showcases/linked_probe_colorbar.c` | `ready-now` | Two linked panels, one scalar image, one context/detail view, with colorbar and readout synchronized. | Teaches composed explanatory layout. This is not a minimal image, colorbar, or panel example. |
 
 ### Materials And Appearance
@@ -299,7 +296,7 @@ Current feature seeds and migration notes:
 | `feature.colorbar` | `examples/c/features/colorbar.c` | Standalone scalar scale/colorbar proof; do not add probing or linked panels. |
 | `feature.annotation_label` | `examples/c/features/annotation_readout.c` | Standalone anchored text/readout proof; keep data query behavior elsewhere. |
 | `feature.probe_image` | `examples/c/features/image_probe.c` | Focused image probe using a sampled scalar field and pixel query; colorbar and annotation/readout are split into separate examples. |
-| `feature.pick_marker` | `examples/c/features/pick_marker.c` | Picking/selection proof; do not use as the marker visual baseline. |
+| `feature.picking` | `examples/c/features/picking.c` | Picking/selection proof; do not use as the marker visual baseline. |
 | `feature.mesh_texture` | `examples/c/features/mesh_texture.c`, `examples/c/showcases/textured_planet.c` | Minimal textured-mesh proof is separate from the planet showcase. |
 | `feature.controller_arcball` | `examples/c/features/controller_arcball.c`, `examples/c/showcases/protein.c` | Minimal controller proof is separate from composed scientific/showcase examples. |
 | `feature.controller_fly` | `examples/c/features/controller_fly.c`, `examples/c/showcases/point_cloud.c` | Minimal fly-controller proof is separate from the dense point-cloud showcase. |

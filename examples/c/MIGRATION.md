@@ -55,11 +55,8 @@ source material.
 | `alpha_blending` | `features/alpha_blending.c` | Feature proof. |
 | `panel_background` | `features/panel_background.c` | Feature proof. |
 | `controller_panzoom` | `features/panzoom.c` | Feature proof. |
-| `feature_pick_point` | `features/pick_point.c` | Feature proof. |
-| `feature_pick_hover` | `features/pick_hover.c` | Feature proof. |
-| `marker_picking` | `features/pick_marker.c` | Feature proof. |
+| `feature_picking` | `features/picking.c` | Unified picking, hover, and selection proof. |
 | `feature_probe_labels` | `features/probe_labels.c` | Feature proof. |
-| `feature_selection` | `features/selection.c` | Feature proof. |
 | `feature_timer_animation` | `features/timer_animation.c` | Feature proof. |
 | `feature_marker_symbols` | `features/marker_symbols.c` | Feature proof. |
 | `feature_legend_categorical` | `features/legend_categorical.c` | Experimental feature proof. |

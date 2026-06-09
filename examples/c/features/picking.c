@@ -4,53 +4,52 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* pick_point - retained point item picking proof.
+/* picking - unified retained marker hover and selection proof.
  *
- * Scenario: feature.pick_point
+ * Scenario: feature_picking
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
- * Opens a GLFW window showing a deterministic point set. Move the cursor over the panel to query
- * the frontmost point item. Hover is rendered with retained item-state scaling. Left-click toggles
- * persistent selection; clicking the background clears it.
+ * Opens a GLFW window showing mixed marker shapes. Move the cursor over the panel to query the
+ * frontmost marker item. Hover and selection are rendered by the retained item-state API. Click a
+ * marker to toggle persistent selection; click the background to clear it.
  *
- * Build:  just example-c features/pick_point
- * Run:    ./build/examples/c/features/pick_point --live
- * Smoke:  ./build/examples/c/features/pick_point --png
+ * Current marker queries prove item/frontmost picking. They use the marker family's query bounds;
+ * exact SDF shape-discard picking is a later precision improvement.
+ *
+ * Build:  just example-c features/picking
+ * Run:    ./build/examples/c/features/picking --live
+ * Smoke:  ./build/examples/c/features/picking --png
  */
 
-
-
-/*************************************************************************************************/
-/*  Includes                                                                                     */
-/*************************************************************************************************/
-
+#include <math.h>
 #include <stdbool.h>
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 
+#include "_alloc.h"
 #include "datoviz/scene.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
 
 
-DvzScenarioSpec dvz_example_pick_point_scenario(void);
+DvzScenarioSpec dvz_example_picking_scenario(void);
 
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1600u
-#define HEIGHT      1200u
-#define GRID_COLS   8u
-#define GRID_ROWS   5u
-#define POINT_COUNT (GRID_COLS * GRID_ROWS)
-#define BASE_SIZE   34.0f
-#define HOVER_SIZE  52.0f
-#define QUERY_ID    1u
+#define WIDTH        1600
+#define HEIGHT       1200
+#define GRID_COLS    9
+#define GRID_ROWS    6
+#define MARKER_COUNT (GRID_COLS * GRID_ROWS + 5)
+#define BASE_SIZE    34.0f
+#define HOVER_SIZE   50.0f
+#define QUERY_ID     1u
+#define PI_F         3.14159265358979323846f
 
 
 
@@ -58,9 +57,9 @@ DvzScenarioSpec dvz_example_pick_point_scenario(void);
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-typedef struct PointPickState PointPickState;
+typedef struct PickingState PickingState;
 
-struct PointPickState
+struct PickingState
 {
     DvzScene* scene;
     DvzPanel* panel;
@@ -80,18 +79,44 @@ struct PointPickState
 /*************************************************************************************************/
 
 /**
- * Return one deterministic point color from the shared graphite-cyan palette.
+ * Return a deterministic mixed marker shape.
  *
- * @param index point index
- * @return point color
+ * @param index marker index
+ * @return marker shape enum value
  */
-static DvzColor _point_color(uint32_t index)
+static uint32_t _marker_shape(uint32_t index)
+{
+    switch (index % 6u)
+    {
+    case 1:
+        return DVZ_MARKER_SHAPE_SQUARE;
+    case 2:
+        return DVZ_MARKER_SHAPE_TRIANGLE;
+    case 3:
+        return DVZ_MARKER_SHAPE_DIAMOND;
+    case 4:
+        return DVZ_MARKER_SHAPE_CROSS;
+    case 5:
+        return DVZ_MARKER_SHAPE_RING;
+    default:
+        return DVZ_MARKER_SHAPE_DISC;
+    }
+}
+
+
+
+/**
+ * Return one deterministic marker color from the shared graphite-cyan palette.
+ *
+ * @param index marker index
+ * @return marker color
+ */
+static DvzColor _marker_palette_color(uint32_t index)
 {
     const ExampleStyleColorRole roles[] = {
         EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
         EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
         EXAMPLE_STYLE_COLOR_TEXT,
-        EXAMPLE_STYLE_COLOR_WARNING,
     };
     DvzColor color = example_graphite_cyan_color(roles[index % DVZ_ARRAY_COUNT(roles)]);
     color.a = 245u;
@@ -101,24 +126,24 @@ static DvzColor _point_color(uint32_t index)
 
 
 /**
- * Toggle retained selection for one queried point.
+ * Toggle retained selection for one queried marker.
  *
- * @param state point-pick example state
- * @param query point item query result
+ * @param state marker-pick example state
+ * @param query marker item query result
  */
-static void _toggle_point_selection(PointPickState* state, const DvzQueryResult* query)
+static void _toggle_marker_selection(PickingState* state, const DvzQueryResult* query)
 {
     if (state == NULL || query == NULL)
         return;
     if (
         query->status != DVZ_QUERY_STATUS_HIT || !query->hit ||
-        query->visual_family != DVZ_SCENE_VISUAL_FAMILY_POINT ||
-        query->resolved_target != DVZ_SCENE_TARGET_ITEM || query->resolved_id >= POINT_COUNT)
+        query->visual_family != DVZ_SCENE_VISUAL_FAMILY_MARKER ||
+        query->resolved_target != DVZ_SCENE_TARGET_ITEM || query->resolved_id >= MARKER_COUNT)
         return;
 
     if (dvz_selection_apply_query(state->selection, query) != 0)
         fprintf(stderr, "dvz_selection_apply_query() failed\n");
-    fprintf(stdout, "toggle point id=%" PRIu64 "\n", query->resolved_id);
+    fprintf(stdout, "toggle marker id=%" PRIu64 "\n", query->resolved_id);
 }
 
 
@@ -128,26 +153,28 @@ static void _toggle_point_selection(PointPickState* state, const DvzQueryResult*
 /*************************************************************************************************/
 
 /**
- * Record pointer position and dispatch click selection.
+ * Record the latest pointer position and click intent in panel coordinates.
  *
- * @param user_data point-pick example state
+ * @param event portable pointer event
+ * @param user_data marker-pick example state
  */
-static void _point_pick_pointer(const DvzScenarioPointerEvent* event, void* user_data)
+static void _picking_pointer(const DvzScenarioPointerEvent* event, void* user_data)
 {
-    PointPickState* state = (PointPickState*)user_data;
+    PickingState* state = (PickingState*)user_data;
     if (state == NULL || event == NULL)
         return;
-    if (event->type != DVZ_SCENARIO_POINTER_MOVE && event->type != DVZ_SCENARIO_POINTER_PRESS)
+    if (
+        event->type != DVZ_SCENARIO_POINTER_MOVE && event->type != DVZ_SCENARIO_POINTER_PRESS)
         return;
 
-    state->cursor_valid =
-        dvz_scenario_panel_pointer_position(state->panel, event, &state->cursor_x, &state->cursor_y);
+    state->cursor_valid = dvz_scenario_panel_pointer_position(
+        state->panel, event, &state->cursor_x, &state->cursor_y);
     if (event->type == DVZ_SCENARIO_POINTER_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
     {
         if (!state->cursor_valid)
             return;
         if (state->has_hover_query)
-            _toggle_point_selection(state, &state->latest_hover_query);
+            _toggle_marker_selection(state, &state->latest_hover_query);
         else
             dvz_selection_clear(state->selection);
     }
@@ -156,43 +183,43 @@ static void _point_pick_pointer(const DvzScenarioPointerEvent* event, void* user
 
 
 /**
- * Consume point query results, update hover styling, and queue the next query.
+ * Consume marker query results, update hover styling, and queue the next query.
  *
  * @param ctx scenario context
- * @param user_data point-pick example state
+ * @param user_data marker-pick example state
  */
-static void _point_pick_post_frame(DvzScenarioContext* ctx, void* user_data)
+static void _picking_post_frame(DvzScenarioContext* ctx, void* user_data)
 {
     (void)ctx;
-    PointPickState* state = (PointPickState*)user_data;
+    PickingState* state = (PickingState*)user_data;
     if (state == NULL)
         return;
 
     DvzQueryResult query = {0};
-    bool saw_point_query = false;
+    bool saw_marker_query = false;
     while (dvz_scene_poll_query(state->scene, &query))
     {
         if (query.request_id != QUERY_ID)
             continue;
 
-        saw_point_query = true;
+        saw_marker_query = true;
         if (dvz_hover_apply_query(state->hover, &query) != 0)
             fprintf(stderr, "dvz_hover_apply_query() failed\n");
         if (
             query.status == DVZ_QUERY_STATUS_HIT && query.hit &&
-            query.visual_family == DVZ_SCENE_VISUAL_FAMILY_POINT &&
-            query.resolved_target == DVZ_SCENE_TARGET_ITEM && query.resolved_id < POINT_COUNT)
+            query.visual_family == DVZ_SCENE_VISUAL_FAMILY_MARKER &&
+            query.resolved_target == DVZ_SCENE_TARGET_ITEM && query.resolved_id < MARKER_COUNT)
         {
             state->latest_hover_query = query;
             state->has_hover_query = true;
-            fprintf(stdout, "hover point id=%" PRIu64 "\n", query.resolved_id);
+            fprintf(stdout, "hover marker id=%" PRIu64 "\n", query.resolved_id);
         }
         else
         {
             state->has_hover_query = false;
         }
     }
-    if (saw_point_query && !state->has_hover_query)
+    if (saw_marker_query && !state->has_hover_query)
         dvz_hover_clear(state->hover);
 
     if (state->cursor_valid)
@@ -203,7 +230,9 @@ static void _point_pick_post_frame(DvzScenarioContext* ctx, void* user_data)
         request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
 
         if (dvz_scenario_panel_query(state->panel, state->cursor_x, state->cursor_y, &request) != 0)
+        {
             fprintf(stderr, "dvz_scenario_panel_query() failed\n");
+        }
     }
 }
 
@@ -222,7 +251,7 @@ static void _scenario_event(DvzScenarioContext* ctx, const DvzScenarioEvent* eve
     if (event == NULL)
         return;
     if (event->kind == DVZ_SCENARIO_EVENT_POINTER)
-        _point_pick_pointer(&event->content.pointer, user);
+        _picking_pointer(&event->content.pointer, user);
 }
 
 
@@ -232,7 +261,7 @@ static void _scenario_event(DvzScenarioContext* ctx, const DvzScenarioEvent* eve
 /*************************************************************************************************/
 
 /**
- * Initialize the retained point picking feature scenario.
+ * Initialize the retained marker picking feature scenario.
  *
  * @param ctx scenario context
  * @param out_user scenario state output
@@ -245,7 +274,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (out_user != NULL)
         *out_user = NULL;
 
-    PointPickState* state = (PointPickState*)calloc(1, sizeof(*state));
+    PickingState* state = (PickingState*)dvz_calloc(1, sizeof(*state));
     if (state == NULL)
         return false;
     if (out_user != NULL)
@@ -260,17 +289,17 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzVisual* visual = dvz_point(ctx->scene, 0);
+    DvzVisual* visual = dvz_marker(ctx->scene, 0);
     if (visual == NULL)
         return false;
     dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM);
 
-    DvzPointStyleDesc style = dvz_point_style_desc();
-    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
-    if (dvz_point_set_style(visual, &style) != 0)
-        return false;
-    if (dvz_visual_set_depth_test(visual, false) != 0)
+    DvzMarkerStyle style = dvz_marker_style();
+    style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
+    DvzColor grid = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
+    style.edge_color = dvz_color_rgba(grid.r, grid.g, grid.b, 210);
+    style.stroke_width = 2.0f;
+    if (dvz_marker_set_style(visual, &style) != 0)
         return false;
 
     DvzSelection* selection = dvz_selection(
@@ -310,28 +339,47 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->selection = selection;
     state->hover = hover;
 
-    vec3 positions[POINT_COUNT] = {0};
-    DvzColor colors[POINT_COUNT] = {0};
-    float diameters[POINT_COUNT] = {0};
+    vec3 positions[MARKER_COUNT] = {0};
+    DvzColor colors[MARKER_COUNT] = {0};
+    float diameters[MARKER_COUNT] = {0};
+    float angles[MARKER_COUNT] = {0};
+    uint32_t shapes[MARKER_COUNT] = {0};
+
     for (uint32_t row = 0; row < GRID_ROWS; row++)
     {
         for (uint32_t col = 0; col < GRID_COLS; col++)
         {
-            const uint32_t index = row * GRID_COLS + col;
-            positions[index][0] = -0.82f + 1.64f * ((float)col / (float)(GRID_COLS - 1u));
-            positions[index][1] = +0.62f - 1.24f * ((float)row / (float)(GRID_ROWS - 1u));
+            uint32_t index = row * GRID_COLS + col;
+            positions[index][0] = -0.88f + 1.76f * ((float)col / (float)(GRID_COLS - 1));
+            positions[index][1] = -0.72f + 1.44f * ((float)row / (float)(GRID_ROWS - 1));
             positions[index][2] = 0.0f;
-            colors[index] = _point_color(index);
+            colors[index] = _marker_palette_color(index);
             diameters[index] = BASE_SIZE;
+            angles[index] = ((float)(index % 12u) / 12.0f) * 2.0f * PI_F;
+            shapes[index] = _marker_shape(index);
         }
     }
 
+    for (uint32_t i = 0; i < 5; i++)
+    {
+        uint32_t index = GRID_COLS * GRID_ROWS + i;
+        positions[index][0] = -0.05f + 0.025f * (float)i;
+        positions[index][1] = -0.02f + 0.020f * (float)(i % 3u);
+        positions[index][2] = 0.0f;
+        colors[index] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
+        diameters[index] = BASE_SIZE;
+        angles[index] = 0.25f * PI_F * (float)i;
+        shapes[index] = _marker_shape(index + 2u);
+    }
+
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
-        {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
+        {.attr_name = "position", .data = positions, .item_count = MARKER_COUNT},
+        {.attr_name = "color", .data = colors, .item_count = MARKER_COUNT},
+        {.attr_name = "diameter", .data = diameters, .item_count = MARKER_COUNT},
+        {.attr_name = "angle", .data = angles, .item_count = MARKER_COUNT},
+        {.attr_name = "shape", .data = shapes, .item_count = MARKER_COUNT},
     };
-    if (dvz_visual_set_data_many(visual, updates, 3) != 0)
+    if (dvz_visual_set_data_many(visual, updates, 5) != 0)
         return false;
     if (dvz_panel_add_visual(panel, visual, NULL) != 0)
         return false;
@@ -343,7 +391,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
 
 /**
- * Destroy the retained point picking feature scenario state.
+ * Destroy the retained marker picking feature scenario state.
  *
  * @param ctx scenario context
  * @param user scenario state
@@ -351,30 +399,30 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 {
     (void)ctx;
-    free(user);
+    dvz_free(user);
 }
 
 
 
 /**
- * Return the retained point picking scenario specification.
+ * Return the retained marker picking scenario specification.
  *
  * @return scenario specification
  */
-DvzScenarioSpec dvz_example_pick_point_scenario(void)
+DvzScenarioSpec dvz_example_picking_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_pick_point",
-        .title = "pick_point",
+        .id = "feature_picking",
+        .title = "picking",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
-        .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_QUERY_READBACK |
+        .requirements = DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_QUERY_READBACK |
                         DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM |
                         DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
         .event = _scenario_event,
-        .post_frame = _point_pick_post_frame,
+        .post_frame = _picking_post_frame,
         .destroy = _scenario_destroy,
     };
 }
@@ -386,7 +434,7 @@ DvzScenarioSpec dvz_example_pick_point_scenario(void)
 /*************************************************************************************************/
 
 /**
- * Run the retained point picking feature example through the native scenario runner.
+ * Run the retained marker picking and selection feature example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -395,7 +443,7 @@ DvzScenarioSpec dvz_example_pick_point_scenario(void)
 #ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = dvz_example_pick_point_scenario();
+    DvzScenarioSpec spec = dvz_example_picking_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
 #endif

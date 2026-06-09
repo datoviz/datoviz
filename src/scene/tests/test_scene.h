@@ -860,6 +860,9 @@ int test_scene_query_queue_processes_native_results(TstContext* suite, const Tst
 
 int test_scene_query_queue_coalesces_pending_requests(TstContext* suite, const TstCase* item);
 
+int test_scene_query_queue_preserves_panel_local_y_orientation(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_query_volume_sample_is_explicitly_unsupported(
     TstContext* suite, const TstCase* item);
 
