@@ -252,7 +252,12 @@ function emitStream(Module, scene, figure, label) {
   const stream = JSON.parse(payload);
   requireOk(Array.isArray(stream.commands), `${label} stream has no commands array`);
   requireOk(stream.commands.length > 0, `${label} stream has no commands`);
-  return { stream, payload, ptr, size };
+  const resourceVersion = Module._dvz_wasm_api_resource_version(scene);
+  const frameIndex = Module._dvz_wasm_api_frame_index(scene);
+  requireOk(resourceVersion > 0, `${label}: missing JSON artifact resource version`);
+  requireOk(frameIndex > 0, `${label}: missing JSON artifact frame index`);
+  requireOk(Module._dvz_wasm_api_packet_status(scene) === 0, `${label}: JSON artifact packet status not OK`);
+  return { stream, payload, ptr, size, resourceVersion, frameIndex };
 }
 
 function expectPacket(Module, scene, kind, label, { expectArena = false } = {}) {
@@ -304,14 +309,43 @@ function emitPacketStream(Module, scene, figure, label) {
   }
   requireOk(Module._dvz_wasm_api_packet_status(scene) === 0, `${label}: packet status not OK`);
   requireOk(messages.length === 0, `${label}: diagnostics: ${messages.join("; ")}`);
-  requireOk(Module._dvz_wasm_api_resource_version(scene) > 0, `${label}: missing resource version`);
-  requireOk(Module._dvz_wasm_api_frame_index(scene) > 0, `${label}: missing frame index`);
+  const resourceVersion = Module._dvz_wasm_api_resource_version(scene);
+  const frameIndex = Module._dvz_wasm_api_frame_index(scene);
+  requireOk(resourceVersion > 0, `${label}: missing resource version`);
+  requireOk(frameIndex > 0, `${label}: missing frame index`);
 
-  return {
+  const packetStream = {
+    resourceVersion,
+    frameIndex,
     setup: expectPacket(Module, scene, DVZ_DRP2_PACKET_SETUP, `${label} setup`),
     update: expectPacket(Module, scene, DVZ_DRP2_PACKET_UPDATE, `${label} update`, { expectArena: true }),
     frame: expectPacket(Module, scene, DVZ_DRP2_PACKET_FRAME, `${label} frame`),
   };
+  for (const [kind, packet] of Object.entries(packetStream)) {
+    if (kind === "resourceVersion" || kind === "frameIndex") continue;
+    requireOk(packet.decoded.resource_version === resourceVersion, `${label} ${kind}: resource counter mismatch`);
+    requireOk(packet.decoded.frame_index === frameIndex, `${label} ${kind}: frame counter mismatch`);
+  }
+  return packetStream;
+}
+
+function expectReleasedPackets(Module, scene, label, resourceVersion, frameIndex) {
+  expectStatus(Module._dvz_wasm_api_release_packets(scene), 0, `${label}: release frame artifact`);
+  requireOk(Module._dvz_wasm_api_packet_status(scene) === 0, `${label}: released packet status not OK`);
+  for (const kind of [DVZ_DRP2_PACKET_SETUP, DVZ_DRP2_PACKET_UPDATE, DVZ_DRP2_PACKET_FRAME]) {
+    requireOk(Module._dvz_wasm_api_packet_ptr(scene, kind) === 0, `${label}: packet ${kind} ptr survived release`);
+    requireOk(Module._dvz_wasm_api_packet_size(scene, kind) === 0, `${label}: packet ${kind} size survived release`);
+    requireOk(Module._dvz_wasm_api_packet_arena_ptr(scene, kind) === 0, `${label}: packet ${kind} arena ptr survived release`);
+    requireOk(Module._dvz_wasm_api_packet_arena_size(scene, kind) === 0, `${label}: packet ${kind} arena size survived release`);
+  }
+  requireOk(
+    Module._dvz_wasm_api_resource_version(scene) === resourceVersion,
+    `${label}: resource counter changed on release`,
+  );
+  requireOk(
+    Module._dvz_wasm_api_frame_index(scene) === frameIndex,
+    `${label}: frame counter changed on release`,
+  );
 }
 
 function emitIncrementalPacketStream(Module, scene, figure, label) {
@@ -1821,6 +1855,9 @@ try {
         "generic 2D split packet reload missing commands",
       );
       expectNoPayload(Module, scene, "split packet emit invalidates JSON payload");
+      expectReleasedPackets(
+        Module, scene, "generic 2D split packet reload",
+        splitReload.resourceVersion, splitReload.frameIndex);
     } finally {
       Module._free(largerImagePtr);
     }

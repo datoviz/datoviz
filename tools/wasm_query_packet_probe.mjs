@@ -42,6 +42,19 @@ function packet(scene, kind) {
   return decodeDrp2Packet(bytes, arena);
 }
 
+function assertPacketsReleased(scene, label, resourceVersion, frameIndex) {
+  requireOk(Module._dvz_wasm_api_release_packets(scene) === 0, `${label}: release failed`);
+  requireOk(Module._dvz_wasm_api_packet_status(scene) === 0, `${label}: released packet status failed`);
+  for (const kind of [DVZ_DRP2_PACKET_SETUP, DVZ_DRP2_PACKET_UPDATE, DVZ_DRP2_PACKET_FRAME]) {
+    requireOk(Module._dvz_wasm_api_packet_ptr(scene, kind) === 0, `${label}: packet ${kind} ptr survived release`);
+    requireOk(Module._dvz_wasm_api_packet_size(scene, kind) === 0, `${label}: packet ${kind} size survived release`);
+    requireOk(Module._dvz_wasm_api_packet_arena_ptr(scene, kind) === 0, `${label}: packet ${kind} arena ptr survived release`);
+    requireOk(Module._dvz_wasm_api_packet_arena_size(scene, kind) === 0, `${label}: packet ${kind} arena size survived release`);
+  }
+  requireOk(Module._dvz_wasm_api_resource_version(scene) === resourceVersion, `${label}: resource counter changed on release`);
+  requireOk(Module._dvz_wasm_api_frame_index(scene) === frameIndex, `${label}: frame counter changed on release`);
+}
+
 const scene = Module._dvz_wasm_api_scene(256, 256);
 requireOk(scene !== 0, "scene creation failed");
 
@@ -55,6 +68,10 @@ try {
   requireOk(figure !== 0, "point scenario has no figure");
 
   requireOk(Module._dvz_wasm_api_emit_packets(scene, figure) === 0, "initial packet emit failed");
+  const initialResourceVersion = Module._dvz_wasm_api_resource_version(scene);
+  const initialFrameIndex = Module._dvz_wasm_api_frame_index(scene);
+  requireOk(initialResourceVersion > 0, "initial packet emit did not set resource version");
+  requireOk(initialFrameIndex > 0, "initial packet emit did not set frame index");
   requireOk(
     Module._dvz_wasm_api_scenario_pointer(
       scene, DVZ_POINTER_EVENT_MOVE, 32, 32, DVZ_POINTER_BUTTON_LEFT, 0, 1, 400) === 0,
@@ -68,13 +85,20 @@ try {
   requireOk(Module._dvz_wasm_api_query_active(scene) === 1, "query did not remain active");
   requireOk(Module._dvz_wasm_api_query_readback_size(scene) === 4, "unexpected readback size");
   requireOk(Module._dvz_wasm_api_diagnostic_count(scene) === 0, "unexpected query diagnostics");
+  const queryResourceVersion = Module._dvz_wasm_api_resource_version(scene);
+  const queryFrameIndex = Module._dvz_wasm_api_frame_index(scene);
+  requireOk(queryResourceVersion > initialResourceVersion, "query packet resource version did not advance");
+  requireOk(queryFrameIndex > initialFrameIndex, "query packet frame index did not advance");
 
   const setup = packet(scene, DVZ_DRP2_PACKET_SETUP);
   const frame = packet(scene, DVZ_DRP2_PACKET_FRAME);
   const querySetupSize = packetSize(scene, DVZ_DRP2_PACKET_SETUP);
   const queryUpdateSize = packetSize(scene, DVZ_DRP2_PACKET_UPDATE);
   const queryFrameSize = packetSize(scene, DVZ_DRP2_PACKET_FRAME);
-  const queryFrameIndex = frame.frame_index;
+  requireOk(setup.resource_version === queryResourceVersion, "query setup resource counter mismatch");
+  requireOk(frame.resource_version === queryResourceVersion, "query frame resource counter mismatch");
+  requireOk(setup.frame_index === queryFrameIndex, "query setup frame counter mismatch");
+  requireOk(frame.frame_index === queryFrameIndex, "query frame counter mismatch");
   requireOk(
     setup.commands.some((command) => command.cmd === "CreateTexture" && command.format === "r32uint"),
     "query setup packet did not create an r32uint target",
@@ -97,6 +121,9 @@ try {
   );
   requireOk(submit !== undefined, "query frame packet did not request a readback");
   requireOk(submit.readbacks[0]?.size === 4, "query readback size was not 4 bytes");
+  assertPacketsReleased(scene, "query frame artifact", queryResourceVersion, queryFrameIndex);
+  requireOk(Module._dvz_wasm_api_query_active(scene) === 1, "query release cleared active query");
+  requireOk(Module._dvz_wasm_api_query_readback_size(scene) === 4, "query release cleared readback state");
 
   requireOk(Module._dvz_wasm_api_emit_packets(scene, figure) === 0, "normal packet emit after query failed");
   const renderFrame = packet(scene, DVZ_DRP2_PACKET_FRAME);
