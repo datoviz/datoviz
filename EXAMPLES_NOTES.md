@@ -29,7 +29,7 @@ is still visible with the blocker or preferred next action.
 | `features/input_events` | partial | Current example prints emitted input events through app/view router; a live terminal window variant remains optional. |
 | `features/legend_categorical` | resolved | Removed highlighted entry that made one swatch larger in `examples/c/features/legend_categorical.c`; compiled. |
 | `features/lighting` | resolved | Three-panel material/light comparison in `examples/c/features/lighting.c`; compiled. |
-| `features/marker_symbols` | deferred | Needs clearer row labels and a stronger bitmap pin symbol. |
+| `features/marker_symbols` | resolved | Added row labels and a distinct colored bitmap-pin row in `examples/c/features/marker_symbols.c`; compiled and docs regenerated. |
 | `features/technique_msaa` | partial | Prefix is correct; stronger 3D mesh/cube comparison still needed. |
 | `features/offscreen_capture` | deferred | Keep exact-pixel offscreen semantics; add high-DPI/supersampled variant separately if desired. |
 | `features/overlay_card` | deferred | Needs realistic minimal overlay use case. |

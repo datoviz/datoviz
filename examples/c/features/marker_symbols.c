@@ -133,20 +133,32 @@ static float _shape_distance(float x, float y, uint32_t variant)
  */
 static void _fill_bitmap_symbol(uint8_t rgba[SYMBOL_PIXELS * SYMBOL_PIXELS * 4], uint32_t variant)
 {
-    const float color_mix = (float)(variant % 5u) / 4.0f;
+    static const DvzColor pin_colors[ROW_SYMBOLS] = {
+        {239, 71, 111, 255},
+        {255, 183, 3, 255},
+        {76, 201, 240, 255},
+        {128, 255, 219, 255},
+        {201, 209, 217, 255},
+    };
+    const DvzColor pin = pin_colors[variant % ROW_SYMBOLS];
     for (uint32_t y = 0; y < SYMBOL_PIXELS; y++)
     {
         for (uint32_t x = 0; x < SYMBOL_PIXELS; x++)
         {
             const float px = (2.0f * ((float)x + 0.5f) / (float)SYMBOL_PIXELS) - 1.0f;
             const float py = (2.0f * ((float)y + 0.5f) / (float)SYMBOL_PIXELS) - 1.0f;
-            const float d = _shape_distance(px, py, variant);
             const float edge = 0.030f;
-            const float alpha = _saturate(0.5f - d / edge);
+            const float head = sqrtf(px * px + (py + 0.28f) * (py + 0.28f)) - 0.44f;
+            const float tail_width = 0.30f * (0.84f - py) / 0.94f;
+            const float tail = fmaxf(fabsf(px) - fmaxf(tail_width, 0.0f),
+                                     fmaxf(-py - 0.10f, py - 0.84f));
+            const float alpha =
+                fmaxf(_saturate(0.5f - head / edge), _saturate(0.5f - tail / edge));
+            const bool center = sqrtf(px * px + (py + 0.28f) * (py + 0.28f)) < 0.14f;
             const uint32_t i = 4u * (y * SYMBOL_PIXELS + x);
-            rgba[i + 0u] = _unorm8(0.78f + 0.18f * color_mix);
-            rgba[i + 1u] = _unorm8(0.82f - 0.18f * color_mix);
-            rgba[i + 2u] = _unorm8(0.98f);
+            rgba[i + 0u] = center ? 255u : pin.r;
+            rgba[i + 1u] = center ? 255u : pin.g;
+            rgba[i + 2u] = center ? 255u : pin.b;
             rgba[i + 3u] = _unorm8(alpha);
         }
     }
@@ -375,7 +387,7 @@ static bool _add_symbol_row(
     for (uint32_t i = 0; i < ROW_SYMBOLS; i++)
     {
         const float t = ROW_SYMBOLS > 1u ? (float)i / (float)(ROW_SYMBOLS - 1u) : 0.0f;
-        positions[i][0] = -0.68f + 1.36f * t;
+        positions[i][0] = -0.46f + 1.24f * t;
         positions[i][1] = y;
         positions[i][2] = 0.0f;
         colors[i] = example_graphite_cyan_color(role);
@@ -397,6 +409,49 @@ static bool _add_symbol_row(
     if (dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED) != 0)
         return false;
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
+}
+
+
+
+/**
+ * Add a retained screen-space row label.
+ *
+ * @param panel panel receiving the text object
+ * @param label row label
+ * @param y_px panel-local screen-space y position
+ * @return true on success
+ */
+static bool _add_row_label(DvzPanel* panel, const char* label, float y_px)
+{
+    if (panel == NULL || label == NULL)
+        return false;
+
+    DvzText* text = dvz_text(panel, 0);
+    if (text == NULL)
+        return false;
+
+    DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
+    DvzTextStyle style = dvz_text_style();
+    style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    style.size_px = 22.0f;
+    style.color[0] = color.r;
+    style.color[1] = color.g;
+    style.color[2] = color.b;
+    style.color[3] = 230u;
+    if (dvz_text_set_style(text, &style) != 0)
+        return false;
+
+    DvzTextPlacement placement = dvz_text_placement();
+    placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    placement.position[0] = 90.0f;
+    placement.position[1] = y_px;
+    placement.text_anchor[0] = 0.0f;
+    placement.text_anchor[1] = 0.5f;
+    placement.has_text_anchor = true;
+    dvz_text_set_placement(text, &placement);
+    dvz_text_set_string(text, label);
+    return true;
 }
 
 
@@ -458,10 +513,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         EXAMPLE_STYLE_COLOR_ERROR,
     };
     const DvzSymbolId* row_ids[ROW_COUNT] = {builtin_ids, bitmap_ids, sdf_ids, msdf_ids, svg_ids};
+    const char* row_labels[ROW_COUNT] = {"built-in", "bitmap pin", "SDF", "MSDF", "SVG path"};
+    const float label_y_px[ROW_COUNT] = {205.0f, 400.0f, 600.0f, 795.0f, 990.0f};
     for (uint32_t row = 0; row < ROW_COUNT; row++)
     {
         if (!_add_symbol_row(
                 ctx->scene, panel, symbol_set, row_ids[row], row, row_y[row], row_roles[row]))
+            return false;
+        if (!_add_row_label(panel, row_labels[row], label_y_px[row]))
             return false;
     }
 
