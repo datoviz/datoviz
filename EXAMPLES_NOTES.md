@@ -41,7 +41,7 @@ is still visible with the blocker or preferred next action.
 | `features/basic_scene` | resolved | No `scene_` source/executable prefix; manifest/docs use `feature_basic_scene` as internal gallery ID. |
 | `features/compute_buffer_animation` | resolved | Compute shader now drives small independent circular point motion in `examples/c/features/compute_buffer_animation.c`; compiled. |
 | `features/json_export` | resolved | Writes `scene_export.json` and prints `./scene_export.json`; title/feature metadata updated to JSON Export. |
-| `features/technique_ssao` | partial | Prefix is correct; blur/grain visual tuning remains. |
+| `features/technique_ssao` | resolved | Increased SSAO samples and blur radius while lowering strength in `examples/c/features/technique_ssao.c`; compiled. |
 | `features/technique_transparency` | resolved | Three-panel source-over/WBOIT/depth-peel comparison now uses overlapping translucent 3D cubes in `examples/c/features/technique_transparency.c`; compiled. |
 | `features/video_export` | resolved | Runner record modes print video output paths; `examples/c/features/video_export.c` runs frame animation. |
 | `features/visibility` | resolved | Batching/visual-level visibility comment exists in `examples/c/features/visibility.c`. |

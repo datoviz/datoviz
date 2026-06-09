@@ -221,13 +221,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzSsaoDesc ssao = dvz_ssao_desc();
     ssao.radius = 1.10f;
-    ssao.strength = 2.80f;
+    ssao.strength = 2.35f;
     ssao.bias = 0.025f;
     ssao.power = 1.30f;
     ssao.min_visibility = 0.36f;
-    ssao.sample_count = 16u;
+    ssao.sample_count = 32u;
     ssao.blur_enabled = true;
-    ssao.blur_radius = 2.0f;
+    ssao.blur_radius = 6.0f;
     return dvz_panel_set_ssao(panel, &ssao);
 }
 
