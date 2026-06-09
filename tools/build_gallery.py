@@ -18,7 +18,7 @@ DEFAULT_MANIFEST = ROOT / "examples/c/MANIFEST.yaml"
 DEFAULT_DOCS_DIR = ROOT / "docs/examples"
 DEFAULT_IMAGE_DIR = ROOT / "docs/images/gallery"
 SOURCE_BASE_URL = "https://github.com/datoviz/datoviz/blob/v0.4-dev"
-PUBLIC_LANES = ("visuals", "features", "composites", "showcases")
+PUBLIC_LANES = ("visuals", "features", "composites", "showcases", "advanced")
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
 PYTHON_SOURCE_BY_ID = {}
 
@@ -27,6 +27,7 @@ CATEGORY_TO_LANE = {
     "feature": "features",
     "composite": "composites",
     "showcase": "showcases",
+    "advanced": "advanced",
 }
 
 LANE_TO_CATEGORY = {lane: category for category, lane in CATEGORY_TO_LANE.items()}
@@ -67,10 +68,23 @@ PAGE_CONFIG = {
             publication.
         """,
     },
+    "advanced.md": {
+        "title": "Advanced Examples",
+        "lanes": ("advanced",),
+        "intro": """\
+            Advanced examples cover low-level runtime, DRP2, and host-integration paths. They are
+            public release proof, but are not the preferred starting point for ordinary scene code.
+        """,
+    },
 }
 
 TECHNIQUE_IDS = (
-    "depth_test",
+    "technique_depth_test",
+    "technique_edl",
+    "technique_ssao",
+    "technique_msaa",
+    "technique_depth_cue",
+    "technique_transparency",
     "alpha_blending",
     "feature_lighting",
     "feature_material_mesh",
@@ -235,6 +249,7 @@ def lane_title(lane: str) -> str:
         "workflows": "Workflows",
         "composites": "Composites",
         "showcases": "Showcases",
+        "advanced": "Advanced",
         "scientific": "Scientific",
     }.get(lane, lane.capitalize())
 
@@ -336,6 +351,7 @@ def render_index(examples: list[Example], docs_dir: Path) -> None:
     feature_examples = by_lane["features"]
     composite_examples = by_lane["composites"]
     showcase_examples = by_lane["showcases"]
+    advanced_examples = by_lane["advanced"]
     lines = generated_header("Examples")
     lines.extend(
         dedent(
@@ -360,6 +376,7 @@ def render_index(examples: list[Example], docs_dir: Path) -> None:
             f"| [Feature gallery](feature-gallery.md) | {len(feature_examples)} | One isolated feature or technique per example. |",
             f"| [Composites](composites.md) | {len(composite_examples)} | One semantic object lowering to one or more visuals per example. |",
             f"| [Showcases](showcases.md) | {len(showcase_examples)} | Composed workflows, scientific stories, real-data examples, and polished demos. |",
+            f"| [Advanced examples](advanced.md) | {len(advanced_examples)} | Low-level runtime, DRP2, and host-integration examples. |",
         ]
     )
     lines.extend(["", "## Gallery Sections", ""])
@@ -371,6 +388,7 @@ def render_index(examples: list[Example], docs_dir: Path) -> None:
             f"| [Feature gallery](feature-gallery.md) | {len(feature_examples)} | {status_counts(feature_examples)} |",
             f"| [Composites](composites.md) | {len(composite_examples)} | {status_counts(composite_examples)} |",
             f"| [Showcases](showcases.md) | {len(showcase_examples)} | {status_counts(showcase_examples)} |",
+            f"| [Advanced examples](advanced.md) | {len(advanced_examples)} | {status_counts(advanced_examples)} |",
             f"| [Techniques](techniques.md) | {len([e for e in examples if e.id in TECHNIQUE_IDS])} | Rendering and compute behavior coverage |",
             f"| [Validation gallery](validation-gallery.md) | {len(examples)} | Release evidence checklist |",
         ]
@@ -380,7 +398,7 @@ def render_index(examples: list[Example], docs_dir: Path) -> None:
             "",
             "## Current Source Lanes",
             "",
-            "Public source lanes use `visuals`, `features`, `composites`, or `showcases`.",
+            "Public source lanes use `visuals`, `features`, `composites`, `showcases`, or `advanced`.",
             "Concepts such as `workflow`, `scientific`, and `real-data` are manifest tags.",
             "",
             "Coding agents should use [`docs/examples/examples.json`](examples.json),",

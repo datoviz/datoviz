@@ -14,24 +14,26 @@ keeps media status explicit while capture artifacts are prepared separately.
 | Category | Examples | Use |
 | --- | ---: | --- |
 | [Visual gallery](visual-gallery.md) | 15 | One public visual family per example. |
-| [Feature gallery](feature-gallery.md) | 65 | One isolated feature or technique per example. |
+| [Feature gallery](feature-gallery.md) | 70 | One isolated feature or technique per example. |
 | [Composites](composites.md) | 2 | One semantic object lowering to one or more visuals per example. |
-| [Showcases](showcases.md) | 11 | Composed workflows, scientific stories, real-data examples, and polished demos. |
+| [Showcases](showcases.md) | 14 | Composed workflows, scientific stories, real-data examples, and polished demos. |
+| [Advanced examples](advanced.md) | 3 | Low-level runtime, DRP2, and host-integration examples. |
 
 ## Gallery Sections
 
 | Section | Examples | Status |
 | --- | ---: | --- |
 | [Visual gallery](visual-gallery.md) | 15 | 13 supported, 2 experimental |
-| [Feature gallery](feature-gallery.md) | 65 | 60 supported, 5 experimental |
+| [Feature gallery](feature-gallery.md) | 70 | 65 supported, 5 experimental |
 | [Composites](composites.md) | 2 | 2 supported |
-| [Showcases](showcases.md) | 11 | 9 supported, 1 experimental, 1 prototype |
-| [Techniques](techniques.md) | 7 | Rendering and compute behavior coverage |
-| [Validation gallery](validation-gallery.md) | 93 | Release evidence checklist |
+| [Showcases](showcases.md) | 14 | 10 supported, 1 experimental, 3 prototype |
+| [Advanced examples](advanced.md) | 3 | 3 experimental |
+| [Techniques](techniques.md) | 13 | Rendering and compute behavior coverage |
+| [Validation gallery](validation-gallery.md) | 104 | Release evidence checklist |
 
 ## Current Source Lanes
 
-Public source lanes use `visuals`, `features`, `composites`, or `showcases`.
+Public source lanes use `visuals`, `features`, `composites`, `showcases`, or `advanced`.
 Concepts such as `workflow`, `scientific`, and `real-data` are manifest tags.
 
 Coding agents should use [`docs/examples/examples.json`](examples.json),
@@ -42,6 +44,7 @@ starting points by example or capability.
 | Lane | Source directory | Examples |
 | --- | --- | ---: |
 | Visuals | `examples/c/visuals/` | 15 |
-| Features | `examples/c/features/` | 65 |
+| Features | `examples/c/features/` | 70 |
 | Composites | `examples/c/composites/` | 2 |
-| Showcases | `examples/c/showcases/` | 11 |
+| Showcases | `examples/c/showcases/` | 14 |
+| Advanced | `examples/c/advanced/` | 3 |

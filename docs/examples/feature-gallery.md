@@ -5,7 +5,7 @@
 This page indexes focused C examples for public scene, layout, adornment, interaction,
 update, rendering-technique, and appearance features.
 
-Coverage: 65 examples (60 supported, 5 experimental).
+Coverage: 70 examples (65 supported, 5 experimental).
 
 ## Features
 
@@ -187,7 +187,7 @@ _Media pending._
 
 `experimental` `features`<br><span>`scene-compute`, `storage-buffer`, `point`</span>
 
-minimal scene compute pass writing a point position buffer.
+scene compute pass with independent circular point motion.
 
 </div>
 
@@ -337,6 +337,18 @@ CPU contour extraction rendered as retained segment overlays.
 
 <div class="card" markdown="1">
 
+### [JSON Export](gallery/features/feature_json_export.md)
+
+_Media pending._
+
+`experimental` `features`
+
+retained scene JSON serialization diagnostic.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Label Probe](gallery/features/feature_probe_labels.md)
 
 _Media pending._
@@ -380,6 +392,18 @@ _Media pending._
 `supported` `features`<br><span>`marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`, `svg-path-symbol`</span>
 
 marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Mesh Instance Selection](gallery/features/feature_selection_mesh_instances.md)
+
+_Media pending._
+
+`supported` `features`
+
+retained instanced mesh hover and click selection.
 
 </div>
 
@@ -457,6 +481,18 @@ orbit-camera controller attached to a small 3D mesh.
 
 <div class="card" markdown="1">
 
+### [Orientation Gizmo](gallery/features/feature_orientation_gizmo.md)
+
+_Media pending._
+
+`supported` `features`
+
+panel-attached orientation axes linked to an arcball controller.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Overlay Card](gallery/features/feature_overlay_card.md)
 
 _Media pending._
@@ -505,7 +541,7 @@ four grid-owned panels with clipped panel-local content.
 
 <div class="card" markdown="1">
 
-### [Panzoom](gallery/features/controller_panzoom.md)
+### [Panzoom](gallery/features/feature_panzoom.md)
 
 _Media pending._
 
@@ -553,6 +589,18 @@ unified retained marker hover and selection proof.
 
 <div class="card" markdown="1">
 
+### [Pixel Selection](gallery/features/feature_selection_pixel.md)
+
+_Media pending._
+
+`supported` `features`
+
+retained pixel hover and click selection.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Polygon Triangulation](gallery/features/feature_triangulation_polygon.md)
 
 _Media pending._
@@ -584,6 +632,18 @@ _Media pending._
 `experimental` `features`
 
 record an offscreen app view and replay it into a second offscreen view.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Reference Grid](gallery/features/feature_reference_grid.md)
+
+_Media pending._
+
+`supported` `features`
+
+plane-oriented reference grid in an arcball 3D scene.
 
 </div>
 
@@ -625,18 +685,6 @@ retained scale bar with a custom time-unit string.
 
 <div class="card" markdown="1">
 
-### [Scene JSON](gallery/features/feature_json_export.md)
-
-_Media pending._
-
-`experimental` `features`
-
-retained scene JSON serialization diagnostic.
-
-</div>
-
-<div class="card" markdown="1">
-
 ### [Screen-Space Ambient Occlusion](gallery/features/technique_ssao.md)
 
 _Media pending._
@@ -656,6 +704,18 @@ _Media pending._
 `supported` `features`
 
 one explicit panel rectangle with panel chrome and one visual.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Sphere Selection](gallery/features/feature_selection_sphere.md)
+
+_Media pending._
+
+`supported` `features`
+
+retained sphere hover and click selection.
 
 </div>
 

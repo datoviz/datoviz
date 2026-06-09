@@ -7,7 +7,7 @@ They may use workflows, prepared data, animation, postprocess settings, or
 domain-specific context. Each item still needs a deterministic screenshot before final
 publication.
 
-Coverage: 11 examples (9 supported, 1 experimental, 1 prototype).
+Coverage: 14 examples (10 supported, 1 experimental, 3 prototype).
 
 ## Showcases
 
@@ -22,6 +22,18 @@ _Media pending._
 `prototype` `showcases`<br><span>`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, ...</span>
 
 local Allen mouse brain RGBA volume and occluded slice.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Embedding Atlas](gallery/showcases/showcase_embedding_atlas.md)
+
+_Media pending._
+
+`supported` `showcases`<br><span>`scientific`, `synthetic`, `embedding`, `point`, `panzoom`, ...</span>
+
+interactive synthetic AI embedding atlas.
 
 </div>
 
@@ -58,6 +70,18 @@ _Media pending._
 `supported` `showcases`<br><span>`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, ...</span>
 
 linked image panels with one probe readout and shared colorbar.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Lipid Brain Atlas](gallery/showcases/showcase_lipid_brain_atlas.md)
+
+_Media pending._
+
+`prototype` `showcases`<br><span>`scientific`, `real-data`, `lipid-atlas`, `image`, `sampled-field`, ...</span>
+
+section/channel lipid intensity showcase.
 
 </div>
 
@@ -106,6 +130,18 @@ _Media pending._
 `supported` `showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
 
 histogram, guide annotations, stacked traces, and error bands.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Synthetic Mouse](gallery/showcases/showcase_synthetic_mouse.md)
+
+_Media pending._
+
+`prototype` `showcases`<br><span>`scientific`, `synthetic`, `textured-mesh`, `animation`, `skeleton`, ...</span>
+
+animated textured mouse mesh with trajectory and skeleton trails.
 
 </div>
 

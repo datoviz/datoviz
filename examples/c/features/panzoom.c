@@ -6,7 +6,7 @@
 
 /* panzoom - bind a panzoom controller to one panel with a simple 2D visual.
  *
- * Scenario: feature.controller_panzoom
+ * Scenario: feature.panzoom
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/panzoom

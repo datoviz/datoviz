@@ -657,10 +657,10 @@ examples:
     agent_copy_safe: true
 
   - id: feature_json_export
-    title: Scene JSON
+    title: JSON Export
     stage: v0.4_experimental
     category: feature
-    primary_feature: scene-json
+    primary_feature: json-export
     lane: features
     source: examples/c/features/json_export.c
     validation: smoke+stdout
@@ -896,7 +896,7 @@ examples:
       kind: synthetic
     agent_copy_safe: true
 
-  - id: controller_panzoom
+  - id: feature_panzoom
     title: Panzoom
     stage: v0.4_required
     category: feature
