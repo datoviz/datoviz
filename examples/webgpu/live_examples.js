@@ -85,6 +85,11 @@ export const LIVE_EXAMPLES = [
     label: "Scale Bar",
     scenarioId: "feature_scalebar",
   },
+  {
+    id: "scalebar_units",
+    label: "Scale Bar Units",
+    scenarioId: "feature_scalebar_units",
+  },
 ];
 
 export function liveExampleById(id) {

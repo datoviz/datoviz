@@ -922,7 +922,7 @@ function expectColorbarScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "WriteTexture").length >= 2, `${label}: expected scalar image and glyph texture uploads`);
 }
 
-function expectScaleBarScenarioStreamShape(stream, label) {
+function expectScaleBarScenarioStreamShape(stream, label, { reference = "point" } = {}) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
   expectCommandCount(stream, "HelloRenderer", 1, label);
@@ -933,11 +933,19 @@ function expectScaleBarScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "BeginRenderPass").length >= 1, `${label}: expected render pass`);
   requireOk(commandsOf(stream, "SetViewport").length >= 1, `${label}: expected viewport command`);
   requireOk(commandsOf(stream, "SetScissor").length >= 1, `${label}: expected scissor command`);
-  expectPipeline(
-    stream,
-    `${label} point`,
-    (pipeline) => pipeline.builtin_pipeline === "scene.point",
-  );
+  if (reference === "point") {
+    expectPipeline(
+      stream,
+      `${label} point`,
+      (pipeline) => pipeline.builtin_pipeline === "scene.point",
+    );
+  } else if (reference === "path") {
+    expectPipeline(
+      stream,
+      `${label} path`,
+      (pipeline) => pipeline.builtin_pipeline === "scene.path",
+    );
+  }
   expectPipeline(
     stream,
     `${label} scale segment`,
@@ -948,8 +956,15 @@ function expectScaleBarScenarioStreamShape(stream, label) {
     `${label} scale label`,
     (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
   );
-  expectDraw(stream, 6, 5, `${label} point`);
-  requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected scale-bar segment draw`);
+  if (reference === "point") {
+    expectDraw(stream, 6, 5, `${label} point`);
+  }
+  const indexedDraws = commandsOf(stream, "DrawIndexed").length;
+  const expectedIndexedDraws = reference === "path" ? 2 : 1;
+  requireOk(
+    indexedDraws >= expectedIndexedDraws,
+    `${label}: expected at least ${expectedIndexedDraws} indexed draw(s)`,
+  );
   requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
 }
 
@@ -1460,6 +1475,7 @@ try {
     "feature_image_probe",
     "feature_colorbar",
     "feature_scalebar",
+    "feature_scalebar_units",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -1686,6 +1702,36 @@ try {
     expectScaleBarScenarioStreamShape(initialScalebar.stream, "scale-bar scenario initial");
   } finally {
     Module._dvz_wasm_api_scene_destroy(scalebarScene);
+  }
+
+  const scalebarUnitsIndex = scenarioIndex(Module, "feature_scalebar_units");
+  const scalebarUnitsWidth = Module._dvz_wasm_api_scenario_width(scalebarUnitsIndex);
+  const scalebarUnitsHeight = Module._dvz_wasm_api_scenario_height(scalebarUnitsIndex);
+  const scalebarUnitsScene = Module._dvz_wasm_api_scene(scalebarUnitsWidth, scalebarUnitsHeight);
+  requireOk(scalebarUnitsScene !== 0, "scale-bar units scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(scalebarUnitsScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "scale-bar units scenario canvas format",
+    );
+    setCapabilities(
+      Module, scalebarUnitsScene, 4096, 4, 8, 256 * 1024 * 1024, 256, 4,
+      "scale-bar units scenario capabilities");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(scalebarUnitsScene, scalebarUnitsIndex),
+      0,
+      "scale-bar units scenario create",
+    );
+    expectNoDiagnostics(Module, scalebarUnitsScene, "scale-bar units scenario create diagnostics");
+    const scalebarUnitsFigure = Module._dvz_wasm_api_scenario_figure(scalebarUnitsScene);
+    requireOk(scalebarUnitsFigure !== 0, "scale-bar units scenario has no figure");
+    const initialScalebarUnits =
+      emitStream(Module, scalebarUnitsScene, scalebarUnitsFigure, "scale-bar units scenario initial");
+    expectScaleBarScenarioStreamShape(
+      initialScalebarUnits.stream, "scale-bar units scenario initial", { reference: "path" });
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(scalebarUnitsScene);
   }
 
   const pixelSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);

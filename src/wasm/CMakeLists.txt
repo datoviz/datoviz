@@ -24,6 +24,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_pixel.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_sphere.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/scalebar.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/scalebar_units.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/timer_animation.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/triangulation_polygon.c
 )
