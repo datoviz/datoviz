@@ -10,6 +10,8 @@ smallest runner-backed retained scene with one point visual.
 - Status: `supported`
 - Source: [`examples/c/features/basic_scene.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/basic_scene.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `point`
 - Build: `just example-c features/basic_scene`
 - Smoke: `./build/examples/c/features/basic_scene --png`
 - Validation: `smoke+screenshot`

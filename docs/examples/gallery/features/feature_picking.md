@@ -10,6 +10,9 @@ unified retained marker hover and selection proof.
 - Status: `supported`
 - Source: [`examples/c/features/picking.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/picking.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_picking`](../../../../examples/webgpu/live.html?id=feature_picking)
+- WebGPU requirements: `marker`, `panzoom`, `query-readback`, `frame-callbacks`
 - Build: `just example-c features/picking`
 - Smoke: `./build/examples/c/features/picking --png`
 - Validation: `smoke+interaction`

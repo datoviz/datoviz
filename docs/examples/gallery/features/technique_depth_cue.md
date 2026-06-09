@@ -10,6 +10,8 @@ depth-dependent fading applied to a regular 3D sphere lattice.
 - Status: `supported`
 - Source: [`examples/c/features/technique_depth_cue.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_cue.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-deferred`
+- WebGPU requirements: `depth-cue`
 - Build: `just example-c features/technique_depth_cue`
 - Smoke: `./build/examples/c/features/technique_depth_cue --png`
 - Validation: `smoke+screenshot`

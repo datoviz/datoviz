@@ -1356,13 +1356,10 @@ try {
     Module._dvz_wasm_api_scene_destroy(diagnosticScene);
   }
 
-  requireOk(Module._dvz_wasm_api_scenario_count() >= 6, "expected query-capable WASM scenarios");
+  requireOk(Module._dvz_wasm_api_scenario_count() >= 3, "expected gallery-live WASM scenarios");
   const expectedScenarioIds = [
     "feature_timer_animation",
-    "feature_pick_point",
-    "feature_pick_marker",
-    "feature_pick_hover",
-    "feature_selection",
+    "feature_picking",
     "feature_image_probe",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {

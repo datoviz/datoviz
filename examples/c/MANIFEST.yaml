@@ -23,6 +23,7 @@ taxonomy:
     capture.size: optional WxH override; defaults to defaults.public_capture
     portability: portable-scenario | native-only | browser-only
     webgpu.status: webgpu-live | webgpu-planned | webgpu-deferred | native-only | browser-only
+    webgpu.route: live browser route for webgpu-live examples
     webgpu.requirements: requirement tags used by the scenario runner and website routing
     agent_copy_safe: true only for examples suitable as starting points for generated user code
   tag_not_folder:
@@ -942,6 +943,7 @@ examples:
     portability: portable-scenario
     webgpu:
       status: webgpu-live
+      route: examples/webgpu/live.html?id=image_probe
       requirements:
         - image
         - query-readback
@@ -961,6 +963,7 @@ examples:
     portability: portable-scenario
     webgpu:
       status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_picking
       requirements:
         - marker
         - panzoom
@@ -1143,7 +1146,8 @@ examples:
       kind: synthetic
     portability: portable-scenario
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_timer_animation
       requirements:
         - point
         - frame-callbacks

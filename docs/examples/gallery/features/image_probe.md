@@ -10,6 +10,9 @@ scalar image pixel-query proof with a live probe marker.
 - Status: `supported`
 - Source: [`examples/c/features/image_probe.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/image_probe.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=image_probe`](../../../../examples/webgpu/live.html?id=image_probe)
+- WebGPU requirements: `image`, `query-readback`, `frame-callbacks`
 - Build: `just example-c features/image_probe`
 - Smoke: `./build/examples/c/features/image_probe --png`
 - Validation: `smoke+readback+screenshot`

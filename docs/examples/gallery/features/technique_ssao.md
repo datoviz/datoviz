@@ -10,6 +10,8 @@ screen-space ambient occlusion on normal-producing mesh geometry.
 - Status: `supported`
 - Source: [`examples/c/features/technique_ssao.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_ssao.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-deferred`
+- WebGPU requirements: `gbuffer`, `depth-postprocess`
 - Build: `just example-c features/technique_ssao`
 - Smoke: `./build/examples/c/features/technique_ssao --png`
 - Validation: `smoke+screenshot`

@@ -10,6 +10,8 @@ retained pixel hover and click selection.
 - Status: `supported`
 - Source: [`examples/c/features/selection_pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_pixel.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `pixel`, `panzoom`, `query-readback`, `frame-callbacks`
 - Build: `just example-c features/selection_pixel`
 - Smoke: `./build/examples/c/features/selection_pixel --png`
 - Validation: `smoke+interaction+screenshot`

@@ -17,24 +17,9 @@ const DEMOS = [
     load: () => import("./demos/wasm_timer_animation.js"),
   },
   {
-    id: "wasm-pick-point",
-    label: "WASM point picking",
-    load: () => import("./demos/wasm_pick_point.js"),
-  },
-  {
-    id: "wasm-pick-marker",
-    label: "WASM marker picking",
-    load: () => import("./demos/wasm_pick_marker.js"),
-  },
-  {
-    id: "wasm-pick-hover",
-    label: "WASM hover picking",
-    load: () => import("./demos/wasm_pick_hover.js"),
-  },
-  {
-    id: "wasm-selection",
-    label: "WASM selection",
-    load: () => import("./demos/wasm_selection.js"),
+    id: "wasm-picking",
+    label: "WASM picking",
+    load: () => import("./demos/wasm_picking.js"),
   },
   {
     id: "wasm-image-probe",

@@ -10,6 +10,8 @@ host-owned GLFW loop using Datoviz hosted rendering.
 - Status: `experimental`
 - Source: [`examples/c/advanced/external_surface_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/external_surface_glfw.c)
 - Agent copy-safe: `false`
+- WebGPU status: `native-only`
+- WebGPU requirements: `native-view`, `external-surface`, `glfw`
 - Build: `just example-c advanced/external_surface_glfw`
 - Smoke: `./build/examples/c/advanced/external_surface_glfw --png`
 - Validation: `native-smoke`

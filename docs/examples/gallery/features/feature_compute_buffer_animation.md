@@ -10,6 +10,8 @@ scene compute pass with independent circular point motion.
 - Status: `experimental`
 - Source: [`examples/c/features/compute_buffer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/compute_buffer_animation.c)
 - Agent copy-safe: `false`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `scene-buffers`, `storage-buffers`, `scene-compute`, `point`
 - Build: `just example-c features/compute_buffer_animation`
 - Smoke: `./build/examples/c/features/compute_buffer_animation --png`
 - Validation: `smoke+screenshot`

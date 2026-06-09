@@ -10,6 +10,8 @@ live native keyboard, pointer, wheel, and resize event logging.
 - Status: `supported`
 - Source: [`examples/c/features/input_events.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/input_events.c)
 - Agent copy-safe: `true`
+- WebGPU status: `native-only`
+- WebGPU requirements: `native-view`, `input-events`
 - Build: `just example-c features/input_events`
 - Smoke: `./build/examples/c/features/input_events --png`
 - Validation: `smoke+interaction`

@@ -10,6 +10,8 @@ dockable Dear ImGui window containing a live Datoviz render target.
 - Status: `supported`
 - Source: [`examples/c/features/gui_viewport.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_viewport.c)
 - Agent copy-safe: `false`
+- WebGPU status: `native-only`
+- WebGPU requirements: `gui`, `native-view`
 - Build: `just example-c features/gui_viewport`
 - Smoke: `./build/examples/c/features/gui_viewport --png`
 - Validation: `smoke+interaction`

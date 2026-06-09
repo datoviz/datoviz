@@ -10,6 +10,8 @@ curated Datoviz GUI controls mutating one retained point visual.
 - Status: `supported`
 - Source: [`examples/c/features/gui_controls.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_controls.c)
 - Agent copy-safe: `true`
+- WebGPU status: `native-only`
+- WebGPU requirements: `gui`
 - Build: `just example-c features/gui_controls`
 - Smoke: `./build/examples/c/features/gui_controls --png`
 - Validation: `smoke+interaction`

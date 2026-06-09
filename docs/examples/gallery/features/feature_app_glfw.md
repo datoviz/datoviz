@@ -10,6 +10,8 @@ direct GLFW app path without the scenario runner.
 - Status: `supported`
 - Source: [`examples/c/features/app_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/app_glfw.c)
 - Agent copy-safe: `true`
+- WebGPU status: `native-only`
+- WebGPU requirements: `native-view`
 - Build: `just example-c features/app_glfw`
 - Smoke: `./build/examples/c/features/app_glfw --png`
 - Validation: `smoke+interaction`

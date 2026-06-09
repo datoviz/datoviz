@@ -10,6 +10,8 @@ polygon triangulation with derived edge overlay.
 - Status: `supported`
 - Source: [`examples/c/features/triangulation_polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/triangulation_polygon.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `primitive`, `segment`
 - Build: `just example-c features/triangulation_polygon`
 - Smoke: `./build/examples/c/features/triangulation_polygon --png`
 - Validation: `smoke+screenshot`

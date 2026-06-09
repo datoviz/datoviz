@@ -10,6 +10,8 @@ render an exact-pixel offscreen view once and write a PNG.
 - Status: `supported`
 - Source: [`examples/c/features/offscreen_capture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/offscreen_capture.c)
 - Agent copy-safe: `true`
+- WebGPU status: `native-only`
+- WebGPU requirements: `native-capture`
 - Build: `just example-c features/offscreen_capture`
 - Smoke: `./build/examples/c/features/offscreen_capture --png`
 - Validation: `smoke+screenshot`

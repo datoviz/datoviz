@@ -10,6 +10,9 @@ portable scenario updating retained point data on runner frames.
 - Status: `supported`
 - Source: [`examples/c/features/timer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/timer_animation.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_timer_animation`](../../../../examples/webgpu/live.html?id=feature_timer_animation)
+- WebGPU requirements: `point`, `frame-callbacks`
 - Build: `just example-c features/timer_animation`
 - Smoke: `./build/examples/c/features/timer_animation --png`
 - Validation: `smoke+screenshot`

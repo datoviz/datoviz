@@ -10,6 +10,8 @@ raw_triangle_vklite — vklite draw commands into DvzCanvas.
 - Status: `experimental`
 - Source: [`examples/c/advanced/raw_triangle_vklite.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/raw_triangle_vklite.c)
 - Agent copy-safe: `false`
+- WebGPU status: `native-only`
+- WebGPU requirements: `vklite`, `canvas`
 - Build: `just example-c advanced/raw_triangle_vklite`
 - Smoke: `./build/examples/c/advanced/raw_triangle_vklite --png`
 - Validation: `smoke+png`

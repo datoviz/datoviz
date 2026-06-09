@@ -10,6 +10,8 @@ record an offscreen app view and replay it into a second offscreen view.
 - Status: `experimental`
 - Source: [`examples/c/features/record_replay.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/record_replay.c)
 - Agent copy-safe: `false`
+- WebGPU status: `native-only`
+- WebGPU requirements: `native-capture`
 - Build: `just example-c features/record_replay`
 - Smoke: `./build/examples/c/features/record_replay --png`
 - Validation: `smoke+capture`

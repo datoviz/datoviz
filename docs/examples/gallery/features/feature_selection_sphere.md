@@ -10,6 +10,8 @@ retained sphere hover and click selection.
 - Status: `supported`
 - Source: [`examples/c/features/selection_sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_sphere.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `sphere`, `arcball`, `query-readback`, `frame-callbacks`
 - Build: `just example-c features/selection_sphere`
 - Smoke: `./build/examples/c/features/selection_sphere --png`
 - Validation: `smoke+interaction+screenshot`

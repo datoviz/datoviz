@@ -10,6 +10,8 @@ screen-space marker, path, and axis scaling controlled by a GUI slider.
 - Status: `supported`
 - Source: [`examples/c/features/user_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/user_scale.c)
 - Agent copy-safe: `true`
+- WebGPU status: `native-only`
+- WebGPU requirements: `marker`, `path`, `gui`
 - Build: `just example-c features/user_scale`
 - Smoke: `./build/examples/c/features/user_scale --png`
 - Validation: `smoke+interaction+screenshot`

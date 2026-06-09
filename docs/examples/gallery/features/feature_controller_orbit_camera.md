@@ -10,6 +10,8 @@ orbit-camera controller attached to a small 3D mesh.
 - Status: `supported`
 - Source: [`examples/c/features/controller_orbit_camera.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_orbit_camera.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-deferred`
+- WebGPU requirements: `controller`, `orbit-camera`
 - Build: `just example-c features/controller_orbit_camera`
 - Smoke: `./build/examples/c/features/controller_orbit_camera --png`
 - Validation: `smoke+interaction+screenshot`

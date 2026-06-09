@@ -10,6 +10,8 @@ retained instanced mesh hover and click selection.
 - Status: `supported`
 - Source: [`examples/c/features/selection_mesh_instances.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_mesh_instances.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `mesh`, `arcball`, `query-readback`, `frame-callbacks`
 - Build: `just example-c features/selection_mesh_instances`
 - Smoke: `./build/examples/c/features/selection_mesh_instances --png`
 - Validation: `smoke+interaction+screenshot`

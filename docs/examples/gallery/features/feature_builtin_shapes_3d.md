@@ -10,6 +10,8 @@ builtin 3D geometry builders rendered through retained meshes.
 - Status: `supported`
 - Source: [`examples/c/features/builtin_shapes_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_3d.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `mesh`, `controller`
 - Build: `just example-c features/builtin_shapes_3d`
 - Smoke: `./build/examples/c/features/builtin_shapes_3d --png`
 - Validation: `smoke+screenshot`

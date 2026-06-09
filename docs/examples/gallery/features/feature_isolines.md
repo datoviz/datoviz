@@ -10,6 +10,8 @@ CPU contour extraction rendered as retained segment overlays.
 - Status: `supported`
 - Source: [`examples/c/features/isolines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/isolines.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `mesh`, `segment`, `controller`
 - Build: `just example-c features/isolines`
 - Smoke: `./build/examples/c/features/isolines --png`
 - Validation: `smoke+screenshot`

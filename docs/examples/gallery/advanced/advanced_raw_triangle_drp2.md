@@ -10,6 +10,8 @@ raw_triangle_drp2 — triangle rendered via a hand-written DRP2 command stream.
 - Status: `experimental`
 - Source: [`examples/c/advanced/raw_triangle_drp2.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/raw_triangle_drp2.c)
 - Agent copy-safe: `false`
+- WebGPU status: `native-only`
+- WebGPU requirements: `drp2`, `vklite`
 - Build: `just example-c advanced/raw_triangle_drp2`
 - Smoke: `./build/examples/c/advanced/raw_triangle_drp2 --png`
 - Validation: `smoke+png`

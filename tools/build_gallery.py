@@ -110,6 +110,7 @@ class Example:
     data: dict
     dataset: dict
     encoding: dict
+    webgpu: dict
     agent_copy_safe: bool | None
     python_source: str | None
 
@@ -139,6 +140,19 @@ class Example:
         if self.python_source is None:
             return None
         return ROOT / self.python_source
+
+    @property
+    def webgpu_status(self) -> str:
+        return str(self.webgpu.get("status", "unclassified"))
+
+    @property
+    def webgpu_route(self) -> str:
+        return str(self.webgpu.get("route", ""))
+
+    @property
+    def webgpu_requirements(self) -> tuple[str, ...]:
+        requirements = self.webgpu.get("requirements") or ()
+        return tuple(str(requirement) for requirement in requirements)
 
 
 def parse_args() -> argparse.Namespace:
@@ -226,6 +240,7 @@ def collect_examples(manifest: dict) -> list[Example]:
             data=entry.get("data") or {},
             dataset=entry.get("dataset") or {},
             encoding=entry.get("encoding") or {},
+            webgpu=entry.get("webgpu") or {},
             agent_copy_safe=entry.get("agent_copy_safe"),
             python_source=PYTHON_SOURCE_BY_ID.get(str(entry["id"])),
         )
@@ -391,6 +406,7 @@ def render_index(examples: list[Example], docs_dir: Path) -> None:
             f"| [Advanced examples](advanced.md) | {len(advanced_examples)} | {status_counts(advanced_examples)} |",
             f"| [Techniques](techniques.md) | {len([e for e in examples if e.id in TECHNIQUE_IDS])} | Rendering and compute behavior coverage |",
             f"| [Validation gallery](validation-gallery.md) | {len(examples)} | Release evidence checklist |",
+            f"| [WebGPU matrix](webgpu-matrix.md) | {len([e for e in examples if e.webgpu])} | Browser live-example status |",
         ]
     )
     lines.extend(
@@ -492,6 +508,51 @@ def render_validation(examples: list[Example], docs_dir: Path) -> None:
     write_text(docs_dir / "validation-gallery.md", "\n".join(lines))
 
 
+def render_webgpu_matrix(examples: list[Example], docs_dir: Path) -> None:
+    classified = [example for example in examples if example.webgpu]
+    status_order = {
+        "webgpu-live": 0,
+        "webgpu-planned": 1,
+        "webgpu-deferred": 2,
+        "native-only": 3,
+        "browser-only": 4,
+    }
+    classified.sort(key=lambda example: (status_order.get(example.webgpu_status, 99), example.id))
+
+    lines = generated_header("WebGPU Live Example Matrix")
+    lines.extend(
+        dedent(
+            """\
+            This page is generated from `examples/c/MANIFEST.yaml`. `webgpu-live` rows are public
+            browser routes backed by the same canonical C example or portable C scenario as native
+            validation. Browser JavaScript is host glue only.
+            """
+        )
+        .strip()
+        .splitlines()
+    )
+    lines.extend(
+        [
+            "",
+            "| Example | Source | WebGPU status | Requirements | Browser route |",
+            "| --- | --- | --- | --- | --- |",
+        ]
+    )
+    for example in classified:
+        requirements = ", ".join(f"`{requirement}`" for requirement in example.webgpu_requirements)
+        route = (
+            f"[`{example.webgpu_route}`](../../{example.webgpu_route})"
+            if example.webgpu_route
+            else ""
+        )
+        lines.append(
+            f"| [{example.title}]({example.page_path}) | "
+            f"[`{example.source}`]({source_url(example)}) | "
+            f"`{example.webgpu_status}` | {requirements} | {route} |"
+        )
+    write_text(docs_dir / "webgpu-matrix.md", "\n".join(lines))
+
+
 def render_example_page(example: Example, docs_dir: Path, image_dir: Path) -> None:
     lines = generated_header(example.title)
     lines.extend([example.summary, ""])
@@ -508,6 +569,15 @@ def render_example_page(example: Example, docs_dir: Path, image_dir: Path) -> No
         metadata.append(
             f"- Python source: [`{example.python_source}`]({SOURCE_BASE_URL}/{example.python_source})",
         )
+    if example.webgpu:
+        metadata.append(f"- WebGPU status: `{example.webgpu_status}`")
+        if example.webgpu_route:
+            metadata.append(
+                f"- WebGPU live route: [`{example.webgpu_route}`](../../../../{example.webgpu_route})"
+            )
+        if example.webgpu_requirements:
+            requirements = ", ".join(f"`{requirement}`" for requirement in example.webgpu_requirements)
+            metadata.append(f"- WebGPU requirements: {requirements}")
     metadata.extend(
         [
             f"- Build: `just example-c {example.rel_executable}`",
@@ -564,6 +634,7 @@ def main() -> int:
         render_gallery_page(filename, config, examples, args.docs_dir, args.image_dir)
     render_techniques(examples, args.docs_dir)
     render_validation(examples, args.docs_dir)
+    render_webgpu_matrix(examples, args.docs_dir)
     for example in examples:
         render_example_page(example, args.docs_dir, args.image_dir)
     print(f"Generated {len(examples)} C gallery entries under {args.docs_dir}")

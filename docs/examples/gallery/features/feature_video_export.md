@@ -10,6 +10,8 @@ portable scenario using the native runner's live/capture modes.
 - Status: `experimental`
 - Source: [`examples/c/features/video_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/video_export.c)
 - Agent copy-safe: `false`
+- WebGPU status: `native-only`
+- WebGPU requirements: `point`, `frame-callbacks`, `native-capture`
 - Build: `just example-c features/video_export`
 - Smoke: `./build/examples/c/features/video_export --png`
 - Validation: `smoke+optional-video`

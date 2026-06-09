@@ -10,6 +10,8 @@ raw cimgui calls inside a Datoviz GUI callback.
 - Status: `supported`
 - Source: [`examples/c/features/gui_cimgui.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_cimgui.c)
 - Agent copy-safe: `false`
+- WebGPU status: `native-only`
+- WebGPU requirements: `gui`
 - Build: `just example-c features/gui_cimgui`
 - Smoke: `./build/examples/c/features/gui_cimgui --png`
 - Validation: `smoke+interaction`

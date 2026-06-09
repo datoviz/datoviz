@@ -10,6 +10,8 @@ Eye-Dome Lighting applied to a regular 3D sphere lattice.
 - Status: `supported`
 - Source: [`examples/c/features/technique_edl.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_edl.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-deferred`
+- WebGPU requirements: `depth-postprocess`
 - Build: `just example-c features/technique_edl`
 - Smoke: `./build/examples/c/features/technique_edl --png`
 - Validation: `smoke+screenshot`

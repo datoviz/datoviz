@@ -10,6 +10,8 @@ retained track-backed visual transform animation.
 - Status: `supported`
 - Source: [`examples/c/features/animation_tracks.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/animation_tracks.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-planned`
+- WebGPU requirements: `mesh`, `frame-callbacks`, `arcball`
 - Build: `just example-c features/animation_tracks`
 - Smoke: `./build/examples/c/features/animation_tracks --png`
 - Validation: `smoke+interaction+screenshot`

@@ -10,6 +10,8 @@ side-by-side multisample antialiasing on slanted 3D cube silhouettes.
 - Status: `supported`
 - Source: [`examples/c/features/technique_msaa.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_msaa.c)
 - Agent copy-safe: `true`
+- WebGPU status: `webgpu-deferred`
+- WebGPU requirements: `multisample`
 - Build: `just example-c features/technique_msaa`
 - Smoke: `./build/examples/c/features/technique_msaa --png`
 - Validation: `smoke+screenshot`
