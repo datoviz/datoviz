@@ -36,7 +36,7 @@
 
 #define WIDTH         1600u
 #define HEIGHT        1200u
-#define SEGMENT_COUNT 10u
+#define SEGMENT_COUNT 4u
 
 
 
@@ -58,28 +58,29 @@ static bool _add_plot_guides(DvzScene* scene, DvzPanel* panel)
 
     const float left = -0.70f;
     const float right = +0.78f;
-    const float bottom = -0.66f;
-    const float top = +0.74f;
+    const float bottom = -0.62f;
+    const float top = +0.68f;
 
     vec3 starts[SEGMENT_COUNT] = {
-        {left, bottom, 0.0f}, {right, bottom, 0.0f}, {right, top, 0.0f}, {left, top, 0.0f},
-        {left, 0.0f, 0.0f},  {0.0f, bottom, 0.0f}, {left, -0.34f, 0.0f},
-        {left, +0.34f, 0.0f}, {+0.24f, bottom, 0.0f}, {-0.24f, bottom, 0.0f},
+        {left, bottom, 0.0f},
+        {right, bottom, 0.0f},
+        {right, top, 0.0f},
+        {left, top, 0.0f},
     };
     vec3 ends[SEGMENT_COUNT] = {
-        {right, bottom, 0.0f}, {right, top, 0.0f}, {left, top, 0.0f}, {left, bottom, 0.0f},
-        {right, 0.0f, 0.0f},  {0.0f, top, 0.0f}, {right, +0.48f, 0.0f},
-        {right, -0.18f, 0.0f}, {+0.58f, top, 0.0f}, {-0.58f, top, 0.0f},
+        {right, bottom, 0.0f},
+        {right, top, 0.0f},
+        {left, top, 0.0f},
+        {left, bottom, 0.0f},
     };
     DvzColor colors[SEGMENT_COUNT] = {0};
     float widths[SEGMENT_COUNT] = {0};
 
     for (uint32_t i = 0; i < SEGMENT_COUNT; i++)
     {
-        colors[i] = i < 4u ? example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY)
-                            : example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
-        colors[i].a = i < 4u ? 220u : 180u;
-        widths[i] = i < 4u ? 3.0f : 2.0f;
+        colors[i] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
+        colors[i].a = 180u;
+        widths[i] = 2.5f;
     }
 
     DvzVisual* visual = dvz_segment(scene, 0);

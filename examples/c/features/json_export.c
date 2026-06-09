@@ -107,7 +107,7 @@ static bool _serialize_scene(DvzScene* scene)
     {
         const int rc = dvz_write_bytes(JSON_PATH, "wb", (DvzSize)length, (const uint8_t*)json);
         if (rc == 0)
-            fprintf(stdout, "json_export: wrote %s (%zu bytes)\n", JSON_PATH, length);
+            fprintf(stdout, "json_export: wrote ./%s (%zu bytes)\n", JSON_PATH, length);
         else
             fprintf(stderr, "json_export: failed to write %s\n", JSON_PATH);
         dvz_scene_json_destroy(json);

@@ -83,22 +83,22 @@ static bool _upload_points(DvzVisual* visual, DvzColor color)
 
 
 /**
- * Return a simple translation transform.
+ * Return a simple affine transform with translation and non-uniform scale.
  *
  * @param x X translation
  * @param y Y translation
  * @param out output matrix
  */
-static void _translation(float x, float y, mat4 out)
+static void _example_transform(float x, float y, mat4 out)
 {
     ANN(out);
 
-    out[0][0] = 1.0f;
-    out[0][1] = 0.0f;
+    out[0][0] = 1.24f;
+    out[0][1] = 0.22f;
     out[0][2] = 0.0f;
     out[0][3] = 0.0f;
-    out[1][0] = 0.0f;
-    out[1][1] = 1.0f;
+    out[1][0] = -0.18f;
+    out[1][1] = 0.82f;
     out[1][2] = 0.0f;
     out[1][3] = 0.0f;
     out[2][0] = 0.0f;
@@ -109,6 +109,47 @@ static void _translation(float x, float y, mat4 out)
     out[3][1] = y;
     out[3][2] = 0.0f;
     out[3][3] = 1.0f;
+}
+
+
+/**
+ * Add one point visual to a panel, optionally with a visual-local transform.
+ *
+ * @param scene scene owning the visual
+ * @param panel panel receiving the visual
+ * @param transformed whether to apply the example transform
+ * @return true on success
+ */
+static bool _add_panel_points(DvzScene* scene, DvzPanel* panel, bool transformed)
+{
+    ANN(scene);
+    ANN(panel);
+
+    DvzVisual* visual = dvz_point(scene, 0);
+    if (visual == NULL)
+        return false;
+
+    DvzColor color = transformed ? example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY)
+                                 : example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
+    if (!transformed)
+        color.a = 210u;
+    if (!_upload_points(visual, color))
+        return false;
+
+    if (transformed)
+    {
+        mat4 transform = {{0}};
+        mat4 current = {{0}};
+        _example_transform(0.16f, 0.18f, transform);
+        if (dvz_visual_set_transform(visual, transform) != 0)
+            return false;
+        if (!dvz_visual_has_transform(visual))
+            return false;
+        if (dvz_visual_get_transform(visual, current) != 0)
+            return false;
+    }
+
+    return dvz_panel_add_visual(panel, visual, NULL) == 0;
 }
 
 
@@ -135,41 +176,29 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx->figure == NULL)
         return false;
 
-    DvzPanel* panel = dvz_panel_full(ctx->figure);
-    if (panel == NULL)
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
+    if (grid == NULL)
         return false;
-    example_graphite_cyan_set_panel_background(panel);
-
-    DvzVisual* base = dvz_point(ctx->scene, 0);
-    DvzVisual* shifted = dvz_point(ctx->scene, 0);
-    if (base == NULL || shifted == NULL)
+    if (!dvz_grid_set_margins(grid, &(DvzPanelReserve){.left_px = 36, .right_px = 36,
+                                                       .top_px = 36, .bottom_px = 36}))
         return false;
-
-    DvzColor muted = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
-    muted.a = 150u;
-    if (!_upload_points(base, muted))
-        return false;
-    if (!_upload_points(shifted, example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY)))
+    if (!dvz_grid_set_gutter(grid, 36.0f, 0.0f))
         return false;
 
-    mat4 transform = {{0}};
-    mat4 current = {{0}};
-    _translation(0.36f, 0.30f, transform);
-    if (dvz_visual_set_transform(shifted, transform) != 0)
+    DvzPanel* base = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* transformed = dvz_grid_panel(grid, 0, 1);
+    if (base == NULL || transformed == NULL)
         return false;
-    if (!dvz_visual_has_transform(shifted))
+    example_graphite_cyan_set_panel_background(base);
+    example_graphite_cyan_set_panel_background(transformed);
+
+    if (!_add_panel_points(ctx->scene, base, false))
         return false;
-    if (dvz_visual_get_transform(shifted, current) != 0)
+    if (!_add_panel_points(ctx->scene, transformed, true))
         return false;
 
-    _translation(-0.38f, -0.28f, transform);
-    if (dvz_visual_set_transform(base, transform) != 0)
-        return false;
-    if (dvz_visual_clear_transform(base) != 0 || dvz_visual_has_transform(base))
-        return false;
-
-    return dvz_panel_add_visual(panel, base, NULL) == 0 &&
-           dvz_panel_add_visual(panel, shifted, NULL) == 0;
+    return dvz_scenario_panzoom(ctx, base, NULL, DVZ_DIM_MASK_XY) != NULL &&
+           dvz_scenario_panzoom(ctx, transformed, NULL, DVZ_DIM_MASK_XY) != NULL;
 }
 
 

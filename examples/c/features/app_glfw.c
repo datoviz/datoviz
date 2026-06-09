@@ -32,8 +32,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1000u
-#define HEIGHT      700u
+#define WIDTH       1600u
+#define HEIGHT      1200u
 #define POINT_COUNT 6u
 
 

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* lighting - lit sphere cluster with explicit light direction.
+/* lighting - compare lit sphere clusters with different material and light settings.
  *
  * Scenario: feature.lighting
  * Style: features, graphite_cyan, 1600x1200 capture target
@@ -44,13 +44,14 @@
 /*************************************************************************************************/
 
 /**
- * Add one lit sphere visual with deterministic positions and one material light direction.
+ * Add one sphere visual with deterministic positions and one material/light variant.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
+ * @param variant material/light variant index
  * @return true on success
  */
-static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel)
+static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
 {
     vec3 positions[SPHERE_COUNT] = {
         {-0.72f, -0.28f, -0.20f},
@@ -84,12 +85,33 @@ static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel)
         return false;
 
     DvzMaterialDesc material = dvz_standard_material_desc();
-    material.light_direction[0] = -0.34f;
-    material.light_direction[1] = -0.46f;
-    material.light_direction[2] = +0.82f;
-    material.standard.roughness = 0.52f;
-    material.standard.specular = 0.42f;
-    material.standard.rim_strength = 0.18f;
+    if (variant == 0u)
+    {
+        material.light_direction[0] = -0.34f;
+        material.light_direction[1] = -0.46f;
+        material.light_direction[2] = +0.82f;
+        material.standard.roughness = 0.86f;
+        material.standard.specular = 0.12f;
+        material.standard.rim_strength = 0.05f;
+    }
+    else if (variant == 1u)
+    {
+        material.light_direction[0] = +0.12f;
+        material.light_direction[1] = -0.70f;
+        material.light_direction[2] = +0.62f;
+        material.standard.roughness = 0.42f;
+        material.standard.specular = 0.60f;
+        material.standard.rim_strength = 0.18f;
+    }
+    else
+    {
+        material.light_direction[0] = +0.62f;
+        material.light_direction[1] = +0.18f;
+        material.light_direction[2] = +0.76f;
+        material.standard.roughness = 0.24f;
+        material.standard.specular = 0.78f;
+        material.standard.rim_strength = 0.42f;
+    }
     if (dvz_visual_set_material(visual, &material) != 0)
         return false;
 
@@ -127,10 +149,15 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx->figure == NULL)
         return false;
 
-    DvzPanel* panel = dvz_panel_full(ctx->figure);
-    if (panel == NULL)
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 3);
+    if (grid == NULL)
         return false;
-    example_graphite_cyan_set_panel_background(panel);
+    if (!dvz_grid_set_margins(
+            grid, &(DvzPanelReserve){.left_px = 34.0f, .right_px = 34.0f, .top_px = 40.0f,
+                                     .bottom_px = 40.0f}))
+        return false;
+    if (!dvz_grid_set_gutter(grid, 24.0f, 0.0f))
+        return false;
 
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = 0.0f;
@@ -141,21 +168,27 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera.fov_y = 0.58f;
     camera.near = 0.05f;
     camera.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera))
-        return false;
+    for (uint32_t i = 0; i < 3u; i++)
+    {
+        DvzPanel* panel = dvz_grid_panel(grid, 0, i);
+        if (panel == NULL)
+            return false;
+        example_graphite_cyan_set_panel_background(panel);
+        if (!dvz_panel_set_camera(panel, &camera))
+            return false;
+        if (!_add_lit_spheres(ctx->scene, panel, i))
+            return false;
 
-    if (!_add_lit_spheres(ctx->scene, panel))
-        return false;
-
-    DvzController* controller = dvz_arcball(ctx->scene, NULL);
-    if (controller == NULL)
-        return false;
-    DvzArcball* arcball = dvz_controller_arcball(controller);
-    if (arcball == NULL)
-        return false;
-    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
-        return false;
-    dvz_arcball_set(arcball, (vec3){+0.46f, -0.12f, +0.18f});
+        DvzController* controller = dvz_arcball(ctx->scene, NULL);
+        if (controller == NULL)
+            return false;
+        DvzArcball* arcball = dvz_controller_arcball(controller);
+        if (arcball == NULL)
+            return false;
+        if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+            return false;
+        dvz_arcball_set(arcball, (vec3){+0.46f, -0.12f, +0.18f});
+    }
     return true;
 }
 

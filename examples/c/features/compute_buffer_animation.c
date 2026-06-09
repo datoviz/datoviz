@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* compute_buffer_animation - minimal scene compute pass writing a point position buffer.
+/* compute_buffer_animation - scene compute pass with independent circular point motion.
  *
  * Scenario: feature.compute_buffer_animation
  * Style: features, graphite_cyan, 1600x1200 capture target, experimental scene compute
@@ -49,11 +49,18 @@ static const char* COMPUTE_GLSL =
     "layout(local_size_x = 1) in;\n"
     "layout(std430, set = 0, binding = 0) readonly buffer Params { vec4 p; } params;\n"
     "layout(std430, set = 0, binding = 1) buffer Positions { float x[]; } positions;\n"
+    "layout(std430, set = 0, binding = 2) buffer Phases { float x[]; } phases;\n"
     "void main() {\n"
     "    uint i = gl_GlobalInvocationID.x;\n"
     "    uint count = uint(params.p.z);\n"
     "    if (i >= count) return;\n"
-    "    positions.x[3u * i + 1u] += params.p.x;\n"
+    "    float phase = phases.x[i] + params.p.x * (0.65 + 0.18 * float(i));\n"
+    "    float center = -0.70 + 1.40 * (float(i) / max(1.0, float(count - 1u)));\n"
+    "    float radius = 0.07 + 0.018 * float((i * 7u) % 4u);\n"
+    "    positions.x[3u * i + 0u] = center + radius * cos(phase);\n"
+    "    positions.x[3u * i + 1u] = 0.18 * sin(0.7 * float(i)) + radius * sin(phase);\n"
+    "    positions.x[3u * i + 2u] = 0.0;\n"
+    "    phases.x[i] = phase;\n"
     "}\n";
 
 
@@ -103,7 +110,8 @@ static bool _add_compute_points(DvzScene* scene, DvzFigure* figure, DvzPanel* pa
         {-0.72f, -0.24f, 0.0f}, {-0.44f, +0.18f, 0.0f}, {-0.16f, -0.10f, 0.0f},
         {+0.16f, +0.10f, 0.0f}, {+0.44f, -0.18f, 0.0f}, {+0.72f, +0.24f, 0.0f},
     };
-    const vec4 params = {0.18f, 0.0f, (float)POINT_COUNT, 0.0f};
+    const float phases[POINT_COUNT] = {0.0f, 0.7f, 1.6f, 2.4f, 3.2f, 4.1f};
+    const vec4 params = {0.055f, 0.0f, (float)POINT_COUNT, 0.0f};
     DvzColor colors[POINT_COUNT] = {
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
@@ -119,7 +127,9 @@ static bool _add_compute_points(DvzScene* scene, DvzFigure* figure, DvzPanel* pa
         positions, sizeof(positions));
     DvzSceneBuffer* param = _scene_buffer(
         scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec4), &params, sizeof(params));
-    if (position == NULL || param == NULL)
+    DvzSceneBuffer* phase = _scene_buffer(
+        scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(float), phases, sizeof(phases));
+    if (position == NULL || param == NULL || phase == NULL)
         return false;
 
     DvzVisual* point = dvz_point(scene, 0);
@@ -158,6 +168,9 @@ static bool _add_compute_points(DvzScene* scene, DvzFigure* figure, DvzPanel* pa
         return false;
     if (!dvz_scene_compute_set_buffer(
             compute, 1, position, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0, sizeof(positions)))
+        return false;
+    if (!dvz_scene_compute_set_buffer(
+            compute, 2, phase, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0, sizeof(phases)))
         return false;
     return dvz_figure_add_compute(figure, compute);
 }

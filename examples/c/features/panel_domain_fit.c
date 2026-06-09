@@ -46,13 +46,14 @@
 /*************************************************************************************************/
 
 /**
- * Add a domain rectangle and corner points after the panel fit policy has resolved visible bounds.
+ * Add a data-space rectangle and corner points.
  *
  * @param scene scene owning visuals
  * @param panel target panel
+ * @param color rectangle color
  * @return true when visuals were added
  */
-static bool _add_domain_shape(DvzScene* scene, DvzPanel* panel)
+static bool _add_domain_shape(DvzScene* scene, DvzPanel* panel, DvzColor color)
 {
     ANN(scene);
     ANN(panel);
@@ -61,24 +62,19 @@ static bool _add_domain_shape(DvzScene* scene, DvzPanel* panel)
         {0.0f, 0.0f, 0.0f}, {2.0f, 0.0f, 0.0f}, {2.0f, 1.0f, 0.0f},
         {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f},
     };
-    vec3 visual_path[PATH_COUNT] = {{0}};
     DvzColor path_colors[PATH_COUNT] = {{0}};
     float widths[PATH_COUNT] = {0};
     for (uint32_t i = 0; i < PATH_COUNT; i++)
     {
-        path_colors[i] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
+        path_colors[i] = color;
         widths[i] = 5.0f;
     }
-
-    if (dvz_panel_data_to_visual_positions(
-            panel, (const float*)data_path, (float*)visual_path, PATH_COUNT) != 0)
-        return false;
 
     DvzVisual* path = dvz_path(scene, 0);
     if (path == NULL)
         return false;
     DvzVisualDataUpdate path_updates[] = {
-        {.attr_name = "position", .data = visual_path, .item_count = PATH_COUNT},
+        {.attr_name = "position", .data = data_path, .item_count = PATH_COUNT},
         {.attr_name = "color", .data = path_colors, .item_count = PATH_COUNT},
         {.attr_name = "stroke_width", .data = widths, .item_count = PATH_COUNT},
     };
@@ -88,7 +84,9 @@ static bool _add_domain_shape(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_path_set_join(path, DVZ_PATH_JOIN_ROUND, 4.0f) != 0)
         return false;
-    if (dvz_panel_add_visual(panel, path, NULL) != 0)
+    DvzVisualAttachDesc attach = {DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
+        .coord_space = DVZ_COORD_DATA};
+    if (dvz_panel_add_visual(panel, path, &attach) != 0)
         return false;
 
     const vec3 data_points[POINT_COUNT] = {
@@ -97,27 +95,22 @@ static bool _add_domain_shape(DvzScene* scene, DvzPanel* panel)
         {2.0f, 1.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
     };
-    vec3 visual_points[POINT_COUNT] = {{0}};
     DvzColor point_colors[POINT_COUNT] = {{0}};
     float diameters[POINT_COUNT] = {26.0f, 26.0f, 26.0f, 26.0f};
     for (uint32_t i = 0; i < POINT_COUNT; i++)
         point_colors[i] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
 
-    if (dvz_panel_data_to_visual_positions(
-            panel, (const float*)data_points, (float*)visual_points, POINT_COUNT) != 0)
-        return false;
-
     DvzVisual* point = dvz_point(scene, 0);
     if (point == NULL)
         return false;
     DvzVisualDataUpdate point_updates[] = {
-        {.attr_name = "position", .data = visual_points, .item_count = POINT_COUNT},
+        {.attr_name = "position", .data = data_points, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = point_colors, .item_count = POINT_COUNT},
         {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
     };
     if (dvz_visual_set_data_many(point, point_updates, 3) != 0)
         return false;
-    return dvz_panel_add_visual(panel, point, NULL) == 0;
+    return dvz_panel_add_visual(panel, point, &attach) == 0;
 }
 
 
@@ -169,14 +162,36 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx->figure == NULL)
         return false;
 
-    DvzPanel* panel = dvz_panel_full(ctx->figure);
-    if (panel == NULL)
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
+    if (grid == NULL)
         return false;
-    example_graphite_cyan_set_panel_background(panel);
+    if (!dvz_grid_set_margins(
+            grid, &(DvzPanelReserve){.left_px = 46.0f, .right_px = 46.0f, .top_px = 46.0f,
+                                     .bottom_px = 58.0f}))
+        return false;
+    if (!dvz_grid_set_gutter(grid, 34.0f, 0.0f))
+        return false;
 
-    if (!dvz_panel_set_layout_reserve(
-            panel, &(DvzPanelLayoutReserve){
-                       .left = 0.13f, .right = 0.06f, .bottom = 0.14f, .top = 0.06f}))
+    DvzPanel* free_panel = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* fit_panel = dvz_grid_panel(grid, 0, 1);
+    if (free_panel == NULL || fit_panel == NULL)
+        return false;
+
+    DvzPanel* panels[2] = {free_panel, fit_panel};
+    for (uint32_t i = 0; i < 2u; i++)
+    {
+        example_graphite_cyan_set_panel_background(panels[i]);
+        if (!dvz_panel_set_layout_reserve(
+                panels[i], &(DvzPanelLayoutReserve){.left = 0.13f, .right = 0.05f,
+                                                    .bottom = 0.15f, .top = 0.07f}))
+            return false;
+        if (!_add_axes(panels[i]))
+            return false;
+    }
+
+    if (dvz_panel_set_domain(free_panel, DVZ_DIM_X, 0.0, 2.0) != 0)
+        return false;
+    if (dvz_panel_set_domain(free_panel, DVZ_DIM_Y, 0.0, 1.0) != 0)
         return false;
 
     DvzPanelDomainFit fit = dvz_panel_domain_fit();
@@ -184,23 +199,30 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     fit.y = (DvzDataDomain){.min = 0.0, .max = 1.0};
     fit.padding = 0.08;
     fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
-    if (dvz_panel_set_domain_fit(panel, &fit) != 0)
+    if (dvz_panel_set_domain_fit(fit_panel, &fit) != 0)
         return false;
 
     double x_min = 0.0;
     double x_max = 0.0;
     double y_min = 0.0;
     double y_max = 0.0;
-    if (!dvz_panel_visible_domain(panel, DVZ_DIM_X, &x_min, &x_max))
+    if (!dvz_panel_visible_domain(fit_panel, DVZ_DIM_X, &x_min, &x_max))
         return false;
-    if (!dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y_min, &y_max))
+    if (!dvz_panel_visible_domain(fit_panel, DVZ_DIM_Y, &y_min, &y_max))
         return false;
     if (!(x_min < 0.0 && x_max > 2.0 && y_min < 0.0 && y_max > 1.0))
         return false;
 
-    if (!_add_domain_shape(ctx->scene, panel) || !_add_axes(panel))
+    if (!_add_domain_shape(
+            ctx->scene, free_panel,
+            example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY)))
         return false;
-    return dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY) != NULL;
+    if (!_add_domain_shape(
+            ctx->scene, fit_panel,
+            example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY)))
+        return false;
+    return dvz_scenario_panzoom(ctx, free_panel, NULL, DVZ_DIM_MASK_XY) != NULL &&
+           dvz_scenario_panzoom(ctx, fit_panel, NULL, DVZ_DIM_MASK_XY) != NULL;
 }
 
 

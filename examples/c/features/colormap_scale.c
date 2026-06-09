@@ -23,6 +23,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_assertions.h"
 #include "datoviz/scene.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
@@ -36,6 +37,46 @@
 #define WIDTH       1600u
 #define HEIGHT      1200u
 #define POINT_COUNT 5u
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Create the explicit scalar color scale used by this feature example.
+ *
+ * @param scene target scene
+ * @return scene-owned continuous scale, or NULL on failure
+ */
+static DvzScale* _add_scalar_color_scale(DvzScene* scene)
+{
+    ANN(scene);
+
+    DvzColor colors[] = {
+        dvz_color_rgb(29, 43, 54),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
+    };
+    DvzColormap* colormap =
+        dvz_colormap_custom(scene, "feature_colormap_scale", colors, DVZ_ARRAY_COUNT(colors));
+    if (colormap == NULL)
+        return NULL;
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
+                   .kind = DVZ_SCALE_CONTINUOUS,
+                   .label = "scalar value",
+               });
+    if (scale == NULL)
+        return NULL;
+
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    dvz_scale_set_colormap(scale, colormap);
+    return scale;
+}
 
 
 
@@ -81,7 +122,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (rc != 0)
         return false;
 
-    DvzScale* scale = example_graphite_cyan_color_scale(ctx->scene, 0.0, 1.0);
+    DvzScale* scale = _add_scalar_color_scale(ctx->scene);
     if (scale == NULL)
         return false;
 

@@ -116,7 +116,19 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
         return false;
-    example_graphite_cyan_set_panel_background(panel);
+    if (!dvz_panel_set_desc(
+            panel, (DvzPanelDesc){.x = 0.10f, .y = 0.12f, .width = 0.80f, .height = 0.76f}))
+        return false;
+    DvzPanelBackgroundDesc background = {DVZ_STRUCT_INIT_FIELDS(DvzPanelBackgroundDesc),
+        .type = DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT,
+        .gradient = {
+            .start = {0.0f, 0.0f},
+            .end = {1.0f, 1.0f},
+            .color0 = {0.04f, 0.07f, 0.11f, 1.0f},
+            .color1 = {0.02f, 0.20f, 0.22f, 1.0f},
+        }};
+    if (!dvz_panel_set_background(panel, &background))
+        return false;
 
     return _add_foreground(ctx->scene, panel);
 }

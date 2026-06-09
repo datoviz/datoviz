@@ -177,7 +177,7 @@ static DvzAnnotation* _add_readout(DvzPanel* panel, const vec3 position)
 
     DvzColor text = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
     DvzTextStyle style = dvz_text_style();
-    style.size_px = 15.0f;
+    style.size_px = 24.0f;
     style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.color[0] = text.r;
     style.color[1] = text.g;
@@ -194,8 +194,8 @@ static DvzAnnotation* _add_readout(DvzPanel* panel, const vec3 position)
     placement.position[0] = anchor_px[0];
     placement.position[1] = anchor_px[1];
     placement.position[2] = position[2];
-    placement.offset[0] = 20.0f;
-    placement.offset[1] = -20.0f;
+    placement.offset[0] = 10.0f;
+    placement.offset[1] = -10.0f;
     placement.text_anchor[0] = 0.0f;
     placement.text_anchor[1] = 0.5f;
     placement.has_text_anchor = true;

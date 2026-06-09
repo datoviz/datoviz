@@ -24,6 +24,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_assertions.h"
 #include "datoviz/scene.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
@@ -36,7 +37,8 @@
 
 #define WIDTH         1600u
 #define HEIGHT        1200u
-#define SEGMENT_COUNT 24u
+#define SEGMENT_COUNT      24u
+#define SEGMENTS_PER_BAND  8u
 
 static const float TAU = 6.28318530718f;
 
@@ -119,6 +121,53 @@ static void _fill_segments(
 }
 
 
+/**
+ * Add one band of segments with a shared endpoint cap style.
+ *
+ * @param scene scene owning the visual
+ * @param panel panel receiving the visual
+ * @param starts all segment starts
+ * @param ends all segment ends
+ * @param colors all segment colors
+ * @param widths all segment stroke widths
+ * @param band zero-based cap band
+ * @param cap endpoint cap style
+ * @return true on success
+ */
+static bool _add_segment_band(
+    DvzScene* scene, DvzPanel* panel, const vec3 starts[SEGMENT_COUNT],
+    const vec3 ends[SEGMENT_COUNT], const DvzColor colors[SEGMENT_COUNT],
+    const float widths[SEGMENT_COUNT], uint32_t band, DvzSegmentCap cap)
+{
+    ANN(scene);
+    ANN(panel);
+    ANN(starts);
+    ANN(ends);
+    ANN(colors);
+    ANN(widths);
+
+    if (band >= 3u)
+        return false;
+
+    const uint32_t offset = band * SEGMENTS_PER_BAND;
+    DvzVisual* visual = dvz_segment(scene, 0);
+    if (visual == NULL)
+        return false;
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position_start", .data = &starts[offset], .item_count = SEGMENTS_PER_BAND},
+        {.attr_name = "position_end", .data = &ends[offset], .item_count = SEGMENTS_PER_BAND},
+        {.attr_name = "color", .data = &colors[offset], .item_count = SEGMENTS_PER_BAND},
+        {.attr_name = "stroke_width", .data = &widths[offset], .item_count = SEGMENTS_PER_BAND},
+    };
+    if (dvz_visual_set_data_many(visual, updates, 4) != 0)
+        return false;
+    if (dvz_segment_set_caps(visual, cap, cap) != 0)
+        return false;
+    return dvz_panel_add_visual(panel, visual, NULL) == 0;
+}
+
+
 
 /*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
@@ -153,21 +202,17 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzVisual* visual = dvz_segment(ctx->scene, 0);
-    if (visual == NULL)
+    if (!_add_segment_band(
+            ctx->scene, panel, (const vec3*)starts, (const vec3*)ends, colors, widths, 0,
+            DVZ_SEGMENT_CAP_BUTT))
         return false;
-
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position_start", .data = starts, .item_count = SEGMENT_COUNT},
-        {.attr_name = "position_end", .data = ends, .item_count = SEGMENT_COUNT},
-        {.attr_name = "color", .data = colors, .item_count = SEGMENT_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = SEGMENT_COUNT},
-    };
-    if (dvz_visual_set_data_many(visual, updates, 4) != 0)
+    if (!_add_segment_band(
+            ctx->scene, panel, (const vec3*)starts, (const vec3*)ends, colors, widths, 1,
+            DVZ_SEGMENT_CAP_SQUARE))
         return false;
-    if (dvz_segment_set_caps(visual, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) != 0)
-        return false;
-    if (dvz_panel_add_visual(panel, visual, NULL) != 0)
+    if (!_add_segment_band(
+            ctx->scene, panel, (const vec3*)starts, (const vec3*)ends, colors, widths, 2,
+            DVZ_SEGMENT_CAP_ROUND))
         return false;
 
     DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);

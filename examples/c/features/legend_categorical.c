@@ -189,11 +189,7 @@ static bool _add_legend(DvzPanel* panel, DvzScale* scale)
     desc.entry_gap_px = 13.0f;
     desc.mark_label_gap_px = 12.0f;
 
-    DvzLegend* legend = dvz_legend(panel, scale, &desc);
-    if (legend == NULL)
-        return false;
-
-    return dvz_legend_set_highlight(legend, CATEGORY_IDS[3]);
+    return dvz_legend(panel, scale, &desc) != NULL;
 }
 
 

@@ -47,9 +47,9 @@
 
 typedef struct GuideSpansState
 {
+    DvzPanel* panel;
     DvzGuideSpan* hspan;
     DvzGuideSpan* vspan;
-    bool updated;
 } GuideSpansState;
 
 
@@ -132,6 +132,47 @@ static bool _add_axes(DvzPanel* panel)
 }
 
 
+/**
+ * Convert one panel-local pointer position to the panel data domain.
+ *
+ * @param panel target panel
+ * @param panel_x panel-local X coordinate in logical pixels
+ * @param panel_y panel-local Y coordinate in logical pixels
+ * @param out_x output data X
+ * @param out_y output data Y
+ * @return whether the position is inside the plot rectangle
+ */
+static bool
+_panel_pointer_to_data(DvzPanel* panel, double panel_x, double panel_y, double* out_x, double* out_y)
+{
+    if (panel == NULL || out_x == NULL || out_y == NULL)
+        return false;
+
+    DvzRect plot = {0};
+    if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
+        return false;
+
+    double x0 = 0.0;
+    double x1 = 0.0;
+    double y0 = 0.0;
+    double y1 = 0.0;
+    if (!dvz_panel_visible_domain(panel, DVZ_DIM_X, &x0, &x1) ||
+        !dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y0, &y1))
+    {
+        return false;
+    }
+
+    const double tx = (panel_x - (double)plot.x) / (double)plot.width;
+    const double ty = (panel_y - (double)plot.y) / (double)plot.height;
+    if (tx < 0.0 || tx > 1.0 || ty < 0.0 || ty > 1.0)
+        return false;
+
+    *out_x = x0 + tx * (x1 - x0);
+    *out_y = y1 - ty * (y1 - y0);
+    return true;
+}
+
+
 
 /*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
@@ -160,6 +201,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
         goto error;
+    state->panel = panel;
     example_graphite_cyan_set_panel_background(panel);
 
     if (!dvz_panel_set_layout_reserve(
@@ -205,22 +247,37 @@ error:
 
 
 /**
- * Move both guide spans once so range updates are exercised.
+ * Center both guide spans around the current pointer position.
  *
  * @param ctx scenario context
+ * @param event scenario event
  * @param user scenario state
  */
-static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+static void _scenario_event(DvzScenarioContext* ctx, const DvzScenarioEvent* event, void* user)
 {
-    if (ctx == NULL || user == NULL)
+    if (ctx == NULL || event == NULL || user == NULL || event->kind != DVZ_SCENARIO_EVENT_POINTER)
+        return;
+
+    const DvzScenarioPointerEvent* pointer = &event->content.pointer;
+    if (
+        pointer->type != DVZ_SCENARIO_POINTER_MOVE &&
+        pointer->type != DVZ_SCENARIO_POINTER_DRAG)
         return;
 
     GuideSpansState* state = (GuideSpansState*)user;
-    if (!state->updated && ctx->time >= 1.0)
-    {
-        state->updated = dvz_guide_span_set_range(state->vspan, 4.0, 5.8) == 0 &&
-                         dvz_guide_span_set_range(state->hspan, 1.15, 1.70) == 0;
-    }
+    double panel_x = 0.0;
+    double panel_y = 0.0;
+    double data_x = 0.0;
+    double data_y = 0.0;
+    if (!dvz_scenario_panel_pointer_position(state->panel, pointer, &panel_x, &panel_y))
+        return;
+    if (!_panel_pointer_to_data(state->panel, panel_x, panel_y, &data_x, &data_y))
+        return;
+
+    const double half_x = 0.65;
+    const double half_y = 0.22;
+    (void)dvz_guide_span_set_range(state->vspan, data_x - half_x, data_x + half_x);
+    (void)dvz_guide_span_set_range(state->hspan, data_y - half_y, data_y + half_y);
 }
 
 
@@ -253,7 +310,7 @@ static DvzScenarioSpec _guide_spans_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .init = _scenario_init,
-        .frame = _scenario_frame,
+        .event = _scenario_event,
         .destroy = _scenario_destroy,
     };
 }
