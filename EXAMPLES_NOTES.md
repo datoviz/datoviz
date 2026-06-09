@@ -11,7 +11,7 @@ is still visible with the blocker or preferred next action.
 | --- | --- | --- |
 | `composites/graph` | resolved | Rewritten as a cleaner two-community graph with bridge edges in `examples/c/composites/graph.c`; compiled and docs regenerated. |
 | `composites/polygon` | resolved | Rewritten as a regular holed polygon plus non-overlapping star/tiles in `examples/c/composites/polygon.c`; triangulation remains covered by `features/triangulation_polygon.c`. |
-| `features/animation_tracks` | deferred | Needs rotating object plus camera keyframes using `dvz_track_keyframes`. |
+| `features/animation_tracks` | resolved | Cube rotation remains track-backed and the camera eye now follows looping `dvz_track_keyframes()` while the target stays fixed at the cube center in `examples/c/features/animation_tracks.c`; compiled. |
 | `features/annotation_readout` | resolved | Larger closer label in `examples/c/features/annotation_readout.c`; compiled in focused example batch. |
 | `features/app_glfw` | resolved | Standard 1600x1200 size in `examples/c/features/app_glfw.c`. |
 | `features/axis_labels` | resolved | Removed confusing tilted segment clutter; retained only simple plot-frame guides in `examples/c/features/axis_labels.c`. |

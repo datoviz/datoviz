@@ -48,9 +48,11 @@
 typedef struct AnimationTracksState
 {
     DvzGeometry* geometry;
-    DvzTrack* translation;
     DvzTrack* rotation;
-    DvzAnimation* animation;
+    DvzTrack* camera_eye;
+    DvzTrack* camera_target;
+    DvzAnimation* visual_animation;
+    DvzAnimation* camera_animation;
 } AnimationTracksState;
 
 
@@ -60,7 +62,7 @@ typedef struct AnimationTracksState
 /*************************************************************************************************/
 
 /**
- * Create one animated cube driven by retained scene tracks.
+ * Create one cube whose local transform is driven by retained scene tracks.
  *
  * @param ctx scenario context
  * @param panel target panel
@@ -89,23 +91,6 @@ _add_animated_cube(DvzScenarioContext* ctx, DvzPanel* panel, AnimationTracksStat
     if (dvz_panel_add_visual(panel, cube, NULL) != 0)
         return false;
 
-    static const double times[] = {0.0, 1.0, 2.0, 3.0, 4.0};
-    static const vec3 translations[] = {
-        {-0.70f, -0.05f, 0.00f}, {-0.24f, +0.28f, 0.10f}, {+0.24f, -0.22f, 0.02f},
-        {+0.70f, +0.10f, 0.14f}, {-0.70f, -0.05f, 0.00f},
-    };
-
-    DvzTrackKeyframesDesc translation_desc = dvz_track_keyframes_desc();
-    translation_desc.type = DVZ_TRACK_VEC3;
-    translation_desc.count = DVZ_ARRAY_COUNT(times);
-    translation_desc.times = times;
-    translation_desc.values = translations;
-    translation_desc.repeat = DVZ_TRACK_REPEAT_LOOP;
-    translation_desc.interpolation = DVZ_TRACK_INTERP_CATMULL_ROM;
-    state->translation = dvz_track_keyframes(&translation_desc);
-    if (state->translation == NULL)
-        return false;
-
     DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
     rotation_desc.axis[0] = 0.35f;
     rotation_desc.axis[1] = 0.85f;
@@ -116,25 +101,69 @@ _add_animated_cube(DvzScenarioContext* ctx, DvzPanel* panel, AnimationTracksStat
         return false;
 
     DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
-    transform_desc.translation = state->translation;
     transform_desc.rotation = state->rotation;
-    state->animation = dvz_anim_visual_transform(ctx->scene, cube, &transform_desc);
-    if (state->animation == NULL)
+    state->visual_animation = dvz_anim_visual_transform(ctx->scene, cube, &transform_desc);
+    if (state->visual_animation == NULL)
         return false;
 
-    DvzController* controller = dvz_arcball(ctx->scene, NULL);
-    if (controller == NULL)
+    dvz_anim_set_speed(state->visual_animation, 1.0f);
+    dvz_anim_start(state->visual_animation, 0.0);
+    return true;
+}
+
+
+
+/**
+ * Create a keyframed camera flyover that keeps looking at the cube.
+ *
+ * @param ctx scenario context
+ * @param camera panel-owned camera
+ * @param state scenario state
+ * @return true on success
+ */
+static bool
+_add_camera_hover(DvzScenarioContext* ctx, DvzCamera* camera, AnimationTracksState* state)
+{
+    if (ctx == NULL || camera == NULL || state == NULL)
         return false;
-    DvzArcball* arcball = dvz_controller_arcball(controller);
-    if (arcball == NULL)
+
+    static const double times[] = {0.0, 1.2, 2.4, 3.6, 4.8};
+    static const vec3 eyes[] = {
+        {+0.00f, -3.25f, +1.35f}, {+1.45f, -2.55f, +1.70f}, {+2.45f, -0.20f, +1.18f},
+        {-1.15f, +2.70f, +1.58f}, {+0.00f, -3.25f, +1.35f},
+    };
+
+    DvzTrackKeyframesDesc eye_desc = dvz_track_keyframes_desc();
+    eye_desc.type = DVZ_TRACK_VEC3;
+    eye_desc.count = DVZ_ARRAY_COUNT(times);
+    eye_desc.times = times;
+    eye_desc.values = eyes;
+    eye_desc.repeat = DVZ_TRACK_REPEAT_LOOP;
+    eye_desc.interpolation = DVZ_TRACK_INTERP_CATMULL_ROM;
+    state->camera_eye = dvz_track_keyframes(&eye_desc);
+    if (state->camera_eye == NULL)
         return false;
-    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+
+    DvzTrackConstantDesc target_desc = dvz_track_constant_desc();
+    target_desc.type = DVZ_TRACK_VEC3;
+    target_desc.value = (float[3]){0.0f, 0.0f, 0.0f};
+    state->camera_target = dvz_track_constant(&target_desc);
+    if (state->camera_target == NULL)
         return false;
-    dvz_arcball_set(arcball, (vec3){+0.42f, -0.18f, +0.20f});
-    dvz_anim_set_interaction_policy(
-        state->animation, controller, DVZ_ANIM_INTERACTION_RESUME_AFTER_IDLE, 0.8);
-    dvz_anim_set_speed(state->animation, 1.0f);
-    dvz_anim_start(state->animation, 0.0);
+
+    DvzCameraMotionDesc camera_motion = dvz_camera_motion_desc();
+    camera_motion.eye = state->camera_eye;
+    camera_motion.target = state->camera_target;
+    camera_motion.up_mode = DVZ_CAMERA_UP_WORLD;
+    camera_motion.up[0] = 0.0f;
+    camera_motion.up[1] = 0.0f;
+    camera_motion.up[2] = 1.0f;
+    state->camera_animation = dvz_anim_camera_motion(ctx->scene, camera, &camera_motion);
+    if (state->camera_animation == NULL)
+        return false;
+
+    dvz_anim_set_speed(state->camera_animation, 1.0f);
+    dvz_anim_start(state->camera_animation, 0.0);
     return true;
 }
 
@@ -180,10 +209,29 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera.fov_y = 0.66f;
     camera.near = 0.05f;
     camera.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera))
+    DvzCamera* panel_camera = dvz_panel_set_camera(panel, &camera);
+    if (panel_camera == NULL)
         return false;
 
-    return _add_animated_cube(ctx, panel, state);
+    if (!_add_animated_cube(ctx, panel, state))
+        return false;
+    if (!_add_camera_hover(ctx, panel_camera, state))
+        return false;
+
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    if (controller == NULL)
+        return false;
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    if (arcball == NULL)
+        return false;
+    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return false;
+    dvz_arcball_set(arcball, (vec3){+0.42f, -0.18f, +0.20f});
+    dvz_anim_set_interaction_policy(
+        state->visual_animation, controller, DVZ_ANIM_INTERACTION_RESUME_AFTER_IDLE, 0.8);
+    dvz_anim_set_interaction_policy(
+        state->camera_animation, controller, DVZ_ANIM_INTERACTION_RESUME_AFTER_IDLE, 0.8);
+    return true;
 }
 
 
@@ -201,8 +249,9 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     if (state == NULL)
         return;
 
-    dvz_track_destroy(state->translation);
     dvz_track_destroy(state->rotation);
+    dvz_track_destroy(state->camera_eye);
+    dvz_track_destroy(state->camera_target);
     if (state->geometry != NULL)
         dvz_geometry_destroy(state->geometry);
     free(state);
