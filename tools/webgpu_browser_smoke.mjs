@@ -450,6 +450,11 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
       frame: cloneSpan(packetSet.frame),
       resource_version: packetSet.resource_version,
       frame_index: packetSet.frame_index,
+      source: packetSet.source,
+      artifact_resource_version: packetSet.artifact_resource_version,
+      artifact_frame_index: packetSet.artifact_frame_index,
+      artifact_spans_copied: packetSet.artifact_spans_copied,
+      artifact_released: packetSet.artifact_released,
     });
     const packetStats = (packetSet) => ({
       setup: packetSet.setup.packet.byteLength,

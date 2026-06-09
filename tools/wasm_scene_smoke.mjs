@@ -371,6 +371,9 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(source.includes("_dvz_wasm_api_visual_set_path_caps"), "browser wrapper cannot set path caps");
   requireOk(source.includes("_dvz_wasm_api_visual_set_path_join"), "browser wrapper cannot set path joins");
   requireOk(source.includes(".slice()"), "browser wrapper retains borrowed WASM packet views");
+  requireOk(source.includes("wasm_frame_artifact"), "browser wrapper does not tag frame artifact packet sets");
+  requireOk(source.includes("artifact_spans_copied: true"), "browser wrapper does not mark copied artifact spans");
+  requireOk(source.includes("artifact_released = true"), "browser wrapper does not release frame artifacts");
 }
 
 function expectNoLegacyDirectAbi(Module) {

@@ -279,6 +279,21 @@ function hasPacketApi(Module) {
   );
 }
 
+function frameArtifactPacketSet(setup, update, frame, resourceVersion, frameIndex) {
+  return {
+    setup,
+    update,
+    frame,
+    resource_version: resourceVersion,
+    frame_index: frameIndex,
+    source: "wasm_frame_artifact",
+    artifact_resource_version: resourceVersion,
+    artifact_frame_index: frameIndex,
+    artifact_spans_copied: true,
+    artifact_released: false,
+  };
+}
+
 export class DatovizWasmScene {
   static async create(canvas, options = {}) {
     const Module = await loadDatovizWasmModule();
@@ -762,7 +777,14 @@ export class DatovizWasmScene {
     const ptr = this.Module._dvz_wasm_api_payload_ptr(this.scene);
     const size = this.Module._dvz_wasm_api_payload_size(this.scene);
     requireOk(ptr !== 0 && size > 0, "WASM scene emitted no payload");
-    return JSON.parse(new TextDecoder().decode(this.Module.HEAPU8.subarray(ptr, ptr + size)));
+    const json = JSON.parse(new TextDecoder().decode(this.Module.HEAPU8.subarray(ptr, ptr + size)));
+    if (typeof this.Module._dvz_wasm_api_release_packets === "function") {
+      this._requireStatus(
+        this.Module._dvz_wasm_api_release_packets(this.scene),
+        "dvz_wasm_api_release_packets failed",
+      );
+    }
+    return json;
   }
 
   _currentPacketSet() {
@@ -784,13 +806,18 @@ export class DatovizWasmScene {
           : new Uint8Array(),
       };
     };
-    return {
-      setup: span(1),
-      update: span(2),
-      frame: span(3),
-      resource_version: this.Module._dvz_wasm_api_resource_version?.(this.scene) ?? 0,
-      frame_index: this.Module._dvz_wasm_api_frame_index?.(this.scene) ?? 0,
-    };
+    const resourceVersion = this.Module._dvz_wasm_api_resource_version?.(this.scene) ?? 0;
+    const frameIndex = this.Module._dvz_wasm_api_frame_index?.(this.scene) ?? 0;
+    return frameArtifactPacketSet(span(1), span(2), span(3), resourceVersion, frameIndex);
+  }
+
+  _releaseCurrentArtifact(packetSet) {
+    this._requireStatus(
+      this.Module._dvz_wasm_api_release_packets(this.scene),
+      "dvz_wasm_api_release_packets failed",
+    );
+    packetSet.artifact_released = true;
+    return packetSet;
   }
 
   emitPackets() {
@@ -804,11 +831,7 @@ export class DatovizWasmScene {
       throw new Error(this._diagnosticMessage(`dvz_wasm_api_emit_packets failed with ${status}`));
     }
     const packetSet = this._currentPacketSet();
-    this._requireStatus(
-      this.Module._dvz_wasm_api_release_packets(this.scene),
-      "dvz_wasm_api_release_packets failed",
-    );
-    return packetSet;
+    return this._releaseCurrentArtifact(packetSet);
   }
 
   _packetExecutionContext(label, packetSet) {
@@ -868,7 +891,7 @@ export class DatovizWasmScene {
         continue;
       }
 
-      const packetSet = this._currentPacketSet();
+      const packetSet = this._releaseCurrentArtifact(this._currentPacketSet());
       const result = await this._executePacketSet("query", packetSet);
       const readback = result.readbacks?.[0] ?? null;
       const expectedSize = Module._dvz_wasm_api_query_readback_size(this.scene);

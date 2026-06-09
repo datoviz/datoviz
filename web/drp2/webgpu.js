@@ -2104,6 +2104,19 @@ export class Drp2WebGpuRuntime {
     const packets = [decoded.setup, decoded.update, decoded.frame].filter((packet) => packet !== undefined);
     const resourceVersion = packets[0].resource_version;
     const frameIndex = packets[0].frame_index;
+    if (packetSet.source === "wasm_frame_artifact") {
+      if (packetSet.artifact_spans_copied !== true || packetSet.artifact_released !== true) {
+        throw new Error("WASM frame artifact packet spans must be copied and released before execution");
+      }
+      if (
+        packetSet.artifact_resource_version !== resourceVersion ||
+        packetSet.artifact_frame_index !== frameIndex ||
+        packetSet.resource_version !== resourceVersion ||
+        packetSet.frame_index !== frameIndex
+      ) {
+        throw new Error("WASM frame artifact packet counters do not match encoded packets");
+      }
+    }
     for (const packet of packets) {
       if (packet.resource_version !== resourceVersion || packet.frame_index !== frameIndex) {
         throw new Error("DRP2 packet set phases have inconsistent version counters");
