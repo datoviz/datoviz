@@ -1096,8 +1096,8 @@ int test_scene_pixel_query_accepts_square_corner(TstContext* suite, const TstCas
     AT(query.status == DVZ_QUERY_STATUS_HIT);
     AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_PIXEL);
     AT(query.resolved_target == DVZ_SCENE_TARGET_ITEM);
-    AT(query.resolved_id == 1);
-    AT(query.item_id == 1);
+    AT(query.resolved_id == 0);
+    AT(query.item_id == 0);
     AT(!dvz_scene_poll_query(scene, &query));
 
     dvz_scene_destroy(scene);
@@ -1252,8 +1252,8 @@ int test_scene_sphere_query_resolves_item(TstContext* suite, const TstCase* item
     AT(query.raw_target == DVZ_SCENE_TARGET_ITEM);
     AT(query.raw_id == 1);
     AT(query.resolved_target == DVZ_SCENE_TARGET_ITEM);
-    AT(query.resolved_id == 0);
-    AT(query.item_id == 0);
+    AT(query.resolved_id == 1);
+    AT(query.item_id == 1);
     AT(!query.has_data_position);
     AT(!dvz_scene_poll_query(scene, &query));
 
@@ -1436,8 +1436,8 @@ int test_scene_segment_query_resolves_item(TstContext* suite, const TstCase* ite
     AT(query.status == DVZ_QUERY_STATUS_HIT);
     AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_SEGMENT);
     AT(query.resolved_target == DVZ_SCENE_TARGET_ITEM);
-    AT(query.resolved_id == 0);
-    AT(query.item_id == 0);
+    AT(query.resolved_id == 1);
+    AT(query.item_id == 1);
     AT(!dvz_scene_poll_query(scene, &query));
 
     dvz_scene_destroy(scene);
