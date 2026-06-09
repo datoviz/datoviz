@@ -51,7 +51,7 @@ is still visible with the blocker or preferred next action.
 | `showcases/choropleth` | deferred | Retina title size and fixed-aspect right-drag zoom remain. |
 | `showcases/scientific_plotting` | deferred | X-axis clipping remains to inspect/fix. |
 | `showcases/textured_planet` | deferred | Dark-side lighting and zoom limits/sensitivity remain. |
-| `showcases/wind_field` | deferred | Ellipsoid pointer needs removal/replacement/explanation. |
+| `showcases/wind_field` | resolved | Current showcase uses a fixed probe crosshair and readout card in `examples/c/showcases/wind_field.c`; no ellipsoid pointer remains; compiled. |
 | `visuals/glyph` | resolved | Source/manifest/docs now identify it as a low-level SDF atlas-quad visual distinct from font-shaped text and marker symbols; compiled. |
 | `visuals/segment` | resolved | Shows butt, square, and round caps in `examples/c/visuals/segment.c`; compiled. |
 | General comments/descriptions | partial | Changed summaries regenerate docs; broader top-of-file copy audit remains. |
