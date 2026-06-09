@@ -433,44 +433,33 @@ static void _legend_detached_rect(
 {
     ANN(legend);
     ANN(out);
-    const DvzPlacement* placement = &legend->placement;
-    float space_x = 0.0f;
-    float space_y = 0.0f;
-    float space_width = panel_width;
-    float space_height = panel_height;
-    if (placement->space == DVZ_PLACEMENT_SPACE_FIGURE && legend->panel != NULL &&
-        legend->panel->figure != NULL)
-    {
-        space_x = -panel_x;
-        space_y = -panel_y;
-        space_width = legend->panel->figure->width > 0 ? (float)legend->panel->figure->width :
-                                                         panel_width;
-        space_height = legend->panel->figure->height > 0 ? (float)legend->panel->figure->height :
-                                                           panel_height;
-    }
-
+    DvzPlacement placement = legend->placement;
     float default_height =
         (legend->scale != NULL ? (float)legend->scale->category_count : 1.0f) *
             (legend->mark_size_px + legend->entry_gap_px) +
         (legend->title[0] != '\0' ? 20.0f : 0.0f);
-    float width = _legend_positive_or_default(placement->width_px, legend->reserve_px);
-    float height = _legend_positive_or_default(placement->height_px, default_height);
-    float x = space_x + placement->offset_x_px;
-    if (placement->horizontal_anchor == DVZ_HORIZONTAL_ANCHOR_CENTER)
-        x = space_x + 0.5f * (space_width - width) + placement->offset_x_px;
-    else if (placement->horizontal_anchor == DVZ_HORIZONTAL_ANCHOR_RIGHT)
-        x = space_x + space_width - width + placement->offset_x_px;
+    float width = _legend_positive_or_default(placement.width_px, legend->reserve_px);
+    float height = _legend_positive_or_default(placement.height_px, default_height);
+    placement.width_px = width;
+    placement.height_px = height;
 
-    float y = space_y + placement->offset_y_px;
-    if (placement->vertical_anchor == DVZ_VERTICAL_ANCHOR_CENTER)
-        y = space_y + 0.5f * (space_height - height) + placement->offset_y_px;
-    else if (placement->vertical_anchor == DVZ_VERTICAL_ANCHOR_BOTTOM)
-        y = space_y + space_height - height + placement->offset_y_px;
-
-    out[0] = x;
-    out[1] = y;
-    out[2] = x + width;
-    out[3] = y + height;
+    DvzRect panel_rect = {.x = panel_x, .y = panel_y, .width = panel_width, .height = panel_height};
+    DvzRect figure_rect = {.x = 0.0f, .y = 0.0f, .width = panel_width, .height = panel_height};
+    if (legend->panel != NULL && legend->panel->figure != NULL)
+    {
+        figure_rect.width =
+            legend->panel->figure->width > 0 ? (float)legend->panel->figure->width : panel_width;
+        figure_rect.height =
+            legend->panel->figure->height > 0 ? (float)legend->panel->figure->height :
+                                                panel_height;
+    }
+    DvzRect rect = {0};
+    if (!dvz_placement_resolve(&placement, &panel_rect, &figure_rect, &rect))
+        rect = (DvzRect){0.0f, 0.0f, width, height};
+    out[0] = rect.x;
+    out[1] = rect.y;
+    out[2] = rect.x + rect.width;
+    out[3] = rect.y + rect.height;
 }
 
 

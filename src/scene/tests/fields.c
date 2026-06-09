@@ -386,6 +386,40 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
 }
 
 
+int test_scene_placement_helpers(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzPlacement placement = dvz_placement();
+    AT(placement.space == DVZ_PLACEMENT_SPACE_PANEL);
+    AT(placement.horizontal_anchor == DVZ_HORIZONTAL_ANCHOR_LEFT);
+    AT(placement.vertical_anchor == DVZ_VERTICAL_ANCHOR_TOP);
+
+    DvzRect panel_rect = {.x = 100.0f, .y = 50.0f, .width = 400.0f, .height = 300.0f};
+    DvzRect figure_rect = {.x = 0.0f, .y = 0.0f, .width = 800.0f, .height = 600.0f};
+    DvzRect rect = {0};
+
+    placement = dvz_placement_panel_corner(
+        DVZ_HORIZONTAL_ANCHOR_RIGHT, DVZ_VERTICAL_ANCHOR_BOTTOM, 150.0f, 120.0f, -16.0f,
+        -20.0f);
+    AT(dvz_placement_resolve(&placement, &panel_rect, &figure_rect, &rect));
+    AT(fabsf(rect.x - 234.0f) < 1e-6f);
+    AT(fabsf(rect.y - 160.0f) < 1e-6f);
+    AT(fabsf(rect.width - 150.0f) < 1e-6f);
+    AT(fabsf(rect.height - 120.0f) < 1e-6f);
+
+    placement.space = DVZ_PLACEMENT_SPACE_FIGURE;
+    AT(dvz_placement_resolve(&placement, &panel_rect, &figure_rect, &rect));
+    AT(fabsf(rect.x - 534.0f) < 1e-6f);
+    AT(fabsf(rect.y - 410.0f) < 1e-6f);
+
+    placement.width_px = -1.0f;
+    AT(!dvz_placement_resolve(&placement, &panel_rect, &figure_rect, &rect));
+    return 0;
+}
+
+
 int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* item)
 {
     (void)item;
@@ -4325,6 +4359,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_field_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_scale_colormap_colorbar_core);
     TST_CASE(test_scene_categorical_scale_entries);
+    TST_CASE(test_scene_placement_helpers);
     TST_CASE(test_scene_legend_lifecycle_and_reserve);
     TST_CASE(test_scene_legend_prepare_visuals);
     TST_CASE(test_scene_legend_emit_stream_contains_derived_visuals);

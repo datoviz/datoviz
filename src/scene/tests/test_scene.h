@@ -577,6 +577,8 @@ int test_scene_field_descriptor_abi_rejects_invalid_structs(
 
 int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item);
 
+int test_scene_placement_helpers(TstContext* suite, const TstCase* item);
+
 int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* item);
 
 int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item);

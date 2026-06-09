@@ -989,45 +989,34 @@ static void _colorbar_detached_rect(
 {
     ANN(colorbar);
     ANN(out);
-    const DvzPlacement* placement = &colorbar->placement;
-    float space_x = 0.0f;
-    float space_y = 0.0f;
-    float space_width = panel_width;
-    float space_height = panel_height;
-    if (placement->space == DVZ_PLACEMENT_SPACE_FIGURE && colorbar->panel != NULL &&
-        colorbar->panel->figure != NULL)
-    {
-        space_x = -panel_x;
-        space_y = -panel_y;
-        space_width = colorbar->panel->figure->width > 0 ? (float)colorbar->panel->figure->width :
-                                                           panel_width;
-        space_height = colorbar->panel->figure->height > 0 ?
-                           (float)colorbar->panel->figure->height :
-                           panel_height;
-    }
-
+    DvzPlacement placement = colorbar->placement;
     float width = _colorbar_positive_or_default(
-        placement->width_px, _colorbar_vertical(colorbar) ? colorbar->ramp_width_px :
-                                                            fmaxf(1.0f, panel_width));
+        placement.width_px, _colorbar_vertical(colorbar) ? colorbar->ramp_width_px :
+                                                           fmaxf(1.0f, panel_width));
     float height = _colorbar_positive_or_default(
-        placement->height_px, _colorbar_vertical(colorbar) ? fmaxf(1.0f, panel_height) :
-                                                             colorbar->ramp_width_px);
-    float x = space_x + placement->offset_x_px;
-    if (placement->horizontal_anchor == DVZ_HORIZONTAL_ANCHOR_CENTER)
-        x = space_x + 0.5f * (space_width - width) + placement->offset_x_px;
-    else if (placement->horizontal_anchor == DVZ_HORIZONTAL_ANCHOR_RIGHT)
-        x = space_x + space_width - width + placement->offset_x_px;
+        placement.height_px, _colorbar_vertical(colorbar) ? fmaxf(1.0f, panel_height) :
+                                                            colorbar->ramp_width_px);
+    placement.width_px = width;
+    placement.height_px = height;
 
-    float y = space_y + placement->offset_y_px;
-    if (placement->vertical_anchor == DVZ_VERTICAL_ANCHOR_CENTER)
-        y = space_y + 0.5f * (space_height - height) + placement->offset_y_px;
-    else if (placement->vertical_anchor == DVZ_VERTICAL_ANCHOR_BOTTOM)
-        y = space_y + space_height - height + placement->offset_y_px;
-
-    out[0] = x;
-    out[1] = y;
-    out[2] = x + width;
-    out[3] = y + height;
+    DvzRect panel_rect = {.x = panel_x, .y = panel_y, .width = panel_width, .height = panel_height};
+    DvzRect figure_rect = {.x = 0.0f, .y = 0.0f, .width = panel_width, .height = panel_height};
+    if (colorbar->panel != NULL && colorbar->panel->figure != NULL)
+    {
+        figure_rect.width = colorbar->panel->figure->width > 0 ?
+                                (float)colorbar->panel->figure->width :
+                                panel_width;
+        figure_rect.height = colorbar->panel->figure->height > 0 ?
+                                 (float)colorbar->panel->figure->height :
+                                 panel_height;
+    }
+    DvzRect rect = {0};
+    if (!dvz_placement_resolve(&placement, &panel_rect, &figure_rect, &rect))
+        rect = (DvzRect){0.0f, 0.0f, width, height};
+    out[0] = rect.x;
+    out[1] = rect.y;
+    out[2] = rect.x + rect.width;
+    out[3] = rect.y + rect.height;
 }
 
 

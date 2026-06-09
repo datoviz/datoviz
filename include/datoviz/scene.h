@@ -609,6 +609,51 @@ DVZ_EXPORT bool dvz_panel_plot_rect_px(const DvzPanel* panel, DvzRect* out);
 
 
 /**
+ * Return the default panel-local placement descriptor.
+ *
+ * The default anchors a zero-sized widget to the panel top-left corner with no offset. Callers
+ * normally override anchors, size, and offsets before resolving.
+ *
+ * @return default placement descriptor
+ */
+DVZ_EXPORT DvzPlacement dvz_placement(void);
+
+
+/**
+ * Return a fixed-size panel-corner placement descriptor.
+ *
+ * @param horizontal horizontal panel anchor
+ * @param vertical vertical panel anchor
+ * @param width_px widget width in logical pixels
+ * @param height_px widget height in logical pixels
+ * @param offset_x_px horizontal offset from the anchor in logical pixels
+ * @param offset_y_px vertical offset from the anchor in logical pixels
+ * @return placement descriptor
+ */
+DVZ_EXPORT DvzPlacement dvz_placement_panel_corner(
+    DvzHorizontalAnchor horizontal, DvzVerticalAnchor vertical, float width_px, float height_px,
+    float offset_x_px, float offset_y_px);
+
+
+/**
+ * Resolve a placement to a panel-local rectangle.
+ *
+ * `panel_rect` and `figure_rect` are expressed in logical figure pixels. Panel-space placements
+ * resolve inside the panel; figure-space placements resolve inside the figure and are returned in
+ * the panel's local coordinate system.
+ *
+ * @param placement placement descriptor
+ * @param panel_rect panel rectangle in figure pixels
+ * @param figure_rect figure rectangle in figure pixels, or NULL to use the panel rectangle
+ * @param out output panel-local rectangle
+ * @return whether the placement could be resolved
+ */
+DVZ_EXPORT bool dvz_placement_resolve(
+    const DvzPlacement* placement, const DvzRect* panel_rect, const DvzRect* figure_rect,
+    DvzRect* out);
+
+
+/**
  * Reserve visual-space room around one panel's plot area for future adornments.
  *
  * Compatibility bridge: reservations are accepted in panel visual-space units and converted to
