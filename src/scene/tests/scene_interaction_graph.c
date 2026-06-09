@@ -597,16 +597,16 @@ int test_scene_reference_grid_api_and_geometry(TstContext* suite, const TstCase*
     AT(color_view.item_count == 8);
     AT(width_view.item_count == 8);
 
-    const vec3* starts = (const vec3*)start_view.data;
-    const vec3* ends = (const vec3*)end_view.data;
+    const float* starts = (const float*)start_view.data;
+    const float* ends = (const float*)end_view.data;
     ANN(starts);
     ANN(ends);
-    AC(starts[0][0], -1.0f, 1e-6f);
-    AC(starts[0][1], -0.5f, 1e-6f);
-    AC(starts[0][2], -0.5f, 1e-6f);
-    AC(ends[0][0], -1.0f, 1e-6f);
-    AC(ends[0][1], -0.5f, 1e-6f);
-    AC(ends[0][2], +0.5f, 1e-6f);
+    AC(starts[0], -1.0f, 1e-6f);
+    AC(starts[1], -0.5f, 1e-6f);
+    AC(starts[2], -0.5f, 1e-6f);
+    AC(ends[0], -1.0f, 1e-6f);
+    AC(ends[1], -0.5f, 1e-6f);
+    AC(ends[2], +0.5f, 1e-6f);
 
     dvz_reference_grid_set_visible(grid, false);
     AT(!grid->visible);
