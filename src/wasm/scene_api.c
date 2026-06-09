@@ -61,7 +61,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 22
+#define DVZ_WASM_API_SCENARIO_COUNT 23
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -104,6 +104,7 @@ DvzScenarioSpec dvz_example_selection_pixel_scenario(void);
 DvzScenarioSpec dvz_example_selection_sphere_scenario(void);
 DvzScenarioSpec dvz_showcase_linked_probe_colorbar_scenario(void);
 DvzScenarioSpec dvz_showcase_scientific_plotting_scenario(void);
+DvzScenarioSpec dvz_showcase_wind_field_scenario(void);
 DvzScenarioSpec dvz_visual_vector_scenario(void);
 
 
@@ -407,6 +408,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_showcase_scientific_plotting_scenario();
     case 21:
         return dvz_visual_vector_scenario();
+    case 22:
+        return dvz_showcase_wind_field_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

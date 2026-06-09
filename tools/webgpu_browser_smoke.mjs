@@ -784,6 +784,7 @@ async function main() {
     let wasmLinkedProbe = null;
     let wasmScientific = null;
     let wasmVector = null;
+    let wasmWindField = null;
     try {
       wasmBasic = await smokeAnimatedWasmPage(
         page,
@@ -935,6 +936,20 @@ async function main() {
       }
       console.log(skipLine(`WebGPU live vector smoke: headless WebGPU instance loss (${error.message})`));
     }
+    try {
+      wasmWindField = await smokeWasmPage(
+        page,
+        baseUrl,
+        '/examples/webgpu/live.html?id=showcase_wind_field',
+        'Rendered Wind Field',
+        join(artifactsDir, 'webgpu_live_wind_field.png'),
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(skipLine(`WebGPU live wind-field smoke: headless WebGPU instance loss (${error.message})`));
+    }
     if (wasmBasic !== null) {
       console.log(passLine(`live basic: ${wasmBasic.initialStatus}; initial_frame=${wasmBasic.initialFrame}`));
     }
@@ -972,6 +987,9 @@ async function main() {
     }
     if (wasmVector !== null) {
       console.log(passLine(`live vector: ${wasmVector.initialStatus}`));
+    }
+    if (wasmWindField !== null) {
+      console.log(passLine(`live wind-field: ${wasmWindField.initialStatus}`));
     }
     console.log(`Wrote ${artifactsDir}`);
   } finally {

@@ -1076,6 +1076,47 @@ function expectVectorScenarioStreamShape(stream, label) {
   expectWriteCommands(stream, label);
 }
 
+function expectWindFieldScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  expectCommandCount(stream, "BeginCommandEncoder", 1, label);
+  expectCommandCount(stream, "FinishCommandEncoder", 1, label);
+  expectCommandCount(stream, "QueueSubmit", 1, label);
+  requireOk(commandsOf(stream, "BeginRenderPass").length >= 1, `${label}: expected render pass`);
+  requireOk(commandsOf(stream, "SetViewport").length >= 1, `${label}: expected viewport command`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 1, `${label}: expected scissor command`);
+  expectPipeline(
+    stream,
+    `${label} scalar field`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.image",
+  );
+  expectPipeline(
+    stream,
+    `${label} streamlines`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.path",
+  );
+  expectPipeline(
+    stream,
+    `${label} vector arrows`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.segment",
+  );
+  expectPipeline(
+    stream,
+    `${label} colorbar ramp`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.primitive",
+  );
+  expectPipeline(
+    stream,
+    `${label} labels`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 3, `${label}: expected image, colorbar, and labels`);
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 2, `${label}: expected segment and path draws`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 2, `${label}: expected field and glyph texture uploads`);
+}
+
 function expectScaleBarScenarioStreamShape(stream, label, { reference = "point" } = {}) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -1635,6 +1676,7 @@ try {
     "linked_panels_probe_colorbar",
     "scientific_plotting_workflow",
     "visual_vector",
+    "showcase_wind_field",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -2065,6 +2107,35 @@ try {
     expectVectorScenarioStreamShape(initialVector.stream, "vector scenario initial");
   } finally {
     Module._dvz_wasm_api_scene_destroy(vectorScene);
+  }
+
+  const windFieldIndex = scenarioIndex(Module, "showcase_wind_field");
+  const windFieldWidth = Module._dvz_wasm_api_scenario_width(windFieldIndex);
+  const windFieldHeight = Module._dvz_wasm_api_scenario_height(windFieldIndex);
+  const windFieldScene = Module._dvz_wasm_api_scene(windFieldWidth, windFieldHeight);
+  requireOk(windFieldScene !== 0, "wind-field scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(windFieldScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "wind-field scenario canvas format",
+    );
+    setCapabilities(
+      Module, windFieldScene, 4096, 4, 8, 256 * 1024 * 1024, 256, 4,
+      "wind-field scenario capabilities");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(windFieldScene, windFieldIndex),
+      0,
+      "wind-field scenario create",
+    );
+    expectNoDiagnostics(Module, windFieldScene, "wind-field scenario create diagnostics");
+    const windFieldFigure = Module._dvz_wasm_api_scenario_figure(windFieldScene);
+    requireOk(windFieldFigure !== 0, "wind-field scenario has no figure");
+    const initialWindField =
+      emitStream(Module, windFieldScene, windFieldFigure, "wind-field scenario initial");
+    expectWindFieldScenarioStreamShape(initialWindField.stream, "wind-field scenario initial");
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(windFieldScene);
   }
 
   const pixelSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);

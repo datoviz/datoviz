@@ -2046,13 +2046,14 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
       requirements:
         - image
         - vector
         - path
         - colorbar
         - panzoom
+      route: examples/webgpu/live.html?id=showcase_wind_field
     agent_copy_safe: false
     gallery:
       card: section

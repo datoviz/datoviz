@@ -10,7 +10,8 @@ synthetic weather-like scalar and vector field showcase.
 - Status: `supported`
 - Source: [`examples/c/showcases/wind_field.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c)
 - Agent copy-safe: `false`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=showcase_wind_field`](/examples/webgpu/live.html?id=showcase_wind_field)
 - WebGPU requirements: `image`, `vector`, `path`, `colorbar`, `panzoom`
 - Build: `just example-c showcases/wind_field`
 - Smoke: `./build/examples/c/showcases/wind_field --png`
@@ -32,6 +33,14 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=showcase_wind_field" title="Wind Field WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=showcase_wind_field).
 
 ## Source
 

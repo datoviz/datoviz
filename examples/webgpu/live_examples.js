@@ -115,6 +115,11 @@ export const LIVE_EXAMPLES = [
     label: "Vector",
     scenarioId: "visual_vector",
   },
+  {
+    id: "showcase_wind_field",
+    label: "Wind Field",
+    scenarioId: "showcase_wind_field",
+  },
 ];
 
 export function liveExampleById(id) {

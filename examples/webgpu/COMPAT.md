@@ -329,6 +329,16 @@ Current status as of this note:
   exited successfully in this shell, with the live timer, colorbar, scale-bar, scale-bar-units,
   legend, annotation-readout, picking query, linked-probe query, scientific-plotting, and vector
   checks skipped by known headless WebGPU instance loss before scene rendering.
+- recorded local wind-field promotion checkpoint on 2026-06-09: `node --check
+  tools/wasm_scene_smoke.mjs`, `node --check tools/webgpu_browser_smoke.mjs`, and `node --check
+  examples/webgpu/live_examples.js` passed; `python3 tools/check_example_manifests.py` passed;
+  `just example-c showcases/wind_field` passed; `just wasm-scene-smoke` emitted, packetized, and
+  replayed the composed wind-field scenario, including the scalar image field, colorbar, glyph
+  labels, vector arrows lowered through segment draw streams, and streamlines lowered through path
+  draw streams. `just webgpu-browser-smoke` exited successfully in this shell, with the live timer,
+  colorbar, scale-bar, scale-bar-units, legend, annotation-readout, picking query, linked-probe
+  query, scientific-plotting, vector, and wind-field checks skipped by known headless WebGPU
+  instance loss before scene rendering.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
