@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Public C examples in manifest: 104
-- Examples declaring screenshot validation: 90
+- Public C examples in manifest: 106
+- Examples declaring screenshot validation: 92
 - Examples that should have video or motion evidence: 7
 
 ## Commands
@@ -42,6 +42,7 @@ Screenshot and video capture should be run separately from documentation generat
 | [Arcball Controller](gallery/features/feature_controller_arcball.md) | [`examples/c/features/controller_arcball.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c) | `supported` | `smoke+interaction+screenshot` |
 | [Orientation Gizmo](gallery/features/feature_orientation_gizmo.md) | [`examples/c/features/orientation_gizmo.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/orientation_gizmo.c) | `supported` | `smoke+interaction+screenshot` |
 | [Reference Grid](gallery/features/feature_reference_grid.md) | [`examples/c/features/reference_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/reference_grid.c) | `supported` | `smoke+interaction+screenshot` |
+| [Bounds Overlay](gallery/features/feature_bounds_overlay.md) | [`examples/c/features/bounds_overlay.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bounds_overlay.c) | `diagnostic` | `smoke+screenshot` |
 | [Fly Controller](gallery/features/feature_controller_fly.md) | [`examples/c/features/controller_fly.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_fly.c) | `supported` | `smoke+interaction+screenshot` |
 | [Turntable Controller](gallery/features/feature_controller_turntable.md) | [`examples/c/features/controller_turntable.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_turntable.c) | `supported` | `smoke+interaction+screenshot` |
 | [Textured Mesh](gallery/features/feature_mesh_texture.md) | [`examples/c/features/mesh_texture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/mesh_texture.c) | `supported` | `smoke+interaction+screenshot` |
@@ -115,6 +116,7 @@ Screenshot and video capture should be run separately from documentation generat
 | [Embedding Atlas](gallery/showcases/showcase_embedding_atlas.md) | [`examples/c/showcases/embedding_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/embedding_atlas.c) | `supported` | `smoke+interaction+screenshot` |
 | [Lipid Brain Atlas](gallery/showcases/showcase_lipid_brain_atlas.md) | [`examples/c/showcases/lipid_brain_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/lipid_brain_atlas.c) | `prototype` | `smoke+screenshot+video` |
 | [Synthetic Mouse](gallery/showcases/showcase_synthetic_mouse.md) | [`examples/c/showcases/synthetic_mouse.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/synthetic_mouse.c) | `prototype` | `smoke+screenshot+video` |
+| [Surface Grid](gallery/showcases/showcase_surface_grid.md) | [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c) | `supported` | `smoke+screenshot` |
 | [Allen Mouse Brain](gallery/showcases/brain_volume.md) | [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c) | `prototype` | `smoke+screenshot` |
 | [Point Cloud](gallery/showcases/point_cloud.md) | [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c) | `supported` | `smoke+screenshot` |
 | [Textured Planets](gallery/showcases/textured_terrain_or_planet.md) | [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c) | `supported` | `smoke+screenshot` |

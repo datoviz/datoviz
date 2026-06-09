@@ -14,9 +14,9 @@ keeps media status explicit while capture artifacts are prepared separately.
 | Category | Examples | Use |
 | --- | ---: | --- |
 | [Visual gallery](visual-gallery.md) | 15 | One public visual family per example. |
-| [Feature gallery](feature-gallery.md) | 70 | One isolated feature or technique per example. |
+| [Feature gallery](feature-gallery.md) | 71 | One isolated feature or technique per example. |
 | [Composites](composites.md) | 2 | One semantic object lowering to one or more visuals per example. |
-| [Showcases](showcases.md) | 14 | Composed workflows, scientific stories, real-data examples, and polished demos. |
+| [Showcases](showcases.md) | 15 | Composed workflows, scientific stories, real-data examples, and polished demos. |
 | [Advanced examples](advanced.md) | 3 | Low-level runtime, DRP2, and host-integration examples. |
 
 ## Gallery Sections
@@ -24,12 +24,12 @@ keeps media status explicit while capture artifacts are prepared separately.
 | Section | Examples | Status |
 | --- | ---: | --- |
 | [Visual gallery](visual-gallery.md) | 15 | 13 supported, 2 experimental |
-| [Feature gallery](feature-gallery.md) | 70 | 65 supported, 5 experimental |
+| [Feature gallery](feature-gallery.md) | 71 | 65 supported, 5 experimental, 1 diagnostic |
 | [Composites](composites.md) | 2 | 2 supported |
-| [Showcases](showcases.md) | 14 | 10 supported, 1 experimental, 3 prototype |
+| [Showcases](showcases.md) | 15 | 11 supported, 1 experimental, 3 prototype |
 | [Advanced examples](advanced.md) | 3 | 3 experimental |
 | [Techniques](techniques.md) | 13 | Rendering and compute behavior coverage |
-| [Validation gallery](validation-gallery.md) | 104 | Release evidence checklist |
+| [Validation gallery](validation-gallery.md) | 106 | Release evidence checklist |
 
 ## Current Source Lanes
 
@@ -44,7 +44,7 @@ starting points by example or capability.
 | Lane | Source directory | Examples |
 | --- | --- | ---: |
 | Visuals | `examples/c/visuals/` | 15 |
-| Features | `examples/c/features/` | 70 |
+| Features | `examples/c/features/` | 71 |
 | Composites | `examples/c/composites/` | 2 |
-| Showcases | `examples/c/showcases/` | 14 |
+| Showcases | `examples/c/showcases/` | 15 |
 | Advanced | `examples/c/advanced/` | 3 |

@@ -57,11 +57,11 @@ is still visible with the blocker or preferred next action.
 | General comments/descriptions | partial | Changed summaries regenerate docs; broader top-of-file copy audit remains. |
 | Scenario-helper use | partial | New/changed examples use scenario runner where appropriate; app/window/advanced exceptions remain explicit. |
 | Builtin-shapes parity | deferred | v0.4 has 2D/3D shape examples; Platonic solids/histogram/gizmo-shape parity is deferred or needs geom API additions. |
-| Further: `showcases/surface_grid` | deferred | Needs new showcase port. |
+| Further: `showcases/surface_grid` | resolved | Added `examples/c/showcases/surface_grid.c` with `dvz_geom_surface_grid()` mesh plus derived wireframe overlay; registered in CMake/manifest/generated docs; `./build/examples/c/showcases/surface_grid --png` passed. |
 | Further: `features/instancing` | resolved | Current feature exists as `examples/c/features/selection_mesh_instances.c`; plain non-selection instancing example still optional. |
 | Further: `features/isolines` | resolved | Current implementation exists in `examples/c/features/isolines.c` and is in generated docs. |
 | Further: raw triangles | resolved | `advanced_raw_triangle_vklite` and `advanced_raw_triangle_drp2` are in CMake/manifest/generated advanced docs. |
-| Further: `bounds_overlay.c` | deferred | Needs one/two feature-example ports. |
+| Further: `bounds_overlay.c` | resolved | Added diagnostic `examples/c/features/bounds_overlay.c` with 2D/3D retained visual bounds overlays; registered in CMake/manifest/generated docs; `./build/examples/c/features/bounds_overlay --png` passed. |
 | Further: `arcball_gizmo.c` | resolved | Superseded by synchronized inset `examples/c/features/orientation_gizmo.c`; generated docs now include it. |
 
 

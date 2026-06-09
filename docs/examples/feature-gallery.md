@@ -5,7 +5,7 @@
 This page indexes focused C examples for public scene, layout, adornment, interaction,
 update, rendering-technique, and appearance features.
 
-Coverage: 70 examples (65 supported, 5 experimental).
+Coverage: 71 examples (65 supported, 5 experimental, 1 diagnostic).
 
 ## Features
 
@@ -128,6 +128,18 @@ _Media pending._
 `supported` `features`
 
 tessellated cubic Bezier curve rendered as a retained path.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Bounds Overlay](gallery/features/feature_bounds_overlay.md)
+
+_Media pending._
+
+`diagnostic` `features`<br><span>`diagnostic`, `bounds`, `overlay`, `point`, `sphere`</span>
+
+diagnostic retained visual bounds in 2D and 3D panels.
 
 </div>
 

@@ -7,7 +7,7 @@ They may use workflows, prepared data, animation, postprocess settings, or
 domain-specific context. Each item still needs a deterministic screenshot before final
 publication.
 
-Coverage: 14 examples (10 supported, 1 experimental, 3 prototype).
+Coverage: 15 examples (11 supported, 1 experimental, 3 prototype).
 
 ## Showcases
 
@@ -130,6 +130,18 @@ _Media pending._
 `supported` `showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
 
 histogram, guide annotations, stacked traces, and error bands.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Surface Grid](gallery/showcases/showcase_surface_grid.md)
+
+_Media pending._
+
+`supported` `showcases`<br><span>`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, ...</span>
+
+generated height-field mesh with a derived wireframe overlay.
 
 </div>
 

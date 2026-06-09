@@ -3,21 +3,22 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 104,
+  "example_count": 106,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 70,
-    "showcase": 14,
+    "feature": 71,
+    "showcase": 15,
     "visual": 15
   },
   "statuses": {
+    "diagnostic": 1,
     "experimental": 11,
     "prototype": 3,
-    "supported": 90
+    "supported": 91
   },
   "agent_copy_safe": {
-    "false": 26,
+    "false": 28,
     "true": 78
   },
   "capabilities": {
@@ -154,7 +155,7 @@
         ]
       },
       "synthetic": {
-        "count": 95,
+        "count": 97,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -281,6 +282,15 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/reference_grid.c",
             "page": "gallery/features/feature_reference_grid.md"
+          },
+          {
+            "id": "feature_bounds_overlay",
+            "title": "Bounds Overlay",
+            "category": "feature",
+            "status": "diagnostic",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/bounds_overlay.c",
+            "page": "gallery/features/feature_bounds_overlay.md"
           },
           {
             "id": "feature_controller_fly",
@@ -985,6 +995,15 @@
             "page": "gallery/showcases/showcase_wind_field.md"
           },
           {
+            "id": "showcase_surface_grid",
+            "title": "Surface Grid",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/surface_grid.c",
+            "page": "gallery/showcases/showcase_surface_grid.md"
+          },
+          {
             "id": "advanced_raw_triangle_vklite",
             "title": "Raw Triangle Vklite",
             "category": "advanced",
@@ -1124,6 +1143,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/bezier_curve_path.c",
             "page": "gallery/features/feature_bezier_curve_path.md"
+          }
+        ]
+      },
+      "bounds-overlay": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_bounds_overlay",
+            "title": "Bounds Overlay",
+            "category": "feature",
+            "status": "diagnostic",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/bounds_overlay.c",
+            "page": "gallery/features/feature_bounds_overlay.md"
           }
         ]
       },
@@ -2081,7 +2114,7 @@
         ]
       },
       "arcball": {
-        "count": 7,
+        "count": 8,
         "examples": [
           {
             "id": "visual_mesh",
@@ -2127,6 +2160,15 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/synthetic_mouse.c",
             "page": "gallery/showcases/showcase_synthetic_mouse.md"
+          },
+          {
+            "id": "showcase_surface_grid",
+            "title": "Surface Grid",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/surface_grid.c",
+            "page": "gallery/showcases/showcase_surface_grid.md"
           },
           {
             "id": "brain_volume",
@@ -2201,6 +2243,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/visuals/volume.c",
             "page": "gallery/visuals/volume.md"
+          }
+        ]
+      },
+      "bounds": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_bounds_overlay",
+            "title": "Bounds Overlay",
+            "category": "feature",
+            "status": "diagnostic",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/bounds_overlay.c",
+            "page": "gallery/features/feature_bounds_overlay.md"
           }
         ]
       },
@@ -2574,6 +2630,20 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/point_cloud.c",
             "page": "gallery/showcases/point_cloud.md"
+          }
+        ]
+      },
+      "diagnostic": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_bounds_overlay",
+            "title": "Bounds Overlay",
+            "category": "feature",
+            "status": "diagnostic",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/bounds_overlay.c",
+            "page": "gallery/features/feature_bounds_overlay.md"
           }
         ]
       },
@@ -3024,7 +3094,7 @@
         ]
       },
       "mesh": {
-        "count": 2,
+        "count": 3,
         "examples": [
           {
             "id": "visual_mesh",
@@ -3034,6 +3104,15 @@
             "agent_copy_safe": true,
             "source": "examples/c/visuals/mesh.c",
             "page": "gallery/visuals/visual_mesh.md"
+          },
+          {
+            "id": "showcase_surface_grid",
+            "title": "Surface Grid",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/surface_grid.c",
+            "page": "gallery/showcases/showcase_surface_grid.md"
           },
           {
             "id": "textured_terrain_or_planet",
@@ -3057,6 +3136,20 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/protein.c",
             "page": "gallery/showcases/protein_arcball_viewer.md"
+          }
+        ]
+      },
+      "overlay": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_bounds_overlay",
+            "title": "Bounds Overlay",
+            "category": "feature",
+            "status": "diagnostic",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/bounds_overlay.c",
+            "page": "gallery/features/feature_bounds_overlay.md"
           }
         ]
       },
@@ -3271,8 +3364,17 @@
         ]
       },
       "point": {
-        "count": 4,
+        "count": 5,
         "examples": [
+          {
+            "id": "feature_bounds_overlay",
+            "title": "Bounds Overlay",
+            "category": "feature",
+            "status": "diagnostic",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/bounds_overlay.c",
+            "page": "gallery/features/feature_bounds_overlay.md"
+          },
           {
             "id": "feature_compute_buffer_animation",
             "title": "Compute Buffer Animation",
@@ -3579,7 +3681,7 @@
         ]
       },
       "scientific": {
-        "count": 8,
+        "count": 9,
         "examples": [
           {
             "id": "scientific_plotting_workflow",
@@ -3643,6 +3745,15 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/synthetic_mouse.c",
             "page": "gallery/showcases/showcase_synthetic_mouse.md"
+          },
+          {
+            "id": "showcase_surface_grid",
+            "title": "Surface Grid",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/surface_grid.c",
+            "page": "gallery/showcases/showcase_surface_grid.md"
           },
           {
             "id": "brain_volume",
@@ -3726,8 +3837,17 @@
         ]
       },
       "sphere": {
-        "count": 2,
+        "count": 3,
         "examples": [
+          {
+            "id": "feature_bounds_overlay",
+            "title": "Bounds Overlay",
+            "category": "feature",
+            "status": "diagnostic",
+            "agent_copy_safe": false,
+            "source": "examples/c/features/bounds_overlay.c",
+            "page": "gallery/features/feature_bounds_overlay.md"
+          },
           {
             "id": "sphere_impostor",
             "title": "Sphere",
@@ -3790,6 +3910,20 @@
           }
         ]
       },
+      "surface-grid": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcase_surface_grid",
+            "title": "Surface Grid",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/surface_grid.c",
+            "page": "gallery/showcases/showcase_surface_grid.md"
+          }
+        ]
+      },
       "svg-path-symbol": {
         "count": 1,
         "examples": [
@@ -3819,7 +3953,7 @@
         ]
       },
       "synthetic": {
-        "count": 5,
+        "count": 6,
         "examples": [
           {
             "id": "linked_panels_axes_panzoom",
@@ -3865,6 +3999,15 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/synthetic_mouse.c",
             "page": "gallery/showcases/showcase_synthetic_mouse.md"
+          },
+          {
+            "id": "showcase_surface_grid",
+            "title": "Surface Grid",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/surface_grid.c",
+            "page": "gallery/showcases/showcase_surface_grid.md"
           }
         ]
       },
@@ -4111,6 +4254,20 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/wind_field.c",
             "page": "gallery/showcases/showcase_wind_field.md"
+          }
+        ]
+      },
+      "wireframe": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcase_surface_grid",
+            "title": "Surface Grid",
+            "category": "showcase",
+            "status": "supported",
+            "agent_copy_safe": false,
+            "source": "examples/c/showcases/surface_grid.c",
+            "page": "gallery/showcases/showcase_surface_grid.md"
           }
         ]
       },

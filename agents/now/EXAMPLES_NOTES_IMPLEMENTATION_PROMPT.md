@@ -93,13 +93,12 @@ Example behavior and policy:
   explicit render-scale/supersample option is added; record the decision in the
   example/docs.
 
-Unblocked example ports:
+Resolved in checkpoint `showcases/surface_grid` / `features/bounds_overlay`:
 
-- `showcases/surface_grid`: port a v0.4 showcase from the legacy surface-grid
-  examples, using `dvz_geom_surface_grid()` and a visible wireframe overlay.
-- `features/bounds_overlay.c`: port the legacy diagnostic bounds overlay into
-  one focused v0.4 feature example, or split only if the legacy behavior is
-  genuinely two separate concepts.
+- `showcases/surface_grid`: ported as `examples/c/showcases/surface_grid.c`
+  with `dvz_geom_surface_grid()` and a derived wireframe overlay.
+- `features/bounds_overlay.c`: ported as diagnostic
+  `examples/c/features/bounds_overlay.c` with 2D and 3D retained visual bounds.
 
 General `EXAMPLES_NOTES.md` comments to close:
 

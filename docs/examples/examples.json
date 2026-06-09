@@ -2,21 +2,22 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 104,
+  "count": 106,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 70,
-    "showcase": 14,
+    "feature": 71,
+    "showcase": 15,
     "visual": 15
   },
   "statuses": {
+    "diagnostic": 1,
     "experimental": 11,
     "prototype": 3,
-    "supported": 90
+    "supported": 91
   },
   "agent_copy_safe": {
-    "false": 26,
+    "false": 28,
     "true": 78
   },
   "examples": [
@@ -313,6 +314,33 @@
         "kind": "synthetic"
       },
       "primary_feature": "reference-grid"
+    },
+    {
+      "id": "feature_bounds_overlay",
+      "title": "Bounds Overlay",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "diagnostic",
+      "source": "examples/c/features/bounds_overlay.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bounds_overlay.c",
+      "page": "gallery/features/feature_bounds_overlay.md",
+      "summary": "diagnostic retained visual bounds in 2D and 3D panels.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/bounds_overlay",
+      "smoke_command": "./build/examples/c/features/bounds_overlay --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "diagnostic",
+        "bounds",
+        "overlay",
+        "point",
+        "sphere"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "bounds-overlay"
     },
     {
       "id": "feature_controller_fly",
@@ -2303,6 +2331,33 @@
         "license": "generated fallback; upstream OSF terms require review for real assets",
         "preprocessing": "python tools/data/prepare_synthetic_mouse.py",
         "cache_prepared_path": ".cache/datoviz/examples/synthetic_mouse/prepared"
+      }
+    },
+    {
+      "id": "showcase_surface_grid",
+      "title": "Surface Grid",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/showcases/surface_grid.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c",
+      "page": "gallery/showcases/showcase_surface_grid.md",
+      "summary": "generated height-field mesh with a derived wireframe overlay.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c showcases/surface_grid",
+      "smoke_command": "./build/examples/c/showcases/surface_grid --png",
+      "agent_copy_safe": false,
+      "tags": [
+        "scientific",
+        "synthetic",
+        "surface-grid",
+        "mesh",
+        "wireframe",
+        "arcball"
+      ],
+      "data": {
+        "kind": "synthetic"
       }
     },
     {

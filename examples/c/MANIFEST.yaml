@@ -225,6 +225,27 @@ examples:
       kind: synthetic
     agent_copy_safe: true
 
+  - id: feature_bounds_overlay
+    title: Bounds Overlay
+    stage: v0.4_required
+    category: feature
+    primary_feature: bounds-overlay
+    lane: features
+    source: examples/c/features/bounds_overlay.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: false
+    gallery:
+      card: small
+      status_label: diagnostic
+    tags:
+      - diagnostic
+      - bounds
+      - overlay
+      - point
+      - sphere
+
   - id: feature_controller_fly
     title: Fly Controller
     stage: v0.4_required
@@ -1728,6 +1749,27 @@ examples:
       - reference-grid
       - arcball
       - video
+
+  - id: showcase_surface_grid
+    title: Surface Grid
+    stage: v0.4_required
+    category: showcase
+    lane: showcases
+    source: examples/c/showcases/surface_grid.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    agent_copy_safe: false
+    gallery:
+      card: section
+      status_label: supported
+    tags:
+      - scientific
+      - synthetic
+      - surface-grid
+      - mesh
+      - wireframe
+      - arcball
 
   - id: brain_volume
     title: Allen Mouse Brain
