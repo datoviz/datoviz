@@ -377,6 +377,61 @@ Each promotion must satisfy the promotion rule above.
 5. Add performance baselines for packet decode, upload, and render.
 
 
+## v0.4 RC Good-Enough Plan
+
+The v0.4 RC WebGPU goal is a credible experimental browser subset with a useful proportion of the
+gallery live on the website. It is not full Vulkan parity.
+
+Good enough for RC means:
+
+1. `showcase_gpu_particle_smoke` is live in browser WebGPU with a documented particle budget, or
+   explicitly blocked by native/browser compute evidence that is recorded in `COMPAT.md`;
+2. request/query/readback remains live for picking, selection, and one image probe;
+3. representative live examples exist for every current browser visual family;
+4. panel, panzoom, axes, text, image, colorbar, scale-bar, legend, readout, and simple composition
+   examples have enough live coverage that the public matrix looks broad rather than selective;
+5. remaining public examples are honestly classified as `webgpu-planned`, `webgpu-deferred`, or
+   `native-only`, with requirement tags that explain why;
+6. browser JavaScript remains host glue and does not reimplement scene construction or data
+   semantics.
+
+Promotion order to reach that bar:
+
+1. **Compute particle proof.** Promote `showcase_gpu_particle_smoke` after the compact
+   `feature_compute_buffer_animation` route. Record browser particle count, native Vulkan evidence
+   when available, and any headless WebGPU instance-loss skips honestly.
+2. **Simple visual-family batch.** Promote standalone examples for current families before composed
+   showcases: `point_2d`, `visual_pixel`, `visual_marker`, `visual_primitive`, `visual_segment`,
+   `visual_path`, `visual_image`, `visual_mesh`, `sphere_impostor`, `visual_text`,
+   `visual_glyph`, and `visual_labels`. These should be mostly mechanical because their primitives
+   already exist in the WASM scene smoke path.
+3. **Panel and annotation basics.** Promote `feature_panel_single`, `feature_panel_grid`,
+   `feature_panel_multi`, `feature_panel_linked`, `feature_panzoom`, `path_axes_2d`,
+   `feature_axis_labels`, `feature_sampled_field_2d`, `colormap_scale`, `feature_text_block`,
+   `feature_overlay_card`, `feature_guide_lines`, `feature_guide_spans`, and
+   `feature_bars_bands` where they reuse current primitives.
+4. **Composed showcase pass.** Promote composed examples only after their component families are
+   already live: `linked_panels_axes_panzoom`, `composite_polygon`, `us_state_choropleth`,
+   `scalebar_measurement_workflow`, `showcase_surface_grid`, `textured_terrain_or_planet`,
+   `protein_arcball_viewer`, and `showcase_embedding_atlas` if query/readback and overlay behavior
+   are stable enough.
+5. **Keep explicit deferrals.** Do not spend RC time forcing live support for native GUI/capture,
+   video/export, GLFW/app, raw vklite/DRP2 examples, CUDA, dense point-cloud GUI/fly workflows,
+   volume-heavy examples, splats, marker symbol-set atlas parity, orbit-camera-only paths, or
+   postprocess techniques unless they become release blockers.
+
+Checkpoint rules:
+
+1. one commit per example or capability cluster;
+2. run the narrow native example where applicable;
+3. run `node --check` for touched JavaScript;
+4. run `python3 tools/check_example_manifests.py` whenever manifest status changes;
+5. run `just wasm-scene-smoke` and `just webgpu-browser-smoke`;
+6. update `examples/webgpu/COMPAT.md` with evidence or honest skips;
+7. regenerate gallery docs when manifest status changes;
+8. finish every checkpoint with `git diff --check`.
+
+
 ## Validation Commands
 
 Browserless checks:
