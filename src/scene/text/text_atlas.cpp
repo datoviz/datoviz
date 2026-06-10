@@ -1249,6 +1249,29 @@ static DvzTextAtlas** _text_atlas_find_slot(DvzFont* font, const DvzTextAtlasSpe
 
 
 /**
+ * Find an existing atlas cache entry for one spec without mutating the font.
+ *
+ * @param font the font
+ * @param spec atlas spec
+ * @return matching atlas, or NULL
+ */
+static const DvzTextAtlas* _text_atlas_find_const(
+    const DvzFont* font, const DvzTextAtlasSpec* spec)
+{
+    ANN(font);
+    ANN(spec);
+    for (uint32_t i = 0; i < font->atlas_count && i < DVZ_SCENE_MAX_TEXT_ATLASES_PER_FONT; i++)
+    {
+        const DvzTextAtlas* atlas = font->atlases[i];
+        if (atlas != NULL && _text_atlas_spec_equal(&atlas->spec, spec))
+            return atlas;
+    }
+    return NULL;
+}
+
+
+
+/**
  * Find or allocate an atlas cache slot for one spec.
  *
  * @param font the font
@@ -2436,7 +2459,13 @@ const DvzTextAtlas* dvz_font_atlas(const DvzFont* font, const DvzTextAtlasSpec* 
 {
     if (font == NULL || spec == NULL)
         return NULL;
-    return _scene_text_atlas_get((DvzFont*)font, spec);
+    const DvzTextAtlas* atlas = _text_atlas_find_const(font, spec);
+    if (atlas != NULL)
+        return atlas;
+    if (spec->backend == DVZ_TEXT_ATLAS_BACKEND_STB_SDF)
+        return NULL;
+    DvzTextAtlasSpec fallback = _text_atlas_fallback_spec(spec);
+    return _text_atlas_find_const(font, &fallback);
 }
 
 
@@ -2495,7 +2524,24 @@ const DvzTextAtlasGlyph* dvz_text_atlas_glyph(const DvzTextAtlas* atlas, uint32_
 {
     if (atlas == NULL)
         return NULL;
-    return _scene_text_atlas_glyph((DvzTextAtlas*)atlas, codepoint);
+    if (!_text_atlas_codepoint_renderable(codepoint))
+        codepoint = DVZ_TEXT_SDF_FALLBACK;
+
+    for (uint32_t i = 0; i < atlas->glyph_count && i < DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS; i++)
+    {
+        const DvzTextAtlasGlyph* glyph = &atlas->glyphs[i];
+        if (glyph->codepoint == codepoint && glyph->valid)
+            return glyph;
+    }
+    if (codepoint == DVZ_TEXT_SDF_FALLBACK)
+        return NULL;
+    for (uint32_t i = 0; i < atlas->glyph_count && i < DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS; i++)
+    {
+        const DvzTextAtlasGlyph* glyph = &atlas->glyphs[i];
+        if (glyph->codepoint == DVZ_TEXT_SDF_FALLBACK && glyph->valid)
+            return glyph;
+    }
+    return NULL;
 }
 
 
