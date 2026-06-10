@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* graph - deterministic brain-connectivity graph composite with community labels.
+/* graph - deterministic brain-connectivity graph composite.
  *
  * Scenario: composite_graph
  * Style: feature composite, graphite_cyan, 1600x1200 capture target
@@ -45,19 +45,9 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-typedef enum BrainLabelSide
-{
-    BRAIN_LABEL_SIDE_TOP,
-    BRAIN_LABEL_SIDE_BOTTOM,
-} BrainLabelSide;
-
-
 typedef struct BrainCommunity
 {
-    const char* label;
     DvzColor color;
-    BrainLabelSide label_side;
-    double label_gap_ratio;
 } BrainCommunity;
 
 
@@ -87,18 +77,9 @@ typedef struct BrainEdge
 /*************************************************************************************************/
 
 static const BrainCommunity COMMUNITIES[] = {
-    {.label = "Visual",
-     .color = {65, 201, 226, 255},
-     .label_side = BRAIN_LABEL_SIDE_TOP,
-     .label_gap_ratio = 0.20},
-    {.label = "Motor",
-     .color = {246, 185, 72, 255},
-     .label_side = BRAIN_LABEL_SIDE_TOP,
-     .label_gap_ratio = 0.20},
-    {.label = "Memory",
-     .color = {234, 104, 91, 255},
-     .label_side = BRAIN_LABEL_SIDE_BOTTOM,
-     .label_gap_ratio = 1.20},
+    {.color = {65, 201, 226, 255}},
+    {.color = {246, 185, 72, 255}},
+    {.color = {234, 104, 91, 255}},
 };
 
 
@@ -183,7 +164,7 @@ static bool _configure_panel(DvzPanel* panel)
     DvzPanelDomainFit fit = dvz_panel_domain_fit();
     fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
     fit.x = (DvzDataDomain){.min = -1.34, .max = +1.34};
-    fit.y = (DvzDataDomain){.min = -1.18, .max = +0.92};
+    fit.y = (DvzDataDomain){.min = -1.08, .max = +0.92};
     fit.padding = 0.03;
     return dvz_panel_set_domain_fit(panel, &fit) == 0;
 }
@@ -204,53 +185,6 @@ static void _make_positions(dvec3 positions[NODE_COUNT])
         positions[i][1] = NODES[i].position[1];
         positions[i][2] = NODES[i].position[2];
     }
-}
-
-
-
-static void _community_label_placement(uint32_t community, double position[3])
-{
-    ASSERT(community < COMMUNITY_COUNT);
-    ANN(position);
-
-    bool found = false;
-    double min_x = 0.0;
-    double max_x = 0.0;
-    double min_y = 0.0;
-    double max_y = 0.0;
-    for (uint32_t i = 0; i < NODE_COUNT; i++)
-    {
-        if (NODES[i].community != community)
-            continue;
-        const double x = NODES[i].position[0];
-        const double y = NODES[i].position[1];
-        if (!found)
-        {
-            min_x = max_x = x;
-            min_y = max_y = y;
-            found = true;
-        }
-        else
-        {
-            if (x < min_x)
-                min_x = x;
-            if (x > max_x)
-                max_x = x;
-            if (y < min_y)
-                min_y = y;
-            if (y > max_y)
-                max_y = y;
-        }
-    }
-    ASSERT(found);
-
-    const BrainCommunity* community_desc = &COMMUNITIES[community];
-    const double height = max_y - min_y;
-    const double gap = height * community_desc->label_gap_ratio;
-    position[0] = 0.5 * (min_x + max_x);
-    position[1] =
-        community_desc->label_side == BRAIN_LABEL_SIDE_BOTTOM ? min_y - gap : max_y + gap;
-    position[2] = 0.0;
 }
 
 
@@ -318,56 +252,6 @@ static void _make_bridge_controls(
         control1[i][1] = sy + 0.64 * dy + bend * dx;
         control1[i][2] = 0.0;
     }
-}
-
-
-
-/**
- * Add fixed labels describing the graph dataset and communities.
- *
- * @param panel panel receiving labels
- * @return whether all labels were added
- */
-static bool _add_graph_labels(DvzPanel* panel)
-{
-    ANN(panel);
-
-    DvzLabelDesc title = dvz_label_desc();
-    title.text = "Brain connectivity: 15 regions / 26 weighted links";
-    title.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_TITLE);
-    title.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
-    title.style.size_px = 27.0f;
-    title.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
-    title.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
-    title.placement.position[0] = 28.0f;
-    title.placement.position[1] = 24.0f;
-    title.placement.text_anchor[0] = 0.0f;
-    title.placement.text_anchor[1] = 0.0f;
-    title.placement.has_text_anchor = true;
-    if (dvz_annotation_label(panel, &title) == NULL)
-        return false;
-
-    for (uint32_t i = 0; i < COMMUNITY_COUNT; i++)
-    {
-        DvzLabelDesc desc = dvz_label_desc();
-        desc.text = COMMUNITIES[i].label;
-        desc.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_DATA_LABEL);
-        desc.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
-        desc.style.size_px = 26.0f;
-        desc.style.color[0] = COMMUNITIES[i].color.r;
-        desc.style.color[1] = COMMUNITIES[i].color.g;
-        desc.style.color[2] = COMMUNITIES[i].color.b;
-        desc.style.color[3] = 245u;
-        desc.placement.mode = DVZ_TEXT_PLACEMENT_DATA;
-        desc.placement.anchor = DVZ_SCENE_ANCHOR_DATA;
-        _community_label_placement(i, desc.placement.position);
-        desc.placement.text_anchor[0] = 0.5f;
-        desc.placement.text_anchor[1] = 0.5f;
-        desc.placement.has_text_anchor = true;
-        if (dvz_annotation_label(panel, &desc) == NULL)
-            return false;
-    }
-    return true;
 }
 
 
@@ -477,9 +361,7 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
     rc = dvz_panel_add_composite(
         panel, composite, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
                                                 .z_layer = 0});
-    if (rc != 0)
-        return false;
-    return _add_graph_labels(panel);
+    return rc == 0;
 }
 
 
