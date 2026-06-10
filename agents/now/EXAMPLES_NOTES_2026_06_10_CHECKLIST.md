@@ -107,7 +107,7 @@ changed-example build/smoke where supported.
 Validation: `git diff --check`, `just build`, graph/scene tests where available, plus changed-example
 build/smoke where supported.
 
-- [ ] `composites/graph`: choose a deterministic scientific graph, preferably brain connectivity or
+- [x] `composites/graph`: choose a deterministic scientific graph, preferably brain connectivity or
   protein interaction.
 - [ ] `composites/graph`: keep helper structs and data example-local.
 - [ ] `composites/graph`: do not promote a new public `DvzGraph` API in this batch.
