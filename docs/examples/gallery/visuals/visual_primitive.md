@@ -29,7 +29,7 @@ topology-parametric triangles rendered with the retained primitive visual.
 
 ## Media
 
-![Primitive](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_primitive.png)
+![Primitive](/assets/gallery/v0.4/visuals/visual_primitive.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

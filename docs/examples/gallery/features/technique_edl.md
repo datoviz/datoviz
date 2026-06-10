@@ -24,7 +24,7 @@ Eye-Dome Lighting applied to a regular 3D sphere lattice.
 
 ## Media
 
-![Eye-Dome Lighting](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/technique_edl.png)
+![Eye-Dome Lighting](/assets/gallery/v0.4/features/technique_edl.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

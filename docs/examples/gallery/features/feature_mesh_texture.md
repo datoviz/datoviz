@@ -10,8 +10,9 @@ minimal UV textured mesh with a procedural RGBA8 texture.
 - Status: `supported`
 - Source: [`examples/c/features/mesh_texture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/mesh_texture.c)
 - Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `mesh`, `sampled-field`, `texture`, `arcball`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=textured_terrain_or_planet`](/examples/webgpu/live.html?id=textured_terrain_or_planet)
+- WebGPU requirements: `mesh`, `sampled-field`, `texture`, `arcball`, `material`
 - Build: `just example-c features/mesh_texture`
 - Smoke: `./build/examples/c/features/mesh_texture --png`
 - Validation: `smoke+interaction+screenshot`
@@ -24,10 +25,18 @@ minimal UV textured mesh with a procedural RGBA8 texture.
 
 ## Media
 
-![Textured Mesh](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_mesh_texture.png)
+![Textured Mesh](/assets/gallery/v0.4/features/feature_mesh_texture.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=textured_terrain_or_planet" title="Textured Mesh WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=textured_terrain_or_planet).
 
 ## Source
 

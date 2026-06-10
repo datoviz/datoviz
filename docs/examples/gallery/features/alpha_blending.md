@@ -24,7 +24,7 @@ retained primitive visual using per-vertex alpha and source-over blending.
 
 ## Media
 
-![Alpha Blending](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/alpha_blending.png)
+![Alpha Blending](/assets/gallery/v0.4/features/alpha_blending.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

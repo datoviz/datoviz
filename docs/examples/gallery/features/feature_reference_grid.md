@@ -24,7 +24,7 @@ plane-oriented reference grid in an arcball 3D scene.
 
 ## Media
 
-![Reference Grid](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_reference_grid.png)
+![Reference Grid](/assets/gallery/v0.4/features/feature_reference_grid.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

@@ -25,7 +25,7 @@ retained label annotation anchored to data.
 
 ## Media
 
-![Annotation Readout](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/annotation_readout.png)
+![Annotation Readout](/assets/gallery/v0.4/features/annotation_readout.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

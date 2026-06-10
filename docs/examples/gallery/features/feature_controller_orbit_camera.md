@@ -25,7 +25,7 @@ orbit-camera controller attached to a small 3D mesh.
 
 ## Media
 
-![Orbit Camera Controller](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_controller_orbit_camera.png)
+![Orbit Camera Controller](/assets/gallery/v0.4/features/feature_controller_orbit_camera.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

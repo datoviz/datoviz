@@ -29,7 +29,7 @@ synthetic weather-like scalar and vector field showcase.
 
 ## Media
 
-![Wind Field](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/showcase_wind_field.png)
+![Wind Field](/assets/gallery/v0.4/showcases/showcase_wind_field.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

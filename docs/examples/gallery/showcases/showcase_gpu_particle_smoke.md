@@ -29,7 +29,7 @@ scene API compute-to-graphics particle smoke showcase.
 
 ## Media
 
-![GPU Particle Smoke](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/showcase_gpu_particle_smoke.png)
+![GPU Particle Smoke](/assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

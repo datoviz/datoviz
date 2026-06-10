@@ -25,7 +25,7 @@ retained instanced mesh hover and click selection.
 
 ## Media
 
-![Mesh Instance Selection](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_selection_mesh_instances.png)
+![Mesh Instance Selection](/assets/gallery/v0.4/features/feature_selection_mesh_instances.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

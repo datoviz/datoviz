@@ -25,7 +25,7 @@ compare lit sphere clusters with different material and light settings.
 
 ## Media
 
-![Lighting](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_lighting.png)
+![Lighting](/assets/gallery/v0.4/features/feature_lighting.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

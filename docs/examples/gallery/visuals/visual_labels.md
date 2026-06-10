@@ -29,7 +29,7 @@ retained labels visual with a small deterministic integer sampled field.
 
 ## Media
 
-![Labels](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_labels.png)
+![Labels](/assets/gallery/v0.4/visuals/visual_labels.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

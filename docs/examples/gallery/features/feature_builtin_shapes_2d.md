@@ -25,7 +25,7 @@ builtin 2D geometry builders rendered through retained meshes.
 
 ## Media
 
-![Builtin Shapes 2D](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_builtin_shapes_2d.png)
+![Builtin Shapes 2D](/assets/gallery/v0.4/features/feature_builtin_shapes_2d.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

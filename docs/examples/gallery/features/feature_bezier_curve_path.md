@@ -24,7 +24,7 @@ tessellated cubic Bezier curve rendered as a retained path.
 
 ## Media
 
-![Bezier Curve Path](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_bezier_curve_path.png)
+![Bezier Curve Path](/assets/gallery/v0.4/features/feature_bezier_curve_path.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

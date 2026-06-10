@@ -29,7 +29,7 @@ clean semantic polygon and polygon-set composites.
 
 ## Media
 
-![Polygon Composite](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/composites/composite_polygon.png)
+![Polygon Composite](/assets/gallery/v0.4/composites/composite_polygon.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

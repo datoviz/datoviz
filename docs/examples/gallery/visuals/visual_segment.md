@@ -29,7 +29,7 @@ retained segment visual with independent endpoint-pair strokes.
 
 ## Media
 
-![Segment](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_segment.png)
+![Segment](/assets/gallery/v0.4/visuals/visual_segment.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

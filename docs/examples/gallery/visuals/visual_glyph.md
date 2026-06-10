@@ -29,7 +29,7 @@ low-level SDF atlas quads, distinct from font-shaped text and marker symbols.
 
 ## Media
 
-![Glyph](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_glyph.png)
+![Glyph](/assets/gallery/v0.4/visuals/visual_glyph.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

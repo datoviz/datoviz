@@ -25,7 +25,7 @@ portable scenario updating retained point data on runner frames.
 
 ## Media
 
-![Timer Animation](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_timer_animation.png)
+![Timer Animation](/assets/gallery/v0.4/features/feature_timer_animation.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

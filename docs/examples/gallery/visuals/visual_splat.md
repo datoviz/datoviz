@@ -28,7 +28,7 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
 
 ## Media
 
-![Splat](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_splat.png)
+![Splat](/assets/gallery/v0.4/visuals/visual_splat.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

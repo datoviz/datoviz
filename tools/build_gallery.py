@@ -17,7 +17,8 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "examples/c/MANIFEST.yaml"
 DEFAULT_DOCS_DIR = ROOT / "docs/examples"
 DEFAULT_IMAGE_DIR = ROOT / "data/gallery/v0.4"
-DEFAULT_IMAGE_URL_BASE = "https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4"
+DEFAULT_IMAGE_URL_BASE = "/assets/gallery/v0.4"
+DEFAULT_IMAGE_FORMAT = "webp"
 SOURCE_BASE_URL = "https://github.com/datoviz/datoviz/blob/v0.4-dev"
 PUBLIC_LANES = ("visuals", "features", "composites", "showcases", "advanced")
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
@@ -168,6 +169,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--docs-dir", type=Path, default=DEFAULT_DOCS_DIR)
     parser.add_argument("--image-dir", type=Path, default=DEFAULT_IMAGE_DIR)
     parser.add_argument("--image-url-base", default=DEFAULT_IMAGE_URL_BASE)
+    parser.add_argument("--image-format", choices=("png", "webp"), default=DEFAULT_IMAGE_FORMAT)
     return parser.parse_args()
 
 
@@ -281,10 +283,12 @@ def source_url(example: Example) -> str:
     return f"{SOURCE_BASE_URL}/{example.source}"
 
 
-def media_block(example: Example, image_dir: Path, image_url_base: str) -> str:
+def media_block(
+    example: Example, image_dir: Path, image_url_base: str, image_format: str = DEFAULT_IMAGE_FORMAT
+) -> str:
     image = image_dir / example.lane / f"{example.id}.png"
     if image.exists():
-        url = f"{image_url_base.rstrip('/')}/{example.lane}/{example.id}.png"
+        url = f"{image_url_base.rstrip('/')}/{example.lane}/{example.id}.{image_format}"
         return f"![{example.title}]({url})"
     return "_Media pending._"
 
@@ -319,10 +323,16 @@ def render_webgpu_live(example: Example) -> list[str]:
     ]
 
 
-def render_card(example: Example, docs_dir: Path, image_dir: Path, image_url_base: str) -> str:
+def render_card(
+    example: Example,
+    docs_dir: Path,
+    image_dir: Path,
+    image_url_base: str,
+    image_format: str = DEFAULT_IMAGE_FORMAT,
+) -> str:
     page = Path(example.page_path)
     href = page.as_posix()
-    media = media_block(example, image_dir, image_url_base)
+    media = media_block(example, image_dir, image_url_base, image_format)
     tags = ", ".join(f"`{tag}`" for tag in example.tags[:5])
     if len(example.tags) > 5:
         tags += ", ..."
@@ -357,7 +367,12 @@ def generated_header(title: str) -> list[str]:
 
 
 def render_lane_section(
-    examples: list[Example], lane: str, docs_dir: Path, image_dir: Path, image_url_base: str
+    examples: list[Example],
+    lane: str,
+    docs_dir: Path,
+    image_dir: Path,
+    image_url_base: str,
+    image_format: str = DEFAULT_IMAGE_FORMAT,
 ) -> list[str]:
     lane_examples = [example for example in examples if example.lane == lane]
     if not lane_examples:
@@ -366,7 +381,7 @@ def render_lane_section(
     lines.append('<div class="grid cards" markdown="1">')
     lines.append("")
     for example in sorted(lane_examples, key=lambda item: item.title.lower()):
-        lines.append(render_card(example, docs_dir, image_dir, image_url_base))
+        lines.append(render_card(example, docs_dir, image_dir, image_url_base, image_format))
     lines.append("</div>")
     lines.append("")
     return lines
@@ -379,13 +394,16 @@ def render_gallery_page(
     docs_dir: Path,
     image_dir: Path,
     image_url_base: str,
+    image_format: str = DEFAULT_IMAGE_FORMAT,
 ) -> None:
     page_examples = [example for example in examples if example.lane in config["lanes"]]
     lines = generated_header(config["title"])
     lines.extend(dedent(config["intro"]).strip().splitlines())
     lines.extend(["", f"Coverage: {len(page_examples)} examples ({status_counts(page_examples)}).", ""])
     for lane in config["lanes"]:
-        lines.extend(render_lane_section(page_examples, lane, docs_dir, image_dir, image_url_base))
+        lines.extend(
+            render_lane_section(page_examples, lane, docs_dir, image_dir, image_url_base, image_format)
+        )
     write_text(docs_dir / filename, "\n".join(lines))
 
 
@@ -584,7 +602,11 @@ def render_webgpu_matrix(examples: list[Example], docs_dir: Path) -> None:
 
 
 def render_example_page(
-    example: Example, docs_dir: Path, image_dir: Path, image_url_base: str
+    example: Example,
+    docs_dir: Path,
+    image_dir: Path,
+    image_url_base: str,
+    image_format: str = DEFAULT_IMAGE_FORMAT,
 ) -> None:
     lines = generated_header(example.title)
     lines.extend([example.summary, ""])
@@ -638,7 +660,7 @@ def render_example_page(
         for key, value in example.encoding.items():
             lines.append(f"| `{key}` | {value} |")
         lines.append("")
-    lines.extend(["## Media", "", media_block(example, image_dir, image_url_base), ""])
+    lines.extend(["## Media", "", media_block(example, image_dir, image_url_base, image_format), ""])
     lines.extend(
         [
             "Static screenshots are required before final website publication. Generated media is",
@@ -665,13 +687,21 @@ def main() -> int:
     render_index(examples, args.docs_dir)
     for filename, config in PAGE_CONFIG.items():
         render_gallery_page(
-            filename, config, examples, args.docs_dir, args.image_dir, args.image_url_base
+            filename,
+            config,
+            examples,
+            args.docs_dir,
+            args.image_dir,
+            args.image_url_base,
+            args.image_format,
         )
     render_techniques(examples, args.docs_dir)
     render_validation(examples, args.docs_dir)
     render_webgpu_matrix(examples, args.docs_dir)
     for example in examples:
-        render_example_page(example, args.docs_dir, args.image_dir, args.image_url_base)
+        render_example_page(
+            example, args.docs_dir, args.image_dir, args.image_url_base, args.image_format
+        )
     print(f"Generated {len(examples)} C gallery entries under {args.docs_dir}")
     return 0
 

@@ -25,7 +25,7 @@ one explicit panel rectangle with panel chrome and one visual.
 
 ## Media
 
-![Single Panel](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_panel_single.png)
+![Single Panel](/assets/gallery/v0.4/features/feature_panel_single.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

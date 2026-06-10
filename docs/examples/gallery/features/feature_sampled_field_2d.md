@@ -25,7 +25,7 @@ scene-owned 2D sampled field bound to an image visual.
 
 ## Media
 
-![2D Sampled Field](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_sampled_field_2d.png)
+![2D Sampled Field](/assets/gallery/v0.4/features/feature_sampled_field_2d.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

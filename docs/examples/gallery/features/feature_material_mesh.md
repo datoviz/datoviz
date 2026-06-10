@@ -25,7 +25,7 @@ retained mesh visuals with explicit material parameters.
 
 ## Media
 
-![Mesh Materials](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_material_mesh.png)
+![Mesh Materials](/assets/gallery/v0.4/features/feature_material_mesh.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

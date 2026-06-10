@@ -29,7 +29,7 @@ retained marker visual with deterministic symbol, fill, stroke, and size variati
 
 ## Media
 
-![Marker](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_marker.png)
+![Marker](/assets/gallery/v0.4/visuals/visual_marker.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

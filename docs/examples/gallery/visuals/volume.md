@@ -28,7 +28,7 @@ deterministic gyroid scalar field rendered with the retained volume visual.
 
 ## Media
 
-![Volume](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/volume.png)
+![Volume](/assets/gallery/v0.4/visuals/volume.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

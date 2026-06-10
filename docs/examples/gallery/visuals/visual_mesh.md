@@ -29,7 +29,7 @@ retained lit indexed cube mesh.
 
 ## Media
 
-![Mesh](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_mesh.png)
+![Mesh](/assets/gallery/v0.4/visuals/visual_mesh.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

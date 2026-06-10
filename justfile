@@ -2029,6 +2029,12 @@ check-gallery-media *args:
     @python3 tools/check_gallery_media.py "$@"
 
 
+# Generate build-local WebP derivatives for gallery screenshots.
+[positional-arguments]
+gallery-webp *args:
+    @python3 tools/build_gallery_webp.py "$@"
+
+
 # Capture the native C screenshots used by the local v0.4 landing prototype.
 capture-landing: build
     @python3 tools/capture_gallery.py --landing
@@ -2036,6 +2042,8 @@ capture-landing: build
 
 # Build the gallery Markdown files and machine-readable example manifests.
 gallery:
+    @echo "Generating build-local gallery WebP assets..."
+    @python3 tools/build_gallery_webp.py
     @echo "Generating the gallery Markdown files..."
     @python tools/build_gallery.py
     @echo "Generating the public examples manifest..."

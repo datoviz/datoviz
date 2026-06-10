@@ -24,7 +24,7 @@ arcball controller attached to a small 3D mesh.
 
 ## Media
 
-![Arcball Controller](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_controller_arcball.png)
+![Arcball Controller](/assets/gallery/v0.4/features/feature_controller_arcball.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

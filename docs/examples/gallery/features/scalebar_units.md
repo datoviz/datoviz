@@ -25,7 +25,7 @@ retained scale bar with a custom time-unit string.
 
 ## Media
 
-![Scale Bar Units](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/scalebar_units.png)
+![Scale Bar Units](/assets/gallery/v0.4/features/scalebar_units.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

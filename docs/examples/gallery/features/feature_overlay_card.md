@@ -25,7 +25,7 @@ screen-space data readout over a simple panel visual.
 
 ## Media
 
-![Overlay Card](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_overlay_card.png)
+![Overlay Card](/assets/gallery/v0.4/features/feature_overlay_card.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

@@ -24,7 +24,7 @@ depth-dependent fading applied to a regular 3D sphere lattice.
 
 ## Media
 
-![Depth Cue](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/technique_depth_cue.png)
+![Depth Cue](/assets/gallery/v0.4/features/technique_depth_cue.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

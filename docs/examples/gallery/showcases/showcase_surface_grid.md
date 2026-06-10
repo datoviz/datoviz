@@ -29,7 +29,7 @@ generated height-field mesh with a derived wireframe overlay.
 
 ## Media
 
-![Surface Grid](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/showcase_surface_grid.png)
+![Surface Grid](/assets/gallery/v0.4/showcases/showcase_surface_grid.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

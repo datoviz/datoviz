@@ -25,7 +25,7 @@ two panels with bidirectional linked X panzoom state.
 
 ## Media
 
-![Linked Panels](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_panel_linked.png)
+![Linked Panels](/assets/gallery/v0.4/features/feature_panel_linked.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

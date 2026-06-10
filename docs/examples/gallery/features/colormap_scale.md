@@ -25,7 +25,7 @@ point visual with scalar float colors and one retained color scale.
 
 ## Media
 
-![Scalar Color Scale](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/colormap_scale.png)
+![Scalar Color Scale](/assets/gallery/v0.4/features/colormap_scale.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

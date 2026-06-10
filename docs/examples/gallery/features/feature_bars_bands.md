@@ -25,7 +25,7 @@ retained bars and uncertainty band plot helpers.
 
 ## Media
 
-![Bars And Bands](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_bars_bands.png)
+![Bars And Bands](/assets/gallery/v0.4/features/feature_bars_bands.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

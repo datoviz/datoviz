@@ -29,7 +29,7 @@ deterministic retained 2D point visual baseline.
 
 ## Media
 
-![Point](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/point_2d.png)
+![Point](/assets/gallery/v0.4/visuals/point_2d.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

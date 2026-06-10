@@ -25,7 +25,7 @@ retained visual visibility toggled on a runner frame.
 
 ## Media
 
-![Visual Visibility](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_visibility.png)
+![Visual Visibility](/assets/gallery/v0.4/features/feature_visibility.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

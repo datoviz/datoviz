@@ -25,7 +25,7 @@ side-by-side visual depth-test toggle with overlapping 3D points.
 
 ## Media
 
-![Depth Test Toggle](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/technique_depth_test.png)
+![Depth Test Toggle](/assets/gallery/v0.4/features/technique_depth_test.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

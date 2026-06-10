@@ -25,7 +25,7 @@ scalar image pixel-query proof with a live probe marker.
 
 ## Media
 
-![Image Probe](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/image_probe.png)
+![Image Probe](/assets/gallery/v0.4/features/image_probe.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

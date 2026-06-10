@@ -29,7 +29,7 @@ deterministic scalar sampled field rendered with the retained image visual.
 
 ## Media
 
-![Image](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_image.png)
+![Image](/assets/gallery/v0.4/visuals/visual_image.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

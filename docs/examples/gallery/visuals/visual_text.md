@@ -29,7 +29,7 @@ retained semantic text objects lowered to glyph visuals.
 
 ## Media
 
-![Text](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_text.png)
+![Text](/assets/gallery/v0.4/visuals/visual_text.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

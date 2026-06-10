@@ -24,7 +24,7 @@ side-by-side volume occluder attenuation on an embedded slice.
 
 ## Media
 
-![Volume Occlusion](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_volume_occlusion.png)
+![Volume Occlusion](/assets/gallery/v0.4/features/feature_volume_occlusion.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

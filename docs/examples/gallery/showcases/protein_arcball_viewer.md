@@ -10,7 +10,8 @@ RCSB PDB protein structure rendered as clustered spheres.
 - Status: `supported`
 - Source: [`examples/c/showcases/protein.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c)
 - Agent copy-safe: `false`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=protein_arcball_viewer`](/examples/webgpu/live.html?id=protein_arcball_viewer)
 - WebGPU requirements: `sphere`, `arcball`, `material`, `real-data`
 - Build: `just example-c showcases/protein`
 - Smoke: `./build/examples/c/showcases/protein --png`
@@ -48,10 +49,18 @@ RCSB PDB protein structure rendered as clustered spheres.
 
 ## Media
 
-![Protein](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/protein_arcball_viewer.png)
+![Protein](/assets/gallery/v0.4/showcases/protein_arcball_viewer.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=protein_arcball_viewer" title="Protein WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=protein_arcball_viewer).
 
 ## Source
 

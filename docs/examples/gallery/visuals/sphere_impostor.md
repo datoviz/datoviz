@@ -29,7 +29,7 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
 
 ## Media
 
-![Sphere](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/sphere_impostor.png)
+![Sphere](/assets/gallery/v0.4/visuals/sphere_impostor.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

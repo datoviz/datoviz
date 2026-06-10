@@ -25,7 +25,7 @@ deterministic path with retained 2D axes and tick labels.
 
 ## Media
 
-![Path With 2D Axes](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/path_axes_2d.png)
+![Path With 2D Axes](/assets/gallery/v0.4/features/path_axes_2d.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

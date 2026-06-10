@@ -29,7 +29,7 @@ linked image panels with one probe readout and shared colorbar.
 
 ## Media
 
-![Linked Probe With Colorbar](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/linked_panels_probe_colorbar.png)
+![Linked Probe With Colorbar](/assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

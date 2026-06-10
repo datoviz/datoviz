@@ -25,7 +25,7 @@ smallest runner-backed retained scene with one point visual.
 
 ## Media
 
-![Basic Scene](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_basic_scene.png)
+![Basic Scene](/assets/gallery/v0.4/features/feature_basic_scene.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

@@ -25,7 +25,7 @@ retained horizontal and vertical guide spans in panel data coordinates.
 
 ## Media
 
-![Guide Spans](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_guide_spans.png)
+![Guide Spans](/assets/gallery/v0.4/features/feature_guide_spans.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

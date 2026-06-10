@@ -25,7 +25,7 @@ builtin 3D geometry builders rendered through retained meshes.
 
 ## Media
 
-![Builtin Shapes 3D](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_builtin_shapes_3d.png)
+![Builtin Shapes 3D](/assets/gallery/v0.4/features/feature_builtin_shapes_3d.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

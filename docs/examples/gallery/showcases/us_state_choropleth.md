@@ -50,7 +50,7 @@ contiguous U.S. state population-density choropleth.
 
 ## Media
 
-![U.S. State Choropleth](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/us_state_choropleth.png)
+![U.S. State Choropleth](/assets/gallery/v0.4/showcases/us_state_choropleth.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

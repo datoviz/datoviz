@@ -39,7 +39,7 @@ section/channel lipid intensity showcase.
 
 ## Media
 
-![Lipid Brain Atlas](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/showcase_lipid_brain_atlas.png)
+![Lipid Brain Atlas](/assets/gallery/v0.4/showcases/showcase_lipid_brain_atlas.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

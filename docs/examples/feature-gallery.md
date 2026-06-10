@@ -15,7 +15,7 @@ Coverage: 71 examples (65 supported, 5 experimental, 1 diagnostic).
 
 ### [2D Sampled Field](gallery/features/feature_sampled_field_2d.md)
 
-![2D Sampled Field](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_sampled_field_2d.png)
+![2D Sampled Field](/assets/gallery/v0.4/features/feature_sampled_field_2d.webp)
 
 `supported` `features`
 
@@ -27,7 +27,7 @@ scene-owned 2D sampled field bound to an image visual.
 
 ### [3D Sampled Field](gallery/features/feature_sampled_field_3d.md)
 
-![3D Sampled Field](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_sampled_field_3d.png)
+![3D Sampled Field](/assets/gallery/v0.4/features/feature_sampled_field_3d.webp)
 
 `supported` `features`
 
@@ -39,7 +39,7 @@ scene-owned 3D sampled field bound to a volume visual.
 
 ### [Alpha Blending](gallery/features/alpha_blending.md)
 
-![Alpha Blending](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/alpha_blending.png)
+![Alpha Blending](/assets/gallery/v0.4/features/alpha_blending.webp)
 
 `supported` `features`
 
@@ -51,7 +51,7 @@ retained primitive visual using per-vertex alpha and source-over blending.
 
 ### [Animation Tracks](gallery/features/feature_animation_tracks.md)
 
-![Animation Tracks](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_animation_tracks.png)
+![Animation Tracks](/assets/gallery/v0.4/features/feature_animation_tracks.webp)
 
 `supported` `features`
 
@@ -63,7 +63,7 @@ retained track-backed visual transform animation.
 
 ### [Annotation Readout](gallery/features/annotation_readout.md)
 
-![Annotation Readout](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/annotation_readout.png)
+![Annotation Readout](/assets/gallery/v0.4/features/annotation_readout.webp)
 
 `supported` `features`
 
@@ -75,7 +75,7 @@ retained label annotation anchored to data.
 
 ### [Arcball Controller](gallery/features/feature_controller_arcball.md)
 
-![Arcball Controller](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_controller_arcball.png)
+![Arcball Controller](/assets/gallery/v0.4/features/feature_controller_arcball.webp)
 
 `supported` `features`
 
@@ -87,7 +87,7 @@ arcball controller attached to a small 3D mesh.
 
 ### [Axis Labels](gallery/features/feature_axis_labels.md)
 
-![Axis Labels](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_axis_labels.png)
+![Axis Labels](/assets/gallery/v0.4/features/feature_axis_labels.webp)
 
 `supported` `features`
 
@@ -99,7 +99,7 @@ retained axis titles and tick-label placement with plot margins.
 
 ### [Bars And Bands](gallery/features/feature_bars_bands.md)
 
-![Bars And Bands](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_bars_bands.png)
+![Bars And Bands](/assets/gallery/v0.4/features/feature_bars_bands.webp)
 
 `supported` `features`
 
@@ -111,7 +111,7 @@ retained bars and uncertainty band plot helpers.
 
 ### [Basic Scene](gallery/features/feature_basic_scene.md)
 
-![Basic Scene](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_basic_scene.png)
+![Basic Scene](/assets/gallery/v0.4/features/feature_basic_scene.webp)
 
 `supported` `features`
 
@@ -123,7 +123,7 @@ smallest runner-backed retained scene with one point visual.
 
 ### [Bezier Curve Path](gallery/features/feature_bezier_curve_path.md)
 
-![Bezier Curve Path](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_bezier_curve_path.png)
+![Bezier Curve Path](/assets/gallery/v0.4/features/feature_bezier_curve_path.webp)
 
 `supported` `features`
 
@@ -135,7 +135,7 @@ tessellated cubic Bezier curve rendered as a retained path.
 
 ### [Bounds Overlay](gallery/features/feature_bounds_overlay.md)
 
-![Bounds Overlay](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_bounds_overlay.png)
+![Bounds Overlay](/assets/gallery/v0.4/features/feature_bounds_overlay.webp)
 
 `diagnostic` `features`<br><span>`diagnostic`, `bounds`, `overlay`, `point`, `sphere`</span>
 
@@ -147,7 +147,7 @@ diagnostic retained visual bounds in 2D and 3D panels.
 
 ### [Builtin Shapes 2D](gallery/features/feature_builtin_shapes_2d.md)
 
-![Builtin Shapes 2D](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_builtin_shapes_2d.png)
+![Builtin Shapes 2D](/assets/gallery/v0.4/features/feature_builtin_shapes_2d.webp)
 
 `supported` `features`
 
@@ -159,7 +159,7 @@ builtin 2D geometry builders rendered through retained meshes.
 
 ### [Builtin Shapes 3D](gallery/features/feature_builtin_shapes_3d.md)
 
-![Builtin Shapes 3D](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_builtin_shapes_3d.png)
+![Builtin Shapes 3D](/assets/gallery/v0.4/features/feature_builtin_shapes_3d.webp)
 
 `supported` `features`
 
@@ -171,7 +171,7 @@ builtin 3D geometry builders rendered through retained meshes.
 
 ### [Categorical Legend](gallery/features/feature_legend_categorical.md)
 
-![Categorical Legend](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_legend_categorical.png)
+![Categorical Legend](/assets/gallery/v0.4/features/feature_legend_categorical.webp)
 
 `experimental` `features`<br><span>`categorical-scale`, `legend`, `marker`, `capture`</span>
 
@@ -183,7 +183,7 @@ tentative retained categorical legend proof.
 
 ### [Colorbar](gallery/features/colorbar.md)
 
-![Colorbar](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/colorbar.png)
+![Colorbar](/assets/gallery/v0.4/features/colorbar.webp)
 
 `supported` `features`<br><span>`colorbar`, `scalar-field`, `image`, `capture`</span>
 
@@ -195,7 +195,7 @@ deterministic scalar image with one retained continuous colorbar.
 
 ### [Compute Buffer Animation](gallery/features/feature_compute_buffer_animation.md)
 
-![Compute Buffer Animation](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_compute_buffer_animation.png)
+![Compute Buffer Animation](/assets/gallery/v0.4/features/feature_compute_buffer_animation.webp)
 
 `experimental` `features`<br><span>`scene-compute`, `storage-buffer`, `point`</span>
 
@@ -207,7 +207,7 @@ scene compute pass with independent circular point motion.
 
 ### [Depth Cue](gallery/features/technique_depth_cue.md)
 
-![Depth Cue](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/technique_depth_cue.png)
+![Depth Cue](/assets/gallery/v0.4/features/technique_depth_cue.webp)
 
 `supported` `features`
 
@@ -219,7 +219,7 @@ depth-dependent fading applied to a regular 3D sphere lattice.
 
 ### [Depth Test Toggle](gallery/features/technique_depth_test.md)
 
-![Depth Test Toggle](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/technique_depth_test.png)
+![Depth Test Toggle](/assets/gallery/v0.4/features/technique_depth_test.webp)
 
 `supported` `features`
 
@@ -231,7 +231,7 @@ side-by-side visual depth-test toggle with overlapping 3D points.
 
 ### [Eye-Dome Lighting](gallery/features/technique_edl.md)
 
-![Eye-Dome Lighting](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/technique_edl.png)
+![Eye-Dome Lighting](/assets/gallery/v0.4/features/technique_edl.webp)
 
 `supported` `features`
 
@@ -243,7 +243,7 @@ Eye-Dome Lighting applied to a regular 3D sphere lattice.
 
 ### [Fly Controller](gallery/features/feature_controller_fly.md)
 
-![Fly Controller](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_controller_fly.png)
+![Fly Controller](/assets/gallery/v0.4/features/feature_controller_fly.webp)
 
 `supported` `features`
 
@@ -291,7 +291,7 @@ dockable Dear ImGui window containing a live Datoviz render target.
 
 ### [Guide Lines](gallery/features/feature_guide_lines.md)
 
-![Guide Lines](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_guide_lines.png)
+![Guide Lines](/assets/gallery/v0.4/features/feature_guide_lines.webp)
 
 `supported` `features`
 
@@ -303,7 +303,7 @@ retained horizontal and vertical guide lines in panel data coordinates.
 
 ### [Guide Spans](gallery/features/feature_guide_spans.md)
 
-![Guide Spans](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_guide_spans.png)
+![Guide Spans](/assets/gallery/v0.4/features/feature_guide_spans.webp)
 
 `supported` `features`
 
@@ -315,7 +315,7 @@ retained horizontal and vertical guide spans in panel data coordinates.
 
 ### [Image Probe](gallery/features/image_probe.md)
 
-![Image Probe](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/image_probe.png)
+![Image Probe](/assets/gallery/v0.4/features/image_probe.webp)
 
 `supported` `features`
 
@@ -339,7 +339,7 @@ live native keyboard, pointer, wheel, and resize event logging.
 
 ### [Isolines](gallery/features/feature_isolines.md)
 
-![Isolines](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_isolines.png)
+![Isolines](/assets/gallery/v0.4/features/feature_isolines.webp)
 
 `supported` `features`
 
@@ -363,7 +363,7 @@ retained scene JSON serialization diagnostic.
 
 ### [Label Probe](gallery/features/feature_probe_labels.md)
 
-![Label Probe](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_probe_labels.png)
+![Label Probe](/assets/gallery/v0.4/features/feature_probe_labels.webp)
 
 `supported` `features`
 
@@ -375,7 +375,7 @@ categorical labels query proof with deterministic label-id readout.
 
 ### [Lighting](gallery/features/feature_lighting.md)
 
-![Lighting](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_lighting.png)
+![Lighting](/assets/gallery/v0.4/features/feature_lighting.webp)
 
 `supported` `features`
 
@@ -387,7 +387,7 @@ compare lit sphere clusters with different material and light settings.
 
 ### [Linked Panels](gallery/features/feature_panel_linked.md)
 
-![Linked Panels](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_panel_linked.png)
+![Linked Panels](/assets/gallery/v0.4/features/feature_panel_linked.webp)
 
 `supported` `features`
 
@@ -399,7 +399,7 @@ two panels with bidirectional linked X panzoom state.
 
 ### [Marker Symbols](gallery/features/feature_marker_symbols.md)
 
-![Marker Symbols](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_marker_symbols.png)
+![Marker Symbols](/assets/gallery/v0.4/features/feature_marker_symbols.webp)
 
 `supported` `features`<br><span>`marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`, `svg-path-symbol`</span>
 
@@ -411,7 +411,7 @@ marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
 ### [Mesh Instance Selection](gallery/features/feature_selection_mesh_instances.md)
 
-![Mesh Instance Selection](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_selection_mesh_instances.png)
+![Mesh Instance Selection](/assets/gallery/v0.4/features/feature_selection_mesh_instances.webp)
 
 `supported` `features`
 
@@ -423,7 +423,7 @@ retained instanced mesh hover and click selection.
 
 ### [Mesh Materials](gallery/features/feature_material_mesh.md)
 
-![Mesh Materials](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_material_mesh.png)
+![Mesh Materials](/assets/gallery/v0.4/features/feature_material_mesh.webp)
 
 `supported` `features`
 
@@ -435,7 +435,7 @@ retained mesh visuals with explicit material parameters.
 
 ### [Multiple Panels](gallery/features/feature_panel_multi.md)
 
-![Multiple Panels](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_panel_multi.png)
+![Multiple Panels](/assets/gallery/v0.4/features/feature_panel_multi.webp)
 
 `supported` `features`
 
@@ -447,7 +447,7 @@ multiple independent panels with panel-local panzoom controllers.
 
 ### [Multisample Antialiasing](gallery/features/technique_msaa.md)
 
-![Multisample Antialiasing](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/technique_msaa.png)
+![Multisample Antialiasing](/assets/gallery/v0.4/features/technique_msaa.webp)
 
 `supported` `features`
 
@@ -459,7 +459,7 @@ side-by-side multisample antialiasing on slanted 3D cube silhouettes.
 
 ### [OBJ Loading](gallery/features/feature_obj_loading.md)
 
-![OBJ Loading](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_obj_loading.png)
+![OBJ Loading](/assets/gallery/v0.4/features/feature_obj_loading.webp)
 
 `supported` `features`
 
@@ -471,7 +471,7 @@ Wavefront OBJ mesh loading through geom/fileio helpers.
 
 ### [Offscreen Capture](gallery/features/feature_offscreen_capture.md)
 
-![Offscreen Capture](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_offscreen_capture.png)
+![Offscreen Capture](/assets/gallery/v0.4/features/feature_offscreen_capture.webp)
 
 `supported` `features`
 
@@ -483,7 +483,7 @@ render an exact-pixel offscreen view once and write a PNG.
 
 ### [Orbit Camera Controller](gallery/features/feature_controller_orbit_camera.md)
 
-![Orbit Camera Controller](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_controller_orbit_camera.png)
+![Orbit Camera Controller](/assets/gallery/v0.4/features/feature_controller_orbit_camera.webp)
 
 `supported` `features`
 
@@ -495,7 +495,7 @@ orbit-camera controller attached to a small 3D mesh.
 
 ### [Orientation Gizmo](gallery/features/feature_orientation_gizmo.md)
 
-![Orientation Gizmo](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_orientation_gizmo.png)
+![Orientation Gizmo](/assets/gallery/v0.4/features/feature_orientation_gizmo.webp)
 
 `supported` `features`
 
@@ -507,7 +507,7 @@ panel-attached orientation axes linked to an arcball controller.
 
 ### [Overlay Card](gallery/features/feature_overlay_card.md)
 
-![Overlay Card](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_overlay_card.png)
+![Overlay Card](/assets/gallery/v0.4/features/feature_overlay_card.webp)
 
 `supported` `features`
 
@@ -519,7 +519,7 @@ screen-space data readout over a simple panel visual.
 
 ### [Panel Background](gallery/features/panel_background.md)
 
-![Panel Background](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/panel_background.png)
+![Panel Background](/assets/gallery/v0.4/features/panel_background.webp)
 
 `supported` `features`
 
@@ -531,7 +531,7 @@ fixed graphite-cyan panel background behind a simple visual.
 
 ### [Panel Domain Fit](gallery/features/feature_panel_domain_fit.md)
 
-![Panel Domain Fit](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_panel_domain_fit.png)
+![Panel Domain Fit](/assets/gallery/v0.4/features/feature_panel_domain_fit.webp)
 
 `supported` `features`
 
@@ -543,7 +543,7 @@ panel-owned data-domain fit with equal aspect.
 
 ### [Panel Grid](gallery/features/feature_panel_grid.md)
 
-![Panel Grid](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_panel_grid.png)
+![Panel Grid](/assets/gallery/v0.4/features/feature_panel_grid.webp)
 
 `supported` `features`
 
@@ -567,7 +567,7 @@ bind a panzoom controller to one panel with a simple 2D visual.
 
 ### [Partial Data Update](gallery/features/update_partial.md)
 
-![Partial Data Update](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/update_partial.png)
+![Partial Data Update](/assets/gallery/v0.4/features/update_partial.webp)
 
 `supported` `features`
 
@@ -579,7 +579,7 @@ point visual with one retained data-range update.
 
 ### [Path With 2D Axes](gallery/features/path_axes_2d.md)
 
-![Path With 2D Axes](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/path_axes_2d.png)
+![Path With 2D Axes](/assets/gallery/v0.4/features/path_axes_2d.webp)
 
 `supported` `features`
 
@@ -603,7 +603,7 @@ unified retained marker hover and selection proof.
 
 ### [Pixel Selection](gallery/features/feature_selection_pixel.md)
 
-![Pixel Selection](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_selection_pixel.png)
+![Pixel Selection](/assets/gallery/v0.4/features/feature_selection_pixel.webp)
 
 `supported` `features`
 
@@ -615,7 +615,7 @@ retained pixel hover and click selection.
 
 ### [Polygon Triangulation](gallery/features/feature_triangulation_polygon.md)
 
-![Polygon Triangulation](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_triangulation_polygon.png)
+![Polygon Triangulation](/assets/gallery/v0.4/features/feature_triangulation_polygon.webp)
 
 `supported` `features`
 
@@ -651,7 +651,7 @@ record an offscreen app view and replay it into a second offscreen view.
 
 ### [Reference Grid](gallery/features/feature_reference_grid.md)
 
-![Reference Grid](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_reference_grid.png)
+![Reference Grid](/assets/gallery/v0.4/features/feature_reference_grid.webp)
 
 `supported` `features`
 
@@ -663,7 +663,7 @@ plane-oriented reference grid in an arcball 3D scene.
 
 ### [Scalar Color Scale](gallery/features/colormap_scale.md)
 
-![Scalar Color Scale](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/colormap_scale.png)
+![Scalar Color Scale](/assets/gallery/v0.4/features/colormap_scale.webp)
 
 `supported` `features`
 
@@ -675,7 +675,7 @@ point visual with scalar float colors and one retained color scale.
 
 ### [Scale Bar](gallery/features/scale_bar.md)
 
-![Scale Bar](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/scale_bar.png)
+![Scale Bar](/assets/gallery/v0.4/features/scale_bar.webp)
 
 `supported` `features`
 
@@ -687,7 +687,7 @@ minimal retained scale bar attached to one 2D panel.
 
 ### [Scale Bar Units](gallery/features/scalebar_units.md)
 
-![Scale Bar Units](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/scalebar_units.png)
+![Scale Bar Units](/assets/gallery/v0.4/features/scalebar_units.webp)
 
 `supported` `features`
 
@@ -699,7 +699,7 @@ retained scale bar with a custom time-unit string.
 
 ### [Screen-Space Ambient Occlusion](gallery/features/technique_ssao.md)
 
-![Screen-Space Ambient Occlusion](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/technique_ssao.png)
+![Screen-Space Ambient Occlusion](/assets/gallery/v0.4/features/technique_ssao.webp)
 
 `supported` `features`
 
@@ -711,7 +711,7 @@ screen-space ambient occlusion on normal-producing mesh geometry.
 
 ### [Single Panel](gallery/features/feature_panel_single.md)
 
-![Single Panel](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_panel_single.png)
+![Single Panel](/assets/gallery/v0.4/features/feature_panel_single.webp)
 
 `supported` `features`
 
@@ -723,7 +723,7 @@ one explicit panel rectangle with panel chrome and one visual.
 
 ### [Sphere Selection](gallery/features/feature_selection_sphere.md)
 
-![Sphere Selection](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_selection_sphere.png)
+![Sphere Selection](/assets/gallery/v0.4/features/feature_selection_sphere.webp)
 
 `supported` `features`
 
@@ -735,7 +735,7 @@ retained sphere hover and click selection.
 
 ### [Text Block](gallery/features/feature_text_block.md)
 
-![Text Block](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_text_block.png)
+![Text Block](/assets/gallery/v0.4/features/feature_text_block.webp)
 
 `supported` `features`
 
@@ -747,7 +747,7 @@ compact retained text block with stable screen placement.
 
 ### [Textured Mesh](gallery/features/feature_mesh_texture.md)
 
-![Textured Mesh](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_mesh_texture.png)
+![Textured Mesh](/assets/gallery/v0.4/features/feature_mesh_texture.webp)
 
 `supported` `features`
 
@@ -759,7 +759,7 @@ minimal UV textured mesh with a procedural RGBA8 texture.
 
 ### [Timer Animation](gallery/features/feature_timer_animation.md)
 
-![Timer Animation](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_timer_animation.png)
+![Timer Animation](/assets/gallery/v0.4/features/feature_timer_animation.webp)
 
 `supported` `features`
 
@@ -771,7 +771,7 @@ portable scenario updating retained point data on runner frames.
 
 ### [Transparency Order](gallery/features/technique_transparency.md)
 
-![Transparency Order](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/technique_transparency.png)
+![Transparency Order](/assets/gallery/v0.4/features/technique_transparency.webp)
 
 `supported` `features`
 
@@ -783,7 +783,7 @@ source-over, WBOIT, and depth-peel transparency on overlapping cubes.
 
 ### [Turntable Controller](gallery/features/feature_controller_turntable.md)
 
-![Turntable Controller](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_controller_turntable.png)
+![Turntable Controller](/assets/gallery/v0.4/features/feature_controller_turntable.webp)
 
 `supported` `features`
 
@@ -795,7 +795,7 @@ constrained turntable controller around a small 3D mesh.
 
 ### [User Scale](gallery/features/feature_user_scale.md)
 
-![User Scale](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_user_scale.png)
+![User Scale](/assets/gallery/v0.4/features/feature_user_scale.webp)
 
 `supported` `features`
 
@@ -819,7 +819,7 @@ portable scenario using the native runner's live/capture modes.
 
 ### [Visual Data Update](gallery/features/feature_update_visual_data.md)
 
-![Visual Data Update](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_update_visual_data.png)
+![Visual Data Update](/assets/gallery/v0.4/features/feature_update_visual_data.webp)
 
 `supported` `features`
 
@@ -831,7 +831,7 @@ retained point visual with full data replacement.
 
 ### [Visual Transform](gallery/features/feature_visual_transform.md)
 
-![Visual Transform](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_visual_transform.png)
+![Visual Transform](/assets/gallery/v0.4/features/feature_visual_transform.webp)
 
 `supported` `features`
 
@@ -843,7 +843,7 @@ retained visual-local affine transform on point visuals.
 
 ### [Visual Visibility](gallery/features/feature_visibility.md)
 
-![Visual Visibility](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_visibility.png)
+![Visual Visibility](/assets/gallery/v0.4/features/feature_visibility.webp)
 
 `supported` `features`
 
@@ -855,7 +855,7 @@ retained visual visibility toggled on a runner frame.
 
 ### [Volume Occlusion](gallery/features/feature_volume_occlusion.md)
 
-![Volume Occlusion](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_volume_occlusion.png)
+![Volume Occlusion](/assets/gallery/v0.4/features/feature_volume_occlusion.webp)
 
 `supported` `features`
 

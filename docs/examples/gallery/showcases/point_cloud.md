@@ -38,7 +38,7 @@ RESEPI RGB LiDAR dense point cloud.
 
 ## Media
 
-![Point Cloud](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/point_cloud.png)
+![Point Cloud](/assets/gallery/v0.4/showcases/point_cloud.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

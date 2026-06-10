@@ -66,11 +66,11 @@ def remove_example_docstrings():
                 f.write('\n'.join(lines).lstrip() + '\n')
 
 
-def copy_tree_if_exists(src, dst):
+def copy_tree_if_exists(src, dst, label='asset'):
     src_path = ROOT / src
     dst_path = Path(dst)
     if not src_path.exists():
-        print(f"mkdocs: skipping missing WebGPU asset source {src_path}")
+        print(f"mkdocs: skipping missing {label} source {src_path}")
         return
     if dst_path.exists():
         shutil.rmtree(dst_path)
@@ -79,10 +79,17 @@ def copy_tree_if_exists(src, dst):
 
 def copy_webgpu_live_assets(site_dir):
     site = Path(site_dir)
-    copy_tree_if_exists('examples/webgpu', site / 'examples/webgpu')
-    copy_tree_if_exists('web/wasm', site / 'web/wasm')
-    copy_tree_if_exists('web/drp2', site / 'web/drp2')
-    copy_tree_if_exists('build-wasm-scene/wasm', site / 'build-wasm-scene/wasm')
+    copy_tree_if_exists('examples/webgpu', site / 'examples/webgpu', 'WebGPU asset')
+    copy_tree_if_exists('web/wasm', site / 'web/wasm', 'WebGPU asset')
+    copy_tree_if_exists('web/drp2', site / 'web/drp2', 'WebGPU asset')
+    copy_tree_if_exists('build-wasm-scene/wasm', site / 'build-wasm-scene/wasm', 'WebGPU asset')
+
+
+def copy_gallery_webp_assets(site_dir):
+    site = Path(site_dir)
+    copy_tree_if_exists(
+        'build/gallery-webp/v0.4', site / 'assets/gallery/v0.4', 'gallery WebP asset'
+    )
 
 
 # Hooks
@@ -107,4 +114,5 @@ def on_pre_build(**kwargs):
 
 
 def on_post_build(config, **kwargs):
+    copy_gallery_webp_assets(config['site_dir'])
     copy_webgpu_live_assets(config['site_dir'])
