@@ -2056,7 +2056,8 @@ examples:
     data:
       kind: real
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=protein_arcball_viewer
       requirements:
         - sphere
         - arcball

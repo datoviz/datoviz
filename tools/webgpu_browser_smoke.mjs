@@ -1126,6 +1126,12 @@ async function main() {
         'webgpu_live_textured_planets.png',
         'textured-planets',
       ],
+      [
+        'protein_arcball_viewer',
+        'Protein',
+        'webgpu_live_protein.png',
+        'protein',
+      ],
     ];
     for (const [id, label, filename, shortLabel] of promotedLiveRoutes) {
       try {

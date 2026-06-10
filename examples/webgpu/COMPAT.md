@@ -15,7 +15,7 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
-now has 66 promoted routes backed by canonical C examples or portable C scenarios:
+now has 67 promoted routes backed by canonical C examples or portable C scenarios:
 `feature_basic_scene`, `feature_timer_animation`, `feature_triangulation_polygon`,
 `feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `feature_isolines`,
 `feature_animation_tracks`, `feature_compute_buffer_animation`, `feature_obj_loading`,
@@ -32,9 +32,9 @@ now has 66 promoted routes backed by canonical C examples or portable C scenario
 `scalebar_measurement_workflow`, `showcase_surface_grid`, `us_state_choropleth`,
 `feature_update_partial`, `feature_update_visual_data`, `feature_visibility`,
 `technique_depth_test`, `feature_material_mesh`, `feature_lighting`,
-`textured_terrain_or_planet`, `visual_point`, `visual_pixel`, `visual_marker`,
-`visual_primitive`, `visual_segment`, `visual_path`, `visual_image`, `visual_mesh`,
-`sphere_impostor`, `visual_text`, `visual_glyph`, and `visual_labels`.
+`textured_terrain_or_planet`, `protein_arcball_viewer`, `visual_point`, `visual_pixel`,
+`visual_marker`, `visual_primitive`, `visual_segment`, `visual_path`, `visual_image`,
+`visual_mesh`, `sphere_impostor`, `visual_text`, `visual_glyph`, and `visual_labels`.
 
 Remaining RC promotions are:
 
@@ -125,6 +125,14 @@ preloaded `data/assets/textures` when present. `just webgpu-browser-smoke` exite
 this shell with the known headless external WebGPU instance-loss skip at `QueueSubmit` for the new
 live route; `just example-c showcases/textured_planet --png` passed natively with the expected
 offscreen warning that the Dear ImGui overlay requires a GLFW window.
+
+Recorded local protein promotion proof on 2026-06-10: `just wasm-scene-smoke` passed with
+`protein_arcball_viewer` registered in the WASM scenario table and covered by targeted sphere
+material, crosshair segment, draw, and upload checks. The WASM build preloaded the prepared 1UBQ
+bundle from `data/examples/proteins/1ubq/prepared`, and the scenario loaded `602` atoms from that
+path. `just webgpu-browser-smoke` exited successfully in this shell with the known headless
+external WebGPU instance-loss skip at `QueueSubmit` for the new live route; `just example-c
+showcases/protein --png` passed natively.
 
 
 ## Fixture Dashboard

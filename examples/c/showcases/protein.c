@@ -89,6 +89,14 @@ typedef struct ProteinState
 
 
 /*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_showcase_protein_scenario(void);
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
@@ -197,6 +205,23 @@ static bool _cache_bundle_path(const char* pdb_id, char* out, size_t out_size)
 
 
 /**
+ * Return whether a bundle directory contains the required atom data.
+ *
+ * @param dir prepared protein bundle directory
+ * @return whether the bundle has required atom arrays
+ */
+static bool _bundle_exists(const char* dir)
+{
+    ANN(dir);
+    char position_path[1200] = {0};
+    uint64_t position_size = 0;
+    return _join_path(dir, "atom_position.f32", position_path, sizeof(position_path)) &&
+           _file_size(position_path, &position_size) && position_size > 0;
+}
+
+
+
+/**
  * Return the default bundle path.
  *
  * @param out output path buffer
@@ -206,7 +231,7 @@ static bool _cache_bundle_path(const char* pdb_id, char* out, size_t out_size)
 static bool _default_bundle_path(char* out, size_t out_size)
 {
     ANN(out);
-    if (_cache_bundle_path(DEFAULT_PDB_ID, out, out_size))
+    if (_cache_bundle_path(DEFAULT_PDB_ID, out, out_size) && _bundle_exists(out))
         return true;
     int n = dvz_snprintf(out, out_size, "%s", DEFAULT_BUNDLE_PATH);
     return n > 0 && (size_t)n < out_size;
@@ -555,6 +580,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             DEFAULT_ATOM_SCALE),
         "selection upload failed");
 
+#ifndef DVZ_EXAMPLE_NO_MAIN
     DvzMsaaDesc msaa_desc = dvz_msaa_desc();
     msaa_desc.sample_count = 16;
     msaa_desc.alpha_to_coverage = true;
@@ -573,6 +599,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         .blur_enabled = true,
     };
     (void)dvz_panel_set_ssao(panel, &ssao_desc);
+#endif
 
     DvzController* arcball_controller = dvz_arcball(ctx->scene, NULL);
     EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
@@ -638,7 +665,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _protein_scenario(void)
+DvzScenarioSpec dvz_showcase_protein_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "protein_arcball_viewer",
@@ -660,8 +687,10 @@ static DvzScenarioSpec _protein_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _protein_scenario();
+    DvzScenarioSpec spec = dvz_showcase_protein_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

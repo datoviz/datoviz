@@ -1413,6 +1413,29 @@ function expectTexturedPlanetScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "WriteBuffer").length >= 4, `${label}: expected mesh and material uploads`);
 }
 
+function expectProteinScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  const sphere = expectPipeline(
+    stream,
+    `${label} sphere`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.sphere",
+  );
+  expectDepthPipeline(sphere, `${label} sphere`);
+  requireOk(
+    sphere.bind_group_layout_ids.length >= 2,
+    `${label}: expected material bind group layout on protein sphere pipeline`,
+  );
+  expectPipeline(
+    stream,
+    `${label} crosshair`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.segment",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 2, `${label}: expected atom and selection sphere draws`);
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected crosshair segment draw`);
+  requireOk(commandsOf(stream, "WriteBuffer").length >= 8, `${label}: expected protein data and material uploads`);
+}
+
 function expectLinkedProbeColorbarScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -2187,6 +2210,7 @@ try {
     "feature_material_mesh",
     "feature_lighting",
     "textured_terrain_or_planet",
+    "protein_arcball_viewer",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3136,6 +3160,11 @@ try {
       "textured_terrain_or_planet",
       "textured planets",
       (stream, label) => expectTexturedPlanetScenarioStreamShape(stream, label),
+    ],
+    [
+      "protein_arcball_viewer",
+      "protein",
+      (stream, label) => expectProteinScenarioStreamShape(stream, label),
     ],
   ];
   for (const [id, label, expectShape] of panelAndAxesScenarios) {

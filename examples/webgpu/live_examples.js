@@ -230,6 +230,11 @@ export const LIVE_EXAMPLES = [
     scenarioId: "textured_terrain_or_planet",
   },
   {
+    id: "protein_arcball_viewer",
+    label: "Protein",
+    scenarioId: "protein_arcball_viewer",
+  },
+  {
     id: "feature_panel_multi",
     label: "Multiple Panels",
     scenarioId: "feature_panel_multi",

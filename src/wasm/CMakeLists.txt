@@ -57,6 +57,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/linked_probe_colorbar.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/gpu_particle_smoke.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/panel_linked_axes.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/protein.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/scalebar_measurement.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/scientific_plotting.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/surface_grid.c
@@ -127,5 +128,11 @@ endif()
 if(EXISTS "${PROJECT_SOURCE_DIR}/data/assets/textures")
     target_link_options(datoviz_wasm_scene PRIVATE
         "SHELL:--preload-file ${PROJECT_SOURCE_DIR}/data/assets/textures@data/assets/textures"
+    )
+endif()
+
+if(EXISTS "${PROJECT_SOURCE_DIR}/data/examples/proteins/1ubq/prepared")
+    target_link_options(datoviz_wasm_scene PRIVATE
+        "SHELL:--preload-file ${PROJECT_SOURCE_DIR}/data/examples/proteins/1ubq/prepared@data/examples/proteins/1ubq/prepared"
     )
 endif()
