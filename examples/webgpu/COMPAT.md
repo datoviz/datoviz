@@ -15,7 +15,7 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
-now has 36 promoted routes backed by canonical C examples or portable C scenarios:
+now has 41 promoted routes backed by canonical C examples or portable C scenarios:
 `feature_basic_scene`, `feature_timer_animation`, `feature_triangulation_polygon`,
 `feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `feature_isolines`,
 `feature_animation_tracks`, `feature_compute_buffer_animation`, `feature_obj_loading`,
@@ -23,7 +23,8 @@ now has 36 promoted routes backed by canonical C examples or portable C scenario
 `feature_selection_mesh_instances`, `image_probe`, `colorbar`, `scale_bar`, `scalebar_units`,
 `feature_legend_categorical`, `annotation_readout`, `linked_panels_probe_colorbar`,
 `scientific_plotting_workflow`, `visual_vector`, `showcase_wind_field`,
-`showcase_gpu_particle_smoke`, `visual_point`, `visual_pixel`, `visual_marker`,
+`showcase_gpu_particle_smoke`, `feature_panel_single`, `feature_panel_grid`, `feature_panzoom`,
+`path_axes_2d`, `feature_axis_labels`, `visual_point`, `visual_pixel`, `visual_marker`,
 `visual_primitive`, `visual_segment`, `visual_path`, `visual_image`, `visual_mesh`,
 `sphere_impostor`, `visual_text`, `visual_glyph`, and `visual_labels`.
 
@@ -37,6 +38,14 @@ Remaining RC promotions are:
 Do not move broader live-example coverage into the supported/current section until
 `wasm-scene-smoke`, `webgpu-browser-smoke`, and any relevant native/DRP2 checks have recorded
 evidence for the promoted slice.
+
+Recorded local panel/annotation basics promotion proof on 2026-06-10: `just wasm-scene-build`
+linked `feature_panel_single`, `feature_panel_grid`, `feature_panzoom`, `path_axes_2d`, and
+`feature_axis_labels` into the WASM scenario table; `just wasm-scene-smoke` passed with targeted
+stream-shape coverage for panel viewports/scissors, panzoom, path axes, axis primitives, and glyph
+labels; `just webgpu-browser-smoke` exited successfully in this shell with the known headless
+external WebGPU instance-loss skip at `QueueSubmit` for live routes including `feature_panel_grid`,
+`feature_panzoom`, and `feature_axis_labels`; native PNG smokes passed for all five examples.
 
 Recorded local standalone visual-family promotion proof on 2026-06-10: targeted native CMake
 builds passed for `visuals/segment`, `visuals/path`, `visuals/image`, `visuals/mesh`,

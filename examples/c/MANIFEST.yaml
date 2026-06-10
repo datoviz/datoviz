@@ -82,7 +82,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_panel_single
       requirements:
         - panel
         - point
@@ -99,7 +100,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_panel_grid
       requirements:
         - panel-grid
         - point
@@ -154,7 +156,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=path_axes_2d
       requirements:
         - path
         - axes
@@ -173,7 +176,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_axis_labels
       requirements:
         - axes
         - text
@@ -1195,7 +1199,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_panzoom
       requirements:
         - controller
         - panzoom

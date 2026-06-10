@@ -974,6 +974,99 @@ function expectAnnotationReadoutScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
 }
 
+function expectPanelScenarioStreamShape(stream, label, { minViewports = 1, pointInstances = 5 } = {}) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  expectCommandCount(stream, "BeginCommandEncoder", 1, label);
+  expectCommandCount(stream, "FinishCommandEncoder", 1, label);
+  expectCommandCount(stream, "QueueSubmit", 1, label);
+  requireOk(commandsOf(stream, "BeginRenderPass").length >= 1, `${label}: expected render pass`);
+  requireOk(
+    commandsOf(stream, "SetViewport").length >= minViewports,
+    `${label}: expected at least ${minViewports} viewport command(s)`,
+  );
+  requireOk(
+    commandsOf(stream, "SetScissor").length >= minViewports,
+    `${label}: expected at least ${minViewports} scissor command(s)`,
+  );
+  expectPipeline(
+    stream,
+    `${label} points`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.point",
+  );
+  expectPipeline(
+    stream,
+    `${label} panel chrome`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.primitive",
+  );
+  expectDraw(stream, 6, pointInstances, `${label} points`);
+  requireOk(commandsOf(stream, "Draw").length >= minViewports, `${label}: expected panel draws`);
+  expectWriteCommands(stream, label);
+}
+
+function expectPanzoomScenarioStreamShape(stream, label) {
+  expectPanelScenarioStreamShape(stream, label, { minViewports: 1, pointInstances: 64 });
+}
+
+function expectAxes2DScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  expectCommandCount(stream, "BeginCommandEncoder", 1, label);
+  expectCommandCount(stream, "FinishCommandEncoder", 1, label);
+  expectCommandCount(stream, "QueueSubmit", 1, label);
+  requireOk(commandsOf(stream, "BeginRenderPass").length >= 1, `${label}: expected render pass`);
+  requireOk(commandsOf(stream, "SetViewport").length >= 1, `${label}: expected viewport command`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 1, `${label}: expected scissor command`);
+  expectPipeline(
+    stream,
+    `${label} path`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.path",
+  );
+  expectPipeline(
+    stream,
+    `${label} axes`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.primitive",
+  );
+  expectPipeline(
+    stream,
+    `${label} axis labels`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected path draw`);
+  requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected axis or label draw`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
+}
+
+function expectAxisLabelsScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  expectCommandCount(stream, "BeginCommandEncoder", 1, label);
+  expectCommandCount(stream, "FinishCommandEncoder", 1, label);
+  expectCommandCount(stream, "QueueSubmit", 1, label);
+  requireOk(commandsOf(stream, "BeginRenderPass").length >= 1, `${label}: expected render pass`);
+  requireOk(commandsOf(stream, "SetViewport").length >= 1, `${label}: expected viewport command`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 1, `${label}: expected scissor command`);
+  expectPipeline(
+    stream,
+    `${label} guide and axis segments`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.segment",
+  );
+  expectPipeline(
+    stream,
+    `${label} labels`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected guide or axis draw`);
+  requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected label draws`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
+}
+
 function expectLinkedProbeColorbarScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -1706,6 +1799,11 @@ try {
     "visual_vector",
     "showcase_wind_field",
     "showcase_gpu_particle_smoke",
+    "feature_panel_single",
+    "feature_panel_grid",
+    "feature_panzoom",
+    "path_axes_2d",
+    "feature_axis_labels",
     "visual_point",
     "visual_pixel",
     "visual_marker",
@@ -2509,6 +2607,66 @@ try {
     );
   } finally {
     Module._dvz_wasm_api_scene_destroy(particleScene);
+  }
+
+  const panelAndAxesScenarios = [
+    [
+      "feature_panel_single",
+      "single-panel",
+      (stream, label) => expectPanelScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_panel_grid",
+      "panel-grid",
+      (stream, label) => expectPanelScenarioStreamShape(stream, label, {
+        minViewports: 4,
+        pointInstances: 4,
+      }),
+    ],
+    [
+      "feature_panzoom",
+      "panzoom",
+      (stream, label) => expectPanzoomScenarioStreamShape(stream, label),
+    ],
+    [
+      "path_axes_2d",
+      "path axes",
+      (stream, label) => expectAxes2DScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_axis_labels",
+      "axis labels",
+      (stream, label) => expectAxisLabelsScenarioStreamShape(stream, label),
+    ],
+  ];
+  for (const [id, label, expectShape] of panelAndAxesScenarios) {
+    const index = scenarioIndex(Module, id);
+    const width = Module._dvz_wasm_api_scenario_width(index);
+    const height = Module._dvz_wasm_api_scenario_height(index);
+    const scene = Module._dvz_wasm_api_scene(width, height);
+    requireOk(scene !== 0, `${label} scenario scene creation failed`);
+    try {
+      expectStatus(
+        Module._dvz_wasm_api_set_canvas_format(scene, DVZ_FORMAT_R8G8B8A8_UNORM),
+        0,
+        `${label} scenario canvas format`,
+      );
+      setCapabilities(
+        Module, scene, 4096, 4, 8, 256 * 1024 * 1024, 256, 8,
+        `${label} scenario capabilities`);
+      expectStatus(
+        Module._dvz_wasm_api_scenario_create(scene, index),
+        0,
+        `${label} scenario create`,
+      );
+      expectNoDiagnostics(Module, scene, `${label} scenario create diagnostics`);
+      const figure = Module._dvz_wasm_api_scenario_figure(scene);
+      requireOk(figure !== 0, `${label} scenario has no figure`);
+      const initial = emitStream(Module, scene, figure, `${label} initial`);
+      expectShape(initial.stream, `${label} initial`);
+    } finally {
+      Module._dvz_wasm_api_scene_destroy(scene);
+    }
   }
 
   const standaloneVisuals = [

@@ -61,7 +61,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 36
+#define DVZ_WASM_API_SCENARIO_COUNT 41
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -85,6 +85,8 @@ DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags);
 
 DvzScenarioSpec dvz_example_annotation_readout_scenario(void);
 DvzScenarioSpec dvz_example_animation_tracks_scenario(void);
+DvzScenarioSpec dvz_example_axes_2d_scenario(void);
+DvzScenarioSpec dvz_example_axis_labels_scenario(void);
 DvzScenarioSpec dvz_example_basic_scene_scenario(void);
 DvzScenarioSpec dvz_example_builtin_shapes_2d_scenario(void);
 DvzScenarioSpec dvz_example_builtin_shapes_3d_scenario(void);
@@ -97,6 +99,9 @@ DvzScenarioSpec dvz_example_image_probe_scenario(void);
 DvzScenarioSpec dvz_example_isolines_scenario(void);
 DvzScenarioSpec dvz_example_legend_categorical_scenario(void);
 DvzScenarioSpec dvz_example_obj_loading_scenario(void);
+DvzScenarioSpec dvz_example_panel_grid_scenario(void);
+DvzScenarioSpec dvz_example_panel_single_scenario(void);
+DvzScenarioSpec dvz_example_panzoom_scenario(void);
 DvzScenarioSpec dvz_example_scalebar_scenario(void);
 DvzScenarioSpec dvz_example_scalebar_units_scenario(void);
 DvzScenarioSpec dvz_example_selection_mesh_instances_scenario(void);
@@ -426,28 +431,38 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
     case 23:
         return dvz_showcase_gpu_particle_smoke_scenario();
     case 24:
-        return dvz_visual_point_scenario();
+        return dvz_example_panel_single_scenario();
     case 25:
-        return dvz_visual_pixel_scenario();
+        return dvz_example_panel_grid_scenario();
     case 26:
-        return dvz_visual_marker_scenario();
+        return dvz_example_panzoom_scenario();
     case 27:
-        return dvz_visual_primitive_scenario();
+        return dvz_example_axes_2d_scenario();
     case 28:
-        return dvz_visual_segment_scenario();
+        return dvz_example_axis_labels_scenario();
     case 29:
-        return dvz_visual_path_scenario();
+        return dvz_visual_point_scenario();
     case 30:
-        return dvz_visual_image_scenario();
+        return dvz_visual_pixel_scenario();
     case 31:
-        return dvz_visual_mesh_scenario();
+        return dvz_visual_marker_scenario();
     case 32:
-        return dvz_visual_sphere_scenario();
+        return dvz_visual_primitive_scenario();
     case 33:
-        return dvz_visual_text_scenario();
+        return dvz_visual_segment_scenario();
     case 34:
-        return dvz_visual_glyph_scenario();
+        return dvz_visual_path_scenario();
     case 35:
+        return dvz_visual_image_scenario();
+    case 36:
+        return dvz_visual_mesh_scenario();
+    case 37:
+        return dvz_visual_sphere_scenario();
+    case 38:
+        return dvz_visual_text_scenario();
+    case 39:
+        return dvz_visual_glyph_scenario();
+    case 40:
         return dvz_visual_labels_scenario();
     default:
         return (DvzScenarioSpec){0};

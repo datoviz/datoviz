@@ -127,6 +127,31 @@ export const LIVE_EXAMPLES = [
     animate: true,
   },
   {
+    id: "feature_panel_single",
+    label: "Single Panel",
+    scenarioId: "feature_panel_single",
+  },
+  {
+    id: "feature_panel_grid",
+    label: "Panel Grid",
+    scenarioId: "feature_panel_grid",
+  },
+  {
+    id: "feature_panzoom",
+    label: "Panzoom",
+    scenarioId: "feature_panzoom",
+  },
+  {
+    id: "path_axes_2d",
+    label: "Path With 2D Axes",
+    scenarioId: "path_axes_2d",
+  },
+  {
+    id: "feature_axis_labels",
+    label: "Axis Labels",
+    scenarioId: "feature_axis_labels",
+  },
+  {
     id: "point_2d",
     label: "Point",
     scenarioId: "visual_point",

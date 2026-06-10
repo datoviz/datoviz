@@ -796,6 +796,9 @@ async function main() {
     let wasmWindField = null;
     let wasmIsolines = null;
     let wasmParticleSmoke = null;
+    let wasmPanelGrid = null;
+    let wasmPanzoom = null;
+    let wasmAxisLabels = null;
     try {
       wasmBasic = await smokeAnimatedWasmPage(
         page,
@@ -1018,6 +1021,48 @@ async function main() {
       }
       console.log(skipLine(`WebGPU live particle-smoke: headless WebGPU instance loss (${error.message})`));
     }
+    try {
+      wasmPanelGrid = await smokeWasmPage(
+        page,
+        baseUrl,
+        '/examples/webgpu/live.html?id=feature_panel_grid',
+        'Rendered Panel Grid',
+        join(artifactsDir, 'webgpu_live_panel_grid.png'),
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(skipLine(`WebGPU live panel-grid smoke: headless WebGPU instance loss (${error.message})`));
+    }
+    try {
+      wasmPanzoom = await smokeWasmPage(
+        page,
+        baseUrl,
+        '/examples/webgpu/live.html?id=feature_panzoom',
+        'Rendered Panzoom',
+        join(artifactsDir, 'webgpu_live_panzoom.png'),
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(skipLine(`WebGPU live panzoom smoke: headless WebGPU instance loss (${error.message})`));
+    }
+    try {
+      wasmAxisLabels = await smokeWasmPage(
+        page,
+        baseUrl,
+        '/examples/webgpu/live.html?id=feature_axis_labels',
+        'Rendered Axis Labels',
+        join(artifactsDir, 'webgpu_live_axis_labels.png'),
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(skipLine(`WebGPU live axis-labels smoke: headless WebGPU instance loss (${error.message})`));
+    }
     if (wasmBasic !== null) {
       console.log(passLine(`live basic: ${wasmBasic.initialStatus}; initial_frame=${wasmBasic.initialFrame}`));
     }
@@ -1070,6 +1115,15 @@ async function main() {
     }
     if (wasmParticleSmoke !== null) {
       console.log(passLine(`live particle-smoke: ${wasmParticleSmoke.initialStatus}`));
+    }
+    if (wasmPanelGrid !== null) {
+      console.log(passLine(`live panel-grid: ${wasmPanelGrid.initialStatus}`));
+    }
+    if (wasmPanzoom !== null) {
+      console.log(passLine(`live panzoom: ${wasmPanzoom.initialStatus}`));
+    }
+    if (wasmAxisLabels !== null) {
+      console.log(passLine(`live axis-labels: ${wasmAxisLabels.initialStatus}`));
     }
     console.log(`Wrote ${artifactsDir}`);
   } finally {

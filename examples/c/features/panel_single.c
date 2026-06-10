@@ -30,6 +30,14 @@
 
 
 /*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_example_panel_single_scenario(void);
+
+
+
+/*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
@@ -122,7 +130,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _panel_single_scenario(void)
+DvzScenarioSpec dvz_example_panel_single_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_panel_single",
@@ -130,6 +138,7 @@ static DvzScenarioSpec _panel_single_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL,
         .init = _scenario_init,
     };
 }
@@ -147,8 +156,10 @@ static DvzScenarioSpec _panel_single_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _panel_single_scenario();
+    DvzScenarioSpec spec = dvz_example_panel_single_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

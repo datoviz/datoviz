@@ -10,7 +10,8 @@ retained axis titles and tick-label placement with plot margins.
 - Status: `supported`
 - Source: [`examples/c/features/axis_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axis_labels.c)
 - Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_axis_labels`](/examples/webgpu/live.html?id=feature_axis_labels)
 - WebGPU requirements: `axes`, `text`, `labels`
 - Build: `just example-c features/axis_labels`
 - Smoke: `./build/examples/c/features/axis_labels --png`
@@ -28,6 +29,14 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=feature_axis_labels" title="Axis Labels WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_axis_labels).
 
 ## Source
 

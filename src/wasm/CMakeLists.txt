@@ -12,6 +12,8 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/example_style.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/annotation_readout.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/animation_tracks.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/axes_2d.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/axis_labels.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/basic_scene.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/builtin_shapes_2d.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/builtin_shapes_3d.c
@@ -21,6 +23,9 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/isolines.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/legend_categorical.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/obj_loading.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/panel_grid.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/panel_single.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/panzoom.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/picking.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_mesh_instances.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_pixel.c
