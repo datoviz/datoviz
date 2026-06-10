@@ -74,9 +74,19 @@ def copy_tree_if_exists(src, dst, label='asset'):
     if not src_path.exists():
         print(f"mkdocs: skipping missing {label} source {src_path}")
         return
+    if src_path.resolve() == dst_path.resolve():
+        return
     if dst_path.exists():
         shutil.rmtree(dst_path)
     shutil.copytree(src_path, dst_path)
+
+
+def first_existing_path(*paths):
+    for path in paths:
+        src_path = ROOT / path
+        if src_path.exists():
+            return path
+    return paths[0] if paths else None
 
 
 def copy_webgpu_live_assets(site_dir):
@@ -84,7 +94,11 @@ def copy_webgpu_live_assets(site_dir):
     copy_tree_if_exists('examples/webgpu', site / 'examples/webgpu', 'WebGPU asset')
     copy_tree_if_exists('web/wasm', site / 'web/wasm', 'WebGPU asset')
     copy_tree_if_exists('web/drp2', site / 'web/drp2', 'WebGPU asset')
-    copy_tree_if_exists('build-wasm-scene/wasm', site / 'build-wasm-scene/wasm', 'WebGPU asset')
+    copy_tree_if_exists(
+        first_existing_path('build-wasm-scene/wasm', 'site/build-wasm-scene/wasm'),
+        site / 'build-wasm-scene/wasm',
+        'WebGPU asset',
+    )
 
 
 def copy_gallery_webp_assets(site_dir):
@@ -136,6 +150,16 @@ def on_pre_build(**kwargs):
 
 
 def on_files(files, config):
+    add_generated_tree(files, config, 'examples/webgpu', 'examples/webgpu', 'WebGPU asset')
+    add_generated_tree(files, config, 'web/wasm', 'web/wasm', 'WebGPU asset')
+    add_generated_tree(files, config, 'web/drp2', 'web/drp2', 'WebGPU asset')
+    add_generated_tree(
+        files,
+        config,
+        first_existing_path('build-wasm-scene/wasm', 'site/build-wasm-scene/wasm'),
+        'build-wasm-scene/wasm',
+        'WebGPU asset',
+    )
     add_generated_tree(
         files,
         config,
