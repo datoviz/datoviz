@@ -215,6 +215,16 @@ export const LIVE_EXAMPLES = [
     scenarioId: "technique_depth_test",
   },
   {
+    id: "feature_material_mesh",
+    label: "Mesh Materials",
+    scenarioId: "feature_material_mesh",
+  },
+  {
+    id: "feature_lighting",
+    label: "Lighting",
+    scenarioId: "feature_lighting",
+  },
+  {
     id: "feature_panel_multi",
     label: "Multiple Panels",
     scenarioId: "feature_panel_multi",

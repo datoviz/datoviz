@@ -1113,6 +1113,13 @@ async function main() {
         'us-state-choropleth',
       ],
       ['technique_depth_test', 'Depth Test Toggle', 'webgpu_live_depth_test.png', 'depth-test'],
+      [
+        'feature_material_mesh',
+        'Mesh Materials',
+        'webgpu_live_material_mesh.png',
+        'material-mesh',
+      ],
+      ['feature_lighting', 'Lighting', 'webgpu_live_lighting.png', 'lighting'],
     ];
     for (const [id, label, filename, shortLabel] of promotedLiveRoutes) {
       try {

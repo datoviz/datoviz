@@ -30,6 +30,8 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/image_probe.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/isolines.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/legend_categorical.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/lighting.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/material_mesh.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/obj_loading.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/overlay_card.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_background.c

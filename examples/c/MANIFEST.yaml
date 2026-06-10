@@ -411,11 +411,13 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_material_mesh
       requirements:
         - mesh
         - material
         - lighting
+        - arcball
     agent_copy_safe: true
 
   - id: feature_lighting
@@ -429,11 +431,13 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_lighting
       requirements:
-        - mesh
         - sphere
+        - material
         - lighting
+        - arcball
     agent_copy_safe: true
 
   - id: feature_user_scale

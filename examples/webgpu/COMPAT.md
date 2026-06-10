@@ -15,7 +15,7 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
-now has 63 promoted routes backed by canonical C examples or portable C scenarios:
+now has 65 promoted routes backed by canonical C examples or portable C scenarios:
 `feature_basic_scene`, `feature_timer_animation`, `feature_triangulation_polygon`,
 `feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `feature_isolines`,
 `feature_animation_tracks`, `feature_compute_buffer_animation`, `feature_obj_loading`,
@@ -31,9 +31,10 @@ now has 63 promoted routes backed by canonical C examples or portable C scenario
 `panel_background`, `composite_polygon`, `linked_panels_axes_panzoom`,
 `scalebar_measurement_workflow`, `showcase_surface_grid`, `us_state_choropleth`,
 `feature_update_partial`, `feature_update_visual_data`, `feature_visibility`,
-`technique_depth_test`, `visual_point`, `visual_pixel`, `visual_marker`, `visual_primitive`,
-`visual_segment`, `visual_path`, `visual_image`, `visual_mesh`, `sphere_impostor`, `visual_text`,
-`visual_glyph`, and `visual_labels`.
+`technique_depth_test`, `feature_material_mesh`, `feature_lighting`, `visual_point`,
+`visual_pixel`, `visual_marker`, `visual_primitive`, `visual_segment`, `visual_path`,
+`visual_image`, `visual_mesh`, `sphere_impostor`, `visual_text`, `visual_glyph`, and
+`visual_labels`.
 
 Remaining RC promotions are:
 
@@ -109,6 +110,13 @@ webgpu-browser-smoke` exited successfully in this shell with the known headless 
 instance-loss skip at `QueueSubmit` for the new live route; `just example-c
 features/technique_depth_test --png` passed natively. `alpha_blending` remains planned because its
 current scene stream does not emit a color-target blend state for the primitive pipeline.
+
+Recorded local material/lighting promotion proof on 2026-06-10: `just wasm-scene-smoke` passed with
+`feature_material_mesh` and `feature_lighting` registered in the WASM scenario table and covered by
+targeted material-backed mesh/sphere pipeline checks, material bind-group layout checks, and
+multi-panel draw/upload assertions. `just webgpu-browser-smoke` exited successfully in this shell
+with the known headless external WebGPU instance-loss skip at `QueueSubmit` for both new live
+routes; native PNG smokes passed for `features/material_mesh` and `features/lighting`.
 
 
 ## Fixture Dashboard

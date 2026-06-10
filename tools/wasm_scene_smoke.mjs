@@ -1356,6 +1356,45 @@ function expectDepthTestScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "Draw").length >= 2, `${label}: expected point draws`);
 }
 
+function expectMaterialMeshScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  const mesh = expectPipeline(
+    stream,
+    `${label} mesh`,
+    (pipeline) =>
+      pipeline.topology === "triangle-list" &&
+      pipeline.vertex_buffer_slots >= 3 &&
+      pipeline.bind_group_layout_ids.length >= 2,
+  );
+  expectDepthPipeline(mesh, `${label} mesh`);
+  requireOk(
+    mesh.bind_group_layout_ids.length >= 2,
+    `${label}: expected material bind group layout on mesh pipeline`,
+  );
+  requireOk(commandsOf(stream, "SetViewport").length >= 3, `${label}: expected material panel viewports`);
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 3, `${label}: expected material mesh draws`);
+  requireOk(commandsOf(stream, "WriteBuffer").length >= 6, `${label}: expected mesh and material buffer uploads`);
+}
+
+function expectLightingScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  const sphere = expectPipeline(
+    stream,
+    `${label} sphere`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.sphere",
+  );
+  expectDepthPipeline(sphere, `${label} sphere`);
+  requireOk(
+    sphere.bind_group_layout_ids.length >= 2,
+    `${label}: expected material bind group layout on sphere pipeline`,
+  );
+  requireOk(commandsOf(stream, "SetViewport").length >= 3, `${label}: expected lighting panel viewports`);
+  requireOk(commandsOf(stream, "Draw").length >= 3, `${label}: expected lit sphere draws`);
+  requireOk(commandsOf(stream, "WriteBuffer").length >= 6, `${label}: expected sphere and material buffer uploads`);
+}
+
 function expectLinkedProbeColorbarScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -2127,6 +2166,8 @@ try {
     "feature_update_visual_data",
     "feature_visibility",
     "technique_depth_test",
+    "feature_material_mesh",
+    "feature_lighting",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3061,6 +3102,16 @@ try {
       "technique_depth_test",
       "depth test",
       (stream, label) => expectDepthTestScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_material_mesh",
+      "material mesh",
+      (stream, label) => expectMaterialMeshScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_lighting",
+      "lighting",
+      (stream, label) => expectLightingScenarioStreamShape(stream, label),
     ],
   ];
   for (const [id, label, expectShape] of panelAndAxesScenarios) {

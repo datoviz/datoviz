@@ -61,7 +61,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 63
+#define DVZ_WASM_API_SCENARIO_COUNT 65
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -109,6 +109,8 @@ DvzScenarioSpec dvz_example_picking_scenario(void);
 DvzScenarioSpec dvz_example_image_probe_scenario(void);
 DvzScenarioSpec dvz_example_isolines_scenario(void);
 DvzScenarioSpec dvz_example_legend_categorical_scenario(void);
+DvzScenarioSpec dvz_example_lighting_scenario(void);
+DvzScenarioSpec dvz_example_material_mesh_scenario(void);
 DvzScenarioSpec dvz_example_obj_loading_scenario(void);
 DvzScenarioSpec dvz_example_overlay_card_scenario(void);
 DvzScenarioSpec dvz_example_panel_background_scenario(void);
@@ -530,6 +532,10 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_example_visibility_scenario();
     case 62:
         return dvz_example_depth_test_scenario();
+    case 63:
+        return dvz_example_material_mesh_scenario();
+    case 64:
+        return dvz_example_lighting_scenario();
     default:
         return (DvzScenarioSpec){0};
     }
