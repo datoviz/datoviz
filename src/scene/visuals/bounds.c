@@ -251,6 +251,149 @@ static int _bounds_overlay_source_bounds(const DvzVisual* visual, DvzBounds* out
 
 
 /**
+ * Return the maximum point-like rendered radius in logical pixels.
+ *
+ * @param visual the visual
+ * @param out_radius_px output maximum radius in logical pixels
+ * @return whether a point-like radius was available
+ */
+static bool _bounds_point_like_render_radius_px(const DvzVisual* visual, double* out_radius_px)
+{
+    ANN(visual);
+    ANN(out_radius_px);
+
+    const char* attr_name = NULL;
+    if (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_MARKER)
+        attr_name = "diameter";
+    else if (visual->type == DVZ_VISUAL_TYPE_PIXEL)
+        attr_name = "pixel_size";
+    else
+        return false;
+
+    const DvzVisualAttr* attr = _bounds_attr(visual, attr_name, sizeof(float));
+    if (attr == NULL)
+        return false;
+
+    const float* values = (const float*)attr->data;
+    double max_value = 0.0;
+    for (uint64_t i = 0; i < attr->item_count; i++)
+    {
+        double value = (double)values[i];
+        if (isfinite(value) && value > max_value)
+            max_value = value;
+    }
+    if (!(max_value > 0.0))
+        return false;
+
+    *out_radius_px = 0.5 * max_value;
+    return true;
+}
+
+
+
+/**
+ * Return world-space units per logical pixel for a 2D overlay attachment.
+ *
+ * @param panel panel owning the visual
+ * @param attach panel visual attachment
+ * @param out_x output X units per logical pixel
+ * @param out_y output Y units per logical pixel
+ * @return whether conversion factors were resolved
+ */
+static bool _bounds_overlay_units_per_px(
+    DvzPanel* panel, const DvzPanelAttach* attach, double* out_x, double* out_y)
+{
+    ANN(panel);
+    ANN(attach);
+    ANN(out_x);
+    ANN(out_y);
+
+    float plot_x = 0.0f;
+    float plot_y = 0.0f;
+    float plot_width = 0.0f;
+    float plot_height = 0.0f;
+    _scene_panel_plot_pixel_rect(panel, &plot_x, &plot_y, &plot_width, &plot_height);
+    (void)plot_x;
+    (void)plot_y;
+    if (!(plot_width > 0.0f) || !(plot_height > 0.0f))
+        return false;
+
+    if (attach->coord_space == DVZ_COORD_DATA)
+    {
+        double xmin = 0.0;
+        double xmax = 0.0;
+        double ymin = 0.0;
+        double ymax = 0.0;
+        if (
+            !dvz_panel_visible_domain(panel, DVZ_DIM_X, &xmin, &xmax) ||
+            !dvz_panel_visible_domain(panel, DVZ_DIM_Y, &ymin, &ymax) ||
+            !(xmax > xmin) || !(ymax > ymin))
+        {
+            return false;
+        }
+        *out_x = (xmax - xmin) / (double)plot_width;
+        *out_y = (ymax - ymin) / (double)plot_height;
+        return isfinite(*out_x) && isfinite(*out_y);
+    }
+
+    if (attach->coord_space == DVZ_COORD_VISUAL)
+    {
+        float visual[4] = {0};
+        _scene_panel_plot_visual_rect(panel, visual);
+        if (!(visual[1] > visual[0]) || !(visual[3] > visual[2]))
+            return false;
+        *out_x = ((double)visual[1] - (double)visual[0]) / (double)plot_width;
+        *out_y = ((double)visual[3] - (double)visual[2]) / (double)plot_height;
+        return isfinite(*out_x) && isfinite(*out_y);
+    }
+
+    return false;
+}
+
+
+
+/**
+ * Expand point-like overlay bounds to enclose rendered marks.
+ *
+ * @param panel panel owning the visual
+ * @param attach visual attachment context
+ * @param visual visual whose overlay is being generated
+ * @param bounds bounds to expand in place
+ */
+static void _bounds_overlay_expand_rendered_marks(
+    DvzPanel* panel, const DvzPanelAttach* attach, const DvzVisual* visual,
+    DvzBounds* bounds)
+{
+    ANN(panel);
+    ANN(attach);
+    ANN(visual);
+    ANN(bounds);
+    if (!bounds->valid || bounds->dims != 2)
+        return;
+
+    double radius_px = 0.0;
+    double units_x = 0.0;
+    double units_y = 0.0;
+    if (
+        !_bounds_point_like_render_radius_px(visual, &radius_px) ||
+        !_bounds_overlay_units_per_px(panel, attach, &units_x, &units_y))
+    {
+        return;
+    }
+
+    const double pad_x = radius_px * units_x;
+    const double pad_y = radius_px * units_y;
+    if (!isfinite(pad_x) || !isfinite(pad_y))
+        return;
+    bounds->min[0] -= pad_x;
+    bounds->max[0] += pad_x;
+    bounds->min[1] -= pad_y;
+    bounds->max[1] += pad_y;
+}
+
+
+
+/**
  * Find one visual attachment on a panel.
  *
  * @param panel the panel
@@ -551,6 +694,7 @@ static bool _bounds_overlay_sync_panel(DvzPanel* panel)
         DvzBounds bounds = {0};
         if (_bounds_overlay_source_bounds(visual, &bounds) != 0)
             continue;
+        _bounds_overlay_expand_rendered_marks(panel, attach, visual, &bounds);
         uint64_t next = 0;
         if (_dvz_add_u64_overflows(max_lines, _bounds_wire_line_count(&bounds), &next))
         {
@@ -610,6 +754,7 @@ static bool _bounds_overlay_sync_panel(DvzPanel* panel)
         DvzBounds bounds = {0};
         if (_bounds_overlay_source_bounds(visual, &bounds) != 0)
             continue;
+        _bounds_overlay_expand_rendered_marks(panel, attach, visual, &bounds);
         _bounds_wire_append_box(&bounds, start, end, colors, widths, &line_count);
     }
 

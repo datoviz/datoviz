@@ -81,10 +81,8 @@ static bool _add_fill(DvzScene* scene, DvzPanel* panel, const DvzGeometry* geome
         positions[i][1] = (float)geometry->positions[src][1];
         positions[i][2] = 0.0f;
         normals[i][2] = 1.0f;
-        colors[i] = i / 3u % 2u == 0
-                        ? example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY)
-                        : example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
-        colors[i].a = 170u;
+        colors[i] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
+        colors[i].a = 118u;
     }
 
     DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
@@ -190,6 +188,92 @@ error:
 
 
 
+/**
+ * Add input polygon rings as plain boundary segments.
+ *
+ * @param scene scene owning the visual
+ * @param panel target panel
+ * @param outer outer polygon ring
+ * @param holes optional hole rings
+ * @param hole_count number of hole rings
+ * @return true when the visual was added
+ */
+static bool _add_input_rings(
+    DvzScene* scene, DvzPanel* panel, const DvzPolygonRing* outer, const DvzPolygonRing* holes,
+    uint32_t hole_count)
+{
+    ANN(scene);
+    ANN(panel);
+    ANN(outer);
+    if (outer->xy == NULL || outer->count < 3)
+        return false;
+
+    uint32_t line_count = outer->count;
+    for (uint32_t h = 0; h < hole_count; h++)
+        line_count += holes[h].count;
+    if (line_count == 0)
+        return false;
+
+    vec3* starts = (vec3*)dvz_calloc(line_count, sizeof(vec3));
+    vec3* ends = (vec3*)dvz_calloc(line_count, sizeof(vec3));
+    DvzColor* colors = (DvzColor*)dvz_calloc(line_count, sizeof(DvzColor));
+    float* widths = (float*)dvz_calloc(line_count, sizeof(float));
+    if (starts == NULL || ends == NULL || colors == NULL || widths == NULL)
+        goto error;
+
+    uint32_t line = 0;
+    for (uint32_t r = 0; r < hole_count + 1u; r++)
+    {
+        const DvzPolygonRing* ring = r == 0 ? outer : &holes[r - 1u];
+        ANN(ring);
+        for (uint32_t i = 0; i < ring->count; i++)
+        {
+            const uint32_t j = (i + 1u) % ring->count;
+            starts[line][0] = (float)ring->xy[i][0];
+            starts[line][1] = (float)ring->xy[i][1];
+            starts[line][2] = 0.02f;
+            ends[line][0] = (float)ring->xy[j][0];
+            ends[line][1] = (float)ring->xy[j][1];
+            ends[line][2] = 0.02f;
+            colors[line] = r == 0 ? example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT)
+                                  : example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
+            widths[line] = r == 0 ? 4.0f : 3.0f;
+            line++;
+        }
+    }
+
+    DvzVisual* segment = dvz_segment(scene, 0);
+    if (segment == NULL)
+        goto error;
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position_start", .data = starts, .item_count = line_count},
+        {.attr_name = "position_end", .data = ends, .item_count = line_count},
+        {.attr_name = "color", .data = colors, .item_count = line_count},
+        {.attr_name = "stroke_width", .data = widths, .item_count = line_count},
+    };
+    if (dvz_visual_set_data_many(segment, updates, 4) != 0)
+        goto error;
+    if (dvz_segment_set_caps(segment, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) != 0)
+        goto error;
+    if (dvz_panel_add_visual(panel, segment, NULL) != 0)
+        goto error;
+
+    dvz_free(starts);
+    dvz_free(ends);
+    dvz_free(colors);
+    dvz_free(widths);
+    return true;
+
+error:
+    dvz_free(starts);
+    dvz_free(ends);
+    dvz_free(colors);
+    dvz_free(widths);
+    return false;
+}
+
+
+
 /*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
@@ -212,26 +296,49 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx->figure == NULL)
         return false;
 
-    DvzPanel* panel = dvz_panel_full(ctx->figure);
-    if (panel == NULL)
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
+    if (grid == NULL)
         return false;
-    example_graphite_cyan_set_panel_background(panel);
+    if (!dvz_grid_set_margins(
+            grid, &(DvzPanelReserve){.left_px = 58.0f, .right_px = 58.0f, .top_px = 54.0f,
+                                     .bottom_px = 54.0f}))
+        return false;
+    if (!dvz_grid_set_gutter(grid, 42.0f, 0.0f))
+        return false;
+
+    DvzPanel* input_panel = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* result_panel = dvz_grid_panel(grid, 0, 1);
+    if (input_panel == NULL || result_panel == NULL)
+        return false;
+    example_graphite_cyan_set_panel_background(input_panel);
+    example_graphite_cyan_set_panel_background(result_panel);
 
     const dvec2 outer[] = {
-        {-0.82, -0.58}, {-0.62, +0.54}, {-0.08, +0.78}, {+0.72, +0.46},
-        {+0.88, -0.22}, {+0.28, -0.74}, {-0.42, -0.70},
+        {-0.88, -0.34}, {-0.70, +0.22}, {-0.42, +0.64}, {+0.02, +0.78},
+        {+0.48, +0.60}, {+0.84, +0.20}, {+0.74, -0.34}, {+0.38, -0.70},
+        {-0.04, -0.54}, {-0.42, -0.80},
     };
-    const dvec2 hole[] = {
-        {-0.20, -0.16},
-        {+0.28, -0.10},
-        {+0.20, +0.28},
-        {-0.30, +0.22},
+    const dvec2 hole_a[] = {
+        {-0.42, -0.22},
+        {-0.14, -0.18},
+        {-0.18, +0.12},
+        {-0.50, +0.10},
     };
-    const DvzPolygonRing holes[] = {{.xy = hole, .count = DVZ_ARRAY_COUNT(hole)}};
+    const dvec2 hole_b[] = {
+        {+0.18, -0.06},
+        {+0.46, -0.02},
+        {+0.40, +0.28},
+        {+0.12, +0.20},
+    };
+    const DvzPolygonRing holes[] = {
+        {.xy = hole_a, .count = DVZ_ARRAY_COUNT(hole_a)},
+        {.xy = hole_b, .count = DVZ_ARRAY_COUNT(hole_b)},
+    };
+    const DvzPolygonRing outer_ring = {.xy = outer, .count = DVZ_ARRAY_COUNT(outer)};
     DvzGeometry* geometry = dvz_triangulate_polygon(
         &(DvzPolygonDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
-            .outer = {.xy = outer, .count = DVZ_ARRAY_COUNT(outer)},
+            .outer = outer_ring,
             .holes = holes,
             .hole_count = DVZ_ARRAY_COUNT(holes),
         },
@@ -245,8 +352,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     }
 
-    const bool ok = _add_fill(ctx->scene, panel, geometry) &&
-                    _add_edges(ctx->scene, panel, geometry, edges);
+    const bool ok = _add_input_rings(
+                        ctx->scene, input_panel, &outer_ring, holes, DVZ_ARRAY_COUNT(holes)) &&
+                    _add_fill(ctx->scene, result_panel, geometry) &&
+                    _add_edges(ctx->scene, result_panel, geometry, edges);
     dvz_geometry_edges_destroy(edges);
     dvz_geometry_destroy(geometry);
     return ok;

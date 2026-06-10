@@ -22,6 +22,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <math.h>
 
 #include "_assertions.h"
 #include "datoviz/scene.h"
@@ -36,8 +37,8 @@
 
 #define WIDTH       1600u
 #define HEIGHT      1200u
-#define PATH_COUNT  5u
-#define POINT_COUNT 4u
+#define CIRCLE_COUNT 97u
+#define GRID_LINES   10u
 
 
 
@@ -46,7 +47,7 @@
 /*************************************************************************************************/
 
 /**
- * Add a data-space rectangle and corner points.
+ * Add a unit circle, square frame, and grid in data coordinates.
  *
  * @param scene scene owning visuals
  * @param panel target panel
@@ -58,25 +59,27 @@ static bool _add_domain_shape(DvzScene* scene, DvzPanel* panel, DvzColor color)
     ANN(scene);
     ANN(panel);
 
-    const vec3 data_path[PATH_COUNT] = {
-        {0.0f, 0.0f, 0.0f}, {2.0f, 0.0f, 0.0f}, {2.0f, 1.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f},
-    };
-    DvzColor path_colors[PATH_COUNT] = {{0}};
-    float widths[PATH_COUNT] = {0};
-    for (uint32_t i = 0; i < PATH_COUNT; i++)
+    vec3 circle[CIRCLE_COUNT] = {0};
+    DvzColor circle_colors[CIRCLE_COUNT] = {{0}};
+    float circle_widths[CIRCLE_COUNT] = {0};
+    for (uint32_t i = 0; i < CIRCLE_COUNT; i++)
     {
-        path_colors[i] = color;
-        widths[i] = 5.0f;
+        const float t = (float)i / (float)(CIRCLE_COUNT - 1u);
+        const float a = 6.283185307179586f * t;
+        circle[i][0] = cosf(a);
+        circle[i][1] = sinf(a);
+        circle[i][2] = 0.0f;
+        circle_colors[i] = color;
+        circle_widths[i] = 4.0f;
     }
 
     DvzVisual* path = dvz_path(scene, 0);
     if (path == NULL)
         return false;
     DvzVisualDataUpdate path_updates[] = {
-        {.attr_name = "position", .data = data_path, .item_count = PATH_COUNT},
-        {.attr_name = "color", .data = path_colors, .item_count = PATH_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = PATH_COUNT},
+        {.attr_name = "position", .data = circle, .item_count = CIRCLE_COUNT},
+        {.attr_name = "color", .data = circle_colors, .item_count = CIRCLE_COUNT},
+        {.attr_name = "stroke_width", .data = circle_widths, .item_count = CIRCLE_COUNT},
     };
     if (dvz_visual_set_data_many(path, path_updates, 3) != 0)
         return false;
@@ -89,28 +92,39 @@ static bool _add_domain_shape(DvzScene* scene, DvzPanel* panel, DvzColor color)
     if (dvz_panel_add_visual(panel, path, &attach) != 0)
         return false;
 
-    const vec3 data_points[POINT_COUNT] = {
-        {0.0f, 0.0f, 0.0f},
-        {2.0f, 0.0f, 0.0f},
-        {2.0f, 1.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},
-    };
-    DvzColor point_colors[POINT_COUNT] = {{0}};
-    float diameters[POINT_COUNT] = {26.0f, 26.0f, 26.0f, 26.0f};
-    for (uint32_t i = 0; i < POINT_COUNT; i++)
-        point_colors[i] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
+    vec3 starts[GRID_LINES] = {0};
+    vec3 ends[GRID_LINES] = {0};
+    DvzColor grid_colors[GRID_LINES] = {{0}};
+    float grid_widths[GRID_LINES] = {0};
+    for (uint32_t i = 0; i < 5u; i++)
+    {
+        const float v = -1.0f + 0.5f * (float)i;
+        starts[i][0] = -1.0f;
+        starts[i][1] = v;
+        ends[i][0] = +1.0f;
+        ends[i][1] = v;
+        starts[5u + i][0] = v;
+        starts[5u + i][1] = -1.0f;
+        ends[5u + i][0] = v;
+        ends[5u + i][1] = +1.0f;
+        grid_colors[i] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
+        grid_colors[5u + i] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
+        grid_widths[i] = v == -1.0f || v == +1.0f ? 3.0f : 1.2f;
+        grid_widths[5u + i] = grid_widths[i];
+    }
 
-    DvzVisual* point = dvz_point(scene, 0);
-    if (point == NULL)
+    DvzVisual* grid = dvz_segment(scene, 0);
+    if (grid == NULL)
         return false;
-    DvzVisualDataUpdate point_updates[] = {
-        {.attr_name = "position", .data = data_points, .item_count = POINT_COUNT},
-        {.attr_name = "color", .data = point_colors, .item_count = POINT_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
+    DvzVisualDataUpdate grid_updates[] = {
+        {.attr_name = "position_start", .data = starts, .item_count = GRID_LINES},
+        {.attr_name = "position_end", .data = ends, .item_count = GRID_LINES},
+        {.attr_name = "color", .data = grid_colors, .item_count = GRID_LINES},
+        {.attr_name = "stroke_width", .data = grid_widths, .item_count = GRID_LINES},
     };
-    if (dvz_visual_set_data_many(point, point_updates, 3) != 0)
+    if (dvz_visual_set_data_many(grid, grid_updates, 4) != 0)
         return false;
-    return dvz_panel_add_visual(panel, point, &attach) == 0;
+    return dvz_panel_add_visual(panel, grid, &attach) == 0;
 }
 
 
@@ -189,14 +203,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             return false;
     }
 
-    if (dvz_panel_set_domain(free_panel, DVZ_DIM_X, 0.0, 2.0) != 0)
+    if (dvz_panel_set_domain(free_panel, DVZ_DIM_X, -1.0, +1.0) != 0)
         return false;
-    if (dvz_panel_set_domain(free_panel, DVZ_DIM_Y, 0.0, 1.0) != 0)
+    if (dvz_panel_set_domain(free_panel, DVZ_DIM_Y, -1.0, +1.0) != 0)
         return false;
 
     DvzPanelDomainFit fit = dvz_panel_domain_fit();
-    fit.x = (DvzDataDomain){.min = 0.0, .max = 2.0};
-    fit.y = (DvzDataDomain){.min = 0.0, .max = 1.0};
+    fit.x = (DvzDataDomain){.min = -1.0, .max = +1.0};
+    fit.y = (DvzDataDomain){.min = -1.0, .max = +1.0};
     fit.padding = 0.08;
     fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
     if (dvz_panel_set_domain_fit(fit_panel, &fit) != 0)
@@ -210,7 +224,15 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (!dvz_panel_visible_domain(fit_panel, DVZ_DIM_Y, &y_min, &y_max))
         return false;
-    if (!(x_min < 0.0 && x_max > 2.0 && y_min < 0.0 && y_max > 1.0))
+    const double x_span = x_max - x_min;
+    const double y_span = y_max - y_min;
+    DvzRect plot = {0};
+    if (!dvz_panel_plot_rect_px(fit_panel, &plot) || !(plot.width > 0.0f) ||
+        !(plot.height > 0.0f))
+        return false;
+    const double x_units_per_px = x_span / (double)plot.width;
+    const double y_units_per_px = y_span / (double)plot.height;
+    if (fabs(x_units_per_px - y_units_per_px) > 1e-4)
         return false;
 
     if (!_add_domain_shape(

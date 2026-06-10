@@ -3501,7 +3501,9 @@ int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* ite
     DvzVisual* points = dvz_point(scene, 0);
     ANN(points);
     vec3 positions[2] = {{-1.0f, -1.0f, 0.0f}, {+1.0f, +1.0f, 0.0f}};
+    float diameters[2] = {20.0f, 20.0f};
     AT(dvz_visual_set_data(points, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(points, "diameter", diameters, 2) == 0);
     AT(dvz_panel_add_visual(panel, points, NULL) == 0);
 
     AT(!dvz_panel_bounds_visible(panel));
@@ -3534,6 +3536,29 @@ int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* ite
     AT(overlay->attrs[end_idx].item_count == 4);
     AT(overlay->attrs[color_idx].item_count == 4);
     AT(overlay->attrs[width_idx].item_count == 4);
+    const float* starts = (const float*)overlay->attrs[start_idx].data;
+    const float* ends = (const float*)overlay->attrs[end_idx].data;
+    ANN(starts);
+    ANN(ends);
+    float min_x = +FLT_MAX;
+    float max_x = -FLT_MAX;
+    float min_y = +FLT_MAX;
+    float max_y = -FLT_MAX;
+    for (uint32_t i = 0; i < overlay->attrs[start_idx].item_count; i++)
+    {
+        min_x = fminf(min_x, starts[3 * i + 0]);
+        min_x = fminf(min_x, ends[3 * i + 0]);
+        max_x = fmaxf(max_x, starts[3 * i + 0]);
+        max_x = fmaxf(max_x, ends[3 * i + 0]);
+        min_y = fminf(min_y, starts[3 * i + 1]);
+        min_y = fminf(min_y, ends[3 * i + 1]);
+        max_y = fmaxf(max_y, starts[3 * i + 1]);
+        max_y = fmaxf(max_y, ends[3 * i + 1]);
+    }
+    AT(min_x < -1.09f);
+    AT(max_x > +1.09f);
+    AT(min_y < -1.19f);
+    AT(max_y > +1.19f);
 
     start_idx = _attr_index(occluded_overlay, "position_start");
     end_idx = _attr_index(occluded_overlay, "position_end");
