@@ -1130,6 +1130,48 @@ async function main() {
         console.log(skipLine(`WebGPU live ${shortLabel} smoke: headless WebGPU instance loss (${error.message})`));
       }
     }
+
+    const promotedAnimatedRoutes = [
+      [
+        'update_partial',
+        'Partial Data Update',
+        'webgpu_live_update_partial.png',
+        'partial-update',
+        'feature_update_partial',
+      ],
+      [
+        'feature_update_visual_data',
+        'Visual Data Update',
+        'webgpu_live_update_visual_data.png',
+        'visual-data-update',
+        'feature_update_visual_data',
+      ],
+      [
+        'feature_visibility',
+        'Visual Visibility',
+        'webgpu_live_visibility.png',
+        'visibility',
+        'feature_visibility',
+      ],
+    ];
+    for (const [id, label, filename, shortLabel, scenarioId] of promotedAnimatedRoutes) {
+      try {
+        const result = await smokeAnimatedWasmPage(
+          page,
+          baseUrl,
+          `/examples/webgpu/live.html?id=${id}`,
+          `Rendered ${label}`,
+          join(artifactsDir, filename),
+          scenarioId,
+        );
+        console.log(passLine(`live ${shortLabel}: ${result.initialStatus}`));
+      } catch (error) {
+        if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+          throw error;
+        }
+        console.log(skipLine(`WebGPU live ${shortLabel} smoke: headless WebGPU instance loss (${error.message})`));
+      }
+    }
     if (wasmBasic !== null) {
       console.log(passLine(`live basic: ${wasmBasic.initialStatus}; initial_frame=${wasmBasic.initialFrame}`));
     }

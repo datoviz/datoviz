@@ -1107,10 +1107,12 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=update_partial
       requirements:
         - buffer-update
         - point
+        - frame-callbacks
     agent_copy_safe: true
 
   - id: feature_update_visual_data
@@ -1124,11 +1126,13 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_update_visual_data
       requirements:
         - buffer-update
         - visual-update
         - point
+        - frame-callbacks
     agent_copy_safe: true
 
   - id: feature_visibility
@@ -1142,11 +1146,12 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_visibility
       requirements:
         - visual-visibility
         - point
-        - marker
+        - frame-callbacks
     agent_copy_safe: true
 
   - id: technique_depth_test

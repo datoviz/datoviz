@@ -192,6 +192,24 @@ export const LIVE_EXAMPLES = [
     scenarioId: "us_state_choropleth",
   },
   {
+    id: "update_partial",
+    label: "Partial Data Update",
+    scenarioId: "feature_update_partial",
+    animate: true,
+  },
+  {
+    id: "feature_update_visual_data",
+    label: "Visual Data Update",
+    scenarioId: "feature_update_visual_data",
+    animate: true,
+  },
+  {
+    id: "feature_visibility",
+    label: "Visual Visibility",
+    scenarioId: "feature_visibility",
+    animate: true,
+  },
+  {
     id: "feature_panel_multi",
     label: "Multiple Panels",
     scenarioId: "feature_panel_multi",

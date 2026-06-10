@@ -15,7 +15,7 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
-now has 59 promoted routes backed by canonical C examples or portable C scenarios:
+now has 62 promoted routes backed by canonical C examples or portable C scenarios:
 `feature_basic_scene`, `feature_timer_animation`, `feature_triangulation_polygon`,
 `feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `feature_isolines`,
 `feature_animation_tracks`, `feature_compute_buffer_animation`, `feature_obj_loading`,
@@ -29,7 +29,8 @@ now has 59 promoted routes backed by canonical C examples or portable C scenario
 `feature_bars_bands`, `feature_controller_fly`, `feature_controller_turntable`,
 `feature_controller_orbit_camera`, `feature_sampled_field_2d`, `colormap_scale`,
 `panel_background`, `composite_polygon`, `linked_panels_axes_panzoom`,
-`scalebar_measurement_workflow`, `showcase_surface_grid`, `us_state_choropleth`, `visual_point`,
+`scalebar_measurement_workflow`, `showcase_surface_grid`, `us_state_choropleth`,
+`feature_update_partial`, `feature_update_visual_data`, `feature_visibility`, `visual_point`,
 `visual_pixel`, `visual_marker`, `visual_primitive`, `visual_segment`, `visual_path`,
 `visual_image`, `visual_mesh`, `sphere_impostor`, `visual_text`, `visual_glyph`, and
 `visual_labels`.
@@ -92,6 +93,14 @@ prepared path from the `data` submodule when present. `just webgpu-browser-smoke
 successfully in this shell with the known headless external WebGPU instance-loss skip at
 `QueueSubmit` for the new live route; `just example-c showcases/choropleth --png` passed natively
 and loaded `48` regions, `72` rings, and `10983` points.
+
+Recorded local retained-update/visibility promotion proof on 2026-06-10: `just wasm-scene-smoke`
+passed with `feature_update_partial`, `feature_update_visual_data`, and `feature_visibility`
+registered in the WASM scenario table. Targeted checks cover retained `WriteBuffer` updates after
+scenario frame callbacks and visibility-driven draw changes. `just webgpu-browser-smoke` exited
+successfully in this shell with the known headless external WebGPU instance-loss skip at
+`QueueSubmit` for all three new animated live routes; native PNG smokes passed for
+`features/update_partial`, `features/update_visual_data`, and `features/visibility`.
 
 
 ## Fixture Dashboard

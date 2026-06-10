@@ -54,6 +54,14 @@ typedef struct UpdateVisualDataState
 
 
 /*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_example_update_visual_data_scenario(void);
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
@@ -219,7 +227,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _update_visual_data_scenario(void)
+DvzScenarioSpec dvz_example_update_visual_data_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_update_visual_data",
@@ -246,8 +254,10 @@ static DvzScenarioSpec _update_visual_data_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _update_visual_data_scenario();
+    DvzScenarioSpec spec = dvz_example_update_visual_data_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

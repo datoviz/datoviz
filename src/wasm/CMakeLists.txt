@@ -48,6 +48,9 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/text_block.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/timer_animation.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/triangulation_polygon.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/update_partial.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/update_visual_data.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/visibility.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/linked_probe_colorbar.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/gpu_particle_smoke.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/panel_linked_axes.c

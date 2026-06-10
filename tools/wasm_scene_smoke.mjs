@@ -1309,6 +1309,30 @@ function expectChoroplethScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
 }
 
+function expectPointUpdateScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} point`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.point",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected point draw`);
+  requireOk(commandsOf(stream, "WriteBuffer").length >= 3, `${label}: expected point data uploads`);
+}
+
+function expectVisibilityScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} point`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.point",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 2, `${label}: expected visible point draws`);
+  requireOk(commandsOf(stream, "WriteBuffer").length >= 6, `${label}: expected visible point uploads`);
+}
+
 function expectLinkedProbeColorbarScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -2076,6 +2100,9 @@ try {
     "scalebar_measurement_workflow",
     "showcase_surface_grid",
     "us_state_choropleth",
+    "feature_update_partial",
+    "feature_update_visual_data",
+    "feature_visibility",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -2991,6 +3018,21 @@ try {
       "us state choropleth",
       (stream, label) => expectChoroplethScenarioStreamShape(stream, label),
     ],
+    [
+      "feature_update_partial",
+      "partial update",
+      (stream, label) => expectPointUpdateScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_update_visual_data",
+      "visual data update",
+      (stream, label) => expectPointUpdateScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_visibility",
+      "visual visibility",
+      (stream, label) => expectVisibilityScenarioStreamShape(stream, label),
+    ],
   ];
   for (const [id, label, expectShape] of panelAndAxesScenarios) {
     const index = scenarioIndex(Module, id);
@@ -3017,6 +3059,34 @@ try {
       requireOk(figure !== 0, `${label} scenario has no figure`);
       const initial = emitStream(Module, scene, figure, `${label} initial`);
       expectShape(initial.stream, `${label} initial`);
+      if (
+        id === "feature_update_partial" ||
+        id === "feature_update_visual_data" ||
+        id === "feature_visibility"
+      ) {
+        expectStatus(
+          Module._dvz_wasm_api_scenario_frame(scene, 1.1, 1 / 60),
+          0,
+          `${label} scenario update frame`,
+        );
+        if (id === "feature_visibility") {
+          const visibleFrame = emitStream(Module, scene, figure, `${label} visible frame`);
+          requireOk(
+            commandsOf(visibleFrame.stream, "Draw").length >= 3,
+            `${label}: expected hidden visual to become drawable after frame callback`,
+          );
+        } else {
+          const frame = emitIncrementalPacketStream(Module, scene, figure, `${label} split packet frame`);
+          requireOk(
+            frame.update.commandCount > 0 && frame.frame.commandCount > 0,
+            `${label}: expected update and frame packet commands after scenario frame`,
+          );
+          requireOk(
+            frame.update.decoded.commands.some((command) => command.cmd === "WriteBuffer"),
+            `${label}: expected retained data WriteBuffer update`,
+          );
+        }
+      }
     } finally {
       Module._dvz_wasm_api_scene_destroy(scene);
     }

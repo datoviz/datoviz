@@ -10,8 +10,9 @@ retained point visual with full data replacement.
 - Status: `supported`
 - Source: [`examples/c/features/update_visual_data.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_visual_data.c)
 - Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `buffer-update`, `visual-update`, `point`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_update_visual_data`](/examples/webgpu/live.html?id=feature_update_visual_data)
+- WebGPU requirements: `buffer-update`, `visual-update`, `point`, `frame-callbacks`
 - Build: `just example-c features/update_visual_data`
 - Smoke: `./build/examples/c/features/update_visual_data --png`
 - Validation: `smoke+screenshot`
@@ -28,6 +29,14 @@ retained point visual with full data replacement.
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=feature_update_visual_data" title="Visual Data Update WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_update_visual_data).
 
 ## Source
 

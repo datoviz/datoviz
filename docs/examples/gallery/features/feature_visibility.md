@@ -10,8 +10,9 @@ retained visual visibility toggled on a runner frame.
 - Status: `supported`
 - Source: [`examples/c/features/visibility.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visibility.c)
 - Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `visual-visibility`, `point`, `marker`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_visibility`](/examples/webgpu/live.html?id=feature_visibility)
+- WebGPU requirements: `visual-visibility`, `point`, `frame-callbacks`
 - Build: `just example-c features/visibility`
 - Smoke: `./build/examples/c/features/visibility --png`
 - Validation: `smoke+screenshot`
@@ -28,6 +29,14 @@ retained visual visibility toggled on a runner frame.
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=feature_visibility" title="Visual Visibility WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_visibility).
 
 ## Source
 

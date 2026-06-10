@@ -10,8 +10,9 @@ point visual with one retained data-range update.
 - Status: `supported`
 - Source: [`examples/c/features/update_partial.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_partial.c)
 - Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `buffer-update`, `point`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=update_partial`](/examples/webgpu/live.html?id=update_partial)
+- WebGPU requirements: `buffer-update`, `point`, `frame-callbacks`
 - Build: `just example-c features/update_partial`
 - Smoke: `./build/examples/c/features/update_partial --png`
 - Validation: `smoke+screenshot`
@@ -28,6 +29,14 @@ point visual with one retained data-range update.
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=update_partial" title="Partial Data Update WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=update_partial).
 
 ## Source
 
