@@ -84,6 +84,7 @@ typedef struct DvzOrientationGizmo  DvzOrientationGizmo;
 typedef struct DvzReferenceGrid     DvzReferenceGrid;
 typedef struct DvzFont              DvzFont;
 typedef struct DvzText              DvzText;
+typedef struct DvzTextAtlas         DvzTextAtlas;
 typedef struct DvzSymbolSet         DvzSymbolSet;
 typedef struct DvzAnnotation        DvzAnnotation;
 typedef struct DvzAnnotation        DvzScaleBar;
@@ -185,6 +186,23 @@ typedef enum
     DVZ_SCENE_FRAME_ARTIFACT_STATUS_OK = 0,
     DVZ_SCENE_FRAME_ARTIFACT_STATUS_ENCODE_ERROR = 1,
 } DvzSceneFrameArtifactStatus;
+
+
+typedef enum
+{
+    DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP = 0,
+    DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP,
+    DVZ_TEXT_ATLAS_BACKEND_STB_SDF,
+    DVZ_TEXT_ATLAS_BACKEND_MSDF,
+} DvzTextAtlasBackend;
+
+
+typedef enum
+{
+    DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA = 0,
+    DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA,
+    DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB,
+} DvzTextAtlasEncoding;
 
 
 
@@ -1194,6 +1212,54 @@ struct DvzTextStyle
     bool underline;
 };
 typedef struct DvzTextStyle DvzTextStyle;
+
+
+struct DvzTextAtlasSpec
+{
+    DvzTextAtlasBackend backend;
+    float em_px;
+    float distance_range_px;
+    uint32_t flags;
+};
+typedef struct DvzTextAtlasSpec DvzTextAtlasSpec;
+
+
+struct DvzTextAtlasInfo
+{
+    DvzTextAtlasSpec spec;
+    DvzTextAtlasBackend backend;
+    DvzTextAtlasEncoding encoding;
+    uint32_t width;
+    uint32_t height;
+    uint32_t glyph_count;
+    uint32_t channels;
+    float em_px;
+    float distance_range_px;
+    float ascent;
+    float descent;
+    float line_gap;
+    float line_height;
+    uint32_t missing_glyph_count;
+    uint64_t generation;
+};
+typedef struct DvzTextAtlasInfo DvzTextAtlasInfo;
+
+
+struct DvzTextAtlasGlyph
+{
+    uint32_t codepoint;
+    uint32_t glyph_id;
+    float advance;
+    float xoff;
+    float yoff;
+    float width;
+    float height;
+    float plane_bounds[4];
+    float atlas_bounds[4];
+    float uv[4];
+    bool valid;
+};
+typedef struct DvzTextAtlasGlyph DvzTextAtlasGlyph;
 
 
 struct DvzTextPlacement

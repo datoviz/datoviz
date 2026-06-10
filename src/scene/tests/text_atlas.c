@@ -266,6 +266,71 @@ int test_scene_text_default_msdf_uses_embedded_atlas(TstContext* suite, const Ts
 }
 
 
+/**
+ * Verify the public font atlas API exposes generated atlas metadata and glyph metrics.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_public_font_atlas_api(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+#if defined(DVZ_HAS_ZLIB) && DVZ_HAS_ZLIB
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzFontDesc desc = dvz_font_desc();
+    desc.family = "Roboto";
+    desc.style = "Regular";
+    DvzFont* font = dvz_font(scene, &desc);
+    ANN(font);
+
+    DvzTextAtlasSpec spec = dvz_text_atlas_spec(DVZ_TEXT_RENDERER_MSDF_ATLAS, 48.0f);
+    AT(spec.backend == DVZ_TEXT_ATLAS_BACKEND_MSDF);
+    AT(dvz_font_atlas_ensure_string(font, &spec, "Atlas caf" "\xC3" "\xA9"));
+
+    const DvzTextAtlas* atlas = dvz_font_atlas(font, &spec);
+    ANN(atlas);
+    DvzTextAtlasInfo info = dvz_text_atlas_info(atlas);
+    AT(info.backend == DVZ_TEXT_ATLAS_BACKEND_MSDF);
+    AT(info.encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
+    AT(info.width > 0);
+    AT(info.height > 0);
+    AT(info.glyph_count >= 95);
+    AT(info.channels == 4);
+
+    DvzSampledField* field = dvz_text_atlas_field(atlas);
+    ANN(field);
+    const DvzSampledFieldDesc* field_desc = dvz_sampled_field_get_desc(field);
+    ANN(field_desc);
+    AT(field_desc->width == info.width);
+    AT(field_desc->height == info.height);
+    AT(field_desc->format == DVZ_FIELD_FORMAT_RGBA8_UNORM);
+
+    const DvzTextAtlasGlyph* glyph = dvz_text_atlas_glyph(atlas, 0x00E9u);
+    ANN(glyph);
+    AT(glyph->valid);
+    AT(glyph->width > 0.0f);
+    AT(glyph->height > 0.0f);
+    AT(glyph->advance > 0.0f);
+    AT(glyph->uv[0] < glyph->uv[2]);
+    AT(glyph->uv[1] < glyph->uv[3]);
+
+    const DvzTextAtlasGlyph* fallback = dvz_text_atlas_glyph(atlas, 0x10FFFFu);
+    ANN(fallback);
+    AT(fallback->codepoint == '?');
+
+    dvz_scene_destroy(scene);
+#else
+    tst_skip(suite, "zlib unavailable");
+#endif
+    return 0;
+}
+
+
 
 /**
  * Verify font-backed UTF-8 text renders through scene DRP2 runtime readback.
@@ -405,6 +470,7 @@ int test_scene_text_atlas(TstSuite* suite)
 
     TST_CASE(test_scene_text_msdf_shader_uses_rgb_distance);
     TST_CASE(test_scene_text_default_msdf_uses_embedded_atlas);
+    TST_CASE(test_scene_text_public_font_atlas_api);
     TST_SCENE_TEXT_ATLAS_GPU_CASE(test_scene_text_atlas_utf8_runtime_readback);
 
     return 0;

@@ -345,9 +345,6 @@ typedef struct DvzAnimation DvzAnimation;
 typedef struct DvzTextShapedGlyph DvzTextShapedGlyph;
 typedef struct DvzTextLayoutMetrics DvzTextLayoutMetrics;
 typedef struct DvzTextGlyphInstance DvzTextGlyphInstance;
-typedef struct DvzTextAtlasGlyph DvzTextAtlasGlyph;
-typedef struct DvzTextAtlasSpec DvzTextAtlasSpec;
-typedef struct DvzTextAtlas DvzTextAtlas;
 typedef struct DvzTextBlockRun DvzTextBlockRun;
 typedef struct DvzTextBlockLayout DvzTextBlockLayout;
 typedef struct DvzTextBlockRasterDesc DvzTextBlockRasterDesc;
@@ -400,30 +397,9 @@ struct DvzSceneRequestFrameSubscription
 
 
 /*************************************************************************************************/
-/*  Text atlas                                                                                   */
-/*************************************************************************************************/
-
-typedef enum
-{
-    DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP = 0,
-    DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP,
-    DVZ_TEXT_ATLAS_BACKEND_STB_SDF,
-    DVZ_TEXT_ATLAS_BACKEND_MSDF,
-} DvzTextAtlasBackend;
-
-
-typedef enum
-{
-    DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA = 0,
-    DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA,
-    DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB,
-} DvzTextAtlasEncoding;
-
-
-
-/*************************************************************************************************/
 /*  Shared helpers                                                                               */
 /*************************************************************************************************/
+
 
 void _scene_panel_pixel_rect(
     const DvzPanel* panel, float* out_x, float* out_y, float* out_width, float* out_height);
@@ -599,32 +575,6 @@ struct DvzTextGlyphInstance
     uint32_t text_index;
     uint32_t glyph_index;
 };
-
-
-struct DvzTextAtlasGlyph
-{
-    uint32_t codepoint;
-    uint32_t glyph_id;
-    float advance;
-    float xoff;
-    float yoff;
-    float width;
-    float height;
-    float plane_bounds[4];
-    float atlas_bounds[4];
-    float uv[4];
-    bool valid;
-};
-
-
-struct DvzTextAtlasSpec
-{
-    DvzTextAtlasBackend backend;
-    float em_px;
-    float distance_range_px;
-    uint32_t flags;
-};
-
 
 
 struct DvzTextAtlas

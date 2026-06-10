@@ -62,6 +62,98 @@ DVZ_EXPORT void dvz_font_destroy(DvzFont* font);
 
 
 /**
+ * Resolve a text atlas specification from a renderer and rendered text size.
+ *
+ * @param renderer requested text renderer
+ * @param size_px rendered text size in logical pixels
+ * @return atlas generation spec
+ */
+DVZ_EXPORT DvzTextAtlasSpec dvz_text_atlas_spec(DvzTextRenderer renderer, float size_px);
+
+
+/**
+ * Ensure a font has an atlas for Datoviz's default text glyph set.
+ *
+ * @param font the font
+ * @param spec requested atlas spec
+ * @return true when the atlas is available
+ */
+DVZ_EXPORT bool dvz_font_atlas_ensure(DvzFont* font, const DvzTextAtlasSpec* spec);
+
+
+/**
+ * Ensure a font has an atlas that covers one UTF-8 string.
+ *
+ * @param font the font
+ * @param spec requested atlas spec
+ * @param string the UTF-8 string
+ * @return true when the atlas is available
+ */
+DVZ_EXPORT bool
+dvz_font_atlas_ensure_string(DvzFont* font, const DvzTextAtlasSpec* spec, const char* string);
+
+
+/**
+ * Ensure a font has an atlas that covers a list of UTF-8 strings.
+ *
+ * @param font the font
+ * @param spec requested atlas spec
+ * @param strings UTF-8 strings
+ * @param count string count
+ * @return true when the atlas is available
+ */
+DVZ_EXPORT bool dvz_font_atlas_ensure_strings(
+    DvzFont* font, const DvzTextAtlasSpec* spec, const char* const* strings, uint32_t count);
+
+
+/**
+ * Return the font atlas matching a spec.
+ *
+ * The returned atlas is owned by the font's scene and remains valid until the font or scene is
+ * destroyed. When the requested renderer falls back internally, this function returns the fallback
+ * atlas.
+ *
+ * @param font the font
+ * @param spec requested atlas spec
+ * @return atlas pointer, or NULL when unavailable
+ */
+DVZ_EXPORT const DvzTextAtlas*
+dvz_font_atlas(const DvzFont* font, const DvzTextAtlasSpec* spec);
+
+
+/**
+ * Return immutable atlas metadata.
+ *
+ * @param atlas the text atlas
+ * @return atlas metadata; zeroed when atlas is NULL
+ */
+DVZ_EXPORT DvzTextAtlasInfo dvz_text_atlas_info(const DvzTextAtlas* atlas);
+
+
+/**
+ * Return the sampled field containing the atlas texture.
+ *
+ * The field is owned by the atlas's font scene. It may be bound to glyph visuals but must not be
+ * destroyed by the caller.
+ *
+ * @param atlas the text atlas
+ * @return sampled atlas field, or NULL
+ */
+DVZ_EXPORT DvzSampledField* dvz_text_atlas_field(const DvzTextAtlas* atlas);
+
+
+/**
+ * Return one atlas glyph, falling back to '?' for unsupported codepoints.
+ *
+ * @param atlas the text atlas
+ * @param codepoint Unicode codepoint
+ * @return glyph metrics, or NULL when unavailable
+ */
+DVZ_EXPORT const DvzTextAtlasGlyph*
+dvz_text_atlas_glyph(const DvzTextAtlas* atlas, uint32_t codepoint);
+
+
+/**
  * Create a retained text object attached to a panel.
  *
  * The text object owns semantic string, style, placement, and renderer state. Rendering lowers to

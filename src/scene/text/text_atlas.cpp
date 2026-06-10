@@ -2341,6 +2341,165 @@ static bool _text_atlas_ensure_set(
 extern "C" {
 
 /**
+ * Resolve a text atlas specification from a renderer and rendered text size.
+ *
+ * @param renderer requested text renderer
+ * @param size_px rendered text size in pixels
+ * @return atlas generation spec
+ */
+DvzTextAtlasSpec dvz_text_atlas_spec(DvzTextRenderer renderer, float size_px)
+{
+    DvzTextAtlasBackend backend = DVZ_TEXT_ATLAS_BACKEND_MSDF;
+    switch (renderer)
+    {
+    case DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS:
+        backend = DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP;
+        break;
+    case DVZ_TEXT_RENDERER_BITMAP_ATLAS:
+#if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
+        backend = DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP;
+#else
+        backend = DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP;
+#endif
+        break;
+    case DVZ_TEXT_RENDERER_AUTO:
+        backend = size_px < 14.0f ? DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP
+                                  : DVZ_TEXT_ATLAS_BACKEND_MSDF;
+        break;
+    case DVZ_TEXT_RENDERER_MSDF_ATLAS:
+    case DVZ_TEXT_RENDERER_VECTOR_GPU:
+    default:
+        backend = DVZ_TEXT_ATLAS_BACKEND_MSDF;
+        break;
+    }
+    return _scene_text_atlas_spec(backend, size_px);
+}
+
+
+/**
+ * Ensure a font has an atlas for Datoviz's default text glyph set.
+ *
+ * @param font the font
+ * @param spec requested atlas spec
+ * @return true when the atlas is available
+ */
+bool dvz_font_atlas_ensure(DvzFont* font, const DvzTextAtlasSpec* spec)
+{
+    if (font == NULL || spec == NULL)
+        return false;
+    return _scene_text_atlas_ensure(font, spec);
+}
+
+
+/**
+ * Ensure a font has an atlas that covers one UTF-8 string.
+ *
+ * @param font the font
+ * @param spec requested atlas spec
+ * @param string the UTF-8 string
+ * @return true when the atlas is available
+ */
+bool dvz_font_atlas_ensure_string(DvzFont* font, const DvzTextAtlasSpec* spec, const char* string)
+{
+    if (font == NULL || spec == NULL || string == NULL)
+        return false;
+    return _scene_text_atlas_ensure_string(font, spec, string);
+}
+
+
+/**
+ * Ensure a font has an atlas that covers a list of UTF-8 strings.
+ *
+ * @param font the font
+ * @param spec requested atlas spec
+ * @param strings the UTF-8 strings
+ * @param count string count
+ * @return true when the atlas is available
+ */
+bool dvz_font_atlas_ensure_strings(
+    DvzFont* font, const DvzTextAtlasSpec* spec, const char* const* strings, uint32_t count)
+{
+    if (font == NULL || spec == NULL || strings == NULL || count == 0)
+        return false;
+    return _scene_text_atlas_ensure_strings(font, spec, strings, count);
+}
+
+
+/**
+ * Return the font atlas matching a requested spec, including fallback atlases.
+ *
+ * @param font the scene font
+ * @param spec requested atlas spec
+ * @return atlas pointer, or NULL when unavailable
+ */
+const DvzTextAtlas* dvz_font_atlas(const DvzFont* font, const DvzTextAtlasSpec* spec)
+{
+    if (font == NULL || spec == NULL)
+        return NULL;
+    return _scene_text_atlas_get((DvzFont*)font, spec);
+}
+
+
+/**
+ * Return immutable atlas metadata.
+ *
+ * @param atlas the text atlas
+ * @return atlas metadata; zeroed when atlas is NULL
+ */
+DvzTextAtlasInfo dvz_text_atlas_info(const DvzTextAtlas* atlas)
+{
+    DvzTextAtlasInfo info = {};
+    if (atlas == NULL)
+        return info;
+    info.spec = atlas->spec;
+    info.backend = atlas->backend;
+    info.encoding = atlas->encoding;
+    info.width = atlas->width;
+    info.height = atlas->height;
+    info.glyph_count = atlas->glyph_count;
+    info.channels = atlas->channels;
+    info.em_px = atlas->em_px;
+    info.distance_range_px = atlas->distance_range_px;
+    info.ascent = atlas->ascent;
+    info.descent = atlas->descent;
+    info.line_gap = atlas->line_gap;
+    info.line_height = atlas->line_height;
+    info.missing_glyph_count = atlas->missing_glyph_count;
+    info.generation = atlas->generation;
+    return info;
+}
+
+
+/**
+ * Return the sampled field containing the atlas texture.
+ *
+ * @param atlas the text atlas
+ * @return sampled atlas field, or NULL
+ */
+DvzSampledField* dvz_text_atlas_field(const DvzTextAtlas* atlas)
+{
+    if (atlas == NULL)
+        return NULL;
+    return atlas->field;
+}
+
+
+/**
+ * Return one atlas glyph, falling back to '?' for unsupported codepoints.
+ *
+ * @param atlas the text atlas
+ * @param codepoint Unicode codepoint
+ * @return glyph metrics, or NULL when unavailable
+ */
+const DvzTextAtlasGlyph* dvz_text_atlas_glyph(const DvzTextAtlas* atlas, uint32_t codepoint)
+{
+    if (atlas == NULL)
+        return NULL;
+    return _scene_text_atlas_glyph((DvzTextAtlas*)atlas, codepoint);
+}
+
+
+/**
  * Resolve a text atlas spec from a backend and rendered size.
  *
  * @param backend requested atlas backend
