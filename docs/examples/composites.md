@@ -19,7 +19,7 @@ _Media pending._
 
 `supported` `composites`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
 
-semantic two-community graph composite with bridge edges.
+deterministic brain-connectivity graph composite with community labels.
 
 </div>
 

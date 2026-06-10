@@ -21,6 +21,10 @@ Blockers:
 | Public API/status cleanup | Missing. | Mark public surfaces as supported, experimental, advanced/unstable, deferred, or external/GSP. |
 | Release example proof | Partial for the full RC, but the 2026-06-09 `EXAMPLES_NOTES.md` ledger is closed: source/gallery polish, `showcases/surface_grid`, `features/bounds_overlay`, runtime/readability fixes, scenario-helper audit, comment metadata audit, and builtin-shapes parity audit are resolved with native smoke or explicit audit evidence. | Continue broader release proof outside `EXAMPLES_NOTES.md`: visible parity table, API disposition, and any additional focused native evidence where the environment supports Vulkan. |
 
+June 10 examples cleanup is closed in git history: shared interaction fixes, 3D context polish,
+technique-panel polish, reviewed visual polish, and graph replacement landed with focused tests and
+native smoke evidence.
+
 Closed first slices that should stay in validation: frame artifact scene emission, raw `ctypes`, retained textured mesh, retained
 DATA-coordinate visual attachments, text, 2D axes/ticks, colorbars, labels/readouts, scale bars,
 app/offscreen rendering, broad item/sample query paths, scene visual-boundary checks, WebGPU fixture
