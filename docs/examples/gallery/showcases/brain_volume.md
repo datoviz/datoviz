@@ -36,10 +36,10 @@ local Allen mouse brain RGBA volume and occluded slice.
 
 ## Media
 
-_Media pending._
+![Allen Mouse Brain](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/brain_volume.png)
 
 Static screenshots are required before final website publication. Generated media is
-prepared separately from this page and should not be staged without explicit approval.
+prepared in the `data` submodule and linked from this page.
 
 ## Source
 

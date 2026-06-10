@@ -21,8 +21,9 @@ python3 tools/run_c_examples.py --list
 git diff --check
 ```
 
-Screenshot and video capture should be run separately from documentation generation. Do not stage
-`data/gallery`, `docs/images/gallery`, or other generated media without explicit approval.
+Screenshot and video capture should be run separately from documentation generation.
+Gallery screenshots are generated into the `data` submodule under `data/gallery/v0.4`
+and should be committed through that submodule, not copied into the main repository.
 
 ## Screenshot Queue
 

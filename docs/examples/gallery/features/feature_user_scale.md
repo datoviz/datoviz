@@ -24,10 +24,10 @@ screen-space marker, path, and axis scaling controlled by a GUI slider.
 
 ## Media
 
-_Media pending._
+![User Scale](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_user_scale.png)
 
 Static screenshots are required before final website publication. Generated media is
-prepared separately from this page and should not be staged without explicit approval.
+prepared in the `data` submodule and linked from this page.
 
 ## Source
 

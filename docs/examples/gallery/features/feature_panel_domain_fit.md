@@ -24,10 +24,10 @@ panel-owned data-domain fit with equal aspect.
 
 ## Media
 
-_Media pending._
+![Panel Domain Fit](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_panel_domain_fit.png)
 
 Static screenshots are required before final website publication. Generated media is
-prepared separately from this page and should not be staged without explicit approval.
+prepared in the `data` submodule and linked from this page.
 
 ## Source
 

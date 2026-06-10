@@ -28,10 +28,10 @@ scale-aware overview, detail, and 3D measurement workflow.
 
 ## Media
 
-_Media pending._
+![Scale Bar Measurement Workflow](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/scalebar_measurement_workflow.png)
 
 Static screenshots are required before final website publication. Generated media is
-prepared separately from this page and should not be staged without explicit approval.
+prepared in the `data` submodule and linked from this page.
 
 ## Source
 

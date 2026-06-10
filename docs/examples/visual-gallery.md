@@ -16,7 +16,7 @@ Coverage: 15 examples (13 supported, 2 experimental).
 
 ### [Glyph](gallery/visuals/visual_glyph.md)
 
-_Media pending._
+![Glyph](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_glyph.png)
 
 `experimental` `visuals`<br><span>`glyph`, `texture-atlas`, `sdf`, `capture`</span>
 
@@ -28,7 +28,7 @@ low-level SDF atlas quads, distinct from font-shaped text and marker symbols.
 
 ### [Image](gallery/visuals/visual_image.md)
 
-_Media pending._
+![Image](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_image.png)
 
 `supported` `visuals`<br><span>`image`, `sampled-field`, `capture`</span>
 
@@ -40,7 +40,7 @@ deterministic scalar sampled field rendered with the retained image visual.
 
 ### [Labels](gallery/visuals/visual_labels.md)
 
-_Media pending._
+![Labels](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_labels.png)
 
 `supported` `visuals`<br><span>`labels`, `categorical-scale`, `panzoom`, `capture`</span>
 
@@ -52,7 +52,7 @@ retained labels visual with a small deterministic integer sampled field.
 
 ### [Marker](gallery/visuals/visual_marker.md)
 
-_Media pending._
+![Marker](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_marker.png)
 
 `supported` `visuals`<br><span>`marker`, `panzoom`, `capture`</span>
 
@@ -64,7 +64,7 @@ retained marker visual with deterministic symbol, fill, stroke, and size variati
 
 ### [Mesh](gallery/visuals/visual_mesh.md)
 
-_Media pending._
+![Mesh](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_mesh.png)
 
 `supported` `visuals`<br><span>`mesh`, `indexed-geometry`, `arcball`, `capture`</span>
 
@@ -76,7 +76,7 @@ retained lit indexed cube mesh.
 
 ### [Path](gallery/visuals/visual_path.md)
 
-_Media pending._
+![Path](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_path.png)
 
 `supported` `visuals`<br><span>`path`, `capture`</span>
 
@@ -88,7 +88,7 @@ deterministic multi-signal retained path visual.
 
 ### [Pixel](gallery/visuals/visual_pixel.md)
 
-_Media pending._
+![Pixel](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_pixel.png)
 
 `supported` `visuals`<br><span>`pixel`, `panzoom`, `capture`</span>
 
@@ -100,7 +100,7 @@ deterministic retained pixel visual baseline.
 
 ### [Point](gallery/visuals/point_2d.md)
 
-_Media pending._
+![Point](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/point_2d.png)
 
 `supported` `visuals`<br><span>`point`, `panzoom`, `capture`</span>
 
@@ -112,7 +112,7 @@ deterministic retained 2D point visual baseline.
 
 ### [Primitive](gallery/visuals/visual_primitive.md)
 
-_Media pending._
+![Primitive](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_primitive.png)
 
 `supported` `visuals`<br><span>`primitive`, `capture`</span>
 
@@ -124,7 +124,7 @@ topology-parametric triangles rendered with the retained primitive visual.
 
 ### [Segment](gallery/visuals/visual_segment.md)
 
-_Media pending._
+![Segment](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_segment.png)
 
 `supported` `visuals`<br><span>`segment`, `panzoom`, `capture`</span>
 
@@ -136,7 +136,7 @@ retained segment visual with independent endpoint-pair strokes.
 
 ### [Sphere](gallery/visuals/sphere_impostor.md)
 
-_Media pending._
+![Sphere](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/sphere_impostor.png)
 
 `supported` `visuals`<br><span>`sphere`, `arcball`, `capture`</span>
 
@@ -148,7 +148,7 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
 
 ### [Splat](gallery/visuals/visual_splat.md)
 
-_Media pending._
+![Splat](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_splat.png)
 
 `experimental` `visuals`<br><span>`splat`, `panzoom`, `capture`</span>
 
@@ -160,7 +160,7 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
 
 ### [Text](gallery/visuals/visual_text.md)
 
-_Media pending._
+![Text](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_text.png)
 
 `supported` `visuals`<br><span>`text`, `capture`</span>
 
@@ -172,7 +172,7 @@ retained semantic text objects lowered to glyph visuals.
 
 ### [Vector](gallery/visuals/visual_vector.md)
 
-_Media pending._
+![Vector](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_vector.png)
 
 `supported` `visuals`<br><span>`vector`, `path`, `panzoom`, `capture`</span>
 
@@ -184,7 +184,7 @@ retained straight and curved vector visual example.
 
 ### [Volume](gallery/visuals/volume.md)
 
-_Media pending._
+![Volume](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/volume.png)
 
 `supported` `visuals`<br><span>`sampled-field`, `volume`, `transfer-function`, `boundary-box`, `arcball`, ...</span>
 

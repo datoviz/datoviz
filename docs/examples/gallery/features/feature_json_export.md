@@ -27,7 +27,7 @@ retained scene JSON serialization diagnostic.
 _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
-prepared separately from this page and should not be staged without explicit approval.
+prepared in the `data` submodule and linked from this page.
 
 ## Source
 

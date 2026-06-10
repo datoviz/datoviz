@@ -25,10 +25,10 @@ polygon triangulation with derived edge overlay.
 
 ## Media
 
-_Media pending._
+![Polygon Triangulation](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_triangulation_polygon.png)
 
 Static screenshots are required before final website publication. Generated media is
-prepared separately from this page and should not be staged without explicit approval.
+prepared in the `data` submodule and linked from this page.
 
 ## Live WebGPU
 

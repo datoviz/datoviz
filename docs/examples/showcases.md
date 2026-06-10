@@ -17,7 +17,7 @@ Coverage: 15 examples (11 supported, 1 experimental, 3 prototype).
 
 ### [Allen Mouse Brain](gallery/showcases/brain_volume.md)
 
-_Media pending._
+![Allen Mouse Brain](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/brain_volume.png)
 
 `prototype` `showcases`<br><span>`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, ...</span>
 
@@ -29,7 +29,7 @@ local Allen mouse brain RGBA volume and occluded slice.
 
 ### [Embedding Atlas](gallery/showcases/showcase_embedding_atlas.md)
 
-_Media pending._
+![Embedding Atlas](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/showcase_embedding_atlas.png)
 
 `supported` `showcases`<br><span>`scientific`, `synthetic`, `embedding`, `point`, `panzoom`, ...</span>
 
@@ -41,7 +41,7 @@ interactive synthetic AI embedding atlas.
 
 ### [GPU Particle Smoke](gallery/showcases/showcase_gpu_particle_smoke.md)
 
-_Media pending._
+![GPU Particle Smoke](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/showcase_gpu_particle_smoke.png)
 
 `experimental` `showcases`<br><span>`compute`, `simulation`, `particles`, `point`, `alpha-blending`, ...</span>
 
@@ -65,7 +65,7 @@ linked temporal panels with a spanning summary panel.
 
 ### [Linked Probe With Colorbar](gallery/showcases/linked_panels_probe_colorbar.md)
 
-_Media pending._
+![Linked Probe With Colorbar](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/linked_panels_probe_colorbar.png)
 
 `supported` `showcases`<br><span>`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, ...</span>
 
@@ -77,7 +77,7 @@ linked image panels with one probe readout and shared colorbar.
 
 ### [Lipid Brain Atlas](gallery/showcases/showcase_lipid_brain_atlas.md)
 
-_Media pending._
+![Lipid Brain Atlas](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/showcase_lipid_brain_atlas.png)
 
 `prototype` `showcases`<br><span>`scientific`, `real-data`, `lipid-atlas`, `image`, `sampled-field`, ...</span>
 
@@ -89,7 +89,7 @@ section/channel lipid intensity showcase.
 
 ### [Point Cloud](gallery/showcases/point_cloud.md)
 
-_Media pending._
+![Point Cloud](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/point_cloud.png)
 
 `supported` `showcases`<br><span>`real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, ...</span>
 
@@ -101,7 +101,7 @@ RESEPI RGB LiDAR dense point cloud.
 
 ### [Protein](gallery/showcases/protein_arcball_viewer.md)
 
-_Media pending._
+![Protein](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/protein_arcball_viewer.png)
 
 `supported` `showcases`<br><span>`scientific`, `real-data`, `molecular`, `sphere`, `arcball`</span>
 
@@ -113,7 +113,7 @@ RCSB PDB protein structure rendered as clustered spheres.
 
 ### [Scale Bar Measurement Workflow](gallery/showcases/scalebar_measurement_workflow.md)
 
-_Media pending._
+![Scale Bar Measurement Workflow](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/scalebar_measurement_workflow.png)
 
 `supported` `showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
 
@@ -125,7 +125,7 @@ scale-aware overview, detail, and 3D measurement workflow.
 
 ### [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md)
 
-_Media pending._
+![Scientific Plotting Workflow](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/scientific_plotting_workflow.png)
 
 `supported` `showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
 
@@ -137,7 +137,7 @@ histogram, guide annotations, stacked traces, and error bands.
 
 ### [Surface Grid](gallery/showcases/showcase_surface_grid.md)
 
-_Media pending._
+![Surface Grid](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/showcase_surface_grid.png)
 
 `supported` `showcases`<br><span>`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, ...</span>
 
@@ -149,7 +149,7 @@ generated height-field mesh with a derived wireframe overlay.
 
 ### [Synthetic Mouse](gallery/showcases/showcase_synthetic_mouse.md)
 
-_Media pending._
+![Synthetic Mouse](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/showcase_synthetic_mouse.png)
 
 `prototype` `showcases`<br><span>`scientific`, `synthetic`, `textured-mesh`, `animation`, `skeleton`, ...</span>
 
@@ -161,7 +161,7 @@ animated textured mouse mesh with trajectory and skeleton trails.
 
 ### [Textured Planets](gallery/showcases/textured_terrain_or_planet.md)
 
-_Media pending._
+![Textured Planets](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/textured_terrain_or_planet.png)
 
 `supported` `showcases`<br><span>`real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, ...</span>
 
@@ -173,7 +173,7 @@ UV textured planet mesh via dvz_mesh + sampled fields.
 
 ### [U.S. State Choropleth](gallery/showcases/us_state_choropleth.md)
 
-_Media pending._
+![U.S. State Choropleth](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/us_state_choropleth.png)
 
 `supported` `showcases`<br><span>`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, ...</span>
 
@@ -185,7 +185,7 @@ contiguous U.S. state population-density choropleth.
 
 ### [Wind Field](gallery/showcases/showcase_wind_field.md)
 
-_Media pending._
+![Wind Field](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/showcases/showcase_wind_field.png)
 
 `supported` `showcases`<br><span>`scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, ...</span>
 

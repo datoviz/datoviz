@@ -29,10 +29,10 @@ retained semantic text objects lowered to glyph visuals.
 
 ## Media
 
-_Media pending._
+![Text](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/visuals/visual_text.png)
 
 Static screenshots are required before final website publication. Generated media is
-prepared separately from this page and should not be staged without explicit approval.
+prepared in the `data` submodule and linked from this page.
 
 ## Live WebGPU
 

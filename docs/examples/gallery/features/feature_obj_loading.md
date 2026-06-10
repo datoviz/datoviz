@@ -25,10 +25,10 @@ Wavefront OBJ mesh loading through geom/fileio helpers.
 
 ## Media
 
-_Media pending._
+![OBJ Loading](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_obj_loading.png)
 
 Static screenshots are required before final website publication. Generated media is
-prepared separately from this page and should not be staged without explicit approval.
+prepared in the `data` submodule and linked from this page.
 
 ## Live WebGPU
 

@@ -15,7 +15,7 @@ Coverage: 2 examples (2 supported).
 
 ### [Graph Composite](gallery/composites/composite_graph.md)
 
-_Media pending._
+![Graph Composite](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/composites/composite_graph.png)
 
 `supported` `composites`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
 
@@ -27,7 +27,7 @@ deterministic brain-connectivity graph composite with community labels.
 
 ### [Polygon Composite](gallery/composites/composite_polygon.md)
 
-_Media pending._
+![Polygon Composite](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/composites/composite_polygon.png)
 
 `supported` `composites`<br><span>`composite`, `polygon`, `polygon-set`, `holes`, `panzoom`</span>
 

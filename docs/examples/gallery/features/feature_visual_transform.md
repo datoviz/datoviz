@@ -24,10 +24,10 @@ retained visual-local affine transform on point visuals.
 
 ## Media
 
-_Media pending._
+![Visual Transform](https://raw.githubusercontent.com/datoviz/data/v0.4-dev/gallery/v0.4/features/feature_visual_transform.png)
 
 Static screenshots are required before final website publication. Generated media is
-prepared separately from this page and should not be staged without explicit approval.
+prepared in the `data` submodule and linked from this page.
 
 ## Source
 
