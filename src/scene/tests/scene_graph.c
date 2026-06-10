@@ -138,6 +138,8 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
     TST_CASE(test_scene_visual_alpha_mode_wboit_transparent_only_depth);
     TST_CASE(test_scene_visual_alpha_mode_depth_peel_frame_plan);
+    TST_CASE(test_scene_visual_alpha_mode_depth_peel_blended_overlay);
+    TST_CASE(test_scene_visual_alpha_mode_depth_peel_loads_prior_panel);
     TST_CASE(test_scene_visual_alpha_mode_mixed_oit_rejected);
     TST_CASE(test_scene_visual_alpha_mode_emits_depth_peel_drp2);
     TST_CASE(test_scene_visual_alpha_mode_requires_wboit_capabilities);

@@ -108,7 +108,12 @@ bool _scene_technique_emit_depth_peel_frame_graph(
     dvz_strlcpy(opaque.panel_id, panel_id, sizeof(opaque.panel_id));
     dvz_strlcpy(opaque.work_label, "opaque", sizeof(opaque.work_label));
     opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
-    _scene_frame_graph_color_attachment(&color, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+    bool color_written = _scene_frame_graph_color_written(plan, "rt");
+    _scene_frame_graph_color_attachment(
+        &color, "rt",
+        color_written ? DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD
+                      : DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+        !color_written);
     if (!dvz_frame_graph_pass_color_attachment(&opaque, &color))
         return false;
     if (opaque_needs_depth)

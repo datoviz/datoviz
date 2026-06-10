@@ -57,40 +57,16 @@ typedef struct MaterialMeshState
 /*************************************************************************************************/
 
 /**
- * Set a visual-local translation transform.
- *
- * @param visual visual to transform
- * @param x translation on X
- * @param z translation on Z
- * @return true when the transform was accepted
- */
-static bool _translate_visual(DvzVisual* visual, float x, float z)
-{
-    mat4 transform = {
-        {1.0f, 0.0f, 0.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f, 1.0f, 0.0f},
-        {x, 0.0f, z, 1.0f},
-    };
-    return dvz_visual_set_transform(visual, transform) == 0;
-}
-
-
-
-/**
  * Add one cube mesh with a specific material.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
- * @param x visual-local X translation
- * @param z visual-local Z translation
  * @param material material descriptor
  * @param out_geometry geometry handle for cleanup on failure before upload completes
  * @return true on success
  */
 static bool _add_material_cube(
-    DvzScene* scene, DvzPanel* panel, float x, float z, const DvzMaterialDesc* material,
-    DvzGeometry** out_geometry)
+    DvzScene* scene, DvzPanel* panel, const DvzMaterialDesc* material, DvzGeometry** out_geometry)
 {
     const ExampleStyleColorRole face_roles[6] = {
         EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
@@ -105,8 +81,6 @@ static bool _add_material_cube(
         return false;
 
     if (dvz_visual_set_material(visual, material) != 0)
-        return false;
-    if (!_translate_visual(visual, x, z))
         return false;
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
 }
@@ -141,23 +115,25 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx->figure == NULL)
         return false;
 
-    DvzPanel* panel = dvz_panel_full(ctx->figure);
-    if (panel == NULL)
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 3);
+    if (grid == NULL)
         return false;
-    example_graphite_cyan_set_panel_background(panel);
+    if (!dvz_grid_set_margins(
+            grid, &(DvzPanelReserve){.left_px = 34.0f, .right_px = 34.0f, .top_px = 40.0f,
+                                     .bottom_px = 40.0f}))
+        return false;
+    if (!dvz_grid_set_gutter(grid, 24.0f, 0.0f))
+        return false;
 
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = 0.0f;
-    camera.eye[1] = -3.40f;
-    camera.eye[2] = 1.30f;
+    camera.eye[1] = -3.25f;
+    camera.eye[2] = 1.22f;
     camera.up[1] = 0.0f;
     camera.up[2] = 1.0f;
     camera.fov_y = 0.64f;
     camera.near = 0.05f;
     camera.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera))
-        return false;
-
     DvzMaterialDesc matte = dvz_phong_material_desc();
     matte.phong.ambient = 0.34f;
     matte.phong.diffuse = 0.84f;
@@ -175,22 +151,40 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     rim.standard.specular = 0.46f;
     rim.standard.rim_strength = 0.30f;
 
-    if (!_add_material_cube(ctx->scene, panel, -0.88f, -0.10f, &matte, &state->geometry))
-        return false;
-    if (!_add_material_cube(ctx->scene, panel, +0.00f, +0.08f, &glossy, &state->geometry))
-        return false;
-    if (!_add_material_cube(ctx->scene, panel, +0.88f, -0.10f, &rim, &state->geometry))
-        return false;
+    const DvzMaterialDesc* materials[3] = {&matte, &glossy, &rim};
+    const char* labels[3] = {"matte phong", "glossy phong", "standard rim"};
+    DvzController* controllers[3] = {0};
+    for (uint32_t i = 0; i < 3u; i++)
+    {
+        DvzPanel* panel = dvz_grid_panel(grid, 0, i);
+        if (panel == NULL)
+            return false;
+        example_graphite_cyan_set_panel_background(panel);
+        if (!example_add_panel_label(panel, labels[i], 18.0f, 18.0f))
+            return false;
+        if (!dvz_panel_set_camera(panel, &camera))
+            return false;
+        if (!_add_material_cube(ctx->scene, panel, materials[i], &state->geometry))
+            return false;
 
-    DvzController* controller = dvz_arcball(ctx->scene, NULL);
-    if (controller == NULL)
-        return false;
-    DvzArcball* arcball = dvz_controller_arcball(controller);
-    if (arcball == NULL)
-        return false;
-    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
-        return false;
-    dvz_arcball_set(arcball, (vec3){+0.58f, -0.14f, +0.26f});
+        DvzController* controller = dvz_arcball(ctx->scene, NULL);
+        if (controller == NULL)
+            return false;
+        DvzArcball* arcball = dvz_controller_arcball(controller);
+        if (arcball == NULL)
+            return false;
+        if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+            return false;
+        dvz_arcball_set(arcball, (vec3){+0.58f, -0.14f, +0.26f});
+        controllers[i] = controller;
+    }
+    for (uint32_t i = 1; i < 3u; i++)
+    {
+        if (!example_link_controllers_bidirectional(
+                ctx->scene, controllers[0], controllers[i],
+                DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM))
+            return false;
+    }
     return true;
 }
 

@@ -146,18 +146,18 @@ static bool _set_camera(DvzPanel* panel)
  * @param panel target panel
  * @return true on success
  */
-static bool _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel)
+static DvzController* _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel)
 {
     DvzController* controller = dvz_arcball(ctx->scene, NULL);
     if (controller == NULL)
-        return false;
+        return NULL;
     DvzArcball* arcball = dvz_controller_arcball(controller);
     if (arcball == NULL)
-        return false;
+        return NULL;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
-        return false;
+        return NULL;
     dvz_arcball_set(arcball, (vec3){+0.58f, -0.24f, +0.18f});
-    return true;
+    return controller;
 }
 
 
@@ -200,10 +200,19 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(single);
     example_graphite_cyan_set_panel_background(multisample);
+    if (!example_add_panel_label(single, "single sample", 18.0f, 18.0f) ||
+        !example_add_panel_label(multisample, "8x MSAA", 18.0f, 18.0f))
+        return false;
 
     if (!_set_camera(single) || !_set_camera(multisample))
         return false;
-    if (!_bind_arcball(ctx, single) || !_bind_arcball(ctx, multisample))
+    DvzController* single_controller = _bind_arcball(ctx, single);
+    DvzController* multisample_controller = _bind_arcball(ctx, multisample);
+    if (single_controller == NULL || multisample_controller == NULL)
+        return false;
+    if (!example_link_controllers_bidirectional(
+            ctx->scene, single_controller, multisample_controller,
+            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM))
         return false;
     if (!_add_cube_cluster(ctx->scene, single) || !_add_cube_cluster(ctx->scene, multisample))
         return false;

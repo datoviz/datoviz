@@ -103,6 +103,11 @@ bool example_panel_pointer_position(
 
 bool example_add_xz_reference_grid(DvzPanel* panel, float origin_y, float size);
 
+bool example_add_panel_label(DvzPanel* panel, const char* label, float x_px, float y_px);
+
+bool example_link_controllers_bidirectional(
+    DvzScene* scene, DvzController* a, DvzController* b, uint32_t components);
+
 DvzVisual* example_graphite_cyan_cube_mesh(
     DvzScene* scene,
     double size,

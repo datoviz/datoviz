@@ -3385,6 +3385,149 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
 }
 
 
+/**
+ * Verify source-over overlays on a depth-peel panel get matching graph passes.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_alpha_mode_depth_peel_blended_overlay(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* peel = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* overlay = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(peel != NULL);
+    AT(overlay != NULL);
+
+    vec3 positions[3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
+    };
+    DvzColor peel_colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+    DvzColor overlay_colors[3] = {
+        {255, 255, 255, 192}, {255, 255, 255, 192}, {255, 255, 255, 192}};
+
+    AT(dvz_visual_set_data(peel, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(peel, "color", peel_colors, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(peel, DVZ_ALPHA_DEPTH_PEEL) == 0);
+    AT(dvz_panel_add_visual(panel, peel, NULL) == 0);
+
+    AT(dvz_visual_set_data(overlay, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(overlay, "color", overlay_colors, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(overlay, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_panel_add_visual(panel, overlay, NULL) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.alpha.depth_peel.overlay", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+
+    AT(dvz_frame_plan_node_count(plan) == 4 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 4 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
+    const DvzFramePlanNode* overlay_node =
+        dvz_frame_plan_node_get(plan, 3 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
+    const DvzFrameGraphPass* overlay_pass =
+        dvz_frame_plan_graph_pass_get(plan, 3 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
+    ANN(overlay_node);
+    ANN(overlay_pass);
+    AT(dvz_frame_plan_render_pass_role(overlay_node) == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
+    AT(strcmp(overlay_pass->work_label, "transparent_blend") == 0);
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_frame_plan_contracts_validate(figure, plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify a depth-peel panel preserves earlier graph-backed panel output.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_alpha_mode_depth_peel_loads_prior_panel(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 128, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    AT(left != NULL);
+    AT(right != NULL);
+
+    DvzVisual* blended = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* peel = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(blended != NULL);
+    AT(peel != NULL);
+
+    vec3 positions[3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
+    };
+    DvzColor colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+    AT(dvz_visual_set_data(blended, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(blended, "color", colors, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(blended, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_panel_add_visual(left, blended, NULL) == 0);
+    AT(dvz_visual_set_data(peel, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(peel, "color", colors, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(peel, DVZ_ALPHA_DEPTH_PEEL) == 0);
+    AT(dvz_panel_add_visual(right, peel, NULL) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.alpha.depth_peel.load_prior", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    AT(_scene_emit_panel_render(figure, 1, plan, "figure_0"));
+
+    const DvzFrameGraphPass* right_opaque = NULL;
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
+    {
+        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
+        if (
+            pass != NULL && strcmp(pass->panel_id, "figure_0_p1") == 0 &&
+            strcmp(pass->work_label, "opaque") == 0)
+        {
+            right_opaque = pass;
+            break;
+        }
+    }
+    ANN(right_opaque);
+    AT(right_opaque->color_attachment_count == 1);
+    AT(right_opaque->color_attachments[0].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD);
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_frame_plan_contracts_validate(figure, plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Verify panels mixing WBOIT and depth peeling are rejected with a diagnostic.

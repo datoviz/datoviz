@@ -24,6 +24,7 @@
 #include <stdint.h>
 
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -54,15 +55,15 @@
 static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
 {
     vec3 positions[SPHERE_COUNT] = {
-        {-0.72f, -0.28f, -0.20f},
-        {-0.36f, -0.28f, +0.05f},
-        {+0.00f, -0.28f, +0.18f},
-        {+0.36f, -0.28f, +0.05f},
-        {+0.72f, -0.28f, -0.20f},
-        {-0.48f, +0.18f, -0.06f},
-        {-0.12f, +0.18f, +0.16f},
-        {+0.24f, +0.18f, +0.12f},
-        {+0.60f, +0.18f, -0.08f},
+        {-1.02f, -0.36f, -0.20f},
+        {-0.52f, -0.36f, +0.05f},
+        {+0.00f, -0.36f, +0.18f},
+        {+0.52f, -0.36f, +0.05f},
+        {+1.02f, -0.36f, -0.20f},
+        {-0.72f, +0.28f, -0.06f},
+        {-0.20f, +0.28f, +0.16f},
+        {+0.34f, +0.28f, +0.12f},
+        {+0.86f, +0.28f, -0.08f},
     };
     const float radii[SPHERE_COUNT] = {
         0.150f, 0.170f, 0.190f, 0.170f, 0.150f, 0.165f, 0.205f, 0.185f, 0.155f};
@@ -161,19 +162,23 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = 0.0f;
-    camera.eye[1] = -2.80f;
-    camera.eye[2] = 1.05f;
+    camera.eye[1] = -4.10f;
+    camera.eye[2] = 1.45f;
     camera.up[1] = 0.0f;
     camera.up[2] = 1.0f;
-    camera.fov_y = 0.58f;
+    camera.fov_y = 0.66f;
     camera.near = 0.05f;
     camera.far = 100.0f;
+    DvzController* controllers[3] = {0};
+    const char* labels[3] = {"matte key light", "glossy side light", "rim highlight"};
     for (uint32_t i = 0; i < 3u; i++)
     {
         DvzPanel* panel = dvz_grid_panel(grid, 0, i);
         if (panel == NULL)
             return false;
         example_graphite_cyan_set_panel_background(panel);
+        if (!example_add_panel_label(panel, labels[i], 18.0f, 18.0f))
+            return false;
         if (!dvz_panel_set_camera(panel, &camera))
             return false;
         if (!_add_lit_spheres(ctx->scene, panel, i))
@@ -188,6 +193,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
             return false;
         dvz_arcball_set(arcball, (vec3){+0.46f, -0.12f, +0.18f});
+        controllers[i] = controller;
+    }
+    for (uint32_t i = 1; i < 3u; i++)
+    {
+        if (!example_link_controllers_bidirectional(
+                ctx->scene, controllers[0], controllers[i],
+                DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM))
+            return false;
     }
     return true;
 }

@@ -59,19 +59,19 @@ tests when available, plus changed-example build/smoke where supported.
 Validation: `git diff --check`, `just build`, focused scene/technique tests where available, plus
 changed-example build/smoke where supported.
 
-- [ ] `features/lighting`: add panel legends.
-- [ ] `features/lighting`: widen sphere spacing.
-- [ ] `features/lighting`: make the initial camera much less zoomed in.
-- [ ] `features/lighting`: link panel arcballs.
-- [ ] `features/material_mesh`: show the same mesh in different panels with different materials.
-- [ ] `features/material_mesh`: link panel arcballs.
-- [ ] `features/material_mesh`: add panel legends.
-- [ ] `features/technique_depth_cue`: add linked arcball comparison and panel labels.
-- [ ] `features/technique_edl`: treat as its own item; add linked arcball comparison and panel
+- [x] `features/lighting`: add panel legends.
+- [x] `features/lighting`: widen sphere spacing.
+- [x] `features/lighting`: make the initial camera much less zoomed in.
+- [x] `features/lighting`: link panel arcballs.
+- [x] `features/material_mesh`: show the same mesh in different panels with different materials.
+- [x] `features/material_mesh`: link panel arcballs.
+- [x] `features/material_mesh`: add panel legends.
+- [x] `features/technique_depth_cue`: add linked arcball comparison and panel labels.
+- [x] `features/technique_edl`: treat as its own item; add linked arcball comparison and panel
   labels.
-- [ ] `features/technique_msaa`: replace separate arcballs with linked panels.
-- [ ] `features/technique_ssao`: tune SSAO parameters, increase blur as needed, and add arcball.
-- [ ] `features/technique_transparency`: investigate empty first two panels as a possible
+- [x] `features/technique_msaa`: replace separate arcballs with linked panels.
+- [x] `features/technique_ssao`: tune SSAO parameters, increase blur as needed, and add arcball.
+- [x] `features/technique_transparency`: investigate empty first two panels as a possible
   technique/render-path bug before reducing it to example polish.
 
 

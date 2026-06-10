@@ -370,6 +370,57 @@ bool example_add_xz_reference_grid(DvzPanel* panel, float origin_y, float size)
 
 
 /**
+ * Add a compact fixed panel label.
+ *
+ * @param panel target panel
+ * @param label label text
+ * @param x_px panel-local x position
+ * @param y_px panel-local y position
+ * @return true when the label was created
+ */
+bool example_add_panel_label(DvzPanel* panel, const char* label, float x_px, float y_px)
+{
+    if (panel == NULL || label == NULL || label[0] == '\0')
+        return false;
+
+    DvzLabelDesc desc = dvz_label_desc();
+    desc.text = label;
+    desc.style.size_px = 15.0f;
+    desc.style.color[0] = 222u;
+    desc.style.color[1] = 236u;
+    desc.style.color[2] = 244u;
+    desc.style.color[3] = 245u;
+    desc.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    desc.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    desc.placement.position[0] = x_px;
+    desc.placement.position[1] = y_px;
+    desc.placement.text_anchor[0] = 0.0f;
+    desc.placement.text_anchor[1] = 0.0f;
+    desc.placement.has_text_anchor = true;
+    return dvz_annotation_label(panel, &desc) != NULL;
+}
+
+
+/**
+ * Link two controllers in both directions using current one-way controller links.
+ *
+ * @param scene scene owning both controllers
+ * @param a first controller
+ * @param b second controller
+ * @param components linked controller state components
+ * @return true when both links were created
+ */
+bool example_link_controllers_bidirectional(
+    DvzScene* scene, DvzController* a, DvzController* b, uint32_t components)
+{
+    if (scene == NULL || a == NULL || b == NULL)
+        return false;
+    return dvz_controller_link(scene, a, b, components, DVZ_CONTROLLER_LINK_ONE_WAY) != NULL &&
+           dvz_controller_link(scene, b, a, components, DVZ_CONTROLLER_LINK_ONE_WAY) != NULL;
+}
+
+
+/**
  * Create a mesh visual backed by one graphite-cyan colored cube geometry.
  *
  * @param scene scene owning the visual

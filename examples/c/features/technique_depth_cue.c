@@ -24,6 +24,7 @@
 #include <stdint.h>
 
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -141,6 +142,21 @@ static bool _set_camera(DvzPanel* panel)
 }
 
 
+static DvzController* _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel)
+{
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    if (controller == NULL)
+        return NULL;
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    if (arcball == NULL)
+        return NULL;
+    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return NULL;
+    dvz_arcball_set(arcball, (vec3){+0.48f, -0.18f, +0.20f});
+    return controller;
+}
+
+
 
 /*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
@@ -180,8 +196,19 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(plain);
     example_graphite_cyan_set_panel_background(cued);
+    if (!example_add_panel_label(plain, "plain depth", 18.0f, 18.0f) ||
+        !example_add_panel_label(cued, "depth cue", 18.0f, 18.0f))
+        return false;
 
     if (!_set_camera(plain) || !_set_camera(cued))
+        return false;
+    DvzController* plain_controller = _bind_arcball(ctx, plain);
+    DvzController* cued_controller = _bind_arcball(ctx, cued);
+    if (plain_controller == NULL || cued_controller == NULL)
+        return false;
+    if (!example_link_controllers_bidirectional(
+            ctx->scene, plain_controller, cued_controller,
+            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM))
         return false;
     return _add_sphere_lattice(ctx->scene, plain, false) &&
            _add_sphere_lattice(ctx->scene, cued, true);

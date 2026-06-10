@@ -766,6 +766,12 @@ int test_scene_visual_alpha_mode_wboit_transparent_only_depth(
 
 int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const TstCase* item);
 
+int test_scene_visual_alpha_mode_depth_peel_blended_overlay(
+    TstContext* suite, const TstCase* item);
+
+int test_scene_visual_alpha_mode_depth_peel_loads_prior_panel(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_visual_alpha_mode_mixed_oit_rejected(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const TstCase* item);

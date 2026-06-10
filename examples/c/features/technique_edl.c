@@ -24,6 +24,7 @@
 #include <stdint.h>
 
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -126,6 +127,21 @@ static bool _set_camera(DvzPanel* panel)
 }
 
 
+static DvzController* _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel)
+{
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    if (controller == NULL)
+        return NULL;
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    if (arcball == NULL)
+        return NULL;
+    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return NULL;
+    dvz_arcball_set(arcball, (vec3){+0.48f, -0.18f, +0.20f});
+    return controller;
+}
+
+
 
 /*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
@@ -165,8 +181,19 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(plain);
     example_graphite_cyan_set_panel_background(lit);
+    if (!example_add_panel_label(plain, "plain lighting", 18.0f, 18.0f) ||
+        !example_add_panel_label(lit, "eye-dome lighting", 18.0f, 18.0f))
+        return false;
 
     if (!_set_camera(plain) || !_set_camera(lit))
+        return false;
+    DvzController* plain_controller = _bind_arcball(ctx, plain);
+    DvzController* lit_controller = _bind_arcball(ctx, lit);
+    if (plain_controller == NULL || lit_controller == NULL)
+        return false;
+    if (!example_link_controllers_bidirectional(
+            ctx->scene, plain_controller, lit_controller,
+            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM))
         return false;
     if (!_add_sphere_lattice(ctx->scene, plain) || !_add_sphere_lattice(ctx->scene, lit))
         return false;

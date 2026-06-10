@@ -1193,6 +1193,14 @@ bool _scene_emit_panel_render_ex(
                 report, "failed to emit depth-peeling FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
+        if (blended_count > 0 && !_scene_technique_emit_blended_frame_graph(
+                                     plan, panel_id, false, false, false, blended_count,
+                                     blended_needs_depth, blended_writes_depth, NULL))
+        {
+            _scene_emit_graph_report(
+                report, "failed to emit blended FramePlan graph for panel %s", panel_id);
+            graph_ok = false;
+        }
     }
     else if (blended_count > 0)
     {

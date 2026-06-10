@@ -194,18 +194,18 @@ static bool _set_camera(DvzPanel* panel)
  * @param panel target panel
  * @return true on success
  */
-static bool _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel)
+static DvzController* _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel)
 {
     DvzController* controller = dvz_arcball(ctx->scene, NULL);
     if (controller == NULL)
-        return false;
+        return NULL;
     DvzArcball* arcball = dvz_controller_arcball(controller);
     if (arcball == NULL)
-        return false;
+        return NULL;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
-        return false;
+        return NULL;
     dvz_arcball_set(arcball, (vec3){+0.50f, -0.18f, +0.22f});
-    return true;
+    return controller;
 }
 
 
@@ -250,11 +250,27 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_graphite_cyan_set_panel_background(blended);
     example_graphite_cyan_set_panel_background(wboit);
     example_graphite_cyan_set_panel_background(peel);
+    if (!example_add_panel_label(blended, "source-over", 18.0f, 18.0f) ||
+        !example_add_panel_label(wboit, "weighted OIT", 18.0f, 18.0f) ||
+        !example_add_panel_label(peel, "depth peel", 18.0f, 18.0f))
+        return false;
 
     if (!_set_camera(blended) || !_set_camera(wboit) || !_set_camera(peel))
         return false;
-    if (!_bind_arcball(ctx, blended) || !_bind_arcball(ctx, wboit) || !_bind_arcball(ctx, peel))
+    DvzController* controllers[3] = {
+        _bind_arcball(ctx, blended),
+        _bind_arcball(ctx, wboit),
+        _bind_arcball(ctx, peel),
+    };
+    if (controllers[0] == NULL || controllers[1] == NULL || controllers[2] == NULL)
         return false;
+    for (uint32_t i = 1; i < 3u; i++)
+    {
+        if (!example_link_controllers_bidirectional(
+                ctx->scene, controllers[0], controllers[i],
+                DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM))
+            return false;
+    }
 
     return _add_transparent_cubes(ctx->scene, blended, DVZ_ALPHA_BLENDED) &&
            _add_transparent_cubes(ctx->scene, wboit, DVZ_ALPHA_WBOIT) &&

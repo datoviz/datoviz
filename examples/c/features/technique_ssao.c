@@ -24,6 +24,7 @@
 #include <stdint.h>
 
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -214,20 +215,33 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (panel == NULL)
         return false;
     example_graphite_cyan_set_panel_background(panel);
+    if (!example_add_panel_label(panel, "SSAO  radius 1.35  blur 9px", 18.0f, 18.0f))
+        return false;
     if (!_set_camera(panel))
         return false;
     if (!_add_occlusion_mesh(ctx->scene, panel) || !_add_spheres(ctx->scene, panel))
         return false;
 
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    if (controller == NULL)
+        return false;
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    if (arcball == NULL)
+        return false;
+    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return false;
+    dvz_arcball_set(arcball, (vec3){+0.54f, -0.20f, +0.20f});
+
     DvzSsaoDesc ssao = dvz_ssao_desc();
-    ssao.radius = 1.10f;
-    ssao.strength = 2.35f;
-    ssao.bias = 0.025f;
-    ssao.power = 1.30f;
-    ssao.min_visibility = 0.36f;
-    ssao.sample_count = 32u;
+    ssao.radius = 1.35f;
+    ssao.strength = 2.85f;
+    ssao.bias = 0.018f;
+    ssao.power = 1.45f;
+    ssao.min_visibility = 0.30f;
+    ssao.sample_count = 48u;
     ssao.blur_enabled = true;
-    ssao.blur_radius = 6.0f;
+    ssao.blur_radius = 9.0f;
+    ssao.blur_normal_sigma = 0.55f;
     return dvz_panel_set_ssao(panel, &ssao);
 }
 
