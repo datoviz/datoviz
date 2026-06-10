@@ -8,6 +8,8 @@ import os
 import shutil
 from pathlib import Path
 
+from mkdocs.structure.files import File
+
 # Constants
 # -------------------------------------------------------------------------------------------------
 
@@ -92,6 +94,26 @@ def copy_gallery_webp_assets(site_dir):
     )
 
 
+def add_generated_tree(files, config, src, dst_prefix, label='asset'):
+    src_path = ROOT / src
+    if not src_path.exists():
+        print(f"mkdocs: skipping missing {label} source {src_path}")
+        return files
+
+    for path in sorted(src_path.rglob('*')):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(src_path).as_posix()
+        files.append(
+            File.generated(
+                config,
+                f"{dst_prefix.rstrip('/')}/{rel}",
+                abs_src_path=str(path),
+            )
+        )
+    return files
+
+
 # Hooks
 # -------------------------------------------------------------------------------------------------
 
@@ -111,6 +133,17 @@ def on_page_markdown(markdown, page, config, files):
 def on_pre_build(**kwargs):
     # build_gallery()
     remove_example_docstrings()
+
+
+def on_files(files, config):
+    add_generated_tree(
+        files,
+        config,
+        'build/gallery-webp/v0.4',
+        'assets/gallery/v0.4',
+        'gallery WebP asset',
+    )
+    return files
 
 
 def on_post_build(config, **kwargs):
