@@ -942,7 +942,7 @@
           },
           {
             "id": "visual_glyph",
-            "title": "Glyph",
+            "title": "Font Atlas Glyphs",
             "category": "visual",
             "status": "experimental",
             "agent_copy_safe": false,
@@ -2405,7 +2405,7 @@
           },
           {
             "id": "visual_glyph",
-            "title": "Glyph",
+            "title": "Font Atlas Glyphs",
             "category": "visual",
             "status": "experimental",
             "agent_copy_safe": false,
@@ -2745,6 +2745,20 @@
           }
         ]
       },
+      "font-atlas": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_glyph",
+            "title": "Font Atlas Glyphs",
+            "category": "visual",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/visuals/glyph.c",
+            "page": "gallery/visuals/visual_glyph.md"
+          }
+        ]
+      },
       "geo": {
         "count": 1,
         "examples": [
@@ -2778,7 +2792,7 @@
         "examples": [
           {
             "id": "visual_glyph",
-            "title": "Glyph",
+            "title": "Font Atlas Glyphs",
             "category": "visual",
             "status": "experimental",
             "agent_copy_safe": false,
@@ -3771,7 +3785,7 @@
         "examples": [
           {
             "id": "visual_glyph",
-            "title": "Glyph",
+            "title": "Font Atlas Glyphs",
             "category": "visual",
             "status": "experimental",
             "agent_copy_safe": false,
@@ -4044,7 +4058,7 @@
         "examples": [
           {
             "id": "visual_glyph",
-            "title": "Glyph",
+            "title": "Font Atlas Glyphs",
             "category": "visual",
             "status": "experimental",
             "agent_copy_safe": false,
@@ -4319,7 +4333,7 @@
         "examples": [
           {
             "id": "visual_glyph",
-            "title": "Glyph",
+            "title": "Font Atlas Glyphs",
             "category": "visual",
             "status": "experimental",
             "agent_copy_safe": false,

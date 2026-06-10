@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* glyph - low-level SDF atlas quads, distinct from font-shaped text and marker symbols.
+/* glyph - low-level font atlas glyph quads, distinct from retained semantic text.
  *
  * Scenario: visual.glyph
  * Style: visuals, graphite_cyan, 1600x1200 capture target
@@ -20,11 +20,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/scene.h"
 #include "example_style.h"
@@ -38,15 +36,11 @@
 
 #define WIDTH            1600u
 #define HEIGHT           1200u
-#define GLYPH_COUNT       9u
-#define VERTEX_PER_GLYPH  6u
-#define VERTEX_COUNT      (GLYPH_COUNT * VERTEX_PER_GLYPH)
-#define ATLAS_GRID        3u
-#define ATLAS_CELL_SIZE   64u
-#define ATLAS_PADDING_PX  6.0f
-#define ATLAS_SIZE        (ATLAS_GRID * ATLAS_CELL_SIZE)
+#define MAX_GLYPHS       32u
+#define VERTEX_PER_GLYPH 6u
+#define MAX_VERTICES     (MAX_GLYPHS * VERTEX_PER_GLYPH)
 
-static const float SDF_EDGE_PX = 3.5f;
+static const char* TEXT_STRING = "Datoviz Atlas caf" "\xC3" "\xA9";
 
 
 
@@ -59,213 +53,226 @@ DvzScenarioSpec dvz_visual_glyph_scenario(void);
 
 
 /*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-typedef struct GlyphVisualState
-{
-    uint8_t* pixels;
-} GlyphVisualState;
-
-
-
-/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
 /**
- * Return the signed distance to a centered rectangle.
+ * Decode the next UTF-8 codepoint from a string.
  *
- * @param x normalized x in [-1, +1]
- * @param y normalized y in [-1, +1]
- * @param half_width rectangle half-width
- * @param half_height rectangle half-height
- * @return signed distance in normalized cell units
+ * @param string UTF-8 string
+ * @param inout_index byte index, advanced on success
+ * @param out_codepoint decoded codepoint
+ * @return whether a codepoint was decoded
  */
-static float _sd_box(float x, float y, float half_width, float half_height)
+static bool _utf8_next(const char* string, uint32_t* inout_index, uint32_t* out_codepoint)
 {
-    const float dx = fabsf(x) - half_width;
-    const float dy = fabsf(y) - half_height;
-    const float outside_x = fmaxf(dx, 0.0f);
-    const float outside_y = fmaxf(dy, 0.0f);
-    const float outside = sqrtf(outside_x * outside_x + outside_y * outside_y);
-    const float inside = fminf(fmaxf(dx, dy), 0.0f);
-    return outside + inside;
-}
+    ANN(string);
+    ANN(inout_index);
+    ANN(out_codepoint);
 
+    const unsigned char* s = (const unsigned char*)string;
+    uint32_t i = *inout_index;
+    if (s[i] == '\0')
+        return false;
 
-
-/**
- * Return the signed distance to a simple atlas glyph.
- *
- * @param glyph glyph index
- * @param x normalized x in [-1, +1]
- * @param y normalized y in [-1, +1]
- * @return signed distance in normalized cell units, negative inside
- */
-static float _sd_glyph(uint32_t glyph, float x, float y)
-{
-    switch (glyph % GLYPH_COUNT)
+    unsigned char c = s[i++];
+    if (c < 0x80u)
     {
-    case 0:
-        return sqrtf(x * x + y * y) - 0.58f;
-    case 1:
-        return _sd_box(x, y, 0.48f, 0.48f);
-    case 2:
-        return fmaxf(fabsf(x) - 0.12f, fabsf(y) - 0.62f);
-    case 3:
-        return fmaxf(fabsf(x) + fabsf(y) - 0.72f, -_sd_box(x, y, 0.18f, 0.18f));
-    case 4:
-        return fminf(_sd_box(x, y, 0.58f, 0.11f), _sd_box(x, y, 0.11f, 0.58f));
-    case 5:
-        return fabsf(sqrtf(x * x + y * y) - 0.50f) - 0.12f;
-    case 6:
-        return fminf(_sd_box(x + 0.22f, y, 0.10f, 0.58f), _sd_box(x - 0.22f, y, 0.10f, 0.58f));
-    case 7:
-        return fminf(
-            _sd_box(x, y + 0.22f, 0.58f, 0.10f),
-            _sd_box(x, y - 0.22f, 0.58f, 0.10f));
-    default:
-        return fminf(
-            _sd_box(x + y, x - y, 0.13f, 0.74f),
-            _sd_box(x - y, x + y, 0.13f, 0.74f));
+        *out_codepoint = c;
+        *inout_index = i;
+        return true;
     }
-}
-
-
-
-/**
- * Fill a compact RGBA atlas texture with MSDF-compatible single-channel SDF glyphs.
- *
- * @param pixels output tightly packed RGBA8 pixels
- */
-static void _fill_atlas(uint8_t* pixels)
-{
-    ANN(pixels);
-
-    for (uint32_t y = 0; y < ATLAS_SIZE; y++)
+    if ((c & 0xE0u) == 0xC0u && (s[i] & 0xC0u) == 0x80u)
     {
-        for (uint32_t x = 0; x < ATLAS_SIZE; x++)
-        {
-            const uint32_t cell_x = x / ATLAS_CELL_SIZE;
-            const uint32_t cell_y = y / ATLAS_CELL_SIZE;
-            const uint32_t glyph = cell_y * ATLAS_GRID + cell_x;
-            const float local_x =
-                (float)(x % ATLAS_CELL_SIZE) + 0.5f - 0.5f * (float)ATLAS_CELL_SIZE;
-            const float local_y =
-                (float)(y % ATLAS_CELL_SIZE) + 0.5f - 0.5f * (float)ATLAS_CELL_SIZE;
-            const float scale = 2.0f / ((float)ATLAS_CELL_SIZE - 2.0f * ATLAS_PADDING_PX);
-            const float nx = local_x * scale;
-            const float ny = local_y * scale;
-            const float dist_norm = _sd_glyph(glyph, nx, ny);
-            const float dist_px = dist_norm / scale;
-            const float sdf = fminf(fmaxf(0.5f - dist_px / SDF_EDGE_PX, 0.0f), 1.0f);
-            const uint8_t value = (uint8_t)(255.0f * sdf + 0.5f);
-            const uint32_t i = 4u * (y * ATLAS_SIZE + x);
-            pixels[i + 0] = value;
-            pixels[i + 1] = value;
-            pixels[i + 2] = value;
-            pixels[i + 3] = value;
-        }
+        *out_codepoint = ((uint32_t)(c & 0x1Fu) << 6) | (uint32_t)(s[i] & 0x3Fu);
+        *inout_index = i + 1u;
+        return true;
     }
-}
+    if (
+        (c & 0xF0u) == 0xE0u && (s[i] & 0xC0u) == 0x80u &&
+        (s[i + 1u] & 0xC0u) == 0x80u)
+    {
+        *out_codepoint = ((uint32_t)(c & 0x0Fu) << 12) | ((uint32_t)(s[i] & 0x3Fu) << 6) |
+                         (uint32_t)(s[i + 1u] & 0x3Fu);
+        *inout_index = i + 2u;
+        return true;
+    }
+    if (
+        (c & 0xF8u) == 0xF0u && (s[i] & 0xC0u) == 0x80u &&
+        (s[i + 1u] & 0xC0u) == 0x80u && (s[i + 2u] & 0xC0u) == 0x80u)
+    {
+        *out_codepoint = ((uint32_t)(c & 0x07u) << 18) | ((uint32_t)(s[i] & 0x3Fu) << 12) |
+                         ((uint32_t)(s[i + 1u] & 0x3Fu) << 6) |
+                         (uint32_t)(s[i + 2u] & 0x3Fu);
+        *inout_index = i + 3u;
+        return true;
+    }
 
+    *out_codepoint = '?';
+    *inout_index = i;
+    return true;
+}
 
 
 /**
  * Repeat one glyph item as the six vertices expected by the glyph visual.
  *
- * @param glyph_index glyph item index
+ * @param vertex first vertex index
  * @param position glyph anchor
  * @param bounds glyph local pixel bounds
  * @param texcoords atlas UV bounds
  * @param color glyph color
- * @param angle glyph angle in radians
  * @param positions output positions
  * @param all_bounds output bounds
  * @param all_texcoords output UV bounds
  * @param colors output colors
  * @param angles output angles
  */
-static void _set_glyph(
-    uint32_t glyph_index, const vec3 position, const vec4 bounds, const vec4 texcoords,
-    DvzColor color, float angle, vec3 positions[VERTEX_COUNT], vec4 all_bounds[VERTEX_COUNT],
-    vec4 all_texcoords[VERTEX_COUNT], DvzColor colors[VERTEX_COUNT], float angles[VERTEX_COUNT])
+static void _write_glyph(
+    uint32_t vertex, const vec3 position, const vec4 bounds, const vec4 texcoords, DvzColor color,
+    vec3 positions[MAX_VERTICES], vec4 all_bounds[MAX_VERTICES], vec4 all_texcoords[MAX_VERTICES],
+    DvzColor colors[MAX_VERTICES], float angles[MAX_VERTICES])
 {
-    const uint32_t base = glyph_index * VERTEX_PER_GLYPH;
     for (uint32_t i = 0; i < VERTEX_PER_GLYPH; i++)
     {
-        positions[base + i][0] = position[0];
-        positions[base + i][1] = position[1];
-        positions[base + i][2] = position[2];
+        const uint32_t dst = vertex + i;
+        positions[dst][0] = position[0];
+        positions[dst][1] = position[1];
+        positions[dst][2] = position[2];
 
-        all_bounds[base + i][0] = bounds[0];
-        all_bounds[base + i][1] = bounds[1];
-        all_bounds[base + i][2] = bounds[2];
-        all_bounds[base + i][3] = bounds[3];
+        all_bounds[dst][0] = bounds[0];
+        all_bounds[dst][1] = bounds[1];
+        all_bounds[dst][2] = bounds[2];
+        all_bounds[dst][3] = bounds[3];
 
-        all_texcoords[base + i][0] = texcoords[0];
-        all_texcoords[base + i][1] = texcoords[1];
-        all_texcoords[base + i][2] = texcoords[2];
-        all_texcoords[base + i][3] = texcoords[3];
+        all_texcoords[dst][0] = texcoords[0];
+        all_texcoords[dst][1] = texcoords[1];
+        all_texcoords[dst][2] = texcoords[2];
+        all_texcoords[dst][3] = texcoords[3];
 
-        colors[base + i] = color;
-        angles[base + i] = angle;
+        colors[dst] = color;
+        angles[dst] = 0.0f;
     }
 }
 
 
-
 /**
- * Fill a compact raw glyph grid.
+ * Fill glyph visual attributes from font atlas metrics.
  *
- * @param positions output glyph positions
- * @param bounds output glyph bounds
- * @param texcoords output glyph UV bounds
- * @param colors output glyph colors
- * @param angles output glyph angles
+ * @param atlas font atlas
+ * @param positions output positions
+ * @param bounds output bounds
+ * @param texcoords output UV bounds
+ * @param colors output colors
+ * @param angles output angles
+ * @param out_vertex_count output vertex count
+ * @return true when at least one glyph was written
  */
-static void _fill_glyphs(
-    vec3 positions[VERTEX_COUNT], vec4 bounds[VERTEX_COUNT], vec4 texcoords[VERTEX_COUNT],
-    DvzColor colors[VERTEX_COUNT], float angles[VERTEX_COUNT])
+static bool _fill_text_glyphs(
+    const DvzTextAtlas* atlas, vec3 positions[MAX_VERTICES], vec4 bounds[MAX_VERTICES],
+    vec4 texcoords[MAX_VERTICES], DvzColor colors[MAX_VERTICES], float angles[MAX_VERTICES],
+    uint32_t* out_vertex_count)
 {
+    ANN(atlas);
     ANN(positions);
     ANN(bounds);
     ANN(texcoords);
     ANN(colors);
     ANN(angles);
+    ANN(out_vertex_count);
 
-    const ExampleStyleColorRole roles[GLYPH_COUNT] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY, EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_TEXT,           EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_WARNING,        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-        EXAMPLE_STYLE_COLOR_TEXT,           EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-        EXAMPLE_STYLE_COLOR_ERROR,
+    DvzTextAtlasInfo info = dvz_text_atlas_info(atlas);
+    const float scale = 1.0f;
+    const float line_width = 610.0f;
+    const vec3 anchor = {-0.34f, +0.10f, 0.0f};
+
+    const ExampleStyleColorRole roles[4] = {
+        EXAMPLE_STYLE_COLOR_TEXT,
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_WARNING,
     };
 
-    for (uint32_t i = 0; i < GLYPH_COUNT; i++)
+    uint32_t vertex = 0;
+    uint32_t glyph_index = 0;
+    uint32_t byte_index = 0;
+    uint32_t cp = 0;
+    float cursor_x = 0.0f;
+    while (_utf8_next(TEXT_STRING, &byte_index, &cp) && glyph_index < MAX_GLYPHS)
     {
-        const uint32_t row = i / 3u;
-        const uint32_t col = i % 3u;
-        const float px = -0.48f + 0.48f * (float)col;
-        const float py = +0.38f - 0.38f * (float)row;
-        const float size = 92.0f + 18.0f * (float)((i + row) % 3u);
-        const float half = 0.5f * size;
-        const vec3 position = {px, py, 0.0f};
-        const vec4 rect = {-half, -half, +half, +half};
-        const float u0 = (float)col / (float)ATLAS_GRID;
-        const float v0 = (float)row / (float)ATLAS_GRID;
-        const float u1 = (float)(col + 1u) / (float)ATLAS_GRID;
-        const float v1 = (float)(row + 1u) / (float)ATLAS_GRID;
-        const vec4 uv = {u0, v0, u1, v1};
-        DvzColor color = example_graphite_cyan_color(roles[i]);
-        color.a = 238u;
-        _set_glyph(
-            i, position, rect, uv, color, -0.22f + 0.11f * (float)i, positions, bounds, texcoords,
-            colors, angles);
+        const DvzTextAtlasGlyph* glyph = dvz_text_atlas_glyph(atlas, cp);
+        if (glyph == NULL)
+            continue;
+
+        const float advance = glyph->advance * scale;
+        if (glyph->width <= 0.0f || glyph->height <= 0.0f)
+        {
+            cursor_x += advance;
+            continue;
+        }
+
+        const float x0 = cursor_x + glyph->xoff * scale - 0.5f * line_width;
+        const float y0 = -0.5f * info.ascent + info.ascent * scale + glyph->yoff * scale;
+        const float x1 = x0 + glyph->width * scale;
+        const float y1 = y0 + glyph->height * scale;
+        const vec4 rect = {x0, y0, x1, y1};
+        const vec4 uv = {glyph->uv[0], glyph->uv[1], glyph->uv[2], glyph->uv[3]};
+
+        DvzColor color = example_graphite_cyan_color(roles[glyph_index % 4u]);
+        color.a = 245u;
+        _write_glyph(vertex, anchor, rect, uv, color, positions, bounds, texcoords, colors, angles);
+        vertex += VERTEX_PER_GLYPH;
+        glyph_index++;
+        cursor_x += advance;
     }
+
+    *out_vertex_count = vertex;
+    return vertex > 0;
 }
 
+
+/**
+ * Add a preview of the generated atlas texture.
+ *
+ * @param scene scene owning the visual
+ * @param panel target panel
+ * @param atlas font atlas
+ * @return true when the visual was added
+ */
+static bool _add_atlas_preview(DvzScene* scene, DvzPanel* panel, const DvzTextAtlas* atlas)
+{
+    ANN(scene);
+    ANN(panel);
+    ANN(atlas);
+
+    DvzTextAtlasInfo info = dvz_text_atlas_info(atlas);
+    const float aspect = info.height > 0 ? (float)info.width / (float)info.height : 1.0f;
+    const float half_h = 0.34f;
+    const float half_w = half_h * aspect;
+    const float cx = +0.42f;
+    const float cy = -0.20f;
+
+    vec3 positions[4] = {
+        {cx - half_w, cy - half_h, 0.0f},
+        {cx - half_w, cy + half_h, 0.0f},
+        {cx + half_w, cy - half_h, 0.0f},
+        {cx + half_w, cy + half_h, 0.0f},
+    };
+    vec2 uv[4] = {{0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}};
+
+    DvzVisual* image = dvz_image(scene, 0);
+    if (image == NULL)
+        return false;
+    if (dvz_visual_set_data(image, "position", positions, 4) != 0)
+        return false;
+    if (dvz_visual_set_data(image, "texcoords", uv, 4) != 0)
+        return false;
+    if (!dvz_visual_set_field(image, "field", dvz_text_atlas_field(atlas)))
+        return false;
+    if (dvz_visual_set_depth_test(image, false) != 0)
+        return false;
+    return dvz_panel_add_visual(panel, image, NULL) == 0;
+}
 
 
 /**
@@ -273,42 +280,68 @@ static void _fill_glyphs(
  *
  * @param scene scene owning the visual
  * @param panel target panel
- * @param pixels atlas pixels
+ * @param atlas font atlas
  * @return true when the visual was added
  */
-static bool _add_glyphs(DvzScene* scene, DvzPanel* panel, uint8_t* pixels)
+static bool _add_glyphs(DvzScene* scene, DvzPanel* panel, const DvzTextAtlas* atlas)
 {
     ANN(scene);
     ANN(panel);
-    ANN(pixels);
+    ANN(atlas);
 
-    vec3 positions[VERTEX_COUNT] = {{0}};
-    vec4 bounds[VERTEX_COUNT] = {{0}};
-    vec4 texcoords[VERTEX_COUNT] = {{0}};
-    DvzColor colors[VERTEX_COUNT] = {{0}};
-    float angles[VERTEX_COUNT] = {0};
-    _fill_glyphs(positions, bounds, texcoords, colors, angles);
+    vec3 positions[MAX_VERTICES] = {{0}};
+    vec4 bounds[MAX_VERTICES] = {{0}};
+    vec4 texcoords[MAX_VERTICES] = {{0}};
+    DvzColor colors[MAX_VERTICES] = {{0}};
+    float angles[MAX_VERTICES] = {0};
+    uint32_t vertex_count = 0;
+    if (!_fill_text_glyphs(atlas, positions, bounds, texcoords, colors, angles, &vertex_count))
+        return false;
 
     DvzVisual* glyph = dvz_glyph(scene, 0);
     if (glyph == NULL)
         return false;
 
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = VERTEX_COUNT},
-        {.attr_name = "bounds", .data = bounds, .item_count = VERTEX_COUNT},
-        {.attr_name = "texcoords", .data = texcoords, .item_count = VERTEX_COUNT},
-        {.attr_name = "color", .data = colors, .item_count = VERTEX_COUNT},
-        {.attr_name = "angle", .data = angles, .item_count = VERTEX_COUNT},
+        {.attr_name = "position", .data = positions, .item_count = vertex_count},
+        {.attr_name = "bounds", .data = bounds, .item_count = vertex_count},
+        {.attr_name = "texcoords", .data = texcoords, .item_count = vertex_count},
+        {.attr_name = "color", .data = colors, .item_count = vertex_count},
+        {.attr_name = "angle", .data = angles, .item_count = vertex_count},
     };
     if (dvz_visual_set_data_many(glyph, updates, 5) != 0)
         return false;
-    if (dvz_visual_set_texture(glyph, pixels, ATLAS_SIZE, ATLAS_SIZE) != 0)
+    if (dvz_glyph_set_atlas(glyph, atlas) != 0)
         return false;
     if (dvz_visual_set_depth_test(glyph, false) != 0)
         return false;
     if (dvz_visual_set_alpha_mode(glyph, DVZ_ALPHA_BLENDED) != 0)
         return false;
     return dvz_panel_add_visual(panel, glyph, NULL) == 0;
+}
+
+
+/**
+ * Create a font atlas for the example string.
+ *
+ * @param scene scene owning the font
+ * @return generated atlas, or NULL on error
+ */
+static const DvzTextAtlas* _create_font_atlas(DvzScene* scene)
+{
+    ANN(scene);
+
+    DvzFontDesc desc = dvz_font_desc();
+    desc.family = "Roboto";
+    desc.style = "Regular";
+    DvzFont* font = dvz_font(scene, &desc);
+    if (font == NULL)
+        return NULL;
+
+    DvzTextAtlasSpec spec = dvz_text_atlas_spec(DVZ_TEXT_RENDERER_MSDF_ATLAS, 64.0f);
+    if (!dvz_font_atlas_ensure_string(font, &spec, TEXT_STRING))
+        return NULL;
+    return dvz_font_atlas(font, &spec);
 }
 
 
@@ -331,60 +364,22 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (out_user != NULL)
         *out_user = NULL;
 
-    GlyphVisualState* state = (GlyphVisualState*)dvz_malloc(sizeof(*state));
-    if (state == NULL)
-        return false;
-    state->pixels = NULL;
-
-    state->pixels = (uint8_t*)dvz_malloc(ATLAS_SIZE * ATLAS_SIZE * 4u);
-    if (state->pixels == NULL)
-    {
-        dvz_free(state);
-        return false;
-    }
-    _fill_atlas(state->pixels);
-
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
-        goto error;
+        return false;
 
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
-        goto error;
+        return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    if (!_add_glyphs(ctx->scene, panel, state->pixels))
-        goto error;
-
-    if (out_user != NULL)
-        *out_user = state;
-    return true;
-
-error:
-    dvz_free(state->pixels);
-    dvz_free(state);
-    return false;
+    const DvzTextAtlas* atlas = _create_font_atlas(ctx->scene);
+    if (atlas == NULL)
+        return false;
+    if (!_add_atlas_preview(ctx->scene, panel, atlas))
+        return false;
+    return _add_glyphs(ctx->scene, panel, atlas);
 }
-
-
-
-/**
- * Destroy the raw glyph visual scenario state.
- *
- * @param ctx scenario context
- * @param user scenario state
- */
-static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
-{
-    (void)ctx;
-
-    GlyphVisualState* state = (GlyphVisualState*)user;
-    if (state == NULL)
-        return;
-    dvz_free(state->pixels);
-    dvz_free(state);
-}
-
 
 
 /**
@@ -401,7 +396,6 @@ DvzScenarioSpec dvz_visual_glyph_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .init = _scenario_init,
-        .destroy = _scenario_destroy,
     };
 }
 

@@ -310,6 +310,13 @@ int test_scene_text_public_font_atlas_api(TstContext* suite, const TstCase* item
     AT(field_desc->height == info.height);
     AT(field_desc->format == DVZ_FIELD_FORMAT_RGBA8_UNORM);
 
+    DvzVisual* glyph_visual = dvz_glyph(scene, 0);
+    ANN(glyph_visual);
+    AT(dvz_glyph_set_atlas(glyph_visual, atlas) == 0);
+    AT(_visual_family_state(glyph_visual)->field == field);
+    AT(_visual_family_state(glyph_visual)->glyph_atlas_encoding == info.encoding);
+    AT(_visual_family_state(glyph_visual)->glyph_distance_range_px == info.distance_range_px);
+
     const DvzTextAtlasGlyph* glyph = dvz_text_atlas_glyph(atlas, 0x00E9u);
     ANN(glyph);
     AT(glyph->valid);

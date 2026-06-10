@@ -3220,6 +3220,19 @@ DVZ_EXPORT DvzVisual* dvz_glyph(DvzScene* scene, uint32_t flags);
 
 
 /**
+ * Bind a font atlas to a glyph visual.
+ *
+ * This configures the atlas sampled field, distance-field encoding, and distance range used by
+ * the glyph shader. The atlas remains owned by the font's scene and must outlive the glyph visual.
+ *
+ * @param visual the glyph visual
+ * @param atlas the text atlas
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_glyph_set_atlas(DvzVisual* visual, const DvzTextAtlas* atlas);
+
+
+/**
  * Create a volume visual.
  *
  * Volume visuals retain a 3D sampled field bound through

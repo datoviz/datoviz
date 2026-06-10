@@ -44,3 +44,25 @@ DvzVisual* dvz_glyph(DvzScene* scene, uint32_t flags)
     }
     return visual;
 }
+
+
+/**
+ * Bind a font atlas to a glyph visual.
+ *
+ * @param visual the glyph visual
+ * @param atlas the text atlas
+ * @return 0 on success, -1 on error
+ */
+int dvz_glyph_set_atlas(DvzVisual* visual, const DvzTextAtlas* atlas)
+{
+    if (visual == NULL || atlas == NULL)
+        return -1;
+    if (visual->type != DVZ_VISUAL_TYPE_GLYPH)
+        return -1;
+    if (atlas->field == NULL)
+        return -1;
+
+    _visual_family_state(visual)->glyph_atlas_encoding = atlas->encoding;
+    _visual_family_state(visual)->glyph_distance_range_px = atlas->distance_range_px;
+    return dvz_visual_set_field(visual, "field", atlas->field) ? 0 : -1;
+}

@@ -1860,7 +1860,7 @@ examples:
       - capture
 
   - id: visual_glyph
-    title: Glyph
+    title: Font Atlas Glyphs
     stage: v0.4_experimental
     category: visual
     primary_visual: glyph
@@ -1882,6 +1882,7 @@ examples:
       status_label: experimental
     tags:
       - glyph
+      - font-atlas
       - texture-atlas
       - sdf
       - capture
