@@ -19,7 +19,7 @@ Coverage: 2 examples (2 supported).
 
 `supported` `composites`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
 
-deterministic brain-connectivity graph composite with community labels.
+deterministic brain-connectivity graph composite.
 
 </div>
 
